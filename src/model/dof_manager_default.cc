@@ -628,7 +628,7 @@ void DOFManagerDefault::assemblePreassembledMatrix(
   for (const auto & term : terms) {
     UInt gi = this->localToGlobalEquationNumber(equation_number_m(term.i()));
     UInt gj = this->localToGlobalEquationNumber(equation_number_n(term.j()));
-    A.addToMatrix(gi, gj, term);
+    A.add(gi, gj, term);
   }
 }
 
@@ -702,7 +702,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
         for (UInt j = 0; j < size_mat; ++j) {
           UInt c_jcn = element_eq_nb(j);
           if (c_jcn < size) {
-            A.addToProfile(c_irn, c_jcn);
+            A.add(c_irn, c_jcn);
           }
         }
       }

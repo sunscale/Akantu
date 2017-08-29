@@ -69,10 +69,10 @@ public:
   virtual void clear() = 0;
 
   /// add a non-zero element to the profile
-  virtual UInt addToProfile(UInt i, UInt j) = 0;
+  virtual UInt add(UInt i, UInt j) = 0;
 
   /// assemble a local matrix in the sparse one
-  virtual void addToMatrix(UInt i, UInt j, Real value) = 0;
+  virtual void add(UInt i, UInt j, Real value) = 0;
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(__attribute__((unused)) const std::string &) const {

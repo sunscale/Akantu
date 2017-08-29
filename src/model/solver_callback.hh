@@ -31,12 +31,11 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_SOLVER_CALLBACK_HH__
 #define __AKANTU_SOLVER_CALLBACK_HH__
 
 namespace akantu {
-  class DOFManager;
+class DOFManager;
 }
 
 namespace akantu {
@@ -57,27 +56,32 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// callback to assemble the Jacobian Matrix
-  virtual void assembleJacobian();
+  /// get the type of matrix needed
+  virtual MatrixType getMatrixType(const ID &) = 0;
+
+  /// callback to assemble a Matrix
+  virtual void assembleMatrix(const ID &) = 0;
+
+  /// callback to assemble a lumped Matrix
+  virtual void assembleLumpedMatrix(const ID &) = 0;
 
   /// callback to assemble the residual (rhs)
-  virtual void assembleResidual();
+  virtual void assembleResidual() = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Dynamic simulations part                                                 */
   /* ------------------------------------------------------------------------ */
   /// callback for the predictor (in case of dynamic simulation)
-  virtual void predictor() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual void predictor() { }
 
   /// callback for the corrector (in case of dynamic simulation)
-  virtual void corrector() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual void corrector() { }
 
 protected:
   /// DOFManager prefixed to avoid collision in multiple inheritance cases
   DOFManager * sc_dof_manager;
 };
 
-} // akantu
-
+} // namespace akantu
 
 #endif /* __AKANTU_SOLVER_CALLBACK_HH__ */

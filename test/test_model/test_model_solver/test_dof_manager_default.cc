@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
-#include "time_step_solver.hh"
 #include "sparse_matrix_aij.hh"
+#include "time_step_solver.hh"
 
 using namespace akantu;
 
@@ -43,11 +43,8 @@ using namespace akantu;
 class MySolverCallback : public SolverCallback {
 public:
   MySolverCallback(Real F, DOFManagerDefault & dof_manager, UInt nb_dofs = 3)
-      : dof_manager(dof_manager),
-        K(dynamic_cast<SparseMatrixAIJ &>(
-            dof_manager.getNewMatrix("K", _symmetric))),
-        dispacement(nb_dofs, 1, "disp"), blocked(nb_dofs, 1),
-        forces(nb_dofs, 1), nb_dofs(nb_dofs) {
+      : dof_manager(dof_manager), dispacement(nb_dofs, 1, "disp"),
+        blocked(nb_dofs, 1), forces(nb_dofs, 1), nb_dofs(nb_dofs) {
     dof_manager.registerDOFs("disp", dispacement, _dst_generic);
     dof_manager.registerBlockedDOFs("disp", blocked);
 
@@ -57,24 +54,33 @@ public:
 
     forces(nb_dofs - 1, _x) = F;
     blocked(0, _x) = true;
-
-    for (UInt i = 0; i < nb_dofs; ++i)
-      K.addToProfile(i, i);
-    for (UInt i = 0; i < nb_dofs - 1; ++i)
-      K.addToProfile(i, i + 1);
   }
 
-  void assembleJacobian() {
-    for (UInt i = 1; i < nb_dofs - 1; ++i)
-      K(i, i) = 2;
-    for (UInt i = 0; i < nb_dofs - 1; ++i)
-      K(i, i + 1) = -1;
+  void assembleMatrix(const ID & matrix_id) {
+    if (matrix_id != "K")
+      return;
 
-    K(0, 0) = K(nb_dofs - 1, nb_dofs - 1) = 1;
+    auto & K = dynamic_cast<SparseMatrixAIJ &>(dof_manager.getMatrix("K"));
+    K.clear();
+
+    for (UInt i = 1; i < nb_dofs - 1; ++i)
+      K.add(i, i, 2.);
+    for (UInt i = 0; i < nb_dofs - 1; ++i)
+      K.add(i, i + 1, -1.);
+
+    K.add(0, 0, 1);
+    K.add(nb_dofs - 1, nb_dofs - 1, 1);
 
     // K *= 1 / L_{el}
     K *= nb_dofs - 1;
   }
+
+  MatrixType getMatrixType(const ID & matrix_id) {
+    if (matrix_id == "K")
+      return _symmetric;
+    return _mt_not_defined;
+  }
+  void assembleLumpedMatrix(const ID &) {}
 
   void assembleResidual() { dof_manager.assembleToResidual("disp", forces); }
 
@@ -82,7 +88,6 @@ public:
   void corrector() {}
 
   DOFManagerDefault & dof_manager;
-  SparseMatrixAIJ & K;
   Array<Real> dispacement;
   Array<bool> blocked;
   Array<Real> forces;
@@ -95,8 +100,6 @@ int main(int argc, char * argv[]) {
 
   DOFManagerDefault dof_manager("test_dof_manager");
   MySolverCallback callback(10., dof_manager, 11);
-
-  dof_manager.getNewMatrix("J", "K");
 
   NonLinearSolver & nls =
       dof_manager.getNewNonLinearSolver("my_nls", _nls_linear);
@@ -117,7 +120,8 @@ int main(int argc, char * argv[]) {
   for (; disp_it != callback.dispacement.end();
        ++disp_it, ++force_it, ++blocked_it) {
     std::cout << std::setw(8) << *disp_it << " " << std::setw(8) << *force_it
-              << " " << std::setw(8) << std::boolalpha << *blocked_it << std::endl;
+              << " " << std::setw(8) << std::boolalpha << *blocked_it
+              << std::endl;
   }
 
   finalize();

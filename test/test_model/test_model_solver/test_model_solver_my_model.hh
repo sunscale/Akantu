@@ -58,27 +58,12 @@ public:
         internal_forces(nb_dofs, 1, "force_int"),
         stresses(nb_elements, 1, "stress"), strains(nb_elements, 1, "strain"),
         initial_lengths(nb_elements, 1, "L0") {
-    this->initDOFManager();
 
+    this->initDOFManager();
     this->getDOFManager().registerDOFs("disp", displacement, _dst_nodal);
     this->getDOFManager().registerDOFsDerivative("disp", 1, velocity);
     this->getDOFManager().registerDOFsDerivative("disp", 2, acceleration);
-
     this->getDOFManager().registerBlockedDOFs("disp", blocked);
-
-    this->getDOFManager().getNewMatrix("K", _symmetric);
-    this->getDOFManager().getNewMatrix("M", "K");
-    this->getDOFManager().getNewMatrix("J", "K");
-
-    this->getDOFManager().getNewLumpedMatrix("M");
-
-    if (lumped) {
-      this->assembleLumpedMass();
-    } else {
-      this->assembleMass();
-      this->assembleStiffness();
-    }
-    this->assembleJacobian();
 
     displacement.set(0.);
     velocity.set(0.);
@@ -124,6 +109,8 @@ public:
     this->assembleLumpedMass(_not_ghost);
     if (this->mesh.getNbElement(_segment_2, _ghost) > 0)
       this->assembleLumpedMass(_ghost);
+
+    is_lumped_mass_assembled = true;
   }
 
   void assembleLumpedMass(const GhostType & ghost_type) {
@@ -193,9 +180,37 @@ public:
     }
     this->getDOFManager().assembleElementalMatricesToMatrix(
         "M", "disp", m_all_el, _segment_2);
+
+    is_mass_assembled = true;
   }
 
-  void assembleJacobian() {}
+  MatrixType getMatrixType(const ID &) { return _symmetric; }
+
+  void assembleMatrix(const ID & matrix_id) {
+    if (matrix_id == "K") {
+      if (not is_stiffness_assembled)
+        this->assembleStiffness();
+    } else if (matrix_id == "M") {
+      if (not is_mass_assembled)
+        this->assembleMass();
+    } else if (matrix_id == "C") {
+      // pass, no damping matrix
+    } else {
+      AKANTU_EXCEPTION("This solver does not know what to do with a matrix "
+                       << matrix_id);
+    }
+  }
+
+  void assembleLumpedMatrix(const ID & matrix_id) {
+    if (matrix_id == "M") {
+      if (not is_lumped_mass_assembled)
+        this->assembleLumpedMass();
+    } else {
+      AKANTU_EXCEPTION("This solver does not know what to do with a matrix "
+                       << matrix_id);
+    }
+  }
+
   void assembleStiffness() {
     SparseMatrix & K = this->getDOFManager().getMatrix("K");
     K.clear();
@@ -227,6 +242,8 @@ public:
 
     this->getDOFManager().assembleElementalMatricesToMatrix(
         "K", "disp", k_all_el, _segment_2);
+
+    is_stiffness_assembled = true;
   }
 
   void assembleResidual() {
@@ -426,6 +443,10 @@ private:
   Real E, A, rho;
 
   bool lumped;
+
+  bool is_stiffness_assembled{false};
+  bool is_mass_assembled{false};
+  bool is_lumped_mass_assembled{false};
 
 public:
   Mesh & mesh;

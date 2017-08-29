@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "time_step_solver.hh"
-#include "non_linear_solver.hh"
 #include "dof_manager.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -43,7 +43,7 @@ TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
                                const ID & id, UInt memory_id)
     : Memory(id, memory_id), SolverCallback(dof_manager),
       _dof_manager(dof_manager), type(type), time_step(0.),
-      solver_callback(NULL), non_linear_solver(non_linear_solver) {
+      solver_callback(nullptr), non_linear_solver(non_linear_solver) {
   this->registerSubRegistry("non_linear_solver", non_linear_solver);
 }
 
@@ -51,9 +51,27 @@ TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
 TimeStepSolver::~TimeStepSolver() {}
 
 /* -------------------------------------------------------------------------- */
+MatrixType TimeStepSolver::getCommonMatrixType() {
+  MatrixType common_type = _mt_not_defined;
+  for (auto & pair : needed_matrices) {
+    auto & type = pair.second;
+    if (type == _mt_not_defined) {
+      type = this->solver_callback->getMatrixType(pair.first);
+    }
+
+    common_type = std::min(common_type, type);
+  }
+
+  AKANTU_DEBUG_ASSERT(common_type != _mt_not_defined,
+                      "No type defined for the matrices");
+
+  return common_type;
+}
+
+/* -------------------------------------------------------------------------- */
 void TimeStepSolver::predictor() {
   AKANTU_DEBUG_ASSERT(
-      this->solver_callback != NULL,
+      this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
   this->solver_callback->predictor();
@@ -62,26 +80,64 @@ void TimeStepSolver::predictor() {
 /* -------------------------------------------------------------------------- */
 void TimeStepSolver::corrector() {
   AKANTU_DEBUG_ASSERT(
-      this->solver_callback != NULL,
+      this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
   this->solver_callback->corrector();
 }
 
 /* -------------------------------------------------------------------------- */
-void TimeStepSolver::assembleJacobian() {
+void TimeStepSolver::assembleLumpedMatrix(const ID & matrix_id) {
   AKANTU_DEBUG_ASSERT(
-      this->solver_callback != NULL,
+      this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
-  //  this->_dof_manager.clearMatrix("J");
-  this->solver_callback->assembleJacobian();
+  if (not _dof_manager.hasLumpedMatrix(matrix_id))
+    _dof_manager.getNewLumpedMatrix(matrix_id);
+
+  this->solver_callback->assembleLumpedMatrix(matrix_id);
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolver::assembleMatrix(const ID & matrix_id) {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != nullptr,
+      "This function cannot be called if the solver_callback is not set");
+
+  auto common_type = this->getCommonMatrixType();
+
+  if (matrix_id != "J") {
+    auto type = needed_matrices[matrix_id];
+    if (type == _mt_not_defined) return;
+
+    if (not _dof_manager.hasMatrix(matrix_id)) {
+      _dof_manager.getNewMatrix(matrix_id, type);
+    }
+
+    this->solver_callback->assembleMatrix(matrix_id);
+    return;
+  }
+
+  if (not _dof_manager.hasMatrix("J"))
+    _dof_manager.getNewMatrix("J", common_type);
+
+  for (auto & pair : needed_matrices) {
+    auto type = pair.second;
+    if (type == _mt_not_defined)
+      continue;
+
+    auto name = pair.first;
+    if (not _dof_manager.hasMatrix(name))
+      _dof_manager.getNewMatrix(name, type);
+
+    this->solver_callback->assembleMatrix(name);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void TimeStepSolver::assembleResidual() {
   AKANTU_DEBUG_ASSERT(
-      this->solver_callback != NULL,
+      this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
   this->_dof_manager.clearResidual();
@@ -90,4 +146,4 @@ void TimeStepSolver::assembleResidual() {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

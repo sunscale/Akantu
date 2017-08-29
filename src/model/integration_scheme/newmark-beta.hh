@@ -91,31 +91,30 @@ public:
   NewmarkBeta(DOFManager & dof_manager, const ID & dof_id, Real alpha = 0.,
               Real beta = 0.);
 
-  ~NewmarkBeta(){};
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
                  Array<Real> & u_dot_dot,
-                 const Array<bool> & blocked_dofs) const;
+                 const Array<bool> & blocked_dofs) const override;
 
   void corrector(const SolutionType & type, Real delta_t, Array<Real> & u,
                  Array<Real> & u_dot, Array<Real> & u_dot_dot,
                  const Array<bool> & blocked_dofs,
-                 const Array<Real> & delta) const;
+                 const Array<Real> & delta) const override;
 
-  void assembleJacobian(const SolutionType & type, Real delta_t);
+  void assembleJacobian(const SolutionType & type, Real delta_t) override;
 
 public:
   Real getAccelerationCoefficient(const SolutionType & type,
-                                  Real delta_t) const;
+                                  Real delta_t) const override;
 
-  Real getVelocityCoefficient(const SolutionType & type, Real delta_t) const;
+  Real getVelocityCoefficient(const SolutionType & type,
+                              Real delta_t) const override;
 
   Real getDisplacementCoefficient(const SolutionType & type,
-                                  Real delta_t) const;
+                                  Real delta_t) const override;
 
 private:
   template <SolutionType type>
@@ -164,6 +163,8 @@ class CentralDifference : public NewmarkBeta {
 public:
   CentralDifference(DOFManager & dof_manager, const ID & dof_id)
       : NewmarkBeta(dof_manager, dof_id, 0., 1. / 2.){};
+
+  std::vector<std::string> getNeededMatrixList() { return {"M", "C"}; }
 };
 //#include "integration_scheme/central_difference.hh"
 
@@ -190,6 +191,6 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NEWMARK_BETA_HH__ */

@@ -119,49 +119,17 @@ public:
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
 
-  /// register the tags associated with the parallel synchronizer
-  // virtual void initParallel(MeshPartition * partition,
-  //                           DataAccessor<Element> * data_accessor = NULL);
-
-  /// allocate all vectors
-  virtual void initArrays();
-
-  /// allocate all vectors
-  // void initArraysPreviousDisplacment();
-
   /// initialize all internal arrays for materials
   virtual void initMaterials();
 
   /// initialize the model
   void initModel() override;
 
-  /// init PBC synchronizer
-  // void initPBC();
-
   /// initialize a new solver and sets it as the default one to use
   void initNewSolver(const AnalysisMethod & method);
 
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
-
-protected:
-  /// allocate an array if needed
-  template <typename T>
-  void allocNodalField(Array<T> *& array, const ID & name);
-
-  /* ------------------------------------------------------------------------ */
-  /* PBC                                                                      */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// change the equation number for proper assembly when using PBC
-  //  void changeEquationNumberforPBC(std::map <UInt, UInt> & pbc_pair);
-
-  /// synchronize Residual for output
-  // void synchronizeResidual();
-
-protected:
-  /// register PBC synchronizer
-  //  void registerPBCSynchronizer();
 
   /* ------------------------------------------------------------------------ */
   /* Solver interface                                                         */
@@ -176,8 +144,14 @@ protected:
   /// callback for the solver, this adds f_{ext} - f_{int} to the residual
   void assembleResidual() override;
 
+  /// get the type of matrix needed
+  MatrixType getMatrixType(const ID & matrix_id) override;
+
+  /// callback for the solver, this assembles different matrices
+  void assembleMatrix(const ID & matrix_id) override;
+
   /// callback for the solver, this assembles the stiffness matrix
-  void assembleJacobian() override;
+  void assembleLumpedMatrix(const ID & matrix_id) override;
 
   /// callback for the solver, this is called at beginning of solve
   void predictor() override;
@@ -195,164 +169,23 @@ protected:
   ModelSolverOptions
   getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
-  /* ------------------------------------------------------------------------ */
-  /* Explicit                                                                 */
-  /* ------------------------------------------------------------------------ */
-  // public:
-  //   /// initialize the stuff for the explicit scheme
-  //   void initExplicit(AnalysisMethod analysis_method =
-  //   _explicit_lumped_mass);
-
 public:
   bool isDefaultSolverExplicit() {
     return method == _explicit_lumped_mass ||
            method == _explicit_consistent_mass;
   }
 
-  //   /// initialize the array needed by updateResidual (residual,
-  //   current_position)
-  //   void initializeUpdateResidualData();
-
 protected:
   /// update the current position vector
   void updateCurrentPosition();
-
-  //   /// assemble the residual for the explicit scheme
-  //   virtual void updateResidual(bool need_initialize = true);
-
-  //   /**
-  //    * \brief compute the acceleration from the residual
-  //    * this function is the explicit equivalent to solveDynamic in implicit
-  //    * In the case of lumped mass just divide the residual by the mass
-  //    * In the case of not lumped mass call
-  //    solveDynamic<_acceleration_corrector>
-  //    */
-  //   void updateAcceleration();
-
-  /// Update the increment of displacement
-  // void updateIncrement();
-
-  // /// Copy the actuel displacement into previous displacement
-  // void updatePreviousDisplacement();
-
-  //   /// Save stress and strain through EventManager
-  //   void saveStressAndStrainBeforeDamage();
-  //   /// Update energies through EventManager
-  //   void updateEnergiesAfterDamage();
-
-  //   /// Solve the system @f[ A x = \alpha b @f] with A a lumped matrix
-  //   void solveLumped(Array<Real> & x, const Array<Real> & A,
-  //                    const Array<Real> & b, const Array<bool> & blocked_dofs,
-  //                    Real alpha);
-
-  //   /// explicit integration predictor
-  //   void explicitPred();
-
-  //   /// explicit integration corrector
-  //   void explicitCorr();
-
-  // public:
-  //   void solveStep();
-
-  //   /*
-  //   ------------------------------------------------------------------------
-  //   */
-  //   /* Implicit */
-  //   /*
-  //   ------------------------------------------------------------------------
-  //   */
-  // public:
-  //   /// initialize the solver and the jacobian_matrix (called by
-  //   initImplicit)
-  //   void initSolver();
-
-  //   /// initialize the stuff for the implicit solver
-  //   void initImplicit(bool            dynamic = false);
-
-  //   /// solve Ma = f to get the initial acceleration
-  //   void initialAcceleration();
-
-  //   /// assemble the stiffness matrix
-  //   void assembleStiffnessMatrix();
-
-  // public:
-  //   /**
-  //    * solve a step (predictor + convergence loop + corrector) using the
-  //    * the given convergence method (see akantu::SolveConvergenceMethod)
-  //    * and the given convergence criteria (see
-  //    * akantu::SolveConvergenceCriteria)
-  //    **/
-  //   template <SolveConvergenceMethod method, SolveConvergenceCriteria
-  //   criteria>
-  //   bool solveStep(Real tolerance, UInt max_iteration = 100);
-
-  //   template <SolveConvergenceMethod method, SolveConvergenceCriteria
-  //   criteria>
-  //   bool solveStep(Real tolerance, Real & error, UInt max_iteration = 100,
-  //                  bool do_not_factorize = false);
-
-  // public:
-  //   /**
-  //    * solve Ku = f using the the given convergence method (see
-  //    * akantu::SolveConvergenceMethod) and the given convergence
-  //    * criteria (see akantu::SolveConvergenceCriteria)
-  //    **/
-  //   template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria
-  //   criteria>
-  //   bool solveStatic(Real tolerance, UInt max_iteration,
-  //                    bool do_not_factorize = false);
-
-  //   /// create and return the velocity damping matrix
-  //   SparseMatrix & initVelocityDampingMatrix();
-
-  //   /// implicit time integration predictor
-  //   void implicitPred();
-
-  //   /// implicit time integration corrector
-  //   void implicitCorr();
-
-  //   /// compute the Cauchy stress on user demand.
-  //   void computeCauchyStresses();
-
-  //   // /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  //   // template <NewmarkBeta::IntegrationSchemeCorrectorType type>
-  //   // void solve(Array<Real> &increment, Real block_val = 1.,
-  //   //            bool need_factorize = true, bool has_profile_changed =
-  //   false);
-
-  // protected:
-  //   /// finish the computation of residual to solve in increment
-  //   void updateResidualInternal();
-
-  //   /// compute the support reaction and store it in force
-  //   void updateSupportReaction();
-
-  // private:
-  //   /// re-initialize the J matrix (to use if the profile of K changed)
-  //   void initJacobianMatrix();
-
-  /* ------------------------------------------------------------------------ */
-  // public:
-  /// Update the stresses for the computation of the residual of the Stiffness
-  /// matrix in the case of finite deformation
-  // void computeStresses();
-
-  /// synchronize the ghost element boundaries values
-  // void synchronizeBoundaries();
 
   /* ------------------------------------------------------------------------ */
   /* Materials (solid_mechanics_model_material.cc)                            */
   /* ------------------------------------------------------------------------ */
 public:
-  /// registers all the custom materials of a given type present in the input
-  /// file
-  // template <typename M> void registerNewCustomMaterials(const ID & mat_type);
-
   /// register an empty material of a given type
   Material & registerNewMaterial(const ID & mat_name, const ID & mat_type,
                                  const ID & opt_param);
-  // /// Use a UIntData in the mesh to specify the material to use per
-  // element void setMaterialIDsFromIntData(const std::string & data_name);
 
   /// reassigns materials depending on the material selector
   virtual void reassignMaterial();
@@ -373,10 +206,6 @@ protected:
   void
   assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
 
-  /// reinitialize dof_synchronizer and solver (either in implicit or
-  /// explicit) when cohesive elements are inserted
-  // void reinitializeSolver();
-
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */
   /* ------------------------------------------------------------------------ */
@@ -393,12 +222,6 @@ protected:
 
   /// assemble the mass matrix for either _ghost or _not_ghost elements
   void assembleMass(GhostType ghost_type);
-
-  /// assemble the lumped mass only for a given list of nodes
-  void assembleMassLumped(const Array<UInt> & node_list);
-
-  /// assemble the lumped mass only for a given list of nodes
-  void assembleMass(const Array<UInt> & node_list);
 
   /// fill a vector of rho
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
@@ -535,15 +358,8 @@ public:
   /// return the dimension of the system space
   AKANTU_GET_MACRO(SpatialDimension, Model::spatial_dimension, UInt);
 
-  /// get the current value of the time step
-  // AKANTU_GET_MACRO(TimeStep, time_step, Real);
-
   /// set the value of the time step
   void setTimeStep(Real time_step, const ID & solver_id = "") override;
-  /// void setTimeStep(Real time_step);
-
-  /// return the of iterations done in the last solveStep
-  // AKANTU_GET_MACRO(NumberIter, n_iter, UInt);
 
   /// get the value of the conversion from forces/ mass to acceleration
   AKANTU_GET_MACRO(F_M2A, f_m2a, Real);
@@ -584,10 +400,6 @@ public:
   /// get the SolidMechanicsModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
-  /// get the SolidMechnicsModel::incrementAcceleration vector
-  // AKANTU_GET_MACRO(IncrementAcceleration, *increment_acceleration,
-  //                  Array<Real> &);
-
   /// get the value of the SolidMechanicsModel::increment_flag
   AKANTU_GET_MACRO(IncrementFlag, increment_flag, bool);
 
@@ -624,36 +436,8 @@ public:
   Real getEnergy(const std::string & energy_id, const ElementType & type,
                  UInt index);
 
-  /**
-   * @brief set the SolidMechanicsModel::increment_flag  to on, the activate the
-   * update of the SolidMechanicsModel::increment vector
-   */
-  // void setIncrementFlagOn();
-
-  // /// get the stiffness matrix
-  // AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, SparseMatrix &);
-
-  // /// get the global jacobian matrix of the system
-  // AKANTU_GET_MACRO(GlobalJacobianMatrix, *jacobian_matrix, const SparseMatrix
-  // &);
-
-  // /// get the mass matrix
-  // AKANTU_GET_MACRO(MassMatrix, *mass_matrix, SparseMatrix &);
-
-  // /// get the velocity damping matrix
-  // AKANTU_GET_MACRO(VelocityDampingMatrix, *velocity_damping_matrix,
-  // SparseMatrix &);
-
   /// get the FEEngine object to integrate or interpolate on the boundary
-  FEEngine & getFEEngineBoundary(const ID & name = "");
-
-  // /// get integrator
-  // AKANTU_GET_MACRO(Integrator, *integrator, const IntegrationScheme2ndOrder
-  // &);
-
-  // /// get synchronizer
-  // AKANTU_GET_MACRO(Synchronizer, *synch_parallel, const ElementSynchronizer
-  // &);
+  FEEngine & getFEEngineBoundary(const ID & name = "") override;
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
@@ -685,12 +469,6 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  /// number of iterations
-  // UInt n_iter;
-
-  /// time step
-  //  Real time_step;
-
   /// conversion coefficient form force/mass to acceleration
   Real f_m2a;
 
@@ -706,6 +484,10 @@ protected:
 
   /// lumped mass array
   Array<Real> * mass;
+  /// Check if materials need to recompute the mass array
+  bool need_to_reassemble_lumped_mass{true};
+  /// Check if materials need to recompute the mass matrix
+  bool need_to_reassemble_mass{true};
 
   /// velocities array
   Array<Real> * velocity;
@@ -728,19 +510,6 @@ protected:
   /// array of current position used during update residual
   Array<Real> * current_position;
   UInt current_position_release{0};
-
-  /// mass matrix
-  SparseMatrix * mass_matrix;
-
-  /// velocity damping matrix
-  SparseMatrix * velocity_damping_matrix;
-
-  /// stiffness matrix
-  SparseMatrix * stiffness_matrix;
-
-  /// jacobian matrix @f[A = cM + dD + K@f] with @f[c = \frac{1}{\beta \Delta
-  /// t^2}, d = \frac{\gamma}{\beta \Delta t} @f]
-  SparseMatrix * jacobian_matrix;
 
   /// Arrays containing the material index for each element
   ElementTypeMapArray<UInt> material_index;
@@ -767,9 +536,6 @@ protected:
   /// define if it is the default selector or not
   bool is_default_material_selector;
 
-  // /// integration scheme of second order used
-  // IntegrationScheme2ndOrder *integrator;
-
   /// flag defining if the increment must be computed or not
   bool increment_flag;
 
@@ -788,9 +554,6 @@ protected:
 
   /// non local manager
   std::unique_ptr<NonLocalManager> non_local_manager;
-
-  /// pointer to the pbc synchronizer
-  // PBCSynchronizer * pbc_synch;
 };
 
 /* -------------------------------------------------------------------------- */

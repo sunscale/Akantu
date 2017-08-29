@@ -28,6 +28,10 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "material_cohesive_linear.hh"
+#include "solid_mechanics_model_cohesive.hh"
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_MATERIAL_COHESIVE_LINEAR_INLINE_IMPL_CC__

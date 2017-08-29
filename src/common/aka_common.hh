@@ -188,7 +188,7 @@ enum SolveConvergenceCriteria {
 enum CohesiveMethod { _intrinsic, _extrinsic };
 
 /// @enum SparseMatrixType type of sparse matrix used
-enum MatrixType { _unsymmetric, _symmetric };
+enum MatrixType { _unsymmetric, _symmetric, _mt_not_defined };
 
 /* -------------------------------------------------------------------------- */
 /* Ghosts handling                                                            */

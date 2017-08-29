@@ -69,15 +69,16 @@ void TimeStepSolverDefault::setIntegrationScheme(
                      << "  have already an integration scheme associated");
   }
 
-  IntegrationScheme * integration_scheme = NULL;
+  std::unique_ptr<IntegrationScheme> integration_scheme;
   if (this->is_mass_lumped) {
     switch (type) {
     case _ist_forward_euler: {
-      integration_scheme = new ForwardEuler(dof_manager, dof_id);
+      integration_scheme = std::make_unique<ForwardEuler>(dof_manager, dof_id);
       break;
     }
     case _ist_central_difference: {
-      integration_scheme = new CentralDifference(dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<CentralDifference>(dof_manager, dof_id);
       break;
     }
     default:
@@ -87,50 +88,61 @@ void TimeStepSolverDefault::setIntegrationScheme(
   } else {
     switch (type) {
     case _ist_pseudo_time: {
-      integration_scheme = new PseudoTime(dof_manager, dof_id);
+      integration_scheme = std::make_unique<PseudoTime>(dof_manager, dof_id);
       break;
     }
     case _ist_forward_euler: {
-      integration_scheme = new ForwardEuler(dof_manager, dof_id);
+      integration_scheme = std::make_unique<ForwardEuler>(dof_manager, dof_id);
       break;
     }
     case _ist_trapezoidal_rule_1: {
-      integration_scheme = new TrapezoidalRule1(dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<TrapezoidalRule1>(dof_manager, dof_id);
       break;
     }
     case _ist_backward_euler: {
-      integration_scheme = new BackwardEuler(dof_manager, dof_id);
+      integration_scheme = std::make_unique<BackwardEuler>(dof_manager, dof_id);
       break;
     }
     case _ist_central_difference: {
-      integration_scheme = new CentralDifference(dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<CentralDifference>(dof_manager, dof_id);
       break;
     }
     case _ist_fox_goodwin: {
-      integration_scheme = new FoxGoodwin(dof_manager, dof_id);
+      integration_scheme = std::make_unique<FoxGoodwin>(dof_manager, dof_id);
       break;
     }
     case _ist_trapezoidal_rule_2: {
-      integration_scheme = new TrapezoidalRule2(dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<TrapezoidalRule2>(dof_manager, dof_id);
       break;
     }
     case _ist_linear_acceleration: {
-      integration_scheme = new LinearAceleration(dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<LinearAceleration>(dof_manager, dof_id);
       break;
     }
     case _ist_generalized_trapezoidal: {
-      integration_scheme = new GeneralizedTrapezoidal(dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<GeneralizedTrapezoidal>(dof_manager, dof_id);
       break;
     }
     case _ist_newmark_beta:
-      integration_scheme = new NewmarkBeta(dof_manager, dof_id);
+      integration_scheme = std::make_unique<NewmarkBeta>(dof_manager, dof_id);
       break;
     }
   }
 
-  AKANTU_DEBUG_ASSERT(integration_scheme != nullptr,
+  AKANTU_DEBUG_ASSERT(integration_scheme,
                       "No integration scheme was found for the provided types");
-  this->integration_schemes[dof_id] = integration_scheme;
+
+  auto && matrices_names = integration_scheme->getNeededMatrixList();
+  for (auto && name : matrices_names) {
+    needed_matrices.insert({name, _mt_not_defined});
+  }
+
+  this->integration_schemes[dof_id] = std::move(integration_scheme);
   this->solution_types[dof_id] = solution_type;
 
   this->integration_schemes_owner.insert(dof_id);
@@ -141,18 +153,9 @@ bool TimeStepSolverDefault::hasIntegrationScheme(const ID & dof_id) const {
   return this->integration_schemes.find(dof_id) !=
          this->integration_schemes.end();
 }
-/* -------------------------------------------------------------------------- */
-TimeStepSolverDefault::~TimeStepSolverDefault() {
-  DOFsIntegrationSchemesOwner::iterator it =
-      this->integration_schemes_owner.begin();
-  DOFsIntegrationSchemesOwner::iterator end =
-      this->integration_schemes_owner.end();
 
-  for (; it != end; ++it) {
-    delete this->integration_schemes[*it];
-  }
-  this->integration_schemes.clear();
-}
+/* -------------------------------------------------------------------------- */
+TimeStepSolverDefault::~TimeStepSolverDefault() = default;
 
 /* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::solveStep(SolverCallback & solver_callback) {
@@ -169,11 +172,9 @@ void TimeStepSolverDefault::predictor() {
 
   TimeStepSolver::predictor();
 
-  IntegrationScheme * integration_scheme;
-  ID dof_id;
-
-  for(auto & pair : this->integration_schemes) {
-    std::tie(dof_id, integration_scheme) = pair;
+  for (auto & pair : this->integration_schemes) {
+    auto & dof_id = pair.first;
+    auto & integration_scheme = pair.second;
 
     if (this->dof_manager.hasPreviousDOFs(dof_id)) {
       this->dof_manager.savePreviousDOFs(dof_id);
@@ -192,11 +193,9 @@ void TimeStepSolverDefault::corrector() {
 
   TimeStepSolver::corrector();
 
-  IntegrationScheme * integration_scheme;
-  ID dof_id;
-
-  for(auto & pair : this->integration_schemes) {
-    std::tie(dof_id, integration_scheme) = pair;
+  for (auto & pair : this->integration_schemes) {
+    auto & dof_id = pair.first;
+    auto & integration_scheme = pair.second;
 
     const auto & solution_type = this->solution_types[dof_id];
     integration_scheme->corrector(solution_type, this->time_step);
@@ -229,21 +228,21 @@ void TimeStepSolverDefault::corrector() {
 }
 
 /* -------------------------------------------------------------------------- */
-void TimeStepSolverDefault::assembleJacobian() {
+void TimeStepSolverDefault::assembleMatrix(const ID & matrix_id) {
   AKANTU_DEBUG_IN();
 
-  TimeStepSolver::assembleJacobian();
+  TimeStepSolver::assembleMatrix(matrix_id);
 
-  IntegrationScheme * integration_scheme;
-  ID dof_id;
+  if (matrix_id != "J")
+    return;
 
-  for(auto & pair : this->integration_schemes) {
-    std::tie(dof_id, integration_scheme) = pair;
+  for (auto & pair : this->integration_schemes) {
+    auto & dof_id = pair.first;
+    auto & integration_scheme = pair.second;
 
     const auto & solution_type = this->solution_types[dof_id];
 
-    integration_scheme->assembleJacobian(solution_type,
-                                         this->time_step);
+    integration_scheme->assembleJacobian(solution_type, this->time_step);
   }
 
   this->dof_manager.applyBoundary("J");
@@ -255,13 +254,19 @@ void TimeStepSolverDefault::assembleJacobian() {
 void TimeStepSolverDefault::assembleResidual() {
   AKANTU_DEBUG_IN();
 
+  if (this->needed_matrices.find("M") != needed_matrices.end()) {
+    if (this->is_mass_lumped) {
+      this->assembleLumpedMatrix("M");
+    } else {
+      this->assembleMatrix("M");
+    }
+  }
+
   TimeStepSolver::assembleResidual();
 
-  IntegrationScheme * integration_scheme;
-  ID dof_id;
+  for (auto & pair : this->integration_schemes) {
+    auto & integration_scheme = pair.second;
 
-  for(auto & pair : this->integration_schemes) {
-    std::tie(dof_id, integration_scheme) = pair;
     integration_scheme->assembleResidual(this->is_mass_lumped);
   }
 
@@ -270,4 +275,4 @@ void TimeStepSolverDefault::assembleResidual() {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

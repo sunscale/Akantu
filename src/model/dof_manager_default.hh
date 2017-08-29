@@ -31,6 +31,7 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 #include <unordered_map>
+#include <functional>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_HH__

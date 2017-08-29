@@ -42,29 +42,31 @@ class PseudoTime : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
 public:
   PseudoTime(DOFManager & dof_manager, const ID & dof_id);
-  virtual ~PseudoTime() {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get list of needed matrices
+  std::vector<std::string> getNeededMatrixList() override;
+
   /// generic interface of a predictor
-  virtual void predictor(Real delta_t);
+  void predictor(Real delta_t) override;
 
   /// generic interface of a corrector
-  virtual void corrector(const SolutionType & type, Real delta_t);
+  void corrector(const SolutionType & type, Real delta_t) override;
 
   /// assemble the jacobian matrix
-  virtual void assembleJacobian(const SolutionType & type, Real delta_t);
+  void assembleJacobian(const SolutionType & type, Real delta_t) override;
 
   /// assemble the residual
-  virtual void assembleResidual(bool is_lumped);
+  void assembleResidual(bool is_lumped) override;
 
 protected:
   /// last release of K matrix
   UInt k_release;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_PSEUDO_TIME_HH__ */

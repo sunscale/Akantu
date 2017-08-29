@@ -58,9 +58,8 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   this->dof_manager.updateGlobalBlockedDofs();
   solver_callback.predictor();
 
-  const Array<Real> & A = this->dof_manager.getLumpedMatrix("M");
-  Array<Real> & x = this->dof_manager.getGlobalSolution();
-  const Array<Real> & b = this->dof_manager.getResidual();
+  auto & x = this->dof_manager.getGlobalSolution();
+  const auto & b = this->dof_manager.getResidual();
 
   x.resize(b.size());
 
@@ -69,6 +68,7 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
 
   solver_callback.assembleResidual();
 
+  const auto & A = this->dof_manager.getLumpedMatrix("M");
   // alpha is the conversion factor from from force/mass to acceleration needed
   // in model coupled with atomistic \todo find a way to define alpha per dof
   // type

@@ -121,6 +121,11 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+protected:
+  template <typename T>
+  void allocNodalField(Array<T> *& array, UInt nb_component, const ID & name);
+
+
   /* ------------------------------------------------------------------------ */
   /* Accessors */
   /* ------------------------------------------------------------------------ */

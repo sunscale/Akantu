@@ -48,7 +48,7 @@ NonLinearSolver::NonLinearSolver(
 }
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver::~NonLinearSolver() {}
+NonLinearSolver::~NonLinearSolver() = default;
 
 /* -------------------------------------------------------------------------- */
 void NonLinearSolver::checkIfTypeIsSupported() {

@@ -59,7 +59,7 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
   solver_callback.predictor();
 
   solver_callback.assembleResidual();
-  solver_callback.assembleJacobian();
+  solver_callback.assembleMatrix("J");
 
   this->solver.solve();
 

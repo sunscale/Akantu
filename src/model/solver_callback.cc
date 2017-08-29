@@ -38,10 +38,10 @@ SolverCallback::SolverCallback(DOFManager & dof_manager)
     : sc_dof_manager(&dof_manager) {}
 
 /* -------------------------------------------------------------------------- */
-SolverCallback::SolverCallback() : sc_dof_manager(NULL) {}
+SolverCallback::SolverCallback() : sc_dof_manager(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
-SolverCallback::~SolverCallback() {}
+SolverCallback::~SolverCallback() = default;
 
 /* -------------------------------------------------------------------------- */
 void SolverCallback::setDOFManager(DOFManager & dof_manager) {
@@ -49,15 +49,5 @@ void SolverCallback::setDOFManager(DOFManager & dof_manager) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverCallback::assembleJacobian() {
-  this->sc_dof_manager->clearMatrix("J");
-}
 
-/* -------------------------------------------------------------------------- */
-void SolverCallback::assembleResidual() {
-  this->sc_dof_manager->clearResidual();
-}
-
-/* -------------------------------------------------------------------------- */
-
-} // akantu
+} // namespace akantu

@@ -37,6 +37,11 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+std::vector<std::string> IntegrationScheme1stOrder::getNeededMatrixList() {
+  return {"K", "M"};
+}
+
+/* -------------------------------------------------------------------------- */
 void IntegrationScheme1stOrder::predictor(Real delta_t) {
   AKANTU_DEBUG_IN();
 

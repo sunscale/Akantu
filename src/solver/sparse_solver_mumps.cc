@@ -127,8 +127,8 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
                                      const ID & matrix_id, const ID & id,
                                      const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
-      dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
-      master_rhs_solution(0, 1), is_initialized(false) {
+      dof_manager(dof_manager),
+      master_rhs_solution(0, 1) {
   AKANTU_DEBUG_IN();
 
   this->prank = communicator.whoAmI();
@@ -138,42 +138,6 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
 #else  // AKANTU_USE_MPI
   this->parallel_method = _not_parallel;
 #endif // AKANTU_USE_MPI
-
-  this->mumps_data.par = 1; // The host is part of computations
-
-  switch (this->parallel_method) {
-  case _not_parallel:
-    break;
-  case _master_slave_distributed:
-    this->mumps_data.par = 0; // The host is not part of the computations
-  case _fully_distributed:
-#ifdef AKANTU_USE_MPI
-    const StaticCommunicatorMPI & mpi_st_comm =
-        dynamic_cast<const StaticCommunicatorMPI &>(
-            communicator.getRealStaticCommunicator());
-    MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
-    this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
-#else
-    AKANTU_DEBUG_ERROR(
-        "You cannot use parallel method to solve without activating MPI");
-#endif
-    break;
-  }
-
-  this->mumps_data.sym = 2 * (this->matrix.getMatrixType() == _symmetric);
-  this->prank = communicator.whoAmI();
-
-  this->setOutputLevel();
-
-  this->mumps_data.job = _smj_initialize; // initialize
-  dmumps_c(&this->mumps_data);
-
-  this->setOutputLevel();
-
-  this->is_initialized = true;
-
-  this->last_profile_release = this->matrix.getProfileRelease() - 1;
-  this->last_value_release = this->matrix.getValueRelease() - 1;
 
   AKANTU_DEBUG_OUT();
 }
@@ -196,16 +160,17 @@ void SparseSolverMumps::destroyInternalData() {
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::checkInitialized() {
-  if (!this->is_initialized)
-    AKANTU_EXCEPTION("You cannot use an un/de-initialized mumps solver");
+  if (this->is_initialized) return;
+
+  this->initialize();
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::setOutputLevel() {
   // Output setup
   icntl(1) = 0; // error output
-  icntl(2) = 0; // dignostics output
-  icntl(3) = 0; // informations
+  icntl(2) = 0; // diagnostics output
+  icntl(3) = 0; // information
   icntl(4) = 0;
 
 #if !defined(AKANTU_NDEBUG)
@@ -215,24 +180,26 @@ void SparseSolverMumps::setOutputLevel() {
     strcpy(this->mumps_data.write_problem, "mumps_matrix.mtx");
   }
 
+  // clang-format off
   icntl(1) = (dbg_lvl >= dblWarning) ? 6 : 0;
-  icntl(3) = (dbg_lvl >= dblInfo) ? 6 : 0;
-  icntl(2) = (dbg_lvl >= dblTrace) ? 6 : 0;
+  icntl(3) = (dbg_lvl >= dblInfo)    ? 6 : 0;
+  icntl(2) = (dbg_lvl >= dblTrace)   ? 6 : 0;
 
-  if (dbg_lvl >= dblDump) {
-    icntl(4) = 4;
-  } else if (dbg_lvl >= dblTrace) {
-    icntl(4) = 3;
-  } else if (dbg_lvl >= dblInfo) {
-    icntl(4) = 2;
-  } else if (dbg_lvl >= dblWarning) {
-    icntl(4) = 1;
-  }
+  icntl(4) =
+    dbg_lvl >= dblDump    ? 4 :
+    dbg_lvl >= dblTrace   ? 3 :
+    dbg_lvl >= dblInfo    ? 2 :
+    dbg_lvl >= dblWarning ? 1 :
+                            0;
+
+  // clang-format on
 #endif
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::initMumpsData() {
+  auto & A = dof_manager.getMatrix(matrix_id);
+
   // Default Scaling
   icntl(8) = 77;
 
@@ -246,7 +213,7 @@ void SparseSolverMumps::initMumpsData() {
   // automatic choice for analysis
   icntl(28) = 0;
 
-  UInt size = this->matrix.size();
+  UInt size = A.size();
 
   if (prank == 0) {
     this->master_rhs_solution.resize(size);
@@ -259,9 +226,9 @@ void SparseSolverMumps::initMumpsData() {
   case _fully_distributed:
     icntl(18) = 3; // fully distributed
 
-    this->mumps_data.nz_loc = matrix.getNbNonZero();
-    this->mumps_data.irn_loc = matrix.getIRN().storage();
-    this->mumps_data.jcn_loc = matrix.getJCN().storage();
+    this->mumps_data.nz_loc = A.getNbNonZero();
+    this->mumps_data.irn_loc = A.getIRN().storage();
+    this->mumps_data.jcn_loc = A.getJCN().storage();
 
     break;
   case _not_parallel:
@@ -269,9 +236,9 @@ void SparseSolverMumps::initMumpsData() {
     icntl(18) = 0; // centralized
 
     if (prank == 0) {
-      this->mumps_data.nz = matrix.getNbNonZero();
-      this->mumps_data.irn = matrix.getIRN().storage();
-      this->mumps_data.jcn = matrix.getJCN().storage();
+      this->mumps_data.nz = A.getNbNonZero();
+      this->mumps_data.irn = A.getIRN().storage();
+      this->mumps_data.jcn = A.getJCN().storage();
     } else {
       this->mumps_data.nz = 0;
       this->mumps_data.irn = NULL;
@@ -287,8 +254,41 @@ void SparseSolverMumps::initMumpsData() {
 void SparseSolverMumps::initialize() {
   AKANTU_DEBUG_IN();
 
-  this->analysis();
-  //  icntl(14) = 80;
+  this->mumps_data.par = 1; // The host is part of computations
+
+  switch (this->parallel_method) {
+  case _not_parallel:
+    break;
+  case _master_slave_distributed:
+    this->mumps_data.par = 0; // The host is not part of the computations
+    __attribute__((fallthrough));
+  case _fully_distributed:
+#ifdef AKANTU_USE_MPI
+    const StaticCommunicatorMPI & mpi_st_comm =
+        dynamic_cast<const StaticCommunicatorMPI &>(
+            communicator.getRealStaticCommunicator());
+    MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
+#else
+    AKANTU_DEBUG_ERROR(
+        "You cannot use parallel method to solve without activating MPI");
+#endif
+    break;
+  }
+
+  const auto & A = dof_manager.getMatrix(matrix_id);
+
+  this->mumps_data.sym = 2 * (A.getMatrixType() == _symmetric);
+  this->prank = communicator.whoAmI();
+
+  this->setOutputLevel();
+
+  this->mumps_data.job = _smj_initialize; // initialize
+  dmumps_c(&this->mumps_data);
+
+  this->setOutputLevel();
+
+  this->is_initialized = true;
 
   AKANTU_DEBUG_OUT();
 }
@@ -299,7 +299,6 @@ void SparseSolverMumps::analysis() {
 
   initMumpsData();
 
-  this->checkInitialized();
   this->mumps_data.job = _smj_analyze; // analyze
   dmumps_c(&this->mumps_data);
 
@@ -310,17 +309,15 @@ void SparseSolverMumps::analysis() {
 void SparseSolverMumps::factorize() {
   AKANTU_DEBUG_IN();
 
-  // should be null on slaves
-  // this->mumps_data.rhs = this->master_rhs_solution.storage();
+  auto & A = dof_manager.getMatrix(matrix_id);
 
   if (parallel_method == _fully_distributed)
-    this->mumps_data.a_loc = this->matrix.getA().storage();
+    this->mumps_data.a_loc = A.getA().storage();
   else {
     if (prank == 0)
-      this->mumps_data.a = this->matrix.getA().storage();
+      this->mumps_data.a = A.getA().storage();
   }
 
-  this->checkInitialized();
   this->mumps_data.job = _smj_factorize; // factorize
   dmumps_c(&this->mumps_data);
 
@@ -364,29 +361,32 @@ void SparseSolverMumps::solve() {
 void SparseSolverMumps::solveInternal() {
   AKANTU_DEBUG_IN();
 
+  this->checkInitialized();
+
+  const auto & A = dof_manager.getMatrix(matrix_id);
+
   this->setOutputLevel();
 
-  if (this->last_profile_release != this->matrix.getProfileRelease()) {
+  if (this->last_profile_release != A.getProfileRelease()) {
     this->analysis();
-    this->last_profile_release = this->matrix.getProfileRelease();
+    this->last_profile_release = A.getProfileRelease();
   }
 
   if (AKANTU_DEBUG_TEST(dblDump)) {
     std::stringstream sstr;
     sstr << prank << ".mtx";
-    this->matrix.saveMatrix("solver_mumps" + sstr.str());
+    A.saveMatrix("solver_mumps" + sstr.str());
   }
 
-  if (this->last_value_release != this->matrix.getValueRelease()) {
+  if (this->last_value_release != A.getValueRelease()) {
     this->factorize();
-    this->last_value_release = this->matrix.getValueRelease();
+    this->last_value_release = A.getValueRelease();
   }
 
   if (prank == 0) {
     this->mumps_data.rhs = this->master_rhs_solution.storage();
   }
 
-  this->checkInitialized();
   this->mumps_data.job = _smj_solve; // solve
   dmumps_c(&this->mumps_data);
 
@@ -423,8 +423,8 @@ void SparseSolverMumps::printError() {
       } else {
         AKANTU_DEBUG_ERROR("The MUMPS workarray is too small INFO(2)="
                            << info(2) << "No further increase possible");
-        break;
       }
+      break;
     }
     default:
       AKANTU_DEBUG_ERROR("Error in mumps during solve process, check mumps "

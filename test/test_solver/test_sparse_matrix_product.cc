@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
   for (UInt i = 0; i < nb_nodes*nb_dof; ++i) {
     if(dof_manager.isLocalOrMasterDOF(i))
-      A.addToMatrix(i, i, 2.);
+      A.add(i, i, 2.);
   }
 
   std::stringstream str; str << "Matrix_" << prank << ".mtx";

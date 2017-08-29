@@ -79,29 +79,27 @@ public:
   GeneralizedTrapezoidal(DOFManager & dof_manager, const ID & dof_id,
                          Real alpha = 0);
 
-  virtual ~GeneralizedTrapezoidal(){};
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
-                         const Array<bool> & blocked_dofs) const;
+  void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                 const Array<bool> & blocked_dofs) const override;
 
-  virtual void corrector(const SolutionType & type, Real delta_t,
-                         Array<Real> & u, Array<Real> & u_dot,
-                         const Array<bool> & blocked_dofs,
-                         const Array<Real> & delta) const;
+  void corrector(const SolutionType & type, Real delta_t, Array<Real> & u,
+                 Array<Real> & u_dot, const Array<bool> & blocked_dofs,
+                 const Array<Real> & delta) const override;
 
-  virtual void assembleJacobian(const SolutionType & type, Real time_step);
+  void assembleJacobian(const SolutionType & type, Real time_step) override;
 
 public:
   /// the coeffichent @f{b@f} in the description
-  Real getTemperatureCoefficient(const SolutionType & type, Real delta_t) const;
+  Real getTemperatureCoefficient(const SolutionType & type,
+                                 Real delta_t) const override;
 
   /// the coeffichent @f{a@f} in the description
   Real getTemperatureRateCoefficient(const SolutionType & type,
-                                     Real delta_t) const;
+                                     Real delta_t) const override;
 
 private:
   template <SolutionType type>
@@ -138,7 +136,9 @@ private:
 class ForwardEuler : public GeneralizedTrapezoidal {
 public:
   ForwardEuler(DOFManager & dof_manager, const ID & dof_id)
-    : GeneralizedTrapezoidal(dof_manager, dof_id, 0.){};
+      : GeneralizedTrapezoidal(dof_manager, dof_id, 0.){};
+
+  std::vector<std::string> getNeededMatrixList() override { return {"K"}; }
 };
 
 /**
@@ -147,7 +147,7 @@ public:
 class TrapezoidalRule1 : public GeneralizedTrapezoidal {
 public:
   TrapezoidalRule1(DOFManager & dof_manager, const ID & dof_id)
-    : GeneralizedTrapezoidal(dof_manager, dof_id, .5){};
+      : GeneralizedTrapezoidal(dof_manager, dof_id, .5){};
 };
 
 /**
@@ -156,11 +156,11 @@ public:
 class BackwardEuler : public GeneralizedTrapezoidal {
 public:
   BackwardEuler(DOFManager & dof_manager, const ID & dof_id)
-    : GeneralizedTrapezoidal(dof_manager, dof_id, 1.){};
+      : GeneralizedTrapezoidal(dof_manager, dof_id, 1.){};
 };
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_GENERALIZED_TRAPEZOIDAL_HH__ */

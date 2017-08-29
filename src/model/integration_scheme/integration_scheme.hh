@@ -1,3 +1,4 @@
+
 /**
  * @file   integration_scheme.hh
  *
@@ -56,7 +57,7 @@ public:
   };
 
   IntegrationScheme(DOFManager & dof_manager, const ID & dof_id, UInt order);
-  virtual ~IntegrationScheme() {}
+  virtual ~IntegrationScheme() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -74,6 +75,9 @@ public:
   /// assemble the residual
   virtual void assembleResidual(bool is_lumped) = 0;
 
+  /// returns a list of needed matrices
+  virtual std::vector<std::string> getNeededMatrixList() = 0;
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -85,7 +89,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  /// The underlying dofmanager
+  /// The underlying DOFManager
   DOFManager & dof_manager;
 
   /// The id of the dof treated by this integration scheme.
@@ -102,6 +106,6 @@ std::istream & operator>>(std::istream & stream,
                           IntegrationScheme::SolutionType & type);
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_INTEGRATION_SCHEME_HH__ */

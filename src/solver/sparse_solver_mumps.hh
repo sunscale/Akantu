@@ -114,9 +114,6 @@ private:
   /// DOFManager used by the Mumps implementation of the SparseSolver
   DOFManagerDefault & dof_manager;
 
-  /// AIJ Matrix, usualy the jacobian matrix
-  SparseMatrixAIJ & matrix;
-
   /// Full right hand side on the master processors and solution after solve
   Array<Real> master_rhs_solution;
 
@@ -127,13 +124,13 @@ private:
   UInt prank;
 
   /// matrix release at last solve
-  UInt last_profile_release;
+  UInt last_profile_release{UInt(-1)};
 
   /// matrix release at last solve
-  UInt last_value_release;
+  UInt last_value_release{UInt(-1)};
 
   /// check if the solver data are initialized
-  bool is_initialized;
+  bool is_initialized{false};
 
   /* ------------------------------------------------------------------------ */
   /* Local types                                                              */

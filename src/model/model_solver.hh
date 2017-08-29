@@ -104,16 +104,10 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// Predictor interface for the callback
-  virtual void predictor();
+  void predictor() override;
 
   /// Corrector interface for the callback
-  virtual void corrector();
-
-  /// AssembleResidual interface for the callback
-  virtual void assembleResidual() = 0;
-
-  /// AssembleJacobian interface for the callback
-  virtual void assembleJacobian() = 0;
+  void corrector() override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

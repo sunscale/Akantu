@@ -64,53 +64,53 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// remove the existing profile
-  inline void clearProfile();
+  inline void clearProfile() override;
 
   /// add a non-zero element
-  virtual inline UInt addToProfile(UInt i, UInt j);
+  inline UInt add(UInt i, UInt j) override;
 
   /// set the matrix to 0
-  virtual void clear();
+  void clear() override;
 
   /// assemble a local matrix in the sparse one
-  virtual inline void addToMatrix(UInt i, UInt j, Real value);
+  inline void add(UInt i, UInt j, Real value) override;
 
   /// set the size of the matrix
   void resize(UInt size) { this->size_ = size; }
 
   /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundary(Real block_val = 1.);
+  void applyBoundary(Real block_val = 1.) override;
 
   /// save the profil in a file using the MatrixMarket file format
-  virtual void saveProfile(const std::string & filename) const;
+  void saveProfile(const std::string & filename) const override;
 
   /// save the matrix in a file using the MatrixMarket file format
-  virtual void saveMatrix(const std::string & filename) const;
+  void saveMatrix(const std::string & filename) const override;
 
   /// copy assuming the profile are the same
   virtual void copyContent(const SparseMatrix & matrix);
 
   /// multiply the matrix by a scalar
-  void mul(Real alpha);
+  void mul(Real alpha) override;
 
   /// add matrix *this += B
   // virtual void add(const SparseMatrix & matrix, Real alpha);
 
   /// Equivalent of *gemv in blas
-  virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
-                         Real alpha = 1., Real beta = 0.) const;
+  void matVecMul(const Array<Real> & x, Array<Real> & y,
+                 Real alpha = 1., Real beta = 0.) const override;
 
   /* ------------------------------------------------------------------------ */
   /// accessor to A_{ij} - if (i, j) not present it returns 0
-  inline Real operator()(UInt i, UInt j) const;
+  inline Real operator()(UInt i, UInt j) const override;
 
   /// accessor to A_{ij} - if (i, j) not present it fails, (i, j) should be
   /// first added to the profile
-  inline Real & operator()(UInt i, UInt j);
+  inline Real & operator()(UInt i, UInt j) override;
 
 protected:
   /// This is the revert of add B += \alpha * *this;
-  virtual void addMeTo(SparseMatrix & B, Real alpha) const;
+  void addMeTo(SparseMatrix & B, Real alpha) const override;
 
 private:
   /// This is just to inline the addToMatrix function
@@ -132,7 +132,7 @@ public:
   /// (my_release != release) and not as (my_release < release)
   AKANTU_GET_MACRO(ProfileRelease, profile_release, UInt);
   AKANTU_GET_MACRO(ValueRelease, value_release, UInt);
-  virtual UInt getRelease() const { return value_release; }
+  UInt getRelease() const override { return value_release; }
 protected:
   using KeyCOO = std::pair<UInt, UInt>;
   using coordinate_list_map = std::unordered_map<KeyCOO, UInt>;
@@ -160,10 +160,10 @@ private:
   Array<Real> a;
 
   /// Profile release
-  UInt profile_release;
+  UInt profile_release{1};
 
   /// Value release
-  UInt value_release;
+  UInt value_release{1};
 
   /// map for (i, j) ->  k correspondence
   coordinate_list_map irn_jcn_k;

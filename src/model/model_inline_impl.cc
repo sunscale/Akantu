@@ -188,6 +188,18 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
 //   else
 //     return is_pbc_slave_node(node);
 // }
+/* -------------------------------------------------------------------------- */
+template <typename T>
+void Model::allocNodalField(Array<T> *& array, UInt nb_component, const ID & name) {
+  if (array == nullptr) {
+    UInt nb_nodes = mesh.getNbNodes();
+    std::stringstream sstr_disp;
+    sstr_disp << id << ":" << name;
+
+    array =
+        &(alloc<T>(sstr_disp.str(), nb_nodes, nb_component, T()));
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,

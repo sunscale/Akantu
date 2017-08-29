@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "time_step_solver.hh"
 #include "integration_scheme.hh"
+#include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 #include <set>
@@ -64,26 +64,27 @@ public:
   void setIntegrationScheme(const ID & dof_id,
                             const IntegrationSchemeType & type,
                             IntegrationScheme::SolutionType solution_type =
-                                IntegrationScheme::_not_defined);
-  virtual bool hasIntegrationScheme(const ID & dof_id) const;
+                                IntegrationScheme::_not_defined) override;
+  bool hasIntegrationScheme(const ID & dof_id) const override;
 
   /// implementation of the TimeStepSolver::predictor()
-  virtual void predictor();
+  void predictor() override;
   /// implementation of the TimeStepSolver::corrector()
-  virtual void corrector();
-  /// implementation of the TimeStepSolver::assembleJacobian()
-  virtual void assembleJacobian();
+  void corrector() override;
+  /// implementation of the TimeStepSolver::assembleMatrix()
+  void assembleMatrix(const ID & matrix_id) override;
   /// implementation of the TimeStepSolver::assembleResidual()
-  virtual void assembleResidual();
+  void assembleResidual() override;
 
   /// implementation of the generic TimeStepSolver::solveStep()
-  virtual void solveStep(SolverCallback & solver_callback);
+  void solveStep(SolverCallback & solver_callback) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::map<ID, IntegrationScheme *> DOFsIntegrationSchemes;
+  typedef std::map<ID, std::unique_ptr<IntegrationScheme>>
+      DOFsIntegrationSchemes;
   typedef std::map<ID, IntegrationScheme::SolutionType>
       DOFsIntegrationSchemesSolutionTypes;
   typedef std::set<ID> DOFsIntegrationSchemesOwner;
@@ -105,6 +106,6 @@ private:
   bool is_mass_lumped;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__ */

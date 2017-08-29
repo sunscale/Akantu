@@ -76,14 +76,18 @@ public:
   /* Solver Callback interface                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// implementation of the SolverCallback::getMatrixType()
+  MatrixType getMatrixType(const ID &) override final { return _mt_not_defined; }
   /// implementation of the SolverCallback::predictor()
-  virtual void predictor();
+  void predictor() override;
   /// implementation of the SolverCallback::corrector()
-  virtual void corrector();
+  void corrector() override;
   /// implementation of the SolverCallback::assembleJacobian()
-  virtual void assembleJacobian();
+  void assembleMatrix(const ID & matrix_id) override;
+  /// implementation of the SolverCallback::assembleJacobian()
+  void assembleLumpedMatrix(const ID & matrix_id) override final;
   /// implementation of the SolverCallback::assembleResidual()
-  virtual void assembleResidual();
+  void assembleResidual() override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
@@ -95,6 +99,8 @@ public:
   AKANTU_GET_MACRO(NonLinearSolver, non_linear_solver, const NonLinearSolver &);
   AKANTU_GET_MACRO_NOT_CONST(NonLinearSolver, non_linear_solver,
                              NonLinearSolver &);
+protected:
+  MatrixType getCommonMatrixType();
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -114,6 +120,9 @@ protected:
 
   /// NonLinearSolver used by this tome step solver
   NonLinearSolver & non_linear_solver;
+
+  /// List of required matrices
+  std::map<std::string, MatrixType> needed_matrices;
 };
 
 } // akantu

@@ -103,8 +103,8 @@ int main(int argc, char * argv[]) {
   model.getDOFManager().clearResidual();
   model.assembleResidual();
 
-  Real epot = model.getPotentialEnergy();
-  Real ekin = model.getKineticEnergy();
+  Real epot = 0;//model.getPotentialEnergy();
+  Real ekin = 0;//model.getKineticEnergy();
   Real einit = ekin + epot;
   Real etot = ekin + epot - wext - einit;
   if (prank == 0) {

@@ -56,17 +56,18 @@ int main(int argc, char * argv[]) {
   auto & A = dof_manager.getNewMatrix("A", _symmetric);
 
   for (UInt i = 0; i < 10; ++i) {
-    A.addToProfile(i, i);
+    A.add(i, i);
   }
 
-  A.addToProfile(0, 9);
+  A.add(0, 9);
+  A.saveProfile("profile_hand.mtx");
 
   for (UInt i = 0; i < 10; ++i) {
-    A.addToMatrix(i, i, i * 10);
+    A.add(i, i, i * 10);
   }
-  A.addToMatrix(0, 9, 100);
+  A.add(0, 9, 100);
 
-  A.saveProfile("profile_hand.mtx");
+
   A.saveMatrix("matrix_hand.mtx");
 
   /* ------------------------------------------------------------------------ */

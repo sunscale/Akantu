@@ -60,6 +60,8 @@ private:
 void SolidMechanicsModel::assembleMassLumped() {
   AKANTU_DEBUG_IN();
 
+  if(not need_to_reassemble_lumped_mass) return;
+
   UInt nb_nodes = mesh.getNbNodes();
 
   if (this->mass == NULL) {
@@ -104,6 +106,9 @@ void SolidMechanicsModel::assembleMassLumped() {
 #endif
 
   this->synchronize(_gst_smm_mass);
+
+  need_to_reassemble_lumped_mass = false;
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -111,12 +116,12 @@ void SolidMechanicsModel::assembleMassLumped() {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  if (!this->getDOFManager().hasMatrix("M")) {
-    this->getDOFManager().getNewMatrix("M", "J");
-  }
+  if(not need_to_reassemble_mass) return;
 
   this->getDOFManager().clearMatrix("M");
   assembleMass(_not_ghost);
+
+  need_to_reassemble_mass = false;
 
   AKANTU_DEBUG_OUT();
 }
@@ -147,24 +152,6 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
     fem.assembleFieldMatrix(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMassLumped(const Array<UInt> &) {
-  AKANTU_DEBUG_IN();
-
-  assembleMassLumped();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMass(const Array<UInt> &) {
-  AKANTU_DEBUG_IN();
-
-  assembleMass();
 
   AKANTU_DEBUG_OUT();
 }

@@ -26,6 +26,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "sparse_matrix_aij.hh"
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_CC__
@@ -33,15 +35,18 @@
 
 namespace akantu {
 
-inline UInt SparseMatrixAIJ::addToProfile(UInt i, UInt j) {
+inline UInt SparseMatrixAIJ::add(UInt i, UInt j) {
   KeyCOO jcn_irn = this->key(i, j);
 
   coordinate_list_map::iterator it = this->irn_jcn_k.find(jcn_irn);
 
-  if (!(it == this->irn_jcn_k.end())) return it->second;
+  if (!(it == this->irn_jcn_k.end()))
+    return it->second;
 
-  if(i + 1 > this->size_) this->size_ = i + 1;
-  if(j + 1 > this->size_) this->size_ = j + 1;
+  if (i + 1 > this->size_)
+    this->size_ = i + 1;
+  if (j + 1 > this->size_)
+    this->size_ = j + 1;
 
   this->irn.push_back(i + 1);
   this->jcn.push_back(j + 1);
@@ -74,8 +79,8 @@ inline void SparseMatrixAIJ::clearProfile() {
 }
 
 /* -------------------------------------------------------------------------- */
-inline void SparseMatrixAIJ::addToMatrix(UInt i, UInt j, Real value) {
-  UInt idx = this->addToProfile(i, j);
+inline void SparseMatrixAIJ::add(UInt i, UInt j, Real value) {
+  UInt idx = this->add(i, j);
 
   this->a(idx) += value;
 
@@ -88,7 +93,8 @@ inline Real SparseMatrixAIJ::operator()(UInt i, UInt j) const {
   coordinate_list_map::const_iterator irn_jcn_k_it =
       this->irn_jcn_k.find(jcn_irn);
 
-  if (irn_jcn_k_it == this->irn_jcn_k.end()) return 0.;
+  if (irn_jcn_k_it == this->irn_jcn_k.end())
+    return 0.;
   return this->a(irn_jcn_k_it->second);
 }
 
@@ -106,6 +112,6 @@ inline Real & SparseMatrixAIJ::operator()(UInt i, UInt j) {
   return this->a(irn_jcn_k_it->second);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SPARSE_MATRIX_AIJ_INLINE_IMPL_CC__ */

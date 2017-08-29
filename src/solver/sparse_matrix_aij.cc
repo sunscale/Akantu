@@ -43,14 +43,13 @@ namespace akantu {
 SparseMatrixAIJ::SparseMatrixAIJ(DOFManagerDefault & dof_manager,
                                  const MatrixType & matrix_type, const ID & id)
     : SparseMatrix(dof_manager, matrix_type, id), dof_manager(dof_manager),
-      irn(0, 1, id + ":irn"), jcn(0, 1, id + ":jcn"), a(0, 1, id + ":a"),
-      profile_release(1), value_release(1) {}
+      irn(0, 1, id + ":irn"), jcn(0, 1, id + ":jcn"), a(0, 1, id + ":a") {}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id)
     : SparseMatrix(matrix, id), dof_manager(matrix.dof_manager),
       irn(matrix.irn, true, id + ":irn"), jcn(matrix.jcn, true, id + ":jcn"),
-      a(matrix.a, true, id + ":a"), profile_release(1), value_release(1) {}
+      a(matrix.a, true, id + ":a") {}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::~SparseMatrixAIJ() {}
@@ -189,11 +188,11 @@ void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
   auto a_end = this->a.end();
 
   for (; a_it != a_end; ++a_it, ++i_it, ++j_it) {
-    const Int & i = *i_it;
-    const Int & j = *j_it;
-    const Real & A_ij = *a_it;
+    const auto & i = *i_it;
+    const auto & j = *j_it;
+    const auto & A_ij = *a_it;
 
-    B.addToMatrix(i - 1, j - 1, alpha * A_ij);
+    B.add(i - 1, j - 1, alpha * A_ij);
   }
 }
 

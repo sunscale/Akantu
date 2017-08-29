@@ -47,19 +47,21 @@ public:
   IntegrationScheme1stOrder(DOFManager & dof_manager, const ID & dof_id)
     : IntegrationScheme(dof_manager, dof_id, 1){};
 
-  virtual ~IntegrationScheme1stOrder(){};
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get list of needed matrices
+  std::vector<std::string> getNeededMatrixList() override;
+
   /// generic interface of a predictor
-  virtual void predictor(Real delta_t);
+  void predictor(Real delta_t) override;
   /// generic interface of a corrector
-  virtual void corrector(const SolutionType & type, Real delta_t);
+  void corrector(const SolutionType & type, Real delta_t) override;
 
   /// assemble the residual
-  virtual void assembleResidual(bool is_lumped);
+  void assembleResidual(bool is_lumped) override;
+
 protected:
   /// generic interface of a predictor of 1st order
   virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,

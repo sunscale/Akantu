@@ -83,7 +83,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   if (this->non_linear_solver_type == _nls_newton_raphson_modified ||
       (this->non_linear_solver_type == _nls_linear &&
        this->force_linear_recompute)) {
-    solver_callback.assembleJacobian();
+    solver_callback.assembleMatrix("J");
     this->force_linear_recompute = false;
   }
 
@@ -99,7 +99,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   do {
     if (this->non_linear_solver_type == _nls_newton_raphson)
-      solver_callback.assembleJacobian();
+      solver_callback.assembleMatrix("J");
 
     this->solver.solve();
 

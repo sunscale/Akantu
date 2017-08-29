@@ -40,6 +40,11 @@ PseudoTime::PseudoTime(DOFManager & dof_manager, const ID & dof_id)
     : IntegrationScheme(dof_manager, dof_id, 0), k_release(0) {}
 
 /* -------------------------------------------------------------------------- */
+std::vector<std::string> PseudoTime::getNeededMatrixList() {
+  return {"K"};
+}
+
+/* -------------------------------------------------------------------------- */
 void PseudoTime::predictor(Real) {}
 
 /* -------------------------------------------------------------------------- */

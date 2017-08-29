@@ -36,6 +36,12 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+std::vector<std::string>
+IntegrationScheme2ndOrder::getNeededMatrixList() {
+  return {"K", "M", "C"};
+}
+
+/* -------------------------------------------------------------------------- */
 void IntegrationScheme2ndOrder::predictor(Real delta_t) {
   AKANTU_DEBUG_IN();
 
@@ -85,7 +91,7 @@ void IntegrationScheme2ndOrder::assembleResidual(bool is_lumped) {
   const Array<Real> & second_derivative =
       this->dof_manager.getDOFsDerivatives(this->dof_id, 2);
 
-  if (!is_lumped) {
+  if (not is_lumped) {
     this->dof_manager.assembleMatMulVectToResidual(this->dof_id, "M",
                                                    second_derivative, -1);
   } else {
@@ -97,4 +103,4 @@ void IntegrationScheme2ndOrder::assembleResidual(bool is_lumped) {
 }
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
