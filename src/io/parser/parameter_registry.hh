@@ -93,6 +93,7 @@ public:
   /* ------------------------------------------------------------------------ */
   virtual void printself(std::ostream & stream) const;
 
+  virtual const std::type_info& type() const = 0;
 protected:
   /// Returns const instance of templated sub-class ParameterTyped
   template <typename T> const ParameterTyped<T> & getParameterTyped() const;
@@ -131,6 +132,8 @@ public:
   virtual void printself(std::ostream & stream) const;
 
   inline operator Real() const;
+
+  inline const std::type_info& type() const override { return typeid(T); }
 private:
   /// Value of parameter
   T & param;
@@ -149,13 +152,13 @@ public:
   /// Add parameter to the params map
   template <typename T>
   void registerParam(std::string name, T & variable, ParameterAccessType type,
-                     const std::string description = "");
+                     const std::string & description = "");
 
   /// Add parameter to the params map (with default value)
   template <typename T>
   void registerParam(std::string name, T & variable, const T & default_value,
                      ParameterAccessType type,
-                     const std::string description = "");
+                     const std::string & description = "");
 
   /*------------------------------------------------------------------------- */
 protected:
@@ -172,6 +175,18 @@ public:
 
   /// Get value of a parameter
   inline const Parameter & get(const std::string & name) const;
+
+  std::vector<ID> listParameters() const {
+    std::vector<ID> params;
+    for(auto & pair : this->params) params.push_back(pair.first);
+    return params;
+  }
+
+  std::vector<ID> listSubRegisteries() const {
+    std::vector<ID> subs;
+    for(auto & pair : this->sub_registries) subs.push_back(pair.first);
+    return subs;
+  }
 
 protected:
   template <typename T> T & get(const std::string & name);

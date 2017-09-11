@@ -144,7 +144,7 @@ void ParameterRegistry::setParameterAccessType(const std::string & name,
                                                ParameterAccessType ptype) {
   Parameters::iterator it = params.find(name);
   if (it == params.end())
-    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name));
+    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
   Parameter & param = *(it->second);
   param.setAccessType(ptype);
 }

@@ -32,10 +32,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_error.hh"
+#include "parameter_registry.hh"
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
 #include <string>
 /* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_PARAMETER_REGISTRY_TMPL_HH__
+#define __AKANTU_PARAMETER_REGISTRY_TMPL_HH__
 
 namespace akantu {
 
@@ -49,9 +54,21 @@ namespace debug {
 
   class ParameterUnexistingException : public ParameterException {
   public:
-    ParameterUnexistingException(const std::string & name)
+    ParameterUnexistingException(const std::string & name,
+                                 const ParameterRegistry & registery)
         : ParameterException(name, "Parameter " + name +
-                                       " does not exists in this scope") {}
+                                       " does not exists in this scope") {
+      auto && params = registery.listParameters();
+      this->_info =
+          std::accumulate(params.begin(), params.end(),
+                          this->_info + "\n Possible parameters are: ",
+                          [](auto && str, auto && param) {
+                            static auto first = true;
+                            auto && ret = str + (first ? " " : ", ") + param;
+                            first = false;
+                            return ret;
+                          });
+    }
   };
 
   class ParameterAccessRightException : public ParameterException {
@@ -64,9 +81,12 @@ namespace debug {
   class ParameterWrongTypeException : public ParameterException {
   public:
     ParameterWrongTypeException(const std::string name,
-                                const std::string & type)
-        : ParameterException(name,
-                             "Parameter " + name + " is not of type " + type) {}
+                                const std::type_info & wrong_type,
+                                const std::type_info & type)
+        : ParameterException(name, "Parameter " + name +
+                                       " type error, cannot convert " +
+                                       debug::demangle(type.name()) + " to " +
+                                       debug::demangle(wrong_type.name())) {}
   };
 } // namespace debug
 /* -------------------------------------------------------------------------- */
@@ -77,8 +97,8 @@ const ParameterTyped<T> & Parameter::getParameterTyped() const {
         dynamic_cast<const ParameterTyped<T> &>(*this);
     return tmp;
   } catch (std::bad_cast &) {
-    AKANTU_CUSTOM_EXCEPTION(debug::ParameterWrongTypeException(
-        name, debug::demangle(typeid(T).name())));
+    AKANTU_CUSTOM_EXCEPTION(
+        debug::ParameterWrongTypeException(name, typeid(T), this->type()));
   }
 }
 
@@ -87,9 +107,9 @@ template <typename T> ParameterTyped<T> & Parameter::getParameterTyped() {
   try {
     ParameterTyped<T> & tmp = dynamic_cast<ParameterTyped<T> &>(*this);
     return tmp;
-  } catch (...) {
-    AKANTU_CUSTOM_EXCEPTION(debug::ParameterWrongTypeException(
-        name, debug::demangle(typeid(T).name())));
+  } catch (std::bad_cast &) {
+    AKANTU_CUSTOM_EXCEPTION(
+        debug::ParameterWrongTypeException(name, typeid(T), this->type()));
   }
 }
 
@@ -210,7 +230,7 @@ inline void ParameterTyped<bool>::printself(std::ostream & stream) const {
 template <typename T>
 void ParameterRegistry::registerParam(std::string name, T & variable,
                                       ParameterAccessType type,
-                                      const std::string description) {
+                                      const std::string & description) {
   std::map<std::string, Parameter *>::iterator it = params.find(name);
   if (it != params.end())
     AKANTU_CUSTOM_EXCEPTION(debug::ParameterException(
@@ -225,7 +245,7 @@ template <typename T>
 void ParameterRegistry::registerParam(std::string name, T & variable,
                                       const T & default_value,
                                       ParameterAccessType type,
-                                      const std::string description) {
+                                      const std::string & description) {
   variable = default_value;
   registerParam(name, variable, type, description);
 }
@@ -241,7 +261,7 @@ void ParameterRegistry::setMixed(const std::string & name, const V & value) {
         it->second->setMixed<T>(name, value);
       }
     } else {
-      AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name));
+      AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
     }
   } else {
     Parameter & param = *(it->second);
@@ -292,7 +312,7 @@ const Parameter & ParameterRegistry::get(const std::string & name) const {
     }
 
     // nothing was found not even in sub registries
-    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name));
+    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
   }
 
   Parameter & param = *(it->second);
@@ -322,3 +342,5 @@ template <typename T> inline ParameterTyped<T>::operator Real() const {
 }
 
 } // namespace akantu
+
+#endif /* __AKANTU_PARAMETER_REGISTRY_TMPL_HH__ */
