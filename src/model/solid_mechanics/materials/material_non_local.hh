@@ -46,8 +46,11 @@ class MaterialNonLocalInterface {
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// initialize the material computed parameter
-  virtual void initMaterial() { this->registerNeighborhood(); }
+  /// initialize the material the non local parts of the material
+  void initMaterialNonLocal() {
+    this->registerNeighborhood();
+    this->registerNonLocalVariables();
+  };
 
   /// insert the quadrature points in the neighborhoods of the non-local manager
   virtual void insertIntegrationPointsInNeighborhoods(
@@ -62,10 +65,16 @@ public:
   /// constitutive law
   virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
 
+protected:
+  /// get the name of the neighborhood for this material
+  virtual ID getNeighborhoodName() =0;
+
   /// register the neighborhoods for the material
   virtual void registerNeighborhood() = 0;
 
-protected:
+  /// register the non local internal variable
+  virtual void registerNonLocalVariables() = 0;
+
   virtual inline void onElementsAdded(const Array<Element> &,
                                       const NewElementsEvent &) {}
 };
@@ -84,9 +93,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// initialize the material computed parameter
-  void initMaterial() override;
-
   /// insert the quadrature points in the neighborhoods of the non-local manager
   void insertIntegrationPointsInNeighborhoods(
       const GhostType & ghost_type,
@@ -100,6 +106,12 @@ public:
 
   /// register the neighborhoods for the material
   void registerNeighborhood() override;
+
+protected:
+  /// get the name of the neighborhood for this material
+  ID getNeighborhoodName() override {
+    return this->name;
+  }
 };
 
 } // namespace akantu

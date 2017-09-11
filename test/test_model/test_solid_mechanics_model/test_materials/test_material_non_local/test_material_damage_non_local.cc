@@ -49,12 +49,10 @@ int main(int argc, char * argv[]) {
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-
   model.initFull();
 
   Real time_step = model.getStableTimeStep();
@@ -69,7 +67,7 @@ int main(int argc, char * argv[]) {
   stress.eye(5e8);
   model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
-  /*model.setBaseName("damage_non_local");
+  model.setBaseName("damage_non_local");
   model.addDumpFieldVector("displacement");
   model.addDumpField("mass"        );
   model.addDumpField("velocity"    );
@@ -79,7 +77,7 @@ int main(int argc, char * argv[]) {
   model.addDumpField("damage"      );
   model.addDumpField("stress"      );
   model.addDumpField("strain"      );
-  model.dump();*/
+  model.dump();
 
   for (UInt s = 0; s < max_steps; ++s) {
     model.solveStep();
@@ -88,39 +86,34 @@ int main(int argc, char * argv[]) {
     // <<std::endl;  if(s % 100 == 0) model.dump();
   }
 
-  const Vector<Real> & lower_bounds = mesh.getLowerBounds();
-  const Vector<Real> & upper_bounds = mesh.getUpperBounds();
+  model.dump();
+
+  const auto & lower_bounds = mesh.getLowerBounds();
+  const auto & upper_bounds = mesh.getUpperBounds();
   Real L = upper_bounds(0) - lower_bounds(0);
   Real H = upper_bounds(1) - lower_bounds(1);
 
-  const ElementTypeMapArray<UInt> & filter =
-      model.getMaterial(0).getElementFilter();
-  ElementTypeMapArray<UInt>::type_iterator it =
-      filter.firstType(spatial_dimension);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      filter.lastType(spatial_dimension);
+  const auto & mat = model.getMaterial(0);
+  const auto & filter = mat.getElementFilter();
   Vector<Real> barycenter(spatial_dimension);
-  for (; it != end; ++it) {
-    UInt nb_elem = mesh.getNbElement(*it);
-    const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(*it);
-    Array<Real> & material_damage_array =
-        model.getMaterial(0).getArray<Real>("damage", *it);
+
+  for (auto & type : filter.elementTypes(spatial_dimension)) {
+    UInt nb_elem = mesh.getNbElement(type);
+    const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(type);
+    auto & material_damage_array =
+        mat.getArray<Real>("damage", type);
     UInt cpt = 0;
     for (UInt nel = 0; nel < nb_elem; ++nel) {
-      mesh.getBarycenter(nel, *it, barycenter.storage());
+      mesh.getBarycenter(nel, type, barycenter.storage());
       if ((std::abs(barycenter(0) - (L / 2) + 0.025) < 0.025) &&
           (std::abs(barycenter(1) - (H / 2) + 0.025) < 0.025)) {
         if (material_damage_array(cpt, 0) < 0.9) {
-          //	  std::cout << "barycenter(0) = " << barycenter(0) << ",
-          //barycenter(1) = "
-          //	    << barycenter(1)  <<std::endl;
-          return EXIT_FAILURE;
+          std::terminate();
         }
       }
       cpt += nb_gp;
     }
   }
 
-  akantu::finalize();
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -92,7 +92,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
 
 #add_flags(cxx "-Wall -Wextra -pedantic -Werror")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_flags(cxx "-Wall -Wextra -pedantic")
+  add_flags(cxx "-Wall -Wextra -pedantic") # -Weffc++
 else()
   add_flags(cxx "-Wall")
 endif()

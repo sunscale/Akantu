@@ -64,6 +64,7 @@ containing tests in akantu
       [DIRECTORIES_TO_CREATE <directories>...]
       [COMPILE_OPTIONS <flags>...]
       [EXTRA_FILES <filnames>...]
+      [LINK_LIBRARIES <libraries>...]
       [UNSABLE]
       [PARALLEL]
       [PARALLEL_LEVEL <procs>...]
@@ -206,7 +207,8 @@ endfunction()
 # ==============================================================================
 function(register_test test_name)
    set(multi_variables
-     SOURCES FILES_TO_COPY DEPENDS DIRECTORIES_TO_CREATE COMPILE_OPTIONS EXTRA_FILES PACKAGE PARALLEL_LEVEL
+     SOURCES FILES_TO_COPY DEPENDS DIRECTORIES_TO_CREATE COMPILE_OPTIONS
+     EXTRA_FILES LINK_LIBRARIES PACKAGE PARALLEL_LEVEL
      )
 
    cmake_parse_arguments(_register_test
@@ -282,7 +284,7 @@ function(register_test test_name)
 
         target_include_directories(${test_name}
           PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-        target_link_libraries(${test_name} akantu)
+        target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
 
         if(_register_test_DEPENDS)
           add_dependencies(${test_name} ${_register_test_DEPENDS})

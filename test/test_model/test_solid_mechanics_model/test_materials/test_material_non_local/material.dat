@@ -7,5 +7,5 @@ material custom_non_local_test_material [
 
 
 non_local test base_wf [
-	  radius  = 0.4
+  radius  = 0.4
 ]

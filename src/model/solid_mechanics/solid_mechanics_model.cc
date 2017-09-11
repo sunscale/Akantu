@@ -375,6 +375,18 @@ void SolidMechanicsModel::assembleLumpedMatrix(const ID & matrix_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::beforeSolveStep() {
+  for (auto & material : materials)
+    material->beforeSolveStep();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::afterSolveStep() {
+  for (auto & material : materials)
+    material->afterSolveStep();
+}
+
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::predictor() { ++displacement_release; }
 
 /* -------------------------------------------------------------------------- */
@@ -398,12 +410,10 @@ void SolidMechanicsModel::assembleInternalForces() {
     material->computeAllStresses(_not_ghost);
   }
 
-#ifdef AKANTU_DAMAGE_NON_LOCAL
   /* ------------------------------------------------------------------------ */
   /* Computation of the non local part */
   if (this->non_local_manager)
     this->non_local_manager->computeAllNonLocalStresses();
-#endif
 
   // communicate the stresses
   AKANTU_DEBUG_INFO("Send data for residual assembly");
@@ -882,23 +892,27 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
 void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
     const GhostType & ghost_type) {
   for (auto & mat : materials) {
-    try {
-      ElementTypeMapArray<Real> quadrature_points_coordinates(
-          "quadrature_points_coordinates_tmp_nl", this->id, this->memory_id);
-      quadrature_points_coordinates.initialize(
-          this->getFEEngine(), _spatial_dimension = Model::spatial_dimension,
-          _nb_component = Model::spatial_dimension, _ghost_type = ghost_type);
-      for (auto & type : quadrature_points_coordinates.elementTypes(
-               Model::spatial_dimension, ghost_type)) {
-        this->getFEEngine().computeIntegrationPointsCoordinates(
-            quadrature_points_coordinates(type, ghost_type), type, ghost_type);
-      }
+    MaterialNonLocalInterface * mat_non_local;
+    if ((mat_non_local =
+             dynamic_cast<MaterialNonLocalInterface *>(mat.get())) == nullptr)
+      continue;
 
-      auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
-      mat_non_local.insertIntegrationPointsInNeighborhoods(
-          ghost_type, quadrature_points_coordinates);
-    } catch (std::bad_cast &) {
+    ElementTypeMapArray<Real> quadrature_points_coordinates(
+        "quadrature_points_coordinates_tmp_nl", this->id, this->memory_id);
+    quadrature_points_coordinates.initialize(this->getFEEngine(),
+                                             _nb_component = spatial_dimension,
+                                             _ghost_type = ghost_type);
+
+    for (auto & type : quadrature_points_coordinates.elementTypes(
+             Model::spatial_dimension, ghost_type)) {
+      this->getFEEngine().computeIntegrationPointsCoordinates(
+          quadrature_points_coordinates(type, ghost_type), type, ghost_type);
     }
+
+    mat_non_local->initMaterialNonLocal();
+
+    mat_non_local->insertIntegrationPointsInNeighborhoods(
+        ghost_type, quadrature_points_coordinates);
   }
 }
 

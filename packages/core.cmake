@@ -445,6 +445,7 @@ package_declare_elements(core
   compute_shapes
   compute_shapes_derivatives
   get_shapes_derivatives
+  lagrange_base
   )
 
 package_declare_material_infos(core

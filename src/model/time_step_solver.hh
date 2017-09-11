@@ -89,6 +89,8 @@ public:
   /// implementation of the SolverCallback::assembleResidual()
   void assembleResidual() override;
 
+  void beforeSolveStep() override;
+  void afterSolveStep() override;
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */

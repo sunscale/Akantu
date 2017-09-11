@@ -1,3 +1,4 @@
+
 /**
  * @file   local_material_damage.hh
  *

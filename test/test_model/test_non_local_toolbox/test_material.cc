@@ -38,21 +38,16 @@ TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id)
     : Parent(model, id), grad_u_nl("grad_u non local", *this) {
   this->is_non_local = true;
   this->grad_u_nl.initialize(dim * dim);
-  this->model.getNonLocalManager().registerNonLocalVariable(
-      this->gradu.getName(), grad_u_nl.getName(), dim * dim);
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void TestMaterial<spatial_dimension>::initMaterial() {
-  AKANTU_DEBUG_IN();
-
-  Parent::initMaterial();
+template <UInt dim>
+void TestMaterial<dim>::registerNonLocalVariables() {
+  this->model.getNonLocalManager().registerNonLocalVariable(
+      this->gradu.getName(), grad_u_nl.getName(), dim * dim);
 
   this->model.getNonLocalManager().getNeighborhood("test_region")
       .registerNonLocalVariable(grad_u_nl.getName());
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

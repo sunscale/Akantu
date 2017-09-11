@@ -97,6 +97,7 @@ package_declare_elements(cohesive_element
   inverse_map
   contains
   get_shapes_derivatives
+  lagrange_base
   )
 
 package_declare_material_infos(cohesive_element

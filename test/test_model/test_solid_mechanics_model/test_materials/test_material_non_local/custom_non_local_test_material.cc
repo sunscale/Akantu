@@ -44,15 +44,23 @@ CustomNonLocalTestMaterial<dim>::CustomNonLocalTestMaterial(
   // Initialize the internal field by specifying the number of components
   this->local_damage.initialize(1);
   this->damage.initialize(1);
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+void CustomNonLocalTestMaterial<dim>::registerNonLocalVariables() {
   /// register the non-local variable in the manager
-  this->model.getNonLocalManager().registerNonLocalVariable(this->local_damage.getName(),
-                                       this->damage.getName(), 1);
+  this->model.getNonLocalManager().registerNonLocalVariable(
+      this->local_damage.getName(), this->damage.getName(), 1);
+
+  this->model.getNonLocalManager()
+      .getNeighborhood(this->name)
+      .registerNonLocalVariable(damage.getName());
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim> void CustomNonLocalTestMaterial<dim>::initMaterial() {
   MyNonLocalParent::initMaterial();
-  this->model.getNonLocalManager().getNeighborhood(this->name).registerNonLocalVariable(damage.getName());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -81,6 +89,7 @@ void CustomNonLocalTestMaterial<dim>::computeNonLocalStress(
 
 /* -------------------------------------------------------------------------- */
 // Instantiate the material for the 3 dimensions
-INSTANTIATE_MATERIAL(custom_non_local_test_material, CustomNonLocalTestMaterial);
+INSTANTIATE_MATERIAL(custom_non_local_test_material,
+                     CustomNonLocalTestMaterial);
 /* -------------------------------------------------------------------------- */
 } // namespace akantu

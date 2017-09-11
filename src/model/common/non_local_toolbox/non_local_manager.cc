@@ -42,8 +42,9 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NonLocalManager::NonLocalManager(Model & model, const ID & id,
-                                 const MemoryID & memory_id)
+NonLocalManager::NonLocalManager(Model & model,
+                                 NonLocalManagerCallback & callback,
+                                 const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id), Parsable(_st_neighborhoods, id),
       spatial_dimension(model.getMesh().getSpatialDimension()), model(model),
       integration_points_positions("integration_points_positions", id,
@@ -66,23 +67,19 @@ NonLocalManager::NonLocalManager(Model & model, const ID & id,
     this->weight_function_types[name] = section;
   }
 
-  this->initializeNonLocal();
+  this->callback = &callback;
 }
 
 /* -------------------------------------------------------------------------- */
 NonLocalManager::~NonLocalManager() = default;
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::registerNonLocalManagerCallback(
-    std::shared_ptr<NonLocalManagerCallback> & callback) {
-  this->callback = callback;
-}
-
-/* -------------------------------------------------------------------------- */
-void NonLocalManager::initializeNonLocal() {
+void NonLocalManager::initialize() {
   volumes.initialize(this->model.getFEEngine(),
                      _spatial_dimension = spatial_dimension);
 
+  AKANTU_DEBUG_ASSERT(this->callback,
+                      "A callback should be registered prior to this call");
   this->callback->insertIntegrationPointsInNeighborhoods(_not_ghost);
 
   /// store the number of current ghost elements for each type in the mesh
@@ -127,7 +124,13 @@ void NonLocalManager::createNeighborhood(const ID & weight_func,
 
   AKANTU_DEBUG_IN();
 
-  const ParserSection & section = this->weight_function_types[weight_func];
+  auto weight_func_it = this->weight_function_types.find(weight_func);
+  AKANTU_DEBUG_ASSERT(weight_func_it != weight_function_types.end(),
+                      "No info found in the input file for the weight_function "
+                          << weight_func << " in the neighborhood "
+                          << neighborhood_id);
+
+  const ParserSection & section = weight_func_it->second;
   const ID weight_func_type = section.getOption();
   /// create new neighborhood for given ID
   std::stringstream sstr;
@@ -564,8 +567,7 @@ void NonLocalManager::removeIntegrationPointsFromMap(
         AKANTU_DEBUG_ASSERT(
             tmp.size() == vect.size(),
             "Something strange append some mater was created or disappeared in "
-                << vect.getID() << "(" << vect.size()
-                << "!=" << tmp.size()
+                << vect.getID() << "(" << vect.size() << "!=" << tmp.size()
                 << ") "
                    "!!");
 

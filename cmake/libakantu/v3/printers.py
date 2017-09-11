@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 #
 # Inspired from boost's pretty printers from
@@ -8,7 +8,7 @@
 
 import gdb
 import re
-import sys
+#import sys
 # import libstdcxx.v6.printers as std
 
 __use_gdb_pp__ = True
@@ -23,7 +23,7 @@ class AkantuPrinter(object):
 
     @classmethod
     def supports(cls, typename):
-        print('{0} ~= {1}'.format(typename, cls.regex), file=sys.stderr)
+        #print('{0} ~= {1}'.format(typename, cls.regex), file=sys.stderr)
         return cls.regex.search(typename)
 
     @classmethod
@@ -50,6 +50,10 @@ else:
             self.name = name
             self.printers = {}
 
+        @property
+        def enabled(self):
+            return True
+
         def add_printer(self, name, regex, printer):
             self.printers[name] = printer
 
@@ -58,7 +62,7 @@ else:
             if not typename:
                 return None
 
-            for name, printer in self.printers.iteritems():
+            for name, printer in self.printers.items():
                 if(printer.supports(typename)):
                     return printer
 

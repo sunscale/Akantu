@@ -31,15 +31,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "custom_non_local_test_material.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
 
   // some configuration variables
@@ -47,48 +47,52 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  StaticCommunicator & comm =
+      akantu::StaticCommunicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   // mesh creation and read
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("mesh.msh");
   }
   mesh.distribute();
 
   /// model creation
-  SolidMechanicsModel  model(mesh);
+  SolidMechanicsModel model(mesh);
 
   /// model initialization changed to use our material
   model.initFull();
 
-  CustomNonLocalTestMaterial<spatial_dimension> & mat = dynamic_cast<CustomNonLocalTestMaterial<spatial_dimension> &>(model.getMaterial("test"));
+  CustomNonLocalTestMaterial<spatial_dimension> & mat =
+      dynamic_cast<CustomNonLocalTestMaterial<spatial_dimension> &>(
+          model.getMaterial("test"));
 
-  if(prank == 0) std::cout << mat << std::endl;
+  if (prank == 0)
+    std::cout << mat << std::endl;
 
   // Setting up the dumpers + first dump
   model.setBaseName("non_local_material");
   model.addDumpFieldVector("displacement");
   model.addDumpFieldVector("external_force");
   model.addDumpFieldVector("internal_force");
-  model.addDumpField("partitions"   );
-  model.addDumpField("stress"      );
-  model.addDumpField("stress"      );
+  model.addDumpField("partitions");
+  model.addDumpField("stress");
+  model.addDumpField("stress");
   model.addDumpField("local_damage");
-  model.addDumpField("damage"      );
-
+  model.addDumpField("damage");
 
   model.assembleInternalForces();
   model.dump();
 
-
-  //Array<Real> & damage = mat.getArray("local_damage", _quadrangle_4);
+  // Array<Real> & damage = mat.getArray("local_damage", _quadrangle_4);
   Array<Real> & damage = mat.getArray<Real>("local_damage", _triangle_3);
 
   RandomGenerator<UInt> gen;
 
   for (UInt i = 0; i < 1; ++i) {
-    UInt g = (gen() / Real(RandomGenerator<UInt>::max() - RandomGenerator<UInt>::min()))  * damage.size();
+    UInt g = (gen() / Real(RandomGenerator<UInt>::max() -
+                           RandomGenerator<UInt>::min())) *
+             damage.size();
     std::cout << prank << " -> " << g << std::endl;
     damage(g) = 1.;
   }

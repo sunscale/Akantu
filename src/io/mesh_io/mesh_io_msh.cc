@@ -798,7 +798,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         sstr_elem >> msh_type;
 
         /// get the connectivity vector depending on the element type
-        akantu_type = this->_msh_to_akantu_element_types[(MSHElementType)msh_type];
+        akantu_type =
+            this->_msh_to_akantu_element_types[(MSHElementType)msh_type];
 
         if (akantu_type == _not_defined) {
           AKANTU_DEBUG_WARNING("Unsuported element kind "
@@ -851,7 +852,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
           AKANTU_DEBUG_ASSERT(node_index <= last_node_number,
                               "Node number not in range : line "
-                              << current_line);
+                                  << current_line);
 
           node_index -= first_node_number;
           local_connect(read_order[j]) = node_index;
@@ -867,7 +868,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     }
   }
 
-  //mesh.updateTypesOffsets(_not_ghost);
+  // mesh.updateTypesOffsets(_not_ghost);
 
   infile.close();
 
@@ -915,39 +916,32 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   outfile << "$Elements" << std::endl;
   ;
 
-  Mesh::type_iterator it =
-      mesh.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end =
-      mesh.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
   Int nb_elements = 0;
-  for (; it != end; ++it) {
-    const Array<UInt> & connectivity = mesh.getConnectivity(*it, _not_ghost);
+  for (auto && type :
+       mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
+    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
     nb_elements += connectivity.size();
   }
   outfile << nb_elements << std::endl;
 
   UInt element_idx = 1;
-  for (it = mesh.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
-       it != end; ++it) {
-    ElementType type = *it;
-    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
+  for (auto && type :
+       mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
+    const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
 
-    UInt * tag[2] = {NULL, NULL};
+    UInt * tag[2] = {nullptr, nullptr};
     try {
-      const Array<UInt> & data_tag_0 =
-          mesh.getData<UInt>("tag_0", type, _not_ghost);
+      const auto & data_tag_0 = mesh.getData<UInt>("tag_0", type, _not_ghost);
       tag[0] = data_tag_0.storage();
     } catch (...) {
-      tag[0] = NULL;
+      tag[0] = nullptr;
     }
 
     try {
-      const Array<UInt> & data_tag_1 =
-          mesh.getData<UInt>("tag_1", type, _not_ghost);
+      const auto & data_tag_1 = mesh.getData<UInt>("tag_1", type, _not_ghost);
       tag[1] = data_tag_1.storage();
     } catch (...) {
-      tag[1] = NULL;
+      tag[1] = nullptr;
     }
 
     for (UInt i = 0; i < connectivity.size(); ++i) {
@@ -978,4 +972,4 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

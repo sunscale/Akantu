@@ -63,7 +63,9 @@ class NonLocalManager : protected Memory,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLocalManager(Model & model, const ID & id, const MemoryID & memory_id);
+  NonLocalManager(Model & model, NonLocalManagerCallback & callback,
+                  const ID & id = "non_local_manager",
+                  const MemoryID & memory_id = 0);
   virtual ~NonLocalManager();
   using NeighborhoodMap =
       std::map<ID, std::unique_ptr<NonLocalNeighborhoodBase>>;
@@ -83,17 +85,16 @@ public:
   inline void registerNeighborhood(const ID & neighborhood,
                                    const ID & weight_func_id);
 
-  void registerNonLocalManagerCallback(
-      std::shared_ptr<NonLocalManagerCallback> & callback);
+  // void registerNonLocalManagerCallback(NonLocalManagerCallback & callback);
 
   /// average the internals and compute the non-local stresses
   virtual void computeAllNonLocalStresses();
 
-protected:
   /// initialize the non-local manager: compute pair lists and weights for all
   /// neighborhoods
-  virtual void initializeNonLocal();
+  virtual void initialize();
 
+protected:
   /// create the grid synchronizers for each neighborhood
   void createNeighborhoodSynchronizers();
 
@@ -272,7 +273,7 @@ protected:
   DummyDataAccessor dummy_accessor;
 
   /* ------------------------------------------------------------------------ */
-  std::shared_ptr<NonLocalManagerCallback> callback;
+  NonLocalManagerCallback * callback;
 };
 
 } // namespace akantu

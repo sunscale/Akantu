@@ -81,8 +81,13 @@ public:
 
   /// register a new non-local variable in the neighborhood
   //void registerNonLocalVariable(const ID & id);
-
 protected:
+  template <class Func>
+  inline void foreach_weight(const GhostType & ghost_type, Func && func);
+
+  template <class Func>
+  inline void foreach_weight(const GhostType & ghost_type, Func && func) const;
+
   inline UInt getNbData(const Array<Element> & elements,
                         const SynchronizationTag & tag) const override;
 
@@ -94,11 +99,10 @@ protected:
                          const Array<Element> & elements,
                          const SynchronizationTag & tag) override;
 
-  /* --------------------------------------------------------------------------
-   */
-  /* Accessor */
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
+  /* Accessor                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
   AKANTU_GET_MACRO(NonLocalManager, non_local_manager, const NonLocalManager &);
   AKANTU_GET_MACRO_NOT_CONST(NonLocalManager, non_local_manager,
                              NonLocalManager &);

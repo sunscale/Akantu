@@ -35,7 +35,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include <iostream>
-
 /* -------------------------------------------------------------------------- */
 #include "local_material_damage.hh"
 #include "solid_mechanics_model.hh"
@@ -51,8 +50,6 @@ int main(int argc, char * argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");
 
-  SolidMechanicsModel model(mesh);
-
   /// model initialization
   MaterialFactory::getInstance().registerAllocator(
       "local_damage",
@@ -61,66 +58,63 @@ int main(int argc, char * argv[]) {
         return std::make_unique<LocalMaterialDamage>(model, id);
       });
 
+  SolidMechanicsModel model(mesh);
   model.initFull();
+
+  std::cout << model.getMaterial(0) << std::endl;
+
+  model.addDumpField("damage");
+
+  model.addDumpField("strain");
+  model.addDumpField("stress");
+  model.addDumpFieldVector("displacement");
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
+  model.dump();
 
   Real time_step = model.getStableTimeStep();
   model.setTimeStep(time_step / 2.5);
 
-  model.assembleMassLumped();
-
-  std::cout << model << std::endl;
-
   /// Dirichlet boundary conditions
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed");
   // model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed");
-
-  // Boundary condition (Neumann)
   Matrix<Real> stress(2, 2);
-  stress.eye(7e5);
+  stress.eye(5e7);
   model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
-  for (UInt s = 0; s < max_steps; ++s) {
-    if (s < 100) {
-      // Boundary condition (Neumann)
-      stress.eye(7e5);
-      model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
-    }
+  for (UInt s = 0; s < max_steps; ++s) model.solveStep();
 
-    model.solveStep();
-  }
+  model.dump();
+  const auto & lower_bounds = mesh.getLowerBounds();
+  const auto & upper_bounds = mesh.getUpperBounds();
+  Real L = upper_bounds(_x) - lower_bounds(_x);
+  Real H = upper_bounds(_y) - lower_bounds(_y);
 
-  const Vector<Real> & lower_bounds = mesh.getLowerBounds();
-  const Vector<Real> & upper_bounds = mesh.getUpperBounds();
-  Real L = upper_bounds(0) - lower_bounds(0);
+  const auto & filter = model.getMaterial("concrete").getElementFilter();
 
-  const ElementTypeMapArray<UInt> & filter =
-      model.getMaterial(0).getElementFilter();
-  ElementTypeMapArray<UInt>::type_iterator it =
-      filter.firstType(spatial_dimension);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      filter.lastType(spatial_dimension);
   Vector<Real> barycenter(spatial_dimension);
-  bool is_fully_damaged = false;
-  for (; it != end; ++it) {
-    UInt nb_elem = mesh.getNbElement(*it);
-    const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(*it);
-    Array<Real> & material_damage_array =
-        model.getMaterial(0).getArray<Real>("damage", *it);
+
+  for (auto & type : filter.elementTypes(spatial_dimension)) {
+    UInt nb_elem = mesh.getNbElement(type);
+    const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(type);
+    const auto & material_damage_array =
+        model.getMaterial(0).getArray<Real>("damage", type);
     UInt cpt = 0;
-    for (UInt nel = 0; nel < nb_elem; ++nel) {
-      if (material_damage_array(cpt, 0) > 0.9) {
-        is_fully_damaged = true;
-        mesh.getBarycenter(nel, *it, barycenter.storage());
-        if ((std::abs(barycenter(0) - (L / 2)) < (L / 10))) {
-          return EXIT_FAILURE;
+    for (auto nel : arange(nb_elem)) {
+      mesh.getBarycenter(nel, type, barycenter.storage());
+      if ((std::abs(barycenter(_x) - (L / 2) + 0.025) < 0.025) &&
+          (std::abs(barycenter(_y) - (H / 2) + 0.045) < 0.045)) {
+        if (material_damage_array(cpt, 0) < 0.9) {
+          std::terminate();
+        } else {
+          std::cout << "element " << nel << " is correctly broken"  << std::endl;
         }
       }
+
       cpt += nb_gp;
     }
   }
-  if (!is_fully_damaged)
-    return EXIT_FAILURE;
 
   akantu::finalize();
-  return EXIT_SUCCESS;
+  return 0;
 }

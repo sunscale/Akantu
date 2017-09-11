@@ -29,14 +29,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
-#include "test_material.hh"
-#include "non_local_neighborhood_base.hh"
-#include "dumper_paraview.hh"
+#include "my_model.hh"
 /* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
+
 using namespace akantu;
+
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
 
   // some configuration variables
@@ -47,21 +48,9 @@ int main(int argc, char *argv[]) {
   mesh.read("plate.msh");
 
   /// model creation
-  SolidMechanicsModel  model(mesh);
-
-  /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
- 
-  /// model initialization changed to use our material
-  model.initFull();
-  
-  /// dump material index in paraview
-  model.addDumpField("material_index");
-  model.dump();
-
-  NonLocalNeighborhoodBase & neighborhood = model.getNonLocalManager().getNeighborhood("test_region");
+  MyModel model(mesh, spatial_dimension);
+  const auto & manager = model.getNonLocalManager();
+  const auto & neighborhood = manager.getNeighborhood("test_region");
 
   /// save the pair of quadrature points and the coords of all neighbors
   std::string output_1 = "quadrature_pairs";
@@ -72,17 +61,20 @@ int main(int argc, char *argv[]) {
   /// print results to screen for validation
   std::ifstream quad_pairs;
   quad_pairs.open("quadrature_pairs.0");
+
   std::string current_line;
-  while(getline(quad_pairs, current_line))
+  while (getline(quad_pairs, current_line))
     std::cout << current_line << std::endl;
+
   quad_pairs.close();
+
   std::ifstream neighborhoods;
   neighborhoods.open("neighborhoods.0");
-  while(getline(neighborhoods, current_line))
+  while (getline(neighborhoods, current_line))
     std::cout << current_line << std::endl;
   neighborhoods.close();
 
   finalize();
-  
+
   return EXIT_SUCCESS;
 }

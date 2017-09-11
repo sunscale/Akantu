@@ -334,6 +334,11 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
+  inline TensorStorage & operator=(const TensorStorage & src) {
+    return this->operator=(dynamic_cast<RetType &>(src));
+  }
+
+  /* ------------------------------------------------------------------------ */
   inline TensorStorage & operator=(const RetType & src) {
     if (this != &src) {
       if (this->wrapped) {

@@ -103,6 +103,17 @@ void SolidMechanicsModel::instantiateMaterials() {
     registerNewMaterial(section);
   }
 
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+  for (auto & material : materials) {
+    if (dynamic_cast<MaterialNonLocalInterface *>(material.get()) == nullptr)
+      continue;
+
+    this->non_local_manager = std::make_unique<NonLocalManager>(
+        *this, *this, id + ":non_local_manager", memory_id);
+    break;
+  }
+#endif
+
   are_materials_instantiated = true;
 }
 
@@ -221,22 +232,9 @@ void SolidMechanicsModel::initMaterials() {
     break;
   }
 
-#ifdef AKANTU_DAMAGE_NON_LOCAL
-  bool has_non_local_materials = false;
-  for (auto & material : materials) {
-    try {
-      dynamic_cast<MaterialNonLocalInterface &>(*material);
-      has_non_local_materials = true;
-    } catch (std::bad_cast &) {
-    }
-  }
 
-  if (has_non_local_materials) {
-    /// initialize the non-local manager for non-local computations
-    this->non_local_manager = std::make_unique<NonLocalManager>(
-        *this, id + ":non_local_manager", memory_id);
-  }
-#endif
+  if(this->non_local_manager)
+    this->non_local_manager->initialize();
 }
 
 /* -------------------------------------------------------------------------- */

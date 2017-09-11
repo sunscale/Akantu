@@ -70,7 +70,6 @@ struct SolidMechanicsModelOptions : public ModelOptions {
   SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
 
   AnalysisMethod analysis_method;
-  // bool no_init_materials;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -161,6 +160,11 @@ protected:
   void predictor() override;
   /// callback for the solver, this is called at end of solve
   void corrector() override;
+
+  /// callback for the solver, this is called at beginning of solve
+  void beforeSolveStep() override;
+  /// callback for the solver, this is called at end of solve
+  void afterSolveStep() override;
 
   /// Callback for the model to instantiate the matricees when needed
   void initSolver(TimeStepSolverType time_step_solver_type,

@@ -41,24 +41,26 @@ using namespace akantu;
 template <UInt dim>
 class TestMaterialDamage
     : public MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>> {
+
+  using Parent = MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
+
   /* ------------------------------------------------------------------------ */
   /* Constructor/Destructor */
   /* ------------------------------------------------------------------------ */
 public:
   TestMaterialDamage(SolidMechanicsModel & model, const ID & id);
-  virtual ~TestMaterialDamage(){};
-  using Parent = MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
-
   /* ------------------------------------------------------------------------ */
   /* Methods */
   /* ------------------------------------------------------------------------ */
 public:
-  void initMaterial();
+  void registerNonLocalVariables() override final;
 
-  void computeNonLocalStress(ElementType, GhostType) final{};
+  void computeNonLocalStress(ElementType, GhostType) override final {};
 
-  void computeNonLocalStresses(GhostType) final{};
   void insertQuadsInNeighborhoods(GhostType ghost_type);
+
+protected:
+  ID getNeighborhoodName() override { return "test_region"; }
 
   /* ------------------------------------------------------------------------ */
   /* Members */

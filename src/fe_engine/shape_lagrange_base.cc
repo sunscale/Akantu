@@ -51,13 +51,15 @@ void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
   this->computeShapesOnIntegrationPoints<type>(                                \
       nodes, integration_points, shapes, ghost_type, filter_elements)
 
-#define AKANTU_LAGRANGE_ELEMENT_TYPE                                           \
-  AKANTU_ek_regular_ELEMENT_TYPE AKANTU_ek_cohesive_ELEMENT_TYPE
+#define AKANTU_COMPUTE_SHAPES_KIND(kind)            \
+  AKANTU_BOOST_KIND_ELEMENT_SWITCH(AKANTU_COMPUTE_SHAPES, kind);
 
-  AKANTU_BOOST_ELEMENT_SWITCH(AKANTU_COMPUTE_SHAPES,
-                              AKANTU_LAGRANGE_ELEMENT_TYPE);
+  AKANTU_BOOST_ALL_KIND_LIST(
+      AKANTU_COMPUTE_SHAPES_KIND,
+      AKANTU_FE_ENGINE_LIST_LAGRANGE_BASE)
 
 #undef AKANTU_COMPUTE_SHAPES
+#undef AKANTU_COMPUTE_SHAPES_KIND
   //#undef AKANTU_LAGRANGE_ELEMENT_TYPE
 }
 

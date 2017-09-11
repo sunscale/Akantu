@@ -1438,8 +1438,7 @@ void Material::onElementsRemoved(
         new_numbering.lastType(_all_dimensions, gt, _ek_not_defined);
     for (; it != end; ++it) {
       ElementType type = *it;
-      if (element_filter.exists(type, gt) &&
-          element_filter(type, gt).size()) {
+      if (element_filter.exists(type, gt) && element_filter(type, gt).size()) {
         Array<UInt> & elem_filter = element_filter(type, gt);
 
         Array<UInt> & mat_indexes = this->model.getMaterialByElement(*it, gt);
@@ -1452,8 +1451,7 @@ void Material::onElementsRemoved(
         mat_loc_num.resize(nb_element);
 
         if (!material_local_new_numbering.exists(type, gt))
-          material_local_new_numbering.alloc(elem_filter.size(), 1, type,
-                                             gt);
+          material_local_new_numbering.alloc(elem_filter.size(), 1, type, gt);
 
         Array<UInt> & mat_renumbering = material_local_new_numbering(type, gt);
         const Array<UInt> & renumbering = new_numbering(type, gt);
@@ -1504,21 +1502,13 @@ void Material::onElementsRemoved(
 }
 
 /* -------------------------------------------------------------------------- */
-void Material::onBeginningSolveStep(__attribute__((unused))
-                                    const AnalysisMethod & method) {
-  this->savePreviousState();
-}
+void Material::beforeSolveStep() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
-void Material::onEndSolveStep(__attribute__((unused))
-                              const AnalysisMethod & method) {
-  ElementTypeMapArray<UInt>::type_iterator it = this->element_filter.firstType(
-      _all_dimensions, _not_ghost, _ek_not_defined);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
-  for (; it != end; ++it) {
-    this->updateEnergies(*it, _not_ghost);
+void Material::afterSolveStep() {
+  for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
+                                                 _ek_not_defined)) {
+    this->updateEnergies(type, _not_ghost);
   }
 }
 /* -------------------------------------------------------------------------- */
@@ -1605,23 +1595,16 @@ void Material::extrapolateInternal(const ID & id, const Element & element,
 void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
                                const GhostType ghost_type) {
 
-  ElementTypeMapArray<UInt>::type_iterator it = this->element_filter.firstType(
-      _all_dimensions, _not_ghost, _ek_not_defined);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
-  for (; it != end; ++it) {
-    ElementType type = *it;
+  for (auto && type : element_filter.elementTypes(_all_dimensions, _not_ghost,
+                                                  _ek_not_defined)) {
     if (!element_filter(type, ghost_type).size())
       continue;
-    Array<Real>::matrix_iterator eigen_it =
-        this->eigengradu(type, ghost_type)
-            .begin(spatial_dimension, spatial_dimension);
-    Array<Real>::matrix_iterator eigen_end =
-        this->eigengradu(type, ghost_type)
-            .end(spatial_dimension, spatial_dimension);
+    auto eigen_it = this->eigengradu(type, ghost_type)
+                        .begin(spatial_dimension, spatial_dimension);
+    auto eigen_end = this->eigengradu(type, ghost_type)
+                         .end(spatial_dimension, spatial_dimension);
     for (; eigen_it != eigen_end; ++eigen_it) {
-      Matrix<Real> & current_eigengradu = *eigen_it;
+      auto & current_eigengradu = *eigen_it;
       current_eigengradu = prescribed_eigen_grad_u;
     }
   }

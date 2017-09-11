@@ -32,6 +32,7 @@
 /* -------------------------------------------------------------------------- */
 #include "neighborhood_base.hh"
 #include "grid_synchronizer.hh"
+#include "mesh_accessor.hh"
 #include "model.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
@@ -86,8 +87,8 @@ void NeighborhoodBase::createGrid() {
   Vector<Real> spacing(spatial_dimension,
                        this->neighborhood_radius * safety_factor);
 
-  spatial_grid =
-    std::make_unique<SpatialGrid<IntegrationPoint>>(spatial_dimension, spacing, center);
+  spatial_grid = std::make_unique<SpatialGrid<IntegrationPoint>>(
+      spatial_dimension, spacing, center);
 
   AKANTU_DEBUG_OUT();
 }
@@ -97,54 +98,26 @@ void NeighborhoodBase::updatePairList() {
   AKANTU_DEBUG_IN();
 
   //// loop over all quads -> all cells
-  SpatialGrid<IntegrationPoint>::cells_iterator cell_it =
-      spatial_grid->beginCells();
-  SpatialGrid<IntegrationPoint>::cells_iterator cell_end =
-      spatial_grid->endCells();
-
-  Vector<Real> q1_coords(spatial_dimension);
-  Vector<Real> q2_coords(spatial_dimension);
-  IntegrationPoint q1;
-  IntegrationPoint q2;
-
-  UInt counter = 0;
-  for (; cell_it != cell_end; ++cell_it) {
+  for (auto && cell_id : *spatial_grid) {
     AKANTU_DEBUG_INFO("Looping on next cell");
-    SpatialGrid<IntegrationPoint>::Cell::iterator first_quad =
-        spatial_grid->beginCell(*cell_it);
-    SpatialGrid<IntegrationPoint>::Cell::iterator last_quad =
-        spatial_grid->endCell(*cell_it);
 
-    for (; first_quad != last_quad; ++first_quad, ++counter) {
-      q1 = *first_quad;
+    for (auto && q1 : spatial_grid->getCell(cell_id)) {
       if (q1.ghost_type == _ghost)
         break;
-      Array<Real>::const_vector_iterator coords_type_1_it =
-          this->quad_coordinates(q1.type, q1.ghost_type)
-              .begin(spatial_dimension);
-      q1_coords = coords_type_1_it[q1.global_num];
+      auto coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type)
+                                  .begin(spatial_dimension);
+      auto q1_coords = Vector<Real>(coords_type_1_it[q1.global_num]);
+
       AKANTU_DEBUG_INFO("Current quadrature point in this cell: " << q1);
-      SpatialGrid<IntegrationPoint>::CellID cell_id =
-          spatial_grid->getCellID(q1_coords);
-      /// loop over all the neighbouring cells of the current quad
-      SpatialGrid<IntegrationPoint>::neighbor_cells_iterator first_neigh_cell =
-          spatial_grid->beginNeighborCells(cell_id);
-      SpatialGrid<IntegrationPoint>::neighbor_cells_iterator last_neigh_cell =
-          spatial_grid->endNeighborCells(cell_id);
+      auto cell_id = spatial_grid->getCellID(q1_coords);
 
-      for (; first_neigh_cell != last_neigh_cell; ++first_neigh_cell) {
-        SpatialGrid<IntegrationPoint>::Cell::iterator first_neigh_quad =
-            spatial_grid->beginCell(*first_neigh_cell);
-        SpatialGrid<IntegrationPoint>::Cell::iterator last_neigh_quad =
-            spatial_grid->endCell(*first_neigh_cell);
-
+      /// loop over all the neighboring cells of the current quad
+      for (auto && neighbor_cell : cell_id.neighbors()) {
         // loop over the quadrature point in the current neighboring cell
-        for (; first_neigh_quad != last_neigh_quad; ++first_neigh_quad) {
-          q2 = *first_neigh_quad;
-          Array<Real>::const_vector_iterator coords_type_2_it =
-              this->quad_coordinates(q2.type, q2.ghost_type)
-                  .begin(spatial_dimension);
-          q2_coords = coords_type_2_it[q2.global_num];
+        for (auto && q2 : spatial_grid->getCell(neighbor_cell)) {
+          auto coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type)
+                                      .begin(spatial_dimension);
+          auto q2_coords = Vector<Real>(coords_type_2_it[q2.global_num]);
 
           Real distance = q1_coords.distance(q2_coords);
 
@@ -164,43 +137,86 @@ void NeighborhoodBase::updatePairList() {
 
 /* -------------------------------------------------------------------------- */
 void NeighborhoodBase::savePairs(const std::string & filename) const {
-  std::ofstream pout;
-
   std::stringstream sstr;
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
   sstr << filename << "." << prank;
 
+  std::ofstream pout;
   pout.open(sstr.str().c_str());
 
-  for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type2 = (GhostType)gt;
-
-    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-    PairList::const_iterator last_pair = pair_list[ghost_type2].end();
-
-    for (; first_pair != last_pair; ++first_pair) {
-
-      const IntegrationPoint & q1 = first_pair->first;
-      const IntegrationPoint & q2 = first_pair->second;
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & pair : pair_list[ghost_type]) {
+      const auto & q1 = pair.first;
+      const auto & q2 = pair.second;
       pout << q1 << " " << q2 << " " << std::endl;
     }
   }
+
+  pout.close();
+
+  if (comm.getNbProc() != 1)
+    return;
+
+  Mesh mesh_out(spatial_dimension);
+  MeshAccessor mesh_accessor(mesh_out);
+  auto & connectivity = mesh_accessor.getConnectivity(_segment_2);
+  auto & tag = mesh_accessor.getData<UInt>("tag_1", _segment_2);
+  auto & nodes = mesh_accessor.getNodes();
+
+  std::map<IntegrationPoint, UInt> quad_to_nodes;
+  UInt node = 0;
+
+  IntegrationPoint q1, q2;
+  bool inserted;
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & pair : pair_list[ghost_type]) {
+      std::tie(q1, q2) = pair;
+
+      auto add_node = [&](auto && q) {
+        std::tie(std::ignore, inserted) =
+            quad_to_nodes.insert(std::make_pair(q, node));
+
+        if (not inserted)
+          return;
+
+        auto coords_it = this->quad_coordinates(q.type, q.ghost_type)
+                             .begin(spatial_dimension);
+        auto && coords = Vector<Real>(coords_it[q.global_num]);
+        nodes.push_back(coords);
+        ++node;
+      };
+
+      add_node(q1);
+      add_node(q2);
+    }
+  }
+
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & pair : pair_list[ghost_type]) {
+      std::tie(q1, q2) = pair;
+
+      UInt node1 = quad_to_nodes[q1];
+      UInt node2 = quad_to_nodes[q2];
+
+      connectivity.push_back(Vector<UInt>{node1, node2});
+      tag.push_back(node1 + 1);
+      if (node1 != node2) {
+        connectivity.push_back(Vector<UInt>{node2, node1});
+        tag.push_back(node2 + 1);
+      }
+    }
+  }
+
+  mesh_out.write(filename + ".msh");
 }
 
 /* -------------------------------------------------------------------------- */
 void NeighborhoodBase::saveNeighborCoords(const std::string & filename) const {
-
-  /// this function is not optimazed and only used for tests on small meshes
-  /// @todo maybe optimize this function for better performance?
-
-  Vector<Real> q1_coords(spatial_dimension);
-  Vector<Real> q2_coords(spatial_dimension);
-  IntegrationPoint q1;
+  // this function is not optimized and only used for tests on small meshes
+  // @todo maybe optimize this function for better performance?
   IntegrationPoint q2;
-
-  std::ofstream pout;
 
   std::stringstream sstr;
 
@@ -208,49 +224,33 @@ void NeighborhoodBase::saveNeighborCoords(const std::string & filename) const {
   Int prank = comm.whoAmI();
   sstr << filename << "." << prank;
 
+  std::ofstream pout;
   pout.open(sstr.str().c_str());
 
   /// loop over all the quads and write the position of their neighbors
-  SpatialGrid<IntegrationPoint>::cells_iterator cell_it =
-      spatial_grid->beginCells();
-  SpatialGrid<IntegrationPoint>::cells_iterator cell_end =
-      spatial_grid->endCells();
+  for (auto && cell_id : *spatial_grid) {
+    for (auto && q1 : spatial_grid->getCell(cell_id)) {
+      auto coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type)
+                                  .begin(spatial_dimension);
+      auto && q1_coords = Vector<Real>(coords_type_1_it[q1.global_num]);
 
-  for (; cell_it != cell_end; ++cell_it) {
-    SpatialGrid<IntegrationPoint>::Cell::iterator first_quad =
-        spatial_grid->beginCell(*cell_it);
-    SpatialGrid<IntegrationPoint>::Cell::iterator last_quad =
-        spatial_grid->endCell(*cell_it);
-
-    for (; first_quad != last_quad; ++first_quad) {
-      q1 = *first_quad;
-      Array<Real>::const_vector_iterator coords_type_1_it =
-          this->quad_coordinates(q1.type, q1.ghost_type)
-              .begin(spatial_dimension);
-      q1_coords = coords_type_1_it[q1.global_num];
       pout << "#neighbors for quad " << q1.global_num << std::endl;
       pout << q1_coords << std::endl;
-      for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-        GhostType ghost_type2 = (GhostType)gt;
-        PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-        PairList::const_iterator last_pair = pair_list[ghost_type2].end();
-        for (; first_pair != last_pair; ++first_pair) {
-          if (q1 == first_pair->first && first_pair->second != q1) {
-            q2 = first_pair->second;
-            Array<Real>::const_vector_iterator coords_type_2_it =
-                this->quad_coordinates(q2.type, q2.ghost_type)
-                    .begin(spatial_dimension);
-            q2_coords = coords_type_2_it[q2.global_num];
-            pout << q2_coords << std::endl;
+
+      for (auto && ghost_type2 : ghost_types) {
+        for (auto && pair : pair_list[ghost_type2]) {
+          if (q1 == pair.first && pair.second != q1) {
+            q2 = pair.second;
+          } else if (q1 == pair.second && pair.first != q1) {
+            q2 = pair.first;
+          } else {
+            continue;
           }
-          if (q1 == first_pair->second && first_pair->first != q1) {
-            q2 = first_pair->first;
-            Array<Real>::const_vector_iterator coords_type_2_it =
-                this->quad_coordinates(q2.type, q2.ghost_type)
-                    .begin(spatial_dimension);
-            q2_coords = coords_type_2_it[q2.global_num];
-            pout << q2_coords << std::endl;
-          }
+
+          auto coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type)
+                                      .begin(spatial_dimension);
+          auto && q2_coords = Vector<Real>(coords_type_2_it[q2.global_num]);
+          pout << q2_coords << std::endl;
         }
       }
     }
@@ -267,33 +267,23 @@ void NeighborhoodBase::onElementsRemoved(
   FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = 0;
   // Change the pairs in new global numbering
-  for(auto ghost_type2 : ghost_types) {
+  for (auto ghost_type2 : ghost_types) {
+    for (auto && pair : pair_list[ghost_type2]) {
+      auto cleanPoint = [&](auto && q) {
+        if (new_numbering.exists(q.type, q.ghost_type)) {
+          UInt q_new_el = new_numbering(q.type, q.ghost_type)(q.element);
+          AKANTU_DEBUG_ASSERT(q_new_el != UInt(-1),
+                              "A local quadrature_point "
+                              "as been removed instead of "
+                              "just being renumbered");
+          q.element = q_new_el;
+          nb_quad = fem.getNbIntegrationPoints(q.type, q.ghost_type);
+          q.global_num = nb_quad * q.element + q.num_point;
+        }
+      };
 
-    auto first_pair = pair_list[ghost_type2].begin();
-    auto last_pair = pair_list[ghost_type2].end();
-
-    for (; first_pair != last_pair; ++first_pair) {
-      IntegrationPoint & q1 = first_pair->first;
-      if (new_numbering.exists(q1.type, q1.ghost_type)) {
-        UInt q1_new_el = new_numbering(q1.type, q1.ghost_type)(q1.element);
-        AKANTU_DEBUG_ASSERT(q1_new_el != UInt(-1), "A local quadrature_point "
-                                                   "as been removed instead of "
-                                                   "just being renumbered");
-        q1.element = q1_new_el;
-        nb_quad = fem.getNbIntegrationPoints(q1.type, q1.ghost_type);
-        q1.global_num = nb_quad * q1.element + q1.num_point;
-      }
-
-      IntegrationPoint & q2 = first_pair->second;
-      if (new_numbering.exists(q2.type, q2.ghost_type)) {
-        UInt q2_new_el = new_numbering(q2.type, q2.ghost_type)(q2.element);
-        AKANTU_DEBUG_ASSERT(q2_new_el != UInt(-1), "A local quadrature_point "
-                                                   "as been removed instead of "
-                                                   "just being renumbered");
-        q2.element = q2_new_el;
-        nb_quad = fem.getNbIntegrationPoints(q2.type, q2.ghost_type);
-        q2.global_num = nb_quad * q2.element + q2.num_point;
-      }
+      cleanPoint(pair.first);
+      cleanPoint(pair.second);
     }
   }
 

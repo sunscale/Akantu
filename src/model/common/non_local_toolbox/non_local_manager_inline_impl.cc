@@ -44,7 +44,7 @@ inline void NonLocalManager::registerNeighborhood(const ID & neighborhood,
                                                   const ID & weight_func_id) {
 
   /// check if neighborhood has already been created
-  NeighborhoodMap::const_iterator it = neighborhoods.find(neighborhood);
+  auto it = neighborhoods.find(neighborhood);
   if (it == neighborhoods.end()) {
     this->createNeighborhood(weight_func_id, neighborhood);
   }

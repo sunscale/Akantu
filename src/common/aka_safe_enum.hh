@@ -59,7 +59,7 @@ public:
   class iterator {
   public:
     explicit iterator(type v) : it(v) { }
-    void operator++() { ++it; }
+    iterator & operator++() { ++it; return *this; }
     safe_enum operator*() { return safe_enum(static_cast<type>(it)); }
     bool operator!=(iterator const & it) { return it.it != this->it; }
   private:

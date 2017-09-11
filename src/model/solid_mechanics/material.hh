@@ -406,8 +406,10 @@ public:
   /* SolidMechanicsModelEventHandler inherited members                        */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onBeginningSolveStep(const AnalysisMethod & method);
-  virtual void onEndSolveStep(const AnalysisMethod & method);
+  virtual void beforeSolveStep();
+  virtual void afterSolveStep();
+
+
   virtual void onDamageIteration();
   virtual void onDamageUpdate();
   virtual void onDump();

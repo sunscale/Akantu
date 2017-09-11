@@ -48,7 +48,7 @@ TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
 }
 
 /* -------------------------------------------------------------------------- */
-TimeStepSolver::~TimeStepSolver() {}
+TimeStepSolver::~TimeStepSolver() = default;
 
 /* -------------------------------------------------------------------------- */
 MatrixType TimeStepSolver::getCommonMatrixType() {
@@ -84,6 +84,24 @@ void TimeStepSolver::corrector() {
       "This function cannot be called if the solver_callback is not set");
 
   this->solver_callback->corrector();
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolver::beforeSolveStep() {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != nullptr,
+      "This function cannot be called if the solver_callback is not set");
+
+  this->solver_callback->beforeSolveStep();
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolver::afterSolveStep() {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != nullptr,
+      "This function cannot be called if the solver_callback is not set");
+
+  this->solver_callback->afterSolveStep();
 }
 
 /* -------------------------------------------------------------------------- */

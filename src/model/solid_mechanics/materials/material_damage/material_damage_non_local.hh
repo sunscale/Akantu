@@ -47,11 +47,6 @@ public:
   MaterialDamageNonLocal(SolidMechanicsModel & model, const ID & id)
       : MaterialParent(model, id) {};
 
-  /* ------------------------------------------------------------------------ */
-  virtual void initMaterial() {
-    MaterialParent::initMaterial();
-  }
-
 protected:
   /* ------------------------------------------------------------------------ */
   virtual void computeNonLocalStress(ElementType type,
@@ -71,24 +66,6 @@ protected:
     }
 
     AKANTU_DEBUG_OUT();
-  }
-
-public:
-  /* ------------------------------------------------------------------------ */
-  inline UInt getNbData(const Array<Element> & elements,
-                        const SynchronizationTag & tag) const override {
-    return MaterialParent::getNbData(elements, tag);
-  }
-  inline void packData(CommunicationBuffer & buffer,
-                       const Array<Element> & elements,
-                       const SynchronizationTag & tag) const override {
-    MaterialParent::packData(buffer, elements, tag);
-  }
-
-  inline void unpackData(CommunicationBuffer & buffer,
-                         const Array<Element> & elements,
-                         const SynchronizationTag & tag) {
-    MaterialParent::unpackData(buffer, elements, tag);
   }
 };
 

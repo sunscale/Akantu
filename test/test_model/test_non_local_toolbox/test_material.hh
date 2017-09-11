@@ -48,17 +48,19 @@ public:
       MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
 
   TestMaterial(SolidMechanicsModel & model, const ID & id);
-  virtual ~TestMaterial(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods */
   /* ------------------------------------------------------------------------ */
 public:
-  void initMaterial() final;
+  void registerNonLocalVariables() override final;
 
-  void computeNonLocalStress(ElementType, GhostType) final{};
+  void computeNonLocalStress(ElementType, GhostType) override final{};
 
-  void computeNonLocalStresses(GhostType) final{};
+  void computeNonLocalStresses(GhostType) override final{};
+
+protected:
+  ID getNeighborhoodName() override { return "test_region"; }
 
   /* ------------------------------------------------------------------------ */
   /* Members */

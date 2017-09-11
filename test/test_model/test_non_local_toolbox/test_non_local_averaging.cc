@@ -29,16 +29,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
-#include "test_material.hh"
+#include "dumper_paraview.hh"
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
-#include "dumper_paraview.hh"
+#include "solid_mechanics_model.hh"
+#include "test_material.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
-  akantu::initialize("material.dat", argc, argv);
+int main(int argc, char * argv[]) {
+  akantu::initialize("material_avg.dat", argc, argv);
 
   // some configuration variables
   const UInt spatial_dimension = 2;
@@ -50,16 +50,15 @@ int main(int argc, char *argv[]) {
   mesh.read("plate.msh");
 
   /// model creation
-  SolidMechanicsModel  model(mesh);
+  SolidMechanicsModel model(mesh);
 
   /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  MeshDataMaterialSelector<std::string> mat_selector("physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// model initialization changed to use our material
   model.initFull();
-  
+
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.addDumpField("grad_u");
@@ -70,16 +69,17 @@ int main(int argc, char *argv[]) {
   Matrix<Real> applied_strain(spatial_dimension, spatial_dimension);
   applied_strain.clear();
   for (UInt i = 0; i < spatial_dimension; ++i)
-    applied_strain(i,i) = 2.;
+    applied_strain(i, i) = 2.;
 
   /// apply constant grad_u field in all elements
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    Material & mat = model.getMaterial(m);
-    Array<Real> & grad_u = const_cast<Array<Real> &> (mat.getInternal<Real>("grad_u")(element_type, ghost_type));
-    Array<Real>::iterator< Matrix<Real> > grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
-    Array<Real>::iterator< Matrix<Real> > grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
-    for (; grad_u_it != grad_u_end; ++grad_u_it) 
-      (*grad_u_it) += applied_strain;
+    auto & mat = model.getMaterial(m);
+    auto & grad_u = const_cast<Array<Real> &>(
+        mat.getInternal<Real>("eigen_grad_u")(element_type, ghost_type));
+    auto grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
+    auto grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
+    for (; grad_u_it != grad_u_end; ++grad_u_it)
+      (*grad_u_it) = -1. * applied_strain;
   }
 
   /// compute the non-local strains
@@ -92,7 +92,8 @@ int main(int argc, char *argv[]) {
   Matrix<Real> difference(spatial_dimension, spatial_dimension, 0.);
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
     auto & mat = model.getMaterial(m);
-    Array<Real> & grad_u_nl = mat.getInternal<Real>("grad_u non local")(element_type, ghost_type);
+    auto & grad_u_nl =
+        mat.getInternal<Real>("grad_u non local")(element_type, ghost_type);
 
     auto grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
     auto grad_u_nl_end = grad_u_nl.end(spatial_dimension, spatial_dimension);
@@ -104,8 +105,8 @@ int main(int argc, char *argv[]) {
 
   if (test_result > 10.e-13) {
     std::cout << "the total norm is: " << test_result << std::endl;
-    return EXIT_FAILURE;
+    std::terminate();
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

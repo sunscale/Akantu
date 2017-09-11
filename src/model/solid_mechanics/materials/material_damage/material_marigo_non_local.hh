@@ -61,15 +61,12 @@ public:
       MaterialMarigoNonLocalParent;
   MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialMarigoNonLocal(){};
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-  void initMaterial();
-
 protected:
+  void registerNonLocalVariables() override;
+
   /// constitutive law
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 

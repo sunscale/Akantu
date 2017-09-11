@@ -44,6 +44,34 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class WeightFunction>
+template <class Func>
+inline void NonLocalNeighborhood<WeightFunction>::foreach_weight(
+    const GhostType & ghost_type, Func && func) {
+  auto weight_it =
+      pair_weight[ghost_type]->begin(pair_weight[ghost_type]->getNbComponent());
+
+  for (auto & pair : pair_list[ghost_type]) {
+    std::forward<decltype(func)>(func)(pair.first, pair.second, *weight_it);
+    ++weight_it;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <class WeightFunction>
+template <class Func>
+inline void NonLocalNeighborhood<WeightFunction>::foreach_weight(
+    const GhostType & ghost_type, Func && func) const {
+  auto weight_it =
+      pair_weight[ghost_type]->begin(pair_weight[ghost_type]->getNbComponent());
+
+  for (auto & pair : pair_list[ghost_type]) {
+    std::forward<decltype(func)>(func)(pair.first, pair.second, *weight_it);
+    ++weight_it;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <class WeightFunction>
 NonLocalNeighborhood<WeightFunction>::NonLocalNeighborhood(
     NonLocalManager & manager, const ElementTypeMapReal & quad_coordinates,
     const ID & id, const MemoryID & memory_id)
@@ -52,8 +80,7 @@ NonLocalNeighborhood<WeightFunction>::NonLocalNeighborhood(
       non_local_manager(manager) {
   AKANTU_DEBUG_IN();
 
-  this->weight_function =
-      std::make_unique<WeightFunction>(manager);
+  this->weight_function = std::make_unique<WeightFunction>(manager);
 
   this->registerSubSection(_st_weight_function, "weight_parameter",
                            *weight_function);
@@ -152,35 +179,21 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
   }
 
   ///  normalize the weights
-  for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type2 = (GhostType)gt;
-
-    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-    PairList::const_iterator last_pair = pair_list[ghost_type2].end();
-
-    Array<Real>::vector_iterator weight_it =
-        pair_weight[ghost_type2]->begin(nb_weights_per_pair);
-
-    // Compute the weights
-    for (; first_pair != last_pair; ++first_pair, ++weight_it) {
-      Vector<Real> & weight = *weight_it;
-
-      const IntegrationPoint & q1 = first_pair->first;
-      const IntegrationPoint & q2 = first_pair->second;
-
-      Array<Real> & quad_volumes_1 =
-          quadrature_points_volumes(q1.type, q1.ghost_type);
-      Array<Real> & quad_volumes_2 =
-          quadrature_points_volumes(q2.type, q2.ghost_type);
+  for (auto ghost_type : ghost_types) {
+    foreach_weight(ghost_type, [this, &quadrature_points_volumes](
+                                   const auto & q1, const auto & q2,
+                                   auto & weight) {
+      auto & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
+      auto & quad_volumes_2 = quadrature_points_volumes(q2.type, q2.ghost_type);
 
       Real q1_volume = quad_volumes_1(q1.global_num);
-
+      auto ghost_type2 = q2.ghost_type;
       weight(0) *= 1. / q1_volume;
       if (ghost_type2 != _ghost) {
         Real q2_volume = quad_volumes_2(q2.global_num);
         weight(1) *= 1. / q2_volume;
       }
-    }
+    });
   }
 
   AKANTU_DEBUG_OUT();
@@ -220,43 +233,34 @@ template <class WeightFunction>
 void NonLocalNeighborhood<WeightFunction>::weightedAverageOnNeighbours(
     const ElementTypeMapReal & to_accumulate, ElementTypeMapReal & accumulated,
     UInt nb_degree_of_freedom, const GhostType & ghost_type2) const {
-  AKANTU_DEBUG_IN();
-  std::set<ID>::iterator it = non_local_variables.find(accumulated.getName());
-  /// do averaging only for variables registered in the neighborhood
-  if (it != non_local_variables.end()) {
-    PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-    PairList::const_iterator last_pair = pair_list[ghost_type2].end();
 
-    Array<Real>::vector_iterator weight_it = pair_weight[ghost_type2]->begin(2);
+  auto it = non_local_variables.find(accumulated.getName());
+  // do averaging only for variables registered in the neighborhood
+  if (it == non_local_variables.end())
+    return;
 
-    // Compute the weights
-    for (; first_pair != last_pair; ++first_pair, ++weight_it) {
-      Vector<Real> & weight = *weight_it;
+  foreach_weight(
+      ghost_type2,
+      [ghost_type2, nb_degree_of_freedom, &to_accumulate,
+       &accumulated](const auto & q1, const auto & q2, auto & weight) {
+        const Vector<Real> to_acc_1 =
+            to_accumulate(q1.type, q1.ghost_type)
+                .begin(nb_degree_of_freedom)[q1.global_num];
+        const Vector<Real> to_acc_2 =
+            to_accumulate(q2.type, q2.ghost_type)
+                .begin(nb_degree_of_freedom)[q2.global_num];
+        Vector<Real> acc_1 = accumulated(q1.type, q1.ghost_type)
+                                 .begin(nb_degree_of_freedom)[q1.global_num];
+        Vector<Real> acc_2 = accumulated(q2.type, q2.ghost_type)
+                                 .begin(nb_degree_of_freedom)[q2.global_num];
 
-      const IntegrationPoint & q1 = first_pair->first;
-      const IntegrationPoint & q2 = first_pair->second;
+        acc_1 += weight(0) * to_acc_2;
 
-      const Vector<Real> to_acc_1 =
-          to_accumulate(q1.type, q1.ghost_type)
-              .begin(nb_degree_of_freedom)[q1.global_num];
-      const Vector<Real> to_acc_2 =
-          to_accumulate(q2.type, q2.ghost_type)
-              .begin(nb_degree_of_freedom)[q2.global_num];
-      Vector<Real> acc_1 = accumulated(q1.type, q1.ghost_type)
-                               .begin(nb_degree_of_freedom)[q1.global_num];
-      Vector<Real> acc_2 = accumulated(q2.type, q2.ghost_type)
-                               .begin(nb_degree_of_freedom)[q2.global_num];
-
-      acc_1 += weight(0) * to_acc_2;
-
-      if (ghost_type2 != _ghost) {
-        acc_2 += weight(1) * to_acc_1;
-      }
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-} // namespace akantu
+        if (ghost_type2 != _ghost) {
+          acc_2 += weight(1) * to_acc_1;
+        }
+      });
+}
 
 /* -------------------------------------------------------------------------- */
 template <class WeightFunction>

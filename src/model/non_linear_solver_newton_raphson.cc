@@ -134,8 +134,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     solver_callback.assembleResidual();
 
   if (this->converged) {
-    //    EventManager::sendEvent(
-    //   SolidMechanicsModelEvent::AfterNonLinearSolverSolves(method));
+    // this->sendEvent(NonLinearSolver::ConvergedEvent(method));
   } else if (this->n_iter == this->max_iterations) {
     AKANTU_CUSTOM_EXCEPTION(debug::NLSNotConvergedException(
                                 this->convergence_criteria, this->n_iter, this->error));

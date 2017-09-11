@@ -49,22 +49,20 @@ public:
   CustomNonLocalTestMaterial(SolidMechanicsModel & model, const ID & id);
 
   /* ------------------------------------------------------------------------ */
-  virtual void initMaterial();
+  void initMaterial() override;
 
   void computeNonLocalStress(ElementType el_type, GhostType ghost_type);
-  void computeStress(ElementType el_type, GhostType ghost_type);
-
+  void computeStress(ElementType el_type, GhostType ghost_type) override;
 protected:
+
+  void registerNonLocalVariables() override;
+
   /* ------------------------------------------------------------------------ */
   void computeNonLocalStresses(GhostType ghost_type) {
     AKANTU_DEBUG_IN();
 
-    Mesh::type_iterator it =
-        this->model.getFEEngine().getMesh().firstType(dim, ghost_type);
-    Mesh::type_iterator last_type =
-        this->model.getFEEngine().getMesh().lastType(dim, ghost_type);
-    for (; it != last_type; ++it) {
-      computeNonLocalStress(*it, ghost_type);
+    for (auto & type : this->element_filter.elementTypes(dim, ghost_type)) {
+      computeNonLocalStress(type, ghost_type);
     }
 
     AKANTU_DEBUG_OUT();

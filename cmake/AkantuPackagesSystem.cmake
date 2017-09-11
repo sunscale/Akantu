@@ -207,16 +207,6 @@ function(package_get_element_lists)
     endforeach()
   endif()
 
-#   package_get_all_deactivated_packages(_deactivated_list)
-#   foreach(_pkg_name ${_deactivated_list})
-#     _package_get_variable(ET_KIND ${_pkg_name} _kind)
-#     if(_kind)
-#       string(TOUPPER "${_kind}" _u_kind)
-#       set(_element_kinds "${_element_kinds}
-# #define AKANTU_${_u_kind}_KIND")
-#     endif()
-#   endforeach()
-
   foreach(_list ${_lists})
     string(TOLOWER "${_list}" _l_list)
     set(AKANTU_${_list}_ENUM ${_${_l_list}_enum} PARENT_SCOPE)

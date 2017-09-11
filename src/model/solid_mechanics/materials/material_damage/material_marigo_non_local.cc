@@ -46,20 +46,17 @@ MaterialMarigoNonLocal<spatial_dimension>::MaterialMarigoNonLocal(
   this->is_non_local = true;
   this->Y.initialize(1);
   this->Ynl.initialize(1);
-  this->model.getNonLocalManager()
-      .registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
-void MaterialMarigoNonLocal<spatial_dimension>::initMaterial() {
-  AKANTU_DEBUG_IN();
-  MaterialMarigoNonLocalParent::initMaterial();
+void MaterialMarigoNonLocal<spatial_dimension>::registerNonLocalVariables() {
   this->model.getNonLocalManager()
-      .getNeighborhood(this->name)
-      .registerNonLocalVariable(Ynl.getName());
-  AKANTU_DEBUG_OUT();
+      .registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
+  this->model.getNonLocalManager()
+    .getNeighborhood(this->name)
+    .registerNonLocalVariable(Ynl.getName());
 }
 
 /* -------------------------------------------------------------------------- */

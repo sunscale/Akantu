@@ -29,14 +29,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "dumper_paraview.hh"
-#include "non_local_manager.hh"
-#include "non_local_neighborhood.hh"
-#include "solid_mechanics_model.hh"
-#include "test_material.hh"
+#include "my_model.hh"
+/* -------------------------------------------------------------------------- */
+#include <fstream>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
+
 int main(int argc, char * argv[]) {
   akantu::initialize("material_weight_computation.dat", argc, argv);
 
@@ -48,19 +47,11 @@ int main(int argc, char * argv[]) {
   mesh.read("plate.msh");
 
   /// model creation
-  SolidMechanicsModel model(mesh);
-
-  /// model initialization changed to use our material
-  model.initFull();
-
-  /// dump material index in paraview
-  model.addDumpField("material_index");
-  model.dump();
+  MyModel model(mesh, spatial_dimension);
 
   /// save the weights in a file
-  NonLocalNeighborhood<BaseWeightFunction> & neighborhood =
-    dynamic_cast<NonLocalNeighborhood<BaseWeightFunction> &>(
-        model.getNonLocalManager().getNeighborhood("test_region"));
+  const auto & neighborhood =
+    model.getNonLocalManager().getNeighborhood("test_region");
 
   neighborhood.saveWeights("weights");
   /// print results to screen for validation
@@ -69,6 +60,7 @@ int main(int argc, char * argv[]) {
   std::string current_line;
   while (getline(weights, current_line))
     std::cout << current_line << std::endl;
+
   weights.close();
   finalize();
 

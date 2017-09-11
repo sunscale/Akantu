@@ -77,6 +77,11 @@ public:
   /// callback for the corrector (in case of dynamic simulation)
   virtual void corrector() { }
 
+  /* ------------------------------------------------------------------------ */
+  /* management callbacks                                                     */
+  /* ------------------------------------------------------------------------ */
+  virtual void beforeSolveStep() { };
+  virtual void afterSolveStep() { };
 protected:
   /// DOFManager prefixed to avoid collision in multiple inheritance cases
   DOFManager * sc_dof_manager;
