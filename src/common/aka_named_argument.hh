@@ -22,9 +22,6 @@
 
 namespace akantu {
 
-struct use_named_args_t {};
-extern use_named_args_t use_named_args;
-
 namespace named_argument {
   /* -- Pack utils (proxy version) --------------------------------------------
    */
@@ -57,7 +54,7 @@ namespace named_argument {
   */
   template <typename T, typename head, typename... tail> struct type_at_p {
     enum {
-      _tmp = (std::is_same<T, typename std::decay<head>::type::_tag>::value)
+      _tmp = (std::is_same<T, typename std::decay_t<head>::_tag>::value)
                  ? 0
                  : type_at_p<T, tail...>::_pos
     };
@@ -118,7 +115,12 @@ namespace named_argument {
 
 // CONVENIENCE MACROS FOR CLASS DESIGNERS ==========
 #define TAG_OF_ARGUMENT(_name) p_##_name
-#define TAG_OF_ARGUMENT_WNS(_name) named_argument::TAG_OF_ARGUMENT(_name)
+#define TAG_OF_ARGUMENT_WNS(_name) TAG_OF_ARGUMENT(_name)
+
+#define REQUIRED_NAMED_ARG(_name)                                              \
+  named_argument::get_at<                                                      \
+      named_argument::type_at<TAG_OF_ARGUMENT_WNS(_name), pack...>::_pos,      \
+      0>::get(std::forward<pack>(_pack)...)
 
 #define REQUIRED_NAMED_ARG(_name)                                              \
   named_argument::get_at<                                                      \
@@ -130,29 +132,14 @@ namespace named_argument {
       0>::get(_defaultVal, std::forward<pack>(_pack)...)
 
 #define DECLARE_NAMED_ARGUMENT(name)                                           \
-  namespace named_argument {                                                   \
-    struct TAG_OF_ARGUMENT(name) {};                                           \
-  }                                                                            \
-  extern named_argument::param_proxy<TAG_OF_ARGUMENT_WNS(name)> _##name
+  struct TAG_OF_ARGUMENT(name) {};                                             \
+  named_argument::param_proxy<TAG_OF_ARGUMENT_WNS(name)> _##name               \
+      __attribute__((unused))
 
-#define CREATE_NAMED_ARGUMENT(name)                                            \
-  named_argument::param_proxy<TAG_OF_ARGUMENT_WNS(name)> _##name
-
-DECLARE_NAMED_ARGUMENT(all_ghost_types);
-DECLARE_NAMED_ARGUMENT(default_value);
-DECLARE_NAMED_ARGUMENT(element_kind);
-DECLARE_NAMED_ARGUMENT(ghost_type);
-DECLARE_NAMED_ARGUMENT(nb_component);
-DECLARE_NAMED_ARGUMENT(with_nb_element);
-DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
-DECLARE_NAMED_ARGUMENT(spatial_dimension);
-
-DECLARE_NAMED_ARGUMENT(analysis_method);
-DECLARE_NAMED_ARGUMENT(no_init_materials);
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-DECLARE_NAMED_ARGUMENT(is_extrinsic);
-#endif
+namespace {
+  struct use_named_args_t {};
+  use_named_args_t use_named_args __attribute__((unused));
+} // namespace
 } // namespace akantu
 
 #endif /* __AKANTU_AKA_NAMED_ARGUMENT_HH__ */

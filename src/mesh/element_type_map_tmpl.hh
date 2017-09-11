@@ -572,6 +572,17 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
   }
 }
 
+namespace {
+  DECLARE_NAMED_ARGUMENT(all_ghost_types);
+  DECLARE_NAMED_ARGUMENT(default_value);
+  DECLARE_NAMED_ARGUMENT(element_kind);
+  DECLARE_NAMED_ARGUMENT(ghost_type);
+  DECLARE_NAMED_ARGUMENT(nb_component);
+  DECLARE_NAMED_ARGUMENT(with_nb_element);
+  DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
+  DECLARE_NAMED_ARGUMENT(spatial_dimension);
+} // namespace
+
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
 template <typename... pack>

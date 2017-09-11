@@ -71,6 +71,9 @@ struct FacetsCohesiveIntegrationOrderFunctor {
   }
 };
 
+namespace {
+  DECLARE_NAMED_ARGUMENT(is_extrinsic);
+}
 /* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelCohesiveOptions(

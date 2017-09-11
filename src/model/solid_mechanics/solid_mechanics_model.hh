@@ -58,6 +58,10 @@ template <ElementKind kind> class ShapeLagrange;
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
+namespace {
+DECLARE_NAMED_ARGUMENT(analysis_method);
+}
+
 struct SolidMechanicsModelOptions : public ModelOptions {
   explicit SolidMechanicsModelOptions(
       AnalysisMethod analysis_method = _explicit_lumped_mass);
