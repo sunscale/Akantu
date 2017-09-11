@@ -127,7 +127,7 @@ void ArgumentParser::addArgument(const std::string & name_or_flag,
 ArgumentParser::_Argument &
 ArgumentParser::_addArgument(const std::string & name, const std::string & help,
                              int nargs, ArgumentType type) {
-  _Argument * arg = NULL;
+  _Argument * arg = nullptr;
 
   switch (type) {
   case _string: {
@@ -176,6 +176,7 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
   problem |= ((tmp_keys.size() == 2) && (long_key == -1 || short_key == -1));
 
   if (problem) {
+    delete arg;
     throw std::invalid_argument("Synthax of name or flags is not correct. "
                                 "Possible synthax are \'-f\', \'-f;--foo\', "
                                 "\'--foo\', \'bar\'");
@@ -287,6 +288,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
       break; // "?"
     case _at_least_one:
       min_nb_val = 1; // "+"
+      [[gnu::fallthrough]];
     case _any:
       max_nb_val = argc - current_position;
       break; // "*"
@@ -309,7 +311,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
             argvs_to_remove.push_back(current_position - 1);
         } else {
           // unconsume not parsed argument for optional
-          if (!is_positional || (is_positional && is_key))
+          if (!is_positional || is_key)
             --current_position;
           break;
         }
@@ -433,7 +435,6 @@ void ArgumentParser::printself(std::ostream & stream) const {
 void ArgumentParser::print_usage(std::ostream & stream) const {
   stream << "Usage: " << this->program_name;
 
-  std::stringstream sstr_opt;
   // print shorten usage
   for (_Arguments::const_iterator it = arguments.begin(); it != arguments.end();
        ++it) {
@@ -467,6 +468,7 @@ void ArgumentParser::print_usage_nargs(std::ostream & stream,
     break;
   case _at_least_one:
     stream << " " << u_name;
+    [[gnu::fallthrough]];
   case _any:
     stream << " [" << u_name << " ...]";
     break;

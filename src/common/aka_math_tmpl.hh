@@ -502,7 +502,6 @@ inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
   if (info > 0) {
     AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: " << info
                                                                        << " )");
-    exit(EXIT_FAILURE);
   }
 
   char trans = 'N';
@@ -513,7 +512,6 @@ inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
   aka_getrs(&trans, &N, &nrhs, lu_A, &N, ipiv, x, &N, &info);
   if (info != 0) {
     AKANTU_DEBUG_ERROR("Cannot solve the system (info: " << info << " )");
-    exit(EXIT_FAILURE);
   }
 
   delete[] ipiv;

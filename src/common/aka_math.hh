@@ -269,7 +269,8 @@ public:
   };
 
   struct NewtonRaphsonFunctor {
-    NewtonRaphsonFunctor(std::string name) : name(std::move(name)) {}
+    explicit NewtonRaphsonFunctor(std::string name) : name(std::move(name)) {}
+    virtual ~NewtonRaphsonFunctor() = default;
     virtual Real f(Real x) const = 0;
     virtual Real f_prime(Real x) const = 0;
     std::string name;

@@ -29,10 +29,10 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_error.hh"
 /* -------------------------------------------------------------------------- */
-#include <tuple>
-#include <utility>
 #include <cassert>
 #include <iostream>
+#include <tuple>
+#include <utility>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_ITERATORS_HH__
@@ -133,8 +133,7 @@ namespace tuple {
 namespace iterators {
   namespace details {
     struct dereference_iterator {
-      template <class Iter>
-      decltype(auto) operator()(Iter & it) const {
+      template <class Iter> decltype(auto) operator()(Iter & it) const {
         return std::forward<decltype(*it)>(*it);
       }
     };
@@ -162,6 +161,7 @@ namespace iterators {
   template <class... Iterators> class ZipIterator {
   private:
     using tuple_t = std::tuple<Iterators...>;
+
   public:
     explicit ZipIterator(tuple_t iterators) : iterators(std::move(iterators)) {}
 
@@ -192,7 +192,8 @@ namespace iterators {
 /* -------------------------------------------------------------------------- */
 template <class... Iterators>
 decltype(auto) zip_iterator(std::tuple<Iterators...> && iterators_tuple) {
-  auto zip = iterators::ZipIterator<Iterators...>(std::forward<decltype(iterators_tuple)>(iterators_tuple));
+  auto zip = iterators::ZipIterator<Iterators...>(
+      std::forward<decltype(iterators_tuple)>(iterators_tuple));
   return zip;
 }
 
@@ -236,7 +237,8 @@ namespace containers {
 
 /* -------------------------------------------------------------------------- */
 template <class... Containers> decltype(auto) zip(Containers &&... conts) {
-  return containers::ZipContainer<Containers...>(std::forward<Containers>(conts)...);
+  return containers::ZipContainer<Containers...>(
+      std::forward<Containers>(conts)...);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -246,8 +248,8 @@ namespace iterators {
   template <class T> class ArangeIterator {
   public:
     using value_type = T;
-    using pointer = T*;
-    using reference = T&;
+    using pointer = T *;
+    using reference = T &;
     using iterator_category = std::input_iterator_tag;
 
     constexpr ArangeIterator(T value, T step) : value(value), step(step) {}
@@ -280,7 +282,10 @@ namespace containers {
     using iterator = iterators::ArangeIterator<T>;
 
     constexpr ArangeContainer(T start, T stop, T step = 1)
-    : start(start), stop((stop - start)% step == 0 ? stop : start + (1 + (stop -start)/step)*step), step(step) {}
+        : start(start), stop((stop - start) % step == 0
+                                 ? stop
+                                 : start + (1 + (stop - start) / step) * step),
+          step(step) {}
     explicit constexpr ArangeContainer(T stop) : ArangeContainer(0, stop, 1) {}
 
     constexpr T operator[](size_t i) {
@@ -299,18 +304,18 @@ namespace containers {
   };
 } // namespace containers
 
-template<class T>
-inline decltype(auto) arange(T stop) {
+template <class T> inline decltype(auto) arange(T stop) {
   return containers::ArangeContainer<T>(stop);
 }
 
-template<class T>
+template <class T>
 inline constexpr decltype(auto) arange(T start, T stop, T step = 1) {
   return containers::ArangeContainer<T>(start, stop, step);
 }
 
-template<class Container>
-inline constexpr decltype(auto) enumerate(Container && container, size_t start_ = 0) {
+template <class Container>
+inline constexpr decltype(auto) enumerate(Container && container,
+                                          size_t start_ = 0) {
   auto stop = std::forward<Container>(container).size();
   decltype(stop) start = start_;
   return zip(arange(start, stop), std::forward<Container>(container));
