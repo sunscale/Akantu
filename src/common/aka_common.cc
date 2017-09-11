@@ -65,7 +65,6 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   Tag::setMaxTag(comm.getMaxTag());
 
   debug::debugger.setParallelContext(comm.whoAmI(), comm.getNbProc());
-  debug::initSignalHandler();
   debug::setDebugLevel(dblError);
 
   static_argparser.setParallelContext(comm.whoAmI(), comm.getNbProc());
@@ -111,6 +110,8 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   debug::setDebugLevel(DebugLevel(dbl_level));
 
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
+
+  std::atexit(finalize);
 
   AKANTU_DEBUG_OUT();
 }

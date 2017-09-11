@@ -64,289 +64,292 @@
 #include <mpi.h>
 #endif
 
-#define __BEGIN_AKANTU_DEBUG__                                                 \
-  namespace akantu {                                                           \
-  namespace debug {
-#define __END_AKANTU_DEBUG__                                                   \
-  }                                                                            \
-  }
-
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU_DEBUG__
+namespace akantu {
+namespace debug {
 
-static void printBacktraceAndExit(int sig) {
-  if (debugger.printBacktrace())
-    printBacktrace(sig);
-  debugger.exit(-50);
-}
+  static void printBacktraceAndExit(int) { std::terminate(); }
 
-/* ------------------------------------------------------------------------ */
-void initSignalHandler() {
-  std::signal(SIGSEGV, &printBacktraceAndExit);
-  std::signal(SIGABRT, &printBacktraceAndExit);
-}
+  /* ------------------------------------------------------------------------ */
+  void initSignalHandler() { std::signal(SIGSEGV, &printBacktraceAndExit); }
 
-/* ------------------------------------------------------------------------ */
-std::string demangle(const char * symbol) {
-  int status;
-  std::string result;
-  char * demangled_name;
+  /* ------------------------------------------------------------------------ */
+  std::string demangle(const char * symbol) {
+    int status;
+    std::string result;
+    char * demangled_name;
 
-  if ((demangled_name = abi::__cxa_demangle(symbol, NULL, 0, &status)) !=
-      NULL) {
-    result = demangled_name;
-    free(demangled_name);
-  } else {
-    result = symbol;
+    if ((demangled_name = abi::__cxa_demangle(symbol, NULL, 0, &status)) !=
+        NULL) {
+      result = demangled_name;
+      free(demangled_name);
+    } else {
+      result = symbol;
+    }
+
+    return result;
   }
-
-  return result;
-}
 
 /* ------------------------------------------------------------------------ */
 #if (defined(READLINK_COMMAND) || defined(ADDR2LINK_COMMAND)) &&               \
     (not defined(_WIN32))
-std::string exec(std::string cmd) {
-  FILE * pipe = popen(cmd.c_str(), "r");
-  if (!pipe)
-    return "";
-  char buffer[1024];
-  std::string result = "";
-  while (!feof(pipe)) {
-    if (fgets(buffer, 128, pipe) != NULL)
-      result += buffer;
-  }
+  std::string exec(std::string cmd) {
+    FILE * pipe = popen(cmd.c_str(), "r");
+    if (!pipe)
+      return "";
+    char buffer[1024];
+    std::string result = "";
+    while (!feof(pipe)) {
+      if (fgets(buffer, 128, pipe) != NULL)
+        result += buffer;
+    }
 
-  result = result.substr(0, result.size() - 1);
-  pclose(pipe);
-  return result;
-}
+    result = result.substr(0, result.size() - 1);
+    pclose(pipe);
+    return result;
+  }
 #endif
 
-/* ------------------------------------------------------------------------ */
-void printBacktrace(__attribute__((unused)) int sig) {
-  AKANTU_DEBUG_INFO("Caught  signal " << sig << "!");
+  /* ------------------------------------------------------------------------ */
+  void printBacktrace(__attribute__((unused)) int sig) {
+    AKANTU_DEBUG_INFO("Caught  signal " << sig << "!");
 
 #if not defined(_WIN32)
 #if defined(READLINK_COMMAND) && defined(ADDR2LINE_COMMAND)
-  std::string me = "";
-  char buf[1024];
-  /* The manpage says it won't null terminate.  Let's zero the buffer. */
-  memset(buf, 0, sizeof(buf));
-  /* Note we use sizeof(buf)-1 since we may need an extra char for NUL. */
-  if (readlink("/proc/self/exe", buf, sizeof(buf) - 1))
-    me = std::string(buf);
+    std::string me = "";
+    char buf[1024];
+    /* The manpage says it won't null terminate.  Let's zero the buffer. */
+    memset(buf, 0, sizeof(buf));
+    /* Note we use sizeof(buf)-1 since we may need an extra char for NUL. */
+    if (readlink("/proc/self/exe", buf, sizeof(buf) - 1))
+      me = std::string(buf);
 
-  std::ifstream inmaps;
-  inmaps.open("/proc/self/maps");
-  std::map<std::string, size_t> addr_map;
-  std::string line;
-  while (inmaps.good()) {
-    std::getline(inmaps, line);
-    std::stringstream sstr(line);
+    std::ifstream inmaps;
+    inmaps.open("/proc/self/maps");
+    std::map<std::string, size_t> addr_map;
+    std::string line;
+    while (inmaps.good()) {
+      std::getline(inmaps, line);
+      std::stringstream sstr(line);
 
-    size_t first = line.find('-');
-    std::stringstream sstra(line.substr(0, first));
-    size_t addr;
-    sstra >> std::hex >> addr;
-
-    std::string lib;
-    sstr >> lib;
-    sstr >> lib;
-    sstr >> lib;
-    sstr >> lib;
-    sstr >> lib;
-    sstr >> lib;
-    if (lib != "" && addr_map.find(lib) == addr_map.end()) {
-      addr_map[lib] = addr;
-    }
-  }
-
-  if (me != "")
-    addr_map[me] = 0;
-#endif
-
-  /// \todo for windows this part could be coded using CaptureStackBackTrace and
-  /// SymFromAddr
-
-  const size_t max_depth = 100;
-  size_t stack_depth;
-  void * stack_addrs[max_depth];
-  char ** stack_strings;
-
-  size_t i;
-
-  stack_depth = backtrace(stack_addrs, max_depth);
-  stack_strings = backtrace_symbols(stack_addrs, stack_depth);
-
-  std::cerr << "BACKTRACE :  " << stack_depth << " stack frames." << std::endl;
-  size_t w = size_t(std::floor(log(double(stack_depth)) / std::log(10.)) + 1);
-
-  /// -1 to remove the call to the printBacktrace function
-  for (i = 1; i < stack_depth; i++) {
-    std::cerr << std::dec << "  [" << std::setw(w) << i << "] ";
-    std::string bt_line(stack_strings[i]);
-    size_t first, second;
-
-    if ((first = bt_line.find('(')) != std::string::npos &&
-        (second = bt_line.find('+')) != std::string::npos) {
-      std::string location = bt_line.substr(0, first);
-#if defined(READLINK_COMMAND)
-      location = exec(std::string(BOOST_PP_STRINGIZE(READLINK_COMMAND)) +
-                      std::string(" -f ") + location);
-#endif
-      std::string call =
-          demangle(bt_line.substr(first + 1, second - first - 1).c_str());
-      size_t f = bt_line.find('[');
-      size_t s = bt_line.find(']');
-      std::string address = bt_line.substr(f + 1, s - f - 1);
-      std::stringstream sstra(address);
+      size_t first = line.find('-');
+      std::stringstream sstra(line.substr(0, first));
       size_t addr;
       sstra >> std::hex >> addr;
 
-      std::cerr << location << " [" << call << "]";
+      std::string lib;
+      sstr >> lib; sstr >> lib;
+      sstr >> lib; sstr >> lib;
+      sstr >> lib; sstr >> lib;
+      if (lib != "" && addr_map.find(lib) == addr_map.end()) {
+        addr_map[lib] = addr;
+      }
+    }
+
+    if (me != "")
+      addr_map[me] = 0;
+#endif
+
+    /// \todo for windows this part could be coded using CaptureStackBackTrace
+    /// and SymFromAddr
+    const size_t max_depth = 100;
+    size_t stack_depth;
+    void * stack_addrs[max_depth];
+    char ** stack_strings;
+
+    size_t i;
+    stack_depth = backtrace(stack_addrs, max_depth);
+    stack_strings = backtrace_symbols(stack_addrs, stack_depth);
+
+    std::cerr << "BACKTRACE :  " << stack_depth << " stack frames."
+              << std::endl;
+    size_t w = size_t(std::floor(log(double(stack_depth)) / std::log(10.)) + 1);
+
+    /// -1 to remove the call to the printBacktrace function
+    for (i = 1; i < stack_depth; i++) {
+      std::cerr << std::dec << "  [" << std::setw(w) << i << "] ";
+      std::string bt_line(stack_strings[i]);
+      size_t first, second;
+
+      if ((first = bt_line.find('(')) != std::string::npos &&
+          (second = bt_line.find('+')) != std::string::npos) {
+        std::string location = bt_line.substr(0, first);
+#if defined(READLINK_COMMAND)
+        location = exec(std::string(BOOST_PP_STRINGIZE(READLINK_COMMAND)) +
+                        std::string(" -f ") + location);
+#endif
+        std::string call =
+            demangle(bt_line.substr(first + 1, second - first - 1).c_str());
+        size_t f = bt_line.find('[');
+        size_t s = bt_line.find(']');
+        std::string address = bt_line.substr(f + 1, s - f - 1);
+        std::stringstream sstra(address);
+        size_t addr;
+        sstra >> std::hex >> addr;
+
+        std::cerr << location << " [" << call << "]";
 
 #if defined(READLINK_COMMAND) && defined(ADDR2LINE_COMMAND)
-      std::map<std::string, size_t>::iterator it = addr_map.find(location);
-      if (it != addr_map.end()) {
-        std::stringstream syscom;
-        syscom << BOOST_PP_STRINGIZE(ADDR2LINE_COMMAND) << " 0x" << std::hex
-               << (addr - it->second) << " -i -e " << location;
-        std::string line = exec(syscom.str());
-        std::cerr << " (" << line << ")" << std::endl;
-      } else {
+        std::map<std::string, size_t>::iterator it = addr_map.find(location);
+        if (it != addr_map.end()) {
+          std::stringstream syscom;
+          syscom << BOOST_PP_STRINGIZE(ADDR2LINE_COMMAND) << " 0x" << std::hex
+                 << (addr - it->second) << " -i -e " << location;
+          std::string line = exec(syscom.str());
+          std::cerr << " (" << line << ")" << std::endl;
+        } else {
 #endif
-        std::cerr << " (0x" << std::hex << addr << ")" << std::endl;
+          std::cerr << " (0x" << std::hex << addr << ")" << std::endl;
 #if defined(READLINK_COMMAND) && defined(ADDR2LINE_COMMAND)
-      }
+        }
 #endif
-    } else {
-      std::cerr << bt_line << std::endl;
+      } else {
+        std::cerr << bt_line << std::endl;
+      }
+    }
+
+    free(stack_strings);
+
+    std::cerr << "END BACKTRACE" << std::endl;
+#endif
+  }
+
+  /* ------------------------------------------------------------------------ */
+  namespace {
+    void terminate_handler() {
+      auto eptr = std::current_exception();
+      auto t = abi::__cxa_current_exception_type();
+      auto name = t ? demangle(t->name()) : std::string("unknown");
+      try {
+        if (eptr)
+          std::rethrow_exception(eptr);
+        else
+          std::cerr << "!! Execution terminated for unknown reasons !!"
+                    << std::endl;
+      } catch (std::exception & e) {
+        std::cerr << "!! Uncaught exception of type " << name
+                  << " !!\nwhat(): \"" << e.what() << "\"" << std::endl;
+      } catch (...) {
+        std::cerr << "!! Something strange of type \"" << name
+                  << "\" was thrown.... !!" << std::endl;
+      }
+
+      if (debugger.printBacktrace())
+        printBacktrace(15);
+    }
+  } // namespace
+  /* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
+  Debugger::Debugger() {
+    cout = &std::cerr;
+    level = dblWarning;
+    parallel_context = "";
+    file_open = false;
+    print_backtrace = false;
+
+    initSignalHandler();
+    std::set_terminate(terminate_handler);
+  }
+
+  /* ------------------------------------------------------------------------ */
+  Debugger::~Debugger() {
+    if (file_open) {
+      dynamic_cast<std::ofstream *>(cout)->close();
+      delete cout;
     }
   }
 
-  free(stack_strings);
+  /* ------------------------------------------------------------------------ */
+  void Debugger::exit(int status) {
+    if (status != 0)
+      std::terminate();
 
-  std::cerr << "END BACKTRACE" << std::endl;
-#endif
-}
-
-/* ------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------ */
-Debugger::Debugger() {
-  cout = &std::cerr;
-  level = dblWarning;
-  parallel_context = "";
-  file_open = false;
-  print_backtrace = false;
-}
-
-/* ------------------------------------------------------------------------ */
-Debugger::~Debugger() {
-  if (file_open) {
-    dynamic_cast<std::ofstream *>(cout)->close();
-    delete cout;
-  }
-}
-
-/* ------------------------------------------------------------------------ */
-void Debugger::exit(int status) {
-  if (status != EXIT_SUCCESS && status != -50) {
-#ifndef AKANTU_NDEBUG
-    int * a = NULL;
-    *a = 1;
-#endif
-    if (this->print_backtrace)
-      akantu::debug::printBacktrace(15);
+    std::exit(0);
   }
 
-#ifdef AKANTU_USE_MPI
-  if (status != EXIT_SUCCESS)
-    MPI_Abort(MPI_COMM_WORLD, MPI_ERR_UNKNOWN);
-#endif
-
-  std::exit(
-      status); // not  called when compiled  with MPI  due to  MPI_Abort, but
-  // MPI_Abort does not have the noreturn attribute
-}
-
-/*------------------------------------------------------------------------- */
-void Debugger::throwException(const std::string & info,
-                              const std::string & file, unsigned int line,
-                              __attribute__((unused)) bool silent,
-                              __attribute__((unused))
-                              const std::string & location) const
-    noexcept(false) {
+  /*------------------------------------------------------------------------- */
+  void Debugger::throwException(const std::string & info,
+                                const std::string & file, unsigned int line,
+                                __attribute__((unused)) bool silent,
+                                __attribute__((unused))
+                                const std::string & location) const
+      noexcept(false) {
 
 #if !defined(AKANTU_NDEBUG)
-  if (!silent) {
-    printMessage("###", dblWarning, info + location);
-  }
+    if (!silent) {
+      printMessage("###", dblWarning, info + location);
+    }
 #endif
 
-  debug::Exception ex(info, file, line);
-  throw ex;
-}
+    debug::Exception ex(info, file, line);
+    throw ex;
+  }
 
-/* ------------------------------------------------------------------------ */
-void Debugger::printMessage(const std::string & prefix,
-                            const DebugLevel & level,
-                            const std::string & info) const {
-  if (this->level >= level) {
+  /* ------------------------------------------------------------------------ */
+  void Debugger::printMessage(const std::string & prefix,
+                              const DebugLevel & level,
+                              const std::string & info) const {
+    if (this->level >= level) {
 #if defined(AKANTU_CORE_CXX11)
-    double timestamp =
-        std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(
-            std::chrono::system_clock::now().time_since_epoch())
-            .count();
+      double timestamp =
+          std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(
+              std::chrono::system_clock::now().time_since_epoch())
+              .count();
 #elif defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    double timestamp = time.tv_sec * 1e6 + time.tv_usec; /*in us*/
+      struct timeval time;
+      gettimeofday(&time, NULL);
+      double timestamp = time.tv_sec * 1e6 + time.tv_usec; /*in us*/
 #else
-    struct timespec time;
-    clock_gettime(CLOCK_REALTIME_COARSE, &time);
-    double timestamp = time.tv_sec * 1e6 + time.tv_nsec * 1e-3; /*in us*/
+      struct timespec time;
+      clock_gettime(CLOCK_REALTIME_COARSE, &time);
+      double timestamp = time.tv_sec * 1e6 + time.tv_nsec * 1e-3; /*in us*/
 #endif
-    *(cout) << parallel_context << "{" << (size_t)timestamp << "} " << prefix
-            << " " << info << std::endl;
-  }
-}
-
-/* ------------------------------------------------------------------------ */
-void Debugger::setDebugLevel(const DebugLevel & level) { this->level = level; }
-
-/* ------------------------------------------------------------------------ */
-const DebugLevel & Debugger::getDebugLevel() const { return this->level; }
-
-/* ------------------------------------------------------------------------ */
-void Debugger::setLogFile(const std::string & filename) {
-  if (file_open) {
-    dynamic_cast<std::ofstream *>(cout)->close();
-    delete cout;
+      *(cout) << parallel_context << "{" << (size_t)timestamp << "} " << prefix
+              << " " << info << std::endl;
+    }
   }
 
-  std::ofstream * fileout = new std::ofstream(filename.c_str());
-  file_open = true;
-  cout = fileout;
-}
+  /* ------------------------------------------------------------------------ */
+  void Debugger::setDebugLevel(const DebugLevel & level) {
+    this->level = level;
+  }
 
-std::ostream & Debugger::getOutputStream() { return *cout; }
+  /* ------------------------------------------------------------------------ */
+  const DebugLevel & Debugger::getDebugLevel() const { return this->level; }
 
-/* ------------------------------------------------------------------------ */
-void Debugger::setParallelContext(int rank, int size) {
-  std::stringstream sstr;
-  UInt pad = std::ceil(std::log10(size));
-  sstr << "<" << getpid() << ">[R" << std::setfill(' ') << std::right
-       << std::setw(pad) << rank << "|S" << size << "] ";
-  parallel_context = sstr.str();
-}
+  /* ------------------------------------------------------------------------ */
+  void Debugger::setLogFile(const std::string & filename) {
+    if (file_open) {
+      dynamic_cast<std::ofstream *>(cout)->close();
+      delete cout;
+    }
 
-void setDebugLevel(const DebugLevel & level) { debugger.setDebugLevel(level); }
+    std::ofstream * fileout = new std::ofstream(filename.c_str());
+    file_open = true;
+    cout = fileout;
+  }
 
-const DebugLevel & getDebugLevel() { return debugger.getDebugLevel(); }
+  std::ostream & Debugger::getOutputStream() { return *cout; }
 
-/* -------------------------------------------------------------------------- */
-void exit(int status) { debugger.exit(status); }
+  /* ------------------------------------------------------------------------ */
+  void Debugger::setParallelContext(int rank, int size) {
+    std::stringstream sstr;
+    UInt pad = std::ceil(std::log10(size));
+    sstr << "<" << getpid() << ">[R" << std::setfill(' ') << std::right
+         << std::setw(pad) << rank << "|S" << size << "] ";
+    parallel_context = sstr.str();
+  }
 
-__END_AKANTU_DEBUG__
+  void setDebugLevel(const DebugLevel & level) {
+    debugger.setDebugLevel(level);
+  }
+
+  const DebugLevel & getDebugLevel() { return debugger.getDebugLevel(); }
+
+  /* --------------------------------------------------------------------------
+   */
+  void exit(int status) { debugger.exit(status); }
+
+} // namespace debug
+} // namespace akantu

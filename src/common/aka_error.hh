@@ -95,7 +95,8 @@ namespace debug {
     /* Constructors/Destructors                                               */
     /* ---------------------------------------------------------------------- */
   protected:
-    Exception(std::string info = "") : _info(std::move(info)), _file("") {}
+    explicit Exception(std::string info = "")
+        : _info(std::move(info)), _file("") {}
 
   public:
     //! full constructor
@@ -125,16 +126,20 @@ namespace debug {
     /* ---------------------------------------------------------------------- */
     /* Class Members                                                          */
     /* ---------------------------------------------------------------------- */
-  private:
+  protected:
     /// exception description and additionals
     std::string _info;
 
+  private:
     /// file it is thrown from
     std::string _file;
 
     /// ligne it is thrown from
     unsigned int _line{0};
   };
+
+  class CriticalError : public Exception {};
+  class AssertException : public Exception {};
 
   /// standard output stream operator
   inline std::ostream & operator<<(std::ostream & stream,
@@ -149,6 +154,8 @@ namespace debug {
   public:
     Debugger();
     virtual ~Debugger();
+    Debugger(const Debugger &) = default;
+    Debugger & operator=(const Debugger &) = default;
 
     void exit(int status) __attribute__((noreturn));
 
@@ -250,7 +257,8 @@ namespace debug {
 #define AKANTU_DEBUG_WARNING(info)
 #define AKANTU_DEBUG_TRACE(info)
 #define AKANTU_DEBUG_ASSERT(test, info)
-#define AKANTU_DEBUG_ERROR(info) AKANTU_EXCEPTION(info)
+#define AKANTU_DEBUG_ERROR(info)                                               \
+  AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::CriticalError(), info)
 #define AKANTU_DEBUG_TO_IMPLEMENT() ::akantu::debug::debugger.exit(EXIT_FAILURE)
 
 /* -------------------------------------------------------------------------- */
@@ -284,17 +292,15 @@ namespace debug {
 
 #define AKANTU_DEBUG_ASSERT(test, info)                                        \
   do {                                                                         \
-    if (!(test)) {                                                             \
-      AKANTU_DEBUG_("!!! ", ::akantu::dblAssert,                               \
-                    "assert [" << #test << "] " << info);                      \
-      ::akantu::debug::debugger.exit(EXIT_FAILURE);                            \
-    }                                                                          \
+    if (not (test))                                                     \
+      AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::AssertException(),         \
+                                   "assert [" << #test << "] " << info);       \
   } while (false)
 
 #define AKANTU_DEBUG_ERROR(info)                                               \
   do {                                                                         \
     AKANTU_DEBUG_("!!! ", ::akantu::dblError, info);                           \
-    ::akantu::debug::debugger.exit(EXIT_FAILURE);                              \
+    std::terminate();                                                          \
   } while (false)
 
 #define AKANTU_DEBUG_TO_IMPLEMENT()                                            \
