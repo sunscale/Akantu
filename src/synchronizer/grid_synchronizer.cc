@@ -46,24 +46,24 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class E>
-void GridSynchronizer::createGridSynchronizer(
-    const SpatialGrid<E> & grid) {
+void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
   AKANTU_DEBUG_IN();
 
   const StaticCommunicator & comm = this->mesh.getCommunicator();
   UInt nb_proc = comm.getNbProc();
   UInt my_rank = comm.whoAmI();
 
-  if (nb_proc == 1) return;
+  if (nb_proc == 1)
+    return;
 
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   Tensor3<Real> bounding_boxes(spatial_dimension, 2, nb_proc);
   Matrix<Real> my_bounding_box = bounding_boxes(my_rank);
 
-  const Vector<Real> & lower = grid.getLowerBounds();
-  const Vector<Real> & upper = grid.getUpperBounds();
-  const Vector<Real> & spacing = grid.getSpacing();
+  const auto & lower = grid.getLowerBounds();
+  const auto & upper = grid.getUpperBounds();
+  const auto & spacing = grid.getSpacing();
 
   Vector<Real>(my_bounding_box(0)) = lower - spacing;
   Vector<Real>(my_bounding_box(1)) = upper + spacing;
@@ -302,9 +302,9 @@ void GridSynchronizer::createGridSynchronizer(
   /**
    * Receives the connectivity and store them in the ghosts elements
    */
-  auto & global_nodes_ids = const_cast<Array<UInt> &>(mesh.getGlobalNodesIds());
-  auto & nodes_type = const_cast<Array<NodeType> &>(
-      const_cast<const Mesh &>(mesh).getNodesType());
+  MeshAccessor mesh_accessor(mesh);
+  auto & global_nodes_ids = mesh_accessor.getNodesGlobalIds();
+  auto & nodes_type = mesh_accessor.getNodesType();
 
   std::vector<CommunicationRequest> isend_nodes_requests;
   Vector<UInt> nb_nodes_to_recv(nb_proc);
@@ -327,9 +327,9 @@ void GridSynchronizer::createGridSynchronizer(
 
     auto & scheme = this->getCommunications().createRecvScheme(p);
 
-    ask_nodes_per_proc.emplace(
-        std::piecewise_construct, std::forward_as_tuple(p),
-        std::forward_as_tuple(0));
+    ask_nodes_per_proc.emplace(std::piecewise_construct,
+                               std::forward_as_tuple(p),
+                               std::forward_as_tuple(0));
 
     auto & ask_nodes = ask_nodes_per_proc[p];
     UInt count = 0;
@@ -339,73 +339,78 @@ void GridSynchronizer::createGridSynchronizer(
       Vector<UInt> info(2);
       comm.receive(info, p, Tag::genTag(p, count, SIZE_TAG));
 
-      type = (ElementType) info[0];
+      type = (ElementType)info[0];
 
-      if (type != _not_defined) {
-        UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
-        UInt nb_element = info[1] / nb_nodes_per_element;
+      if (type == _not_defined)
+        break;
 
-        Array<UInt> tmp_conn(nb_element, nb_nodes_per_element);
-        tmp_conn.clear();
-        if (info[1] != 0)
-          comm.receive<UInt>(tmp_conn, p, Tag::genTag(p, count, DATA_TAG));
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+      UInt nb_element = info[1] / nb_nodes_per_element;
 
-        AKANTU_DEBUG_INFO("I will receive "
-                          << nb_element << " elements of type "
-                          << ElementType(info[0]) << " from processor " << p
-                          << " (communication tag : "
-                          << Tag::genTag(p, count, DATA_TAG) << ")");
+      Array<UInt> tmp_conn(nb_element, nb_nodes_per_element);
+      tmp_conn.clear();
+      if (info[1] != 0)
+        comm.receive<UInt>(tmp_conn, p, Tag::genTag(p, count, DATA_TAG));
 
-        auto & ghost_connectivity =
-            const_cast<Array<UInt> &>(mesh.getConnectivity(type, _ghost));
+      AKANTU_DEBUG_INFO("I will receive "
+                        << nb_element << " elements of type "
+                        << ElementType(info[0]) << " from processor " << p
+                        << " (communication tag : "
+                        << Tag::genTag(p, count, DATA_TAG) << ")");
 
-        UInt nb_ghost_element = ghost_connectivity.size();
-        Element element(type, 0, _ghost);
+      auto & ghost_connectivity = mesh_accessor.getConnectivity(type, _ghost);
+      auto & ghost_counter = mesh_accessor.getGhostsCounters(type, _ghost);
 
-        Vector<UInt> conn(nb_nodes_per_element);
-        for (UInt el = 0; el < nb_element; ++el) {
-          UInt nb_node_to_ask_for_elem = 0;
+      UInt nb_ghost_element = ghost_connectivity.size();
+      Element element(type, 0, _ghost);
 
-          for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-            UInt gn = tmp_conn(el, n);
-            UInt ln = global_nodes_ids.find(gn);
+      Vector<UInt> conn(nb_nodes_per_element);
+      for (UInt el = 0; el < nb_element; ++el) {
+        UInt nb_node_to_ask_for_elem = 0;
 
-            AKANTU_DEBUG_ASSERT(gn < mesh.getNbGlobalNodes(),
-                                "This global node seems not correct "
-                                    << gn << " from element " << el << " node "
-                                    << n);
+        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+          UInt gn = tmp_conn(el, n);
+          UInt ln = global_nodes_ids.find(gn);
 
-            if (ln == UInt(-1)) {
-              global_nodes_ids.push_back(gn);
-              nodes_type.push_back(_nt_pure_gost); // pure ghost node
-              ln = nb_current_nodes;
+          AKANTU_DEBUG_ASSERT(gn < mesh.getNbGlobalNodes(),
+                              "This global node seems not correct "
+                                  << gn << " from element " << el << " node "
+                                  << n);
 
-              new_nodes.getList().push_back(ln);
-              ++nb_current_nodes;
-              ask_nodes.push_back(gn);
-              ++nb_node_to_ask_for_elem;
-            }
-            conn[n] = ln;
+          if (ln == UInt(-1)) {
+            global_nodes_ids.push_back(gn);
+            nodes_type.push_back(_nt_pure_gost); // pure ghost node
+            ln = nb_current_nodes;
+
+            new_nodes.getList().push_back(ln);
+            ++nb_current_nodes;
+            ask_nodes.push_back(gn);
+            ++nb_node_to_ask_for_elem;
           }
-
-          // all the nodes are already known locally, the element should
-          // already exists
-          auto c = UInt(-1);
-          if (nb_node_to_ask_for_elem == 0) {
-            c = ghost_connectivity.find(conn);
-            element.element = c;
-          }
-
-          if (c == UInt(-1)) {
-            element.element = nb_ghost_element;
-            ++nb_ghost_element;
-            ghost_connectivity.push_back(conn);
-            new_elements.getList().push_back(element);
-          }
-
-          scheme.push_back(element);
+          conn[n] = ln;
         }
+
+        // all the nodes are already known locally, the element should
+        // already exists
+        auto c = UInt(-1);
+        if (nb_node_to_ask_for_elem == 0) {
+          c = ghost_connectivity.find(conn);
+          element.element = c;
+        }
+
+        if (c == UInt(-1)) {
+          element.element = nb_ghost_element;
+          ++nb_ghost_element;
+          ghost_connectivity.push_back(conn);
+          ghost_counter.push_back(1);
+          new_elements.getList().push_back(element);
+        } else {
+          ++ghost_counter(c);
+        }
+
+        scheme.push_back(element);
       }
+
       count++;
     } while (type != _not_defined);
 
@@ -462,9 +467,9 @@ void GridSynchronizer::createGridSynchronizer(
     nb_nodes_to_send--;
     asked_nodes.resize(nb_nodes_to_send);
 
-    nodes_to_send_per_proc.emplace(
-        std::piecewise_construct, std::forward_as_tuple(p),
-        std::forward_as_tuple(0, spatial_dimension));
+    nodes_to_send_per_proc.emplace(std::piecewise_construct,
+                                   std::forward_as_tuple(p),
+                                   std::forward_as_tuple(0, spatial_dimension));
 
     auto & nodes_to_send = nodes_to_send_per_proc[p];
     auto node_it = nodes.begin(spatial_dimension);

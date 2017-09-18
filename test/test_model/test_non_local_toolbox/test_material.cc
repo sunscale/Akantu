@@ -46,7 +46,7 @@ void TestMaterial<dim>::registerNonLocalVariables() {
   this->model.getNonLocalManager().registerNonLocalVariable(
       this->gradu.getName(), grad_u_nl.getName(), dim * dim);
 
-  this->model.getNonLocalManager().getNeighborhood("test_region")
+  this->model.getNonLocalManager().getNeighborhood(this->getNeighborhoodName())
       .registerNonLocalVariable(grad_u_nl.getName());
 }
 

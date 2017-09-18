@@ -33,10 +33,10 @@
 /* -------------------------------------------------------------------------- */
 #include "boundary_condition.hh"
 #include "data_accessor.hh"
+#include "fe_engine.hh"
 #include "model.hh"
 #include "non_local_manager.hh"
 #include "solid_mechanics_model_event_handler.hh"
-#include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
 //#include "integrator_gauss.hh"
 //#include "shape_lagrange.hh"
@@ -59,7 +59,7 @@ template <ElementKind kind> class ShapeLagrange;
 namespace akantu {
 
 namespace {
-DECLARE_NAMED_ARGUMENT(analysis_method);
+  DECLARE_NAMED_ARGUMENT(analysis_method);
 }
 
 struct SolidMechanicsModelOptions : public ModelOptions {
@@ -246,6 +246,8 @@ protected:
   /* NonLocalManager inherited members                                        */
   /* ------------------------------------------------------------------------ */
 protected:
+  void initializeNonLocal() override;
+
   void updateDataForNonLocalCriterion(ElementTypeMapReal & criterion) override;
 
   void computeNonLocalStresses(const GhostType & ghost_type) override;
@@ -267,25 +269,23 @@ protected:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline UInt getNbData(const Array<Element> & elements,
-                        const SynchronizationTag & tag) const override;
+  UInt getNbData(const Array<Element> & elements,
+                 const SynchronizationTag & tag) const override;
 
-  inline void packData(CommunicationBuffer & buffer,
-                       const Array<Element> & elements,
-                       const SynchronizationTag & tag) const override;
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                const SynchronizationTag & tag) const override;
 
-  inline void unpackData(CommunicationBuffer & buffer,
-                         const Array<Element> & elements,
-                         const SynchronizationTag & tag) override;
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                  const SynchronizationTag & tag) override;
 
-  inline UInt getNbData(const Array<UInt> & dofs,
-                        const SynchronizationTag & tag) const override;
+  UInt getNbData(const Array<UInt> & dofs,
+                 const SynchronizationTag & tag) const override;
 
-  inline void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
-                       const SynchronizationTag & tag) const override;
+  void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+                const SynchronizationTag & tag) const override;
 
-  inline void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
-                         const SynchronizationTag & tag) override;
+  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+                  const SynchronizationTag & tag) override;
 
 protected:
   inline void splitElementByMaterial(const Array<Element> & elements,

@@ -33,9 +33,9 @@
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
+#include "aka_iterators.hh"
 #include "mpi_type_wrapper.hh"
 #include "static_communicator_mpi.hh"
-
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -225,18 +225,19 @@ void StaticCommunicatorMPI::waitAll(
 UInt StaticCommunicatorMPI::waitAny(
     std::vector<CommunicationRequest> & requests) {
   MPI_Status status;
-  std::vector<MPI_Request> reqs(requests.size());
-  UInt r = 0;
-  for (auto it = requests.begin(); it != requests.end(); ++it, ++r) {
-    reqs[r] = static_cast<CommunicationRequestMPI *>(&it->getInternal())
-                  ->getMPIRequest();
+  std::vector<MPI_Request> mpi_requests(requests.size());
+
+  for (auto && request_pair : zip(requests, mpi_requests)) {
+    auto && req = std::get<0>(request_pair);
+    auto && mpi_req = std::get<1>(request_pair);
+    mpi_req = dynamic_cast<CommunicationRequestMPI &>(req.getInternal()).getMPIRequest();
   }
 
   int pos;
 #if !defined(AKANTU_NDEBUG)
   int ret =
 #endif
-      MPI_Waitany(requests.size(), reqs.data(), &pos, &status);
+      MPI_Waitany(mpi_requests.size(), mpi_requests.data(), &pos, &status);
   AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Wait.");
 
   if (pos != MPI_UNDEFINED) {
@@ -482,14 +483,15 @@ MPI_Datatype MPITypeWrapper::getMPIDatatype<SCMinMaxLoc<float, int>>() {
   return MPI_FLOAT_INT;
 }
 
-template <>
-MPI_Datatype MPITypeWrapper::getMPIDatatype<bool>() {
+template <> MPI_Datatype MPITypeWrapper::getMPIDatatype<bool>() {
   return MPI_CXX_BOOL;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Template instantiation                                                     */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Template instantiation */
+  /* --------------------------------------------------------------------------
+   */
 
 #define AKANTU_MPI_COMM_INSTANTIATE(T)                                         \
   template void StaticCommunicatorMPI::send<T>(T * buffer, Int size,           \
@@ -554,4 +556,4 @@ template void StaticCommunicatorMPI::allReduce<SCMinMaxLoc<Real, int>>(
 AKANTU_MPI_COMM_INSTANTIATE(int);
 #endif
 
-} // akantu
+} // namespace akantu

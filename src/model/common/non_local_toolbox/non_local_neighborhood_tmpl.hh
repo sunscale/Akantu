@@ -270,7 +270,7 @@ void NonLocalNeighborhood<WeightFunction>::updateWeights() {
       (this->non_local_manager.getNbStressCalls() %
            this->weight_function->getUpdateRate() ==
        0)) {
-    this->synchronize(_gst_mnl_weight);
+    SynchronizerRegistry::synchronize(_gst_mnl_weight);
     this->computeWeights();
   }
 }

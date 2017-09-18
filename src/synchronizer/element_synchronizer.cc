@@ -46,21 +46,15 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-#if defined(AKANTU_DEBUG_TOOLS)
-#include "aka_debug_tools.hh"
-#endif
-
-/* -------------------------------------------------------------------------- */
-
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-ElementSynchronizer::ElementSynchronizer(Mesh & mesh,
-                                         const ID & id, MemoryID memory_id,
+ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
+                                         MemoryID memory_id,
                                          bool register_to_event_manager,
                                          EventHandlerPriority event_priority)
-    : SynchronizerImpl<Element>(id, memory_id, mesh.getCommunicator()), mesh(mesh),
-      prank_to_element("prank_to_element", id, memory_id) {
+    : SynchronizerImpl<Element>(id, memory_id, mesh.getCommunicator()),
+      mesh(mesh), prank_to_element("prank_to_element", id, memory_id) {
 
   AKANTU_DEBUG_IN();
 
@@ -76,37 +70,27 @@ ElementSynchronizer::~ElementSynchronizer() = default;
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::substituteElements(
     const std::map<Element, Element> & old_to_new_elements) {
+  auto found_element_end =
+    old_to_new_elements.end();
+
   // substitute old elements with new ones
-
-  auto subsitute =
-      [&old_to_new_elements](Communications<Element>::scheme_iterator it,
-                             Communications<Element>::scheme_iterator end) {
-        std::map<Element, Element>::const_iterator found_element_it;
-        std::map<Element, Element>::const_iterator found_element_end =
-            old_to_new_elements.end();
-
-        for (; it != end; ++it) {
-          Array<Element> & list = it->second;
-          for (UInt el = 0; el < list.size(); ++el) {
-            found_element_it = old_to_new_elements.find(list(el));
-            if (found_element_it != found_element_end)
-              list(el) = found_element_it->second;
-          }
-        }
-      };
-
-  subsitute(communications.begin_recv_scheme(),
-            communications.end_recv_scheme());
-  subsitute(communications.begin_send_scheme(),
-            communications.end_send_scheme());
+  for (auto && sr : iterate_send_recv) {
+    for (auto && scheme_pair : communications.iterateSchemes(sr)) {
+      auto & list = scheme_pair.second;
+      for (auto & el : list) {
+        auto found_element_it = old_to_new_elements.find(el);
+        if (found_element_it != found_element_end)
+          el = found_element_it->second;
+      }
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::onElementsChanged(
     const Array<Element> & old_elements_list,
-    const Array<Element> & new_elements_list,
-    __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const ChangedElementsEvent & event) {
+    const Array<Element> & new_elements_list, const ElementTypeMapArray<UInt> &,
+    const ChangedElementsEvent &) {
   // create a map to link old elements to new ones
   std::map<Element, Element> old_to_new_elements;
 
@@ -125,10 +109,12 @@ void ElementSynchronizer::onElementsChanged(
 void ElementSynchronizer::onElementsRemoved(
     const Array<Element> & element_to_remove,
     const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const RemovedElementsEvent & event) {
+    const RemovedElementsEvent &) {
   AKANTU_DEBUG_IN();
+
   this->removeElements(element_to_remove);
   this->renumberElements(new_numbering);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -139,14 +125,11 @@ void ElementSynchronizer::buildPrankToElement() {
   UInt spatial_dimension = mesh.getSpatialDimension();
   prank_to_element.initialize(mesh, _spatial_dimension = spatial_dimension,
                               _element_kind = _ek_not_defined,
-                              _with_nb_element = true,
-                              _default_value = rank);
+                              _with_nb_element = true, _default_value = rank);
 
   /// assign prank to all ghost elements
-  Communications<Element>::scheme_iterator recv_it =
-      communications.begin_recv_scheme();
-  Communications<Element>::scheme_iterator recv_end =
-      communications.end_recv_scheme();
+  auto recv_it = communications.begin_recv_scheme();
+  auto recv_end = communications.end_recv_scheme();
   for (; recv_it != recv_end; ++recv_it) {
     auto & recv = recv_it->second;
     auto proc = recv_it->first;
@@ -166,14 +149,11 @@ void ElementSynchronizer::filterElementsByKind(
   AKANTU_DEBUG_IN();
 
   auto filter_list = [&kind](Array<Element> & list, Array<Element> & new_list) {
+    auto copy = list;
     list.resize(0);
     new_list.resize(0);
 
-    Array<Element> copy = list;
-    Array<Element>::const_scalar_iterator it = copy.begin();
-    Array<Element>::const_scalar_iterator end = copy.end();
-    for (; it != end; ++it) {
-      const Element & el = *it;
+    for (auto && el : copy) {
       if (el.kind == kind) {
         new_list.push_back(el);
       } else {
@@ -182,30 +162,14 @@ void ElementSynchronizer::filterElementsByKind(
     }
   };
 
-  Communications<Element>::scheme_iterator recv_it =
-      communications.begin_recv_scheme();
-  Communications<Element>::scheme_iterator recv_end =
-      communications.end_recv_scheme();
-  for (; recv_it != recv_end; ++recv_it) {
-    UInt proc = recv_it->first;
-    Array<Element> & recv = recv_it->second;
-    Array<Element> & new_recv =
-        new_synchronizer->communications.createRecvScheme(proc);
-
-    filter_list(recv, new_recv);
-  }
-
-  Communications<Element>::scheme_iterator send_it =
-      communications.begin_send_scheme();
-  Communications<Element>::scheme_iterator send_end =
-      communications.end_send_scheme();
-  for (; send_it != send_end; ++send_it) {
-    UInt proc = send_it->first;
-    Array<Element> & send = send_it->second;
-    Array<Element> & new_send =
-        new_synchronizer->communications.createSendScheme(proc);
-
-    filter_list(send, new_send);
+  for (auto && sr : iterate_send_recv) {
+    for (auto && scheme_pair : communications.iterateSchemes(sr)) {
+      auto proc = scheme_pair.first;
+      auto & scheme = scheme_pair.second;
+      auto & new_scheme =
+          new_synchronizer->communications.createScheme(proc, sr);
+      filter_list(scheme, new_scheme);
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -238,39 +202,32 @@ void ElementSynchronizer::removeElements(
   };
 
   // Handling ghost elements
-  Communications<Element>::scheme_iterator recv_it =
-      communications.begin_recv_scheme();
-  Communications<Element>::scheme_iterator recv_end =
-      communications.end_recv_scheme();
-  for (; recv_it != recv_end; ++recv_it) {
-    Array<Element> & recv = recv_it->second;
-    UInt proc = recv_it->first;
-
+  for (auto && scheme_pair : communications.iterateSchemes(_recv)) {
+    auto proc = scheme_pair.first;
+    auto & recv = scheme_pair.second;
     Array<UInt> & keep_list = list_of_elements_per_proc[proc];
 
-    Array<Element>::const_iterator<Element> rem_it = element_to_remove.begin();
-    Array<Element>::const_iterator<Element> rem_end = element_to_remove.end();
+    auto rem_it = element_to_remove.begin();
+    auto rem_end = element_to_remove.end();
 
-    Array<Element>::const_scalar_iterator it = recv.begin();
-    Array<Element>::const_scalar_iterator end = recv.end();
-    for (UInt e = 0; it != end; ++it, ++e) {
-      const Element & el = *it;
-      Array<Element>::const_iterator<Element> pos =
-          std::find(rem_it, rem_end, el);
+    for (auto && pair : enumerate(recv)) {
+      const auto & el = std::get<1>(pair);
+      auto pos = std::find(rem_it, rem_end, el);
+
       if (pos == rem_end) {
-        keep_list.push_back(e);
+        keep_list.push_back(std::get<0>(pair));
       }
     }
 
     keep_list.push_back(UInt(-1)); // To no send empty arrays
 
-    Tag tag = Tag::genTag(proc, 0, Tag::_MODIFY_SCHEME, this->hash_id);
+    auto && tag = Tag::genTag(proc, 0, Tag::_MODIFY_SCHEME, this->hash_id);
     AKANTU_DEBUG_INFO("Sending a message of size "
                       << keep_list.size() << " to proc " << proc << " TAG("
                       << tag << ")");
     send_requests.push_back(this->communicator.asyncSend(keep_list, proc, tag));
 
-    UInt old_size = recv.size();
+    auto old_size = recv.size();
     filter_list(keep_list, recv);
 
     AKANTU_DEBUG_INFO("I had " << old_size << " elements to recv from proc "
@@ -279,16 +236,12 @@ void ElementSynchronizer::removeElements(
                                << " elements left.");
   }
 
-  Communications<Element>::scheme_iterator send_it =
-      communications.begin_send_scheme();
-  Communications<Element>::scheme_iterator send_end =
-      communications.end_send_scheme();
-  for (; send_it != send_end; ++send_it) {
-    UInt proc = send_it->first;
-    Array<Element> send = send_it->second;
+  for (auto && scheme_pair : communications.iterateSchemes(_send)) {
+    auto proc = scheme_pair.first;
+    auto & send = scheme_pair.second;
 
     CommunicationStatus status;
-    Tag tag = Tag::genTag(rank, 0, Tag::_MODIFY_SCHEME, this->hash_id);
+    auto && tag = Tag::genTag(rank, 0, Tag::_MODIFY_SCHEME, this->hash_id);
     AKANTU_DEBUG_INFO("Getting number of elements of proc "
                       << proc << " to keep - TAG(" << tag << ")");
     this->communicator.probe<UInt>(proc, tag, status);
@@ -299,7 +252,7 @@ void ElementSynchronizer::removeElements(
                       << proc << " TAG(" << tag << ")");
     this->communicator.receive(keep_list, proc, tag);
 
-    UInt old_size = send.size();
+    auto old_size = send.size();
     filter_list(keep_list, send);
 
     AKANTU_DEBUG_INFO("I had " << old_size << " elements to send to proc "
@@ -317,25 +270,15 @@ void ElementSynchronizer::removeElements(
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::renumberElements(
     const ElementTypeMapArray<UInt> & new_numbering) {
-
-  auto renumber =
-      [&new_numbering](Communications<Element>::scheme_iterator it,
-                       Communications<Element>::scheme_iterator end) {
-        for (; it != end; ++it) {
-          Array<Element> & list = it->second;
-          Array<Element>::scalar_iterator el_it = list.begin();
-          Array<Element>::scalar_iterator el_end = list.end();
-          for (; el_it != el_end; ++el_it) {
-            Element & el = *el_it;
-            el.element = new_numbering(el.type, el.ghost_type)(el.element);
-          }
-        }
-      };
-
-  renumber(communications.begin_recv_scheme(),
-           communications.end_recv_scheme());
-  renumber(communications.begin_send_scheme(),
-           communications.end_send_scheme());
+  for(auto && sr : iterate_send_recv) {
+    for (auto && scheme_pair : communications.iterateSchemes(sr)) {
+      auto & list = scheme_pair.second;
+      for (auto && el : list) {
+        if(new_numbering.exists(el.type, el.ghost_type))
+          el.element = new_numbering(el);
+      }
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -348,16 +291,13 @@ UInt ElementSynchronizer::sanityCheckDataSize(
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::packSanityCheckData(
     CommunicationDescriptor<Element> & comm_desc) const {
-  CommunicationBuffer & buffer = comm_desc.getBuffer();
+  auto & buffer = comm_desc.getBuffer();
   buffer << comm_desc.getTag();
 
-  Communications<Element>::Scheme & send_element = comm_desc.getScheme();
+  auto & send_element = comm_desc.getScheme();
 
   /// pack barycenters in debug mode
-  Array<Element>::const_iterator<Element> bit = send_element.begin();
-  Array<Element>::const_iterator<Element> bend = send_element.end();
-  for (; bit != bend; ++bit) {
-    const Element & element = *bit;
+  for(auto && element : send_element) {
     Vector<Real> barycenter(mesh.getSpatialDimension());
     mesh.getBarycenter(element.element, element.type, barycenter.storage(),
                        element.ghost_type);
@@ -368,8 +308,8 @@ void ElementSynchronizer::packSanityCheckData(
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::unpackSanityCheckData(
     CommunicationDescriptor<Element> & comm_desc) const {
-  CommunicationBuffer & buffer = comm_desc.getBuffer();
-  const SynchronizationTag & tag = comm_desc.getTag();
+  auto & buffer = comm_desc.getBuffer();
+  const auto & tag = comm_desc.getTag();
 
   SynchronizationTag t;
   buffer >> t;
@@ -377,15 +317,10 @@ void ElementSynchronizer::unpackSanityCheckData(
   AKANTU_DEBUG_ASSERT(
       t == tag, "The tag received does not correspond to the tag expected");
 
-  Communications<Element>::Scheme & recv_element = comm_desc.getScheme();
-  Array<Element>::const_iterator<Element> bit = recv_element.begin();
-  Array<Element>::const_iterator<Element> bend = recv_element.end();
+  auto & recv_element = comm_desc.getScheme();
+  auto spatial_dimension = mesh.getSpatialDimension();
 
-  UInt spatial_dimension = mesh.getSpatialDimension();
-
-  for (; bit != bend; ++bit) {
-    const Element & element = *bit;
-
+  for(auto && element : recv_element) {
     Vector<Real> barycenter_loc(spatial_dimension);
     mesh.getBarycenter(element.element, element.type, barycenter_loc.storage(),
                        element.ghost_type);

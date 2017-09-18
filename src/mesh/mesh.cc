@@ -74,6 +74,7 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
       GroupManager(*this, id + ":group_manager", memory_id),
       nodes_type(0, 1, id + ":nodes_type"),
       connectivities("connectivities", id, memory_id),
+      ghosts_counters("ghosts_counters", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
       lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
       size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
@@ -100,16 +101,6 @@ Mesh::Mesh(UInt spatial_dimension, StaticCommunicator & communicator,
 Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
     : Mesh(spatial_dimension, StaticCommunicator::getStaticCommunicator(), id,
            memory_id) {}
-
-// /* --------------------------------------------------------------------------
-// */ Mesh::Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
-//            const MemoryID & memory_id)
-//     : Mesh(spatial_dimension, id, memory_id,
-//            StaticCommunicator::getStaticCommunicator()) {
-//   this->nodes = &(this->getArray<Real>(nodes_id));
-//   this->nb_global_nodes = this->nodes->size();
-//   this->computeBoundingBox();
-// }
 
 /* -------------------------------------------------------------------------- */
 Mesh::Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
@@ -417,7 +408,10 @@ void Mesh::fillNodesToElements() {
 
   UInt nb_nodes = nodes->size();
   for (UInt n = 0; n < nb_nodes; ++n) {
-    this->nodes_to_elements[n]->clear();
+    if(this->nodes_to_elements[n])
+      this->nodes_to_elements[n]->clear();
+    else
+      this->nodes_to_elements[n] = std::make_unique<std::set<Element>>();
   }
 
   for (auto ghost_type : ghost_types) {
@@ -441,5 +435,42 @@ void Mesh::fillNodesToElements() {
     }
   }
 }
+
+/* -------------------------------------------------------------------------- */
+void Mesh::eraseElements(const Array<Element> & elements) {
+  ElementTypeMap<UInt> last_element;
+
+  RemovedElementsEvent event(*this);
+  auto & remove_list = event.getList();
+  auto & new_numbering = event.getNewNumbering();
+
+  for(auto && el : elements) {
+    if(el.ghost_type != _not_ghost) {
+      auto & count = ghosts_counters(el);
+      --count;
+      if (count > 0) continue;
+    }
+
+    remove_list.push_back(el);
+    if (not last_element.exists(el.type, el.ghost_type)) {
+      UInt nb_element = mesh.getNbElement(el.type, el.ghost_type);
+      last_element(nb_element - 1, el.type, el.ghost_type);
+      auto & numbering = new_numbering.alloc(nb_element, 1, el.type, el.ghost_type);
+      for (auto && pair : enumerate(numbering)) {
+        std::get<1>(pair) = std::get<0>(pair);
+      }
+    }
+
+    UInt & pos = last_element(el.type, el.ghost_type);
+    auto & numbering = new_numbering(el.type, el.ghost_type);
+
+    numbering(el.element) = UInt(-1);
+    numbering(pos) = el.element;
+    --pos;
+  }
+
+  this->sendEvent(event);
+}
+
 
 } // namespace akantu

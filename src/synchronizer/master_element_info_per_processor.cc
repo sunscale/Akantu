@@ -26,13 +26,12 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
-#include "mesh_iterators.hh"
 #include "element_group.hh"
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
+#include "mesh_iterators.hh"
 #include "mesh_utils.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
@@ -57,14 +56,14 @@ MasterElementInfoPerProc::MasterElementInfoPerProc(
   if (type != _not_defined) {
     nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     nb_element = mesh.getNbElement(type);
-    const Array<UInt> & partition_num =
+    const auto & partition_num =
         this->partition.getPartition(this->type, _not_ghost);
-    const CSR<UInt> & ghost_partition =
+    const auto & ghost_partition =
         this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
     for (UInt el = 0; el < nb_element; ++el) {
       this->all_nb_local_element[partition_num(el)]++;
-      for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
+      for (auto part = ghost_partition.begin(el);
            part != ghost_partition.end(el); ++part) {
         this->all_nb_ghost_element[*part]++;
       }
@@ -113,9 +112,9 @@ MasterElementInfoPerProc::MasterElementInfoPerProc(
 
 /* ------------------------------------------------------------------------ */
 void MasterElementInfoPerProc::synchronizeConnectivities() {
-  const Array<UInt> & partition_num =
+  const auto & partition_num =
       this->partition.getPartition(this->type, _not_ghost);
-  const CSR<UInt> & ghost_partition =
+  const auto & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
   std::vector<Array<UInt>> buffers(this->nb_proc);
@@ -161,16 +160,13 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
   /// send all connectivity and ghost information to all processors
   std::vector<CommunicationRequest> requests;
   for (UInt p = 0; p < this->nb_proc; ++p) {
-    if (p != this->root) {
-      AKANTU_DEBUG_INFO(
-          "Sending connectivities to proc "
-          << p << " TAG("
-          << Tag::genTag(this->rank, this->message_count, Tag::_CONNECTIVITY)
-          << ")");
-      requests.push_back(comm.asyncSend(
-          buffers[p], p,
-          Tag::genTag(this->rank, this->message_count, Tag::_CONNECTIVITY)));
-    }
+    if (p == this->root)
+      continue;
+    auto && tag =
+        Tag::genTag(this->rank, this->message_count, Tag::_CONNECTIVITY);
+    AKANTU_DEBUG_INFO("Sending connectivities to proc " << p << " TAG(" << tag
+                                                        << ")");
+    requests.push_back(comm.asyncSend(buffers[p], p, tag));
   }
 
   Array<UInt> & old_nodes = this->getNodesGlobalIds();
@@ -180,15 +176,16 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
   MeshUtils::renumberMeshNodes(mesh, buffers[root], all_nb_local_element[root],
                                all_nb_ghost_element[root], type, old_nodes);
 
+
   comm.waitAll(requests);
   comm.freeCommunicationRequest(requests);
 }
 
 /* ------------------------------------------------------------------------ */
 void MasterElementInfoPerProc::synchronizePartitions() {
-  const Array<UInt> & partition_num =
+  const auto & partition_num =
       this->partition.getPartition(this->type, _not_ghost);
-  const CSR<UInt> & ghost_partition =
+  const auto & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
   std::vector<Array<UInt>> buffers(this->partition.getNbPartition());
@@ -200,42 +197,39 @@ void MasterElementInfoPerProc::synchronizePartitions() {
     buffers[proc].push_back(ghost_partition.getNbCols(el));
 
     UInt i(0);
-    for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-         part != ghost_partition.end(el); ++part, ++i) {
+    for (auto part = ghost_partition.begin(el); part != ghost_partition.end(el);
+         ++part, ++i) {
       buffers[proc].push_back(*part);
     }
   }
 
   for (UInt el = 0; el < nb_element; ++el) {
     UInt i(0);
-    for (CSR<UInt>::const_iterator part = ghost_partition.begin(el);
-         part != ghost_partition.end(el); ++part, ++i) {
+    for (auto part = ghost_partition.begin(el); part != ghost_partition.end(el);
+         ++part, ++i) {
       buffers[*part].push_back(partition_num(el));
     }
   }
 
 #ifndef AKANTU_NDEBUG
   for (UInt p = 0; p < this->nb_proc; ++p) {
-    AKANTU_DEBUG_ASSERT(
-        buffers[p].size() ==
-            (this->all_nb_ghost_element[p] + this->all_nb_element_to_send[p]),
-        "Data stored in the buffer are most probably wrong");
+    AKANTU_DEBUG_ASSERT(buffers[p].size() == (this->all_nb_ghost_element[p] +
+                                              this->all_nb_element_to_send[p]),
+                        "Data stored in the buffer are most probably wrong");
   }
 #endif
 
   std::vector<CommunicationRequest> requests;
   /// last data to compute the communication scheme
   for (UInt p = 0; p < this->nb_proc; ++p) {
-    if (p != this->root) {
-      AKANTU_DEBUG_INFO(
-          "Sending partition informations to proc "
-          << p << " TAG("
-          << Tag::genTag(this->rank, this->message_count, Tag::_PARTITIONS)
-          << ")");
-      requests.push_back(comm.asyncSend(
-          buffers[p], p,
-          Tag::genTag(this->rank, this->message_count, Tag::_PARTITIONS)));
-    }
+    if (p == this->root)
+      continue;
+
+    auto && tag =
+        Tag::genTag(this->rank, this->message_count, Tag::_PARTITIONS);
+    AKANTU_DEBUG_INFO("Sending partition informations to proc " << p << " TAG("
+                                                                << tag << ")");
+    requests.push_back(comm.asyncSend(buffers[p], p, tag));
   }
 
   if (Mesh::getSpatialDimension(this->type) ==
@@ -258,7 +252,7 @@ void MasterElementInfoPerProc::synchronizeTags() {
   }
 
   UInt mesh_data_sizes_buffer_length;
-  MeshData & mesh_data = this->getMeshData();
+  auto & mesh_data = this->getMeshData();
 
   /// tag info
   std::vector<std::string> tag_names;
@@ -271,12 +265,10 @@ void MasterElementInfoPerProc::synchronizeTags() {
   // number of components of the underlying array associated to the current
   // type
   DynamicCommunicationBuffer mesh_data_sizes_buffer;
-  std::vector<std::string>::const_iterator names_it = tag_names.begin();
-  std::vector<std::string>::const_iterator names_end = tag_names.end();
-  for (; names_it != names_end; ++names_it) {
-    mesh_data_sizes_buffer << *names_it;
-    mesh_data_sizes_buffer << mesh_data.getTypeCode(*names_it);
-    mesh_data_sizes_buffer << mesh_data.getNbComponent(*names_it, type);
+  for (auto && tag_name : tag_names) {
+    mesh_data_sizes_buffer << tag_name;
+    mesh_data_sizes_buffer << mesh_data.getTypeCode(tag_name);
+    mesh_data_sizes_buffer << mesh_data.getNbComponent(tag_name, type);
   }
 
   mesh_data_sizes_buffer_length = mesh_data_sizes_buffer.size();
@@ -293,46 +285,38 @@ void MasterElementInfoPerProc::synchronizeTags() {
 
   if (mesh_data_sizes_buffer_length != 0) {
     // Sending the actual data to each processor
-    DynamicCommunicationBuffer * buffers =
-        new DynamicCommunicationBuffer[nb_proc];
-    std::vector<std::string>::const_iterator names_it = tag_names.begin();
-    std::vector<std::string>::const_iterator names_end = tag_names.end();
-
+    std::vector<DynamicCommunicationBuffer> buffers(nb_proc);
     // Loop over each tag for the current type
-    for (; names_it != names_end; ++names_it) {
+    for (auto && tag_name : tag_names) {
       // Type code of the current tag (i.e. the tag named *names_it)
-      this->fillTagBuffer(buffers, *names_it);
+      this->fillTagBuffer(buffers, tag_name);
     }
 
     std::vector<CommunicationRequest> requests;
     for (UInt p = 0; p < nb_proc; ++p) {
-      if (p != root) {
-        AKANTU_DEBUG_INFO("Sending "
-                          << buffers[p].size()
-                          << " bytes of mesh data to proc " << p << " TAG("
-                          << Tag::genTag(this->rank, this->message_count,
-                                         Tag::_MESH_DATA)
-                          << ")");
+      if (p == root)
+        continue;
 
-        requests.push_back(comm.asyncSend(
-            buffers[p], p,
-            Tag::genTag(this->rank, this->message_count, Tag::_MESH_DATA)));
-      }
+      auto && tag =
+          Tag::genTag(this->rank, this->message_count, Tag::_MESH_DATA);
+      AKANTU_DEBUG_INFO("Sending " << buffers[p].size()
+                                   << " bytes of mesh data to proc " << p
+                                   << " TAG(" << tag << ")");
+
+      requests.push_back(comm.asyncSend(buffers[p], p, tag));
     }
 
-    names_it = tag_names.begin();
     // Loop over each tag for the current type
-    for (; names_it != names_end; ++names_it) {
+    for (auto && tag_name : tag_names) {
       // Reinitializing the mesh data on the master
-      this->fillMeshData(buffers[root], *names_it,
-                         mesh_data.getTypeCode(*names_it),
-                         mesh_data.getNbComponent(*names_it, type));
+      this->fillMeshData(buffers[root], tag_name,
+                         mesh_data.getTypeCode(tag_name),
+                         mesh_data.getNbComponent(tag_name, type));
     }
 
     comm.waitAll(requests);
     comm.freeCommunicationRequest(requests);
     requests.clear();
-    delete[] buffers;
   }
 
   AKANTU_DEBUG_OUT();
@@ -341,13 +325,14 @@ void MasterElementInfoPerProc::synchronizeTags() {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void MasterElementInfoPerProc::fillTagBufferTemplated(
-    DynamicCommunicationBuffer * buffers, const std::string & tag_name) {
+    std::vector<DynamicCommunicationBuffer> & buffers,
+    const std::string & tag_name) {
   MeshData & mesh_data = this->getMeshData();
 
-  const Array<T> & data = mesh_data.getElementalDataArray<T>(tag_name, type);
-  const Array<UInt> & partition_num =
+  const auto & data = mesh_data.getElementalDataArray<T>(tag_name, type);
+  const auto & partition_num =
       this->partition.getPartition(this->type, _not_ghost);
-  const CSR<UInt> & ghost_partition =
+  const auto & ghost_partition =
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
   // Not possible to use the iterator because it potentially triggers the
@@ -375,8 +360,8 @@ void MasterElementInfoPerProc::fillTagBufferTemplated(
   /// copying the data for the ghost element
   for (UInt el(0); data_it != data_end;
        data_it += data.getNbComponent(), ++el) {
-    CSR<UInt>::const_iterator it = ghost_partition.begin(el);
-    CSR<UInt>::const_iterator end = ghost_partition.end(el);
+    auto it = ghost_partition.begin(el);
+    auto end = ghost_partition.end(el);
     for (; it != end; ++it) {
       UInt proc = *it;
       for (UInt j(0); j < data.getNbComponent(); ++j) {
@@ -388,7 +373,8 @@ void MasterElementInfoPerProc::fillTagBufferTemplated(
 
 /* -------------------------------------------------------------------------- */
 void MasterElementInfoPerProc::fillTagBuffer(
-    DynamicCommunicationBuffer * buffers, const std::string & tag_name) {
+    std::vector<DynamicCommunicationBuffer> & buffers,
+    const std::string & tag_name) {
   MeshData & mesh_data = this->getMeshData();
 
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, extra_param, elem)          \
@@ -413,15 +399,13 @@ void MasterElementInfoPerProc::fillTagBuffer(
 void MasterElementInfoPerProc::synchronizeGroups() {
   AKANTU_DEBUG_IN();
 
-  DynamicCommunicationBuffer * buffers =
-      new DynamicCommunicationBuffer[nb_proc];
+  std::vector<DynamicCommunicationBuffer> buffers(nb_proc);
 
   using ElementToGroup = std::vector<std::vector<std::string>>;
-  ElementToGroup element_to_group;
-  element_to_group.resize(nb_element);
+  ElementToGroup element_to_group(nb_element);
 
   for (auto & eg : ElementGroupsIterable(mesh)) {
-    const std::string & name = eg.getName();
+    const auto & name = eg.getName();
 
     for (const auto & element : eg.getElements(type, _not_ghost)) {
       element_to_group[element].push_back(name);
@@ -438,20 +422,18 @@ void MasterElementInfoPerProc::synchronizeGroups() {
       this->partition.getGhostPartitionCSR()(this->type, _not_ghost);
 
   /// copying the data, element by element
-  ElementToGroup::const_iterator data_it = element_to_group.begin();
-  ElementToGroup::const_iterator data_end = element_to_group.end();
-  for (auto pair : zip(partition_num, element_to_group)) {
+  for (auto && pair : zip(partition_num, element_to_group)) {
     buffers[std::get<0>(pair)] << std::get<1>(pair);
   }
 
-  data_it = element_to_group.begin();
   /// copying the data for the ghost element
-  for (UInt el(0); data_it != data_end; ++data_it, ++el) {
-    CSR<UInt>::const_iterator it = ghost_partition.begin(el);
-    CSR<UInt>::const_iterator end = ghost_partition.end(el);
+  for (auto && pair : enumerate(element_to_group)) {
+    auto && el = std::get<0>(pair);
+    auto it = ghost_partition.begin(el);
+    auto end = ghost_partition.end(el);
     for (; it != end; ++it) {
       UInt proc = *it;
-      buffers[proc] << *data_it;
+      buffers[proc] << std::get<1>(pair);
     }
   }
 
@@ -459,12 +441,11 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   for (UInt p = 0; p < this->nb_proc; ++p) {
     if (p == this->rank)
       continue;
-    AKANTU_DEBUG_INFO("Sending element groups to proc "
-                      << p << " TAG("
-                      << Tag::genTag(this->rank, p, Tag::_ELEMENT_GROUP)
-                      << ")");
-    requests.push_back(comm.asyncSend(
-        buffers[p], p, Tag::genTag(this->rank, p, Tag::_ELEMENT_GROUP)));
+
+    auto && tag = Tag::genTag(this->rank, p, Tag::_ELEMENT_GROUP);
+    AKANTU_DEBUG_INFO("Sending element groups to proc " << p << " TAG(" << tag
+                                                        << ")");
+    requests.push_back(comm.asyncSend(buffers[p], p, tag));
   }
 
   this->fillElementGroupsFromBuffer(buffers[this->rank]);
@@ -472,7 +453,6 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   comm.waitAll(requests);
   comm.freeCommunicationRequest(requests);
   requests.clear();
-  delete[] buffers;
 
   AKANTU_DEBUG_OUT();
 }

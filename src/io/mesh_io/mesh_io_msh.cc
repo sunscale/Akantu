@@ -930,18 +930,14 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
     const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
 
     UInt * tag[2] = {nullptr, nullptr};
-    try {
+    if (mesh.hasData<UInt>("tag_0", type, _not_ghost)) {
       const auto & data_tag_0 = mesh.getData<UInt>("tag_0", type, _not_ghost);
       tag[0] = data_tag_0.storage();
-    } catch (...) {
-      tag[0] = nullptr;
     }
 
-    try {
+    if (mesh.hasData<UInt>("tag_1", type, _not_ghost)) {
       const auto & data_tag_1 = mesh.getData<UInt>("tag_1", type, _not_ghost);
       tag[1] = data_tag_1.storage();
-    } catch (...) {
-      tag[1] = nullptr;
     }
 
     for (UInt i = 0; i < connectivity.size(); ++i) {

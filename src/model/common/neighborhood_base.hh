@@ -89,11 +89,14 @@ public:
 
   /// create grid synchronizer and exchange ghost cells
   virtual void createGridSynchronizer() = 0;
+  virtual void synchronize(DataAccessor<Element> & data_accessor,
+                           const SynchronizationTag & tag) = 0;
 
   /// inherited function from MeshEventHandler
-  virtual void onElementsRemoved(const Array<Element> & element_list,
-                                 const ElementTypeMapArray<UInt> & new_numbering,
-                                 const RemovedElementsEvent & event) ;
+  virtual void
+  onElementsRemoved(const Array<Element> & element_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event);
 
 protected:
   /// create the grid

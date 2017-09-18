@@ -60,6 +60,9 @@ public:
   /// create grid synchronizer and exchange ghost cells
   void createGridSynchronizer() override;
 
+  void synchronize(DataAccessor<Element> & data_accessor,
+                   const SynchronizationTag & tag) override;
+
   /// compute weights, for instance needed for non-local damage computation
   virtual void computeWeights(){};
 
@@ -74,7 +77,9 @@ public:
   virtual void updateWeights() = 0;
 
   /// update the weights for the non-local averaging
-  virtual void saveWeights(const std::string & ) const { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  virtual void saveWeights(const std::string &) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
 
   /// register a new non-local variable in the neighborhood
   virtual void registerNonLocalVariable(const ID & id);

@@ -47,7 +47,7 @@ ElementInfoPerProc::ElementInfoPerProc(ElementSynchronizer & synchronizer,
       rank(synchronizer.getCommunicator().whoAmI()),
       nb_proc(synchronizer.getCommunicator().getNbProc()), root(root),
       type(type), message_count(message_cnt), mesh(synchronizer.getMesh()),
-      comm(synchronizer.getCommunicator()) { }
+      comm(synchronizer.getCommunicator()) {}
 
 /* -------------------------------------------------------------------------- */
 void ElementInfoPerProc::fillCommunicationScheme(
@@ -58,12 +58,10 @@ void ElementInfoPerProc::fillCommunicationScheme(
   element.type = this->type;
   element.kind = Mesh::getKind(this->type);
 
-  Communications<Element> & communications =
-      this->synchronizer.getCommunications();
+  auto & communications = this->synchronizer.getCommunications();
+  auto part = partition.begin();
 
-  Array<UInt>::const_scalar_iterator part = partition.begin();
-
-  std::map<UInt, Array<Element> > send_array_per_proc;
+  std::map<UInt, Array<Element>> send_array_per_proc;
   for (UInt lel = 0; lel < nb_local_element; ++lel) {
     UInt nb_send = *part;
     ++part;
@@ -73,39 +71,40 @@ void ElementInfoPerProc::fillCommunicationScheme(
     for (UInt p = 0; p < nb_send; ++p, ++part) {
       UInt proc = *part;
 
-      AKANTU_DEBUG(dblAccessory, "Must send : " << element << " to proc "
-                   << proc);
+      AKANTU_DEBUG(dblAccessory,
+                   "Must send : " << element << " to proc " << proc);
       send_array_per_proc[proc].push_back(element);
     }
   }
 
   for (auto & send_schemes : send_array_per_proc) {
-    if (send_schemes.second.size() == 0) continue;
+    if (send_schemes.second.size() == 0)
+      continue;
     auto & scheme = communications.createSendScheme(send_schemes.first);
     scheme.append(send_schemes.second);
   }
 
-  std::map<UInt, Array<Element> > recv_array_per_proc;
+  std::map<UInt, Array<Element>> recv_array_per_proc;
 
   for (UInt gel = 0; gel < nb_ghost_element; ++gel, ++part) {
     UInt proc = *part;
     element.element = gel;
     element.ghost_type = _ghost;
-    AKANTU_DEBUG(dblAccessory, "Must recv : " << element << " from proc "
-                 << proc);
+    AKANTU_DEBUG(dblAccessory,
+                 "Must recv : " << element << " from proc " << proc);
     recv_array_per_proc[proc].push_back(element);
   }
 
   for (auto & recv_schemes : recv_array_per_proc) {
-    if (recv_schemes.second.size() == 0) continue;
+    if (recv_schemes.second.size() == 0)
+      continue;
     auto & scheme = communications.createRecvScheme(recv_schemes.first);
     scheme.append(recv_schemes.second);
   }
-
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

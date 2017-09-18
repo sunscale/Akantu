@@ -65,22 +65,6 @@ public:
       std::shared_ptr<InternalCommunicationRequest> request = nullptr)
       : request(std::move(request)) {}
 
-  // CommunicationRequest(CommunicationRequest & other)
-  //     : request(std::move(other.request)) {}
-
-  // CommunicationRequest(CommunicationRequest && other)
-  //     : request(std::move(other.request)) {}
-
-  // CommunicationRequest & operator=(CommunicationRequest & other) {
-  //   request = std::move(other.request);
-  //   return *this;
-  // }
-
-  // CommunicationRequest & operator=(CommunicationRequest && other) {
-  //   request = std::move(other.request);
-  //   return *this;
-  // }
-
   virtual void free() { request.reset(); }
 
   void printself(std::ostream & stream, int indent = 0) const {

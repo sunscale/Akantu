@@ -51,9 +51,6 @@ NonLocalManager::NonLocalManager(Model & model,
                                    memory_id),
       volumes("volumes", id, memory_id), compute_stress_calls(0),
       dummy_registry(nullptr), dummy_grid(nullptr) {
-  Mesh & mesh = this->model.getMesh();
-  mesh.registerEventHandler(*this, _ehp_non_local_manager);
-
   /// parse the neighborhood information from the input file
   const Parser & parser = getStaticParser();
 
@@ -82,11 +79,13 @@ void NonLocalManager::initialize() {
                       "A callback should be registered prior to this call");
   this->callback->insertIntegrationPointsInNeighborhoods(_not_ghost);
 
+  auto & mesh = this->model.getMesh();
+  mesh.registerEventHandler(*this, _ehp_non_local_manager);
+
   /// store the number of current ghost elements for each type in the mesh
-  ElementTypeMap<UInt> nb_ghost_protected;
-  Mesh & mesh = this->model.getMesh();
-  for (auto type : mesh.elementTypes(spatial_dimension, _ghost))
-    nb_ghost_protected(mesh.getNbElement(type, _ghost), type, _ghost);
+  //ElementTypeMap<UInt> nb_ghost_protected;
+  // for (auto type : mesh.elementTypes(spatial_dimension, _ghost))
+  //   nb_ghost_protected(mesh.getNbElement(type, _ghost), type, _ghost);
 
   /// exchange the missing ghosts for the non-local neighborhoods
   this->createNeighborhoodSynchronizers();
@@ -99,7 +98,10 @@ void NonLocalManager::initialize() {
   this->updatePairLists();
 
   /// cleanup the unneccessary ghost elements
-  this->cleanupExtraGhostElements(nb_ghost_protected);
+  this->cleanupExtraGhostElements(); //nb_ghost_protected);
+
+  this->callback->initializeNonLocal();
+
   this->setJacobians(fee, _ek_regular);
 
   this->initNonLocalVariables();
@@ -239,20 +241,31 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
 
   dummy_grid = std::make_unique<SpatialGrid<IntegrationPoint>>(
       this->spatial_dimension, spacing, grid_center);
-  std::set<SynchronizationTag> tags;
-  tags.insert(_gst_mnl_for_average);
-  tags.insert(_gst_mnl_weight);
 
   for (auto & neighborhood_id : global_neighborhoods) {
     it = neighborhoods.find(neighborhood_id);
     if (it != neighborhoods.end()) {
       it->second->createGridSynchronizer();
     } else {
-      std::stringstream sstr;
-      sstr << this->id << ":" << neighborhood_id << ":grid_synchronizer";
       dummy_synchronizers[neighborhood_id] = std::make_unique<GridSynchronizer>(
-          this->model.getMesh(), *dummy_grid, sstr.str(), this->memory_id,
-          false);
+          this->model.getMesh(), *dummy_grid,
+          std::string(this->id + ":" + neighborhood_id + ":grid_synchronizer"),
+          this->memory_id, false);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void NonLocalManager::synchronize(DataAccessor<Element> & data_accessor, const SynchronizationTag & tag) {
+  for (auto & neighborhood_id : global_neighborhoods) {
+    auto it = neighborhoods.find(neighborhood_id);
+    if (it != neighborhoods.end()) {
+      it->second->synchronize(data_accessor, tag);
+    } else {
+      auto synchronizer_it = dummy_synchronizers.find(neighborhood_id);
+      if (synchronizer_it == dummy_synchronizers.end()) continue;
+
+      synchronizer_it->second->synchronizeOnce(data_accessor, tag);
     }
   }
 }
@@ -416,8 +429,8 @@ void NonLocalManager::computeAllNonLocalStresses() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::cleanupExtraGhostElements(
-    ElementTypeMap<UInt> & nb_ghost_protected) {
+void NonLocalManager::cleanupExtraGhostElements() {
+    //ElementTypeMap<UInt> & nb_ghost_protected) {
 
   using ElementSet = std::set<Element>;
   ElementSet relevant_ghost_elements;
@@ -432,60 +445,60 @@ void NonLocalManager::cleanupExtraGhostElements(
       relevant_ghost_elements.insert(element);
   }
 
-  /// remove all unneccessary ghosts from the mesh
-  /// Create list of element to remove and new numbering for element to keep
-  Mesh & mesh = this->model.getMesh();
-  ElementSet ghost_to_erase;
+  // /// remove all unneccessary ghosts from the mesh
+  // /// Create list of element to remove and new numbering for element to keep
+  // Mesh & mesh = this->model.getMesh();
+  // ElementSet ghost_to_erase;
 
-  RemovedElementsEvent remove_elem(mesh);
-  auto & new_numberings = remove_elem.getNewNumbering();
-  Element element;
-  element.ghost_type = _ghost;
+  // RemovedElementsEvent remove_elem(mesh);
+  // auto & new_numberings = remove_elem.getNewNumbering();
+  // Element element;
+  // element.ghost_type = _ghost;
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _ghost)) {
-    element.type = type;
-    UInt nb_ghost_elem = mesh.getNbElement(type, _ghost);
-    UInt nb_ghost_elem_protected = 0;
-    try {
-      nb_ghost_elem_protected = nb_ghost_protected(type, _ghost);
-    } catch (...) {
-    }
+  // for (auto & type : mesh.elementTypes(spatial_dimension, _ghost)) {
+  //   element.type = type;
+  //   UInt nb_ghost_elem = mesh.getNbElement(type, _ghost);
+  //   // UInt nb_ghost_elem_protected = 0;
+  //   // try {
+  //   //   nb_ghost_elem_protected = nb_ghost_protected(type, _ghost);
+  //   // } catch (...) {
+  //   // }
 
-    if (!new_numberings.exists(type, _ghost))
-      new_numberings.alloc(nb_ghost_elem, 1, type, _ghost);
-    else
-      new_numberings(type, _ghost).resize(nb_ghost_elem);
+  //   if (!new_numberings.exists(type, _ghost))
+  //     new_numberings.alloc(nb_ghost_elem, 1, type, _ghost);
+  //   else
+  //     new_numberings(type, _ghost).resize(nb_ghost_elem);
 
-    Array<UInt> & new_numbering = new_numberings(type, _ghost);
-    for (UInt g = 0; g < nb_ghost_elem; ++g) {
-      element.element = g;
-      if (element.element >= nb_ghost_elem_protected &&
-          relevant_ghost_elements.find(element) ==
-              relevant_ghost_elements.end()) {
-        remove_elem.getList().push_back(element);
-        new_numbering(element.element) = UInt(-1);
-      }
-    }
-    /// renumber remaining ghosts
-    UInt ng = 0;
-    for (UInt g = 0; g < nb_ghost_elem; ++g) {
-      if (new_numbering(g) != UInt(-1)) {
-        new_numbering(g) = ng;
-        ++ng;
-      }
-    }
-  }
+  //   Array<UInt> & new_numbering = new_numberings(type, _ghost);
+  //   for (UInt g = 0; g < nb_ghost_elem; ++g) {
+  //     element.element = g;
+  //     if (element.element >= nb_ghost_elem_protected &&
+  //         relevant_ghost_elements.find(element) ==
+  //             relevant_ghost_elements.end()) {
+  //       remove_elem.getList().push_back(element);
+  //       new_numbering(element.element) = UInt(-1);
+  //     }
+  //   }
+  //   /// renumber remaining ghosts
+  //   UInt ng = 0;
+  //   for (UInt g = 0; g < nb_ghost_elem; ++g) {
+  //     if (new_numbering(g) != UInt(-1)) {
+  //       new_numbering(g) = ng;
+  //       ++ng;
+  //     }
+  //   }
+  // }
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost)) {
-    UInt nb_elem = mesh.getNbElement(type, _not_ghost);
-    if (!new_numberings.exists(type, _not_ghost))
-      new_numberings.alloc(nb_elem, 1, type, _not_ghost);
-    Array<UInt> & new_numbering = new_numberings(type, _not_ghost);
-    for (UInt e = 0; e < nb_elem; ++e) {
-      new_numbering(e) = e;
-    }
-  }
-  mesh.sendEvent(remove_elem);
+  // for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost)) {
+  //   UInt nb_elem = mesh.getNbElement(type, _not_ghost);
+  //   if (!new_numberings.exists(type, _not_ghost))
+  //     new_numberings.alloc(nb_elem, 1, type, _not_ghost);
+  //   Array<UInt> & new_numbering = new_numberings(type, _not_ghost);
+  //   for (UInt e = 0; e < nb_elem; ++e) {
+  //     new_numbering(e) = e;
+  //   }
+  // }
+  // mesh.sendEvent(remove_elem);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -517,10 +530,8 @@ void NonLocalManager::onElementsRemoved(
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::onElementsAdded(__attribute__((unused))
-                                      const Array<Element> & element_list,
-                                      __attribute__((unused))
-                                      const NewElementsEvent & event) {
+void NonLocalManager::onElementsAdded(const Array<Element> &,
+                                      const NewElementsEvent &) {
   this->resizeElementTypeMap(1, volumes, model.getFEEngine());
   this->resizeElementTypeMap(spatial_dimension, integration_points_positions,
                              model.getFEEngine());
@@ -559,10 +570,6 @@ void NonLocalManager::removeIntegrationPointsFromMap(
         Array<Real> & vect = element_map(type, gt);
         UInt nb_quad_per_elem = fee.getNbIntegrationPoints(type, gt);
         Array<Real> tmp(renumbering.size() * nb_quad_per_elem, nb_component);
-
-        AKANTU_DEBUG_ASSERT(
-            tmp.size() == vect.size(),
-            "Something strange append some mater was created from nowhere!!");
 
         AKANTU_DEBUG_ASSERT(
             tmp.size() == vect.size(),

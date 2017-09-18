@@ -35,12 +35,5 @@
 
 namespace akantu {
 
-NodeSynchronizer & MeshAccessor::getNodeSynchronizer() {
-  return *this->_mesh.node_synchronizer;
-}
-
-ElementSynchronizer & MeshAccessor::getElementSynchronizer() {
-  return *this->_mesh.element_synchronizer;
-}
 
 }  // akantu

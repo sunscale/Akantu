@@ -42,7 +42,7 @@ class safe_enum : public def {
   using type = typename def::type;
 
 public:
-  explicit safe_enum(type v) : val(v) {}
+  explicit safe_enum(type v = def::_end_) : val(v) {}
   inner underlying() const { return val; }
 
   bool operator == (const safe_enum & s) const { return this->val == s.val; }

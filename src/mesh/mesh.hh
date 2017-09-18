@@ -113,8 +113,8 @@ public:
    * constructor that use an existing nodes coordinates
    * array, by getting the vector of coordinates
    */
-  Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes, const ID & id = "mesh",
-       const MemoryID & memory_id = 0);
+  Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
+       const ID & id = "mesh", const MemoryID & memory_id = 0);
 
   virtual ~Mesh();
 
@@ -165,7 +165,7 @@ public:
   inline Element linearizedToElement(UInt linearized_element) const;
 
   /// update the types offsets array for the conversions
-  //inline void updateTypesOffsets(const GhostType & ghost_type);
+  // inline void updateTypesOffsets(const GhostType & ghost_type);
 
   /// add a Array of connectivity for the type <type>.
   inline void addConnectivityType(const ElementType & type,
@@ -176,6 +176,9 @@ public:
     //    if(event.getList().size() != 0)
     EventHandlerManager<MeshEventHandler>::sendEvent<Event>(event);
   }
+
+  /// prepare the  event to remove the elements listed
+  void eraseElements(const Array<Element> & elements);
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
@@ -308,30 +311,32 @@ public:
   getSubelementToElement(const ElementType & el_type,
                          const GhostType & ghost_type = _not_ghost);
 
-  /// get a name field associated to the mesh
-  template <typename T>
-  inline const Array<T> &
-  getData(const std::string & data_name, const ElementType & el_type,
-          const GhostType & ghost_type = _not_ghost) const;
-
-  /// get a name field associated to the mesh
-  template <typename T>
-  inline Array<T> & getData(const std::string & data_name,
-                            const ElementType & el_type,
-                            const GhostType & ghost_type = _not_ghost);
-
   /// register a new ElementalTypeMap in the MeshData
   template <typename T>
   inline ElementTypeMapArray<T> & registerData(const std::string & data_name);
 
-  /// get a name field associated to the mesh
   template <typename T>
-  inline const ElementTypeMapArray<T> &
-  getData(const std::string & data_name) const;
+  inline bool hasData(const ID & data_name, const ElementType & el_type,
+                      const GhostType & ghost_type = _not_ghost) const;
 
   /// get a name field associated to the mesh
   template <typename T>
-  inline ElementTypeMapArray<T> & getData(const std::string & data_name);
+  inline const Array<T> &
+  getData(const ID & data_name, const ElementType & el_type,
+          const GhostType & ghost_type = _not_ghost) const;
+
+  /// get a name field associated to the mesh
+  template <typename T>
+  inline Array<T> & getData(const ID & data_name, const ElementType & el_type,
+                            const GhostType & ghost_type = _not_ghost);
+
+  /// get a name field associated to the mesh
+  template <typename T>
+  inline const ElementTypeMapArray<T> & getData(const ID & data_name) const;
+
+  /// get a name field associated to the mesh
+  template <typename T>
+  inline ElementTypeMapArray<T> & getData(const ID & data_name);
 
   template <typename T>
   ElementTypeMap<UInt> getNbDataPerElem(ElementTypeMapArray<T> & array,
@@ -478,6 +483,15 @@ private:
   getConnectivityPointer(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost);
 
+  /// get the ghost element counter
+  inline Array<UInt> &
+  getGhostsCounters(const ElementType & type,
+                    const GhostType & ghost_type = _ghost) {
+    AKANTU_DEBUG_ASSERT(ghost_type != _not_ghost,
+                        "No ghost counter for _not_ghost elements");
+    return ghosts_counters(type, ghost_type);
+  }
+
   /// get a pointer to the element_to_subelement Array for the given type and
   /// create it if necessary
   inline Array<std::vector<Element>> &
@@ -511,6 +525,9 @@ private:
 
   /// all class of elements present in this mesh (for heterogenous meshes)
   ElementTypeMapArray<UInt> connectivities;
+
+  /// count the references on ghost elements
+  ElementTypeMapArray<UInt> ghosts_counters;
 
   /// map to normals for all class of elements present in this mesh
   ElementTypeMapArray<Real> normals;

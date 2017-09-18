@@ -50,10 +50,14 @@ struct CommunicationSRType {
 
 typedef safe_enum<CommunicationSRType> send_recv_t;
 
+namespace {
+  send_recv_t iterate_send_recv{};
+}
+
 /* ------------------------------------------------------------------------ */
 class Communication {
 public:
-  Communication(const CommunicationSendRecv & type = _csr_not_defined)
+  explicit Communication(const CommunicationSendRecv & type = _csr_not_defined)
       : _size(0), _type(type) {}
 
   Communication(const Communication &) = delete;
@@ -72,6 +76,7 @@ public:
 
   inline const CommunicationBuffer & buffer() const { return this->_buffer; }
   inline CommunicationBuffer & buffer() { return this->_buffer; }
+
 private:
   UInt _size;
   CommunicationBuffer _buffer;
@@ -140,7 +145,7 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-} // akantu
+} // namespace akantu
 
 #include "communication_descriptor_tmpl.hh"
 

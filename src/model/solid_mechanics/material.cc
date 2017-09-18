@@ -101,11 +101,7 @@ Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
-Material::~Material() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+Material::~Material() = default;
 
 /* -------------------------------------------------------------------------- */
 void Material::initialize() {
