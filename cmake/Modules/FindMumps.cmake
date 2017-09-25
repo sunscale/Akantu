@@ -229,9 +229,10 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   #===============================================================================
 
   set(_retry_try_run TRUE)
+  set(_retry_count 0)
 
   # trying only as long as we add dependencies to avoid inifinte loop in case of an unkown dependency
-  while (_retry_try_run)
+  while (_retry_try_run AND _retry_count LESS 100)
     try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
       CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
       LINK_LIBRARIES ${_libraries_all} ${_compiler_specific}
@@ -264,8 +265,14 @@ ${_u_first_precision}MUMPS_STRUC_C id;
         set(_retry_try_run TRUE)
       endif()
     endforeach()
+
+    math(EXPR _retry_count "${_retry_count} + 1")
   endwhile()
 
+  if(_retry_count GREATER_EQUAL 100)
+    message(FATAL_ERROR "Do not know what to do to link with mumps on your system, I give up!")
+  endif()
+  
   if(APPLE)
     # in doubt add some stuff because mumps was perhaps badly compiled
     mumps_add_dependency(pord)
