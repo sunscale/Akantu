@@ -152,17 +152,12 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
   const SolidMechanicsModelOptions & smm_options =
       dynamic_cast<const SolidMechanicsModelOptions &>(options);
 
-  this->method = smm_options.analysis_method;
+  method = smm_options.analysis_method;
 
-  // initialize the vectors
-  for (auto ghost_type : ghost_types) {
-    for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type,
-                                       _ek_not_defined)) {
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
-      this->material_index.alloc(nb_element, 1, type, ghost_type);
-      this->material_local_numbering.alloc(nb_element, 1, type, ghost_type);
-    }
-  }
+  material_index.initialize(mesh, _element_kind = _ek_not_defined,
+                            _default_value = UInt(-1), _with_nb_element = true);
+  material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
+                                      _with_nb_element = true);
 
   if (!this->hasDefaultSolver())
     this->initNewSolver(this->method);
@@ -729,17 +724,19 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
                                           const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-  for (auto ghost_type : ghost_types) {
-    for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type,
-                                       _ek_not_defined)) {
+  for(auto && ghost_type : ghost_types) {
+    for (auto type :
+           mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       UInt nb_element = this->mesh.getNbElement(type, ghost_type);
 
       if (!material_index.exists(type, ghost_type)) {
         this->material_index.alloc(nb_element, 1, type, ghost_type);
-        this->material_local_numbering.alloc(nb_element, 1, type, ghost_type);
+        this->material_local_numbering.alloc(nb_element, 1, type, ghost_type,
+                                             UInt(-1));
       } else {
         this->material_index(type, ghost_type).resize(nb_element);
-        this->material_local_numbering(type, ghost_type).resize(nb_element);
+        this->material_local_numbering(type, ghost_type)
+          .resize(nb_element, UInt(-1));
       }
     }
   }
@@ -764,11 +761,11 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onElementsRemoved(
-    __attribute__((unused)) const Array<Element> & element_list,
+    const Array<Element> & element_list,
     const ElementTypeMapArray<UInt> & new_numbering,
     const RemovedElementsEvent & event) {
-  this->getFEEngine().initShapeFunctions(_not_ghost);
-  this->getFEEngine().initShapeFunctions(_ghost);
+  //this->getFEEngine().initShapeFunctions(_not_ghost);
+  //this->getFEEngine().initShapeFunctions(_ghost);
 
   for (auto & material : materials) {
     material->onElementsRemoved(element_list, new_numbering, event);
@@ -777,7 +774,6 @@ void SolidMechanicsModel::onElementsRemoved(
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
-                                       __attribute__((unused))
                                        const NewNodesEvent & event) {
   AKANTU_DEBUG_IN();
   UInt nb_nodes = mesh.getNbNodes();
@@ -889,6 +885,11 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::initializeNonLocal() {
+  this->non_local_manager->synchronize(*this, _gst_material_id);
+}
+
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
     const GhostType & ghost_type) {
   for (auto & mat : materials) {
@@ -960,6 +961,306 @@ void SolidMechanicsModel::updateNonLocalInternal(
 FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
   return dynamic_cast<FEEngine &>(
       getFEEngineClassBoundary<MyFEEngineType>(name));
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::splitElementByMaterial(
+    const Array<Element> & elements, Array<Element> * elements_per_mat) const {
+  ElementType current_element_type = _not_defined;
+  GhostType current_ghost_type = _casper;
+  const Array<UInt> * mat_indexes = NULL;
+  const Array<UInt> * mat_loc_num = NULL;
+
+  Array<Element>::const_iterator<Element> it = elements.begin();
+  Array<Element>::const_iterator<Element> end = elements.end();
+  for (; it != end; ++it) {
+    Element el = *it;
+
+    if (el.type != current_element_type ||
+        el.ghost_type != current_ghost_type) {
+      current_element_type = el.type;
+      current_ghost_type = el.ghost_type;
+      mat_indexes = &(this->material_index(el.type, el.ghost_type));
+      mat_loc_num = &(this->material_local_numbering(el.type, el.ghost_type));
+    }
+
+    UInt old_id = el.element;
+    el.element = (*mat_loc_num)(old_id);
+    elements_per_mat[(*mat_indexes)(old_id)].push_back(el);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
+                                    const SynchronizationTag & tag) const {
+  AKANTU_DEBUG_IN();
+
+  UInt size = 0;
+  UInt nb_nodes_per_element = 0;
+
+  for (const Element & el : elements) {
+    nb_nodes_per_element += Mesh::getNbNodesPerElement(el.type);
+  }
+
+  switch (tag) {
+  case _gst_material_id: {
+    size += elements.size() * sizeof(UInt);
+    break;
+  }
+  case _gst_smm_mass: {
+    size += nb_nodes_per_element * sizeof(Real) *
+            Model::spatial_dimension; // mass vector
+    break;
+  }
+  case _gst_smm_for_gradu: {
+    size += nb_nodes_per_element * Model::spatial_dimension *
+            sizeof(Real); // displacement
+    break;
+  }
+  case _gst_smm_boundary: {
+    // force, displacement, boundary
+    size += nb_nodes_per_element * Model::spatial_dimension *
+            (2 * sizeof(Real) + sizeof(bool));
+    break;
+  }
+  case _gst_for_dump: {
+    // displacement, velocity, acceleration, residual, force
+    size += nb_nodes_per_element * Model::spatial_dimension * sizeof(Real) * 5;
+    break;
+  }
+  default: {}
+  }
+
+  if (tag != _gst_material_id) {
+    Array<Element> * elements_per_mat = new Array<Element>[materials.size()];
+    this->splitElementByMaterial(elements, elements_per_mat);
+
+    for (UInt i = 0; i < materials.size(); ++i) {
+      size += materials[i]->getNbData(elements_per_mat[i], tag);
+    }
+    delete[] elements_per_mat;
+  }
+
+  AKANTU_DEBUG_OUT();
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
+                                   const Array<Element> & elements,
+                                   const SynchronizationTag & tag) const {
+  AKANTU_DEBUG_IN();
+
+  switch (tag) {
+  case _gst_material_id: {
+    this->packElementalDataHelper(material_index, buffer, elements, false,
+                                  getFEEngine());
+    break;
+  }
+  case _gst_smm_mass: {
+    packNodalDataHelper(*mass, buffer, elements, mesh);
+    break;
+  }
+  case _gst_smm_for_gradu: {
+    packNodalDataHelper(*displacement, buffer, elements, mesh);
+    break;
+  }
+  case _gst_for_dump: {
+    packNodalDataHelper(*displacement, buffer, elements, mesh);
+    packNodalDataHelper(*velocity, buffer, elements, mesh);
+    packNodalDataHelper(*acceleration, buffer, elements, mesh);
+    packNodalDataHelper(*internal_force, buffer, elements, mesh);
+    packNodalDataHelper(*external_force, buffer, elements, mesh);
+    break;
+  }
+  case _gst_smm_boundary: {
+    packNodalDataHelper(*external_force, buffer, elements, mesh);
+    packNodalDataHelper(*velocity, buffer, elements, mesh);
+    packNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
+    break;
+  }
+  default: {}
+  }
+
+  if (tag != _gst_material_id) {
+    Array<Element> * elements_per_mat = new Array<Element>[materials.size()];
+    splitElementByMaterial(elements, elements_per_mat);
+
+    for (UInt i = 0; i < materials.size(); ++i) {
+      materials[i]->packData(buffer, elements_per_mat[i], tag);
+    }
+
+    delete[] elements_per_mat;
+  }
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
+                                     const Array<Element> & elements,
+                                     const SynchronizationTag & tag) {
+  AKANTU_DEBUG_IN();
+
+  switch (tag) {
+  case _gst_material_id: {
+    for (auto && element : elements) {
+      UInt recv_mat_index;
+      buffer >> recv_mat_index;
+      UInt & mat_index = material_index(element);
+      if (mat_index != UInt(-1))
+        continue;
+
+      mat_index = recv_mat_index;
+      UInt index = materials[mat_index]->addElement(element);
+      material_local_numbering(element) = index;
+      std::cout << "Registering: " << element << " in material " << mat_index
+                << std::endl;
+    }
+    break;
+  }
+  case _gst_smm_mass: {
+    unpackNodalDataHelper(*mass, buffer, elements, mesh);
+    break;
+  }
+  case _gst_smm_for_gradu: {
+    unpackNodalDataHelper(*displacement, buffer, elements, mesh);
+    break;
+  }
+  case _gst_for_dump: {
+    unpackNodalDataHelper(*displacement, buffer, elements, mesh);
+    unpackNodalDataHelper(*velocity, buffer, elements, mesh);
+    unpackNodalDataHelper(*acceleration, buffer, elements, mesh);
+    unpackNodalDataHelper(*internal_force, buffer, elements, mesh);
+    unpackNodalDataHelper(*external_force, buffer, elements, mesh);
+    break;
+  }
+  case _gst_smm_boundary: {
+    unpackNodalDataHelper(*external_force, buffer, elements, mesh);
+    unpackNodalDataHelper(*velocity, buffer, elements, mesh);
+    unpackNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
+    break;
+  }
+  default: {}
+  }
+
+  if (tag != _gst_material_id) {
+    Array<Element> * elements_per_mat = new Array<Element>[materials.size()];
+    splitElementByMaterial(elements, elements_per_mat);
+
+    for (UInt i = 0; i < materials.size(); ++i) {
+      materials[i]->unpackData(buffer, elements_per_mat[i], tag);
+    }
+
+    delete[] elements_per_mat;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
+                                    const SynchronizationTag & tag) const {
+  AKANTU_DEBUG_IN();
+
+  UInt size = 0;
+  //  UInt nb_nodes = mesh.getNbNodes();
+
+  switch (tag) {
+  case _gst_smm_uv: {
+    size += sizeof(Real) * Model::spatial_dimension * 2;
+    break;
+  }
+  case _gst_smm_res: {
+    size += sizeof(Real) * Model::spatial_dimension;
+    break;
+  }
+  case _gst_smm_mass: {
+    size += sizeof(Real) * Model::spatial_dimension;
+    break;
+  }
+  case _gst_for_dump: {
+    size += sizeof(Real) * Model::spatial_dimension * 5;
+    break;
+  }
+  default: {
+    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
+  }
+
+  AKANTU_DEBUG_OUT();
+  return size * dofs.size();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
+                                   const Array<UInt> & dofs,
+                                   const SynchronizationTag & tag) const {
+  AKANTU_DEBUG_IN();
+
+  switch (tag) {
+  case _gst_smm_uv: {
+    packDOFDataHelper(*displacement, buffer, dofs);
+    packDOFDataHelper(*velocity, buffer, dofs);
+    break;
+  }
+  case _gst_smm_res: {
+    packDOFDataHelper(*internal_force, buffer, dofs);
+    break;
+  }
+  case _gst_smm_mass: {
+    packDOFDataHelper(*mass, buffer, dofs);
+    break;
+  }
+  case _gst_for_dump: {
+    packDOFDataHelper(*displacement, buffer, dofs);
+    packDOFDataHelper(*velocity, buffer, dofs);
+    packDOFDataHelper(*acceleration, buffer, dofs);
+    packDOFDataHelper(*internal_force, buffer, dofs);
+    packDOFDataHelper(*external_force, buffer, dofs);
+    break;
+  }
+  default: {
+    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
+                                     const Array<UInt> & dofs,
+                                     const SynchronizationTag & tag) {
+  AKANTU_DEBUG_IN();
+
+  switch (tag) {
+  case _gst_smm_uv: {
+    unpackDOFDataHelper(*displacement, buffer, dofs);
+    unpackDOFDataHelper(*velocity, buffer, dofs);
+    break;
+  }
+  case _gst_smm_res: {
+    unpackDOFDataHelper(*internal_force, buffer, dofs);
+    break;
+  }
+  case _gst_smm_mass: {
+    unpackDOFDataHelper(*mass, buffer, dofs);
+    break;
+  }
+  case _gst_for_dump: {
+    unpackDOFDataHelper(*displacement, buffer, dofs);
+    unpackDOFDataHelper(*velocity, buffer, dofs);
+    unpackDOFDataHelper(*acceleration, buffer, dofs);
+    unpackDOFDataHelper(*internal_force, buffer, dofs);
+    unpackDOFDataHelper(*external_force, buffer, dofs);
+    break;
+  }
+  default: {
+    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
+  }
+
+  AKANTU_DEBUG_OUT();
 }
 
 } // namespace akantu

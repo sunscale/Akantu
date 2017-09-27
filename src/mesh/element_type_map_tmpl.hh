@@ -66,7 +66,7 @@ inline bool ElementTypeMap<Stored, SupportType>::exists(
 template <class Stored, typename SupportType>
 inline const Stored & ElementTypeMap<Stored, SupportType>::
 operator()(const SupportType & type, const GhostType & ghost_type) const {
-  typename DataMap::const_iterator it = this->getData(ghost_type).find(type);
+  auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end())
     AKANTU_SILENT_EXCEPTION("No element of type "
@@ -89,7 +89,7 @@ template <class Stored, typename SupportType>
 inline Stored & ElementTypeMap<Stored, SupportType>::
 operator()(const Stored & insert, const SupportType & type,
            const GhostType & ghost_type) {
-  typename DataMap::iterator it = this->getData(ghost_type).find(type);
+  auto it = this->getData(ghost_type).find(type);
 
   if (it != this->getData(ghost_type).end()) {
     AKANTU_SILENT_EXCEPTION("Element of type "
@@ -98,8 +98,8 @@ operator()(const Stored & insert, const SupportType & type,
                             << debug::demangle(typeid(Stored).name())
                             << "> class");
   } else {
-    DataMap & data = this->getData(ghost_type);
-    const std::pair<typename DataMap::iterator, bool> & res =
+    auto & data = this->getData(ghost_type);
+    const auto & res =
         data.insert(std::pair<ElementType, Stored>(type, insert));
     it = res.first;
   }
@@ -113,8 +113,8 @@ inline typename ElementTypeMap<Stored, SupportType>::DataMap &
 ElementTypeMap<Stored, SupportType>::getData(GhostType ghost_type) {
   if (ghost_type == _not_ghost)
     return data;
-  else
-    return ghost_data;
+
+  return ghost_data;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -123,8 +123,8 @@ inline const typename ElementTypeMap<Stored, SupportType>::DataMap &
 ElementTypeMap<Stored, SupportType>::getData(GhostType ghost_type) const {
   if (ghost_type == _not_ghost)
     return data;
-  else
-    return ghost_data;
+
+  return ghost_data;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -145,26 +145,17 @@ void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream,
              << std::endl;
     }
   }
+
   stream << space << "]" << std::endl;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-ElementTypeMap<Stored, SupportType>::ElementTypeMap() {
-  AKANTU_DEBUG_IN();
-
-  // std::stringstream sstr;
-  // if(parent_id != "") sstr << parent_id << ":";
-  // sstr << id;
-
-  // this->id = sstr.str();
-
-  AKANTU_DEBUG_OUT();
-}
+ElementTypeMap<Stored, SupportType>::ElementTypeMap() = default;
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-ElementTypeMap<Stored, SupportType>::~ElementTypeMap() {}
+ElementTypeMap<Stored, SupportType>::~ElementTypeMap() = default;
 
 /* -------------------------------------------------------------------------- */
 /* ElementTypeMapArray                                                        */
@@ -179,8 +170,7 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
 
   Array<T> * tmp;
 
-  typename ElementTypeMapArray<T, SupportType>::DataMap::iterator it =
-      this->getData(ghost_type).find(type);
+  auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end()) {
     std::stringstream sstr;
@@ -217,8 +207,8 @@ template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::free() {
   AKANTU_DEBUG_IN();
 
-  for (auto gt : ghost_types) {
-    DataMap & data = this->getData(gt);
+  for (auto && gt : ghost_types) {
+    auto & data = this->getData(gt);
     for (auto & pair : data) {
       dealloc(pair.second->getID());
     }
@@ -232,7 +222,7 @@ inline void ElementTypeMapArray<T, SupportType>::free() {
 template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::clear() {
   for (auto gt : ghost_types) {
-    DataMap & data = this->getData(gt);
+    auto & data = this->getData(gt);
     for (auto & vect : data) {
       vect.second->clear();
     }
@@ -243,8 +233,7 @@ inline void ElementTypeMapArray<T, SupportType>::clear() {
 template <typename T, typename SupportType>
 inline const Array<T> & ElementTypeMapArray<T, SupportType>::
 operator()(const SupportType & type, const GhostType & ghost_type) const {
-  typename ElementTypeMapArray<T, SupportType>::DataMap::const_iterator it =
-      this->getData(ghost_type).find(type);
+  auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end())
     AKANTU_SILENT_EXCEPTION("No element of type "
@@ -259,8 +248,7 @@ operator()(const SupportType & type, const GhostType & ghost_type) const {
 template <typename T, typename SupportType>
 inline Array<T> & ElementTypeMapArray<T, SupportType>::
 operator()(const SupportType & type, const GhostType & ghost_type) {
-  typename ElementTypeMapArray<T, SupportType>::DataMap::iterator it =
-      this->getData(ghost_type).find(type);
+  auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end())
     AKANTU_SILENT_EXCEPTION("No element of type "
@@ -278,8 +266,7 @@ inline void
 ElementTypeMapArray<T, SupportType>::setArray(const SupportType & type,
                                               const GhostType & ghost_type,
                                               const Array<T> & vect) {
-  typename ElementTypeMapArray<T, SupportType>::DataMap::iterator it =
-      this->getData(ghost_type).find(type);
+  auto it = this->getData(ghost_type).find(type);
 
   if (AKANTU_DEBUG_TEST(dblWarning) && it != this->getData(ghost_type).end() &&
       it->second != &vect) {
@@ -625,6 +612,20 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
                          OPTIONAL_NAMED_ARG(element_kind, _ek_regular)),
                      OPTIONAL_NAMED_ARG(default_value, T()));
   }
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+inline T & ElementTypeMapArray<T, SupportType>::
+operator()(const Element & element) {
+  return this->operator()(element.type, element.ghost_type)(element.element);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+inline const T & ElementTypeMapArray<T, SupportType>::
+operator()(const Element & element) const {
+  return this->operator()(element.type, element.ghost_type)(element.element);
 }
 
 } // namespace akantu

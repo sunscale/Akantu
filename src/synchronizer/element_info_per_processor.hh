@@ -74,21 +74,21 @@ protected:
 protected:
   ElementSynchronizer & synchronizer;
 
-  UInt rank;
-  UInt nb_proc;
+  UInt rank{0};
+  UInt nb_proc{1};
 
-  UInt root;
+  UInt root{0};
 
-  ElementType type;
+  ElementType type{_not_defined};
 
-  UInt nb_tags;
-  UInt nb_nodes_per_element;
-  UInt nb_element;
+  UInt nb_tags{0};
+  UInt nb_nodes_per_element{0};
+  UInt nb_element{0};
 
-  UInt nb_local_element;
-  UInt nb_ghost_element;
+  UInt nb_local_element{0};
+  UInt nb_ghost_element{0};
 
-  UInt message_count;
+  UInt message_count{0};
   Mesh & mesh;
   const StaticCommunicator & comm;
 };
@@ -100,16 +100,16 @@ public:
                            UInt root, ElementType type,
                            const MeshPartition & partition);
 
-  void synchronizeConnectivities();
-  void synchronizePartitions();
-  void synchronizeTags();
-  void synchronizeGroups();
+  void synchronizeConnectivities() override;
+  void synchronizePartitions() override;
+  void synchronizeTags() override;
+  void synchronizeGroups() override;
 
 protected:
   template <typename T>
-  void fillTagBufferTemplated(DynamicCommunicationBuffer * buffers,
+  void fillTagBufferTemplated(std::vector<DynamicCommunicationBuffer> & buffers,
                               const std::string & tag_name);
-  void fillTagBuffer(DynamicCommunicationBuffer * buffers,
+  void fillTagBuffer(std::vector<DynamicCommunicationBuffer> & buffers,
                      const std::string & tag_name);
 
 private:
@@ -126,15 +126,15 @@ public:
   SlaveElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                           UInt root);
 
-  void synchronizeConnectivities();
-  void synchronizePartitions();
-  void synchronizeTags();
-  void synchronizeGroups();
+  void synchronizeConnectivities() override;
+  void synchronizePartitions() override;
+  void synchronizeTags() override;
+  void synchronizeGroups() override;
 
   bool needSynchronize();
 
 private:
-  UInt nb_element_to_receive;
+  UInt nb_element_to_receive{0};
 };
 
 } // akantu

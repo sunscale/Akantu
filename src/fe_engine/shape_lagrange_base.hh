@@ -1,3 +1,4 @@
+
 /**
  * @file   shape_lagrange_base.hh
  *
@@ -40,7 +41,8 @@ class ShapeLagrangeBase : public ShapeFunctions {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrangeBase(const Mesh & mesh, const ElementKind &kind, const ID & id = "shape_lagrange",
+  ShapeLagrangeBase(const Mesh & mesh, const ElementKind & kind,
+                    const ID & id = "shape_lagrange",
                     const MemoryID & memory_id = 0);
   virtual ~ShapeLagrangeBase();
 
@@ -67,7 +69,7 @@ public:
 
   template <ElementType type>
   void computeShapesOnIntegrationPoints(
-      const Array<Real> &, const Matrix<Real> & integration_points,
+      const Array<Real> & nodes, const Matrix<Real> & integration_points,
       Array<Real> & shapes, const GhostType & ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const;
 
@@ -90,6 +92,7 @@ public:
   inline const Array<Real> &
   getShapesDerivatives(const ElementType & el_type,
                        const GhostType & ghost_type = _not_ghost) const;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

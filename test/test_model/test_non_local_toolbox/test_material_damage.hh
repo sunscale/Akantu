@@ -60,7 +60,7 @@ public:
   void insertQuadsInNeighborhoods(GhostType ghost_type);
 
 protected:
-  ID getNeighborhoodName() override { return "test_region"; }
+  //ID getNeighborhoodName() override { return "test_region"; }
 
   /* ------------------------------------------------------------------------ */
   /* Members */

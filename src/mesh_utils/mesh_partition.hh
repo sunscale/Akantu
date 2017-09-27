@@ -102,6 +102,7 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  bool hasPartitions(const ElementType & type, const GhostType & ghost_type);
   AKANTU_GET_MACRO(Partitions, partitions, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Partition, partitions, UInt);
 

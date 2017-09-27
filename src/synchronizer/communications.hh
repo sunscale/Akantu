@@ -109,6 +109,30 @@ public:
 
 public:
   explicit Communications(const StaticCommunicator & communicator);
+
+  /* ------------------------------------------------------------------------ */
+  class IterableCommunicationDesc {
+  public:
+    IterableCommunicationDesc(Communications & communications,
+                              SynchronizationTag tag,
+                              CommunicationSendRecv sr)
+        : communications(communications), tag(std::move(tag)), sr(std::move(sr)) {}
+    decltype(auto) begin() { return communications.begin(tag, sr); }
+    decltype(auto) end() { return communications.end(tag, sr); }
+
+  private:
+    Communications & communications;
+    SynchronizationTag tag;
+    CommunicationSendRecv sr;
+  };
+
+  decltype(auto) iterateRecv(const SynchronizationTag & tag) {
+    return IterableCommunicationDesc(*this, tag, _recv);
+  }
+  decltype(auto) iterateSend(const SynchronizationTag & tag) {
+    return IterableCommunicationDesc(*this, tag, _send);
+  }
+
   /* ------------------------------------------------------------------------ */
   iterator begin_send(const SynchronizationTag & tag);
   iterator end_send(const SynchronizationTag & tag);
@@ -118,6 +142,19 @@ public:
   iterator end_recv(const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */
+  class IterableTags {
+  public:
+    explicit IterableTags(Communications & communications)
+        : communications(communications) {}
+    decltype(auto) begin() { return communications.begin_tag(); }
+    decltype(auto) end() { return communications.end_tag(); }
+
+  private:
+    Communications & communications;
+  };
+
+  decltype(auto) iterateTags() { return IterableTags(*this); }
+
   tag_iterator begin_tag();
   tag_iterator end_tag();
 
@@ -142,6 +179,50 @@ public:
   void freeRecvRequests(const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
+  class IterableSchemes {
+  public:
+    IterableSchemes(Communications & communications,
+                    CommunicationSendRecv sr)
+        : communications(communications), sr(std::move(sr)) {}
+    decltype(auto) begin() { return communications.begin_scheme(sr); }
+    decltype(auto) end() { return communications.end_scheme(sr); }
+
+  private:
+    Communications & communications;
+    CommunicationSendRecv sr;
+  };
+
+  class ConstIterableSchemes {
+  public:
+    ConstIterableSchemes(const Communications & communications,
+                         CommunicationSendRecv sr)
+        : communications(communications), sr(std::move(sr)) {}
+    decltype(auto) begin() const { return communications.begin_scheme(sr); }
+    decltype(auto) end() const { return communications.end_scheme(sr); }
+
+  private:
+    const Communications & communications;
+    CommunicationSendRecv sr;
+  };
+
+  decltype(auto) iterateSchemes(const CommunicationSendRecv & sr) {
+    return IterableSchemes(*this, sr);
+  }
+  decltype(auto) iterateSchemes(const CommunicationSendRecv & sr) const {
+    return ConstIterableSchemes(*this, sr);
+  }
+
+  decltype(auto) iterateSendSchemes() { return IterableSchemes(*this, _send); }
+  decltype(auto) iterateSendSchemes() const {
+    return ConstIterableSchemes(*this, _send);
+  }
+
+  decltype(auto) iterateRecvSchemes() { return IterableSchemes(*this, _recv); }
+  decltype(auto) iterateRecvSchemes() const {
+    return ConstIterableSchemes(*this, _recv);
+  }
+
   scheme_iterator begin_scheme(const CommunicationSendRecv & sr);
   scheme_iterator end_scheme(const CommunicationSendRecv & sr);
   const_scheme_iterator begin_scheme(const CommunicationSendRecv & sr) const;

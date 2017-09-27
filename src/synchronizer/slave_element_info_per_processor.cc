@@ -76,7 +76,7 @@ void SlaveElementInfoPerProc::synchronizeConnectivities() {
       local_connectivity, this->root,
       Tag::genTag(this->root, this->message_count, Tag::_CONNECTIVITY));
 
-  Array<UInt> & old_nodes = this->getNodesGlobalIds();
+  auto & old_nodes = this->getNodesGlobalIds();
   AKANTU_DEBUG_INFO("Renumbering local connectivities");
   MeshUtils::renumberMeshNodes(this->mesh, local_connectivity,
                                this->nb_local_element, this->nb_ghost_element,

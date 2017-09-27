@@ -42,6 +42,8 @@ namespace akantu {
 
 class NonLocalManagerCallback {
 public:
+  virtual void initializeNonLocal() {}
+
   /* ------------------------------------------------------------------------ */
   virtual void
   insertIntegrationPointsInNeighborhoods(const GhostType & ghost_type) = 0;

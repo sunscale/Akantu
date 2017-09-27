@@ -49,6 +49,11 @@ inline UInt Material::addElement(const ElementType & type, UInt element,
 }
 
 /* -------------------------------------------------------------------------- */
+inline UInt Material::addElement(const Element & element) {
+  return this->addElement(element.type, element.element, element.ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
 inline UInt Material::getTangentStiffnessVoigtSize(UInt dim) const {
   return (dim * (dim - 1) / 2 + dim);
 }

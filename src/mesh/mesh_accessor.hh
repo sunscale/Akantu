@@ -46,7 +46,7 @@ class MeshAccessor {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  explicit MeshAccessor(Mesh & mesh) : _mesh(mesh){};
+  explicit MeshAccessor(Mesh & mesh) : _mesh(mesh) {}
   virtual ~MeshAccessor() = default;
 
   /* ------------------------------------------------------------------------ */
@@ -54,44 +54,47 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the global number of nodes
-  inline UInt getNbGlobalNodes() const { return this->_mesh.nb_global_nodes; };
+  inline UInt getNbGlobalNodes() const { return this->_mesh.nb_global_nodes; }
 
   /// set the global number of nodes
   inline void setNbGlobalNodes(UInt nb_global_nodes) {
     this->_mesh.nb_global_nodes = nb_global_nodes;
-  };
+  }
 
   /// set the mesh as being distributed
   inline void setDistributed() { this->_mesh.is_distributed = true; }
 
   /// get a pointer to the nodes_global_ids Array<UInt> and create it if
   /// necessary
-  inline Array<UInt> & getNodesGlobalIds() {
+  inline auto & getNodesGlobalIds() {
     return this->_mesh.getNodesGlobalIdsPointer();
   }
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline Array<NodeType> & getNodesType() {
-    return this->_mesh.getNodesTypePointer();
-  }
+  inline auto & getNodesType() { return this->_mesh.getNodesTypePointer(); }
 
   /// get a pointer to the coordinates Array
-  inline Array<Real> & getNodes() { return this->_mesh.getNodesPointer(); }
+  inline auto & getNodes() { return this->_mesh.getNodesPointer(); }
 
   /// get a pointer to the coordinates Array
-  inline std::shared_ptr<Array<Real>> getNodesSharedPtr() { return this->_mesh.nodes; }
+  inline auto getNodesSharedPtr() { return this->_mesh.nodes; }
 
   /// get a pointer to the connectivity Array for the given type and create it
   /// if necessary
-  inline Array<UInt> &
-  getConnectivity(const ElementType & type,
-                  const GhostType & ghost_type = _not_ghost) {
+  inline auto & getConnectivity(const ElementType & type,
+                                const GhostType & ghost_type = _not_ghost) {
     return this->_mesh.getConnectivityPointer(type, ghost_type);
+  }
+
+  /// get the ghost element counter
+  inline auto & getGhostsCounters(const ElementType & type,
+                                  const GhostType & ghost_type = _ghost) {
+    return this->_mesh.getGhostsCounters(type, ghost_type);
   }
 
   /// get a pointer to the element_to_subelement Array for the given type and
   /// create it if necessary
-  inline Array<std::vector<Element>> &
+  inline auto &
   getElementToSubelement(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost) {
     return this->_mesh.getElementToSubelementPointer(type, ghost_type);
@@ -99,14 +102,14 @@ public:
 
   /// get a pointer to the subelement_to_element Array for the given type and
   /// create it if necessary
-  inline Array<Element> &
+  inline auto &
   getSubelementToElement(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost) {
     return this->_mesh.getSubelementToElementPointer(type, ghost_type);
   }
 
   template <typename T>
-  inline Array<T> &
+  inline auto &
   getData(const std::string & data_name, const ElementType & el_type,
           const GhostType & ghost_type = _not_ghost, UInt nb_component = 1,
           bool size_to_nb_element = true, bool resize_with_parent = false) {
@@ -115,13 +118,13 @@ public:
                                          resize_with_parent);
   }
 
-  MeshData & getMeshData() { return this->_mesh.getMeshData(); }
+  auto & getMeshData() { return this->_mesh.getMeshData(); }
 
   /// get the node synchonizer
-  NodeSynchronizer & getNodeSynchronizer();
+  auto & getNodeSynchronizer() { return *this->_mesh.node_synchronizer; }
 
   /// get the element synchonizer
-  ElementSynchronizer & getElementSynchronizer();
+  auto & getElementSynchronizer() { return *this->_mesh.element_synchronizer; }
 
 private:
   Mesh & _mesh;

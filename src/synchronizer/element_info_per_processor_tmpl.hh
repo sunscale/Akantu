@@ -117,10 +117,9 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
   Element el;
   el.type = type;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    UInt nb_element = mesh.getNbElement(type, *gt);
-    el.ghost_type = *gt;
+  for(auto && ghost_type : ghost_types) {
+    UInt nb_element = mesh.getNbElement(type, ghost_type);
+    el.ghost_type = ghost_type;
 
     for (UInt e = 0; e < nb_element; ++e) {
       el.element = e;
@@ -128,13 +127,11 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
       std::vector<std::string> element_to_group;
       buffer >> element_to_group;
 
-      AKANTU_DEBUG_ASSERT(e < mesh.getNbElement(type, *gt),
+      AKANTU_DEBUG_ASSERT(e < mesh.getNbElement(type, ghost_type),
                           "The mesh does not have the element " << e);
 
-      std::vector<std::string>::iterator it = element_to_group.begin();
-      std::vector<std::string>::iterator end = element_to_group.end();
-      for (; it != end; ++it) {
-        mesh.getElementGroup(*it).add(el, false, false);
+      for (auto && element : element_to_group) {
+        mesh.getElementGroup(element).add(el, false, false);
       }
     }
   }

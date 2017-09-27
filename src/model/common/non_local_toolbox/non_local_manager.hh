@@ -94,6 +94,8 @@ public:
   /// neighborhoods
   virtual void initialize();
 
+  /// synchronize once on a given tag using the neighborhoods synchronizer
+  void synchronize(DataAccessor<Element> & data_accessor, const SynchronizationTag &);
 protected:
   /// create the grid synchronizers for each neighborhood
   void createNeighborhoodSynchronizers();
@@ -109,7 +111,6 @@ protected:
 
   /// update the flattened version of the weight function internals
   void updateWeightFunctionInternals();
-
 protected:
   /// create a new neighborhood for a given domain ID
   void createNeighborhood(const ID & weight_func, const ID & neighborhood);
@@ -138,7 +139,7 @@ protected:
   void initNonLocalVariables();
 
   /// cleanup unneccessary ghosts
-  void cleanupExtraGhostElements(ElementTypeMap<UInt> & nb_ghost_protected);
+  void cleanupExtraGhostElements();//ElementTypeMap<UInt> & nb_ghost_protected);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor kind of interface                                           */

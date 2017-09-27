@@ -222,6 +222,7 @@ public:
   /// add an element to the local mesh filter
   inline UInt addElement(const ElementType & type, UInt element,
                          const GhostType & ghost_type);
+  inline UInt addElement(const Element & element);
 
   /// add many elements at once
   void addElements(const Array<Element> & elements_to_add);

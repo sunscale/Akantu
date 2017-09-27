@@ -594,29 +594,29 @@ void MeshUtils::renumberMeshNodes(Mesh & mesh,
                                   nb_nodes_per_element,
                               renumbering_map);
 
-  std::map<UInt, UInt>::iterator it = renumbering_map.begin();
-  std::map<UInt, UInt>::iterator end = renumbering_map.end();
   old_nodes_numbers.resize(renumbering_map.size());
-  for (; it != end; ++it) {
-    old_nodes_numbers(it->second) = it->first;
+  for (auto & renumber_pair : renumbering_map) {
+    old_nodes_numbers(renumber_pair.second) = renumber_pair.first;
   }
   renumbering_map.clear();
 
   MeshAccessor mesh_accessor(mesh);
 
   /// copy the renumbered connectivity to the right place
-  Array<UInt> & local_conn = mesh_accessor.getConnectivity(type);
+  auto & local_conn = mesh_accessor.getConnectivity(type);
   local_conn.resize(nb_local_element);
   memcpy(local_conn.storage(), local_connectivities.storage(),
          nb_local_element * nb_nodes_per_element * sizeof(UInt));
 
-  Array<UInt> & ghost_conn = mesh_accessor.getConnectivity(type, _ghost);
+  auto & ghost_conn = mesh_accessor.getConnectivity(type, _ghost);
   ghost_conn.resize(nb_ghost_element);
-  memcpy(ghost_conn.storage(),
-         local_connectivities.storage() +
-             nb_local_element * nb_nodes_per_element,
-         nb_ghost_element * nb_nodes_per_element * sizeof(UInt));
+  std::memcpy(ghost_conn.storage(),
+              local_connectivities.storage() +
+              nb_local_element * nb_nodes_per_element,
+              nb_ghost_element * nb_nodes_per_element * sizeof(UInt));
 
+  auto & ghost_counter = mesh_accessor.getGhostsCounters(type, _ghost);
+  ghost_counter.resize(nb_ghost_element, 1);
   AKANTU_DEBUG_OUT();
 }
 

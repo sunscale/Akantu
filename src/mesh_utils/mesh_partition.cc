@@ -34,6 +34,7 @@
 #include "mesh_partition.hh"
 #include "aka_iterators.hh"
 #include "aka_types.hh"
+#include "mesh_accessor.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
@@ -51,9 +52,8 @@ MeshPartition::MeshPartition(const Mesh & mesh, UInt spatial_dimension,
       ghost_partitions("ghost_partition", id, memory_id),
       ghost_partitions_offset("ghost_partition_offset", id, memory_id),
       saved_connectivity("saved_connectivity", id, memory_id),
-      lin_to_element(mesh.getNbElement(spatial_dimension)){
+      lin_to_element(mesh.getNbElement(spatial_dimension)) {
   AKANTU_DEBUG_IN();
-
 
   Element elem;
   elem.ghost_type = _not_ghost;
@@ -147,7 +147,8 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   std::unordered_map<UInt, UInt> weight_map;
 
   for (UInt t = 0, linerized_el = 0; t < nb_good_types; ++t) {
-    auto conn_it = connectivities[t]->begin(connectivities[t]->getNbComponent());
+    auto conn_it =
+        connectivities[t]->begin(connectivities[t]->getNbComponent());
     auto conn_end = connectivities[t]->end(connectivities[t]->getNbComponent());
     for (; conn_it != conn_end; ++conn_it, ++linerized_el) {
       /// fill the weight map
@@ -399,21 +400,20 @@ void MeshPartition::tweakConnectivity(const Array<UInt> & pairs) {
 /* -------------------------------------------------------------------------- */
 void MeshPartition::restoreConnectivity() {
   AKANTU_DEBUG_IN();
-
-  ElementTypeMapArray<UInt>::type_iterator it = saved_connectivity.firstType(
-      spatial_dimension, _not_ghost, _ek_not_defined);
-  ElementTypeMapArray<UInt>::type_iterator end = saved_connectivity.lastType(
-      spatial_dimension, _not_ghost, _ek_not_defined);
-  for (; it != end; ++it) {
-    ElementType type = *it;
-
-    Array<UInt> & conn =
-        const_cast<Array<UInt> &>(mesh.getConnectivity(type, _not_ghost));
-    Array<UInt> & saved_conn = saved_connectivity(type, _not_ghost);
+  MeshAccessor mesh_accessor(const_cast<Mesh &>(mesh));
+  for (auto && type : saved_connectivity.elementTypes(
+           spatial_dimension, _not_ghost, _ek_not_defined)) {
+    auto & conn = mesh_accessor.getConnectivity(type, _not_ghost);
+    auto & saved_conn = saved_connectivity(type, _not_ghost);
     conn.copy(saved_conn);
   }
-
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+bool MeshPartition::hasPartitions(const ElementType & type,
+                                  const GhostType & ghost_type) {
+  return partitions.exists(type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */

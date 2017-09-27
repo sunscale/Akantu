@@ -39,8 +39,7 @@ using namespace akantu;
 int main(int argc, char * argv[]) {
   akantu::initialize("material_parallel_test.dat", argc, argv);
 
-  StaticCommunicator & comm =
-      akantu::StaticCommunicator::getStaticCommunicator();
+  auto & comm = akantu::StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
@@ -66,10 +65,8 @@ int main(int argc, char * argv[]) {
   }
 
   /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector =
-      new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  MeshDataMaterialSelector<std::string> mat_selector("physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// dump material index in paraview
   model.addDumpField("partitions");
@@ -96,22 +93,21 @@ int main(int argc, char * argv[]) {
   GhostType ghost_type = _not_ghost;
   /// apply constant grad_u field in all elements
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    Material & mat = model.getMaterial(m);
-    Array<Real> & grad_u = const_cast<Array<Real> &>(
+    auto & mat = model.getMaterial(m);
+    auto & grad_u = const_cast<Array<Real> &>(
         mat.getInternal<Real>("grad_u")(element_type, ghost_type));
-    Array<Real>::iterator<Matrix<Real>> grad_u_it =
-        grad_u.begin(spatial_dimension, spatial_dimension);
-    Array<Real>::iterator<Matrix<Real>> grad_u_end =
-        grad_u.end(spatial_dimension, spatial_dimension);
+    auto grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
+    auto grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
     for (; grad_u_it != grad_u_end; ++grad_u_it)
-      (*grad_u_it) += applied_strain;
+      (*grad_u_it) = -1. * applied_strain;
   }
 
   /// double the strain in the center: find the closed gauss point to the center
   /// compute the quadrature points
   ElementTypeMapReal quad_coords("quad_coords");
   quad_coords.initialize(mesh, _nb_component = spatial_dimension,
-                         _spatial_dimension = spatial_dimension,  _with_nb_element = true);
+                         _spatial_dimension = spatial_dimension,
+                         _with_nb_element = true);
   model.getFEEngine().computeIntegrationPointsCoordinates(quad_coords);
 
   Vector<Real> center(spatial_dimension, 0.);

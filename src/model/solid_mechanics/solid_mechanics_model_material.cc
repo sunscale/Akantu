@@ -85,7 +85,7 @@ Material & SolidMechanicsModel::registerNewMaterial(const ID & mat_name,
   ID mat_id = sstr_mat.str();
 
   std::unique_ptr<Material> material = MaterialFactory::getInstance().allocate(
-      mat_type, Model::spatial_dimension, opt_param, *this, mat_id);
+      mat_type, spatial_dimension, opt_param, *this, mat_id);
 
   materials.push_back(std::move(material));
 
@@ -125,18 +125,18 @@ void SolidMechanicsModel::assignMaterialToElements(
   element.ghost_type = _not_ghost;
 
   auto element_types =
-      mesh.elementTypes(Model::spatial_dimension, _not_ghost, _ek_not_defined);
-  if (filter != NULL) {
-    element_types = filter->elementTypes(Model::spatial_dimension, _not_ghost,
-                                         _ek_not_defined);
+      mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
+  if (filter != nullptr) {
+    element_types =
+        filter->elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
   }
 
   // Fill the element material array from the material selector
   for (auto type : element_types) {
     UInt nb_element = mesh.getNbElement(type, _not_ghost);
 
-    const Array<UInt> * filter_array = NULL;
-    if (filter != NULL) {
+    const Array<UInt> * filter_array = nullptr;
+    if (filter != nullptr) {
       filter_array = &((*filter)(type, _not_ghost));
       nb_element = filter_array->size();
     }
@@ -145,7 +145,7 @@ void SolidMechanicsModel::assignMaterialToElements(
     element.kind = mesh.getKind(element.type);
     Array<UInt> & mat_indexes = material_index(type, _not_ghost);
     for (UInt el = 0; el < nb_element; ++el) {
-      if (filter != NULL)
+      if (filter != nullptr)
         element.element = (*filter_array)(el);
       else
         element.element = el;
@@ -158,44 +158,42 @@ void SolidMechanicsModel::assignMaterialToElements(
     }
   }
 
-  // synchronize the element material arrays
-  this->synchronize(_gst_material_id);
+  if (non_local_manager)
+    non_local_manager->synchronize(*this, _gst_material_id);
 
   /// fill the element filters of the materials using the element_material
   /// arrays
-  for (auto ghost_type : ghost_types) {
-    element_types = mesh.elementTypes(Model::spatial_dimension, ghost_type,
-                                      _ek_not_defined);
+  auto ghost_type = _not_ghost;
+  if (filter != nullptr) {
+    element_types =
+        filter->elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
+  } else {
+    element_types =
+        mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
+  }
 
-    if (filter != NULL) {
-      element_types = filter->elementTypes(Model::spatial_dimension, ghost_type,
-                                           _ek_not_defined);
+  for (auto type : element_types) {
+    UInt nb_element = mesh.getNbElement(type, ghost_type);
+
+    const Array<UInt> * filter_array = nullptr;
+    if (filter != nullptr) {
+      filter_array = &((*filter)(type, ghost_type));
+      nb_element = filter_array->size();
     }
 
-    for (auto type : element_types) {
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
+    Array<UInt> & mat_indexes = material_index(type, ghost_type);
+    Array<UInt> & mat_local_num = material_local_numbering(type, ghost_type);
+    for (UInt el = 0; el < nb_element; ++el) {
+      UInt element;
 
-      const Array<UInt> * filter_array = NULL;
-      if (filter != NULL) {
-        filter_array = &((*filter)(type, ghost_type));
-        nb_element = filter_array->size();
-      }
+      if (filter != nullptr)
+        element = (*filter_array)(el);
+      else
+        element = el;
 
-      Array<UInt> & mat_indexes = material_index(type, ghost_type);
-      Array<UInt> & mat_local_num = material_local_numbering(type, ghost_type);
-      for (UInt el = 0; el < nb_element; ++el) {
-        UInt element;
-
-        if (filter != NULL)
-          element = (*filter_array)(el);
-        else
-          element = el;
-
-        UInt mat_index = mat_indexes(element);
-        UInt index =
-            materials[mat_index]->addElement(type, element, ghost_type);
-        mat_local_num(element) = index;
-      }
+      UInt mat_index = mat_indexes(element);
+      UInt index = materials[mat_index]->addElement(type, element, ghost_type);
+      mat_local_num(element) = index;
     }
   }
 }
@@ -208,6 +206,8 @@ void SolidMechanicsModel::initMaterials() {
     instantiateMaterials();
 
   this->assignMaterialToElements();
+  // synchronize the element material arrays
+  this->synchronize(_gst_material_id);
 
   for (auto & material : materials) {
     /// init internals properties
@@ -232,9 +232,9 @@ void SolidMechanicsModel::initMaterials() {
     break;
   }
 
-
-  if(this->non_local_manager)
+  if (this->non_local_manager) {
     this->non_local_manager->initialize();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -265,8 +265,8 @@ void SolidMechanicsModel::reassignMaterial() {
   for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type,
-                                       _ek_not_defined)) {
+    for (auto type :
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       element.type = type;
       element.kind = Mesh::getKind(type);
 
@@ -303,7 +303,7 @@ void SolidMechanicsModel::applyEigenGradU(
     const GhostType ghost_type) {
 
   AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() ==
-                          Model::spatial_dimension * Model::spatial_dimension,
+                          spatial_dimension * spatial_dimension,
                       "The prescribed grad_u is not of the good size");
   for (auto & material : materials) {
     if (material->getName() == material_name)

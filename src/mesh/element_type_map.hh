@@ -33,6 +33,7 @@
 #include "aka_array.hh"
 #include "aka_memory.hh"
 #include "aka_named_argument.hh"
+#include "element.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_HH__
@@ -238,20 +239,19 @@ template <typename T, typename SupportType>
 class ElementTypeMapArray : public ElementTypeMap<Array<T> *, SupportType>,
                             public Memory {
 public:
-  typedef T type;
-  typedef Array<T> array_type;
+  using type = T;
+  using array_type = Array<T>;
 
 protected:
-  typedef ElementTypeMap<Array<T> *, SupportType> parent;
-  typedef typename parent::DataMap DataMap;
-
-private:
-private:
-  /// standard assigment (copy) operator
-  void operator=(const ElementTypeMap<T, SupportType> &){};
+  using parent = ElementTypeMap<Array<T> *, SupportType>;
+  using DataMap = typename parent::DataMap;
 
 public:
   using type_iterator = typename parent::type_iterator;
+
+  /// standard assigment (copy) operator
+  void operator=(const ElementTypeMapArray &) = delete;
+  ElementTypeMapArray(const ElementTypeMapArray &) = delete;
 
   /*! Constructor
    *  @param id optional: identifier (string)
@@ -290,6 +290,12 @@ public:
   inline const Array<T> &
   operator()(const SupportType & type,
              const GhostType & ghost_type = _not_ghost) const;
+
+  /// access the data of an element, this combine the map and array accessor
+  inline const T & operator()(const Element & element) const;
+
+  /// access the data of an element, this combine the map and array accessor
+  inline T & operator()(const Element & element);
 
   /* get a reference to the array of certain type
    * @param type data filed under type is returned
@@ -367,24 +373,20 @@ public:
   /// get the name of the internal field
   AKANTU_GET_MACRO(Name, name, ID);
 
-private:
-  ElementTypeMapArray operator=(__attribute__((unused))
-                                const ElementTypeMapArray & other){};
-
   /// name of the elment type map: e.g. connectivity, grad_u
   ID name;
 };
 
 /// to store data Array<Real> by element type
-typedef ElementTypeMapArray<Real> ElementTypeMapReal;
+using ElementTypeMapReal = ElementTypeMapArray<Real>;
 /// to store data Array<Int> by element type
-typedef ElementTypeMapArray<Int> ElementTypeMapInt;
+using ElementTypeMapInt = ElementTypeMapArray<Int>;
 /// to store data Array<UInt> by element type
-typedef ElementTypeMapArray<UInt, ElementType> ElementTypeMapUInt;
+using ElementTypeMapUInt = ElementTypeMapArray<UInt, ElementType>;
 
 /// Map of data of type UInt stored in a mesh
-typedef std::map<std::string, Array<UInt> *> UIntDataMap;
-typedef ElementTypeMap<UIntDataMap, ElementType> ElementTypeMapUIntDataMap;
+using UIntDataMap = std::map<std::string, Array<UInt> *>;
+using ElementTypeMapUIntDataMap = ElementTypeMap<UIntDataMap, ElementType>;
 
 } // namespace akantu
 

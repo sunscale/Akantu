@@ -26,7 +26,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "mesh_utils_distribution.hh"
 #include "element_info_per_processor.hh"
@@ -73,15 +72,10 @@ namespace MeshUtilsDistribution {
     /**
      * connectivity and communications scheme construction
      */
-    Mesh::type_iterator it =
-        mesh.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
-    Mesh::type_iterator end =
-        mesh.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
     UInt count = 0;
     /* --- MAIN LOOP ON TYPES --- */
-    for (; it != end; ++it) {
-      ElementType type = *it;
-
+    for (auto && type :
+         mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
       /// \todo change this ugly way to avoid a problem if an element
       /// type is present in the mesh but not in the partitions
       try {
@@ -173,6 +167,6 @@ namespace MeshUtilsDistribution {
     mesh_accessor.setDistributed();
   }
 
-} // MeshUtilsDistribution
+} // namespace MeshUtilsDistribution
 
-} // akantu
+} // namespace akantu
