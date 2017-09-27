@@ -269,7 +269,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
     math(EXPR _retry_count "${_retry_count} + 1")
   endwhile()
 
-  if(_retry_count GREATER_EQUAL 100)
+  if(_retry_count GREATER 100)
     message(FATAL_ERROR "Do not know what to do to link with mumps on your system, I give up!")
   endif()
   
