@@ -40,8 +40,6 @@ package_declare_sources(damage_non_local
   model/solid_mechanics/materials/material_damage/material_mazars_non_local.cc
   model/solid_mechanics/materials/material_damage/material_mazars_non_local.hh
 
-  model/solid_mechanics/materials/weight_functions/base_weight_function.hh
-  model/solid_mechanics/materials/weight_functions/base_weight_function_inline_impl.cc
   model/solid_mechanics/materials/weight_functions/damaged_weight_function.hh
   model/solid_mechanics/materials/weight_functions/damaged_weight_function_inline_impl.cc
   model/solid_mechanics/materials/weight_functions/remove_damaged_weight_function.hh
