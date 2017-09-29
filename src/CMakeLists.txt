@@ -181,7 +181,7 @@ if(_extra_target_dependencies)
   add_dependencies(akantu ${_extra_target_dependencies})
 endif()
 
-
+package_get_all_export_list(AKANTU_EXPORT_LIST)
 list(APPEND AKANTU_EXPORT_LIST akantu)
 
 # TODO separate public from private headers

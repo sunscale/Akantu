@@ -28,6 +28,21 @@
 #
 #===============================================================================
 
+if(EXISTS ${PROJECT_SOURCE_DIR}/third-party/iohelper)
+  set(IOHELPER_TARGETS_EXPORT ${AKANTU_TARGETS_EXPORT})
+  add_subdirectory(${PROJECT_SOURCE_DIR}/third-party/iohelper)
+
+  set(IOHELPER_SOURCE_TYPE "internal"
+    CACHE INTERNAL "internal variable for clean export")
+
+  set(IOHELPER_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/third-party/iohelper/src"
+    CACHE INTERNAL "IOHelper include directory")
+
+  set(IOHELPER_LIBRARIES iohelper CACHE INTERNAL "IOHelper library")
+  package_add_to_export_list(iohelper iohelper)
+  return()
+endif()
+
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${IOHELPER_ARCHIVE})
   set(_iohelper_download_command
     GIT_REPOSITORY ${IOHELPER_GIT}
@@ -66,6 +81,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 set(IOHELPER_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/iohelper" CACHE PATH "IOHelper include directory")
+set(IOHELPER_SOURCE_TYPE "external" CACHE INTERNAL "internal variable for clean export")
 
 mark_as_advanced(
   IOHELPER_LIBRARIES

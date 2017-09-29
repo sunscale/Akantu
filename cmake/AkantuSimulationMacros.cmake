@@ -103,8 +103,15 @@ function(_add_akantu_simulation simulation_name)
       add_executable(${simulation_name}
         ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_SOURCES})
 
-      target_link_libraries(${simulation_name} akantu ${_simulation_LIBRARIES})
-      target_include_directories(${simulation_name} PRIVATE ${AKANTU_INCLUDE_DIRS} ${_boost_include_dir} ${_simulation_INCLUDE_DIRS})
+      target_link_libraries(${simulation_name}
+	akantu
+	${_simulation_LIBRARIES})
+
+      target_include_directories(${simulation_name}
+	PRIVATE
+	  ${AKANTU_INCLUDE_DIRS}
+	  ${_boost_include_dir}
+	  ${_simulation_INCLUDE_DIRS})
 
       if(_simulation_DEPENDS)
         foreach(_deps ${_simulation_DEPENDS})

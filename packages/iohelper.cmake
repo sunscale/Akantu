@@ -34,11 +34,11 @@ package_declare(IOHelper EXTERNAL
   SYSTEM OFF third-party/cmake/iohelper.cmake
   DEFAULT ON)
 
-set(_version "master")
+set(_version "1.1.1")
 package_add_third_party_script_variable(IOHelper
   IOHELPER_VERSION ${_version})
 package_add_third_party_script_variable(IOHelper
-  IOHELPER_GIT "https://c4science.ch/diffusion/IOHELPER/iohelper.git")
+  IOHELPER_GIT "https://c4science.ch/source/iohelper.git")
 package_add_third_party_script_variable(Scotch
   IOHELPER_ARCHIVE "iohelper_${_version}.tar.gz")
 

@@ -29,8 +29,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
+#include <ostream>
+/* -------------------------------------------------------------------------- */
 
 #if defined(AKANTU_USE_CXX11)
 #define __CONST_EXPR constexpr
@@ -151,7 +154,7 @@ public:
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const {
-    stream << "Rand48Generator [seed=" << seed << "]";
+    stream << "Rand48Generator [seed=" << _seed << "]";
   }
 
   /* ------------------------------------------------------------------------ */
@@ -269,7 +272,7 @@ public:
 #define AKANTU_RANDOM_DISTRIBUTION_TYPE_NEW(r, data, elem)                     \
   else if (type == AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                    \
                        BOOST_PP_TUPLE_ELEM(2, 0, elem))) {                     \
-    typedef BOOST_PP_TUPLE_ELEM(2, 1, elem) <T> Dist;                          \
+    typedef BOOST_PP_TUPLE_ELEM(2, 1, elem)<T> Dist;                           \
     distribution = new Dist(*static_cast<Dist *>(other.distribution));         \
   }
 

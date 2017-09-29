@@ -286,8 +286,7 @@ void Debugger::throwException(const std::string & info,
                               const std::string & file, unsigned int line,
                               __attribute__((unused)) bool silent,
                               __attribute__((unused))
-                              const std::string & location) const
-    throw(akantu::debug::Exception) {
+                              const std::string & location) const {
 
 #if !defined(AKANTU_NDEBUG)
   if (!silent) {
