@@ -28,6 +28,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "aka_named_argument.hh"
+#include "aka_static_if.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -131,9 +133,10 @@ namespace mesh_iterators {
   namespace details {
     template <class internal_iterator> class delegated_iterator {
     public:
-      using value_type = std::remove_pointer_t<typename internal_iterator::value_type::second_type>;
-      using pointer = value_type*;
-      using reference = value_type&;
+      using value_type = std::remove_pointer_t<
+          typename internal_iterator::value_type::second_type>;
+      using pointer = value_type *;
+      using reference = value_type &;
       using iterator_category = std::input_iterator_tag;
 
       explicit delegated_iterator(internal_iterator it) : it(std::move(it)) {}
@@ -225,27 +228,75 @@ namespace mesh_iterators {
 
 template <class GroupManager>
 decltype(auto) ElementGroupsIterable(GroupManager && group_manager) {
-  return mesh_iterators::details::ElementGroupsIterable<GroupManager>(group_manager);
+  return mesh_iterators::details::ElementGroupsIterable<GroupManager>(
+      group_manager);
 }
 
 template <class GroupManager>
 decltype(auto) NodeGroupsIterable(GroupManager && group_manager) {
-  return mesh_iterators::details::NodeGroupsIterable<GroupManager>(group_manager);
+  return mesh_iterators::details::NodeGroupsIterable<GroupManager>(
+      group_manager);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Func>
-void for_each_elements(size_t nb_elements, const Array<UInt> & filter_elements, Func && function) {
-  if(filter_elements != empty_filter) {
+void for_each_elements(size_t nb_elements, const Array<UInt> & filter_elements,
+                       Func && function) {
+  if (filter_elements != empty_filter) {
     std::for_each(filter_elements.begin(), filter_elements.end(),
                   std::forward<Func>(function));
   } else {
     auto && range = arange(nb_elements);
-    std::for_each(range.begin(), range.end(),
-                  std::forward<Func>(function));
+    std::for_each(range.begin(), range.end(), std::forward<Func>(function));
   }
 }
 
+namespace {
+  DECLARE_NAMED_ARGUMENT(element_filter);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Func, typename... pack>
+void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
+  auto && requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _casper);
+  auto && filter = OPTIONAL_NAMED_ARG(element_filter, nullptr);
+
+  bool all_ghost_types = requested_ghost_type == _casper;
+
+  auto && spatial_dimension =
+      OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension());
+  auto && element_kind = OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined);
+
+  for (auto && ghost_type : ghost_types) {
+    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+      continue;
+
+    auto element_types =
+        mesh.elementTypes(spatial_dimension, ghost_type, element_kind);
+
+    static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
+        .then([&](auto && element_types) {
+          element_types =
+              filter->elementTypes(spatial_dimension, ghost_type, element_kind);
+        })(std::forward<decltype(element_types)>(element_types));
+
+    for (auto && type : element_types) {
+      const Array<UInt> * filter_array;
+
+      static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
+          .then([&](auto && array) { array = &((*filter)(type, ghost_type)); })
+          .else_([&](auto && array) { array = &empty_filter; })(
+              std::forward<const Array<UInt> *>(filter_array));
+
+      auto nb_elements = mesh.getNbElement(type, ghost_type);
+
+      for_each_elements(nb_elements, *filter_array, [&](auto && el) {
+        auto element = Element(type, el, ghost_type, mesh.getKind(type));
+        std::forward<Func>(function)(element);
+      });
+    }
+  }
+}
 } // namespace akantu
 
 #endif /* __AKANTU_MESH_ITERATORS_HH__ */

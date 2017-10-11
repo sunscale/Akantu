@@ -58,18 +58,12 @@ template <ElementKind kind> class ShapeLagrange;
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-namespace {
-  DECLARE_NAMED_ARGUMENT(analysis_method);
-}
-
 struct SolidMechanicsModelOptions : public ModelOptions {
   explicit SolidMechanicsModelOptions(
       AnalysisMethod analysis_method = _explicit_lumped_mass);
 
   template <typename... pack>
   SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
-
-  AnalysisMethod analysis_method;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -122,17 +116,18 @@ public:
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
 
+protected:
   /// initialize all internal arrays for materials
   virtual void initMaterials();
 
   /// initialize the model
   void initModel() override;
 
-  /// initialize a new solver and sets it as the default one to use
-  void initNewSolver(const AnalysisMethod & method);
-
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
+
+  /// get some default values for derived classes
+  std::tuple<ID, TimeStepSolverType> getDefaultSolverID(const AnalysisMethod & method) override;
 
   /* ------------------------------------------------------------------------ */
   /* Solver interface                                                         */
@@ -460,9 +455,6 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
                                    material_local_numbering, UInt);
 
-  /// Get the type of analysis method used
-  AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
-
   /// Access the non_local_manager interface
   AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
 
@@ -485,38 +477,39 @@ protected:
   UInt displacement_release{0};
 
   /// displacements array at the previous time step (used in finite deformation)
-  Array<Real> * previous_displacement;
+  Array<Real> * previous_displacement{nullptr};
 
   /// increment of displacement
-  Array<Real> * displacement_increment;
+  Array<Real> * displacement_increment{nullptr};
 
   /// lumped mass array
-  Array<Real> * mass;
+  Array<Real> * mass{nullptr};
+
   /// Check if materials need to recompute the mass array
   bool need_to_reassemble_lumped_mass{true};
   /// Check if materials need to recompute the mass matrix
   bool need_to_reassemble_mass{true};
 
   /// velocities array
-  Array<Real> * velocity;
+  Array<Real> * velocity{nullptr};
 
   /// accelerations array
-  Array<Real> * acceleration;
+  Array<Real> * acceleration{nullptr};
 
   /// accelerations array
   // Array<Real> * increment_acceleration;
 
   /// external forces array
-  Array<Real> * external_force;
+  Array<Real> * external_force{nullptr};
 
   /// internal forces array
-  Array<Real> * internal_force;
+  Array<Real> * internal_force{nullptr};
 
   /// array specifing if a degree of freedom is blocked or not
-  Array<bool> * blocked_dofs;
+  Array<bool> * blocked_dofs{nullptr};
 
   /// array of current position used during update residual
-  Array<Real> * current_position;
+  Array<Real> * current_position{nullptr};
   UInt current_position_release{0};
 
   /// Arrays containing the material index for each element
@@ -547,9 +540,6 @@ protected:
   /// flag defining if the increment must be computed or not
   bool increment_flag;
 
-  /// analysis method check the list in akantu::AnalysisMethod
-  AnalysisMethod method;
-
   /// tells if the material are instantiated
   bool are_materials_instantiated;
 
@@ -571,13 +561,6 @@ namespace BC {
     typedef FromSameDim FromTraction;
   } // namespace Neumann
 } // namespace BC
-
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const SolidMechanicsModel & _this) {
-  _this.printself(stream);
-  return stream;
-}
 
 } // namespace akantu
 

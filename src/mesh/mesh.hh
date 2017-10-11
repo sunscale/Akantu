@@ -424,10 +424,9 @@ public:
   using ElementTypesIteratorHelper =
       ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;
 
-  inline ElementTypesIteratorHelper
-  elementTypes(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
-               ElementKind kind = _ek_regular) const {
-    return connectivities.elementTypes(dim, ghost_type, kind);
+  template <typename... pack>
+  ElementTypesIteratorHelper elementTypes(pack &&... _pack) const {
+    return connectivities.elementTypes(_pack...);
   }
 
   inline type_iterator firstType(UInt dim = _all_dimensions,

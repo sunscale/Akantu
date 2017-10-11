@@ -428,6 +428,15 @@ ElementTypeMap<Stored, SupportType>::elementTypes(UInt dim,
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
+template <typename P, typename T, typename... pack>
+typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
+ElementTypeMap<Stored, SupportType>::elementTypes(
+    named_argument::param_t<P, T &&> && first, pack &&... _pack) const {
+  return ElementTypesIteratorHelper(*this, use_named_args, first, _pack...);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator
 ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
                                                ElementKind kind) const {
@@ -558,17 +567,6 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
                   default_value);
   }
 }
-
-namespace {
-  DECLARE_NAMED_ARGUMENT(all_ghost_types);
-  DECLARE_NAMED_ARGUMENT(default_value);
-  DECLARE_NAMED_ARGUMENT(element_kind);
-  DECLARE_NAMED_ARGUMENT(ghost_type);
-  DECLARE_NAMED_ARGUMENT(nb_component);
-  DECLARE_NAMED_ARGUMENT(with_nb_element);
-  DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
-  DECLARE_NAMED_ARGUMENT(spatial_dimension);
-} // namespace
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>

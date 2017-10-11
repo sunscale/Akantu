@@ -96,8 +96,6 @@
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_triangle_6, _gt_triangle_6, _itp_lagrange_triangle_6, _ek_regular, 2,
 				     _git_triangle, 2);
 
-AKANTU_DEFINE_SHAPE(_gt_triangle_6, _gst_triangle);
-
 /* -------------------------------------------------------------------------- */
 
 template <>

@@ -120,20 +120,17 @@ public:
                               const ID & id = "solid_mechanics_model_cohesive",
                               const MemoryID & memory_id = 0);
 
-  virtual ~SolidMechanicsModelCohesive();
+  ~SolidMechanicsModelCohesive() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// set the value of the time step
-  void setTimeStep(Real time_step);
+  void setTimeStep(Real time_step, const ID & solver_id = "") override;
 
   /// assemble the residual for the explicit scheme
-  virtual void assembleInternalForces();
-
-  /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void assembleInternalForces() override;
 
   /// function to perform a stress check on each facet and insert
   /// cohesive elements if needed (returns the number of new cohesive
@@ -144,8 +141,8 @@ public:
   void interpolateStress();
 
   /// initialize the cohesive model
-  void
-  initFull(const ModelOptions & options = SolidMechanicsModelCohesiveOptions());
+  void initFull(const ModelOptions & options =
+                    SolidMechanicsModelCohesiveOptions()) override;
 
   template <typename P, typename T, typename... pack>
   void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
@@ -153,14 +150,6 @@ public:
         SolidMechanicsModelCohesiveOptions{use_named_args, first, _pack...});
   }
 
-  /// initialize the model
-  void initModel();
-
-  /// initialize cohesive material
-  void initMaterials();
-
-  /// init facet filters for cohesive materials
-  void initFacetFilter();
 
   /// limit the cohesive element insertion to a given area
   void limitInsertion(BC::Axis axis, Real first_limit, Real second_limit);
@@ -171,9 +160,6 @@ public:
   /// insert intrinsic cohesive elements
   void insertIntrinsicElements();
 
-  // synchronize facets physical data before insertion along physical surfaces
-  void synchronizeInsertionData();
-
   // template <SolveConvergenceMethod cmethod, SolveConvergenceCriteria
   // criteria> bool solveStepCohesive(Real tolerance, Real & error, UInt
   // max_iteration = 100,
@@ -181,8 +167,24 @@ public:
   //                        Real tol_increase_factor = 1.0,
   //                        bool do_not_factorize = false);
 
+protected:
   /// initialize stress interpolation
   void initStressInterpolation();
+
+    /// initialize the model
+  void initModel() override;
+
+  /// initialize cohesive material
+  void initMaterials() override;
+
+  /// init facet filters for cohesive materials
+  void initFacetFilter();
+
+  // synchronize facets physical data before insertion along physical surfaces
+  void synchronizeInsertionData();
+
+  /// function to print the contain of the class
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 private:
   /// initialize cohesive material with intrinsic insertion (by default)
@@ -212,28 +214,28 @@ private:
   /* ------------------------------------------------------------------------ */
 
 protected:
-  virtual void onNodesAdded(const Array<UInt> & nodes_list,
-                            const NewNodesEvent & event);
-  virtual void onElementsAdded(const Array<Element> & nodes_list,
-                               const NewElementsEvent & event);
+  void onNodesAdded(const Array<UInt> & nodes_list,
+                    const NewNodesEvent & event) override;
+  void onElementsAdded(const Array<Element> & nodes_list,
+                       const NewElementsEvent & event) override;
 
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onEndSolveStep(const AnalysisMethod & method);
+  void onEndSolveStep(const AnalysisMethod & method) override;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onDump();
+  void onDump() override;
 
-  virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
-                                         const std::string & field_id,
-                                         const std::string & group_name,
-                                         const ElementKind & element_kind,
-                                         bool padding_flag);
+  void addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                 const std::string & field_id,
+                                 const std::string & group_name,
+                                 const ElementKind & element_kind,
+                                 bool padding_flag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -287,14 +289,6 @@ private:
 #include "solid_mechanics_model_cohesive_parallel.hh"
 #endif
 };
-
-/* -------------------------------------------------------------------------- */
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const SolidMechanicsModelCohesive & _this) {
-  _this.printself(stream);
-  return stream;
-}
 
 } // namespace akantu
 

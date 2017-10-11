@@ -159,7 +159,7 @@ public:
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
   }
 
-  void setDirectory(const std::string & directory) {
+  void setDirecory(const std::string & directory) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
   }
   void setDirectoryToDumper(const std::string & dumper_name,

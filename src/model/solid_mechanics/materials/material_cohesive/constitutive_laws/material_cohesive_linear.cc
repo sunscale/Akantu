@@ -504,7 +504,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkDeltaMax(
   * friction behavior are correctly set.
   */
 
-  Mesh & mesh = fem_cohesive->getMesh();
+  Mesh & mesh = fem_cohesive.getMesh();
   Mesh::type_iterator it =
       mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
   Mesh::type_iterator last_type =
@@ -582,7 +582,7 @@ void MaterialCohesiveLinear<spatial_dimension>::resetVariables(
   * false at the beginning of a new incremental step.
   */
 
-  Mesh & mesh = fem_cohesive->getMesh();
+  Mesh & mesh = fem_cohesive.getMesh();
   Mesh::type_iterator it =
       mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
   Mesh::type_iterator last_type =

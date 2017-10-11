@@ -147,27 +147,19 @@ void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {
  * the different possibilities
  */
 void SolidMechanicsModel::initFull(const ModelOptions & options) {
-  Model::initFull(options);
-
-  const SolidMechanicsModelOptions & smm_options =
-      dynamic_cast<const SolidMechanicsModelOptions &>(options);
-
-  method = smm_options.analysis_method;
-
   material_index.initialize(mesh, _element_kind = _ek_not_defined,
                             _default_value = UInt(-1), _with_nb_element = true);
   material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
                                       _with_nb_element = true);
 
-  if (!this->hasDefaultSolver())
-    this->initNewSolver(this->method);
+  Model::initFull(options);
 
   // initialize pbc
   if (this->pbc_pair.size() != 0)
     this->initPBC();
 
   // initialize the materials
-  if (this->parser->getLastParsedFile() != "") {
+  if (this->parser.getLastParsedFile() != "") {
     this->instantiateMaterials();
   }
 
@@ -211,55 +203,38 @@ ModelSolverOptions SolidMechanicsModel::getDefaultSolverOptions(
     }
     break;
   }
+  default:
+    AKANTU_EXCEPTION(type << " is not a valid time step solver type");
   }
 
   return options;
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initNewSolver(const AnalysisMethod & method) {
-  ID solver_name;
-  TimeStepSolverType tss_type;
-
-  this->method = method;
-
-  switch (this->method) {
+std::tuple<ID, TimeStepSolverType>
+SolidMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
+  switch (method) {
   case _explicit_lumped_mass: {
-    solver_name = "explicit_lumped";
-    tss_type = _tsst_dynamic_lumped;
-    break;
+    return std::make_tuple("explicit_lumped", _tsst_dynamic_lumped);
   }
   case _explicit_consistent_mass: {
-    solver_name = "explicit";
-    tss_type = _tsst_dynamic;
-    break;
+    return std::make_tuple("explicit", _tsst_dynamic);
   }
   case _static: {
-    solver_name = "static";
-    tss_type = _tsst_static;
-    break;
+    return std::make_tuple("static", _tsst_static);
   }
   case _implicit_dynamic: {
-    solver_name = "implicit";
-    tss_type = _tsst_dynamic;
-    break;
+    return std::make_tuple("implicit", _tsst_dynamic);
   }
-  }
-
-  if (!this->hasSolver(solver_name)) {
-    ModelSolverOptions options = this->getDefaultSolverOptions(tss_type);
-    this->getNewSolver(solver_name, tss_type, options.non_linear_solver_type);
-    this->setIntegrationScheme(solver_name, "displacement",
-                               options.integration_scheme_type["displacement"],
-                               options.solution_type["displacement"]);
-    this->setDefaultSolver(solver_name);
+  default:
+    return std::make_tuple("unknown", _tsst_not_defined);
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initSolver(TimeStepSolverType time_step_solver_type,
                                      NonLinearSolverType) {
-  DOFManager & dof_manager = this->getDOFManager();
+  auto & dof_manager = this->getDOFManager();
 
   /* ------------------------------------------------------------------------ */
   // for alloc type of solvers
@@ -724,9 +699,9 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
                                           const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-  for(auto && ghost_type : ghost_types) {
+  for (auto && ghost_type : ghost_types) {
     for (auto type :
-           mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       UInt nb_element = this->mesh.getNbElement(type, ghost_type);
 
       if (!material_index.exists(type, ghost_type)) {
@@ -736,7 +711,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
       } else {
         this->material_index(type, ghost_type).resize(nb_element);
         this->material_local_numbering(type, ghost_type)
-          .resize(nb_element, UInt(-1));
+            .resize(nb_element, UInt(-1));
       }
     }
   }
@@ -764,8 +739,8 @@ void SolidMechanicsModel::onElementsRemoved(
     const Array<Element> & element_list,
     const ElementTypeMapArray<UInt> & new_numbering,
     const RemovedElementsEvent & event) {
-  //this->getFEEngine().initShapeFunctions(_not_ghost);
-  //this->getFEEngine().initShapeFunctions(_ghost);
+  // this->getFEEngine().initShapeFunctions(_not_ghost);
+  // this->getFEEngine().initShapeFunctions(_ghost);
 
   for (auto & material : materials) {
     material->onElementsRemoved(element_list, new_numbering, event);
@@ -1110,11 +1085,10 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
       if (mat_index != UInt(-1))
         continue;
 
+      // add ghosts element to the correct material
       mat_index = recv_mat_index;
       UInt index = materials[mat_index]->addElement(element);
       material_local_numbering(element) = index;
-      std::cout << "Registering: " << element << " in material " << mat_index
-                << std::endl;
     }
     break;
   }

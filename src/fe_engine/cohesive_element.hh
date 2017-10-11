@@ -86,6 +86,6 @@ AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_triangle_6, _cohesive_3d_12);
 AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_quadrangle_4, _cohesive_3d_8);
 AKANTU_DEFINE_COHESIVE_FACET_PROPERTY(_quadrangle_8, _cohesive_3d_16);
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_HH__ */

@@ -45,6 +45,17 @@ class FEEngine;
 
 namespace akantu {
 
+namespace {
+  DECLARE_NAMED_ARGUMENT(all_ghost_types);
+  DECLARE_NAMED_ARGUMENT(default_value);
+  DECLARE_NAMED_ARGUMENT(element_kind);
+  DECLARE_NAMED_ARGUMENT(ghost_type);
+  DECLARE_NAMED_ARGUMENT(nb_component);
+  DECLARE_NAMED_ARGUMENT(with_nb_element);
+  DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
+  DECLARE_NAMED_ARGUMENT(spatial_dimension);
+} // namespace
+
 template <class Stored, typename SupportType = ElementType>
 class ElementTypeMap;
 
@@ -54,7 +65,7 @@ class ElementTypeMap;
 /// Common non templated base class for the ElementTypeMap class
 class ElementTypeMapBase {
 public:
-  virtual ~ElementTypeMapBase(){};
+  virtual ~ElementTypeMapBase() = default;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -119,13 +130,13 @@ public:
   class type_iterator
       : private std::iterator<std::forward_iterator_tag, const SupportType> {
   public:
-    typedef const SupportType value_type;
-    typedef const SupportType * pointer;
-    typedef const SupportType & reference;
+    using value_type = const SupportType;
+    using pointer = const SupportType *;
+    using reference = const SupportType &;
 
   protected:
-    typedef typename ElementTypeMap<Stored>::DataMap::const_iterator
-        DataMapIterator;
+    using DataMapIterator =
+        typename ElementTypeMap<Stored>::DataMap::const_iterator;
 
   public:
     type_iterator(DataMapIterator & list_begin, DataMapIterator & list_end,
@@ -155,12 +166,18 @@ public:
     using Container = ElementTypeMap<Stored, SupportType>;
     using iterator = typename Container::type_iterator;
 
-    ElementTypesIteratorHelper(const Container & container,
-                               UInt dim = _all_dimensions,
-                               GhostType ghost_type = _not_ghost,
-                               ElementKind kind = _ek_regular)
+    ElementTypesIteratorHelper(const Container & container, UInt dim,
+                               GhostType ghost_type, ElementKind kind)
         : container(std::cref(container)), dim(dim), ghost_type(ghost_type),
           kind(kind) {}
+
+    template <typename... pack>
+    ElementTypesIteratorHelper(const Container & container, use_named_args_t,
+                               pack &&... _pack)
+        : ElementTypesIteratorHelper(
+            container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+            OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
+            OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
 
     ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
     ElementTypesIteratorHelper &
@@ -184,6 +201,11 @@ public:
   ElementTypesIteratorHelper elementTypes(UInt dim = _all_dimensions,
                                           GhostType ghost_type = _not_ghost,
                                           ElementKind kind = _ek_regular) const;
+
+  template <typename P, typename T, typename... pack>
+  ElementTypesIteratorHelper
+  elementTypes(named_argument::param_t<P, T &&> && first,
+               pack &&... _pack) const;
 
   /*! Get an iterator to the beginning of a subset datamap. This method expects
    *  the SupportType to be ElementType.

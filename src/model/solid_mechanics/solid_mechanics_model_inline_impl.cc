@@ -45,7 +45,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 inline SolidMechanicsModelOptions::SolidMechanicsModelOptions(
     AnalysisMethod analysis_method)
-    : analysis_method(analysis_method) {}
+    : ModelOptions(analysis_method) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename... pack>

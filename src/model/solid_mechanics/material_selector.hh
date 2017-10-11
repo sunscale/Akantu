@@ -68,26 +68,21 @@ protected:
  */
 class DefaultMaterialSelector : public MaterialSelector {
 public:
-  DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index)
+  explicit DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index)
       : material_index(material_index) {}
 
   UInt operator()(const Element & element) {
-    try {
-      DebugLevel dbl = debug::getDebugLevel();
-      debug::setDebugLevel(dblError);
+    if (not material_index.exists(element.type, element.ghost_type))
+      return fallback_value;
 
-      const Array<UInt> & mat_indexes =
-          material_index(element.type, element.ghost_type);
-      UInt mat = this->fallback_value;
-
-      if (element.element < mat_indexes.size())
-        mat = mat_indexes(element.element);
-
-      debug::setDebugLevel(dbl);
-      return mat;
-    } catch (...) {
-      return MaterialSelector::operator()(element);
+    const auto & mat_indexes = material_index(element.type, element.ghost_type);
+    if (element.element < mat_indexes.size()) {
+      auto && tmp_mat = mat_indexes(element.element);
+      if (tmp_mat != UInt(-1))
+        return tmp_mat;
     }
+
+    return fallback_value;
   }
 
 private:
@@ -142,6 +137,6 @@ public:
                            UInt first_index = 1);
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_HH__ */

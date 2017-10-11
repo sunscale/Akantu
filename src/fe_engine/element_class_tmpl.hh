@@ -37,6 +37,7 @@
 /* -------------------------------------------------------------------------- */
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_ELEMENT_CLASS_TMPL_HH__
 #define __AKANTU_ELEMENT_CLASS_TMPL_HH__
 
@@ -176,7 +177,7 @@ inline void InterpolationElement<interpolation_type, kind>::interpolate(
   Matrix<Real> interpm(interpolated.storage(), nodal_values.rows(), 1);
   Matrix<Real> shapesm(
       shapes.storage(),
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element, 1);
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element, 1);
   interpm.mul<false, false>(nodal_values, shapesm);
 }
 
@@ -222,7 +223,7 @@ InterpolationElement<interpolation_type, kind>::interpolateOnNaturalCoordinates(
     const Vector<Real> & natural_coords, const Matrix<Real> & nodal_values,
     Vector<Real> & interpolated) {
   Vector<Real> shapes(
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element);
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element);
   computeShapes(natural_coords, shapes);
 
   interpolate(nodal_values, shapes, interpolated);
@@ -237,8 +238,8 @@ InterpolationElement<interpolation_type, kind>::gradientOnNaturalCoordinates(
     const Vector<Real> & natural_coords, const Matrix<Real> & f,
     Matrix<Real> & gradient) {
   Matrix<Real> dnds(
-      InterpolationPorperty<interpolation_type>::natural_space_dimension,
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element);
+      InterpolationProperty<interpolation_type>::natural_space_dimension,
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element);
   computeDNDS(natural_coords, dnds);
   gradient.mul<false, true>(f, dnds);
 }

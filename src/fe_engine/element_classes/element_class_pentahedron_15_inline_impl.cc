@@ -80,8 +80,6 @@ AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_pentahedron_15,
                                      _git_pentahedron,
                                      2);
 
-AKANTU_DEFINE_SHAPE(_gt_pentahedron_15, _gst_prism);
-
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>

@@ -290,7 +290,7 @@ template <typename T> T & ParameterRegistry::get(const std::string & name) {
     }
 
     // nothing was found not even in sub registries
-    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name));
+    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
   }
 
   Parameter & param = *(it->second);

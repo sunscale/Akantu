@@ -34,10 +34,9 @@
 #include "aka_factory.hh"
 #include "aka_math.hh"
 #include "material_non_local.hh"
-#include "solid_mechanics_model.hh"
-#ifdef AKANTU_DAMAGE_NON_LOCAL
+#include "mesh_iterators.hh"
 #include "non_local_manager.hh"
-#endif
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -95,7 +94,7 @@ Material & SolidMechanicsModel::registerNewMaterial(const ID & mat_name,
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::instantiateMaterials() {
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      sub_sect = this->parser->getSubSections(_st_material);
+      sub_sect = this->parser.getSubSections(_st_material);
 
   Parser::const_section_iterator it = sub_sect.first;
   for (; it != sub_sect.second; ++it) {
@@ -121,81 +120,28 @@ void SolidMechanicsModel::instantiateMaterials() {
 void SolidMechanicsModel::assignMaterialToElements(
     const ElementTypeMapArray<UInt> * filter) {
 
-  Element element;
-  element.ghost_type = _not_ghost;
-
-  auto element_types =
-      mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
-  if (filter != nullptr) {
-    element_types =
-        filter->elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
-  }
-
-  // Fill the element material array from the material selector
-  for (auto type : element_types) {
-    UInt nb_element = mesh.getNbElement(type, _not_ghost);
-
-    const Array<UInt> * filter_array = nullptr;
-    if (filter != nullptr) {
-      filter_array = &((*filter)(type, _not_ghost));
-      nb_element = filter_array->size();
-    }
-
-    element.type = type;
-    element.kind = mesh.getKind(element.type);
-    Array<UInt> & mat_indexes = material_index(type, _not_ghost);
-    for (UInt el = 0; el < nb_element; ++el) {
-      if (filter != nullptr)
-        element.element = (*filter_array)(el);
-      else
-        element.element = el;
-
-      UInt mat_index = (*material_selector)(element);
-      AKANTU_DEBUG_ASSERT(
-          mat_index < materials.size(),
-          "The material selector returned an index that does not exists");
-      mat_indexes(element.element) = mat_index;
-    }
-  }
+  for_each_elements(mesh,
+                    [&](auto && element) {
+                      UInt mat_index = (*material_selector)(element);
+                      AKANTU_DEBUG_ASSERT(
+                          mat_index < materials.size(),
+                          "The material selector returned an index that does not exists");
+                      material_index(element) = mat_index;
+                    },
+                    _element_filter = filter,
+                    _ghost_type = _not_ghost);
 
   if (non_local_manager)
     non_local_manager->synchronize(*this, _gst_material_id);
 
-  /// fill the element filters of the materials using the element_material
-  /// arrays
-  auto ghost_type = _not_ghost;
-  if (filter != nullptr) {
-    element_types =
-        filter->elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
-  } else {
-    element_types =
-        mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined);
-  }
-
-  for (auto type : element_types) {
-    UInt nb_element = mesh.getNbElement(type, ghost_type);
-
-    const Array<UInt> * filter_array = nullptr;
-    if (filter != nullptr) {
-      filter_array = &((*filter)(type, ghost_type));
-      nb_element = filter_array->size();
-    }
-
-    Array<UInt> & mat_indexes = material_index(type, ghost_type);
-    Array<UInt> & mat_local_num = material_local_numbering(type, ghost_type);
-    for (UInt el = 0; el < nb_element; ++el) {
-      UInt element;
-
-      if (filter != nullptr)
-        element = (*filter_array)(el);
-      else
-        element = el;
-
-      UInt mat_index = mat_indexes(element);
-      UInt index = materials[mat_index]->addElement(type, element, ghost_type);
-      mat_local_num(element) = index;
-    }
-  }
+  for_each_elements(mesh,
+                    [&](auto && element) {
+                      auto mat_index = material_index(element);
+                      auto index = materials[mat_index]->addElement(element);
+                      material_local_numbering(element) = index;
+                    },
+                    _element_filter = filter,
+                    _ghost_type = _not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */

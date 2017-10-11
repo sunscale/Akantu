@@ -49,7 +49,7 @@ Model::Model(Mesh& mesh, UInt dim, const ID & id,
   mesh(mesh),
   spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension() : dim),
   is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
-  parser(&getStaticParser()) {
+  parser(getStaticParser()) {
   AKANTU_DEBUG_IN();
 
   this->mesh.registerEventHandler(*this, _ehp_model);
@@ -58,33 +58,40 @@ Model::Model(Mesh& mesh, UInt dim, const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-Model::~Model() {
+Model::~Model() = default;
+
+/* -------------------------------------------------------------------------- */
+//void Model::setParser(Parser & parser) { this->parser = &parser; }
+
+/* -------------------------------------------------------------------------- */
+void Model::initFull(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
-  FEEngineMap::iterator it;
-  for (it = fems.begin(); it != fems.end(); ++it) {
-    if (it->second)
-      delete it->second;
+  method = options.analysis_method;
+  if (!this->hasDefaultSolver()) {
+    this->initNewSolver(this->method);
   }
-
-  for (it = fems_boundary.begin(); it != fems_boundary.end(); ++it) {
-    if (it->second)
-      delete it->second;
-  }
+  initModel();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void Model::setParser(Parser & parser) { this->parser = &parser; }
+void Model::initNewSolver(const AnalysisMethod & method) {
+  ID solver_name;
+  TimeStepSolverType tss_type;
+  std::tie(solver_name, tss_type) = this->getDefaultSolverID(method);
 
-/* -------------------------------------------------------------------------- */
-void Model::initFull(__attribute__((unused)) const ModelOptions & options) {
-  AKANTU_DEBUG_IN();
+  if (!this->hasSolver(solver_name)) {
+    ModelSolverOptions options = this->getDefaultSolverOptions(tss_type);
+    this->getNewSolver(solver_name, tss_type, options.non_linear_solver_type);
+    this->setIntegrationScheme(solver_name, "displacement",
+                               options.integration_scheme_type["displacement"],
+                               options.solution_type["displacement"]);
+  }
 
-  initModel();
-
-  AKANTU_DEBUG_OUT();
+  this->method = method;
+  this->setDefaultSolver(solver_name);
 }
 
 /* -------------------------------------------------------------------------- */

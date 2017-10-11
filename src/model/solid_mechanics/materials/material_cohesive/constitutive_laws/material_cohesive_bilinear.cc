@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_cohesive_bilinear.hh"
-#include "solid_mechanics_model_cohesive.hh"
+//#include "solid_mechanics_model_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -93,7 +93,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
     UInt index = el_it->element;
     ElementType type = el_it->type;
     UInt nb_element = this->model->getMesh().getNbElement(type);
-    UInt nb_quad_per_element = this->fem_cohesive->getNbIntegrationPoints(type);
+    UInt nb_quad_per_element = this->fem_cohesive.getNbIntegrationPoints(type);
 
     Array<Real>::vector_iterator sigma_c_begin =
         this->sigma_c_eff(type).begin_reinterpret(nb_quad_per_element,

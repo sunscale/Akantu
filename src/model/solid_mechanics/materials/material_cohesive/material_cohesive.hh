@@ -34,11 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
-#include "cohesive_element_inserter.hh"
 #include "cohesive_internal_field.hh"
-#include "fe_engine_template.hh"
-#include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_COHESIVE_HH__
@@ -199,7 +195,7 @@ protected:
   ElementTypeMapArray<UInt> facet_filter;
 
   /// Link to the cohesive fem object in the model
-  MyFEEngineCohesiveType * fem_cohesive;
+  FEEngine & fem_cohesive;
 
 private:
   /// reversible energy by quadrature point

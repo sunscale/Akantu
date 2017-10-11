@@ -50,8 +50,6 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
 
   FEEngineMap::const_iterator it_boun = fems_boundary.find(name);
 
-  FEEngineClass * tmp_fem_boundary;
-
   if (it_boun == fems_boundary.end()) {
     AKANTU_DEBUG_INFO("Creating FEEngine boundary " << name);
 
@@ -63,15 +61,12 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
     std::stringstream sstr;
     sstr << id << ":fem_boundary:" << name;
 
-    tmp_fem_boundary = new FEEngineClass(
+    fems_boundary[name] = std::make_unique<FEEngineClass>(
         it->second->getMesh(), spatial_dimension - 1, sstr.str(), memory_id);
-    fems_boundary[name] = tmp_fem_boundary;
-  } else {
-    tmp_fem_boundary = dynamic_cast<FEEngineClass *>(it_boun->second);
   }
 
   AKANTU_DEBUG_OUT();
-  return *tmp_fem_boundary;
+  return dynamic_cast<FEEngineClass &>(*fems_boundary[name]);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -98,7 +93,6 @@ inline void Model::unRegisterFEEngineObject(const std::string & name) {
   AKANTU_DEBUG_ASSERT(it != fems.end(), "FEEngine object with name "
                                             << name << " was not found");
 
-  delete ((*it).second);
   fems.erase(it);
   if (!fems.empty())
     default_fem = (*fems.begin()).first;
@@ -120,8 +114,7 @@ inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
 
   std::stringstream sstr;
   sstr << id << ":fem:" << name << memory_id;
-  fems[name] =
-      new FEEngineClass(mesh, spatial_dimension, sstr.str(), memory_id);
+  fems[name] = std::make_unique<FEEngineClass>(mesh, spatial_dimension, sstr.str(), memory_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -137,7 +130,7 @@ inline FEEngine & Model::getFEEngine(const ID & name) const {
                       "The FEEngine " << tmp_name << " is not registered");
 
   AKANTU_DEBUG_OUT();
-  return *(it->second);
+  return *(it->second);\
 }
 
 /* -------------------------------------------------------------------------- */

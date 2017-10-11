@@ -78,6 +78,9 @@ inline std::ostream & operator<<(std::ostream & stream,
   case _tsst_dynamic_lumped:
     stream << "dynamic_lumped";
     break;
+  case _tsst_not_defined:
+    stream << "not defined time step solver";
+    break;
   }
   return stream;
 }

@@ -109,7 +109,6 @@ AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_hexahedron_8,
 				     _ek_regular,
 				     3,
 				     _git_segment, 2);
-AKANTU_DEFINE_SHAPE(_gt_hexahedron_8, _gst_square);
 
 /* -------------------------------------------------------------------------- */
 template <>

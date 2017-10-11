@@ -35,10 +35,8 @@
 #include "aka_memory.hh"
 #include "fe_engine.hh"
 #include "mesh.hh"
-#include "mesh_partition.hh"
-#include "mesh_utils.hh"
 #include "model_solver.hh"
-#include "parser.hh"
+#include "aka_named_argument.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MODEL_HH__
@@ -46,13 +44,27 @@
 
 namespace akantu {
 class SynchronizerRegistry;
-} // akantu
+class Parser;
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
+namespace {
+  DECLARE_NAMED_ARGUMENT(analysis_method);
+}
+
 struct ModelOptions {
-  virtual ~ModelOptions() {}
+  explicit ModelOptions(AnalysisMethod analysis_method = _static)
+      : analysis_method(analysis_method) {}
+
+  template <typename... pack>
+  ModelOptions(use_named_args_t, pack &&... _pack)
+      : ModelOptions(OPTIONAL_NAMED_ARG(analysis_method, _static)) {}
+
+  virtual ~ModelOptions() = default;
+
+  AnalysisMethod analysis_method;
 };
 
 class DumperIOHelper;
@@ -67,7 +79,7 @@ public:
 
   virtual ~Model();
 
-  typedef std::map<std::string, FEEngine *> FEEngineMap;
+  typedef std::map<std::string, std::unique_ptr<FEEngine>> FEEngineMap;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -75,23 +87,35 @@ public:
 public:
   virtual void initFull(const ModelOptions & options);
 
+  template <typename P, typename T, typename... pack>
+  void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
+    this->initFull(ModelOptions{use_named_args, first, _pack...});
+  }
+
+  /// initialize a new solver if needed
+  void initNewSolver(const AnalysisMethod & method);
+
+protected:
+  /// get some default values for derived classes
+  virtual std::tuple<ID, TimeStepSolverType> getDefaultSolverID(const AnalysisMethod & method) = 0;
+
   virtual void initModel() = 0;
 
   // /// change local equation number so that PBC is assembled properly
   // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
   //                                      UInt dimension);
   /// function to print the containt of the class
-  virtual void printself(__attribute__((unused)) std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {};
+  virtual void printself(std::ostream &, int = 0) const {};
 
   // /// initialize the model for PBC
   // void setPBC(UInt x, UInt y, UInt z);
   // void setPBC(SurfacePairList & surface_pairs);
+public:
 
   virtual void initPBC();
 
   /// set the parser to use
-  void setParser(Parser & parser);
+  //void setParser(Parser & parser);
 
   /* ------------------------------------------------------------------------ */
   /* Access to the dumpable interface of the boundaries                       */
@@ -124,7 +148,6 @@ public:
 protected:
   template <typename T>
   void allocNodalField(Array<T> *& array, UInt nb_component, const ID & name);
-
 
   /* ------------------------------------------------------------------------ */
   /* Accessors */
@@ -175,6 +198,9 @@ public:
   /// returns the array of pbc slave nodes (boolean information)
   AKANTU_GET_MACRO(IsPBCSlaveNode, is_pbc_slave_node, const Array<bool> &)
 
+  /// Get the type of analysis method used
+  AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
+
   /* ------------------------------------------------------------------------ */
   /* Pack and unpack helper functions                                         */
   /* ------------------------------------------------------------------------ */
@@ -185,7 +211,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
-
   void setTextModeToDumper();
 
   virtual void addDumpGroupFieldToDumper(const std::string & field_id,
@@ -281,6 +306,11 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  friend std::ostream & operator<<(std::ostream &, const Model &);
+
+  /// analysis method check the list in akantu::AnalysisMethod
+  AnalysisMethod method;
+
   /// Mesh
   Mesh & mesh;
 
@@ -303,7 +333,7 @@ protected:
   Array<bool> is_pbc_slave_node;
 
   /// parser to the pointer to use
-  Parser * parser;
+  Parser & parser;
 };
 
 /// standard output stream operator
@@ -312,7 +342,7 @@ inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #include "model_inline_impl.cc"
 

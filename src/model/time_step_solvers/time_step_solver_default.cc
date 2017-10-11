@@ -55,6 +55,8 @@ TimeStepSolverDefault::TimeStepSolverDefault(
   case _tsst_static:
     /// initialize a static time solver for callback dofs
     break;
+  default:
+    AKANTU_DEBUG_TO_IMPLEMENT();
   }
 }
 

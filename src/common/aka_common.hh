@@ -159,6 +159,7 @@ enum TimeStepSolverType {
   _tsst_static,         ///< Static solution
   _tsst_dynamic,        ///< Dynamic solver
   _tsst_dynamic_lumped, ///< Dynamic solver with lumped mass
+  _tsst_not_defined,    ///< For not defined cases
 };
 
 /// Type of integration scheme

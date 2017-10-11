@@ -71,8 +71,6 @@
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_quadrangle_4, _gt_quadrangle_4, _itp_lagrange_quadrangle_4, _ek_regular, 2,
 				     _git_segment, 2);
 
-AKANTU_DEFINE_SHAPE(_gt_quadrangle_4, _gst_square);
-
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>

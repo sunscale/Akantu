@@ -292,7 +292,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::checkDeltaMax(
    * friction behavior are correctly set.
    */
 
-  Mesh & mesh = this->fem_cohesive->getMesh();
+  Mesh & mesh = this->fem_cohesive.getMesh();
   Mesh::type_iterator it =
       mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
   Mesh::type_iterator last_type =

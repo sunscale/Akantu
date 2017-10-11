@@ -383,7 +383,6 @@ private:
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #include "fe_engine_template_tmpl_struct.hh"
 #endif
-
 /* -------------------------------------------------------------------------- */
 /* Shape IGFEM specialization                                                 */
 /* -------------------------------------------------------------------------- */

@@ -35,7 +35,10 @@
 #include "solid_mechanics_model_cohesive.hh"
 #include "aka_iterators.hh"
 #include "dumpable_inline_impl.hh"
+#include "fe_engine_template.hh"
+#include "integrator_gauss.hh"
 #include "material_cohesive.hh"
+#include "parser.hh"
 #include "shape_cohesive.hh"
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_paraview.hh"
@@ -51,7 +54,6 @@ const SolidMechanicsModelCohesiveOptions
                                                    false);
 
 /* -------------------------------------------------------------------------- */
-
 SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
     Mesh & mesh, UInt dim, const ID & id, const MemoryID & memory_id)
     : SolidMechanicsModel(mesh, dim, id, memory_id), tangents("tangents", id),
@@ -96,8 +98,8 @@ SolidMechanicsModelCohesive::~SolidMechanicsModelCohesive() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::setTimeStep(Real time_step) {
-  SolidMechanicsModel::setTimeStep(time_step);
+void SolidMechanicsModelCohesive::setTimeStep(Real time_step, const ID & solver_id) {
+  SolidMechanicsModel::setTimeStep(time_step, solver_id);
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.getDumper("cohesive elements").setTimeStep(time_step);
@@ -184,7 +186,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
     // thing that comes in Fabian's head....
     typedef ParserSection::const_section_iterator const_section_iterator;
     std::pair<const_section_iterator, const_section_iterator> sub_sections =
-        this->parser->getSubSections(_st_mesh);
+        this->parser.getSubSections(_st_mesh);
 
     if (sub_sections.first != sub_sections.second) {
       std::string cohesive_surfaces =
@@ -295,8 +297,10 @@ void SolidMechanicsModelCohesive::initModel() {
   ElementType type = _not_defined;
 
   for (auto && type_ghost : ghost_types) {
-    for (const auto & tmp_type : mesh.elementTypes(spatial_dimension, type_ghost)) {
-      const Array<UInt> & connectivity = mesh.getConnectivity(tmp_type, type_ghost);
+    for (const auto & tmp_type :
+         mesh.elementTypes(spatial_dimension, type_ghost)) {
+      const Array<UInt> & connectivity =
+          mesh.getConnectivity(tmp_type, type_ghost);
       if (connectivity.size() == 0)
         continue;
 

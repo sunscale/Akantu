@@ -95,7 +95,7 @@
 #     package_get_name(<pkg> <retval>)
 #
 #.. command:: package_get_real_name
-#     package_get_real_name(<pkg> <retval>)
+#    package_get_real_name(<pkg> <retval>)
 #
 #.. command:: package_get_option_name
 #     package_get_option_name(<pkg> <retval>)
@@ -187,11 +187,13 @@
 #     package_get_all_features_private(<features>)
 #
 #
-#.. command:: package_set_package_system_dependency(<pkg> <system> <dep1>
-#                                                   <dep2> ... <depn>)
+#     .. command:: package_set_package_system_dependency
+#
 #     package_set_package_system_dependency(<pkg> <system> <dep1>
 #                                           <dep2> ... <depn>)
-#.. command:: package_get_package_system_dependency(<pkg> <var>)
+#
+#                                       .. command:: package_get_package_system_dependency
+#
 #     package_get_package_system_dependency(<pkg> <var>)
 #
 #
