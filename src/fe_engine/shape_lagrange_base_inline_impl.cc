@@ -36,21 +36,6 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline const Array<Real> &
-ShapeLagrangeBase::getShapes(const ElementType & el_type,
-                             const GhostType & ghost_type) const {
-  return shapes(FEEngine::getInterpolationType(el_type), ghost_type);
-}
-
-/* -------------------------------------------------------------------------- */
-inline const Array<Real> &
-ShapeLagrangeBase::getShapesDerivatives(const ElementType & el_type,
-                                        const GhostType & ghost_type) const {
-  return shapes_derivatives(FEEngine::getInterpolationType(el_type),
-                            ghost_type);
-}
-
-/* -------------------------------------------------------------------------- */
 template <ElementType type>
 void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
     const Array<Real> &, const Matrix<Real> & integration_points,

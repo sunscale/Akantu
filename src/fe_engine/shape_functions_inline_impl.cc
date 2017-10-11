@@ -43,6 +43,21 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+inline const Array<Real> &
+ShapeFunctions::getShapes(const ElementType & el_type,
+                          const GhostType & ghost_type) const {
+  return shapes(FEEngine::getInterpolationType(el_type), ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+inline const Array<Real> &
+ShapeFunctions::getShapesDerivatives(const ElementType & el_type,
+                                     const GhostType & ghost_type) const {
+  return shapes_derivatives(FEEngine::getInterpolationType(el_type),
+                            ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
 inline UInt ShapeFunctions::getShapeSize(const ElementType & type) {
   AKANTU_DEBUG_IN();
 
@@ -230,11 +245,11 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
     const Array<UInt> & element_filter) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_element = this->mesh.getNbElement(type, ghost_type);
+  auto nb_element = this->mesh.getNbElement(type, ghost_type);
 
-  UInt nb_quad_per_element =
+  auto nb_quad_per_element =
       GaussIntegrationElement<type>::getNbQuadraturePoints();
-  UInt nb_interpolation_points_per_elem =
+  auto nb_interpolation_points_per_elem =
       interpolation_points_coordinates_matrices.getNbComponent() /
       nb_quad_per_element;
 
@@ -247,22 +262,21 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 
   Matrix<Real> coefficients(nb_quad_per_element, field.getNbComponent());
 
-  Array<Real> & result_vec = result(type, ghost_type);
+  auto & result_vec = result(type, ghost_type);
 
-  Array<Real>::const_matrix_iterator field_it = field.begin_reinterpret(
-      field.getNbComponent(), nb_quad_per_element, nb_element);
+  auto field_it = field.begin_reinterpret(field.getNbComponent(),
+                                          nb_quad_per_element, nb_element);
 
-  Array<Real>::const_matrix_iterator interpolation_points_coordinates_it =
+  auto interpolation_points_coordinates_it =
       interpolation_points_coordinates_matrices.begin(
           nb_interpolation_points_per_elem, nb_quad_per_element);
 
-  Array<Real>::matrix_iterator result_begin = result_vec.begin_reinterpret(
+  auto result_begin = result_vec.begin_reinterpret(
       field.getNbComponent(), nb_interpolation_points_per_elem,
       result_vec.size() / nb_interpolation_points_per_elem);
 
-  Array<Real>::const_matrix_iterator inv_quad_coord_it =
-      quad_points_coordinates_inv_matrices.begin(nb_quad_per_element,
-                                                 nb_quad_per_element);
+  auto inv_quad_coord_it = quad_points_coordinates_inv_matrices.begin(
+      nb_quad_per_element, nb_quad_per_element);
 
   /// loop over the elements of the current filter and element type
   for (UInt el = 0; el < nb_element; ++el, ++field_it, ++inv_quad_coord_it,
@@ -271,7 +285,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
      * matrix containing the inversion of the quadrature points'
      * coordinates
      */
-    const Matrix<Real> & inv_quad_coord_matrix = *inv_quad_coord_it;
+    const auto & inv_quad_coord_matrix = *inv_quad_coord_it;
 
     /**
      * multiply it by the field values over quadrature points to get
@@ -280,7 +294,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
     coefficients.mul<false, true>(inv_quad_coord_matrix, *field_it);
 
     /// matrix containing the points' coordinates
-    const Matrix<Real> & coord = *interpolation_points_coordinates_it;
+    const auto & coord = *interpolation_points_coordinates_it;
 
     /// multiply the coordinates matrix by the coefficients matrix and store the
     /// result
@@ -290,22 +304,19 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 
   AKANTU_DEBUG_OUT();
 }
+
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
     const Array<Real> & u_el, Array<Real> & uq, const GhostType & ghost_type,
     const Array<Real> & shapes, const Array<UInt> & filter_elements) const {
-  UInt nb_element;
-  UInt nb_nodes_per_element = ElementClass<type>::getShapeSize();
-
-  UInt nb_points = shapes.size() / mesh.getNbElement(type, ghost_type);
-  UInt nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
+  auto nb_element = mesh.getNbElement(type, ghost_type);
+  auto nb_nodes_per_element = ElementClass<type>::getShapeSize();
+  auto nb_points = shapes.size() / mesh.getNbElement(type, ghost_type);
+  auto nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
 
   Array<Real>::const_matrix_iterator N_it;
-  Array<Real>::const_matrix_iterator u_it;
-  Array<Real>::matrix_iterator inter_u_it;
-
-  Array<Real> * filtered_N = NULL;
+  Array<Real> * filtered_N = nullptr;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
     filtered_N = new Array<Real>(0, shapes.getNbComponent());
@@ -314,23 +325,22 @@ inline void ShapeFunctions::interpolateElementalFieldOnIntegrationPoints(
     N_it = filtered_N->begin_reinterpret(nb_nodes_per_element, nb_points,
                                          nb_element);
   } else {
-    nb_element = mesh.getNbElement(type, ghost_type);
     N_it =
         shapes.begin_reinterpret(nb_nodes_per_element, nb_points, nb_element);
   }
 
   uq.resize(nb_element * nb_points);
 
-  u_it = u_el.begin(nb_degree_of_freedom, nb_nodes_per_element);
-  inter_u_it =
+  auto u_it = u_el.begin(nb_degree_of_freedom, nb_nodes_per_element);
+  auto inter_u_it =
       uq.begin_reinterpret(nb_degree_of_freedom, nb_points, nb_element);
 
   for (UInt el = 0; el < nb_element; ++el, ++N_it, ++u_it, ++inter_u_it) {
-    const Matrix<Real> & u = *u_it;
-    const Matrix<Real> & N = *N_it;
-    Matrix<Real> & inter_u = *inter_u_it;
+    const auto & u = *u_it;
+    const auto & N = *N_it;
+    auto & inter_u = *inter_u_it;
 
-    inter_u.mul<false, false>(u, N);
+    inter_u.template mul<false, false>(u, N);
   }
 
   delete filtered_N;
@@ -344,18 +354,16 @@ void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes_per_element =
+  auto nb_nodes_per_element =
       ElementClass<type>::getNbNodesPerInterpolationElement();
-  UInt nb_points = integration_points(type, ghost_type).cols();
-  UInt element_dimension = ElementClass<type>::getNaturalSpaceDimension();
-  UInt nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
+  auto nb_points = integration_points(type, ghost_type).cols();
+  auto element_dimension = ElementClass<type>::getNaturalSpaceDimension();
+  auto nb_degree_of_freedom = u_el.getNbComponent() / nb_nodes_per_element;
+  auto nb_element = mesh.getNbElement(type, ghost_type);
 
   Array<Real>::const_matrix_iterator B_it;
-  Array<Real>::const_matrix_iterator u_it;
-  Array<Real>::matrix_iterator nabla_u_it;
 
-  UInt nb_element;
-  Array<Real> * filtered_B = NULL;
+  Array<Real> * filtered_B = nullptr;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
     filtered_B = new Array<Real>(0, shapes_derivatives.getNbComponent());
@@ -364,21 +372,18 @@ void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
     B_it = filtered_B->begin(element_dimension, nb_nodes_per_element);
   } else {
     B_it = shapes_derivatives.begin(element_dimension, nb_nodes_per_element);
-    nb_element = mesh.getNbElement(type, ghost_type);
   }
 
   out_nablauq.resize(nb_element * nb_points);
-
-  u_it = u_el.begin(nb_degree_of_freedom, nb_nodes_per_element);
-  nabla_u_it = out_nablauq.begin(nb_degree_of_freedom, element_dimension);
+  auto u_it = u_el.begin(nb_degree_of_freedom, nb_nodes_per_element);
+  auto nabla_u_it = out_nablauq.begin(nb_degree_of_freedom, element_dimension);
 
   for (UInt el = 0; el < nb_element; ++el, ++u_it) {
-    const Matrix<Real> & u = *u_it;
+    const auto & u = *u_it;
     for (UInt q = 0; q < nb_points; ++q, ++B_it, ++nabla_u_it) {
-      const Matrix<Real> & B = *B_it;
-      Matrix<Real> & nabla_u = *nabla_u_it;
-
-      nabla_u.mul<false, true>(u, B);
+      const auto & B = *B_it;
+     auto & nabla_u = *nabla_u_it;
+      nabla_u.template mul<false, true>(u, B);
     }
   }
 

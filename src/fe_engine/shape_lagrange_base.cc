@@ -35,8 +35,6 @@ ShapeLagrangeBase::ShapeLagrangeBase(const Mesh & mesh,
                                      const ElementKind & kind, const ID & id,
                                      const MemoryID & memory_id)
     : ShapeFunctions(mesh, id, memory_id),
-      shapes("shapes_generic", id, memory_id),
-      shapes_derivatives("shapes_derivatives_generic", id, memory_id),
       _kind(kind) {}
 
 /* -------------------------------------------------------------------------- */

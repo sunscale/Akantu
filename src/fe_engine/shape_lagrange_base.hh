@@ -79,30 +79,7 @@ public:
   onElementsRemoved(const Array<Element> & elements,
                     const ElementTypeMapArray<UInt> & new_numbering) override;
 
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get a the shapes vector
-  inline const Array<Real> &
-  getShapes(const ElementType & el_type,
-            const GhostType & ghost_type = _not_ghost) const;
-
-  /// get a the shapes derivatives vector
-  inline const Array<Real> &
-  getShapesDerivatives(const ElementType & el_type,
-                       const GhostType & ghost_type = _not_ghost) const;
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
 protected:
-  /// shape functions for all elements
-  ElementTypeMapArray<Real, InterpolationType> shapes;
-
-  /// shape functions derivatives for all elements
-  ElementTypeMapArray<Real, InterpolationType> shapes_derivatives;
-
   /// The kind to consider
   ElementKind _kind;
 };

@@ -36,12 +36,16 @@ package_declare(structural_mechanics
 package_declare_sources(structural_mechanics
   fe_engine/element_class_structural.hh
   fe_engine/element_classes/element_class_bernoulli_beam_inline_impl.cc
-  fe_engine/fe_engine_template_tmpl_struct.hh
   fe_engine/element_classes/element_class_kirchhoff_shell_inline_impl.cc
+  fe_engine/fe_engine_template_tmpl_struct.hh
+  fe_engine/shape_structural.cc
+  fe_engine/shape_structural.hh
+  fe_engine/shape_structural_inline_impl.cc
   io/mesh_io/mesh_io_msh_struct.cc
   io/mesh_io/mesh_io_msh_struct.hh
-  io/model_io/model_io_ibarras.cc
-  io/model_io/model_io_ibarras.hh
+  model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_2.hh
+  model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_3.hh
+  model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_kirchhoff_shell.hh
   model/structural_mechanics/structural_mechanics_model.cc
   model/structural_mechanics/structural_mechanics_model.hh
   model/structural_mechanics/structural_mechanics_model_boundary.cc
@@ -56,7 +60,8 @@ package_declare_elements(structural_mechanics
   _kirchhoff_shell
   KIND structural
   INTERPOLATION_TYPES
-  _itp_bernoulli_beam
+  _itp_bernoulli_beam_2
+  _itp_bernoulli_beam_3
   _itp_kirchhoff_shell
   INTERPOLATION_KIND
   _itk_structural

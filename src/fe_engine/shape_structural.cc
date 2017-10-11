@@ -1,5 +1,5 @@
 /**
- * @file   shape_linked.cc
+ * @file   shape_structural.cc
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
@@ -7,7 +7,7 @@
  * @date creation: Fri Jul 15 2011
  * @date last modification: Sun Oct 19 2014
  *
- * @brief  ShapeLinked implementation
+ * @brief  ShapeStructural implementation
  *
  * @section LICENSE
  *
@@ -31,52 +31,23 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "shape_structural.hh"
 #include "aka_memory.hh"
 #include "mesh.hh"
-#include "shape_linked.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
 /* -------------------------------------------------------------------------- */
 template <>
-ShapeLinked<_ek_structural>::ShapeLinked(Mesh & mesh, const ID & id, const MemoryID & memory_id) :
-  ShapeFunctions(mesh, id, memory_id)
-{
-
-}
-
+ShapeStructural<_ek_structural>::ShapeStructural(Mesh & mesh, const ID & id,
+                                         const MemoryID & memory_id)
+    : ShapeFunctions(mesh, id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
-template <>
-ShapeLinked<_ek_structural>::~ShapeLinked() {
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+template <> ShapeStructural<_ek_structural>::~ShapeStructural() = default;
 
-    // delete all the shapes id
-    ElementTypeMapMultiReal::type_iterator s_type_it  =
-      shapes.firstType(_all_dimensions, ghost_type, _ek_structural);
-    ElementTypeMapMultiReal::type_iterator s_type_end =
-      shapes.lastType (_all_dimensions, ghost_type, _ek_structural);
-
-    for(; s_type_it != s_type_end; ++s_type_it) {
-      delete [] shapes(*s_type_it, ghost_type);
-    }
+/* -------------------------------------------------------------------------- */
 
 
-    // delete all the shapes derivatives id
-    ElementTypeMapMultiReal::type_iterator sd_type_it  =
-      shapes_derivatives.firstType(_all_dimensions, ghost_type, _ek_structural);
-    ElementTypeMapMultiReal::type_iterator sd_type_end =
-      shapes_derivatives.lastType (_all_dimensions, ghost_type, _ek_structural);
-
-    for(; sd_type_it != sd_type_end; ++sd_type_it) {
-      delete [] shapes_derivatives(*sd_type_it, ghost_type);
-    }
-  }
-}
-#endif
-
-} // akantu
+} // namespace akantu

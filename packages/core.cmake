@@ -122,9 +122,6 @@ package_declare_sources(core
   fe_engine/shape_lagrange.cc
   fe_engine/shape_lagrange.hh
   fe_engine/shape_lagrange_inline_impl.cc
-  fe_engine/shape_linked.cc
-  fe_engine/shape_linked.hh
-  fe_engine/shape_linked_inline_impl.cc
   fe_engine/element.hh
 
   io/dumper/dumpable.hh
@@ -144,8 +141,8 @@ package_declare_sources(core
   io/mesh_io/mesh_io_diana.hh
   io/mesh_io/mesh_io_msh.cc
   io/mesh_io/mesh_io_msh.hh
-  io/model_io.cc
-  io/model_io.hh
+  #io/model_io.cc
+  #io/model_io.hh
 
   io/parser/algebraic_parser.hh
   io/parser/input_file_parser.hh

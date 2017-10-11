@@ -1,5 +1,5 @@
 /**
- * @file   shape_linked.hh
+ * @file   shape_structural.hh
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
@@ -21,7 +21,7 @@
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
@@ -34,22 +34,21 @@
 
 #include "shape_functions.hh"
 
-#ifndef __AKANTU_SHAPE_LINKED_HH__
-#define __AKANTU_SHAPE_LINKED_HH__
+#ifndef __AKANTU_SHAPE_STRUCTURAL_HH__
+#define __AKANTU_SHAPE_STRUCTURAL_HH__
 
 namespace akantu {
 
-template <ElementKind kind>
-class ShapeLinked : public ShapeFunctions {
+template <ElementKind kind> class ShapeStructural : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   typedef ElementTypeMap<Array<Real> **> ElementTypeMapMultiReal;
 
-  ShapeLinked(Mesh & mesh, const ID & id = "shape_linked", const MemoryID & memory_id = 0);
-  virtual ~ShapeLinked();
+  ShapeStructural(Mesh & mesh, const ID & id = "shape_structural",
+              const MemoryID & memory_id = 0);
+  virtual ~ShapeStructural();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -57,105 +56,68 @@ public:
 public:
   /// initialization function for structural elements
   inline void initShapeFunctions(const Array<Real> & nodes,
-				 const Matrix<Real> & integration_points,
-				 const ElementType & type,
-				 const GhostType & ghost_type);
+                                 const Matrix<Real> & integration_points,
+                                 const ElementType & type,
+                                 const GhostType & ghost_type);
 
-  /// pre compute all shapes on the element integration points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural
+  /// coordinates
   template <ElementType type>
   void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
-				       const GhostType & ghost_type);
+                                           const GhostType & ghost_type);
 
-  /// pre compute all shapes on the element integration points from natural coordinates
+  /// pre compute all shapes on the element integration points from natural
+  /// coordinates
   template <ElementType type>
-  void precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
-						 const GhostType & ghost_type);
+  void
+  precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
+                                                const GhostType & ghost_type);
 
   /// interpolate nodal values on the integration points
   template <ElementType type>
-  void interpolateOnIntegrationPoints(const Array<Real> &u,
-				  Array<Real> &uq,
-				  UInt nb_degree_of_freedom,
-				  const GhostType & ghost_type = _not_ghost,
-				  const Array<UInt> & filter_elements = empty_filter,
-				  bool accumulate = false,
-				  UInt id_shape = 0,
-				  UInt num_degre_of_freedom_to_interpolate = 0,
-				  UInt num_degre_of_freedom_interpolated = 0) const;
-
+  void interpolateOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & uq, UInt nb_degree_of_freedom,
+      const GhostType & ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// compute the gradient of u on the integration points
   template <ElementType type>
-  void gradientOnIntegrationPoints(const Array<Real> &u,
-			       Array<Real> &nablauq,
-			       UInt nb_degree_of_freedom,
-			       const GhostType & ghost_type = _not_ghost,
-			       const Array<UInt> & filter_elements = empty_filter,
-			       bool accumulate = false,
-			       UInt id_shape = 0,
-			       UInt num_degre_of_freedom_to_interpolate = 0,
-			       UInt num_degre_of_freedom_interpolated = 0) const;
+  void gradientOnIntegrationPoints(
+      const Array<Real> & u, Array<Real> & nablauq, UInt nb_degree_of_freedom,
+      const GhostType & ghost_type = _not_ghost,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// multiply a field by shape functions
   template <ElementType type>
-  void fieldTimesShapes(__attribute__((unused)) const Array<Real> & field,
-			__attribute__((unused)) Array<Real> & fiedl_times_shapes,
-			__attribute__((unused)) const GhostType & ghost_type) const {
+  void
+  fieldTimesShapes(__attribute__((unused)) const Array<Real> & field,
+                   __attribute__((unused)) Array<Real> & fiedl_times_shapes,
+                   __attribute__((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
-
-private:
-  /// extract the nodal field value to fill an elemental field
-  template <ElementType type>
-  void extractNodalToElementField(const Array<Real> & nodal_f,
-				  Array<Real> & elemental_f,
-				  UInt num_degre_of_freedom_to_extract,
-				  const GhostType & ghost_type,
-				  const Array<UInt> & filter_elements) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// get a the shapes vector
   inline const Array<Real> & getShapes(const ElementType & type,
-					const GhostType & ghost_type,
-					UInt id = 0) const;
+                                       const GhostType & ghost_type,
+                                       UInt id = 0) const;
 
   /// get a the shapes derivatives vector
   inline const Array<Real> & getShapesDerivatives(const ElementType & type,
-						   const GhostType & ghost_type,
-						   UInt id = 0) const;
+                                                  const GhostType & ghost_type,
+                                                  UInt id = 0) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  /// shape functions for all elements
-  ElementTypeMapMultiReal shapes;
-
-  /// shape derivatives for all elements
-  ElementTypeMapMultiReal shapes_derivatives;
 };
 
+} // namespace akantu
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+#include "shape_structural_inline_impl.cc"
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "shape_linked_inline_impl.cc"
-#endif
-
-/// standard output stream operator
-// inline std::ostream & operator <<(std::ostream & stream, const ShapeLinked & _this)
-// {
-//   _this.printself(stream);
-//   return stream;
-// }
-
-
-} // akantu
-
-#endif /* __AKANTU_SHAPE_LINKED_HH__ */
+#endif /* __AKANTU_SHAPE_STRUCTURAL_HH__ */

@@ -49,9 +49,8 @@ class ShapeFunctions : protected Memory {
   /* ------------------------------------------------------------------------ */
 public:
   ShapeFunctions(const Mesh & mesh, const ID & id = "shape",
-                 const MemoryID & memory_id = 0)
-      : Memory(id, memory_id), mesh(mesh){};
-  virtual ~ShapeFunctions(){};
+                 const MemoryID & memory_id = 0);
+  virtual ~ShapeFunctions() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -144,10 +143,13 @@ protected:
                                        UInt integration_order) const;
 
 public:
-  virtual void onElementsAdded(const Array<Element> & elements) = 0;
-  virtual void
-  onElementsRemoved(const Array<Element> & elements,
-                    const ElementTypeMapArray<UInt> & new_numbering) = 0;
+  virtual void onElementsAdded(const Array<Element> &) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+  virtual void onElementsRemoved(const Array<Element> &,
+                                 const ElementTypeMapArray<UInt> &) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -164,10 +166,30 @@ public:
     return integration_points(type, ghost_type);
   }
 
+    /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// get a the shapes vector
+  inline const Array<Real> &
+  getShapes(const ElementType & el_type,
+            const GhostType & ghost_type = _not_ghost) const;
+
+  /// get a the shapes derivatives vector
+  inline const Array<Real> &
+  getShapesDerivatives(const ElementType & el_type,
+                       const GhostType & ghost_type = _not_ghost) const;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// shape functions for all elements
+  ElementTypeMapArray<Real, InterpolationType> shapes;
+
+  /// shape functions derivatives for all elements
+  ElementTypeMapArray<Real, InterpolationType> shapes_derivatives;
+
   /// associated mesh
   const Mesh & mesh;
 

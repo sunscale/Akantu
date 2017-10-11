@@ -33,6 +33,12 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+ShapeFunctions::ShapeFunctions(const Mesh & mesh, const ID & id,
+                               const MemoryID & memory_id)
+    : Memory(id, memory_id), shapes("shapes_generic", id, memory_id),
+      shapes_derivatives("shapes_derivatives_generic", id, memory_id),
+      mesh(mesh) {}
+
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 inline void
@@ -40,8 +46,8 @@ ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
     const Array<Real> & interpolation_points_coordinates,
     ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
     ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-    const Array<Real> & quadrature_points_coordinates, const GhostType & ghost_type,
-    const Array<UInt> & element_filter) const {
+    const Array<Real> & quadrature_points_coordinates,
+    const GhostType & ghost_type, const Array<UInt> & element_filter) const {
 
   AKANTU_DEBUG_IN();
 
@@ -59,8 +65,7 @@ ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
   UInt nb_interpolation_points_per_elem =
       interpolation_points_coordinates.size() / nb_element;
 
-  AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.size() % nb_element ==
-                          0,
+  AKANTU_DEBUG_ASSERT(interpolation_points_coordinates.size() % nb_element == 0,
                       "Number of interpolation points should be a multiple of "
                       "total number of elements");
 

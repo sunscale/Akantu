@@ -32,57 +32,46 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_named_argument.hh"
+#include "model.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__
 #define __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "model.hh"
-#include "integrator_gauss.hh"
-#include "shape_linked.hh"
-#include "aka_types.hh"
-#include "dumpable.hh"
-#include "solver.hh"
-#include "integration_scheme_2nd_order.hh"
-
-/* -------------------------------------------------------------------------- */
 namespace akantu {
-class SparseMatrix;
-}
+class Material;
+class MaterialSelector;
+class DumperIOHelper;
+class NonLocalManager;
+template <ElementKind kind, class IntegrationOrderFunctor>
+class IntegratorGauss;
+template <ElementKind kind> class ShapeStructural;
+} // namespace akantu
 
 namespace akantu {
 
 struct StructuralMaterial {
-  Real E;
-  Real A;
-  Real I;
-  Real Iz;
-  Real Iy;
-  Real GJ;
-  Real rho;
-  Real t;
-  Real nu;
+  Real E{0};
+  Real A{1};
+  Real I{0};
+  Real Iz{0};
+  Real Iy{0};
+  Real GJ{0};
+  Real rho{0};
+  Real t{0};
+  Real nu{0};
 };
-
-struct StructuralMechanicsModelOptions : public ModelOptions {
-  StructuralMechanicsModelOptions(AnalysisMethod analysis_method = _static)
-      : analysis_method(analysis_method) {}
-  AnalysisMethod analysis_method;
-};
-
-extern const StructuralMechanicsModelOptions
-    default_structural_mechanics_model_options;
 
 class StructuralMechanicsModel : public Model {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLinked, _ek_structural>
-      MyFEEngineType;
+  using MyFEEngineType =
+      FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
 
   StructuralMechanicsModel(Mesh & mesh,
                            UInt spatial_dimension = _all_dimensions,
@@ -95,22 +84,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// initialize fully the model
-  void initFull(const ModelOptions & options =
-                    default_structural_mechanics_model_options);
-
-  /// initialize the internal vectors
-  void initArrays();
+  void initSolver(TimeStepSolverType, NonLinearSolverType);
 
   /// initialize the model
   void initModel();
-
-  /// initialize the solver
-  void initSolver(SolverOptions & options = _solver_no_options);
-
-  /// initialize the stuff for the implicit solver
-  void initImplicit(bool dynamic = false,
-                    SolverOptions & solver_options = _solver_no_options);
 
   /// compute the stresses per elements
   void computeStresses();
@@ -121,20 +98,11 @@ public:
   /// assemble the mass matrix for consistent mass resolutions
   void assembleMass();
 
-  /// implicit time integration predictor
-  void implicitPred();
-
-  /// implicit time integration corrector
-  void implicitCorr();
-
   /// update the residual vector
   void updateResidual();
 
   /// solve the system
   void solve();
-
-  bool testConvergenceIncrement(Real tolerance);
-  bool testConvergenceIncrement(Real tolerance, Real & error);
 
   void computeRotationMatrix(const ElementType & type);
 
@@ -144,11 +112,6 @@ protected:
   /// compute Rotation Matrices
   template <const ElementType type>
   void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations) {}
-
-  /// compute A and solve @f[ A\delta u = f_ext - f_int @f]
-  template <NewmarkBeta::IntegrationSchemeCorrectorType type>
-  void solve(Array<Real> & increment,
-             __attribute__((unused)) Real block_val = 1.);
 
   /* ------------------------------------------------------------------------ */
   /* Mass (structural_mechanics_model_mass.cc) */
@@ -222,20 +185,16 @@ public:
   /// StructuralMechanicsModel::updateAcceleration
   AKANTU_GET_MACRO(Acceleration, *acceleration, Array<Real> &);
 
-  /// get the StructuralMechanicsModel::force vector (boundary forces)
-  AKANTU_GET_MACRO(Force, *force_momentum, Array<Real> &);
+  /// get the StructuralMechanicsModel::external_force vector
+  AKANTU_GET_MACRO(ExternalForce, *external_force_momentum, Array<Real> &);
 
-  /// get the StructuralMechanicsModel::residual vector, computed by
-  /// StructuralMechanicsModel::updateResidual
-  AKANTU_GET_MACRO(Residual, *residual, const Array<Real> &);
+  /// get the StructuralMechanicsModel::internal_force vector (boundary forces)
+  AKANTU_GET_MACRO(InternalForce, *internal_force_momentum, Array<Real> &);
+
   /// get the StructuralMechanicsModel::boundary vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(RotationMatrix, rotation_matrix, Real);
-
-  AKANTU_GET_MACRO(StiffnessMatrix, *stiffness_matrix, const SparseMatrix &);
-
-  AKANTU_GET_MACRO(MassMatrix, *mass_matrix, const SparseMatrix &);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Stress, stress, Real);
 
@@ -267,25 +226,9 @@ public:
   void computeForcesByLocalTractionArray(const Array<Real> & tractions);
 
   /// compute force vector from a function(x,y,momentum) that describe stresses
-  template <ElementType type>
-  void computeForcesFromFunction(BoundaryFunction in_function,
-                                 BoundaryFunctionType function_type);
-
-  /**
-    * solve a step (predictor + convergence loop + corrector) using the
-    * the given convergence method (see akantu::SolveConvergenceMethod)
-    * and the given convergence criteria (see
-    * akantu::SolveConvergenceCriteria)
-    **/
-  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real tolerance, UInt max_iteration = 100);
-
-  template <SolveConvergenceMethod method, SolveConvergenceCriteria criteria>
-  bool solveStep(Real tolerance, Real & error, UInt max_iteration = 100);
-
-  /// test if the system is converged
-  template <SolveConvergenceCriteria criteria>
-  bool testConvergence(Real tolerance, Real & error);
+  // template <ElementType type>
+  // void computeForcesFromFunction(BoundaryFunction in_function,
+  //                                BoundaryFunctionType function_type);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -298,61 +241,33 @@ private:
   Real f_m2a;
 
   /// displacements array
-  Array<Real> * displacement_rotation;
-
-  /// displacements array at the previous time step (used in finite deformation)
-  Array<Real> * previous_displacement;
+  Array<Real> * displacement_rotation{nullptr};
 
   /// velocities array
-  Array<Real> * velocity;
+  Array<Real> * velocity{nullptr};
 
   /// accelerations array
-  Array<Real> * acceleration;
+  Array<Real> * acceleration{nullptr};
 
   /// forces array
-  Array<Real> * force_momentum;
+  Array<Real> * internal_force_momentum{nullptr};
+
+  /// forces array
+  Array<Real> * external_force_momentum{nullptr};
 
   /// lumped mass array
-  Array<Real> * mass;
-
-  /// stress arraz
-
-  ElementTypeMapArray<Real> stress;
-
-  /// residuals array
-  Array<Real> * residual;
+  Array<Real> * mass{nullptr};
 
   /// boundaries array
-  Array<bool> * blocked_dofs;
+  Array<bool> * blocked_dofs{nullptr};
 
-  /// position of a dof in the K matrix
-  Array<Int> * equation_number;
+  /// stress array
+  ElementTypeMapArray<Real> stress;
 
   ElementTypeMapArray<UInt> element_material;
 
   // Define sets of beams
   ElementTypeMapArray<UInt> set_ID;
-
-  /// local equation_number to global
-  unordered_map<UInt, UInt>::type local_eq_num_to_global;
-
-  /// stiffness matrix
-  SparseMatrix * stiffness_matrix;
-
-  /// mass matrix
-  SparseMatrix * mass_matrix;
-
-  /// velocity damping matrix
-  SparseMatrix * velocity_damping_matrix;
-
-  /// jacobian matrix
-  SparseMatrix * jacobian_matrix;
-
-  /// increment of displacement
-  Array<Real> * increment;
-
-  /// solver for implicit
-  Solver * solver;
 
   /// number of degre of freedom
   UInt nb_degree_of_freedom;
@@ -366,27 +281,12 @@ private:
   /// flag defining if the increment must be computed or not
   bool increment_flag;
 
-  /// integration scheme of second order used
-  IntegrationScheme2ndOrder * integrator;
-
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
   std::vector<StructuralMaterial> materials;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+} // namespace akantu
 
 #include "structural_mechanics_model_inline_impl.cc"
-
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const StructuralMechanicsModel & _this) {
-  _this.printself(stream);
-  return stream;
-}
-
-} // akantu
 
 #endif /* __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__ */
