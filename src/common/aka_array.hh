@@ -109,6 +109,19 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
+namespace {
+  template <std::size_t dim, typename T> struct IteratorHelper {};
+
+  template <typename T> struct IteratorHelper<0, T> { using type = T; };
+  template <typename T> struct IteratorHelper<1, T> { using type = Vector<T>; };
+  template <typename T> struct IteratorHelper<2, T> { using type = Matrix<T>; };
+  template <typename T> struct IteratorHelper<3, T> {
+    using type = Tensor3<T>;
+  };
+
+  template <std::size_t dim, typename T>
+  using IteratorHelper_t = typename IteratorHelper<dim, T>::type;
+} // namespace
 
 /* -------------------------------------------------------------------------- */
 template <typename T, bool is_scal> class Array : public ArrayBase {
@@ -173,92 +186,43 @@ public:
   /// const_iterator for Array of nb_component = 1
   using const_scalar_iterator = const_iterator<T>;
 
-  /// iterator rerturning Vectors of size n  on entries of Array with
+  /// iterator returning Vectors of size n  on entries of Array with
   /// nb_component = n
   using vector_iterator = iterator<Vector<T>>;
-  /// const_iterator rerturning Vectors of n size on entries of Array with
+  /// const_iterator returning Vectors of n size on entries of Array with
   /// nb_component = n
   using const_vector_iterator = const_iterator<Vector<T>>;
 
-  /// iterator rerturning Matrices of size (m, n) on entries of Array with
+  /// iterator returning Matrices of size (m, n) on entries of Array with
   /// nb_component = m*n
   using matrix_iterator = iterator<Matrix<T>>;
-  /// const iterator rerturning Matrices of size (m, n) on entries of Array with
+  /// const iterator returning Matrices of size (m, n) on entries of Array with
   /// nb_component = m*n
   using const_matrix_iterator = const_iterator<Matrix<T>>;
 
-  /* ------------------------------------------------------------------------ */
-  /// Get an iterator that behaves like a pointer T * to the first entry
-  inline scalar_iterator begin();
-  /// Get an iterator that behaves like a pointer T * to the end of the Array
-  inline scalar_iterator end();
-  /// Get a const_iterator to the beginging of an Array of scalar
-  inline const_scalar_iterator begin() const;
-  /// Get a const_iterator to the end of an Array of scalar
-  inline const_scalar_iterator end() const;
-
-  /// Get a scalar_iterator on the beginning of the Array considered of shape
-  /// (new_size)
-  inline scalar_iterator begin_reinterpret(UInt new_size);
-  /// Get a scalar_iterator on the end of the Array considered of shape
-  /// (new_size)
-  inline scalar_iterator end_reinterpret(UInt new_size);
-  /// Get a const_scalar_iterator on the beginning of the Array considered of
-  /// shape (new_size)
-  inline const_scalar_iterator begin_reinterpret(UInt new_size) const;
-  /// Get a const_scalar_iterator on the end of the Array considered of shape
-  /// (new_size)
-  inline const_scalar_iterator end_reinterpret(UInt new_size) const;
+  /// iterator returning Tensor3 of size (m, n, k) on entries of Array with
+  /// nb_component = m*n*k
+  using tensor3_iterator = iterator<Tensor3<T>>;
+  /// const iterator returning Tensor3 of size (m, n, k) on entries of Array
+  /// with nb_component = m*n*k
+  using const_tensor3_iterator = const_iterator<Tensor3<T>>;
 
   /* ------------------------------------------------------------------------ */
-  /// Get a vector_iterator on the beginning of the Array
-  inline vector_iterator begin(UInt n);
-  /// Get a vector_iterator on the end of the Array
-  inline vector_iterator end(UInt n);
-  /// Get a vector_iterator on the beginning of the Array
-  inline const_vector_iterator begin(UInt n) const;
-  /// Get a vector_iterator on the end of the Array
-  inline const_vector_iterator end(UInt n) const;
+  template <typename... Ns> inline decltype(auto) begin(Ns... n);
+  template <typename... Ns> inline decltype(auto) end(Ns... n);
 
-  /// Get a vector_iterator on the begining of the Array considered of shape
-  /// (new_size, n)
-  inline vector_iterator begin_reinterpret(UInt n, UInt new_size);
-  /// Get a vector_iterator on the end of the Array considered of shape
-  /// (new_size, n)
-  inline vector_iterator end_reinterpret(UInt n, UInt new_size);
-  /// Get a const_vector_iterator on the begining of the Array considered of
-  /// shape (new_size, n)
-  inline const_vector_iterator begin_reinterpret(UInt n, UInt new_size) const;
-  /// Get a const_vector_iterator on the end of the Array considered of shape
-  /// (new_size, n)
-  inline const_vector_iterator end_reinterpret(UInt n, UInt new_size) const;
+  template <typename... Ns> inline decltype(auto) begin(Ns... n) const;
+  template <typename... Ns> inline decltype(auto) end(Ns... n) const;
 
-  /* ------------------------------------------------------------------------ */
-  /// Get a matrix_iterator on the begining of the Array (Matrices of size (m,
-  /// n))
-  inline matrix_iterator begin(UInt m, UInt n);
-  /// Get a matrix_iterator on the end of the Array (Matrices of size (m, n))
-  inline matrix_iterator end(UInt m, UInt n);
-  /// Get a const_matrix_iterator on the begining of the Array (Matrices of size
-  /// (m, n))
-  inline const_matrix_iterator begin(UInt m, UInt n) const;
-  /// Get a const_matrix_iterator on the end of the Array (Matrices of size (m,
-  /// n))
-  inline const_matrix_iterator end(UInt m, UInt n) const;
+  template <typename... Ns>
+  inline decltype(auto) begin_reinterpret(Ns... n);
+  template <typename... Ns>
+  inline decltype(auto) end_reinterpret(Ns... n);
 
-  /// Get a matrix_iterator on the begining of the Array considered of shape
-  /// (new_size, m*n)
-  inline matrix_iterator begin_reinterpret(UInt m, UInt n, UInt size);
-  /// Get a matrix_iterator on the end of the Array considered of shape
-  /// (new_size, m*n)
-  inline matrix_iterator end_reinterpret(UInt m, UInt n, UInt size);
-  /// Get a const_matrix_iterator on the begining of the Array considered of
-  /// shape (new_size, m*n)
-  inline const_matrix_iterator begin_reinterpret(UInt m, UInt n,
-                                                 UInt size) const;
-  /// Get a const_matrix_iterator on the end of the Array considered of shape
-  /// (new_size, m*n)
-  inline const_matrix_iterator end_reinterpret(UInt m, UInt n, UInt size) const;
+  template <typename... Ns>
+  inline decltype(auto) begin_reinterpret(Ns... n) const;
+  template <typename... Ns>
+  inline decltype(auto) end_reinterpret(Ns... n) const;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
