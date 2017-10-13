@@ -1,0 +1,32 @@
+seed = 5.0
+material elastic [
+	 name    = head
+	 rho     = 2500
+	 nu      = 0.29
+	 E       = 70e9
+#	 finite_deformation = 1
+]
+
+material cohesive_exponential [
+	 name = coh_1
+	 sigma_c = 30e6
+	 beta = 1
+	 delta_c = 4e-7
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+material cohesive_exponential [
+	 name = coh_2
+	 sigma_c = 60e6
+	 beta = 1
+	 delta_c = 8e-7
+	 exponential_penalty = true
+	 contact_tangent = 1.0
+]
+
+mesh parameters [
+
+     	cohesive_surfaces = coh_1,coh_2 
+
+]
