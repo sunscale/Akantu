@@ -4,9 +4,6 @@
 [submodule "extra_packages/igfem"]
 	path = extra_packages/igfem
 	url = git@lsmssrv1.epfl.ch:akantu-igfem.git
-[submodule "extra_packages/parallel-cohesive-element"]
-	path = extra_packages/parallel-cohesive-element
-	url = git@lsmssrv1.epfl.ch:akantu-parallel-cohesive.git
 [submodule "extra_packages/students-extra-package"]
 	path = extra_packages/students-extra-package
 	url = git@lsmssrv1.epfl.ch:students-extra-package.git
