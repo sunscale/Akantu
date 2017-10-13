@@ -18,16 +18,16 @@ package_declare(parallel_cohesive_element
   DEPENDS cohesive_element parallel)
 
 package_declare_sources(parallel_cohesive_element
-  cohesive_element_inserter_parallel.cc
-  cohesive_element_inserter_inline_impl.cc
-  solid_mechanics_model_cohesive_parallel.hh
-  solid_mechanics_model_cohesive_parallel.cc
-  solid_mechanics_model_cohesive_parallel_inline_impl.cc
-  facet_synchronizer.cc
-  facet_synchronizer.hh
-  facet_synchronizer_inline_impl.cc
-  facet_stress_synchronizer.cc
-  facet_stress_synchronizer.hh
+  mesh_utils/cohesive_element_inserter_parallel.cc
+  mesh_utils/cohesive_element_inserter_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel_inline_impl.cc
+  synchronizer/facet_synchronizer.cc
+  synchronizer/facet_synchronizer.hh
+  synchronizer/facet_synchronizer_inline_impl.cc
+  synchronizer/facet_stress_synchronizer.cc
+  synchronizer/facet_stress_synchronizer.hh
   )
 
 package_declare_documentation(parallel_cohesive_element

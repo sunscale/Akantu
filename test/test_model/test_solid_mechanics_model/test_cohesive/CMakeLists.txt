@@ -39,4 +39,5 @@ add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
 add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
 add_akantu_test(test_cohesive_insertion "test_cohesive_insertion")
 add_akantu_test(test_cohesive_linear_friction "test_cohesive_linear_friction")
+add_akantu_test(test_parallel_cohesive "parallel_cohesive_test")
 #===============================================================================

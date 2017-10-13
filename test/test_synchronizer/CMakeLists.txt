@@ -82,3 +82,13 @@ register_test(test_data_distribution
   PACKAGE parallel
   PARALLEL
   )
+
+add_mesh(test_facet_synchronizer_mesh
+  facet.geo 3 2)
+
+register_test(test_facet_synchronizer
+  SOURCES test_facet_synchronizer.cc test_data_accessor.hh
+  DEPENDS test_facet_synchronizer_mesh
+  PACKAGE parallel_cohesive_element
+  PARALLEL_LEVEL 3
+  )
