@@ -366,7 +366,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
 
   // getting the shapes on the integration points
   Array<Real> shapes(0, shapes_size);
-  shape_functions.template computeVoigtShapesOnIntegrationPoints<type>(
+  shape_functions.template computeShapesOnIntegrationPoints<type>(
       mesh.getNodes(), integration_points, shapes, ghost_type);
 
   // Extending the shape functions
