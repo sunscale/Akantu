@@ -41,7 +41,7 @@ namespace akantu {
 /// Macro to generate the InterpolationProperty structures for different
 /// interpolation types
 #define AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(                  \
-    itp_type, parent_type, ndim, ndof)                                         \
+    itp_type, parent_type, ndim, ndof, voigt)                                  \
   template <> struct InterpolationProperty<itp_type> {                         \
     static const InterpolationKind kind{_itk_structural};                      \
     static const UInt nb_nodes_per_element{                                    \
@@ -49,6 +49,7 @@ namespace akantu {
     static const InterpolationType parent_element_type{parent_type};           \
     static const UInt natural_space_dimension{ndim};                           \
     static const UInt nb_degree_of_freedom{ndof};                              \
+    static const UInt voigt_size{voigt};                                       \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -111,14 +112,15 @@ public:
       ShapeDerivativesSize,
       (interpolation_property::nb_nodes_per_element *
        interpolation_property::nb_degree_of_freedom *
-       interpolation_property::natural_space_dimension),
+       interpolation_property::voigt_size),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NaturalSpaceDimension, interpolation_property::natural_space_dimension,
       UInt);
-    static AKANTU_GET_MACRO_NOT_CONST(
-      NbDegreeOfFreedom,
-      interpolation_property::nb_degree_of_freedom, UInt);
+  static AKANTU_GET_MACRO_NOT_CONST(
+      NbDegreeOfFreedom, interpolation_property::nb_degree_of_freedom, UInt);
+  static AKANTU_GET_MACRO_NOT_CONST(
+      VoigtSize, interpolation_property::voigt_size, UInt);
 
 };
 

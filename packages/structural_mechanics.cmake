@@ -45,7 +45,7 @@ package_declare_sources(structural_mechanics
   io/mesh_io/mesh_io_msh_struct.hh
   model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_2.hh
   model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_3.hh
-  model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_kirchhoff_shell.hh
+  model/structural_mechanics/structural_elements/structural_element_kirchhoff_shell.hh
   model/structural_mechanics/structural_mechanics_model.cc
   model/structural_mechanics/structural_mechanics_model.hh
   model/structural_mechanics/structural_mechanics_model_boundary.cc

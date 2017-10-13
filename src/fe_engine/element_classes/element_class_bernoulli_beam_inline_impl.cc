@@ -110,10 +110,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam_2,
                                                      _itp_lagrange_segment_2, 2,
-                                                     3);
+                                                     3, 2);
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam_3,
                                                      _itp_lagrange_segment_2, 3,
-                                                     6);
+                                                     6, 4);
 
 AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_2,
                                                 _gt_segment_2,

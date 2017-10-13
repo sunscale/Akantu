@@ -31,10 +31,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_static_if.hh"
 #include "element_type_map.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_type_conversion.hh"
+/* -------------------------------------------------------------------------- */
+#include <tuple>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
@@ -420,19 +423,34 @@ operator!=(const type_iterator & other) const {
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypes(UInt dim,
-                                                  GhostType ghost_type,
-                                                  ElementKind kind) const {
+ElementTypeMap<Stored, SupportType>::elementTypesInternal(
+    UInt dim, GhostType ghost_type, ElementKind kind) const {
   return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-template <typename P, typename T, typename... pack>
+template <typename... pack>
 typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypes(
-    named_argument::param_t<P, T &&> && first, pack &&... _pack) const {
-  return ElementTypesIteratorHelper(*this, use_named_args, first, _pack...);
+ElementTypeMap<Stored, SupportType>::elementTypesInternal(
+    const use_named_args_t & /*unused*/, pack &&... _pack) const {
+  return ElementTypesIteratorHelper(*this, use_named_args, _pack...);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+template <typename... pack>
+typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
+ElementTypeMap<Stored, SupportType>::elementTypes(pack &&... _pack) const {
+  return static_if(
+      is_named_argument<std::decay_t<std::tuple_element_t<0, std::tuple<pack...>>>>{})
+      .then([&](auto&&... args) {
+        return elementTypesInternal(use_named_args,
+                                    std::forward<decltype(args)>(args)...);
+      })
+      .else_([&](auto&&... args) {
+          return elementTypesInternal(std::forward<decltype(args)>(args)...);
+      })(std::forward<pack>(_pack)...);
 }
 
 /* -------------------------------------------------------------------------- */

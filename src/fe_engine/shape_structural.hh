@@ -31,8 +31,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "shape_functions.hh"
+/* -------------------------------------------------------------------------- */
+
 
 #ifndef __AKANTU_SHAPE_STRUCTURAL_HH__
 #define __AKANTU_SHAPE_STRUCTURAL_HH__
@@ -95,25 +96,6 @@ public:
                    __attribute__((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get a the shapes vector
-  inline const Array<Real> & getShapes(const ElementType & type,
-                                       const GhostType & ghost_type,
-                                       UInt id = 0) const;
-
-  /// get a the shapes derivatives vector
-  inline const Array<Real> & getShapesDerivatives(const ElementType & type,
-                                                  const GhostType & ghost_type,
-                                                  UInt id = 0) const;
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-private:
 };
 
 } // namespace akantu

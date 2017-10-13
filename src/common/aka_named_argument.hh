@@ -140,6 +140,22 @@ namespace {
   struct use_named_args_t {};
   use_named_args_t use_named_args __attribute__((unused));
 } // namespace
+
+template <typename T> struct is_named_argument : public std::false_type {};
+
+template <typename tag, typename type>
+struct is_named_argument<named_argument::param_t<tag, type>>
+    : public std::true_type {};
+template <typename tag, typename type>
+struct is_named_argument<named_argument::param_t<tag, type & >>
+    : public std::true_type {};
+template <typename tag, typename type>
+struct is_named_argument<named_argument::param_t<tag, type &&>>
+    : public std::true_type {};
+template <typename tag, typename type>
+struct is_named_argument<named_argument::param_t<tag, const type &>>
+    : public std::true_type {};
+
 } // namespace akantu
 
 #endif /* __AKANTU_AKA_NAMED_ARGUMENT_HH__ */

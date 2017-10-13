@@ -4,7 +4,6 @@
  * @author Fabian Barras <fabian.barras@epfl.ch>
  * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @author Damien Spielmann <damien.spielmann@epfl.ch>
  *
  * @date creation  Tue Sep 19 2017
  *
@@ -30,36 +29,35 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "structural_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH__
 #define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH__
 
 namespace akantu {
-
-inline UInt
-StructuralMechanicsModel::getTangentStiffnessVoigtSize<_bernoulli_beam_2>() {
-  return 2;
-}
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   AKANTU_DEBUG_IN();
 
-  GhostType ghost_type = _not_ghost;
-  ElementType type = _bernoulli_beam_2;
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
-  UInt nb_element = getFEEngine().getMesh().getNbElement(type);
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
-  UInt nb_fields_to_interpolate =
-      getTangentStiffnessVoigtSize<_bernoulli_beam_2>();
+  const ElementType type = _bernoulli_beam_2;
 
-  UInt nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element;
+  auto & fem = getFEEngineClass<MyFEEngineType>();
+  auto nb_element = mesh.getNbElement(type);
+  auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+  auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
+  auto nb_fields_to_interpolate = ElementClass<type>::getVoigtSize();
+  auto nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element;
 
-  Array<Real> * n =
-      new Array<Real>(nb_element * nb_quadrature_points,
-                      nb_fields_to_interpolate * nt_n_field_size, "N");
-  n->clear();
+  Array<Real> n(nb_element * nb_quadrature_points,
+                nb_fields_to_interpolate * nt_n_field_size, "N");
+
+  const auto & N_star = fem.getShapes(type);
+
+  for
+
   Array<Real> * rho_field =
       new Array<Real>(nb_element * nb_quadrature_points, "Rho");
   rho_field->clear();
@@ -87,41 +85,26 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
 template <>
 void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_2>(
     Array<Real> & rotations) {
+  auto type = _bernoulli_beam_2;
+  auto nb_element = mesh.getNbElement(type);
 
-  ElementType type = _bernoulli_beam_2;
-  Mesh & mesh = getFEEngine().getMesh();
-  UInt nb_element = mesh.getNbElement(type);
-
-  Array<UInt>::iterator<Vector<UInt> > connec_it =
-      mesh.getConnectivity(type).begin(2);
-  Array<Real>::vector_iterator nodes_it =
-      mesh.getNodes().begin(spatial_dimension);
-  Array<Real>::matrix_iterator R_it =
-      rotations.begin(nb_degree_of_freedom, nb_degree_of_freedom);
+  auto connec_it = mesh.getConnectivity(type).begin(2);
+  auto nodes_it = mesh.getNodes().begin(spatial_dimension);
+  auto R_it = rotations.begin(nb_degree_of_freedom, nb_degree_of_freedom);
 
   for (UInt e = 0; e < nb_element; ++e, ++R_it, ++connec_it) {
-    Matrix<Real> & R = *R_it;
-    Vector<UInt> & connec = *connec_it;
+    auto & R = *R_it;
+    auto & connec = *connec_it;
 
-    Vector<Real> x2;
-    x2 = nodes_it[connec(1)]; // X2
-    Vector<Real> x1;
-    x1 = nodes_it[connec(0)]; // X1
+    Vector<Real> x2 = nodes_it[connec(1)]; // X2
+    Vector<Real> x1 = nodes_it[connec(0)]; // X1
 
-    Real le = x1.distance(x2);
-    Real c = (x2(0) - x1(0)) / le;
-    Real s = (x2(1) - x1(1)) / le;
+    auto le = x1.distance(x2);
+    auto c = (x2(0) - x1(0)) / le;
+    auto s = (x2(1) - x1(1)) / le;
 
     /// Definition of the rotation matrix
-    R(0, 0) = c;
-    R(0, 1) = s;
-    R(0, 2) = 0.;
-    R(1, 0) = -s;
-    R(1, 1) = c;
-    R(1, 2) = 0.;
-    R(2, 0) = 0.;
-    R(2, 1) = 0.;
-    R(2, 2) = 1.;
+    R = {{c, s, 0.}, {-s, c, 0.}, {0., 0., 1.}};
   }
 }
 
@@ -129,78 +112,27 @@ void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_2>(
 template <>
 void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
     Array<Real> & tangent_moduli) {
-  UInt nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
-  UInt nb_quadrature_points =
+  auto nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
+  auto nb_quadrature_points =
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
-  UInt tangent_size = 2;
+  auto tangent_size = 2;
 
-  Array<Real>::matrix_iterator D_it =
-      tangent_moduli.begin(tangent_size, tangent_size);
-  Array<UInt> & el_mat = element_material(_bernoulli_beam_2, _not_ghost);
+  auto D_it = tangent_moduli.begin(tangent_size, tangent_size);
+  auto & el_mat = element_material(_bernoulli_beam_2, _not_ghost).begin();
 
-  for (UInt e = 0; e < nb_element; ++e) {
-    UInt mat = el_mat(e);
-    Real E = materials[mat].E;
-    Real A = materials[mat].A;
-    Real I = materials[mat].I;
+  for (UInt e = 0; e < nb_element; ++e, ++el_mat) {
+    auto mat = *el_mat;
+    auto E = materials[mat].E;
+    auto A = materials[mat].A;
+    auto I = materials[mat].I;
     for (UInt q = 0; q < nb_quadrature_points; ++q, ++D_it) {
-      Matrix<Real> & D = *D_it;
+      auto & D = *D_it;
       D(0, 0) = E * A;
       D(1, 1) = E * I;
     }
   }
 }
 
-/* -------------------------------------------------------------------------- */
-template <>
-void StructuralMechanicsModel::transferBMatrixToSymVoigtBMatrix<
-    _bernoulli_beam_2>(Array<Real> & b, bool) {
-  UInt nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(_bernoulli_beam_2);
-  UInt nb_quadrature_points =
-      getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
-
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
-  Array<Real>::const_vector_iterator shape_Np =
-      fem.getShapesDerivatives(_bernoulli_beam_2, _not_ghost, 0)
-          .begin(nb_nodes_per_element);
-  Array<Real>::const_vector_iterator shape_Mpp =
-      fem.getShapesDerivatives(_bernoulli_beam_2, _not_ghost, 1)
-          .begin(nb_nodes_per_element);
-  Array<Real>::const_vector_iterator shape_Lpp =
-      fem.getShapesDerivatives(_bernoulli_beam_2, _not_ghost, 2)
-          .begin(nb_nodes_per_element);
-
-  UInt tangent_size = getTangentStiffnessVoigtSize<_bernoulli_beam_2>();
-  UInt bt_d_b_size = nb_nodes_per_element * nb_degree_of_freedom;
-  b.clear();
-  Array<Real>::matrix_iterator B_it = b.begin(tangent_size, bt_d_b_size);
-
-  for (UInt e = 0; e < nb_element; ++e) {
-    for (UInt q = 0; q < nb_quadrature_points; ++q) {
-      Matrix<Real> & B = *B_it;
-      const Vector<Real> & Np = *shape_Np;
-      const Vector<Real> & Lpp = *shape_Lpp;
-      const Vector<Real> & Mpp = *shape_Mpp;
-
-      B(0, 0) = Np(0);
-      B(0, 3) = Np(1);
-
-      B(1, 1) = Mpp(0);
-      B(1, 2) = Lpp(0);
-      B(1, 4) = Mpp(1);
-      B(1, 5) = Lpp(1);
-
-      ++B_it;
-      ++shape_Np;
-      ++shape_Mpp;
-      ++shape_Lpp;
-    }
-
-    // ++R_it;
-  }
-}
-
-}  // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH__ */

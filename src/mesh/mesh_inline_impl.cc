@@ -39,11 +39,18 @@
 #if defined(AKANTU_COHESIVE_ELEMENT)
 #include "cohesive_element.hh"
 #endif
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MESH_INLINE_IMPL_CC__
 #define __AKANTU_MESH_INLINE_IMPL_CC__
 
 namespace akantu {
+
+/* -------------------------------------------------------------------------- */
+template <typename... pack>
+Mesh::ElementTypesIteratorHelper Mesh::elementTypes(pack &&... _pack) const {
+  return connectivities.elementTypes(_pack...);
+}
 
 /* -------------------------------------------------------------------------- */
 inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)

@@ -260,16 +260,15 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
 #undef ASSIGN_WEIGHT_TO_NODES
   /// compute @f$ \int \rho dV = \rho V @f$ for each element
-  auto int_field =
-    std::make_unique<Array<Real>>(field.size(), nb_degree_of_freedom, "inte_rho_x");
+  auto int_field = std::make_unique<Array<Real>>(
+      field.size(), nb_degree_of_freedom, "inte_rho_x");
   integrator.template integrate<type>(field, *int_field, nb_degree_of_freedom,
                                       ghost_type, empty_filter);
 
   /// distribute the mass of the element to the nodes
   auto lumped_per_node = std::make_unique<Array<Real>>(
       nb_element, nb_degree_of_freedom * nb_nodes_per_element, "mass_per_node");
-  auto int_field_it =
-      int_field->begin(nb_degree_of_freedom);
+  auto int_field_it = int_field->begin(nb_degree_of_freedom);
   auto lumped_per_node_it =
       lumped_per_node->begin(nb_degree_of_freedom, nb_nodes_per_element);
 
@@ -367,10 +366,12 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
 
   // getting the shapes on the integration points
   Array<Real> shapes(0, shapes_size);
-  shape_functions.template computeShapesOnIntegrationPoints<type>(
+  shape_functions.template computeVoigtShapesOnIntegrationPoints<type>(
       mesh.getNodes(), integration_points, shapes, ghost_type);
 
   // Extending the shape functions
+  /// \TODO move this in the shape functions as Voigt format shapes to have the
+  /// code in common with the structural elements
   Array<Real> modified_shapes(vect_size, lmat_size * nb_degree_of_freedom, 0.);
   Array<Real> local_mat(vect_size, lmat_size * lmat_size);
   auto mshapes_it = modified_shapes.begin(nb_degree_of_freedom, lmat_size);
@@ -392,8 +393,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
   // computing \rho * N
   mshapes_it = modified_shapes.begin(nb_degree_of_freedom, lmat_size);
   auto lmat = local_mat.begin(lmat_size, lmat_size);
-  auto field_it =
-      field.begin_reinterpret(nb_degree_of_freedom, field.size());
+  auto field_it = field.begin_reinterpret(nb_degree_of_freedom, field.size());
 
   for (UInt q = 0; q < vect_size; ++q, ++lmat, ++mshapes_it, ++field_it) {
     const auto & rho = *field_it;

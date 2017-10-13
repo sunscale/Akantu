@@ -101,14 +101,9 @@ public:
   /// update the residual vector
   void updateResidual();
 
-  /// solve the system
-  void solve();
-
   void computeRotationMatrix(const ElementType & type);
 
 protected:
-  UInt getTangentStiffnessVoigtSize(const ElementType & type);
-
   /// compute Rotation Matrices
   template <const ElementType type>
   void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations) {}
@@ -127,24 +122,12 @@ protected:
   void updateResidualInternal();
 
   /* ------------------------------------------------------------------------ */
-
 private:
-  template <ElementType type> inline UInt getTangentStiffnessVoigtSize();
-
   template <ElementType type> void assembleStiffnessMatrix();
-
   template <ElementType type> void assembleMass();
-
   template <ElementType type> void computeStressOnQuad();
-
   template <ElementType type>
   void computeTangentModuli(Array<Real> & tangent_moduli);
-
-  template <ElementType type>
-  void transferBMatrixToSymVoigtBMatrix(Array<Real> & B, bool local = false);
-
-  template <ElementType type>
-  void transferNMatrixToSymVoigtNMatrix(Array<Real> & N_matrix);
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
@@ -169,7 +152,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// set the value of the time step
-  void setTimeStep(Real time_step);
+  void setTimeStep(Real time_step, const ID & solver_id = "") override;
 
   /// return the dimension of the system space
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
@@ -212,6 +195,10 @@ public:
    * update of the StructuralMechanicsModel::increment vector
    */
   void setIncrementFlagOn();
+
+  const StructuralMaterial & getMaterial(const Element & element) const {
+    return materials[element_material(element)];
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Boundaries (structural_mechanics_model_boundary.cc)                      */
@@ -286,7 +273,5 @@ private:
 };
 
 } // namespace akantu
-
-#include "structural_mechanics_model_inline_impl.cc"
 
 #endif /* __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__ */

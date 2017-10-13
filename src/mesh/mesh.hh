@@ -425,9 +425,7 @@ public:
       ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;
 
   template <typename... pack>
-  ElementTypesIteratorHelper elementTypes(pack &&... _pack) const {
-    return connectivities.elementTypes(_pack...);
-  }
+  ElementTypesIteratorHelper elementTypes(pack &&... _pack) const;
 
   inline type_iterator firstType(UInt dim = _all_dimensions,
                                  GhostType ghost_type = _not_ghost,

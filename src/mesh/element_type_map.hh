@@ -175,9 +175,9 @@ public:
     ElementTypesIteratorHelper(const Container & container, use_named_args_t,
                                pack &&... _pack)
         : ElementTypesIteratorHelper(
-            container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
-            OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
-            OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
+              container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+              OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
+              OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
 
     ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
     ElementTypesIteratorHelper &
@@ -197,16 +197,22 @@ public:
     ElementKind kind;
   };
 
+public:
   /// method to create the helper class to use in range for constructs
-  ElementTypesIteratorHelper elementTypes(UInt dim = _all_dimensions,
-                                          GhostType ghost_type = _not_ghost,
-                                          ElementKind kind = _ek_regular) const;
+  template <typename... pack>
+  ElementTypesIteratorHelper elementTypes(pack &&... _pack) const;
 
-  template <typename P, typename T, typename... pack>
+private:
   ElementTypesIteratorHelper
-  elementTypes(named_argument::param_t<P, T &&> && first,
-               pack &&... _pack) const;
+  elementTypesInternal(UInt dim, GhostType ghost_type = _not_ghost,
+                       ElementKind kind = _ek_regular) const;
 
+  template <typename... pack>
+  ElementTypesIteratorHelper
+  elementTypesInternal(const use_named_args_t & /*unused*/,
+                       pack &&... _pack) const;
+
+public:
   /*! Get an iterator to the beginning of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when

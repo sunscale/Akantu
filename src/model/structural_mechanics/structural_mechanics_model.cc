@@ -36,13 +36,18 @@
 #include "structural_mechanics_model.hh"
 #include "dof_manager.hh"
 #include "sparse_matrix.hh"
+#include "integrator_gauss.hh"
+#include "shape_structural.hh"
+#include "mesh.cc"
 /* -------------------------------------------------------------------------- */
-
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_elemental_field.hh"
 #include "dumper_paraview.hh"
 #endif
 /* -------------------------------------------------------------------------- */
+#include "structural_mechanics_model_inline_impl.cc"
+/* -------------------------------------------------------------------------- */
+
 
 namespace akantu {
 
@@ -138,19 +143,6 @@ void StructuralMechanicsModel::initModel() {
 }
 
 /* -------------------------------------------------------------------------- */
-UInt StructuralMechanicsModel::getTangentStiffnessVoigtSize(
-    const ElementType & type) {
-  UInt size;
-#define GET_TANGENT_STIFFNESS_VOIGT_SIZE(type)                                 \
-  size = getTangentStiffnessVoigtSize<type>();
-
-  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(GET_TANGENT_STIFFNESS_VOIGT_SIZE);
-#undef GET_TANGENT_STIFFNESS_VOIGT_SIZE
-
-  return size;
-}
-
-/* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleStiffnessMatrix() {
   AKANTU_DEBUG_IN();
 
@@ -173,7 +165,6 @@ void StructuralMechanicsModel::computeStresses() {
 
   for (auto & type : mesh.elementTypes(_spatial_dimension = spatial_dimension,
                      _element_kind = _ek_structural)) {
-
 #define COMPUTE_STRESS_ON_QUAD(type) computeStressOnQuad<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(COMPUTE_STRESS_ON_QUAD);
@@ -212,7 +203,7 @@ void StructuralMechanicsModel::computeRotationMatrix(const ElementType & type) {
   if (!rotation_matrix.exists(type)) {
     rotation_matrix.alloc(nb_element,
                           nb_degree_of_freedom * nb_nodes_per_element *
-                              nb_degree_of_freedom * nb_nodes_per_element,
+                          nb_degree_of_freedom * nb_nodes_per_element,
                           type);
   } else {
     rotation_matrix(type).resize(nb_element);
@@ -236,7 +227,6 @@ void StructuralMechanicsModel::computeRotationMatrix(const ElementType & type) {
   for (UInt el = 0; el < nb_element; ++el, ++R_it, ++T_it) {
     auto & T = *T_it;
     auto & R = *R_it;
-    T.clear();
     for (UInt k = 0; k < nb_nodes_per_element; ++k) {
       for (UInt i = 0; i < nb_degree_of_freedom; ++i)
         for (UInt j = 0; j < nb_degree_of_freedom; ++j)
@@ -268,8 +258,9 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   UInt n;
   if (spatial_dimension == 2) {
     n = 2;
-  } else
+  } else {
     n = 3;
+  }
 
   if (field_name == "displacement") {
     return mesh.createStridedNodalField(displacement_rotation, group_name, n, 0,

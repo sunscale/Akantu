@@ -27,24 +27,32 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-
 #include "structural_mechanics_model.hh"
 #include "material.hh"
-/* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
 namespace akantu {
 
-/* -------------------------------------------------------------------------- */
+class ComputeRhoFunctor {
+public:
+  explicit ComputeRhoFunctor(const StructuralMechanicsModel & model)
+      : model(model){};
 
+  void operator()(Matrix<Real> & rho, const Element & element) const {
+    Real mat_rho =
+        model.getMaterial(element).rho;
+    rho.set(mat_rho);
+  }
+
+private:
+  const StructuralMechanicsModel & model;
+};
+
+
+/* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleMass(){
   AKANTU_DEBUG_IN();
-
-  if(!mass_matrix){
-    std::stringstream sstr; sstr << id << ":mass_matrix";
-    mass_matrix = new SparseMatrix(*jacobian_matrix, sstr.str(), memory_id);
-  }
 
   assembleMass(_not_ghost);
 
@@ -55,43 +63,12 @@ void StructuralMechanicsModel::assembleMass(){
 void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real> rho_1(0,1);
-  mass_matrix->clear();
+  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
+  ComputeRhoFunctor compute_rho(*this);
 
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type, _ek_structural);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_structural);
-  for(; it != end; ++it){
-    ElementType type = *it;
-
-#define ASSEMBLE_MASS(type)		\
-    assembleMass<type>();
-
-    AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(ASSEMBLE_MASS);
-#undef ASSEMBLE_MASS
-
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-
-void StructuralMechanicsModel::computeRho(Array<Real> & rho,
-					  ElementType type,
-					  GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  UInt nb_element = getFEEngine().getMesh().getNbElement(type);
-  UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
-
-  Array<UInt> & el_mat = element_material(type, ghost_type);
-
-  for (UInt e = 0; e < nb_element; ++e){
-    UInt mat = el_mat(e);
-    Real rho_el = materials[mat].rho;
-    for (UInt q = e*nb_quadrature_points; q < e*nb_quadrature_points + nb_quadrature_points; ++q){
-      rho(q) = rho_el;
-    }
+  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_structural)) {
+    fem.assembleFieldMatrix(compute_rho, "M", "displacement",
+                            this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
