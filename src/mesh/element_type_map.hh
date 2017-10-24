@@ -200,17 +200,16 @@ public:
 public:
   /// method to create the helper class to use in range for constructs
   template <typename... pack>
-  ElementTypesIteratorHelper elementTypes(pack &&... _pack) const;
+  decltype(auto) elementTypes(pack &&... _pack) const;
 
 private:
   ElementTypesIteratorHelper
-  elementTypesInternal(UInt dim, GhostType ghost_type = _not_ghost,
-                       ElementKind kind = _ek_regular) const;
+  elementTypesImpl(UInt dim, GhostType ghost_type = _not_ghost,
+                   ElementKind kind = _ek_regular) const;
 
   template <typename... pack>
   ElementTypesIteratorHelper
-  elementTypesInternal(const use_named_args_t & /*unused*/,
-                       pack &&... _pack) const;
+  elementTypesImpl(const use_named_args_t & /*unused*/, pack &&... _pack) const;
 
 public:
   /*! Get an iterator to the beginning of a subset datamap. This method expects
