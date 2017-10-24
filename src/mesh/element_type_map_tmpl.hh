@@ -432,7 +432,7 @@ ElementTypeMap<Stored, SupportType>::elementTypesImpl(
 template <class Stored, typename SupportType>
 template <typename... pack>
 typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypesImpl\(
+ElementTypeMap<Stored, SupportType>::elementTypesImpl(
     const use_named_args_t & /*unused*/, pack &&... _pack) const {
   return ElementTypesIteratorHelper(*this, use_named_args, _pack...);
 }
