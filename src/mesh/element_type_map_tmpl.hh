@@ -37,8 +37,6 @@
 /* -------------------------------------------------------------------------- */
 #include "element_type_conversion.hh"
 /* -------------------------------------------------------------------------- */
-#include <tuple>
-/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
@@ -210,7 +208,7 @@ template <typename T, typename SupportType>
 inline void ElementTypeMapArray<T, SupportType>::free() {
   AKANTU_DEBUG_IN();
 
-  for (auto && gt : ghost_types) {
+  for (auto gt : ghost_types) {
     auto & data = this->getData(gt);
     for (auto & pair : data) {
       dealloc(pair.second->getID());
@@ -435,23 +433,6 @@ typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
 ElementTypeMap<Stored, SupportType>::elementTypesImpl(
     const use_named_args_t & /*unused*/, pack &&... _pack) const {
   return ElementTypesIteratorHelper(*this, use_named_args, _pack...);
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Stored, typename SupportType>
-template <typename... pack>
-decltype(auto)
-ElementTypeMap<Stored, SupportType>::elementTypes(pack &&... _pack) const {
-  auto && first_arg = std::get<0>(std::forward_as_tuple(_pack...));
-
-  return static_if(is_named_argument<std::decay_t<decltype(first_arg)>>{})
-      .then([&](auto && /*a*/) {
-        return elementTypesImpl(use_named_args,
-                                    std::forward<decltype(_pack)>(_pack)...);
-      })
-      .else_([&](auto && /*a*/) {
-        return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);
-      })(std::forward<decltype(first_arg)>(first_arg));
 }
 
 /* -------------------------------------------------------------------------- */

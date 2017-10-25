@@ -79,6 +79,7 @@ package_declare_sources(core
   common/aka_warning_restore.hh
   common/aka_iterators.hh
   common/aka_static_if.hh
+  common/aka_compatibilty_with_cpp_standard.hh
 
   fe_engine/element_class.cc
   fe_engine/element_class.hh

@@ -147,7 +147,7 @@ template <typename tag, typename type>
 struct is_named_argument<named_argument::param_t<tag, type>>
     : public std::true_type {};
 template <typename tag, typename type>
-struct is_named_argument<named_argument::param_t<tag, type & >>
+struct is_named_argument<named_argument::param_t<tag, type &>>
     : public std::true_type {};
 template <typename tag, typename type>
 struct is_named_argument<named_argument::param_t<tag, type &&>>

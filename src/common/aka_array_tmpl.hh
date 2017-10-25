@@ -1169,7 +1169,7 @@ public:
 // #if defined(AKANTU_CORE_CXX11)
 //   template<class R> using iterator = iterator_internal<R>;
 // #else
-template <class T, class R, bool issame = is_same<T, R>::value>
+template <class T, class R, bool issame = std::is_same<T, R>::value>
 struct ConstConverterIteratorHelper {
   using const_iterator = typename Array<T>::template const_iterator<R>;
   using iterator = typename Array<T>::template iterator<R>;

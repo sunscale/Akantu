@@ -42,13 +42,10 @@
 #include <list>
 #include <limits>
 #include <type_traits>
+/* -------------------------------------------------------------------------- */
 
-#if __cplusplus < 201402L
-namespace std {
-template< bool B, class T = void >
-using enable_if_t = typename enable_if<B,T>::type;
-}
-#endif
+#include "aka_compatibilty_with_cpp_standard.hh"
+
 /* -------------------------------------------------------------------------- */
 #define __BEGIN_AKANTU_DUMPER__ namespace dumper {
 #define __END_AKANTU_DUMPER__ }
@@ -318,27 +315,8 @@ enum SynchronizerOperation {
 #define AKANTU_INCLUDE_INLINE_IMPL
 
 /* -------------------------------------------------------------------------- */
-template <class T> struct is_scalar {
-  enum { value = false };
-};
-
-#define AKANTU_SPECIFY_IS_SCALAR(type)                                         \
-  template <> struct is_scalar<type> {                                         \
-    enum { value = true };                                                     \
-  }
-
-AKANTU_SPECIFY_IS_SCALAR(Real);
-AKANTU_SPECIFY_IS_SCALAR(UInt);
-AKANTU_SPECIFY_IS_SCALAR(Int);
-AKANTU_SPECIFY_IS_SCALAR(bool);
-
-template <typename T1, typename T2> struct is_same {
-  enum { value = false }; // is_same represents a bool.
-};
-
-template <typename T> struct is_same<T, T> {
-  enum { value = true };
-};
+template<typename T>
+using is_scalar = std::is_arithmetic<T>;
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_SET_MACRO(name, variable, type)                                 \

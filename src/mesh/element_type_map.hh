@@ -197,19 +197,35 @@ public:
     ElementKind kind;
   };
 
-public:
-  /// method to create the helper class to use in range for constructs
-  template <typename... pack>
-  decltype(auto) elementTypes(pack &&... _pack) const;
-
 private:
   ElementTypesIteratorHelper
-  elementTypesImpl(UInt dim, GhostType ghost_type = _not_ghost,
+  elementTypesImpl(UInt dim = _all_dimensions,
+                   GhostType ghost_type = _not_ghost,
                    ElementKind kind = _ek_regular) const;
 
   template <typename... pack>
   ElementTypesIteratorHelper
   elementTypesImpl(const use_named_args_t & /*unused*/, pack &&... _pack) const;
+
+  template <typename... pack>
+  using named_argument_test =
+      std::conjunction<std::bool_constant<(sizeof...(pack) > 0)>,
+                       is_named_argument<pack>...>;
+
+public:
+  template <typename... pack>
+  std::enable_if_t<named_argument_test<pack...>{}, ElementTypesIteratorHelper>
+  elementTypes(pack &&... _pack) const {
+    return elementTypesImpl(use_named_args,
+                            std::forward<decltype(_pack)>(_pack)...);
+  }
+
+  template <typename... pack>
+  std::enable_if_t<not named_argument_test<pack...>{},
+                   ElementTypesIteratorHelper>
+  elementTypes(pack &&... _pack) const {
+    return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);
+  }
 
 public:
   /*! Get an iterator to the beginning of a subset datamap. This method expects

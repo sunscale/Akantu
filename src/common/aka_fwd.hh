@@ -31,7 +31,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_FWD_HH__
 #define __AKANTU_FWD_HH__
@@ -41,33 +40,33 @@ class ArgumentParser;
 }
 
 namespace akantu {
-  // forward declaration
-  template <int dim, class model_type> struct ContactData;
+// forward declaration
+template <int dim, class model_type> struct ContactData;
 
-  template <typename T> class Matrix;
-  template <typename T> class Vector;
-  template <typename T> class Tensor3;
+template <typename T> class Matrix;
+template <typename T> class Vector;
+template <typename T> class Tensor3;
 
-  template <typename T, bool is_scal = is_scalar<T>::value> class Array;
-  template <typename T, typename SupportType = ElementType>
-  class ElementTypeMapArray;
+template <typename T, bool is_scal = is_scalar<T>::value> class Array;
+template <typename T, typename SupportType = ElementType>
+class ElementTypeMapArray;
 
-  template <class T> class SpatialGrid;
+template <class T> class SpatialGrid;
 
-  // Model element
-  template <class ModelPolicy> class ModelElement;
+// Model element
+template <class ModelPolicy> class ModelElement;
 
-  extern const Array<UInt> empty_filter;
+extern const Array<UInt> empty_filter;
 
-  class Parser;
-  class ParserSection;
+class Parser;
+class ParserSection;
 
-  extern Parser static_parser;
+extern Parser static_parser;
 
-  extern cppargparse::ArgumentParser static_argparser;
+extern cppargparse::ArgumentParser static_argparser;
 
-  class Mesh;
-  class SparseMatrix;
-}
+class Mesh;
+class SparseMatrix;
+} // namespace akantu
 
 #endif /* __AKANTU_FWD_HH__ */

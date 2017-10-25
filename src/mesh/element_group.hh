@@ -81,10 +81,9 @@ public:
                                 const GhostType & ghost_type = _not_ghost,
                                 const ElementKind & kind = _ek_regular) const;
 
-  inline auto elementTypes(UInt dim = _all_dimensions,
-                           const GhostType & ghost_type = _not_ghost,
-                           const ElementKind & kind = _ek_regular) const {
-    return elements.elementTypes(dim, ghost_type, kind);
+  template <typename... pack>
+  inline decltype(auto) elementTypes(pack &&... _pack) const {
+    return elements.elementTypes(_pack...);
   }
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
@@ -140,8 +139,9 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  const Array<UInt> & getElements(const ElementType & type,
-                                  const GhostType & ghost_type = _not_ghost) const;
+  const Array<UInt> &
+  getElements(const ElementType & type,
+              const GhostType & ghost_type = _not_ghost) const;
   AKANTU_GET_MACRO(Elements, elements, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
   AKANTU_GET_MACRO(NodeGroup, node_group, const NodeGroup &);

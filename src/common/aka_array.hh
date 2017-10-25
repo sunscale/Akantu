@@ -169,7 +169,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /// \todo protected: does not compile with intel  check why
 public:
-  template <class R, class IR = R, bool issame = is_same<IR, T>::value>
+  template <class R, class IR = R, bool issame = std::is_same<IR, T>::value>
   class iterator_internal;
 
 public:
