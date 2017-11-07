@@ -62,24 +62,24 @@ public:
                    UInt nb_quad_per_element = 0)
       : Element(element), num_point(num_point),
         global_num(element.element * nb_quad_per_element + num_point),
-        position((Real *)NULL, 0){};
+        position(nullptr, 0){};
 
   IntegrationPoint(ElementType type = _not_defined, UInt element = 0,
                    UInt num_point = 0, GhostType ghost_type = _not_ghost)
-      : Element(type, element, ghost_type), num_point(num_point), global_num(0),
-        position((Real *)NULL, 0){};
+      : Element{type, element, ghost_type}, num_point(num_point), global_num(0),
+        position(nullptr, 0){};
 
   IntegrationPoint(UInt element, UInt num_point, UInt global_num,
                    const position_type & position, ElementType type,
                    GhostType ghost_type = _not_ghost)
-      : Element(type, element, ghost_type), num_point(num_point),
-        global_num(global_num), position((Real *)NULL, 0) {
+      : Element{type, element, ghost_type}, num_point(num_point),
+        global_num(global_num), position(nullptr, 0) {
     this->position.shallowCopy(position);
   };
 
   IntegrationPoint(const IntegrationPoint & quad)
       : Element(quad), num_point(quad.num_point), global_num(quad.global_num),
-        position((Real *)NULL, 0) {
+        position(nullptr, 0) {
     position.shallowCopy(quad.position);
   };
 
@@ -92,9 +92,7 @@ public:
   }
 
   inline bool operator!=(const IntegrationPoint & quad) const {
-    return ((element != quad.element) || (type != quad.type) ||
-            (ghost_type != quad.ghost_type) || (kind != quad.kind) ||
-            (num_point != quad.num_point) || (global_num != quad.global_num));
+    return Element::operator!=(quad) ||  (num_point != quad.num_point) || (global_num != quad.global_num);
   }
 
   bool operator<(const IntegrationPoint & rhs) const {
@@ -135,7 +133,7 @@ public:
     for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
       ;
     stream << space << "IntegrationPoint [";
-    Element::printself(stream, 0);
+    stream << *static_cast<const Element *>(this);
     stream << ", " << num_point << "(" << global_num << ")"
            << "]";
   }

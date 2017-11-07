@@ -117,7 +117,7 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
   Element el;
   el.type = type;
 
-  for(auto && ghost_type : ghost_types) {
+  for(auto ghost_type : ghost_types) {
     UInt nb_element = mesh.getNbElement(type, ghost_type);
     el.ghost_type = ghost_type;
 

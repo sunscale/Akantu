@@ -70,7 +70,7 @@ MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
       sizeof(Int) == sizeof(SCOTCH_Num),
       "The integer type of Akantu does not match the one from Scotch");
 
-  static_if(scotch_version >= 6)
+  static_if(aka::bool_constant_v<scotch_version >= 6>)
       .then([](auto && y) { SCOTCH_randomSeed(y); })
       .else_([](auto && y) {
         srandom(y);

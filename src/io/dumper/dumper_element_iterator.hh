@@ -105,7 +105,7 @@ public:
   UInt element_type() { return getIOHelperType(*tit); }
 
   Element getCurrentElement(){
-    return Element(*tit,array_it.getCurrentIndex());
+    return Element{*tit, array_it.getCurrentIndex(), _not_ghost};
   }
 
   UInt getNbDataPerElem(const ElementType & type) const {

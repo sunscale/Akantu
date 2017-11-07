@@ -34,7 +34,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 #include "mesh.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 
 namespace akantu {
 
@@ -64,7 +64,7 @@ void DumperText::registerMesh(const Mesh & mesh,
   registerField("position", new dumper::NodalField<Real>(mesh.getNodes()));
 
   // in parallel we need node type
-  UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
+  UInt nb_proc = mesh.getCommunicator().getNbProc();
   if (nb_proc > 1) {
     registerField("nodes_type",
                   new dumper::NodalField<NodeType>(mesh.getNodesType()));
@@ -84,7 +84,7 @@ void DumperText::registerFilteredMesh(
                                 mesh.getNodes(), 0, 0, &nodes_filter));
 
   // in parallel we need node type
-  UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
+  UInt nb_proc = mesh.getCommunicator().getNbProc();
   if (nb_proc > 1) {
     registerField("nodes_type", new dumper::NodalField<NodeType, true>(
                                     mesh.getNodesType(), 0, 0, &nodes_filter));

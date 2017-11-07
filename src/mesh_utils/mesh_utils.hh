@@ -87,8 +87,7 @@ public:
 
   /// build facets for a given spatial dimension
   static void buildFacetsDimension(
-      const Mesh & mesh, Mesh & mesh_facets, bool boundary_only, UInt dimension,
-      const ElementTypeMapArray<UInt> * prank_to_element = nullptr);
+      const Mesh & mesh, Mesh & mesh_facets, bool boundary_only, UInt dimension);
 
   /// take the local_connectivity array as the array of local and ghost
   /// connectivity, renumber the nodes and set the connectivity of the mesh

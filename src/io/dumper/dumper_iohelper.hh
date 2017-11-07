@@ -124,7 +124,7 @@ public:
 public:
   /* ------------------------------------------------------------------------ */
   /* Variable wrapper */
-  template <typename T, bool is_scal = is_scalar<T>::value> class Variable;
+  template <typename T, bool is_scal = std::is_arithmetic<T>::value> class Variable;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

@@ -44,9 +44,10 @@
 #include "mesh_io.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_synchronizer.hh"
+#include "facet_synchronizer.hh"
 #include "mesh_utils_distribution.hh"
 #include "node_synchronizer.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_field.hh"
@@ -56,20 +57,9 @@
 
 namespace akantu {
 
-const Element ElementNull(_not_defined, 0);
-
-/* -------------------------------------------------------------------------- */
-void Element::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
-  stream << space << "Element [" << type << ", " << element << ", "
-         << ghost_type << "]";
-}
-
 /* -------------------------------------------------------------------------- */
 Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
-           StaticCommunicator & communicator)
+           Communicator & communicator)
     : Memory(id, memory_id),
       GroupManager(*this, id + ":group_manager", memory_id),
       nodes_type(0, 1, id + ":nodes_type"),
@@ -129,6 +119,11 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
 
     mesh_facets->mesh_parent = this;
     mesh_facets->is_mesh_facets = true;
+    if (mesh.isDistributed()) {
+      mesh_facets->is_distributed = true;
+      mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(
+          *mesh_facets, mesh.getElementSynchronizer());
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -248,31 +243,36 @@ void Mesh::initNormals() {
 
 /* -------------------------------------------------------------------------- */
 void Mesh::getGlobalConnectivity(
-    ElementTypeMapArray<UInt> & global_connectivity, UInt dimension,
-    GhostType ghost_type) {
+    ElementTypeMapArray<UInt> & global_connectivity) {
   AKANTU_DEBUG_IN();
 
-  for (auto type : elementTypes(dimension, ghost_type)) {
-    auto & local_conn = connectivities(type, ghost_type);
-    auto & g_connectivity = global_connectivity(type, ghost_type);
+  for (auto && ghost_type : ghost_types) {
+    for (auto type :
+         global_connectivity.elementTypes(_ghost_type = ghost_type)) {
+      if (not connectivities.exists(type, ghost_type))
+        continue;
 
-    UInt nb_nodes = local_conn.size() * local_conn.getNbComponent();
+      auto & local_conn = connectivities(type, ghost_type);
+      auto & g_connectivity = global_connectivity(type, ghost_type);
 
-    if (!nodes_global_ids && is_mesh_facets) {
-      std::transform(
-          local_conn.begin_reinterpret(nb_nodes),
-          local_conn.end_reinterpret(nb_nodes),
-          g_connectivity.begin_reinterpret(nb_nodes),
-          [& node_ids = *mesh_parent->nodes_global_ids](UInt l)->UInt {
-            return node_ids(l);
-          });
-    } else {
-      std::transform(local_conn.begin_reinterpret(nb_nodes),
-                     local_conn.end_reinterpret(nb_nodes),
-                     g_connectivity.begin_reinterpret(nb_nodes),
-                     [& node_ids = *nodes_global_ids](UInt l)->UInt {
-                       return node_ids(l);
-                     });
+      UInt nb_nodes = local_conn.size() * local_conn.getNbComponent();
+
+      if (not nodes_global_ids && is_mesh_facets) {
+        std::transform(
+            local_conn.begin_reinterpret(nb_nodes),
+            local_conn.end_reinterpret(nb_nodes),
+            g_connectivity.begin_reinterpret(nb_nodes),
+            [& node_ids = *mesh_parent->nodes_global_ids](UInt l)->UInt {
+              return node_ids(l);
+            });
+      } else {
+        std::transform(local_conn.begin_reinterpret(nb_nodes),
+                       local_conn.end_reinterpret(nb_nodes),
+                       g_connectivity.begin_reinterpret(nb_nodes),
+                       [& node_ids = *nodes_global_ids](UInt l)->UInt {
+                         return node_ids(l);
+                       });
+      }
     }
   }
 
@@ -387,8 +387,6 @@ void Mesh::distribute(Communicator & communicator) {
 #endif
 
   this->is_distributed = true;
-
-  this->element_synchronizer->buildPrankToElement();
   this->computeBoundingBox();
 }
 
@@ -406,7 +404,7 @@ void Mesh::fillNodesToElements() {
 
   UInt nb_nodes = nodes->size();
   for (UInt n = 0; n < nb_nodes; ++n) {
-    if(this->nodes_to_elements[n])
+    if (this->nodes_to_elements[n])
       this->nodes_to_elements[n]->clear();
     else
       this->nodes_to_elements[n] = std::make_unique<std::set<Element>>();
@@ -417,7 +415,6 @@ void Mesh::fillNodesToElements() {
     for (const auto & type :
          elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       e.type = type;
-      e.kind = getKind(type);
 
       UInt nb_element = this->getNbElement(type, ghost_type);
       Array<UInt>::const_iterator<Vector<UInt>> conn_it =
@@ -442,18 +439,20 @@ void Mesh::eraseElements(const Array<Element> & elements) {
   auto & remove_list = event.getList();
   auto & new_numbering = event.getNewNumbering();
 
-  for(auto && el : elements) {
-    if(el.ghost_type != _not_ghost) {
+  for (auto && el : elements) {
+    if (el.ghost_type != _not_ghost) {
       auto & count = ghosts_counters(el);
       --count;
-      if (count > 0) continue;
+      if (count > 0)
+        continue;
     }
 
     remove_list.push_back(el);
     if (not last_element.exists(el.type, el.ghost_type)) {
       UInt nb_element = mesh.getNbElement(el.type, el.ghost_type);
       last_element(nb_element - 1, el.type, el.ghost_type);
-      auto & numbering = new_numbering.alloc(nb_element, 1, el.type, el.ghost_type);
+      auto & numbering =
+          new_numbering.alloc(nb_element, 1, el.type, el.ghost_type);
       for (auto && pair : enumerate(numbering)) {
         std::get<1>(pair) = std::get<0>(pair);
       }
@@ -469,6 +468,5 @@ void Mesh::eraseElements(const Array<Element> & elements) {
 
   this->sendEvent(event);
 }
-
 
 } // namespace akantu

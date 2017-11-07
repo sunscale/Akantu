@@ -98,7 +98,7 @@ void MaterialPython::initMaterial() {
   Material::initMaterial();
 
   auto && coords = *this->internals["quad_coordinates"];
-  this->model->getFEEngine().computeIntegrationPointsCoordinates(coords,
+  this->model.getFEEngine().computeIntegrationPointsCoordinates(coords,
                                                                  &this->element_filter);
   AKANTU_DEBUG_OUT();
 }

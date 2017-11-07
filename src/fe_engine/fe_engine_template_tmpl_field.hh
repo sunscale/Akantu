@@ -51,7 +51,7 @@ namespace fe_engine {
         auto field_it = field.begin_reinterpret(
             nb_degree_of_freedom, nb_integration_points, nb_element);
 
-        Element el(type, 0, ghost_type);
+        Element el{type, 0, ghost_type};
         for (; el.element < nb_element; ++el.element, ++field_it) {
           field_funct(*field_it, el);
         }
@@ -405,7 +405,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
       Nt(d) *= rho(d);
     }
 
-    mat.mul<false, false>(Nt, N);
+    mat.template mul<false, false>(Nt, N);
   }
 
   // integrate the elemental values

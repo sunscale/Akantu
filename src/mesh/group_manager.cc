@@ -555,7 +555,6 @@ UInt GroupManager::createClusters(UInt element_dimension,
 
     for (; type_it != type_end; ++type_it) {
       el.type = *type_it;
-      el.kind = Mesh::getKind(*type_it);
       UInt nb_element = mesh.getNbElement(*type_it, ghost_type);
       Array<bool> & seen_elements_array = seen_elements(el.type, ghost_type);
 

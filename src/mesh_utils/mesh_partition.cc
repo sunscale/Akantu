@@ -96,16 +96,10 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   std::vector<UInt> magic_number;
   std::vector<UInt> nb_element;
   std::vector<Array<UInt> *> connectivities;
-
-  Element elem;
-  elem.ghost_type = _not_ghost;
-
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   for (auto & type :
        mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
-    elem.type = type;
-
     ElementType type_p1 = Mesh::getP1ElementType(type);
 
     connectivities.push_back(
@@ -179,8 +173,8 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
 #if defined(AKANTU_COHESIVE_ELEMENT)
           /// Patch in order to prevent neighboring cohesive elements
           /// from detecting each other
-          ElementKind linearized_el_kind = lin_to_element(linerized_el).kind;
-          ElementKind adjacent_el_kind = lin_to_element(adjacent_el).kind;
+          ElementKind linearized_el_kind = lin_to_element(linerized_el).kind();
+          ElementKind adjacent_el_kind = lin_to_element(adjacent_el).kind();
 
           if (linearized_el_kind == adjacent_el_kind &&
               linearized_el_kind == _ek_cohesive)

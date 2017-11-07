@@ -195,8 +195,7 @@ public:
   void defineMeshParent(const Mesh & mesh);
 
   /// get global connectivity array
-  void getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity,
-                             UInt dimension, GhostType ghost_type);
+  void getGlobalConnectivity(ElementTypeMapArray<UInt> & global_connectivity);
 
 public:
   void getAssociatedElements(const Array<UInt> & node_list,
@@ -584,12 +583,6 @@ private:
   /// This info is stored to simplify the dynamic changes
   NodesToElements nodes_to_elements;
 };
-
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream, const Element & _this) {
-  _this.printself(stream);
-  return stream;
-}
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {

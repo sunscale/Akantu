@@ -1064,7 +1064,7 @@ void Material::interpolateStressOnFacets(
     UInt nb_facet_per_elem = facet_to_element.getNbComponent();
     UInt nb_quad_per_facet =
         nb_interpolation_points_per_elem / nb_facet_per_elem;
-    Element element_for_comparison(type, 0, ghost_type);
+    Element element_for_comparison{type, 0, ghost_type};
     const Array<std::vector<Element>> * element_to_facet = NULL;
     GhostType current_ghost_type = _casper;
     Array<Real> * result_vec = NULL;
@@ -1344,7 +1344,6 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
           material_local_new_numbering(type, ghost_type);
 
       UInt nb_element = elem_filter.size();
-      element.kind = (*el_begin).kind;
       Array<UInt> elem_filter_tmp;
 
       UInt new_id = 0;
@@ -1453,10 +1452,8 @@ void Material::onElementsRemoved(
         const Array<UInt> & renumbering = new_numbering(type, gt);
         Array<UInt> elem_filter_tmp;
         UInt ni = 0;
-        Element el;
-        el.type = type;
-        el.ghost_type = gt;
-        el.kind = Mesh::getKind(type);
+        Element el{type, 0, gt};
+
         for (UInt i = 0; i < elem_filter.size(); ++i) {
           el.element = elem_filter(i);
           if (std::find(el_begin, el_end, el) == el_end) {
@@ -1547,7 +1544,7 @@ void Material::extrapolateInternal(const ID & id, const Element & element,
                                    __attribute__((unused))
                                    const Matrix<Real> & point,
                                    Matrix<Real> & extrapolated) {
-  if (this->isInternal<Real>(id, element.kind)) {
+  if (this->isInternal<Real>(id, element.kind())) {
     UInt nb_element =
         this->element_filter(element.type, element.ghost_type).size();
     const ID name = this->getID() + ":" + id;

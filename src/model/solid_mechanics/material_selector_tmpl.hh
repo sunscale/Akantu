@@ -28,7 +28,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "material_selector.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_TMPL_HH__
@@ -37,16 +38,9 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-MeshDataMaterialSelector<T>::MeshDataMaterialSelector(const std::string & name,
-                                                      const SolidMechanicsModel & model,
-                                                      UInt first_index):
-  ElementDataMaterialSelector<T>(model.getMesh().getData<T>(name), model, first_index)
-{}
-
-/* -------------------------------------------------------------------------- */
-template<>
-inline UInt ElementDataMaterialSelector<std::string>::operator() (const Element & element) {
+template <>
+inline UInt ElementDataMaterialSelector<std::string>::
+operator()(const Element & element) {
   try {
     std::string material_name = this->elementData(element);
     return model.getMaterialIndex(material_name);
@@ -56,8 +50,9 @@ inline UInt ElementDataMaterialSelector<std::string>::operator() (const Element 
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline UInt ElementDataMaterialSelector<UInt>::operator() (const Element & element) {
+template <>
+inline UInt ElementDataMaterialSelector<UInt>::
+operator()(const Element & element) {
   try {
     return this->elementData(element) - first_index;
   } catch (...) {
@@ -65,6 +60,14 @@ inline UInt ElementDataMaterialSelector<UInt>::operator() (const Element & eleme
   }
 }
 
-} // akantu
+/* -------------------------------------------------------------------------- */
+template <typename T>
+MeshDataMaterialSelector<T>::MeshDataMaterialSelector(
+    const std::string & name, const SolidMechanicsModel & model,
+    UInt first_index)
+    : ElementDataMaterialSelector<T>(model.getMesh().getData<T>(name), model,
+                                     first_index) {}
+
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_TMPL_HH__ */

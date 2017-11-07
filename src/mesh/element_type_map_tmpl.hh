@@ -421,8 +421,9 @@ operator!=(const type_iterator & other) const {
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypesImpl(
-    UInt dim, GhostType ghost_type, ElementKind kind) const {
+ElementTypeMap<Stored, SupportType>::elementTypesImpl(UInt dim,
+                                                      GhostType ghost_type,
+                                                      ElementKind kind) const {
   return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
 }
 
@@ -560,11 +561,23 @@ protected:
 template <typename T, typename SupportType>
 template <class Func>
 void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
-                                                     const T & default_value) {
+                                                     const T & default_value,
+                                                     bool do_not_default) {
   for (auto & type : f.elementTypes()) {
     if (not this->exists(type, f.ghostType()))
-      this->alloc(f.size(type), f.nbComponent(type), type, f.ghostType(),
-                  default_value);
+      if (do_not_default) {
+        auto & array = this->alloc(0, f.nbComponent(type), type, f.ghostType());
+        array.resize(f.size(type));
+      } else {
+        this->alloc(f.size(type), f.nbComponent(type), type, f.ghostType(),
+                    default_value);
+      }
+    else {
+      auto & array = this->operator()(type, f.ghostType());
+      array.resize(f.size(type));
+      if (not do_not_default)
+        array.set(default_value);
+    }
   }
 }
 
@@ -587,7 +600,8 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
             ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
             OPTIONAL_NAMED_ARG(with_nb_element, false),
             OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false)),
-        OPTIONAL_NAMED_ARG(default_value, T()));
+        OPTIONAL_NAMED_ARG(default_value, T()),
+        OPTIONAL_NAMED_ARG(_do_not_default, false));
   }
 }
 
@@ -608,7 +622,8 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
                          OPTIONAL_NAMED_ARG(spatial_dimension, UInt(-2)),
                          ghost_type,
                          OPTIONAL_NAMED_ARG(element_kind, _ek_regular)),
-                     OPTIONAL_NAMED_ARG(default_value, T()));
+                     OPTIONAL_NAMED_ARG(default_value, T()),
+                     OPTIONAL_NAMED_ARG(_do_not_default, false));
   }
 }
 

@@ -54,6 +54,7 @@ namespace {
   DECLARE_NAMED_ARGUMENT(with_nb_element);
   DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
   DECLARE_NAMED_ARGUMENT(spatial_dimension);
+  DECLARE_NAMED_ARGUMENT(_do_not_default);
 } // namespace
 
 template <class Stored, typename SupportType = ElementType>
@@ -209,7 +210,7 @@ private:
 
   template <typename... pack>
   using named_argument_test =
-      std::conjunction<std::bool_constant<(sizeof...(pack) > 0)>,
+      aka::conjunction<aka::bool_constant<(sizeof...(pack) > 0)>,
                        is_named_argument<pack>...>;
 
 public:
@@ -397,7 +398,7 @@ public:
 public:
   /// initialize the arrays in accordance to a functor
   template <class Func>
-  void initialize(const Func & f, const T & default_value = T());
+  void initialize(const Func & f, const T & default_value, bool do_not_default);
 
   /// initialize with sizes and number of components in accordance of a mesh
   /// content

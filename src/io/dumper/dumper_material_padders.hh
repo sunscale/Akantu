@@ -53,15 +53,15 @@ public:
   /* ------------------------------------------------------------------------ */
   /// return the material from the global element index
   const Material & getMaterialFromGlobalIndex(Element global_index) {
-    UInt index = global_index.getIndex();
-    UInt material_id = material_index(global_index.getType())(index);
+    UInt index = global_index.element;
+    UInt material_id = material_index(global_index.type)(index);
     const Material & material = model.getMaterial(material_id);
     return material;
   }
 
   /// return the type of the element from global index
   ElementType getElementTypeFromGlobalIndex(Element global_index) {
-    return global_index.getType();
+    return global_index.type;
   }
 
 protected:

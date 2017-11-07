@@ -47,6 +47,11 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+inline ElementKind Element::kind() const { return Mesh::getKind(type); }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 template <typename... pack>
 Mesh::ElementTypesIteratorHelper Mesh::elementTypes(pack &&... _pack) const {
   return connectivities.elementTypes(_pack...);
@@ -211,9 +216,11 @@ Mesh::getElementToSubelementPointer(const ElementType & type,
 inline Array<Element> &
 Mesh::getSubelementToElementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
-  return getDataPointer<Element>("subelement_to_element", type, ghost_type,
+  auto & array = getDataPointer<Element>("subelement_to_element", type, ghost_type,
                                  getNbFacetsPerElement(type), true,
                                  is_mesh_facets);
+  array.set(ElementNull);
+  return array;
 }
 
 /* -------------------------------------------------------------------------- */

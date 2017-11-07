@@ -199,8 +199,7 @@ Material::convertToLocalElement(const Element & global_element) const {
   UInt le = this->model.getMaterialLocalNumbering(
       global_element.type, global_element.ghost_type)(ge);
 
-  Element tmp_quad(global_element.type, le, global_element.ghost_type,
-                   global_element.kind);
+  Element tmp_quad{global_element.type, le, global_element.ghost_type};
   return tmp_quad;
 }
 
@@ -211,8 +210,7 @@ Material::convertToGlobalElement(const Element & local_element) const {
   UInt ge =
       this->element_filter(local_element.type, local_element.ghost_type)(le);
 
-  Element tmp_quad(local_element.type, ge, local_element.ghost_type,
-                   local_element.kind);
+  Element tmp_quad{local_element.type, ge, local_element.ghost_type};
   return tmp_quad;
 }
 

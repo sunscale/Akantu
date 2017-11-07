@@ -400,7 +400,7 @@ void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
   auto end = field_times_shapes.end(nb_degree_of_freedom, size_of_shapes);
 
   for (; it != end; ++it, ++field_it, ++shapes_it) {
-    it->mul<false, false>(*field_it, *shapes_it);
+    it->template mul<false, false>(*field_it, *shapes_it);
   }
 
   AKANTU_DEBUG_OUT();

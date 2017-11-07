@@ -288,7 +288,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
       break; // "?"
     case _at_least_one:
       min_nb_val = 1; // "+"
-      [[gnu::fallthrough]];
+      // [[fallthrough]]; un-comment when compiler will get it
     case _any:
       max_nb_val = argc - current_position;
       break; // "*"
@@ -468,7 +468,7 @@ void ArgumentParser::print_usage_nargs(std::ostream & stream,
     break;
   case _at_least_one:
     stream << " " << u_name;
-    [[gnu::fallthrough]];
+    // [[fallthrough]]; un-comment when compiler will get it
   case _any:
     stream << " [" << u_name << " ...]";
     break;
