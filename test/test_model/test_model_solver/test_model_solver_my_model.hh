@@ -34,7 +34,7 @@
 #include "mesh.hh"
 #include "model_solver.hh"
 #include "sparse_matrix.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -335,7 +335,7 @@ public:
         res += *strain_it * *stress_it * A * *L_it;
       }
 
-      StaticCommunicator::getStaticCommunicator().allReduce(res, _so_sum);
+      mesh.getCommunicator().allReduce(res, SynchronizerOperation::_sum);
     }
 
     return res / 2.;
@@ -357,7 +357,7 @@ public:
           res += *m_it * *it * *it;
       }
 
-      StaticCommunicator::getStaticCommunicator().allReduce(res, _so_sum);
+      mesh.getCommunicator().allReduce(res, SynchronizerOperation::_sum);
     }
 
     return res / 2.;
@@ -377,7 +377,7 @@ public:
         res += (*b_it ? -*if_it : *ef_it) * *it;
     }
 
-    StaticCommunicator::getStaticCommunicator().allReduce(res, _so_sum);
+    mesh.getCommunicator().allReduce(res, SynchronizerOperation::_sum);
 
     return res * this->getTimeStep();
   }
@@ -397,7 +397,7 @@ public:
         res += *x_it * *it;
     }
 
-    StaticCommunicator::getStaticCommunicator().allReduce(res, _so_sum);
+    mesh.getCommunicator().allReduce(res, SynchronizerOperation::_sum);
     return res;
   }
 

@@ -33,15 +33,15 @@
 /* -------------------------------------------------------------------------- */
 #include <io_helper.hh>
 
+#include "communicator.hh"
 #include "dumper_paraview.hh"
-#include "static_communicator.hh"
 #include <fstream>
 
 namespace akantu {
 
 DumperParaview::DumperParaview(const std::string & filename,
-			       const std::string & directory,
-			       bool parallel) : DumperIOHelper() {
+                               const std::string & directory, bool parallel)
+    : DumperIOHelper() {
   iohelper::DumperParaview * dumper_para = new iohelper::DumperParaview();
   dumper = dumper_para;
   setBaseName(filename);
@@ -54,14 +54,13 @@ DumperParaview::DumperParaview(const std::string & filename,
 }
 
 /* -------------------------------------------------------------------------- */
-DumperParaview::~DumperParaview() {
-}
-
+DumperParaview::~DumperParaview() {}
 
 /* -------------------------------------------------------------------------- */
 void DumperParaview::setBaseName(const std::string & basename) {
   DumperIOHelper::setBaseName(basename);
-  static_cast<iohelper::DumperParaview*>(dumper)->setVTUSubDirectory(filename + "-VTU");
+  static_cast<iohelper::DumperParaview *>(dumper)->setVTUSubDirectory(filename +
+                                                                      "-VTU");
 }
 
-} // akantu
+} // namespace akantu

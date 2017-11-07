@@ -30,16 +30,10 @@
 /* -------------------------------------------------------------------------- */
 #include "model_solver.hh"
 #include "dof_manager.hh"
+#include "dof_manager_default.hh"
+#include "mesh.hh"
 #include "non_linear_solver.hh"
 #include "time_step_solver.hh"
-
-#include "mesh.hh"
-
-#if defined(AKANTU_USE_MPI)
-#include "mpi_type_wrapper.hh"
-#endif
-
-#include "dof_manager_default.hh"
 
 #if defined(AKANTU_USE_PETSC)
 #include "dof_manager_petsc.hh"

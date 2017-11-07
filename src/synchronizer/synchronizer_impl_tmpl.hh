@@ -39,7 +39,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 SynchronizerImpl<Entity>::SynchronizerImpl(const ID & id, MemoryID memory_id,
-                                           const StaticCommunicator & comm)
+                                           const Communicator & comm)
     : Synchronizer(id, memory_id, comm), communications(comm) {}
 
 /* -------------------------------------------------------------------------- */
@@ -113,7 +113,7 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
     const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  if (!this->communications.hasCommunication(tag))
+  if (not this->communications.hasCommunicationSize(tag))
     this->computeBufferSize(data_accessor, tag);
 
   this->communications.incrementCounter(tag);
@@ -159,15 +159,15 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
   AKANTU_DEBUG_IN();
 
 #ifndef AKANTU_NDEBUG
-  if (this->communications.begin_recv(tag) !=
-          this->communications.end_recv(tag) &&
+  if (this->communications.begin(tag, _recv) !=
+      this->communications.end(tag, _recv) &&
       !this->communications.hasPendingRecv(tag))
     AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
                                  "No pending communication with the tag \""
                                      << tag);
 #endif
 
-  auto recv_end = this->communications.end_recv(tag);
+  auto recv_end = this->communications.end(tag, _recv);
   decltype(recv_end) recv_it;
 
   while ((recv_it = this->communications.waitAnyRecv(tag)) != recv_end) {
@@ -203,11 +203,13 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
     const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  this->communications.initializeCommunications(tag);
-  AKANTU_DEBUG_ASSERT(communications.hasCommunication(tag) == true,
-                      "Communications where not properly initialized");
+  if (not this->communications.hasCommunication(tag)) {
+    this->communications.initializeCommunications(tag);
+    AKANTU_DEBUG_ASSERT(communications.hasCommunication(tag) == true,
+                        "Communications where not properly initialized");
+  }
 
-  for (auto && sr : iterate_send_recv) {
+  for (auto sr : iterate_send_recv) {
     for (auto && pair : this->communications.iterateSchemes(sr)) {
       auto proc = pair.first;
       auto & scheme = pair.second;
@@ -221,10 +223,63 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
                         << scheme.size() << " element(s)) data to "
                         << std::string(sr == _recv ? "receive from" : "send to")
                         << proc << " for tag " << tag);
+
       this->communications.setCommunicationSize(tag, proc, size, sr);
     }
   }
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename Entity>
+template <typename Pred>
+void SynchronizerImpl<Entity>::split(SynchronizerImpl<Entity> & in_synchronizer,
+                                     Pred && pred) {
+  AKANTU_DEBUG_IN();
+
+  auto filter_list = [&](auto & list, auto & new_list) {
+    auto copy = list;
+    list.resize(0);
+    new_list.resize(0);
+
+    for (auto && entity : copy) {
+      if (std::forward<Pred>(pred)(entity)) {
+        new_list.push_back(entity);
+      } else {
+        list.push_back(entity);
+      }
+    }
+  };
+
+  for (auto sr : iterate_send_recv) {
+    for (auto & scheme_pair :
+         in_synchronizer.communications.iterateSchemes(sr)) {
+      auto proc = scheme_pair.first;
+      auto & scheme = scheme_pair.second;
+      auto & new_scheme = communications.createScheme(proc, sr);
+      filter_list(new_scheme, scheme);
+    }
+  }
+
+  in_synchronizer.communications.invalidateSizes();
+  communications.invalidateSizes();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename Entity>
+template <typename Updater>
+void SynchronizerImpl<Entity>::updateSchemes(Updater && scheme_updater) {
+  for (auto sr : iterate_send_recv) {
+    for (auto & scheme_pair : communications.iterateSchemes(sr)) {
+      auto proc = scheme_pair.first;
+      auto & scheme = scheme_pair.second;
+      std::forward<Updater>(scheme_updater)(scheme, proc, sr);
+    }
+  }
+
+  communications.invalidateSizes();
 }
 
 /* -------------------------------------------------------------------------- */

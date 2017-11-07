@@ -96,8 +96,7 @@
 #include "sparse_matrix_aij.hh"
 
 #if defined(AKANTU_USE_MPI)
-#include "mpi_type_wrapper.hh"
-#include "static_communicator_mpi.hh"
+#include "mpi_communicator_data.hh"
 #endif
 
 #include "sparse_solver_mumps.hh"
@@ -261,13 +260,13 @@ void SparseSolverMumps::initialize() {
     break;
   case _master_slave_distributed:
     this->mumps_data.par = 0; // The host is not part of the computations
-    __attribute__((fallthrough));
+    // [[fallthrough]]; un-comment when compiler will get it
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
-    const StaticCommunicatorMPI & mpi_st_comm =
-        dynamic_cast<const StaticCommunicatorMPI &>(
-            communicator.getRealStaticCommunicator());
-    MPI_Comm mpi_comm = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    const MPICommunicatorData & mpi_data =
+        dynamic_cast<const MPICommunicatorData &>(
+            communicator.getCommunicatorData());
+    MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
     this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
 #else
     AKANTU_DEBUG_ERROR(
@@ -400,7 +399,7 @@ void SparseSolverMumps::printError() {
   Vector<Int> _info_v(2);
   _info_v[0] = info(1);  // to get errors
   _info_v[1] = -info(1); // to get warnings
-  StaticCommunicator::getStaticCommunicator().allReduce(_info_v, _so_min);
+  dof_manager.getCommunicator().allReduce(_info_v, SynchronizerOperation::_min);
   _info_v[1] = -_info_v[1];
 
   if (_info_v[0] < 0) { // < 0 is an error

@@ -31,7 +31,6 @@
 #include "non_linear_solver_linear.hh"
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
-#include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {

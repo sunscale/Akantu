@@ -180,9 +180,9 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   }
 
   /// get the global maximum ID size on each proc
-  StaticCommunicator & static_communicator =
-      akantu::StaticCommunicator::getStaticCommunicator();
-  static_communicator.allReduce(max_id_size, _so_max);
+  const Communicator & static_communicator =
+      model.getMesh().getCommunicator();
+  static_communicator.allReduce(max_id_size, SynchronizerOperation::_max);
 
   /// get the rank for this proc and the total nb proc
   UInt prank = static_communicator.whoAmI();

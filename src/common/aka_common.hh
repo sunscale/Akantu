@@ -191,9 +191,6 @@ enum MatrixType { _unsymmetric, _symmetric, _mt_not_defined };
 /* -------------------------------------------------------------------------- */
 /* Ghosts handling                                                            */
 /* -------------------------------------------------------------------------- */
-
-using SynchronizerID = ID;
-
 /// @enum CommunicatorType type of communication method to use
 enum CommunicatorType { _communicator_mpi, _communicator_dummy };
 
@@ -287,24 +284,6 @@ extern ghost_type_t ghost_types;
 
 /// standard output stream operator for GhostType
 inline std::ostream & operator<<(std::ostream & stream, GhostType type);
-
-/// @enum SynchronizerOperation reduce operation that the synchronizer can
-/// perform
-enum SynchronizerOperation {
-  _so_sum,
-  _so_min,
-  _so_max,
-  _so_prod,
-  _so_land,
-  _so_band,
-  _so_lor,
-  _so_bor,
-  _so_lxor,
-  _so_bxor,
-  _so_min_loc,
-  _so_max_loc,
-  _so_null
-};
 
 /* -------------------------------------------------------------------------- */
 /* Global defines                                                             */

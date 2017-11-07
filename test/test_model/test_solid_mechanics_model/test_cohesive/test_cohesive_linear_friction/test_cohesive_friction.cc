@@ -29,20 +29,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh_io.hh"
-#include "mesh_utils.hh"
-#include "static_communicator.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "material.hh"
-#include "material_cohesive.hh"
-#include "aka_grid_dynamic.hh"
-#include "dof_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <time.h>
 #include <string>
-
 #include <iomanip>
 
 /* -------------------------------------------------------------------------- */

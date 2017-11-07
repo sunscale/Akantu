@@ -31,7 +31,7 @@
 #include "non_linear_solver_newton_raphson.hh"
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -168,7 +168,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(norm, _so_sum);
+  dof_manager.getCommunicator().allReduce(norm, SynchronizerOperation::_sum);
 
   norm = std::sqrt(norm);
 

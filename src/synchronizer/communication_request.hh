@@ -106,30 +106,6 @@ template <typename T1, typename T2> struct SCMinMaxLoc {
   T2 loc;
 };
 
-/* -------------------------------------------------------------------------- */
-
-class StaticCommunicator;
-
-/* -------------------------------------------------------------------------- */
-class RealStaticCommunicator {
-public:
-  RealStaticCommunicator(__attribute__((unused)) int & argc,
-                         __attribute__((unused)) char **& argv) {
-    prank = -1;
-    psize = -1;
-  };
-  virtual ~RealStaticCommunicator(){};
-
-  friend class StaticCommunicator;
-
-  Int getNbProc() { return this->psize; }
-  Int whoAmI() { return this->prank; }
-
-protected:
-  Int prank;
-  Int psize;
-};
-
 } // akantu
 
 #endif /* __AKANTU_REAL_STATIC_COMMUNICATOR_HH__ */

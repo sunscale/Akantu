@@ -40,7 +40,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
-                           const StaticCommunicator & comm)
+                           const Communicator & comm)
     : Memory(id, memory_id), communicator(comm) {
   int max_tag = comm.getMaxTag();
 

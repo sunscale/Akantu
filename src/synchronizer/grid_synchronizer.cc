@@ -37,7 +37,7 @@
 #include "integration_point.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
@@ -49,7 +49,7 @@ template <class E>
 void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
   AKANTU_DEBUG_IN();
 
-  const StaticCommunicator & comm = this->mesh.getCommunicator();
+  const Communicator & comm = this->mesh.getCommunicator();
   UInt nb_proc = comm.getNbProc();
   UInt my_rank = comm.whoAmI();
 
@@ -362,7 +362,7 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
       auto & ghost_counter = mesh_accessor.getGhostsCounters(type, _ghost);
 
       UInt nb_ghost_element = ghost_connectivity.size();
-      Element element(type, 0, _ghost);
+      Element element{type, 0, _ghost};
 
       Vector<UInt> conn(nb_nodes_per_element);
       for (UInt el = 0; el < nb_element; ++el) {

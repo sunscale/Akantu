@@ -31,7 +31,7 @@
 #include "node_info_per_processor.hh"
 #include "node_group.hh"
 #include "node_synchronizer.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 /* -------------------------------------------------------------------------- */

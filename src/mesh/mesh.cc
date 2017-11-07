@@ -86,7 +86,7 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, StaticCommunicator & communicator,
+Mesh::Mesh(UInt spatial_dimension, Communicator & communicator,
            const ID & id, const MemoryID & memory_id)
     : Mesh(spatial_dimension, id, memory_id, communicator) {
   AKANTU_DEBUG_IN();
@@ -99,14 +99,14 @@ Mesh::Mesh(UInt spatial_dimension, StaticCommunicator & communicator,
 
 /* -------------------------------------------------------------------------- */
 Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
-    : Mesh(spatial_dimension, StaticCommunicator::getStaticCommunicator(), id,
+    : Mesh(spatial_dimension, Communicator::getStaticCommunicator(), id,
            memory_id) {}
 
 /* -------------------------------------------------------------------------- */
 Mesh::Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
            const ID & id, const MemoryID & memory_id)
     : Mesh(spatial_dimension, id, memory_id,
-           StaticCommunicator::getStaticCommunicator()) {
+           Communicator::getStaticCommunicator()) {
   this->nodes = nodes;
 
   this->nb_global_nodes = this->nodes->size();
@@ -217,15 +217,13 @@ void Mesh::computeBoundingBox() {
   }
 
   if (this->is_distributed) {
-    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-
     Matrix<Real> reduce_bounds(spatial_dimension, 2);
     for (UInt k = 0; k < spatial_dimension; ++k) {
       reduce_bounds(k, 0) = local_lower_bounds(k);
       reduce_bounds(k, 1) = -local_upper_bounds(k);
     }
 
-    comm.allReduce(reduce_bounds, _so_min);
+    communicator->allReduce(reduce_bounds, SynchronizerOperation::_min);
 
     for (UInt k = 0; k < spatial_dimension; ++k) {
       lower_bounds(k) = reduce_bounds(k, 0);
@@ -355,11 +353,11 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 void Mesh::distribute() {
-  this->distribute(StaticCommunicator::getStaticCommunicator());
+  this->distribute(Communicator::getStaticCommunicator());
 }
 
 /* -------------------------------------------------------------------------- */
-void Mesh::distribute(StaticCommunicator & communicator) {
+void Mesh::distribute(Communicator & communicator) {
   AKANTU_DEBUG_ASSERT(is_distributed == false,
                       "This mesh is already distribute");
   this->communicator = &communicator;

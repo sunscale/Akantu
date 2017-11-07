@@ -139,7 +139,7 @@ void NeighborhoodBase::updatePairList() {
 void NeighborhoodBase::savePairs(const std::string & filename) const {
   std::stringstream sstr;
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const Communicator & comm = model.getMesh().getCommunicator();
   Int prank = comm.whoAmI();
   sstr << filename << "." << prank;
 
@@ -220,7 +220,7 @@ void NeighborhoodBase::saveNeighborCoords(const std::string & filename) const {
 
   std::stringstream sstr;
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const Communicator & comm = model.getMesh().getCommunicator();
   Int prank = comm.whoAmI();
   sstr << filename << "." << prank;
 

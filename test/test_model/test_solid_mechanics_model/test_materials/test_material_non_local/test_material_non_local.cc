@@ -47,8 +47,7 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm =
-      akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   // mesh creation and read

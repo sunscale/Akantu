@@ -33,27 +33,25 @@
 
 /* -------------------------------------------------------------------------- */
 #include "model.hh"
-#include "element_group.hh"
-#include "synchronizer_registry.hh"
+#include "communicator.hh"
 #include "data_accessor.hh"
-#include "static_communicator.hh"
+#include "element_group.hh"
 #include "element_synchronizer.hh"
+#include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh& mesh, UInt dim, const ID & id,
-             const MemoryID & memory_id) :
-  Memory(id, memory_id), ModelSolver(mesh, id, memory_id),
-  mesh(mesh),
-  spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension() : dim),
-  is_pbc_slave_node(0,1,"is_pbc_slave_node") ,
-  parser(getStaticParser()) {
+Model::Model(Mesh & mesh, UInt dim, const ID & id, const MemoryID & memory_id)
+    : Memory(id, memory_id), ModelSolver(mesh, id, memory_id), mesh(mesh),
+      spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
+                                               : dim),
+      is_pbc_slave_node(0, 1, "is_pbc_slave_node"), parser(getStaticParser()) {
   AKANTU_DEBUG_IN();
 
   this->mesh.registerEventHandler(*this, _ehp_model);
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -61,7 +59,7 @@ Model::Model(Mesh& mesh, UInt dim, const ID & id,
 Model::~Model() = default;
 
 /* -------------------------------------------------------------------------- */
-//void Model::setParser(Parser & parser) { this->parser = &parser; }
+// void Model::setParser(Parser & parser) { this->parser = &parser; }
 
 /* -------------------------------------------------------------------------- */
 void Model::initFull(const ModelOptions & options) {
@@ -349,4 +347,4 @@ void Model::setTextModeToDumper() { mesh.setTextModeToDumper(); }
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

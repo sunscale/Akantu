@@ -172,7 +172,7 @@ Communications<Entity>::waitAny(const SynchronizationTag & tag,
 
   for (; it != end; ++it) {
     auto & request = it->second.request();
-    if(!request.isFreed())
+    if (!request.isFreed())
       requests.push_back(request);
   }
 
@@ -257,11 +257,12 @@ template <class Entity>
 void Communications<Entity>::setCommunicationSize(
     const SynchronizationTag & tag, UInt proc, UInt size,
     const CommunicationSendRecv & sr) {
-  // accessor that creates if it does not exists
+  // accessor that fails if it does not exists
+  comm_size_computed[tag] = true; // TODO: need perhaps to be split based on sr
   auto & comms = this->communications[sr];
-  auto & comms_per_tag = comms[tag];
+  auto & comms_per_tag = comms.at(tag);
 
-  comms_per_tag[proc].resize(size);
+  comms_per_tag.at(proc).resize(size);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -289,34 +290,34 @@ void Communications<Entity>::initializeCommunications(
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-Communications<Entity>::Communications(const StaticCommunicator & communicator)
+Communications<Entity>::Communications(const Communicator & communicator)
     : communicator(communicator) {}
 
 /* ---------------------------------------------------------------------- */
-template <class Entity>
-typename Communications<Entity>::iterator
-Communications<Entity>::begin_send(const SynchronizationTag & tag) {
-  return this->begin(tag, _send);
-}
+// template <class Entity>
+// typename Communications<Entity>::iterator
+// Communications<Entity>::begin_send(const SynchronizationTag & tag) {
+//   return this->begin(tag, _send);
+// }
 
-template <class Entity>
-typename Communications<Entity>::iterator
-Communications<Entity>::end_send(const SynchronizationTag & tag) {
-  return this->end(tag, _send);
-}
+// template <class Entity>
+// typename Communications<Entity>::iterator
+// Communications<Entity>::end_send(const SynchronizationTag & tag) {
+//   return this->end(tag, _send);
+// }
 
-/* ---------------------------------------------------------------------- */
-template <class Entity>
-typename Communications<Entity>::iterator
-Communications<Entity>::begin_recv(const SynchronizationTag & tag) {
-  return this->begin(tag, _recv);
-}
+// /* ---------------------------------------------------------------------- */
+// template <class Entity>
+// typename Communications<Entity>::iterator
+// Communications<Entity>::begin_recv(const SynchronizationTag & tag) {
+//   return this->begin(tag, _recv);
+// }
 
-template <class Entity>
-typename Communications<Entity>::iterator
-Communications<Entity>::end_recv(const SynchronizationTag & tag) {
-  return this->end(tag, _recv);
-}
+// template <class Entity>
+// typename Communications<Entity>::iterator
+// Communications<Entity>::end_recv(const SynchronizationTag & tag) {
+//   return this->end(tag, _recv);
+// }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
@@ -441,6 +442,23 @@ UInt Communications<Entity>::getCounter(const SynchronizationTag & tag) const {
 }
 
 template <class Entity>
+bool Communications<Entity>::hasCommunicationSize(
+    const SynchronizationTag & tag) const {
+  auto it = comm_size_computed.find(tag);
+  if (it == comm_size_computed.end()) {
+    return false;
+  }
+
+  return it->second;
+}
+
+template <class Entity> void Communications<Entity>::invalidateSizes() {
+  for (auto && pair : comm_size_computed) {
+    pair.second = true;
+  }
+}
+
+template <class Entity>
 bool Communications<Entity>::hasPendingRecv(
     const SynchronizationTag & tag) const {
   return this->hasPending(tag, _recv);
@@ -453,7 +471,7 @@ bool Communications<Entity>::hasPendingSend(
 }
 
 template <class Entity>
-const StaticCommunicator & Communications<Entity>::getCommunicator() const {
+const auto & Communications<Entity>::getCommunicator() const {
   return communicator;
 }
 
@@ -519,7 +537,8 @@ Communications<Entity>::getScheme(UInt proc, const CommunicationSendRecv & sr) {
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 const typename Communications<Entity>::Scheme &
-Communications<Entity>::getScheme(UInt proc, const CommunicationSendRecv & sr) const {
+Communications<Entity>::getScheme(UInt proc,
+                                  const CommunicationSendRecv & sr) const {
   return this->schemes[sr].find(proc)->second;
 }
 
@@ -536,6 +555,6 @@ void Communications<Entity>::setRecvCommunicationSize(
   this->setCommunicationSize(tag, proc, size, _recv);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COMMUNICATIONS_TMPL_HH__ */

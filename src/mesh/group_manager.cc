@@ -271,7 +271,7 @@ public:
         element_synchronizer(element_synchronizer), nb_cluster(nb_cluster) {}
 
   UInt synchronize() {
-    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+    Communicator & comm = Communicator::getStaticCommunicator();
     UInt rank = comm.whoAmI();
     UInt nb_proc = comm.getNbProc();
 
@@ -517,7 +517,7 @@ UInt GroupManager::createClusters(UInt element_dimension,
                                   Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
+  UInt nb_proc = mesh.getCommunicator().getNbProc();
   std::string tmp_cluster_name_prefix = cluster_name_prefix;
 
   ElementTypeMapArray<UInt> * element_to_fragment = nullptr;
@@ -940,7 +940,7 @@ void GroupManager::fillBufferWithGroupNames(
 void GroupManager::synchronizeGroupNames() {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const Communicator & comm = mesh.getCommunicator();
   Int nb_proc = comm.getNbProc();
   Int my_rank = comm.whoAmI();
 

@@ -33,7 +33,7 @@
 #ifndef __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__
 #define __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "dumper_field.hh"
 #include "dumper_generic_elemental_field.hh"
 #ifdef AKANTU_IGFEM

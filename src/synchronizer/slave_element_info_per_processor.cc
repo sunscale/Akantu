@@ -31,7 +31,7 @@
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
 #include "mesh_utils.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iostream>
@@ -173,7 +173,7 @@ void SlaveElementInfoPerProc::synchronizeTags() {
 void SlaveElementInfoPerProc::synchronizeGroups() {
   AKANTU_DEBUG_IN();
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const Communicator & comm = mesh.getCommunicator();
   UInt my_rank = comm.whoAmI();
 
   AKANTU_DEBUG_INFO("Receiving element groups from proc "

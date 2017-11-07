@@ -55,7 +55,7 @@ Real F = -10;
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
-  UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+  UInt prank = Communicator::getStaticCommunicator().whoAmI();
 
   std::cout << std::setprecision(7);
 
@@ -117,7 +117,7 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 
 /* -------------------------------------------------------------------------- */
 void printResults(MyModel & model, UInt nb_nodes) {
-  UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+  UInt prank = model.mesh.getCommunicator().whoAmI();
   auto & sync = dynamic_cast<DOFManagerDefault &>(model.getDOFManager())
     .getSynchronizer();
 

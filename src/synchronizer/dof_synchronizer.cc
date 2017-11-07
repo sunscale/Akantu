@@ -59,7 +59,7 @@ namespace akantu {
  */
 DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
                                  MemoryID memory_id,
-                                 const StaticCommunicator & comm)
+                                 const Communicator & comm)
     : SynchronizerImpl<UInt>(id, memory_id, comm), root(0),
       dof_manager(dof_manager), root_dofs(0, 1, "dofs-to-receive-from-master"),
       dof_changed(true) {
@@ -204,7 +204,7 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
 
 /* -------------------------------------------------------------------------- */
 bool DOFSynchronizer::hasChanged() {
-  communicator.allReduce(dof_changed, _so_lor);
+  communicator.allReduce(dof_changed, SynchronizerOperation::_lor);
   return dof_changed;
 }
 

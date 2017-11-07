@@ -33,7 +33,7 @@
 #include "element_synchronizer.hh"
 #include "mesh_iterators.hh"
 #include "mesh_utils.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iostream>

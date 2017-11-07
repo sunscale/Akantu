@@ -32,7 +32,7 @@
 /* -------------------------------------------------------------------------- */
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -207,7 +207,7 @@ void NonLocalNeighborhood<WeightFunction>::saveWeights(
 
   std::stringstream sstr;
 
-  const StaticCommunicator & comm = model.getMesh().getCommunicator();
+  const Communicator & comm = model.getMesh().getCommunicator();
 
   Int prank = comm.whoAmI();
   sstr << filename << "." << prank;

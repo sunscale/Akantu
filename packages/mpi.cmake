@@ -36,10 +36,8 @@ package_declare(MPI EXTERNAL
   DEPENDS scotch)
 
 package_declare_sources(MPI
-  synchronizer/mpi_type_wrapper.hh
-  synchronizer/static_communicator_mpi.cc
-  synchronizer/static_communicator_mpi_inline_impl.hh
-  synchronizer/static_communicator_mpi.hh
+  synchronizer/mpi_communicator_data.hh
+  synchronizer/communicator_mpi_inline_impl.cc
   )
 
 

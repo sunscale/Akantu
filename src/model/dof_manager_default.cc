@@ -34,7 +34,7 @@
 #include "node_synchronizer.hh"
 #include "non_linear_solver_default.hh"
 #include "sparse_matrix_aij.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */

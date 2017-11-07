@@ -51,7 +51,7 @@ SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
   //  _gst_solver_solution);
 
   // OK this is fishy...
-  const_cast<StaticCommunicator &>(this->communicator).registerEventHandler(*this);
+  const_cast<Communicator &>(this->communicator).registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }

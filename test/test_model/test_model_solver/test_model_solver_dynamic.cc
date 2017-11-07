@@ -37,7 +37,7 @@
 #include "model_solver.hh"
 #include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 #include "test_model_solver_my_model.hh"
@@ -57,7 +57,7 @@ static void genMesh(Mesh & mesh, UInt nb_nodes);
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
-  UInt prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+  UInt prank = Communicator::getStaticCommunicator().whoAmI();
   UInt global_nb_nodes = 201;
   UInt max_steps = 200;
   Real time_step = 0.001;

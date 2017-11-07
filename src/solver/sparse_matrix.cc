@@ -34,7 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 #include "sparse_matrix.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {

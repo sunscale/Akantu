@@ -34,7 +34,7 @@
 #include <limits>
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -47,8 +47,8 @@ int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   Mesh mesh(spatial_dimension);
-  StaticCommunicator & comm =
-      StaticCommunicator::getStaticCommunicator();
+  const auto & comm =
+      Communicator::getStaticCommunicator();
     Int prank = comm.whoAmI();
 
   debug::setDebugLevel(dblInfo);

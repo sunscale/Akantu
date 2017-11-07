@@ -26,11 +26,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#include "static_communicator.hh"
-/* -------------------------------------------------------------------------- */
-
 #ifndef __AKANTU_COMMUNICATION_TAG_HH__
 #define __AKANTU_COMMUNICATION_TAG_HH__
 

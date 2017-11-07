@@ -30,18 +30,15 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_memory.hh"
+#include "communicator.hh"
+/* -------------------------------------------------------------------------- */
+#include <map>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SYNCHRONIZER_HH__
 #define __AKANTU_SYNCHRONIZER_HH__
-
-/* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
-#include "static_communicator.hh"
-/* -------------------------------------------------------------------------- */
-#include <map>
-/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
@@ -54,8 +51,8 @@ class Synchronizer : protected Memory {
   /* ------------------------------------------------------------------------ */
 public:
   Synchronizer(const ID & id = "synchronizer", MemoryID memory_id = 0,
-               const StaticCommunicator & comm =
-                   StaticCommunicator::getStaticCommunicator());
+               const Communicator & comm =
+                   Communicator::getStaticCommunicator());
 
   virtual ~Synchronizer(){};
 
@@ -94,14 +91,14 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(Communicator, communicator, const StaticCommunicator &);
+  AKANTU_GET_MACRO(Communicator, communicator, const Communicator &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
   /// id of the synchronizer
-  SynchronizerID id;
+  ID id;
 
   /// hashed version of the id
   int hash_id;
@@ -110,7 +107,7 @@ protected:
   std::map<SynchronizationTag, UInt> tag_counter;
 
   /// the static memory instance
-  const StaticCommunicator & communicator;
+  const Communicator & communicator;
 
   /// nb processors in the communicator
   UInt nb_proc;

@@ -32,7 +32,12 @@
 #include "aka_grid_dynamic.hh"
 #include "material.hh"
 #include "solid_mechanics_model.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
+#include "mesh_utils.hh"
+/* -------------------------------------------------------------------------- */
+
+
+
 using namespace akantu;
 
 class StraightInterfaceMaterialSelector : public MaterialSelector {
@@ -154,8 +159,8 @@ int main(int argc, char * argv[]) {
 
   UInt spatial_dimension = 3;
 
-  StaticCommunicator & comm =
-    StaticCommunicator::getStaticCommunicator();
+  const auto & comm =
+    Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);

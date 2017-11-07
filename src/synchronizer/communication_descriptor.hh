@@ -31,6 +31,7 @@
 #include "aka_array.hh"
 #include "communication_tag.hh"
 #include "data_accessor.hh"
+#include "communication_request.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_COMMUNICATION_DESCRIPTOR_HH__
@@ -39,7 +40,7 @@
 namespace akantu {
 
 /* ------------------------------------------------------------------------ */
-enum CommunicationSendRecv { _send, _recv, _csr_not_defined };
+enum CommunicationSendRecv  { _send, _recv, _csr_not_defined };
 
 /* -------------------------------------------------------------------------- */
 struct CommunicationSRType {

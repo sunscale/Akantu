@@ -37,7 +37,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 

@@ -35,7 +35,7 @@
 #include "node_group.hh"
 #include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
@@ -47,7 +47,7 @@ namespace akantu {
 DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id), mesh(nullptr), local_system_size(0),
       pure_local_system_size(0), system_size(0),
-      communicator(StaticCommunicator::getStaticCommunicator()) {}
+      communicator(Communicator::getStaticCommunicator()) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFManager(Mesh & mesh, const ID & id, const MemoryID & memory_id)
@@ -257,8 +257,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
   this->pure_local_system_size += nb_pure_local;
   this->local_system_size += nb_local_dofs;
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  comm.allReduce(nb_pure_local, _so_sum);
+  communicator.allReduce(nb_pure_local, SynchronizerOperation::_sum);
 
   this->system_size += nb_pure_local;
 }
@@ -538,8 +537,7 @@ DOFManager::updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) {
   this->local_system_size += nb_new_local_dofs;
 
   UInt nb_new_global = nb_new_pure_local;
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  comm.allReduce(nb_new_global, _so_sum);
+  communicator.allReduce(nb_new_global, SynchronizerOperation::_sum);
 
   this->system_size += nb_new_global;
 

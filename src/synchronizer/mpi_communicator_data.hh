@@ -54,8 +54,9 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "static_communicator_mpi.hh"
+#include "communicator.hh"
+/* -------------------------------------------------------------------------- */
+#include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MPI_TYPE_WRAPPER_HH__
@@ -63,47 +64,73 @@
 
 namespace akantu {
 
-class MPITypeWrapper {
+class MPICommunicatorData : public CommunicatorInternalData {
 public:
-  MPITypeWrapper(StaticCommunicatorMPI & static_comm)
-      : static_comm(static_comm), communicator(MPI_COMM_WORLD), max_tag(0) {}
+  MPICommunicatorData() {
+    int is_initialized = false;
+    MPI_Initialized(&is_initialized);
+    if (!is_initialized) {
+      MPI_Init(NULL, NULL); // valid according to the spec
+    }
 
-  template <typename T> static inline MPI_Datatype getMPIDatatype();
+    MPI_Comm_create_errhandler(MPICommunicatorData::errorHandler, &error_handler);
+    setMPICommunicator(MPI_COMM_WORLD);
+    is_externaly_initialized = is_initialized;
+  }
+
+  ~MPICommunicatorData() {
+    if (not is_externaly_initialized) {
+      MPI_Finalize();
+    }
+  }
 
   inline void setMPICommunicator(MPI_Comm comm) {
+    MPI_Comm_set_errhandler(communicator, save_error_handler);
     communicator = comm;
-    int prank, psize;
+    MPI_Comm_get_errhandler(comm, &save_error_handler);
+    MPI_Comm_set_errhandler(comm, error_handler);
+  }
+
+  inline int rank() const {
+    int prank;
     MPI_Comm_rank(communicator, &prank);
+    return prank;
+  }
+
+  inline int size() const {
+    int psize;
     MPI_Comm_size(communicator, &psize);
-
-    static_comm.setRank(prank);
-    static_comm.setSize(psize);
-
-    int flag;
-    int * value;
-    MPI_Comm_get_attr(comm, MPI_TAG_UB, &value, &flag);
-    AKANTU_DEBUG_ASSERT(flag, "No attribute MPI_TAG_UB.");
-    this->max_tag = *value;
+    return psize;
   }
 
   inline MPI_Comm getMPICommunicator() const { return communicator; }
-
-  static MPI_Op getMPISynchronizerOperation(const SynchronizerOperation & op) {
-    return synchronizer_operation_to_mpi_op[op];
+  inline int getMaxTag() const {
+    int flag;
+    int * value;
+    MPI_Comm_get_attr(communicator, MPI_TAG_UB, &value, &flag);
+    AKANTU_DEBUG_ASSERT(flag, "No attribute MPI_TAG_UB.");
+    return *value;
   }
 
-  inline int getMaxTag() const { return this->max_tag; }
-
 private:
-  StaticCommunicatorMPI & static_comm;
+  MPI_Comm communicator{MPI_COMM_WORLD};
+  MPI_Errhandler save_error_handler{MPI_ERRORS_ARE_FATAL};
+  bool is_externaly_initialized{false};
 
-  MPI_Comm communicator;
+  /* ------------------------------------------------------------------------ */
+  MPI_Errhandler error_handler;
 
-  int max_tag;
-
-  static MPI_Op synchronizer_operation_to_mpi_op[_so_null + 1];
+  static void errorHandler(MPI_Comm * /*comm*/, int * error_code, ...) {
+    char error_string[MPI_MAX_ERROR_STRING];
+    int str_len;
+    MPI_Error_string(*error_code, error_string, &str_len);
+    AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
+                                 "MPI failed with the error code "
+                                     << *error_code << ": \"" << error_string
+                                     << "\"");
+  }
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MPI_TYPE_WRAPPER_HH__ */

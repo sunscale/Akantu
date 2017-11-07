@@ -30,7 +30,7 @@
 /* -------------------------------------------------------------------------- */
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iostream>
@@ -56,7 +56,6 @@ void ElementInfoPerProc::fillCommunicationScheme(
 
   Element element;
   element.type = this->type;
-  element.kind = Mesh::getKind(this->type);
 
   auto & communications = this->synchronizer.getCommunications();
   auto part = partition.begin();

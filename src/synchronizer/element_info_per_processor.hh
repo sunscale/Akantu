@@ -40,7 +40,7 @@
 
 namespace akantu {
 class ElementSynchronizer;
-class StaticCommunicator;
+class Communicator;
 class MeshPartition;
 }
 
@@ -90,7 +90,7 @@ protected:
 
   UInt message_count{0};
   Mesh & mesh;
-  const StaticCommunicator & comm;
+  const Communicator & comm;
 };
 
 /* -------------------------------------------------------------------------- */

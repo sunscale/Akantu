@@ -33,7 +33,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_static_memory.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "aka_random_generator.hh"
 
 #include "parser.hh"
@@ -59,8 +59,8 @@ void initialize(int & argc, char **& argv) {
 void initialize(const std::string & input_file, int & argc, char **& argv) {
   AKANTU_DEBUG_IN();
   StaticMemory::getStaticMemory();
-  StaticCommunicator & comm =
-      StaticCommunicator::getStaticCommunicator(argc, argv);
+  Communicator & comm =
+    Communicator::getStaticCommunicator(argc, argv);
 
   Tag::setMaxTag(comm.getMaxTag());
 
@@ -120,10 +120,10 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
 void finalize() {
   AKANTU_DEBUG_IN();
 
-  if (StaticCommunicator::isInstantiated()) {
-    StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-    delete &comm;
-  }
+  // if (StaticCommunicator::isInstantiated()) {
+  //   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  //   delete &comm;
+  // }
 
   if (StaticMemory::isInstantiated()) {
     delete &(StaticMemory::getStaticMemory());
@@ -149,5 +149,7 @@ Parser & getStaticParser() { return static_parser; }
 const ParserSection & getUserParser() {
   return *(static_parser.getSubSections(_st_user).first);
 }
+
+std::unique_ptr<Communicator> Communicator::static_communicator;
 
 } // akantu

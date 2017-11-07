@@ -53,7 +53,7 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-class StaticCommunicator;
+class Communicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
 } // namespace akantu
@@ -93,7 +93,7 @@ private:
   /// default constructor used for chaining, the last parameter is just to
   /// differentiate constructors
   Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
-       StaticCommunicator & communicator);
+       Communicator & communicator);
 
 public:
   /// constructor that create nodes coordinates array
@@ -101,7 +101,7 @@ public:
        const MemoryID & memory_id = 0);
 
   /// mesh not distributed and not using the default communicator
-  Mesh(UInt spatial_dimension, StaticCommunicator & communicator,
+  Mesh(UInt spatial_dimension, Communicator & communicator,
        const ID & id = "mesh", const MemoryID & memory_id = 0);
 
   /// constructor that use an existing nodes coordinates array, by knowing its
@@ -140,7 +140,7 @@ private:
   /* ------------------------------------------------------------------------ */
 public:
   /// patitionate the mesh among the processors involved in their computation
-  virtual void distribute(StaticCommunicator & communicator);
+  virtual void distribute(Communicator & communicator);
   virtual void distribute();
 
   /// function to print the containt of the class
@@ -450,7 +450,7 @@ public:
 
   // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
   // &);
-  AKANTU_GET_MACRO(Communicator, *communicator, const StaticCommunicator &);
+  AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */
@@ -571,7 +571,7 @@ private:
   bool is_distributed{false};
 
   /// Communicator on which mesh is distributed
-  const StaticCommunicator * communicator;
+  const Communicator * communicator;
 
   /// Element synchronizer
   std::unique_ptr<ElementSynchronizer> element_synchronizer;

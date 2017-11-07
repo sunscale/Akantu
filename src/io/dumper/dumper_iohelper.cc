@@ -61,8 +61,8 @@ DumperIOHelper::~DumperIOHelper() {
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::setParallelContext(bool is_parallel) {
-  UInt whoami  = StaticCommunicator::getStaticCommunicator().whoAmI();
-  UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
+  UInt whoami  = Communicator::getStaticCommunicator().whoAmI();
+  UInt nb_proc = Communicator::getStaticCommunicator().getNbProc();
 
   if(is_parallel)
     dumper->setParallelContext(whoami, nb_proc);

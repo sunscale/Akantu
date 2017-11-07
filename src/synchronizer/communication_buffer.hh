@@ -31,8 +31,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 #include "element.hh"
 
 #ifndef __AKANTU_COMMUNICATION_BUFFER_HH__
@@ -40,8 +40,7 @@
 
 namespace akantu {
 
-template<bool is_static = true>
-class CommunicationBufferTemplated {
+template <bool is_static = true> class CommunicationBufferTemplated {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -59,7 +58,8 @@ public:
     ptr_unpack = buffer.storage();
   }
 
-  CommunicationBufferTemplated & operator=(const CommunicationBufferTemplated & other) {
+  CommunicationBufferTemplated &
+  operator=(const CommunicationBufferTemplated & other) {
     if (this != &other) {
       buffer = other.buffer;
       ptr_pack = buffer.storage();
@@ -68,13 +68,12 @@ public:
     return *this;
   }
 
-  virtual ~CommunicationBufferTemplated() {};
+  virtual ~CommunicationBufferTemplated(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// reset to "empty"
   inline void reset();
 
@@ -91,80 +90,73 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   inline char * storage() { return buffer.storage(); };
-
+  inline const char * storage() const { return buffer.storage(); };
   /* ------------------------------------------------------------------------ */
   /* Operators                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// printing tool
   template <typename T> inline std::string extractStream(UInt packet_size);
 
   /// packing data
-  template<typename T>
-  inline CommunicationBufferTemplated & operator<< (const T & to_pack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator<<(const T & to_pack);
 
-  template<typename T>
-  inline CommunicationBufferTemplated & operator<< (const Vector<T> & to_pack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator<<(const Vector<T> & to_pack);
 
-  template<typename T>
-  inline CommunicationBufferTemplated & operator<< (const Matrix<T> & to_pack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator<<(const Matrix<T> & to_pack);
 
-  template<typename T>
-  inline CommunicationBufferTemplated & operator<< (const std::vector<T> & to_pack);
+  template <typename T>
+  inline CommunicationBufferTemplated &
+  operator<<(const std::vector<T> & to_pack);
 
   /// unpacking data
-  template<typename T>
-  inline CommunicationBufferTemplated & operator>> (T & to_unpack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator>>(T & to_unpack);
 
-  template<typename T>
-  inline CommunicationBufferTemplated & operator>> (Vector<T> & to_unpack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator>>(Vector<T> & to_unpack);
 
-  template<typename T>
-  inline CommunicationBufferTemplated & operator>> (Matrix<T> & to_unpack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator>>(Matrix<T> & to_unpack);
 
-  template<typename T>
-  inline CommunicationBufferTemplated & operator>> (std::vector<T> & to_unpack);
+  template <typename T>
+  inline CommunicationBufferTemplated & operator>>(std::vector<T> & to_unpack);
 
-  inline CommunicationBufferTemplated & operator<< (const std::string & to_pack);
-  inline CommunicationBufferTemplated & operator>> (std::string & to_unpack);
+  inline CommunicationBufferTemplated & operator<<(const std::string & to_pack);
+  inline CommunicationBufferTemplated & operator>>(std::string & to_unpack);
 
 private:
-
-  template<typename T>
-  inline void packIterable (T & to_pack);
-
-  template<typename T>
-  inline void unpackIterable (T & to_pack);
+  template <typename T> inline void packIterable(T & to_pack);
+  template <typename T> inline void unpackIterable(T & to_pack);
 
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  template <typename T>
-  static inline UInt sizeInBuffer(const T & data);
-  template <typename T>
-  static inline UInt sizeInBuffer(const Vector<T> & data);
-  template <typename T>
-  static inline UInt sizeInBuffer(const Matrix<T> & data);
+  template <typename T> static inline UInt sizeInBuffer(const T & data);
+  template <typename T> static inline UInt sizeInBuffer(const Vector<T> & data);
+  template <typename T> static inline UInt sizeInBuffer(const Matrix<T> & data);
   template <typename T>
   static inline UInt sizeInBuffer(const std::vector<T> & data);
   static inline UInt sizeInBuffer(const std::string & data);
 
   /// return the size in bytes of the stored values
-  inline UInt getPackedSize(){ return ptr_pack - buffer.storage(); };
+  inline UInt getPackedSize() const { return ptr_pack - buffer.storage(); };
   /// return the size in bytes of data left to be unpacked
-  inline UInt getLeftToUnpack(){ return buffer.size() - (ptr_unpack - buffer.storage()); };
+  inline UInt getLeftToUnpack() const {
+    return buffer.size() - (ptr_unpack - buffer.storage());
+  };
   /// return the global size allocated
-  inline UInt size(){ return buffer.size(); };
+  inline UInt size() const { return buffer.size(); };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// current position for packing
   char * ptr_pack;
 
@@ -175,19 +167,17 @@ private:
   Array<char> buffer;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "communication_buffer_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "communication_buffer_inline_impl.cc"
 #endif
 
 using CommunicationBuffer = CommunicationBufferTemplated<true>;
-using DynamicCommunicationBuffer = CommunicationBufferTemplated<false> ;
+using DynamicCommunicationBuffer = CommunicationBufferTemplated<false>;
 
-
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COMMUNICATION_BUFFER_HH__ */

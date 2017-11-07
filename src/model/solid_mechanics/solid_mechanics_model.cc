@@ -40,10 +40,11 @@
 #include "solid_mechanics_model.hh"
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
+#include "solid_mechanics_model_tmpl.hh"
 
 #include "element_synchronizer.hh"
 #include "sparse_matrix.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "synchronizer_registry.hh"
 
 #include "dumpable_inline_impl.hh"
@@ -148,7 +149,8 @@ void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {
  */
 void SolidMechanicsModel::initFull(const ModelOptions & options) {
   material_index.initialize(mesh, _element_kind = _ek_not_defined,
-                            _default_value = UInt(-1), _with_nb_element = true);
+                            _default_value = UInt(-1), _with_nb_element =
+                            true);
   material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
                                       _with_nb_element = true);
 
@@ -165,7 +167,8 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 
   this->initMaterials();
 
-  this->initBC(*this, *displacement, *displacement_increment, *external_force);
+  this->initBC(*this, *displacement, *displacement_increment,
+  *external_force);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -480,7 +483,7 @@ Real SolidMechanicsModel::getStableTimeStep() {
   Real min_dt = getStableTimeStep(_not_ghost);
 
   /// reduction min over all processors
-  StaticCommunicator::getStaticCommunicator().allReduce(min_dt, _so_min);
+  mesh.getCommunicator().allReduce(min_dt, SynchronizerOperation::_min);
 
   AKANTU_DEBUG_OUT();
   return min_dt;
@@ -496,7 +499,6 @@ Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
 
   Element elem;
   elem.ghost_type = ghost_type;
-  elem.kind = _ek_regular;
 
   for (auto type :
        mesh.elementTypes(Model::spatial_dimension, ghost_type, _ek_regular)) {
@@ -572,7 +574,7 @@ Real SolidMechanicsModel::getKineticEnergy() {
     AKANTU_DEBUG_ERROR("No function called to assemble the mass matrix.");
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(ekin, _so_sum);
+  mesh.getCommunicator().allReduce(ekin, SynchronizerOperation::_sum);
 
   AKANTU_DEBUG_OUT();
   return ekin * .5;
@@ -648,7 +650,7 @@ Real SolidMechanicsModel::getExternalWork() {
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(work, _so_sum);
+  mesh.getCommunicator().allReduce(work, SynchronizerOperation::_sum);
 
   if (this->method != _static)
     work *= this->getTimeStep();
@@ -671,7 +673,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
     energy += material->getEnergy(energy_id);
 
   /// reduction sum over all processors
-  StaticCommunicator::getStaticCommunicator().allReduce(energy, _so_sum);
+  mesh.getCommunicator().allReduce(energy, SynchronizerOperation::_sum);
 
   AKANTU_DEBUG_OUT();
   return energy;
@@ -940,17 +942,14 @@ FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::splitElementByMaterial(
-    const Array<Element> & elements, Array<Element> * elements_per_mat) const {
+    const Array<Element> & elements,
+    std::vector<Array<Element>> & elements_per_mat) const {
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-  const Array<UInt> * mat_indexes = NULL;
-  const Array<UInt> * mat_loc_num = NULL;
+  const Array<UInt> * mat_indexes = nullptr;
+  const Array<UInt> * mat_loc_num = nullptr;
 
-  Array<Element>::const_iterator<Element> it = elements.begin();
-  Array<Element>::const_iterator<Element> end = elements.end();
-  for (; it != end; ++it) {
-    Element el = *it;
-
+  for (auto && el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -1007,13 +1006,9 @@ UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
   }
 
   if (tag != _gst_material_id) {
-    Array<Element> * elements_per_mat = new Array<Element>[materials.size()];
-    this->splitElementByMaterial(elements, elements_per_mat);
-
-    for (UInt i = 0; i < materials.size(); ++i) {
-      size += materials[i]->getNbData(elements_per_mat[i], tag);
-    }
-    delete[] elements_per_mat;
+    splitByMaterial(elements, [&](auto && mat, auto && elements) {
+      size += mat.getNbData(elements, tag);
+    });
   }
 
   AKANTU_DEBUG_OUT();
@@ -1058,14 +1053,9 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
   }
 
   if (tag != _gst_material_id) {
-    Array<Element> * elements_per_mat = new Array<Element>[materials.size()];
-    splitElementByMaterial(elements, elements_per_mat);
-
-    for (UInt i = 0; i < materials.size(); ++i) {
-      materials[i]->packData(buffer, elements_per_mat[i], tag);
-    }
-
-    delete[] elements_per_mat;
+    splitByMaterial(elements, [&](auto && mat, auto && elements) {
+      mat.packData(buffer, elements, tag);
+    });
   }
   AKANTU_DEBUG_OUT();
 }
@@ -1118,14 +1108,9 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
   }
 
   if (tag != _gst_material_id) {
-    Array<Element> * elements_per_mat = new Array<Element>[materials.size()];
-    splitElementByMaterial(elements, elements_per_mat);
-
-    for (UInt i = 0; i < materials.size(); ++i) {
-      materials[i]->unpackData(buffer, elements_per_mat[i], tag);
-    }
-
-    delete[] elements_per_mat;
+    splitByMaterial(elements, [&](auto && mat, auto && elements) {
+      mat.unpackData(buffer, elements, tag);
+    });
   }
 
   AKANTU_DEBUG_OUT();

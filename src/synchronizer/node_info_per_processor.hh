@@ -37,7 +37,7 @@
 
 namespace akantu {
 class NodeSynchronizer;
-class StaticCommunicator;
+class Communicator;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -62,7 +62,7 @@ protected:
   void fillCommunicationScheme(const Array<UInt> &);
 protected:
   NodeSynchronizer & synchronizer;
-  const StaticCommunicator & comm;
+  const Communicator & comm;
   UInt rank;
   UInt nb_proc;
   UInt root;

@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "communication_descriptor.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
@@ -37,14 +38,6 @@
 #define __AKANTU_COMMUNICATIONS_HH__
 
 namespace akantu {
-
-namespace debug {
-  class CommunicationException : public Exception {
-  public:
-    CommunicationException()
-        : Exception("An exception happen during a communication process.") {}
-  };
-} // namespace debug
 
 /* -------------------------------------------------------------------------- */
 template <class Entity> class Communications {
@@ -108,7 +101,7 @@ public:
                             UInt size, const CommunicationSendRecv & sr);
 
 public:
-  explicit Communications(const StaticCommunicator & communicator);
+  explicit Communications(const Communicator & communicator);
 
   /* ------------------------------------------------------------------------ */
   class IterableCommunicationDesc {
@@ -117,8 +110,8 @@ public:
                               SynchronizationTag tag,
                               CommunicationSendRecv sr)
         : communications(communications), tag(std::move(tag)), sr(std::move(sr)) {}
-    decltype(auto) begin() { return communications.begin(tag, sr); }
-    decltype(auto) end() { return communications.end(tag, sr); }
+    auto begin() { return communications.begin(tag, sr); }
+    auto end() { return communications.end(tag, sr); }
 
   private:
     Communications & communications;
@@ -126,20 +119,20 @@ public:
     CommunicationSendRecv sr;
   };
 
-  decltype(auto) iterateRecv(const SynchronizationTag & tag) {
+  auto iterateRecv(const SynchronizationTag & tag) {
     return IterableCommunicationDesc(*this, tag, _recv);
   }
-  decltype(auto) iterateSend(const SynchronizationTag & tag) {
+  auto iterateSend(const SynchronizationTag & tag) {
     return IterableCommunicationDesc(*this, tag, _send);
   }
 
   /* ------------------------------------------------------------------------ */
-  iterator begin_send(const SynchronizationTag & tag);
-  iterator end_send(const SynchronizationTag & tag);
+  // iterator begin_send(const SynchronizationTag & tag);
+  // iterator end_send(const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */
-  iterator begin_recv(const SynchronizationTag & tag);
-  iterator end_recv(const SynchronizationTag & tag);
+  // iterator begin_recv(const SynchronizationTag & tag);
+  // iterator end_recv(const SynchronizationTag & tag);
 
   /* ------------------------------------------------------------------------ */
   class IterableTags {
@@ -162,11 +155,14 @@ public:
   bool hasCommunication(const SynchronizationTag & tag) const;
   void incrementCounter(const SynchronizationTag & tag);
   UInt getCounter(const SynchronizationTag & tag) const;
+  bool hasCommunicationSize(const SynchronizationTag & tag) const;
+  void invalidateSizes();
 
+  /* ------------------------------------------------------------------------ */
   bool hasPendingRecv(const SynchronizationTag & tag) const;
   bool hasPendingSend(const SynchronizationTag & tag) const;
 
-  const StaticCommunicator & getCommunicator() const;
+  const auto & getCommunicator() const;
 
   /* ------------------------------------------------------------------------ */
   iterator waitAnyRecv(const SynchronizationTag & tag);
@@ -261,9 +257,12 @@ public:
 protected:
   CommunicationSchemes schemes[2];
   CommunicationsPerTags communications[2];
+
   std::map<SynchronizationTag, UInt> comm_counter;
   std::map<SynchronizationTag, UInt> pending_communications[2];
-  const StaticCommunicator & communicator;
+  std::map<SynchronizationTag, bool> comm_size_computed;
+
+  const Communicator & communicator;
 };
 
 } // namespace akantu

@@ -44,7 +44,7 @@ template <class Entity> class SynchronizerImpl : public Synchronizer {
 public:
   SynchronizerImpl(
       const ID & id = "synchronizer", MemoryID memory_id = 0,
-      const StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
+      const Communicator & comm = Communicator::getStaticCommunicator());
 
   virtual ~SynchronizerImpl(){};
 
