@@ -1,4 +1,4 @@
- /**
+/**
  * @file   facet_synchronizer.hh
  *
  * @author Marco Vocialta <marco.vocialta@epfl.ch>
@@ -12,76 +12,64 @@
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "element_synchronizer.hh"
+#include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_FACET_SYNCHRONIZER_HH__
 #define __AKANTU_FACET_SYNCHRONIZER_HH__
 
-#include "distributed_synchronizer.hh"
-#include "fe_engine.hh"
+namespace akantu {
 
-/* -------------------------------------------------------------------------- */
-
-__BEGIN_AKANTU__
-
-class FacetSynchronizer : public DistributedSynchronizer {
+class FacetSynchronizer : public ElementSynchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-protected:
-
+public:
   FacetSynchronizer(Mesh & mesh,
-		    SynchronizerID id = "facet_synchronizer",
-		    MemoryID memory_id = 0);
-
-// public:
-
-//   virtual ~FacetSynchronizer() {};
+                    const ElementSynchronizer & element_synchronizer,
+                    const ID & id = "facet_synchronizer",
+                    MemoryID memory_id = 0);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
-  /// get a distributed synchronizer and a facet mesh, and create the
-  /// associated FacetSynchronizer
-  static FacetSynchronizer *
-  createFacetSynchronizer(DistributedSynchronizer & distributed_synchronizer,
-			  Mesh & mesh,
-			  SynchronizerID id = "facet_synchronizer",
-			  MemoryID memory_id = 0);
-
   /// update distributed synchronizer after elements' insertion
-  void updateDistributedSynchronizer(DistributedSynchronizer & distributed_synchronizer,
-				     DataAccessor & data_accessor,
-				     const Mesh & mesh_cohesive);
+  void
+  updateDistributedSynchronizer(ElementSynchronizer & distributed_synchronizer,
+                                DataAccessor<Element> & data_accessor,
+                                const Mesh & mesh_cohesive);
 
 protected:
-
   /// update elements list based on facets list
   void updateElementList(Array<Element> * elements,
-			 const Array<Element> * facets,
-			 const Mesh & mesh_cohesive);
+                         const Array<Element> * facets,
+                         const Mesh & mesh_cohesive);
 
   /// setup facet synchronization
-  void setupFacetSynchronization(DistributedSynchronizer & distributed_synchronizer);
+  void
+  setupFacetSynchronization(ElementSynchronizer & distributed_synchronizer);
 
   /// build send facet arrays
-  void buildSendElementList(const Array<ElementTypeMapArray<UInt> *> & send_connectivity,
-			    const Array<ElementTypeMapArray<UInt> *> & recv_connectivity,
-			    const Array<ElementTypeMapArray<UInt> *> & temp_send_element);
+  void buildSendElementList(
+      const Array<ElementTypeMapArray<UInt> *> & send_connectivity,
+      const Array<ElementTypeMapArray<UInt> *> & recv_connectivity,
+      const Array<ElementTypeMapArray<UInt> *> & temp_send_element);
 
   /// build recv facet arrays
-  void buildRecvElementList(const Array<ElementTypeMapArray<UInt> *> & temp_recv_element);
+  void buildRecvElementList(
+      const Array<ElementTypeMapArray<UInt> *> & temp_recv_element);
 
   /// get facets' global connectivity for a list of elements
-  template<GhostType ghost_facets>
-  inline void getFacetGlobalConnectivity(const DistributedSynchronizer & distributed_synchronizer,
-					 const ElementTypeMapArray<UInt> & rank_to_facet,
-					 const Array<Element> * elements,
-					 Array<ElementTypeMapArray<UInt> *> & connectivity,
-					 Array<ElementTypeMapArray<UInt> *> & facets);
+  template <GhostType ghost_facets>
+  inline void getFacetGlobalConnectivity(
+      const ElementSynchronizer & distributed_synchronizer,
+      const ElementTypeMapArray<UInt> & rank_to_facet,
+      const Array<Element> * elements,
+      Array<ElementTypeMapArray<UInt> *> & connectivity,
+      Array<ElementTypeMapArray<UInt> *> & facets);
 
   /// initialize ElementTypeMap containing correspondance between
   /// facets and processors
@@ -89,29 +77,21 @@ protected:
 
   /// find which processor a facet is assigned to
   void buildRankToFacet(ElementTypeMapArray<UInt> & rank_to_facet,
-			const Array<Element> * elements);
+                        const Array<Element> * elements);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
-  friend class FacetStressSynchronizer;
-
+  ElementTypeMapArray<UInt> facet_to_rank;
 };
 
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+} // namespace akantu
 
 #include "facet_synchronizer_inline_impl.cc"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_FACET_SYNCHRONIZER_HH__ */

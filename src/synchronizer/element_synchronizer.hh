@@ -71,43 +71,30 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  /// build processor to element correspondence
-  void buildPrankToElement();
-
   /// mesh event handler onElementsChanged
-  virtual void
-  onElementsChanged(const Array<Element> & old_elements_list,
-                    const Array<Element> & new_elements_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const ChangedElementsEvent & event);
+  void onElementsChanged(const Array<Element> & old_elements_list,
+                         const Array<Element> & new_elements_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const ChangedElementsEvent & event) override;
 
   /// mesh event handler onRemovedElement
-  virtual void
-  onElementsRemoved(const Array<Element> & element_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
+  void onElementsRemoved(const Array<Element> & element_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const RemovedElementsEvent & event) override;
   /// mesh event handler onNodesAdded
-  virtual void onNodesAdded(__attribute__((unused))
-                            const Array<UInt> & nodes_list,
-                            __attribute__((unused))
-                            const NewNodesEvent & event){};
+  void onNodesAdded(const Array<UInt> & /* nodes_list*/,
+                    const NewNodesEvent & /*event*/) override{};
 
   /// mesh event handler onRemovedNodes
-  virtual void
-  onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
-                 __attribute__((unused)) const Array<UInt> & new_numbering,
-                 __attribute__((unused)) const RemovedNodesEvent & event){};
+  void onNodesRemoved(const Array<UInt> & /*nodes_list*/,
+                      const Array<UInt> & /*new_numbering*/,
+                      const RemovedNodesEvent & /*event*/) override{};
 
   /// mesh event handler onElementsAdded
-  virtual void onElementsAdded(__attribute__((unused))
-                               const Array<Element> & elements_list,
-                               __attribute__((unused))
-                               const NewElementsEvent & event){};
+  void onElementsAdded(const Array<Element> & /*elements_list*/,
+                       const NewElementsEvent & /*event*/) override{};
 
-  /// filter elements of a certain kind and copy them into a new synchronizer
-  void filterElementsByKind(ElementSynchronizer * new_synchronizer,
-                            ElementKind kind);
-
+protected:
   /// reset send and recv element lists
   void reset();
 
@@ -116,6 +103,9 @@ public:
 
   /// renumber the elements in the synchronizer
   void renumberElements(const ElementTypeMapArray<UInt> & new_numbering);
+
+  /// build processor to element correspondence
+  void buildElementToPrank();
 
 protected:
   /// fill the nodes type vector
@@ -198,12 +188,9 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(PrankToElement, prank_to_element,
-                   const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
-  AKANTU_GET_MACRO(Mesh, mesh, const Mesh &);
-  AKANTU_GET_MACRO_NOT_CONST(Mesh, mesh, Mesh &);
-
+  Int getRank(const Element & element) const override final;
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -214,7 +201,7 @@ protected:
   friend class FilteredSynchronizer;
   friend class FacetSynchronizer;
 
-  ElementTypeMapArray<UInt> prank_to_element;
+  ElementTypeMapArray<Int> element_to_prank;
 };
 
 /* -------------------------------------------------------------------------- */

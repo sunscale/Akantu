@@ -82,12 +82,8 @@ public:
   class iterator {
     struct element_comparator {
       bool operator()(const Element & lhs, const Element & rhs) const {
-        bool res =
-            ((lhs.kind < rhs.kind) ||
-             ((lhs.kind == rhs.kind) && ((lhs.ghost_type < rhs.ghost_type) ||
-                                         ((lhs.ghost_type == rhs.ghost_type) &&
-                                          ((lhs.type < rhs.type))))));
-        return res;
+        return ((rhs == ElementNull) || std::tie(lhs.ghost_type, lhs.type) <
+                                            std::tie(rhs.ghost_type, rhs.type));
       }
     };
 
@@ -240,7 +236,7 @@ decltype(auto) NodeGroupsIterable(GroupManager && group_manager) {
 
 /* -------------------------------------------------------------------------- */
 template <class Func>
-void for_each_elements(size_t nb_elements, const Array<UInt> & filter_elements,
+void for_each_elements(UInt nb_elements, const Array<UInt> & filter_elements,
                        Func && function) {
   if (filter_elements != empty_filter) {
     std::for_each(filter_elements.begin(), filter_elements.end(),
@@ -267,7 +263,7 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
       OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension());
   auto && element_kind = OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined);
 
-  for (auto && ghost_type : ghost_types) {
+  for (auto ghost_type : ghost_types) {
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
       continue;
 
@@ -280,7 +276,7 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
               filter->elementTypes(spatial_dimension, ghost_type, element_kind);
         })(std::forward<decltype(element_types)>(element_types));
 
-    for (auto && type : element_types) {
+    for (auto type : element_types) {
       const Array<UInt> * filter_array;
 
       static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
@@ -291,8 +287,8 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
       auto nb_elements = mesh.getNbElement(type, ghost_type);
 
       for_each_elements(nb_elements, *filter_array, [&](auto && el) {
-        auto element = Element(type, el, ghost_type, mesh.getKind(type));
-        std::forward<Func>(function)(element);
+          auto element = Element{type, el, ghost_type};
+          std::forward<Func>(function)(element);
       });
     }
   }

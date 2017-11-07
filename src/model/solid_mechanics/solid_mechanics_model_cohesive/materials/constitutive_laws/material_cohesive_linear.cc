@@ -339,7 +339,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
     /// Insertion of only 1 cohesive element in case of implicit approach. The
     /// one subjected to the highest stress.
     if (!model->isDefaultSolverExplicit()) {
-      StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+      const Communicator & comm = model->getMesh().getCommunicator();
       Array<Real> abs_max(comm.getNbProc());
       abs_max(comm.whoAmI()) = max_ratio;
       comm.allGather(abs_max);

@@ -127,7 +127,8 @@ protected:
   void printself(std::ostream & stream, int indent = 0) const override;
 
   /// get some default values for derived classes
-  std::tuple<ID, TimeStepSolverType> getDefaultSolverID(const AnalysisMethod & method) override;
+  std::tuple<ID, TimeStepSolverType>
+  getDefaultSolverID(const AnalysisMethod & method) override;
 
   /* ------------------------------------------------------------------------ */
   /* Solver interface                                                         */
@@ -283,8 +284,12 @@ public:
                   const SynchronizationTag & tag) override;
 
 protected:
-  inline void splitElementByMaterial(const Array<Element> & elements,
-                                     Array<Element> * elements_per_mat) const;
+  void
+  splitElementByMaterial(const Array<Element> & elements,
+                         std::vector<Array<Element>> & elements_per_mat) const;
+
+  template <typename Operation>
+  void splitByMaterial(const Array<Element> & elements, Operation && op) const;
 
   /* ------------------------------------------------------------------------ */
   /* Mesh Event Handler inherited members                                     */
@@ -300,7 +305,6 @@ protected:
   void onElementsRemoved(const Array<Element> & element_list,
                          const ElementTypeMapArray<UInt> & new_numbering,
                          const RemovedElementsEvent & event) override;
-
   void onElementsChanged(const Array<Element> &, const Array<Element> &,
                          const ElementTypeMapArray<UInt> &,
                          const ChangedElementsEvent &) override{};
@@ -572,7 +576,6 @@ namespace BC {
 
 #include "solid_mechanics_model_inline_impl.cc"
 #include "solid_mechanics_model_tmpl.hh"
-
-#include "material_selector_tmpl.hh"
+/* -------------------------------------------------------------------------- */
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_HH__ */

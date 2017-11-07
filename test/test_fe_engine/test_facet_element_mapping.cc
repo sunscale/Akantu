@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
         std::cout << "        ";
         for(UInt j(0); j < mesh.getNbFacetsPerElement(*tit); ++j) {
           if(subelement_to_element(i, j) != ElementNull) {
-            subelement_to_element(i, j).printself(std::cout);
+            std::cout << subelement_to_element(i, j);
             std::cout << ", ";
           } else {
             std::cout << "ElementNull" << ", ";

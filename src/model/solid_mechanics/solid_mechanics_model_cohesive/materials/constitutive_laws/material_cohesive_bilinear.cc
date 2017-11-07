@@ -87,7 +87,8 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
 
   for (; el_it != el_end; ++el_it) {
     // filter not ghost cohesive elements
-    if (el_it->ghost_type != _not_ghost || el_it->kind != _ek_cohesive)
+    if (el_it->ghost_type != _not_ghost ||
+        Mesh::getKind(el_it->type) != _ek_cohesive)
       continue;
 
     UInt index = el_it->element;
@@ -140,7 +141,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::scaleTraction(
   const Mesh & mesh_facets = this->model->getMeshFacets();
   const FEEngine & fe_engine = this->model->getFEEngine();
 
-  Array<Element>::const_vector_iterator coh_element_to_facet_begin =
+  auto coh_element_to_facet_begin =
       mesh_facets.getSubelementToElement(el.type).begin(2);
   const Vector<Element> & coh_element_to_facet =
       coh_element_to_facet_begin[el.element];
@@ -163,7 +164,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::scaleTraction(
     // loop over elements connected to each facet
     for (; elem != elem_end; ++elem) {
       // skip cohesive elements and dummy elements
-      if (*elem == ElementNull || elem->kind == _ek_cohesive)
+      if (*elem == ElementNull || Mesh::getKind(elem->type) == _ek_cohesive)
         continue;
 
       // unit vector for integration in order to obtain the volume

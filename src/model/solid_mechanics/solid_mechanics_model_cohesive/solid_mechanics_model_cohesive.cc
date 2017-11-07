@@ -30,16 +30,20 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
 #include "aka_iterators.hh"
+#include "cohesive_element_inserter.hh"
 #include "dumpable_inline_impl.hh"
+#include "element_synchronizer.hh"
+#include "facet_synchronizer.hh"
 #include "fe_engine_template.hh"
 #include "integrator_gauss.hh"
 #include "material_cohesive.hh"
 #include "parser.hh"
 #include "shape_cohesive.hh"
+
+#include "dumpable_inline_impl.hh"
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_paraview.hh"
 #endif
@@ -60,15 +64,6 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       facet_stress("facet_stress", id), facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
 
-  inserter = nullptr;
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  facet_synchronizer = nullptr;
-  facet_stress_synchronizer = nullptr;
-  cohesive_element_synchronizer = nullptr;
-  global_connectivity = nullptr;
-#endif
-
   delete material_selector;
   material_selector = new DefaultMaterialCohesiveSelector(*this);
 
@@ -79,26 +74,29 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
                                  _ek_cohesive);
 #endif
 
+  if (this->mesh.isDistributed()) {
+    /// create the distributed synchronizer for cohesive elements
+    cohesive_synchronizer = std::make_unique<ElementSynchronizer>(
+        mesh, "cohesive_distributed_synchronizer");
+
+    auto & synchronizer = mesh.getElementSynchronizer();
+    cohesive_synchronizer->split(synchronizer, [](auto && el) {
+        return Mesh::getKind(el.type) == _ek_cohesive;
+    });
+
+    this->registerSynchronizer(*cohesive_synchronizer, _gst_material_id);
+    this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_stress);
+    this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_boundary);
+  }
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-SolidMechanicsModelCohesive::~SolidMechanicsModelCohesive() {
-  AKANTU_DEBUG_IN();
-
-  delete inserter;
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  delete cohesive_element_synchronizer;
-  delete facet_synchronizer;
-  delete facet_stress_synchronizer;
-#endif
-
-  AKANTU_DEBUG_OUT();
-}
+SolidMechanicsModelCohesive::~SolidMechanicsModelCohesive() = default;
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::setTimeStep(Real time_step, const ID & solver_id) {
+void SolidMechanicsModelCohesive::setTimeStep(Real time_step,
+                                              const ID & solver_id) {
   SolidMechanicsModel::setTimeStep(time_step, solver_id);
 
 #if defined(AKANTU_USE_IOHELPER)
@@ -115,14 +113,37 @@ void SolidMechanicsModelCohesive::initFull(const ModelOptions & options) {
 
   this->is_extrinsic = smmc_options.extrinsic;
 
-  if (!inserter)
-    inserter = new CohesiveElementInserter(mesh, is_extrinsic,
-                                           id + ":cohesive_element_inserter");
+  inserter = std::make_unique<CohesiveElementInserter>(
+      mesh, is_extrinsic, id + ":cohesive_element_inserter");
+
+  if (not mesh.isDistributed()) {
+    auto & mesh_facets = inserter->getMeshFacets();
+    auto & synchronizer =
+        dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
+    this->registerSynchronizer(synchronizer, _gst_smmc_facets);
+    this->registerSynchronizer(synchronizer, _gst_smmc_facets_conn);
+    synchronizeGhostFacetsConnectivity();
+
+    /// create the facet synchronizer for extrinsic simulations
+    if (is_extrinsic) {
+      facet_stress_synchronizer =
+          std::make_unique<ElementSynchronizer>(mesh_facets);
+
+      facet_stress_synchronizer->updateSchemes(
+          [&](auto & scheme, auto & proc, auto & direction) {
+            scheme.copy(const_cast<const FacetSynchronizer &>(synchronizer)
+                            .getCommunications()
+                            .getScheme(proc, direction));
+          });
+      this->registerSynchronizer(*facet_stress_synchronizer,
+                                 _gst_smmc_facets_stress);
+    }
+  }
 
   SolidMechanicsModel::initFull(options);
 
   AKANTU_DEBUG_OUT();
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initMaterials() {

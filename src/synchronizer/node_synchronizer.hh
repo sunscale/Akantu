@@ -31,6 +31,8 @@
 #include "mesh_events.hh"
 #include "synchronizer_impl.hh"
 /* -------------------------------------------------------------------------- */
+#include <unordered_map>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NODE_SYNCHRONIZER_HH__
 #define __AKANTU_NODE_SYNCHRONIZER_HH__
@@ -71,7 +73,12 @@ public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
 protected:
+  Int getRank(const UInt & /*node*/) const override final { AKANTU_DEBUG_TO_IMPLEMENT(); }
+
+protected:
   Mesh & mesh;
+
+  //std::unordered_map<UInt, Int> node_to_prank;
 };
 
 } // namespace akantu

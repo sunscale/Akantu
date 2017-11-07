@@ -54,7 +54,7 @@ ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
                                          bool register_to_event_manager,
                                          EventHandlerPriority event_priority)
     : SynchronizerImpl<Element>(id, memory_id, mesh.getCommunicator()),
-      mesh(mesh), prank_to_element("prank_to_element", id, memory_id) {
+      mesh(mesh), element_to_prank("element_to_prank", id, memory_id) {
 
   AKANTU_DEBUG_IN();
 
@@ -103,6 +103,8 @@ void ElementSynchronizer::onElementsChanged(
   }
 
   substituteElements(old_to_new_elements);
+
+  communications.invalidateSizes();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -115,28 +117,27 @@ void ElementSynchronizer::onElementsRemoved(
   this->removeElements(element_to_remove);
   this->renumberElements(new_numbering);
 
+  communications.invalidateSizes();
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void ElementSynchronizer::buildPrankToElement() {
+void ElementSynchronizer::buildElementToPrank() {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
-  prank_to_element.initialize(mesh, _spatial_dimension = spatial_dimension,
+  element_to_prank.initialize(mesh, _spatial_dimension = spatial_dimension,
                               _element_kind = _ek_not_defined,
                               _with_nb_element = true, _default_value = rank);
 
   /// assign prank to all ghost elements
-  auto recv_it = communications.begin_recv_scheme();
-  auto recv_end = communications.end_recv_scheme();
-  for (; recv_it != recv_end; ++recv_it) {
-    auto & recv = recv_it->second;
-    auto proc = recv_it->first;
+  for (auto && scheme : communications.iterateSchemes(_recv)) {
+    auto & recv = scheme.second;
+    auto proc = scheme.first;
 
     for (auto & element : recv) {
-      auto & prank_to_el = prank_to_element(element.type, element.ghost_type);
-      prank_to_el(element.element) = proc;
+      element_to_prank(element) = proc;
     }
   }
 
@@ -144,35 +145,13 @@ void ElementSynchronizer::buildPrankToElement() {
 }
 
 /* -------------------------------------------------------------------------- */
-void ElementSynchronizer::filterElementsByKind(
-    ElementSynchronizer * new_synchronizer, ElementKind kind) {
-  AKANTU_DEBUG_IN();
-
-  auto filter_list = [&kind](Array<Element> & list, Array<Element> & new_list) {
-    auto copy = list;
-    list.resize(0);
-    new_list.resize(0);
-
-    for (auto && el : copy) {
-      if (el.kind == kind) {
-        new_list.push_back(el);
-      } else {
-        list.push_back(el);
-      }
-    }
-  };
-
-  for (auto && sr : iterate_send_recv) {
-    for (auto && scheme_pair : communications.iterateSchemes(sr)) {
-      auto proc = scheme_pair.first;
-      auto & scheme = scheme_pair.second;
-      auto & new_scheme =
-          new_synchronizer->communications.createScheme(proc, sr);
-      filter_list(scheme, new_scheme);
-    }
+Int ElementSynchronizer::getRank(const Element & element) const {
+  if(not element_to_prank.exists(element.type, element.ghost_type)) {
+    // Nicolas: Ok This is nasty I know....
+    const_cast<ElementSynchronizer *>(this)->buildElementToPrank();
   }
 
-  AKANTU_DEBUG_OUT();
+  return element_to_prank(element);
 }
 
 /* -------------------------------------------------------------------------- */

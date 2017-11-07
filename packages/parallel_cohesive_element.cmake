@@ -23,11 +23,6 @@ package_declare_sources(parallel_cohesive_element
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel_inline_impl.cc
-  synchronizer/facet_synchronizer.cc
-  synchronizer/facet_synchronizer.hh
-  synchronizer/facet_synchronizer_inline_impl.cc
-  synchronizer/facet_stress_synchronizer.cc
-  synchronizer/facet_stress_synchronizer.hh
   )
 
 package_declare_documentation(parallel_cohesive_element

@@ -299,8 +299,5 @@ namespace akantu {
 
 } // akantu
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#include "solid_mechanics_model_cohesive_parallel_inline_impl.cc"
-#endif
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__ */

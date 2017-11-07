@@ -38,19 +38,19 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DefaultMaterialCohesiveSelector::DefaultMaterialCohesiveSelector(
-    const SolidMechanicsModelCohesive &model)
+    const SolidMechanicsModelCohesive & model)
     : DefaultMaterialSelector(model.getMaterialByElement()),
       facet_material(model.getFacetMaterial()), mesh(model.getMesh()) {}
 
 /* -------------------------------------------------------------------------- */
-UInt DefaultMaterialCohesiveSelector::operator()(const Element &element) {
+UInt DefaultMaterialCohesiveSelector::operator()(const Element & element) {
   if (Mesh::getKind(element.type) == _ek_cohesive) {
     try {
-      const Array<Element> &cohesive_el_to_facet =
+      const Array<Element> & cohesive_el_to_facet =
           mesh.getMeshFacets().getSubelementToElement(element.type,
                                                       element.ghost_type);
       bool third_dimension = (mesh.getSpatialDimension() == 3);
-      const Element &facet =
+      const Element & facet =
           cohesive_el_to_facet(element.element, third_dimension);
       if (facet_material.exists(facet.type, facet.ghost_type)) {
         return facet_material(facet.type, facet.ghost_type)(facet.element);
@@ -70,7 +70,7 @@ UInt DefaultMaterialCohesiveSelector::operator()(const Element &element) {
 
 /* -------------------------------------------------------------------------- */
 MeshDataMaterialCohesiveSelector::MeshDataMaterialCohesiveSelector(
-    const SolidMechanicsModelCohesive &model)
+    const SolidMechanicsModelCohesive & model)
     : MeshDataMaterialSelector<std::string>("physical_names", model),
       mesh_facets(model.getMeshFacets()),
       material_index(mesh_facets.getData<UInt>("physical_names")) {
@@ -78,20 +78,19 @@ MeshDataMaterialCohesiveSelector::MeshDataMaterialCohesiveSelector(
 }
 
 /* -------------------------------------------------------------------------- */
-UInt MeshDataMaterialCohesiveSelector::operator()(const Element &element) {
-  if (element.kind == _ek_cohesive) {
-    const Array<Element> &cohesive_el_to_facet =
+UInt MeshDataMaterialCohesiveSelector::operator()(const Element & element) {
+  if (Mesh::getKind(element.type) == _ek_cohesive) {
+    const Array<Element> & cohesive_el_to_facet =
         mesh_facets.getSubelementToElement(element.type, element.ghost_type);
-    const Element &facet =
+    const Element & facet =
         cohesive_el_to_facet(element.element, third_dimension);
     UInt material_id =
         material_index(facet.type, facet.ghost_type)(facet.element);
     UInt fallback_id = MaterialSelector::operator()(element);
-    
-    return std::max(material_id,fallback_id);
-  }
-  else
+
+    return std::max(material_id, fallback_id);
+  } else
     return MeshDataMaterialSelector<std::string>::operator()(element);
 }
 
-} // akantu
+} // namespace akantu

@@ -80,6 +80,17 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
+  /// extract the elements that have a true predicate from in_synchronizer and
+  /// store them in the current synchronizer
+  template <typename Pred>
+  void split(SynchronizerImpl & in_synchronizer, Pred && pred);
+
+  /// update schemes in a synchronizer
+  template <typename Updater>
+  void updateSchemes(Updater && scheme_updater);
+
+
+  /* ------------------------------------------------------------------------ */
   virtual UInt sanityCheckDataSize(const Array<Entity> & elements,
                                    const SynchronizationTag & tag) const;
   virtual void
@@ -92,6 +103,8 @@ public:
 
 protected:
   AKANTU_GET_MACRO_NOT_CONST(Communications, communications, Communications<Entity> &);
+
+  virtual Int getRank(const Entity & entity) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

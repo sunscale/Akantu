@@ -34,7 +34,7 @@
 #include "material_cohesive.hh"
 #include "mesh_iterators.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <functional>
@@ -92,7 +92,7 @@ public:
       : model(model), is_unbroken(max_damage) {}
 
   bool operator()(const Element & el) const {
-    if (el.kind == _ek_regular)
+    if (Mesh::getKind(el.type) == _ek_regular)
       return true;
 
     const Array<UInt> & mat_indexes =
@@ -528,8 +528,8 @@ void FragmentManager::integrateFieldOnFragments(
   }
 
   /// sum output over all processors
-  const StaticCommunicator & comm = mesh.getCommunicator();
-  comm.allReduce(output, _so_sum);
+  const Communicator & comm = mesh.getCommunicator();
+  comm.allReduce(output, SynchronizerOperation::_sum);
 
   AKANTU_DEBUG_OUT();
 }
@@ -561,7 +561,7 @@ void FragmentManager::computeNbElementsPerFragment() {
 
   /// sum values over all processors
   const auto & comm = mesh.getCommunicator();
-  comm.allReduce(nb_elements_per_fragment, _so_sum);
+  comm.allReduce(nb_elements_per_fragment, SynchronizerOperation::_sum);
 
   if (dump_data)
     createDumpDataArray(nb_elements_per_fragment, "elements per fragment");

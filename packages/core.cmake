@@ -337,39 +337,39 @@ package_declare_sources(core
   solver/sparse_matrix_aij_inline_impl.cc
   solver/terms_to_assemble.hh
 
-  synchronizer/communication_descriptor_tmpl.hh
-  synchronizer/communications_tmpl.hh
   synchronizer/communication_buffer.hh
   synchronizer/communication_buffer_inline_impl.cc
   synchronizer/communication_descriptor.hh
+  synchronizer/communication_request.hh
   synchronizer/communication_tag.hh
   synchronizer/communications.hh
+  synchronizer/communications_tmpl.hh
+  synchronizer/communicator.cc
+  synchronizer/communicator.hh
+  synchronizer/communicator_dummy_inline_impl.cc
+  synchronizer/communicator_inline_impl.hh
   synchronizer/data_accessor.cc
   synchronizer/data_accessor.hh
-  synchronizer/element_synchronizer.cc
-  synchronizer/element_synchronizer.hh
-  synchronizer/node_synchronizer.cc
-  synchronizer/node_synchronizer.hh
   synchronizer/dof_synchronizer.cc
   synchronizer/dof_synchronizer.hh
   synchronizer/dof_synchronizer_inline_impl.cc
   synchronizer/element_info_per_processor.cc
   synchronizer/element_info_per_processor.hh
   synchronizer/element_info_per_processor_tmpl.hh
-  synchronizer/filtered_synchronizer.cc
-  synchronizer/filtered_synchronizer.hh
+  synchronizer/element_synchronizer.cc
+  synchronizer/element_synchronizer.hh
+  synchronizer/facet_synchronizer.cc
+  synchronizer/facet_synchronizer.hh
+  synchronizer/facet_synchronizer_inline_impl.cc
   synchronizer/grid_synchronizer.cc
   synchronizer/grid_synchronizer.hh
   synchronizer/grid_synchronizer_tmpl.hh
   synchronizer/master_element_info_per_processor.cc
   synchronizer/node_info_per_processor.cc
   synchronizer/node_info_per_processor.hh
-  synchronizer/real_static_communicator.hh
+  synchronizer/node_synchronizer.cc
+  synchronizer/node_synchronizer.hh
   synchronizer/slave_element_info_per_processor.cc
-  synchronizer/static_communicator.cc
-  synchronizer/static_communicator.hh
-  synchronizer/static_communicator_dummy.hh
-  synchronizer/static_communicator_inline_impl.hh
   synchronizer/synchronizer.cc
   synchronizer/synchronizer.hh
   synchronizer/synchronizer_impl.hh
@@ -377,6 +377,14 @@ package_declare_sources(core
   synchronizer/synchronizer_registry.cc
   synchronizer/synchronizer_registry.hh
   synchronizer/synchronizer_tmpl.hh
+synchronizer/communication_descriptor_tmpl.hh)
+
+set(AKANTU_SPIRIT_SOURCES
+  io/mesh_io/mesh_io_abaqus.cc
+  io/parser/parser_real.cc
+  io/parser/parser_random.cc
+  io/parser/parser_types.cc
+  io/parser/parser_input_files.cc
   )
 
 package_declare_elements(core

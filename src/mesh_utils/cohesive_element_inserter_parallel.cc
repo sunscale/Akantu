@@ -15,38 +15,41 @@
 
 /* -------------------------------------------------------------------------- */
 #include "cohesive_element_inserter.hh"
+#include "global_ids_updater.hh"
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
+
+// /* -------------------------------------------------------------------------- */
+// void CohesiveElementInserter::initParallel(FacetSynchronizer * facet_synchronizer,
+// 					   DistributedSynchronizer * distributed_synchronizer) {
+//   AKANTU_DEBUG_IN();
+
+//   this->facet_synchronizer = facet_synchronizer;
+
+//   global_ids_updater = new GlobalIdsUpdater(mesh, distributed_synchronizer);
+
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::initParallel(FacetSynchronizer * facet_synchronizer,
-					   DistributedSynchronizer * distributed_synchronizer) {
+void CohesiveElementInserter::updateNodesType(Mesh & /*mesh*/,
+					      NewNodesEvent & /*node_event*/) {
   AKANTU_DEBUG_IN();
 
-  this->facet_synchronizer = facet_synchronizer;
+  // Array<UInt> & doubled_nodes = node_event.getList();
+  // UInt local_nb_new_nodes = doubled_nodes.getSizeSize();
 
-  global_ids_updater = new GlobalIdsUpdater(mesh, distributed_synchronizer);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::updateNodesType(Mesh & mesh,
-					      NewNodesEvent & node_event) {
-  AKANTU_DEBUG_IN();
-
-  Array<UInt> & doubled_nodes = node_event.getList();
-  UInt local_nb_new_nodes = doubled_nodes.getSize();
   
-  Array<Int> & nodes_type = mesh.getNodesType();
-  UInt nb_old_nodes = nodes_type.getSize();
-  nodes_type.resize(nb_old_nodes + local_nb_new_nodes);
+  // Array<Int> & nodes_type = mesh.getNodesType();
+  // UInt nb_old_nodes = nodes_type.getSize();
+  // nodes_type.resize(nb_old_nodes + local_nb_new_nodes);
 
-  for (UInt n = 0; n < local_nb_new_nodes; ++n) {
-    UInt old_node = doubled_nodes(n, 0);
-    UInt new_node = doubled_nodes(n, 1);
-    nodes_type(new_node) = nodes_type(old_node);
-  }
+  // for (UInt n = 0; n < local_nb_new_nodes; ++n) {
+  //   UInt old_node = doubled_nodes(n, 0);
+  //   UInt new_node = doubled_nodes(n, 1);
+  //   nodes_type(new_node) = nodes_type(old_node);
+  // }
 
   AKANTU_DEBUG_OUT();
 }
@@ -58,13 +61,13 @@ UInt CohesiveElementInserter::updateGlobalIDs(NewNodesEvent & node_event) {
   Array<UInt> & doubled_nodes = node_event.getList();
 
   UInt total_nb_new_nodes
-    = global_ids_updater->updateGlobalIDsLocally(doubled_nodes.getSize());
+    = global_ids_updater->updateGlobalIDsLocally(doubled_nodes.size());
 
   AKANTU_DEBUG_OUT();
   return total_nb_new_nodes;
 }
 
-void CohesiveElementInserter::synchronizeGlobalIDs(NewNodesEvent & node_event) {
+void CohesiveElementInserter::synchronizeGlobalIDs(NewNodesEvent & /*node_event*/) {
   AKANTU_DEBUG_IN();
 
   global_ids_updater->synchronizeGlobalIDs();
@@ -74,4 +77,4 @@ void CohesiveElementInserter::synchronizeGlobalIDs(NewNodesEvent & node_event) {
 
 
 
-__END_AKANTU__
+} // namespace akantu

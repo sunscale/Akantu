@@ -31,6 +31,9 @@
 /* -------------------------------------------------------------------------- */
 #include "cohesive_element_inserter.hh"
 #include "element_group.hh"
+//#include "facet_synchronizer.hh"
+#include "global_ids_updater.hh"
+/* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <limits>
 /* -------------------------------------------------------------------------- */

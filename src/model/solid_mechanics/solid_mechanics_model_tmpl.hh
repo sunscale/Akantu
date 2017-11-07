@@ -31,6 +31,7 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "material.hh"
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -39,6 +40,24 @@
 
 namespace akantu {
 
-} // akantu
+#define FWD(...) ::std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__)
+
+/* -------------------------------------------------------------------------- */
+template <typename Operation>
+void
+SolidMechanicsModel::splitByMaterial(const Array<Element> & elements,
+                                     Operation && op) const {
+  std::vector<Array<Element>> elements_per_mat(materials.size());
+  this->splitElementByMaterial(elements, elements_per_mat);
+
+  for (auto && mat : zip(materials, elements_per_mat)) {
+    FWD(op)(FWD(*std::get<0>(mat)), FWD(std::get<1>(mat)));
+  }
+}
+
+#undef FWD
+/* -------------------------------------------------------------------------- */
+
+} // namespace akantu
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__ */

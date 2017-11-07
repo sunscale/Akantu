@@ -34,6 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_named_argument.hh"
 #include "material_selector.hh"
+#include "material_selector_tmpl.hh"
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 

@@ -214,7 +214,6 @@ void SolidMechanicsModel::reassignMaterial() {
     for (auto type :
          mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       element.type = type;
-      element.kind = Mesh::getKind(type);
 
       UInt nb_element = mesh.getNbElement(type, ghost_type);
       Array<UInt> & mat_indexes = material_index(type, ghost_type);

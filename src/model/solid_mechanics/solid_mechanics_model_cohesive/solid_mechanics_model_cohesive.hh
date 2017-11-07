@@ -29,24 +29,24 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
+#include "cohesive_element_inserter.hh"
+#include "material_selector_cohesive.hh"
+#include "random_internal_field.hh" // included to have the specialization of
+#include "solid_mechanics_model.hh"
+#include "solid_mechanics_model_event_handler.hh"
+// ParameterTyped::operator Real()
+/* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
 
-#include "cohesive_element_inserter.hh"
-#include "material_selector_cohesive.hh"
-#include "solid_mechanics_model.hh"
-#include "solid_mechanics_model_event_handler.hh"
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#include "facet_stress_synchronizer.hh"
-#include "facet_synchronizer.hh"
-#endif
-
-#include "random_internal_field.hh" // included to have the specialization of
-                                    // ParameterTyped::operator Real()
 /* -------------------------------------------------------------------------- */
+namespace akantu {
+class FacetSynchronizer;
+class FacetStressSynchronizer;
+class ElementSynchronizer;
+} // namespace akantu
 
 namespace akantu {
 
@@ -150,7 +150,6 @@ public:
         SolidMechanicsModelCohesiveOptions{use_named_args, first, _pack...});
   }
 
-
   /// limit the cohesive element insertion to a given area
   void limitInsertion(BC::Axis axis, Real first_limit, Real second_limit);
 
@@ -171,7 +170,7 @@ protected:
   /// initialize stress interpolation
   void initStressInterpolation();
 
-    /// initialize the model
+  /// initialize the model
   void initModel() override;
 
   /// initialize cohesive material
@@ -237,6 +236,49 @@ public:
                                  const ElementKind & element_kind,
                                  bool padding_flag) override;
 
+public:
+  /// register the tags associated with the parallel synchronizer for
+  /// cohesive elements
+  // void initParallel(MeshPartition * partition,
+  //                DataAccessor * data_accessor = NULL,
+  //                bool extrinsic = false);
+
+protected:
+  void synchronizeGhostFacetsConnectivity();
+
+  void updateCohesiveSynchronizers();
+
+  /* ------------------------------------------------------------------------ */
+  /* Data Accessor inherited members                                          */
+  /* ------------------------------------------------------------------------ */
+public:
+  UInt getNbData(const Array<Element> & elements,
+                 const SynchronizationTag & tag) const override;
+
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                const SynchronizationTag & tag) const override;
+
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                  const SynchronizationTag & tag) override;
+
+protected:
+  UInt getNbQuadsForFacetCheck(const Array<Element> & elements) const;
+
+  template <typename T>
+  void packFacetStressDataHelper(const ElementTypeMapArray<T> & data_to_pack,
+                                 CommunicationBuffer & buffer,
+                                 const Array<Element> & elements) const;
+
+  template <typename T>
+  void unpackFacetStressDataHelper(ElementTypeMapArray<T> & data_to_unpack,
+                                   CommunicationBuffer & buffer,
+                                   const Array<Element> & elements) const;
+
+  template <typename T, bool pack_helper>
+  void packUnpackFacetStressDataHelper(ElementTypeMapArray<T> & data_to_pack,
+                                       CommunicationBuffer & buffer,
+                                       const Array<Element> & element) const;
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -267,6 +309,10 @@ public:
   /// get is_extrinsic boolean
   AKANTU_GET_MACRO(IsExtrinsic, is_extrinsic, bool);
 
+  /// get cohesive elements synchronizer
+  AKANTU_GET_MACRO(CohesiveSynchronizer, *cohesive_synchronizer,
+                   const ElementSynchronizer &);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -283,15 +329,21 @@ private:
   bool is_extrinsic;
 
   /// cohesive element inserter
-  CohesiveElementInserter * inserter;
+  std::unique_ptr<CohesiveElementInserter> inserter;
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#include "solid_mechanics_model_cohesive_parallel.hh"
-#endif
+  /// facet stress synchronizer
+  std::unique_ptr<ElementSynchronizer> facet_stress_synchronizer;
+
+  /// cohesive elements synchronizer
+  std::unique_ptr<ElementSynchronizer> cohesive_synchronizer;
+
+  /// global connectivity
+  ElementTypeMapArray<UInt> * global_connectivity;
 };
 
 } // namespace akantu
 
 #include "solid_mechanics_model_cohesive_inline_impl.cc"
+#include "solid_mechanics_model_cohesive_parallel_inline_impl.cc"
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__ */

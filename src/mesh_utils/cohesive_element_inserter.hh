@@ -28,22 +28,21 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
-#define __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
-
 /* -------------------------------------------------------------------------- */
 #include "data_accessor.hh"
 #include "mesh_utils.hh"
-#include <numeric>
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#include "facet_synchronizer.hh"
-#include "global_ids_updater.hh"
-#endif
-
 /* -------------------------------------------------------------------------- */
+#include <numeric>
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
+#define __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
+
+namespace akantu {
+class GlobalIdsUpdater;
+class FacetSynchronizer;
+}  // akantu
+
 namespace akantu {
 
 class CohesiveElementInserter : public DataAccessor<Element> {
@@ -97,7 +96,6 @@ protected:
   /// update facet insertion arrays after facets doubling
   void updateInsertionFacets();
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// update nodes type and global ids for parallel simulations
   /// (locally, within each processor)
   UInt updateGlobalIDs(NewNodesEvent & node_event);
@@ -129,19 +127,6 @@ protected:
   inline void
   packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
                                  const Array<Element> & elements) const;
-#else
-  /// functions for parallel communications
-  inline UInt getNbData(const Array<Element> &,
-                        const SynchronizationTag &) const override {
-    return 0;
-  }
-
-  inline void packData(CommunicationBuffer &, const Array<Element> &,
-                       const SynchronizationTag &) const override {}
-
-  inline void unpackData(CommunicationBuffer &, const Array<Element> &,
-                         const SynchronizationTag &) override {}
-#endif
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -182,22 +167,16 @@ private:
   /// inserted
   ElementTypeMapArray<bool> check_facets;
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  /// facet synchronizer
-  FacetSynchronizer * facet_synchronizer;
+  // /// facet synchronizer
+  // FacetSynchronizer & facet_synchronizer;
 
   /// global connectivity ids updater
-  GlobalIdsUpdater * global_ids_updater;
-#endif
+  std::unique_ptr<GlobalIdsUpdater> global_ids_updater;
 };
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-#include "cohesive_element_inserter_inline_impl.cc"
-#endif
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,
@@ -219,5 +198,7 @@ private:
 
 
 } // akantu
+
+#include "cohesive_element_inserter_inline_impl.cc"
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__ */

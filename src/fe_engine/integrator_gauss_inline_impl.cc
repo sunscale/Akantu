@@ -38,7 +38,9 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-
+namespace debug {
+struct IntegratorGaussException : public Exception {};
+}
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
@@ -191,7 +193,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::checkJacobians(
   for (UInt i = 0; i < nb_element * nb_quadrature_points;
        ++i, ++jacobians_val) {
     if (*jacobians_val < 0)
-      AKANTU_DEBUG_ERROR(
+      AKANTU_CUSTOM_EXCEPTION_INFO(debug::IntegratorGaussException{},
           "Negative jacobian computed,"
           << " possible problem in the element node ordering (Quadrature Point "
           << i % nb_quadrature_points << ":" << i / nb_quadrature_points << ":"

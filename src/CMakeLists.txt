@@ -49,8 +49,13 @@ package_get_all_external_informations(
 )
 
 package_get_all_compilation_flags(CXX _cxx_flags)
-set(AKANTU_EXTRA_CXX_FLAGS "${_cxx_flags}" CACHE STRING "Extra flags defined by loaded packages" FORCE)
+set(AKANTU_EXTRA_CXX_FLAGS
+  "${_cxx_flags}" CACHE STRING "Extra flags defined by loaded packages" FORCE)
 mark_as_advanced(AKANTU_EXTRA_CXX_FLAGS)
+
+foreach(src_ ${AKANTU_SPIRIT_SOURCES})
+  set_property(SOURCE ${src_} PROPERTY COMPILE_FLAGS "-g0 -Werror")
+endforeach()
 
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
