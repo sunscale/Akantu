@@ -89,23 +89,25 @@ template <typename T, UInt ndim, class RetType> class TensorStorage;
 /* Proxy classes                                                              */
 /* -------------------------------------------------------------------------- */
 namespace tensors {
-template <class A, class B> struct is_copyable {
-  enum : bool { value = false };
-};
+  template <class A, class B> struct is_copyable {
+    enum : bool { value = false };
+  };
 
-template <class A> struct is_copyable<A, A> {
-  enum : bool { value = true };
-};
+  template <class A> struct is_copyable<A, A> {
+    enum : bool { value = true };
+  };
 
-template <class A> struct is_copyable<A, typename A::RetType> {
-  enum : bool { value = true };
-};
+  template <class A> struct is_copyable<A, typename A::RetType> {
+    enum : bool { value = true };
+  };
 
-template <class A> struct is_copyable<A, typename A::RetType::proxy> {
-  enum : bool { value = true };
-};
+  template <class A> struct is_copyable<A, typename A::RetType::proxy> {
+    enum : bool { value = true };
+  };
 
 } // namespace tensors
+
+
 /**
  * @class TensorProxy aka_types.hh
  * @desc The TensorProxy class is a proxy class to the TensorStorage it handles
@@ -138,7 +140,7 @@ protected:
 public:
   using RetType = _RetType;
 
-  operator RetType() { return RetType(static_cast<RetTypeProxy &>(*this)); }
+  //operator RetType() { return RetType(static_cast<RetTypeProxy &>(*this)); }
 
   UInt size(UInt i) const {
     AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
@@ -254,10 +256,12 @@ public:
 /* -------------------------------------------------------------------------- */
 /* Tensor base class                                                          */
 /* -------------------------------------------------------------------------- */
-template <typename T, UInt ndim, class RetType> class TensorStorage {
+template <typename T, UInt ndim, class RetType>
+class TensorStorage : public TensorTrait {
 public:
   using value_type = T;
 
+  friend class Array<T>;
 protected:
   template <class TensorType> void copySize(const TensorType & src) {
     for (UInt d = 0; d < ndim; ++d)
@@ -291,6 +295,8 @@ public:
 
 protected:
   TensorStorage(UInt m, UInt n, UInt p, const T & def) {
+    static_assert(std::is_trivially_constructible<T>{},
+                  "Cannot create a tensor on non trivial types");
     DimHelper<ndim>::setDims(m, n, p, this->n);
 
     this->computeSize();
@@ -320,11 +326,19 @@ public:
   /* ------------------------------------------------------------------------ */
   template <class TensorType> inline void deepCopy(const TensorType & src) {
     this->copySize(src);
+
     if (!this->wrapped)
       delete[] this->values;
+
+    static_assert(std::is_trivially_constructible<T>{},
+                  "Cannot create a tensor on non trivial types");
     this->values = new T[this->_size];
+
+    static_assert(std::is_trivially_copyable<T>{},
+                  "Cannot copy a tensor on non trivial types");
     memcpy((void *)this->values, (void *)src.storage(),
            this->_size * sizeof(T));
+
     this->wrapped = false;
   }
 
@@ -342,6 +356,8 @@ public:
   inline TensorStorage & operator=(const RetType & src) {
     if (this != &src) {
       if (this->wrapped) {
+        static_assert(std::is_trivially_copyable<T>{},
+                  "Cannot copy a tensor on non trivial types");
         // this test is not sufficient for Tensor of order higher than 1
         AKANTU_DEBUG_ASSERT(this->_size == src.size(),
                             "Tensors of different size");
@@ -445,8 +461,6 @@ public:
   bool isWrapped() const { return this->wrapped; }
 
 protected:
-  friend class Array<T>;
-
   inline void computeSize() {
     _size = 1;
     for (UInt d = 0; d < ndim; ++d)
@@ -514,14 +528,6 @@ protected:
   bool wrapped{false};
 };
 
-// template <typename T, UInt ndim, class RetType>
-// inline TensorProxy<T, ndim, RetType>::TensorProxy(
-//     const TensorStorage<T, ndim, RetType> & other) {
-//   this->values = other.storage();
-//   for (UInt i = 0; i < ndim; ++i)
-//     this->n[i] = other.size(i);
-// }
-
 /* -------------------------------------------------------------------------- */
 /* Vector                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -537,7 +543,7 @@ public:
   explicit Vector(UInt n, const T & def = T()) : parent(n, 0, 0, def) {}
   Vector(T * data, UInt n) : parent(data, n, 0, 0) {}
   Vector(const Vector & src, bool deep_copy = true) : parent(src, deep_copy) {}
-  Vector(const VectorProxy<T> & src) : parent(src) {}
+  Vector(const TensorProxy<T, 1, Vector> & src) : parent(src) {}
 
   Vector(std::initializer_list<T> list) : parent(list.size(), 0, 0, T()) {
     UInt i = 0;
@@ -732,6 +738,8 @@ public:
   Matrix(const Matrix & src, bool deep_copy = true) : parent(src, deep_copy) {}
   Matrix(const MatrixProxy<T> & src) : parent(src) {}
   Matrix(std::initializer_list<std::initializer_list<T>> list) {
+    static_assert(std::is_trivially_copyable<T>{},
+                  "Cannot create a tensor on non trivial types");
     std::size_t n = 0;
     std::size_t m = list.size();
     for (auto row : list) {
@@ -1250,6 +1258,6 @@ Matrix<T> operator-(const Matrix<T> & a, const Matrix<T> & b) {
   return r;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_TYPES_HH__ */

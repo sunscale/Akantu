@@ -43,6 +43,9 @@ class safe_enum : public def {
 
 public:
   explicit safe_enum(type v = def::_end_) : val(v) {}
+  safe_enum(safe_enum && other) = default;
+  safe_enum& operator=(safe_enum && other) = default;
+
   inner underlying() const { return val; }
 
   bool operator == (const safe_enum & s) const { return this->val == s.val; }

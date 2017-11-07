@@ -294,7 +294,7 @@ namespace containers {
       return val;
     }
 
-    constexpr size_t size() { return (stop - start) / step; }
+    constexpr T size() { return (stop - start) / step; }
 
     constexpr iterator begin() { return iterator(start, step); }
     constexpr iterator end() { return iterator(stop, step); }
@@ -304,14 +304,29 @@ namespace containers {
   };
 } // namespace containers
 
-template <class T> inline decltype(auto) arange(T stop) {
+template <class T,
+          typename = std::enable_if_t<std::is_integral<std::decay_t<T>>::value>>
+inline decltype(auto) arange(const T & stop) {
   return containers::ArangeContainer<T>(stop);
 }
 
-template <class T>
-inline constexpr decltype(auto) arange(T start, T stop, T step = 1) {
-  return containers::ArangeContainer<T>(start, stop, step);
+template <class T1, class T2,
+          typename = std::enable_if_t<
+              std::is_integral<std::common_type_t<T1, T2>>::value>>
+inline constexpr decltype(auto) arange(const T1 & start, const T2 & stop) {
+  return containers::ArangeContainer<std::common_type_t<T1, T2>>(start, stop);
 }
+
+template <class T1, class T2, class T3,
+          typename = std::enable_if_t<
+              std::is_integral<std::common_type_t<T1, T2, T3>>::value>>
+inline constexpr decltype(auto) arange(const T1 & start, const T2 & stop,
+                                       const T3 & step) {
+  return containers::ArangeContainer<std::common_type_t<T1, T2, T3>>(
+      start, stop, step);
+}
+
+/* -------------------------------------------------------------------------- */
 
 template <class Container>
 inline constexpr decltype(auto) enumerate(Container && container,

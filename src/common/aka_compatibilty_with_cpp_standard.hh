@@ -29,23 +29,28 @@
  */
 /* -------------------------------------------------------------------------- */
 #include <type_traits>
+#include <utility>
+#include <tuple>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH__
 #define __AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH__
 
-namespace std {
+namespace aka {
 
 // Part taken from C++14
 #if __cplusplus < 201402L
 template <bool B, class T = void>
 using enable_if_t = typename enable_if<B, T>::type;
+#else
+template <bool B, class T = void>
+using enable_if_t = std::enable_if_t<B, T>;
 #endif
 
 // Part taken from C++17
 #if __cplusplus < 201703L
 // bool_constant
-template <bool B> using bool_constant = integral_constant<bool, B>;
+template <bool B> using bool_constant = std::integral_constant<bool, B>;
 namespace {
   template <bool B> constexpr bool bool_constant_v = bool_constant<B>::value;
 }
@@ -57,7 +62,71 @@ template <class B1, class... Bn>
 struct conjunction<B1, Bn...>
     : std::conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
 
-#endif
+namespace detail {
+  // template <class T>
+  // struct is_reference_wrapper : std::false_type {};
+  // template <class U>
+  // struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
+  // template <class T>
+  // constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
+
+  template <class T, class Type, class T1, class... Args>
+  decltype(auto) INVOKE(Type T::*f, T1 && t1, Args &&... args) {
+    static_assert(std::is_member_function_pointer<decltype(f)>{} and
+                      std::is_base_of<T, std::decay_t<T1>>{},
+                  "Does not know what to do with this types");
+    return (std::forward<T1>(t1).*f)(std::forward<Args>(args)...);
+  }
+
+  // template <class T, class Type, class T1, class... Args>
+  // decltype(auto) INVOKE(Type T::*f, T1 && t1, Args &&... args) {
+  //   if constexpr (std::is_member_function_pointer_v<decltype(f)>) {
+  //     if constexpr (std::is_base_of_v<T, std::decay_t<T1>>)
+  //       return (std::forward<T1>(t1).*f)(std::forward<Args>(args)...);
+  //     else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>)
+  //       return (t1.get().*f)(std::forward<Args>(args)...);
+  //     else
+  //       return ((*std::forward<T1>(t1)).*f)(std::forward<Args>(args)...);
+  //   } else {
+  //     static_assert(std::is_member_object_pointer_v<decltype(f)>);
+  //     static_assert(sizeof...(args) == 0);
+  //     if constexpr (std::is_base_of_v<T, std::decay_t<T1>>)
+  //       return std::forward<T1>(t1).*f;
+  //     else if constexpr (is_reference_wrapper_v<std::decay_t<T1>>)
+  //       return t1.get().*f;
+  //     else
+  //       return (*std::forward<T1>(t1)).*f;
+  //   }
+  // }
+
+  template <class F, class... Args>
+  decltype(auto) INVOKE(F && f, Args &&... args) {
+    return std::forward<F>(f)(std::forward<Args>(args)...);
+  }
+} // namespace detail
+
+template <class F, class... Args>
+decltype(auto) invoke(F && f, Args &&... args) {
+  return detail::INVOKE(std::forward<F>(f), std::forward<Args>(args)...);
 }
+
+namespace detail {
+  template <class F, class Tuple, std::size_t... Is>
+  constexpr decltype(auto) apply_impl(F && f, Tuple && t,
+                                      std::index_sequence<Is...>) {
+    return invoke(std::forward<F>(f),
+                  std::get<Is>(std::forward<Tuple>(t))...);
+  }
+} // namespace detail
+
+template <class F, class Tuple>
+constexpr decltype(auto) apply(F && f, Tuple && t) {
+  return detail::apply_impl(
+      std::forward<F>(f), std::forward<Tuple>(t),
+      std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
+}
+
+#endif
+} // namespace aka
 
 #endif /* __AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH__ */

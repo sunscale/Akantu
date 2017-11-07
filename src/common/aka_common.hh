@@ -39,8 +39,8 @@
 #define __AKANTU_COMMON_HH__
 
 /* -------------------------------------------------------------------------- */
-#include <list>
 #include <limits>
+#include <list>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
 
@@ -89,7 +89,7 @@ extern const UInt _all_dimensions;
 /* -------------------------------------------------------------------------- */
 /* Mesh/FEM/Model types                                                       */
 /* -------------------------------------------------------------------------- */
-} // akantu
+} // namespace akantu
 
 #include "aka_element_classes_info.hh"
 
@@ -120,7 +120,6 @@ enum EventHandlerPriority {
   _ehp_lowest = 100
 };
 
-
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion
 enum AnalysisMethod {
@@ -140,16 +139,12 @@ enum NonLinearSolverType {
   _nls_newton_raphson,          ///< Regular Newton-Raphson
   _nls_newton_raphson_modified, ///< Newton-Raphson with initial tangent
   _nls_lumped,                  ///< Case of lumped mass or equivalent matrix
-  _nls_auto                     ///< This will take a default value that make sense in case of
-                                ///  model::getNewSolver
+  _nls_auto ///< This will take a default value that make sense in case of
+            ///  model::getNewSolver
 };
 
 /// Define the node/dof type
-enum NodeType : Int {
-  _nt_pure_gost = -3,
-  _nt_master = -2,
-  _nt_normal = -1
-};
+enum NodeType : Int { _nt_pure_gost = -3, _nt_master = -2, _nt_normal = -1 };
 
 /// Type of time stepping solver
 enum TimeStepSolverType {
@@ -161,18 +156,18 @@ enum TimeStepSolverType {
 
 /// Type of integration scheme
 enum IntegrationSchemeType {
-  _ist_pseudo_time,             ///< Pseudo Time
-  _ist_forward_euler,           ///< GeneralizedTrapezoidal(0)
-  _ist_trapezoidal_rule_1,      ///< GeneralizedTrapezoidal(1/2)
-  _ist_backward_euler,          ///< GeneralizedTrapezoidal(1)
-  _ist_central_difference,      ///< NewmarkBeta(0, 1/2)
-  _ist_fox_goodwin,             ///< NewmarkBeta(1/6, 1/2)
-  _ist_trapezoidal_rule_2,      ///< NewmarkBeta(1/2, 1/2)
-  _ist_linear_acceleration,     ///< NewmarkBeta(1/3, 1/2)
-  _ist_newmark_beta,            ///< generic NewmarkBeta with user defined
-                                /// alpha and beta
-  _ist_generalized_trapezoidal  ///< generic GeneralizedTrapezoidal with user
-                                ///  defined alpha
+  _ist_pseudo_time,            ///< Pseudo Time
+  _ist_forward_euler,          ///< GeneralizedTrapezoidal(0)
+  _ist_trapezoidal_rule_1,     ///< GeneralizedTrapezoidal(1/2)
+  _ist_backward_euler,         ///< GeneralizedTrapezoidal(1)
+  _ist_central_difference,     ///< NewmarkBeta(0, 1/2)
+  _ist_fox_goodwin,            ///< NewmarkBeta(1/6, 1/2)
+  _ist_trapezoidal_rule_2,     ///< NewmarkBeta(1/2, 1/2)
+  _ist_linear_acceleration,    ///< NewmarkBeta(1/3, 1/2)
+  _ist_newmark_beta,           ///< generic NewmarkBeta with user defined
+                               /// alpha and beta
+  _ist_generalized_trapezoidal ///< generic GeneralizedTrapezoidal with user
+                               ///  defined alpha
 };
 
 /// enum SolveConvergenceCriteria different convergence criteria
@@ -294,8 +289,14 @@ inline std::ostream & operator<<(std::ostream & stream, GhostType type);
 #define AKANTU_INCLUDE_INLINE_IMPL
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-using is_scalar = std::is_arithmetic<T>;
+/* Type traits                                                                */
+/* -------------------------------------------------------------------------- */
+struct TensorTrait {};
+/* -------------------------------------------------------------------------- */
+template <typename T> using is_tensor = std::is_base_of<TensorTrait, T>;
+/* -------------------------------------------------------------------------- */
+template <typename T> using is_scalar = std::is_arithmetic<T>;
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_SET_MACRO(name, variable, type)                                 \
@@ -360,7 +361,7 @@ inline std::string trim(const std::string & to_trim);
 template <typename T> std::string printMemorySize(UInt size);
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #include "aka_fwd.hh"
 
@@ -375,7 +376,7 @@ Parser & getStaticParser();
 /// get access to the user part of the internal input file parser
 const ParserSection & getUserParser();
 
-} // akantu
+} // namespace akantu
 
 #include "aka_common_inline_impl.cc"
 
@@ -395,9 +396,8 @@ namespace std {
  * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
  * http://burtleburtle.net/bob/hash/doobs.html
  */
-template <typename a, typename b> struct hash<std::pair<a, b> > {
-public:
-  hash() : ah(), bh() {}
+template <typename a, typename b> struct hash<std::pair<a, b>> {
+  hash() = default;
   size_t operator()(const std::pair<a, b> & p) const {
     size_t seed = ah(p.first);
     return bh(p.second) + AKANTU_HASH_COMBINE_MAGIC_NUMBER + (seed << 6) +
@@ -405,11 +405,10 @@ public:
   }
 
 private:
-  const hash<a> ah;
-  const hash<b> bh;
+  const hash<a> ah{};
+  const hash<b> bh{};
 };
 
-} //std
-
+} // namespace std
 
 #endif /* __AKANTU_COMMON_HH__ */

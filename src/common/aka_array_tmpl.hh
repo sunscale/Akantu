@@ -42,6 +42,10 @@
 
 namespace akantu {
 
+namespace debug {
+  struct ArrayException : public Exception {};
+} // namespace debug
+
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 inline T & Array<T, is_scal>::operator()(UInt i, UInt j) {
@@ -116,7 +120,7 @@ inline void Array<T, is_scal>::push_back(const T & value) {
  * append a matrix or a vector to the array
  * @param new_elem a reference to a Matrix<T> or Vector<T> */
 template <class T, bool is_scal>
-template <template <typename> class C>
+template <template <typename> class C, typename>
 inline void Array<T, is_scal>::push_back(const C<T> & new_elem) {
   AKANTU_DEBUG_ASSERT(
       nb_component == new_elem.size(),
@@ -276,7 +280,7 @@ bool Array<T, is_scal>::operator!=(const Array<T, is_scal> & array) const {
  * @param vm Matrix or Vector to fill the array with
  */
 template <class T, bool is_scal>
-template <template <typename> class C>
+template <template <typename> class C, typename>
 inline void Array<T, is_scal>::set(const C<T> & vm) {
   AKANTU_DEBUG_ASSERT(
       nb_component == vm.size(),
@@ -496,12 +500,12 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
       // Normally there are no allocation problem when reducing an array
       if (new_size == 0) {
         free(values);
-        values = NULL;
+        values = nullptr;
       } else {
         auto * tmp_ptr = static_cast<T *>(
             realloc(values, new_size * nb_component * sizeof(T)));
 
-        if (tmp_ptr == NULL) {
+        if (tmp_ptr == nullptr) {
           AKANTU_EXCEPTION("Cannot free data ("
                            << id << ")"
                            << " [current allocated size : " << allocated_size
@@ -630,7 +634,7 @@ template <class T, bool is_scal> UInt Array<T, is_scal>::find(T elem[]) const {
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
-template <template <typename> class C>
+template <template <typename> class C, typename>
 inline UInt Array<T, is_scal>::find(const C<T> & elem) {
   AKANTU_DEBUG_ASSERT(elem.size() == nb_component,
                       "Cannot find an element with a wrong size ("
@@ -749,7 +753,7 @@ inline void ArrayBase::empty() { size_ = 0; }
 /* Iterators                                                                  */
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
-template <class R, class IR, bool is_r_scal>
+template <class R, class daughter, class IR, bool is_tensor>
 class Array<T, is_scal>::iterator_internal {
 public:
   using value_type = R;
@@ -764,29 +768,30 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
 public:
-  iterator_internal() : initial(NULL), ret(NULL), ret_ptr(NULL){};
+  iterator_internal() = default;
 
   iterator_internal(pointer_type data, UInt _offset)
-      : _offset(_offset), initial(data), ret(NULL), ret_ptr(data) {
+      : _offset(_offset), initial(data), ret(nullptr), ret_ptr(data) {
     AKANTU_DEBUG_ERROR(
         "The constructor should never be called it is just an ugly trick...");
   }
 
-  iterator_internal(pointer wrapped)
+  iterator_internal(std::unique_ptr<internal_value_type> && wrapped)
       : _offset(wrapped->size()), initial(wrapped->storage()),
-        ret(const_cast<internal_pointer>(wrapped)),
-        ret_ptr(wrapped->storage()) {}
+        ret(std::move(wrapped)), ret_ptr(ret->storage()) {}
 
   iterator_internal(const iterator_internal & it) {
     if (this != &it) {
       this->_offset = it._offset;
       this->initial = it.initial;
       this->ret_ptr = it.ret_ptr;
-      this->ret = new internal_value_type(*it.ret, false);
+      this->ret = std::make_unique<internal_value_type>(*it.ret, false);
     }
   }
 
-  virtual ~iterator_internal() { delete ret; };
+  iterator_internal(iterator_internal && it) = default;
+
+  virtual ~iterator_internal() = default;
 
   inline iterator_internal & operator=(const iterator_internal & it) {
     if (this != &it) {
@@ -796,7 +801,7 @@ public:
       if (this->ret)
         this->ret->shallowCopy(*it.ret);
       else
-        this->ret = new internal_value_type(*it.ret, false);
+        this->ret = std::make_unique<internal_value_type>(*it.ret, false);
     }
     return *this;
   }
@@ -815,24 +820,24 @@ public:
   };
   inline pointer operator->() {
     ret->values = ret_ptr;
-    return ret;
+    return ret.get();
   };
-  inline iterator_internal & operator++() {
+  inline daughter & operator++() {
     ret_ptr += _offset;
-    return *this;
+    return static_cast<daughter &>(*this);
   };
-  inline iterator_internal & operator--() {
+  inline daughter & operator--() {
     ret_ptr -= _offset;
-    return *this;
+    return static_cast<daughter &>(*this);
   };
 
-  inline iterator_internal & operator+=(const UInt n) {
+  inline daughter & operator+=(const UInt n) {
     ret_ptr += _offset * n;
-    return *this;
+    return static_cast<daughter &>(*this);
   }
-  inline iterator_internal & operator-=(const UInt n) {
+  inline daughter & operator-=(const UInt n) {
     ret_ptr -= _offset * n;
-    return *this;
+    return static_cast<daughter &>(*this);
   }
 
   inline proxy operator[](const UInt n) {
@@ -863,13 +868,13 @@ public:
     return this->ret_ptr >= other.ret_ptr;
   }
 
-  inline iterator_internal operator+(difference_type n) {
-    iterator_internal tmp(*this);
+  inline daughter operator+(difference_type n) {
+    daughter tmp(static_cast<daughter &>(*this));
     tmp += n;
     return tmp;
   }
-  inline iterator_internal operator-(difference_type n) {
-    iterator_internal tmp(*this);
+  inline daughter operator-(difference_type n) {
+    daughter tmp(static_cast<daughter &>(*this));
     tmp -= n;
     return tmp;
   }
@@ -883,9 +888,9 @@ public:
 
 protected:
   UInt _offset{0};
-  pointer_type initial;
-  internal_pointer ret;
-  pointer_type ret_ptr;
+  pointer_type initial{nullptr};
+  std::unique_ptr<internal_value_type> ret{nullptr};
+  pointer_type ret_ptr{nullptr};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -893,8 +898,8 @@ protected:
  * Specialization for scalar types
  */
 template <class T, bool is_scal>
-template <class R, class IR>
-class Array<T, is_scal>::iterator_internal<R, IR, true> {
+template <class R, class daughter, class IR>
+class Array<T, is_scal>::iterator_internal<R, daughter, IR, false> {
 public:
   using value_type = R;
   using pointer = R *;
@@ -906,8 +911,7 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
 public:
-  iterator_internal(pointer data = nullptr, UInt _offset = 1)
-      : _offset(_offset), ret(data), initial(data){};
+  iterator_internal(pointer data = nullptr) : ret(data), initial(data){};
   iterator_internal(const iterator_internal & it) = default;
   iterator_internal(iterator_internal && it) = default;
 
@@ -915,29 +919,27 @@ public:
 
   inline iterator_internal & operator=(const iterator_internal & it) = default;
 
-  UInt getCurrentIndex() {
-    return (this->ret - this->initial) / this->_offset;
-  };
+  UInt getCurrentIndex() { return (this->ret - this->initial); };
 
   inline reference operator*() { return *ret; };
   inline const_reference operator*() const { return *ret; };
   inline pointer operator->() { return ret; };
-  inline iterator_internal & operator++() {
+  inline daughter & operator++() {
     ++ret;
-    return *this;
+    return static_cast<daughter &>(*this);
   };
-  inline iterator_internal & operator--() {
+  inline daughter & operator--() {
     --ret;
-    return *this;
+    return static_cast<daughter &>(*this);
   };
 
-  inline iterator_internal & operator+=(const UInt n) {
+  inline daughter & operator+=(const UInt n) {
     ret += n;
-    return *this;
+    return static_cast<daughter &>(*this);
   }
-  inline iterator_internal & operator-=(const UInt n) {
+  inline daughter & operator-=(const UInt n) {
     ret -= n;
-    return *this;
+    return static_cast<daughter &>(*this);
   }
 
   inline reference operator[](const UInt n) { return ret[n]; }
@@ -961,76 +963,59 @@ public:
     return ret >= other.ret;
   }
 
-  inline iterator_internal operator-(difference_type n) {
-    return iterator_internal(ret - n);
-  }
-  inline iterator_internal operator+(difference_type n) {
-    return iterator_internal(ret + n);
-  }
+  inline daughter operator-(difference_type n) { return daughter(ret - n); }
+  inline daughter operator+(difference_type n) { return daughter(ret + n); }
 
   inline difference_type operator-(const iterator_internal & b) {
     return ret - b.ret;
   }
 
   inline pointer data() const { return ret; }
-  inline difference_type offset() const { return _offset; }
 
 protected:
-  difference_type _offset;
-  pointer ret;
-  pointer initial;
+  pointer ret{nullptr};
+  pointer initial{nullptr};
 };
 
 /* -------------------------------------------------------------------------- */
 /* Begin/End functions implementation                                         */
 /* -------------------------------------------------------------------------- */
-namespace {
-  template <std::size_t N> struct extract_last {
-    template <typename F, typename... T, typename... Arg>
-    static decltype(auto) extract(F && func, std::tuple<T...> && t,
-                                  Arg... args) {
-      return extract_last<N - 1>::extract(
-          std::forward<F>(func), std::forward<decltype(t)>(t),
-          std::get<sizeof...(T) - N>(std::forward<decltype(t)>(t)), args...);
-    }
-  };
+namespace detail {
+  template <class Tuple, size_t... Is>
+  constexpr auto take_front_impl(Tuple && t, std::index_sequence<Is...>) {
+    return std::make_tuple(std::get<Is>(std::forward<Tuple>(t))...);
+  }
 
-  template <> struct extract_last<1> {
-    template <typename F, typename... T, typename... Arg>
-    static decltype(auto) extract(F && func, std::tuple<T...> && /*unused*/,
-                                  Arg... args) {
-      return std::forward<F>(func)(args...);
-    }
-  };
+  template <size_t N, class Tuple> constexpr auto take_front(Tuple && t) {
+    return take_front_impl(std::forward<Tuple>(t),
+                           std::make_index_sequence<N>{});
+  }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnarrowing"
+  template <typename... V>
+  constexpr auto product_all(V &&... v) ->
+      typename std::common_type<V...>::type {
+    typename std::common_type<V...>::type result = 1;
+    (void)std::initializer_list<int>{(result *= v, 0)...};
+    return result;
+  }
+
+  template <typename... T> std::string to_string_all(T &&... t) {
+    if (sizeof...(T) == 0)
+      return "";
+
+    std::stringstream ss;
+    bool noComma = true;
+    ss << "(";
+    (void)std::initializer_list<bool>{
+        (ss << (noComma ? "" : ", ") << t, noComma = false)...};
+    ss << ")";
+    return ss.str();
+  }
+
   template <std::size_t N> struct InstantiationHelper {
-    template <typename... Ns> static constexpr std::size_t product(Ns... ns) {
-      std::size_t p = 1;
-      for (auto n : std::array<std::size_t, sizeof...(Ns)>{ns...})
-        p *= n;
-      return p;
-    }
-
-    template <typename... Ns> static std::string to_string(Ns... ns) {
-      std::stringstream sstr;
-      bool first = true;
-      sstr << "(";
-      for (auto n : std::array<std::size_t, sizeof...(Ns)>{ns...}) {
-        if (!first) {
-          sstr << ", ";
-        }
-        sstr << n;
-        first = false;
-      }
-      sstr << ")";
-      return sstr.str();
-    }
-#pragma GCC diagnostic pop
     template <typename type, typename T, typename... Ns>
     static auto instantiate(T && data, Ns... ns) {
-      return new type(data, ns...);
+      return std::make_unique<type>(data, ns...);
     }
   };
 
@@ -1038,96 +1023,144 @@ namespace {
     template <typename type, typename T> static auto instantiate(T && data) {
       return data;
     }
-
-    static constexpr std::size_t product() { return 1; }
-    static std::string to_string() { return ""; }
   };
 
   template <typename Arr, typename T, typename... Ns>
-  decltype(auto) get_iterator(Arr && array, T * data, Ns... ns) {
-    using type = IteratorHelper_t<sizeof...(Ns) -1, T>;
+  decltype(auto) get_iterator(Arr && array, T * data, Ns &&... ns) {
+    using type = IteratorHelper_t<sizeof...(Ns) - 1, T>;
     using array_type = std::decay_t<Arr>;
     using iterator =
         std::conditional_t<std::is_const<Arr>::value,
                            typename array_type::template const_iterator<type>,
                            typename array_type::template iterator<type>>;
-    AKANTU_DEBUG_ASSERT(
-        array.getNbComponent() * array.size() ==
-            InstantiationHelper<sizeof...(Ns)>::product(ns...),
-        "The iterator is not compatible with the type "
-            << debug::demangle(typeid(type).name())
-            << InstantiationHelper<sizeof...(Ns)>::to_string(ns...));
+    if (array.getNbComponent() * array.size() !=
+        product_all(std::forward<Ns>(ns)...)) {
+      AKANTU_CUSTOM_EXCEPTION_INFO(
+          debug::ArrayException(),
+          "The iterator on Array "
+              << to_string_all(array.size(), array.getNbComponent())
+              << "is not compatible with the type "
+              << debug::demangle(typeid(type).name()) << to_string_all(ns...));
+    }
 
-    auto && wrapped = extract_last<sizeof...(Ns)>::extract(
+    auto && wrapped = aka::apply(
         [&](auto... n) {
           return InstantiationHelper<sizeof...(n)>::template instantiate<type>(
               data, n...);
         },
-        std::make_tuple(ns...));
+        take_front<sizeof...(Ns) - 1>(std::make_tuple(ns...)));
 
-    return iterator{wrapped};
+    return iterator(std::move(wrapped));
   }
-} // namespace
+} // namespace detail
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::begin(Ns... ns) {
-  return get_iterator(*this, values, ns..., size_);
+inline decltype(auto) Array<T, is_scal>::begin(Ns &&... ns) {
+  return detail::get_iterator(*this, values, std::forward<Ns>(ns)..., size_);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::end(Ns... ns) {
-  return get_iterator(*this, values + nb_component * size_, ns..., size_);
+inline decltype(auto) Array<T, is_scal>::end(Ns &&... ns) {
+  return detail::get_iterator(*this, values + nb_component * size_,
+                              std::forward<Ns>(ns)..., size_);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::begin(Ns... ns) const {
-  return get_iterator(*this, values, ns..., size_);
+inline decltype(auto) Array<T, is_scal>::begin(Ns &&... ns) const {
+  return detail::get_iterator(*this, values, std::forward<Ns>(ns)..., size_);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::end(Ns... ns) const {
-  return get_iterator(*this, values + nb_component * size_, ns..., size_);
+inline decltype(auto) Array<T, is_scal>::end(Ns &&... ns) const {
+  return detail::get_iterator(*this, values + nb_component * size_,
+                              std::forward<Ns>(ns)..., size_);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::begin_reinterpret(Ns... ns) {
-  return get_iterator(*this, values, ns...);
+inline decltype(auto) Array<T, is_scal>::begin_reinterpret(Ns &&... ns) {
+  return detail::get_iterator(*this, values, std::forward<Ns>(ns)...);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::end_reinterpret(Ns... ns) {
-  return get_iterator(
-      *this, values + InstantiationHelper<sizeof...(Ns)>::product(ns...),
-      ns...);
+inline decltype(auto) Array<T, is_scal>::end_reinterpret(Ns &&... ns) {
+  return detail::get_iterator(
+      *this, values + detail::product_all(std::forward<Ns>(ns)...),
+      std::forward<Ns>(ns)...);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::begin_reinterpret(Ns... ns) const {
-  return get_iterator(*this, values, ns...);
+inline decltype(auto) Array<T, is_scal>::begin_reinterpret(Ns &&... ns) const {
+  return detail::get_iterator(*this, values, std::forward<Ns>(ns)...);
 }
 
 template <class T, bool is_scal>
 template <typename... Ns>
-inline decltype(auto) Array<T, is_scal>::end_reinterpret(Ns... ns) const {
-  return get_iterator(
-      *this, values + InstantiationHelper<sizeof...(Ns)>::product(ns...),
-      ns...);
+inline decltype(auto) Array<T, is_scal>::end_reinterpret(Ns &&... ns) const {
+  return detail::get_iterator(
+      *this, values + detail::product_all(std::forward<Ns>(ns)...),
+      std::forward<Ns>(ns)...);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Views                                                                      */
+/* -------------------------------------------------------------------------- */
+namespace detail {
+  template <typename Array, typename... Ns> class ArrayView {
+    using tuple = std::tuple<Ns...>;
+
+  public:
+    ArrayView(Array && array, Ns &&... ns)
+        : array(std::forward<Array>(array)),
+          sizes(std::forward<Ns>(ns)...){};
+
+    decltype(auto) begin() {
+      return aka::apply(
+          [&](auto &&... ns) { return array.begin_reinterpret(ns...); }, sizes);
+    }
+
+    decltype(auto) end() {
+      return aka::apply(
+          [&](auto &&... ns) { return array.end_reinterpret(ns...); }, sizes);
+    }
+
+    decltype(auto) size() {
+      return std::get<std::tuple_size<tuple>::value - 1>(sizes);
+    }
+
+  private:
+    Array array;
+    tuple sizes;
+  };
+} // namespace detail
+
+/* -------------------------------------------------------------------------- */
+template <typename Array, typename... Ns>
+decltype(auto) make_view(Array && array, Ns &&... ns) {
+  auto size = std::forward<decltype(array)>(array).size() *
+              std::forward<decltype(array)>(array).getNbComponent() /
+              detail::product_all(ns...);
+
+  return detail::ArrayView<Array, Ns..., decltype(size)>(
+      std::forward<Array>(array), std::forward<Ns>(ns)...,
+      std::forward<decltype(size)>(size));
 }
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 template <typename R>
-class Array<T, is_scal>::const_iterator : public iterator_internal<const R, R> {
+class Array<T, is_scal>::const_iterator
+    : public iterator_internal<const R, Array<T, is_scal>::const_iterator<R>,
+                               R> {
 public:
-  typedef iterator_internal<const R, R> parent;
+  typedef iterator_internal<const R, const_iterator, R> parent;
   using value_type = typename parent::value_type;
   using pointer = typename parent::pointer;
   using reference = typename parent::reference;
@@ -1136,61 +1169,47 @@ public:
 
 public:
   const_iterator() : parent(){};
-  const_iterator(pointer_type data, UInt offset) : parent(data, offset) {}
-  const_iterator(pointer warped) : parent(warped) {}
-  const_iterator(const parent & it) : parent(it) {}
-  //    const_iterator(const const_iterator<R> & it) : parent(it) {}
+  // const_iterator(pointer_type data, UInt offset) : parent(data, offset) {}
+  // const_iterator(pointer warped) : parent(warped) {}
+  // const_iterator(const parent & it) : parent(it) {}
 
-  inline const_iterator operator+(difference_type n) {
-    return parent::operator+(n);
-  }
-  inline const_iterator operator-(difference_type n) {
-    return parent::operator-(n);
-  }
-  inline difference_type operator-(const const_iterator & b) {
-    return parent::operator-(b);
-  }
+  const_iterator(const const_iterator & it) = default;
+  const_iterator(const_iterator && it) = default;
 
-  inline const_iterator & operator++() {
-    parent::operator++();
-    return *this;
-  };
-  inline const_iterator & operator--() {
-    parent::operator--();
-    return *this;
-  };
-  inline const_iterator & operator+=(const UInt n) {
-    parent::operator+=(n);
-    return *this;
-  }
+  template <typename P, typename = std::enable_if_t<not is_tensor<P>{}>>
+  const_iterator(P * data) : parent(data) {}
+
+  template <typename UP_P, typename = std::enable_if_t<
+                               is_tensor<typename UP_P::element_type>::value>>
+  const_iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
+
+  const_iterator & operator=(const const_iterator & it) = default;
 };
-// #endif
 
-// #if defined(AKANTU_CORE_CXX11)
-//   template<class R> using iterator = iterator_internal<R>;
-// #else
-template <class T, class R, bool issame = std::is_same<T, R>::value>
+template <class T, class R, bool is_tensor_ = is_tensor<R>{}>
 struct ConstConverterIteratorHelper {
   using const_iterator = typename Array<T>::template const_iterator<R>;
   using iterator = typename Array<T>::template iterator<R>;
+
   static inline const_iterator convert(const iterator & it) {
-    return const_iterator(new R(*it, false));
+    return const_iterator(std::unique_ptr<R>(new R(*it, false)));
   }
 };
 
-template <class T, class R> struct ConstConverterIteratorHelper<T, R, true> {
+template <class T, class R> struct ConstConverterIteratorHelper<T, R, false> {
   using const_iterator = typename Array<T>::template const_iterator<R>;
   using iterator = typename Array<T>::template iterator<R>;
   static inline const_iterator convert(const iterator & it) {
-    return const_iterator(it.data(), it.offset());
+    return const_iterator(it.data());
   }
 };
 
 template <class T, bool is_scal>
 template <typename R>
-class Array<T, is_scal>::iterator : public iterator_internal<R> {
+class Array<T, is_scal>::iterator
+    : public iterator_internal<R, Array<T, is_scal>::iterator<R>> {
 public:
-  using parent = iterator_internal<R>;
+  using parent = iterator_internal<R, iterator>;
   using value_type = typename parent::value_type;
   using pointer = typename parent::pointer;
   using reference = typename parent::reference;
@@ -1199,38 +1218,20 @@ public:
 
 public:
   iterator() : parent(){};
-  iterator(pointer_type data, UInt offset) : parent(data, offset){};
-  iterator(pointer warped) : parent(warped) {}
-  iterator(const parent & it) : parent(it) {}
-  //    iterator(const iterator<R> & it) : parent(it) {}
+  iterator(const iterator & it) = default;
+  iterator(iterator && it) = default;
+
+  template <typename P, typename = std::enable_if_t<not is_tensor<P>::value>>
+  iterator(P * data) : parent(data) {}
+
+  template <typename UP_P, typename = std::enable_if_t<
+                               is_tensor<typename UP_P::element_type>::value>>
+  iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
+
+  iterator & operator=(const iterator & it) = default;
 
   operator const_iterator<R>() {
     return ConstConverterIteratorHelper<T, R>::convert(*this);
-  }
-
-  inline iterator operator+(difference_type n) {
-    return parent::operator+(n);
-    ;
-  }
-  inline iterator operator-(difference_type n) {
-    return parent::operator-(n);
-    ;
-  }
-  inline difference_type operator-(const iterator & b) {
-    return parent::operator-(b);
-  }
-
-  inline iterator & operator++() {
-    parent::operator++();
-    return *this;
-  };
-  inline iterator & operator--() {
-    parent::operator--();
-    return *this;
-  };
-  inline iterator & operator+=(const UInt n) {
-    parent::operator+=(n);
-    return *this;
   }
 };
 

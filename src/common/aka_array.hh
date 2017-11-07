@@ -76,7 +76,7 @@ public:
   /// Get the real size allocated in memory
   AKANTU_GET_MACRO(AllocatedSize, allocated_size, UInt);
   /// Get the Size of the Array
-  UInt getsize() const __attribute__((deprecated)) { return size_; }
+  UInt getSize() const __attribute__((deprecated)) { return size_; }
   UInt size() const { return size_; }
   /// Get the number of components
   AKANTU_GET_MACRO(NbComponent, nb_component, UInt);
@@ -84,9 +84,6 @@ public:
   AKANTU_GET_MACRO(ID, id, const ID &);
   /// Set the name of th array
   AKANTU_SET_MACRO(ID, id, const ID &);
-
-  // AKANTU_GET_MACRO(Tag, tag, const std::string &);
-  // AKANTU_SET_MACRO(Tag, tag, const std::string &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -169,7 +166,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /// \todo protected: does not compile with intel  check why
 public:
-  template <class R, class IR = R, bool issame = std::is_same<IR, T>::value>
+  template <class R, class it, class IR = R, bool is_tensor_ = is_tensor<R>{}>
   class iterator_internal;
 
 public:
@@ -208,21 +205,19 @@ public:
   using const_tensor3_iterator = const_iterator<Tensor3<T>>;
 
   /* ------------------------------------------------------------------------ */
-  template <typename... Ns> inline decltype(auto) begin(Ns... n);
-  template <typename... Ns> inline decltype(auto) end(Ns... n);
+  template <typename... Ns> inline decltype(auto) begin(Ns&&... n);
+  template <typename... Ns> inline decltype(auto) end(Ns&&... n);
 
-  template <typename... Ns> inline decltype(auto) begin(Ns... n) const;
-  template <typename... Ns> inline decltype(auto) end(Ns... n) const;
+  template <typename... Ns> inline decltype(auto) begin(Ns&&... n) const;
+  template <typename... Ns> inline decltype(auto) end(Ns&&... n) const;
 
-  template <typename... Ns>
-  inline decltype(auto) begin_reinterpret(Ns... n);
-  template <typename... Ns>
-  inline decltype(auto) end_reinterpret(Ns... n);
+  template <typename... Ns> inline decltype(auto) begin_reinterpret(Ns&&... n);
+  template <typename... Ns> inline decltype(auto) end_reinterpret(Ns&&... n);
 
   template <typename... Ns>
-  inline decltype(auto) begin_reinterpret(Ns... n) const;
+  inline decltype(auto) begin_reinterpret(Ns&&... n) const;
   template <typename... Ns>
-  inline decltype(auto) end_reinterpret(Ns... n) const;
+  inline decltype(auto) end_reinterpret(Ns&&... n) const;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -234,7 +229,8 @@ public:
   // inline void push_back(const value_type new_elem[]);
 
   /// append a Vector or a Matrix
-  template <template <typename> class C>
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>{}>>
   inline void push_back(const C<T> & new_elem);
   /// append the value of the iterator
   template <typename Ret> inline void push_back(const iterator<Ret> & it);
@@ -268,7 +264,9 @@ public:
   UInt find(T elem[]) const;
 
   /// @see Array::find(const_reference elem) const
-  template <template <typename> class C> inline UInt find(const C<T> & elem);
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>{}>>
+  inline UInt find(const C<T> & elem);
 
   /// set all entries of the array to 0
   inline void clear() { std::fill_n(values, size_ * nb_component, T()); }
@@ -279,7 +277,9 @@ public:
 
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
-  template <template <typename> class C> inline void set(const C<T> & vm);
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>{}>>
+  inline void set(const C<T> & vm);
 
   /// Append the content of the other array to the current one
   void append(const Array<T> & other);
