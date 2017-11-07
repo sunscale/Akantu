@@ -32,6 +32,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include "aka_array.hh"
+#include "aka_types.hh"
 %}
 
 %include "typemaps.i"
@@ -50,12 +51,43 @@ namespace akantu {
 %include "aka_array.hh"
 
 namespace akantu {
+
+  %ignore TensorProxy::operator=;
+  %ignore TensorProxy::operator[];
+  %ignore TensorProxy::operator();
+  %ignore Tensor3Proxy::operator=;
+  %ignore Tensor3Proxy::operator[];
+  %ignore Tensor3Proxy::operator();
+  %ignore TensorStorage::operator=;
+  %ignore TensorStorage::operator[];
+  %ignore TensorStorage::operator();
+  %ignore VectorProxy::operator=;
+  %ignore VectorProxy::operator[];
+  %ignore VectorProxy::operator();
+  %ignore MatrixProxy::operator=;
+  %ignore MatrixProxy::operator[];
+  %ignore MatrixProxy::operator();
+  %ignore Matrix::operator=;
+  %ignore Matrix::operator[];
+  %ignore Matrix::operator();
+  %ignore Tensor3::operator=;
+  %ignore Tensor3::operator[];
+  %ignore Tensor3::operator();
+  %ignore Vector::operator=;
+  %ignore Vector::operator[];
+  %ignore Vector::operator();
+  %ignore Vector::solve;
+};
+
+%include "aka_types.hh"
+
+namespace akantu {
   %template(RArray) Array<akantu::Real, true>;
   %template(UArray) Array<akantu::UInt, true>;
   %template(BArray) Array<bool, true>;
-}
 
-
+  %template(RVector) Vector<akantu::Real>;
+};
 
 %include "numpy.i"
 %init %{

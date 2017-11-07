@@ -1,0 +1,222 @@
+%Copyright 2008 Guillaume ANCIAUX (guillaume.anciaux@epfl.ch)
+%
+%This file is part of ParaViewHelper.
+%
+%ParaViewHelper is free software: you can redistribute it and/or modify
+%it under the terms of the GNU General Public License as published by
+%the Free Software Foundation, either version 3 of the License, or
+%(at your option) any later version.
+%
+%ParaViewHelper is distributed in the hope that it will be useful,
+%but WITHOUT ANY WARRANTY; without even the implied warranty of
+%MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%GNU General Public License for more details.
+%
+%You should have received a copy of the GNU General Public License
+%along with ParaViewHelper.  If not, see <http://www.gnu.org/licenses/>.
+
+\chapter{\label{libuse}Library ParaViewHelper API description}
+
+The ParaViewHelper library can be used in C++/C environment. Has the library is designed in C++,
+the associated interface will be described first. Then the C wrapper will presented.
+The description of the API will always be illustrated from the example that can be found in the {\bf examples} 
+directory.
+
+\section{C++ use}
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\lstset{language=C}
+\lstset{xleftmargin=.1cm}
+\lstset{xrightmargin=.1cm}
+\lstset{backgroundcolor=\color{darkgray}}
+\lstset{keywordstyle=\color{red}\bfseries\emph}
+
+\noindent In a C++ context, to use ParaViewHelper library, one should include the necessary header file with:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+#include <dumper_paraview.h>
+\end{lstlisting}
+
+\noindent First one have to declare a ParaView dumper object. For example, an object named dumper can be
+created by:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+DumperParaview dumper;
+\end{lstlisting}
+Then the library can only work if data concerning the mesh is given. Nodal coordinates and connectivity 
+are separately forwarded to the API. In order to give the coordinates one should call the method:
+\begin{lstlisting}[frame=tbrl]
+void SetPoints(double * points,int dimension,int nb,const char * name);
+\end{lstlisting}
+where:
+\begin{itemize}
+\item {\bf points} is a pointer to a contiguous array containing the coordinates
+\item {\bf dimension} is an integer giving the dimension of the stored coordinates
+\item {\bf nb} is the number of nodes
+\item {\bf name} is the name associated with this mesh. This name will be a prefix to all generated file. \\
+\end{itemize}
+
+Such a call is made in {\it testcpp.cpp} with:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+dumper.SetPoints(positions,3,nb_nodes,"cube-mesh");
+\end{lstlisting}
+Then the connectivity should be given to the API through a call to the method:
+\begin{lstlisting}[frame=tbrl]
+void SetConnectivity(int * connectivity,int element_type,int nb_elem,int mode);
+\end{lstlisting}
+where: 
+\begin{itemize}
+\item {\bf connectivity} is a pointer to a contiguous array containing the connectivity data for 
+each element. In other words it contain the nodes connected in element 1, then in element 2, etc...
+\item {\bf element\_type} can take only for values at present time: {\it TRIANGLE1, TRIANGLE2, TETRA1 or TETRA2}
+for 1st order triangle, 2nd order triangle, 1st order tetrahedron and 2nd order tetrahedron respectively.
+\item {\bf nb\_elem} is the number of stored elements.
+\item {\bf mode} can take two values : {\it FORTRAN\_MODE} or {\it C\_MODE}. It depends wether the connectivity indexes 
+stored in the array {\bf connectivity} start at 0 or 1  (in SimulPack FORTRAN\_MODE is required).\\
+\end{itemize}
+
+In the C++ example, the call is made by:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+dumper.SetConnectivity(connectivity,TETRA2,nb_elements,FORTRAN_MODE);
+\end{lstlisting}
+
+Then an init method should simply be called in order to prepare the internal data of ParaViewHelper library:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+dumper.Init();
+\end{lstlisting}
+Now, you can dump files with a simple call like:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+dumper.Dump();
+\end{lstlisting}
+
+Each time you call {\bf Dump()} method, an internal count is incremented. This number will be used
+to name the files generated. We will see in the following sections how to modify properties of the
+generated files. ParaViewHelper API allow for instance binary of compressed output as well as other features.
+
+\section{Attaching Nodal and Elementary Data to the output}
+
+Dumping just the mesh data lack interest when most users want to see the computed fields along simulation
+steps. Then it is possible to declare fields to be dumped in the output file. In the case of nodal data the
+following method is to be used:
+
+\begin{lstlisting}[frame=tbrl]
+void AddNodeDataField(double * data,int dimension,const char * name);
+\end{lstlisting}
+where:
+\begin{itemize}
+\item {\bf data} is a pointer to the nodal data to be attached. The dimension of the represented field
+is provided by the {\bf dimension} parameter (see below).
+\item {\bf dimension} is the dimension of the stored field. It can be any value, in such a way that tensorial fields
+can be asked to be plotted by giving the appropriate value (1 in 1D, 4 in 2D, 9 in 3D).
+\item {\bf name} is the name desired to be given in the generated paraview file. The effect will only be noticed 
+once the paraview file opened. \\
+\end{itemize}
+
+For instance, if one have access to the displacement field, one can make the following call to attach 
+the displacements to the output files:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+dumper.AddNodeDataField(displacements,3,"positions");
+\end{lstlisting}
+
+Now, if the data is a per-element data, it should be attached using the method:
+\begin{lstlisting}[frame=tbrl]
+void AddElemDataField(double * data,int dimension,const char * name);
+\end{lstlisting}
+where:
+\begin{itemize}
+\item {\bf data} is a pointer to the per-element data.
+\item {\bf dimension} is the dimension of the stored field. It is to be noticed that in the case where 
+2nd order elements are used, the the data dumped to output file will be the average value over the quadrature points.
+\item {\bf name} is the name desired to be given to the field in the generated paraview file.\\
+\end{itemize}
+
+It can be useful to ``extend'' a field of dimension lower than 3D. For example, the ``Wrap'' filter provided 
+by paraview, which allow to diplace node coordinates coherently with the computed displacement field, can only
+do so with a 3D field. Then in the case where 2D simulations are run, one need to extend the displacement field
+with zeros for the z-axis. This can be done by use of the method:
+
+\begin{lstlisting}[frame=tbrl]
+void SetEmbeddedValue(const char * name,int flag);
+\end{lstlisting}
+
+where:
+\begin{itemize}
+\item {\bf name} is the name of a field to extend, accordingly the name given in a previous call to {\it AddNodeDataField}.
+\item {\bf flag} should have the value {\bf 0} or {\bf 1}. Zero means that no extension is required while one 
+request the contrary.
+\end{itemize}
+
+According to the example given in ``testcpp.cpp'', such a call should take the form:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+void SetMode(COMPRESSED|TEXT);
+\end{lstlisting}
+
+\section{Properties of the output file}
+
+There few methods, that allow users to specify properties of the output. The main one is:
+
+\begin{lstlisting}[frame=tbrl]
+void SetMode(int mode);
+\end{lstlisting}
+
+where:
+\begin{itemize}
+\item {\bf mode} is a mask composed with the values {\it TEXT, BASE64 or COMPRESSED}. 
+{\it TEXT} request a text file to be dumped. This means that numerical values will be 
+human readable. While {\it BASE64} request a base64 encoding for the numerical values.
+The data stored that way increase with a ratio of 4/3. The main purpose of that encoding is that
+it uses only alphanumeric characters, allowing sending such files with emails. To get a better
+compression {\it COMPRESSED} flag should be used to request a globally gzipped file as output. But 
+such files will have to be uncompressed to be read by paraview. The main purpose of that option 
+is to compress and transport files between a computational site and a workstation for example.
+\end{itemize}
+
+Such options are combined in a mask fashion. For instance, to request TEXT and gzipped output files 
+one should call:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+void SetMode(COMPRESSED|TEXT);
+\end{lstlisting}
+and to get a BASE64 and gzipped file:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+void SetMode(BASE64|TEXT);
+\end{lstlisting}
+
+\section{C wrapper use}
+
+\noindent Altough the library is implemented in C++, a C wrapped interface is provided. An example 
+is given in the file testc.c.
+Thus, in a C context, to use ParaViewHelper library, one should include the necessary header file with:
+\begin{lstlisting}[frame=tb,backgroundcolor=\color{white}]
+#include <dumper_paraview_C_wrapper.h>
+\end{lstlisting}
+\noindent Then, instead of creating a new object, a handle has to be requested. This handle represent 
+like a pointer to a C++ object, that will be used to invoke the methods on the right object. This call 
+is brought by the function:
+\begin{lstlisting}[frame=tbrl]
+PHelper * getNewHandle();
+\end{lstlisting}
+where {\bf PHelper} is the C structure used to store a pointer to the newly created object. \\
+
+\noindent Then all calls to C++ methods are made through the following functions, that all 
+take as first argument a Handle previously created by a call to  {\it getNewHandle}. The prototype 
+of all the wrapped functions where on purpose really similar to the C++ ones:
+\begin{lstlisting}[frame=tbrl]
+void Dump(PHelper * pH);
+void Init(PHelper * pH);
+void SetPoints(PHelper * pH,double * points,
+                            int dimension,int nb,const char * name);
+void SetConnectivity(PHelper * pH,int * connectivity,
+                                  int element_type,int nb_elem,int mode);
+void AddNodeDataField(PHelper * pH,double * data,int dimension,
+                                                 const char * name);
+void AddElemDataField(PHelper * pH,double * data,int dimension,
+                                                 const char * name);
+void SetMode(PHelper * pH,int mode);
+void SetEmbeddedValue(PHelper * ph,const char * name,int flag);
+void SetPrefix(PHelper * ph,const char * dir);
+\end{lstlisting}
+
+\section{Support}
+
+For any question, bug report or other please contact 
+\begin{lstlisting}[frame=tbrl]
+G. ANCIAUX : guillaume.anciaux@epfl.ch
+\end{lstlisting}
+

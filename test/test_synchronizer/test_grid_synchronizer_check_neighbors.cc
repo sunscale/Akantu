@@ -67,12 +67,12 @@ int main(int argc, char *argv[]) {
   initialize(argc, argv);
 
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  //  Int psize = comm.getNbProc();
+  Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
-  std::string file_ref = "neighbors_ref";
-  std::string file = file_ref;
-  std::stringstream sstr; sstr << file << "_" << prank;
+  std::string file_ref = "neighbors_ref_1_0";
+  std::string file = "neighbors_ref";
+  std::stringstream sstr; sstr << file << "_" << psize << "_" << prank;
   file = sstr.str();
 
   std::ifstream nin;
