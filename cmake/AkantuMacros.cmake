@@ -80,7 +80,7 @@ function(generate_material_list)
   try_run(_material_list_run _material_list_compile
     ${CMAKE_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/cmake/material_lister.cc
-    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
+    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}" "-DCMAKE_CXX_STANDARD=14"
     COMPILE_DEFINITIONS "-DAKANTU_CMAKE_LIST_MATERIALS"
     COMPILE_OUTPUT_VARIABLE _compile_results
     RUN_OUTPUT_VARIABLE _result_material_list)
