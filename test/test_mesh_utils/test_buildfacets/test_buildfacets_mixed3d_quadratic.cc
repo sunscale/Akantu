@@ -54,8 +54,6 @@ int main(int argc, char *argv[]) {
   mesh.read("mixed3d_quadratic.msh");
   Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
-  MeshUtils::buildAllFacets(mesh, mesh_facets);
-
   const ElementType type_facet1 = mesh.getFacetType(type1);
   const ElementType type_facet2 = mesh.getFacetType(type2);
   const ElementType type_subfacet = mesh.getFacetType(type_facet1);

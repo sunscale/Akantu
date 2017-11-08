@@ -52,8 +52,6 @@ int main(int argc, char *argv[]) {
   mesh.read("pentahedron_15.msh");
   Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
-  MeshUtils::buildAllFacets(mesh, mesh_facets);
-
   Vector<ElementType> types_facet = mesh.getAllFacetTypes(type);
   const ElementType type_subfacet = mesh.getFacetType(types_facet(0));
   const ElementType type_subsubfacet = mesh.getFacetType(type_subfacet);

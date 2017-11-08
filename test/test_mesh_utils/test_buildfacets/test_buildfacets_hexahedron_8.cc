@@ -53,8 +53,6 @@ int main(int argc, char *argv[]) {
   mesh.read("hexahedron_8.msh");
   Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
-  MeshUtils::buildAllFacets(mesh, mesh_facets);
-
   // debug::setDebugLevel(dblDump);
   // std::cout << mesh << std::endl;
   // std::cout << mesh_facets << std::endl;

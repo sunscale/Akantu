@@ -51,8 +51,6 @@ int main(int argc, char *argv[]) {
   mesh.read("quadrangle_8.msh");
   Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
-  MeshUtils::buildAllFacets(mesh, mesh_facets);
-
   const ElementType type_facet = mesh.getFacetType(type);
   const ElementType type_subfacet = mesh.getFacetType(type_facet);
 
