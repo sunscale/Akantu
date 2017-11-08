@@ -55,7 +55,7 @@ public:
   DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
   DOFManager(Mesh & mesh, const ID & id = "dof_manager",
              const MemoryID & memory_id = 0);
-  virtual ~DOFManager();
+  ~DOFManager() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -338,26 +338,24 @@ protected:
                                                 const Array<UInt> & nodes_list);
 public:
   /// function to implement to react on  akantu::NewNodesEvent
-  virtual void onNodesAdded(const Array<UInt> & nodes_list,
-                            const NewNodesEvent & event);
+  void onNodesAdded(const Array<UInt> & nodes_list,
+                    const NewNodesEvent & event) override;
   /// function to implement to react on  akantu::RemovedNodesEvent
-  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event);
+  void onNodesRemoved(const Array<UInt> & nodes_list,
+                      const Array<UInt> & new_numbering,
+                      const RemovedNodesEvent & event) override;
   /// function to implement to react on  akantu::NewElementsEvent
-  virtual void onElementsAdded(const Array<Element> & elements_list,
-                               const NewElementsEvent & event);
+  void onElementsAdded(const Array<Element> & elements_list,
+                       const NewElementsEvent & event) override;
   /// function to implement to react on  akantu::RemovedElementsEvent
-  virtual void
-  onElementsRemoved(const Array<Element> & elements_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
+  void onElementsRemoved(const Array<Element> & elements_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const RemovedElementsEvent & event) override;
   /// function to implement to react on  akantu::ChangedElementsEvent
-  virtual void
-  onElementsChanged(const Array<Element> & old_elements_list,
-                    const Array<Element> & new_elements_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const ChangedElementsEvent & event);
+  void onElementsChanged(const Array<Element> & old_elements_list,
+                         const Array<Element> & new_elements_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const ChangedElementsEvent & event) override;
 
 protected:
   struct DOFData;

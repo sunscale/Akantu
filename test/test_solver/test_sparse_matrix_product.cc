@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   const UInt spatial_dimension = 2;
   const UInt nb_dof = 2;
 
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 

@@ -66,16 +66,16 @@ public:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbData(const Array<Element> & elements,
-                                const SynchronizationTag & tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual void packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
   /* ------------------------------------------------------------------------ */
   template <bool pack_mode>
   inline void

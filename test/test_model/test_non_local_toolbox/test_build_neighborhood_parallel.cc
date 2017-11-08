@@ -39,7 +39,7 @@ using namespace akantu;
 int main(int argc, char * argv[]) {
   akantu::initialize("material_parallel_test.dat", argc, argv);
 
-  auto & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
@@ -139,7 +139,7 @@ int main(int argc, char * argv[]) {
   }
 
   Real global_min = min_distance;
-  comm.allReduce(global_min, _so_min);
+  comm.allReduce(global_min, SynchronizerOperation::_min);
 
   if (Math::are_float_equal(global_min, min_distance)) {
     UInt mat_index = model.getMaterialByElement(q_min.type, _not_ghost)

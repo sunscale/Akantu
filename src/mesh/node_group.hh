@@ -54,7 +54,7 @@ public:
 	    const Mesh & mesh,
             const std::string & id = "node_group",
             const MemoryID & memory_id = 0);
-  virtual ~NodeGroup();
+  ~NodeGroup() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

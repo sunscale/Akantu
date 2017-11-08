@@ -97,7 +97,7 @@ inline Array<Real> & DOFManager::getPreviousDOFs(const ID & dofs_id) {
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManager::hasPreviousDOFs(const ID & dofs_id) const {
-  return (this->getDOFData(dofs_id).previous != NULL);
+  return (this->getDOFData(dofs_id).previous != nullptr);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -107,7 +107,7 @@ inline Array<Real> & DOFManager::getDOFsIncrement(const ID & dofs_id) {
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManager::hasDOFsIncrement(const ID & dofs_id) const {
-  return (this->getDOFData(dofs_id).increment != NULL);
+  return (this->getDOFData(dofs_id).increment != nullptr);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -115,7 +115,7 @@ inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
                                                     UInt order) {
   std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
-  if ((order > derivatives.size()) || (derivatives[order - 1] == NULL))
+  if ((order > derivatives.size()) || (derivatives[order - 1] == nullptr))
     AKANTU_EXCEPTION("No derivatives of order " << order << " present in "
                                                 << this->id << " for dof "
                                                 << dofs_id);
@@ -128,7 +128,7 @@ inline bool DOFManager::hasDOFsDerivatives(const ID & dofs_id,
                                            UInt order) const{
   const std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
-  return ((order < derivatives.size()) && (derivatives[order - 1] != NULL));
+  return ((order < derivatives.size()) && (derivatives[order - 1] != nullptr));
 }
 
 /* -------------------------------------------------------------------------- */

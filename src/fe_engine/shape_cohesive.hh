@@ -60,7 +60,7 @@ public:
   ShapeLagrange(const Mesh & mesh, const ID & id = "shape_cohesive",
                 const MemoryID & memory_id = 0);
 
-  virtual ~ShapeLagrange() = default;
+  ~ShapeLagrange() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

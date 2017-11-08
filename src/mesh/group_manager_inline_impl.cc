@@ -50,8 +50,8 @@ dumper::Field * GroupManager::createElementalField(
     ElementTypeMap<UInt> nb_data_per_elem) {
 
   const ElementTypeMapArray<T> * field_ptr = &field;
-  if (field_ptr == NULL)
-    return NULL;
+  if (field_ptr == nullptr)
+    return nullptr;
   if (group_name == "all")
     return this->createElementalField<dump_type<false> >(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
@@ -69,8 +69,8 @@ dumper::Field * GroupManager::createElementalField(
     ElementTypeMap<UInt> nb_data_per_elem) {
 
   const ElementTypeMapArray<T> * field_ptr = &field;
-  if (field_ptr == NULL)
-    return NULL;
+  if (field_ptr == nullptr)
+    return nullptr;
   if (group_name == "all")
     return this->createElementalField<dump_type<T, T2, false> >(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
@@ -90,8 +90,8 @@ GroupManager::createElementalField(const ElementTypeMapArray<T> & field,
                                    ElementTypeMap<UInt> nb_data_per_elem) {
   const ElementTypeMapArray<T> * field_ptr = &field;
 
-  if (field_ptr == NULL)
-    return NULL;
+  if (field_ptr == nullptr)
+    return nullptr;
   if (group_name == "all")
     return this->createElementalField<dump_type<T, false> >(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
@@ -108,8 +108,8 @@ dumper::Field * GroupManager::createElementalField(
     UInt spatial_dimension, const ElementKind & kind,
     ElementTypeMap<UInt> nb_data_per_elem) {
   const field_type * field_ptr = &field;
-  if (field_ptr == NULL)
-    return NULL;
+  if (field_ptr == nullptr)
+    return nullptr;
   if (group_name != "all")
     throw;
 
@@ -128,8 +128,8 @@ dumper::Field * GroupManager::createElementalFilteredField(
     ElementTypeMap<UInt> nb_data_per_elem) {
 
   const field_type * field_ptr = &field;
-  if (field_ptr == NULL)
-    return NULL;
+  if (field_ptr == nullptr)
+    return nullptr;
   if (group_name == "all")
     throw;
 
@@ -156,11 +156,11 @@ dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
                                                const std::string & group_name,
                                                UInt padding_size) {
 
-  if (field == NULL)
-    return NULL;
+  if (field == nullptr)
+    return nullptr;
   if (group_name == "all") {
     typedef typename dumper::NodalField<type, false> DumpType;
-    DumpType * dumper = new DumpType(*field, 0, 0, NULL);
+    DumpType * dumper = new DumpType(*field, 0, 0, nullptr);
     dumper->setPadding(padding_size);
     return dumper;
   } else {
@@ -171,7 +171,7 @@ dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
     dumper->setPadding(padding_size);
     return dumper;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -183,7 +183,7 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
                                       UInt stride, UInt padding_size) {
 
   if (field == NULL)
-    return NULL;
+    return nullptr;
   if (group_name == "all") {
     typedef typename dumper::NodalField<type, false> DumpType;
     DumpType * dumper = new DumpType(*field, size, stride, NULL);
@@ -197,7 +197,7 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
     dumper->setPadding(padding_size);
     return dumper;
   }
-  return NULL;
+  return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */

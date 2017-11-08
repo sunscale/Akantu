@@ -77,7 +77,7 @@ public:
   Model(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
         const ID & id = "model", const MemoryID & memory_id = 0);
 
-  virtual ~Model();
+  ~Model() override;
 
   typedef std::map<std::string, std::unique_ptr<FEEngine>> FEEngineMap;
 
@@ -105,7 +105,7 @@ protected:
   // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
   //                                      UInt dimension);
   /// function to print the containt of the class
-  virtual void printself(std::ostream &, int = 0) const {};
+  void printself(std::ostream &, int = 0) const override{};
 
   // /// initialize the model for PBC
   // void setPBC(UInt x, UInt y, UInt z);
@@ -270,21 +270,21 @@ public:
   createNodalFieldReal(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
-    return NULL;
+    return nullptr;
   }
 
   virtual dumper::Field *
   createNodalFieldUInt(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
-    return NULL;
+    return nullptr;
   }
 
   virtual dumper::Field *
   createNodalFieldBool(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
-    return NULL;
+    return nullptr;
   }
 
   virtual dumper::Field *
@@ -293,7 +293,7 @@ public:
                        __attribute__((unused)) bool padding_flag,
                        __attribute__((unused)) const UInt & spatial_dimension,
                        __attribute__((unused)) const ElementKind & kind) {
-    return NULL;
+    return nullptr;
   }
 
   void setDirectory(const std::string & directory);

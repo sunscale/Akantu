@@ -54,7 +54,7 @@ public:
                         NonLinearSolver & non_linear_solver, const ID & id,
                         UInt memory_id);
 
-  virtual ~TimeStepSolverDefault();
+  ~TimeStepSolverDefault() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

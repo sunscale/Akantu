@@ -786,7 +786,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       Int index;
       UInt msh_type;
       ElementType akantu_type, akantu_type_old = _not_defined;
-      Array<UInt> * connectivity = NULL;
+      Array<UInt> * connectivity = nullptr;
       UInt node_per_element = 0;
 
       for (UInt i = 0; i < nb_elements; ++i) {

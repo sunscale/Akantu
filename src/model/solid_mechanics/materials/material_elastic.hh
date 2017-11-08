@@ -67,7 +67,7 @@ public:
   MaterialElastic(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                   FEEngine & fe_engine, const ID & id = "");
 
-  virtual ~MaterialElastic() {}
+  ~MaterialElastic() override {}
 
 protected:
   void initialize();
@@ -76,7 +76,7 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type,
@@ -91,15 +91,15 @@ public:
   void computePotentialEnergy(ElementType el_type,
                               GhostType ghost_type = _not_ghost) override;
 
-  virtual void
+  void
   computePotentialEnergyByElement(ElementType type, UInt index,
-                                  Vector<Real> & epot_on_quad_points);
+                                  Vector<Real> & epot_on_quad_points) override;
 
   /// compute the p-wave speed in the material
   Real getPushWaveSpeed(const Element & element) const override;
 
   /// compute the s-wave speed in the material
-  virtual Real getShearWaveSpeed(const Element & element) const;
+  Real getShearWaveSpeed(const Element & element) const override;
 
 protected:
   /// constitutive law for a given quadrature point
@@ -111,13 +111,13 @@ protected:
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
 
   /// recompute the lame coefficient if E or nu changes
-  virtual void updateInternalParameters();
+  void updateInternalParameters() override;
 
   static inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
                                                   const Matrix<Real> & sigma,
                                                   Real & epot);
 
-  virtual bool hasStiffnessMatrixChanged() {
+  bool hasStiffnessMatrixChanged() override {
     return (! was_stiffness_assembled);
   }
 

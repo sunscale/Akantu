@@ -31,7 +31,7 @@
 #include "data_accessor.hh"
 #include "mesh.hh"
 #include "node_synchronizer.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <limits>
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   if (prank == 0)

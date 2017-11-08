@@ -47,7 +47,7 @@ namespace akantu {
 class Parsable : public ParameterRegistry {
 public:
   Parsable(const SectionType & section_type, const ID & id = std::string());
-  virtual ~Parsable();
+  ~Parsable() override;
 
   /// Add subsection to the sub_sections map
   void registerSubSection(const SectionType & type, const std::string & name,

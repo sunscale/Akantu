@@ -57,7 +57,7 @@ public:
   };
 
   IntegrationScheme(DOFManager & dof_manager, const ID & dof_id, UInt order);
-  virtual ~IntegrationScheme() = default;
+  ~IntegrationScheme() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

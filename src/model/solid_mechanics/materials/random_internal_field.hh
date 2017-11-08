@@ -54,7 +54,7 @@ class RandomInternalField : public BaseField<T> {
 public:
   RandomInternalField(const ID & id, Material & material);
 
-  virtual ~RandomInternalField();
+  ~RandomInternalField() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -65,19 +65,19 @@ public:
   AKANTU_GET_MACRO(RandomParameter, random_parameter, const RandomParameter<T>);
 
   /// initialize the field to a given number of component
-  virtual void initialize(UInt nb_component);
+  void initialize(UInt nb_component) override;
 
   /// set the field to a given value
-  void setDefaultValue(const T & value);
+  void setDefaultValue(const T & value) override;
 
   /// set the specified random distribution to a given parameter
   void setRandomDistribution(const RandomParameter<T> & param);
 
   /// print the content
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 protected:
-  virtual void setArrayValues(T * begin, T * end);
+  void setArrayValues(T * begin, T * end) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

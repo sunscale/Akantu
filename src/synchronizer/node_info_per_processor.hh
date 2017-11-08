@@ -81,9 +81,9 @@ public:
                         UInt message_cnt,
                         UInt root);
 
-  void synchronizeNodes();
-  void synchronizeTypes();
-  void synchronizeGroups();
+  void synchronizeNodes() override;
+  void synchronizeTypes() override;
+  void synchronizeGroups() override;
 
 private:
   /// get the list of nodes to send and send them
@@ -98,9 +98,9 @@ public:
                        UInt message_cnt,
                        UInt root);
 
-  void synchronizeNodes();
-  void synchronizeTypes();
-  void synchronizeGroups();
+  void synchronizeNodes() override;
+  void synchronizeTypes() override;
+  void synchronizeGroups() override;
 
 private:
 };

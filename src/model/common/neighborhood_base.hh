@@ -59,7 +59,7 @@ public:
                    const ElementTypeMapArray<Real> & quad_coordinates,
                    const ID & id = "neighborhood",
                    const MemoryID & memory_id = 0);
-  virtual ~NeighborhoodBase();
+  ~NeighborhoodBase() override;
 
   typedef std::vector<std::pair<IntegrationPoint, IntegrationPoint>> PairList;
 

@@ -32,7 +32,7 @@
 #include <cstdlib>
 #include <fstream>
 /* -------------------------------------------------------------------------- */
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "aka_common.hh"
 #include "aka_csr.hh"
 #include "mesh.hh"
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   UInt spatial_dimension = 2;
 
 
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm = akantu::Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 

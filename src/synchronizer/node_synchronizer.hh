@@ -47,7 +47,7 @@ public:
                    const bool register_to_event_manager = true,
                    EventHandlerPriority event_priority = _ehp_synchronizer);
 
-  virtual ~NodeSynchronizer();
+  ~NodeSynchronizer() override;
 
   friend class NodeInfoPerProc;
 
@@ -73,7 +73,9 @@ public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
 protected:
-  Int getRank(const UInt & /*node*/) const override final { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  Int getRank(const UInt & /*node*/) const final {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
 
 protected:
   Mesh & mesh;

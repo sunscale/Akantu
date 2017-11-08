@@ -62,7 +62,7 @@ public:
   SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
                const ID & id = "solver", const MemoryID & memory_id = 0);
 
-  virtual ~SparseSolver();
+  ~SparseSolver() override;
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -87,9 +87,9 @@ public:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onCommunicatorFinalize();
+  void onCommunicatorFinalize() override;
 
-// inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
+  // inline virtual UInt getNbDataForDOFs(const Array<UInt> & dofs,
   //                                      SynchronizationTag tag) const;
 
   // inline virtual void packDOFData(CommunicationBuffer & buffer,

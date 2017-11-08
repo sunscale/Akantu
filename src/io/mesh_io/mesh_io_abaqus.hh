@@ -42,10 +42,10 @@ namespace akantu {
 class MeshIOAbaqus : public MeshIO {
 public:
   MeshIOAbaqus();
-  virtual ~MeshIOAbaqus();
+  ~MeshIOAbaqus() override;
 
   /// read a mesh from the file
-  virtual void read(const std::string & filename, Mesh & mesh);
+  void read(const std::string & filename, Mesh & mesh) override;
 
   /// write a mesh to a file
   //  virtual void write(const std::string & filename, const Mesh & mesh);

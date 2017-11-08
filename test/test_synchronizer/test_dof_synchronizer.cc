@@ -35,7 +35,7 @@
 #include "element_synchronizer.hh"
 #include "mesh_io.hh"
 #include "mesh_partition_scotch.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
@@ -50,8 +50,8 @@ int main(int argc, char * argv[]) {
 
   initialize(argc, argv);
 
-  StaticCommunicator & comm =
-      akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm =
+      akantu::Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);

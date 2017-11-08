@@ -125,13 +125,13 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <typename V> void setTyped(const V & value);
-  void setAuto(const ParserParameter & param);
+  void setAuto(const ParserParameter & param) override;
   T & getTyped();
   const T & getTyped() const;
 
-  virtual void printself(std::ostream & stream) const;
+  void printself(std::ostream & stream) const override;
 
-  inline operator Real() const;
+  inline operator Real() const override;
 
   inline const std::type_info& type() const override { return typeid(T); }
 private:

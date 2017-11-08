@@ -157,8 +157,8 @@ void SolidMechanicsModelCohesive::packUnpackFacetStressDataHelper(
   bool element_rank = 0;
   Mesh & mesh_facets = inserter->getMeshFacets();
 
-  Array<T> * vect = NULL;
-  Array<std::vector<Element>> * element_to_facet = NULL;
+  Array<T> * vect = nullptr;
+  Array<std::vector<Element>> * element_to_facet = nullptr;
 
   auto & fe_engine = this->getFEEngine("FacetsFEEngine");
   for (auto && el : elements) {

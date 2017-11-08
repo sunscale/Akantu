@@ -389,7 +389,7 @@ void Communicator::allGatherVImpl(T * values, int * nb_values) const {
 template <typename T>
 void Communicator::gatherImpl(T * values, int nb_values, int root) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  T *send_buf = NULL, *recv_buf = NULL;
+  T *send_buf = nullptr, *recv_buf = nullptr;
   if (prank == root) {
     send_buf = (T *)MPI_IN_PLACE;
     recv_buf = values;
@@ -431,7 +431,7 @@ void Communicator::gatherVImpl(T * values, int * nb_values, int root) const {
     }
   }
 
-  T *send_buf = NULL, *recv_buf = NULL;
+  T *send_buf = nullptr, *recv_buf = nullptr;
   if (prank == root) {
     send_buf = (T *)MPI_IN_PLACE;
     recv_buf = values;

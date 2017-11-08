@@ -46,7 +46,7 @@ public:
   PlaneStressToolbox(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                      FEEngine & fe_engine, const ID & id = "");
 
-  virtual ~PlaneStressToolbox() {}
+  ~PlaneStressToolbox() override {}
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ThirdAxisDeformation,
                                          third_axis_deformation, Real);
@@ -62,7 +62,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  virtual void initMaterial() {
+  void initMaterial() override {
 
     ParentMaterial::initMaterial();
     if (this->plane_stress && this->initialize_third_axis_deformation) {
@@ -72,7 +72,7 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  virtual void computeStress(ElementType el_type, GhostType ghost_type) {
+  void computeStress(ElementType el_type, GhostType ghost_type) override {
     ParentMaterial::computeStress(el_type, ghost_type);
     if (this->plane_stress)
       computeThirdAxisDeformation(el_type, ghost_type);
@@ -82,7 +82,7 @@ public:
   virtual void computeThirdAxisDeformation(ElementType, GhostType) {}
 
   /// Computation of Cauchy stress tensor in the case of finite deformation
-  virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) {
+  void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) override {
     AKANTU_DEBUG_IN();
 
     if (this->plane_stress) {

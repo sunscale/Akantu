@@ -46,7 +46,7 @@ public:
       const ID & id = "synchronizer", MemoryID memory_id = 0,
       const Communicator & comm = Communicator::getStaticCommunicator());
 
-  virtual ~SynchronizerImpl(){};
+  ~SynchronizerImpl() override{};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

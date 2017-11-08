@@ -42,10 +42,11 @@ template<typename T>
 class CohesiveInternalField : public InternalField<T> {
 public:
   CohesiveInternalField(const ID & id, Material & material);
-  virtual ~CohesiveInternalField();
+  ~CohesiveInternalField() override;
 
   /// initialize the field to a given number of component
-  void initialize(UInt nb_component);
+  void initialize(UInt nb_component) override;
+
 private:
   CohesiveInternalField operator=(__attribute__((unused)) const CohesiveInternalField & other) {};
 
@@ -59,10 +60,10 @@ template<typename T>
 class FacetInternalField : public InternalField<T> {
 public:
   FacetInternalField(const ID & id, Material & material);
-  virtual ~FacetInternalField();
+  ~FacetInternalField() override;
 
   /// initialize the field to a given number of component
-  void initialize(UInt nb_component);
+  void initialize(UInt nb_component) override;
 };
 
 } // akantu

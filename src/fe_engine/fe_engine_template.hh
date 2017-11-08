@@ -74,7 +74,7 @@ public:
   FEEngineTemplate(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
                    ID id = "fem", MemoryID memory_id = 0);
 
-  virtual ~FEEngineTemplate();
+  ~FEEngineTemplate() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -102,9 +102,8 @@ public:
             const Array<UInt> & filter_elements = empty_filter) const override;
 
   /// integrate one element scalar value on all elements of type "type"
-  virtual Real
-  integrate(const Vector<Real> & f, const ElementType & type, UInt index,
-            const GhostType & ghost_type = _not_ghost) const override;
+  Real integrate(const Vector<Real> & f, const ElementType & type, UInt index,
+                 const GhostType & ghost_type = _not_ghost) const override;
 
   /// integrate partially around an integration point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
@@ -161,13 +160,15 @@ public:
   /// by_element_type
   void interpolateOnIntegrationPoints(
       const Array<Real> & u, ElementTypeMapArray<Real> & uq,
-      const ElementTypeMapArray<UInt> * filter_elements = NULL) const override;
+      const ElementTypeMapArray<UInt> * filter_elements =
+          nullptr) const override;
 
   /// compute the position of integration points given by an element_type_map
   /// from nodes position
   inline void computeIntegrationPointsCoordinates(
       ElementTypeMapArray<Real> & quadrature_points_coordinates,
-      const ElementTypeMapArray<UInt> * filter_elements = NULL) const override;
+      const ElementTypeMapArray<UInt> * filter_elements =
+          nullptr) const override;
 
   /// compute the position of integration points from nodes position
   inline void computeIntegrationPointsCoordinates(
@@ -201,7 +202,8 @@ public:
       const ElementTypeMapArray<Real> & interpolation_points_coordinates,
       ElementTypeMapArray<Real> & interpolation_points_coordinates_matrices,
       ElementTypeMapArray<Real> & quad_points_coordinates_inv_matrices,
-      const ElementTypeMapArray<UInt> * element_filter = NULL) const override;
+      const ElementTypeMapArray<UInt> * element_filter =
+          nullptr) const override;
 
   /// find natural coords from real coords provided an element
   void inverseMap(const Vector<Real> & real_coords, UInt element,

@@ -145,9 +145,9 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
   AKANTU_DEBUG_ASSERT(it != fems_boundary.end(), "The FEEngine boundary  "
                                                      << tmp_name
                                                      << " is not registered");
-  AKANTU_DEBUG_ASSERT(it->second != NULL, "The FEEngine boundary "
-                                              << tmp_name
-                                              << " was not created");
+  AKANTU_DEBUG_ASSERT(it->second != nullptr, "The FEEngine boundary "
+                                                 << tmp_name
+                                                 << " was not created");
 
   AKANTU_DEBUG_OUT();
   return *(it->second);

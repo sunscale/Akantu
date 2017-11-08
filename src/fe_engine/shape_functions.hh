@@ -50,7 +50,7 @@ class ShapeFunctions : protected Memory {
 public:
   ShapeFunctions(const Mesh & mesh, const ID & id = "shape",
                  const MemoryID & memory_id = 0);
-  virtual ~ShapeFunctions() = default;
+  ~ShapeFunctions() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

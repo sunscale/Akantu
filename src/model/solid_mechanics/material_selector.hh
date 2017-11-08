@@ -71,7 +71,7 @@ public:
   explicit DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index)
       : material_index(material_index) {}
 
-  UInt operator()(const Element & element) {
+  UInt operator()(const Element & element) override {
     if (not material_index.exists(element.type, element.ghost_type))
       return fallback_value;
 
@@ -109,7 +109,7 @@ public:
     return data;
   }
 
-  inline UInt operator()(const Element & element) {
+  inline UInt operator()(const Element & element) override {
     return MaterialSelector::operator()(element);
   }
 

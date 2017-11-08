@@ -55,7 +55,7 @@ public:
                     const MemoryID & memory_id = 0);
   DOFManagerDefault(Mesh & mesh, const ID & id = "dof_manager_default",
                     const MemoryID & memory_id = 0);
-  virtual ~DOFManagerDefault();
+  ~DOFManagerDefault() override;
 
 protected:
   struct DOFDataDefault : public DOFData {

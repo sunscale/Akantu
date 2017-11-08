@@ -86,7 +86,7 @@ void DOFManager::assembleElementalArrayLocalArray(
   UInt nb_degree_of_freedom =
       elementary_vect.getNbComponent() / nb_nodes_per_element;
 
-  UInt * filter_it = NULL;
+  UInt * filter_it = nullptr;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
     filter_it = filter_elements.storage();
@@ -110,7 +110,7 @@ void DOFManager::assembleElementalArrayLocalArray(
 
   for (UInt el = 0; el < nb_element; ++el, ++elem_it) {
     UInt element = el;
-    if (filter_it != NULL) {
+    if (filter_it != nullptr) {
       // conn_it = conn_begin + *filter_it;
       element = *filter_it;
     }
@@ -125,7 +125,7 @@ void DOFManager::assembleElementalArrayLocalArray(
       assemble.aXplusY(elem_val, scale_factor);
     }
 
-    if (filter_it != NULL)
+    if (filter_it != nullptr)
       ++filter_it;
     //    else
     //      ++conn_it;
@@ -185,8 +185,8 @@ void DOFManager::assembleElementalArrayToLumpedMatrix(
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData::DOFData(const ID & dof_id)
-    : support_type(_dst_generic), group_support("__mesh__"), dof(NULL),
-      blocked_dofs(NULL), increment(NULL), previous(NULL),
+    : support_type(_dst_generic), group_support("__mesh__"), dof(nullptr),
+      blocked_dofs(nullptr), increment(nullptr), previous(nullptr),
       solution(0, 1, dof_id + ":solution"),
       local_equation_number(0, 1, dof_id + ":local_equation_number") {}
 
@@ -221,7 +221,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
     UInt nb_nodes = 0;
     const ID & group = dofs_storage.group_support;
 
-    NodeGroup * node_group = NULL;
+    NodeGroup * node_group = nullptr;
     if (group == "__mesh__") {
       nb_nodes = this->mesh->getNbNodes();
     } else {
@@ -285,7 +285,7 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
 void DOFManager::registerDOFsPrevious(const ID & dof_id, Array<Real> & array) {
   DOFData & dof = this->getDOFData(dof_id);
 
-  if (dof.previous != NULL) {
+  if (dof.previous != nullptr) {
     AKANTU_EXCEPTION("The previous dofs array for "
                      << dof_id << " has already been registered");
   }
@@ -297,7 +297,7 @@ void DOFManager::registerDOFsPrevious(const ID & dof_id, Array<Real> & array) {
 void DOFManager::registerDOFsIncrement(const ID & dof_id, Array<Real> & array) {
   DOFData & dof = this->getDOFData(dof_id);
 
-  if (dof.increment != NULL) {
+  if (dof.increment != nullptr) {
     AKANTU_EXCEPTION("The dofs increment array for "
                      << dof_id << " has already been registered");
   }
@@ -312,9 +312,9 @@ void DOFManager::registerDOFsDerivative(const ID & dof_id, UInt order,
   std::vector<Array<Real> *> & derivatives = dof.dof_derivatives;
 
   if (derivatives.size() < order) {
-    derivatives.resize(order, NULL);
+    derivatives.resize(order, nullptr);
   } else {
-    if (derivatives[order - 1] != NULL) {
+    if (derivatives[order - 1] != nullptr) {
       AKANTU_EXCEPTION("The dof derivatives of order "
                        << order << " already been registered for this dof ("
                        << dof_id << ")");
@@ -329,7 +329,7 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
                                      Array<bool> & blocked_dofs) {
   DOFData & dof = this->getDOFData(dof_id);
 
-  if (dof.blocked_dofs != NULL) {
+  if (dof.blocked_dofs != nullptr) {
     AKANTU_EXCEPTION("The blocked dofs array for "
                      << dof_id << " has already been registered");
   }

@@ -64,7 +64,7 @@ void SolidMechanicsModel::assembleMassLumped() {
 
   UInt nb_nodes = mesh.getNbNodes();
 
-  if (this->mass == NULL) {
+  if (this->mass == nullptr) {
     std::stringstream sstr_mass;
     sstr_mass << id << ":mass";
     mass =

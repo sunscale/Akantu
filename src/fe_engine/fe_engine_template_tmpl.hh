@@ -495,7 +495,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
         const ElementTypeMapArray<UInt> * filter_elements) const {
   AKANTU_DEBUG_IN();
 
-  const Array<UInt> * filter = NULL;
+  const Array<UInt> * filter = nullptr;
 
   for (auto ghost_type : ghost_types) {
     for (auto & type : uq.elementTypes(_all_dimensions, ghost_type, kind)) {
@@ -826,10 +826,10 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
  */
 template <ElementKind kind> struct InverseMapHelper {
   template <class S>
-  static void call(const S & shape_functions, const Vector<Real> & real_coords,
-                   UInt element, const ElementType & type,
-                   Vector<Real> & natural_coords,
-                   const GhostType & ghost_type) {
+  static void call(const S & /*shape_functions*/, const Vector<Real> & /*real_coords*/,
+                   UInt /*element*/, const ElementType & /*type*/,
+                   Vector<Real> & /*natural_coords*/,
+                   const GhostType & /*ghost_type*/) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };

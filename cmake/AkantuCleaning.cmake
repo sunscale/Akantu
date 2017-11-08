@@ -47,6 +47,13 @@ find_program(CLANG_TIDY "clang-tidy")
 mark_as_advanced(CLANG_TIDY)
 macro(register_target_to_tidy target)
   if(CLANG_TIDY)
+    option(AKANTU_CLANG_TIDY_AUTOFIX OFF)
+    mark_as_advanced(AKANTU_CLANG_TIDY_AUTOFIX)
+
+    set(_autofix_option)
+    if(AKANTU_CLANG_TIDY_AUTOFIX)
+      set(_autofix_option -fix)
+    endif()
     get_target_property(_sources ${target} SOURCES)
 
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
@@ -65,6 +72,7 @@ macro(register_target_to_tidy target)
         COMMAND ${CLANG_TIDY}
          -p=${PROJECT_BINARY_DIR}
          -export-fixes=${PROJECT_BINARY_DIR}/clang-tidy/${_src}.yaml
+         ${_autofix_option}
         ${_src}
         COMMENT "Tidying ${_src}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

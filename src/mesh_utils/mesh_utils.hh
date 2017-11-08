@@ -208,10 +208,10 @@ private:
 #endif
 
   /// update elemental connectivity after doubling a node
-  inline static void
-  updateElementalConnectivity(Mesh & mesh, UInt old_node, UInt new_node,
-                              const std::vector<Element> & element_list,
-                              const std::vector<Element> * facet_list = NULL);
+  inline static void updateElementalConnectivity(
+      Mesh & mesh, UInt old_node, UInt new_node,
+      const std::vector<Element> & element_list,
+      const std::vector<Element> * facet_list = nullptr);
 
   /// double middle nodes if facets are _segment_3
   template <bool third_dim_segments>

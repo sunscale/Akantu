@@ -63,7 +63,7 @@ public:
                    const bool register_to_event_manager = true,
                    EventHandlerPriority event_priority = _ehp_synchronizer);
 
-  virtual ~GridSynchronizer() = default;
+  ~GridSynchronizer() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

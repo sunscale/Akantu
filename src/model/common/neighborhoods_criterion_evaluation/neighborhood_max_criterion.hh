@@ -48,7 +48,7 @@ public:
                            const ID & criterion_id,
                            const ID & id = "neighborhood_max_criterion",
                            const MemoryID & memory_id = 0);
-  virtual ~NeighborhoodMaxCriterion();
+  ~NeighborhoodMaxCriterion() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -56,10 +56,10 @@ public:
 
 public:
   /// initialize the neighborhood
-  virtual void initNeighborhood();
+  void initNeighborhood() override;
 
   /// create grid synchronizer and exchange ghost cells
-  virtual void createGridSynchronizer();
+  void createGridSynchronizer() override;
 
   /// find the quads which have the maximum criterion in their neighborhood
   void findMaxQuads(std::vector<IntegrationPoint> & max_quads);

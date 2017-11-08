@@ -59,7 +59,7 @@ static inline std::string to_upper(const std::string & str) {
 /* -------------------------------------------------------------------------- */
 /* ArgumentParser                                                             */
 /* -------------------------------------------------------------------------- */
-ArgumentParser::ArgumentParser() : external_exit(NULL), prank(0), psize(1) {
+ArgumentParser::ArgumentParser() : external_exit(nullptr), prank(0), psize(1) {
   this->addArgument("-h;--help", "show this help message and exit", 0, _boolean,
                     false, true);
 }
@@ -218,7 +218,8 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
 static char * strdup(const char * str) {
   size_t len = strlen(str);
   char *x = (char *)malloc(len+1); /* 1 for the null terminator */
-  if(!x) return NULL; /* malloc could not allocate memory */
+  if(!x)
+    return nullptr;    /* malloc could not allocate memory */
   memcpy(x,str,len+1); /* copy the string into the new buffer */
   return x;
 }
@@ -260,7 +261,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
     ArgumentKeyMap::iterator key_it = key_args.find(arg);
 
     bool is_positional = false;
-    _Argument * argument_ptr = NULL;
+    _Argument * argument_ptr = nullptr;
     if (key_it == key_args.end()) {
       if (positional_queue.empty()) {
         if (stop_in_not_parsed)
@@ -288,7 +289,8 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
       break; // "?"
     case _at_least_one:
       min_nb_val = 1; // "+"
-      // [[fallthrough]]; un-comment when compiler will get it
+      /* FALLTHRU */
+      /* [[fallthrough]]; un-comment when compiler will get it*/
     case _any:
       max_nb_val = argc - current_position;
       break; // "*"
@@ -468,7 +470,8 @@ void ArgumentParser::print_usage_nargs(std::ostream & stream,
     break;
   case _at_least_one:
     stream << " " << u_name;
-    // [[fallthrough]]; un-comment when compiler will get it
+    /* FALLTHRU */
+    /* [[fallthrough]]; un-comment when compiler will get it */
   case _any:
     stream << " [" << u_name << " ...]";
     break;

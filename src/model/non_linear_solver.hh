@@ -53,7 +53,7 @@ public:
   NonLinearSolver(DOFManager & dof_manager,
                   const NonLinearSolverType & non_linear_solver_type,
                   const ID & id = "non_linear_solver", UInt memory_id = 0);
-  virtual ~NonLinearSolver();
+  ~NonLinearSolver() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

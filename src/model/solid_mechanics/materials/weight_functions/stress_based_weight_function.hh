@@ -51,9 +51,9 @@ public:
   /* -------------------------------------------------------------------------- */
   /* Base Weight Function inherited methods                                     */
   /* -------------------------------------------------------------------------- */
-  void init();
+  void init() override;
 
-  virtual inline void updateInternals();
+  inline void updateInternals() override;
 
   void updatePrincipalStress(GhostType ghost_type);
 

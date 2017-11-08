@@ -180,7 +180,7 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
 
   ///  normalize the weights
   for (auto ghost_type : ghost_types) {
-    foreach_weight(ghost_type, [this, &quadrature_points_volumes](
+    foreach_weight(ghost_type, [&](
                                    const auto & q1, const auto & q2,
                                    auto & weight) {
       auto & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);

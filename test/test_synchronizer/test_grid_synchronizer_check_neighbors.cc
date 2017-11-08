@@ -33,7 +33,7 @@
 #include <string>
 
 #include "aka_common.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 
 using namespace akantu;
 
@@ -66,7 +66,7 @@ void readNeighbors(std::ifstream & nin,
 int main(int argc, char *argv[]) {
   initialize(argc, argv);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 

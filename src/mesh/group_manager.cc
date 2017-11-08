@@ -238,7 +238,7 @@ ElementGroup & GroupManager::createFilteredElementGroup(
     const NodeGroup & node_group, T & filter) {
   AKANTU_DEBUG_IN();
 
-  ElementGroup * element_group = NULL;
+  ElementGroup * element_group = nullptr;
 
   if (T::type == FilterFunctor::_node_filter_functor) {
     NodeGroup & filtered_node_group = this->createFilteredNodeGroup(
@@ -411,7 +411,7 @@ public:
 private:
   /// functions for parallel communications
   inline UInt getNbData(const Array<Element> & elements,
-                        const SynchronizationTag & tag) const {
+                        const SynchronizationTag & tag) const override {
     if (tag == _gst_gm_clusters)
       return elements.size() * sizeof(UInt);
 
@@ -420,7 +420,7 @@ private:
 
   inline void packData(CommunicationBuffer & buffer,
                        const Array<Element> & elements,
-                       const SynchronizationTag & tag) const {
+                       const SynchronizationTag & tag) const override {
     if (tag != _gst_gm_clusters)
       return;
 
@@ -439,7 +439,7 @@ private:
 
   inline void unpackData(CommunicationBuffer & buffer,
                          const Array<Element> & elements,
-                         const SynchronizationTag & tag) {
+                         const SynchronizationTag & tag) override {
     if (tag != _gst_gm_clusters)
       return;
 

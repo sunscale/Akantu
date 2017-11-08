@@ -54,6 +54,11 @@ public:
   void initModel() override {}
 
   MatrixType getMatrixType(const ID &) override { return _mt_not_defined; }
+  std::tuple<ID, TimeStepSolverType>
+  getDefaultSolverID(const AnalysisMethod & /*method*/) {
+    return {"test", _tsst_static};
+  }
+
   void assembleMatrix(const ID &) override {}
   void assembleLumpedMatrix(const ID &) override {}
   void assembleResidual() override {}
@@ -81,7 +86,6 @@ public:
 
     IntegrationPoint q;
     q.ghost_type = ghost_type;
-    q.kind = _ek_regular;
     q.global_num = 0;
 
     auto & neighborhood = manager.getNeighborhood("test_region");

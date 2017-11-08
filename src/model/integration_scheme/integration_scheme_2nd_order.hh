@@ -52,7 +52,7 @@ public:
   IntegrationScheme2ndOrder(DOFManager & dof_manager, const ID & dof_id)
       : IntegrationScheme(dof_manager, dof_id, 2){};
 
-  virtual ~IntegrationScheme2ndOrder() = default;
+  ~IntegrationScheme2ndOrder() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

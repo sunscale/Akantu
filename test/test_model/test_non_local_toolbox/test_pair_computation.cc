@@ -45,8 +45,7 @@ int main(int argc, char * argv[]) {
   // some configuration variables
   const UInt spatial_dimension = 2;
 
-  StaticCommunicator & comm =
-      akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   // mesh creation and read
@@ -156,8 +155,6 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
       mesh.lastType(spatial_dimension, _not_ghost, kind);
   IntegrationPoint q1;
   IntegrationPoint q2;
-  q1.kind = kind;
-  q2.kind = kind;
   GhostType ghost_type_1 = _not_ghost;
   q1.ghost_type = ghost_type_1;
   Vector<Real> q1_coords(spatial_dimension);

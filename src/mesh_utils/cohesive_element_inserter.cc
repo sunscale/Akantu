@@ -46,8 +46,6 @@ CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh, bool is_extrinsic,
       insertion_facets("insertion_facets", id),
       insertion_limits(mesh.getSpatialDimension(), 2),
       check_facets("check_facets", id) {
-
-  MeshUtils::buildAllFacets(mesh, mesh_facets, 0);
   init(is_extrinsic);
 }
 

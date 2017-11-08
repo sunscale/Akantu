@@ -153,6 +153,7 @@ BOOST_PP_SEQ_FOR_EACH(AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE, _,
 /* -------------------------------------------------------------------------- */
 template <class T> class RandomDistribution {
 public:
+  virtual ~RandomDistribution() = default;
   virtual T operator()(RandomGenerator<UInt> & gen) = 0;
   virtual std::unique_ptr<RandomDistribution<T>> make_unique() const = 0;
   virtual void printself(std::ostream & stream, int = 0) const = 0;
@@ -216,6 +217,8 @@ public:
     type = other.type;
     return *this;
   }
+
+  virtual ~RandomParameter() = default;
 
   inline void setBaseValue(const T & value) { this->base_value = value; }
   inline T getBaseValue() const { return this->base_value; }

@@ -47,7 +47,7 @@ public:
   DumperParaview(const std::string & filename,
                  const std::string & directory = "./paraview",
                  bool parallel = true);
-  virtual ~DumperParaview();
+  ~DumperParaview() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -59,7 +59,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  void setBaseName(const std::string & basename);
+  void setBaseName(const std::string & basename) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

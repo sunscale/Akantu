@@ -58,7 +58,7 @@ public:
                         "Update frequency");
   }
 
-  virtual ~BaseWeightFunction() {}
+  ~BaseWeightFunction() override {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

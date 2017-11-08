@@ -27,7 +27,8 @@ inline void ParaviewHelper::visitField(T & visited){
   this->position_flag = false;
   switch (current_stage){
   case _s_writeFieldProperty:   writeFieldProperty(visited); break;
-  case _s_writePosition:        this->position_flag = true;
+  case _s_writePosition:        this->position_flag = true;  /* FALLTHRU */
+  // [[fallthrough]] un-comment when compiler gets it
   case _s_writeField:           writeField(visited);         break;
   case _s_writeConnectivity:    writeConnectivity(visited);  break;
   case _s_writeElemType:        writeElemType(visited);      break;

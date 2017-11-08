@@ -161,6 +161,7 @@ public:
     return const_cast<Array &>(a);
   }
 
+#ifndef SWIG
   /* ------------------------------------------------------------------------ */
   /* Iterator                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -218,6 +219,7 @@ public:
   inline decltype(auto) begin_reinterpret(Ns&&... n) const;
   template <typename... Ns>
   inline decltype(auto) end_reinterpret(Ns&&... n) const;
+#endif // SWIG
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

@@ -66,7 +66,7 @@ public:
   FEEngine(Mesh & mesh, UInt spatial_dimension = _all_dimensions, ID id = "fem",
            MemoryID memory_id = 0);
 
-  virtual ~FEEngine();
+  ~FEEngine() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -165,13 +165,13 @@ public:
   /// types -> uq
   virtual void interpolateOnIntegrationPoints(
       const Array<Real> & u, ElementTypeMapArray<Real> & uq,
-      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+      const ElementTypeMapArray<UInt> * filter_elements = nullptr) const = 0;
 
   /// Compute the interpolation point position in the global coordinates for
   /// many element types
   virtual void computeIntegrationPointsCoordinates(
       ElementTypeMapArray<Real> & integration_points_coordinates,
-      const ElementTypeMapArray<UInt> * filter_elements = NULL) const = 0;
+      const ElementTypeMapArray<UInt> * filter_elements = nullptr) const = 0;
 
   /// Compute the interpolation point position in the global coordinates for an
   /// element type

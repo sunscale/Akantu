@@ -100,7 +100,7 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   try {
     seed = static_parser.getParameter("seed", _ppsc_current_scope);
   } catch (debug::Exception &) {
-    seed = time(NULL);
+    seed = time(nullptr);
   }
 
   seed *= (comm.whoAmI() + 1);

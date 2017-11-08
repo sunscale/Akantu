@@ -55,7 +55,7 @@ public:
   TimeStepSolver(DOFManager & dof_manager, const TimeStepSolverType & type,
                  NonLinearSolver & non_linear_solver, const ID & id,
                  UInt memory_id);
-  virtual ~TimeStepSolver();
+  ~TimeStepSolver() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -77,7 +77,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// implementation of the SolverCallback::getMatrixType()
-  MatrixType getMatrixType(const ID &) override final { return _mt_not_defined; }
+  MatrixType getMatrixType(const ID &) final { return _mt_not_defined; }
   /// implementation of the SolverCallback::predictor()
   void predictor() override;
   /// implementation of the SolverCallback::corrector()
@@ -85,7 +85,7 @@ public:
   /// implementation of the SolverCallback::assembleJacobian()
   void assembleMatrix(const ID & matrix_id) override;
   /// implementation of the SolverCallback::assembleJacobian()
-  void assembleLumpedMatrix(const ID & matrix_id) override final;
+  void assembleLumpedMatrix(const ID & matrix_id) final;
   /// implementation of the SolverCallback::assembleResidual()
   void assembleResidual() override;
 

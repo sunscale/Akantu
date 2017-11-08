@@ -47,7 +47,7 @@ public:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
   DamagedWeightFunction(NonLocalManager & manager)
-      : BaseWeightFunction(manager, "damaged"), damage(NULL) {
+      : BaseWeightFunction(manager, "damaged"), damage(nullptr) {
     this->init();
   }
 
@@ -58,7 +58,7 @@ public:
    */
 
   /// set the pointers of internals to the right flattend version
-  virtual void init();
+  void init() override;
 
   inline Real operator()(Real r,
                          const __attribute__((unused)) IntegrationPoint & q1,

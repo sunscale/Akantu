@@ -42,7 +42,7 @@ template <class Entity> class Communications<Entity>::iterator {
       typename std::map<UInt, Communication>::iterator communication_iterator;
 
 public:
-  iterator() : communications(NULL) {}
+  iterator() : communications(nullptr) {}
   iterator(scheme_iterator scheme_it, communication_iterator comm_it,
            Communications<Entity> & communications,
            const SynchronizationTag & tag)

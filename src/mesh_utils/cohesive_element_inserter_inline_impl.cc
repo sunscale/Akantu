@@ -70,8 +70,8 @@ inline void CohesiveElementInserter::packUnpackGroupedInsertionData(
   ElementTypeMapArray<UInt> & physical_names =
       mesh_facets.registerData<UInt>("physical_names");
 
-  Array<bool> * vect = NULL;
-  Array<unsigned int> * vect2 = NULL;
+  Array<bool> * vect = nullptr;
+  Array<unsigned int> * vect2 = nullptr;
 
   Array<Element>::const_iterator<Element> it = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();

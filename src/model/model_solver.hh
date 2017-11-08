@@ -58,7 +58,7 @@ class ModelSolver : public Parsable,
   /* ------------------------------------------------------------------------ */
 public:
   ModelSolver(Mesh & mesh, const ID & id, UInt memory_id);
-  virtual ~ModelSolver();
+  ~ModelSolver() override;
 
   /// initialize the dof manager based on solver type passed in the input file
   void initDOFManager();

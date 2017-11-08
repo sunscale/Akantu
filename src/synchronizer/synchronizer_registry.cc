@@ -63,7 +63,7 @@ void SynchronizerRegistry::registerDataAccessor(
 void SynchronizerRegistry::synchronize(SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(data_accessor != NULL, "No data accessor set.");
+  AKANTU_DEBUG_ASSERT(data_accessor != nullptr, "No data accessor set.");
 
   std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
       synchronizers.equal_range(tag);
@@ -79,7 +79,7 @@ void SynchronizerRegistry::synchronize(SynchronizationTag tag) {
 void SynchronizerRegistry::asynchronousSynchronize(SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(data_accessor != NULL, "No data accessor set.");
+  AKANTU_DEBUG_ASSERT(data_accessor != nullptr, "No data accessor set.");
 
   std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
       synchronizers.equal_range(tag);
@@ -95,7 +95,7 @@ void SynchronizerRegistry::asynchronousSynchronize(SynchronizationTag tag) {
 void SynchronizerRegistry::waitEndSynchronize(SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(data_accessor != NULL, "No data accessor set.");
+  AKANTU_DEBUG_ASSERT(data_accessor != nullptr, "No data accessor set.");
 
   std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
       synchronizers.equal_range(tag);

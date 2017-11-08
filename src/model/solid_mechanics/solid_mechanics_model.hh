@@ -98,7 +98,7 @@ public:
                       const ID & id = "solid_mechanics_model",
                       const MemoryID & memory_id = 0);
 
-  virtual ~SolidMechanicsModel();
+  ~SolidMechanicsModel() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -208,7 +208,7 @@ protected:
 
   /// set the element_id_by_material and add the elements to the good materials
   void
-  assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = NULL);
+  assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = nullptr);
 
   /* ------------------------------------------------------------------------ */
   /* Mass (solid_mechanics_model_mass.cc)                                     */

@@ -51,7 +51,7 @@ public:
                          const NonLinearSolverType & non_linear_solver_type,
                          const ID & id = "non_linear_solver_linear",
                          UInt memory_id = 0);
-  virtual ~NonLinearSolverLinear();
+  ~NonLinearSolverLinear() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -59,7 +59,7 @@ public:
 public:
   /// Function that solve the non linear system described by the dof manager and
   /// the solver callback functions
-  virtual void solve(SolverCallback & solver_callback);
+  void solve(SolverCallback & solver_callback) override;
 
   AKANTU_GET_MACRO_NOT_CONST(Solver, solver, SparseSolverMumps &);
   AKANTU_GET_MACRO(Solver, solver, const SparseSolverMumps &);

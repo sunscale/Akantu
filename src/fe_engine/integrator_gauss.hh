@@ -54,7 +54,7 @@ public:
   IntegratorGauss(const Mesh & mesh, const ID & id = "integrator_gauss",
                   const MemoryID & memory_id = 0);
 
-  virtual ~IntegratorGauss(){};
+  ~IntegratorGauss() override{};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

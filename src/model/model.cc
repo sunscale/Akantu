@@ -296,7 +296,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       bool padding_flag) {
 
 #ifdef AKANTU_USE_IOHELPER
-  dumper::Field * field = NULL;
+  dumper::Field * field = nullptr;
 
   if (!field)
     field = this->createNodalFieldReal(field_id, group_name, padding_flag);

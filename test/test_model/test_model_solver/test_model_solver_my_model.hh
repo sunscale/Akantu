@@ -256,7 +256,7 @@ public:
 
     this->getDOFManager().assembleToResidual("disp", internal_forces, -1.);
 
-    // auto & comm = StaticCommunicator::getStaticCommunicator();
+    // auto & comm = Communicator::getStaticCommunicator();
     // const auto & dof_manager_default =
     //   dynamic_cast<DOFManagerDefault &>(this->getDOFManager());
     // const auto & residual = dof_manager_default.getResidual();

@@ -45,7 +45,7 @@ InternalField<T>::InternalField(const ID & id, Material & material)
       element_filter(material.getElementFilter()), default_value(T()),
       spatial_dimension(material.getModel().getSpatialDimension()),
       element_kind(_ek_regular), nb_component(0), is_init(false),
-      previous_values(NULL) {}
+      previous_values(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -56,7 +56,7 @@ InternalField<T>::InternalField(
       material(material), fem(&fem), element_filter(element_filter),
       default_value(T()), spatial_dimension(material.getSpatialDimension()),
       element_kind(_ek_regular), nb_component(0), is_init(false),
-      previous_values(NULL) {}
+      previous_values(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -66,7 +66,7 @@ InternalField<T>::InternalField(
     : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
       material(material), fem(&fem), element_filter(element_filter),
       default_value(T()), spatial_dimension(dim), element_kind(_ek_regular),
-      nb_component(0), is_init(false), previous_values(NULL) {}
+      nb_component(0), is_init(false), previous_values(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -77,7 +77,7 @@ InternalField<T>::InternalField(const ID & id, const InternalField<T> & other)
       element_filter(other.element_filter), default_value(other.default_value),
       spatial_dimension(other.spatial_dimension),
       element_kind(other.element_kind), nb_component(other.nb_component),
-      is_init(false), previous_values(NULL) {
+      is_init(false), previous_values(nullptr) {
 
   AKANTU_DEBUG_ASSERT(other.is_init,
                       "Cannot create a copy of a non initialized field");
@@ -133,7 +133,7 @@ template <typename T> void InternalField<T>::resize() {
       UInt new_size = nb_element * nb_quadrature_points;
 
       UInt old_size = 0;
-      Array<T> * vect = NULL;
+      Array<T> * vect = nullptr;
 
       if (this->exists(*it, *gt)) {
         vect = &(this->operator()(*it, *gt));
@@ -213,7 +213,7 @@ void InternalField<T>::setArrayValues(T * begin, T * end) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void InternalField<T>::saveCurrentValues() {
-  AKANTU_DEBUG_ASSERT(this->previous_values != NULL,
+  AKANTU_DEBUG_ASSERT(this->previous_values != nullptr,
                       "The history of the internal "
                           << this->getID() << " has not been activated");
 

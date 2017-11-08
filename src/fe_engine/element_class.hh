@@ -84,7 +84,7 @@ template <GeometricalShapeType shape> struct GeometricalShapeContains {
 /// types
 #define AKANTU_DEFINE_SHAPE(geom_type, geom_shape)                             \
   template <> struct GeometricalShape<geom_type> {                             \
-    static const GeometricalShapeType shape{geom_shape};                      \
+    static const GeometricalShapeType shape{geom_shape};                       \
   }
 
 AKANTU_DEFINE_SHAPE(_gt_hexahedron_20, _gst_square);
@@ -137,14 +137,12 @@ protected:
   static UInt nb_facet_types;
   /// number of facets for element
   static UInt nb_facets[];
+  /// Nb nodes per facets types
+  static UInt nb_nodes_per_facet[];
   /// storage of the facet local connectivity
   static UInt facet_connectivity_vect[];
   /// local connectivity of facets
   static UInt * facet_connectivity[];
-
-private:
-  /// Type of the facet elements
-  static UInt nb_nodes_per_facet[];
 };
 
 /* -------------------------------------------------------------------------- */

@@ -164,7 +164,7 @@ public:
   CentralDifference(DOFManager & dof_manager, const ID & dof_id)
       : NewmarkBeta(dof_manager, dof_id, 0., 1. / 2.){};
 
-  std::vector<std::string> getNeededMatrixList() { return {"M", "C"}; }
+  std::vector<std::string> getNeededMatrixList() override { return {"M", "C"}; }
 };
 //#include "integration_scheme/central_difference.hh"
 

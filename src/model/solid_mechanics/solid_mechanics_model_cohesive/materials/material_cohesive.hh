@@ -57,64 +57,59 @@ public:
 
 public:
   MaterialCohesive(SolidMechanicsModel & model, const ID & id = "");
-  virtual ~MaterialCohesive();
+  ~MaterialCohesive() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the material computed parameter
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// compute tractions (including normals and openings)
   void computeTraction(GhostType ghost_type = _not_ghost);
 
   /// assemble residual
-  void assembleInternalForces(GhostType ghost_type = _not_ghost);
+  void assembleInternalForces(GhostType ghost_type = _not_ghost) override;
 
   /// compute reversible and total energies by element
   void computeEnergies();
 
   /// check stress for cohesive elements' insertion, by default it
   /// also updates the cohesive elements' data
-  virtual void checkInsertion(__attribute__((unused)) bool check_only = false) {
+  virtual void checkInsertion(bool /*check_only*/ = false) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// check delta_max for cohesive elements in case of no convergence
   /// in the solveStep (only for extrinsic-implicit)
-  virtual void checkDeltaMax(__attribute__((unused))
-                             GhostType ghost_type = _not_ghost) {
+  virtual void checkDeltaMax(GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// reset variables when convergence is reached (only for
   /// extrinsic-implicit)
-  virtual void resetVariables(__attribute__((unused))
-                              GhostType ghost_type = _not_ghost) {
+  virtual void resetVariables(GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
-  virtual void interpolateStress(__attribute__((unused)) const ElementType type,
-                                 __attribute__((unused))
-                                 Array<Real> & result){};
+  virtual void interpolateStress(const ElementType /*type*/,
+
+                                 Array<Real> & /*result*/){};
 
   /// compute the stresses
-  virtual void computeAllStresses(__attribute__((unused))
-                                  GhostType ghost_type = _not_ghost){};
+  void computeAllStresses(GhostType /*ghost_type*/ = _not_ghost) override{};
 
   // add the facet to be handled by the material
   UInt addFacet(const Element & element);
 
 protected:
-  virtual void
-  computeTangentTraction(__attribute__((unused)) const ElementType & el_type,
-                         __attribute__((unused)) Array<Real> & tangent_matrix,
-                         __attribute__((unused)) const Array<Real> & normal,
-                         __attribute__((unused))
-                         GhostType ghost_type = _not_ghost) {
+  virtual void computeTangentTraction(const ElementType & /*el_type*/,
+                                      Array<Real> & /*tangent_matrix*/,
+                                      const Array<Real> & /*normal*/,
+                                      GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -131,7 +126,7 @@ protected:
                      GhostType ghost_type);
 
   /// assemble stiffness
-  void assembleStiffnessMatrix(GhostType ghost_type);
+  void assembleStiffnessMatrix(GhostType ghost_type) override;
 
   /// constitutive law
   virtual void computeTraction(const Array<Real> & normal, ElementType el_type,
@@ -180,10 +175,10 @@ public:
   Real getContactEnergy();
 
   /// get energy
-  virtual Real getEnergy(std::string type);
+  Real getEnergy(std::string type) override;
 
   /// return the energy (identified by id) for the provided element
-  virtual Real getEnergy(std::string energy_id, ElementType type, UInt index) {
+  Real getEnergy(std::string energy_id, ElementType type, UInt index) override {
     return Material::getEnergy(energy_id, type, index);
   }
 

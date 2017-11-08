@@ -47,7 +47,7 @@ struct ArgumentParser::_Argument : public Argument {
       : Argument(), help(std::string()), nargs(1), type(_string),
         required(false), parsed(false), has_default(false), has_const(false),
         is_positional(false) {}
-  virtual ~_Argument() {}
+  ~_Argument() override {}
 
   void setValues(std::vector<std::string> & values) {
     for (std::vector<std::string>::iterator it = values.begin();
@@ -96,24 +96,24 @@ class ArgumentParser::ArgumentStorage : public ArgumentParser::_Argument {
 public:
   ArgumentStorage() : _default(T()), _const(T()), values(std::vector<T>()) {}
 
-  virtual void addValue(std::string & value) {
+  void addValue(std::string & value) override {
     std::stringstream sstr(value);
     T t;
     sstr >> t;
     values.push_back(t);
   }
 
-  virtual void setToDefault() {
+  void setToDefault() override {
     values.clear();
     values.push_back(_default);
   }
 
-  virtual void setToConst() {
+  void setToConst() override {
     values.clear();
     values.push_back(_const);
   }
 
-  void printself(std::ostream & stream) const {
+  void printself(std::ostream & stream) const override {
     stream << this->name << " =";
     stream << std::boolalpha; // for boolean
     for (typename std::vector<T>::const_iterator vit = this->values.begin();
@@ -122,12 +122,12 @@ public:
     }
   }
 
-  virtual std::ostream & _printDefault(std::ostream & stream) const {
+  std::ostream & _printDefault(std::ostream & stream) const override {
     stream << _default;
     return stream;
   }
 
-  virtual std::ostream & _printConst(std::ostream & stream) const {
+  std::ostream & _printConst(std::ostream & stream) const override {
     stream << _const;
     return stream;
   }

@@ -33,15 +33,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <sstream>
-
 #include "aka_config.hh"
-
 /* -------------------------------------------------------------------------- */
 #include "element_class.hh"
 #include "group_manager_inline_impl.cc"
 #include "mesh.hh"
 #include "mesh_io.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_synchronizer.hh"
 #include "facet_synchronizer.hh"
@@ -54,6 +52,9 @@
 #include "dumper_internal_material_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
+#include <sstream>
+/* -------------------------------------------------------------------------- */
+
 
 namespace akantu {
 
@@ -119,6 +120,9 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
 
     mesh_facets->mesh_parent = this;
     mesh_facets->is_mesh_facets = true;
+
+    MeshUtils::buildAllFacets(*this, *mesh_facets, 0);
+
     if (mesh.isDistributed()) {
       mesh_facets->is_distributed = true;
       mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(

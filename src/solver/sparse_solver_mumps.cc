@@ -260,7 +260,8 @@ void SparseSolverMumps::initialize() {
     break;
   case _master_slave_distributed:
     this->mumps_data.par = 0; // The host is not part of the computations
-    // [[fallthrough]]; un-comment when compiler will get it
+    /* FALLTHRU */
+    /* [[fallthrough]]; un-comment when compiler will get it */
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
     const MPICommunicatorData & mpi_data =

@@ -57,7 +57,7 @@ public:
   SparseMatrixAIJ(const SparseMatrixAIJ & matrix,
                   const ID & id = "sparse_matrix_aij");
 
-  virtual ~SparseMatrixAIJ();
+  ~SparseMatrixAIJ() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

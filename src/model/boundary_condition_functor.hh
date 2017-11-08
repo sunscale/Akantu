@@ -154,12 +154,12 @@ namespace Neumann {
   class FromHigherDim : public NeumannFunctor {
   public:
     explicit FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
-    virtual ~FromHigherDim() {}
+    ~FromHigherDim() override {}
 
   public:
     inline void operator()(const IntegrationPoint & quad_point,
                            Vector<Real> & dual, const Vector<Real> & coord,
-                           const Vector<Real> & normals) const;
+                           const Vector<Real> & normals) const override;
 
   protected:
     Matrix<Real> bc_data;
@@ -169,12 +169,12 @@ namespace Neumann {
   class FromSameDim : public NeumannFunctor {
   public:
     explicit FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
-    virtual ~FromSameDim() {}
+    ~FromSameDim() override {}
 
   public:
     inline void operator()(const IntegrationPoint & quad_point,
                            Vector<Real> & dual, const Vector<Real> & coord,
-                           const Vector<Real> & normals) const;
+                           const Vector<Real> & normals) const override;
 
   protected:
     Vector<Real> bc_data;
@@ -185,7 +185,7 @@ namespace Neumann {
   public:
     inline void operator()(const IntegrationPoint & quad_point,
                            Vector<Real> & dual, const Vector<Real> & coord,
-                           const Vector<Real> & normals) const;
+                           const Vector<Real> & normals) const override;
   };
 } // end namespace Neumann
 } // end namespace BC

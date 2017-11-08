@@ -167,7 +167,7 @@ void TimeStepSolverDefault::solveStep(SolverCallback & solver_callback) {
   this->non_linear_solver.solve(*this);
   this->solver_callback->afterSolveStep();
 
-  this->solver_callback = NULL;
+  this->solver_callback = nullptr;
 }
 
 /* -------------------------------------------------------------------------- */

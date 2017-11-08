@@ -184,8 +184,8 @@ public:
     return dofs_per_node.find(node)->second[nth_dof];
   }
 
-  virtual UInt getNbData(const Array<UInt> & nodes,
-                         const SynchronizationTag & tag) const {
+  UInt getNbData(const Array<UInt> & nodes,
+                 const SynchronizationTag & tag) const override {
     if (tag == _gst_size) {
       return nodes.size() * sizeof(size_type);
     }
@@ -203,8 +203,8 @@ public:
     return 0;
   }
 
-  virtual void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
-                        const SynchronizationTag & tag) const {
+  void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
+                const SynchronizationTag & tag) const override {
     for (auto node : nodes) {
       auto it = dofs_per_node.find(node);
       if (tag == _gst_size) {
@@ -220,9 +220,8 @@ public:
     }
   }
 
-  virtual void unpackData(CommunicationBuffer & buffer,
-                          const Array<UInt> & nodes,
-                          const SynchronizationTag & tag) {
+  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
+                  const SynchronizationTag & tag) override {
     for (auto node : nodes) {
       auto it = dofs_per_node.find(node);
       if (tag == _gst_size) {

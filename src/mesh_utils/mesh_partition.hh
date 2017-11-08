@@ -53,7 +53,7 @@ public:
                 const ID & id = "MeshPartitioner",
                 const MemoryID & memory_id = 0);
 
-  virtual ~MeshPartition();
+  ~MeshPartition() override;
 
   class EdgeLoadFunctor {
   public:
@@ -63,8 +63,8 @@ public:
 
   class ConstEdgeLoadFunctor : public EdgeLoadFunctor {
   public:
-    virtual inline Int operator()(const Element &, const Element &) const
-        noexcept {
+    inline Int operator()(const Element &, const Element &) const
+        noexcept override {
       return 1;
     }
   };

@@ -46,7 +46,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(Mesh & mesh, const ID & id, UInt memory_id)
     : Parsable(_st_model_solver, id), SolverCallback(), parent_id(id),
-      parent_memory_id(memory_id), mesh(mesh), dof_manager(NULL),
+      parent_memory_id(memory_id), mesh(mesh), dof_manager(nullptr),
       default_solver_id("") {}
 
 /* -------------------------------------------------------------------------- */
@@ -67,9 +67,9 @@ void ModelSolver::initDOFManager() {
   solver_type = "petsc";
 #endif
 
-  const ParserSection * section = NULL;
+  const ParserSection * section = nullptr;
   Parser::const_section_iterator it;
-  for (it = sub_sect.first; it != sub_sect.second && section == NULL; ++it) {
+  for (it = sub_sect.first; it != sub_sect.second && section == nullptr; ++it) {
     if (it->getName() == this->parent_id) {
       section = &(*it);
       solver_type = section->getOption(solver_type);

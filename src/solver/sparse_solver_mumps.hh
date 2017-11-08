@@ -56,26 +56,26 @@ public:
                     const ID & id = "sparse_solver_mumps",
                     const MemoryID & memory_id = 0);
 
-  virtual ~SparseSolverMumps();
+  ~SparseSolverMumps() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// build the profile and do the analysis part
-  virtual void initialize();
+  void initialize() override;
 
   /// analysis (symbolic facto + permutations)
-  virtual void analysis();
+  void analysis() override;
 
   /// factorize the matrix
-  virtual void factorize();
+  void factorize() override;
 
   /// solve the system
   virtual void solve(Array<Real> & x, const Array<Real> & b);
 
   /// solve using residual and solution from the dof_manager
-  virtual void solve();
+  void solve() override;
 
 private:
   /// print the error if any happened in mumps
@@ -92,7 +92,7 @@ private:
 
 protected:
   /// de-initialize the internal data
-  virtual void destroyInternalData();
+  void destroyInternalData() override;
 
   /// check if initialized and except if it is not the case
   void checkInitialized();

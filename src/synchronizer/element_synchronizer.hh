@@ -63,7 +63,7 @@ public:
                       EventHandlerPriority event_priority = _ehp_synchronizer);
 
 public:
-  virtual ~ElementSynchronizer();
+  ~ElementSynchronizer() override;
 
   friend class ElementInfoPerProc;
   /* ------------------------------------------------------------------------ */
@@ -175,14 +175,14 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Sanity checks                                                            */
   /* ------------------------------------------------------------------------ */
-  virtual UInt sanityCheckDataSize(const Array<Element> & elements,
-                                   const SynchronizationTag & tag) const;
+  UInt sanityCheckDataSize(const Array<Element> & elements,
+                                   const SynchronizationTag & tag) const override;
   /* ------------------------------------------------------------------------ */
-  virtual void
-  packSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const;
+   void
+  packSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const override;
   /* ------------------------------------------------------------------------ */
-  virtual void
-  unpackSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const;
+   void
+  unpackSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -190,7 +190,7 @@ protected:
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
-  Int getRank(const Element & element) const override final;
+  Int getRank(const Element & element) const final;
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

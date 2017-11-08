@@ -91,7 +91,7 @@ public:
                         const Real max_damage = 1.)
       : model(model), is_unbroken(max_damage) {}
 
-  bool operator()(const Element & el) const {
+  bool operator()(const Element & el) const override {
     if (Mesh::getKind(el.type) == _ek_regular)
       return true;
 

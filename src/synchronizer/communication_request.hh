@@ -65,6 +65,8 @@ public:
       std::shared_ptr<InternalCommunicationRequest> request = nullptr)
       : request(std::move(request)) {}
 
+  virtual ~CommunicationRequest() = default;
+
   virtual void free() { request.reset(); }
 
   void printself(std::ostream & stream, int indent = 0) const {

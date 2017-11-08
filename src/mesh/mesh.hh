@@ -116,7 +116,7 @@ public:
   Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
        const ID & id = "mesh", const MemoryID & memory_id = 0);
 
-  virtual ~Mesh();
+  ~Mesh() override;
 
   /// @typedef ConnectivityTypeList list of the types present in a Mesh
   typedef std::set<ElementType> ConnectivityTypeList;
@@ -144,7 +144,7 @@ public:
   virtual void distribute();
 
   /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /// extract coordinates of nodes from an element
   template <typename T>

@@ -310,7 +310,7 @@ void Array<T, is_scal>::append(const Array<T> & other) {
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(UInt size, UInt nb_component, const ID & id)
-    : ArrayBase(id), values(NULL) {
+    : ArrayBase(id), values(nullptr) {
   AKANTU_DEBUG_IN();
   allocate(size, nb_component);
 
@@ -343,7 +343,7 @@ Array<T, is_scal>::Array(UInt size, UInt nb_component, const T def_values[],
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(UInt size, UInt nb_component, const T & value,
                          const ID & id)
-    : ArrayBase(id), values(NULL) {
+    : ArrayBase(id), values(nullptr) {
   AKANTU_DEBUG_IN();
   allocate(size, nb_component);
 
@@ -429,7 +429,7 @@ void Array<T, is_scal>::allocate(UInt size, UInt nb_component) {
                             << id << ")");
   }
 
-  if (values == NULL) {
+  if (values == nullptr) {
     this->size_ = this->allocated_size = 0;
   } else {
     AKANTU_DEBUG(dblAccessory, "Allocated "
@@ -525,9 +525,9 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
     auto * tmp_ptr = static_cast<T *>(
         realloc(values, size_to_alloc * nb_component * sizeof(T)));
     AKANTU_DEBUG_ASSERT(
-        tmp_ptr != NULL,
+        tmp_ptr != nullptr,
         "Cannot allocate " << printMemorySize<T>(size_to_alloc * nb_component));
-    if (tmp_ptr == NULL) {
+    if (tmp_ptr == nullptr) {
       AKANTU_DEBUG_ERROR("Cannot allocate more data ("
                          << id << ")"
                          << " [current allocated size : " << allocated_size

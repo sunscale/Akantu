@@ -40,7 +40,7 @@
 namespace akantu {
 
 bool StaticMemory::is_instantiated = false;
-StaticMemory * StaticMemory::single_static_memory = NULL;
+StaticMemory * StaticMemory::single_static_memory = nullptr;
 UInt StaticMemory::nb_reference = 0;
 
 /* -------------------------------------------------------------------------- */
@@ -79,7 +79,7 @@ StaticMemory::~StaticMemory() {
   }
   memories.clear();
   is_instantiated = false;
-  StaticMemory::single_static_memory = NULL;
+  StaticMemory::single_static_memory = nullptr;
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */

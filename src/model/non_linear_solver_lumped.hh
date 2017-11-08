@@ -51,7 +51,7 @@ public:
                          const NonLinearSolverType & non_linear_solver_type,
                          const ID & id = "non_linear_solver_lumped",
                          UInt memory_id = 0);
-  virtual ~NonLinearSolverLumped();
+  ~NonLinearSolverLumped() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -59,7 +59,7 @@ public:
 public:
   /// Function that solve the non linear system described by the dof manager and
   /// the solver callback functions
-  virtual void solve(SolverCallback & solver_callback);
+  void solve(SolverCallback & solver_callback) override;
 
   static void solveLumped(const Array<Real> & A,
                           Array<Real> & x,

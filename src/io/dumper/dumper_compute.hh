@@ -56,7 +56,7 @@ template <typename return_type>
 class ComputeFunctorOutput : public ComputeFunctorInterface {
 public:
   ComputeFunctorOutput(){};
-  virtual ~ComputeFunctorOutput(){};
+  ~ComputeFunctorOutput() override{};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -64,7 +64,7 @@ template <typename input_type, typename return_type>
 class ComputeFunctor : public ComputeFunctorOutput<return_type> {
 public:
   ComputeFunctor(){};
-  virtual ~ComputeFunctor(){};
+  ~ComputeFunctor() override{};
 
   virtual return_type func(const input_type & d, Element global_index) = 0;
 };
@@ -121,13 +121,13 @@ public:
     this->checkHomogeneity();
   };
 
-  ~FieldCompute() {
+  ~FieldCompute() override {
     delete &(this->sub_field);
     delete &(this->func);
   }
 
-  virtual void registerToDumper(const std::string & id,
-                                iohelper::Dumper & dumper) {
+  void registerToDumper(const std::string & id,
+                        iohelper::Dumper & dumper) override {
     dumper.addElemDataField(id, *this);
   }
 
@@ -146,16 +146,16 @@ public:
     return 0;
   }
 
-  virtual void checkHomogeneity() { this->homogeneous = true; };
+  void checkHomogeneity() override { this->homogeneous = true; };
 
   iohelper::DataType getDataType() {
     return iohelper::getDataType<data_type>();
   }
 
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt>
+  ElementTypeMap<UInt>
   getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
-                  ElementKind kind = _ek_not_defined) {
+                  ElementKind kind = _ek_not_defined) override {
     ElementTypeMap<UInt> nb_components;
     const ElementTypeMap<UInt> & old_nb_components =
         this->sub_field.getNbComponents(dim, ghost_type, kind);
@@ -174,10 +174,10 @@ public:
   };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(FieldComputeProxy & proxy);
+  inline Field * connect(FieldComputeProxy & proxy) override;
 
   /// for connection to a FieldCompute
-  virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy);
+  ComputeFunctorInterface * connect(HomogenizerProxy & proxy) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -236,7 +236,7 @@ public:
   Field * connectToFunctor(__attribute__((unused)) FieldCompute<
       FieldCompute<SubFieldCompute, return_type1>, return_type2> * ptr) {
     throw; //    return new FieldCompute<T,output>(*ptr,func);
-    return NULL;
+    return nullptr;
   }
 
   template <typename output, typename SubFieldCompute, typename return_type1,
@@ -247,7 +247,7 @@ public:
                    return_type3>,
       return_type4> * ptr) {
     throw; //    return new FieldCompute<T,output>(*ptr,func);
-    return NULL;
+    return nullptr;
   }
 
   /* ------------------------------------------------------------------------ */

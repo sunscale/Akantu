@@ -143,7 +143,7 @@ public:
     typedef typename _parent::pointer pointer;
     typedef typename _parent::reference reference;
 
-    explicit iterator_internal(pointer x = NULL) : pos(x){};
+    explicit iterator_internal(pointer x = nullptr) : pos(x){};
     iterator_internal(const iterator_internal & it) : pos(it.pos){};
 
     iterator_internal & operator++() {

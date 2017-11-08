@@ -55,7 +55,7 @@ public:
       DOFManagerDefault & dof_manager, const ID & id = "dof_synchronizer",
       MemoryID memory_id = 0,
       const Communicator & comm = Communicator::getStaticCommunicator());
-  virtual ~DOFSynchronizer();
+  ~DOFSynchronizer() override;
 
   virtual void registerDOFs(const ID & dof_id);
   /* ------------------------------------------------------------------------ */
@@ -90,7 +90,10 @@ protected:
   /// init the scheme for scatter and gather operation, need extra memory
   void initScatterGatherCommunicationScheme();
 
-  Int getRank(const UInt & /*node*/) const override final { AKANTU_DEBUG_TO_IMPLEMENT(); }
+  Int getRank(const UInt & /*node*/) const final {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
 private:
   /// Root processor for scatter/gather operations
   Int root;

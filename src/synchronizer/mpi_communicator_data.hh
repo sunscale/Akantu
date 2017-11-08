@@ -70,7 +70,7 @@ public:
     int is_initialized = false;
     MPI_Initialized(&is_initialized);
     if (!is_initialized) {
-      MPI_Init(NULL, NULL); // valid according to the spec
+      MPI_Init(nullptr, nullptr); // valid according to the spec
     }
 
     MPI_Comm_create_errhandler(MPICommunicatorData::errorHandler, &error_handler);
@@ -78,7 +78,7 @@ public:
     is_externaly_initialized = is_initialized;
   }
 
-  ~MPICommunicatorData() {
+  ~MPICommunicatorData() override {
     if (not is_externaly_initialized) {
       MPI_Finalize();
     }

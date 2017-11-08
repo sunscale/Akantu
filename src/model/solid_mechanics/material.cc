@@ -1065,9 +1065,9 @@ void Material::interpolateStressOnFacets(
     UInt nb_quad_per_facet =
         nb_interpolation_points_per_elem / nb_facet_per_elem;
     Element element_for_comparison{type, 0, ghost_type};
-    const Array<std::vector<Element>> * element_to_facet = NULL;
+    const Array<std::vector<Element>> * element_to_facet = nullptr;
     GhostType current_ghost_type = _casper;
-    Array<Real> * result_vec = NULL;
+    Array<Real> * result_vec = nullptr;
 
     Array<Real>::const_matrix_iterator result_it =
         by_elem_res.begin_reinterpret(

@@ -51,7 +51,7 @@ public:
                            const ElementTypeMapReal & quad_coordinates,
                            const ID & id = "non_local_neighborhood",
                            const MemoryID & memory_id = 0);
-  virtual ~NonLocalNeighborhoodBase();
+  ~NonLocalNeighborhoodBase() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

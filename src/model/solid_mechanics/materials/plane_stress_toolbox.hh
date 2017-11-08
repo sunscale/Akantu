@@ -59,13 +59,13 @@ public:
                      const ID & id = "")
       : ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
 
-  virtual ~PlaneStressToolbox() {}
+  ~PlaneStressToolbox() override {}
 
 protected:
   void initialize();
 
 public:
-  virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) {
+  void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) override {
     AKANTU_DEBUG_IN();
 
     ParentMaterial::computeAllCauchyStresses(ghost_type);

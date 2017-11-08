@@ -57,14 +57,14 @@ public:
                        const ElementTypeMapReal & quad_coordinates,
                        const ID & id = "neighborhood",
                        const MemoryID & memory_id = 0);
-  virtual ~NonLocalNeighborhood();
+  ~NonLocalNeighborhood() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// compute the weights for non-local averaging
-  void computeWeights();
+  void computeWeights() override;
 
   /// save the pair of weights in a file
   void saveWeights(const std::string & filename) const override;
@@ -77,7 +77,7 @@ public:
                                    const GhostType & ghost_type2) const override;
 
   /// update the weights based on the weight function
-  void updateWeights();
+  void updateWeights() override;
 
   /// register a new non-local variable in the neighborhood
   //void registerNonLocalVariable(const ID & id);

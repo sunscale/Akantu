@@ -755,7 +755,7 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
       const UInt nb_subfacet_per_facet =
           Mesh::getNbFacetsPerElement(type_facet);
       GhostType gt_subfacet = _casper;
-      Array<std::vector<Element>> * f_to_subfacet = NULL;
+      Array<std::vector<Element>> * f_to_subfacet = nullptr;
 
       Array<Element> & subfacet_to_facet =
           mesh_facets.getSubelementToElement(type_facet, gt_facet);
@@ -862,7 +862,7 @@ UInt MeshUtils::updateFacetToDouble(
       UInt nb_facet_per_element = 0;
       Element old_facet_el{type_facet, 0, gt_facet};
 
-      Array<Element> * facet_to_element = NULL;
+      Array<Element> * facet_to_element = nullptr;
 
       for (UInt f = 0; f < f_insertion.size(); ++f) {
 
@@ -992,11 +992,11 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
       ElementType type_subsubfacet = Mesh::getFacetType(type_subfacet);
       GhostType gt_subsubfacet = _casper;
 
-      Array<UInt> * conn_subfacet = NULL;
-      Array<UInt> * sf_to_double = NULL;
-      Array<std::vector<Element>> * sf_to_subfacet_double = NULL;
-      Array<std::vector<Element>> * f_to_subfacet_double = NULL;
-      Array<std::vector<Element>> * el_to_subfacet_double = NULL;
+      Array<UInt> * conn_subfacet = nullptr;
+      Array<UInt> * sf_to_double = nullptr;
+      Array<std::vector<Element>> * sf_to_subfacet_double = nullptr;
+      Array<std::vector<Element>> * f_to_subfacet_double = nullptr;
+      Array<std::vector<Element>> * el_to_subfacet_double = nullptr;
 
       UInt nb_subfacet = Mesh::getNbFacetsPerElement(type_facet);
 
@@ -1015,7 +1015,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
       Array<std::vector<Element>> & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
-      Array<Element> * subsubfacet_to_subfacet = NULL;
+      Array<Element> * subsubfacet_to_subfacet = nullptr;
 
       UInt old_nb_facet = subfacet_to_facet.size() - nb_facet_to_double;
 
@@ -1027,7 +1027,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
         subfacet_list = new std::vector<Element>;
 
       /// map to filter subfacets
-      Array<std::vector<Element>> * facet_to_subfacet = NULL;
+      Array<std::vector<Element>> * facet_to_subfacet = nullptr;
 
       /// this is used to make sure that both new and old facets are
       /// checked
@@ -1357,8 +1357,8 @@ void MeshUtils::updateQuadraticSegments(Mesh & mesh, Mesh & mesh_facets,
       mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
   /// this ones matter only for segments in 3D
-  Array<std::vector<Element>> * el_to_subfacet_double = NULL;
-  Array<std::vector<Element>> * f_to_subfacet_double = NULL;
+  Array<std::vector<Element>> * el_to_subfacet_double = nullptr;
+  Array<std::vector<Element>> * f_to_subfacet_double = nullptr;
 
   if (third_dim_segments) {
     el_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
@@ -1422,12 +1422,12 @@ void MeshUtils::updateSubfacetToFacet(Mesh & mesh_facets,
   /// update subfacet_to_facet vector
   ElementType type_facet = _not_defined;
   GhostType gt_facet = _casper;
-  Array<Element> * subfacet_to_facet = NULL;
+  Array<Element> * subfacet_to_facet = nullptr;
   UInt nb_subfacet_per_facet = 0;
   UInt old_nb_subfacet = mesh_facets.getNbElement(type_subfacet, gt_subfacet) -
                          nb_subfacet_to_double;
 
-  Array<std::vector<Element>> * facet_list = NULL;
+  Array<std::vector<Element>> * facet_list = nullptr;
   if (facet_mode)
     facet_list = &mesh_facets.getData<std::vector<Element>>(
         "facets_to_subfacet_double", type_subfacet, gt_subfacet);
@@ -1487,7 +1487,7 @@ void MeshUtils::updateFacetToSubfacet(Mesh & mesh_facets,
   Array<std::vector<Element>> & facet_to_subfacet =
       mesh_facets.getElementToSubelement(type_subfacet, gt_subfacet);
 
-  Array<std::vector<Element>> * facet_to_subfacet_double = NULL;
+  Array<std::vector<Element>> * facet_to_subfacet_double = nullptr;
 
   if (facet_mode) {
     facet_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
@@ -1574,7 +1574,7 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
           mesh_facets.getData<std::vector<Element>>(
               "elements_to_subfacet_double", type_subfacet, gt_subfacet);
 
-      Array<std::vector<Element>> * sf_to_subfacet_double = NULL;
+      Array<std::vector<Element>> * sf_to_subfacet_double = nullptr;
 
       if (spatial_dimension == 3)
         sf_to_subfacet_double = &mesh_facets.getData<std::vector<Element>>(
@@ -1885,10 +1885,10 @@ bool MeshUtils::findElementsAroundSubfacet(
 
   elem_list.push_back(starting_element);
 
-  const Array<UInt> * facet_connectivity = NULL;
-  const Array<UInt> * sf_connectivity = NULL;
-  const Array<Element> * facet_to_element = NULL;
-  const Array<Element> * subfacet_to_facet = NULL;
+  const Array<UInt> * facet_connectivity = nullptr;
+  const Array<UInt> * sf_connectivity = nullptr;
+  const Array<Element> * facet_to_element = nullptr;
+  const Array<Element> * subfacet_to_facet = nullptr;
 
   ElementType current_type = _not_defined;
   GhostType current_ghost_type = _casper;
@@ -1899,9 +1899,9 @@ bool MeshUtils::findElementsAroundSubfacet(
   ElementType current_subfacet_type = _not_defined;
   GhostType current_subfacet_ghost_type = _casper;
 
-  const Array<std::vector<Element>> * element_to_facet = NULL;
+  const Array<std::vector<Element>> * element_to_facet = nullptr;
 
-  const Element * opposing_el = NULL;
+  const Element * opposing_el = nullptr;
 
   std::queue<Element> elements_to_check;
   elements_to_check.push(starting_element);
@@ -2091,12 +2091,12 @@ void MeshUtils::updateElementalConnectivity(
 
   ElementType el_type = _not_defined;
   GhostType gt_type = _casper;
-  Array<UInt> * conn_elem = NULL;
+  Array<UInt> * conn_elem = nullptr;
 #if defined(AKANTU_COHESIVE_ELEMENT)
-  const Array<Element> * cohesive_facets = NULL;
+  const Array<Element> * cohesive_facets = nullptr;
 #endif
   UInt nb_nodes_per_element = 0;
-  UInt * n_update = NULL;
+  UInt * n_update = nullptr;
 
   for (UInt el = 0; el < element_list.size(); ++el) {
     const Element & elem = element_list[el];
@@ -2119,7 +2119,7 @@ void MeshUtils::updateElementalConnectivity(
     if (elem.kind() == _ek_cohesive) {
 
       AKANTU_DEBUG_ASSERT(
-          facet_list != NULL,
+          facet_list != nullptr,
           "Provide a facet list in order to update cohesive elements");
 
       /// loop over cohesive element's facets

@@ -46,7 +46,7 @@ public:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
   RemoveDamagedWeightFunction(NonLocalManager & manager)
-      : BaseWeightFunction(manager, "remove_damaged"), damage(NULL) {
+      : BaseWeightFunction(manager, "remove_damaged"), damage(nullptr) {
     this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable,
                         "Damage Threshold");
     this->init();
@@ -58,7 +58,7 @@ public:
   /* --------------------------------------------------------------------------
    */
 
-  virtual inline void init();
+  inline void init() override;
 
   inline Real operator()(Real r, const IntegrationPoint & q1,
                          const IntegrationPoint & q2);

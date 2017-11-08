@@ -111,7 +111,7 @@ class Communicator : public EventHandlerManager<CommunicatorEventHandler> {
   /* ------------------------------------------------------------------------ */
 public:
   Communicator(int & argc, char **& argv, const private_member &);
-  virtual ~Communicator();
+  ~Communicator() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

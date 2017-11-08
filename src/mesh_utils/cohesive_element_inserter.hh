@@ -53,7 +53,7 @@ public:
   CohesiveElementInserter(Mesh & mesh, bool is_extrinsic = false,
                           const ID & id = "cohesive_element_inserter");
 
-  virtual ~CohesiveElementInserter();
+  ~CohesiveElementInserter() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -188,7 +188,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 class CohesiveNewNodesEvent : public NewNodesEvent{
 public:
   CohesiveNewNodesEvent() = default;
-  virtual ~CohesiveNewNodesEvent() = default;
+  ~CohesiveNewNodesEvent() override = default;
 
   AKANTU_GET_MACRO_NOT_CONST(OldNodesList, old_nodes, Array<UInt> &);
   AKANTU_GET_MACRO(OldNodesList, old_nodes, const Array<UInt> &);

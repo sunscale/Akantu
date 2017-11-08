@@ -52,7 +52,7 @@ public:
                   FEEngine & fe_engine,
                   const ID & id = "");
 
-  virtual ~MaterialThermal() {};
+  ~MaterialThermal() override{};
 
 protected:
   void initialize();
@@ -61,10 +61,10 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type);
+  void computeStress(ElementType el_type, GhostType ghost_type) override;
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */

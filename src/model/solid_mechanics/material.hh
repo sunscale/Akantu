@@ -99,7 +99,7 @@ public:
            FEEngine & fe_engine, const ID & id = "");
 
   /// Destructor
-  virtual ~Material();
+  ~Material() override;
 
 protected:
   void initialize();
@@ -231,7 +231,7 @@ public:
   void removeElements(const Array<Element> & elements_to_remove);
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /**
    * interpolate stress on given positions for each element by means
@@ -359,16 +359,16 @@ protected:
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual inline UInt getNbData(const Array<Element> & elements,
-                                const SynchronizationTag & tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  virtual inline void packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  virtual inline void unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   template <typename T>
   inline void packElementDataHelper(const ElementTypeMapArray<T> & data_to_pack,
@@ -387,21 +387,20 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  virtual void onNodesAdded(const Array<UInt> &, const NewNodesEvent &){};
-  virtual void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
-                              const RemovedNodesEvent &){};
+  void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) override{};
+  void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                      const RemovedNodesEvent &) override{};
 
-  virtual void onElementsAdded(const Array<Element> & element_list,
-                               const NewElementsEvent & event);
+  void onElementsAdded(const Array<Element> & element_list,
+                       const NewElementsEvent & event) override;
 
-  virtual void
-  onElementsRemoved(const Array<Element> & element_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
+  void onElementsRemoved(const Array<Element> & element_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const RemovedElementsEvent & event) override;
 
-  virtual void onElementsChanged(const Array<Element> &, const Array<Element> &,
-                                 const ElementTypeMapArray<UInt> &,
-                                 const ChangedElementsEvent &){};
+  void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const ChangedElementsEvent &) override{};
 
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
@@ -410,10 +409,9 @@ public:
   virtual void beforeSolveStep();
   virtual void afterSolveStep();
 
-
-  virtual void onDamageIteration();
-  virtual void onDamageUpdate();
-  virtual void onDump();
+  void onDamageIteration() override;
+  void onDamageUpdate() override;
+  void onDump() override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

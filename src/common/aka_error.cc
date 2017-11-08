@@ -80,8 +80,8 @@ namespace debug {
     std::string result;
     char * demangled_name;
 
-    if ((demangled_name = abi::__cxa_demangle(symbol, NULL, 0, &status)) !=
-        NULL) {
+    if ((demangled_name = abi::__cxa_demangle(symbol, nullptr, nullptr,
+                                              &status)) != nullptr) {
       result = demangled_name;
       free(demangled_name);
     } else {
@@ -101,7 +101,7 @@ namespace debug {
     char buffer[1024];
     std::string result = "";
     while (!feof(pipe)) {
-      if (fgets(buffer, 128, pipe) != NULL)
+      if (fgets(buffer, 128, pipe) != nullptr)
         result += buffer;
     }
 

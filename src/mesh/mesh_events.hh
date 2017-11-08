@@ -58,13 +58,13 @@ class Mesh;
 /// akantu::MeshEvent related to new nodes in the mesh
 class NewNodesEvent : public MeshEvent<UInt> {
 public:
-  virtual ~NewNodesEvent(){};
+  ~NewNodesEvent() override{};
 };
 
 /// akantu::MeshEvent related to nodes removed from the mesh
 class RemovedNodesEvent : public MeshEvent<UInt> {
 public:
-  virtual ~RemovedNodesEvent(){};
+  ~RemovedNodesEvent() override{};
   inline RemovedNodesEvent(const Mesh & mesh);
   /// Get the new numbering following suppression of nodes from nodes arrays
   AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, Array<UInt> &);
@@ -78,13 +78,13 @@ private:
 /// akantu::MeshEvent related to new elements in the mesh
 class NewElementsEvent : public MeshEvent<Element> {
 public:
-  virtual ~NewElementsEvent(){};
+  ~NewElementsEvent() override{};
 };
 
 /// akantu::MeshEvent related to elements removed from the mesh
 class RemovedElementsEvent : public MeshEvent<Element> {
 public:
-  virtual ~RemovedElementsEvent(){};
+  ~RemovedElementsEvent() override{};
   inline RemovedElementsEvent(const Mesh & mesh,
                               ID new_numbering_id = "new_numbering");
   /// Get the new numbering following suppression of elements from elements
@@ -110,7 +110,7 @@ protected:
 /// combination of removed and added elements
 class ChangedElementsEvent : public RemovedElementsEvent {
 public:
-  virtual ~ChangedElementsEvent(){};
+  ~ChangedElementsEvent() override{};
   inline ChangedElementsEvent(
       const Mesh & mesh, ID new_numbering_id = "changed_event:new_numbering")
       : RemovedElementsEvent(mesh, new_numbering_id){};

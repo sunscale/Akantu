@@ -35,6 +35,9 @@
 #include <typeinfo>
 /* -------------------------------------------------------------------------- */
 
+#ifndef __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
+#define __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
+
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */

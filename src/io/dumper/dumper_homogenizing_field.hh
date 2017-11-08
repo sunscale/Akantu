@@ -42,7 +42,8 @@ __BEGIN_AKANTU_DUMPER__
 
 template <typename type>
 inline type typeConverter(const type & input,
-                          __attribute__((unused)) Vector<typename type::value_type> & res,
+                          __attribute__((unused))
+                          Vector<typename type::value_type> & res,
                           __attribute__((unused)) UInt nb_data) {
 
   throw;
@@ -63,10 +64,10 @@ inline Matrix<type> typeConverter(const Matrix<type> & input,
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
-inline Vector<type>
-typeConverter(__attribute__((unused)) const Vector<type> & input,
-              __attribute__((unused)) Vector<type> & res,
-              __attribute__((unused)) UInt nb_data) {
+inline Vector<type> typeConverter(__attribute__((unused))
+                                  const Vector<type> & input,
+                                  __attribute__((unused)) Vector<type> & res,
+                                  __attribute__((unused)) UInt nb_data) {
 
   return res;
 }
@@ -103,9 +104,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  virtual type func(const type & d,
-                    __attribute__((unused)) Element global_index) {
-
+  type func(const type & d, Element /*global_index*/) {
     Vector<value_type> res(this->nb_data);
 
     if (d.size() % this->nb_data)
@@ -122,8 +121,8 @@ public:
     return typeConverter(d, res, this->nb_data);
   };
 
-  UInt getDim() { return nb_data; };
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) { throw; };
+  UInt getDim() override { return nb_data; };
+  UInt getNbComponent(UInt /*old_nb_comp*/) { throw; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -174,10 +173,10 @@ HomogenizerProxy::instantiateHomogenizer(ElementTypeMap<UInt> & nb_components) {
 
 template <>
 inline ComputeFunctorInterface *
-HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType> >(
+HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType>>(
     __attribute__((unused)) ElementTypeMap<UInt> & nb_components) {
   throw;
-  return NULL;
+  return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -212,6 +211,6 @@ HomogenizerProxy::createHomogenizer(Field & field) {
 // */
 
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__ */

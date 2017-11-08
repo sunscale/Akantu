@@ -56,7 +56,9 @@ private:
   /* Constructors / Destructors / Initializers                                */
   /* ------------------------------------------------------------------------ */
 public:
-  BoundaryCondition() : model(NULL), primal(NULL), dual(NULL), primal_increment(NULL) {}
+  BoundaryCondition()
+      : model(nullptr), primal(nullptr), dual(nullptr),
+        primal_increment(nullptr) {}
   ///Initialize the boundary conditions
   void initBC(ModelType & ptr, Array<Real> & primal, Array<Real> & dual);
   void initBC(ModelType & ptr, Array<Real> & primal,

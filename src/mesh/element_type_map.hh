@@ -78,7 +78,7 @@ class ElementTypeMap : public ElementTypeMapBase {
 
 public:
   ElementTypeMap();
-  ~ElementTypeMap();
+  ~ElementTypeMap() override;
 
   inline static std::string printType(const SupportType & type,
                                       const GhostType & ghost_type);
@@ -371,7 +371,7 @@ public:
   onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// text output helper
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /*! set the id
    *  @param id the new name

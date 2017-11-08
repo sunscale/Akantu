@@ -73,7 +73,7 @@ private:
 public:
   MeshData(const ID & id = "mesh_data", const ID & parent_id = "",
            const MemoryID & memory_id = 0);
-  ~MeshData();
+  ~MeshData() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods and accessors                                                    */

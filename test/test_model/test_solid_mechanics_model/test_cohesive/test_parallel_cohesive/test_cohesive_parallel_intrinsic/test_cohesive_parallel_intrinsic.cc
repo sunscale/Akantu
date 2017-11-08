@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 

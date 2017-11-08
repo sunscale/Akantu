@@ -371,10 +371,10 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
 
   std::string diana_type;
   ElementType akantu_type, akantu_type_old = _not_defined;
-  Array<UInt> * connectivity = NULL;
+  Array<UInt> * connectivity = nullptr;
   UInt node_per_element = 0;
   Element elem;
-  UInt * read_order = NULL;
+  UInt * read_order = nullptr;
 
   while (1) {
     my_getline(infile, lline);

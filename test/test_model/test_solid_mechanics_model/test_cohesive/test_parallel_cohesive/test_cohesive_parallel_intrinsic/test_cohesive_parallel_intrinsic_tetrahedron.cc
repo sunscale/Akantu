@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
@@ -516,7 +516,7 @@ void findNodesToCheck(const Mesh & mesh,
 		      Array<UInt> & nodes_to_check,
 		      Int psize) {
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   nodes_to_check.resize(0);
@@ -614,7 +614,7 @@ bool checkEquilibrium(const Mesh & mesh,
       residual_sum += *res_it;
   }
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   comm.allReduce(residual_sum.storage(), spatial_dimension, _so_sum);
 
   for (UInt s = 0; s < spatial_dimension; ++s) {
@@ -651,7 +651,7 @@ bool checkResidual(const Array<Real> & residual,
     total_force += res;
   }
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   comm.allReduce(total_force.storage(), spatial_dimension, _so_sum);
 
   Vector<Real> theoretical_total_force(spatial_dimension);

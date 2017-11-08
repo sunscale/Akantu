@@ -56,7 +56,7 @@ template <class T> class DataAccessor : public virtual DataAccessorBase {
   /* ------------------------------------------------------------------------ */
 public:
   DataAccessor() {}
-  virtual ~DataAccessor() {}
+  ~DataAccessor() override {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -91,7 +91,7 @@ public:
 template <> class DataAccessor<Element> : public virtual DataAccessorBase {
 public:
   DataAccessor() {}
-  virtual ~DataAccessor() {}
+  ~DataAccessor() override {}
 
   virtual UInt getNbData(const Array<Element> & elements,
                          const SynchronizationTag & tag) const = 0;
@@ -160,7 +160,7 @@ public:
 template <> class DataAccessor<UInt> : public virtual DataAccessorBase {
 public:
   DataAccessor() {}
-  virtual ~DataAccessor() {}
+  ~DataAccessor() override {}
 
   virtual UInt getNbData(const Array<UInt> & elements,
                          const SynchronizationTag & tag) const = 0;
@@ -215,15 +215,15 @@ public:
   ReduceUIntDataAccessor(Array<T> & data, const SynchronizationTag & tag)
       : data(data), tag(tag) {}
 
-  virtual ~ReduceUIntDataAccessor() {}
+  ~ReduceUIntDataAccessor() override {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  virtual UInt getNbData(const Array<UInt> & elements,
-                         const SynchronizationTag & tag) const {
+  UInt getNbData(const Array<UInt> & elements,
+                 const SynchronizationTag & tag) const override {
     if (tag != this->tag)
       return 0;
 
@@ -232,9 +232,8 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  virtual void packData(CommunicationBuffer & buffer,
-                        const Array<UInt> & elements,
-                        const SynchronizationTag & tag) const {
+  void packData(CommunicationBuffer & buffer, const Array<UInt> & elements,
+                const SynchronizationTag & tag) const override {
     if (tag != this->tag)
       return;
 
@@ -245,9 +244,8 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  virtual void unpackData(CommunicationBuffer & buffer,
-                          const Array<UInt> & elements,
-                          const SynchronizationTag & tag) {
+  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & elements,
+                  const SynchronizationTag & tag) override {
     if (tag != this->tag)
       return;
 

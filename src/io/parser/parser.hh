@@ -110,7 +110,7 @@ class ParserSection;
 class ParserParameter {
 public:
   ParserParameter()
-      : parent_section(NULL), name(std::string()), value(std::string()),
+      : parent_section(nullptr), name(std::string()), value(std::string()),
         dbg_filename(std::string()) {}
 
   ParserParameter(const std::string & name, const std::string & value,
@@ -261,10 +261,10 @@ public:
 
   /* ---------------------------------------------------------------------- */
   ParserSection()
-      : parent_section(NULL), name(std::string()), type(_st_not_defined) {}
+      : parent_section(nullptr), name(std::string()), type(_st_not_defined) {}
 
   ParserSection(const std::string & name, SectionType type)
-      : parent_section(NULL), name(name), type(type) {}
+      : parent_section(nullptr), name(name), type(type) {}
 
   ParserSection(const std::string & name, SectionType type,
                 const std::string & option,

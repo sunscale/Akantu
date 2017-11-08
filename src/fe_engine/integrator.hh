@@ -53,7 +53,7 @@ public:
     AKANTU_DEBUG_OUT();
   };
 
-  virtual ~Integrator(){};
+  ~Integrator() override{};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

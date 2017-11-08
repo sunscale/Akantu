@@ -75,9 +75,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt>
+  ElementTypeMap<UInt>
   getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
-                  ElementKind kind = _ek_not_defined) {
+                  ElementKind kind = _ek_not_defined) override {
     return this->field.getNbComponents(dim, ghost_type, kind);
   };
 
@@ -103,21 +103,21 @@ protected:
   }
 
   /// check if the same quantity of data for all element types
-  virtual void checkHomogeneity();
+  void checkHomogeneity() override;
 
 public:
-  virtual void registerToDumper(const std::string & id,
-                                iohelper::Dumper & dumper) {
+  void registerToDumper(const std::string & id,
+                        iohelper::Dumper & dumper) override {
     dumper.addElemDataField(id, *this);
   };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(FieldComputeProxy & proxy) {
+  inline Field * connect(FieldComputeProxy & proxy) override {
     return proxy.connectToField(this);
   }
 
   /// for connection to a Homogenizer
-  inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy) {
+  inline ComputeFunctorInterface * connect(HomogenizerProxy & proxy) override {
     return proxy.connectToField(this);
   };
 
@@ -193,7 +193,7 @@ public:
     return 0;
   }
 
-  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) {
+  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) override {
     nb_data_per_elem = nb_data;
   }
 

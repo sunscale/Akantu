@@ -51,7 +51,6 @@ namespace akantu {
 %include "aka_array.hh"
 
 namespace akantu {
-
   %ignore TensorProxy::operator=;
   %ignore TensorProxy::operator[];
   %ignore TensorProxy::operator();
@@ -85,7 +84,6 @@ namespace akantu {
   %template(RArray) Array<akantu::Real, true>;
   %template(UArray) Array<akantu::UInt, true>;
   %template(BArray) Array<bool, true>;
-
   %template(RVector) Vector<akantu::Real>;
 };
 

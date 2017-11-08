@@ -44,7 +44,7 @@ public:
   ShapeLagrangeBase(const Mesh & mesh, const ElementKind & kind,
                     const ID & id = "shape_lagrange",
                     const MemoryID & memory_id = 0);
-  virtual ~ShapeLagrangeBase();
+  ~ShapeLagrangeBase() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

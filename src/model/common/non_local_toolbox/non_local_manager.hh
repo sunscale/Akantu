@@ -66,7 +66,7 @@ public:
   NonLocalManager(Model & model, NonLocalManagerCallback & callback,
                   const ID & id = "non_local_manager",
                   const MemoryID & memory_id = 0);
-  virtual ~NonLocalManager();
+  ~NonLocalManager() override;
   using NeighborhoodMap =
       std::map<ID, std::unique_ptr<NonLocalNeighborhoodBase>>;
 

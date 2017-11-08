@@ -49,7 +49,7 @@ int main(int argc, char * argv[]) {
   Mesh mesh_group_after(spatial_dimension, "after");
   Mesh mesh_group_before(spatial_dimension, "before");
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 

@@ -761,7 +761,7 @@ public:
     }
   }
 
-  virtual ~Matrix() = default;
+  ~Matrix() override = default;
   /* ------------------------------------------------------------------------ */
   inline Matrix & operator=(const Matrix & src) {
     parent::operator=(src);
@@ -900,7 +900,7 @@ public:
                         "eigenvalues should be of size " << this->cols()
                                                          << ".");
 #ifndef AKANTU_NDEBUG
-    if (eigenvectors.storage() != NULL)
+    if (eigenvectors.storage() != nullptr)
       AKANTU_DEBUG_ASSERT((eigenvectors.rows() == eigenvectors.cols()) &&
                               (eigenvectors.rows() == this->cols()),
                           "Eigenvectors needs to be a square matrix of size "

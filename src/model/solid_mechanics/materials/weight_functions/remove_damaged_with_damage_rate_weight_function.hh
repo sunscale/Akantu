@@ -46,8 +46,9 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWithDamageRateWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "remove_damage_with_damage_rate"),
-									 damage_with_damage_rate(NULL) {
+  RemoveDamagedWithDamageRateWeightFunction(NonLocalManager & manager)
+      : BaseWeightFunction(manager, "remove_damage_with_damage_rate"),
+        damage_with_damage_rate(nullptr) {
     this->registerParam<Real>("damage_limit", this->damage_limit_with_damage_rate, 1, _pat_parsable, "Damage Threshold");
     this->init();
   }
@@ -59,7 +60,7 @@ public:
 			 const __attribute__((unused)) IntegrationPoint & q1,
 			 const IntegrationPoint & q2);
 
-  virtual inline void init();
+  inline void init() override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
