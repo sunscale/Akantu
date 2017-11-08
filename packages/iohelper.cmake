@@ -39,7 +39,7 @@ package_add_third_party_script_variable(IOHelper
   IOHELPER_VERSION ${_version})
 package_add_third_party_script_variable(IOHelper
   IOHELPER_GIT "https://c4science.ch/source/iohelper.git")
-package_add_third_party_script_variable(Scotch
+package_add_third_party_script_variable(IOHelper
   IOHELPER_ARCHIVE "iohelper_${_version}.tar.gz")
 
 package_declare_sources(IOHelper

@@ -624,7 +624,9 @@ function(_package_load_packages)
   set(_packages_deactivated)
   foreach(_pkg_name ${_pkg_list})
     _package_is_activated(${_pkg_name} _active)
-    if(_active)
+    set(_exclude FALSE)
+    _package_get_variable(EXCLUDE_FROM_ALL ${_pkg_name} _exclude)
+    if(_active AND NOT _exclude)
       list(APPEND _packages_activated ${_pkg_name})
     else()
       list(APPEND _packages_deactivated ${_pkg_name})
@@ -716,7 +718,11 @@ function(_package_load_package pkg_name)
     set(_activated TRUE)
     if(_use_system)
       _package_load_external_package(${pkg_name} _activated)
-    else()
+    endif()
+
+
+    _package_get_variable(SYSTEM_FALLBACK ${pkg_name} _fallback)
+    if((NOT _use_system) OR (_fallback AND (NOT _activated)))
       _package_load_third_party_script(${pkg_name})
     endif()
 
@@ -765,7 +771,13 @@ function(_package_load_external_package pkg_name activate)
 
 
   # find the package
-  find_package(${_real_name} REQUIRED ${_opt_pkg_ARGS})
+  set(_required REQUIRED)
+  _package_get_variable(SYSTEM_FALLBACK ${pkg_name} _fallback)
+  if(_fallback)
+    set(_required QUIET)
+  endif()
+
+  find_package(${_real_name} ${_required} ${_opt_pkg_ARGS})
 
   # check if the package is found
   if(_opt_pkg_PREFIX)

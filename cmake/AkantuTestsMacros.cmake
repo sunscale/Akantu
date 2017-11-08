@@ -129,7 +129,6 @@ macro(add_test_tree dir)
     include(CTest)
     mark_as_advanced(BUILD_TESTING)
 
-
     set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
     set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
 
@@ -161,9 +160,24 @@ function(add_akantu_test dir desc)
   option(AKANTU_BUILD_${_u_dir} "${desc}")
   mark_as_advanced(AKANTU_BUILD_${_u_dir})
 
+  set(AKANTU_${_u_dir}_GTEST_SOURCE "" CACHE INTERNAL "")
+
   # add the sub-directory
   add_subdirectory(${dir})
 
+  if(AKANTU_${_u_dir}_GTEST_SOURCE)
+    set(_srcs)
+    foreach(_src ${AKANTU_${_u_dir}_GTEST_SOURCE})
+      list(APPEND _srcs ${dir}/${_src})
+    endforeach()
+
+    add_executable(${dir}_gtest_all ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc ${_srcs})
+    target_link_libraries(${dir}_gtest_all akantu GTest::GTest GTest::Main)
+    set_property(TARGET ${dir}_gtest_all PROPERTY OUTPUT_NAME ${dir}/gtest_all)
+
+    add_test(NAME ${dir}_gtest COMMAND ${AKANTU_DRIVER_SCRIPT}  -n "${dir}" -e "gtest_all" -w "${CMAKE_CURRENT_BINARY_DIR}/${dir}")
+  endif()
+  
   # if no test can be activated make the option disappear
   set(_force_deactivate_count FALSE)
   if(${_akantu_${dir}_tests_count} EQUAL 0)
@@ -206,17 +220,33 @@ endfunction()
 
 # ==============================================================================
 function(register_test test_name)
-   set(multi_variables
-     SOURCES FILES_TO_COPY DEPENDS DIRECTORIES_TO_CREATE COMPILE_OPTIONS
-     EXTRA_FILES LINK_LIBRARIES PACKAGE PARALLEL_LEVEL
-     )
+  set(flags
+    GTEST
+    UNSTABLE
+    PARALLEL
+    )
+  set(one_variables
+    POSTPROCESS
+    SCRIPT
+    )
+  set(multi_variables
+    SOURCES
+    FILES_TO_COPY
+    DEPENDS
+    DIRECTORIES_TO_CREATE
+    COMPILE_OPTIONS
+    EXTRA_FILES
+    LINK_LIBRARIES
+    PACKAGE
+    PARALLEL_LEVEL
+    )
 
-   cmake_parse_arguments(_register_test
-     "UNSTABLE;PARALLEL"
-     "POSTPROCESS;SCRIPT"
-     "${multi_variables}"
-     ${ARGN}
-     )
+  cmake_parse_arguments(_register_test
+    "${flags}"
+    "${one_variables}"
+    "${multi_variables}"
+    ${ARGN}
+    )
 
   if(NOT _register_test_PACKAGE)
     message(FATAL_ERROR "No reference package was defined for the test"
@@ -260,7 +290,7 @@ function(register_test test_name)
 
     if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
       if(_compile_source)
-         # get the include directories for sources in activated directories
+        # get the include directories for sources in activated directories
         package_get_all_include_directories(
           AKANTU_LIBRARY_INCLUDE_DIRS
           )
@@ -271,37 +301,37 @@ function(register_test test_name)
           AKANTU_EXTERNAL_LIBRARIES
           )
 
-        # set the proper includes to build most of the tests
-        include_directories(
-          ${PROJECT_BINARY_DIR}/src
-          ${AKANTU_LIBRARY_INCLUDE_DIRS}
-          ${AKANTU_EXTERNAL_INCLUDE_DIR}
-          )
 
-        # Register the executable to compile
-        add_executable(${test_name} ${_compile_source})
-        #set_target_properties(${test_name} PROPERTIES CXX_STANDARD 14)
+        if(NOT _register_test_GTEST)
+          # Register the executable to compile
+          add_executable(${test_name} ${_compile_source})
+          
+          # set the proper includes to build most of the tests
+          target_include_directories(${test_name}
+            PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
+          target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
 
-        target_include_directories(${test_name}
-          PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-        target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+          if(_register_test_DEPENDS)
+            add_dependencies(${test_name} ${_register_test_DEPENDS})
+          endif()
 
-        if(_register_test_DEPENDS)
-          add_dependencies(${test_name} ${_register_test_DEPENDS})
-        endif()
+          # add the extra compilation options
+          if(_register_test_COMPILE_OPTIONS)
+            set_target_properties(${test_name}
+              PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+          endif()
 
-        # add the extra compilation options
-        if(_register_test_COMPILE_OPTIONS)
-          set_target_properties(${test_name}
-            PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
-        endif()
-
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
-          set(AKANTU_EXTRA_CXX_FLAGS "${AKANTU_EXTRA_CXX_FLAGS} -no-pie")
-        endif()
-        if(AKANTU_EXTRA_CXX_FLAGS)
-          set_target_properties(${test_name}
-            PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+          if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(AKANTU_EXTRA_CXX_FLAGS "${AKANTU_EXTRA_CXX_FLAGS} -no-pie")
+          endif()
+          if(AKANTU_EXTRA_CXX_FLAGS)
+            set_target_properties(${test_name}
+              PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+          endif()
+        else()
+          set(_list ${AKANTU_${_u_parent}_GTEST_SOURCE})
+          list(APPEND _list ${_compile_source})
+          set(AKANTU_${_u_parent}_GTEST_SOURCE ${_list} CACHE INTERNAL "")
         endif()
       else()
         if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
@@ -384,19 +414,17 @@ function(register_test test_name)
 
       string(REPLACE ";" " " _command "${_arguments}")
 
-      # register them test
-      if(_procs)
-        foreach(p ${_procs})
-          add_test(NAME ${test_name}_${p}_run COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p})
-          # add the executable as a dependency of the run
-          set_tests_properties(${test_name}_${p}_run PROPERTIES DEPENDS ${test_name})
-        endforeach()
-      else()
-        add_test(NAME ${test_name}_run COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
-        # add the executable as a dependency of the run
-        set_tests_properties(${test_name}_run PROPERTIES DEPENDS ${test_name})
+      if(NOT _register_test_GTEST)
+        
+        # register them test
+        if(_procs)
+          foreach(p ${_procs})
+            add_test(NAME ${test_name}_${p} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p})
+          endforeach()
+        else()
+          add_test(NAME ${test_name} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
+        endif()
       endif()
-
     endif()
   endif()
 

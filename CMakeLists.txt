@@ -97,6 +97,9 @@ else()
   add_flags(cxx "-Wall")
 endif()
 
+option(AKANTU_EXAMPLES "Activate examples" OFF)
+option(AKANTU_TESTS "Activate tests" OFF)
+
 include(AkantuExtraCompilationProfiles)
 #===============================================================================
 # Dependencies
@@ -138,9 +141,6 @@ endif()
 #===============================================================================
 # Examples and tests
 #===============================================================================
-option(AKANTU_EXAMPLES "Activate examples" OFF)
-option(AKANTU_TESTS "Activate tests" OFF)
-
 include(AkantuTestsMacros)
 include(AkantuExampleMacros)
 
