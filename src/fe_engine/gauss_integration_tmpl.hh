@@ -233,7 +233,7 @@ const Matrix<Real>
 GaussIntegrationElement<element_type, n>::getQuadraturePoints() {
   const InterpolationType itp_type =
       ElementClassProperty<element_type>::interpolation_type;
-  typedef InterpolationProperty<itp_type> interpolation_property;
+  using interpolation_property = InterpolationProperty<itp_type>;
   typedef _aka_gauss_helpers::GaussIntegrationTypeDataHelper<
       ElementClassProperty<element_type>::gauss_integration_type,
       interpolation_property::natural_space_dimension, n> data_helper;
@@ -246,7 +246,7 @@ template <ElementType element_type, UInt n>
 const Vector<Real> GaussIntegrationElement<element_type, n>::getWeights() {
   const InterpolationType itp_type =
       ElementClassProperty<element_type>::interpolation_type;
-  typedef InterpolationProperty<itp_type> interpolation_property;
+  using interpolation_property = InterpolationProperty<itp_type>;
   typedef _aka_gauss_helpers::GaussIntegrationTypeDataHelper<
       ElementClassProperty<element_type>::gauss_integration_type,
       interpolation_property::natural_space_dimension, n> data_helper;
@@ -259,7 +259,7 @@ template <ElementType element_type, UInt n>
 UInt GaussIntegrationElement<element_type, n>::getNbQuadraturePoints() {
   const InterpolationType itp_type =
       ElementClassProperty<element_type>::interpolation_type;
-  typedef InterpolationProperty<itp_type> interpolation_property;
+  using interpolation_property = InterpolationProperty<itp_type>;
   typedef _aka_gauss_helpers::GaussIntegrationTypeDataHelper<
       ElementClassProperty<element_type>::gauss_integration_type,
       interpolation_property::natural_space_dimension, n> data_helper;

@@ -107,12 +107,12 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
   SCOTCH_Num velmbas = vnodnbr;
   SCOTCH_Num velmnbr = total_nb_element;
 
-  SCOTCH_Num * verttab = new SCOTCH_Num[vnodnbr + velmnbr + 1];
+  auto * verttab = new SCOTCH_Num[vnodnbr + velmnbr + 1];
   SCOTCH_Num * vendtab = verttab + 1;
 
-  SCOTCH_Num * velotab = NULL;
-  SCOTCH_Num * vnlotab = NULL;
-  SCOTCH_Num * vlbltab = NULL;
+  SCOTCH_Num * velotab = nullptr;
+  SCOTCH_Num * vnlotab = nullptr;
+  SCOTCH_Num * vlbltab = nullptr;
 
   memset(verttab, 0, (vnodnbr + velmnbr + 1) * sizeof(SCOTCH_Num));
 
@@ -144,7 +144,7 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
 
   /// rearrange element to get the node-element list
   SCOTCH_Num edgenbr = verttab[vnodnbr] + nb_edge;
-  SCOTCH_Num * edgetab = new SCOTCH_Num[edgenbr];
+  auto * edgetab = new SCOTCH_Num[edgenbr];
 
   UInt linearized_el = 0;
 
@@ -189,7 +189,7 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
     }
   }
 
-  SCOTCH_Mesh * meshptr = new SCOTCH_Mesh;
+  auto * meshptr = new SCOTCH_Mesh;
 
   SCOTCH_meshInit(meshptr);
 
@@ -280,13 +280,13 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
   SCOTCH_Num edgenbr = dxadj(vertnbr);   // twice  the number  of "edges"
   //(an "edge" bounds two nodes)
   SCOTCH_Num * verttab = dxadj.storage(); // array of start indices in edgetab
-  SCOTCH_Num * vendtab = NULL; // array of after-last indices in edgetab
-  SCOTCH_Num * velotab = NULL; // integer  load  associated with
+  SCOTCH_Num * vendtab = nullptr; // array of after-last indices in edgetab
+  SCOTCH_Num * velotab = nullptr; // integer  load  associated with
   // every vertex ( optional )
   SCOTCH_Num * edlotab = edge_loads.storage(); // integer  load  associated with
   // every edge ( optional )
   SCOTCH_Num * edgetab = dadjncy.storage(); // adjacency array of every vertex
-  SCOTCH_Num * vlbltab = NULL;              // vertex label array (optional)
+  SCOTCH_Num * vlbltab = nullptr;           // vertex label array (optional)
 
   /// Allocate space for Scotch arrays
   parttab = new SCOTCH_Num[vertnbr];
@@ -404,11 +404,11 @@ void MeshPartitionScotch::reorder() {
   SCOTCH_Strat scotch_strat;
   // SCOTCH_Ordering scotch_order;
 
-  SCOTCH_Num * permtab = new SCOTCH_Num[nb_nodes];
-  SCOTCH_Num * peritab = NULL;
+  auto * permtab = new SCOTCH_Num[nb_nodes];
+  SCOTCH_Num * peritab = nullptr;
   SCOTCH_Num cblknbr = 0;
-  SCOTCH_Num * rangtab = NULL;
-  SCOTCH_Num * treetab = NULL;
+  SCOTCH_Num * rangtab = nullptr;
+  SCOTCH_Num * treetab = nullptr;
 
   /// Initialize the strategy structure
   SCOTCH_stratInit(&scotch_strat);
@@ -441,7 +441,7 @@ void MeshPartitionScotch::reorder() {
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
+    auto gt = (GhostType)g;
 
     Mesh::type_iterator it = mesh.firstType(_all_dimensions, gt);
     Mesh::type_iterator end = mesh.lastType(_all_dimensions, gt);
@@ -462,7 +462,7 @@ void MeshPartitionScotch::reorder() {
   }
 
   /// \todo think of a in-place way to do it
-  Real * new_coordinates = new Real[spatial_dimension * nb_nodes];
+  auto * new_coordinates = new Real[spatial_dimension * nb_nodes];
   Real * old_coordinates = mesh.getNodes().storage();
   for (UInt i = 0; i < nb_nodes; ++i) {
     memcpy(new_coordinates + permtab[i] * spatial_dimension,

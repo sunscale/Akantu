@@ -58,7 +58,8 @@ public:
   MaterialPython(SolidMechanicsModel & model, PyObject * obj,
                  const ID & id = "");
 
-  virtual ~MaterialPython(){};
+  ~MaterialPython() override = default;
+  ;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -66,10 +67,11 @@ public:
 public:
   void registerInternals();
 
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   /// constitutive law for a given quad point
   template <typename it_type>
@@ -77,12 +79,12 @@ public:
                      std::vector<it_type> & internal_iterators);
 
   /// compute the tangent stiffness matrix for an element type
-  virtual void computeTangentModuli(const ElementType & el_type,
-                                    Array<Real> & tangent_matrix,
-                                    GhostType ghost_type = _not_ghost);
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
 
   /// compute the push wave speed of the material
-  Real getPushWaveSpeed(const Element & element) const;
+  Real getPushWaveSpeed(const Element & element) const override;
 
 protected:
   /// update the dissipated energy, must be called after the stress have been

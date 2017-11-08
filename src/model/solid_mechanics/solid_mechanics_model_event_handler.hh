@@ -48,13 +48,13 @@ struct AfterSolveStepEvent {
   AnalysisMethod method;
 };
 struct BeforeDumpEvent {
-  BeforeDumpEvent() {}
+  BeforeDumpEvent() = default;
 };
 struct BeginningOfDamageIterationEvent {
-  BeginningOfDamageIterationEvent() {}
+  BeginningOfDamageIterationEvent() = default;
 };
 struct AfterDamageEvent {
-  AfterDamageEvent() {}
+  AfterDamageEvent() = default;
 };
 }
 
@@ -64,7 +64,7 @@ class SolidMechanicsModelEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~SolidMechanicsModelEventHandler(){};
+  virtual ~SolidMechanicsModelEventHandler() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

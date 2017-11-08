@@ -83,7 +83,7 @@ namespace debug {
 
   void initSignalHandler();
   std::string demangle(const char * symbol);
-  std::string exec(std::string cmd);
+  std::string exec(const std::string & cmd);
 
   void printBacktrace(int sig);
 

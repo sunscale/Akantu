@@ -49,9 +49,7 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("triangle_3.msh");
-  Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
-
-  MeshUtils::buildAllFacets(mesh, mesh_facets);
+  const auto & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
   const ElementType type_facet = mesh.getFacetType(type);
   const ElementType type_subfacet = mesh.getFacetType(type_facet);
@@ -59,7 +57,6 @@ int main(int argc, char *argv[]) {
   /* ------------------------------------------------------------------------ */
   /* Element to Subelement testing                                            */
   /* ------------------------------------------------------------------------ */
-
   const Array< std::vector<Element> > & el_to_subel2 = mesh_facets.getElementToSubelement(type_facet);
   const Array< std::vector<Element> > & el_to_subel1 = mesh_facets.getElementToSubelement(type_subfacet);
 

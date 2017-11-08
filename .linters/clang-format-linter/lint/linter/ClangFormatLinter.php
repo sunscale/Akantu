@@ -4,13 +4,12 @@
  * Uses the clang format to format C/C++/Obj-C code
  */
 final class ClangFormatLinter extends ArcanistExternalLinter {
-
   public function getInfoName() {
     return 'clang-format';
   }
 
   public function getInfoURI() {
-    return '';
+    return 'https://clang.llvm.org/docs/ClangFormat.html';
   }
 
   public function getInfoDescription() {
@@ -36,8 +35,18 @@ final class ClangFormatLinter extends ArcanistExternalLinter {
     return 'clang-format';
   }
 
+  public function getVersion() {
+    list($stdout) = execx('%C -version', $this->getExecutableCommand());
+    $matches = array();
+    if (preg_match('/^(?P<version>\d+\.\d+\.\d+)$/', $stdout, $matches)) {
+      return $matches['version'];
+    } else {
+      return false;
+    }
+  }
+
   public function getInstallInstructions() {
-    return pht('Make sure clang-format is in directory specified by $PATH');
+    return pht('On a apt based system, apt-get install clang-format. Othewhy install following the instructions on installing tool inb clang, and make sure clang-format is in directory specified by $PATH');
   }
 
   public function shouldExpectCommandErrors() {

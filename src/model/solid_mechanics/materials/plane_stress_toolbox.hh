@@ -59,7 +59,7 @@ public:
                      const ID & id = "")
       : ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
 
-  ~PlaneStressToolbox() override {}
+  ~PlaneStressToolbox() override = default;
 
 protected:
   void initialize();

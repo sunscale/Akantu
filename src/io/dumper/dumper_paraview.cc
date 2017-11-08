@@ -54,7 +54,7 @@ DumperParaview::DumperParaview(const std::string & filename,
 }
 
 /* -------------------------------------------------------------------------- */
-DumperParaview::~DumperParaview() {}
+DumperParaview::~DumperParaview() = default;
 
 /* -------------------------------------------------------------------------- */
 void DumperParaview::setBaseName(const std::string & basename) {

@@ -144,7 +144,7 @@ public:
                   UInt dim, ElementKind ek);
 
     type_iterator(const type_iterator & it);
-    type_iterator() {}
+    type_iterator() = default;
 
     inline reference operator*();
     inline reference operator*() const;

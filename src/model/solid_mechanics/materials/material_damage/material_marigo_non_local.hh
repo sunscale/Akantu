@@ -68,10 +68,11 @@ protected:
   void registerNonLocalVariables() override;
 
   /// constitutive law
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   void computeNonLocalStress(ElementType type,
-                             GhostType ghost_type = _not_ghost);
+                             GhostType ghost_type = _not_ghost) override;
 
 private:
   /* ------------------------------------------------------------------------ */

@@ -52,7 +52,7 @@ SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id)
       a(matrix.a, true, id + ":a") {}
 
 /* -------------------------------------------------------------------------- */
-SparseMatrixAIJ::~SparseMatrixAIJ() {}
+SparseMatrixAIJ::~SparseMatrixAIJ() = default;
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::applyBoundary(Real block_val) {
@@ -169,7 +169,7 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
   AKANTU_DEBUG_IN();
-  const SparseMatrixAIJ & mat = dynamic_cast<const SparseMatrixAIJ &>(matrix);
+  const auto & mat = dynamic_cast<const SparseMatrixAIJ &>(matrix);
   AKANTU_DEBUG_ASSERT(nb_non_zero == mat.getNbNonZero(),
                       "The to matrix don't have the same profiles");
   memcpy(a.storage(), mat.getA().storage(), nb_non_zero * sizeof(Real));
@@ -198,7 +198,7 @@ void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::addMeTo(SparseMatrix & B, Real alpha) const {
-  if (SparseMatrixAIJ * B_aij = dynamic_cast<SparseMatrixAIJ *>(&B)) {
+  if (auto * B_aij = dynamic_cast<SparseMatrixAIJ *>(&B)) {
     this->addMeToTemplated<SparseMatrixAIJ>(*B_aij, alpha);
   } else {
     //    this->addMeToTemplated<SparseMatrix>(*this, alpha);

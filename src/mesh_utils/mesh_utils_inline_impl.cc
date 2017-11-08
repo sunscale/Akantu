@@ -60,8 +60,8 @@ MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
   if (elem_list.size() <= elem_to_remove.size())
     return true;
 
-  std::vector<Element>::const_iterator el_it = elem_to_remove.begin();
-  std::vector<Element>::const_iterator el_last = elem_to_remove.end();
+  auto el_it = elem_to_remove.begin();
+  auto el_last = elem_to_remove.end();
   std::vector<Element>::iterator el_del;
 
   UInt deletions = 0;

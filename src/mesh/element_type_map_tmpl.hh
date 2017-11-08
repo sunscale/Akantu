@@ -287,7 +287,7 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(
   for (auto gt : ghost_types) {
     for (auto & type :
          new_numbering.elementTypes(_all_dimensions, gt, _ek_not_defined)) {
-      SupportType support_type = convertType<ElementType, SupportType>(type);
+      auto support_type = convertType<ElementType, SupportType>(type);
       if (this->exists(support_type, gt)) {
         const auto & renumbering = new_numbering(type, gt);
         if (renumbering.size() == 0)
@@ -324,7 +324,7 @@ void ElementTypeMapArray<T, SupportType>::printself(std::ostream & stream,
   stream << space << "ElementTypeMapArray<" << debug::demangle(typeid(T).name())
          << "> [" << std::endl;
   for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
+    auto gt = (GhostType)g;
 
     const DataMap & data = this->getData(gt);
     typename DataMap::const_iterator it;

@@ -82,7 +82,7 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 
   UInt linearized_el = 0;
   UInt nb_elements = mesh.getNbElement(mesh.getSpatialDimension(), ghost_type);
-  Int * partition_list = new Int[nb_elements];
+  auto * partition_list = new Int[nb_elements];
 
 #if !defined(AKANTU_NDEBUG)
   std::set<UInt> partitions;

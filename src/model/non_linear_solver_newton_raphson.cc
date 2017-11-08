@@ -70,7 +70,7 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
 }
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolverNewtonRaphson::~NonLinearSolverNewtonRaphson() {}
+NonLinearSolverNewtonRaphson::~NonLinearSolverNewtonRaphson() = default;
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {

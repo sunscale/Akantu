@@ -29,17 +29,20 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <utility>
+
 #include "parameter_registry.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
-Parameter::Parameter() : name(""), description(""), param_type(_pat_internal) {}
+Parameter::Parameter() : name(""), description("") {}
 
 /* -------------------------------------------------------------------------- */
 Parameter::Parameter(std::string name, std::string description,
                      ParameterAccessType param_type)
-    : name(name), description(description), param_type(param_type) {}
+    : name(std::move(name)), description(std::move(description)),
+      param_type(param_type) {}
 
 /* -------------------------------------------------------------------------- */
 bool Parameter::isWritable() const { return param_type & _pat_writable; }
@@ -99,9 +102,7 @@ void Parameter::printself(std::ostream & stream) const {
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-ParameterRegistry::ParameterRegistry() : consisder_sub(true) {
-
-}
+ParameterRegistry::ParameterRegistry() {}
 
 /* -------------------------------------------------------------------------- */
 ParameterRegistry::~ParameterRegistry() {
@@ -142,7 +143,7 @@ void ParameterRegistry::registerSubRegistry(const ID & id,
 /* -------------------------------------------------------------------------- */
 void ParameterRegistry::setParameterAccessType(const std::string & name,
                                                ParameterAccessType ptype) {
-  Parameters::iterator it = params.find(name);
+  auto it = params.find(name);
   if (it == params.end())
     AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
   Parameter & param = *(it->second);

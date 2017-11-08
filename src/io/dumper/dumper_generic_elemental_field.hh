@@ -48,14 +48,14 @@ class GenericElementalField : public Field {
   /* ------------------------------------------------------------------------ */
 public:
   // check dumper_type_traits.hh for additional information over these types
-  typedef _types types;
-  typedef typename types::data_type data_type;
-  typedef typename types::it_type it_type;
-  typedef typename types::field_type field_type;
-  typedef typename types::array_type array_type;
-  typedef typename types::array_iterator array_iterator;
-  typedef typename field_type::type_iterator field_type_iterator;
-  typedef iterator_type<types> iterator;
+  using types = _types;
+  using data_type = typename types::data_type;
+  using it_type = typename types::it_type;
+  using field_type = typename types::field_type;
+  using array_type = typename types::array_type;
+  using array_iterator = typename types::array_iterator;
+  using field_type_iterator = typename field_type::type_iterator;
+  using iterator = iterator_type<types>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */

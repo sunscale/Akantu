@@ -44,27 +44,29 @@ class Variable : public VariableInterface {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Variable(Cont & c, const std::string name) : my_variable(c), name(name) {};
-  virtual ~Variable() {};
+  Variable(Cont & c, const std::string & name) : my_variable(c), name(name){};
+  ~Variable() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   //! accept to be visited by a visitor
-  inline void accept(Visitor & v) const;
+  inline void accept(Visitor & v) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  inline DataType getDataType() const { return my_variable.getDataType(); }
+  inline DataType getDataType() const override {
+    return my_variable.getDataType();
+  }
 
   //! return the dim
-  inline UInt getDim() const { return my_variable.getDim(); }
+  inline UInt getDim() const override { return my_variable.getDim(); }
 
   //! return the description name of the container
-  inline std::string getName() const { return name; }
+  inline std::string getName() const override { return name; }
 
   inline const Cont & operator*() const { return my_variable; } 
 

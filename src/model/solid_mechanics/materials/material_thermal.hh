@@ -52,7 +52,7 @@ public:
                   FEEngine & fe_engine,
                   const ID & id = "");
 
-  ~MaterialThermal() override{};
+  ~MaterialThermal() override = default;
 
 protected:
   void initialize();

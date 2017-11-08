@@ -219,7 +219,7 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
                       "In matchPBCPairs: The normalization is zero. "
                           << "Did you compute the bounding box of the mesh?");
 
-  UInt odir_1 = UInt(-1), odir_2 = UInt(-1);
+  auto odir_1 = UInt(-1), odir_2 = UInt(-1);
 
   if (dim == 3) {
     if (dir == _x) {

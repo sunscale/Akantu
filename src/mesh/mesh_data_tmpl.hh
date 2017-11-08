@@ -56,7 +56,7 @@ BOOST_PP_SEQ_FOR_EACH(MESH_DATA_GET_TYPE, void, AKANTU_MESH_DATA_TYPES)
 #undef MESH_DATA_GET_TYPE
 
 inline MeshDataTypeCode MeshData::getTypeCode(const ID & name) const {
-  TypeCodeMap::const_iterator it = typecode_map.find(name);
+  auto it = typecode_map.find(name);
   if (it == typecode_map.end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return it->second;
@@ -66,7 +66,7 @@ inline MeshDataTypeCode MeshData::getTypeCode(const ID & name) const {
 //  Register new elemental data templated (and alloc data) with check if the
 //  name is new
 template <typename T> void MeshData::registerElementalData(const ID & name) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
+  auto it = elemental_data.find(name);
   if (it == elemental_data.end()) {
     allocElementalData<T>(name);
   } else {
@@ -98,8 +98,7 @@ inline void MeshData::registerElementalData(const ID & name,
 /// Register new elemental data (and alloc data)
 template <typename T>
 ElementTypeMapArray<T> * MeshData::allocElementalData(const ID & name) {
-  ElementTypeMapArray<T> * dataset =
-      new ElementTypeMapArray<T>(name, id, memory_id);
+  auto * dataset = new ElementTypeMapArray<T>(name, id, memory_id);
   elemental_data[name] = dataset;
   typecode_map[name] = getTypeCode<T>();
   return dataset;
@@ -109,7 +108,7 @@ ElementTypeMapArray<T> * MeshData::allocElementalData(const ID & name) {
 template <typename T>
 const ElementTypeMapArray<T> &
 MeshData::getElementalData(const ID & name) const {
-  ElementalDataMap::const_iterator it = elemental_data.find(name);
+  auto it = elemental_data.find(name);
   if (it == elemental_data.end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second));
@@ -119,7 +118,7 @@ MeshData::getElementalData(const ID & name) const {
 // Get an existing elemental data
 template <typename T>
 ElementTypeMapArray<T> & MeshData::getElementalData(const ID & name) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
+  auto it = elemental_data.find(name);
   if (it == elemental_data.end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second));
@@ -144,7 +143,7 @@ template <typename T>
 const Array<T> &
 MeshData::getElementalDataArray(const ID & name, const ElementType & elem_type,
                                 const GhostType & ghost_type) const {
-  ElementalDataMap::const_iterator it = elemental_data.find(name);
+  auto it = elemental_data.find(name);
   if (it == elemental_data.end()) {
     AKANTU_EXCEPTION("Data named " << name
                                    << " not registered for type: " << elem_type
@@ -158,7 +157,7 @@ template <typename T>
 Array<T> & MeshData::getElementalDataArray(const ID & name,
                                            const ElementType & elem_type,
                                            const GhostType & ghost_type) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
+  auto it = elemental_data.find(name);
   if (it == elemental_data.end()) {
     AKANTU_EXCEPTION("Data named " << name
                                    << " not registered for type: " << elem_type
@@ -175,7 +174,7 @@ Array<T> & MeshData::getElementalDataArrayAlloc(const ID & name,
                                                 const ElementType & elem_type,
                                                 const GhostType & ghost_type,
                                                 UInt nb_component) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
+  auto it = elemental_data.find(name);
   ElementTypeMapArray<T> * dataset;
   if (it == elemental_data.end()) {
     dataset = allocElementalData<T>(name);
@@ -202,7 +201,7 @@ Array<T> & MeshData::getElementalDataArrayAlloc(const ID & name,
 inline UInt MeshData::getNbComponent(const ID & name,
                                      const ElementType & el_type,
                                      const GhostType & ghost_type) const {
-  TypeCodeMap::const_iterator it = typecode_map.find(name);
+  auto it = typecode_map.find(name);
   UInt nb_comp(0);
   if (it == typecode_map.end()) {
     AKANTU_EXCEPTION("Could not determine the type held in dataset "
@@ -248,8 +247,8 @@ inline void MeshData::getTagNames(StringVector & tags,
   tags.clear();
   bool exists(false);
 
-  ElementalDataMap::const_iterator it = elemental_data.begin();
-  ElementalDataMap::const_iterator it_end = elemental_data.end();
+  auto it = elemental_data.begin();
+  auto it_end = elemental_data.end();
   for (; it != it_end; ++it) {
     MeshDataTypeCode type = getTypeCode(it->first);
     switch (type) {

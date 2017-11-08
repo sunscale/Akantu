@@ -123,8 +123,9 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef typename ElementTypeMapArray<T>::type_iterator type_iterator;
-  typedef typename ElementTypeMapArray<UInt>::type_iterator filter_type_iterator;
+  using type_iterator = typename ElementTypeMapArray<T>::type_iterator;
+  using filter_type_iterator =
+      typename ElementTypeMapArray<UInt>::type_iterator;
 
   /// get the type iterator on all types contained in the internal field
   type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {

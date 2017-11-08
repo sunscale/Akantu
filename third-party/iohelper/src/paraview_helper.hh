@@ -131,7 +131,7 @@ class ParaviewHelper : public Visitor {
  public:
 
   ParaviewHelper(File & f, UInt mode);
-  virtual ~ParaviewHelper();
+  ~ParaviewHelper() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

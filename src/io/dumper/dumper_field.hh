@@ -50,8 +50,8 @@ class Field {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Field() : homogeneous(false) {}
-  virtual ~Field(){};
+  Field() = default;
+  virtual ~Field() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -120,7 +120,7 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// the flag to know if it is homogeneous
-  bool homogeneous;
+  bool homogeneous{false};
 
   /// the name of the group it was associated to
   std::string group_name;

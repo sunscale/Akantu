@@ -108,7 +108,7 @@ void SolidMechanicsModelCohesive::setTimeStep(Real time_step,
 void SolidMechanicsModelCohesive::initFull(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
-  const SolidMechanicsModelCohesiveOptions & smmc_options =
+  const auto & smmc_options =
       dynamic_cast<const SolidMechanicsModelCohesiveOptions &>(options);
 
   this->is_extrinsic = smmc_options.extrinsic;
@@ -188,8 +188,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
           element.element = el;
           UInt mat_index = (*material_selector)(element);
           f_material(el) = mat_index;
-          MaterialCohesive & mat =
-              dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
+          auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
           mat.addFacet(element);
         }
       }
@@ -205,7 +204,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
   } else {
     // TODO think of something a bit mor consistant than just coding the first
     // thing that comes in Fabian's head....
-    typedef ParserSection::const_section_iterator const_section_iterator;
+    using const_section_iterator = ParserSection::const_section_iterator;
     std::pair<const_section_iterator, const_section_iterator> sub_sections =
         this->parser.getSubSections(_st_mesh);
 
@@ -223,7 +222,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
-    std::string cohesive_surfaces) {
+    const std::string & cohesive_surfaces) {
 
   AKANTU_DEBUG_IN();
 
@@ -370,7 +369,7 @@ void SolidMechanicsModelCohesive::insertIntrinsicElements() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::insertElementsFromMeshData(
-    std::string physname) {
+    const std::string & physname) {
   AKANTU_DEBUG_IN();
 
   UInt material_index = SolidMechanicsModel::getMaterialIndex(physname);
@@ -500,7 +499,7 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
   /// loop over non cohesive materials
   for (UInt m = 0; m < materials.size(); ++m) {
     try {
-      MaterialCohesive & mat __attribute__((unused)) =
+      auto & mat __attribute__((unused)) =
           dynamic_cast<MaterialCohesive &>(*materials[m]);
     } catch (std::bad_cast &) {
       /// initialize the interpolation function
@@ -518,7 +517,7 @@ void SolidMechanicsModelCohesive::assembleInternalForces() {
   // f_int += f_int_cohe
   for (auto & material : this->materials) {
     try {
-      MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(*material);
+      auto & mat = dynamic_cast<MaterialCohesive &>(*material);
       mat.computeTraction(_not_ghost);
     } catch (std::bad_cast & bce) {
     }
@@ -529,7 +528,7 @@ void SolidMechanicsModelCohesive::assembleInternalForces() {
   if (isDefaultSolverExplicit()) {
     for (auto & material : materials) {
       try {
-        MaterialCohesive & mat = dynamic_cast<MaterialCohesive &>(*material);
+        auto & mat = dynamic_cast<MaterialCohesive &>(*material);
         mat.computeEnergies();
       } catch (std::bad_cast & bce) {
       }
@@ -581,7 +580,7 @@ void SolidMechanicsModelCohesive::interpolateStress() {
 
   for (auto & material : materials) {
     try {
-      MaterialCohesive & mat __attribute__((unused)) =
+      auto & mat __attribute__((unused)) =
           dynamic_cast<MaterialCohesive &>(*material);
     } catch (std::bad_cast &) {
       /// interpolate stress on facet quadrature points positions
@@ -608,7 +607,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
 
   for (auto & mat : materials) {
     try {
-      MaterialCohesive & mat_cohesive = dynamic_cast<MaterialCohesive &>(*mat);
+      auto & mat_cohesive = dynamic_cast<MaterialCohesive &>(*mat);
       /// check which not ghost cohesive elements are to be created
       mat_cohesive.checkInsertion();
     } catch (std::bad_cast &) {

@@ -109,9 +109,9 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
           0, 1, std::string(id + ":previous_global_blocked_dofs")),
       dofs_type(0, 1, std::string(id + ":dofs_type")),
       data_cache(0, 1, std::string(id + ":data_cache_array")),
-      jacobian_release(0),
+
       global_equation_number(0, 1, "global_equation_number"),
-      first_global_dof_id(0), synchronizer(nullptr) {}
+      synchronizer(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
@@ -396,8 +396,8 @@ void DOFManagerDefault::clearLumpedMatrix(const ID & mtx) {
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::updateGlobalBlockedDofs() {
-  DOFStorage::iterator it = this->dofs.begin();
-  DOFStorage::iterator end = this->dofs.end();
+  auto it = this->dofs.begin();
+  auto end = this->dofs.end();
 
   this->previous_global_blocked_dofs.copy(this->global_blocked_dofs);
   this->global_blocked_dofs.resize(this->local_system_size);
@@ -800,10 +800,9 @@ DOFManagerDefault::updateNodalDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
-                                       UInt nb_new_local_dofs,
-                                       UInt nb_new_pure_local,
-                                       std::function<UInt(UInt)> getNode) {
+void DOFManagerDefault::updateDOFsData(
+    DOFDataDefault & dof_data, UInt nb_new_local_dofs, UInt nb_new_pure_local,
+    const std::function<UInt(UInt)> & getNode) {
   auto prank = this->communicator.whoAmI();
   auto psize = this->communicator.getNbProc();
 

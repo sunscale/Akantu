@@ -57,7 +57,7 @@ enum ParameterAccessType {
 /// Bit-wise operator between access modes
 inline ParameterAccessType operator|(const ParameterAccessType & a,
                                      const ParameterAccessType & b) {
-  ParameterAccessType tmp = ParameterAccessType(UInt(a) | UInt(b));
+  auto tmp = ParameterAccessType(UInt(a) | UInt(b));
   return tmp;
 }
 
@@ -108,7 +108,7 @@ private:
   /// Description of parameter
   std::string description;
   /// Type of access
-  ParameterAccessType param_type;
+  ParameterAccessType param_type{_pat_internal};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -207,7 +207,7 @@ protected:
   SubRegisteries sub_registries;
 
   /// should accessor check in sub registries
-  bool consisder_sub;
+  bool consisder_sub{true};
 };
 
 } // akantu

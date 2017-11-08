@@ -293,7 +293,7 @@ MeshIOMSH::MeshIOMSH() {
 }
 
 /* -------------------------------------------------------------------------- */
-MeshIOMSH::~MeshIOMSH() {}
+MeshIOMSH::~MeshIOMSH() = default;
 
 /* -------------------------------------------------------------------------- */
 /* Spirit stuff                                                               */
@@ -729,8 +729,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
         sstr_phys_name >> phys_dim >> phys_name_id;
 
-        std::size_t b = line.find("\"");
-        std::size_t e = line.rfind("\"");
+        std::size_t b = line.find('\"');
+        std::size_t e = line.rfind('\"');
         std::string phys_name = line.substr(b + 1, e - b - 1);
 
         phys_name_map[phys_name_id] = phys_name;

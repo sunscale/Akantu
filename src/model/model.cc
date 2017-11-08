@@ -94,8 +94,8 @@ void Model::initNewSolver(const AnalysisMethod & method) {
 
 /* -------------------------------------------------------------------------- */
 void Model::initPBC() {
-  std::map<UInt, UInt>::iterator it = pbc_pair.begin();
-  std::map<UInt, UInt>::iterator end = pbc_pair.end();
+  auto it = pbc_pair.begin();
+  auto end = pbc_pair.end();
 
   is_pbc_slave_node.resize(mesh.getNbNodes());
 #ifndef AKANTU_NDEBUG
@@ -136,8 +136,8 @@ void Model::dumpGroup(const std::string & group_name,
 
 /* -------------------------------------------------------------------------- */
 void Model::dumpGroup() {
-  GroupManager::element_group_iterator bit = mesh.element_group_begin();
-  GroupManager::element_group_iterator bend = mesh.element_group_end();
+  auto bit = mesh.element_group_begin();
+  auto bend = mesh.element_group_end();
   for (; bit != bend; ++bit) {
     bit->second->dump();
   }
@@ -145,8 +145,8 @@ void Model::dumpGroup() {
 
 /* -------------------------------------------------------------------------- */
 void Model::setGroupDirectory(const std::string & directory) {
-  GroupManager::element_group_iterator bit = mesh.element_group_begin();
-  GroupManager::element_group_iterator bend = mesh.element_group_end();
+  auto bit = mesh.element_group_begin();
+  auto bend = mesh.element_group_end();
   for (; bit != bend; ++bit) {
     bit->second->setDirectory(directory);
   }
@@ -250,7 +250,8 @@ void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 void Model::addDumpFieldVectorToDumper(const std::string & dumper_name,
                                        const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular, 3);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
+                                  true);
 }
 
 /* -------------------------------------------------------------------------- */

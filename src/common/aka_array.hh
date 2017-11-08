@@ -230,6 +230,7 @@ public:
   /// append a vector
   // inline void push_back(const value_type new_elem[]);
 
+#ifndef SWIG
   /// append a Vector or a Matrix
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>{}>>
@@ -241,6 +242,7 @@ public:
   inline void erase(UInt i);
   /// ask Nico, clarify
   template <typename R> inline iterator<R> erase(const iterator<R> & it);
+#endif
 
   /// changes the allocated size but not the size
   virtual void reserve(UInt size);
@@ -265,10 +267,12 @@ public:
   /// @see Array::find(const_reference elem) const
   UInt find(T elem[]) const;
 
+#ifndef SWIG
   /// @see Array::find(const_reference elem) const
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>{}>>
   inline UInt find(const C<T> & elem);
+#endif
 
   /// set all entries of the array to 0
   inline void clear() { std::fill_n(values, size_ * nb_component, T()); }
@@ -277,11 +281,13 @@ public:
   /// @param t value to fill the array with
   inline void set(T t) { std::fill_n(values, size_ * nb_component, t); }
 
+#ifndef SWIG
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>{}>>
   inline void set(const C<T> & vm);
+#endif
 
   /// Append the content of the other array to the current one
   void append(const Array<T> & other);

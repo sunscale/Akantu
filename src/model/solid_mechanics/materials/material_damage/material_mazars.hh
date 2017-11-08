@@ -63,15 +63,15 @@ class MaterialMazars : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
 public:
   MaterialMazars(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialMazars(){};
+  ~MaterialMazars() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// constitutive law for a given quadrature point

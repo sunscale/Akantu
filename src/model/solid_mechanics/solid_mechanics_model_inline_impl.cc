@@ -90,8 +90,7 @@ inline Material & SolidMechanicsModel::getMaterial(const std::string & name) {
 inline UInt
 SolidMechanicsModel::getMaterialIndex(const std::string & name) const {
   AKANTU_DEBUG_IN();
-  std::map<std::string, UInt>::const_iterator it =
-      materials_names_to_id.find(name);
+  auto it = materials_names_to_id.find(name);
   AKANTU_DEBUG_ASSERT(it != materials_names_to_id.end(),
                       "The model " << id << " has no material named " << name);
   AKANTU_DEBUG_OUT();
@@ -102,8 +101,7 @@ SolidMechanicsModel::getMaterialIndex(const std::string & name) const {
 inline const Material &
 SolidMechanicsModel::getMaterial(const std::string & name) const {
   AKANTU_DEBUG_IN();
-  std::map<std::string, UInt>::const_iterator it =
-      materials_names_to_id.find(name);
+  auto it = materials_names_to_id.find(name);
   AKANTU_DEBUG_ASSERT(it != materials_names_to_id.end(),
                       "The model " << id << " has no material named " << name);
   AKANTU_DEBUG_OUT();

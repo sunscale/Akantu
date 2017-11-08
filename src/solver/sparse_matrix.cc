@@ -59,7 +59,7 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-SparseMatrix::~SparseMatrix() {}
+SparseMatrix::~SparseMatrix() = default;
 
 /* -------------------------------------------------------------------------- */
 Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat) {

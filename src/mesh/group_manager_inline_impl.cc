@@ -106,7 +106,7 @@ template <typename dump_type, typename field_type>
 dumper::Field * GroupManager::createElementalField(
     const field_type & field, const std::string & group_name,
     UInt spatial_dimension, const ElementKind & kind,
-    ElementTypeMap<UInt> nb_data_per_elem) {
+    const ElementTypeMap<UInt> & nb_data_per_elem) {
   const field_type * field_ptr = &field;
   if (field_ptr == nullptr)
     return nullptr;
@@ -133,15 +133,15 @@ dumper::Field * GroupManager::createElementalFilteredField(
   if (group_name == "all")
     throw;
 
-  typedef typename field_type::type T;
+  using T = typename field_type::type;
   ElementGroup & group = this->getElementGroup(group_name);
   UInt dim = group.getDimension();
   if (dim != spatial_dimension)
     throw;
   const ElementTypeMapArray<UInt> & elemental_filter = group.getElements();
 
-  ElementTypeMapArrayFilter<T> * filtered = new ElementTypeMapArrayFilter<T>(
-      field, elemental_filter, nb_data_per_elem);
+  auto * filtered = new ElementTypeMapArrayFilter<T>(field, elemental_filter,
+                                                     nb_data_per_elem);
 
   dumper::Field * dumper = new dump_type(*filtered, dim, _not_ghost, kind);
   dumper->setNbDataPerElem(nb_data_per_elem);
@@ -160,14 +160,14 @@ dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
     return nullptr;
   if (group_name == "all") {
     typedef typename dumper::NodalField<type, false> DumpType;
-    DumpType * dumper = new DumpType(*field, 0, 0, nullptr);
+    auto * dumper = new DumpType(*field, 0, 0, nullptr);
     dumper->setPadding(padding_size);
     return dumper;
   } else {
     ElementGroup & group = this->getElementGroup(group_name);
     const Array<UInt> * nodal_filter = &(group.getNodes());
     typedef typename dumper::NodalField<type, true> DumpType;
-    DumpType * dumper = new DumpType(*field, 0, 0, nodal_filter);
+    auto * dumper = new DumpType(*field, 0, 0, nodal_filter);
     dumper->setPadding(padding_size);
     return dumper;
   }
@@ -186,14 +186,14 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
     return nullptr;
   if (group_name == "all") {
     typedef typename dumper::NodalField<type, false> DumpType;
-    DumpType * dumper = new DumpType(*field, size, stride, NULL);
+    auto * dumper = new DumpType(*field, size, stride, NULL);
     dumper->setPadding(padding_size);
     return dumper;
   } else {
     ElementGroup & group = this->getElementGroup(group_name);
     const Array<UInt> * nodal_filter = &(group.getNodes());
     typedef typename dumper::NodalField<type, true> DumpType;
-    DumpType * dumper = new DumpType(*field, size, stride, nodal_filter);
+    auto * dumper = new DumpType(*field, size, stride, nodal_filter);
     dumper->setPadding(padding_size);
     return dumper;
   }

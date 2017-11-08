@@ -49,6 +49,7 @@
 #include <numeric>
 #include <queue>
 #include <sstream>
+#include <utility>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -129,8 +130,8 @@ GroupManager::createFilteredNodeGroup(const std::string & group_name,
 void GroupManager::destroyNodeGroup(const std::string & group_name) {
   AKANTU_DEBUG_IN();
 
-  NodeGroups::iterator nit = node_groups.find(group_name);
-  NodeGroups::iterator nend = node_groups.end();
+  auto nit = node_groups.find(group_name);
+  auto nend = node_groups.end();
   if (nit != nend) {
     delete (nit->second);
     node_groups.erase(nit);
@@ -266,7 +267,7 @@ public:
                       const ElementSynchronizer & element_synchronizer,
                       UInt nb_cluster)
       : group_manager(group_manager), element_dimension(element_dimension),
-        cluster_name_prefix(cluster_name_prefix),
+        cluster_name_prefix(std::move(cluster_name_prefix)),
         element_to_fragment(element_to_fragment),
         element_synchronizer(element_synchronizer), nb_cluster(nb_cluster) {}
 
@@ -381,8 +382,8 @@ public:
       ElementGroup & cluster =
           group_manager.createElementGroup(sstr.str(), element_dimension, true);
 
-      std::set<UInt>::iterator it = global_clusters[c].begin();
-      std::set<UInt>::iterator end = global_clusters[c].end();
+      auto it = global_clusters[c].begin();
+      auto end = global_clusters[c].end();
 
       /// append to current element group all fragments that belong to
       /// the same cluster if they exist
@@ -485,7 +486,8 @@ UInt GroupManager::createBoundaryGroupFromGeometry() {
 UInt GroupManager::createClusters(
     UInt element_dimension, Mesh & mesh_facets, std::string cluster_name_prefix,
     const GroupManager::ClusteringFilter & filter) {
-  return createClusters(element_dimension, cluster_name_prefix, filter, mesh_facets);
+  return createClusters(element_dimension, std::move(cluster_name_prefix),
+                        filter, mesh_facets);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -505,14 +507,15 @@ UInt GroupManager::createClusters(
                               element_dimension - 1);
   }
 
-  return createClusters(element_dimension, cluster_name_prefix, filter, *mesh_facets);
+  return createClusters(element_dimension, std::move(cluster_name_prefix),
+                        filter, *mesh_facets);
 }
 
 /* -------------------------------------------------------------------------- */
 //// \todo if needed element list construction can be optimized by
 //// templating the filter class
 UInt GroupManager::createClusters(UInt element_dimension,
-                                  std::string cluster_name_prefix,
+                                  const std::string & cluster_name_prefix,
                                   const GroupManager::ClusteringFilter & filter,
                                   Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
@@ -711,7 +714,8 @@ template <typename T>
 void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
   std::set<std::string> group_names;
   const ElementTypeMapArray<T> & datas = mesh.getData<T>(dataset_name);
-  typedef typename ElementTypeMapArray<T>::type_iterator type_iterator;
+  using type_iterator =
+      typename ElementTypeMapArray<T>::type_iterator;
 
   std::map<std::string, UInt> group_dim;
 
@@ -734,7 +738,7 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
         std::string gname = sstr.str();
         group_names.insert(gname);
 
-        std::map<std::string, UInt>::iterator it = group_dim.find(gname);
+        auto it = group_dim.find(gname);
         if (it == group_dim.end()) {
           group_dim[gname] = mesh.getSpatialDimension(*type_it);
         } else {
@@ -744,8 +748,8 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
     }
   }
 
-  std::set<std::string>::iterator git = group_names.begin();
-  std::set<std::string>::iterator gend = group_names.end();
+  auto git = group_names.begin();
+  auto gend = group_names.end();
   for (; git != gend; ++git)
     createElementGroup(*git, group_dim[*git]);
 
@@ -819,14 +823,12 @@ void GroupManager::printself(std::ostream & stream, int indent) const {
   stream << space << "GroupManager [" << std::endl;
 
   std::set<std::string> node_group_seen;
-  for (const_element_group_iterator it(element_group_begin());
-       it != element_group_end(); ++it) {
+  for (auto it(element_group_begin()); it != element_group_end(); ++it) {
     it->second->printself(stream, indent + 1);
     node_group_seen.insert(it->second->getNodeGroup().getName());
   }
 
-  for (const_node_group_iterator it(node_group_begin()); it != node_group_end();
-       ++it) {
+  for (auto it(node_group_begin()); it != node_group_end(); ++it) {
     if (node_group_seen.find(it->second->getName()) == node_group_seen.end())
       it->second->printself(stream, indent + 1);
   }
@@ -839,8 +841,8 @@ UInt GroupManager::getNbElementGroups(UInt dimension) const {
   if (dimension == _all_dimensions)
     return element_groups.size();
 
-  ElementGroups::const_iterator it = element_groups.begin();
-  ElementGroups::const_iterator end = element_groups.end();
+  auto it = element_groups.begin();
+  auto end = element_groups.end();
   UInt count = 0;
   for (; it != end; ++it)
     count += (it->second->getDimension() == dimension);
@@ -902,8 +904,8 @@ void GroupManager::fillBufferWithGroupNames(
   comm_buffer << nb_groups;
   AKANTU_DEBUG_INFO("Sending " << nb_groups << " node group names");
 
-  NodeGroups::const_iterator nnames_it = node_groups.begin();
-  NodeGroups::const_iterator nnames_end = node_groups.end();
+  auto nnames_it = node_groups.begin();
+  auto nnames_end = node_groups.end();
   for (; nnames_it != nnames_end; ++nnames_it) {
     std::string node_group_name = nnames_it->first;
     comm_buffer << node_group_name;
@@ -914,8 +916,8 @@ void GroupManager::fillBufferWithGroupNames(
   nb_groups = this->element_groups.size();
   comm_buffer << nb_groups;
   AKANTU_DEBUG_INFO("Sending " << nb_groups << " element group names");
-  ElementGroups::const_iterator gnames_it = this->element_groups.begin();
-  ElementGroups::const_iterator gnames_end = this->element_groups.end();
+  auto gnames_it = this->element_groups.begin();
+  auto gnames_end = this->element_groups.end();
   for (; gnames_it != gnames_end; ++gnames_it) {
     ElementGroup & element_group = *(gnames_it->second);
     std::string element_group_name = gnames_it->first;
@@ -995,7 +997,7 @@ void GroupManager::synchronizeGroupNames() {
 /* -------------------------------------------------------------------------- */
 const ElementGroup &
 GroupManager::getElementGroup(const std::string & name) const {
-  const_element_group_iterator it = element_group_find(name);
+  auto it = element_group_find(name);
   if (it == element_group_end()) {
     AKANTU_EXCEPTION("There are no element groups named "
                      << name << " associated to the group manager: " << id);
@@ -1006,7 +1008,7 @@ GroupManager::getElementGroup(const std::string & name) const {
 
 /* -------------------------------------------------------------------------- */
 ElementGroup & GroupManager::getElementGroup(const std::string & name) {
-  element_group_iterator it = element_group_find(name);
+  auto it = element_group_find(name);
   if (it == element_group_end()) {
     AKANTU_EXCEPTION("There are no element groups named "
                      << name << " associated to the group manager: " << id);
@@ -1017,7 +1019,7 @@ ElementGroup & GroupManager::getElementGroup(const std::string & name) {
 
 /* -------------------------------------------------------------------------- */
 const NodeGroup & GroupManager::getNodeGroup(const std::string & name) const {
-  const_node_group_iterator it = node_group_find(name);
+  auto it = node_group_find(name);
   if (it == node_group_end()) {
     AKANTU_EXCEPTION("There are no node groups named "
                      << name << " associated to the group manager: " << id);
@@ -1028,7 +1030,7 @@ const NodeGroup & GroupManager::getNodeGroup(const std::string & name) const {
 
 /* -------------------------------------------------------------------------- */
 NodeGroup & GroupManager::getNodeGroup(const std::string & name) {
-  node_group_iterator it = node_group_find(name);
+  auto it = node_group_find(name);
   if (it == node_group_end()) {
     AKANTU_EXCEPTION("There are no node groups named "
                      << name << " associated to the group manager: " << id);

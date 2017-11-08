@@ -130,7 +130,7 @@ void SolidMechanicsModel::assembleMass() {
 void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
+  auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctor compute_rho(*this);
 
   for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
@@ -145,7 +145,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
 void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
+  auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctor compute_rho(*this);
 
   for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {

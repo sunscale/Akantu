@@ -59,15 +59,14 @@ static inline std::string to_upper(const std::string & str) {
 /* -------------------------------------------------------------------------- */
 /* ArgumentParser                                                             */
 /* -------------------------------------------------------------------------- */
-ArgumentParser::ArgumentParser() : external_exit(nullptr), prank(0), psize(1) {
+ArgumentParser::ArgumentParser() {
   this->addArgument("-h;--help", "show this help message and exit", 0, _boolean,
                     false, true);
 }
 
 /* -------------------------------------------------------------------------- */
 ArgumentParser::~ArgumentParser() {
-  for (_Arguments::iterator it = arguments.begin(); it != arguments.end();
-       ++it) {
+  for (auto it = arguments.begin(); it != arguments.end(); ++it) {
     delete it->second;
   }
 }
@@ -99,7 +98,7 @@ void ArgumentParser::_exit(const std::string & msg, int status) {
 /* -------------------------------------------------------------------------- */
 const ArgumentParser::Argument & ArgumentParser::
 operator[](const std::string & name) const {
-  Arguments::const_iterator it = success_parsed.find(name);
+  auto it = success_parsed.find(name);
 
   if (it != success_parsed.end()) {
     return *(it->second);
@@ -162,8 +161,7 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
   int long_key = -1;
   int short_key = -1;
   bool problem = (tmp_keys.size() > 2) || (name == "");
-  for (std::vector<std::string>::iterator it = tmp_keys.begin();
-       it != tmp_keys.end(); ++it) {
+  for (auto it = tmp_keys.begin(); it != tmp_keys.end(); ++it) {
     if (it->find("--") == 0) {
       problem |= (long_key != -1);
       long_key = it - tmp_keys.begin();
@@ -217,7 +215,7 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
 #if not HAVE_STRDUP
 static char * strdup(const char * str) {
   size_t len = strlen(str);
-  char *x = (char *)malloc(len+1); /* 1 for the null terminator */
+  auto * x = (char *)malloc(len + 1); /* 1 for the null terminator */
   if(!x)
     return nullptr;    /* malloc could not allocate memory */
   memcpy(x,str,len+1); /* copy the string into the new buffer */
@@ -233,8 +231,9 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
 
   std::vector<std::string> argvs;
 
+  argvs.reserve(argc);
   for (int i = 0; i < argc; ++i) {
-    argvs.push_back(std::string(argv[i]));
+    argvs.emplace_back(argv[i]);
   }
 
   unsigned int current_position = 0;
@@ -248,8 +247,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
   }
 
   std::queue<_Argument *> positional_queue;
-  for (PositionalArgument::iterator it = pos_args.begin(); it != pos_args.end();
-       ++it)
+  for (auto it = pos_args.begin(); it != pos_args.end(); ++it)
     positional_queue.push(*it);
 
   std::vector<int> argvs_to_remove;
@@ -258,7 +256,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
     std::string arg = argvs[current_position];
     ++current_position;
 
-    ArgumentKeyMap::iterator key_it = key_args.find(arg);
+    auto key_it = key_args.find(arg);
 
     bool is_positional = false;
     _Argument * argument_ptr = nullptr;
@@ -353,8 +351,7 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
     }
   }
 
-  for (_Arguments::iterator ait = arguments.begin(); ait != arguments.end();
-       ++ait) {
+  for (auto ait = arguments.begin(); ait != arguments.end(); ++ait) {
     _Argument & argument = *(ait->second);
     if (!argument.parsed) {
       if (argument.has_default) {
@@ -425,8 +422,7 @@ bool ArgumentParser::checkType(ArgumentType type,
 
 /* -------------------------------------------------------------------------- */
 void ArgumentParser::printself(std::ostream & stream) const {
-  for (Arguments::const_iterator it = success_parsed.begin();
-       it != success_parsed.end(); ++it) {
+  for (auto it = success_parsed.begin(); it != success_parsed.end(); ++it) {
     const Argument & argument = *(it->second);
     argument.printself(stream);
     stream << std::endl;
@@ -438,8 +434,7 @@ void ArgumentParser::print_usage(std::ostream & stream) const {
   stream << "Usage: " << this->program_name;
 
   // print shorten usage
-  for (_Arguments::const_iterator it = arguments.begin(); it != arguments.end();
-       ++it) {
+  for (auto it = arguments.begin(); it != arguments.end(); ++it) {
     const _Argument & argument = *(it->second);
     if (!argument.is_positional) {
       if (!argument.required)
@@ -451,8 +446,7 @@ void ArgumentParser::print_usage(std::ostream & stream) const {
     }
   }
 
-  for (PositionalArgument::const_iterator it = pos_args.begin();
-       it != pos_args.end(); ++it) {
+  for (auto it = pos_args.begin(); it != pos_args.end(); ++it) {
     const _Argument & argument = **it;
     this->print_usage_nargs(stream, argument);
   }
@@ -487,8 +481,7 @@ void ArgumentParser::print_help(std::ostream & stream) const {
   if (!pos_args.empty()) {
     stream << std::endl;
     stream << "positional arguments:" << std::endl;
-    for (PositionalArgument::const_iterator it = pos_args.begin();
-         it != pos_args.end(); ++it) {
+    for (auto it = pos_args.begin(); it != pos_args.end(); ++it) {
       const _Argument & argument = **it;
       this->print_help_argument(stream, argument);
     }
@@ -497,8 +490,7 @@ void ArgumentParser::print_help(std::ostream & stream) const {
   if (!key_args.empty()) {
     stream << std::endl;
     stream << "optional arguments:" << std::endl;
-    for (_Arguments::const_iterator it = arguments.begin();
-         it != arguments.end(); ++it) {
+    for (auto it = arguments.begin(); it != arguments.end(); ++it) {
       const _Argument & argument = *(it->second);
       if (!argument.is_positional) {
         this->print_help_argument(stream, argument);

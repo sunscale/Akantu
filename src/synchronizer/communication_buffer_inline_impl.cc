@@ -104,7 +104,7 @@ CommunicationBufferTemplated<is_static>::operator>>(T & to_unpack) {
   alignas(alignof(T)) std::array<char, sizeof(T)> aligned_ptr;
   memcpy(aligned_ptr.data(), ptr_unpack, size);
 
-  T * tmp = reinterpret_cast<T *>(aligned_ptr.data());
+  auto * tmp = reinterpret_cast<T *>(aligned_ptr.data());
   AKANTU_DEBUG_ASSERT(
       (buffer.storage() + buffer.size()) >= (ptr_unpack + size),
       "Unpacking too much data in the CommunicationBufferTemplated");
@@ -189,8 +189,8 @@ template <bool is_static>
 template <typename T>
 inline void CommunicationBufferTemplated<is_static>::packIterable(T & to_pack) {
   operator<<(size_t(to_pack.size()));
-  typename T::const_iterator it = to_pack.begin();
-  typename T::const_iterator end = to_pack.end();
+  auto it = to_pack.begin();
+  auto end = to_pack.end();
   for (; it != end; ++it)
     operator<<(*it);
 }
@@ -203,8 +203,8 @@ CommunicationBufferTemplated<is_static>::unpackIterable(T & to_unpack) {
   size_t size;
   operator>>(size);
   to_unpack.resize(size);
-  typename T::iterator it = to_unpack.begin();
-  typename T::iterator end = to_unpack.end();
+  auto it = to_unpack.begin();
+  auto end = to_unpack.end();
   for (; it != end; ++it)
     operator>>(*it);
 }
@@ -260,7 +260,7 @@ template <typename T>
 inline std::string
 CommunicationBufferTemplated<is_static>::extractStream(UInt block_size) {
   std::stringstream str;
-  T * ptr = reinterpret_cast<T *>(buffer.storage());
+  auto * ptr = reinterpret_cast<T *>(buffer.storage());
   UInt sz = buffer.size() / sizeof(T);
   UInt sz_block = block_size / sizeof(T);
 

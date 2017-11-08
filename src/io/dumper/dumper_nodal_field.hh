@@ -82,9 +82,10 @@ public:
   /* ------------------------------------------------------------------------ */
 
   NodalField(const Container & field, UInt n = 0, UInt stride = 0,
-	     __attribute__ ((unused)) const Filter * filter = NULL) :
+             __attribute__((unused)) const Filter * filter = nullptr)
+      :
 
-    field(field), n(n), stride(stride), padding(0) {
+        field(field), n(n), stride(stride), padding(0) {
     AKANTU_DEBUG_ASSERT(filter == nullptr,
                         "Filter passed to unfiltered NodalField!");
     if(n == 0) { this->n = field.getNbComponent() - stride; }

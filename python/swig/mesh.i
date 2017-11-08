@@ -46,7 +46,6 @@ using akantu::UInt;
 using akantu::Real;
 using akantu::Array;
 using akantu::SolidMechanicsModel;
-
 %}
 
 
@@ -62,6 +61,7 @@ namespace akantu {
   %ignore Mesh::getGroupDumer;
   %ignore Mesh::getFacetLocalConnectivity;
   %ignore Mesh::getAllFacetTypes;
+  %ignore Mesh::getCommunicator;
 }
 
 print_self(Mesh)

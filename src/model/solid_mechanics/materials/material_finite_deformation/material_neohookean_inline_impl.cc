@@ -30,8 +30,9 @@
 
 #include <iostream>
 
-#include <cmath>
 #include "material_neohookean.hh"
+#include <cmath>
+#include <utility>
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -67,16 +68,16 @@ class C33_NR : public Math::NewtonRaphsonFunctor {
 public:
   C33_NR(std::string name, const Real & lambda, const Real & mu,
          const Matrix<Real> & C)
-      : NewtonRaphsonFunctor(name), lambda(lambda), mu(mu), C(C) {}
+      : NewtonRaphsonFunctor(std::move(name)), lambda(lambda), mu(mu), C(C) {}
 
-  inline Real f(Real x) const {
+  inline Real f(Real x) const override {
     return (this->lambda / 2. *
                 (std::log(x) + std::log(this->C(0, 0) * this->C(1, 1) -
                                         Math::pow<2>(this->C(0, 1)))) +
             this->mu * (x - 1.));
   }
 
-  inline Real f_prime(Real x) const {
+  inline Real f_prime(Real x) const override {
     AKANTU_DEBUG_ASSERT(std::abs(x) > Math::getTolerance(),
                         "x is zero (x should be the off plane right Cauchy"
                             << " measure in this function so you made a mistake"

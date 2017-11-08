@@ -62,26 +62,26 @@ public:
   MaterialElasticLinearAnisotropic(SolidMechanicsModel & model,
                                    const ID & id = "", bool symmetric = true);
 
-  ~MaterialElasticLinearAnisotropic();
+  ~MaterialElasticLinearAnisotropic() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type,
-                             GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
                             Array<Real> & tangent_matrix,
-                            GhostType ghost_type = _not_ghost);
+                            GhostType ghost_type = _not_ghost) override;
 
-  virtual void updateInternalParameters();
+  void updateInternalParameters() override;
 
-  virtual bool hasStiffnessMatrixChanged() {
+  bool hasStiffnessMatrixChanged() override {
     return (! was_stiffness_assembled);
   }
 
@@ -94,7 +94,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// compute max wave celerity
-  virtual Real getCelerity(const Element & element) const;
+  Real getCelerity(const Element & element) const override;
 
   AKANTU_GET_MACRO(VoigtStiffness, C, Matrix<Real>);
 
@@ -102,7 +102,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  typedef VoigtHelper<Dim> voigt_h;
+  using voigt_h = VoigtHelper<1U>;
 
   /// direction matrix and vectors
   std::vector<Vector<Real> *> dir_vecs;

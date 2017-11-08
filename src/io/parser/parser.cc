@@ -75,7 +75,7 @@ void ParserSection::printself(std::ostream & stream,
          << (option != "" ? (" " + option) : "") << " [" << std::endl;
   if (!this->parameters.empty()) {
     stream << space << ind << "Parameters [" << std::endl;
-    Parameters::const_iterator pit = this->parameters.begin();
+    auto pit = this->parameters.begin();
     for (; pit != this->parameters.end(); ++pit) {
       stream << space << ind << " + ";
       pit->second.printself(stream);
@@ -86,7 +86,7 @@ void ParserSection::printself(std::ostream & stream,
 
   if (!this->sub_sections_by_type.empty()) {
     stream << space << ind << "Subsections [" << std::endl;
-    SubSections::const_iterator sit = this->sub_sections_by_type.begin();
+    auto sit = this->sub_sections_by_type.begin();
     for (; sit != this->sub_sections_by_type.end(); ++sit)
       sit->second.printself(stream, indent + 2);
     stream << std::endl;

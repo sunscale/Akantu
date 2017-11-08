@@ -46,7 +46,7 @@ public:
   PlaneStressToolbox(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                      FEEngine & fe_engine, const ID & id = "");
 
-  ~PlaneStressToolbox() override {}
+  ~PlaneStressToolbox() override = default;
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ThirdAxisDeformation,
                                          third_axis_deformation, Real);

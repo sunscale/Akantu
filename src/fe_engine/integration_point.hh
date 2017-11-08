@@ -51,7 +51,7 @@ class IntegrationPoint : public Element {
   /* ------------------------------------------------------------------------ */
 
 public:
-  typedef Vector<Real> position_type;
+  using position_type = Vector<Real>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -66,7 +66,7 @@ public:
 
   IntegrationPoint(ElementType type = _not_defined, UInt element = 0,
                    UInt num_point = 0, GhostType ghost_type = _not_ghost)
-      : Element{type, element, ghost_type}, num_point(num_point), global_num(0),
+      : Element{type, element, ghost_type}, num_point(num_point),
         position(nullptr, 0){};
 
   IntegrationPoint(UInt element, UInt num_point, UInt global_num,
@@ -147,7 +147,7 @@ public:
   /// number of quadrature point in the element
   UInt num_point;
   /// global number of the quadrature point
-  UInt global_num;
+  UInt global_num{0};
   // TODO might be temporary: however this class should be tought maybe...
   std::string material_id;
 

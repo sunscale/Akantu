@@ -89,7 +89,7 @@ public:
     this->el_type = el_type;
   };
 
-  virtual ~ContainerArray(){};
+  virtual ~ContainerArray() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

@@ -341,8 +341,7 @@ inline void GZfstream<charT,Traits>::open(const std::string & fname,
 // //     this->flush();
 // // }
 
-
-typedef GZfstream<char> File;
+using File = GZfstream<char>;
 
 __END_IOHELPER__
 

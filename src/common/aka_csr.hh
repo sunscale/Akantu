@@ -57,7 +57,7 @@ public:
     rows_offsets.clear();
   };
 
-  virtual ~CSR(){};
+  virtual ~CSR() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -140,8 +140,8 @@ public:
       : public std::iterator<std::bidirectional_iterator_tag, R> {
   public:
     typedef std::iterator<std::bidirectional_iterator_tag, R> _parent;
-    typedef typename _parent::pointer pointer;
-    typedef typename _parent::reference reference;
+    using pointer = typename _parent::pointer;
+    using reference = typename _parent::reference;
 
     explicit iterator_internal(pointer x = nullptr) : pos(x){};
     iterator_internal(const iterator_internal & it) : pos(it.pos){};
@@ -175,8 +175,8 @@ public:
     pointer pos;
   };
 
-  typedef iterator_internal<T> iterator;
-  typedef iterator_internal<const T> const_iterator;
+  using iterator = iterator_internal<T>;
+  using const_iterator = iterator_internal<const T>;
 
   inline iterator begin(UInt row) {
     return iterator(rows.storage() + rows_offsets(row));

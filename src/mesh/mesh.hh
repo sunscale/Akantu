@@ -113,13 +113,13 @@ public:
    * constructor that use an existing nodes coordinates
    * array, by getting the vector of coordinates
    */
-  Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
+  Mesh(UInt spatial_dimension, const std::shared_ptr<Array<Real>> & nodes,
        const ID & id = "mesh", const MemoryID & memory_id = 0);
 
   ~Mesh() override;
 
   /// @typedef ConnectivityTypeList list of the types present in a Mesh
-  typedef std::set<ElementType> ConnectivityTypeList;
+  using ConnectivityTypeList = std::set<ElementType>;
 
   /// read the mesh from a file
   void read(const std::string & filename,
@@ -449,7 +449,9 @@ public:
 
   // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
   // &);
+#ifndef SWIG
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
+#endif
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */

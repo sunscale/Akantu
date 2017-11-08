@@ -52,21 +52,22 @@ class DumperParaview : public Dumper {
 public:
 
   DumperParaview(const std::string & prefix = std::string("./"));
-  ~DumperParaview();
+  ~DumperParaview() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
   //! dump to file
-  void dump(const std::string & name = std::string(""), UInt count = UInt(-1));
+  void dump(const std::string & name = std::string(""),
+            UInt count = UInt(-1)) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 
   //! set mode for file creation : TEXT, BASE64, COMPRESSED
-  void setMode(Int mode);
+  void setMode(Int mode) override;
 
   //! set the sub directory where to store the vtu files
   void setVTUSubDirectory(const std::string & sub);
@@ -77,7 +78,8 @@ public:
   template <typename T> void pushElemField(ParaviewHelper & paraHelper, Field<T> & f);
 
   //! give vector to connectivity
-  virtual void setConnectivity(int * connectivity, ElemType element_type, UInt nb_elem, int mode);
+  void setConnectivity(int * connectivity, ElemType element_type, UInt nb_elem,
+                       int mode) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

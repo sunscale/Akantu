@@ -38,7 +38,7 @@ namespace akantu {
 inline UInt SparseMatrixAIJ::add(UInt i, UInt j) {
   KeyCOO jcn_irn = this->key(i, j);
 
-  coordinate_list_map::iterator it = this->irn_jcn_k.find(jcn_irn);
+  auto it = this->irn_jcn_k.find(jcn_irn);
 
   if (!(it == this->irn_jcn_k.end()))
     return it->second;
@@ -90,8 +90,7 @@ inline void SparseMatrixAIJ::add(UInt i, UInt j, Real value) {
 /* -------------------------------------------------------------------------- */
 inline Real SparseMatrixAIJ::operator()(UInt i, UInt j) const {
   KeyCOO jcn_irn = this->key(i, j);
-  coordinate_list_map::const_iterator irn_jcn_k_it =
-      this->irn_jcn_k.find(jcn_irn);
+  auto irn_jcn_k_it = this->irn_jcn_k.find(jcn_irn);
 
   if (irn_jcn_k_it == this->irn_jcn_k.end())
     return 0.;
@@ -101,7 +100,7 @@ inline Real SparseMatrixAIJ::operator()(UInt i, UInt j) const {
 /* -------------------------------------------------------------------------- */
 inline Real & SparseMatrixAIJ::operator()(UInt i, UInt j) {
   KeyCOO jcn_irn = this->key(i, j);
-  coordinate_list_map::iterator irn_jcn_k_it = this->irn_jcn_k.find(jcn_irn);
+  auto irn_jcn_k_it = this->irn_jcn_k.find(jcn_irn);
   AKANTU_DEBUG_ASSERT(irn_jcn_k_it != this->irn_jcn_k.end(),
                       "Couple (i,j) = (" << i << "," << j
                                          << ") does not exist in the profile");

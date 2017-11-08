@@ -42,7 +42,7 @@ Parsable::Parsable(const SectionType & section_type, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-Parsable::~Parsable() {}
+Parsable::~Parsable() = default;
 
 /* -------------------------------------------------------------------------- */
 void Parsable::registerSubSection(const SectionType & type,
@@ -56,8 +56,7 @@ void Parsable::registerSubSection(const SectionType & type,
 
 /* -------------------------------------------------------------------------- */
 void Parsable::parseParam(const ParserParameter & in_param) {
-  std::map<std::string, Parameter *>::iterator it =
-      params.find(in_param.getName());
+  auto it = params.find(in_param.getName());
   if (it == params.end()) {
     if (Parser::isPermissive()) {
       AKANTU_DEBUG_WARNING("No parameter named " << in_param.getName()
@@ -97,7 +96,7 @@ void Parsable::parseSection(const ParserSection & section) {
 /* -------------------------------------------------------------------------- */
 void Parsable::parseSubSection(const ParserSection & section) {
   SubSectionKey key(section.getType(), section.getName());
-  SubSections::iterator it = sub_sections.find(key);
+  auto it = sub_sections.find(key);
   if (it != sub_sections.end()) {
     it->second->parseSection(section);
   } else if (!Parser::isPermissive()) {

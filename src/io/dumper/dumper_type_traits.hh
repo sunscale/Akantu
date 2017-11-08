@@ -42,17 +42,17 @@ template <class data, class ret, class field>
 struct TypeTraits {
 
   //! the stored data (real, int, uint, ...)
-  typedef data  data_type;
+  using data_type = data;
   //! the type returned by the operator *
-  typedef ret   return_type;
+  using return_type = ret;
   //! the field type (ElementTypeMap or ElementTypeMapFilter)
-  typedef field field_type;
+  using field_type = field;
   //! the type over which we iterate
-  typedef typename field_type::type it_type;
+  using it_type = typename field_type::type;
   //! the type of array (Array<T> or ArrayFilter<T>)
-  typedef typename field_type::array_type array_type;
+  using array_type = typename field_type::array_type;
   //! the iterator over the array
-  typedef typename array_type::const_vector_iterator array_iterator;
+  using array_iterator = typename array_type::const_vector_iterator;
 };
 
 /* -------------------------------------------------------------------------- */

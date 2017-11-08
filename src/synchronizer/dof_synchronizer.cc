@@ -66,7 +66,7 @@ DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
   std::vector<ID> dof_ids = dof_manager.getDOFIDs();
 
   // Transfers nodes to global equation numbers in new schemes
-  for (ID dof_id : dof_ids) {
+  for (const ID & dof_id : dof_ids) {
     registerDOFs(dof_id);
   }
 
@@ -74,7 +74,7 @@ DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-DOFSynchronizer::~DOFSynchronizer() {}
+DOFSynchronizer::~DOFSynchronizer() = default;
 
 /* -------------------------------------------------------------------------- */
 void DOFSynchronizer::registerDOFs(const ID & dof_id) {

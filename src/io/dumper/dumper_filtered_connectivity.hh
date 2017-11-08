@@ -43,9 +43,9 @@ class filtered_connectivity_field_iterator
   /* ------------------------------------------------------------------------ */
 public:
   typedef element_iterator<types, dumper::filtered_connectivity_field_iterator> parent;
-  typedef typename types::return_type return_type;
-  typedef typename types::field_type field_type;
-  typedef typename types::array_iterator array_iterator;
+  using return_type = typename types::return_type;
+  using field_type = typename types::field_type;
+  using array_iterator = typename types::array_iterator;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -98,8 +98,8 @@ class FilteredConnectivityField :
   /* ------------------------------------------------------------------------ */
 public:
   typedef SingleType<UInt,Vector,true> types;
-  typedef filtered_connectivity_field_iterator<types> iterator;
-  typedef types::field_type field_type;
+  using iterator = filtered_connectivity_field_iterator<types>;
+  using field_type = types::field_type;
   typedef GenericElementalField<types,filtered_connectivity_field_iterator> parent;
 
   /* ------------------------------------------------------------------------ */
@@ -114,7 +114,7 @@ public:
     parent(field, spatial_dimension, ghost_type, element_kind),
     nodal_filter(nodal_filter) { }
 
-  ~FilteredConnectivityField() {
+  ~FilteredConnectivityField() override {
     // since the field is created in registerFilteredMesh it is destroyed here
     delete const_cast<field_type *>(&this->field);
   }
@@ -123,13 +123,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  iterator begin() {
+  iterator begin() override {
     iterator it = parent::begin();
     it.setNodalFilter(nodal_filter);
     return it;
   }
 
-  iterator end() {
+  iterator end() override {
     iterator it = parent::end();
     it.setNodalFilter(nodal_filter);
     return it;

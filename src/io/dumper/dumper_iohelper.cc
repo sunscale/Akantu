@@ -48,11 +48,11 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-DumperIOHelper::DumperIOHelper() : count(0), time_activated(false) {}
+DumperIOHelper::DumperIOHelper() {}
 
 /* -------------------------------------------------------------------------- */
 DumperIOHelper::~DumperIOHelper() {
-  for (Fields::iterator it = fields.begin(); it != fields.end(); ++it) {
+  for (auto it = fields.begin(); it != fields.end(); ++it) {
     delete it->second;
   }
 
@@ -144,8 +144,8 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 					  UInt spatial_dimension,
 					  const GhostType & ghost_type,
 					  const ElementKind & element_kind) {
-  ElementTypeMapArrayFilter<UInt> * f_connectivities =
-    new ElementTypeMapArrayFilter<UInt>(mesh.getConnectivities(), elements_filter);
+  auto * f_connectivities = new ElementTypeMapArrayFilter<UInt>(
+      mesh.getConnectivities(), elements_filter);
 
   this->registerField("connectivities",
                       new dumper::FilteredConnectivityField(*f_connectivities,
@@ -164,7 +164,7 @@ void DumperIOHelper::registerFilteredMesh(const Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerField(const std::string & field_id,
                                    dumper::Field * field) {
-  Fields::iterator it = fields.find(field_id);
+  auto it = fields.find(field_id);
   if(it != fields.end()) {
     AKANTU_DEBUG_WARNING("The field " << field_id
 			 << " is already registered in this Dumper. Field ignored.");
@@ -177,7 +177,7 @@ void DumperIOHelper::registerField(const std::string & field_id,
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::unRegisterField(const std::string & field_id) {
-  Fields::iterator it = fields.find(field_id);
+  auto it = fields.find(field_id);
   if(it == fields.end()) {
     AKANTU_DEBUG_WARNING("The field " << field_id
 			 << " is not registered in this Dumper. Nothing to do.");
@@ -192,7 +192,7 @@ void DumperIOHelper::unRegisterField(const std::string & field_id) {
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerVariable(const std::string & variable_id,
                                       dumper::VariableBase * variable) {
-  Variables::iterator it = variables.find(variable_id);
+  auto it = variables.find(variable_id);
 
   if(it != variables.end()) {
     AKANTU_DEBUG_WARNING("The Variable " << variable_id
@@ -206,7 +206,7 @@ void DumperIOHelper::registerVariable(const std::string & variable_id,
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::unRegisterVariable(const std::string & variable_id) {
-  Variables::iterator it = variables.find(variable_id);
+  auto it = variables.find(variable_id);
 
   if(it == variables.end()) {
     AKANTU_DEBUG_WARNING("The variable " << variable_id

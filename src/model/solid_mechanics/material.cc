@@ -139,18 +139,15 @@ void Material::initMaterial() {
   if (use_previous_gradu)
     this->gradu.initializeHistory();
 
-  for (std::map<ID, InternalField<Real> *>::iterator it =
-           internal_vectors_real.begin();
+  for (auto it = internal_vectors_real.begin();
        it != internal_vectors_real.end(); ++it)
     it->second->resize();
 
-  for (std::map<ID, InternalField<UInt> *>::iterator it =
-           internal_vectors_uint.begin();
+  for (auto it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end(); ++it)
     it->second->resize();
 
-  for (std::map<ID, InternalField<bool> *>::iterator it =
-           internal_vectors_bool.begin();
+  for (auto it = internal_vectors_bool.begin();
        it != internal_vectors_bool.end(); ++it)
     it->second->resize();
 
@@ -163,8 +160,7 @@ void Material::initMaterial() {
 void Material::savePreviousState() {
   AKANTU_DEBUG_IN();
 
-  for (std::map<ID, InternalField<Real> *>::iterator it =
-           internal_vectors_real.begin();
+  for (auto it = internal_vectors_real.begin();
        it != internal_vectors_real.end(); ++it) {
     if (it->second->hasHistory())
       it->second->saveCurrentValues();
@@ -198,8 +194,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 
   if (!finite_deformation) {
 
-    Array<Real> & internal_force =
-        const_cast<Array<Real> &>(model.getInternalForce());
+    auto & internal_force = const_cast<Array<Real> &>(model.getInternalForce());
 
     Mesh & mesh = fem.getMesh();
     Mesh::type_iterator it =
@@ -1230,8 +1225,7 @@ InternalField<T> & Material::getInternal(__attribute__((unused))
 /* -------------------------------------------------------------------------- */
 template <>
 const InternalField<Real> & Material::getInternal(const ID & int_id) const {
-  std::map<ID, InternalField<Real> *>::const_iterator it =
-      internal_vectors_real.find(getID() + ":" + int_id);
+  auto it = internal_vectors_real.find(getID() + ":" + int_id);
   if (it == internal_vectors_real.end()) {
     AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
                                             << ") does not contain an internal "
@@ -1243,8 +1237,7 @@ const InternalField<Real> & Material::getInternal(const ID & int_id) const {
 
 /* -------------------------------------------------------------------------- */
 template <> InternalField<Real> & Material::getInternal(const ID & int_id) {
-  std::map<ID, InternalField<Real> *>::iterator it =
-      internal_vectors_real.find(getID() + ":" + int_id);
+  auto it = internal_vectors_real.find(getID() + ":" + int_id);
   if (it == internal_vectors_real.end()) {
     AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
                                             << ") does not contain an internal "
@@ -1257,8 +1250,7 @@ template <> InternalField<Real> & Material::getInternal(const ID & int_id) {
 /* -------------------------------------------------------------------------- */
 template <>
 const InternalField<UInt> & Material::getInternal(const ID & int_id) const {
-  std::map<ID, InternalField<UInt> *>::const_iterator it =
-      internal_vectors_uint.find(getID() + ":" + int_id);
+  auto it = internal_vectors_uint.find(getID() + ":" + int_id);
   if (it == internal_vectors_uint.end()) {
     AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
                                             << ") does not contain an internal "
@@ -1270,8 +1262,7 @@ const InternalField<UInt> & Material::getInternal(const ID & int_id) const {
 
 /* -------------------------------------------------------------------------- */
 template <> InternalField<UInt> & Material::getInternal(const ID & int_id) {
-  std::map<ID, InternalField<UInt> *>::iterator it =
-      internal_vectors_uint.find(getID() + ":" + int_id);
+  auto it = internal_vectors_uint.find(getID() + ":" + int_id);
   if (it == internal_vectors_uint.end()) {
     AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
                                             << ") does not contain an internal "
@@ -1366,18 +1357,15 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
     }
   }
 
-  for (std::map<ID, InternalField<Real> *>::iterator it =
-           internal_vectors_real.begin();
+  for (auto it = internal_vectors_real.begin();
        it != internal_vectors_real.end(); ++it)
     it->second->removeIntegrationPoints(material_local_new_numbering);
 
-  for (std::map<ID, InternalField<UInt> *>::iterator it =
-           internal_vectors_uint.begin();
+  for (auto it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end(); ++it)
     it->second->removeIntegrationPoints(material_local_new_numbering);
 
-  for (std::map<ID, InternalField<bool> *>::iterator it =
-           internal_vectors_bool.begin();
+  for (auto it = internal_vectors_bool.begin();
        it != internal_vectors_bool.end(); ++it)
     it->second->removeIntegrationPoints(material_local_new_numbering);
 
@@ -1387,18 +1375,15 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
 /* -------------------------------------------------------------------------- */
 void Material::resizeInternals() {
   AKANTU_DEBUG_IN();
-  for (std::map<ID, InternalField<Real> *>::iterator it =
-           internal_vectors_real.begin();
+  for (auto it = internal_vectors_real.begin();
        it != internal_vectors_real.end(); ++it)
     it->second->resize();
 
-  for (std::map<ID, InternalField<UInt> *>::iterator it =
-           internal_vectors_uint.begin();
+  for (auto it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end(); ++it)
     it->second->resize();
 
-  for (std::map<ID, InternalField<bool> *>::iterator it =
-           internal_vectors_bool.begin();
+  for (auto it = internal_vectors_bool.begin();
        it != internal_vectors_bool.end(); ++it)
     it->second->resize();
   AKANTU_DEBUG_OUT();
@@ -1478,18 +1463,15 @@ void Material::onElementsRemoved(
     }
   }
 
-  for (std::map<ID, InternalField<Real> *>::iterator it =
-           internal_vectors_real.begin();
+  for (auto it = internal_vectors_real.begin();
        it != internal_vectors_real.end(); ++it)
     it->second->removeIntegrationPoints(material_local_new_numbering);
 
-  for (std::map<ID, InternalField<UInt> *>::iterator it =
-           internal_vectors_uint.begin();
+  for (auto it = internal_vectors_uint.begin();
        it != internal_vectors_uint.end(); ++it)
     it->second->removeIntegrationPoints(material_local_new_numbering);
 
-  for (std::map<ID, InternalField<bool> *>::iterator it =
-           internal_vectors_bool.begin();
+  for (auto it = internal_vectors_bool.begin();
        it != internal_vectors_bool.end(); ++it)
     it->second->removeIntegrationPoints(material_local_new_numbering);
 }
@@ -1531,7 +1513,7 @@ void Material::printself(std::ostream & stream, int indent) const {
   for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
     ;
 
-  std::string type = getID().substr(getID().find_last_of(":") + 1);
+  std::string type = getID().substr(getID().find_last_of(':') + 1);
 
   stream << space << "Material " << type << " [" << std::endl;
   Parsable::printself(stream, indent);

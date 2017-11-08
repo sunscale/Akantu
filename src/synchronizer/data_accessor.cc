@@ -47,7 +47,7 @@ void DataAccessor<Element>::packUnpackNodalDataHelper(
 
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-  UInt * conn = NULL;
+  UInt * conn = nullptr;
 
   Array<Element>::const_iterator<Element> it = elements.begin();
   Array<Element>::const_iterator<Element> end = elements.end();
@@ -86,7 +86,7 @@ void DataAccessor<Element>::packUnpackElementalDataHelper(
   UInt nb_quad_per_elem = 0;
   UInt nb_component = 0;
 
-  Array<T> * vect = NULL;
+  Array<T> * vect = nullptr;
 
   Array<Element>::const_iterator<Element> it = element.begin();
   Array<Element>::const_iterator<Element> end = element.end();

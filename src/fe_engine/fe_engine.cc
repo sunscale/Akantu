@@ -39,7 +39,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, ID id,
+FEEngine::FEEngine(Mesh & mesh, UInt element_dimension, const ID & id,
                    MemoryID memory_id)
     : Memory(id, memory_id), mesh(mesh),
       normals_on_integration_points("normals_on_quad_points", id, memory_id) {

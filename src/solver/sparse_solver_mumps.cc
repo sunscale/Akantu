@@ -240,8 +240,8 @@ void SparseSolverMumps::initMumpsData() {
       this->mumps_data.jcn = A.getJCN().storage();
     } else {
       this->mumps_data.nz = 0;
-      this->mumps_data.irn = NULL;
-      this->mumps_data.jcn = NULL;
+      this->mumps_data.irn = nullptr;
+      this->mumps_data.jcn = nullptr;
     }
     break;
   default:
@@ -264,9 +264,8 @@ void SparseSolverMumps::initialize() {
     /* [[fallthrough]]; un-comment when compiler will get it */
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
-    const MPICommunicatorData & mpi_data =
-        dynamic_cast<const MPICommunicatorData &>(
-            communicator.getCommunicatorData());
+    const auto & mpi_data = dynamic_cast<const MPICommunicatorData &>(
+        communicator.getCommunicatorData());
     MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
     this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
 #else

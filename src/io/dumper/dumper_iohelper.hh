@@ -141,7 +141,7 @@ protected:
   Variables variables;
 
   /// dump counter
-  UInt count;
+  UInt count{0};
 
   /// directory name
   std::string directory;
@@ -150,7 +150,7 @@ protected:
   std::string filename;
 
   /// is time tracking activated in the dumper
-  bool time_activated;
+  bool time_activated{false};
 };
 
 } // akantu

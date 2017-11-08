@@ -245,8 +245,8 @@ Communications<Entity>::createScheme(UInt proc,
 
 template <class Entity>
 void Communications<Entity>::resetSchemes(const CommunicationSendRecv & sr) {
-  scheme_iterator it = this->schemes[sr].begin();
-  scheme_iterator end = this->schemes[sr].end();
+  auto it = this->schemes[sr].begin();
+  auto end = this->schemes[sr].end();
   for (; it != end; ++it) {
     it->second.resize(0);
   }

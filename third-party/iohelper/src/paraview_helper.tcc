@@ -82,7 +82,7 @@ inline void ParaviewHelper::writeConnectivity(T & data) {
   typename T::iterator end = data.end();
 
   for (; it != end; ++it) {
-    ElemType type = (ElemType) it.element_type();
+    auto type = (ElemType)it.element_type();
     //typename T::iterator::type & n = *it;
     UInt dim = (*it).size();
     assert(nb_node_per_elem[type] == dim);
@@ -102,7 +102,7 @@ inline void ParaviewHelper::writeElemType(T & data){
   typename T::iterator end = data.end();
 
   for (; it != end; ++it) {
-    ElemType type = (ElemType) it.element_type();
+    auto type = (ElemType)it.element_type();
     this->pushDatum(this->paraview_code_type[type], 1);
   }
 }

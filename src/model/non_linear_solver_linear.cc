@@ -49,7 +49,7 @@ NonLinearSolverLinear::NonLinearSolverLinear(
 }
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolverLinear::~NonLinearSolverLinear() {}
+NonLinearSolverLinear::~NonLinearSolverLinear() = default;
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {

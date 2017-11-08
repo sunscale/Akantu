@@ -44,12 +44,12 @@ enum CommunicationSendRecv  { _send, _recv, _csr_not_defined };
 
 /* -------------------------------------------------------------------------- */
 struct CommunicationSRType {
-  typedef CommunicationSendRecv type;
+  using type = CommunicationSendRecv;
   static const type _begin_ = _send;
   static const type _end_ = _csr_not_defined;
 };
 
-typedef safe_enum<CommunicationSRType> send_recv_t;
+using send_recv_t = safe_enum<CommunicationSRType>;
 
 namespace {
   send_recv_t iterate_send_recv{};
@@ -59,7 +59,7 @@ namespace {
 class Communication {
 public:
   explicit Communication(const CommunicationSendRecv & type = _csr_not_defined)
-      : _size(0), _type(type) {}
+      : _type(type) {}
 
   Communication(const Communication &) = delete;
   Communication & operator=(const Communication &) = delete;
@@ -79,7 +79,7 @@ public:
   inline CommunicationBuffer & buffer() { return this->_buffer; }
 
 private:
-  UInt _size;
+  UInt _size{0};
   CommunicationBuffer _buffer;
   CommunicationRequest _request;
   CommunicationSendRecv _type;

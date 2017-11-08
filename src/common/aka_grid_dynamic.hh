@@ -425,7 +425,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
-  Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
+  auto & nodes = const_cast<Array<Real> &>(mesh.getNodes());
 
   ElementType type;
   switch (dimension) {

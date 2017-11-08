@@ -106,7 +106,7 @@ void DOFSynchronizer::gather(const Array<T> & to_gather, Array<T> & gathered) {
     }
   }
 
-  UInt rr = UInt(-1);
+  auto rr = UInt(-1);
   while ((rr = communicator.waitAny(requests)) != UInt(-1)) {
     CommunicationRequest & request = requests[rr];
     UInt sender = request.getSource();

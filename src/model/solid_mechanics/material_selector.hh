@@ -50,8 +50,8 @@ class SolidMechanicsModel;
  */
 class MaterialSelector {
 public:
-  MaterialSelector() : fallback_value(0) {}
-  virtual ~MaterialSelector() {}
+  MaterialSelector() = default;
+  virtual ~MaterialSelector() = default;
   virtual UInt operator()(__attribute__((unused)) const Element & element) {
     return fallback_value;
   }
@@ -59,7 +59,7 @@ public:
   void setFallback(UInt f) { fallback_value = f; }
 
 protected:
-  UInt fallback_value;
+  UInt fallback_value{0};
 };
 
 /* -------------------------------------------------------------------------- */

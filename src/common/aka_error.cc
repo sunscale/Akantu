@@ -94,7 +94,7 @@ namespace debug {
 /* ------------------------------------------------------------------------ */
 #if (defined(READLINK_COMMAND) || defined(ADDR2LINK_COMMAND)) &&               \
     (not defined(_WIN32))
-  std::string exec(std::string cmd) {
+  std::string exec(const std::string & cmd) {
     FILE * pipe = popen(cmd.c_str(), "r");
     if (!pipe)
       return "";
@@ -164,7 +164,7 @@ namespace debug {
 
     std::cerr << "BACKTRACE :  " << stack_depth << " stack frames."
               << std::endl;
-    size_t w = size_t(std::floor(log(double(stack_depth)) / std::log(10.)) + 1);
+    auto w = size_t(std::floor(log(double(stack_depth)) / std::log(10.)) + 1);
 
     /// -1 to remove the call to the printBacktrace function
     for (i = 1; i < stack_depth; i++) {
@@ -191,7 +191,7 @@ namespace debug {
         std::cerr << location << " [" << call << "]";
 
 #if defined(READLINK_COMMAND) && defined(ADDR2LINE_COMMAND)
-        std::map<std::string, size_t>::iterator it = addr_map.find(location);
+        auto it = addr_map.find(location);
         if (it != addr_map.end()) {
           std::stringstream syscom;
           syscom << BOOST_PP_STRINGIZE(ADDR2LINE_COMMAND) << " 0x" << std::hex
@@ -325,7 +325,7 @@ namespace debug {
       delete cout;
     }
 
-    std::ofstream * fileout = new std::ofstream(filename.c_str());
+    auto * fileout = new std::ofstream(filename.c_str());
     file_open = true;
     cout = fileout;
   }

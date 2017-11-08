@@ -72,7 +72,8 @@ public:
   Real getEnergy(std::string type) override;
 
   /// Compute the plastic energy
-  virtual void updateEnergies(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void updateEnergies(ElementType el_type,
+                      GhostType ghost_type = _not_ghost) override;
 
   /// Compute the true potential energy
   void computePotentialEnergy(ElementType el_type, GhostType ghost_type) override;

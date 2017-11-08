@@ -87,7 +87,7 @@ private:
       DOFsIntegrationSchemes;
   typedef std::map<ID, IntegrationScheme::SolutionType>
       DOFsIntegrationSchemesSolutionTypes;
-  typedef std::set<ID> DOFsIntegrationSchemesOwner;
+  using DOFsIntegrationSchemesOwner = std::set<ID>;
 
   /// DOFManager with its real type
   DOFManagerDefault & dof_manager;

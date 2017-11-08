@@ -355,8 +355,7 @@ inline bool Material::isInternal(__attribute__((unused)) const ID & id,
 template <>
 inline bool Material::isInternal<Real>(const ID & id,
                                        const ElementKind & element_kind) const {
-  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
-      internal_vectors_real.find(this->getID() + ":" + id);
+  auto internal_array = internal_vectors_real.find(this->getID() + ":" + id);
 
   if (internal_array == internal_vectors_real.end() ||
       internal_array->second->getElementKind() != element_kind)
@@ -383,7 +382,7 @@ Material::getInternalDataPerElem(const ID & field_id,
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
-    typedef typename InternalField<T>::type_iterator type_iterator;
+    using type_iterator = typename InternalField<T>::type_iterator;
     type_iterator tit = internal_field.firstType(*gt);
     type_iterator tend = internal_field.lastType(*gt);
 
@@ -412,7 +411,7 @@ void Material::flattenInternal(const std::string & field_id,
   const FEEngine & fe_engine = internal_field.getFEEngine();
   const Mesh & mesh = fe_engine.getMesh();
 
-  typedef typename InternalField<T>::filter_type_iterator type_iterator;
+  using type_iterator = typename InternalField<T>::filter_type_iterator;
   type_iterator tit = internal_field.filterFirstType(ghost_type);
   type_iterator tend = internal_field.filterLastType(ghost_type);
 

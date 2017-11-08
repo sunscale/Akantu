@@ -58,7 +58,7 @@ public:
                         "Update frequency");
   }
 
-  ~BaseWeightFunction() override {}
+  ~BaseWeightFunction() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

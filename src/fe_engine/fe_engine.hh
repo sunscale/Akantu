@@ -63,8 +63,8 @@ class FEEngine : protected Memory, public MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  FEEngine(Mesh & mesh, UInt spatial_dimension = _all_dimensions, ID id = "fem",
-           MemoryID memory_id = 0);
+  FEEngine(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+           const ID & id = "fem", MemoryID memory_id = 0);
 
   ~FEEngine() override;
 

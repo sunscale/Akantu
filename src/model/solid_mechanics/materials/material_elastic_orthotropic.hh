@@ -71,25 +71,23 @@ public:
 
   MaterialElasticOrthotropic(SolidMechanicsModel & model, const ID & id = "");
 
-  ~MaterialElasticOrthotropic();
+  ~MaterialElasticOrthotropic() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  void initMaterial() override;
 
-  virtual void initMaterial();
-
-  virtual void updateInternalParameters();
-
+  void updateInternalParameters() override;
 
   /// compute the elastic potential energy
-  virtual void computePotentialEnergy(ElementType el_type,
-				      GhostType ghost_type = _not_ghost);
+  void computePotentialEnergy(ElementType el_type,
+                              GhostType ghost_type = _not_ghost) override;
 
-  virtual void computePotentialEnergyByElement(ElementType type, UInt index,
-					       Vector<Real> & epot_on_quad_points);
-
+  void
+  computePotentialEnergyByElement(ElementType type, UInt index,
+                                  Vector<Real> & epot_on_quad_points) override;
 
 protected:
 

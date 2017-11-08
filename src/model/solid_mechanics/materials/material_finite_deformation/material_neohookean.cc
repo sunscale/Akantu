@@ -176,12 +176,7 @@ void MaterialNeohookean<2>::computeStress(ElementType el_type,
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialNeohookean<dim>::computeThirdAxisDeformation(
-    __attribute__((unused)) ElementType el_type,
-    __attribute__((unused)) GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+    ElementType /*el_type*/, GhostType /*ghost_type*/) {}
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -289,4 +284,4 @@ Real MaterialNeohookean<spatial_dimension>::getShearWaveSpeed(
 
 INSTANTIATE_MATERIAL(neohookean, MaterialNeohookean);
 
-} // akantu
+} // namespace akantu

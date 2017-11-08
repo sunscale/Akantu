@@ -45,8 +45,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFManager(const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), mesh(nullptr), local_system_size(0),
-      pure_local_system_size(0), system_size(0),
+    : Memory(id, memory_id),
       communicator(Communicator::getStaticCommunicator()) {}
 
 /* -------------------------------------------------------------------------- */
@@ -191,11 +190,11 @@ DOFManager::DOFData::DOFData(const ID & dof_id)
       local_equation_number(0, 1, dof_id + ":local_equation_number") {}
 
 /* -------------------------------------------------------------------------- */
-DOFManager::DOFData::~DOFData() {}
+DOFManager::DOFData::~DOFData() = default;
 
 /* -------------------------------------------------------------------------- */
 DOFManager::DOFData & DOFManager::getNewDOFData(const ID & dof_id) {
-  DOFStorage::iterator it = this->dofs.find(dof_id);
+  auto it = this->dofs.find(dof_id);
   if (it != this->dofs.end()) {
     AKANTU_EXCEPTION("This dof array has already been registered");
   }
@@ -339,8 +338,8 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::splitSolutionPerDOFs() {
-  DOFStorage::iterator it = this->dofs.begin();
-  DOFStorage::iterator end = this->dofs.end();
+  auto it = this->dofs.begin();
+  auto end = this->dofs.end();
 
   for (; it != end; ++it) {
     DOFData & dof_data = *it->second;
@@ -431,7 +430,7 @@ SparseMatrix & DOFManager::getMatrix(const ID & id) {
 /* -------------------------------------------------------------------------- */
 bool DOFManager::hasMatrix(const ID & id) const {
   ID mtx_id = this->id + ":mtx:" + id;
-  SparseMatricesMap::const_iterator it = this->matrices.find(mtx_id);
+  auto it = this->matrices.find(mtx_id);
   return it != this->matrices.end();
 }
 
@@ -450,7 +449,7 @@ Array<Real> & DOFManager::getLumpedMatrix(const ID & id) {
 /* -------------------------------------------------------------------------- */
 const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) const {
   ID matrix_id = this->id + ":lumped_mtx:" + id;
-  LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(matrix_id);
+  auto it = this->lumped_matrices.find(matrix_id);
   if (it == this->lumped_matrices.end()) {
     AKANTU_SILENT_EXCEPTION("The lumped matrix "
                             << matrix_id << " does not exists in " << this->id);
@@ -462,7 +461,7 @@ const Array<Real> & DOFManager::getLumpedMatrix(const ID & id) const {
 /* -------------------------------------------------------------------------- */
 bool DOFManager::hasLumpedMatrix(const ID & id) const {
   ID mtx_id = this->id + ":lumped_mtx:" + id;
-  LumpedMatricesMap::const_iterator it = this->lumped_matrices.find(mtx_id);
+  auto it = this->lumped_matrices.find(mtx_id);
   return it != this->lumped_matrices.end();
 }
 
@@ -483,8 +482,7 @@ NonLinearSolver & DOFManager::getNonLinearSolver(const ID & id) {
 /* -------------------------------------------------------------------------- */
 bool DOFManager::hasNonLinearSolver(const ID & id) const {
   ID solver_id = this->id + ":nls:" + id;
-  NonLinearSolversMap::const_iterator it =
-      this->non_linear_solvers.find(solver_id);
+  auto it = this->non_linear_solvers.find(solver_id);
   return it != this->non_linear_solvers.end();
 }
 
@@ -505,8 +503,7 @@ TimeStepSolver & DOFManager::getTimeStepSolver(const ID & id) {
 /* -------------------------------------------------------------------------- */
 bool DOFManager::hasTimeStepSolver(const ID & solver_id) const {
   ID time_step_solver_id = this->id + ":tss:" + solver_id;
-  TimeStepSolversMap::const_iterator it =
-      this->time_step_solvers.find(time_step_solver_id);
+  auto it = this->time_step_solvers.find(time_step_solver_id);
   return it != this->time_step_solvers.end();
 }
 

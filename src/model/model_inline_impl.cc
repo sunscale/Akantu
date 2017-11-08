@@ -77,7 +77,7 @@ inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
   if (name == "")
     name = default_fem;
 
-  FEEngineMap::const_iterator it = fems.find(name);
+  auto it = fems.find(name);
   AKANTU_DEBUG_ASSERT(it != fems.end(), "The FEEngine "
                                             << name << " is not registered");
 
@@ -89,7 +89,7 @@ inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
 
 inline void Model::unRegisterFEEngineObject(const std::string & name) {
 
-  FEEngineMap::iterator it = fems.find(name);
+  auto it = fems.find(name);
   AKANTU_DEBUG_ASSERT(it != fems.end(), "FEEngine object with name "
                                             << name << " was not found");
 
@@ -107,7 +107,7 @@ inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
     default_fem = name;
 
 #ifndef AKANTU_NDEBUG
-  FEEngineMap::iterator it = fems.find(name);
+  auto it = fems.find(name);
   AKANTU_DEBUG_ASSERT(it == fems.end(), "FEEngine object with name "
                                             << name << " was already created");
 #endif
@@ -124,7 +124,7 @@ inline FEEngine & Model::getFEEngine(const ID & name) const {
   if (name == "")
     tmp_name = default_fem;
 
-  FEEngineMap::const_iterator it = fems.find(tmp_name);
+  auto it = fems.find(tmp_name);
 
   AKANTU_DEBUG_ASSERT(it != fems.end(),
                       "The FEEngine " << tmp_name << " is not registered");

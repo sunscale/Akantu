@@ -45,7 +45,7 @@ InternalCommunicationRequest::InternalCommunicationRequest(UInt source,
 }
 
 /* -------------------------------------------------------------------------- */
-InternalCommunicationRequest::~InternalCommunicationRequest() {}
+InternalCommunicationRequest::~InternalCommunicationRequest() = default;
 
 /* -------------------------------------------------------------------------- */
 void InternalCommunicationRequest::printself(std::ostream & stream,
@@ -63,7 +63,7 @@ void InternalCommunicationRequest::printself(std::ostream & stream,
 
 /* -------------------------------------------------------------------------- */
 Communicator::~Communicator() {
-  FinalizeCommunicatorEvent * event = new FinalizeCommunicatorEvent(*this);
+  auto * event = new FinalizeCommunicatorEvent(*this);
   this->sendEvent(*event);
   this->barrier();
   delete event;

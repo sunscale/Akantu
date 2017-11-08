@@ -295,7 +295,7 @@ void NonLocalManager::computeWeights() {
   this->updateWeightFunctionInternals();
   this->volumes.clear();
 
-  for (auto global_neighborhood : global_neighborhoods) {
+  for (const auto & global_neighborhood : global_neighborhoods) {
     auto it = neighborhoods.find(global_neighborhood);
 
     if (it != neighborhoods.end())
@@ -515,8 +515,7 @@ void NonLocalManager::onElementsRemoved(
                                        _ek_regular);
 
   /// loop over all the neighborhoods and call onElementsRemoved
-  std::set<ID>::const_iterator global_neighborhood_it =
-      global_neighborhoods.begin();
+  auto global_neighborhood_it = global_neighborhoods.begin();
   NeighborhoodMap::iterator it;
   for (; global_neighborhood_it != global_neighborhoods.end();
        ++global_neighborhood_it) {

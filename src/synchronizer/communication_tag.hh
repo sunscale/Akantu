@@ -36,8 +36,8 @@ namespace akantu {
  */
 class Tag {
 public:
-  Tag() : tag(0), hash(0) {}
-  Tag(int val) : tag(val), hash(0) {}
+  Tag() = default;
+  Tag(int val) : tag(val) {}
   Tag(int val, int hash) : tag(val), hash(hash) {}
 
   operator int() const { return int(max_tag == 0 ? tag : (uint32_t(tag) % max_tag)); }
@@ -97,8 +97,8 @@ private:
   friend void initialize(const std::string &, int &, char **&);
 
 private:
-  int tag;
-  int hash;
+  int tag{0};
+  int hash{0};
   static int max_tag;
 };
 

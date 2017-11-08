@@ -94,7 +94,7 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
            memory_id) {}
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, std::shared_ptr<Array<Real>> nodes,
+Mesh::Mesh(UInt spatial_dimension, const std::shared_ptr<Array<Real>> & nodes,
            const ID & id, const MemoryID & memory_id)
     : Mesh(spatial_dimension, id, memory_id,
            Communicator::getStaticCommunicator()) {

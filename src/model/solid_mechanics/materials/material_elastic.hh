@@ -67,7 +67,7 @@ public:
   MaterialElastic(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                   FEEngine & fe_engine, const ID & id = "");
 
-  ~MaterialElastic() override {}
+  ~MaterialElastic() override = default;
 
 protected:
   void initialize();

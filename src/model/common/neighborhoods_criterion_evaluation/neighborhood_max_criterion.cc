@@ -269,7 +269,7 @@ void NeighborhoodMaxCriterion::cleanupExtraGhostElements(
   Element element;
   element.ghost_type = _ghost;
 
-  std::set<Element>::const_iterator end = relevant_ghost_elements.end();
+  auto end = relevant_ghost_elements.end();
   for (; it != last_type; ++it) {
     element.type = *it;
     UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);

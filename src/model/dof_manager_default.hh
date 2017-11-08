@@ -197,7 +197,7 @@ protected:
 private:
   void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
                       UInt nb_new_pure_local,
-                      std::function<UInt(UInt)> getNode);
+                      const std::function<UInt(UInt)> & getNode);
 
 public:
   /// function to implement to react on  akantu::NewNodesEvent
@@ -336,7 +336,7 @@ protected:
   Array<Real> data_cache;
 
   /// Release at last apply boundary on jacobian
-  UInt jacobian_release;
+  UInt jacobian_release{0};
 
   /// equation number in global numbering
   Array<UInt> global_equation_number;
@@ -347,7 +347,7 @@ protected:
   equation_numbers_map global_to_local_mapping;
 
   /// accumulator to know what would be the next global id to use
-  UInt first_global_dof_id;
+  UInt first_global_dof_id{0};
 
   /// synchronizer to maintain coherency in dof fields
   std::unique_ptr<DOFSynchronizer> synchronizer;

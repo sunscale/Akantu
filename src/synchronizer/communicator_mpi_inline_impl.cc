@@ -191,8 +191,7 @@ CommunicationRequest
 Communicator::asyncSendImpl(const T * buffer, Int size, Int receiver, Int tag,
                             const CommunicationMode & mode) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  CommunicationRequestMPI * request =
-      new CommunicationRequestMPI(prank, receiver);
+  auto * request = new CommunicationRequestMPI(prank, receiver);
   MPI_Request & req = request->getMPIRequest();
 
   MPI_Datatype type = getMPIDatatype<T>();
@@ -216,8 +215,7 @@ template <typename T>
 CommunicationRequest Communicator::asyncReceiveImpl(T * buffer, Int size,
                                                     Int sender, Int tag) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  CommunicationRequestMPI * request =
-      new CommunicationRequestMPI(sender, prank);
+  auto * request = new CommunicationRequestMPI(sender, prank);
   MPI_Datatype type = getMPIDatatype<T>();
 
   MPI_Request & req = request->getMPIRequest();
@@ -268,7 +266,7 @@ bool Communicator::asyncProbe(Int sender, Int tag,
 bool Communicator::test(CommunicationRequest & request) const {
   MPI_Status status;
   int flag;
-  CommunicationRequestMPI & req_mpi =
+  auto & req_mpi =
       dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
   MPI_Request & req = req_mpi.getMPIRequest();
 
@@ -293,7 +291,7 @@ bool Communicator::testAll(std::vector<CommunicationRequest> & requests) const {
 /* -------------------------------------------------------------------------- */
 void Communicator::wait(CommunicationRequest & request) const {
   MPI_Status status;
-  CommunicationRequestMPI & req_mpi =
+  auto & req_mpi =
       dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Wait(&req, &status);
@@ -329,7 +327,7 @@ void Communicator::barrier() const {
 /* -------------------------------------------------------------------------- */
 CommunicationRequest Communicator::asyncBarrier() const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  CommunicationRequestMPI * request = new CommunicationRequestMPI(0, 0);
+  auto * request = new CommunicationRequestMPI(0, 0);
 
   MPI_Request & req = request->getMPIRequest();
   MPI_Ibarrier(communicator, &req);

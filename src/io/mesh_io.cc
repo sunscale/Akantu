@@ -45,7 +45,7 @@ MeshIO::MeshIO() {
 }
 
 /* -------------------------------------------------------------------------- */
-MeshIO::~MeshIO() {}
+MeshIO::~MeshIO() = default;
 
 /* -------------------------------------------------------------------------- */
 std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,

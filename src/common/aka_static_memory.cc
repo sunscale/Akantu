@@ -88,7 +88,7 @@ void StaticMemory::sfree(const MemoryID & memory_id,
   AKANTU_DEBUG_IN();
 
   try {
-    ArrayMap & vectors = const_cast<ArrayMap &>(getMemory(memory_id));
+    auto & vectors = const_cast<ArrayMap &>(getMemory(memory_id));
     ArrayMap::iterator vector_it;
     vector_it = vectors.find(name);
     if(vector_it != vectors.end()) {

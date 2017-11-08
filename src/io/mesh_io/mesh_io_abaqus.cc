@@ -63,10 +63,10 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-MeshIOAbaqus::MeshIOAbaqus() {}
+MeshIOAbaqus::MeshIOAbaqus() = default;
 
 /* -------------------------------------------------------------------------- */
-MeshIOAbaqus::~MeshIOAbaqus() {}
+MeshIOAbaqus::~MeshIOAbaqus() = default;
 
 /* -------------------------------------------------------------------------- */
 namespace spirit = boost::spirit;
@@ -90,9 +90,8 @@ void element_read(Mesh & mesh, const ElementType & type, UInt id,
   Array<UInt> & connectivity = mesh.getConnectivity(type);
 
   UInt i = 0;
-  for (std::vector<Int>::const_iterator it = conn.begin(); it != conn.end();
-       ++it) {
-    std::map<UInt, UInt>::const_iterator nit = nodes_mapping.find(*it);
+  for (auto it = conn.begin(); it != conn.end(); ++it) {
+    auto nit = nodes_mapping.find(*it);
     AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
                         "There is an unknown node in the connectivity.");
     tmp_conn[i++] = nit->second;
@@ -106,8 +105,8 @@ void node_read(Mesh & mesh, UInt id, const std::vector<Real> & pos,
                std::map<UInt, UInt> & nodes_mapping) {
   Vector<Real> tmp_pos(mesh.getSpatialDimension());
   UInt i = 0;
-  for (std::vector<Real>::const_iterator it = pos.begin();
-       it != pos.end() || i < mesh.getSpatialDimension(); ++it)
+  for (auto it = pos.begin(); it != pos.end() || i < mesh.getSpatialDimension();
+       ++it)
     tmp_pos[i++] = *it;
 
   nodes_mapping[id] = mesh.getNbNodes();
@@ -117,7 +116,7 @@ void node_read(Mesh & mesh, UInt id, const std::vector<Real> & pos,
 /* ------------------------------------------------------------------------ */
 void add_element_to_group(ElementGroup * el_grp, UInt element,
                           const std::map<UInt, Element> & elements_mapping) {
-  std::map<UInt, Element>::const_iterator eit = elements_mapping.find(element);
+  auto eit = elements_mapping.find(element);
   AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
                       "There is an unknown element ("
                           << element << ") in the in the ELSET "
@@ -127,7 +126,7 @@ void add_element_to_group(ElementGroup * el_grp, UInt element,
 }
 
 ElementGroup * element_group_create(Mesh & mesh, const ID & name) {
-  Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
+  auto eg_it = mesh.element_group_find(name);
   if (eg_it != mesh.element_group_end()) {
     return eg_it->second;
   } else {
@@ -136,7 +135,7 @@ ElementGroup * element_group_create(Mesh & mesh, const ID & name) {
 }
 
 NodeGroup * node_group_create(Mesh & mesh, const ID & name) {
-  Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
+  auto ng_it = mesh.node_group_find(name);
   if (ng_it != mesh.node_group_end()) {
     return ng_it->second;
   } else {
@@ -146,7 +145,7 @@ NodeGroup * node_group_create(Mesh & mesh, const ID & name) {
 
 void add_node_to_group(NodeGroup * node_grp, UInt node,
                        const std::map<UInt, UInt> & nodes_mapping) {
-  std::map<UInt, UInt>::const_iterator nit = nodes_mapping.find(node);
+  auto nit = nodes_mapping.find(node);
 
   AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
                       "There is an unknown node in the in the NSET "
@@ -440,8 +439,8 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
   std::copy(std::istream_iterator<char>(infile), std::istream_iterator<char>(),
             std::back_inserter(storage));
 
-  typedef std::string::const_iterator iterator_t;
-  typedef AbaqusSkipper<iterator_t> skipper;
+  using iterator_t = std::string::const_iterator;
+  using skipper = AbaqusSkipper<iterator_t>;
   typedef AbaqusMeshGrammar<iterator_t, skipper> grammar;
 
   grammar g(mesh);

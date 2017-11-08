@@ -64,9 +64,8 @@ MaterialElasticOrthotropic<Dim>::MaterialElasticOrthotropic(SolidMechanicsModel 
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt Dim>
-MaterialElasticOrthotropic<Dim>::~MaterialElasticOrthotropic() {
-}
+template <UInt Dim>
+MaterialElasticOrthotropic<Dim>::~MaterialElasticOrthotropic() = default;
 
 /* -------------------------------------------------------------------------- */
 template<UInt Dim>

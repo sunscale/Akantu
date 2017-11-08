@@ -51,7 +51,7 @@ namespace akantu {
 namespace parser {
   struct algebraic_error_handler_ {
     template <typename, typename, typename> struct result {
-      typedef void type;
+      using type = void;
     };
 
     template <typename Iterator>
@@ -248,7 +248,7 @@ namespace parser {
   struct parsable_vector {
     operator Vector<Real>() {
       Vector<Real> tmp(_cells.size());
-      std::vector<Real>::iterator it = _cells.begin();
+      auto it = _cells.begin();
       for (UInt i = 0; it != _cells.end(); ++it, ++i)
         tmp(i) = *it;
       return tmp;
@@ -260,7 +260,7 @@ namespace parser {
   inline std::ostream & operator<<(std::ostream & stream,
                                    const parsable_vector & pv) {
     stream << "pv[";
-    std::vector<Real>::const_iterator it = pv._cells.begin();
+    auto it = pv._cells.begin();
     if (it != pv._cells.end()) {
       stream << *it;
       for (++it; it != pv._cells.end(); ++it)
@@ -273,7 +273,7 @@ namespace parser {
   struct parsable_matrix {
     operator Matrix<Real>() {
       size_t cols = 0;
-      std::vector<parsable_vector>::iterator it_rows = _cells.begin();
+      auto it_rows = _cells.begin();
       for (; it_rows != _cells.end(); ++it_rows)
         cols = std::max(cols, it_rows->_cells.size());
 
@@ -281,7 +281,7 @@ namespace parser {
 
       it_rows = _cells.begin();
       for (UInt i = 0; it_rows != _cells.end(); ++it_rows, ++i) {
-        std::vector<Real>::iterator it_cols = it_rows->_cells.begin();
+        auto it_cols = it_rows->_cells.begin();
         for (UInt j = 0; it_cols != it_rows->_cells.end(); ++it_cols, ++j) {
           tmp(i, j) = *it_cols;
         }
@@ -295,7 +295,7 @@ namespace parser {
   inline std::ostream & operator<<(std::ostream & stream,
                                    const parsable_matrix & pm) {
     stream << "pm[";
-    std::vector<parsable_vector>::const_iterator it = pm._cells.begin();
+    auto it = pm._cells.begin();
     if (it != pm._cells.end()) {
       stream << *it;
       for (++it; it != pm._cells.end(); ++it)

@@ -69,7 +69,7 @@ private:
   using NodeGroups = std::map<std::string, NodeGroup *>;
 
 public:
-  typedef std::set<ElementType> GroupManagerTypeSet;
+  using GroupManagerTypeSet = std::set<ElementType>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -83,11 +83,11 @@ public:
   /* Groups iterators                                                         */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef NodeGroups::iterator node_group_iterator;
-  typedef ElementGroups::iterator element_group_iterator;
+  using node_group_iterator = NodeGroups::iterator;
+  using element_group_iterator = ElementGroups::iterator;
 
-  typedef NodeGroups::const_iterator const_node_group_iterator;
-  typedef ElementGroups::const_iterator const_element_group_iterator;
+  using const_node_group_iterator = NodeGroups::const_iterator;
+  using const_element_group_iterator = ElementGroups::const_iterator;
 
 #ifndef SWIG
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,    \
@@ -182,7 +182,8 @@ public:
 
 private:
   /// create element clusters for a given dimension
-  UInt createClusters(UInt element_dimension, std::string cluster_name_prefix,
+  UInt createClusters(UInt element_dimension,
+                      const std::string & cluster_name_prefix,
                       const ClusteringFilter & filter, Mesh & mesh_facets);
 
 public:
@@ -250,7 +251,7 @@ protected:
   inline dumper::Field *
   createElementalField(const field_type & field, const std::string & group_name,
                        UInt spatial_dimension, const ElementKind & kind,
-                       ElementTypeMap<UInt> nb_data_per_elem);
+                       const ElementTypeMap<UInt> & nb_data_per_elem);
 
   /// register an elemental field to the given group name
   template <class dump_type, typename field_type>

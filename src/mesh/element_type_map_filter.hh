@@ -70,7 +70,7 @@ public:
               this->sub_element_counter);
     }
 
-    inline const_iterator(){};
+    inline const_iterator() = default;
     inline const_iterator(const original_iterator<Shape> & origin_it,
                           const filter_iterator & filter_it,
                           UInt nb_item_per_elem)
@@ -119,15 +119,15 @@ public:
     UInt sub_element_counter;
   };
 
-  typedef iterator<Vector<T> > vector_iterator;
+  using vector_iterator = iterator<Vector<T>>;
 
-  typedef Array<T> array_type;
+  using array_type = Array<T>;
 
   typedef const_iterator<array_type::template const_iterator, Vector<T>,
                          Array<UInt>::const_iterator<UInt> >
       const_vector_iterator;
 
-  typedef typename array_type::value_type value_type;
+  using value_type = typename array_type::value_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -217,9 +217,9 @@ class ElementTypeMapArrayFilter {
   /* ------------------------------------------------------------------------ */
 
 public:
-  typedef T type;
-  typedef ArrayFilter<T> array_type;
-  typedef typename array_type::value_type value_type;
+  using type = T;
+  using array_type = ArrayFilter<T>;
+  using value_type = typename array_type::value_type;
 
   typedef typename ElementTypeMapArray<UInt, SupportType>::type_iterator
       type_iterator;
@@ -268,7 +268,7 @@ public:
       const ElementTypeMapArray<UInt, SupportType> & filter)
       : array(array), filter(filter) {}
 
-  ~ElementTypeMapArrayFilter() {}
+  ~ElementTypeMapArrayFilter() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

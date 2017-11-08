@@ -46,8 +46,8 @@ namespace akantu {
 
 class DataAccessorBase {
 public:
-  DataAccessorBase() {}
-  virtual ~DataAccessorBase() {}
+  DataAccessorBase() = default;
+  virtual ~DataAccessorBase() = default;
 };
 
 template <class T> class DataAccessor : public virtual DataAccessorBase {
@@ -55,8 +55,8 @@ template <class T> class DataAccessor : public virtual DataAccessorBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DataAccessor() {}
-  ~DataAccessor() override {}
+  DataAccessor() = default;
+  ~DataAccessor() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -90,8 +90,8 @@ public:
 /* -------------------------------------------------------------------------- */
 template <> class DataAccessor<Element> : public virtual DataAccessorBase {
 public:
-  DataAccessor() {}
-  ~DataAccessor() override {}
+  DataAccessor() = default;
+  ~DataAccessor() override = default;
 
   virtual UInt getNbData(const Array<Element> & elements,
                          const SynchronizationTag & tag) const = 0;
@@ -159,8 +159,8 @@ public:
 /* -------------------------------------------------------------------------- */
 template <> class DataAccessor<UInt> : public virtual DataAccessorBase {
 public:
-  DataAccessor() {}
-  ~DataAccessor() override {}
+  DataAccessor() = default;
+  ~DataAccessor() override = default;
 
   virtual UInt getNbData(const Array<UInt> & elements,
                          const SynchronizationTag & tag) const = 0;
@@ -215,7 +215,7 @@ public:
   ReduceUIntDataAccessor(Array<T> & data, const SynchronizationTag & tag)
       : data(data), tag(tag) {}
 
-  ~ReduceUIntDataAccessor() override {}
+  ~ReduceUIntDataAccessor() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

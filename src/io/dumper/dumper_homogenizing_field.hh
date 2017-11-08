@@ -81,7 +81,7 @@ class AvgHomogenizingFunctor : public ComputeFunctor<type, type> {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  typedef typename type::value_type value_type;
+  using value_type = typename type::value_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -104,7 +104,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  type func(const type & d, Element /*global_index*/) {
+  type func(const type & d, Element /*global_index*/) override {
     Vector<value_type> res(this->nb_data);
 
     if (d.size() % this->nb_data)
@@ -122,7 +122,7 @@ public:
   };
 
   UInt getDim() override { return nb_data; };
-  UInt getNbComponent(UInt /*old_nb_comp*/) { throw; };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { throw; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -142,7 +142,7 @@ class HomogenizerProxy {
   /* ------------------------------------------------------------------------ */
 
 public:
-  HomogenizerProxy(){};
+  HomogenizerProxy() = default;
 
 public:
   inline static ComputeFunctorInterface * createHomogenizer(Field & field);
@@ -151,7 +151,7 @@ public:
   inline ComputeFunctorInterface * connectToField(T * field) {
     ElementTypeMap<UInt> nb_components = field->getNbComponents();
 
-    typedef typename T::types::return_type ret_type;
+    using ret_type = typename T::types::return_type;
     return this->instantiateHomogenizer<ret_type>(nb_components);
   }
 
@@ -166,8 +166,8 @@ template <typename ret_type>
 inline ComputeFunctorInterface *
 HomogenizerProxy::instantiateHomogenizer(ElementTypeMap<UInt> & nb_components) {
 
-  typedef dumper::AvgHomogenizingFunctor<ret_type> Homogenizer;
-  Homogenizer * foo = new Homogenizer(nb_components);
+  using Homogenizer = dumper::AvgHomogenizingFunctor<ret_type>;
+  auto * foo = new Homogenizer(nb_components);
   return foo;
 }
 

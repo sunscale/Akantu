@@ -62,9 +62,9 @@ class MeshData : public Memory {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef MeshDataTypeCode TypeCode;
+  using TypeCode = MeshDataTypeCode;
   typedef std::map<std::string, ElementTypeMapBase *> ElementalDataMap;
-  typedef std::vector<std::string> StringVector;
+  using StringVector = std::vector<std::string>;
   typedef std::map<std::string, TypeCode> TypeCodeMap;
 
   /* ------------------------------------------------------------------------ */

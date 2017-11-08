@@ -191,10 +191,10 @@ private:
 
   ///  initialize cohesive material with intrinsic insertion (if physical
   ///  surfaces are precised)
-  void initIntrinsicCohesiveMaterials(std::string cohesive_surfaces);
+  void initIntrinsicCohesiveMaterials(const std::string & cohesive_surfaces);
 
   /// insert cohesive elements along a given physical surface of the mesh
-  void insertElementsFromMeshData(std::string physical_name);
+  void insertElementsFromMeshData(const std::string & physical_name);
 
   /// initialize completely the model for extrinsic elements
   void initAutomaticInsertion();

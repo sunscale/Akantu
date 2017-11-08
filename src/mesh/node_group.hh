@@ -60,7 +60,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef Array<UInt>::const_iterator<UInt> const_node_iterator;
+  using const_node_iterator = Array<UInt>::const_iterator<UInt>;
 
   /// empty the node group
   void empty();
@@ -76,10 +76,11 @@ public:
   /// remove a node
   inline void remove(UInt node);
 
+#ifndef SWIG
   inline decltype(auto) find(UInt node) const {
     return node_group.find(node);
   }
-  
+#endif
   /// remove duplicated nodes
   void optimize();
 

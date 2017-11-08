@@ -43,8 +43,8 @@ class TermsToAssemble {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TermsToAssemble() {}
-  virtual ~TermsToAssemble() {}
+  TermsToAssemble() = default;
+  virtual ~TermsToAssemble() = default;
 
   class TermToAssemble {
   public:
@@ -79,10 +79,10 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::vector<TermToAssemble> TermsContainer;
+  using TermsContainer = std::vector<TermToAssemble>;
 
 public:
-  typedef TermsContainer::const_iterator const_terms_iterator;
+  using const_terms_iterator = TermsContainer::const_iterator;
 
   const_terms_iterator begin() const { return terms.begin(); }
   const_terms_iterator end() const { return terms.end(); }

@@ -45,8 +45,8 @@ Dumpable::Dumpable() : default_dumper("") {}
 /* -------------------------------------------------------------------------- */
 Dumpable::~Dumpable() {
 
-  DumperMap::iterator it = dumpers.begin();
-  DumperMap::iterator end = dumpers.end();
+  auto it = dumpers.begin();
+  auto end = dumpers.end();
 
   for (; it != end; ++it) {
     delete it->second;
@@ -264,8 +264,8 @@ DumperIOHelper & Dumpable::getDumper() {
 /* -------------------------------------------------------------------------- */
 DumperIOHelper & Dumpable::getDumper(const std::string & dumper_name) {
 
-  DumperMap::iterator it = this->dumpers.find(dumper_name);
-  DumperMap::iterator end = this->dumpers.end();
+  auto it = this->dumpers.find(dumper_name);
+  auto end = this->dumpers.end();
 
   if (it == end)
     AKANTU_EXCEPTION("Dumper " << dumper_name

@@ -33,8 +33,8 @@
 
 template<class types, template <class> class iterator>
 void GenericElementalField<types,iterator>::checkHomogeneity() {
-  typedef typename field_type::type_iterator field_type_iterator;
-  typedef typename field_type::array_type array_type;
+  using field_type_iterator = typename field_type::type_iterator;
+  using array_type = typename field_type::array_type;
 
   field_type_iterator tit;
   field_type_iterator end;

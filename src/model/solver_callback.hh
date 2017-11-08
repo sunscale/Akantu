@@ -84,7 +84,7 @@ public:
   virtual void afterSolveStep() { };
 protected:
   /// DOFManager prefixed to avoid collision in multiple inheritance cases
-  DOFManager * sc_dof_manager;
+  DOFManager * sc_dof_manager{nullptr};
 };
 
 } // namespace akantu

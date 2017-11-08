@@ -74,7 +74,7 @@ MeshIODiana::MeshIODiana() {
        it != _diana_to_akantu_element_types.end(); ++it) {
     UInt nb_nodes = Mesh::getNbNodesPerElement(it->second);
 
-    UInt * tmp = new UInt[nb_nodes];
+    auto * tmp = new UInt[nb_nodes];
     for (UInt i = 0; i < nb_nodes; ++i) {
       tmp[i] = i;
     }
@@ -132,12 +132,12 @@ MeshIODiana::MeshIODiana() {
 }
 
 /* -------------------------------------------------------------------------- */
-MeshIODiana::~MeshIODiana() {}
+MeshIODiana::~MeshIODiana() = default;
 
 /* -------------------------------------------------------------------------- */
 inline void my_getline(std::ifstream & infile, std::string & line) {
   std::getline(infile, line);   // read the line
-  size_t pos = line.find("\r"); /// remove the extra \r if needed
+  size_t pos = line.find('\r'); /// remove the extra \r if needed
   line = line.substr(0, pos);
 }
 
@@ -274,14 +274,14 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
       my_getline(infile, line);
     }
 
-    std::stringstream * str = new std::stringstream(line);
+    auto * str = new std::stringstream(line);
 
     UInt id;
     std::string name;
     char c;
     *str >> id >> name >> c;
 
-    Array<UInt> * list_ids = new Array<UInt>(0, 1, name);
+    auto * list_ids = new Array<UInt>(0, 1, name);
 
     UInt s = 1;
     bool end = false;
@@ -289,7 +289,7 @@ std::string MeshIODiana::readGroups(std::ifstream & infile, Mesh & mesh,
       while (!str->eof() && s != 0) {
         std::set<UInt> interval;
         s = readInterval(*str, interval);
-        std::set<UInt>::iterator it = interval.begin();
+        auto it = interval.begin();
         if (s == 1)
           list_ids->push_back(*it);
         if (s == 2) {
@@ -376,7 +376,7 @@ std::string MeshIODiana::readConnectivity(std::ifstream & infile, Mesh & mesh,
   Element elem;
   UInt * read_order = nullptr;
 
-  while (1) {
+  while (true) {
     my_getline(infile, lline);
     //    std::cerr << lline << std::endl;
     std::stringstream sstr_elem(lline);
@@ -548,8 +548,7 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
       if (!mat_prop.empty()) {
         material_file << "material elastic [" << std::endl;
         material_file << "\tname = material" << ++mat_id << std::endl;
-        for (MatProp::iterator it = mat_prop.begin(); it != mat_prop.end();
-             ++it)
+        for (auto it = mat_prop.begin(); it != mat_prop.end(); ++it)
           material_file << "\t" << it->first << " = " << it->second
                         << std::endl;
         material_file << "]" << std::endl;
@@ -565,8 +564,7 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
           if (!mat_prop.empty()) {
             material_file << "material elastic [" << std::endl;
             material_file << "\tname = material" << ++mat_id << std::endl;
-            for (MatProp::iterator it = mat_prop.begin(); it != mat_prop.end();
-                 ++it)
+            for (auto it = mat_prop.begin(); it != mat_prop.end(); ++it)
               material_file << "\t" << it->first << " = " << it->second
                             << std::endl;
             material_file << "]" << std::endl;

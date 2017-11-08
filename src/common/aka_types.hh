@@ -129,6 +129,7 @@ protected:
     this->values = data;
   }
 
+#ifndef SWIG
   template <class Other, typename = std::enable_if_t<
                              tensors::is_copyable<TensorProxy, Other>::value>>
   explicit TensorProxy(const Other & other) {
@@ -136,7 +137,7 @@ protected:
     for (UInt i = 0; i < ndim; ++i)
       this->n[i] = other.size(i);
   }
-
+#endif
 public:
   using RetType = _RetType;
 
@@ -158,6 +159,7 @@ public:
 
   T * storage() const { return values; }
 
+#ifndef SWIG
   template <class Other, typename = std::enable_if_t<
                              tensors::is_copyable<TensorProxy, Other>::value>>
   inline TensorProxy & operator=(const Other & other) {
@@ -167,7 +169,7 @@ public:
     memcpy(this->values, other.storage(), this->size() * sizeof(T));
     return *this;
   }
-
+#endif
   // template <class Other, typename = std::enable_if_t<
   //                          tensors::is_copyable<TensorProxy, Other>::value>>
   // inline TensorProxy & operator=(const Other && other) {
@@ -285,8 +287,7 @@ protected:
   TensorStorage(const TensorStorage & src) = delete;
 
 public:
-  TensorStorage(const TensorStorage & src, bool deep_copy)
-      : values(nullptr), wrapped(false) {
+  TensorStorage(const TensorStorage & src, bool deep_copy) : values(nullptr) {
     if (deep_copy)
       this->deepCopy(src);
     else

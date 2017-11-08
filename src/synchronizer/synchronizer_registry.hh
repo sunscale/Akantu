@@ -86,7 +86,7 @@ private:
   Tag2Sync synchronizers;
 
   /// data accessor that will permit to do the pack/unpack things
-  DataAccessorBase * data_accessor;
+  DataAccessorBase * data_accessor{nullptr};
 };
 
 /* -------------------------------------------------------------------------- */

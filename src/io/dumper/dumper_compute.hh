@@ -44,7 +44,7 @@ __BEGIN_AKANTU_DUMPER__
 
 class ComputeFunctorInterface {
 public:
-  virtual ~ComputeFunctorInterface(){};
+  virtual ~ComputeFunctorInterface() = default;
 
   virtual UInt getDim() = 0;
   virtual UInt getNbComponent(UInt old_nb_comp) = 0;
@@ -55,16 +55,16 @@ public:
 template <typename return_type>
 class ComputeFunctorOutput : public ComputeFunctorInterface {
 public:
-  ComputeFunctorOutput(){};
-  ~ComputeFunctorOutput() override{};
+  ComputeFunctorOutput() = default;
+  ~ComputeFunctorOutput() override = default;
 };
 
 /* -------------------------------------------------------------------------- */
 template <typename input_type, typename return_type>
 class ComputeFunctor : public ComputeFunctorOutput<return_type> {
 public:
-  ComputeFunctor(){};
-  ~ComputeFunctor() override{};
+  ComputeFunctor() = default;
+  ~ComputeFunctor() override = default;
 
   virtual return_type func(const input_type & d, Element global_index) = 0;
 };
@@ -76,11 +76,11 @@ class FieldCompute : public Field {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef typename SubFieldCompute::iterator sub_iterator;
-  typedef typename SubFieldCompute::types sub_types;
-  typedef typename sub_types::return_type sub_return_type;
-  typedef _return_type return_type;
-  typedef typename sub_types::data_type data_type;
+  using sub_iterator = typename SubFieldCompute::iterator;
+  using sub_types = typename SubFieldCompute::types;
+  using sub_return_type = typename sub_types::return_type;
+  using return_type = _return_type;
+  using data_type = typename sub_types::data_type;
 
   typedef TypeTraits<data_type, return_type, ElementTypeMapArray<data_type> >
       types;
@@ -226,8 +226,7 @@ public:
   }
 
   template <typename output, typename T> Field * connectToFunctor(T * ptr) {
-    FieldCompute<T, output> * functor_ptr =
-        new FieldCompute<T, output>(*ptr, func);
+    auto * functor_ptr = new FieldCompute<T, output>(*ptr, func);
     return functor_ptr;
   }
 

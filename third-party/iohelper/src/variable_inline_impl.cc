@@ -41,7 +41,7 @@ __BEGIN_IOHELPER__
 
 template <class Cont>
 inline void Variable<Cont>::accept(Visitor & v) const {
-  if (DumperText * ptr_txt = dynamic_cast<DumperText*>(&v)){
+  if (auto * ptr_txt = dynamic_cast<DumperText *>(&v)) {
     ptr_txt->visitVariable(*this);
   }
   /*

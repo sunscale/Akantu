@@ -174,7 +174,7 @@ template <InterpolationType interpolation_type,
               InterpolationProperty<interpolation_type>::kind>
 class InterpolationElement {
 public:
-  typedef InterpolationProperty<interpolation_type> interpolation_property;
+  using interpolation_property = InterpolationProperty<interpolation_type>;
 
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
@@ -280,16 +280,14 @@ class ElementClass
       public InterpolationElement<
           ElementClassProperty<element_type>::interpolation_type> {
 protected:
-  typedef GeometricalElement<
-      ElementClassProperty<element_type>::geometrical_type>
-      geometrical_element;
-  typedef InterpolationElement<
-      ElementClassProperty<element_type>::interpolation_type>
-      interpolation_element;
+  using geometrical_element = GeometricalElement<
+      ElementClassProperty<element_type>::geometrical_type>;
+  using interpolation_element = InterpolationElement<
+      ElementClassProperty<element_type>::interpolation_type>;
 
-  typedef ElementClassProperty<element_type> element_property;
-  typedef typename interpolation_element::interpolation_property
-      interpolation_property;
+  using element_property = ElementClassProperty<element_type>;
+  using interpolation_property =
+      typename interpolation_element::interpolation_property;
 
 public:
   /**

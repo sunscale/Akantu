@@ -54,7 +54,7 @@ public:
                const Communicator & comm =
                    Communicator::getStaticCommunicator());
 
-  ~Synchronizer() override{};
+  ~Synchronizer() override = default;
 
   virtual void printself(__attribute__((unused)) std::ostream & stream,
                          __attribute__((unused)) int indent = 0) const {};

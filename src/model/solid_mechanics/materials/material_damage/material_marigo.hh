@@ -57,19 +57,19 @@ class MaterialMarigo : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
 public:
   MaterialMarigo(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialMarigo(){};
+  ~MaterialMarigo() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void initMaterial();
+  void initMaterial() override;
 
-  virtual void updateInternalParameters();
+  void updateInternalParameters() override;
 
   /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// constitutive law for a given quadrature point
@@ -83,16 +83,16 @@ protected:
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbData(const Array<Element> & elements,
-                                const SynchronizationTag & tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual void packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

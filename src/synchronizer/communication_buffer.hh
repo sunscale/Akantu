@@ -68,7 +68,7 @@ public:
     return *this;
   }
 
-  virtual ~CommunicationBufferTemplated(){};
+  virtual ~CommunicationBufferTemplated() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

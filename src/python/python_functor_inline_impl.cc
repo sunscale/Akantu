@@ -108,7 +108,7 @@ PythonFunctor::convertToPython(const std::vector<T> & array) const {
   npy_intp dims[1] = {int(array.size())};
   PyObject * obj = PyArray_SimpleNewFromData(1, dims, data_typecode,
                                              const_cast<T *>(&array[0]));
-  PyArrayObject * res = (PyArrayObject *)obj;
+  auto * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
 /* -------------------------------------------------------------------------- */
@@ -148,7 +148,7 @@ PyObject * PythonFunctor::convertToPython(const Vector<T> & array) const {
   npy_intp dims[1] = {array.size()};
   PyObject * obj =
       PyArray_SimpleNewFromData(1, dims, data_typecode, array.storage());
-  PyArrayObject * res = (PyArrayObject *)obj;
+  auto * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
 
@@ -159,7 +159,7 @@ PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
   npy_intp dims[2] = {array.size(), array.getNbComponent()};
   PyObject * obj =
       PyArray_SimpleNewFromData(2, dims, data_typecode, array.storage());
-  PyArrayObject * res = (PyArrayObject *)obj;
+  auto * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
 /* -------------------------------------------------------------------------- */
@@ -175,7 +175,7 @@ PyObject * PythonFunctor::convertToPython(const Matrix<T> & mat) const {
   npy_intp dims[2] = {mat.size(0), mat.size(1)};
   PyObject * obj =
       PyArray_SimpleNewFromData(2, dims, data_typecode, mat.storage());
-  PyArrayObject * res = (PyArrayObject *)obj;
+  auto * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
 

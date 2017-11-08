@@ -561,8 +561,8 @@ protected:
 /* -------------------------------------------------------------------------- */
 namespace BC {
   namespace Neumann {
-    typedef FromHigherDim FromStress;
-    typedef FromSameDim FromTraction;
+    using FromStress = FromHigherDim;
+    using FromTraction = FromSameDim;
   } // namespace Neumann
 } // namespace BC
 

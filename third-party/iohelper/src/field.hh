@@ -47,16 +47,14 @@ class Field : public FieldInterface {
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  typedef typename Cont::iterator iterator;
+  using iterator = typename Cont::iterator;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  Field(Cont & c, const std::string name):my_field(c), name(name){};
-  virtual ~Field(){};
+  Field(Cont & c, const std::string & name) : my_field(c), name(name){};
+  ~Field() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -64,16 +62,16 @@ public:
 public:
 
   //! return true if the data is a constant size per element
-  inline bool isHomogeneous();
+  inline bool isHomogeneous() override;
   //! return the size per element (valid only if isHomogeneous is true)
-  inline UInt getDim();
+  inline UInt getDim() override;
   //! return the number of stored items (elements, nodes, etc...)
-  inline UInt size();
+  inline UInt size() override;
   //! return the description name of the container
-  inline std::string getName();
+  inline std::string getName() override;
 
   //! accept to be visited by a visitor
-  void accept(Visitor & v);
+  void accept(Visitor & v) override;
 
   //! begin method
   iterator begin(){return my_field.begin();}
@@ -85,7 +83,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 
-  inline DataType getDataType() { return my_field.getDataType(); }
+  inline DataType getDataType() override { return my_field.getDataType(); }
 
 public:
 

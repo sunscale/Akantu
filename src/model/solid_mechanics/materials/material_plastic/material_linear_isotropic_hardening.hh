@@ -66,12 +66,13 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
                             Array<Real> & tangent_matrix,
-                            GhostType ghost_type = _not_ghost);
+                            GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// Infinitesimal deformations

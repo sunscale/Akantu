@@ -185,7 +185,7 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   typedef std::map<std::string, DumperIOHelper *> DumperMap;
-  typedef std::set<std::string> DumperSet;
+  using DumperSet = std::set<std::string>;
 
   DumperMap dumpers;
   std::string default_dumper;

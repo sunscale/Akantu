@@ -69,7 +69,7 @@ class FEEngineTemplate : public FEEngine {
   /* ------------------------------------------------------------------------ */
 public:
   typedef I<kind, IntegrationOrderFunctor> Integ;
-  typedef S<kind> Shape;
+  using Shape = S<kind>;
 
   FEEngineTemplate(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
                    ID id = "fem", MemoryID memory_id = 0);

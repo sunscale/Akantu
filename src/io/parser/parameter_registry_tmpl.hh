@@ -80,7 +80,7 @@ namespace debug {
 
   class ParameterWrongTypeException : public ParameterException {
   public:
-    ParameterWrongTypeException(const std::string name,
+    ParameterWrongTypeException(const std::string & name,
                                 const std::type_info & wrong_type,
                                 const std::type_info & type)
         : ParameterException(name, "Parameter " + name +
@@ -93,8 +93,7 @@ namespace debug {
 template <typename T>
 const ParameterTyped<T> & Parameter::getParameterTyped() const {
   try {
-    const ParameterTyped<T> & tmp =
-        dynamic_cast<const ParameterTyped<T> &>(*this);
+    const auto & tmp = dynamic_cast<const ParameterTyped<T> &>(*this);
     return tmp;
   } catch (std::bad_cast &) {
     AKANTU_CUSTOM_EXCEPTION(
@@ -105,7 +104,7 @@ const ParameterTyped<T> & Parameter::getParameterTyped() const {
 /* -------------------------------------------------------------------------- */
 template <typename T> ParameterTyped<T> & Parameter::getParameterTyped() {
   try {
-    ParameterTyped<T> & tmp = dynamic_cast<ParameterTyped<T> &>(*this);
+    auto & tmp = dynamic_cast<ParameterTyped<T> &>(*this);
     return tmp;
   } catch (std::bad_cast &) {
     AKANTU_CUSTOM_EXCEPTION(
@@ -231,12 +230,11 @@ template <typename T>
 void ParameterRegistry::registerParam(std::string name, T & variable,
                                       ParameterAccessType type,
                                       const std::string & description) {
-  std::map<std::string, Parameter *>::iterator it = params.find(name);
+  auto it = params.find(name);
   if (it != params.end())
     AKANTU_CUSTOM_EXCEPTION(debug::ParameterException(
         name, "Parameter named " + name + " already registered."));
-  ParameterTyped<T> * param =
-      new ParameterTyped<T>(name, description, type, variable);
+  auto * param = new ParameterTyped<T>(name, description, type, variable);
   params[name] = param;
 }
 
@@ -253,11 +251,10 @@ void ParameterRegistry::registerParam(std::string name, T & variable,
 /* -------------------------------------------------------------------------- */
 template <typename T, typename V>
 void ParameterRegistry::setMixed(const std::string & name, const V & value) {
-  std::map<std::string, Parameter *>::iterator it = params.find(name);
+  auto it = params.find(name);
   if (it == params.end()) {
     if (consisder_sub) {
-      for (SubRegisteries::iterator it = sub_registries.begin();
-           it != sub_registries.end(); ++it) {
+      for (auto it = sub_registries.begin(); it != sub_registries.end(); ++it) {
         it->second->setMixed<T>(name, value);
       }
     } else {
@@ -277,11 +274,10 @@ void ParameterRegistry::set(const std::string & name, const T & value) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> T & ParameterRegistry::get(const std::string & name) {
-  Parameters::iterator it = params.find(name);
+  auto it = params.find(name);
   if (it == params.end()) {
     if (consisder_sub) {
-      for (SubRegisteries::iterator it = sub_registries.begin();
-           it != sub_registries.end(); ++it) {
+      for (auto it = sub_registries.begin(); it != sub_registries.end(); ++it) {
         try {
           return it->second->get<T>(name);
         } catch (...) {
@@ -299,11 +295,10 @@ template <typename T> T & ParameterRegistry::get(const std::string & name) {
 
 /* -------------------------------------------------------------------------- */
 const Parameter & ParameterRegistry::get(const std::string & name) const {
-  Parameters::const_iterator it = params.find(name);
+  auto it = params.find(name);
   if (it == params.end()) {
     if (consisder_sub) {
-      for (SubRegisteries::const_iterator it = sub_registries.begin();
-           it != sub_registries.end(); ++it) {
+      for (auto it = sub_registries.begin(); it != sub_registries.end(); ++it) {
         try {
           return it->second->get(name);
         } catch (...) {

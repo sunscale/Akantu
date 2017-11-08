@@ -81,10 +81,12 @@ public:
                                 const GhostType & ghost_type = _not_ghost,
                                 const ElementKind & kind = _ek_regular) const;
 
+#ifndef SWIG
   template <typename... pack>
   inline decltype(auto) elementTypes(pack &&... _pack) const {
     return elements.elementTypes(_pack...);
   }
+#endif
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
   inline const_element_iterator

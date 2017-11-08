@@ -65,8 +65,8 @@ void NodeInfoPerProc::fillNodeGroupsFromBuffer(CommunicationBuffer & buffer) {
   auto nit = global_nodes.begin();
   auto nend = global_nodes.end();
   for (; nit != nend; ++nit) {
-    std::vector<std::string>::iterator it = node_to_group[*nit].begin();
-    std::vector<std::string>::iterator end = node_to_group[*nit].end();
+    auto it = node_to_group[*nit].begin();
+    auto end = node_to_group[*nit].end();
 
     for (; it != end; ++it) {
       mesh.getNodeGroup(*it).add(nit - nbegin, false);
@@ -101,7 +101,7 @@ void NodeInfoPerProc::fillNodesType() {
   Array<bool> already_seen(nb_nodes, 1, false);
 
   for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
+    auto gt = (GhostType)g;
     UInt set = NORMAL_SET;
     if (gt == _ghost)
       set = GHOST_SET;
@@ -371,7 +371,7 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
 
   DynamicCommunicationBuffer buffer;
 
-  typedef std::vector<std::vector<std::string>> NodeToGroup;
+  using NodeToGroup = std::vector<std::vector<std::string>>;
   NodeToGroup node_to_group;
   node_to_group.resize(nb_total_nodes);
 

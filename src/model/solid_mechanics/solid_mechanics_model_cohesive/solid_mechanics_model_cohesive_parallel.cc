@@ -154,7 +154,7 @@ void SolidMechanicsModelCohesive::packUnpackFacetStressDataHelper(
   UInt nb_quad_per_elem = 0;
   UInt sp2 = spatial_dimension * spatial_dimension;
   UInt nb_component = sp2 * 2;
-  bool element_rank = 0;
+  bool element_rank = false;
   Mesh & mesh_facets = inserter->getMeshFacets();
 
   Array<T> * vect = nullptr;

@@ -116,6 +116,7 @@ inline void Array<T, is_scal>::push_back(const T & value) {
 // }
 
 /* -------------------------------------------------------------------------- */
+#ifndef SWIG
 /**
  * append a matrix or a vector to the array
  * @param new_elem a reference to a Matrix<T> or Vector<T> */
@@ -152,7 +153,7 @@ Array<T, is_scal>::push_back(const Array<T, is_scal>::iterator<Ret> & it) {
   T * new_elem = it.data();
   std::uninitialized_copy(new_elem, new_elem + nb_component, tmp);
 }
-
+#endif
 /* -------------------------------------------------------------------------- */
 /**
  * erase an element. If the erased element is not the last of the array, the
@@ -275,6 +276,7 @@ bool Array<T, is_scal>::operator!=(const Array<T, is_scal> & array) const {
 }
 
 /* -------------------------------------------------------------------------- */
+#ifndef SWIG
 /**
  * set all tuples of the array to a given vector or matrix
  * @param vm Matrix or Vector to fill the array with
@@ -290,7 +292,7 @@ inline void Array<T, is_scal>::set(const C<T> & vm) {
     std::copy(vm.storage(), vm.storage() + nb_component, it);
   }
 }
-
+#endif
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 void Array<T, is_scal>::append(const Array<T> & other) {
@@ -749,6 +751,7 @@ inline UInt ArrayBase::getMemorySize() const {
 
 inline void ArrayBase::empty() { size_ = 0; }
 
+#ifndef SWIG
 /* -------------------------------------------------------------------------- */
 /* Iterators                                                                  */
 /* -------------------------------------------------------------------------- */
@@ -1246,6 +1249,7 @@ Array<T, is_scal>::erase(const iterator<R> & it) {
   iterator<R> rit = it;
   return --rit;
 }
+#endif
 
 } // namespace akantu
 

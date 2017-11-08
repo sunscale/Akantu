@@ -90,7 +90,7 @@ struct FinalizeCommunicatorEvent {
 
 class CommunicatorEventHandler {
 public:
-  virtual ~CommunicatorEventHandler() {}
+  virtual ~CommunicatorEventHandler() = default;
   virtual void onCommunicatorFinalize() {}
 
 private:
@@ -288,7 +288,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
-  inline void allGatherV(Array<T> & values, Array<Int> sizes) const {
+  inline void allGatherV(Array<T> & values, const Array<Int> & sizes) const {
     this->allGatherVImpl(values.storage(), sizes.storage());
   }
 
@@ -334,7 +334,8 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
-  inline void gatherV(Array<T> & values, Array<Int> sizes, int root = 0) const {
+  inline void gatherV(Array<T> & values, const Array<Int> & sizes,
+                      int root = 0) const {
     this->gatherVImpl(values.storage(), sizes.storage(), root);
   }
 

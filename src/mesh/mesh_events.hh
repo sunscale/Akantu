@@ -29,6 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <utility>
+
 #include "aka_array.hh"
 #include "element.hh"
 #include "element_type_map.hh"
@@ -43,7 +45,7 @@ namespace akantu {
 /// akantu::MeshEvent is the base event for meshes
 template <class Entity> class MeshEvent {
 public:
-  virtual ~MeshEvent() {}
+  virtual ~MeshEvent() = default;
   /// Get the list of entity modified by the event nodes or elements
   const Array<Entity> & getList() const { return list; }
   /// Get the list of entity modified by the event nodes or elements
@@ -58,13 +60,13 @@ class Mesh;
 /// akantu::MeshEvent related to new nodes in the mesh
 class NewNodesEvent : public MeshEvent<UInt> {
 public:
-  ~NewNodesEvent() override{};
+  ~NewNodesEvent() override = default;
 };
 
 /// akantu::MeshEvent related to nodes removed from the mesh
 class RemovedNodesEvent : public MeshEvent<UInt> {
 public:
-  ~RemovedNodesEvent() override{};
+  ~RemovedNodesEvent() override = default;
   inline RemovedNodesEvent(const Mesh & mesh);
   /// Get the new numbering following suppression of nodes from nodes arrays
   AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, Array<UInt> &);
@@ -78,15 +80,15 @@ private:
 /// akantu::MeshEvent related to new elements in the mesh
 class NewElementsEvent : public MeshEvent<Element> {
 public:
-  ~NewElementsEvent() override{};
+  ~NewElementsEvent() override = default;
 };
 
 /// akantu::MeshEvent related to elements removed from the mesh
 class RemovedElementsEvent : public MeshEvent<Element> {
 public:
-  ~RemovedElementsEvent() override{};
+  ~RemovedElementsEvent() override = default;
   inline RemovedElementsEvent(const Mesh & mesh,
-                              ID new_numbering_id = "new_numbering");
+                              const ID & new_numbering_id = "new_numbering");
   /// Get the new numbering following suppression of elements from elements
   /// arrays
   AKANTU_GET_MACRO(NewNumbering, new_numbering,
@@ -110,10 +112,10 @@ protected:
 /// combination of removed and added elements
 class ChangedElementsEvent : public RemovedElementsEvent {
 public:
-  ~ChangedElementsEvent() override{};
+  ~ChangedElementsEvent() override = default;
   inline ChangedElementsEvent(
       const Mesh & mesh, ID new_numbering_id = "changed_event:new_numbering")
-      : RemovedElementsEvent(mesh, new_numbering_id){};
+      : RemovedElementsEvent(mesh, std::move(new_numbering_id)){};
   AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
   AKANTU_GET_MACRO_NOT_CONST(ListOld, list, Array<Element> &);
   AKANTU_GET_MACRO(ListNew, new_list, const Array<Element> &);
@@ -127,7 +129,7 @@ protected:
 
 class MeshEventHandler {
 public:
-  virtual ~MeshEventHandler(){};
+  virtual ~MeshEventHandler() = default;
   /* ------------------------------------------------------------------------ */
   /* Internal code                                                            */
   /* ------------------------------------------------------------------------ */

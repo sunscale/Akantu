@@ -46,7 +46,7 @@ namespace akantu {
 template <class EventHandler> class EventHandlerManager {
 private:
   typedef std::pair<EventHandlerPriority, EventHandler *> priority_value;
-  typedef std::list<priority_value> priority_list;
+  using priority_list = std::list<priority_value>;
   struct KeyComp {
     bool operator()(const priority_value & a, const priority_value & b) const {
       return (a.first < b.first);
@@ -60,7 +60,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~EventHandlerManager(){};
+  virtual ~EventHandlerManager() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

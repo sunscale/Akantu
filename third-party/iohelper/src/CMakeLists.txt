@@ -83,7 +83,7 @@ add_library(iohelper ${IOHELPER_COMMON_SRC})
 # link library with other libraries
 target_link_libraries (iohelper ${IOHELPER_EXTERNAL_LIBS})
 set_target_properties(iohelper PROPERTIES PUBLIC_HEADER "${IOHELPER_COMMON_HEADERS}")
-
+set_property(TARGET iohelper PROPERTY CXX_STANDARD 11)
 
 export(TARGETS iohelper
   FILE "${CMAKE_BINARY_DIR}/IOHelperLibraryDepends.cmake")

@@ -45,7 +45,8 @@ CohesiveInternalField<T>::CohesiveInternalField(const ID & id,
   this->element_kind = _ek_cohesive;
 }
 
-template <typename T> CohesiveInternalField<T>::~CohesiveInternalField() {}
+template <typename T>
+CohesiveInternalField<T>::~CohesiveInternalField() = default;
 
 template <typename T>
 void CohesiveInternalField<T>::initialize(UInt nb_component) {
@@ -62,7 +63,7 @@ FacetInternalField<T>::FacetInternalField(const ID & id, Material & material)
   this->element_kind = _ek_regular;
 }
 
-template <typename T> FacetInternalField<T>::~FacetInternalField() {}
+template <typename T> FacetInternalField<T>::~FacetInternalField() = default;
 
 template <typename T>
 void FacetInternalField<T>::initialize(UInt nb_component) {

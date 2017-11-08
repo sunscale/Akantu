@@ -214,10 +214,8 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
 template <typename ModelType>
 template <typename FunctorType>
 inline void BoundaryCondition<ModelType>::applyBC(const FunctorType & func) {
-  GroupManager::const_element_group_iterator bit =
-      model->getMesh().getGroupManager().element_group_begin();
-  GroupManager::const_element_group_iterator bend =
-      model->getMesh().getGroupManager().element_group_end();
+  auto bit = model->getMesh().getGroupManager().element_group_begin();
+  auto bend = model->getMesh().getGroupManager().element_group_end();
   for (; bit != bend; ++bit)
     applyBC(func, *bit);
 }

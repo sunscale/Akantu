@@ -50,7 +50,7 @@ RandomInternalField<T, BaseField, Generator>::RandomInternalField(
 /* -------------------------------------------------------------------------- */
 template <typename T, template <typename> class BaseField,
           template <typename> class Generator>
-RandomInternalField<T, BaseField, Generator>::~RandomInternalField() {}
+RandomInternalField<T, BaseField, Generator>::~RandomInternalField() = default;
 
 /* -------------------------------------------------------------------------- */
 template <typename T, template <typename> class BaseField,

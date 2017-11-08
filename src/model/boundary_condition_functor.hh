@@ -45,10 +45,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
-typedef ::akantu::SpacialDirection Axis;
+  using Axis = ::akantu::SpacialDirection;
 
-struct Functor {
-  enum Type { _dirichlet, _neumann };
+  struct Functor {
+    enum Type { _dirichlet, _neumann };
 };
 
 /* ------------------------------------------------------------------------ */
@@ -58,7 +58,7 @@ namespace Dirichlet {
   /* ---------------------------------------------------------------------- */
   class DirichletFunctor : public Functor {
   protected:
-    DirichletFunctor() : axis(_x) {}
+    DirichletFunctor() = default;
     explicit DirichletFunctor(Axis ax) : axis(ax) {}
 
   public:
@@ -73,7 +73,7 @@ namespace Dirichlet {
     static const Type type = _dirichlet;
 
   protected:
-    Axis axis;
+    Axis axis{_x};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -137,14 +137,14 @@ namespace Neumann {
   class NeumannFunctor : public Functor {
 
   protected:
-    NeumannFunctor() {}
+    NeumannFunctor() = default;
 
   public:
     virtual void operator()(const IntegrationPoint & quad_point,
                             Vector<Real> & dual, const Vector<Real> & coord,
                             const Vector<Real> & normals) const = 0;
 
-    virtual ~NeumannFunctor() {}
+    virtual ~NeumannFunctor() = default;
 
   public:
     static const Type type = _neumann;
@@ -154,7 +154,7 @@ namespace Neumann {
   class FromHigherDim : public NeumannFunctor {
   public:
     explicit FromHigherDim(const Matrix<Real> & mat) : bc_data(mat) {}
-    ~FromHigherDim() override {}
+    ~FromHigherDim() override = default;
 
   public:
     inline void operator()(const IntegrationPoint & quad_point,
@@ -169,7 +169,7 @@ namespace Neumann {
   class FromSameDim : public NeumannFunctor {
   public:
     explicit FromSameDim(const Vector<Real> & vec) : bc_data(vec) {}
-    ~FromSameDim() override {}
+    ~FromSameDim() override = default;
 
   public:
     inline void operator()(const IntegrationPoint & quad_point,

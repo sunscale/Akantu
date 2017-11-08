@@ -38,13 +38,13 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManager::hasDOFs(const ID & dof_id) const {
-  DOFStorage::const_iterator it = this->dofs.find(dof_id);
+  auto it = this->dofs.find(dof_id);
   return it != this->dofs.end();
 }
 
 /* -------------------------------------------------------------------------- */
 inline DOFManager::DOFData & DOFManager::getDOFData(const ID & dof_id) {
-  DOFStorage::iterator it = this->dofs.find(dof_id);
+  auto it = this->dofs.find(dof_id);
   if (it == this->dofs.end()) {
     AKANTU_EXCEPTION("The dof " << dof_id << " does not exists in "
                                 << this->id);
@@ -54,7 +54,7 @@ inline DOFManager::DOFData & DOFManager::getDOFData(const ID & dof_id) {
 
 /* -------------------------------------------------------------------------- */
 const DOFManager::DOFData & DOFManager::getDOFData(const ID & dof_id) const {
-  DOFStorage::const_iterator it = this->dofs.find(dof_id);
+  auto it = this->dofs.find(dof_id);
   if (it == this->dofs.end()) {
     AKANTU_EXCEPTION("The dof " << dof_id << " does not exists in "
                                 << this->id);

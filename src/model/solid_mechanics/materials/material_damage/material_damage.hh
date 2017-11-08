@@ -48,25 +48,24 @@ class MaterialDamage : public Parent<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
 public:
   MaterialDamage(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialDamage(){};
+  ~MaterialDamage() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// compute the tangent stiffness matrix for an element type
-  virtual void computeTangentModuli(const ElementType & el_type,
-                                    Array<Real> & tangent_matrix,
-                                    GhostType ghost_type = _not_ghost);
-  virtual bool hasStiffnessMatrixChanged() { return true; }
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
+  bool hasStiffnessMatrixChanged() override { return true; }
 
 protected:
   /// update the dissipated energy, must be called after the stress have been
   /// computed
-  virtual void updateEnergies(ElementType el_type, GhostType ghost_type);
+  void updateEnergies(ElementType el_type, GhostType ghost_type) override;
 
   /// compute the tangent stiffness matrix for a given quadrature point
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent, Real & dam);
@@ -82,8 +81,8 @@ public:
   /// give the dissipated energy for the time step
   Real getDissipatedEnergy() const;
 
-  virtual Real getEnergy(std::string type);
-  virtual Real getEnergy(std::string energy_id, ElementType type, UInt index) {
+  Real getEnergy(std::string type) override;
+  Real getEnergy(std::string energy_id, ElementType type, UInt index) override {
     return Parent<spatial_dimension>::getEnergy(energy_id, type, index);
   };
 

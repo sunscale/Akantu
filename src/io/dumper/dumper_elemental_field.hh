@@ -54,8 +54,8 @@ class ElementalField
   /* ------------------------------------------------------------------------ */
 public:
   typedef SingleType<T,ret,filtered> types;
-  typedef typename types::field_type field_type;
-  typedef elemental_field_iterator<types> iterator;
+  using field_type = typename types::field_type;
+  using iterator = elemental_field_iterator<types>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */

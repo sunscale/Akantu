@@ -65,7 +65,7 @@ NodeGroup::NodeGroup(const std::string & name,
 }
 
 /* -------------------------------------------------------------------------- */
-NodeGroup::~NodeGroup() {}
+NodeGroup::~NodeGroup() = default;
 
 /* -------------------------------------------------------------------------- */
 void NodeGroup::empty() {

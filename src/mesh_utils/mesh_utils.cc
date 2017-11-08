@@ -593,7 +593,7 @@ void MeshUtils::renumberNodesInConnectivity(
   UInt new_node_num = renumbering_map.size();
   for (UInt n = 0; n < nb_nodes; ++n, ++connectivity) {
     UInt & node = *connectivity;
-    std::map<UInt, UInt>::iterator it = renumbering_map.find(node);
+    auto it = renumbering_map.find(node);
     if (it == renumbering_map.end()) {
       UInt old_node = node;
       renumbering_map[old_node] = new_node_num;
@@ -617,7 +617,7 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
   Array<UInt> & nodes_removed = remove_nodes.getList();
 
   for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type = (GhostType)gt;
+    auto ghost_type = (GhostType)gt;
 
     Mesh::type_iterator it =
         mesh.firstType(_all_dimensions, ghost_type, _ek_not_defined);
@@ -639,8 +639,8 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
   Array<UInt> & new_numbering = remove_nodes.getNewNumbering();
   std::fill(new_numbering.begin(), new_numbering.end(), UInt(-1));
 
-  std::map<UInt, UInt>::iterator it = renumbering_map.begin();
-  std::map<UInt, UInt>::iterator end = renumbering_map.end();
+  auto it = renumbering_map.begin();
+  auto end = renumbering_map.end();
   for (; it != end; ++it) {
     new_numbering(it->first) = it->second;
   }
@@ -935,7 +935,7 @@ void MeshUtils::resetFacetToDouble(Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
 
   for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType)g;
+    auto gt = (GhostType)g;
 
     Mesh::type_iterator it = mesh_facets.firstType(_all_dimensions, gt);
     Mesh::type_iterator end = mesh_facets.lastType(_all_dimensions, gt);
@@ -1653,11 +1653,11 @@ void MeshUtils::flipFacets(
     auto conn_glob_it = g_connectivity.begin(nb_nodes_per_facet);
     auto subf_to_f = subfacet_to_facet.begin(nb_subfacet_per_facet);
 
-    UInt * conn_tmp_pointer = new UInt[nb_nodes_per_facet];
+    auto * conn_tmp_pointer = new UInt[nb_nodes_per_facet];
     Vector<UInt> conn_tmp(conn_tmp_pointer, nb_nodes_per_facet);
 
     Element el_tmp;
-    Element * subf_tmp_pointer = new Element[nb_subfacet_per_facet];
+    auto * subf_tmp_pointer = new Element[nb_subfacet_per_facet];
     Vector<Element> subf_tmp(subf_tmp_pointer, nb_subfacet_per_facet);
 
     for (UInt f = 0; f < nb_facet;

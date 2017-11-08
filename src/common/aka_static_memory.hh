@@ -64,8 +64,7 @@ class StaticMemory {
   /* ------------------------------------------------------------------------ */
 private:
   /// Default constructor
-  StaticMemory(){};
-
+  StaticMemory() = default;
 public:
   virtual ~StaticMemory();
 

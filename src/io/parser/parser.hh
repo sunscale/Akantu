@@ -110,20 +110,17 @@ class ParserSection;
 class ParserParameter {
 public:
   ParserParameter()
-      : parent_section(nullptr), name(std::string()), value(std::string()),
-        dbg_filename(std::string()) {}
+      : name(std::string()), value(std::string()), dbg_filename(std::string()) {
+  }
 
   ParserParameter(const std::string & name, const std::string & value,
                   const ParserSection & parent_section)
       : parent_section(&parent_section), name(name), value(value),
         dbg_filename(std::string()) {}
 
-  ParserParameter(const ParserParameter & param)
-      : parent_section(param.parent_section), name(param.name),
-        value(param.value), dbg_filename(param.dbg_filename),
-        dbg_line(param.dbg_line), dbg_column(param.dbg_column) {}
+  ParserParameter(const ParserParameter & param) = default;
 
-  virtual ~ParserParameter() {}
+  virtual ~ParserParameter() = default;
 
   /// Get parameter name
   const std::string & getName() const { return name; }
@@ -156,7 +153,7 @@ private:
 
 private:
   /// Pointer to the parent section
-  const ParserSection * parent_section;
+  const ParserSection * parent_section{nullptr};
   /// Name of the parameter
   std::string name;
   /// Value of the parameter
@@ -177,7 +174,7 @@ public:
   typedef std::map<std::string, ParserParameter> Parameters;
 
 private:
-  typedef SubSections::const_iterator const_section_iterator_;
+  using const_section_iterator_ = SubSections::const_iterator;
 
 public:
   /* ------------------------------------------------------------------------ */
@@ -186,9 +183,8 @@ public:
   /// Iterator on sections
   class const_section_iterator {
   public:
-    const_section_iterator() {}
-    const_section_iterator(const const_section_iterator & other)
-        : it(other.it) {}
+    const_section_iterator() = default;
+    const_section_iterator(const const_section_iterator & other) = default;
     const_section_iterator(const const_section_iterator_ & it) : it(it) {}
 
     const_section_iterator & operator=(const const_section_iterator & other) {
@@ -226,8 +222,7 @@ public:
   /// Iterator on parameters
   class const_parameter_iterator {
   public:
-    const_parameter_iterator(const const_parameter_iterator & other)
-        : it(other.it) {}
+    const_parameter_iterator(const const_parameter_iterator & other) = default;
     const_parameter_iterator(const Parameters::const_iterator & it) : it(it) {}
 
     const_parameter_iterator &
@@ -260,8 +255,7 @@ public:
   };
 
   /* ---------------------------------------------------------------------- */
-  ParserSection()
-      : parent_section(nullptr), name(std::string()), type(_st_not_defined) {}
+  ParserSection() : name(std::string()) {}
 
   ParserSection(const std::string & name, SectionType type)
       : parent_section(nullptr), name(name), type(type) {}
@@ -313,11 +307,11 @@ protected:
 
 private:
   void setChldrenPointers() {
-    Parameters::iterator pit = this->parameters.begin();
+    auto pit = this->parameters.begin();
     for (; pit != this->parameters.end(); ++pit)
       pit->second.setParent(*this);
 
-    SubSections::iterator sit = this->sub_sections_by_type.begin();
+    auto sit = this->sub_sections_by_type.begin();
     for (; sit != this->sub_sections_by_type.end(); ++sit)
       sit->second.setParent(*this);
   }
@@ -443,11 +437,11 @@ protected:
   /* ---------------------------------------------------------------------- */
 private:
   /// Pointer to the parent section
-  const ParserSection * parent_section;
+  const ParserSection * parent_section{nullptr};
   /// Name of section
   std::string name;
   /// Type of section, see AKANTU_SECTION_TYPES
-  SectionType type;
+  SectionType type{_st_not_defined};
   /// Section option
   std::string option;
   /// Map of parameters in section

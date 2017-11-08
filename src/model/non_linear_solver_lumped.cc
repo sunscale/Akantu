@@ -51,7 +51,7 @@ NonLinearSolverLumped::NonLinearSolverLumped(
 }
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolverLumped::~NonLinearSolverLumped() {}
+NonLinearSolverLumped::~NonLinearSolverLumped() = default;
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {

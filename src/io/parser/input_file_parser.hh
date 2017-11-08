@@ -54,7 +54,7 @@ namespace akantu {
 namespace parser {
 struct error_handler_ {
   template <typename, typename, typename, typename> struct result {
-    typedef void type;
+    using type = void;
   };
 
   template <typename Iterator>
@@ -234,7 +234,7 @@ struct InputFileGrammar
 
   const std::string & getErrorMessage() const { return error_message; };
 
-  typedef typename Skipper<Iterator>::type skipper_type;
+  using skipper_type = typename Skipper<Iterator>::type;
   skipper_type skipper;
 
 private:

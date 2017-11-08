@@ -52,7 +52,8 @@ FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::FEEngineTemplate(
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
-FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::~FEEngineTemplate() {}
+FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::~FEEngineTemplate() =
+    default;
 
 /* -------------------------------------------------------------------------- */
 /**

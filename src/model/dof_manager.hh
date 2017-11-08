@@ -440,16 +440,16 @@ protected:
   TimeStepSolversMap time_step_solvers;
 
   /// reference to the underlying mesh
-  Mesh * mesh;
+  Mesh * mesh{nullptr};
 
   /// Total number of degrees of freedom (size with the ghosts)
-  UInt local_system_size;
+  UInt local_system_size{0};
 
   /// Number of purely local dofs (size without the ghosts)
-  UInt pure_local_system_size;
+  UInt pure_local_system_size{0};
 
   /// Total number of degrees of freedom
-  UInt system_size;
+  UInt system_size{0};
 
   /// Communicator used for this manager, should be the same as in the mesh if a
   /// mesh is registered

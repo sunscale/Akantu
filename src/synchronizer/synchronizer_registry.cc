@@ -38,7 +38,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-SynchronizerRegistry::SynchronizerRegistry() : data_accessor(nullptr) {
+SynchronizerRegistry::SynchronizerRegistry() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -68,7 +68,7 @@ void SynchronizerRegistry::synchronize(SynchronizationTag tag) {
   std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
       synchronizers.equal_range(tag);
 
-  for (Tag2Sync::iterator it = range.first; it != range.second; ++it) {
+  for (auto it = range.first; it != range.second; ++it) {
     it->second->synchronize(*data_accessor, tag);
   }
 
@@ -84,7 +84,7 @@ void SynchronizerRegistry::asynchronousSynchronize(SynchronizationTag tag) {
   std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
       synchronizers.equal_range(tag);
 
-  for (Tag2Sync::iterator it = range.first; it != range.second; ++it) {
+  for (auto it = range.first; it != range.second; ++it) {
     (*it).second->asynchronousSynchronize(*data_accessor, tag);
   }
 
@@ -100,7 +100,7 @@ void SynchronizerRegistry::waitEndSynchronize(SynchronizationTag tag) {
   std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
       synchronizers.equal_range(tag);
 
-  for (Tag2Sync::iterator it = range.first; it != range.second; ++it) {
+  for (auto it = range.first; it != range.second; ++it) {
     (*it).second->waitEndSynchronize(*data_accessor, tag);
   }
 

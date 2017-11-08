@@ -56,9 +56,7 @@ private:
   /* Constructors / Destructors / Initializers                                */
   /* ------------------------------------------------------------------------ */
 public:
-  BoundaryCondition()
-      : model(nullptr), primal(nullptr), dual(nullptr),
-        primal_increment(nullptr) {}
+  BoundaryCondition() : model(nullptr) {}
   ///Initialize the boundary conditions
   void initBC(ModelType & ptr, Array<Real> & primal, Array<Real> & dual);
   void initBC(ModelType & ptr, Array<Real> & primal,
@@ -95,9 +93,9 @@ public:
 private:
 
   ModelType * model;
-  Array<Real> * primal;
-  Array<Real> * dual;
-  Array<Real> * primal_increment;
+  Array<Real> * primal{nullptr};
+  Array<Real> * dual{nullptr};
+  Array<Real> * primal_increment{nullptr};
 };
 
 } // akantu

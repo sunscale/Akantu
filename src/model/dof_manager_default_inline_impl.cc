@@ -56,8 +56,7 @@ DOFManagerDefault::getLocalEquationNumbers(const ID & dof_id) const {
 
 inline const Array<UInt> &
 DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
-  const DOFDataDefault & dof_data =
-      this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  const auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
   return dof_data.associated_nodes;
 }
 /* -------------------------------------------------------------------------- */

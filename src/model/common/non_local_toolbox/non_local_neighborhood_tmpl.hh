@@ -127,8 +127,8 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
 
     /// loop over all pairs in the current pair list array and their
     /// corresponding weights
-    PairList::const_iterator first_pair = pair_list[ghost_type].begin();
-    PairList::const_iterator last_pair = pair_list[ghost_type].end();
+    auto first_pair = pair_list[ghost_type].begin();
+    auto last_pair = pair_list[ghost_type].end();
     Array<Real>::vector_iterator weight_it =
         pair_weight[ghost_type]->begin(nb_weights_per_pair);
 
@@ -215,7 +215,7 @@ void NonLocalNeighborhood<WeightFunction>::saveWeights(
   pout.open(sstr.str().c_str());
 
   for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    GhostType ghost_type = (GhostType)gt;
+    auto ghost_type = (GhostType)gt;
 
     AKANTU_DEBUG_ASSERT((pair_weight[ghost_type]),
                         "the weights have not been computed yet");

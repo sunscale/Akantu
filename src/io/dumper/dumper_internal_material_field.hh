@@ -52,10 +52,9 @@ class InternalMaterialField
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  typedef SingleType<T,Vector,filtered> types;
-  typedef GenericElementalField<types,quadrature_point_iterator> parent;
-  typedef typename types::field_type field_type;
+  using types = SingleType<T,Vector,filtered>;
+  using parent = GenericElementalField<types,quadrature_point_iterator>;
+  using field_type = typename types::field_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */

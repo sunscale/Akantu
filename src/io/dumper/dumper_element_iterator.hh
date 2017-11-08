@@ -44,12 +44,11 @@ class element_iterator {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  typedef typename types::it_type      it_type;
-  typedef typename types::field_type field_type;
-  typedef typename types::array_type array_type;
-  typedef typename types::array_iterator array_iterator;
-  typedef final_iterator<types> iterator;
+  using it_type = typename types::it_type;
+  using field_type = typename types::field_type;
+  using array_type = typename types::array_type;
+  using array_iterator = typename types::array_iterator;
+  using iterator = final_iterator<types>;
 
 public:
 
@@ -152,10 +151,10 @@ public:
   /* ------------------------------------------------------------------------ */
 
   typedef element_iterator<types, ::akantu::dumper::elemental_field_iterator> parent;
-  typedef typename types::it_type     it_type;
-  typedef typename types::return_type return_type;
-  typedef typename types::field_type  field_type;
-  typedef typename types::array_iterator array_iterator;
+  using it_type = typename types::it_type;
+  using return_type = typename types::return_type;
+  using field_type = typename types::field_type;
+  using array_iterator = typename types::array_iterator;
 
 public:
 
