@@ -1,0 +1,6 @@
+{
+  "repository.callsign" : "AKAPRIV",
+  "phabricator.uri" : "https://c4science.ch/",
+  "load" : [ ".linters/clang-format-linter" ],
+  "history.immutable" : true
+}
