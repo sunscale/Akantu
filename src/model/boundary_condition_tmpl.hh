@@ -189,7 +189,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
 
         for (UInt q(0); q < nb_quad_points;
              ++q, ++dual_iter_mat, ++dual_by_shapes_iter, ++shapes_iter) {
-          dual_by_shapes_iter->mul<false, false>(*dual_iter_mat, *shapes_iter);
+          dual_by_shapes_iter->template mul<false, false>(*dual_iter_mat, *shapes_iter);
         }
       }
 
