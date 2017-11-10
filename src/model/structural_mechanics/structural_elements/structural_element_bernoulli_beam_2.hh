@@ -29,6 +29,7 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
 #include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -56,27 +57,31 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
 
   const auto & N_star = fem.getShapes(type);
 
-  for
+  // for
 
   Array<Real> * rho_field =
-      new Array<Real>(nb_element * nb_quadrature_points, "Rho");
+      new Array<Real>(nb_element * nb_quadrature_points, 1, "Rho");
   rho_field->clear();
   computeRho(*rho_field, type, _not_ghost);
 
   bool sign = true;
 
-  /* ------------------------------------------------------------------------ */
-  fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
-                          0, 0, 0, sign, ghost_type); // Ni ui -> u
-  fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
-                          1, 1, 1, sign, ghost_type); // Mi vi -> v
-  fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
-                          2, 2, 1, sign, ghost_type); // Li Theta_i -> v
-  /* ------------------------------------------------------------------------ */
-  fem.assembleFieldMatrix(*rho_field, nb_degree_of_freedom, *mass_matrix, n,
-                          rotation_matrix, type, ghost_type);
+  for (auto ghost_type : ghost_types) {
+    // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
+    // n,
+    //                         0, 0, 0, sign, ghost_type); // Ni ui -> u
+    // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
+    // n,
+    //                         1, 1, 1, sign, ghost_type); // Mi vi -> v
+    // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
+    // n,
+    //                         2, 2, 1, sign, ghost_type); // Li Theta_i -> v
+    // fem.assembleFieldMatrix(*rho_field, nb_degree_of_freedom, *mass_matrix,
+    // n,
+    //                         rotation_matrix, type, ghost_type);
+  }
 
-  delete n;
+  // delete n;
   delete rho_field;
   AKANTU_DEBUG_OUT();
 }
@@ -118,10 +123,9 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
   auto tangent_size = 2;
 
   auto D_it = tangent_moduli.begin(tangent_size, tangent_size);
-  auto & el_mat = element_material(_bernoulli_beam_2, _not_ghost).begin();
+  auto el_mat = element_material(_bernoulli_beam_2, _not_ghost).begin();
 
-  for (UInt e = 0; e < nb_element; ++e, ++el_mat) {
-    auto mat = *el_mat;
+  for (auto & mat : element_material(_bernoulli_beam_2, _not_ghost)) {
     auto E = materials[mat].E;
     auto A = materials[mat].A;
     auto I = materials[mat].I;

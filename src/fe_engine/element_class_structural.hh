@@ -60,27 +60,20 @@ public:
 
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
-                                   Tensor3<Real> & N,
-                                   const Matrix<Real> & real_nodal_coord) {
-    UInt nb_points = natural_coord.cols();
-    for (UInt p = 0; p < nb_points; ++p) {
-      Matrix<Real> Np = N(p);
-      computeShapes(natural_coord(p), Np, real_nodal_coord);
-    }
+                                   Tensor3<Real> & N) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
   /// compute the shape values for a given point in natural coordinates
   static inline void computeShapes(const Vector<Real> & natural_coord,
-                                   Matrix<Real> & N,
-                                   const Matrix<Real> & real_nodal_coord);
+                                   Matrix<Real> & N);
   /**
    * compute @f$ B_{ij} = \frac{\partial N_j}{\partial S_i} @f$ the variation of
    * shape functions along with variation of natural coordinates on a given set
    * of points in natural coordinates
    */
   static inline void computeDNDS(const Matrix<Real> & natural_coord,
-                                 Tensor3<Real> & dnds,
-                                 const Matrix<Real> & real_nodal_coord) {
+                                 Tensor3<Real> & dnds) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> dnds_t = dnds(i);
       computeDNDS(natural_coord(i), dnds_t, real_nodal_coord);
@@ -94,8 +87,7 @@ public:
    * coordinates
    */
   static inline void computeDNDS(const Vector<Real> & natural_coord,
-                                 Matrix<Real> & dnds,
-                                 const Matrix<Real> & real_nodal_coord);
+                                 Matrix<Real> & dnds);
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(

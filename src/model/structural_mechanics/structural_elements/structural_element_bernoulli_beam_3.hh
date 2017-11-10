@@ -33,6 +33,8 @@
 #ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__
 #define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__
 
+#include "structural_mechanics_model.hh"
+
 namespace akantu {
 
 inline UInt
