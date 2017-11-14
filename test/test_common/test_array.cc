@@ -32,14 +32,16 @@ std::ostream & operator<<(std::ostream & stream, const NonTrivial & _this) {
 using TestTypes = ::testing::Types<Real, UInt, NonTrivial>;
 /* -------------------------------------------------------------------------- */
 
-::testing::AssertionResult AssertType(const char * /*a_expr*/, const char * /*b_expr*/,
+::testing::AssertionResult AssertType(const char * /*a_expr*/,
+                                      const char * /*b_expr*/,
                                       const std::type_info & a,
                                       const std::type_info & b) {
   if (std::type_index(a) == std::type_index(b))
     return ::testing::AssertionSuccess();
 
   return ::testing::AssertionFailure()
-      << debug::demangle(a.name()) << " != " << debug::demangle(b.name()) << ") are different";
+         << debug::demangle(a.name()) << " != " << debug::demangle(b.name())
+         << ") are different";
 }
 
 /* -------------------------------------------------------------------------- */
@@ -115,7 +117,7 @@ public:
     array = this->construct(1000, 10);
   }
 
-  void TearDown() override { array.release(); }
+  void TearDown() override { array.reset(nullptr); }
 
 protected:
   std::unique_ptr<Array<T>> array;
@@ -185,8 +187,10 @@ TYPED_TEST(ArrayFixture, ViewVector) {
   {
     auto it = view.begin();
     EXPECT_EQ(10, it->size());
-    EXPECT_PRED_FORMAT2(AssertType, typeid(*it), typeid(Vector<typename TestFixture::type>));
-    EXPECT_PRED_FORMAT2(AssertType, typeid(it[0]), typeid(VectorProxy<typename TestFixture::type>));
+    EXPECT_PRED_FORMAT2(AssertType, typeid(*it),
+                        typeid(Vector<typename TestFixture::type>));
+    EXPECT_PRED_FORMAT2(AssertType, typeid(it[0]),
+                        typeid(VectorProxy<typename TestFixture::type>));
   }
 }
 
@@ -201,8 +205,10 @@ TYPED_TEST(ArrayFixture, ViewMatrix) {
       EXPECT_EQ(2, it->size(0));
       EXPECT_EQ(5, it->size(1));
 
-      EXPECT_PRED_FORMAT2(AssertType, typeid(*it), typeid(Matrix<typename TestFixture::type>));
-      EXPECT_PRED_FORMAT2(AssertType, typeid(it[0]), typeid(MatrixProxy<typename TestFixture::type>));
+      EXPECT_PRED_FORMAT2(AssertType, typeid(*it),
+                          typeid(Matrix<typename TestFixture::type>));
+      EXPECT_PRED_FORMAT2(AssertType, typeid(it[0]),
+                          typeid(MatrixProxy<typename TestFixture::type>));
     }
   }
 }
@@ -219,11 +225,12 @@ TYPED_TEST(ArrayFixture, ViewMatrixWrong) {
 
 TYPED_TEST(ArrayFixture, ViewMatrixIter) {
   std::size_t count = 0;
-  for(auto && mat : make_view(*this->array, 10, 10)) {
+  for (auto && mat : make_view(*this->array, 10, 10)) {
     EXPECT_EQ(100, mat.size());
     EXPECT_EQ(10, mat.size(0));
     EXPECT_EQ(10, mat.size(1));
-    EXPECT_PRED_FORMAT2(AssertType, typeid(mat), typeid(Matrix<typename TestFixture::type>));
+    EXPECT_PRED_FORMAT2(AssertType, typeid(mat),
+                        typeid(Matrix<typename TestFixture::type>));
 
     ++count;
   }
