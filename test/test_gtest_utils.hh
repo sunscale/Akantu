@@ -6,6 +6,9 @@
 #include <tuple>
 /* -------------------------------------------------------------------------- */
 
+#ifndef __AKANTU_TEST_GTEST_UTILS_HH__
+#define __AKANTU_TEST_GTEST_UTILS_HH__
+
 namespace {
 
 /* -------------------------------------------------------------------------- */
@@ -108,3 +111,5 @@ using not_is_point_1 =
     aka::negation<std::is_same<T, element_type_t<::akantu::_point_1>>>;
 
 using TestElementTypes = tuple_filter_t<not_is_point_1, TestElementTypesAll>;
+
+#endif /* __AKANTU_TEST_GTEST_UTILS_HH__ */

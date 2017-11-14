@@ -95,7 +95,7 @@ public:
 
 private:
   inline void sendEvent(const FinalizeCommunicatorEvent &) {
-    onCommunicatorFinalize();
+    this->onCommunicatorFinalize();
   }
 
   template <class EventHandler> friend class EventHandlerManager;

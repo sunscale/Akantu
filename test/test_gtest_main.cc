@@ -8,7 +8,7 @@ public:
   // Override this to define how to set up the environment.
   void SetUp() override { ::akantu::initialize(argc, argv); }
   // Override this to define how to tear down the environment.
-  void TearDown() override {  }
+  void TearDown() override { ::akantu::finalize(); }
 
 protected:
   int & argc;

@@ -22,7 +22,7 @@ public:
   void TearDown() override {}
 
   template <typename V> void compareToRef(const V & v) {
-    for (int i; i < size_; ++i) {
+    for (int i = 0; i < size_; ++i) {
       EXPECT_DOUBLE_EQ(reference[i], v.storage()[i]);
     }
   }
@@ -403,7 +403,7 @@ TEST_F(TensorFixture, MatrixEqualSlice) {
   Matrix<double> m(mat_size[0], mat_size[1], 0.);
 
   for (unsigned int i = 0; i < m.cols(); ++i)
-    m(i) = mref(i);
+    m(i) = Vector<Real>(mref(i));
 
   compareToRef(m);
 }

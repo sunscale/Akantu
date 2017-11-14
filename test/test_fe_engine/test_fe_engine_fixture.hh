@@ -8,6 +8,9 @@
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
+#ifndef __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__
+#define __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__
+
 using namespace akantu;
 
 template <typename type_> class TestFEMFixture : public ::testing::Test {
@@ -57,3 +60,5 @@ protected:
 using types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestFEMFixture, types);
+
+#endif /* __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__ */
