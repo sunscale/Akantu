@@ -350,7 +350,7 @@ public:
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, element_kind, ElementKind);
-  static AKANTU_GET_MACRO_NOT_CONST(
+  static constexpr AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, p1_type,
