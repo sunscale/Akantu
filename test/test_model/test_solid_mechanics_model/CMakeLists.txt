@@ -221,9 +221,22 @@ register_test(test_material_selector
   PACKAGE core
   )
 
+package_get_variable(ET_ELEMENT_TYPES core _element_list)
+foreach(_et ${_element_list})
+  if(_et STREQUAL _point_1)
+    continue()
+  endif()
+
+  execute_process(COMMAND
+    ${CMAKE_COMMAND} -E copy_if_different ${_et}.msh ${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/patch_tests/data)
+endforeach()
+
+
 #===============================================================================
 register_test(test_solid_mechanics_model_linear_elastic_potential_energy
   SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
-  FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat; patch_tests/data/_triangle_3.msh
+  FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat
   PACKAGE core
+  GTEST
   )

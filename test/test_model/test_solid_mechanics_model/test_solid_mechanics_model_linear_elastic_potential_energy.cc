@@ -8,8 +8,8 @@
  *
  * @brief  test potential energy of the linear elasticity model
  *
- * @section description                                                     
- *                                                                          
+ * @section description
+ *
  * This test uses a linear elastic material with density = 1, Young's
  * modulus = 1, and Poisson's ratio = 0 and applies a linear
  * displacement from 0 to ε in x direction. The resulting potential
@@ -37,44 +37,33 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <vector>
-
-/* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
+#include "test_solid_mechanics_model_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char * argv[]) {
-  initialize("test_solid_mechanics_model_linear_elastic_potential_energy_material.dat", argc, argv);     
+namespace {
 
-  UInt spatial_dimension = 2;     
+TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
+  const auto spatial_dimension = this->spatial_dimension;
+  
+  this->model->initFull(_analysis_method = _static);
 
-  Mesh mesh(spatial_dimension);
-  mesh.read("patch_tests/data/_triangle_3.msh");
-
-  SolidMechanicsModel model(mesh);
-
-  /// model initialization
-  model.initFull(_analysis_method = _static); // _static, _explicit_lumped, _implicit_lumped
-
-  auto & lower  = mesh.getLowerBounds();
-  auto & upper  = mesh.getUpperBounds();
+  auto & lower = this->mesh->getLowerBounds();
+  auto & upper = this->mesh->getUpperBounds();
   auto length = upper(_x) - lower(_x);
 
-  //std::cout << model.getMaterial(0) << std::endl;
+  const auto & pos = this->mesh->getNodes();
+  auto & disp = this->model->getDisplacement();
+  auto & boun = this->model->getBlockedDOFs();
 
-  const Array<Real> & pos = mesh.getNodes();
-  Array<Real> & disp = model.getDisplacement();
-  Array<bool> & boun = model.getBlockedDOFs();
+  std::vector<Real> strains{0.0, 0.1, 0.2, 0.3};
 
-  std::vector<double> strains = {0.0, 0.1, 0.2, 0.3};
-  for(auto && eps : strains) {
-
+  for (auto && eps : strains) {
     /// boundary conditions
-    for(auto && pair : zip(make_view(pos, spatial_dimension),
-                           make_view(disp, spatial_dimension),
-                           make_view(boun, spatial_dimension))) {
+    for (auto && pair : zip(make_view(pos, spatial_dimension),
+                            make_view(disp, spatial_dimension),
+                            make_view(boun, spatial_dimension))) {
       auto & posv = std::get<0>(pair);
       auto & dispv = std::get<1>(pair);
       auto & bounv = std::get<2>(pair);
@@ -84,21 +73,14 @@ int main(int argc, char * argv[]) {
     }
 
     /// "solve" a step (solution is imposed)
-    model.solveStep();
+    this->model->solveStep();
 
     /// compare energy to analytical solution
-    const Real E_ref = 0.5 * eps*eps;
-    auto E_pot = model.getEnergy("potential");
+    const auto E_ref = 0.5 * eps * eps;
+    auto E_pot = this->model->getEnergy("potential");
 
-    if (std::abs(E_ref - E_pot) > 1e-8) {
-      std::cout << "FAIL for strain " << eps
-                << "      reference energy: " << E_ref
-                << "      calculated energy: " << E_pot << std::endl;
-      return 1; // failure
-    }
+    EXPECT_NEAR(E_ref, E_pot, 1e-8);
   }
-
-  finalize();
-
-  return EXIT_SUCCESS;
 }
+
+} // namespace
