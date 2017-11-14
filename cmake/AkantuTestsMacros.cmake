@@ -128,7 +128,7 @@ macro(add_test_tree dir)
     enable_testing()
     include(CTest)
     mark_as_advanced(BUILD_TESTING)
-
+    
     set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
     set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
 
@@ -150,7 +150,7 @@ function(add_akantu_test dir desc)
   endif()
 
   set(_my_parent_dir ${_akantu_current_parent_test})
-
+ 
   # initialize variables
   set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
   set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
@@ -173,6 +173,7 @@ function(add_akantu_test dir desc)
 
     add_executable(${dir}_gtest_all ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc ${_srcs})
     target_link_libraries(${dir}_gtest_all akantu GTest::GTest GTest::Main)
+    target_include_directories(${dir}_gtest_all PRIVATE ${PROJECT_SOURCE_DIR}/test)
     set_property(TARGET ${dir}_gtest_all PROPERTY OUTPUT_NAME ${dir}/gtest_all)
 
     add_test(NAME ${dir}_gtest COMMAND ${AKANTU_DRIVER_SCRIPT}  -n "${dir}" -e "gtest_all" -w "${CMAKE_CURRENT_BINARY_DIR}/${dir}")

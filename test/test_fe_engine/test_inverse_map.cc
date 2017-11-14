@@ -28,83 +28,45 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_iterators.hh"
-#include "fe_engine.hh"
-#include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
-/* -------------------------------------------------------------------------- */
-#include <iostream>
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char * argv[]) {
-  akantu::initialize(argc, argv);
+namespace {
 
-  const auto type = TYPE;
-  auto dim = ElementClass<type>::getSpatialDimension();
+TYPED_TEST(TestFEMFixture, InverseMap) {
+  const auto type = this->type;
+  const auto dim = this->dim;
 
-  Mesh my_mesh(dim);
-  std::stringstream meshfilename;
-  meshfilename << type << ".msh";
-
-  my_mesh.read(meshfilename.str());
-
-  const auto & lower = my_mesh.getLowerBounds();
-  const auto & upper = my_mesh.getUpperBounds();
-  UInt nb_elements = my_mesh.getNbElement(type);
-
-  auto fem = std::make_unique<FEEngineTemplate<IntegratorGauss, ShapeLagrange>>(
-      my_mesh, dim, "my_fem");
-
-  fem->initShapeFunctions();
   Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
 
-  /// get the quadrature points coordinates
-  Array<Real> coord_on_quad(quad.cols() * nb_elements,
-                            my_mesh.getSpatialDimension(), "coord_on_quad");
+  const auto & position = this->fem->getMesh().getNodes();
 
-  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(), coord_on_quad,
-                                      my_mesh.getSpatialDimension(), type);
+  /// get the quadrature points coordinates
+  Array<Real> coord_on_quad(quad.cols() * this->nb_element, dim,
+                            "coord_on_quad");
+
+  this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, dim, type);
 
   Vector<Real> natural_coords(dim);
 
-  /// loop over the quadrature points
-  auto it = coord_on_quad.begin_reinterpret(dim, quad.cols(), nb_elements);
-  auto end = coord_on_quad.end_reinterpret(dim, quad.cols(), nb_elements);
+  auto length = (this->upper - this->lower).template norm<L_inf>();
 
-  auto length = (upper - lower).norm<L_inf>();
+  for(auto && enum_ : enumerate(make_view(coord_on_quad, dim, quad.cols()))) {
+    auto el = std::get<0>(enum_);
+    const auto & quads_coords = std::get<1>(enum_);
 
-  auto eps = 5e-12;
-  UInt el = 0;
-  for (; it != end; ++it, ++el) {
-    const auto & quads_coords = *it;
     for (auto q : arange(quad.cols())) {
       Vector<Real> quad_coord = quads_coords(q);
       Vector<Real> ref_quad_coord = quad(q);
-      fem->inverseMap(quad_coord, el, type, natural_coords);
+      this->fem->inverseMap(quad_coord, el, type, natural_coords);
 
       auto dis_normalized = ref_quad_coord.distance(natural_coords) / length;
-      if (not(dis_normalized < eps)) {
-        std::cout << "Real coordinates inversion test failed : "
-                  << std::scientific << natural_coords << " - "
-                  << ref_quad_coord << " / " << length << " = " << dis_normalized << std::endl;
-        return 1;
-      }
-
-      // std::cout << "Real coordinates inversion : " << std::scientific
-      //           << natural_coords << " = " << ref_quad_coord << " ("
-      //           << dis_normalized << ")" << std::endl;
+      EXPECT_NEAR(0., dis_normalized, 5e-12);
     }
   }
-
-  std::cout << "inverse completed over " << nb_elements << " elements"
-            << std::endl;
-
-  finalize();
-
-  return 0;
 }
+
+} // namespace
