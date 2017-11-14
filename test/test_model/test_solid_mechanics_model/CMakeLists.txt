@@ -220,3 +220,10 @@ register_test(test_material_selector
   FILES_TO_COPY material_selector.dat material_selector.msh
   PACKAGE core
   )
+
+#===============================================================================
+register_test(test_solid_mechanics_model_linear_elastic_potential_energy
+  SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
+  FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat; patch_tests/data/_triangle_3.msh
+  PACKAGE core
+  )
