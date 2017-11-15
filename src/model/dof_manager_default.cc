@@ -129,7 +129,7 @@ DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
       first_global_dof_id(0), synchronizer(nullptr) {
   if (this->mesh->isDistributed())
     this->synchronizer = std::make_unique<DOFSynchronizer>(
-        *this, this->id + ":dof_synchronizer", this->memory_id, communicator);
+        *this, this->id + ":dof_synchronizer", this->memory_id);
 }
 
 /* -------------------------------------------------------------------------- */

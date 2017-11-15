@@ -53,7 +53,7 @@ ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
                                          MemoryID memory_id,
                                          bool register_to_event_manager,
                                          EventHandlerPriority event_priority)
-    : SynchronizerImpl<Element>(id, memory_id, mesh.getCommunicator()),
+    : SynchronizerImpl<Element>(mesh.getCommunicator(), id, memory_id),
       mesh(mesh), element_to_prank("element_to_prank", id, memory_id) {
 
   AKANTU_DEBUG_IN();

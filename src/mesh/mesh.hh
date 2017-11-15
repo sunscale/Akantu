@@ -451,20 +451,13 @@ public:
   // &);
 #ifndef SWIG
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
+  AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
 #endif
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */
 private:
   friend class MeshAccessor;
-
-  //#if defined(AKANTU_COHESIVE_ELEMENT)
-  //  friend class CohesiveElementInserter;
-  //#endif
-
-  //#if defined(AKANTU_IGFEM)
-  //  template <UInt dim> friend class MeshIgfemSphericalGrowingGel;
-  //#endif
 
   AKANTU_GET_MACRO(NodesPointer, *nodes, Array<Real> &);
 
@@ -572,7 +565,7 @@ private:
   bool is_distributed{false};
 
   /// Communicator on which mesh is distributed
-  const Communicator * communicator;
+  Communicator * communicator;
 
   /// Element synchronizer
   std::unique_ptr<ElementSynchronizer> element_synchronizer;

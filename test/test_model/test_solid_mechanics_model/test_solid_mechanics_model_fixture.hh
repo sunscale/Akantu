@@ -23,9 +23,6 @@ public:
     element_type << type;
     SCOPED_TRACE(element_type.str().c_str());
 
-    getStaticParser().parse("test_solid_mechanics_model_linear_elastic_"
-                            "potential_energy_material.dat");
-
     mesh = std::make_unique<Mesh>(spatial_dimension);
 
     mesh->read(element_type.str() + ".msh");
@@ -35,8 +32,8 @@ public:
   }
 
   void TearDown() override {
-    mesh.reset(nullptr);
     model.reset(nullptr);
+    mesh.reset(nullptr);
   }
 
 protected:

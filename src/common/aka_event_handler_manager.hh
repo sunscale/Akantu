@@ -60,7 +60,9 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~EventHandlerManager() = default;
+  virtual ~EventHandlerManager() {
+    event_handlers.clear();
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -73,7 +75,7 @@ public:
     auto it = this->searchEventHandler(event_handler);
 
     if (it != this->event_handlers.end()) {
-      AKANTU_EXCEPTION("This event handler was already registered");
+      AKANTU_EXCEPTION("This event handler was already registered (priority: "<< priority << ")");
     }
 
     auto pos =

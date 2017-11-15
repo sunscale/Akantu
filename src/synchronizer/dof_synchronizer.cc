@@ -58,9 +58,8 @@ namespace akantu {
  * constructor sets up this information.
  */
 DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
-                                 MemoryID memory_id,
-                                 const Communicator & comm)
-    : SynchronizerImpl<UInt>(id, memory_id, comm), root(0),
+                                 MemoryID memory_id)
+    : SynchronizerImpl<UInt>(dof_manager.getCommunicator(), id, memory_id), root(0),
       dof_manager(dof_manager), root_dofs(0, 1, "dofs-to-receive-from-master"),
       dof_changed(true) {
   std::vector<ID> dof_ids = dof_manager.getDOFIDs();

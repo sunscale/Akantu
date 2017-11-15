@@ -32,13 +32,16 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SYNCHRONIZER_HH__
 #define __AKANTU_SYNCHRONIZER_HH__
+
+namespace akantu {
+class Communicator;
+}
 
 namespace akantu {
 
@@ -50,14 +53,11 @@ class Synchronizer : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Synchronizer(const ID & id = "synchronizer", MemoryID memory_id = 0,
-               const Communicator & comm =
-                   Communicator::getStaticCommunicator());
+  Synchronizer(const Communicator & comm, const ID & id = "synchronizer",
+               MemoryID memory_id = 0);
 
   ~Synchronizer() override = default;
 
-  virtual void printself(__attribute__((unused)) std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -116,14 +116,7 @@ protected:
   UInt rank;
 };
 
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const Synchronizer & _this) {
-  _this.printself(stream);
-  return stream;
-}
-
-} // akantu
+} // namespace akantu
 
 #include "synchronizer_tmpl.hh"
 

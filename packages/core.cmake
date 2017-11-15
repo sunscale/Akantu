@@ -337,9 +337,9 @@ package_declare_sources(core
   solver/sparse_matrix_aij_inline_impl.cc
   solver/terms_to_assemble.hh
 
-  synchronizer/communication_buffer.hh
   synchronizer/communication_buffer_inline_impl.cc
   synchronizer/communication_descriptor.hh
+  synchronizer/communication_descriptor_tmpl.hh
   synchronizer/communication_request.hh
   synchronizer/communication_tag.hh
   synchronizer/communications.hh
@@ -347,6 +347,7 @@ package_declare_sources(core
   synchronizer/communicator.cc
   synchronizer/communicator.hh
   synchronizer/communicator_dummy_inline_impl.cc
+  synchronizer/communicator_event_handler.hh
   synchronizer/communicator_inline_impl.hh
   synchronizer/data_accessor.cc
   synchronizer/data_accessor.hh
@@ -377,7 +378,8 @@ package_declare_sources(core
   synchronizer/synchronizer_registry.cc
   synchronizer/synchronizer_registry.hh
   synchronizer/synchronizer_tmpl.hh
-synchronizer/communication_descriptor_tmpl.hh)
+  synchronizer/communication_buffer.hh
+  )
 
 set(AKANTU_SPIRIT_SOURCES
   io/mesh_io/mesh_io_abaqus.cc

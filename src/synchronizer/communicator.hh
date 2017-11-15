@@ -34,6 +34,7 @@
 #include "aka_event_handler_manager.hh"
 #include "communication_buffer.hh"
 #include "communication_request.hh"
+#include "communicator_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_STATIC_COMMUNICATOR_HH__
@@ -78,27 +79,6 @@ namespace akantu {
 
 struct CommunicatorInternalData {
   virtual ~CommunicatorInternalData() = default;
-};
-
-class Communicator;
-
-struct FinalizeCommunicatorEvent {
-  explicit FinalizeCommunicatorEvent(const Communicator & comm)
-      : communicator(comm) {}
-  const Communicator & communicator;
-};
-
-class CommunicatorEventHandler {
-public:
-  virtual ~CommunicatorEventHandler() = default;
-  virtual void onCommunicatorFinalize() {}
-
-private:
-  inline void sendEvent(const FinalizeCommunicatorEvent &) {
-    this->onCommunicatorFinalize();
-  }
-
-  template <class EventHandler> friend class EventHandlerManager;
 };
 
 /* -------------------------------------------------------------------------- */
