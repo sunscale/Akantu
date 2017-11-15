@@ -90,6 +90,12 @@
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 
+AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_hermite_2,
+                                                     _itp_lagrange_segment_2, 1,
+                                                     4, 4);
+
+/* -------------------------------------------------------------------------- */
+
 namespace {
   namespace details {
     template <InterpolationType type>
@@ -98,6 +104,7 @@ namespace {
       Real xi = natural_coords(0);
 
 #if 0 // Version where we also interpolate the rotations
+
       // Cubic Hermite splines interpolating displacement
       auto M1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 2);
       auto M2 = 1. / 4. * Math::pow<2>(xi + 1) * (2 - xi);
@@ -111,11 +118,12 @@ namespace {
 
       // clang-format off
       //    v1   t1   v2   t2
-      N = {{M1 , L1,  M2,  L2},
-	   {M1_, L1_, M2_, L2_}};
+      N = {{M1 , L1,  M2,  L2}, // displacement interpolation
+	   {M1_, L1_, M2_, L2_}}; // rotation interpolation
       // clang-format on
 
 #else // Version where we only interpolate displacements
+
       // Cubic Hermite splines interpolating displacement
       auto M1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 2);
       auto M2 = 1. / 4. * Math::pow<2>(xi + 1) * (2 - xi);
@@ -150,31 +158,31 @@ namespace {
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-InterpolationElement<_itp_hermite, _itk_structural>::computeShapes(
+InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
     const Vector<Real> & natural_coords, Matrix<Real> & N) {
-  details::computeShapes<_itp_hermite>(natural_coords, N);
+  details::computeShapes<_itp_hermite_2>(natural_coords, N);
 }
 
 template <>
 inline void
-InterpolationElement<_itp_hermite, _itk_structural>::computeShapes(
+InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
     const Vector<Real> & natural_coords, Matrix<Real> & N) {
-  details::computeShapes<_itp_hermite>(natural_coords, N);
+  details::computeShapes<_itp_hermite_2>(natural_coords, N);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-InterpolationElement<_itp_hermite, _itk_structural>::computeDNDS(
+InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
     const Vector<Real> & natural_coords, Matrix<Real> & B) {
-  details::computeDNDS<_itp_hermite>(natural_coords, B);
+  details::computeDNDS<_itp_hermite_2>(natural_coords, B);
 }
 
 template <>
 inline void
-InterpolationElement<_itp_hermite, _itk_structural>::computeDNDS(
+InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
     const Vector<Real> & natural_coords, Matrix<Real> & B) {
-  details::computeDNDS<_itp_hermite>(natural_coords, B);
+  details::computeDNDS<_itp_hermite_2>(natural_coords, B);
 }
 
 } // namespace akantu

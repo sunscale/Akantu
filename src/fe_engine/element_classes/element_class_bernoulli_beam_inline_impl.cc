@@ -32,71 +32,9 @@
  *
  * @verbatim
    --x-----q1----|----q2-----x---> x
-    -a          0            a
+    -1          0            1
  @endverbatim
  *
- * @subsection coords Nodes coordinates
- *
- * @f[
- * \begin{array}{ll}
- *  x_{1}  = -a   &  x_{2} = a
- * \end{array}
- * @f]
- *
- * @subsection shapes Shape functions
- * @f[
- *   \begin{array}{ll}
- *     N_1(x) &= \frac{1-x}{2a}\\
- *     N_2(x) &= \frac{1+x}{2a}
- *   \end{array}
- *
- *   \begin{array}{ll}
- *     M_1(x) &= 1/4(x^{3}/a^{3}-3x/a+2)\\
- *     M_2(x) &= -1/4(x^{3}/a^{3}-3x/a-2)
- *   \end{array}
- *
- *   \begin{array}{ll}
- *     L_1(x) &= a/4(x^{3}/a^{3}-x^{2}/a^{2}-x/a+1)\\
- *     L_2(x) &= a/4(x^{3}/a^{3}+x^{2}/a^{2}-x/a-1)
- *   \end{array}
- *
- *   \begin{array}{ll}
- *     M'_1(x) &= 3/4a(x^{2}/a^{2}-1)\\
- *     M'_2(x) &= -3/4a(x^{2}/a^{2}-1)
- *   \end{array}
- *
- *   \begin{array}{ll}
- *     L'_1(x) &= 1/4(3x^{2}/a^{2}-2x/a-1)\\
- *     L'_2(x) &= 1/4(3x^{2}/a^{2}+2x/a-1)
- *   \end{array}
- *@f]
- *
- * @subsection dnds Shape derivatives
- *
- *@f[
- * \begin{array}{ll}
- *   N'_1(x) &= -1/2a\\
- *   N'_2(x) &= 1/2a
- * \end{array}]
- *
- * \begin{array}{ll}
- *   -M''_1(x) &= -3x/(2a^{3})\\
- *   -M''_2(x) &= 3x/(2a^{3})\\
- * \end{array}
- *
- * \begin{array}{ll}
- *   -L''_1(x) &= -1/2a(3x/a-1)\\
- *   -L''_2(x) &= -1/2a(3x/a+1)
- * \end{array}
- *@f]
- *
- * @subsection quad_points Position of quadrature points
- *
- * @f[
- * \begin{array}{ll}
- * x_{q1}  = -a/\sqrt{3} & x_{q2} = a/\sqrt{3}
- * \end{array}
- * @f]
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_static_if.hh"
@@ -132,31 +70,7 @@ AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_3,
 namespace {
   namespace details {
     template <InterpolationType type>
-    void computeShapes(const Vector<Real> & natural_coords, Matrix<Real> & N,
-                       const Matrix<Real> & real_coord) {
-      /// Compute the dimension of the beam
-      Vector<Real> x1 = real_coord(0);
-      Vector<Real> x2 = real_coord(1);
-
-      Real a = x1.distance(x2) / 2.;
-      /// natural coordinate
-      Real c = natural_coords(0);
-
-      auto N0 = (1 - c) / 2.;
-      auto N1 = (1 + c) / 2.;
-
-      auto M0 = (c * c * c - 3. * c + 2.) / 4.;
-      auto M1 = -(c * c * c - 3. * c - 2.) / 4.;
-
-      auto L0 = a * (c * c * c - c * c - c + 1.) / 4.;
-      auto L1 = a * (c * c * c + c * c - c - 1.) / 4.;
-
-      auto Mp0 = 3. / a * (c * c - 1.) / 4.;
-      auto Mp1 = -3. / a * (c * c - 1.) / 4.;
-
-      auto Lp0 = (3. * c * c - 2. * c - 1.) / 4.;
-      auto Lp1 = (3. * c * c + 2. * c - 1.) / 4.;
-
+    void computeShapes(const Vector<Real> & natural_coords, Matrix<Real> & N) {
       static_if(type == _itp_bernoulli_beam_2)
           .then([&](auto && N) {
             // clang-format off
@@ -186,24 +100,7 @@ namespace {
     /* ---------------------------------------------------------------------- */
 
     template <InterpolationType type>
-    void computeDNDS(const Vector<Real> & natural_coords, Matrix<Real> & B,
-                     const Matrix<Real> & real_nodes_coord) {
-      /// Compute the dimension of the beam
-      Vector<Real> x1 = real_nodes_coord(0);
-      Vector<Real> x2 = real_nodes_coord(1);
-
-      Real a = .5 * x1.distance(x2);
-      /// natural coordinate
-      Real c = natural_coords(0) * a;
-
-      auto Np0 = -1. / (2. * a);
-      auto Np1 = 1. / (2. * a);
-
-      auto Mpp0 = -3. * c / (2. * pow(a, 3.));
-      auto Mpp1 = 3. * c / (2. * pow(a, 3.));
-
-      auto Lpp0 = -1. / (2. * a) * (3. * c / a - 1.);
-      auto Lpp1 = -1. / (2. * a) * (3. * c / a + 1.);
+    void computeDNDS(const Vector<Real> & natural_coords, Matrix<Real> & B) {
 
       static_if(type == _itp_bernoulli_beam_2)
           .then([&](auto && B) {
@@ -234,36 +131,81 @@ namespace {
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N,
-    const Matrix<Real> & real_coord) {
-  details::computeShapes<_itp_bernoulli_beam_2>(natural_coords, N, real_coord);
+    const Vector<Real> & natural_coords, Matrix<Real> & N) {
+  Vector<Real> L(2);
+  InterpolationElement<_itp_segment_2, _itk_lagrange>::computeShapes(
+      natural_coords, L);
+  Matrix<Real> H(2, 4);
+  InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
+      natural_coords, H);
+
+  // clang-format off
+  //    u1   v1      t1      u2   v2      t2
+  N = {{L(0) 0       0       L(1) 0       0      },  // u
+       {0    H(0, 0) H(0, 1) 0    H(0, 2) H(0, 3)},  // v
+       {0    H(1, 0) H(1, 1) 0    H(1, 2) H(1, 3)}}; // theta
+  // clang-format on
 }
 
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N,
-    const Matrix<Real> & real_coord) {
-  details::computeShapes<_itp_bernoulli_beam_3>(natural_coords, N, real_coord);
+    const Vector<Real> & natural_coords, Matrix<Real> & N) {
+  Vector<Real> L(2);
+  InterpolationElement<_itp_segment_2, _itk_lagrange>::computeShapes(
+      natural_coords, L);
+  Matrix<Real> H(2, 4);
+  InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
+      natural_coords, H);
+
+  // clang-format off
+  //   u1    v1      w1      x1   y1      z1      u2   v2      w2      x2   y2      z2
+  N = {{L(0) 0       0       0    0       0       L(1) 0       0       0    0       0      },  // u
+       {0    H(0, 0) 0       0    H(0, 1) 0       0    H(0, 2) 0       0    H(0, 3) 0      },  // v
+       {0    0       H(0, 0) 0    0       H(0, 1) 0    0       H(0, 2) 0    0       H(0, 3)},  // w
+       {0    0       0       L(0) 0       0       0    0       0       L(1) 0       0      },  // thetax
+       {0    H(1, 0) 0       0    H(1, 1) 0       0    H(1, 2) 0       0    H(1, 3) 0      },  // thetay
+       {0    0       H(1, 0) 0    0       H(1, 1) 0    0       H(1, 2) 0    0       H(1, 3)}}; // thetaz
+  // clang-format on
 }
+
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B,
-    const Matrix<Real> & real_nodes_coord) {
-  details::computeDNDS<_itp_bernoulli_beam_2>(natural_coords, B,
-                                              real_nodes_coord);
+    const Vector<Real> & natural_coords, Matrix<Real> & B) {
+  Matrix<Real> L(1, 2);
+  InterpolationElement<_itp_segment_2, _itk_lagrange>::computeDNDS(
+      natural_coords, L);
+  Matrix<Real> H(1, 4);
+  InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
+      natural_coords, H);
+
+  // clang-format off
+  //    u1      v1      t1      u2      v2      t2
+  B = {{L(0, 0) 0       0       L(0, 1) 0       0      },   // epsilon
+       {0       H(0, 0) H(0, 1) 0       H(0, 2) H(0, 3)}};  // chi (curv.)
+  // clang-format on
 }
 
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B,
-    const Matrix<Real> & real_nodes_coord) {
-  details::computeDNDS<_itp_bernoulli_beam_3>(natural_coords, B,
-                       real_nodes_coord);
+    const Vector<Real> & natural_coords, Matrix<Real> & B) {
+  Matrix<Real> L(1, 2);
+  InterpolationElement<_itp_segment_2, _itk_lagrange>::computeDNDS(
+      natural_coords, L);
+  Matrix<Real> H(1, 4);
+  InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
+      natural_coords, H);
+  // clang-format off
+  //    u1      v1      w1      x1      y1      z1      u2      v2      w2      x2      y2      z2
+  B = {{L(0, 0) 0       0       0       0       0       L(0, 1) 0       0       0       0       0      },  // eps
+       {0       H(0, 0) 0       0       H(0, 1) 0       0       H(0, 2) 0       0       H(0, 3) 0      },  // chix
+       {0       0       H(0, 0) 0       0       H(0, 1) 0       0       H(0, 2) 0       0       H(0, 3)},  // chiy
+       {0       0       0       L(0, 0) 0       0       0       0       0       L(0, 1) 0       0      }}; // chiz
+  // clang-format on
 }
 
 } // namespace akantu

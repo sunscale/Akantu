@@ -61,7 +61,7 @@ package_declare_elements(structural_mechanics
   _kirchhoff_shell
   KIND structural
   INTERPOLATION_TYPES
-  _itp_hermite
+  _itp_hermite_2
   _itp_bernoulli_beam_2
   _itp_bernoulli_beam_3
   _itp_kirchhoff_shell
