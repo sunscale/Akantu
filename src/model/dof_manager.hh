@@ -328,6 +328,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   AKANTU_GET_MACRO(Communicator, communicator, const auto &);
+  AKANTU_GET_MACRO_NOT_CONST(Communicator, communicator, auto &);
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
@@ -453,7 +454,7 @@ protected:
 
   /// Communicator used for this manager, should be the same as in the mesh if a
   /// mesh is registered
-  const Communicator & communicator;
+  Communicator & communicator;
 };
 
 } // namespace akantu

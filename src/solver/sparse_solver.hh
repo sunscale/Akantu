@@ -32,9 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
-//#include "data_accessor.hh"
 #include "parsable.hh"
-#include "communicator.hh"
+#include "communicator_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLVER_HH__
@@ -114,7 +113,7 @@ protected:
   SolverParallelMethod parallel_method;
 
   /// Communicator used by the solver
-  const Communicator & communicator;
+  Communicator & communicator;
 };
 
 } // akantu

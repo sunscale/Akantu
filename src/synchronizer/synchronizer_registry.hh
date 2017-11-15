@@ -71,9 +71,6 @@ public:
   void registerSynchronizer(Synchronizer & synchronizer,
                             SynchronizationTag tag);
 
-  /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
-
   /// Register a different data accessor.
   void registerDataAccessor(DataAccessorBase & data_accessor);
 
@@ -89,18 +86,6 @@ private:
   DataAccessorBase * data_accessor{nullptr};
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-// #include "synchronizer_registry_inline_impl.cc"
-
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const SynchronizerRegistry & _this) {
-  _this.printself(stream);
-  return stream;
-}
 
 } // akantu
 

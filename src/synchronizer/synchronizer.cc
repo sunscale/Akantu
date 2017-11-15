@@ -32,6 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "synchronizer.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <functional>
 /* -------------------------------------------------------------------------- */
@@ -39,8 +40,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
-                           const Communicator & comm)
+Synchronizer::Synchronizer(const Communicator & comm, const ID & id,
+                           MemoryID memory_id)
     : Memory(id, memory_id), communicator(comm) {
   int max_tag = comm.getMaxTag();
 
@@ -52,4 +53,4 @@ Synchronizer::Synchronizer(const ID & id, MemoryID memory_id,
   this->rank = communicator.whoAmI();
 }
 
-} // akantu
+} // namespace akantu

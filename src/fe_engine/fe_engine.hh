@@ -29,17 +29,14 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_FE_ENGINE_HH__
-#define __AKANTU_FE_ENGINE_HH__
-
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
 #include "element_type_map.hh"
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_FE_ENGINE_HH__
+#define __AKANTU_FE_ENGINE_HH__
 
 namespace akantu {
 class Mesh;

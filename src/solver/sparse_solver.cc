@@ -34,6 +34,7 @@
 #include "mesh.hh"
 #include "dof_manager.hh"
 #include "sparse_solver.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -45,13 +46,8 @@ SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
     _dof_manager(dof_manager), matrix_id(matrix_id), communicator(dof_manager.getCommunicator()) {
   AKANTU_DEBUG_IN();
 
-  // createSynchronizerRegistry();
-  // this->synch_registry = new SynchronizerRegistry(*this);
-  //  synch_registry->registerSynchronizer(this->matrix->getDOFSynchronizer(),
-  //  _gst_solver_solution);
-
   // OK this is fishy...
-  const_cast<Communicator &>(this->communicator).registerEventHandler(*this);
+  this->communicator.registerEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }
@@ -61,6 +57,7 @@ SparseSolver::~SparseSolver() {
   AKANTU_DEBUG_IN();
 
   this->destroyInternalData();
+  this->communicator.unregisterEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
 }

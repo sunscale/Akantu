@@ -42,9 +42,8 @@ template <class Entity> class SynchronizerImpl : public Synchronizer {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SynchronizerImpl(
-      const ID & id = "synchronizer", MemoryID memory_id = 0,
-      const Communicator & comm = Communicator::getStaticCommunicator());
+  SynchronizerImpl(const Communicator & communicator,
+                   const ID & id = "synchronizer", MemoryID memory_id = 0);
 
   ~SynchronizerImpl() override = default;
 
@@ -66,7 +65,8 @@ public:
                                       const SynchronizationTag & tag);
 
   /// compute all buffer sizes
-  virtual void computeAllBufferSizes(const DataAccessor<Entity> & data_accessor);
+  virtual void
+  computeAllBufferSizes(const DataAccessor<Entity> & data_accessor);
 
   /// compute buffer size for a given tag and data accessor
   virtual void computeBufferSizeImpl(const DataAccessor<Entity> & data_accessor,
@@ -86,9 +86,7 @@ public:
   void split(SynchronizerImpl & in_synchronizer, Pred && pred);
 
   /// update schemes in a synchronizer
-  template <typename Updater>
-  void updateSchemes(Updater && scheme_updater);
-
+  template <typename Updater> void updateSchemes(Updater && scheme_updater);
 
   /* ------------------------------------------------------------------------ */
   virtual UInt sanityCheckDataSize(const Array<Entity> & elements,
@@ -99,10 +97,12 @@ public:
   unpackSanityCheckData(CommunicationDescriptor<Entity> & comm_desc) const;
 
 public:
-  AKANTU_GET_MACRO(Communications, communications, const Communications<Entity> &);
+  AKANTU_GET_MACRO(Communications, communications,
+                   const Communications<Entity> &);
 
 protected:
-  AKANTU_GET_MACRO_NOT_CONST(Communications, communications, Communications<Entity> &);
+  AKANTU_GET_MACRO_NOT_CONST(Communications, communications,
+                             Communications<Entity> &);
 
   virtual Int getRank(const Entity & entity) const = 0;
 
@@ -114,9 +114,8 @@ protected:
   Communications<Entity> communications;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "synchronizer_impl_tmpl.hh"
-
 
 #endif /* __AKANTU_SYNCHRONIZER_IMPL_HH__ */
