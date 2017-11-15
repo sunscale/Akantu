@@ -266,13 +266,13 @@ template <typename T> inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
   // Matrix  A is  row major,  so the  lapack function  in fortran  will process
   // A^t. Asking for the left eigenvectors of A^t will give the transposed right
   // eigenvectors of A so in the C++ code the right eigenvectors.
-  char jobvl;
+  char jobvr, jobvl;
   if (V != nullptr)
-    jobvl = 'V'; // compute left  eigenvectors
+    jobvr = 'V'; // compute left  eigenvectors
   else
-    jobvl = 'N'; // compute left  eigenvectors
+    jobvr = 'N'; // compute left  eigenvectors
 
-  char jobvr('N'); // compute right eigenvectors
+  jobvl = 'N'; // compute right eigenvectors
 
   auto * di = new T[n]; // imaginary part of the eigenvalues
 
@@ -282,13 +282,13 @@ template <typename T> inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
   T wkopt;
   int lwork = -1;
   // query and allocate the optimal workspace
-  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, nullptr, &N, &wkopt,
+  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, nullptr, &N, V, &N, &wkopt,
               &lwork, &info);
 
   lwork = int(wkopt);
   auto * work = new T[lwork];
   // solve the eigenproblem
-  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, nullptr, &N, work,
+  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, nullptr, &N, V, &N, work,
               &lwork, &info);
 
   AKANTU_DEBUG_ASSERT(

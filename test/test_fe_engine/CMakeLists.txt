@@ -49,11 +49,6 @@ package_get_element_types(core _types)
 foreach(_type ${_types})
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
     register_fem_test(fe_engine_precomputation ${_type})
-    register_fem_test(fe_engine_gauss_integration ${_type})
-    register_fem_test(interpolate ${_type})
-    register_fem_test(gradient    ${_type})
-    register_fem_test(integrate   ${_type})
-    register_fem_test(inverse_map ${_type})
   else()
     if(NOT ${_type} STREQUAL _point_1)
       message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
@@ -92,3 +87,27 @@ register_test(test_facet_element_mapping
   DEPENDS test_boundary_msh_physical_names
   PACKAGE core)
 
+
+register_test(test_fe_engine_gauss_integration
+  SOURCES test_fe_engine_gauss_integration.cc
+  PACKAGE core
+  GTEST
+  )
+
+register_test(test_gradient
+  SOURCES test_gradient.cc
+  PACKAGE core
+  GTEST
+  )
+
+register_test(test_integrate
+  SOURCES test_integrate.cc
+  PACKAGE core
+  GTEST
+  )
+
+register_test(test_inverse_map
+  SOURCES test_inverse_map.cc
+  PACKAGE core
+  GTEST
+  )

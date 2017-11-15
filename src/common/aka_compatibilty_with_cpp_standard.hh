@@ -54,6 +54,7 @@ template <bool B> using bool_constant = std::integral_constant<bool, B>;
 namespace {
   template <bool B> constexpr bool bool_constant_v = bool_constant<B>::value;
 }
+/* -------------------------------------------------------------------------- */
 
 // conjunction
 template <class...> struct conjunction : std::true_type {};
@@ -61,6 +62,16 @@ template <class B1> struct conjunction<B1> : B1 {};
 template <class B1, class... Bn>
 struct conjunction<B1, Bn...>
     : std::conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
+
+/* -------------------------------------------------------------------------- */
+
+// negations
+template<class B>
+struct negation : bool_constant<!bool(B::value)> { };
+
+
+/* -------------------------------------------------------------------------- */
+
 
 namespace detail {
   // template <class T>

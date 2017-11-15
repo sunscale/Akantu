@@ -30,63 +30,43 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "fe_engine.hh"
-#include "shape_lagrange.hh"
-#include "integrator_gauss.hh"
-/* -------------------------------------------------------------------------- */
-#include <cstdlib>
-#include <iostream>
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+namespace {
 
-  debug::setDebugLevel(dblTest);
-  const ElementType type = TYPE;
-  UInt dim = ElementClass<type>::getSpatialDimension();
+TYPED_TEST(TestFEMFixture, InterpolateConstant) {
+  const auto type = this->type;
 
-  Real eps = 3e-13;
-  std::cout << "Epsilon : " << eps << std::endl;
+  const auto & position = this->fem->getMesh().getNodes();
 
-  Mesh my_mesh(dim);
+  Array<Real> const_val(position.size(), 2, "const_val");
+  Array<Real> val_on_quad(this->nb_quadrature_points_total, 2, "val_on_quad");
 
-  std::stringstream meshfilename; meshfilename << type << ".msh";
-  my_mesh.read(meshfilename.str());
-
-  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
-
-  fem->initShapeFunctions();
-
-  Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
-
-  UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
-
-  Array<Real> val_on_quad(nb_quadrature_points, 2, "val_on_quad");
-
-  for (UInt i = 0; i < const_val.size(); ++i) {
-    const_val.storage()[i * 2 + 0] = 1.;
-    const_val.storage()[i * 2 + 1] = 2.;
+  Vector<Real> value{1, 2};
+  for (auto && const_ : make_view(const_val, 2)) {
+    const_ = value;
   }
 
-  fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
+  // interpolate function on quadrature points
+  this->fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
 
-  std::cout << "Interpolation of array : " << const_val << std::endl;
-  std::cout << "Gives on quads : " << val_on_quad << std::endl;
-
-  // interpolate coordinates
-  Array<Real> coord_on_quad(nb_quadrature_points, my_mesh.getSpatialDimension(), "coord_on_quad");
-
-  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(),
-				     coord_on_quad,
-				     my_mesh.getSpatialDimension(),
-				     type);
-  std::cout << "Interpolations of node coordinates : " << my_mesh.getNodes() << std::endl;
-  std::cout << "Gives : " << coord_on_quad << std::endl;
-
-  delete fem;
-  finalize();
-
-  return EXIT_SUCCESS;
+  for (auto && int_ : make_view(val_on_quad, 2)) {
+    auto diff = (value - int_).template norm<L_inf>();
+    EXPECT_NEAR(0, diff, 1e-14);
+  }
 }
+
+// TYPED_TEST(TestFEMFixture, InterpolatePosition) {
+//   const auto dim = this->dim;
+//   const auto type = this->type;
+//   const auto & position = this->fem->getMesh().getNodes();
+
+//   Array<Real> coord_on_quad(this->nb_quadrature_points_total, dim,
+//                             "coord_on_quad");
+
+//   this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, dim, type);
+// }
+
+} // namespace

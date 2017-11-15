@@ -45,3 +45,4 @@ register_test(test_zip_iterator test_zip_iterator.cc PACKAGE core)
 register_test(test_arange_iterator test_arange_iterator.cc PACKAGE core)
 
 register_test(test_array test_array.cc PACKAGE core GTEST)
+register_test(test_tensors test_tensors.cc PACKAGE core GTEST)
