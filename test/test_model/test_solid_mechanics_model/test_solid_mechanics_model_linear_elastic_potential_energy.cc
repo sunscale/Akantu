@@ -46,7 +46,10 @@ namespace {
 
 TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
   const auto spatial_dimension = this->spatial_dimension;
-  
+
+  getStaticParser().parse("test_solid_mechanics_model_linear_elastic_"
+                          "potential_energy_material.dat");
+
   this->model->initFull(_analysis_method = _static);
 
   auto & lower = this->mesh->getLowerBounds();
