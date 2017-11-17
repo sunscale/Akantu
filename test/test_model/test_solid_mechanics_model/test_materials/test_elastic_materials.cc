@@ -32,17 +32,23 @@ template <> void FriendMaterial<MaterialElastic<3>>::testComputeStress() {
   setParam("nu", nu);
   setParam("rho", nu);
 
-  Real epsilon = 1.;
-  const Matrix<Real> grad_u = {{0, epsilon, 0}, {epsilon, 0, 0}, {0, 0, 0}};
-  Matrix<Real> sigma(3, 3);
-  this->computeStressOnQuad(grad_u, sigma, 0.);
+  Matrix<Real> rotation_matrix = getRandomRotation3d();
 
-  Matrix<Real> sigma_expected = {{0, 1, 0}, {1, 0, 0}, {0, 0, 0}};
-  sigma_expected *= E / (1 + nu);
+  auto grad_u = this->getDeviatoricStrain(1.);
+
+  auto grad_u_rot = this->applyRotation(grad_u, rotation_matrix);
+
+  Matrix<Real> sigma_rot(3, 3);
+  this->computeStressOnQuad(grad_u_rot, sigma_rot, 0.);
+
+  auto sigma = this->reverseRotation(sigma_rot, rotation_matrix);
+
+  Matrix<Real> sigma_expected =
+    0.5 * E / (1 + nu) * (grad_u + grad_u.transpose());
 
   auto diff = sigma - sigma_expected;
   Real stress_error = diff.norm<L_inf>();
-  ASSERT_DOUBLE_EQ(stress_error, 0.);
+  ASSERT_NEAR(stress_error, 0., 1e-14);
 }
 
 /*****************************************************************/
