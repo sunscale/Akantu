@@ -30,6 +30,14 @@ TYPED_TEST(TestPlasticMaterialFixture, PlasticEnergyDensity) {
 TYPED_TEST(TestPlasticMaterialFixture, PlasticComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
+
+TYPED_TEST(TestPlasticMaterialFixture, PlasticComputePushWaveSpeed) {
+  this->material->testPushWaveSpeed();
+}
+
+TYPED_TEST(TestPlasticMaterialFixture, PlasticComputeShearWaveSpeed) {
+  this->material->testShearWaveSpeed();
+}
 }
 
 /*****************************************************************/

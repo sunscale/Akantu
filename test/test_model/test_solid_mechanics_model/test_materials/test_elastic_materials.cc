@@ -27,7 +27,6 @@ template <> void FriendMaterial<MaterialElastic<3>>::testComputeStress() {
   setParam("E", E);
   setParam("nu", nu);
   setParam("rho", nu);
-  // std::cout << *this << std::endl;
 
   Real epsilon = 1.;
   const Matrix<Real> grad_u = {{0, epsilon, 0}, {epsilon, 0, 0}, {0, 0, 0}};
@@ -107,6 +106,14 @@ TYPED_TEST(TestElasticMaterialFixture, ElasticEnergyDensity) {
 }
 TYPED_TEST(TestElasticMaterialFixture, ElasticComputeTangentModuli) {
   this->material->testComputeTangentModuli();
+}
+
+TYPED_TEST(TestElasticMaterialFixture, ElasticComputePushWaveSpeed) {
+  this->material->testPushWaveSpeed();
+}
+
+TYPED_TEST(TestElasticMaterialFixture, ElasticComputeShearWaveSpeed) {
+  this->material->testShearWaveSpeed();
 }
 }
 

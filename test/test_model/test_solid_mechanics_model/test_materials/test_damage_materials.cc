@@ -36,5 +36,13 @@ TYPED_TEST(TestDamageMaterialFixture, DamageEnergyDensity) {
 TYPED_TEST(TestDamageMaterialFixture, DamageComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
+
+TYPED_TEST(TestDamageMaterialFixture, DamageComputePushWaveSpeed) {
+  this->material->testPushWaveSpeed();
+}
+
+TYPED_TEST(TestDamageMaterialFixture, DamageComputeShearWaveSpeed) {
+  this->material->testShearWaveSpeed();
+}
 }
 /*****************************************************************/
