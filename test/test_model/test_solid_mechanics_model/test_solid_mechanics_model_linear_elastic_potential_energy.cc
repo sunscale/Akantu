@@ -13,7 +13,9 @@
  * This test uses a linear elastic material with density = 1, Young's
  * modulus = 1, and Poisson's ratio = 0 and applies a linear
  * displacement from 0 to ε in x direction. The resulting potential
- * energy should be 0.5*Y*ε² = ε²/2. We test 3 different strains.
+ * energy density should be 0.5*Y*ε² = ε²/2. Since the mesh always has
+ * a volume of 1, the energy density equals the total energy. We test
+ * 3 different strains.
  *
  * @section LICENSE
  *
