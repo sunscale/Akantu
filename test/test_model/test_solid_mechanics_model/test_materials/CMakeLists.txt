@@ -88,3 +88,14 @@ register_test(test_multi_material_elastic
   FILES_TO_COPY test_multi_material_elastic.dat
   DEPENDS test_multi_material_elastic_mesh
   PACKAGE implicit)
+
+
+# ==============================================================================
+# Material unit tests
+# ==============================================================================
+
+register_test(test_elastic_materials test_elastic_materials.cc PACKAGE core GTEST)
+register_test(test_finite_def_materials test_finite_def_materials.cc PACKAGE core GTEST)
+register_test(test_damage_materials test_damage_materials.cc PACKAGE core GTEST)
+register_test(test_plastic_materials test_plastic_materials.cc PACKAGE core GTEST)
+

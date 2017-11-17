@@ -54,7 +54,7 @@ namespace akantu {
  *   - C_ij  : entry on the stiffness
  */
 template <UInt Dim>
-class MaterialElasticLinearAnisotropic : public virtual Material {
+class MaterialElasticLinearAnisotropic : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
