@@ -1,0 +1,6 @@
+material elastic [
+	 name = uniterial
+	 rho = 1    # density
+	 E   = 1    # young's modulus
+	 nu  = 0.0  # poisson's ratio
+]
