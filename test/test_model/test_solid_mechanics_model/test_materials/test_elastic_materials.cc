@@ -16,7 +16,11 @@ using types = ::testing::Types<
 
     Traits<MaterialElasticOrthotropic, 1>,
     Traits<MaterialElasticOrthotropic, 2>,
-    Traits<MaterialElasticOrthotropic, 3>>;
+    Traits<MaterialElasticOrthotropic, 3>,
+
+    Traits<MaterialElasticLinearAnisotropic, 1>,
+    Traits<MaterialElasticLinearAnisotropic, 2>,
+    Traits<MaterialElasticLinearAnisotropic, 3>>;
 
 /*****************************************************************/
 

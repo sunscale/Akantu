@@ -17,7 +17,7 @@ public:
   virtual void testComputeTangentModuli() { TO_IMPLEMENT; };
   virtual void testEnergyDensity() { TO_IMPLEMENT; };
   virtual void testPushWaveSpeed() { TO_IMPLEMENT; }
-  virtual void testShearWaveSpeed() { TO_IMPLEMENT; }  
+  virtual void testShearWaveSpeed() { TO_IMPLEMENT; }
 
   FriendMaterial(SolidMechanicsModel & model, const ID & id = "")
       : T(model, id) {}
