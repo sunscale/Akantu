@@ -51,7 +51,7 @@ namespace akantu {
  *   - Plane_Stress : if 0: plane strain, else: plane stress (default: 0)
  */
 template<UInt spatial_dimension>
-class MaterialNeohookean : public virtual PlaneStressToolbox<spatial_dimension> {
+class MaterialNeohookean : public PlaneStressToolbox<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

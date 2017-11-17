@@ -44,7 +44,6 @@ namespace akantu {
 template<UInt Dim>
 MaterialElasticOrthotropic<Dim>::MaterialElasticOrthotropic(SolidMechanicsModel & model,
                                                             const ID & id)  :
-  Material(model, id),
   MaterialElasticLinearAnisotropic<Dim>(model, id) {
   AKANTU_DEBUG_IN();
   this->registerParam("E1",   E1  , Real(0.), _pat_parsmod, "Young's modulus (n1)");
