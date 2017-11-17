@@ -52,15 +52,14 @@ namespace akantu {
  */
 template <UInt spatial_dimension>
 class MaterialElastic
-  : public PlaneStressToolbox<spatial_dimension,
-                              MaterialThermal<spatial_dimension>> {
+    : public PlaneStressToolbox<spatial_dimension,
+                                MaterialThermal<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef PlaneStressToolbox<spatial_dimension,
-                             MaterialThermal<spatial_dimension>>
-  Parent;
+  using Parent =
+      PlaneStressToolbox<spatial_dimension, MaterialThermal<spatial_dimension>>;
 
 public:
   MaterialElastic(SolidMechanicsModel & model, const ID & id = "");
@@ -80,7 +79,7 @@ public:
 
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type,
-                             GhostType ghost_type = _not_ghost) override;
+                     GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
@@ -118,7 +117,7 @@ protected:
                                                   Real & epot);
 
   bool hasStiffnessMatrixChanged() override {
-    return (! was_stiffness_assembled);
+    return (!was_stiffness_assembled);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -151,7 +150,7 @@ protected:
   bool was_stiffness_assembled;
 };
 
-}  // akantu
+} // akantu
 
 #include "material_elastic_inline_impl.cc"
 
