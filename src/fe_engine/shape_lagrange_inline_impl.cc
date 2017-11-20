@@ -69,12 +69,12 @@ inline void ShapeLagrange<kind>::computeShapeDerivativesOnCPointsByElement(
   Tensor3<Real> dnds(node_coords.rows(), node_coords.cols(),
                      natural_coords.cols());
   ElementClass<type>::computeDNDS(natural_coords, dnds);
-  // compute dxds
+  // compute jacobian
   Tensor3<Real> J(node_coords.rows(), natural_coords.rows(),
                   natural_coords.cols());
   ElementClass<type>::computeJMat(dnds, node_coords, J);
 
-  // compute shape derivatives
+  // compute dndx
   ElementClass<type>::computeShapeDerivatives(J, dnds, shapesd);
 
   AKANTU_DEBUG_OUT();

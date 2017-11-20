@@ -41,15 +41,16 @@ namespace akantu {
 /// Macro to generate the InterpolationProperty structures for different
 /// interpolation types
 #define AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(                  \
-    itp_type, parent_type, ndim, ndof, voigt)                                  \
+    itp_type, itp_geom_type, ndof, nb_stress, nb_sub, sub_itp, sub_indexes)    \
   template <> struct InterpolationProperty<itp_type> {                         \
     static const InterpolationKind kind{_itk_structural};                      \
     static const UInt nb_nodes_per_element{                                    \
-        InterpolationProperty<parent_type>::nb_nodes_per_element};             \
-    static const InterpolationType parent_element_type{parent_type};           \
-    static const UInt natural_space_dimension{ndim};                           \
+        InterpolationProperty<itp_geom_type>::nb_nodes_per_element};           \
+    static const InterpolationType itp_geometry_type{itp_geom_type};           \
+    static const UInt natural_space_dimension{                                 \
+        InterpolationProperty<itp_geom_type>::natural_space_dimension};        \
     static const UInt nb_degree_of_freedom{ndof};                              \
-    static const UInt voigt_size{voigt};                                       \
+    static const UInt nb_stress_components{nb_stress};                         \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -76,7 +77,7 @@ public:
                                  Tensor3<Real> & dnds) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> dnds_t = dnds(i);
-      computeDNDS(natural_coord(i), dnds_t, real_nodal_coord);
+      computeDNDS(natural_coord(i), dnds_t);
     }
   }
 
@@ -156,11 +157,19 @@ public:
                           Tensor3<Real> & shape_deriv,
                           const Matrix<Real> & real_nodal_coord) {
     UInt nb_points = natural_coord.cols();
-    for (UInt p = 0; p < nb_points; ++p) {
-      Matrix<Real> shape_deriv_p = shape_deriv(p);
-      interpolation_element::computeDNDS(natural_coord(p), shape_deriv_p,
-                                         real_nodal_coord);
-    }
+
+    // compute dnds
+    Tensor3<Real> dnds(node_coords.rows(), node_coords.cols(),
+                       natural_coords.cols());
+    ElementClass<type>::computeDNDS(natural_coords, dnds);
+    // compute jacobian
+    Tensor3<Real> J(node_coords.rows(), natural_coords.rows(),
+                    natural_coords.cols());
+    ElementClass<type>::computeJMat(dnds, node_coords, J);
+
+    // compute dndx
+    ElementClass<type>::computeShapeDerivatives(J, dnds, shapesd);
+
   }
 
   /// compute jacobian (or integration variable change factor) for a given point
@@ -185,7 +194,9 @@ public:
 
 } // namespace akantu
 
+#include "element_classes/element_class_hermite_inline_impl.cc"
+
 #include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
-#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+//#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
 
 #endif /* __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__ */

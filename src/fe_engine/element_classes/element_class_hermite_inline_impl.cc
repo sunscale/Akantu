@@ -163,21 +163,7 @@ InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
   details::computeShapes<_itp_hermite_2>(natural_coords, N);
 }
 
-template <>
-inline void
-InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N) {
-  details::computeShapes<_itp_hermite_2>(natural_coords, N);
-}
-
 /* -------------------------------------------------------------------------- */
-template <>
-inline void
-InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B) {
-  details::computeDNDS<_itp_hermite_2>(natural_coords, B);
-}
-
 template <>
 inline void
 InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
