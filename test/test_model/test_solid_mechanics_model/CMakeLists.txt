@@ -240,3 +240,10 @@ register_test(test_solid_mechanics_model_linear_elastic_potential_energy
   PACKAGE core
   GTEST
   )
+
+register_test(test_solid_mechanics_model_kinetic_energy
+  SOURCES test_solid_mechanics_model_kinetic_energy.cc
+  FILES_TO_COPY test_solid_mechanics_model_kinetic_energy_material.dat
+  PACKAGE implicit
+  GTEST
+  )
