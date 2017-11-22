@@ -73,7 +73,8 @@ void ShapeStructural<_ek_structural>::precomputeShapesOnIntegrationPoints(
   auto spatial_dimension = mesh.getSpatialDimension();
   auto nb_points = integration_points(type, ghost_type).cols();
   auto nb_element = mesh.getNbElement(type, ghost_type);
-  auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
+  auto nb_dof = InterpolationElement<
+      ElementClassProperty<type>::interpolation_type>::getNbDegreeOfFreedom();
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not shapes.exists(itp_type, ghost_type)) {
@@ -110,6 +111,8 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   auto nb_points = natural_coords.cols();
   auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
   auto nb_element = mesh.getNbElement(type, ghost_type);
+  auto nb_stress_components = InterpolationProperty<
+      ElementClassProperty<type>::interpolation_type>::nb_stress_components;
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not this->shapes_derivatives.exists(itp_type, ghost_type)) {
@@ -120,17 +123,10 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   auto & shapesd = this->shapes_derivatives(itp_type, ghost_type);
   shapesd.resize(nb_element * nb_points);
 
-  auto x_it = x_el.begin(spatial_dimension, nb_nodes_per_element);
-  auto shapesd_it = shapesd.begin_reinterpret(natural_spatial_dimension,
-                                              nb_nodes_per_element * nb_dof,
-                                              nb_points, nb_element);
-
-  auto rotation_it = rotation_matr;
-
   for (auto && tuple :
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
-           make_view(natural_spatial_dimension, nb_nodes_per_element * nb_dof,
-                     nb_points),
+           make_view(shapesd, natural_spatial_dimension,
+                     nb_nodes_per_element * nb_dof, nb_points),
            make_view(rot_matrices, spatial_dimension, spatial_dimension))) {
     // compute shape derivatives
     auto & X = std::get<0>(tuple);
@@ -146,18 +142,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
       for (UInt i = 0 ; i < node_coords.cols() ; ++i)
 	node_coords(i, j) = x(i, j);
 
-    // compute dnds
-    Tensor3<Real> dnds(nb_stress_components, node_coords.cols() * nb_degree_of_freedom,
-                       natural_coords.cols());
-    ElementClass<type>::computeDNDS(natural_coords, dnds);
-
-    // compute jacobian
-    Tensor3<Real> J(node_coords.rows(), natural_coords.rows(),
-                    natural_coords.cols());
-    ElementClass<type>::computeJMat(dnds, node_coords, J);
-
-    // compute dndx
-    ElementClass<type>::computeShapeDerivatives(J, dnds, shapesd);
+    ElementClass<type>::computeShapeDerivatives(natural_coords, B, node_coords);
   }
 
   AKANTU_DEBUG_OUT();

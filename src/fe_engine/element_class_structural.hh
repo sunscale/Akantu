@@ -41,7 +41,7 @@ namespace akantu {
 /// Macro to generate the InterpolationProperty structures for different
 /// interpolation types
 #define AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(                  \
-    itp_type, itp_geom_type, ndof, nb_stress, nb_sub, sub_itp, sub_indexes)    \
+    itp_type, itp_geom_type, ndof, nb_stress)                                  \
   template <> struct InterpolationProperty<itp_type> {                         \
     static const InterpolationKind kind{_itk_structural};                      \
     static const UInt nb_nodes_per_element{                                    \
@@ -105,7 +105,7 @@ public:
       ShapeDerivativesSize,
       (interpolation_property::nb_nodes_per_element *
        interpolation_property::nb_degree_of_freedom *
-       interpolation_property::voigt_size),
+       interpolation_property::nb_stress_components),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NaturalSpaceDimension, interpolation_property::natural_space_dimension,
@@ -159,24 +159,24 @@ public:
     UInt nb_points = natural_coord.cols();
 
     // compute dnds
-    Tensor3<Real> dnds(node_coords.rows(), node_coords.cols(),
-                       natural_coords.cols());
-    ElementClass<type>::computeDNDS(natural_coords, dnds);
+    Tensor3<Real> dnds(real_nodal_coord.rows(), real_nodal_coord.cols(),
+                       natural_coord.cols());
+    ElementClass<element_type>::computeDNDS(natural_coord, dnds);
     // compute jacobian
-    Tensor3<Real> J(node_coords.rows(), natural_coords.rows(),
-                    natural_coords.cols());
-    ElementClass<type>::computeJMat(dnds, node_coords, J);
+    Tensor3<Real> J(real_nodal_coord.rows(), natural_coord.rows(),
+                    natural_coord.cols());
+    ElementClass<element_type>::computeJMat(dnds, real_nodal_coord, J);
 
     // compute dndx
-    ElementClass<type>::computeShapeDerivatives(J, dnds, shapesd);
+    ElementClass<element_type>::computeShapeDerivatives(J, dnds, shape_deriv);
 
   }
 
   /// compute jacobian (or integration variable change factor) for a given point
-  static inline void computeJacobian(const Matrix<Real> & natural_coords,
-                                     const Matrix<Real> & nodal_coords,
-                                     Vector<Real> & jacobians) {
-    parent_element::computeJacobian(natural_coords, nodal_coords, jacobians);
+  static inline void computeJMat(const Tensor3<Real> & natural_coords,
+                                 const Matrix<Real> & nodal_coords,
+                                 Tensor3<Real> & jacobian) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
 public:
