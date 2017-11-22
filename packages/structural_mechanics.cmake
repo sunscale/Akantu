@@ -58,13 +58,14 @@ package_declare_elements(structural_mechanics
   ELEMENT_TYPES
   _bernoulli_beam_2
   _bernoulli_beam_3
-  _kirchhoff_shell
+  _discrete_kirchhoff_triangle_18
   KIND structural
   INTERPOLATION_TYPES
   _itp_hermite_2
   _itp_bernoulli_beam_2
   _itp_bernoulli_beam_3
-  _itp_kirchhoff_shell
+  _itp_discrete_kirchhoff_triangle_6
+  _itp_discrete_kirchhoff_triangle_18
   INTERPOLATION_KIND
   _itk_structural
   )

@@ -70,11 +70,9 @@ void ShapeStructural<_ek_structural>::precomputeShapesOnIntegrationPoints(
 
   const auto & natural_coords = integration_points(type, ghost_type);
   auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  auto spatial_dimension = mesh.getSpatialDimension();
   auto nb_points = integration_points(type, ghost_type).cols();
   auto nb_element = mesh.getNbElement(type, ghost_type);
-  auto nb_dof = InterpolationElement<
-      ElementClassProperty<type>::interpolation_type>::getNbDegreeOfFreedom();
+  auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not shapes.exists(itp_type, ghost_type)) {
@@ -100,7 +98,7 @@ void ShapeStructural<_ek_structural>::precomputeShapesOnIntegrationPoints(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
-    const Array<Real> & /*nodes*/, const GhostType & ghost_type) {
+    const Array<Real> & nodes, const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   const auto & natural_coords = integration_points(type, ghost_type);
@@ -111,8 +109,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   auto nb_points = natural_coords.cols();
   auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
   auto nb_element = mesh.getNbElement(type, ghost_type);
-  auto nb_stress_components = InterpolationProperty<
-      ElementClassProperty<type>::interpolation_type>::nb_stress_components;
+  auto nb_stress_components = ElementClass<type>::getNbStressComponents();
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not this->shapes_derivatives.exists(itp_type, ghost_type)) {
@@ -120,12 +117,17 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     this->shapes_derivatives.alloc(0, size_of_shapesd, itp_type, ghost_type);
   }
 
+  auto rot_matrices = this->rotation_matrices(type, ghost_type);
+
+  Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
+  FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
+
   auto & shapesd = this->shapes_derivatives(itp_type, ghost_type);
   shapesd.resize(nb_element * nb_points);
 
   for (auto && tuple :
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
-           make_view(shapesd, natural_spatial_dimension,
+           make_view(shapesd, nb_stress_components,
                      nb_nodes_per_element * nb_dof, nb_points),
            make_view(rot_matrices, spatial_dimension, spatial_dimension))) {
     // compute shape derivatives
@@ -138,11 +140,18 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     Matrix<Real> node_coords(natural_spatial_dimension, nb_nodes_per_element);
 
     // Extract relevant first lines
-    for (UInt j = 0 ; j < node_coords.rows() ; ++j)
-      for (UInt i = 0 ; i < node_coords.cols() ; ++i)
-	node_coords(i, j) = x(i, j);
+    for (UInt j = 0; j < node_coords.rows(); ++j)
+      for (UInt i = 0; i < node_coords.cols(); ++i)
+        node_coords(i, j) = x(i, j);
 
-    ElementClass<type>::computeShapeDerivatives(natural_coords, B, node_coords);
+    Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
+    ElementClass<type>::computeDNDS(natural_coords, dnds);
+
+    Tensor3<Real> J(node_coords.rows(), natural_coords.rows(),
+                    natural_coords.cols());
+    ElementClass<type>::computeJMat(dnds, node_coords, J);
+
+    ElementClass<type>::computeShapeDerivatives(J, dnds, B);
   }
 
   AKANTU_DEBUG_OUT();
@@ -167,7 +176,8 @@ void ShapeStructural<kind>::interpolateOnIntegrationPoints(
   auto nb_quad_points_per_element = integration_points(type, ghost_type).cols();
 
   Array<Real> u_el(0, nb_nodes_per_element * nb_dof);
-  FEEngine::extractNodalToElementField<type>(mesh, in_u, u_el, ghost_type, filter_elements);
+  FEEngine::extractNodalToElementField<type>(mesh, in_u, u_el, ghost_type,
+                                             filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
   out_uq.resize(nb_quad_points);
@@ -203,9 +213,8 @@ void ShapeStructural<kind>::interpolateOnIntegrationPoints(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::gradientOnIntegrationPoints(
-    const Array<Real> & in_u, Array<Real> & out_nablauq,
-    UInt nb_dof, const GhostType & ghost_type,
-    const Array<UInt> & filter_elements) const {
+    const Array<Real> & in_u, Array<Real> & out_nablauq, UInt nb_dof,
+    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   auto itp_type = FEEngine::getInterpolationType(type);
@@ -217,17 +226,17 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
 
   Array<Real> u_el(0, nb_nodes_per_element * nb_dof);
-  FEEngine::extractNodalToElementField<type>(mesh, in_u, u_el,
-                                             ghost_type, filter_elements);
+  FEEngine::extractNodalToElementField<type>(mesh, in_u, u_el, ghost_type,
+                                             filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
   out_nablauq.resize(nb_quad_points);
 
-  auto out_it = out_nablauq.begin_reinterpret(element_dimension, 1, nb_quad_points_per_element,
-                                              u_el.size());
-  auto shapesd_it =
-      shapesd.begin_reinterpret(element_dimension, nb_dof * nb_nodes_per_element,
-                                nb_quad_points_per_element, nb_element);
+  auto out_it = out_nablauq.begin_reinterpret(
+      element_dimension, 1, nb_quad_points_per_element, u_el.size());
+  auto shapesd_it = shapesd.begin_reinterpret(
+      element_dimension, nb_dof * nb_nodes_per_element,
+      nb_quad_points_per_element, nb_element);
   auto u_it = u_el.begin_reinterpret(nb_dof * nb_nodes_per_element, 1,
                                      nb_quad_points_per_element, u_el.size());
 
@@ -247,7 +256,6 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
     ++out_it;
     ++u_it;
   });
-
 
   AKANTU_DEBUG_OUT();
 }

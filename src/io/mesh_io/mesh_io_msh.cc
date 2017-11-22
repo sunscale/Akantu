@@ -233,7 +233,7 @@ MeshIOMSH::MeshIOMSH() {
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   _akantu_to_msh_element_types[_bernoulli_beam_2] = _msh_segment_2;
   _akantu_to_msh_element_types[_bernoulli_beam_3] = _msh_segment_2;
-  _akantu_to_msh_element_types[_kirchhoff_shell] = _msh_triangle_3;
+  _akantu_to_msh_element_types[_discrete_kirchhoff_triangle_18] = _msh_triangle_3;
 #endif
 
   std::map<ElementType, MSHElementType>::iterator it;

@@ -38,11 +38,12 @@
 #include "sparse_matrix.hh"
 #include "integrator_gauss.hh"
 #include "shape_structural.hh"
-#include "mesh.cc"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_elemental_field.hh"
 #include "dumper_paraview.hh"
+#include "dumpable_inline_impl.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model_inline_impl.cc"
@@ -85,13 +86,13 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 StructuralMechanicsModel::~StructuralMechanicsModel() = default;
 
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::setTimeStep(Real time_step) {
-  this->time_step = time_step;
+// void StructuralMechanicsModel::setTimeStep(Real time_step) {
+//   this->time_step = time_step;
 
-#if defined(AKANTU_USE_IOHELPER)
-  this->mesh.getDumper().setTimeStep(time_step);
-#endif
-}
+// #if defined(AKANTU_USE_IOHELPER)
+//   this->mesh.getDumper().setTimeStep(time_step);
+// #endif
+// }
 
 /* -------------------------------------------------------------------------- */
 /* Initialisation                                                             */
@@ -148,8 +149,7 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 
   getDOFManager().getMatrix("K").clear();
 
-  for (auto & type : mesh.elementTypes(_spatial_dimension = spatial_dimension,
-                     _element_kind = _ek_structural)) {
+  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
 #define ASSEMBLE_STIFFNESS_MATRIX(type) assembleStiffnessMatrix<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(ASSEMBLE_STIFFNESS_MATRIX);
@@ -163,8 +163,7 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 void StructuralMechanicsModel::computeStresses() {
   AKANTU_DEBUG_IN();
 
-  for (auto & type : mesh.elementTypes(_spatial_dimension = spatial_dimension,
-                     _element_kind = _ek_structural)) {
+  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
 #define COMPUTE_STRESS_ON_QUAD(type) computeStressOnQuad<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(COMPUTE_STRESS_ON_QUAD);

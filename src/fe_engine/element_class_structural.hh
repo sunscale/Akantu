@@ -62,12 +62,24 @@ public:
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
                                    Tensor3<Real> & N) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    for (UInt i = 0; i < natural_coord.cols(); ++i) {
+      Matrix<Real> n_t = N(i);
+      computeShapes(natural_coord(i), n_t);
+    }
   }
 
   /// compute the shape values for a given point in natural coordinates
   static inline void computeShapes(const Vector<Real> & natural_coord,
                                    Matrix<Real> & N);
+
+
+  /// compute shape derivatives (input is dxds) for a set of points
+  static inline void computeShapeDerivatives(const Tensor3<Real> & /*Js*/,
+                                             const Tensor3<Real> & /*DNDSs*/,
+                                             Tensor3<Real> & /*Bs*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
   /**
    * compute @f$ B_{ij} = \frac{\partial N_j}{\partial S_i} @f$ the variation of
    * shape functions along with variation of natural coordinates on a given set
@@ -113,8 +125,7 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(
       NbDegreeOfFreedom, interpolation_property::nb_degree_of_freedom, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
-      VoigtSize, interpolation_property::voigt_size, UInt);
-
+      NbStressComponents, interpolation_property::nb_stress_components, UInt);
 };
 
 /// Macro to generate the element class structures for different structural
@@ -151,33 +162,19 @@ protected:
       ElementClass<ElementClassProperty<element_type>::parent_element_type>;
 
 public:
-  /// compute shape derivatives (input is dxds) for a set of points
-  static inline void
-  computeShapeDerivatives(const Matrix<Real> & natural_coord,
-                          Tensor3<Real> & shape_deriv,
-                          const Matrix<Real> & real_nodal_coord) {
-    UInt nb_points = natural_coord.cols();
-
-    // compute dnds
-    Tensor3<Real> dnds(real_nodal_coord.rows(), real_nodal_coord.cols(),
-                       natural_coord.cols());
-    ElementClass<element_type>::computeDNDS(natural_coord, dnds);
-    // compute jacobian
-    Tensor3<Real> J(real_nodal_coord.rows(), natural_coord.rows(),
-                    natural_coord.cols());
-    ElementClass<element_type>::computeJMat(dnds, real_nodal_coord, J);
-
-    // compute dndx
-    ElementClass<element_type>::computeShapeDerivatives(J, dnds, shape_deriv);
-
-  }
-
   /// compute jacobian (or integration variable change factor) for a given point
-  static inline void computeJMat(const Tensor3<Real> & natural_coords,
-                                 const Matrix<Real> & nodal_coords,
-                                 Tensor3<Real> & jacobian) {
+  static inline void computeJMat(const Tensor3<Real> & /*DNDSs*/,
+                                 const Matrix<Real> & /*Xs*/,
+                                 Tensor3<Real> & /*Js*/) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
+
+  static inline void computeJacobian(const Matrix<Real> & /*natural_coords*/,
+                                     const Matrix<Real> & /*node_coords*/,
+                                     Vector<Real> & /*jacobians*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);
@@ -194,9 +191,11 @@ public:
 
 } // namespace akantu
 
+/* -------------------------------------------------------------------------- */
 #include "element_classes/element_class_hermite_inline_impl.cc"
-
+/* keep order */
 #include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
-//#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+/* -------------------------------------------------------------------------- */
 
 #endif /* __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__ */

@@ -46,7 +46,7 @@
 #include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#define TYPE _kirchhoff_shell
+#define TYPE _discrete_kirchhoff_triangle_18
 
 using namespace akantu;
 

@@ -42,7 +42,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeTangentModuli(
-    Array<Real> & tangent_moduli) {
+    Array<Real> & /*tangent_moduli*/) {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 } // namespace akantu
@@ -61,7 +61,7 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
   auto nb_element = getFEEngine().getMesh().getNbElement(type);
   auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   auto nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
-  auto tangent_size = ElementClass<type>::getVoigtSize();
+  auto tangent_size = ElementClass<type>::getNbStressComponents();
 
   auto tangent_moduli = std::make_unique<Array<Real>>(
       nb_element * nb_quadrature_points, tangent_size * tangent_size,
@@ -114,7 +114,7 @@ void StructuralMechanicsModel::computeStressOnQuad() {
   auto nb_element = mesh.getNbElement(type);
   auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   auto nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
-  auto tangent_size = ElementClass<type>::getVoigtSize();
+  auto tangent_size = ElementClass<type>::getNbStressComponents();
 
   auto tangent_moduli = std::make_unique<Array<Real>>(
       nb_element * nb_quadrature_points, tangent_size * tangent_size,
@@ -136,7 +136,7 @@ void StructuralMechanicsModel::computeStressOnQuad() {
 
   for (UInt e = 0; e < nb_element; ++e) {
     for (UInt q = 0; q < nb_quadrature_points; ++q, ++B, ++D, ++D_B) {
-      D_B->mul<false, false>(*D, *B);
+      D_B->template mul<false, false>(*D, *B);
     }
   }
 
@@ -155,11 +155,9 @@ void StructuralMechanicsModel::computeStressOnQuad() {
   for (UInt e = 0; e < nb_element; ++e, ++T, ++ug) {
     ul.mul<false>(*T, *ug);
     for (UInt q = 0; q < nb_quadrature_points; ++q, ++D_B, ++DBu) {
-      DBu->mul<false>(*D_B, ul);
+      DBu->template mul<false>(*D_B, ul);
     }
   }
-
-  delete d_b;
 
   AKANTU_DEBUG_OUT();
 }
@@ -170,6 +168,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
     const Array<Real> & tractions) {
   AKANTU_DEBUG_IN();
 
+#if 0
   UInt nb_element = getFEEngine().getMesh().getNbElement(type);
   UInt nb_nodes_per_element =
       getFEEngine().getMesh().getNbNodesPerElement(type);
@@ -239,6 +238,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
   getFEEngine().assembleArray(int_funct, *force_momentum,
                               dof_synchronizer->getLocalDOFEquationNumbers(),
                               nb_degree_of_freedom, type);
+#endif
   AKANTU_DEBUG_OUT();
 }
 
@@ -247,6 +247,7 @@ template <ElementType type>
 void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
     const Array<Real> & traction_global) {
   AKANTU_DEBUG_IN();
+#if 0
   UInt nb_element = mesh.getNbElement(type);
   UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_nodes_per_element =
@@ -282,7 +283,7 @@ void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
   }
 
   computeForcesByLocalTractionArray<type>(traction_local);
-
+#endif
   AKANTU_DEBUG_OUT();
 }
 
@@ -291,6 +292,7 @@ void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
  * @param myf pointer  to a function that fills a  vector/tensor with respect to
  * passed coordinates
  */
+#if 0
 template <ElementType type>
 inline void StructuralMechanicsModel::computeForcesFromFunction(
     BoundaryFunction myf, BoundaryFunctionType function_type) {
@@ -355,7 +357,7 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(
     break;
   }
 }
-
+#endif
 } // namespace akantu
 
 #endif /* __AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_CC__ */

@@ -37,22 +37,22 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_kirchhoff_shell,
+AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_discrete_kirchhoff_triangle_18,
                                                      _itp_lagrange_triangle_3,
-                                                     3, 6, 6);
-AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_kirchhoff_shell,
+                                                     6, 6);
+AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_discrete_kirchhoff_triangle_18,
                                                 _gt_triangle_3,
-                                                _itp_kirchhoff_shell,
+                                                _itp_discrete_kirchhoff_triangle_18,
                                                 _triangle_3, _ek_structural, 3,
                                                 _git_triangle, 2);
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void InterpolationElement<_itp_kirchhoff_shell>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N,
-    const Matrix<Real> & projected_coord) {
+inline void InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeShapes(
+    const Vector<Real> & /*natural_coords*/, Matrix<Real> & /*N*/) {
   //   // projected_coord (x1 x2 x3) (y1 y2 y3)
 
+#if 0
   // natural coordinate
   Real xi = natural_coords(0);
   Real eta = natural_coords(1);
@@ -130,15 +130,17 @@ inline void InterpolationElement<_itp_kirchhoff_shell>::computeShapes(
     {   0.,    0., Ny1(0), Ny2(0), Ny3(0),    0.,    0., Ny1(1), Ny2(1), Ny3(1),    0.,    0., Ny1(2), Ny2(2), Ny3(2)},  // 4
     {   0,     0.,     0.,     0.,     0.,    0.,    0.,     0.,     0.,     0.,    0.,    0.,     0.,     0.,     0.}}; // 5 ???
   // clang-format on
+
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-InterpolationElement<_itp_kirchhoff_shell, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B,
-    const Matrix<Real> & projected_coord) {
+InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
+    const Vector<Real> & /*natural_coords*/, Matrix<Real> & /*B*/) {
 
+#if 0
   // natural coordinate
   Real xi = natural_coords(0);
   Real eta = natural_coords(1);
@@ -275,74 +277,7 @@ InterpolationElement<_itp_kirchhoff_shell, _itk_structural>::computeDNDS(
        {  0.,   0.,          Ny1p10,          Ny2p10,          Ny3p10,     0.,   0.,          Ny1p11,          Ny2p11,          Ny3p11,   0.,   0.,          Ny1p12,          Ny2p12,          Ny3p12},  // 4
        {  0.,   0., Nx1p10 + Ny1p00, Nx2p10 + Ny2p00, Nx3p10 + Ny3p00,     0.,   0., Nx1p11 + Ny1p01, Nx2p11 + Ny2p01, Nx3p11 + Ny3p01,   0.,   0., Nx1p12 + Ny1p02, Nx2p12 + Ny2p02, Nx3p12 + Ny3p02}}; // 5
   // clang-format on
-}
-
-/* --------------------------------------------------------------------------
- */
-template <>
-inline void
-ElementClass<_kirchhoff_shell, _ek_structural>::computeShapeDerivatives(
-    const Matrix<Real> & /*natural_coord*/, Tensor3<Real> & /*shape_deriv*/,
-    const Matrix<Real> & /*real_nodal_coord*/) {
-
-  /// TO BE CONTINUED and moved in a _tmpl.hh
-  // UInt spatial_dimension = real_nodal_coord.cols();
-  //   UInt nb_nodes = real_nodal_coord.rows();
-
-  //   const UInt projected_dim = natural_coord.rows();
-  //   Matrix<Real> rotation_matrix(real_nodal_coord);
-  //   Matrix<Real> rotated_nodal_coord(real_nodal_coord);
-  //   Matrix<Real> projected_nodal_coord(natural_coord);
-  //   /*
-  //   ------------------------------------------------------------------------
-  //   */ Matrix<Real> Pe(real_nodal_coord); Matrix<Real>
-  //   Pg(real_nodal_coord); Matrix<Real> inv_Pg(real_nodal_coord);
-
-  //   /// compute matrix Pe
-  //   Pe.eye();
-
-  //   // /// compute matrix Pg
-  //   // Pg(0) = real_nodal_coord(1) - real_nodal_coord(0);
-  //   // Pg(1) = real_nodal_coord(2) - real_nodal_coord(0);
-  //   // Pg(2).crossProduct(Pg(0), Pg(1));
-
-  //   // /// compute inverse of Pg
-  //   // inv_Pg.inverse(Pg);
-
-  //   /// compute rotation matrix
-  //   // rotation_matrix=Pe*inv_Pg;
-  //   rotation_matrix.eye();
-
-  //   /*
-  //   ------------------------------------------------------------------------
-  //   */ rotated_nodal_coord.mul<false, false>(rotation_matrix,
-  //   real_nodal_coord);
-
-  //   UInt nb_points = shape_deriv.size(2);
-
-  //   for (UInt i = 0; i < projected_dim; ++i) {
-  //     for (UInt j = 0; j < nb_points; ++j) {
-  //       projected_nodal_coord(i, j) = rotated_nodal_coord(i, j);
-  //     }
-  //   }
-
-  //   Tensor3<Real> dnds(projected_dim, nb_nodes, natural_coord.cols());
-  //   Tensor3<Real> J(projected_dim, projected_dim, natural_coord.cols());
-
-  //   parent_element::computeDNDS(natural_coord, dnds);
-  //   parent_element::computeJMat(dnds, projected_nodal_coord, J);
-
-  //   for (UInt p = 0; p < nb_points; ++p) {
-  //     Matrix<Real> shape_deriv_p = shape_deriv(p);
-
-  //     interpolation_element::computeDNDS(natural_coord(p), shape_deriv_p,
-  //                                        projected_nodal_coord);
-
-  //     Matrix<Real> dNdS = shape_deriv_p;
-  //     Matrix<Real> inv_J(projected_dim, projected_dim);
-  //     inv_J.inverse(J(p));
-  //     shape_deriv_p.mul<false, false>(inv_J, dNdS);
-  //   }
+#endif
 }
 
 } // namespace akantu

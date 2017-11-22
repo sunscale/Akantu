@@ -42,20 +42,20 @@ namespace akantu {
 template <>
 inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   AKANTU_DEBUG_IN();
-
+#if 0
   const ElementType type = _bernoulli_beam_2;
 
   auto & fem = getFEEngineClass<MyFEEngineType>();
   auto nb_element = mesh.getNbElement(type);
   auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
   auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
-  auto nb_fields_to_interpolate = ElementClass<type>::getVoigtSize();
+  auto nb_fields_to_interpolate = ElementClass<type>::getNbStressComponents();
   auto nt_n_field_size = nb_degree_of_freedom * nb_nodes_per_element;
 
   Array<Real> n(nb_element * nb_quadrature_points,
                 nb_fields_to_interpolate * nt_n_field_size, "N");
 
-  const auto & N_star = fem.getShapes(type);
+  //const auto & N_star = fem.getShapes(type);
 
   // for
 
@@ -66,7 +66,7 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
 
   bool sign = true;
 
-  for (auto ghost_type : ghost_types) {
+  //for (auto && ghost_type : ghost_types) {
     // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
     // n,
     //                         0, 0, 0, sign, ghost_type); // Ni ui -> u
@@ -79,11 +79,12 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
     // fem.assembleFieldMatrix(*rho_field, nb_degree_of_freedom, *mass_matrix,
     // n,
     //                         rotation_matrix, type, ghost_type);
-  }
+  //}
 
   // delete n;
   delete rho_field;
   AKANTU_DEBUG_OUT();
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
@@ -117,7 +118,7 @@ void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_2>(
 template <>
 void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
     Array<Real> & tangent_moduli) {
-  auto nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
+  //auto nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
   auto nb_quadrature_points =
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
   auto tangent_size = 2;

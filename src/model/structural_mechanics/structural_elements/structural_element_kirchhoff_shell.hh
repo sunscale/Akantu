@@ -35,23 +35,18 @@
 
 namespace akantu {
 
-inline UInt
-StructuralMechanicsModel::getTangentStiffnessVoigtSize<_bernoulli_kirchhoff_shell>() {
-  return 6;
-}
-
 /* -------------------------------------------------------------------------- */
 template <>
-inline void StructuralMechanicsModel::assembleMass<_kirchhoff_shell>() {
+inline void StructuralMechanicsModel::assembleMass<_discrete_kirchhoff_triangle_18>() {
 
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
-void StructuralMechanicsModel::computeRotationMatrix<_kirchhoff_shell>(
+void StructuralMechanicsModel::computeRotationMatrix<_discrete_kirchhoff_triangle_18>(
     Array<Real> & rotations) {
-  ElementType type = _kirchhoff_shell;
+  ElementType type = _discrete_kirchhoff_triangle_18;
   Mesh & mesh = getFEEngine().getMesh();
   UInt nb_element = mesh.getNbElement(type);
 
@@ -107,144 +102,6 @@ void StructuralMechanicsModel::computeRotationMatrix<_kirchhoff_shell>(
   }
 }
 
-/* -------------------------------------------------------------------------- */
-template <>
-void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
-    Array<Real> & tangent_moduli) {
-  UInt nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_3);
-  UInt nb_quadrature_points =
-      getFEEngine().getNbIntegrationPoints(_bernoulli_beam_3);
-  UInt tangent_size = 4;
-
-  Array<Real>::matrix_iterator D_it =
-      tangent_moduli.begin(tangent_size, tangent_size);
-
-  for (UInt e = 0; e < nb_element; ++e) {
-    UInt mat = element_material(_bernoulli_beam_3, _not_ghost)(e);
-    Real E = materials[mat].E;
-    Real A = materials[mat].A;
-    Real Iz = materials[mat].Iz;
-    Real Iy = materials[mat].Iy;
-    Real GJ = materials[mat].GJ;
-    for (UInt q = 0; q < nb_quadrature_points; ++q, ++D_it) {
-      Matrix<Real> & D = *D_it;
-      D(0, 0) = E * A;
-      D(1, 1) = E * Iz;
-      D(2, 2) = E * Iy;
-      D(3, 3) = GJ;
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template <>
-void StructuralMechanicsModel::transferBMatrixToSymVoigtBMatrix<
-    _kirchhoff_shell>(Array<Real> & b, __attribute__((unused)) bool local) {
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
-
-  UInt nb_element = getFEEngine().getMesh().getNbElement(_kirchhoff_shell);
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(_kirchhoff_shell);
-  UInt nb_quadrature_points =
-      getFEEngine().getNbIntegrationPoints(_kirchhoff_shell);
-
-  Array<Real>::const_matrix_iterator shape_Np =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 0)
-          .begin(2, nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator shape_Nx1p =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 1)
-          .begin(2, nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator shape_Nx2p =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 2)
-          .begin(2, nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator shape_Nx3p =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 3)
-          .begin(2, nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator shape_Ny1p =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 4)
-          .begin(2, nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator shape_Ny2p =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 5)
-          .begin(2, nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator shape_Ny3p =
-      fem.getShapesDerivatives(_kirchhoff_shell, _not_ghost, 6)
-          .begin(2, nb_nodes_per_element);
-
-  UInt tangent_size = getTangentStiffnessVoigtSize<_kirchhoff_shell>();
-  UInt bt_d_b_size = nb_nodes_per_element * nb_degree_of_freedom;
-
-  b.clear();
-
-  Array<Real>::matrix_iterator B_it = b.begin(tangent_size, bt_d_b_size);
-
-  for (UInt e = 0; e < nb_element; ++e) {
-    for (UInt q = 0; q < nb_quadrature_points; ++q) {
-      Matrix<Real> & B = *B_it;
-
-      const Matrix<Real> & Np = *shape_Np;
-      const Matrix<Real> & Nx1p = *shape_Nx1p;
-      const Matrix<Real> & Nx2p = *shape_Nx2p;
-      const Matrix<Real> & Nx3p = *shape_Nx3p;
-      const Matrix<Real> & Ny1p = *shape_Ny1p;
-      const Matrix<Real> & Ny2p = *shape_Ny2p;
-      const Matrix<Real> & Ny3p = *shape_Ny3p;
-
-      B(0, 0) = Np(0, 0);
-      B(0, 6) = Np(0, 1);
-      B(0, 12) = Np(0, 2);
-
-      B(1, 1) = Np(1, 0);
-      B(1, 7) = Np(1, 1);
-      B(1, 13) = Np(1, 2);
-
-      B(2, 0) = Np(1, 0);
-      B(2, 1) = Np(0, 0);
-      B(2, 6) = Np(1, 1);
-      B(2, 7) = Np(0, 1);
-      B(2, 12) = Np(1, 2);
-      B(2, 13) = Np(0, 2);
-
-      B(3, 2) = Nx1p(0, 0);
-      B(3, 3) = Nx2p(0, 0);
-      B(3, 4) = Nx3p(0, 0);
-      B(3, 8) = Nx1p(0, 1);
-      B(3, 9) = Nx2p(0, 1);
-      B(3, 10) = Nx3p(0, 1);
-      B(3, 14) = Nx1p(0, 2);
-      B(3, 15) = Nx2p(0, 2);
-      B(3, 16) = Nx3p(0, 2);
-
-      B(4, 2) = Ny1p(1, 0);
-      B(4, 3) = Ny2p(1, 0);
-      B(4, 4) = Ny3p(1, 0);
-      B(4, 8) = Ny1p(1, 1);
-      B(4, 9) = Ny2p(1, 1);
-      B(4, 10) = Ny3p(1, 1);
-      B(4, 14) = Ny1p(1, 2);
-      B(4, 15) = Ny2p(1, 2);
-      B(4, 16) = Ny3p(1, 2);
-
-      B(5, 2) = Nx1p(1, 0) + Ny1p(0, 0);
-      B(5, 3) = Nx2p(1, 0) + Ny2p(0, 0);
-      B(5, 4) = Nx3p(1, 0) + Ny3p(0, 0);
-      B(5, 8) = Nx1p(1, 1) + Ny1p(0, 1);
-      B(5, 9) = Nx2p(1, 1) + Ny2p(0, 1);
-      B(5, 10) = Nx3p(1, 1) + Ny3p(0, 1);
-      B(5, 14) = Nx1p(1, 2) + Ny1p(0, 2);
-      B(5, 15) = Nx2p(1, 2) + Ny2p(0, 2);
-      B(5, 16) = Nx3p(1, 2) + Ny3p(0, 2);
-
-      ++B_it;
-      ++shape_Np;
-      ++shape_Nx1p;
-      ++shape_Nx2p;
-      ++shape_Nx3p;
-      ++shape_Ny1p;
-      ++shape_Ny2p;
-      ++shape_Ny3p;
-    }
-  }
-}
-
 }  // akantu
 
-#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__ */
+#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_DISCRETE_KIRCHHOFF_TRIANGLE_18_HH__ */

@@ -37,16 +37,11 @@
 
 namespace akantu {
 
-inline UInt
-StructuralMechanicsModel::getTangentStiffnessVoigtSize<_bernoulli_beam_3>() {
-  return 4;
-}
-
 /* -------------------------------------------------------------------------- */
 template <>
 inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_3>() {
   AKANTU_DEBUG_IN();
-
+#if 0
   GhostType ghost_type = _not_ghost;
   ElementType type = _bernoulli_beam_3;
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
@@ -92,6 +87,7 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_3>() {
 
   delete n;
   delete rho_field;
+#endif
   AKANTU_DEBUG_OUT();
 }
 
@@ -187,65 +183,6 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
   }
 }
 
-/* -------------------------------------------------------------------------- */
-template <>
-void StructuralMechanicsModel::transferBMatrixToSymVoigtBMatrix<
-    _bernoulli_beam_3>(Array<Real> & b, bool) {
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
-
-  UInt nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_3);
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(_bernoulli_beam_3);
-  UInt nb_quadrature_points =
-      getFEEngine().getNbIntegrationPoints(_bernoulli_beam_3);
-
-  Array<Real>::const_vector_iterator shape_Np =
-      fem.getShapesDerivatives(_bernoulli_beam_3, _not_ghost, 0)
-          .begin(nb_nodes_per_element);
-  Array<Real>::const_vector_iterator shape_Mpp =
-      fem.getShapesDerivatives(_bernoulli_beam_3, _not_ghost, 1)
-          .begin(nb_nodes_per_element);
-  Array<Real>::const_vector_iterator shape_Lpp =
-      fem.getShapesDerivatives(_bernoulli_beam_3, _not_ghost, 2)
-          .begin(nb_nodes_per_element);
-
-  UInt tangent_size = getTangentStiffnessVoigtSize<_bernoulli_beam_3>();
-  UInt bt_d_b_size = nb_nodes_per_element * nb_degree_of_freedom;
-
-  b.clear();
-
-  Array<Real>::matrix_iterator B_it = b.begin(tangent_size, bt_d_b_size);
-
-  for (UInt e = 0; e < nb_element; ++e) {
-    for (UInt q = 0; q < nb_quadrature_points; ++q) {
-      Matrix<Real> & B = *B_it;
-
-      const Vector<Real> & Np = *shape_Np;
-      const Vector<Real> & Lpp = *shape_Lpp;
-      const Vector<Real> & Mpp = *shape_Mpp;
-
-      B(0, 0) = Np(0);
-      B(0, 6) = Np(1);
-
-      B(1, 1) = Mpp(0);
-      B(1, 5) = Lpp(0);
-      B(1, 7) = Mpp(1);
-      B(1, 11) = Lpp(1);
-
-      B(2, 2) = Mpp(0);
-      B(2, 4) = -Lpp(0);
-      B(2, 8) = Mpp(1);
-      B(2, 10) = -Lpp(1);
-
-      B(3, 3) = Np(0);
-      B(3, 9) = Np(1);
-
-      ++B_it;
-      ++shape_Np;
-      ++shape_Mpp;
-      ++shape_Lpp;
-    }
-  }
-}
 
 }  // akantu
 

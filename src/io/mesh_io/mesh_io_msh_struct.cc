@@ -44,13 +44,13 @@ MeshIOMSHStruct::MeshIOMSHStruct() : MeshIOMSH() {
   _msh_to_akantu_element_types.clear();
   _msh_to_akantu_element_types[_msh_not_defined   ] = _not_defined;
   _msh_to_akantu_element_types[_msh_segment_2     ] = _bernoulli_beam_2;
-  _msh_to_akantu_element_types[_msh_triangle_3    ] = _kirchhoff_shell;
+  _msh_to_akantu_element_types[_msh_triangle_3    ] = _discrete_kirchhoff_triangle_18;
 
   _akantu_to_msh_element_types.clear();
   _akantu_to_msh_element_types[_not_defined     ] = _msh_not_defined;
   _akantu_to_msh_element_types[_bernoulli_beam_2] = _msh_segment_2;
   _akantu_to_msh_element_types[_bernoulli_beam_3] = _msh_segment_2;
-  _akantu_to_msh_element_types[_kirchhoff_shell] = _msh_triangle_3;
+  _akantu_to_msh_element_types[_discrete_kirchhoff_triangle_18] = _msh_triangle_3;
 
   std::map<ElementType, MSHElementType>::iterator it;
   for(it = _akantu_to_msh_element_types.begin();

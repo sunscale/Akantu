@@ -96,6 +96,8 @@ public:
                    __attribute__((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
+protected:
+  ElementTypeMapArray<Real> rotation_matrices;
 };
 
 } // namespace akantu
