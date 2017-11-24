@@ -76,19 +76,17 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 
   const auto & b = getFEEngine().getShapesDerivatives(type);
 
-  Matrix<Real> Bt_D(bt_d_b_size, tangent_size);
+  Matrix<Real> BtD(bt_d_b_size, tangent_size);
 
-  auto B = b.begin(tangent_size, bt_d_b_size);
-  auto D = tangent_moduli->begin(tangent_size, tangent_size);
-  auto Bt_D_B = bt_d_b->begin(bt_d_b_size, bt_d_b_size);
-  auto T = rotation_matrix(type).begin(bt_d_b_size, bt_d_b_size);
-
-  for (UInt e = 0; e < nb_element; ++e, ++T) {
-    for (UInt q = 0; q < nb_quadrature_points; ++q, ++B, ++D, ++Bt_D_B) {
-      auto BT = *B * *T;
-      Bt_D.mul<true, false>(BT, *D);
-      Bt_D_B->mul<false, false>(Bt_D, BT);
-    }
+  for (auto && tuple :
+       zip(make_view(b, tangent_size, bt_d_b_size),
+           make_view(*tangent_moduli, tangent_size, tangent_size),
+           make_view(*bt_d_b, bt_d_b_size, bt_d_b_size))) {
+    auto & B = std::get<0>(tuple);
+    auto & D = std::get<1>(tuple);
+    auto & BtDB = std::get<2>(tuple);
+    BtD.mul<true, false>(B, D);
+    BtDB.template mul<false, false>(BtD, B);
   }
 
   /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$

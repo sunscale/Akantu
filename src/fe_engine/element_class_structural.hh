@@ -175,6 +175,9 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+  static inline void computeRotation(const Matrix<Real> & node_coords,
+				     Matrix<Real> & rotation);
+
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);

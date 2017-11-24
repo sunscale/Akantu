@@ -81,6 +81,11 @@ public:
   precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
                                                 const GhostType & ghost_type);
 
+  /// pre compute all rotation matrices
+  template <ElementType type>
+  void precomputeRotationMatrices(const Array<Real> & nodes,
+                                  const GhostType & ghost_type);
+
   /// interpolate nodal values on the integration points
   template <ElementType type>
   void interpolateOnIntegrationPoints(

@@ -303,6 +303,29 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   AKANTU_DEBUG_OUT();
 }
 
+template <ElementKind kind>
+template <ElementType type>
+void ShapeStructural<kind>::precomputeRotationMatrices(
+    const Array<Real> & nodes, const GhostType & ghost_type) {
+  auto element_dimension = ElementClass<type>::getSpatialDimension();
+  auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
+
+  Array<Real> x_el(0, nb_nodes_per_element * element_dimension);
+  FEEngine::extractNodalToElementField<type>(mesh, nodes, x_el, ghost_type);
+
+  rotation_matrices(type).resize(element_dimension * element_dimension *
+                                 x_el.size());
+
+  for (auto && tuple :
+       zip(make_view(rotation_matrices(type), element_dimension,
+                     element_dimension),
+           make_view(x_el, element_dimension, nb_nodes_per_element))) {
+    auto & R = std::get<0>(tuple);
+    auto & X = std::get<1>(tuple);
+    ElementClass<type>::computeRotation(X, R);
+  }
+}
+
 } // namespace akantu
 
 #endif /* __AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_CC__ */
