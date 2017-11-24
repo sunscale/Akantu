@@ -42,8 +42,8 @@ namespace akantu {
 template <>
 inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   AKANTU_DEBUG_IN();
-#if 0
-  const ElementType type = _bernoulli_beam_2;
+#if 1
+  constexpr ElementType type = _bernoulli_beam_2;
 
   auto & fem = getFEEngineClass<MyFEEngineType>();
   auto nb_element = mesh.getNbElement(type);

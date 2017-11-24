@@ -64,7 +64,6 @@ void StructuralMechanicsModel::assembleMass(){
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
-#if 0
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctor compute_rho(*this);
 
@@ -72,7 +71,6 @@ void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
     fem.assembleFieldMatrix(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }
-#endif
   AKANTU_DEBUG_OUT();
 }
 
