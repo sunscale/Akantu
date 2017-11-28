@@ -432,8 +432,8 @@ template <class Stored, typename SupportType>
 template <typename... pack>
 typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
 ElementTypeMap<Stored, SupportType>::elementTypesImpl(
-    const use_named_args_t & /*unused*/, pack &&... _pack) const {
-  return ElementTypesIteratorHelper(*this, use_named_args, _pack...);
+    const use_named_args_t & unused, pack &&... _pack) const {
+  return ElementTypesIteratorHelper(*this, unused, _pack...);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -601,7 +601,7 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
             OPTIONAL_NAMED_ARG(with_nb_element, false),
             OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false)),
         OPTIONAL_NAMED_ARG(default_value, T()),
-        OPTIONAL_NAMED_ARG(_do_not_default, false));
+        OPTIONAL_NAMED_ARG(do_not_default, false));
   }
 }
 
@@ -623,7 +623,7 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
                          ghost_type,
                          OPTIONAL_NAMED_ARG(element_kind, _ek_regular)),
                      OPTIONAL_NAMED_ARG(default_value, T()),
-                     OPTIONAL_NAMED_ARG(_do_not_default, false));
+                     OPTIONAL_NAMED_ARG(do_not_default, false));
   }
 }
 

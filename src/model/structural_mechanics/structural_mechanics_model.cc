@@ -44,6 +44,7 @@
 #include "dumper_elemental_field.hh"
 #include "dumper_paraview.hh"
 #include "dumpable_inline_impl.hh"
+#include "group_manager_inline_impl.cc"
 #endif
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model_inline_impl.cc"
@@ -135,7 +136,7 @@ void StructuralMechanicsModel::initSolver(
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::initModel() {
   for (auto && type :
-       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
+       mesh.elementTypes(_element_kind = _ek_structural)) {
     computeRotationMatrix(type);
   }
 
