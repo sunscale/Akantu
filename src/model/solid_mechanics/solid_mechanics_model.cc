@@ -615,15 +615,17 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type,
 Real SolidMechanicsModel::getExternalWork() {
   AKANTU_DEBUG_IN();
 
-  auto incr_or_velo_it = this->velocity->begin(Model::spatial_dimension);
-  if (this->method == _static) {
-    incr_or_velo_it =
-        this->displacement_increment->begin(Model::spatial_dimension);
-  }
-
   auto ext_force_it = external_force->begin(Model::spatial_dimension);
   auto int_force_it = internal_force->begin(Model::spatial_dimension);
   auto boun_it = blocked_dofs->begin(Model::spatial_dimension);
+
+  decltype(ext_force_it) incr_or_velo_it;
+  if (this->method == _static) {
+    incr_or_velo_it =
+        this->displacement_increment->begin(Model::spatial_dimension);
+  } else {
+    incr_or_velo_it = this->velocity->begin(Model::spatial_dimension);
+  }
 
   Real work = 0.;
 
@@ -654,6 +656,7 @@ Real SolidMechanicsModel::getExternalWork() {
 
   if (this->method != _static)
     work *= this->getTimeStep();
+  
   AKANTU_DEBUG_OUT();
   return work;
 }
