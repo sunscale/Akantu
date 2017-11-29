@@ -40,9 +40,9 @@ inline UInt MaterialCohesive::addFacet(const Element & element) {
 
 /* -------------------------------------------------------------------------- */
 template<ElementType type>
-void MaterialCohesive::computeNormal(const Array<Real> & position,
-				     Array<Real> & normal,
-				     GhostType ghost_type) {
+void MaterialCohesive::computeNormal(const Array<Real> & /*position*/,
+				     Array<Real> & /*normal*/,
+				     GhostType /*ghost_type*/) {
 }
 
 /* -------------------------------------------------------------------------- */

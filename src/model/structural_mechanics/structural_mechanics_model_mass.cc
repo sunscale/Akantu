@@ -62,7 +62,7 @@ void StructuralMechanicsModel::assembleMass(){
 }
 
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
+void StructuralMechanicsModel::assembleMass(GhostType /*ghost_type*/) {
   AKANTU_DEBUG_IN();
 #if 0
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();

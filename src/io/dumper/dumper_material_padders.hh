@@ -126,7 +126,7 @@ public:
 
   UInt getDim() override { return 9; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -163,7 +163,7 @@ public:
 
   UInt getDim() override { return 9; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -175,7 +175,7 @@ class ComputeStrain : public MaterialFunctor,
 public:
   ComputeStrain(const SolidMechanicsModel & model) : MaterialFunctor(model) {}
 
-  inline Matrix<Real> func(const Vector<Real> & in, Element /*global_element_id*/) {
+  inline Matrix<Real> func(const Vector<Real> & in, Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt ncols = in.size() / nrows;
     UInt nb_data = in.size() / (nrows * nrows);
@@ -206,7 +206,7 @@ public:
 
   UInt getDim() override { return spatial_dimension * spatial_dimension; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -221,7 +221,7 @@ public:
       : MaterialFunctor(model) {}
 
   inline Matrix<Real> func(const Vector<Real> & in,
-                           Element /*global_element_id*/) {
+                           Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt nb_data = in.size() / (nrows * nrows);
 
@@ -253,7 +253,7 @@ public:
 
   UInt getDim() override { return spatial_dimension; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -267,7 +267,7 @@ public:
       : MaterialFunctor(model) {}
 
   inline Vector<Real> func(const Vector<Real> & in,
-                           Element /*global_element_id*/) {
+                           Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt nb_data = in.size() / (nrows * nrows);
 
@@ -285,7 +285,7 @@ public:
 
   UInt getDim() override { return 1; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };

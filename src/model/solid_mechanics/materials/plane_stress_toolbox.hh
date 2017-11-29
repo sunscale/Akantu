@@ -28,7 +28,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "material.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PLANE_STRESS_TOOLBOX_HH__
@@ -66,17 +67,11 @@ protected:
 
 public:
   void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) override {
-    AKANTU_DEBUG_IN();
-
     ParentMaterial::computeAllCauchyStresses(ghost_type);
-
-    AKANTU_DEBUG_OUT();
   }
 
-  virtual void computeCauchyStressPlaneStress(__attribute__((unused))
-                                              ElementType el_type,
-                                              __attribute__((unused))
-                                              GhostType ghost_type) {
+  virtual void computeCauchyStressPlaneStress(ElementType /*el_type*/,
+                                              GhostType /*ghost_type*/) {
     AKANTU_DEBUG_IN();
 
     AKANTU_DEBUG_ERROR("The function \"computeCauchyStressPlaneStress\" can "
@@ -86,8 +81,10 @@ public:
     AKANTU_DEBUG_OUT();
   }
 
+  virtual void computeThirdAxisDeformation(ElementType, GhostType) {}
+
 protected:
-  bool initialize_third_axis_deformation;
+  bool initialize_third_axis_deformation{false};
 };
 
 #define AKANTU_PLANE_STRESS_TOOL_SPEC(dim)                                     \

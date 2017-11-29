@@ -80,7 +80,7 @@ public:
 
   /// Non linear computation of the third direction strain in 2D plane stress case
   void computeThirdAxisDeformation(ElementType el_type,
-                                   GhostType ghost_type = _not_ghost);
+                                   GhostType ghost_type = _not_ghost) override;
 
   /// compute the elastic potential energy
   void computePotentialEnergy(ElementType el_type,
