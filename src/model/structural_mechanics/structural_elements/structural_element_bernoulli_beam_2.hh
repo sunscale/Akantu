@@ -42,8 +42,7 @@ namespace akantu {
 template <>
 inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   AKANTU_DEBUG_IN();
-#if 0
-  const ElementType type = _bernoulli_beam_2;
+  constexpr ElementType type = _bernoulli_beam_2;
 
   auto & fem = getFEEngineClass<MyFEEngineType>();
   auto nb_element = mesh.getNbElement(type);
@@ -55,36 +54,28 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   Array<Real> n(nb_element * nb_quadrature_points,
                 nb_fields_to_interpolate * nt_n_field_size, "N");
 
-  //const auto & N_star = fem.getShapes(type);
-
-  // for
-
   Array<Real> * rho_field =
       new Array<Real>(nb_element * nb_quadrature_points, 1, "Rho");
   rho_field->clear();
   computeRho(*rho_field, type, _not_ghost);
 
+#if 0
   bool sign = true;
 
-  //for (auto && ghost_type : ghost_types) {
-    // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
-    // n,
-    //                         0, 0, 0, sign, ghost_type); // Ni ui -> u
-    // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
-    // n,
-    //                         1, 1, 1, sign, ghost_type); // Mi vi -> v
-    // fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element,
-    // n,
-    //                         2, 2, 1, sign, ghost_type); // Li Theta_i -> v
-    // fem.assembleFieldMatrix(*rho_field, nb_degree_of_freedom, *mass_matrix,
-    // n,
-    //                         rotation_matrix, type, ghost_type);
-  //}
+  for (auto && ghost_type : ghost_types) {
+    fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
+                            0, 0, 0, sign, ghost_type); // Ni ui -> u
+    fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
+                            1, 1, 1, sign, ghost_type); // Mi vi -> v
+    fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
+                            2, 2, 1, sign, ghost_type); // Li Theta_i -> v
+    fem.assembleFieldMatrix(*rho_field, nb_degree_of_freedom, *mass_matrix, n,
+                            rotation_matrix, type, ghost_type);
+  }
+#endif
 
-  // delete n;
   delete rho_field;
   AKANTU_DEBUG_OUT();
-#endif
 }
 
 /* -------------------------------------------------------------------------- */

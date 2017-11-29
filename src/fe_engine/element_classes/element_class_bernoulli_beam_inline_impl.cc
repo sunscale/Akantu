@@ -148,5 +148,18 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeDNDS(
   // clang-format on
 }
 
+template <>
+inline void ElementClass<_bernoulli_beam_2>::computeRotation(
+    const Matrix<Real> & node_coords, Matrix<Real> & rotation) {
+  auto X1 = node_coords(0);
+  auto X2 = node_coords(1);
+  auto vec = Vector<Real>(X2) - Vector<Real>(X1);
+  auto L = vec.norm();
+  auto c = vec(0) / L;
+  auto s = vec(1) / L;
+
+  rotation = {{c, -s}, {s, c}};
+}
+
 } // namespace akantu
 #endif /* __AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_CC__ */

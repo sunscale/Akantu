@@ -55,6 +55,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// compute shape functions on given integration points
+  template <ElementType type>
+  void computeShapesOnIntegrationPoints(
+      const Array<Real> &, const Matrix<Real> & integration_points,
+      Array<Real> & shapes, const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const;
+
   /// initialization function for structural elements
   inline void initShapeFunctions(const Array<Real> & nodes,
                                  const Matrix<Real> & integration_points,
@@ -73,6 +80,11 @@ public:
   void
   precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
                                                 const GhostType & ghost_type);
+
+  /// pre compute all rotation matrices
+  template <ElementType type>
+  void precomputeRotationMatrices(const Array<Real> & nodes,
+                                  const GhostType & ghost_type);
 
   /// interpolate nodal values on the integration points
   template <ElementType type>

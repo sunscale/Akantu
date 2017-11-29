@@ -64,6 +64,49 @@ inline void ShapeStructural<_ek_structural>::initShapeFunctions(
 /* -------------------------------------------------------------------------- */
 template <>
 template <ElementType type>
+void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
+    const Array<Real> & /*nodes*/, const Matrix<Real> & integration_points,
+    Array<Real> & shapes, const GhostType & ghost_type,
+    const Array<UInt> & filter_elements) const {
+
+  /// \TODO this code differs from ShapeLagrangeBase only in the size of N
+  UInt nb_points = integration_points.cols();
+  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
+
+  shapes.resize(nb_element * nb_points);
+
+  UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
+
+#if !defined(AKANTU_NDEBUG)
+  UInt size_of_shapes = ElementClass<type>::getShapeSize();
+  AKANTU_DEBUG_ASSERT(shapes.getNbComponent() == size_of_shapes,
+                      "The shapes array does not have the correct "
+                          << "number of component");
+#endif
+
+  auto shapes_it = shapes.begin_reinterpret(
+      ElementClass<type>::getNbNodesPerInterpolationElement(), ndof, nb_points,
+      nb_element);
+
+  auto shapes_begin = shapes_it;
+  if (filter_elements != empty_filter) {
+    nb_element = filter_elements.size();
+  }
+
+  for (UInt elem = 0; elem < nb_element; ++elem) {
+    if (filter_elements != empty_filter)
+      shapes_it = shapes_begin + filter_elements(elem);
+
+    Tensor3<Real> & N = *shapes_it;
+    ElementClass<type>::computeShapes(integration_points, N);
+
+    if (filter_elements == empty_filter)
+      ++shapes_it;
+  }
+}
+/* -------------------------------------------------------------------------- */
+template <>
+template <ElementType type>
 void ShapeStructural<_ek_structural>::precomputeShapesOnIntegrationPoints(
     const Array<Real> & /*nodes*/, const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
@@ -258,6 +301,29 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   });
 
   AKANTU_DEBUG_OUT();
+}
+
+template <ElementKind kind>
+template <ElementType type>
+void ShapeStructural<kind>::precomputeRotationMatrices(
+    const Array<Real> & nodes, const GhostType & ghost_type) {
+  auto element_dimension = ElementClass<type>::getSpatialDimension();
+  auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
+
+  Array<Real> x_el(0, nb_nodes_per_element * element_dimension);
+  FEEngine::extractNodalToElementField<type>(mesh, nodes, x_el, ghost_type);
+
+  rotation_matrices(type).resize(element_dimension * element_dimension *
+                                 x_el.size());
+
+  for (auto && tuple :
+       zip(make_view(rotation_matrices(type), element_dimension,
+                     element_dimension),
+           make_view(x_el, element_dimension, nb_nodes_per_element))) {
+    auto & R = std::get<0>(tuple);
+    auto & X = std::get<1>(tuple);
+    ElementClass<type>::computeRotation(X, R);
+  }
 }
 
 } // namespace akantu
