@@ -54,7 +54,7 @@ namespace {
   DECLARE_NAMED_ARGUMENT(with_nb_element);
   DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
   DECLARE_NAMED_ARGUMENT(spatial_dimension);
-  DECLARE_NAMED_ARGUMENT(_do_not_default);
+  DECLARE_NAMED_ARGUMENT(do_not_default);
 } // namespace
 
 template <class Stored, typename SupportType = ElementType>
@@ -210,19 +210,19 @@ private:
 
   template <typename... pack>
   using named_argument_test =
-      aka::conjunction<aka::bool_constant<(sizeof...(pack) > 0)>,
-                       is_named_argument<pack>...>;
+      aka::conjunction<is_named_argument<std::decay_t<pack>>...>;
 
 public:
   template <typename... pack>
-  std::enable_if_t<named_argument_test<pack...>{}, ElementTypesIteratorHelper>
+  std::enable_if_t<named_argument_test<pack...>::value,
+                   ElementTypesIteratorHelper>
   elementTypes(pack &&... _pack) const {
     return elementTypesImpl(use_named_args,
                             std::forward<decltype(_pack)>(_pack)...);
   }
 
   template <typename... pack>
-  std::enable_if_t<not named_argument_test<pack...>{},
+  std::enable_if_t<not named_argument_test<pack...>::value,
                    ElementTypesIteratorHelper>
   elementTypes(pack &&... _pack) const {
     return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);

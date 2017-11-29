@@ -248,7 +248,7 @@ endforeach()
 register_test(test_solid_mechanics_model_linear_elastic_potential_energy
   SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
   FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat
-  PACKAGE core
+  PACKAGE implicit
   GTEST
   )
 

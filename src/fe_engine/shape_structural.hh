@@ -45,11 +45,11 @@ template <ElementKind kind> class ShapeStructural : public ShapeFunctions {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef ElementTypeMap<Array<Real> **> ElementTypeMapMultiReal;
+  using ElementTypeMapMultiReal = ElementTypeMap<Array<Real> **>;
 
   ShapeStructural(Mesh & mesh, const ID & id = "shape_structural",
               const MemoryID & memory_id = 0);
-  virtual ~ShapeStructural();
+  ~ShapeStructural() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

@@ -2,12 +2,7 @@
 Language:                            Cpp
 BasedOnStyle:                        LLVM
 Standard:                            Cpp11
-IndentWidth:                         2
 TabWidth:                            4
-UseTab:                              Never
-ColumnLimit:                         80
-AccessModifierOffset:                -2
 PointerAlignment:                    Middle
 NamespaceIndentation:                Inner
-ContinuationIndentWidth:             4
 ...

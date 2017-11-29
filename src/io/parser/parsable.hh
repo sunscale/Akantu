@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "parser.hh"
 #include "parameter_registry.hh"
+#include "parser.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PARSABLE_HH__
@@ -70,7 +70,5 @@ private:
 };
 
 } // akantu
-
-#include "parsable_tmpl.hh"
 
 #endif /* __AKANTU_PARSABLE_HH__ */

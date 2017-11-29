@@ -23,10 +23,11 @@
 namespace akantu {
 
 namespace named_argument {
-  /* -- Pack utils (proxy version) --------------------------------------------
-   */
+  struct param_t_trait {};
+
+  /* -- Pack utils (proxy version) ------------------------------------------ */
   /// Proxy containing [tag, value]
-  template <typename tag, typename type> struct param_t {
+  template <typename tag, typename type> struct param_t : param_t_trait {
     using _tag = tag;
     using _type = type;
 
@@ -69,7 +70,12 @@ namespace named_argument {
     };
   };
 
-  template <typename T, typename head, typename... tail> struct type_at {
+  template <typename... Ts> struct type_at {
+    enum { _pos = -1 };
+  };
+
+  template <typename T, typename head, typename... tail>
+  struct type_at<T, head, tail...> {
     enum { _tmp = type_at_p<T, head, tail...>::_pos };
     enum { _pos = _tmp == 1 ? 0 : (_tmp == -1 ? -1 : _tmp - 1) };
   };
@@ -143,17 +149,8 @@ namespace {
 
 template <typename T> struct is_named_argument : public std::false_type {};
 
-template <typename tag, typename type>
-struct is_named_argument<named_argument::param_t<tag, type>>
-    : public std::true_type {};
-template <typename tag, typename type>
-struct is_named_argument<named_argument::param_t<tag, type &>>
-    : public std::true_type {};
-template <typename tag, typename type>
-struct is_named_argument<named_argument::param_t<tag, type &&>>
-    : public std::true_type {};
-template <typename tag, typename type>
-struct is_named_argument<named_argument::param_t<tag, const type &>>
+template <typename... type>
+struct is_named_argument<named_argument::param_t<type...>>
     : public std::true_type {};
 
 } // namespace akantu
