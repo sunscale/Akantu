@@ -37,66 +37,74 @@ add_akantu_test(test_cohesive "cohesive_test")
 add_akantu_test(test_embedded_interface "test_embedded_interface")
 
 #===============================================================================
-add_mesh(test_solid_mechanics_model_square_mesh square.geo 2 1)
-add_mesh(test_solid_mechanics_model_circle_mesh1 circle.geo 2 1 OUTPUT circle1.msh)
-add_mesh(test_solid_mechanics_model_circle_mesh2 circle.geo 2 2 OUTPUT circle2.msh)
+#merged in test_solid_mechanics_model_dynamics
+#add_mesh(test_solid_mechanics_model_square_mesh square.geo 2 1)
+#merged in test_solid_mechanics_model_dynamics
+#add_mesh(test_solid_mechanics_model_circle_mesh1 circle.geo 2 1 OUTPUT circle1.msh)
+#merged in test_solid_mechanics_model_dynamics
+#add_mesh(test_solid_mechanics_model_circle_mesh2 circle.geo 2 2 OUTPUT circle2.msh)
 
-register_test(test_solid_mechanics_model_square
-  SOURCES test_solid_mechanics_model_square.cc
-  DEPENDS test_solid_mechanics_model_square_mesh
-  FILES_TO_COPY material.dat test_cst_energy.pl
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
-
-register_test(test_solid_mechanics_model_circle_2
-  SOURCES test_solid_mechanics_model_circle_2.cc
-  DEPENDS test_solid_mechanics_model_circle_mesh2
-  FILES_TO_COPY material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
-
-#===============================================================================
-add_mesh(test_bar_traction_2d_mesh1 bar.geo 2 1 OUTPUT bar1.msh)
-add_mesh(test_bar_traction_2d_mesh2 bar.geo 2 2 OUTPUT bar2.msh)
-add_mesh(test_bar_traction_2d_mesh_structured1 bar_structured.geo 2 1 OUTPUT bar_structured1.msh)
-
-register_test(test_solid_mechanics_model_bar_traction2d
-  SOURCES test_solid_mechanics_model_bar_traction2d.cc
-  DEPENDS test_bar_traction_2d_mesh1 test_bar_traction_2d_mesh2
-  FILES_TO_COPY material.dat test_cst_energy.pl
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
-
-register_test(test_solid_mechanics_model_bar_traction2d_structured
-  SOURCES test_solid_mechanics_model_bar_traction2d_structured.cc
-  DEPENDS test_bar_traction_2d_mesh_structured1
-  FILES_TO_COPY material.dat test_cst_energy.pl
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
+#merged in test_solid_mechanics_model_dynamics
+#register_test(test_solid_mechanics_model_square
+#  SOURCES test_solid_mechanics_model_square.cc
+#  DEPENDS test_solid_mechanics_model_square_mesh
+#  FILES_TO_COPY material.dat test_cst_energy.pl
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE core
+#  )
+#
+#register_test(test_solid_mechanics_model_circle_2
+#  SOURCES test_solid_mechanics_model_circle_2.cc
+#  DEPENDS test_solid_mechanics_model_circle_mesh2
+#  FILES_TO_COPY material.dat
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE core
+#  )
+#
 
 #===============================================================================
-add_mesh(test_solid_mechanics_model_segment_mesh segment.geo 1 2)
+#merged in test_solid_mechanics_model_dynamics
+#add_mesh(test_bar_traction_2d_mesh1 bar.geo 2 1 OUTPUT bar1.msh)
+#add_mesh(test_bar_traction_2d_mesh2 bar.geo 2 2 OUTPUT bar2.msh)
+#add_mesh(test_bar_traction_2d_mesh_structured1 bar_structured.geo 2 1 OUTPUT bar_structured1.msh)
 
-register_test(test_solid_mechanics_model_bar_traction2d_parallel
-  SOURCES test_solid_mechanics_model_bar_traction2d_parallel.cc
-  DEPENDS test_bar_traction_2d_mesh2
-  FILES_TO_COPY material.dat test_cst_energy.pl
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE parallel
-  )
+#register_test(test_solid_mechanics_model_bar_traction2d
+#  SOURCES test_solid_mechanics_model_bar_traction2d.cc
+#  DEPENDS test_bar_traction_2d_mesh1 test_bar_traction_2d_mesh2
+#  FILES_TO_COPY material.dat test_cst_energy.pl
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE core
+#  )
+#
+#register_test(test_solid_mechanics_model_bar_traction2d_structured
+#  SOURCES test_solid_mechanics_model_bar_traction2d_structured.cc
+#  DEPENDS test_bar_traction_2d_mesh_structured1
+#  FILES_TO_COPY material.dat test_cst_energy.pl
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE core
+#  )
+#
+#===============================================================================
 
-register_test(test_solid_mechanics_model_segment_parallel
-  SOURCES test_solid_mechanics_model_segment_parallel.cc
-  DEPENDS test_solid_mechanics_model_segment_mesh
-  FILES_TO_COPY material.dat test_cst_energy.pl
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE parallel
-  )
-
+#merged in test_solid_mechanics_model_dynamics
+#add_mesh(test_solid_mechanics_model_segment_mesh segment.geo 1 2)
+#
+#register_test(test_solid_mechanics_model_bar_traction2d_parallel
+#  SOURCES test_solid_mechanics_model_bar_traction2d_parallel.cc
+#  DEPENDS test_bar_traction_2d_mesh2
+#  FILES_TO_COPY material.dat test_cst_energy.pl
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE parallel
+#  )
+#
+#register_test(test_solid_mechanics_model_segment_parallel
+#  SOURCES test_solid_mechanics_model_segment_parallel.cc
+#  DEPENDS test_solid_mechanics_model_segment_mesh
+#  FILES_TO_COPY material.dat test_cst_energy.pl
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE parallel
+#  )
+#
 #===============================================================================
 #register_test(test_solid_mechanics_model_bar_traction2d_mass_not_lumped
 #  SOURCES test_solid_mechanics_model_bar_traction2d_mass_not_lumped.cc
@@ -128,17 +136,19 @@ register_test(test_solid_mechanics_model_implicit_2d
   )
 
 #===============================================================================
-add_mesh(test_implicit_beam_2d_1 beam_2d.geo 2 1 OUTPUT beam_2d_lin.msh)
-add_mesh(test_implicit_beam_2d_2 beam_2d.geo 2 2 OUTPUT beam_2d_quad.msh)
-add_mesh(test_implicit_beam_3d_2 beam_3d.geo 3 2 OUTPUT beam_3d_quad.msh)
-add_mesh(test_implicit_beam_3d_1 beam_3d.geo 3 1 OUTPUT beam_3d_lin.msh)
-register_test(test_solid_mechanics_model_implicit_dynamic_2d
-  SOURCES test_solid_mechanics_model_implicit_dynamic_2d.cc
-  DEPENDS test_implicit_beam_2d_1 test_implicit_beam_2d_2 test_implicit_beam_3d_2 test_implicit_beam_3d_1
-  FILES_TO_COPY  material_implicit_dynamic.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE implicit
-  )
+#merged in test_solid_mechanics_model_dynamics
+#add_mesh(test_implicit_beam_2d_1 beam_2d.geo 2 1 OUTPUT beam_2d_lin.msh)
+#add_mesh(test_implicit_beam_2d_2 beam_2d.geo 2 2 OUTPUT beam_2d_quad.msh)
+#add_mesh(test_implicit_beam_3d_2 beam_3d.geo 3 2 OUTPUT beam_3d_quad.msh)
+#add_mesh(test_implicit_beam_3d_1 beam_3d.geo 3 1 OUTPUT beam_3d_lin.msh)
+#register_test(test_solid_mechanics_model_implicit_dynamic_2d
+#  SOURCES test_solid_mechanics_model_implicit_dynamic_2d.cc
+#  DEPENDS test_implicit_beam_2d_1 test_implicit_beam_2d_2 test_implicit_beam_3d_2 test_implicit_beam_3d_1
+#  FILES_TO_COPY  material_implicit_dynamic.dat
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE implicit
+#  )
+#
 
 #===============================================================================
 # register_test(test_solid_mechanics_model_bar_traction2d_structured_pbc
@@ -159,26 +169,27 @@ register_test(test_solid_mechanics_model_implicit_dynamic_2d
 #  )
 
 #===============================================================================
-add_mesh(test_cube3d_mesh1 cube.geo 3 1 OUTPUT cube1.msh)
-add_mesh(test_cube3d_mesh2 cube.geo 3 2 OUTPUT cube2.msh)
-add_mesh(test_cube3d_mesh_structured cube_structured.geo 3 1 OUTPUT cube_structured.msh)
 
-register_test(test_solid_mechanics_model_cube3d
-  SOURCES test_solid_mechanics_model_cube3d.cc
-  DEPENDS test_cube3d_mesh1
-  FILES_TO_COPY  material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
-
-register_test(test_solid_mechanics_model_cube3d_tetra10
-  SOURCES test_solid_mechanics_model_cube3d_tetra10.cc
-  DEPENDS test_cube3d_mesh2
-  FILES_TO_COPY  material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE core
-  )
-
+#add_mesh(test_cube3d_mesh1 cube.geo 3 1 OUTPUT cube1.msh)
+#add_mesh(test_cube3d_mesh2 cube.geo 3 2 OUTPUT cube2.msh)
+#add_mesh(test_cube3d_mesh_structured cube_structured.geo 3 1 OUTPUT cube_structured.msh)
+#
+#register_test(test_solid_mechanics_model_cube3d
+#  SOURCES test_solid_mechanics_model_cube3d.cc
+#  DEPENDS test_cube3d_mesh1
+#  FILES_TO_COPY  material.dat
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE core
+#  )
+#
+#register_test(test_solid_mechanics_model_cube3d_tetra10
+#  SOURCES test_solid_mechanics_model_cube3d_tetra10.cc
+#  DEPENDS test_cube3d_mesh2
+#  FILES_TO_COPY  material.dat
+#  DIRECTORIES_TO_CREATE paraview
+#  PACKAGE core
+#  )
+#
 # register_test(test_solid_mechanics_model_cube3d_pbc
 #   SOURCES test_solid_mechanics_model_cube3d_pbc.cc
 #   DEPENDS test_cube3d_mesh_structured
@@ -245,5 +256,29 @@ register_test(test_solid_mechanics_model_kinetic_energy
   SOURCES test_solid_mechanics_model_kinetic_energy.cc
   FILES_TO_COPY test_solid_mechanics_model_kinetic_energy_material.dat
   PACKAGE implicit
+  GTEST
+  )
+
+#===============================================================================
+# dynamics tests
+#===============================================================================
+
+add_mesh(bar_segment_2 patch_tests/data/bar_segment.geo 1 1 OUTPUT bar_segment_2.msh)
+add_mesh(bar_segment_3 patch_tests/data/bar_segment.geo 1 2 OUTPUT bar_segment_3.msh)
+add_mesh(bar_triangle_3 patch_tests/data/bar_triangle.geo 2 1 OUTPUT bar_triangle_3.msh)
+add_mesh(bar_triangle_6 patch_tests/data/bar_triangle.geo 2 2 OUTPUT bar_triangle_6.msh)
+add_mesh(bar_quadrangle_4 patch_tests/data/bar_quadrangle.geo 2 1 OUTPUT bar_quadrangle_4.msh)
+add_mesh(bar_quadrangle_8 patch_tests/data/bar_quadrangle.geo 2 2 OUTPUT bar_quadrangle_8.msh)
+add_mesh(bar_tetrahedron_4 patch_tests/data/bar_tetrahedron.geo 3 1 OUTPUT  bar_tetrahedron_4.msh)
+add_mesh(bar_tetrahedron_10 patch_tests/data/bar_tetrahedron.geo 3 2 OUTPUT bar_tetrahedron_10.msh)
+add_mesh(bar_hexahedron_8  patch_tests/data/bar_hexahedron.geo 3 1 OUTPUT bar_hexahedron_8.msh)
+add_mesh(bar_hexahedron_20 patch_tests/data/bar_hexahedron.geo 3 2 OUTPUT bar_hexahedron_20.msh)
+
+add_custom_target(patch-test-dynamics-meshes ALL DEPENDS bar_segment_2 bar_segment_3 bar_triangle_3 bar_triangle_6 bar_quadrangle_4 bar_quadrangle_8 bar_tetrahedron_4 bar_tetrahedron_10 bar_hexahedron_8 bar_hexahedron_20)
+
+register_test(test_solid_mechanics_model_dynamics
+  SOURCES test_solid_mechanics_model_dynamics.cc
+  FILES_TO_COPY test_solid_mechanics_model_dynamics_material.dat
+  PACKAGE core
   GTEST
   )
