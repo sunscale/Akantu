@@ -107,7 +107,6 @@ namespace tensors {
 
 } // namespace tensors
 
-
 /**
  * @class TensorProxy aka_types.hh
  * @desc The TensorProxy class is a proxy class to the TensorStorage it handles
@@ -124,7 +123,7 @@ template <typename T, UInt ndim, class _RetType> class TensorProxy {
 protected:
   using RetTypeProxy = typename _RetType::proxy;
 
-  TensorProxy(T * data, UInt m, UInt n, UInt p) {
+  constexpr TensorProxy(T * data, UInt m, UInt n, UInt p) {
     DimHelper<ndim>::setDims(m, n, p, this->n);
     this->values = data;
   }
@@ -140,8 +139,6 @@ protected:
 #endif
 public:
   using RetType = _RetType;
-
-  //operator RetType() { return RetType(static_cast<RetTypeProxy &>(*this)); }
 
   UInt size(UInt i) const {
     AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
@@ -201,7 +198,7 @@ template <typename T> class VectorProxy : public TensorProxy<T, 1, Vector<T>> {
   using type = Vector<T>;
 
 public:
-  VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) {}
+  constexpr VectorProxy(T * data, UInt n) : parent(data, n, 0, 0) {}
   template <class Other> explicit VectorProxy(Other & src) : parent(src) {}
 
   /* ---------------------------------------------------------------------- */
@@ -243,7 +240,7 @@ class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T>> {
   using type = Tensor3<T>;
 
 public:
-  Tensor3Proxy(T * data, UInt m, UInt n, UInt k) : parent(data, m, n, k) {}
+  Tensor3Proxy(const T * data, UInt m, UInt n, UInt k) : parent(data, m, n, k) {}
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {}
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) {}
 
@@ -264,6 +261,7 @@ public:
   using value_type = T;
 
   friend class Array<T>;
+
 protected:
   template <class TensorType> void copySize(const TensorType & src) {
     for (UInt d = 0; d < ndim; ++d)
@@ -358,7 +356,7 @@ public:
     if (this != &src) {
       if (this->wrapped) {
         static_assert(std::is_trivially_copyable<T>{},
-                  "Cannot copy a tensor on non trivial types");
+                      "Cannot copy a tensor on non trivial types");
         // this test is not sufficient for Tensor of order higher than 1
         AKANTU_DEBUG_ASSERT(this->_size == src.size(),
                             "Tensors of different size");

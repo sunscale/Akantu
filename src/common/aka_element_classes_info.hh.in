@@ -125,60 +125,73 @@ enum InterpolationKind {
 
 /* -------------------------------------------------------------------------- */
 // BOOST PART: TOUCH ONLY IF YOU KNOW WHAT YOU ARE DOING
-#define AKANTU_BOOST_CASE_MACRO(r,macro,_type)				\
-  case _type : { macro(_type); break; }
+#define AKANTU_BOOST_CASE_MACRO(r, macro, _type)                               \
+  case _type: {                                                                \
+    macro(_type);                                                              \
+    break;                                                                     \
+  }
 
-#define AKANTU_BOOST_LIST_SWITCH(macro1, list1, var)			\
-  do {									\
-    switch(var) {							\
-      BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, macro1, list1)	\
-    default: {								\
+#define AKANTU_BOOST_LIST_SWITCH(macro1, list1, var)                           \
+  do {                                                                         \
+    switch (var) {                                                             \
+      BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, macro1, list1)            \
+    default: {                                                                 \
       AKANTU_DEBUG_ERROR("Type (" << var << ") not handled by this function"); \
-    }									\
-    }									\
-  } while(0)
+    }                                                                          \
+    }                                                                          \
+  } while (0)
 
-#define AKANTU_BOOST_ELEMENT_SWITCH(macro1, list1)                      \
+#define AKANTU_BOOST_LIST_SWITCH_NO_DEFAULT(macro1, list1, var)                \
+  do {                                                                         \
+    switch (var) {                                                             \
+      BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, macro1, list1)            \
+    case _not_defined:                                                         \
+      break;                                                                   \
+    case _max_element_type:                                                    \
+      break;                                                                   \
+    }                                                                          \
+  } while (0)
+
+#define AKANTU_BOOST_ELEMENT_SWITCH(macro1, list1)                             \
   AKANTU_BOOST_LIST_SWITCH(macro1, list1, type)
 
-#define AKANTU_BOOST_ALL_ELEMENT_SWITCH(macro)                          \
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,                                    \
-                              AKANTU_ALL_ELEMENT_TYPE)
+#define AKANTU_BOOST_ELEMENT_SWITCH_NO_DEFAULT(macro1, list1)                  \
+  AKANTU_BOOST_LIST_SWITCH_NO_DEFAULT(macro1, list1, type)
 
-#define AKANTU_BOOST_LIST_MACRO(r, macro, type)                         \
-  macro(type)
+#define AKANTU_BOOST_ALL_ELEMENT_SWITCH(macro)                                 \
+  AKANTU_BOOST_ELEMENT_SWITCH(macro, AKANTU_ALL_ELEMENT_TYPE)
 
-#define AKANTU_BOOST_APPLY_ON_LIST(macro, list)                         \
+#define AKANTU_BOOST_ALL_ELEMENT_SWITCH_NO_DEFAULT(macro)                      \
+  AKANTU_BOOST_ELEMENT_SWITCH_NO_DEFAULT(macro, AKANTU_ALL_ELEMENT_TYPE)
+
+#define AKANTU_BOOST_LIST_MACRO(r, macro, type) macro(type)
+
+#define AKANTU_BOOST_APPLY_ON_LIST(macro, list)                                \
   BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_LIST_MACRO, macro, list)
 
-#define AKANTU_BOOST_ALL_ELEMENT_LIST(macro)                            \
-  AKANTU_BOOST_APPLY_ON_LIST(macro,                                     \
-                             AKANTU_ALL_ELEMENT_TYPE)
+#define AKANTU_BOOST_ALL_ELEMENT_LIST(macro)                                   \
+  AKANTU_BOOST_APPLY_ON_LIST(macro, AKANTU_ALL_ELEMENT_TYPE)
 
-#define AKANTU_GET_ELEMENT_LIST(kind)                                   \
-  AKANTU##kind##_ELEMENT_TYPE
+#define AKANTU_GET_ELEMENT_LIST(kind) AKANTU##kind##_ELEMENT_TYPE
 
-#define AKANTU_BOOST_KIND_ELEMENT_SWITCH(macro, kind)                   \
-  AKANTU_BOOST_ELEMENT_SWITCH(macro,                                    \
-                              AKANTU_GET_ELEMENT_LIST(kind))
+#define AKANTU_BOOST_KIND_ELEMENT_SWITCH(macro, kind)                          \
+  AKANTU_BOOST_ELEMENT_SWITCH(macro, AKANTU_GET_ELEMENT_LIST(kind))
 
 // BOOST_PP_SEQ_TO_LIST does not exists in Boost < 1.49
-#define AKANTU_GENERATE_KIND_LIST(seq)                                  \
-  BOOST_PP_TUPLE_TO_LIST(BOOST_PP_SEQ_SIZE(seq),                        \
-                         BOOST_PP_SEQ_TO_TUPLE(seq))
+#define AKANTU_GENERATE_KIND_LIST(seq)                                         \
+  BOOST_PP_TUPLE_TO_LIST(BOOST_PP_SEQ_SIZE(seq), BOOST_PP_SEQ_TO_TUPLE(seq))
 
-#define AKANTU_ELEMENT_KIND_BOOST_LIST AKANTU_GENERATE_KIND_LIST(AKANTU_ELEMENT_KIND)
+#define AKANTU_ELEMENT_KIND_BOOST_LIST                                         \
+  AKANTU_GENERATE_KIND_LIST(AKANTU_ELEMENT_KIND)
 
-#define AKANTU_BOOST_ALL_KIND_LIST(macro, list)                         \
+#define AKANTU_BOOST_ALL_KIND_LIST(macro, list)                                \
   BOOST_PP_LIST_FOR_EACH(AKANTU_BOOST_LIST_MACRO, macro, list)
 
-#define AKANTU_BOOST_ALL_KIND(macro)                                    \
+#define AKANTU_BOOST_ALL_KIND(macro)                                           \
   AKANTU_BOOST_ALL_KIND_LIST(macro, AKANTU_ELEMENT_KIND_BOOST_LIST)
 
-#define AKANTU_BOOST_ALL_KIND_SWITCH(macro)                             \
-  AKANTU_BOOST_LIST_SWITCH(macro,                                       \
-                           AKANTU_ELEMENT_KIND,                         \
-                           kind)
+#define AKANTU_BOOST_ALL_KIND_SWITCH(macro)                                    \
+  AKANTU_BOOST_LIST_SWITCH(macro, AKANTU_ELEMENT_KIND, kind)
 
 @AKANTU_ELEMENT_KINDS_BOOST_MACROS@
 

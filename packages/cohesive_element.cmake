@@ -36,7 +36,6 @@ package_declare(cohesive_element
   DEPENDS lapack)
 
 package_declare_sources(cohesive_element
-  fe_engine/cohesive_element.cc
   fe_engine/cohesive_element.hh
   fe_engine/fe_engine_template_cohesive.cc
   fe_engine/shape_cohesive.hh
@@ -77,8 +76,6 @@ package_declare_sources(cohesive_element
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_inline_impl.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.cc
-  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.hh
-  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel_inline_impl.cc
   )
 
 

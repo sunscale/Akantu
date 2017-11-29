@@ -32,8 +32,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "gauss_integration_tmpl.hh"
 #include "element_class.hh"
+#include "gauss_integration_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
@@ -42,15 +42,32 @@
 #define __AKANTU_ELEMENT_CLASS_TMPL_HH__
 
 namespace akantu {
+
+template <ElementType element_type, ElementKind element_kind>
+inline constexpr auto
+ElementClass<element_type, element_kind>::getFacetTypes() {
+  return VectorProxy<const ElementType>(
+      element_class_extra_geom_property::facet_type.data(),
+      geometrical_element::getNbFacetTypes());
+}
+
 /* -------------------------------------------------------------------------- */
 /* GeometricalElement                                                         */
 /* -------------------------------------------------------------------------- */
 template <GeometricalType geometrical_type, GeometricalShapeType shape>
-inline const MatrixProxy<UInt>
+inline constexpr auto
 GeometricalElement<geometrical_type,
                    shape>::getFacetLocalConnectivityPerElement(UInt t) {
-  return MatrixProxy<UInt>(facet_connectivity[t], nb_facets[t],
-                           nb_nodes_per_facet[t]);
+  int pos = 0;
+  for (UInt i = 0; i < t; ++i) {
+    pos += geometrical_property::nb_facets[i] *
+           geometrical_property::nb_nodes_per_facet[i];
+  }
+
+  return MatrixProxy<const UInt>(
+      geometrical_property::facet_connectivity_vect.data() + pos,
+      geometrical_property::nb_facets[t],
+      geometrical_property::nb_nodes_per_facet[t]);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -58,8 +75,8 @@ template <GeometricalType geometrical_type, GeometricalShapeType shape>
 inline UInt
 GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement() {
   UInt total_nb_facets = 0;
-  for (UInt n = 0; n < nb_facet_types; ++n) {
-    total_nb_facets += nb_facets[n];
+  for (UInt n = 0; n < geometrical_property::nb_facet_types; ++n) {
+    total_nb_facets += geometrical_property::nb_facets[n];
   }
 
   return total_nb_facets;
@@ -69,7 +86,7 @@ GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement() {
 template <GeometricalType geometrical_type, GeometricalShapeType shape>
 inline UInt
 GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement(UInt t) {
-  return nb_facets[t];
+  return geometrical_property::nb_facets[t];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -450,8 +467,8 @@ inline void ElementClass<type, kind>::inverseMap(
   /* init before iteration loop  */
   /* --------------------------- */
   // do interpolation
-  auto update_f = [&f, &physical_guess, &natural_coords, &node_coords, &mreal_coords,
-                   dimension]() {
+  auto update_f = [&f, &physical_guess, &natural_coords, &node_coords,
+                   &mreal_coords, dimension]() {
     Vector<Real> physical_guess_v(physical_guess.storage(), dimension);
     interpolation_element::interpolateOnNaturalCoordinates(
         natural_coords, node_coords, physical_guess_v);

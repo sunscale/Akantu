@@ -180,13 +180,13 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);
   static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, _not_defined, ElementType);
   static AKANTU_GET_MACRO_NOT_CONST(FacetType, _not_defined, ElementType);
-  static ElementType getFacetType(__attribute__((unused)) UInt t = 0) {
+  static constexpr auto getFacetType(__attribute__((unused)) UInt t = 0) {
     return _not_defined;
   }
   static AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
-  static ElementType * getFacetTypeInternal() { return NULL; }
+  static constexpr auto getFacetTypes() { return ElementClass<_not_defined>::getFacetTypes(); }
 };
 
 } // namespace akantu

@@ -102,11 +102,20 @@ AKANTU_DEFINE_SHAPE(_gt_triangle_3, _gst_triangle);
 AKANTU_DEFINE_SHAPE(_gt_triangle_6, _gst_triangle);
 
 /* -------------------------------------------------------------------------- */
+template <GeometricalType geometrical_type>
+struct GeometricalElementProperty {};
+
+template <ElementType element_type>
+struct ElementClassExtraGeometryProperties {};
+
+/* -------------------------------------------------------------------------- */
 /// Templated GeometricalElement with function getInradius
 template <GeometricalType geometrical_type,
           GeometricalShapeType shape =
               GeometricalShape<geometrical_type>::shape>
 class GeometricalElement {
+  using geometrical_property = GeometricalElementProperty<geometrical_type>;
+
 public:
   /// compute the in-radius
   static inline Real getInradius(__attribute__((unused))
@@ -119,50 +128,34 @@ public:
   static inline bool contains(const vector_type & coord);
 
 public:
-  static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, spatial_dimension, UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement, nb_nodes_per_element,
+  static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension,
+                                    geometrical_property::spatial_dimension,
                                     UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(NbFacetTypes, nb_facet_types, UInt);
+  static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement,
+                                    geometrical_property::nb_nodes_per_element,
+                                    UInt);
+  static inline constexpr auto getNbFacetTypes() {
+    return geometrical_property::nb_facet_types;
+  };
   static inline UInt getNbFacetsPerElement(UInt t);
   static inline UInt getNbFacetsPerElement();
-  static inline const MatrixProxy<UInt>
-  getFacetLocalConnectivityPerElement(UInt t = 0);
-
-protected:
-  /// Number of nodes per element
-  static UInt nb_nodes_per_element;
-  /// spatial dimension of the element
-  static UInt spatial_dimension;
-  /// number of different facet types
-  static UInt nb_facet_types;
-  /// number of facets for element
-  static UInt nb_facets[];
-  /// Nb nodes per facets types
-  static UInt nb_nodes_per_facet[];
-  /// storage of the facet local connectivity
-  static UInt facet_connectivity_vect[];
-  /// local connectivity of facets
-  static UInt * facet_connectivity[];
+  static inline constexpr auto getFacetLocalConnectivityPerElement(UInt t = 0);
 };
 
 /* -------------------------------------------------------------------------- */
 /* Interpolation                                                              */
 /* -------------------------------------------------------------------------- */
 /// default InterpolationProperty structure
-template <InterpolationType interpolation_type> struct InterpolationProperty {
-  static const InterpolationKind kind{_itk_not_defined};
-  static const UInt nb_nodes_per_element{0};
-  static const UInt natural_space_dimension{0};
-};
+template <InterpolationType interpolation_type> struct InterpolationProperty {};
 
 /// Macro to generate the InterpolationProperty structures for different
 /// interpolation types
 #define AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(itp_type, itp_kind,          \
                                                   nb_nodes, ndim)              \
   template <> struct InterpolationProperty<itp_type> {                         \
-    static const InterpolationKind kind{itp_kind};                             \
-    static const UInt nb_nodes_per_element{nb_nodes};                          \
-    static const UInt natural_space_dimension{ndim};                           \
+    static constexpr InterpolationKind kind{itp_kind};                         \
+    static constexpr UInt nb_nodes_per_element{nb_nodes};                      \
+    static constexpr UInt natural_space_dimension{ndim};                       \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -280,8 +273,8 @@ class ElementClass
       public InterpolationElement<
           ElementClassProperty<element_type>::interpolation_type> {
 protected:
-  using geometrical_element = GeometricalElement<
-      ElementClassProperty<element_type>::geometrical_type>;
+  using geometrical_element =
+      GeometricalElement<ElementClassProperty<element_type>::geometrical_type>;
   using interpolation_element = InterpolationElement<
       ElementClassProperty<element_type>::interpolation_type>;
 
@@ -353,22 +346,24 @@ public:
   static constexpr AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, p1_type,
-                                    const ElementType &);
-  static const ElementType & getFacetType(UInt t = 0) { return facet_type[t]; }
-  static ElementType * getFacetTypeInternal() { return facet_type; }
 
-protected:
-  /// Type of the facet elements
-  static ElementType facet_type[];
-  /// type of element P1 associated
-  static ElementType p1_type;
+  using element_class_extra_geom_property =
+      ElementClassExtraGeometryProperties<element_type>;
+
+  static constexpr auto getP1ElementType() {
+    return element_class_extra_geom_property::p1_type;
+  }
+  static constexpr auto getFacetType(UInt t = 0) {
+    return element_class_extra_geom_property::facet_type[t];
+  }
+  static constexpr auto getFacetTypes();
 };
 
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
+#include "geometrical_element_property.hh"
 #include "interpolation_element_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_class_tmpl.hh"
