@@ -247,3 +247,10 @@ register_test(test_solid_mechanics_model_kinetic_energy
   PACKAGE implicit
   GTEST
   )
+
+register_test(test_solid_mechanics_model_work_quasistatic
+  SOURCES test_solid_mechanics_model_work_quasistatic.cc
+  FILES_TO_COPY test_solid_mechanics_model_work_material.dat
+  PACKAGE implicit
+  GTEST
+  )
