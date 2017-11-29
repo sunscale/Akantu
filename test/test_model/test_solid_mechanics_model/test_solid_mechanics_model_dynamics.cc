@@ -61,46 +61,116 @@ public:
   }
 };
 
-template <UInt spatial_dimension>
-auto solution_disp =
+constexpr Real A = 1e-1;
+constexpr Real E = 1.;
+constexpr Real poisson = .3;
+constexpr Real lambda = E * poisson / (1. + poisson) / (1. - 2. * poisson);
+constexpr Real mu = E / 2 / (1. + poisson);
+constexpr Real rho = 1.;
+const Real cp = std::sqrt((lambda + 2 * mu) / rho);
+const Real cs = std::sqrt(mu / rho);
+const Real c = std::sqrt(E / rho);
+
+const Vector<Real> k = {.5, 0., 0.};
+const Vector<Real> psi1 = {0., 0., 1.};
+const Vector<Real> psi2 = {0., 1., 0.};
+const Real knorm = k.norm();
+
+template <UInt spatial_dimension> auto solution_disp = 1;
+template <UInt spatial_dimension> auto solution_vel = 1;
+
+template <>
+auto solution_disp<1> =
     [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
       const auto & x = coord(_x);
-      constexpr Real k = .5;
-      constexpr Real omega = k;
-      disp(_x) = cos(k * x - omega * current_time);
+      const Real omega = c * k[0];
+      disp(_x) = A * cos(k[0] * x - omega * current_time);
     };
 
-template <UInt spatial_dimension>
-auto solution_vel =
+template <>
+auto solution_vel<1> =
     [](Vector<Real> & vel, const Vector<Real> & coord, Real current_time) {
-
       const auto & x = coord(_x);
-      constexpr Real k = .5;
-      constexpr Real omega = k;
-      vel(_x) = omega * sin(k * x - omega * current_time);
+      const Real omega = c * k[0];
+      vel(_x) = omega * A * sin(k[0] * x - omega * current_time);
     };
 
-template <ElementType _type> struct DimensionHelper {
-  static constexpr int dim = -1;
+template <>
+auto solution_disp<2> =
+    [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
+
+      const auto & X = coord;
+      Vector<Real> kshear = {k[1], k[0]};
+      Vector<Real> kpush = {k[0], k[1]};
+
+      const Real omega_p = knorm * cp;
+      const Real omega_s = knorm * cs;
+
+      Real phase_p = X.dot(kpush) - omega_p * current_time;
+      Real phase_s = X.dot(kpush) - omega_s * current_time;
+
+      disp = A * (kpush * cos(phase_p) + kshear * cos(phase_s));
+    };
+
+template <>
+auto solution_vel<2> = [](Vector<Real> & vel, const Vector<Real> & coord,
+                          Real current_time) {
+
+  const auto & X = coord;
+  Vector<Real> kshear = {k[1], k[0]};
+  Vector<Real> kpush = {k[0], k[1]};
+
+  const Real omega_p = knorm * cp;
+  const Real omega_s = knorm * cs;
+
+  Real phase_p = X.dot(kpush) - omega_p * current_time;
+  Real phase_s = X.dot(kpush) - omega_s * current_time;
+
+  vel = A * (kpush * omega_p * cos(phase_p) + kshear * omega_s * cos(phase_s));
+
 };
 
-template <> struct DimensionHelper<_segment_2> {
-  static constexpr UInt dim = 1;
-};
-template <> struct DimensionHelper<_segment_3> {
-  static constexpr UInt dim = 1;
-};
-template <> struct DimensionHelper<_triangle_3> {
-  static constexpr UInt dim = 2;
-};
-template <> struct DimensionHelper<_triangle_6> {
-  static constexpr UInt dim = 2;
-};
-template <> struct DimensionHelper<_quadrangle_4> {
-  static constexpr UInt dim = 2;
-};
-template <> struct DimensionHelper<_quadrangle_8> {
-  static constexpr UInt dim = 2;
+template <>
+auto solution_disp<3> =
+    [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
+
+      const auto & X = coord;
+      Vector<Real> kpush = k;
+      Vector<Real> kshear1(3);
+      Vector<Real> kshear2(3);
+      kshear1.crossProduct(k, psi1);
+      kshear2.crossProduct(k, psi2);
+
+      const Real omega_p = knorm * cp;
+      const Real omega_s = knorm * cs;
+
+      Real phase_p = X.dot(kpush) - omega_p * current_time;
+      Real phase_s = X.dot(kpush) - omega_s * current_time;
+
+      disp = A * (kpush * cos(phase_p) + kshear1 * cos(phase_s) +
+                  kshear2 * cos(phase_s));
+
+    };
+
+template <>
+auto solution_vel<3> = [](Vector<Real> & vel, const Vector<Real> & coord,
+                          Real current_time) {
+
+  const auto & X = coord;
+  Vector<Real> kpush = k;
+  Vector<Real> kshear1(3);
+  Vector<Real> kshear2(3);
+  kshear1.crossProduct(k, psi1);
+  kshear2.crossProduct(k, psi2);
+
+  const Real omega_p = knorm * cp;
+  const Real omega_s = knorm * cs;
+
+  Real phase_p = X.dot(kpush) - omega_p * current_time;
+  Real phase_s = X.dot(kpush) - omega_s * current_time;
+
+  vel = A * (kpush * omega_p * cos(phase_p) + kshear1 * omega_s * cos(phase_s) +
+             kshear2 * omega_s * cos(phase_s));
 };
 
 template <ElementType _type>
@@ -140,7 +210,7 @@ void test_body(SolidMechanicsModel & model, AM analysis_method) {
 
   model.initFull(SolidMechanicsModelOptions(analysis_method));
 
-  bool dump_paraview = false;
+  bool dump_paraview = true;
 
   if (dump_paraview) {
     std::stringstream base_name;
@@ -183,24 +253,25 @@ void test_body(SolidMechanicsModel & model, AM analysis_method) {
     model.dump();
 
   /// boundary conditions
-  model.applyBC(SolutionFunctor<_type>(current_time, model), "Left");
-  model.applyBC(SolutionFunctor<_type>(current_time, model), "Right");
+  model.applyBC(SolutionFunctor<_type>(current_time, model), "BC");
 
   Real max_error = 0.;
   Real wave_velocity = 1.; // sqrt(E/rho) = sqrt(1/1) = 1
   Real simulation_time = 5 / wave_velocity;
 
   UInt max_steps = simulation_time / time_step; // 100
+  UInt ndump = 50;
+  UInt dump_freq = max_steps / ndump;
+
   std::cout << "max_steps: " << max_steps << std::endl;
 
   for (UInt s = 0; s < max_steps; ++s, current_time += time_step) {
 
-    if (dump_paraview)
+    if (s % dump_freq == 0 && dump_paraview)
       model.dump();
 
     /// boundary conditions
-    model.applyBC(SolutionFunctor<_type>(current_time, model), "Left");
-    model.applyBC(SolutionFunctor<_type>(current_time, model), "Right");
+    model.applyBC(SolutionFunctor<_type>(current_time, model), "BC");
 
     // compute the disp solution
     auto itDispSolution = disp_solution.begin(spatial_dimension);
@@ -221,7 +292,7 @@ void test_body(SolidMechanicsModel & model, AM analysis_method) {
     }
     disp_error = sqrt(disp_error) / nb_nodes;
     max_error = std::max(disp_error, max_error);
-    ASSERT_NEAR(disp_error, 0., 1e-1);
+    ASSERT_NEAR(disp_error, 0., 1e-3);
     model.solveStep();
   }
   std::cout << "max error: " << max_error << std::endl;

@@ -66,10 +66,7 @@ Surface Loop(1) = {3, 6, 5, 4, 2, 1};
 //+
 Volume(1) = {1};
 //+
-Physical Surface("Left") = {2};
-//+
-Physical Surface("Right") = {1};
-//+
+Physical Surface("BC") = {1, 2, 3, 4, 5, 6};
 Physical Volume("bulk") = {1};
 
 Transfinite Surface "*";

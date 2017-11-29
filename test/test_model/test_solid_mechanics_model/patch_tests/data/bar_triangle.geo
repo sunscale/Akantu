@@ -18,7 +18,6 @@ Line Loop(1) = {1, 3, 2, 4};
 Plane Surface(1) = {1};
 
 
-Physical Line("Left") = {4};
-Physical Line("Right") = {3};
-//+
+Physical Line("BC") = {4, 3, 1 , 2};
+
 Physical Surface("bulk") = {1};
