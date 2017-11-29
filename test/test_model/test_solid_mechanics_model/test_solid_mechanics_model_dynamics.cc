@@ -210,7 +210,7 @@ void test_body(SolidMechanicsModel & model, AM analysis_method) {
 
   model.initFull(SolidMechanicsModelOptions(analysis_method));
 
-  bool dump_paraview = true;
+  bool dump_paraview = false;
 
   if (dump_paraview) {
     std::stringstream base_name;
