@@ -49,9 +49,16 @@ namespace akantu {
   constexpr std::array<ElementType, ElementClass<type>::getNbFacetTypes()>     \
       ElementClassExtraGeometryProperties<type>::facet_type;
 
+
+#ifdef AKANTU_COHESIVE_ELEMENT
+#define AKA_all_elem_type AKANTU_ek_regular_ELEMENT_TYPE AKANTU_ek_cohesive_ELEMENT_TYPE
+#else
+#define AKA_all_elem_type AKANTU_ek_regular_ELEMENT_TYPE
+#endif
+
+
 BOOST_PP_SEQ_FOR_EACH(AKANTU_INSTANTIATE_TYPES, _,
                       (_not_defined)
-                      AKANTU_ek_regular_ELEMENT_TYPE
-                      AKANTU_ek_cohesive_ELEMENT_TYPE)
+                      AKA_all_elem_type)
 
 } // akantu
