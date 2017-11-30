@@ -232,53 +232,61 @@ register_test(test_material_selector
   PACKAGE core
   )
 
+#===============================================================================
+# Energy tests
+#===============================================================================
+set(_meshes)
 package_get_variable(ET_ELEMENT_TYPES core _element_list)
 foreach(_et ${_element_list})
-  if(_et STREQUAL _point_1)
-    continue()
+  if(NOT _et STREQUAL _point_1)
+    list(APPEND _meshes patch_tests/data/${_et}.msh)
   endif()
-
-  execute_process(COMMAND
-    ${CMAKE_COMMAND} -E copy_if_different ${_et}.msh ${CMAKE_CURRENT_BINARY_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/patch_tests/data)
 endforeach()
 
-
-#===============================================================================
-register_test(test_solid_mechanics_model_linear_elastic_potential_energy
+register_gtest_sources(
   SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
   FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat
   PACKAGE implicit
-  GTEST
   )
 
-register_test(test_solid_mechanics_model_kinetic_energy
+register_gtest_sources(
   SOURCES test_solid_mechanics_model_kinetic_energy.cc
   FILES_TO_COPY test_solid_mechanics_model_kinetic_energy_material.dat
   PACKAGE implicit
-  GTEST
   )
 
 #===============================================================================
 # dynamics tests
 #===============================================================================
+add_mesh(bar_segment_2 patch_tests/data/bar_segment.geo
+  DIM 1 ORDER 1 OUTPUT bar_segment_2.msh)
+add_mesh(bar_segment_3 patch_tests/data/bar_segment.geo
+  DIM 1 ORDER 2 OUTPUT bar_segment_3.msh)
+add_mesh(bar_triangle_3 patch_tests/data/bar_triangle.geo
+  DIM 2 ORDER 1 OUTPUT bar_triangle_3.msh)
+add_mesh(bar_triangle_6 patch_tests/data/bar_triangle.geo
+  DIM 2 ORDER 2 OUTPUT bar_triangle_6.msh)
+add_mesh(bar_quadrangle_4 patch_tests/data/bar_quadrangle.geo
+  DIM 2 ORDER 1 OUTPUT bar_quadrangle_4.msh)
+add_mesh(bar_quadrangle_8 patch_tests/data/bar_quadrangle.geo
+  DIM 2 ORDER 2 OUTPUT bar_quadrangle_8.msh)
+add_mesh(bar_tetrahedron_4 patch_tests/data/bar_tetrahedron.geo
+  DIM 3 ORDER 1 OUTPUT  bar_tetrahedron_4.msh)
+add_mesh(bar_tetrahedron_10 patch_tests/data/bar_tetrahedron.geo
+  DIM 3 ORDER 2 OUTPUT bar_tetrahedron_10.msh)
+add_mesh(bar_hexahedron_8  patch_tests/data/bar_hexahedron.geo
+  DIM 3 ORDER 1 OUTPUT bar_hexahedron_8.msh)
+add_mesh(bar_hexahedron_20 patch_tests/data/bar_hexahedron.geo
+  DIM 3 ORDER 2 OUTPUT bar_hexahedron_20.msh)
 
-add_mesh(bar_segment_2 patch_tests/data/bar_segment.geo 1 1 OUTPUT bar_segment_2.msh)
-add_mesh(bar_segment_3 patch_tests/data/bar_segment.geo 1 2 OUTPUT bar_segment_3.msh)
-add_mesh(bar_triangle_3 patch_tests/data/bar_triangle.geo 2 1 OUTPUT bar_triangle_3.msh)
-add_mesh(bar_triangle_6 patch_tests/data/bar_triangle.geo 2 2 OUTPUT bar_triangle_6.msh)
-add_mesh(bar_quadrangle_4 patch_tests/data/bar_quadrangle.geo 2 1 OUTPUT bar_quadrangle_4.msh)
-add_mesh(bar_quadrangle_8 patch_tests/data/bar_quadrangle.geo 2 2 OUTPUT bar_quadrangle_8.msh)
-add_mesh(bar_tetrahedron_4 patch_tests/data/bar_tetrahedron.geo 3 1 OUTPUT  bar_tetrahedron_4.msh)
-add_mesh(bar_tetrahedron_10 patch_tests/data/bar_tetrahedron.geo 3 2 OUTPUT bar_tetrahedron_10.msh)
-add_mesh(bar_hexahedron_8  patch_tests/data/bar_hexahedron.geo 3 1 OUTPUT bar_hexahedron_8.msh)
-add_mesh(bar_hexahedron_20 patch_tests/data/bar_hexahedron.geo 3 2 OUTPUT bar_hexahedron_20.msh)
-
-add_custom_target(patch-test-dynamics-meshes ALL DEPENDS bar_segment_2 bar_segment_3 bar_triangle_3 bar_triangle_6 bar_quadrangle_4 bar_quadrangle_8 bar_tetrahedron_4 bar_tetrahedron_10 bar_hexahedron_8 bar_hexahedron_20)
-
-register_test(test_solid_mechanics_model_dynamics
+register_gtest_sources(
   SOURCES test_solid_mechanics_model_dynamics.cc
   FILES_TO_COPY test_solid_mechanics_model_dynamics_material.dat
   PACKAGE core
-  GTEST
+  DEPENDS bar_segment_2 bar_segment_3 bar_triangle_3 bar_triangle_6
+          bar_quadrangle_4 bar_quadrangle_8 bar_tetrahedron_4
+          bar_tetrahedron_10 bar_hexahedron_8 bar_hexahedron_20
   )
+
+register_gtest_test(test_solid_mechanics_model
+  FILES_TO_COPY ${_meshes})

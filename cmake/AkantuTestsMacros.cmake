@@ -38,85 +38,85 @@ containing tests in akantu
 
 .. command:: add_test_tree
 
-    add_test_tree(<test_direcotry>)
+add_test_tree(<test_direcotry>)
 
-  ``<test_directory>`` is the entry direcroty of the full structure of
-  subfolders containing tests
+``<test_directory>`` is the entry direcroty of the full structure of
+subfolders containing tests
 
 .. command:: add_akantu_test
 
-    add_akantu_test(<dir> <desc>)
+add_akantu_test(<dir> <desc>)
 
-  This function add a subdirectory ``<dir>`` of tests that will be conditionnaly
-  activable and will be visible only if the parent folder as been activated An
-  option ``AKANTU_BUILD_TEST_<dir>`` will appear in ccmake with the description
-  ``<desc>``. The compilation of all tests can be forced with the option
-  ``AKANTU_BUILD_ALL_TESTS``
+This function add a subdirectory ``<dir>`` of tests that will be conditionnaly
+activable and will be visible only if the parent folder as been activated An
+option ``AKANTU_BUILD_TEST_<dir>`` will appear in ccmake with the description
+``<desc>``. The compilation of all tests can be forced with the option
+``AKANTU_BUILD_ALL_TESTS``
 
 .. command:: register_test
 
-    register_test(<test_name>
-      SOURCES <sources>...
-      PACKAGE <akantu_packages>...
-      SCRIPT <scirpt>
-      [FILES_TO_COPY <filenames>...]
-      [DEPENDS <targets>...]
-      [DIRECTORIES_TO_CREATE <directories>...]
-      [COMPILE_OPTIONS <flags>...]
-      [EXTRA_FILES <filnames>...]
-      [LINK_LIBRARIES <libraries>...]
-      [UNSABLE]
-      [PARALLEL]
-      [PARALLEL_LEVEL <procs>...]
-      )
+register_test(<test_name>
+  SOURCES <sources>...
+  PACKAGE <akantu_packages>...
+  SCRIPT <scirpt>
+  [FILES_TO_COPY <filenames>...]
+  [DEPENDS <targets>...]
+  [DIRECTORIES_TO_CREATE <directories>...]
+  [COMPILE_OPTIONS <flags>...]
+  [EXTRA_FILES <filnames>...]
+  [LINK_LIBRARIES <libraries>...]
+  [UNSABLE]
+  [PARALLEL]
+  [PARALLEL_LEVEL <procs>...]
+  )
 
-  This function defines a test ``<test_name>_run`` this test could be of
-  different nature depending on the context. If Just sources are provided the
-  test consist of running the executable generated. If a file ``<test_name>.sh``
-  is present the test will execute the script. And if a ``<test_name>.verified``
-  exists the output of the test will be compared to this reference file
+This function defines a test ``<test_name>_run`` this test could be of
+different nature depending on the context. If Just sources are provided the
+test consist of running the executable generated. If a file ``<test_name>.sh``
+is present the test will execute the script. And if a ``<test_name>.verified``
+exists the output of the test will be compared to this reference file
 
-  The options are:
+The options are:
 
-  ``SOURCES <sources>...``
-    The list of source files to compile to generate the executable of the test
+``SOURCES <sources>...``
+The list of source files to compile to generate the executable of the test
 
-  ``PACKAGE <akantu_packages>...``
-    The list of package to which this test belongs. The test will be activable
-    only of all the packages listed are activated
+``PACKAGE <akantu_packages>...``
+The list of package to which this test belongs. The test will be activable
+only of all the packages listed are activated
 
-  ``SCRIPT <script>``
-    The script to execute instead of the executable
+``SCRIPT <script>``
+The script to execute instead of the executable
 
-  ``FILES_TO_COPY <filenames>...``
-    List of files to copy from the source directory to the build directory
+``FILES_TO_COPY <filenames>...``
+List of files to copy from the source directory to the build directory
 
-  ``DEPENDS <targets>...``
-    List of targets the test depends on, for example if a mesh as to be generated
+``DEPENDS <targets>...``
+List of targets the test depends on, for example if a mesh as to be generated
 
-  ``DIRECTORIES_TO_CREATE <directories>...``
-    Obsolete. This specifies a list of directories that have to be created in
-    the build folder
+``DIRECTORIES_TO_CREATE <directories>...``
+Obsolete. This specifies a list of directories that have to be created in
+the build folder
 
-  ``COMPILE_OPTIONS <flags>...``
-    List of extra compilations options to pass to the compiler
+``COMPILE_OPTIONS <flags>...``
+List of extra compilations options to pass to the compiler
 
-  ``EXTRA_FILES <filnames>...``
-    Files to consider when generating a package_source
+``EXTRA_FILES <filnames>...``
+Files to consider when generating a package_source
 
-  ``UNSABLE``
-    If this option is specified the test can be unacitivated by the glocal option
-    ``AKANTU_BUILD_UNSTABLE_TESTS``, this is mainly intendeed to remove test
-    under developement from the continious integration
+``UNSABLE``
+If this option is specified the test can be unacitivated by the glocal option
+``AKANTU_BUILD_UNSTABLE_TESTS``, this is mainly intendeed to remove test
+under developement from the continious integration
 
-  ``PARALLEL``
-    This specifies that this test should be run in parallel. It will generate a
-    series of test for different number of processors. This automaticaly adds a
-    dependency to the package ``AKANTU_PARALLEL``
+``PARALLEL``
+This specifies that this test should be run in parallel. It will generate a
+series of test for different number of processors. This automaticaly adds a
+dependency to the package ``AKANTU_PARALLEL``
 
-  ``PARALLEL_LEVEL``
-    This defines the different processor numbers to use, if not defined the
-    macro tries to determine it in a "clever" way
+``PARALLEL_LEVEL``
+This defines the different processor numbers to use, if not defined the
+macro tries to determine it in a "clever" way
 
 ]=======================================================================]
 
@@ -128,7 +128,7 @@ macro(add_test_tree dir)
     enable_testing()
     include(CTest)
     mark_as_advanced(BUILD_TESTING)
-    
+
     set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
     set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
 
@@ -143,6 +143,30 @@ macro(add_test_tree dir)
   endif()
 endmacro()
 
+
+set(_test_flags
+  UNSTABLE
+  PARALLEL
+  )
+
+set(_test_one_variables
+  POSTPROCESS
+  SCRIPT
+  )
+
+set(_test_multi_variables
+  SOURCES
+  FILES_TO_COPY
+  DEPENDS
+  DIRECTORIES_TO_CREATE
+  COMPILE_OPTIONS
+  EXTRA_FILES
+  LINK_LIBRARIES
+  PACKAGE
+  PARALLEL_LEVEL
+  )
+
+
 # ==============================================================================
 function(add_akantu_test dir desc)
   if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
@@ -150,7 +174,7 @@ function(add_akantu_test dir desc)
   endif()
 
   set(_my_parent_dir ${_akantu_current_parent_test})
- 
+  
   # initialize variables
   set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
   set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
@@ -160,24 +184,8 @@ function(add_akantu_test dir desc)
   option(AKANTU_BUILD_${_u_dir} "${desc}")
   mark_as_advanced(AKANTU_BUILD_${_u_dir})
 
-  set(AKANTU_${_u_dir}_GTEST_SOURCE "" CACHE INTERNAL "")
-
   # add the sub-directory
   add_subdirectory(${dir})
-
-  if(AKANTU_${_u_dir}_GTEST_SOURCE)
-    set(_srcs)
-    foreach(_src ${AKANTU_${_u_dir}_GTEST_SOURCE})
-      list(APPEND _srcs ${dir}/${_src})
-    endforeach()
-
-    add_executable(${dir}_gtest_all ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc ${_srcs})
-    target_link_libraries(${dir}_gtest_all akantu GTest::GTest GTest::Main)
-    target_include_directories(${dir}_gtest_all PRIVATE ${PROJECT_SOURCE_DIR}/test)
-    set_property(TARGET ${dir}_gtest_all PROPERTY OUTPUT_NAME ${dir}/gtest_all)
-
-    add_test(NAME ${dir}_gtest COMMAND ${AKANTU_DRIVER_SCRIPT}  -n "${dir}" -e "gtest_all" -w "${CMAKE_CURRENT_BINARY_DIR}/${dir}")
-  endif()
   
   # if no test can be activated make the option disappear
   set(_force_deactivate_count FALSE)
@@ -218,34 +226,11 @@ function(add_akantu_test dir desc)
   set(_akantu_current_parent_test ${_my_parent_dir} CACHE INTERNAL "Current test folder" FORCE)
 endfunction()
 
-
-# ==============================================================================
-function(register_test test_name)
-  set(flags
-    GTEST
-    UNSTABLE
-    PARALLEL
-    )
-  set(one_variables
-    POSTPROCESS
-    SCRIPT
-    )
-  set(multi_variables
-    SOURCES
-    FILES_TO_COPY
-    DEPENDS
-    DIRECTORIES_TO_CREATE
-    COMPILE_OPTIONS
-    EXTRA_FILES
-    LINK_LIBRARIES
-    PACKAGE
-    PARALLEL_LEVEL
-    )
-
+function(is_test_active is_active)
   cmake_parse_arguments(_register_test
-    "${flags}"
-    "${one_variables}"
-    "${multi_variables}"
+    "${_test_flags}"
+    "${_test_one_variables}"
+    "${_test_multi_variables}"
     ${ARGN}
     )
 
@@ -268,6 +253,102 @@ function(register_test test_name)
     set(_test_act FALSE)
   endif()
 
+  if(_test_act)
+    # todo this should be checked for the build package_sources since the file will not be listed.
+    math(EXPR _tmp_parent_count "${_akantu_${_akantu_current_parent_test}_tests_count} + 1")
+    set(_akantu_${_akantu_current_parent_test}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
+  endif()
+
+  string(TOUPPER ${_akantu_current_parent_test} _u_parent)
+  if(NOT (AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS))
+    set(_test_act FALSE)
+  endif()
+
+  set(${is_active} ${_test_act} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+function(register_gtest_sources)
+  cmake_parse_arguments(_register_test
+    "${_test_flags}"
+    "${_test_one_variables}"
+    "${_test_multi_variables}"
+    ${ARGN}
+    )
+
+  is_test_active(_is_active ${ARGN})
+  register_test_files_to_package(${ARGN})
+
+  if(NOT _is_active)
+    return()
+  endif()
+
+  foreach (_var ${_test_flags})
+    if(_register_test_${_var})
+      set(_gtest_${_var} ON PARENT_SCOPE)
+    else()
+      if(_gtest_${_var})
+        message("Another gtest file required ${_var} to be ON it will be globally set for this folder...")
+      endif()
+    endif()
+  endforeach()
+
+  if(_register_test_UNPARSED_ARGUMENTS)
+    list(APPEND _register_test_SOURCES ${_register_test_UNPARSED_ARGUMENTS})
+  endif()
+
+  foreach (_var ${_test_multi_variables})
+    if(_register_test_${_var})
+      set(_list ${_gtest_${_var}})
+      list(APPEND _list ${_register_test_${_var}})
+      set(_gtest_${_var} ${_list} PARENT_SCOPE)
+    endif()
+  endforeach()
+endfunction()
+
+
+function(register_gtest_test test_name)
+  set(_argn ${test_name}_gtest)
+
+  register_gtest_sources(${ARGN}
+    SOURCES ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc
+    LINK_LIBRARIES GTest::GTest GTest::Main
+    PACKAGE ${_gtest_PACKAGE}
+    )
+
+  foreach (_var ${_test_flags})
+    if(_gtest_${_var})
+      list(APPEND _argn ${_var})
+      unset(_gtest_${_var})
+    endif()
+  endforeach()
+
+  foreach (_var ${_test_multi_variables})
+    if(_gtest_${_var})
+      list(APPEND _argn ${_var} ${_gtest_${_var}})
+      unset(_gtest_${_var})
+    endif()
+  endforeach()
+
+  register_test(${_argn})
+  target_include_directories(${test_name}_gtest PRIVATE ${PROJECT_SOURCE_DIR}/test)
+endfunction()
+
+# ==============================================================================
+function(register_test test_name)
+  cmake_parse_arguments(_register_test
+    "${_test_flags}"
+    "${_test_one_variables}"
+    "${_test_multi_variables}"
+    ${ARGN}
+    )
+
+  register_test_files_to_package(${ARGN})
+  is_test_active(_test_act ${ARGN})
+  if(NOT _test_act)
+    return()
+  endif()
+
   # check that the sources are files that need to be compiled
   if(_register_test_SOURCES} OR _register_test_UNPARSED_ARGUMENTS)
     set(_need_to_compile TRUE)
@@ -282,159 +363,141 @@ function(register_test test_name)
     endif()
   endforeach()
 
-  # todo this should be checked for the build package_sources since the file will not be listed.
-  if(_test_act)
-    math(EXPR _tmp_parent_count "${_akantu_${_akantu_current_parent_test}_tests_count} + 1")
-    set(_akantu_${_akantu_current_parent_test}_tests_count ${_tmp_parent_count} CACHE INTERNAL "" FORCE)
+  if(_compile_source)
+    # get the include directories for sources in activated directories
+    package_get_all_include_directories(
+      AKANTU_LIBRARY_INCLUDE_DIRS
+      )
 
-    string(TOUPPER ${_akantu_current_parent_test} _u_parent)
+    # get the external packages compilation and linking informations
+    package_get_all_external_informations(
+      AKANTU_EXTERNAL_INCLUDE_DIR
+      AKANTU_EXTERNAL_LIBRARIES
+      )
 
-    if(AKANTU_BUILD_${_u_parent} OR AKANTU_BUILD_ALL_TESTS)
-      if(_compile_source)
-        # get the include directories for sources in activated directories
-        package_get_all_include_directories(
-          AKANTU_LIBRARY_INCLUDE_DIRS
-          )
+    # Register the executable to compile
+    add_executable(${test_name} ${_compile_source})
 
-        # get the external packages compilation and linking informations
-        package_get_all_external_informations(
-          AKANTU_EXTERNAL_INCLUDE_DIR
-          AKANTU_EXTERNAL_LIBRARIES
-          )
+    # set the proper includes to build most of the tests
+    target_include_directories(${test_name}
+      PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
+    target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
 
+    if(_register_test_DEPENDS)
+      add_dependencies(${test_name} ${_register_test_DEPENDS})
+    endif()
 
-        if(NOT _register_test_GTEST)
-          # Register the executable to compile
-          add_executable(${test_name} ${_compile_source})
-          
-          # set the proper includes to build most of the tests
-          target_include_directories(${test_name}
-            PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
-          target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+    # add the extra compilation options
+    if(_register_test_COMPILE_OPTIONS)
+      set_target_properties(${test_name}
+        PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+    endif()
 
-          if(_register_test_DEPENDS)
-            add_dependencies(${test_name} ${_register_test_DEPENDS})
-          endif()
-
-          # add the extra compilation options
-          if(_register_test_COMPILE_OPTIONS)
-            set_target_properties(${test_name}
-              PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
-          endif()
-
-          if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(AKANTU_EXTRA_CXX_FLAGS "${AKANTU_EXTRA_CXX_FLAGS} -no-pie")
-          endif()
-          if(AKANTU_EXTRA_CXX_FLAGS)
-            set_target_properties(${test_name}
-              PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
-          endif()
-        else()
-          set(_list ${AKANTU_${_u_parent}_GTEST_SOURCE})
-          list(APPEND _list ${_compile_source})
-          set(AKANTU_${_u_parent}_GTEST_SOURCE ${_list} CACHE INTERNAL "")
-        endif()
-      else()
-        if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
-          set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
-        endif()
-      endif()
-
-      # copy the needed files to the build folder
-      if(_register_test_FILES_TO_COPY)
-        foreach(_file ${_register_test_FILES_TO_COPY})
-          file(COPY "${_file}" DESTINATION .)
-        endforeach()
-      endif()
-
-      # create the needed folders in the build folder
-      if(_register_test_DIRECTORIES_TO_CREATE)
-        foreach(_dir ${_register_test_DIRECTORIES_TO_CREATE})
-          if(IS_ABSOLUTE ${dir})
-            file(MAKE_DIRECTORY "${_dir}")
-          else()
-            file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
-          endif()
-        endforeach()
-      endif()
-
-      # register the test for ctest
-      set(_arguments -n "${test_name}")
-      if(_register_test_SCRIPT)
-        file(COPY ${_register_test_SCRIPT}
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-          DESTINATION .)
-        list(APPEND _arguments -e "${_register_test_SCRIPT}")
-      elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
-        file(COPY ${test_name}.sh DESTINATION .)
-        list(APPEND _arguments -e "${test_name}.sh")
-      else()
-        list(APPEND _arguments -e "${test_name}")
-      endif()
-
-      list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
-
-      package_is_activated(parallel _is_parallel)
-
-      if(_is_parallel AND AKANTU_TESTS_ALWAYS_USE_MPI AND NOT _register_test_PARALLEL)
-        set(_register_test_PARALLEL TRUE)
-        set(_register_test_PARALLEL_LEVEL 1)
-      endif()
-
-      if(_register_test_PARALLEL)
-        list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
-        if(_register_test_PARALLEL_LEVEL)
-          set(_procs "${_register_test_PARALLEL_LEVEL}")
-        elseif(CMAKE_VERSION VERSION_GREATER "3.0")
-          set(_procs)
-          include(ProcessorCount)
-          ProcessorCount(N)
-          while(N GREATER 1)
-            list(APPEND _procs ${N})
-            math(EXPR N "${N} / 2")
-          endwhile()
-        endif()
-
-        if(NOT _procs)
-          set(_procs 2)
-        endif()
-      endif()
-
-      if(_register_test_POSTPROCESS)
-        list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
-        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-          DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-      endif()
-
-      list(APPEND _arguments -w "${CMAKE_CURRENT_BINARY_DIR}")
-
-      if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
-        list(APPEND _arguments -r "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
-      endif()
-
-      string(REPLACE ";" " " _command "${_arguments}")
-
-      if(NOT _register_test_GTEST)
-        
-        # register them test
-        if(_procs)
-          foreach(p ${_procs})
-            add_test(NAME ${test_name}_${p} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p})
-          endforeach()
-        else()
-          add_test(NAME ${test_name} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
-        endif()
-      endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
+      set(AKANTU_EXTRA_CXX_FLAGS "${AKANTU_EXTRA_CXX_FLAGS} -no-pie")
+    endif()
+    if(AKANTU_EXTRA_CXX_FLAGS)
+      set_target_properties(${test_name}
+        PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+    endif()
+  else()
+    if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
+      set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
     endif()
   endif()
 
+  # copy the needed files to the build folder
+  if(_register_test_FILES_TO_COPY)
+    foreach(_file ${_register_test_FILES_TO_COPY})
+      file(COPY "${_file}" DESTINATION .)
+    endforeach()
+  endif()
+
+  # create the needed folders in the build folder
+  if(_register_test_DIRECTORIES_TO_CREATE)
+    foreach(_dir ${_register_test_DIRECTORIES_TO_CREATE})
+      if(IS_ABSOLUTE ${dir})
+        file(MAKE_DIRECTORY "${_dir}")
+      else()
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
+      endif()
+    endforeach()
+  endif()
+
+  # register the test for ctest
+  set(_arguments -n "${test_name}")
+  if(_register_test_SCRIPT)
+    file(COPY ${_register_test_SCRIPT}
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+      DESTINATION .)
+    list(APPEND _arguments -e "${_register_test_SCRIPT}")
+  elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
+    file(COPY ${test_name}.sh DESTINATION .)
+    list(APPEND _arguments -e "${test_name}.sh")
+  else()
+    list(APPEND _arguments -e "${test_name}")
+  endif()
+
+  list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
+
+  package_is_activated(parallel _is_parallel)
+  if(_is_parallel AND AKANTU_TESTS_ALWAYS_USE_MPI AND NOT _register_test_PARALLEL)
+    set(_register_test_PARALLEL TRUE)
+    set(_register_test_PARALLEL_LEVEL 1)
+  endif()
+
+  if(_register_test_PARALLEL)
+    list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
+    if(_register_test_PARALLEL_LEVEL)
+      set(_procs "${_register_test_PARALLEL_LEVEL}")
+    elseif(CMAKE_VERSION VERSION_GREATER "3.0")
+      set(_procs)
+      include(ProcessorCount)
+      ProcessorCount(N)
+      while(N GREATER 1)
+        list(APPEND _procs ${N})
+        math(EXPR N "${N} / 2")
+      endwhile()
+    endif()
+
+    if(NOT _procs)
+      set(_procs 2)
+    endif()
+  endif()
+
+  if(_register_test_POSTPROCESS)
+    list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+  endif()
+
+  list(APPEND _arguments -w "${CMAKE_CURRENT_BINARY_DIR}")
+
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
+    list(APPEND _arguments -r "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.verified")
+  endif()
+
+  string(REPLACE ";" " " _command "${_arguments}")
+
+  # register them test
+  if(_procs)
+    foreach(p ${_procs})
+      add_test(NAME ${test_name}_${p} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p})
+    endforeach()
+  else()
+    add_test(NAME ${test_name} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
+  endif()
+endfunction()
+
+
+function(register_test_files_to_package)
   set(_test_all_files)
   # add the source files in the list of all files
   foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS}
       ${_register_test_EXTRA_FILES} ${_register_test_SOURCES} ${_register_test_SCRIPT}
       ${_register_test_POSTPROCESS} ${_register_test_FILES_TO_COPY})
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_file} OR EXISTS ${_file})
       list(APPEND _test_all_files "${_file}")
     else()
       message("The file \"${_file}\" registred by the test \"${test_name}\" does not exists")
@@ -448,8 +511,8 @@ function(register_test test_name)
       list(APPEND _test_all_files "${_dep_ressources}")
     endif()
   endforeach()
-
-  # add estra files to the list of files referenced by a given test
+  
+  # add extra files to the list of files referenced by a given test
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
     list(APPEND _test_all_files "${test_name}.sh")
   endif()
