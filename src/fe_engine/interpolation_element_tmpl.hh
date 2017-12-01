@@ -40,6 +40,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Regular Elements                                                           */
 /* -------------------------------------------------------------------------- */
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_not_defined,             _itk_not_defined, 0, 0);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_point_1,        _itk_lagrangian,  1, 0);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_2,      _itk_lagrangian,  2, 1);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_3,      _itk_lagrangian,  3, 1);

@@ -48,6 +48,7 @@ package_get_element_types(core _types)
 
 foreach(_type ${_types})
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
+    list(APPEND _meshes ${_type}.msh)
     register_fem_test(fe_engine_precomputation ${_type})
   else()
     if(NOT ${_type} STREQUAL _point_1)
@@ -88,26 +89,25 @@ register_test(test_facet_element_mapping
   PACKAGE core)
 
 
-register_test(test_fe_engine_gauss_integration
+register_gtest_sources(
   SOURCES test_fe_engine_gauss_integration.cc
   PACKAGE core
-  GTEST
   )
 
-register_test(test_gradient
+register_gtest_sources(
   SOURCES test_gradient.cc
   PACKAGE core
-  GTEST
   )
 
-register_test(test_integrate
+register_gtest_sources(
   SOURCES test_integrate.cc
   PACKAGE core
-  GTEST
   )
 
-register_test(test_inverse_map
+register_gtest_sources(
   SOURCES test_inverse_map.cc
   PACKAGE core
-  GTEST
   )
+
+register_gtest_test(test_fe_engine
+  FILES_TO_COPY ${_meshes})

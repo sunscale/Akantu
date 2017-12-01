@@ -14,21 +14,28 @@ using namespace akantu;
 template <typename type_> class TestSMMFixture : public ::testing::Test {
 public:
   static constexpr const ElementType type = type_::value;
-  static constexpr const size_t spatial_dimension = ElementClass<type>::getSpatialDimension();
+  static constexpr const size_t spatial_dimension =
+      ElementClass<type>::getSpatialDimension();
 
   void SetUp() override {
     const auto spatial_dimension = this->spatial_dimension;
 
-    std::stringstream element_type;
-    element_type << type;
-    SCOPED_TRACE(element_type.str().c_str());
-
     mesh = std::make_unique<Mesh>(spatial_dimension);
 
-    mesh->read(element_type.str() + ".msh");
+    mesh->read(this->makeMeshName());
+
+    std::stringstream element_type;
+    element_type << type;
 
     model = std::make_unique<SolidMechanicsModel>(*mesh, _all_dimensions,
                                                   element_type.str());
+  }
+
+  virtual std::string makeMeshName() {
+    std::stringstream element_type;
+    element_type << type;
+    SCOPED_TRACE(element_type.str().c_str());
+    return element_type.str() + ".msh";
   }
 
   void TearDown() override {

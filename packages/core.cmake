@@ -81,7 +81,6 @@ package_declare_sources(core
   common/aka_static_if.hh
   common/aka_compatibilty_with_cpp_standard.hh
 
-  fe_engine/element_class.cc
   fe_engine/element_class.hh
   fe_engine/element_class_tmpl.hh
   fe_engine/element_classes/element_class_hexahedron_8_inline_impl.cc
@@ -105,13 +104,13 @@ package_declare_sources(core
   fe_engine/fe_engine_template.hh
   fe_engine/fe_engine_template_tmpl_field.hh
   fe_engine/fe_engine_template_tmpl.hh
-  fe_engine/geometrical_element.cc
+  fe_engine/geometrical_element_property.hh
+  fe_engine/geometrical_element_property.cc
   fe_engine/gauss_integration.cc
   fe_engine/gauss_integration_tmpl.hh
   fe_engine/integrator.hh
   fe_engine/integrator_gauss.hh
   fe_engine/integrator_gauss_inline_impl.cc
-  fe_engine/interpolation_element.cc
   fe_engine/interpolation_element_tmpl.hh
   fe_engine/integration_point.hh
   fe_engine/shape_functions.hh
@@ -120,7 +119,6 @@ package_declare_sources(core
   fe_engine/shape_lagrange_base.cc
   fe_engine/shape_lagrange_base.hh
   fe_engine/shape_lagrange_base_inline_impl.cc
-  fe_engine/shape_lagrange.cc
   fe_engine/shape_lagrange.hh
   fe_engine/shape_lagrange_inline_impl.cc
   fe_engine/element.hh
@@ -149,7 +147,6 @@ package_declare_sources(core
   io/parser/input_file_parser.hh
   io/parser/parsable.cc
   io/parser/parsable.hh
-  io/parser/parsable_tmpl.hh
   io/parser/parser.cc
   io/parser/parser_real.cc
   io/parser/parser_random.cc
@@ -179,7 +176,6 @@ package_declare_sources(core
   mesh/mesh.cc
   mesh/mesh.hh
   mesh/mesh_accessor.hh
-  mesh/mesh_accessor.cc
   mesh/mesh_events.hh
   mesh/mesh_filter.hh
   mesh/mesh_data.cc
@@ -324,7 +320,6 @@ package_declare_sources(core
   model/solid_mechanics/materials/material_non_local.hh
   model/solid_mechanics/materials/material_non_local_tmpl.hh
   model/solid_mechanics/materials/material_non_local_includes.hh
-  model/solid_mechanics/materials/material_non_local_inline_impl.cc
 
   solver/sparse_solver.cc
   solver/sparse_solver.hh

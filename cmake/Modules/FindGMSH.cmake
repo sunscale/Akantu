@@ -41,57 +41,63 @@ endif()
 
 find_package(PackageHandleStandardArgs)
 find_package_handle_standard_args(GMSH DEFAULT_MSG GMSH)
-  find_package_handle_standard_args(GMSH
-    REQUIRED_VARS GMSH
-    VERSION_VAR GMSH_VERSION)
+find_package_handle_standard_args(GMSH
+  REQUIRED_VARS GMSH
+  VERSION_VAR GMSH_VERSION)
 
 #===============================================================================
-function(ADD_MESH MESH_TARGET GEO_FILE DIM ORDER)
-  if(GMSH_FOUND)
-    set(arguments
-      ${MESH_TARGET} ${GEO_FILE} ${DIM} ${ORDER}
-      ${ARGN}
+function(ADD_MESH MESH_TARGET GEO_FILE)
+  if(NOT GMSH_FOUND)
+    return()
+  endif()
+  set(arguments
+    ${MESH_TARGET} ${GEO_FILE}
+    ${ARGN}
+    )
+
+  cmake_parse_arguments(_add_mesh
+    ""
+    "OUTPUT;DIM;ORDER"
+    ""
+    ${arguments}
+    )
+
+  if(NOT _add_mesh_DIM AND NOT _add_mesh_ORDER)
+    list(GET _add_mesh_UNPARSED_ARGUMENTS 2 _add_mesh_DIM)
+    list(GET _add_mesh_UNPARSED_ARGUMENTS 3 _add_mesh_ORDER)
+  endif()
+
+  set(_geo_file ${CMAKE_CURRENT_SOURCE_DIR}/${GEO_FILE})
+
+  set(_r_geo_file "${GEO_FILE}")
+
+  if(_add_mesh_OUTPUT)
+    set(_msh_file ${CMAKE_CURRENT_BINARY_DIR}/${_add_mesh_OUTPUT})
+    set(_r_msh_file "${_add_mesh_OUTPUT}")
+  else(_add_mesh_OUTPUT)
+    get_filename_component(_msh_file "${GEO_FILE}" NAME_WE)
+    set(_r_msh_file "${_msh_file}.msh")
+    set(_msh_file ${CMAKE_CURRENT_BINARY_DIR}/${_msh_file}.msh)
+  endif(_add_mesh_OUTPUT)
+
+  if(GMSH_VERSION VERSION_LESS 3.0.0)
+    set(OPTIMIZE -optimize)
+  endif()
+
+  if(EXISTS ${_geo_file})
+    add_custom_command(
+      OUTPUT ${_msh_file}
+      DEPENDS ${_geo_file}
+      COMMAND ${GMSH}
+      ARGS -${_add_mesh_DIM} -order ${_add_mesh_ORDER} ${OPTIMIZE} -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
+      COMMENT "Generating the ${_add_mesh_DIM}D mesh ${_r_msh_file} (order ${_add_mesh_ORDER}) form the geometry ${_r_geo_file}"
       )
 
-    cmake_parse_arguments(ADD_MESH
-      ""
-      "OUTPUT"
-      ""
-      ${arguments}
-      )
-
-    set(_geo_file ${CMAKE_CURRENT_SOURCE_DIR}/${GEO_FILE})
-
-    set(_r_geo_file "${GEO_FILE}")
-
-    if(ADD_MESH_OUTPUT)
-      set(_msh_file ${CMAKE_CURRENT_BINARY_DIR}/${ADD_MESH_OUTPUT})
-      set(_r_msh_file "${ADD_MESH_OUTPUT}")
-    else(ADD_MESH_OUTPUT)
-      get_filename_component(_msh_file "${GEO_FILE}" NAME_WE)
-      set(_msh_file ${CMAKE_CURRENT_BINARY_DIR}/${_msh_file}.msh)
-      set(_r_msh_file "${_msh_file.msh}")
-    endif(ADD_MESH_OUTPUT)
-
-    if(GMSH_VERSION VERSION_LESS 3.0.0)
-      set(OPTIMIZE -optimize)
-    endif()
-
-    if(EXISTS ${_geo_file})
-      add_custom_command(
-        OUTPUT ${_msh_file}
-        DEPENDS ${_geo_file}
-        COMMAND ${GMSH}
-        ARGS -${DIM} -order ${ORDER} ${OPTIMIZE} -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
-        COMMENT "Generating the ${DIM}D mesh ${_r_msh_file} (order ${ORDER}) form the geometry ${_r_geo_file}"
-        )
-
-      add_custom_target(${MESH_TARGET}
-        DEPENDS ${_msh_file})
-      set_target_properties(${MESH_TARGET} PROPERTIES RESSOURCES ${_geo_file})
-    else(EXISTS ${_geo_file})
-      message(WARNING
-        "File ${_geo_file} not found for target ${MESH_TARGET}")
-    endif(EXISTS ${_geo_file})
-  endif(GMSH_FOUND)
-endfunction(ADD_MESH)
+    add_custom_target(${MESH_TARGET}
+      DEPENDS ${_msh_file})
+    set_target_properties(${MESH_TARGET} PROPERTIES RESSOURCES ${_geo_file})
+  else(EXISTS ${_geo_file})
+    message(WARNING
+      "File ${_geo_file} not found for target ${MESH_TARGET}")
+  endif(EXISTS ${_geo_file})
+endfunction()

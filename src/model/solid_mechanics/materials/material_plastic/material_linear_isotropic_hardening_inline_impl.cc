@@ -34,6 +34,7 @@
 
 #include "material_linear_isotropic_hardening.hh"
 
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -60,8 +61,8 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
 
   // We need a full stress tensor, otherwise the VM stress is messed up
   Matrix<Real> sigma_tr_dev(3, 3, 0);
-  for (UInt i = 0 ; i < dim ; ++i)
-    for (UInt j = 0 ; j < dim ; ++j)
+  for (UInt i = 0; i < dim; ++i)
+    for (UInt j = 0; j < dim; ++j)
       sigma_tr_dev(i, j) = sigma_tr(i, j);
 
   sigma_tr_dev -= Matrix<Real>::eye(3, sigma_tr.trace() / 3.0);
@@ -73,8 +74,10 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
   bool initial_yielding =
       ((sigma_tr_dev_eff - iso_hardening - this->sigma_y) > 0);
 
-  Real dp = (initial_yielding) ?
-    (sigma_tr_dev_eff - this->sigma_y - previous_iso_hardening) / (3*this->mu + this->h):0;
+  Real dp = (initial_yielding)
+                ? (sigma_tr_dev_eff - this->sigma_y - previous_iso_hardening) /
+                      (3 * this->mu + this->h)
+                : 0;
 
   iso_hardening = previous_iso_hardening + this->h * dp;
 
@@ -82,9 +85,9 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
   Matrix<Real> delta_inelastic_strain(dim, dim, 0.);
   if (std::abs(sigma_tr_dev_eff) >
       sigma_tr_dev.norm<L_inf>() * Math::getTolerance()) {
-    for (UInt i = 0 ; i < dim ; ++i)
-      for (UInt j = 0 ; j < dim ; ++j)
-	delta_inelastic_strain(i, j) = sigma_tr_dev(i, j);
+    for (UInt i = 0; i < dim; ++i)
+      for (UInt j = 0; j < dim; ++j)
+        delta_inelastic_strain(i, j) = sigma_tr_dev(i, j);
     delta_inelastic_strain *= 3. / 2. * dp / sigma_tr_dev_eff;
   }
 
@@ -291,3 +294,4 @@ inline void MaterialLinearIsotropicHardening<dim>::computeTangentModuliOnQuad(
   //}
   MaterialElastic<dim>::computeTangentModuliOnQuad(tangent);
 }
+} // akantu

@@ -344,6 +344,5 @@ private:
 } // namespace akantu
 
 #include "solid_mechanics_model_cohesive_inline_impl.cc"
-#include "solid_mechanics_model_cohesive_parallel_inline_impl.cc"
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__ */

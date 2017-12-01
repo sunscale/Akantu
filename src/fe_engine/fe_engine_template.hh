@@ -68,7 +68,7 @@ class FEEngineTemplate : public FEEngine {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef I<kind, IntegrationOrderFunctor> Integ;
+  using Integ = I<kind, IntegrationOrderFunctor>;
   using Shape = S<kind>;
 
   FEEngineTemplate(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
@@ -285,7 +285,7 @@ public:
                            UInt nb_nodes_per_element, Array<Real> * n, UInt id,
                            UInt degree_to_interpolate, UInt degree_interpolated,
                            const bool sign,
-                           const GhostType & ghost_type = _not_ghost) const;
+                           const GhostType & ghost_type = _not_ghost) const override;
 #endif
 
 private:
