@@ -47,11 +47,12 @@ namespace tuple {
       template <class F, class Tuple>
       static inline decltype(auto) transform_forward(F && func,
                                                      Tuple && tuple) {
+        // auto && ret = func(std::get<N - 1>(std::forward<Tuple>(tuple)));
         return std::tuple_cat(
             Foreach<N - 1>::transform_forward(std::forward<F>(func),
                                               std::forward<Tuple>(tuple)),
-            std::forward_as_tuple(std::forward<F>(func)(
-                std::get<N - 1>(std::forward<Tuple>(tuple)))));
+            std::tuple<decltype(func(std::get<N - 1>(std::forward<Tuple>(
+                tuple))))>(func(std::get<N - 1>(std::forward<Tuple>(tuple)))));
       }
 
       template <class F, class Tuple>
@@ -85,8 +86,8 @@ namespace tuple {
       template <class F, class Tuple>
       static inline decltype(auto) transform_forward(F && func,
                                                      Tuple && tuple) {
-        return std::forward_as_tuple(
-            std::forward<F>(func)(std::get<0>(std::forward<Tuple>(tuple))));
+        return std::tuple<decltype(func(std::get<0>(std::forward<Tuple>(
+            tuple))))>(func(std::get<0>(std::forward<Tuple>(tuple))));
       }
 
       template <class F, class Tuple>
@@ -134,7 +135,7 @@ namespace iterators {
   namespace details {
     struct dereference_iterator {
       template <class Iter> decltype(auto) operator()(Iter & it) const {
-        return std::forward<decltype(*it)>(*it);
+        return *it;
       }
     };
 
@@ -310,9 +311,8 @@ inline decltype(auto) arange(const T & stop) {
   return containers::ArangeContainer<T>(stop);
 }
 
-template <class T1, class T2,
-          typename = std::enable_if_t<
-              std::is_integral<std::common_type_t<T1, T2>>::value>>
+template <class T1, class T2, typename = std::enable_if_t<std::is_integral<
+                                  std::common_type_t<T1, T2>>::value>>
 inline constexpr decltype(auto) arange(const T1 & start, const T2 & stop) {
   return containers::ArangeContainer<std::common_type_t<T1, T2>>(start, stop);
 }

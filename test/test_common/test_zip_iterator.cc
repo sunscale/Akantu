@@ -73,7 +73,33 @@ public:
   size_t move_counter{0};
 };
 
+template <typename T> struct C {
+  struct iterator {
+    using reference = A<T>;
+    using difference_type = void;
+    using iterator_category = std::random_access_iterator_tag;
+    iterator(T pos) : pos(std::move(pos)) {}
+
+    A<T> operator*() { return A<int>(pos); }
+    bool operator!=(const iterator & other) const { return pos != other.pos; }
+    bool operator==(const iterator & other) const { return pos == other.pos; }
+    iterator & operator++() {
+      ++pos;
+      return *this;
+    }
+    T pos;
+  };
+
+  C(T begin_, T end_) : begin_(std::move(begin_)), end_(std::move(end_)) {}
+
+  iterator begin() { return iterator(begin_); }
+  iterator end() { return iterator(end_); }
+
+  T begin_, end_;
+};
+
 class TestZipFixutre : public ::testing::Test {
+protected:
   void SetUp() override {
     a.reserve(size);
     b.reserve(size);
@@ -84,6 +110,17 @@ class TestZipFixutre : public ::testing::Test {
     }
   }
 
+  template <typename A, typename B>
+  void check(A && a, B && b, size_t pos, size_t nb_copy, size_t nb_move) {
+    EXPECT_EQ(pos, a.a);
+    EXPECT_EQ(nb_copy, a.copy_counter);
+    EXPECT_EQ(nb_move, a.move_counter);
+
+    EXPECT_FLOAT_EQ(pos + this->size, b.a);
+    EXPECT_EQ(nb_copy, b.copy_counter);
+    EXPECT_EQ(nb_move, b.move_counter);
+  }
+
 protected:
   size_t size{20};
   std::vector<A<int>> a;
@@ -92,42 +129,48 @@ protected:
 
 TEST_F(TestZipFixutre, SimpleTest) {
   size_t i = 0;
-  std::reference_wrapper<A<int>> a;
-  std::reference_wrapper<A<float>> b;
-  for (auto && pair : zip(a, b)) {
-    auto && a = std::get<0>(pair);
-    auto && b = std::get<1>(pair);
-
-    EXPECT_EQ(i, a.a);
-    EXPECT_EQ(0, a.copy_counter);
-    EXPECT_EQ(0, a.move_counter);
-
-    EXPECT_FLOAT_EQ(i + this->size, b.a);
-    EXPECT_EQ(0, b.copy_counter);
-    EXPECT_EQ(0, b.move_counter);
+  for (auto && pair : zip(this->a, this->b)) {
+    this->check(std::get<0>(pair), std::get<1>(pair), i, 0, 0);
     ++i;
   }
 }
 
-// /* --------------------------------------------------------------------------
-// */ int main() {
-//   auto ait = a.begin();
-//   auto bit = b.begin();
-//   auto aend = a.end();
-//   for (; ait != aend; ++ait, ++bit) {
+TEST_F(TestZipFixutre, ConstTest) {
+  size_t i = 0;
+  const auto & ca = this->a;
+  const auto & cb = this->b;
+  for (auto && pair : zip(ca, cb)) {
+    this->check(std::get<0>(pair), std::get<1>(pair), i, 0, 0);
+    EXPECT_EQ(true,
+              std::is_const<
+                  std::remove_reference_t<decltype(std::get<0>(pair))>>::value);
+    EXPECT_EQ(true,
+              std::is_const<
+                  std::remove_reference_t<decltype(std::get<1>(pair))>>::value);
+    ++i;
+  }
+}
 
-//   }
+TEST_F(TestZipFixutre, MixteTest) {
+  size_t i = 0;
+  const auto & cb = this->b;
+  for (auto && pair : zip(a, cb)) {
+    this->check(std::get<0>(pair), std::get<1>(pair), i, 0, 0);
+    EXPECT_EQ(false,
+              std::is_const<
+                  std::remove_reference_t<decltype(std::get<0>(pair))>>::value);
+    EXPECT_EQ(true,
+              std::is_const<
+                  std::remove_reference_t<decltype(std::get<1>(pair))>>::value);
+    ++i;
+  }
+}
 
-//   for (auto pair : zip(a, b)) {
-//     std::cout << std::get<0>(pair) << " " << std::get<1>(pair) << std::endl;
-//     std::get<0>(pair) *= 10;
-//   }
-
-//   ait = a.begin();
-//   bit = b.begin();
-//   for (; ait != aend; ++ait, ++bit) {
-//     std::cout << *ait << " " << *bit << std::endl;
-//   }
-
-//   return 0;
-// }
+TEST_F(TestZipFixutre, MoveTest) {
+  size_t i = 0;
+  for (auto && pair :
+       zip(C<int>(0, this->size), C<int>(this->size, 2 * this->size))) {
+    this->check(std::get<0>(pair), std::get<1>(pair), i, 0, 1);
+    ++i;
+  }
+}
