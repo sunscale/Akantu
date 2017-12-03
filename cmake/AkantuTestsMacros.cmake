@@ -147,6 +147,7 @@ endmacro()
 set(_test_flags
   UNSTABLE
   PARALLEL
+  HEADER_ONLY
   )
 
 set(_test_one_variables
@@ -381,8 +382,11 @@ function(register_test test_name)
     # set the proper includes to build most of the tests
     target_include_directories(${test_name}
       PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
-    target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
 
+    if(NOT _register_test_HEADER_ONLY)
+      target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+    endif()
+    
     if(_register_test_DEPENDS)
       add_dependencies(${test_name} ${_register_test_DEPENDS})
     endif()

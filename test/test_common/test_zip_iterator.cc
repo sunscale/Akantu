@@ -30,7 +30,9 @@
 #include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
+#include <iterator>
 #include <vector>
+#include <boost/range/combine.hpp>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -59,11 +61,78 @@ private:
   size_t counter{0};
 };
 
+template <class T> class B {
+public:
+  B() = default;
+  B(T a) : a(a){};
+  B(const B & other) = delete;
+  B & operator=(const B & other) = delete;
+
+  B(B && other)
+      : a(std::move(other.a)), counter(std::move(other.counter) + 1) {}
+  B & operator=(B && other) {
+    a = std::move(other.a);
+    counter = std::move(other.counter) + 1;
+    return *this;
+  }
+
+  B & operator*=(const T & b) {
+    a *= b;
+    return *this;
+  }
+  void to_stream(std::ostream & stream) const {
+    stream << a << " [" << counter << "]";
+  }
+
+private:
+  T a;
+  size_t counter{0};
+};
+
 template <class T>
 std::ostream & operator<<(std::ostream & stream, const A<T> & a) {
   a.to_stream(stream);
   return stream;
 }
+
+template <typename T> struct C {
+  struct iterator {
+    using reference = B<T>;
+    using difference_type = void;
+    using iterator_category = std::random_access_iterator_tag;
+    iterator(T pos) : pos(std::move(pos)) {}
+
+    B<T> operator*() { return B<int>(pos); }
+    bool operator!=(const iterator & other) const { return pos != other.pos; }
+    bool operator==(const iterator & other) const { return pos == other.pos; }
+    iterator & operator++() {
+      ++pos;
+      return *this;
+    }
+    T pos;
+  };
+
+  C(T begin_, T end_) : begin_(std::move(begin_)), end_(std::move(end_)) {}
+
+  iterator begin() { return iterator(begin_); }
+  iterator end() { return iterator(end_); }
+
+  T begin_, end_;
+};
+
+template <class T>
+std::ostream & operator<<(std::ostream & stream, const B<T> & b) {
+  b.to_stream(stream);
+  return stream;
+}
+
+// namespace std {
+// template<typename T> struct iterator_traits<typename C<T>::iterator> {
+//   using reference = B<T>;
+//   using iterator_category = std::forward_iterator_tag;
+// };
+// }
+
 
 /* -------------------------------------------------------------------------- */
 int main() {
@@ -71,7 +140,6 @@ int main() {
   const std::vector<A<float>> b{6., 7., 8., 9., 10.};
 
   auto aend = a.end();
-
   auto ait = a.begin();
   auto bit = b.begin();
 
@@ -84,10 +152,25 @@ int main() {
     std::get<0>(pair) *= 10;
   }
 
-  ait = a.begin();
-  bit = b.begin();
-  for (; ait != aend; ++ait, ++bit) {
-    std::cout << *ait << " " << *bit << std::endl;
+  // ait = a.begin();
+  // bit = b.begin();
+  // for (; ait != aend; ++ait, ++bit) {
+  //   std::cout << *ait << " " << *bit << std::endl;
+  // }
+
+  auto C1 = C<int>(0, 10);
+  auto C2 = C<int>(100, 110);
+
+  auto c1end = C1.end();
+  auto c1it = C1.begin();
+  auto c2it = C2.begin();
+
+  for (;c1it != c1end; ++c1it, ++c2it) {
+    std::cout << *c1it << " " << *c2it << std::endl;
+  }
+
+  for (auto && tuple : zip(C<int>(0, 10), C<int>(100, 110))) {
+    std::cout << boost::get<0>(tuple) << " " << boost::get<1>(tuple) << std::endl;
   }
 
   return 0;
