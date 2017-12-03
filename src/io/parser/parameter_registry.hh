@@ -199,11 +199,11 @@ protected:
 
 protected:
   /// Parameters map
-  typedef std::map<std::string, Parameter *> Parameters;
+  using Parameters = std::map<std::string, Parameter *>;
   Parameters params;
 
   /// list of sub-registries
-  typedef std::map<std::string, ParameterRegistry *> SubRegisteries;
+  using SubRegisteries = std::map<std::string, ParameterRegistry *>;
   SubRegisteries sub_registries;
 
   /// should accessor check in sub registries

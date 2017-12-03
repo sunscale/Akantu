@@ -61,7 +61,7 @@ public:
                    const MemoryID & memory_id = 0);
   ~NeighborhoodBase() override;
 
-  typedef std::vector<std::pair<IntegrationPoint, IntegrationPoint>> PairList;
+  using PairList = std::vector<std::pair<IntegrationPoint, IntegrationPoint>>;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

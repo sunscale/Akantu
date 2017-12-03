@@ -127,7 +127,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /*! iterator allows to iterate over type-data pairs of the map. The interface
    *  expects the SupportType to be ElementType. */
-  typedef std::map<SupportType, Stored> DataMap;
+  using DataMap = std::map<SupportType, Stored>;
   class type_iterator
       : private std::iterator<std::forward_iterator_tag, const SupportType> {
   public:

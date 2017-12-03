@@ -1163,7 +1163,7 @@ class Array<T, is_scal>::const_iterator
     : public iterator_internal<const R, Array<T, is_scal>::const_iterator<R>,
                                R> {
 public:
-  typedef iterator_internal<const R, const_iterator, R> parent;
+  using parent = iterator_internal<const R, const_iterator, R>;
   using value_type = typename parent::value_type;
   using pointer = typename parent::pointer;
   using reference = typename parent::reference;

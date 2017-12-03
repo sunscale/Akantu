@@ -163,24 +163,19 @@ dumper::Field * SolidMechanicsModel::createElementalField(
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
           internal_flat, group_name, spatial_dimension, kind, nb_data_per_elem);
       if (field_name == "strain") {
-        dumper::ComputeStrain<false> * foo =
-            new dumper::ComputeStrain<false>(*this);
+        auto * foo = new dumper::ComputeStrain<false>(*this);
         field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
       } else if (field_name == "Von Mises stress") {
-        dumper::ComputeVonMisesStress * foo =
-            new dumper::ComputeVonMisesStress(*this);
+        auto * foo = new dumper::ComputeVonMisesStress(*this);
         field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
       } else if (field_name == "Green strain") {
-        dumper::ComputeStrain<true> * foo =
-            new dumper::ComputeStrain<true>(*this);
+        auto * foo = new dumper::ComputeStrain<true>(*this);
         field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
       } else if (field_name == "principal strain") {
-        dumper::ComputePrincipalStrain<false> * foo =
-            new dumper::ComputePrincipalStrain<false>(*this);
+        auto * foo = new dumper::ComputePrincipalStrain<false>(*this);
         field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
       } else if (field_name == "principal Green strain") {
-        dumper::ComputePrincipalStrain<true> * foo =
-            new dumper::ComputePrincipalStrain<true>(*this);
+        auto * foo = new dumper::ComputePrincipalStrain<true>(*this);
         field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
       }
 
@@ -188,12 +183,12 @@ dumper::Field * SolidMechanicsModel::createElementalField(
       if (padding_flag) {
         if (field_name == "stress") {
           if (spatial_dimension == 2) {
-            dumper::StressPadder<2> * foo = new dumper::StressPadder<2>(*this);
+            auto * foo = new dumper::StressPadder<2>(*this);
             field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
           }
         } else if (field_name == "strain" || field_name == "Green strain") {
           if (spatial_dimension == 2) {
-            dumper::StrainPadder<2> * foo = new dumper::StrainPadder<2>(*this);
+            auto * foo = new dumper::StrainPadder<2>(*this);
             field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
           }
         }

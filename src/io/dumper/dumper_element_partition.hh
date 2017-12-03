@@ -45,11 +45,10 @@ class element_partition_field_iterator
   /* ------------------------------------------------------------------------ */
 public:
   typedef element_iterator<types, dumper::element_partition_field_iterator> parent;
-  typedef typename types::return_type return_type;
-  typedef typename types::array_iterator array_iterator;
-  typedef typename types::field_type field_type;
-
-
+  using return_type =
+      typename SingleType<unsigned int, Vector, true>::return_type;
+  using array_iterator = typename types::array_iterator;
+  using field_type = typename types::field_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -93,9 +92,9 @@ public:
   /* ------------------------------------------------------------------------ */
 
   typedef SingleType<UInt,Vector,filtered> types;
-  typedef element_partition_field_iterator<types> iterator;
+  using iterator = element_partition_field_iterator<types>;
   typedef GenericElementalField<types,element_partition_field_iterator> parent;
-  typedef typename types::field_type field_type;
+  using field_type = typename types::field_type;
 
 public:
 

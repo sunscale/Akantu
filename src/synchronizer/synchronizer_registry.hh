@@ -78,7 +78,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::multimap<SynchronizationTag, Synchronizer *> Tag2Sync;
+  using Tag2Sync = std::multimap<SynchronizationTag, Synchronizer *>;
   /// list of registered synchronization
   Tag2Sync synchronizers;
 

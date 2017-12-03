@@ -66,10 +66,10 @@ public:
 public:
 
   /// initialize the material parameters
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// check stress for cohesive elements' insertion
-  virtual void checkInsertion(bool check_only = false);
+  void checkInsertion(bool check_only = false) override;
 
   /// compute effective stress norm for insertion check
   Real computeEffectiveNorm(const Matrix<Real> & stress,
@@ -80,23 +80,22 @@ public:
 protected:
 
   /// constitutive law
-  virtual void computeTraction(const Array<Real> & normal,
-			       ElementType el_type,
-			       GhostType ghost_type = _not_ghost);
+  void computeTraction(const Array<Real> & normal, ElementType el_type,
+                       GhostType ghost_type = _not_ghost) override;
 
   /// check delta_max for cohesive elements in case of no convergence
   /// in the solveStep (only for extrinsic-implicit)
-  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost);
+  void checkDeltaMax(GhostType ghost_type = _not_ghost) override;
 
   /// reset variables when convergence is reached (only for
   /// extrinsic-implicit)
-  void resetVariables(GhostType ghost_type = _not_ghost);
+  void resetVariables(GhostType ghost_type = _not_ghost) override;
 
   /// compute tangent stiffness matrix
-  virtual void computeTangentTraction(const ElementType & el_type,
-				      Array<Real> & tangent_matrix,
-				      const Array<Real> & normal,
-				      GhostType ghost_type);
+  void computeTangentTraction(const ElementType & el_type,
+                              Array<Real> & tangent_matrix,
+                              const Array<Real> & normal,
+                              GhostType ghost_type) override;
 
   /**
    * Scale insertion traction sigma_c according to the volume of the

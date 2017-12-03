@@ -79,7 +79,7 @@ public:
 
   ~Model() override;
 
-  typedef std::map<std::string, std::unique_ptr<FEEngine>> FEEngineMap;
+  using FEEngineMap = std::map<std::string, std::unique_ptr<FEEngine>>;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

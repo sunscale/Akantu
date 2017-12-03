@@ -57,6 +57,13 @@ protected:
   Vector<Real> upper;
 };
 
+template <typename type_>
+constexpr const ElementType TestFEMFixture<type_>::type;
+
+template <typename type_>
+constexpr const size_t TestFEMFixture<type_>::dim;
+
+
 using types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestFEMFixture, types);

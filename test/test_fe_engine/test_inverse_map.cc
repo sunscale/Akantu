@@ -37,31 +37,28 @@ using namespace akantu;
 namespace {
 
 TYPED_TEST(TestFEMFixture, InverseMap) {
-  const auto type = this->type;
-  const auto dim = this->dim;
-
-  Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
+  Matrix<Real> quad = GaussIntegrationElement<TestFixture::type>::getQuadraturePoints();
 
   const auto & position = this->fem->getMesh().getNodes();
 
-  /// get the quadrature points coordinates
-  Array<Real> coord_on_quad(quad.cols() * this->nb_element, dim,
+/// get the quadrature points coordinates
+  Array<Real> coord_on_quad(quad.cols() * this->nb_element, this->dim,
                             "coord_on_quad");
 
-  this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, dim, type);
+  this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, this->dim, this->type);
 
-  Vector<Real> natural_coords(dim);
+  Vector<Real> natural_coords(this->dim);
 
   auto length = (this->upper - this->lower).template norm<L_inf>();
 
-  for(auto && enum_ : enumerate(make_view(coord_on_quad, dim, quad.cols()))) {
+  for(auto && enum_ : enumerate(make_view(coord_on_quad, this->dim, quad.cols()))) {
     auto el = std::get<0>(enum_);
     const auto & quads_coords = std::get<1>(enum_);
 
     for (auto q : arange(quad.cols())) {
       Vector<Real> quad_coord = quads_coords(q);
       Vector<Real> ref_quad_coord = quad(q);
-      this->fem->inverseMap(quad_coord, el, type, natural_coords);
+      this->fem->inverseMap(quad_coord, el, this->type, natural_coords);
 
       auto dis_normalized = ref_quad_coord.distance(natural_coords) / length;
       EXPECT_NEAR(0., dis_normalized, 5e-12);

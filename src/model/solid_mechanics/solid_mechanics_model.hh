@@ -542,15 +542,13 @@ protected:
   bool is_default_material_selector;
 
   /// flag defining if the increment must be computed or not
-  bool
-          increment_flag;
+  bool increment_flag;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;
 
-  typedef std::map<std::pair<std::string, ElementKind>,
-                   ElementTypeMapArray<Real> *>
-      flatten_internal_map;
+  using flatten_internal_map = std::map<std::pair<std::string, ElementKind>,
+                                        ElementTypeMapArray<Real> *>;
 
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;

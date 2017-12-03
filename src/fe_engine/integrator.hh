@@ -65,12 +65,10 @@ public:
                                                     GhostType ghost_type) {}
 
   /// empty method
-  void integrateOnElement(__attribute__((unused)) const Array<Real> & f,
-                          __attribute__((unused)) Real * intf,
-                          __attribute__((unused)) UInt nb_degree_of_freedom,
-                          __attribute__((unused)) const Element & elem,
-                          __attribute__((unused))
-                          GhostType ghost_type) const {};
+  void integrateOnElement(const Array<Real> & /*f*/, Real * /*intf*/,
+                          UInt /*nb_degree_of_freedom*/,
+                          const Element & /*elem*/,
+                          GhostType /*ghost_type*/) const {};
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const {
@@ -85,8 +83,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void onElementsAdded(const Array<Element> &) {}
-  virtual void onElementsRemoved(const Array<Element> &,
-                                 const ElementTypeMapArray<UInt> & new_numbering) {
+  virtual void
+  onElementsRemoved(const Array<Element> &,
+                    const ElementTypeMapArray<UInt> & new_numbering) {
     jacobians.onElementsRemoved(new_numbering);
   }
   /* ------------------------------------------------------------------------ */

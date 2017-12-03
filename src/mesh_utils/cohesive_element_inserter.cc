@@ -50,11 +50,7 @@ CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh, bool is_extrinsic,
 }
 
 /* -------------------------------------------------------------------------- */
-CohesiveElementInserter::~CohesiveElementInserter() {
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  delete global_ids_updater;
-#endif
-}
+CohesiveElementInserter::~CohesiveElementInserter() = default;
 
 /* -------------------------------------------------------------------------- */
 void CohesiveElementInserter::init(bool is_extrinsic) {
@@ -233,8 +229,8 @@ UInt CohesiveElementInserter::insertIntrinsicElements() {
 }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::insertIntrinsicElements(std::string physname,
-                                                      UInt material_index) {
+void CohesiveElementInserter::insertIntrinsicElements(
+    const std::string & physname, UInt material_index) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();

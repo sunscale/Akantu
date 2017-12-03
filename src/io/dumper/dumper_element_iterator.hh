@@ -150,7 +150,7 @@ public:
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  typedef element_iterator<types, ::akantu::dumper::elemental_field_iterator> parent;
+  using parent = element_iterator<types, ::akantu::dumper::elemental_field_iterator>;
   using it_type = typename types::it_type;
   using return_type = typename types::return_type;
   using field_type = typename types::field_type;

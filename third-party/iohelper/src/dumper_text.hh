@@ -89,7 +89,7 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
 
-  typedef std::map<std::string, File *> FileMap;
+  using FileMap = std::map<std::string, File *>;
 
   /**
    * another base name so that you will never understand how iohelper

@@ -109,11 +109,11 @@ public:
     Array<UInt> old_nodes;
   };
 
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
-      MyFEEngineCohesiveType;
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
-                           FacetsCohesiveIntegrationOrderFunctor>
-      MyFEEngineFacetType;
+  using MyFEEngineCohesiveType =
+      FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>;
+  using MyFEEngineFacetType =
+      FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
+                       FacetsCohesiveIntegrationOrderFunctor>;
 
   SolidMechanicsModelCohesive(Mesh & mesh,
                               UInt spatial_dimension = _all_dimensions,
@@ -142,7 +142,7 @@ public:
 
   /// initialize the cohesive model
   void initFull(const ModelOptions & options =
-                    SolidMechanicsModelCohesiveOptions()) override;
+                SolidMechanicsModelCohesiveOptions()) override;
 
   template <typename P, typename T, typename... pack>
   void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {

@@ -174,8 +174,8 @@ DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
 /* -------------------------------------------------------------------------- */
 class GlobalDOFInfoDataAccessor : public DataAccessor<UInt> {
 public:
-  typedef
-      typename std::unordered_map<UInt, std::vector<UInt>>::size_type size_type;
+  using size_type =
+      typename std::unordered_map<UInt, std::vector<UInt>>::size_type;
 
   GlobalDOFInfoDataAccessor() = default;
 
@@ -540,12 +540,6 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
   UInt nb_element;
-  if (ghost_type == _not_ghost) {
-    nb_element = this->mesh->getNbElement(type);
-  } else {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  }
-
   UInt * filter_it = nullptr;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();

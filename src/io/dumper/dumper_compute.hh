@@ -82,8 +82,7 @@ public:
   using return_type = _return_type;
   using data_type = typename sub_types::data_type;
 
-  typedef TypeTraits<data_type, return_type, ElementTypeMapArray<data_type> >
-      types;
+  using types = TypeTraits<data_type, return_type, ElementTypeMapArray<data_type> >;
 
   class iterator {
   public:
