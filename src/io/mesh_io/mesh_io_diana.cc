@@ -539,7 +539,7 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
 
   UInt mat_id = 0;
 
-  typedef std::map<std::string, Real> MatProp;
+  using MatProp = std::map<std::string, Real>;
   MatProp mat_prop;
   do {
     my_getline(infile, line);

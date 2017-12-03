@@ -69,7 +69,7 @@ protected:
 public:
 
   /// get the energy specifying the type for the time step
-  Real getEnergy(std::string type) override;
+  Real getEnergy(const std::string & type) override;
 
   /// Compute the plastic energy
   void updateEnergies(ElementType el_type,

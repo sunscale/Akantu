@@ -176,8 +176,9 @@ namespace debug {
           (second = bt_line.find('+')) != std::string::npos) {
         std::string location = bt_line.substr(0, first);
 #if defined(READLINK_COMMAND)
-        location = exec(std::string(BOOST_PP_STRINGIZE(READLINK_COMMAND)) +
-                        std::string(" -f ") + location);
+        std::string location_cmd = std::string(BOOST_PP_STRINGIZE(READLINK_COMMAND)) +
+          std::string(" -f ") + location;
+        location = exec(location_cmd);
 #endif
         std::string call =
             demangle(bt_line.substr(first + 1, second - first - 1).c_str());

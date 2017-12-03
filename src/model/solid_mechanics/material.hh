@@ -435,9 +435,9 @@ public:
 
   /// return the energy (identified by id) for the subset of elements contained
   /// by the material
-  virtual Real getEnergy(std::string energy_id);
+  virtual Real getEnergy(const std::string & energy_id);
   /// return the energy (identified by id) for the provided element
-  virtual Real getEnergy(std::string energy_id, ElementType type, UInt index);
+  virtual Real getEnergy(const std::string & energy_id, ElementType type, UInt index);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementFilter, element_filter, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(GradU, gradu, Real);

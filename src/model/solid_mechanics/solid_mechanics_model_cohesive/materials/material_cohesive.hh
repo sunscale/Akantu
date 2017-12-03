@@ -175,10 +175,10 @@ public:
   Real getContactEnergy();
 
   /// get energy
-  Real getEnergy(std::string type) override;
+  Real getEnergy(const std::string &type) override;
 
   /// return the energy (identified by id) for the provided element
-  Real getEnergy(std::string energy_id, ElementType type, UInt index) override {
+  Real getEnergy(const std::string &energy_id, ElementType type, UInt index) override {
     return Material::getEnergy(energy_id, type, index);
   }
 

@@ -72,7 +72,7 @@ T Parser::parseType(const std::string & value, Grammar & grammar) {
 namespace parser {
   template<class Iterator>
   struct Skipper {
-    typedef qi::rule<Iterator, void()> type;
+    using type = qi::rule<Iterator, void()>;
   };
 }
 

@@ -44,7 +44,7 @@ class element_partition_field_iterator
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef element_iterator<types, dumper::element_partition_field_iterator> parent;
+  using parent = element_iterator<types, dumper::element_partition_field_iterator>;
   using return_type =
       typename SingleType<unsigned int, Vector, true>::return_type;
   using array_iterator = typename types::array_iterator;
@@ -91,9 +91,9 @@ public:
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  typedef SingleType<UInt,Vector,filtered> types;
+  using types = SingleType<UInt,Vector,filtered>;
   using iterator = element_partition_field_iterator<types>;
-  typedef GenericElementalField<types,element_partition_field_iterator> parent;
+  using parent = GenericElementalField<types,element_partition_field_iterator>;
   using field_type = typename types::field_type;
 
 public:

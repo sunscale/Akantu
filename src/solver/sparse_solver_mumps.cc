@@ -145,16 +145,23 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
 SparseSolverMumps::~SparseSolverMumps() {
   AKANTU_DEBUG_IN();
 
+  mumpsDataDestroy();
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseSolverMumps::destroyInternalData() {
+void SparseSolverMumps::mumpsDataDestroy() {
   if (this->is_initialized) {
     this->mumps_data.job = _smj_destroy; // destroy
     dmumps_c(&this->mumps_data);
     this->is_initialized = false;
   }
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseSolverMumps::destroyInternalData() {
+  mumpsDataDestroy();
 }
 
 /* -------------------------------------------------------------------------- */

@@ -309,7 +309,7 @@ void MeshPartition::fillPartitionInformation(
 
         const std::vector<Element> & adjacent_elems = elem_to_subelem(i);
         if (!adjacent_elems.empty()) {
-          Element min_elem;
+          Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(), *ghost_type_t::end()};
           UInt min_part(std::numeric_limits<UInt>::max());
           std::set<UInt> adjacent_parts;
 
