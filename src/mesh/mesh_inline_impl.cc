@@ -600,7 +600,7 @@ inline UInt Mesh::getNbNodesPerElementList(const Array<Element> & elements) {
 /* -------------------------------------------------------------------------- */
 inline Mesh & Mesh::getMeshFacets() {
   if (!this->mesh_facets)
-    AKANTU_EXCEPTION(
+    AKANTU_SILENT_EXCEPTION(
         "No facet mesh is defined yet! check the buildFacets functions");
 
   return *this->mesh_facets;
@@ -609,7 +609,7 @@ inline Mesh & Mesh::getMeshFacets() {
 /* -------------------------------------------------------------------------- */
 inline const Mesh & Mesh::getMeshFacets() const {
   if (!this->mesh_facets)
-    AKANTU_EXCEPTION(
+    AKANTU_SILENT_EXCEPTION(
         "No facet mesh is defined yet! check the buildFacets functions");
 
   return *this->mesh_facets;
@@ -617,7 +617,7 @@ inline const Mesh & Mesh::getMeshFacets() const {
 /* -------------------------------------------------------------------------- */
 inline const Mesh & Mesh::getMeshParent() const {
   if (!this->mesh_parent)
-    AKANTU_EXCEPTION(
+    AKANTU_SILENT_EXCEPTION(
         "No parent mesh is defined! This is only valid in a mesh_facets");
 
   return *this->mesh_parent;

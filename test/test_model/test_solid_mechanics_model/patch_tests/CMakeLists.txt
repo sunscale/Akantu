@@ -66,3 +66,19 @@ add_akantu_test(explicit "Explicit patch tests")
 add_akantu_test(implicit "Implicit patch tests")
 
 add_akantu_test(lumped_mass "Test the mass lumping")
+
+set(_meshes)
+package_get_variable(ET_ELEMENT_TYPES core _element_list)
+foreach(_et ${_element_list})
+  if(NOT _et STREQUAL _point_1)
+    list(APPEND _meshes data/${_et}.msh)
+  endif()
+endforeach()
+
+
+register_gtest_sources(SOURCES patch_test_linear_elastic.cc
+  PACKAGE core
+  FILES_TO_COPY data/material_check_stress_plane_strain.dat data/material_check_stress_plane_stress.dat)
+
+register_gtest_test(patch_test_linear_elastic
+  FILES_TO_COPY ${_meshes})

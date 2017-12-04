@@ -266,6 +266,8 @@ protected:
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  AKANTU_GET_MACRO(ElementGroups, element_groups, const ElementGroups &);
+
   const ElementGroup & getElementGroup(const std::string & name) const;
   const NodeGroup & getNodeGroup(const std::string & name) const;
 
