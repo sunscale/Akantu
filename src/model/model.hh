@@ -33,10 +33,13 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_memory.hh"
+#include "aka_named_argument.hh"
 #include "fe_engine.hh"
 #include "mesh.hh"
+#include "model_options.hh"
 #include "model_solver.hh"
-#include "aka_named_argument.hh"
+/* -------------------------------------------------------------------------- */
+#include <typeindex>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MODEL_HH__
@@ -45,29 +48,11 @@
 namespace akantu {
 class SynchronizerRegistry;
 class Parser;
+class DumperIOHelper;
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-
-namespace {
-  DECLARE_NAMED_ARGUMENT(analysis_method);
-}
-
-struct ModelOptions {
-  explicit ModelOptions(AnalysisMethod analysis_method = _static)
-      : analysis_method(analysis_method) {}
-
-  template <typename... pack>
-  ModelOptions(use_named_args_t, pack &&... _pack)
-      : ModelOptions(OPTIONAL_NAMED_ARG(analysis_method, _static)) {}
-
-  virtual ~ModelOptions() = default;
-
-  AnalysisMethod analysis_method;
-};
-
-class DumperIOHelper;
 
 class Model : public Memory, public ModelSolver, public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
@@ -84,12 +69,35 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-  virtual void initFull(const ModelOptions & options);
+protected:
+  virtual void initFullImpl(const ModelOptions & options);
 
-  template <typename P, typename T, typename... pack>
-  void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
-    this->initFull(ModelOptions{use_named_args, first, _pack...});
+public:
+  template <typename... pack>
+  std::enable_if_t<are_named_argument<pack...>::value>
+  initFull(pack &&... _pack) {
+    switch (this->options_type) {
+    case ModelOptionsType::_model:
+      // FALLTHRU
+    case ModelOptionsType::_solid_mechanics_model:
+      this->initFullImpl(ModelOptions{use_named_args,
+                                      std::forward<decltype(_pack)>(_pack)...});
+      break;
+#ifdef AKANTU_COHESIVE_ELEMENT
+    case ModelOptionsType::_solid_mechanics_model_cohesive:
+      this->initFullImpl(SolidMechanicsModelCohesiveOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
+      break;
+#endif
+    default:
+      AKANTU_EXCEPTION("Does not know what to do with the parameters");
+    }
+  }
+
+  template <typename... pack>
+  std::enable_if_t<not are_named_argument<pack...>::value>
+  initFull(pack &&... _pack) {
+    this->initFullImpl(std::forward<decltype(_pack)>(_pack)...);
   }
 
   /// initialize a new solver if needed
@@ -97,7 +105,8 @@ public:
 
 protected:
   /// get some default values for derived classes
-  virtual std::tuple<ID, TimeStepSolverType> getDefaultSolverID(const AnalysisMethod & method) = 0;
+  virtual std::tuple<ID, TimeStepSolverType>
+  getDefaultSolverID(const AnalysisMethod & method) = 0;
 
   virtual void initModel() = 0;
 
@@ -111,11 +120,10 @@ protected:
   // void setPBC(UInt x, UInt y, UInt z);
   // void setPBC(SurfacePairList & surface_pairs);
 public:
-
   virtual void initPBC();
 
   /// set the parser to use
-  //void setParser(Parser & parser);
+  // void setParser(Parser & parser);
 
   /* ------------------------------------------------------------------------ */
   /* Access to the dumpable interface of the boundaries                       */
@@ -334,6 +342,9 @@ protected:
 
   /// parser to the pointer to use
   Parser & parser;
+
+  /// type of options to use
+  ModelOptionsType options_type{ModelOptionsType::_model};
 };
 
 /// standard output stream operator

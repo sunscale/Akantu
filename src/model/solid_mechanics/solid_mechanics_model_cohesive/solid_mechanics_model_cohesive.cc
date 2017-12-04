@@ -64,6 +64,8 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       facet_stress("facet_stress", id), facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
 
+  this->options_type = ModelOptionsType::_solid_mechanics_model_cohesive;
+
   delete material_selector;
   material_selector = new DefaultMaterialCohesiveSelector(*this);
 
@@ -105,7 +107,7 @@ void SolidMechanicsModelCohesive::setTimeStep(Real time_step,
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::initFull(const ModelOptions & options) {
+void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
   const auto & smmc_options =
@@ -140,7 +142,7 @@ void SolidMechanicsModelCohesive::initFull(const ModelOptions & options) {
     }
   }
 
-  SolidMechanicsModel::initFull(options);
+  SolidMechanicsModel::initFullImpl(options);
 
   AKANTU_DEBUG_OUT();
 } // namespace akantu
