@@ -29,7 +29,6 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 package_declare(core NOT_OPTIONAL
   DESCRIPTION "core package for Akantu"
   FEATURES_PUBLIC cxx_strong_enums cxx_defaulted_functions cxx_deleted_functions
@@ -265,61 +264,7 @@ package_declare_sources(core
   model/model.cc
   model/model.hh
   model/model_inline_impl.cc
-
-  model/solid_mechanics/material.cc
-  model/solid_mechanics/material.hh
-  model/solid_mechanics/material_inline_impl.cc
-  model/solid_mechanics/material_selector.hh
-  model/solid_mechanics/material_selector_tmpl.hh
-  model/solid_mechanics/materials/internal_field.hh
-  model/solid_mechanics/materials/internal_field_tmpl.hh
-  model/solid_mechanics/materials/random_internal_field.hh
-  model/solid_mechanics/materials/random_internal_field_tmpl.hh
-  model/solid_mechanics/solid_mechanics_model.cc
-  model/solid_mechanics/solid_mechanics_model.hh
-  model/solid_mechanics/solid_mechanics_model_inline_impl.cc
-  model/solid_mechanics/solid_mechanics_model_io.cc
-  model/solid_mechanics/solid_mechanics_model_mass.cc
-  model/solid_mechanics/solid_mechanics_model_material.cc
-  model/solid_mechanics/solid_mechanics_model_tmpl.hh
-  model/solid_mechanics/solid_mechanics_model_event_handler.hh
-  model/solid_mechanics/materials/plane_stress_toolbox.hh
-  model/solid_mechanics/materials/plane_stress_toolbox_tmpl.hh
-
-
-  model/solid_mechanics/materials/material_core_includes.hh
-  model/solid_mechanics/materials/material_elastic.cc
-  model/solid_mechanics/materials/material_elastic.hh
-  model/solid_mechanics/materials/material_elastic_inline_impl.cc
-  model/solid_mechanics/materials/material_thermal.cc
-  model/solid_mechanics/materials/material_thermal.hh
-  model/solid_mechanics/materials/material_elastic_linear_anisotropic.cc
-  model/solid_mechanics/materials/material_elastic_linear_anisotropic.hh
-  model/solid_mechanics/materials/material_elastic_orthotropic.cc
-  model/solid_mechanics/materials/material_elastic_orthotropic.hh
-  model/solid_mechanics/materials/material_damage/material_damage.hh
-  model/solid_mechanics/materials/material_damage/material_damage_tmpl.hh
-  model/solid_mechanics/materials/material_damage/material_marigo.cc
-  model/solid_mechanics/materials/material_damage/material_marigo.hh
-  model/solid_mechanics/materials/material_damage/material_marigo_inline_impl.cc
-  model/solid_mechanics/materials/material_damage/material_mazars.cc
-  model/solid_mechanics/materials/material_damage/material_mazars.hh
-  model/solid_mechanics/materials/material_damage/material_mazars_inline_impl.cc
-  model/solid_mechanics/materials/material_finite_deformation/material_neohookean.cc
-  model/solid_mechanics/materials/material_finite_deformation/material_neohookean.hh
-  model/solid_mechanics/materials/material_finite_deformation/material_neohookean_inline_impl.cc
-  model/solid_mechanics/materials/material_plastic/material_plastic.cc
-  model/solid_mechanics/materials/material_plastic/material_plastic.hh
-  model/solid_mechanics/materials/material_plastic/material_plastic_inline_impl.cc
-  model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening.cc
-  model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening.hh
-  model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening_inline_impl.cc
-  model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
-  model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
-
-  model/solid_mechanics/materials/material_non_local.hh
-  model/solid_mechanics/materials/material_non_local_tmpl.hh
-  model/solid_mechanics/materials/material_non_local_includes.hh
+  model/model_options.hh
 
   solver/sparse_solver.cc
   solver/sparse_solver.hh
@@ -453,11 +398,6 @@ package_declare_elements(core
   lagrange_base
   )
 
-package_declare_material_infos(core
-  LIST AKANTU_CORE_MATERIAL_LIST
-  INCLUDE material_core_includes.hh
-  )
-
 package_declare_documentation_files(core
   manual.sty
   manual.cls
@@ -469,12 +409,8 @@ package_declare_documentation_files(core
   manual-gettingstarted.tex
   manual-io.tex
   manual-feengine.tex
-  manual-solidmechanicsmodel.tex
-  manual-constitutive-laws.tex
-  manual-lumping.tex
   manual-elements.tex
   manual-appendix-elements.tex
-  manual-appendix-materials.tex
   manual-appendix-packages.tex
   manual-backmatter.tex
   manual-bibliography.bib
@@ -485,34 +421,15 @@ package_declare_documentation_files(core
   figures/boundary.svg
   figures/dirichlet.pdf
   figures/dirichlet.svg
-  figures/doc_wheel.pdf
-  figures/doc_wheel.svg
-  figures/dynamic_analysis.png
-  figures/explicit_dynamic.pdf
-  figures/explicit_dynamic.svg
-  figures/static.pdf
-  figures/static.svg
-  figures/hooke_law.pdf
+#  figures/doc_wheel.pdf
+#  figures/doc_wheel.svg
   figures/hot-point-1.png
   figures/hot-point-2.png
-  figures/implicit_dynamic.pdf
-  figures/implicit_dynamic.svg
   figures/insertion.pdf
   figures/interpolate.pdf
   figures/interpolate.svg
-  figures/problemDomain.pdf_tex
-  figures/problemDomain.pdf
-  figures/static_analysis.png
-  figures/stress_strain_el.pdf
-  figures/tangent.pdf
-  figures/tangent.svg
   figures/vectors.pdf
   figures/vectors.svg
-
-  figures/stress_strain_neo.pdf
-  figures/visco_elastic_law.pdf
-  figures/isotropic_hardening_plasticity.pdf
-  figures/stress_strain_visco.pdf
 
   figures/elements/hexahedron_8.pdf
   figures/elements/hexahedron_8.svg
@@ -572,7 +489,6 @@ package_declare_extra_files_to_package(core
   SOURCES
     common/aka_element_classes_info.hh.in
     common/aka_config.hh.in
-    model/solid_mechanics/material_list.hh.in
   )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.9))
