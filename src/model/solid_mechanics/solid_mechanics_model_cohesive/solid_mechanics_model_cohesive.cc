@@ -83,7 +83,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
 
     auto & synchronizer = mesh.getElementSynchronizer();
     cohesive_synchronizer->split(synchronizer, [](auto && el) {
-        return Mesh::getKind(el.type) == _ek_cohesive;
+      return Mesh::getKind(el.type) == _ek_cohesive;
     });
 
     this->registerSynchronizer(*cohesive_synchronizer, _gst_material_id);
@@ -118,7 +118,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   inserter = std::make_unique<CohesiveElementInserter>(
       mesh, is_extrinsic, id + ":cohesive_element_inserter");
 
-  if (not mesh.isDistributed()) {
+  if (mesh.isDistributed()) {
     auto & mesh_facets = inserter->getMeshFacets();
     auto & synchronizer =
         dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
