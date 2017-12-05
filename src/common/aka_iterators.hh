@@ -78,7 +78,7 @@ namespace tuple {
       return make_tuple_no_decay(
           std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple)))...);
     }
-  }; // namespace details
+  } // namespace details
 
   /* ------------------------------------------------------------------------ */
   template <class Tuple> bool are_not_equal(Tuple && a, Tuple && b) {
