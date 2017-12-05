@@ -39,8 +39,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 DefaultMaterialCohesiveSelector::DefaultMaterialCohesiveSelector(
     const SolidMechanicsModelCohesive & model)
-    : DefaultMaterialSelector(model.getMaterialByElement()),
-      facet_material(model.getFacetMaterial()), mesh(model.getMesh()) {}
+    : facet_material(model.getFacetMaterial()), mesh(model.getMesh()) {}
 
 /* -------------------------------------------------------------------------- */
 UInt DefaultMaterialCohesiveSelector::operator()(const Element & element) {
@@ -55,16 +54,16 @@ UInt DefaultMaterialCohesiveSelector::operator()(const Element & element) {
       if (facet_material.exists(facet.type, facet.ghost_type)) {
         return facet_material(facet.type, facet.ghost_type)(facet.element);
       } else {
-        return MaterialSelector::operator()(element);
+        return fallback_value;
       }
     } catch (...) {
-      return MaterialSelector::operator()(element);
+      return fallback_value;
     }
   } else if (Mesh::getSpatialDimension(element.type) ==
              mesh.getSpatialDimension() - 1) {
     return facet_material(element.type, element.ghost_type)(element.element);
   } else {
-    return DefaultMaterialSelector::operator()(element);
+    return MaterialSelector::operator()(element);
   }
 }
 

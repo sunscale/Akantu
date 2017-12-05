@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
   mesh.read("material_selector.msh");
 
   SolidMechanicsModel model(mesh);
-  MeshDataMaterialSelector<std::string> selector("physical_names", model);
+  auto && selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
   model.setMaterialSelector(selector);
 
   model.initFull();

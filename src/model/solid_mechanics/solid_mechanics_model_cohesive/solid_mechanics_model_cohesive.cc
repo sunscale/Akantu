@@ -66,8 +66,11 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
 
   this->options_type = ModelOptionsType::_solid_mechanics_model_cohesive;
 
-  delete material_selector;
-  material_selector = new DefaultMaterialCohesiveSelector(*this);
+  auto && tmp_material_selector =
+      std::make_shared<DefaultMaterialCohesiveSelector>(*this);
+
+  tmp_material_selector->setFallback(this->material_selector);
+  material_selector = tmp_material_selector;
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("cohesive elements", id);
@@ -173,8 +176,6 @@ void SolidMechanicsModelCohesive::initMaterials() {
     const Mesh & mesh_facets = inserter->getMeshFacets();
     facet_material.initialize(mesh_facets, _spatial_dimension =
                                                Model::spatial_dimension - 1);
-    // mesh_facets.initElementTypeMapArray(facet_material, 1,
-    //                                     spatial_dimension - 1);
 
     Element element;
     for (auto ghost_type : ghost_types) {
@@ -246,9 +247,10 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
 
   SolidMechanicsModel::initMaterials();
 
-  if (is_default_material_selector)
-    delete material_selector;
-  material_selector = new MeshDataMaterialCohesiveSelector(*this);
+  auto && tmp = std::make_shared<MeshDataMaterialCohesiveSelector>(*this);
+  tmp->setFallback(material_selector->getFallbackValue());
+  tmp->setFallback(material_selector->getFallbackSelector());
+  material_selector = tmp;
 
   // UInt nb_new_elements =
   inserter->insertElements();
@@ -272,24 +274,10 @@ void SolidMechanicsModelCohesive::synchronizeInsertionData() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
-    UInt cohesive_index) {
+    UInt /*cohesive_index*/) {
 
   AKANTU_DEBUG_IN();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator first =
-        mesh.firstType(Model::spatial_dimension, *gt, _ek_cohesive);
-    Mesh::type_iterator last =
-        mesh.lastType(Model::spatial_dimension, *gt, _ek_cohesive);
-
-    for (; first != last; ++first) {
-      Array<UInt> & mat_indexes = this->material_index(*first, *gt);
-      Array<UInt> & mat_loc_num = this->material_local_numbering(*first, *gt);
-      mat_indexes.set(cohesive_index);
-      mat_loc_num.clear();
-    }
-  }
 #if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   if (facet_synchronizer != nullptr)
     inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);

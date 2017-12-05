@@ -47,7 +47,7 @@ namespace akantu {
  * class that assigns the first cohesive material by default to the
  * cohesive elements
  */
-class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
+class DefaultMaterialCohesiveSelector : public MaterialSelector {
 public:
   DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model);
   UInt operator()(const Element & element) override;
