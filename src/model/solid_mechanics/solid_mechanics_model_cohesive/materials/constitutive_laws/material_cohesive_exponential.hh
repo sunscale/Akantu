@@ -67,18 +67,18 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// Initialization
-  void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law
-  void computeTraction(const Array<Real> & normal,
-		       ElementType el_type,
-		       GhostType ghost_type = _not_ghost);
+  void computeTraction(const Array<Real> & normal, ElementType el_type,
+                       GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentTraction(const ElementType & el_type,
-			      Array<Real> & tangent_matrix,
-			      const Array<Real> & normal,
-			      GhostType ghost_type = _not_ghost);
+                              Array<Real> & tangent_matrix,
+                              const Array<Real> & normal,
+                              GhostType ghost_type = _not_ghost) override;
+
 private:
   
   void computeCoupledTraction(Vector<Real> & tract, const Vector<Real> & normal,

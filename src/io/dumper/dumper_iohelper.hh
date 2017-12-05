@@ -133,8 +133,8 @@ protected:
   /// internal iohelper::Dumper
   iohelper::Dumper * dumper;
 
-  typedef std::map<std::string, dumper::Field *> Fields;
-  typedef std::map<std::string, dumper::VariableBase *> Variables;
+  using Fields = std::map<std::string, dumper::Field *>;
+  using Variables = std::map<std::string, dumper::VariableBase *> ;
 
   /// list of registered fields to dump
   Fields fields;

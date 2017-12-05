@@ -100,7 +100,7 @@ public:
                             std::map<UInt, UInt> & pbc_pair);
   /// compute pbc pair for a surface pair
   static void computePBCMap(const Mesh & mymesh,
-                            const std::pair<Surface, Surface> & surface_pair,
+                            const std::pair<ID, ID> & surface_pair,
                             std::map<UInt, UInt> & pbc_pair);
 
   /// remove not connected nodes /!\ this functions renumbers the nodes.

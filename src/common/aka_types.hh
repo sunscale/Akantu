@@ -236,7 +236,7 @@ public:
 
 template <typename T>
 class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T>> {
-  typedef TensorProxy<T, 3, Tensor3<T>> parent;
+  using parent = TensorProxy<T, 3, Tensor3<T>>;
   using type = Tensor3<T>;
 
 public:
@@ -281,10 +281,9 @@ protected:
     this->wrapped = true;
   }
 
-protected:
+public:
   TensorStorage(const TensorStorage & src) = delete;
 
-public:
   TensorStorage(const TensorStorage & src, bool deep_copy) : values(nullptr) {
     if (deep_copy)
       this->deepCopy(src);
@@ -531,7 +530,7 @@ protected:
 /* Vector                                                                     */
 /* -------------------------------------------------------------------------- */
 template <typename T> class Vector : public TensorStorage<T, 1, Vector<T>> {
-  typedef TensorStorage<T, 1, Vector<T>> parent;
+  using parent = TensorStorage<T, 1, Vector<T>>;
 
 public:
   using value_type = typename parent::value_type;
@@ -724,7 +723,7 @@ inline bool Vector<UInt>::equal(const Vector<UInt> & v,
 /* Matrix                                                                   */
 /* ------------------------------------------------------------------------ */
 template <typename T> class Matrix : public TensorStorage<T, 2, Matrix<T>> {
-  typedef TensorStorage<T, 2, Matrix<T>> parent;
+  using parent = TensorStorage<T, 2, Matrix<T>>;
 
 public:
   using value_type = typename parent::value_type;
@@ -1094,7 +1093,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* Tensor3                                                                  */
 /* ------------------------------------------------------------------------ */
 template <typename T> class Tensor3 : public TensorStorage<T, 3, Tensor3<T>> {
-  typedef TensorStorage<T, 3, Tensor3<T>> parent;
+  using parent = TensorStorage<T, 3, Tensor3<T>>;
 
 public:
   using value_type = typename parent::value_type;

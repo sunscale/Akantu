@@ -995,7 +995,7 @@ Real Material::getPotentialEnergy(ElementType & type, UInt index) {
 }
 
 /* -------------------------------------------------------------------------- */
-Real Material::getEnergy(std::string type) {
+Real Material::getEnergy(const std::string & type) {
   AKANTU_DEBUG_IN();
   if (type == "potential")
     return getPotentialEnergy();
@@ -1004,7 +1004,7 @@ Real Material::getEnergy(std::string type) {
 }
 
 /* -------------------------------------------------------------------------- */
-Real Material::getEnergy(std::string energy_id, ElementType type, UInt index) {
+Real Material::getEnergy(const std::string & energy_id, ElementType type, UInt index) {
   AKANTU_DEBUG_IN();
   if (energy_id == "potential")
     return getPotentialEnergy(type, index);

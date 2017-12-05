@@ -45,7 +45,7 @@ namespace akantu {
 
 template <class EventHandler> class EventHandlerManager {
 private:
-  typedef std::pair<EventHandlerPriority, EventHandler *> priority_value;
+  using priority_value = std::pair<EventHandlerPriority, EventHandler *>;
   using priority_list = std::list<priority_value>;
   struct KeyComp {
     bool operator()(const priority_value & a, const priority_value & b) const {
@@ -60,9 +60,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual ~EventHandlerManager() {
-    event_handlers.clear();
-  }
+  virtual ~EventHandlerManager() { event_handlers.clear(); }
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -75,7 +73,8 @@ public:
     auto it = this->searchEventHandler(event_handler);
 
     if (it != this->event_handlers.end()) {
-      AKANTU_EXCEPTION("This event handler was already registered (priority: "<< priority << ")");
+      AKANTU_EXCEPTION("This event handler was already registered (priority: "
+                       << priority << ")");
     }
 
     auto pos =

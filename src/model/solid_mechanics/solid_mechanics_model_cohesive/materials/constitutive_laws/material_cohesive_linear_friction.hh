@@ -55,7 +55,8 @@ class MaterialCohesiveLinearFriction : public MaterialCohesiveLinear<spatial_dim
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  typedef MaterialCohesiveLinear<spatial_dimension> MaterialParent;
+  using MaterialParent = MaterialCohesiveLinear<spatial_dimension>;
+
 public:
 
   MaterialCohesiveLinearFriction(SolidMechanicsModel & model, const ID & id = "");
@@ -66,24 +67,22 @@ public:
 public:
 
   /// initialize the material parameters
-  virtual void initMaterial();
+  void initMaterial() override;
 
 protected:
   /// constitutive law
-  virtual void computeTraction(const Array<Real> & normal,
-			       ElementType el_type,
-			       GhostType ghost_type = _not_ghost);
+  void computeTraction(const Array<Real> & normal, ElementType el_type,
+                       GhostType ghost_type = _not_ghost) override;
 
   /// check delta_max for cohesive elements in case of no convergence
   /// in the solveStep (only for extrinsic-implicit)
-  virtual void checkDeltaMax(GhostType ghost_type = _not_ghost);
-
+  void checkDeltaMax(GhostType ghost_type = _not_ghost) override;
 
   /// compute tangent stiffness matrix
-  virtual void computeTangentTraction(const ElementType & el_type,
-				      Array<Real> & tangent_matrix,
-				      const Array<Real> & normal,
-				      GhostType ghost_type);
+  void computeTangentTraction(const ElementType & el_type,
+                              Array<Real> & tangent_matrix,
+                              const Array<Real> & normal,
+                              GhostType ghost_type) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

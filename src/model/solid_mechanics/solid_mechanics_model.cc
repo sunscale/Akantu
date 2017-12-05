@@ -147,14 +147,14 @@ void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {
  * @param method the analysis method wanted.  See the akantu::AnalysisMethod for
  * the different possibilities
  */
-void SolidMechanicsModel::initFull(const ModelOptions & options) {
+void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
   material_index.initialize(mesh, _element_kind = _ek_not_defined,
                             _default_value = UInt(-1), _with_nb_element =
                             true);
   material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
                                       _with_nb_element = true);
 
-  Model::initFull(options);
+  Model::initFullImpl(options);
 
   // initialize pbc
   if (this->pbc_pair.size() != 0)
@@ -168,7 +168,7 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
   this->initMaterials();
 
   this->initBC(*this, *displacement, *displacement_increment,
-  *external_force);
+               *external_force);
 }
 
 /* -------------------------------------------------------------------------- */

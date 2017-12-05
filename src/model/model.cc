@@ -62,7 +62,7 @@ Model::~Model() = default;
 // void Model::setParser(Parser & parser) { this->parser = &parser; }
 
 /* -------------------------------------------------------------------------- */
-void Model::initFull(const ModelOptions & options) {
+void Model::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
   method = options.analysis_method;

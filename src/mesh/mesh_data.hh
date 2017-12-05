@@ -63,9 +63,9 @@ class MeshData : public Memory {
   /* ------------------------------------------------------------------------ */
 private:
   using TypeCode = MeshDataTypeCode;
-  typedef std::map<std::string, ElementTypeMapBase *> ElementalDataMap;
+  using ElementalDataMap = std::map<std::string, ElementTypeMapBase *>;
   using StringVector = std::vector<std::string>;
-  typedef std::map<std::string, TypeCode> TypeCodeMap;
+  using TypeCodeMap = std::map<std::string, TypeCode>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */

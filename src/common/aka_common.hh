@@ -79,9 +79,9 @@ static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
 
 using MemoryID = UInt;
 
-using Surface = std::string;
-typedef std::pair<Surface, Surface> SurfacePair;
-using SurfacePairList = std::list<SurfacePair>;
+//using Surface = std::string;
+//using SurfacePair= std::pair<Surface, Surface>;
+//using SurfacePairList = std::list<SurfacePair>;
 
 /* -------------------------------------------------------------------------- */
 extern const UInt _all_dimensions;

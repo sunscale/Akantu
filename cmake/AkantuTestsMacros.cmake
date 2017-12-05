@@ -385,8 +385,12 @@ function(register_test test_name)
 
     if(NOT _register_test_HEADER_ONLY)
       target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+    else()
+      get_target_property(_features akantu INTERFACE_COMPILE_FEATURES)
+      target_link_libraries(${test_name} ${_register_test_LINK_LIBRARIES})
+      target_compile_features(${test_name} PRIVATE ${_features})
     endif()
-    
+
     if(_register_test_DEPENDS)
       add_dependencies(${test_name} ${_register_test_DEPENDS})
     endif()

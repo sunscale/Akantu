@@ -105,7 +105,7 @@ public:
 
       auto res =
           this->fem->getIntegrator()
-          .template integrate<parent::type, this->degree == 0 ? 1 : this->degree>(polynomial);
+          .template integrate<parent::type, (degree == 0 ? 1 : degree)>(polynomial);
       auto expect = poly.integrate(this->lower(d), this->upper(d));
 
       for (size_t o = 0; o < dim; ++o) {
@@ -124,6 +124,9 @@ protected:
   Array<Real> integration_points_pos;
   std::array<Polynomial<5>, 3> polys;
 };
+
+template <typename T>
+constexpr size_t TestGaussIntegrationFixture<T>::degree;
 
 /* -------------------------------------------------------------------------- */
 /* Tests                                                                      */

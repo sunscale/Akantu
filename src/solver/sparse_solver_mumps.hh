@@ -96,6 +96,9 @@ protected:
 
   /// check if initialized and except if it is not the case
   void checkInitialized();
+private:
+
+  void mumpsDataDestroy();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

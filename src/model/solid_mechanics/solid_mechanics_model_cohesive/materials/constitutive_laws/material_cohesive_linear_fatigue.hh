@@ -75,14 +75,13 @@ public:
 public:
 
   /// initialize the material parameters
-  virtual void initMaterial();
+  void initMaterial() override;
 
 protected:
 
   /// constitutive law
-  virtual void computeTraction(const Array<Real> & normal,
-			       ElementType el_type,
-			       GhostType ghost_type = _not_ghost);
+  void computeTraction(const Array<Real> & normal, ElementType el_type,
+                       GhostType ghost_type = _not_ghost) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

@@ -170,8 +170,8 @@ private:
 /// ParserSection represents a branch of the parsing tree.
 class ParserSection {
 public:
-  typedef std::multimap<SectionType, ParserSection> SubSections;
-  typedef std::map<std::string, ParserParameter> Parameters;
+  using SubSections = std::multimap<SectionType, ParserSection>;
+  using Parameters = std::map<std::string, ParserParameter>;
 
 private:
   using const_section_iterator_ = SubSections::const_iterator;

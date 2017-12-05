@@ -116,7 +116,7 @@ void MeshUtils::computePBCMap(const Mesh & mesh, const UInt dir,
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::computePBCMap(const Mesh & mesh,
-                              const SurfacePair & surface_pair,
+                              const std::pair<ID, ID> & surface_pair,
                               std::map<UInt, UInt> & pbc_pair) {
 
   Array<UInt> selected_first;

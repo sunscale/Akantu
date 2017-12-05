@@ -127,7 +127,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /*! iterator allows to iterate over type-data pairs of the map. The interface
    *  expects the SupportType to be ElementType. */
-  typedef std::map<SupportType, Stored> DataMap;
+  using DataMap = std::map<SupportType, Stored>;
   class type_iterator
       : private std::iterator<std::forward_iterator_tag, const SupportType> {
   public:
@@ -208,13 +208,9 @@ private:
   ElementTypesIteratorHelper
   elementTypesImpl(const use_named_args_t & /*unused*/, pack &&... _pack) const;
 
-  template <typename... pack>
-  using named_argument_test =
-      aka::conjunction<is_named_argument<std::decay_t<pack>>...>;
-
 public:
   template <typename... pack>
-  std::enable_if_t<named_argument_test<pack...>::value,
+  std::enable_if_t<are_named_argument<pack...>::value,
                    ElementTypesIteratorHelper>
   elementTypes(pack &&... _pack) const {
     return elementTypesImpl(use_named_args,
@@ -222,7 +218,7 @@ public:
   }
 
   template <typename... pack>
-  std::enable_if_t<not named_argument_test<pack...>::value,
+  std::enable_if_t<not are_named_argument<pack...>::value,
                    ElementTypesIteratorHelper>
   elementTypes(pack &&... _pack) const {
     return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);

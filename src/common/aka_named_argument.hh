@@ -153,6 +153,11 @@ template <typename... type>
 struct is_named_argument<named_argument::param_t<type...>>
     : public std::true_type {};
 
+template <typename... pack>
+using are_named_argument =
+    aka::conjunction<is_named_argument<std::decay_t<pack>>...>;
+
+
 } // namespace akantu
 
 #endif /* __AKANTU_AKA_NAMED_ARGUMENT_HH__ */

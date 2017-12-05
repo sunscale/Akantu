@@ -520,7 +520,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
       mm *= this->beta2_kappa2;
       Delta_tilde += mm;
 
-      Vector<Real> Delta_hat(normal_opening);
+      const Vector<Real> & Delta_hat(normal_opening);
       Matrix<Real> prov(spatial_dimension, spatial_dimension);
       prov.outerProduct(Delta_hat, Delta_tilde);
       prov *= derivative / delta_n;

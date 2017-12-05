@@ -184,7 +184,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::map<std::string, DumperIOHelper *> DumperMap;
+  using DumperMap = std::map<std::string, DumperIOHelper *>;
   using DumperSet = std::set<std::string>;
 
   DumperMap dumpers;

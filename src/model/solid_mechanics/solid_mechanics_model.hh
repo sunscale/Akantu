@@ -38,9 +38,6 @@
 #include "non_local_manager.hh"
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
-//#include "integrator_gauss.hh"
-//#include "shape_lagrange.hh"
-/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_HH__
@@ -57,14 +54,6 @@ template <ElementKind kind> class ShapeLagrange;
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-
-struct SolidMechanicsModelOptions : public ModelOptions {
-  explicit SolidMechanicsModelOptions(
-      AnalysisMethod analysis_method = _explicit_lumped_mass);
-
-  template <typename... pack>
-  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
-};
 
 /* -------------------------------------------------------------------------- */
 class SolidMechanicsModel
@@ -104,19 +93,14 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  template <typename P, typename T, typename... pack>
-  void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
-    this->initFull(SolidMechanicsModelOptions{use_named_args, first, _pack...});
-  }
-
-  /// initialize completely the model
-  void initFull(
-      const ModelOptions & options = SolidMechanicsModelOptions()) override;
-
   /// initialize the fem object needed for boundary conditions
   void initFEEngineBoundary();
 
 protected:
+  /// initialize completely the model
+  void initFullImpl(
+      const ModelOptions & options = SolidMechanicsModelOptions()) override;
+
   /// initialize all internal arrays for materials
   virtual void initMaterials();
 
@@ -542,15 +526,13 @@ protected:
   bool is_default_material_selector;
 
   /// flag defining if the increment must be computed or not
-  bool
-          increment_flag;
+  bool increment_flag;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;
 
-  typedef std::map<std::pair<std::string, ElementKind>,
-                   ElementTypeMapArray<Real> *>
-      flatten_internal_map;
+  using flatten_internal_map = std::map<std::pair<std::string, ElementKind>,
+                                        ElementTypeMapArray<Real> *>;
 
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;

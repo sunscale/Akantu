@@ -126,15 +126,15 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
   Array<Real> & T_1d_array = T_1d(el_type, ghost_type);
   Array<bool> & normal_regime_array = normal_regime(el_type, ghost_type);
 
-  Array<UInt> * switches_array = NULL;
-  Array<Real> * delta_dot_prec_array = NULL;
+  Array<UInt> * switches_array = nullptr;
+  Array<Real> * delta_dot_prec_array = nullptr;
 
   if (count_switches) {
     switches_array = &switches(el_type, ghost_type);
     delta_dot_prec_array = &delta_dot_prec(el_type, ghost_type);
   }
 
-  Real * memory_space = new Real[2*spatial_dimension];
+  auto * memory_space = new Real[2 * spatial_dimension];
   Vector<Real> normal_opening(memory_space, spatial_dimension);
   Vector<Real> tangential_opening(memory_space + spatial_dimension,
 				  spatial_dimension);

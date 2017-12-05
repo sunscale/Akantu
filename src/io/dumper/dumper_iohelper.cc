@@ -48,7 +48,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-DumperIOHelper::DumperIOHelper() {}
+DumperIOHelper::DumperIOHelper() = default;
 
 /* -------------------------------------------------------------------------- */
 DumperIOHelper::~DumperIOHelper() {

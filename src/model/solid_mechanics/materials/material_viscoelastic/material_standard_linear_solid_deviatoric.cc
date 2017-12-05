@@ -38,29 +38,34 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-MaterialStandardLinearSolidDeviatoric<spatial_dimension>::MaterialStandardLinearSolidDeviatoric(SolidMechanicsModel & model, const ID & id)  :
-  MaterialElastic<spatial_dimension>(model, id),
-  stress_dev("stress_dev", *this),
-  history_integral("history_integral", *this),
-  dissipated_energy("dissipated_energy", *this) {
+template <UInt spatial_dimension>
+MaterialStandardLinearSolidDeviatoric<spatial_dimension>::
+    MaterialStandardLinearSolidDeviatoric(SolidMechanicsModel & model,
+                                          const ID & id)
+    : MaterialElastic<spatial_dimension>(model, id),
+      stress_dev("stress_dev", *this),
+      history_integral("history_integral", *this),
+      dissipated_energy("dissipated_energy", *this) {
 
   AKANTU_DEBUG_IN();
 
-  this->registerParam("Eta",  eta,   Real(1.), _pat_parsable | _pat_modifiable, "Viscosity");
-  this->registerParam("Ev",   Ev,    Real(1.), _pat_parsable | _pat_modifiable, "Stiffness of the viscous element");
-  this->registerParam("Einf", E_inf, Real(1.), _pat_readable, "Stiffness of the elastic element");
+  this->registerParam("Eta", eta, Real(1.), _pat_parsable | _pat_modifiable,
+                      "Viscosity");
+  this->registerParam("Ev", Ev, Real(1.), _pat_parsable | _pat_modifiable,
+                      "Stiffness of the viscous element");
+  this->registerParam("Einf", E_inf, Real(1.), _pat_readable,
+                      "Stiffness of the elastic element");
 
   UInt stress_size = spatial_dimension * spatial_dimension;
 
-  this->stress_dev       .initialize(stress_size);
-  this->history_integral .initialize(stress_size);
+  this->stress_dev.initialize(stress_size);
+  this->history_integral.initialize(stress_size);
   this->dissipated_energy.initialize(1);
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
 
@@ -71,22 +76,26 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateInternalParameters() {
+template <UInt spatial_dimension>
+void MaterialStandardLinearSolidDeviatoric<
+    spatial_dimension>::updateInternalParameters() {
   MaterialElastic<spatial_dimension>::updateInternalParameters();
   E_inf = this->E - this->Ev;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::setToSteadyState(ElementType el_type, GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::setToSteadyState(
+    ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & stress_dev_vect  = stress_dev(el_type, ghost_type);
+  Array<Real> & stress_dev_vect = stress_dev(el_type, ghost_type);
   Array<Real> & history_int_vect = history_integral(el_type, ghost_type);
 
-  Array<Real>::matrix_iterator stress_d = stress_dev_vect.begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator history_int = history_int_vect.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::matrix_iterator stress_d =
+      stress_dev_vect.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::matrix_iterator history_int =
+      history_int_vect.begin(spatial_dimension, spatial_dimension);
 
   /// Loop on all quadrature points
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
@@ -99,7 +108,9 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::setToSteadyState(
 
   for (UInt i = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      dev_s(i, j) = 2 * this->mu * (.5 * (grad_u(i,j) + grad_u(j,i)) - 1./3. * Theta *(i == j));
+      dev_s(i, j) =
+          2 * this->mu *
+          (.5 * (grad_u(i, j) + grad_u(j, i)) - 1. / 3. * Theta * (i == j));
       h(i, j) = 0.;
     }
 
@@ -113,25 +124,28 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::setToSteadyState(
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(ElementType el_type, GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(
+    ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real tau = 0.;
   // if(std::abs(Ev) > std::numeric_limits<Real>::epsilon())
   tau = eta / Ev;
 
-  Array<Real> & stress_dev_vect  = stress_dev(el_type, ghost_type);
+  Array<Real> & stress_dev_vect = stress_dev(el_type, ghost_type);
   Array<Real> & history_int_vect = history_integral(el_type, ghost_type);
 
-  Array<Real>::matrix_iterator stress_d = stress_dev_vect.begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator history_int = history_int_vect.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::matrix_iterator stress_d =
+      stress_dev_vect.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::matrix_iterator history_int =
+      history_int_vect.begin(spatial_dimension, spatial_dimension);
 
   Matrix<Real> s(spatial_dimension, spatial_dimension);
 
   Real dt = this->model.getTimeStep();
-  Real exp_dt_tau = exp( -dt/tau );
-  Real exp_dt_tau_2 = exp( -.5*dt/tau );
+  Real exp_dt_tau = exp(-dt / tau);
+  Real exp_dt_tau_2 = exp(-.5 * dt / tau);
 
   Matrix<Real> epsilon_d(spatial_dimension, spatial_dimension);
   Matrix<Real> epsilon_v(spatial_dimension, spatial_dimension);
@@ -147,7 +161,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(Ele
 
   /// Compute the first invariant of strain
   Real gamma_inf = E_inf / this->E;
-  Real gamma_v   = Ev    / this->E;
+  Real gamma_v = Ev / this->E;
 
   this->template gradUToEpsilon<spatial_dimension>(grad_u, epsilon_d);
   Real Theta = epsilon_d.trace();
@@ -161,9 +175,9 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(Ele
   for (UInt i = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j) {
       s(i, j) = 2 * this->mu * epsilon_d(i, j);
-      h(i, j)  = exp_dt_tau * h(i, j) + exp_dt_tau_2 * (s(i, j) - dev_s(i, j));
+      h(i, j) = exp_dt_tau * h(i, j) + exp_dt_tau_2 * (s(i, j) - dev_s(i, j));
       dev_s(i, j) = s(i, j);
-      sigma(i, j) =  U_rond_prim(i,j) + gamma_inf * s(i, j) + gamma_v * h(i, j);
+      sigma(i, j) = U_rond_prim(i, j) + gamma_inf * s(i, j) + gamma_v * h(i, j);
     }
 
   /// Save the deviator of stress
@@ -178,22 +192,25 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::computeStress(Ele
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateDissipatedEnergy(ElementType el_type,
-										      GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialStandardLinearSolidDeviatoric<
+    spatial_dimension>::updateDissipatedEnergy(ElementType el_type,
+                                               GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   // if(ghost_type == _ghost) return 0.;
-  
+
   Real tau = 0.;
   tau = eta / Ev;
   Real * dis_energy = dissipated_energy(el_type, ghost_type).storage();
 
-  Array<Real> & stress_dev_vect  = stress_dev(el_type, ghost_type);
+  Array<Real> & stress_dev_vect = stress_dev(el_type, ghost_type);
   Array<Real> & history_int_vect = history_integral(el_type, ghost_type);
 
-  Array<Real>::matrix_iterator stress_d = stress_dev_vect.begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator history_int = history_int_vect.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::matrix_iterator stress_d =
+      stress_dev_vect.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::matrix_iterator history_int =
+      history_int_vect.begin(spatial_dimension, spatial_dimension);
 
   Matrix<Real> q(spatial_dimension, spatial_dimension);
   Matrix<Real> q_rate(spatial_dimension, spatial_dimension);
@@ -202,7 +219,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateDissipatedE
 
   Real dt = this->model.getTimeStep();
 
-  Real gamma_v   = Ev / this->E;
+  Real gamma_v = Ev / this->E;
   Real alpha = 1. / (2. * this->mu * gamma_v);
 
   /// Loop on all quadrature points
@@ -229,8 +246,7 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateDissipatedE
 
   for (UInt i = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j)
-      *dis_energy +=  (epsilon_d(i, j) - alpha * q(i, j)) * q_rate(i, j) * dt;
-
+      *dis_energy += (epsilon_d(i, j) - alpha * q(i, j)) * q_rate(i, j) * dt;
 
   /// Save the deviator of stress
   ++stress_d;
@@ -243,16 +259,19 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::updateDissipatedE
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEnergy() const {
+template <UInt spatial_dimension>
+Real MaterialStandardLinearSolidDeviatoric<
+    spatial_dimension>::getDissipatedEnergy() const {
   AKANTU_DEBUG_IN();
 
   Real de = 0.;
 
   /// integrate the dissipated energy for each type of elements
-  for(auto & type : this->element_filter.elementTypes(spatial_dimension, _not_ghost)) {
-    de += this->fem.integrate(dissipated_energy(type, _not_ghost), type,
-                              _not_ghost, this->element_filter(type, _not_ghost));
+  for (auto & type :
+       this->element_filter.elementTypes(spatial_dimension, _not_ghost)) {
+    de +=
+        this->fem.integrate(dissipated_energy(type, _not_ghost), type,
+                            _not_ghost, this->element_filter(type, _not_ghost));
   }
 
   AKANTU_DEBUG_OUT();
@@ -260,12 +279,15 @@ Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEner
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEnergy(ElementType type, UInt index) const {
+template <UInt spatial_dimension>
+Real MaterialStandardLinearSolidDeviatoric<
+    spatial_dimension>::getDissipatedEnergy(ElementType type,
+                                            UInt index) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
-  Array<Real>::const_vector_iterator it = this->dissipated_energy(type, _not_ghost).begin(nb_quadrature_points);
+  Array<Real>::const_vector_iterator it =
+      this->dissipated_energy(type, _not_ghost).begin(nb_quadrature_points);
   UInt gindex = (this->element_filter(type, _not_ghost))(index);
 
   AKANTU_DEBUG_OUT();
@@ -273,23 +295,32 @@ Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getDissipatedEner
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(std::string type) {
-  if(type == "dissipated") return getDissipatedEnergy();
-  else if(type == "dissipated_sls_deviatoric") return getDissipatedEnergy();
-  else return MaterialElastic<spatial_dimension>::getEnergy(type);
+template <UInt spatial_dimension>
+Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(
+    const std::string & type) {
+  if (type == "dissipated")
+    return getDissipatedEnergy();
+  else if (type == "dissipated_sls_deviatoric")
+    return getDissipatedEnergy();
+  else
+    return MaterialElastic<spatial_dimension>::getEnergy(type);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(std::string energy_id, ElementType type, UInt index) {
-  if(energy_id == "dissipated") return getDissipatedEnergy(type, index);
-  else if(energy_id == "dissipated_sls_deviatoric") return getDissipatedEnergy(type, index);
-  else return MaterialElastic<spatial_dimension>::getEnergy(energy_id, type, index);
+template <UInt spatial_dimension>
+Real MaterialStandardLinearSolidDeviatoric<spatial_dimension>::getEnergy(
+    const std::string & energy_id, ElementType type, UInt index) {
+  if (energy_id == "dissipated")
+    return getDissipatedEnergy(type, index);
+  else if (energy_id == "dissipated_sls_deviatoric")
+    return getDissipatedEnergy(type, index);
+  else
+    return MaterialElastic<spatial_dimension>::getEnergy(energy_id, type,
+                                                         index);
 }
 
 /* -------------------------------------------------------------------------- */
 
 INSTANTIATE_MATERIAL(sls_deviatoric, MaterialStandardLinearSolidDeviatoric);
 
-} // akantu
+} // namespace akantu

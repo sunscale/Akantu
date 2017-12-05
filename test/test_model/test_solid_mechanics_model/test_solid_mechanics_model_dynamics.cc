@@ -309,6 +309,6 @@ TYPED_TEST(TestSMMFixture, DynamicsImplicit) {
 
 TYPED_TEST(TestSMMFixtureDynamics, DynamicsExplicit) {
   if (this->type != _pentahedron_6 && this->type != _pentahedron_15)
-    test_body<this->type>(*(this->model), _explicit_lumped_mass);
+    test_body<TestFixture::type>(*(this->model), _explicit_lumped_mass);
 }
 }

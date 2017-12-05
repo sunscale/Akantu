@@ -56,7 +56,7 @@ SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
 SparseSolver::~SparseSolver() {
   AKANTU_DEBUG_IN();
 
-  this->destroyInternalData();
+  //this->destroyInternalData();
   this->communicator.unregisterEventHandler(*this);
 
   AKANTU_DEBUG_OUT();

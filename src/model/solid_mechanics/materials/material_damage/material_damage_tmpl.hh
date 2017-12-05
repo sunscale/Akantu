@@ -168,7 +168,8 @@ Real MaterialDamage<spatial_dimension, Parent>::getDissipatedEnergy() const {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension, template <UInt> class Parent>
-Real MaterialDamage<spatial_dimension, Parent>::getEnergy(std::string type) {
+Real MaterialDamage<spatial_dimension, Parent>::getEnergy(
+    const std::string & type) {
   if (type == "dissipated")
     return getDissipatedEnergy();
   else

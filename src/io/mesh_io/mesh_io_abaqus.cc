@@ -441,7 +441,7 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
 
   using iterator_t = std::string::const_iterator;
   using skipper = AbaqusSkipper<iterator_t>;
-  typedef AbaqusMeshGrammar<iterator_t, skipper> grammar;
+  using grammar = AbaqusMeshGrammar<iterator_t, skipper>;
 
   grammar g(mesh);
   skipper ws;

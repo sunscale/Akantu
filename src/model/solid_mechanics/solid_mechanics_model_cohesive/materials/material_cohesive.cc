@@ -230,12 +230,11 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     Array<Real> * shapes_filtered = new Array<Real>(
         nb_element * nb_quadrature_points, size_of_shapes, "filtered shapes");
 
-    Real * shapes_val = shapes.storage();
     Real * shapes_filtered_val = shapes_filtered->storage();
     UInt * elem_filter_val = elem_filter.storage();
 
     for (UInt el = 0; el < nb_element; ++el) {
-      shapes_val = shapes.storage() +
+      auto shapes_val = shapes.storage() +
                    elem_filter_val[el] * size_of_shapes * nb_quadrature_points;
       memcpy(shapes_filtered_val, shapes_val,
              size_of_shapes * nb_quadrature_points * sizeof(Real));
@@ -564,7 +563,7 @@ Real MaterialCohesive::getContactEnergy() {
 }
 
 /* -------------------------------------------------------------------------- */
-Real MaterialCohesive::getEnergy(std::string type) {
+Real MaterialCohesive::getEnergy(const std::string & type) {
   AKANTU_DEBUG_IN();
 
   if (type == "reversible")

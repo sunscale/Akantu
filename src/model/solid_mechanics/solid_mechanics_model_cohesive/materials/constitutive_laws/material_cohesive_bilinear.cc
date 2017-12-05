@@ -158,8 +158,8 @@ void MaterialCohesiveBilinear<spatial_dimension>::scaleTraction(
 
     const std::vector<Element> & element_list = facet_to_element(facet.element);
 
-    std::vector<Element>::const_iterator elem = element_list.begin();
-    std::vector<Element>::const_iterator elem_end = element_list.end();
+    auto elem = element_list.begin();
+    auto elem_end = element_list.end();
 
     // loop over elements connected to each facet
     for (; elem != elem_end; ++elem) {
