@@ -412,8 +412,6 @@ public:
   /// give the number of materials
   inline UInt getNbMaterials() const { return materials.size(); }
 
-  inline void setMaterialSelector(MaterialSelector & selector);
-
   /// give the material internal index from its id
   Int getInternalIndexFromID(const ID & id) const;
 
@@ -442,6 +440,9 @@ public:
                                          material_local_numbering, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
                                    material_local_numbering, UInt);
+
+  AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, material_selector, std::shared_ptr<MaterialSelector>);
+  AKANTU_SET_MACRO(MaterialSelector, material_selector, std::shared_ptr<MaterialSelector>);
 
   /// Access the non_local_manager interface
   AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
@@ -520,10 +521,7 @@ protected:
 #endif
 
   /// class defining of to choose a material
-  MaterialSelector * material_selector;
-
-  /// define if it is the default selector or not
-  bool is_default_material_selector;
+  std::shared_ptr<MaterialSelector> material_selector;
 
   /// flag defining if the increment must be computed or not
   bool increment_flag;

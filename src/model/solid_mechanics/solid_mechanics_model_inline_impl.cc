@@ -109,15 +109,6 @@ SolidMechanicsModel::getMaterial(const std::string & name) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline void
-SolidMechanicsModel::setMaterialSelector(MaterialSelector & selector) {
-  if (is_default_material_selector)
-    delete material_selector;
-  material_selector = &selector;
-  is_default_material_selector = false;
-}
-
-/* -------------------------------------------------------------------------- */
 } // namespace akantu
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_CC__ */

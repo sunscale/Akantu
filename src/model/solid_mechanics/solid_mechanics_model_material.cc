@@ -120,28 +120,28 @@ void SolidMechanicsModel::instantiateMaterials() {
 void SolidMechanicsModel::assignMaterialToElements(
     const ElementTypeMapArray<UInt> * filter) {
 
-  for_each_elements(mesh,
-                    [&](auto && element) {
-                      UInt mat_index = (*material_selector)(element);
-                      AKANTU_DEBUG_ASSERT(
-                          mat_index < materials.size(),
-                          "The material selector returned an index that does not exists");
-                      material_index(element) = mat_index;
-                    },
-                    _element_filter = filter,
-                    _ghost_type = _not_ghost);
+  for_each_elements(
+      mesh,
+      [&](auto && element) {
+        UInt mat_index = (*material_selector)(element);
+        AKANTU_DEBUG_ASSERT(
+            mat_index < materials.size(),
+            "The material selector returned an index that does not exists");
+        material_index(element) = mat_index;
+      },
+      _element_filter = filter, _ghost_type = _not_ghost);
 
   if (non_local_manager)
     non_local_manager->synchronize(*this, _gst_material_id);
 
-  for_each_elements(mesh,
-                    [&](auto && element) {
-                      auto mat_index = material_index(element);
-                      auto index = materials[mat_index]->addElement(element);
-                      material_local_numbering(element) = index;
-                    },
-                    _element_filter = filter,
-                    _ghost_type = _not_ghost);
+  for_each_elements(
+      mesh,
+      [&](auto && element) {
+        auto mat_index = material_index(element);
+        auto index = materials[mat_index]->addElement(element);
+        material_local_numbering(element) = index;
+      },
+      _element_filter = filter, _ghost_type = _not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */
