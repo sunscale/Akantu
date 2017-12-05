@@ -1,6 +1,0 @@
-material elastic [
-	name = concrete
-	E = 2.8e+10
-	nu = 0.2
-	rho = 2350
-]
