@@ -62,10 +62,13 @@ struct ModelOptions {
 /* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelOptions : public ModelOptions {
   explicit SolidMechanicsModelOptions(
-      AnalysisMethod analysis_method = _explicit_lumped_mass);
+      AnalysisMethod analysis_method = _explicit_lumped_mass)
+      : ModelOptions(analysis_method) {}
 
   template <typename... pack>
-  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack);
+  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack)
+      : SolidMechanicsModelOptions(
+            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
 };
 
 /* -------------------------------------------------------------------------- */
@@ -90,7 +93,6 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
 };
 #endif
 
-
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_MODEL_OPTIONS_HH__ */

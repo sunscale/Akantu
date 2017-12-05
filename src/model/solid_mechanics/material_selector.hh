@@ -28,11 +28,13 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "mesh.hh"
+#include "element.hh"
 /* -------------------------------------------------------------------------- */
+#include <memory>
+/* -------------------------------------------------------------------------- */
+
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_HH__
 #define __AKANTU_MATERIAL_SELECTOR_HH__

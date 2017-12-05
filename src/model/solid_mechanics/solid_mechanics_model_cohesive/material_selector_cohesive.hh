@@ -32,9 +32,11 @@
 /* -------------------------------------------------------------------------- */
 #include "material_selector.hh"
 /* -------------------------------------------------------------------------- */
+#include <map>
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
-  class SolidMechanicsModelCohesive;
+class SolidMechanicsModelCohesive;
 }
 
 namespace akantu {
@@ -59,16 +61,35 @@ private:
 
 /* -------------------------------------------------------------------------- */
 /// To be used with intrinsic elements inserted along mesh physical surfaces
-class MeshDataMaterialCohesiveSelector
-    : public MeshDataMaterialSelector<std::string> {
+class MeshDataMaterialCohesiveSelector : public MaterialSelector {
 public:
   MeshDataMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model);
   UInt operator()(const Element & element) override;
 
 protected:
-  const Mesh &mesh_facets;
+  const Mesh & mesh_facets;
   const ElementTypeMapArray<UInt> & material_index;
   bool third_dimension;
+};
+
+/// bulk1, bulk2 -> cohesive
+using MaterialCohesiveRules = std::map<std::pair<ID, ID>, ID>;
+
+/* -------------------------------------------------------------------------- */
+class MaterialCohesiveRulesSelector : public MaterialSelector {
+public:
+  MaterialCohesiveRulesSelector(const SolidMechanicsModelCohesive & model,
+                                const MaterialCohesiveRules & rules,
+                                ID mesh_data_id = "physical_names");
+  UInt operator()(const Element & element);
+
+private:
+  const SolidMechanicsModelCohesive & model;
+  ID mesh_data_id;
+  const Mesh & mesh;
+  const Mesh & mesh_facets;
+  UInt spatial_dimension;
+  MaterialCohesiveRules rules;
 };
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__ */

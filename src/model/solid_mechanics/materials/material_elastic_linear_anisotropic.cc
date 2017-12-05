@@ -52,10 +52,13 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
   (*this->dir_vecs.back())[0] = 1.;
   this->registerParam("n1", *(this->dir_vecs.back()), _pat_parsmod,
                       "Direction of main material axis");
-  this->dir_vecs.push_back(new Vector<Real>(dim));
-  (*this->dir_vecs.back())[1] = 1.;
-  this->registerParam("n2", *(this->dir_vecs.back()), _pat_parsmod,
-                      "Direction of secondary material axis");
+
+  if (dim > 1) {
+    this->dir_vecs.push_back(new Vector<Real>(dim));
+    (*this->dir_vecs.back())[1] = 1.;
+    this->registerParam("n2", *(this->dir_vecs.back()), _pat_parsmod,
+                        "Direction of secondary material axis");
+  }
 
   if (dim > 2) {
     this->dir_vecs.push_back(new Vector<Real>(dim));
@@ -239,8 +242,8 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
     Array<Real> & velocity = this->model.getVelocity();
     const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-    this->fem.gradientOnIntegrationPoints(
-        velocity, strain_rate, dim, el_type, ghost_type, elem_filter);
+    this->fem.gradientOnIntegrationPoints(velocity, strain_rate, dim, el_type,
+                                          ghost_type, elem_filter);
 
     Array<Real>::matrix_iterator gradu_dot_it = strain_rate.begin(dim, dim);
     Array<Real>::matrix_iterator gradu_dot_end = strain_rate.end(dim, dim);

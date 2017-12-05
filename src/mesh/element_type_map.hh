@@ -332,10 +332,10 @@ public:
              const GhostType & ghost_type = _not_ghost) const;
 
   /// access the data of an element, this combine the map and array accessor
-  inline const T & operator()(const Element & element) const;
+  inline const T & operator()(const Element & element, UInt component = 0) const;
 
   /// access the data of an element, this combine the map and array accessor
-  inline T & operator()(const Element & element);
+  inline T & operator()(const Element & element, UInt component = 0);
 
   /* get a reference to the array of certain type
    * @param type data filed under type is returned

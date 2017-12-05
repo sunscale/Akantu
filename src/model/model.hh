@@ -80,7 +80,7 @@ public:
     case ModelOptionsType::_model:
       // FALLTHRU
     case ModelOptionsType::_solid_mechanics_model:
-      this->initFullImpl(ModelOptions{use_named_args,
+      this->initFullImpl(SolidMechanicsModelOptions{use_named_args,
                                       std::forward<decltype(_pack)>(_pack)...});
       break;
 #ifdef AKANTU_COHESIVE_ELEMENT

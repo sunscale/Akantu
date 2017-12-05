@@ -51,10 +51,9 @@ int main(int argc, char * argv[]) {
   /// model creation
   SolidMechanicsModel model(mesh);
   /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector =
-      new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  auto &&
+  mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// model initialization changed to use our material
   model.initFull();

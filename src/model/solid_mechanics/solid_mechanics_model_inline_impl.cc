@@ -44,18 +44,6 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline SolidMechanicsModelOptions::SolidMechanicsModelOptions(
-    AnalysisMethod analysis_method)
-    : ModelOptions(analysis_method) {}
-
-/* -------------------------------------------------------------------------- */
-template <typename... pack>
-SolidMechanicsModelOptions::SolidMechanicsModelOptions(use_named_args_t,
-                                                       pack &&... _pack)
-    : SolidMechanicsModelOptions(
-          OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
-
-/* -------------------------------------------------------------------------- */
 inline Material & SolidMechanicsModel::getMaterial(UInt mat_index) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(mat_index < materials.size(),

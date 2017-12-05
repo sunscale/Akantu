@@ -81,6 +81,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       are_materials_instantiated(false) { //, pbc_synch(nullptr) {
   AKANTU_DEBUG_IN();
 
+  this->options_type = ModelOptionsType::_solid_mechanics_model;
+  
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
                                                Model::spatial_dimension);
 
