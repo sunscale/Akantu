@@ -59,13 +59,13 @@ AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_2,
                                                 _gt_segment_2,
                                                 _itp_bernoulli_beam_2,
                                                 _segment_2, _ek_structural, 2,
-                                                _git_segment, 5);
+                                                _git_segment, 3);
 
 AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_3,
                                                 _gt_segment_2,
                                                 _itp_bernoulli_beam_3,
                                                 _segment_2, _ek_structural, 3,
-                                                _git_segment, 5);
+                                                _git_segment, 3);
 
 /* -------------------------------------------------------------------------- */
 template <>
