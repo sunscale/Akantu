@@ -28,15 +28,12 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material.hh"
 #include "material_elastic.hh"
+/* -------------------------------------------------------------------------- */
 #include <vector>
-
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
@@ -102,7 +99,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  using voigt_h = VoigtHelper<1U>;
+  using voigt_h = VoigtHelper<Dim>;
 
   /// direction matrix and vectors
   std::vector<Vector<Real> *> dir_vecs;

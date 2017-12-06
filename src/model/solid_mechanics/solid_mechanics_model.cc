@@ -837,9 +837,12 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   stream << space << AKANTU_INDENT << "]" << std::endl;
   stream << space << " + nodals information [" << std::endl;
   displacement->printself(stream, indent + 2);
-  mass->printself(stream, indent + 2);
-  velocity->printself(stream, indent + 2);
-  acceleration->printself(stream, indent + 2);
+  if(velocity)
+    velocity->printself(stream, indent + 2);
+  if(acceleration)
+    acceleration->printself(stream, indent + 2);
+  if(mass)
+    mass->printself(stream, indent + 2);
   external_force->printself(stream, indent + 2);
   internal_force->printself(stream, indent + 2);
   blocked_dofs->printself(stream, indent + 2);

@@ -61,13 +61,13 @@ public:
                                           UInt nb_nodes_per_element);
 
 public:
-  const static UInt size;
+  static constexpr UInt size{(dim * (dim - 1)) / 2 + dim};
   // matrix of vector index I as function of tensor indices i,j
-  const static UInt mat[dim][dim];
+  static const UInt mat[dim][dim];
   // array of matrix indices ij as function of vector index I
-  const static UInt vec[dim * dim][2];
+  static const UInt vec[dim * dim][2];
   // factors to multiply the strain by for voigt notation
-  const static Real factors[((dim * (dim - 1)) / 2 + dim)];
+  static const Real factors[size];
 };
 
 } // akantu
