@@ -281,6 +281,12 @@ function(register_gtest_sources)
   register_test_files_to_package(${ARGN})
 
   if(NOT _is_active)
+    if(_register_test_PACKAGE)
+      set(_list ${_gtest_PACKAGE})
+      list(APPEND _list ${_register_test_PACKAGE})
+      list(REMOVE_DUPLICATES _list)
+      set(_gtest_PACKAGE ${_list} PARENT_SCOPE)
+    endif()
     return()
   endif()
 
@@ -311,6 +317,7 @@ function(register_gtest_sources)
     if(_register_test_${_var})
       set(_list ${_gtest_${_var}})
       list(APPEND _list ${_register_test_${_var}})
+      list(REMOVE_DUPLICATES _list)
       set(_gtest_${_var} ${_list} PARENT_SCOPE)
     endif()
   endforeach()
@@ -325,6 +332,11 @@ function(register_gtest_test test_name)
     LINK_LIBRARIES GTest::GTest GTest::Main
     PACKAGE ${_gtest_PACKAGE}
     )
+
+  is_test_active(_is_active ${ARGN} PACKAGE ${_gtest_PACKAGE})
+  if(NOT _is_active)
+    return()
+  endif()
 
   foreach (_var ${_test_flags})
     if(_gtest_${_var})
