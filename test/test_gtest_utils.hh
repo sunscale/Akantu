@@ -102,7 +102,13 @@ using cross_product_t = typename cross_product<T...>::type;
 
 using TestElementTypesAll = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_regular_ELEMENT_TYPE))>;
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
+    BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_structural_ELEMENT_TYPE))>;
+#endif
 } // namespace
+
 
 template <typename T>
 using is_point_1 = std::is_same<T, element_type_t<::akantu::_point_1>>;
@@ -112,6 +118,11 @@ using not_is_point_1 =
     aka::negation<std::is_same<T, element_type_t<::akantu::_point_1>>>;
 
 using TestElementTypes = tuple_filter_t<not_is_point_1, TestElementTypesAll>;
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+using StructuralTestElementTypes =
+    tuple_filter_t<not_is_point_1, TestElementTypesStructural>;
+#endif
 
 /* -------------------------------------------------------------------------- */
 template <size_t degree> class Polynomial {

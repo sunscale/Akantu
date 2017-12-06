@@ -186,7 +186,7 @@ public:
   static constexpr auto getFacetType(__attribute__((unused)) UInt t = 0) {
     return _not_defined;
   }
-  static AKANTU_GET_MACRO_NOT_CONST(
+  static constexpr AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
   static constexpr auto getFacetTypes() { return ElementClass<_not_defined>::getFacetTypes(); }

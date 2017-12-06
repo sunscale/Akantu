@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
 
   const Real M = -3600; // Momentum at 3
 
-  Array<Real> & forces = model.getForce();
+  Array<Real> & forces = model.getExternalForce();
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> & boundary = model.getBlockedDOFs();
   const Array<Real> & N_M  = model.getStress(_bernoulli_beam_3);
@@ -155,7 +155,10 @@ int main(int argc, char *argv[]){
 
   forces(nb_nodes-1,3) += M;
 
+  /// TODO reestablish force computation
+#if 0
   model.computeForcesFromFunction<_bernoulli_beam_3>(lin_load, akantu::_bft_traction);
+#endif
   std::cout<<"Force Definition"<<std::endl;
   /* -------------------------------------------------------------------------- */
   // Defining the boundary conditions
@@ -171,12 +174,8 @@ int main(int argc, char *argv[]){
   std::cout<<"BC Definition"<<std::endl;
   /* -------------------------------------------------------------------------- */
   // Solve
-  Real error;
-
   model.assembleStiffnessMatrix();
   std::cout<<"Assemble Done"<<std::endl;
-  model.getStiffnessMatrix().saveMatrix("Kbz.mtx");
-  UInt count = 0;
   std::cout<<"Matrix saved"<<std::endl;
 
   model.addDumpField("displacememt");
@@ -184,19 +183,13 @@ int main(int argc, char *argv[]){
   model.addDumpField("force");
   model.addDumpField("momentum");
 
-  do {
-    if(count != 0) std::cerr << count << " - " << error << std::endl;
-    model.updateResidual();
-    model.solve();
-    count++;
-  } while (!model.testConvergenceIncrement(1e-10, error) && count < 10);
-  std::cerr << count << " - " << error << std::endl;
+    model.solveStep();
 
   /* -------------------------------------------------------------------------- */
   // Post-Processing
   model.computeStresses();
 
-  model.getStiffnessMatrix().saveMatrix("Kaz.mtx");
+  // model.getStiffnessMatrix().saveMatrix("Kaz.mtx");
   std::cout<< " d1 = " << displacement(nb_nodes_1,3) << std::endl;
   std::cout<< " d2 = " << displacement(nb_nodes-1,3) << std::endl;
   std::cout<< " M1 = " << N_M(0,1) << std::endl;

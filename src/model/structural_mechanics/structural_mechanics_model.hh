@@ -81,13 +81,59 @@ public:
   virtual ~StructuralMechanicsModel();
 
   /* ------------------------------------------------------------------------ */
+  /* Virtual methods from SolverCallback */
+  /* ------------------------------------------------------------------------ */
+  /// get the type of matrix needed
+  MatrixType getMatrixType(const ID &) override;
+
+  /// callback to assemble a Matrix
+  void assembleMatrix(const ID &) override;
+
+  /// callback to assemble a lumped Matrix
+  void assembleLumpedMatrix(const ID &) override;
+
+  /// callback to assemble the residual (rhs)
+  void assembleResidual() override;
+
+  /* ------------------------------------------------------------------------ */
+  /* Virtual methods from MeshEventHandler */
+  /* ------------------------------------------------------------------------ */
+
+  /// function to implement to react on  akantu::NewNodesEvent
+  void onNodesAdded(const Array<UInt> & nodes_list,
+                    const NewNodesEvent & event) override;
+  /// function to implement to react on  akantu::RemovedNodesEvent
+  void onNodesRemoved(const Array<UInt> & nodes_list,
+                      const Array<UInt> & new_numbering,
+                      const RemovedNodesEvent & event) override;
+  /// function to implement to react on  akantu::NewElementsEvent
+  void onElementsAdded(const Array<Element> & elements_list,
+                       const NewElementsEvent & event) override;
+  /// function to implement to react on  akantu::RemovedElementsEvent
+  void onElementsRemoved(const Array<Element> & elements_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const RemovedElementsEvent & event) override;
+  /// function to implement to react on  akantu::ChangedElementsEvent
+  void onElementsChanged(const Array<Element> & old_elements_list,
+                         const Array<Element> & new_elements_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const ChangedElementsEvent & event) override;
+
+  /* ------------------------------------------------------------------------ */
+  /* Virtual methods from Model */
+  /* ------------------------------------------------------------------------ */
+  /// get some default values for derived classes
+  std::tuple<ID, TimeStepSolverType>
+  getDefaultSolverID(const AnalysisMethod & method) override;
+
+  /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void initSolver(TimeStepSolverType, NonLinearSolverType);
+  void initSolver(TimeStepSolverType, NonLinearSolverType) override;
 
   /// initialize the model
-  void initModel();
+  void initModel() override;
 
   /// compute the stresses per elements
   void computeStresses();
