@@ -126,6 +126,9 @@ public:
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & method) override;
 
+  ModelSolverOptions
+  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -198,7 +201,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// set the value of the time step
-  //void setTimeStep(Real time_step, const ID & solver_id = "") override;
+  // void setTimeStep(Real time_step, const ID & solver_id = "") override;
 
   /// return the dimension of the system space
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
@@ -308,8 +311,8 @@ private:
   // Rotation matrix
   ElementTypeMapArray<Real> rotation_matrix;
 
-  /// analysis method check the list in akantu::AnalysisMethod
-  AnalysisMethod method;
+  // /// analysis method check the list in akantu::AnalysisMethod
+  // AnalysisMethod method;
 
   /// flag defining if the increment must be computed or not
   bool increment_flag;

@@ -72,12 +72,17 @@ public:
   static inline void computeShapes(const Vector<Real> & natural_coord,
                                    Matrix<Real> & N);
 
-
   /// compute shape derivatives (input is dxds) for a set of points
-  static inline void computeShapeDerivatives(const Tensor3<Real> & /*Js*/,
-                                             const Tensor3<Real> & /*DNDSs*/,
-                                             Tensor3<Real> & /*Bs*/) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  static inline void computeShapeDerivatives(const Tensor3<Real> & Js,
+                                             const Tensor3<Real> & DNDSs,
+                                             Tensor3<Real> & Bs) {
+    for (UInt i = 0; i < Js.size(2); ++i) {
+      Matrix<Real> J = Js(i);
+      Matrix<Real> DNDS = DNDSs(i);
+      Matrix<Real> B = Bs(i);
+      auto inv_J = J.inverse();
+      B.mul<false, false>(inv_J, DNDS);
+    }
   }
 
   /**
@@ -108,16 +113,14 @@ public:
       interpolation_property::nb_nodes_per_element, UInt);
 
   static AKANTU_GET_MACRO_NOT_CONST(
-      ShapeSize,
-      (interpolation_property::nb_nodes_per_element *
-       interpolation_property::nb_degree_of_freedom *
-       interpolation_property::nb_degree_of_freedom),
+      ShapeSize, (interpolation_property::nb_nodes_per_element *
+                  interpolation_property::nb_degree_of_freedom *
+                  interpolation_property::nb_degree_of_freedom),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
-      ShapeDerivativesSize,
-      (interpolation_property::nb_nodes_per_element *
-       interpolation_property::nb_degree_of_freedom *
-       interpolation_property::nb_stress_components),
+      ShapeDerivativesSize, (interpolation_property::nb_nodes_per_element *
+                             interpolation_property::nb_degree_of_freedom *
+                             interpolation_property::nb_stress_components),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NaturalSpaceDimension, interpolation_property::natural_space_dimension,
@@ -162,22 +165,77 @@ protected:
       ElementClass<ElementClassProperty<element_type>::parent_element_type>;
 
 public:
-  /// compute jacobian (or integration variable change factor) for a given point
-  static inline void computeJMat(const Tensor3<Real> & /*DNDSs*/,
-                                 const Matrix<Real> & /*Xs*/,
-                                 Tensor3<Real> & /*Js*/) {
+  static inline void computeRotationMatrix(Matrix<Real> & /*R*/,
+                                           const Matrix<Real> & /*X*/,
+                                           const Vector<Real> & /*extra_normal*/){
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
-  static inline void computeJacobian(const Matrix<Real> & /*natural_coords*/,
-                                     const Matrix<Real> & /*node_coords*/,
-                                     Vector<Real> & /*jacobians*/) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  /// compute jacobian (or integration variable change factor) for a given point
+  static inline void computeJMat(const Matrix<Real> & DNDS,
+                                 const Matrix<Real> & Xs, Matrix<Real> & J) {
+    auto nb_nodes = Xs.cols();
+    auto dim = Xs.rows();
+    auto nb_dof =
+        interpolation_element::interpolation_property::nb_degree_of_freedom;
+    Matrix<Real> B(dim, nb_nodes);
+    for (UInt s = 0; s < dim; ++s) {
+      for (UInt n = 0; n < nb_nodes; ++n) {
+        B(s, n) = DNDS(s, n * nb_dof + s);
+      }
+    }
+
+    J.mul<false, true>(B, Xs);
+  }
+
+  static inline void computeJMat(const Tensor3<Real> & DNDSs,
+                                 const Matrix<Real> & Xs, Tensor3<Real> & Js) {
+    using itp = typename interpolation_element::interpolation_property;
+    auto nb_nodes = Xs.cols();
+    auto dim = Xs.rows();
+    auto nb_dof = itp::nb_degree_of_freedom;
+    Matrix<Real> B(dim, nb_nodes);
+
+    for (UInt i = 0; i < Xs.cols(); ++i) {
+      Matrix<Real> DNDS = DNDSs(i);
+      Matrix<Real> J = Js(i);
+
+      B.clear();
+      for (UInt s = 0; s < dim; ++s) {
+        for (UInt n = 0; n < nb_nodes; ++n) {
+          B(s, n) = DNDS(s, n * nb_dof + s);
+        }
+      }
+
+      parent_element::computeJMat(B, Xs, J);
+      // computeJMat(DNDS, Xs, J);
+    }
+  }
+
+  static inline void computeJacobian(const Matrix<Real> & natural_coords,
+                                     const Matrix<Real> & node_coords,
+                                     Vector<Real> & jacobians) {
+    using itp = typename interpolation_element::interpolation_property;
+    UInt nb_points = natural_coords.cols();
+    Matrix<Real> dnds(itp::natural_space_dimension, itp::nb_nodes_per_element);
+    Matrix<Real> x(itp::natural_space_dimension, itp::nb_nodes_per_element);
+    Matrix<Real> J(natural_coords.rows(), x.rows());
+
+    // Extract relevant first lines
+    for (UInt j = 0; j < x.cols(); ++j)
+      for (UInt i = 0; i < x.rows(); ++i)
+        x(i, j) = node_coords(i, j);
+
+    for (UInt p = 0; p < nb_points; ++p) {
+      Vector<Real> ncoord_p(natural_coords(p));
+      parent_element::computeDNDS(ncoord_p, dnds);
+      parent_element::computeJMat(dnds, x, J);
+      jacobians(p) = J.det();
+    }
   }
 
   static inline void computeRotation(const Matrix<Real> & node_coords,
-				     Matrix<Real> & rotation);
-
+                                     Matrix<Real> & rotation);
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);
@@ -189,7 +247,9 @@ public:
   static constexpr AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
-  static constexpr auto getFacetTypes() { return ElementClass<_not_defined>::getFacetTypes(); }
+  static constexpr auto getFacetTypes() {
+    return ElementClass<_not_defined>::getFacetTypes();
+  }
 };
 
 } // namespace akantu

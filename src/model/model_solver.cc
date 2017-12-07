@@ -245,6 +245,9 @@ bool ModelSolver::hasSolver(const ID & solver_id) const {
   if (solver_id == "")
     tmp_solver_id = this->default_solver_id;
 
+  if(not this->dof_manager) {
+    AKANTU_EXCEPTION("No DOF manager was initialized");
+  }
   return this->dof_manager->hasTimeStepSolver(tmp_solver_id);
 }
 

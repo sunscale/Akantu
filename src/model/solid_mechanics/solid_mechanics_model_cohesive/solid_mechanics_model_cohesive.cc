@@ -205,7 +205,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
 #endif
     initAutomaticInsertion();
   } else {
-    // TODO think of something a bit mor consistant than just coding the first
+    // TODO think of something a bit more consistent than just coding the first
     // thing that comes in Fabian's head....
     using const_section_iterator = ParserSection::const_section_iterator;
     std::pair<const_section_iterator, const_section_iterator> sub_sections =

@@ -51,14 +51,14 @@ using namespace akantu;
 namespace {
 
 //Linear load function
-static void lin_load(double * position, double * load,
-		     __attribute__ ((unused)) Real * normal,
-		     __attribute__ ((unused)) UInt surface_id){
-  memset(load,0,sizeof(Real)*3);
-  if (position[0]<=10){
-  load[1]= -6000;
- }
-}
+// static void lin_load(double * position, double * load,
+// 		     __attribute__ ((unused)) Real * normal,
+// 		     __attribute__ ((unused)) UInt surface_id){
+//   memset(load,0,sizeof(Real)*3);
+//   if (position[0]<=10){
+//   load[1]= -6000;
+//  }
+// }
 
 void test_body(StructuralMechanicsModel & model, Mesh & beams){
   /* -------------------------------------------------------------------------- */
@@ -165,7 +165,7 @@ void test_body(StructuralMechanicsModel & model, Mesh & beams){
   std::cout<< " M2 = " << N_M(2*(nb_nodes-2),1) << std::endl;
 }
 
-TYPED_TEST(TestStructuralFixture, TestBernouilli) {
+TEST_F(TestStructuralFixtureBeam2, TestBernouilli) {
   test_body(*(this->model), *(this->mesh));
 }
 

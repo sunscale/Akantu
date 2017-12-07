@@ -49,6 +49,7 @@ inline void ShapeStructural<kind>::initShapeFunctions(
 /* -------------------------------------------------------------------------- */
 #define INIT_SHAPE_FUNCTIONS(type)                                             \
   setIntegrationPointsByType<type>(integration_points, ghost_type);            \
+  precomputeRotationMatrices<type>(nodes, ghost_type);                         \
   precomputeShapesOnIntegrationPoints<type>(nodes, ghost_type);                \
   precomputeShapeDerivativesOnIntegrationPoints<type>(nodes, ghost_type);
 
@@ -104,10 +105,57 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
       ++shapes_it;
   }
 }
+
 /* -------------------------------------------------------------------------- */
-template <>
+template <ElementKind kind>
 template <ElementType type>
-void ShapeStructural<_ek_structural>::precomputeShapesOnIntegrationPoints(
+void ShapeStructural<kind>::precomputeRotationMatrices(
+    const Array<Real> & nodes, const GhostType & ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  const auto spatial_dimension = mesh.getSpatialDimension();
+  const auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  const auto nb_element = mesh.getNbElement(type, ghost_type);
+  const auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
+
+  if (not this->rotation_matrices.exists(type, ghost_type)) {
+    this->rotation_matrices.alloc(0, nb_dof * nb_dof, type, ghost_type);
+  }
+
+  auto & rot_matrices = this->rotation_matrices(type, ghost_type);
+  rot_matrices.resize(nb_element);
+
+  Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
+  FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
+
+  bool has_extra_normal = mesh.hasData<Real>("extra_normal", type, ghost_type);
+  Array<Real>::vector_iterator extra_normal;
+  if (has_extra_normal)
+    extra_normal = mesh.getData<Real>("extra_normal", type, ghost_type)
+                       .begin(spatial_dimension);
+
+  for (auto && tuple :
+       zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
+           make_view(rot_matrices, nb_dof, nb_dof))) {
+    // compute shape derivatives
+    auto & X = std::get<0>(tuple);
+    auto & R = std::get<1>(tuple);
+
+    if (has_extra_normal) {
+      ElementClass<type>::computeRotationMatrix(R, X, *extra_normal);
+      ++extra_normal;
+    } else {
+      ElementClass<type>::computeRotationMatrix(R, X, Vector<Real>());
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
     const Array<Real> & /*nodes*/, const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -145,14 +193,14 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   AKANTU_DEBUG_IN();
 
   const auto & natural_coords = integration_points(type, ghost_type);
-  auto spatial_dimension = mesh.getSpatialDimension();
-  auto natural_spatial_dimension =
+  const auto spatial_dimension = mesh.getSpatialDimension();
+  const auto natural_spatial_dimension =
       ElementClass<type>::getNaturalSpaceDimension();
-  auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  auto nb_points = natural_coords.cols();
-  auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
-  auto nb_element = mesh.getNbElement(type, ghost_type);
-  auto nb_stress_components = ElementClass<type>::getNbStressComponents();
+  const auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  const auto nb_points = natural_coords.cols();
+  const auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
+  const auto nb_element = mesh.getNbElement(type, ghost_type);
+  const auto nb_stress_components = ElementClass<type>::getNbStressComponents();
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not this->shapes_derivatives.exists(itp_type, ghost_type)) {
@@ -160,7 +208,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     this->shapes_derivatives.alloc(0, size_of_shapesd, itp_type, ghost_type);
   }
 
-  auto rot_matrices = this->rotation_matrices(type, ghost_type);
+  auto & rot_matrices = this->rotation_matrices(type, ghost_type);
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
@@ -172,19 +220,25 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
            make_view(shapesd, nb_stress_components,
                      nb_nodes_per_element * nb_dof, nb_points),
-           make_view(rot_matrices, spatial_dimension, spatial_dimension))) {
+           make_view(rot_matrices, nb_dof, nb_dof))) {
     // compute shape derivatives
     auto & X = std::get<0>(tuple);
     auto & B = std::get<1>(tuple);
-    auto & R = std::get<2>(tuple);
+    auto & RDOFs = std::get<2>(tuple);
+
+    Matrix<Real> R(spatial_dimension, spatial_dimension);
+
+    for (UInt j = 0; j < spatial_dimension; ++j)
+      for (UInt i = 0; i < spatial_dimension; ++i)
+        R(i, j) = RDOFs(i, j);
 
     // Rotate to local basis
     auto x = R * X;
     Matrix<Real> node_coords(natural_spatial_dimension, nb_nodes_per_element);
 
     // Extract relevant first lines
-    for (UInt j = 0; j < node_coords.rows(); ++j)
-      for (UInt i = 0; i < node_coords.cols(); ++i)
+    for (UInt j = 0; j < node_coords.cols(); ++j)
+      for (UInt i = 0; i < node_coords.rows(); ++i)
         node_coords(i, j) = x(i, j);
 
     Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
@@ -301,29 +355,6 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   });
 
   AKANTU_DEBUG_OUT();
-}
-
-template <ElementKind kind>
-template <ElementType type>
-void ShapeStructural<kind>::precomputeRotationMatrices(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
-  auto element_dimension = ElementClass<type>::getSpatialDimension();
-  auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
-
-  Array<Real> x_el(0, nb_nodes_per_element * element_dimension);
-  FEEngine::extractNodalToElementField<type>(mesh, nodes, x_el, ghost_type);
-
-  rotation_matrices(type).resize(element_dimension * element_dimension *
-                                 x_el.size());
-
-  for (auto && tuple :
-       zip(make_view(rotation_matrices(type), element_dimension,
-                     element_dimension),
-           make_view(x_el, element_dimension, nb_nodes_per_element))) {
-    auto & R = std::get<0>(tuple);
-    auto & X = std::get<1>(tuple);
-    ElementClass<type>::computeRotation(X, R);
-  }
 }
 
 } // namespace akantu

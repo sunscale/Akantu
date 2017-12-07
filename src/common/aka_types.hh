@@ -619,6 +619,12 @@ public:
     return *this;
   }
 
+  inline Vector crossProduct(const Vector<T> & v) {
+    Vector<T> tmp(this->size());
+    tmp.crossProduct(*this, v);
+    return tmp;
+  }
+
   /* ------------------------------------------------------------------------ */
   inline void solve(const Matrix<T> & A, const Vector<T> & b) {
     AKANTU_DEBUG_ASSERT(
@@ -641,9 +647,10 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  inline void normalize() {
+  inline Vector<Real> & normalize() {
     Real n = norm();
     operator/=(n);
+    return *this;
   }
 
   /* ------------------------------------------------------------------------ */
@@ -994,6 +1001,12 @@ public:
       Math::inv3(A.storage(), this->values);
     else
       Math::inv(this->cols(), A.storage(), this->values);
+  }
+
+  inline Matrix inverse() {
+    Matrix inv(this->rows(), this->cols());
+    inv.inverse(*this);
+    return inv;
   }
 
   /* --------------------------------------------------------------------- */

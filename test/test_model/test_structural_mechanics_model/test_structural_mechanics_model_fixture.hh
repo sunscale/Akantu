@@ -49,8 +49,10 @@ protected:
   std::unique_ptr<StructuralMechanicsModel> model;
 };
 
-using types = gtest_list_t<StructuralTestElementTypes>;
+//using types = gtest_list_t<StructuralTestElementTypes>;
 
-TYPED_TEST_CASE(TestStructuralFixture, types);
+//TYPED_TEST_CASE(TestStructuralFixture, types);
+
+using TestStructuralFixtureBeam2 = TestStructuralFixture<element_type_t<_bernoulli_beam_2>>;
 
 #endif /* __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__ */

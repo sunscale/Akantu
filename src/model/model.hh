@@ -78,7 +78,9 @@ public:
   initFull(pack &&... _pack) {
     switch (this->options_type) {
     case ModelOptionsType::_model:
-      // FALLTHRU
+      this->initFullImpl(ModelOptions{use_named_args,
+                                      std::forward<decltype(_pack)>(_pack)...});
+      break;
     case ModelOptionsType::_solid_mechanics_model:
       this->initFullImpl(SolidMechanicsModelOptions{use_named_args,
                                       std::forward<decltype(_pack)>(_pack)...});

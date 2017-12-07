@@ -80,6 +80,8 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 #endif
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_structural);
 
+  this->initDOFManager();
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -361,14 +363,8 @@ void StructuralMechanicsModel::onElementsChanged(
 /* -------------------------------------------------------------------------- */
 /// get some default values for derived classes
 std::tuple<ID, TimeStepSolverType> StructuralMechanicsModel::getDefaultSolverID(
-    const AnalysisMethod & /*method*/) {
+    const AnalysisMethod & method) {
   switch (method) {
-  case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", _tsst_dynamic_lumped);
-  }
-  case _explicit_consistent_mass: {
-    return std::make_tuple("explicit", _tsst_dynamic);
-  }
   case _static: {
     return std::make_tuple("static", _tsst_static);
   }
@@ -381,5 +377,24 @@ std::tuple<ID, TimeStepSolverType> StructuralMechanicsModel::getDefaultSolverID(
 }
 
 /* ------------------------------------------------------------------------ */
+ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
+    const TimeStepSolverType & type) const {
+  ModelSolverOptions options;
+
+  switch (type) {
+  case _tsst_static: {
+    options.non_linear_solver_type = _nls_newton_raphson;
+    options.integration_scheme_type["displacement"] = _ist_pseudo_time;
+    options.solution_type["displacement"] = IntegrationScheme::_not_defined;
+    break;
+  }
+  default:
+    AKANTU_EXCEPTION(type << " is not a valid time step solver type");
+  }
+
+  return options;
+}
+/* -------------------------------------------------------------------------- */
+
 
 } // namespace akantu
