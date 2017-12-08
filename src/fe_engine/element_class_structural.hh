@@ -81,7 +81,10 @@ public:
       Matrix<Real> DNDS = DNDSs(i);
       Matrix<Real> B = Bs(i);
       auto inv_J = J.inverse();
-      B.mul<false, false>(inv_J, DNDS);
+      Matrix<Real> inv_J_full(DNDS.rows(), DNDS.rows());
+      inv_J_full.block(J, 0, 0);
+      inv_J_full.block(J, J.rows(), J.cols());
+      B.mul<false, false>(inv_J_full, DNDS);
     }
   }
 
@@ -165,9 +168,9 @@ protected:
       ElementClass<ElementClassProperty<element_type>::parent_element_type>;
 
 public:
-  static inline void computeRotationMatrix(Matrix<Real> & /*R*/,
-                                           const Matrix<Real> & /*X*/,
-                                           const Vector<Real> & /*extra_normal*/){
+  static inline void
+  computeRotationMatrix(Matrix<Real> & /*R*/, const Matrix<Real> & /*X*/,
+                        const Vector<Real> & /*extra_normal*/) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -218,13 +221,11 @@ public:
     using itp = typename interpolation_element::interpolation_property;
     UInt nb_points = natural_coords.cols();
     Matrix<Real> dnds(itp::natural_space_dimension, itp::nb_nodes_per_element);
-    Matrix<Real> x(itp::natural_space_dimension, itp::nb_nodes_per_element);
-    Matrix<Real> J(natural_coords.rows(), x.rows());
+    Matrix<Real> J(natural_coords.rows(), itp::natural_space_dimension);
 
     // Extract relevant first lines
-    for (UInt j = 0; j < x.cols(); ++j)
-      for (UInt i = 0; i < x.rows(); ++i)
-        x(i, j) = node_coords(i, j);
+    auto x = node_coords.block(0, 0, itp::natural_space_dimension,
+                               itp::nb_nodes_per_element);
 
     for (UInt p = 0; p < nb_points; ++p) {
       Vector<Real> ncoord_p(natural_coords(p));

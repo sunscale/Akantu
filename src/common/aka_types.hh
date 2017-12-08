@@ -129,8 +129,9 @@ protected:
   }
 
 #ifndef SWIG
-  template <class Other, typename = std::enable_if_t<
-                             tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other,
+            typename = std::enable_if_t<
+                tensors::is_copyable<TensorProxy, Other>::value>>
   explicit TensorProxy(const Other & other) {
     this->values = other.storage();
     for (UInt i = 0; i < ndim; ++i)
@@ -141,9 +142,9 @@ public:
   using RetType = _RetType;
 
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
-                                                          << " dimensions, not "
-                                                          << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim,
+                        "This tensor has only " << ndim << " dimensions, not "
+                                                << (i + 1));
     return n[i];
   }
 
@@ -157,8 +158,9 @@ public:
   T * storage() const { return values; }
 
 #ifndef SWIG
-  template <class Other, typename = std::enable_if_t<
-                             tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other,
+            typename = std::enable_if_t<
+                tensors::is_copyable<TensorProxy, Other>::value>>
   inline TensorProxy & operator=(const Other & other) {
     AKANTU_DEBUG_ASSERT(
         other.size() == this->size(),
@@ -240,7 +242,8 @@ class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T>> {
   using type = Tensor3<T>;
 
 public:
-  Tensor3Proxy(const T * data, UInt m, UInt n, UInt k) : parent(data, m, n, k) {}
+  Tensor3Proxy(const T * data, UInt m, UInt n, UInt k)
+      : parent(data, m, n, k) {}
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {}
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) {}
 
@@ -440,9 +443,9 @@ public:
   T * storage() const { return values; }
   UInt size() const { return _size; }
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
-                                                          << " dimensions, not "
-                                                          << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim,
+                        "This tensor has only " << ndim << " dimensions, not "
+                                                << (i + 1));
     return n[i];
   };
   /* ------------------------------------------------------------------------ */
@@ -818,6 +821,29 @@ public:
                             << j << " in a matrix of size (" << this->n[0]
                             << ", " << this->n[1] << ")");
     return VectorProxy<T>(this->values + j * this->n[0], this->n[0]);
+  }
+
+  inline void block(Matrix & block, UInt pos_i, UInt pos_j) {
+    AKANTU_DEBUG_ASSERT(pos_i + block.rows() <= rows(),
+                        "The block size or position are not correct");
+    AKANTU_DEBUG_ASSERT(pos_i + block.cols() <= cols(),
+                        "The block size or position are not correct");
+    for (UInt i = 0; i < block.rows(); ++i)
+      for (UInt j = 0; j < block.cols(); ++j)
+        this->at(i + pos_i, j + pos_j) = block(i, j);
+  }
+
+  inline Matrix block(UInt pos_i, UInt pos_j, UInt block_rows,
+                      UInt block_cols) const {
+    AKANTU_DEBUG_ASSERT(pos_i + block_rows <= rows(),
+                        "The block size or position are not correct");
+    AKANTU_DEBUG_ASSERT(pos_i + block_cols <= cols(),
+                        "The block size or position are not correct");
+    Matrix block(block_rows, block_cols);
+    for (UInt i = 0; i < block_rows; ++i)
+      for (UInt j = 0; j < block_cols; ++j)
+        block(i, j) = this->at(i + pos_i, j + pos_j);
+    return block;
   }
 
   inline T & operator[](UInt idx) { return *(this->values + idx); };

@@ -226,28 +226,19 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     auto & B = std::get<1>(tuple);
     auto & RDOFs = std::get<2>(tuple);
 
-    Matrix<Real> R(spatial_dimension, spatial_dimension);
-
-    for (UInt j = 0; j < spatial_dimension; ++j)
-      for (UInt i = 0; i < spatial_dimension; ++i)
-        R(i, j) = RDOFs(i, j);
+    auto R = RDOFs.block(0, 0, spatial_dimension, spatial_dimension);
 
     // Rotate to local basis
-    auto x = R * X;
-    Matrix<Real> node_coords(natural_spatial_dimension, nb_nodes_per_element);
-
-    // Extract relevant first lines
-    for (UInt j = 0; j < node_coords.cols(); ++j)
-      for (UInt i = 0; i < node_coords.rows(); ++i)
-        node_coords(i, j) = x(i, j);
+    auto x =
+        (R * X).block(0, 0, natural_spatial_dimension, nb_nodes_per_element);
 
     Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
     ElementClass<type>::computeDNDS(natural_coords, dnds);
 
-    Tensor3<Real> J(node_coords.rows(), natural_coords.rows(),
+    Tensor3<Real> J(x.rows(), natural_coords.rows(),
                     natural_coords.cols());
-    ElementClass<type>::computeJMat(dnds, node_coords, J);
 
+    ElementClass<type>::computeJMat(dnds, x, J);
     ElementClass<type>::computeShapeDerivatives(J, dnds, B);
   }
 
