@@ -34,9 +34,11 @@
 #include "aka_error.hh"
 #include "parameter_registry.hh"
 #include "parser.hh"
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <string>
+#include <vector>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PARAMETER_REGISTRY_TMPL_HH__
@@ -56,8 +58,8 @@ namespace debug {
   public:
     ParameterUnexistingException(const std::string & name,
                                  const ParameterRegistry & registery)
-        : ParameterException(name, "Parameter " + name +
-                                       " does not exists in this scope") {
+        : ParameterException(
+              name, "Parameter " + name + " does not exists in this scope") {
       auto && params = registery.listParameters();
       this->_info =
           std::accumulate(params.begin(), params.end(),
@@ -83,10 +85,11 @@ namespace debug {
     ParameterWrongTypeException(const std::string & name,
                                 const std::type_info & wrong_type,
                                 const std::type_info & type)
-        : ParameterException(name, "Parameter " + name +
-                                       " type error, cannot convert " +
-                                       debug::demangle(type.name()) + " to " +
-                                       debug::demangle(wrong_type.name())) {}
+        : ParameterException(name,
+                             "Parameter " + name +
+                                 " type error, cannot convert " +
+                                 debug::demangle(type.name()) + " to " +
+                                 debug::demangle(wrong_type.name())) {}
   };
 } // namespace debug
 /* -------------------------------------------------------------------------- */
@@ -215,14 +218,52 @@ template <typename T> T & ParameterTyped<T>::getTyped() { return param; }
 template <typename T>
 inline void ParameterTyped<T>::printself(std::ostream & stream) const {
   Parameter::printself(stream);
-  stream << param << std::endl;
+  stream << param << "\n";
 }
 
 /* -------------------------------------------------------------------------- */
+template <typename T> class ParameterTyped<std::vector<T>> : public Parameter {
+public:
+  ParameterTyped(std::string name, std::string description,
+                 ParameterAccessType param_type, std::vector<T> & param)
+      : Parameter(name, description, param_type), param(param) {}
+
+  /* ------------------------------------------------------------------------ */
+  template <typename V> void setTyped(const V & value) { param = value; }
+  void setAuto(const ParserParameter & value) override { Parameter::setAuto(value);
+    param.clear();
+    const std::vector<T>  & tmp = value;
+    for(auto && z : tmp) {
+      param.emplace_back(z);
+    }
+  }
+
+  std::vector<T> & getTyped() { return param; }
+  const std::vector<T> & getTyped() const { return param; }
+
+  void printself(std::ostream & stream) const override {
+    Parameter::printself(stream);
+    stream << "[ ";
+    for (auto && v : param)
+      stream << v << " ";
+    stream << "]\n";
+  }
+
+  inline const std::type_info & type() const override {
+    return typeid(std::vector<T>);
+  }
+
+private:
+  /// Value of parameter
+  std::vector<T> & param;
+};
+
+/* ------o--------------------------------------------------------------------
+ */
 template <>
 inline void ParameterTyped<bool>::printself(std::ostream & stream) const {
   Parameter::printself(stream);
-  stream << std::boolalpha << param << std::endl;
+  stream << std::boolalpha << param << "\n";
 }
 
 /* -------------------------------------------------------------------------- */

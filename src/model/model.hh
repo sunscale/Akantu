@@ -59,7 +59,7 @@ class Model : public Memory, public ModelSolver, public MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Model(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+  Model(Mesh & mesh, const ModelType & type, UInt spatial_dimension = _all_dimensions,
         const ID & id = "model", const MemoryID & memory_id = 0);
 
   ~Model() override;
@@ -76,17 +76,17 @@ public:
   template <typename... pack>
   std::enable_if_t<are_named_argument<pack...>::value>
   initFull(pack &&... _pack) {
-    switch (this->options_type) {
-    case ModelOptionsType::_model:
+    switch (this->model_type) {
+    case ModelType::_model:
       this->initFullImpl(ModelOptions{use_named_args,
                                       std::forward<decltype(_pack)>(_pack)...});
       break;
-    case ModelOptionsType::_solid_mechanics_model:
+    case ModelType::_solid_mechanics_model:
       this->initFullImpl(SolidMechanicsModelOptions{use_named_args,
                                       std::forward<decltype(_pack)>(_pack)...});
       break;
 #ifdef AKANTU_COHESIVE_ELEMENT
-    case ModelOptionsType::_solid_mechanics_model_cohesive:
+    case ModelType::_solid_mechanics_model_cohesive:
       this->initFullImpl(SolidMechanicsModelCohesiveOptions{
           use_named_args, std::forward<decltype(_pack)>(_pack)...});
       break;
@@ -344,9 +344,6 @@ protected:
 
   /// parser to the pointer to use
   Parser & parser;
-
-  /// type of options to use
-  ModelOptionsType options_type{ModelOptionsType::_model};
 };
 
 /// standard output stream operator

@@ -70,8 +70,8 @@ int main(int argc, char *argv[]) {
     el.type = *it;
 
     for (UInt e = 0; e < nb_element; ++e) {
-      circle.getBarycenter(e, el.type, bary.storage());
       el.element = e;
+      circle.getBarycenter(el, bary);
       grid.insert(el, bary);
     }
   }

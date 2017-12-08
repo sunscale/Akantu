@@ -37,34 +37,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
                                      const ID & dof_id, UInt order)
-    : Parsable(_st_integration_scheme, dof_id),
-      dof_manager(dof_manager), dof_id(dof_id), order(order) {}
-
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-// /// standard output stream operator for SolutionType
-// std::ostream & operator<<(std::ostream & stream,
-//                           const IntegrationScheme::SolutionType & type) {
-//   switch (type) {
-//   case IntegrationScheme::_displacement:
-//     stream << "displacement";
-//     break;
-//   case IntegrationScheme::_temperature:
-//     stream << "temperature";
-//     break;
-//   case IntegrationScheme::_velocity:
-//     stream << "velocity";
-//     break;
-//   case IntegrationScheme::_temperature_rate:
-//     stream << "temperature_rate";
-//     break;
-//   case IntegrationScheme::_acceleration:
-//     stream << "acceleration";
-//     break;
-//   }
-//   return stream;
-// }
+    : Parsable(ParserType::_integration_scheme, dof_id), dof_manager(dof_manager),
+      dof_id(dof_id), order(order) {}
 
 /* -------------------------------------------------------------------------- */
 /// standard input stream operator for SolutionType

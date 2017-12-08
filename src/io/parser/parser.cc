@@ -56,7 +56,7 @@ ParserParameter & ParserSection::addParameter(const ParserParameter & param) {
 
 /* -------------------------------------------------------------------------- */
 ParserSection & ParserSection::addSubSection(const ParserSection & section) {
-  return ((sub_sections_by_type.insert(std::pair<SectionType, ParserSection>(
+  return ((sub_sections_by_type.insert(std::pair<ParserType, ParserSection>(
                section.getType(), section)))->second);
 }
 

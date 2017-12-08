@@ -131,6 +131,7 @@ namespace mesh_iterators {
     public:
       using value_type = std::remove_pointer_t<
           typename internal_iterator::value_type::second_type>;
+      using difference_type = std::ptrdiff_t;
       using pointer = value_type *;
       using reference = value_type &;
       using iterator_category = std::input_iterator_tag;
@@ -270,16 +271,19 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
     auto element_types =
         mesh.elementTypes(spatial_dimension, ghost_type, element_kind);
 
-    if(filter != nullptr)
-        element_types =
+    static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
+        .then([&](auto && element_types) {
+          element_types =
               filter->elementTypes(spatial_dimension, ghost_type, element_kind);
+        })(std::forward<decltype(element_types)>(element_types));
 
     for (auto type : element_types) {
       const Array<UInt> * filter_array;
-      if(filter != nullptr)
-        filter_array = &((*filter)(type, ghost_type));
-      else
-        filter_array = &empty_filter;
+
+      static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
+          .then([&](auto && array) { array = &((*filter)(type, ghost_type)); })
+          .else_([&](auto && array) { array = &empty_filter; })(
+              std::forward<const Array<UInt> *>(filter_array));
 
       auto nb_elements = mesh.getNbElement(type, ghost_type);
 

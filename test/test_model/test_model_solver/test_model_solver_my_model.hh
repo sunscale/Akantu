@@ -50,7 +50,7 @@ namespace akantu {
 class MyModel : public ModelSolver, public DataAccessor<Element> {
 public:
   MyModel(Real F, Mesh & mesh, bool lumped)
-      : ModelSolver(mesh, "model_solver", 0), nb_dofs(mesh.getNbNodes()),
+      : ModelSolver(mesh, ModelType::_model, "model_solver", 0), nb_dofs(mesh.getNbNodes()),
         nb_elements(mesh.getNbElement()), E(1.), A(1.), rho(1.), lumped(lumped),
         mesh(mesh), displacement(nb_dofs, 1, "disp"),
         velocity(nb_dofs, 1, "velo"), acceleration(nb_dofs, 1, "accel"),

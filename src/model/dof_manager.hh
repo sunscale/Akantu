@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_memory.hh"
+#include "aka_factory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
@@ -456,6 +457,8 @@ protected:
   /// mesh is registered
   Communicator & communicator;
 };
+
+using DefaultDOFManagerFactory = Factory<DOFManager, ID, const ID &, const MemoryID &>;
 
 } // namespace akantu
 

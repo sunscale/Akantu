@@ -286,29 +286,34 @@ public:
   // getConnectivityTypeList(const GhostType & ghost_type = _not_ghost) const;
 
   /// compute the barycenter of a given element
+private:
   inline void getBarycenter(UInt element, const ElementType & type,
                             Real * barycenter,
                             GhostType ghost_type = _not_ghost) const;
+
+public:
   inline void getBarycenter(const Element & element,
                             Vector<Real> & barycenter) const;
 
   /// get the element connected to a subelement
-  const Array<std::vector<Element>> &
+  const auto & getElementToSubelement() const;
+
+  /// get the element connected to a subelement
+  const auto &
   getElementToSubelement(const ElementType & el_type,
                          const GhostType & ghost_type = _not_ghost) const;
+
   /// get the element connected to a subelement
-  Array<std::vector<Element>> &
-  getElementToSubelement(const ElementType & el_type,
-                         const GhostType & ghost_type = _not_ghost);
+  auto & getElementToSubelement(const ElementType & el_type,
+                                const GhostType & ghost_type = _not_ghost);
 
   /// get the subelement connected to an element
-  const Array<Element> &
+  const auto &
   getSubelementToElement(const ElementType & el_type,
                          const GhostType & ghost_type = _not_ghost) const;
   /// get the subelement connected to an element
-  Array<Element> &
-  getSubelementToElement(const ElementType & el_type,
-                         const GhostType & ghost_type = _not_ghost);
+  auto & getSubelementToElement(const ElementType & el_type,
+                                const GhostType & ghost_type = _not_ghost);
 
   /// register a new ElementalTypeMap in the MeshData
   template <typename T>
@@ -406,11 +411,11 @@ public:
   static inline UInt getNbFacetTypes(const ElementType & type, UInt t = 0);
 
   /// get the type of the surface element associated to a given element
-  static inline constexpr auto getFacetType(const ElementType & type, UInt t = 0);
+  static inline constexpr auto getFacetType(const ElementType & type,
+                                            UInt t = 0);
 
   /// get all the type of the surface element associated to a given element
-  static inline constexpr auto
-  getAllFacetTypes(const ElementType & type);
+  static inline constexpr auto getAllFacetTypes(const ElementType & type);
 
   /// get the number of nodes in the given element list
   static inline UInt getNbNodesPerElementList(const Array<Element> & elements);

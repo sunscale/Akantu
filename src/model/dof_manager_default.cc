@@ -900,6 +900,11 @@ void DOFManagerDefault::updateDOFsData(
   }
 }
 
-} // namespace akantu
+/* -------------------------------------------------------------------------- */
+// register in factory
+static bool dof_manager_is_registered = DefaultDOFManagerFactory::getInstance().registerAllocator(
+    "default", [](const ID & id, const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+      return std::make_unique<DOFManagerDefault>(id + ":dof_manager_default:", mem_id);
+    });
 
-//  LocalWords:  dof dofs
+} // namespace akantu

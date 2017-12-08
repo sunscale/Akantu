@@ -65,18 +65,15 @@ inline void CohesiveElementInserter::packUnpackGroupedInsertionData(
 
   AKANTU_DEBUG_IN();
 
-  ElementType current_element_type = _not_defined;
-  GhostType current_ghost_type = _casper;
-  ElementTypeMapArray<UInt> & physical_names =
+  auto current_element_type = _not_defined;
+  auto current_ghost_type = _casper;
+  auto & physical_names =
       mesh_facets.registerData<UInt>("physical_names");
 
   Array<bool> * vect = nullptr;
-  Array<unsigned int> * vect2 = nullptr;
+  Array<UInt> * vect2 = nullptr;
 
-  Array<Element>::const_iterator<Element> it = elements.begin();
-  Array<Element>::const_iterator<Element> end = elements.end();
-  for (; it != end; ++it) {
-    const Element & el = *it;
+  for (const auto & el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;

@@ -51,10 +51,10 @@ public:
   /* ------------------------------------------------------------------------ */
   BaseWeightFunction(NonLocalManager & manager,
                      const std::string & type = "base")
-      : Parsable(_st_weight_function, "weight_function:" + type),
+      : Parsable(ParserType::_weight_function, "weight_function:" + type),
         manager(manager), type(type),
         spatial_dimension(manager.getModel().getMesh().getSpatialDimension()) {
-    this->registerParam("update_rate", update_rate, 1U, _pat_parsmod,
+    this->registerParam("update_rate", update_rate, UInt(1), _pat_parsmod,
                         "Update frequency");
   }
 

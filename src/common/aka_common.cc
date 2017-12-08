@@ -147,7 +147,7 @@ Parser & getStaticParser() { return static_parser; }
 
 /* -------------------------------------------------------------------------- */
 const ParserSection & getUserParser() {
-  return *(static_parser.getSubSections(_st_user).first);
+  return *(static_parser.getSubSections(ParserType::_user).first);
 }
 
 std::unique_ptr<Communicator> Communicator::static_communicator;

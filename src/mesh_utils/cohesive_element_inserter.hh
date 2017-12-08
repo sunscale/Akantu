@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "data_accessor.hh"
 #include "mesh_utils.hh"
+#include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 #include <numeric>
 /* -------------------------------------------------------------------------- */
@@ -41,11 +42,11 @@
 namespace akantu {
 class GlobalIdsUpdater;
 class FacetSynchronizer;
-}  // akantu
+} // akantu
 
 namespace akantu {
 
-class CohesiveElementInserter : public DataAccessor<Element> {
+class CohesiveElementInserter : public DataAccessor<Element>, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -84,11 +85,8 @@ public:
   /// limit check facets to match given insertion limits
   void limitCheckFacets();
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   /// init parallel variables
-  void initParallel(FacetSynchronizer * facet_synchronizer,
-                    ElementSynchronizer * element_synchronizer);
-#endif
+  void initParallel(ElementSynchronizer & element_synchronizer);
 
 protected:
   /// init facets check
@@ -140,6 +138,7 @@ public:
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(InsertionFacets, insertion_facets, bool);
 
+  AKANTU_GET_MACRO(CheckFacets, check_facets, const ElementTypeMapArray<bool> &);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(CheckFacets, check_facets, bool);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(CheckFacets, check_facets, bool);
   AKANTU_GET_MACRO(MeshFacets, mesh_facets, const Mesh &);
@@ -162,14 +161,14 @@ private:
   ElementTypeMapArray<bool> insertion_facets;
 
   /// limits for element insertion
-  Array<Real> insertion_limits;
+  Matrix<Real> insertion_limits;
+
+  /// list of groups to consider for insertion, ignored if empty
+  std::vector<ID> physical_groups;
 
   /// vector containing facets in which extrinsic cohesive elements can be
   /// inserted
   ElementTypeMapArray<bool> check_facets;
-
-  // /// facet synchronizer
-  // FacetSynchronizer & facet_synchronizer;
 
   /// global connectivity ids updater
   std::unique_ptr<GlobalIdsUpdater> global_ids_updater;
@@ -186,17 +185,17 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-class CohesiveNewNodesEvent : public NewNodesEvent{
+class CohesiveNewNodesEvent : public NewNodesEvent {
 public:
   CohesiveNewNodesEvent() = default;
   ~CohesiveNewNodesEvent() override = default;
 
   AKANTU_GET_MACRO_NOT_CONST(OldNodesList, old_nodes, Array<UInt> &);
   AKANTU_GET_MACRO(OldNodesList, old_nodes, const Array<UInt> &);
+
 private:
   Array<UInt> old_nodes;
 };
-
 
 } // akantu
 

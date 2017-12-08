@@ -44,7 +44,7 @@ namespace akantu {
 
 class GlobalIdsUpdater : public DataAccessor<Element> {
 public:
-  GlobalIdsUpdater(Mesh & mesh, ElementSynchronizer * synchronizer)
+  GlobalIdsUpdater(Mesh & mesh, ElementSynchronizer & synchronizer)
       : mesh(mesh), synchronizer(synchronizer) {}
 
   /// function to update and synchronize the global connectivity of
@@ -90,7 +90,7 @@ private:
   Mesh & mesh;
 
   /// distributed synchronizer to communicate the connectivity
-  ElementSynchronizer * synchronizer;
+  ElementSynchronizer & synchronizer;
 };
 
 }  // akantu

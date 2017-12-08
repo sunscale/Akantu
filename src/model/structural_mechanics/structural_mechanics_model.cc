@@ -57,7 +57,7 @@ namespace akantu {
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
                                                    const ID & id,
                                                    const MemoryID & memory_id)
-    : Model(mesh, dim, id, memory_id), time_step(NAN), f_m2a(1.0),
+    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id), time_step(NAN), f_m2a(1.0),
       stress("stress", id, memory_id),
       element_material("element_material", id, memory_id),
       set_ID("beam sets", id, memory_id),

@@ -45,7 +45,7 @@ namespace akantu {
 NonLocalManager::NonLocalManager(Model & model,
                                  NonLocalManagerCallback & callback,
                                  const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), Parsable(_st_neighborhoods, id),
+    : Memory(id, memory_id), Parsable(ParserType::_neighborhoods, id),
       spatial_dimension(model.getMesh().getSpatialDimension()), model(model),
       integration_points_positions("integration_points_positions", id,
                                    memory_id),
@@ -56,7 +56,7 @@ NonLocalManager::NonLocalManager(Model & model,
 
   /// iterate over all the non-local sections and store them in a map
   std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      weight_sect = parser.getSubSections(_st_non_local);
+      weight_sect = parser.getSubSections(ParserType::_non_local);
   Parser::const_section_iterator it = weight_sect.first;
   for (; it != weight_sect.second; ++it) {
     const ParserSection & section = *it;

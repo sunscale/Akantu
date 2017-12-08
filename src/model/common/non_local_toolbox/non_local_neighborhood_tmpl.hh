@@ -82,7 +82,7 @@ NonLocalNeighborhood<WeightFunction>::NonLocalNeighborhood(
 
   this->weight_function = std::make_unique<WeightFunction>(manager);
 
-  this->registerSubSection(_st_weight_function, "weight_parameter",
+  this->registerSubSection(ParserType::_weight_function, "weight_parameter",
                            *weight_function);
 
   AKANTU_DEBUG_OUT();

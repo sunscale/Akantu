@@ -77,7 +77,7 @@ private:
 };
 
 static ParserSection &
-create_subsection(const SectionType & type, const std::string & name,
+create_subsection(const ParserType & type, const std::string & name,
                   const boost::optional<std::string> & option,
                   ParserSection & sect) {
   std::string opt = "";
@@ -196,7 +196,7 @@ struct InputFileGrammar
 /* clang-format on */
 
 #define AKANTU_SECTION_TYPE_ADD(r, data, elem)                                 \
-  (BOOST_PP_STRINGIZE(elem), AKANTU_SECTION_TYPES_PREFIX(elem))
+    (BOOST_PP_STRINGIZE(elem), BOOST_PP_CAT(ParserType::_,elem))
 
     section_type.add BOOST_PP_SEQ_FOR_EACH(AKANTU_SECTION_TYPE_ADD, _,
                                            AKANTU_SECTION_TYPES);
@@ -252,7 +252,7 @@ private:
       value;
   qi::rule<Iterator, std::string(), skipper_type> mono_line_value;
 
-  qi::symbols<char, SectionType> section_type;
+  qi::symbols<char, ParserType> section_type;
 
   ParserSection * parent_section;
 };

@@ -43,7 +43,7 @@ NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(
     Model & model, const ElementTypeMapReal & quad_coordinates, const ID & id,
     const MemoryID & memory_id)
     : NeighborhoodBase(model, quad_coordinates, id, memory_id),
-      Parsable(_st_non_local, id) {
+      Parsable(ParserType::_non_local, id) {
 
   AKANTU_DEBUG_IN();
 

@@ -40,7 +40,7 @@
 
 namespace akantu {
 
-template <class Base, class... Args> class Factory {
+template <class Base, class T = ID, class... Args> class Factory {
   using allocator_t = std::function<std::unique_ptr<Base>(Args...)>;
 private:
   Factory() = default;
@@ -53,7 +53,7 @@ public:
     return instance;
   }
   /* ------------------------------------------------------------------------ */
-  bool registerAllocator(ID id, const allocator_t & allocator) {
+  bool registerAllocator(const T & id, const allocator_t & allocator) {
     if (allocators.find(id) != allocators.end())
       AKANTU_EXCEPTION("The id " << id << " is already registered in the "
                        << debug::demangle(typeid(Base).name()) << " factory");
@@ -61,16 +61,17 @@ public:
     return true;
   }
 
-  std::unique_ptr<Base> allocate(ID id, Args... args) {
+  template<typename... AArgs>
+  std::unique_ptr<Base> allocate(const T & id, AArgs&& ...  args) const {
     if (allocators.find(id) == allocators.end())
       AKANTU_EXCEPTION("The id  " << id << " is not registered in the "
                                   << debug::demangle(typeid(Base).name())
                                   << " factory.");
-    return std::forward<std::unique_ptr<Base>>(allocators[id](args...));
+    return std::forward<std::unique_ptr<Base>>(allocators.at(id)(std::forward<AArgs>(args)...));
   }
 
 private:
-  std::map<std::string, allocator_t> allocators;
+  std::map<T, allocator_t> allocators;
 };
 
 } // namespace akantu

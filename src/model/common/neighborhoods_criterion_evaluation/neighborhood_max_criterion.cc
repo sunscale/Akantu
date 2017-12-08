@@ -40,7 +40,7 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
     Model & model, const ElementTypeMapReal & quad_coordinates,
     const ID & criterion_id, const ID & id, const MemoryID & memory_id)
     : NeighborhoodBase(model, quad_coordinates, id, memory_id),
-      Parsable(_st_non_local, id), is_highest("is_highest", id, memory_id),
+      Parsable(ParserType::_non_local, id), is_highest("is_highest", id, memory_id),
       criterion(criterion_id, id, memory_id) {
 
   AKANTU_DEBUG_IN();
@@ -86,7 +86,7 @@ void NeighborhoodMaxCriterion::initNeighborhood() {
   /// parse the input parameter
   const Parser & parser = getStaticParser();
   const ParserSection & section_neighborhood =
-      *(parser.getSubSections(_st_neighborhood).first);
+      *(parser.getSubSections(ParserType::_neighborhood).first);
   this->parseSection(section_neighborhood);
 
   AKANTU_DEBUG_INFO("Creating the grid");

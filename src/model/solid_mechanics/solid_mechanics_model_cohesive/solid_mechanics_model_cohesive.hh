@@ -161,12 +161,11 @@ protected:
   void printself(std::ostream & stream, int indent = 0) const override;
 
 private:
-  /// initialize cohesive material with intrinsic insertion (by default)
-  void initIntrinsicCohesiveMaterials(UInt cohesive_index);
+  /// initialize cohesive material with extrinsic insertion
+  void initExtrinsicMaterials();
 
-  ///  initialize cohesive material with intrinsic insertion (if physical
-  ///  surfaces are precised)
-  void initIntrinsicCohesiveMaterials(const std::string & cohesive_surfaces);
+  /// initialize cohesive material with intrinsic insertion
+  void initIntrinsicMaterials();
 
   /// insert cohesive elements along a given physical surface of the mesh
   void insertElementsFromMeshData(const std::string & physical_name);
@@ -222,6 +221,7 @@ protected:
   void synchronizeGhostFacetsConnectivity();
 
   void updateCohesiveSynchronizers();
+  void updateFacetStressSynchronizer();
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */

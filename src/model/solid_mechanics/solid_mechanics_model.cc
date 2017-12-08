@@ -70,8 +70,9 @@ namespace akantu {
  */
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                                          const MemoryID & memory_id)
-    : Model(mesh, dim, id, memory_id), BoundaryCondition<SolidMechanicsModel>(),
-      f_m2a(1.0), displacement(nullptr), previous_displacement(nullptr),
+    : Model(mesh, ModelType::_solid_mechanics_model, dim, id, memory_id),
+      BoundaryCondition<SolidMechanicsModel>(), f_m2a(1.0),
+      displacement(nullptr), previous_displacement(nullptr),
       displacement_increment(nullptr), mass(nullptr), velocity(nullptr),
       acceleration(nullptr), external_force(nullptr), internal_force(nullptr),
       blocked_dofs(nullptr), current_position(nullptr),
@@ -81,8 +82,6 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       are_materials_instantiated(false) { //, pbc_synch(nullptr) {
   AKANTU_DEBUG_IN();
 
-  this->options_type = ModelOptionsType::_solid_mechanics_model;
-  
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
                                                Model::spatial_dimension);
 
@@ -93,7 +92,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
 #endif
 
   material_selector = std::make_shared<DefaultMaterialSelector>(material_index),
-  
+
   this->initDOFManager();
 
   this->registerDataAccessor(*this);
@@ -698,22 +697,10 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
                                           const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-  for (auto && ghost_type : ghost_types) {
-    for (auto type :
-         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
-      UInt nb_element = this->mesh.getNbElement(type, ghost_type);
-
-      if (!material_index.exists(type, ghost_type)) {
-        this->material_index.alloc(nb_element, 1, type, ghost_type);
-        this->material_local_numbering.alloc(nb_element, 1, type, ghost_type,
-                                             UInt(-1));
-      } else {
-        this->material_index(type, ghost_type).resize(nb_element);
-        this->material_local_numbering(type, ghost_type)
-            .resize(nb_element, UInt(-1));
-      }
-    }
-  }
+  this->material_index.initialize(mesh, _element_kind = _ek_not_defined,
+                                  _default_value = UInt(-1));
+  this->material_local_numbering.initialize(
+      mesh, _element_kind = _ek_not_defined, _default_value = UInt(-1));
 
   ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(),
                                    this->getMemoryID());
@@ -721,7 +708,6 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   for (auto & elem : element_list) {
     if (!filter.exists(elem.type, elem.ghost_type))
       filter.alloc(0, 1, elem.type, elem.ghost_type);
-
     filter(elem.type, elem.ghost_type).push_back(elem.element);
   }
 
@@ -738,9 +724,6 @@ void SolidMechanicsModel::onElementsRemoved(
     const Array<Element> & element_list,
     const ElementTypeMapArray<UInt> & new_numbering,
     const RemovedElementsEvent & event) {
-  // this->getFEEngine().initShapeFunctions(_not_ghost);
-  // this->getFEEngine().initShapeFunctions(_ghost);
-
   for (auto & material : materials) {
     material->onElementsRemoved(element_list, new_numbering, event);
   }
@@ -787,11 +770,9 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::onNodesRemoved(__attribute__((unused))
-                                         const Array<UInt> & element_list,
+void SolidMechanicsModel::onNodesRemoved(const Array<UInt> & /*element_list*/,
                                          const Array<UInt> & new_numbering,
-                                         __attribute__((unused))
-                                         const RemovedNodesEvent & event) {
+                                         const RemovedNodesEvent & /*event*/) {
   if (displacement) {
     mesh.removeNodesFromArray(*displacement, new_numbering);
     ++displacement_release;
@@ -816,10 +797,6 @@ void SolidMechanicsModel::onNodesRemoved(__attribute__((unused))
 
   if (previous_displacement)
     mesh.removeNodesFromArray(*previous_displacement, new_numbering);
-
-  // if (method != _explicit_lumped_mass) {
-  //   this->initSolver();
-  // }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -837,11 +814,11 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   stream << space << AKANTU_INDENT << "]" << std::endl;
   stream << space << " + nodals information [" << std::endl;
   displacement->printself(stream, indent + 2);
-  if(velocity)
+  if (velocity)
     velocity->printself(stream, indent + 2);
-  if(acceleration)
+  if (acceleration)
     acceleration->printself(stream, indent + 2);
-  if(mass)
+  if (mass)
     mass->printself(stream, indent + 2);
   external_force->printself(stream, indent + 2);
   internal_force->printself(stream, indent + 2);
@@ -898,11 +875,11 @@ void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
 void SolidMechanicsModel::computeNonLocalStresses(
     const GhostType & ghost_type) {
   for (auto & mat : materials) {
-    try {
-      auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
-      mat_non_local.computeNonLocalStresses(ghost_type);
-    } catch (std::bad_cast &) {
-    }
+    if (dynamic_cast<MaterialNonLocalInterface *>(mat.get()) == nullptr)
+      continue;
+
+    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
+    mat_non_local.computeNonLocalStresses(ghost_type);
   }
 }
 
@@ -925,12 +902,12 @@ void SolidMechanicsModel::updateNonLocalInternal(
   const ID field_name = internal_flat.getName();
 
   for (auto & mat : materials) {
-    try {
-      auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
-      mat_non_local.updateNonLocalInternals(internal_flat, field_name,
-                                            ghost_type, kind);
-    } catch (std::bad_cast &) {
-    }
+    if (dynamic_cast<MaterialNonLocalInterface *>(mat.get()) == nullptr)
+      continue;
+
+    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
+    mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type,
+                                          kind);
   }
 }
 

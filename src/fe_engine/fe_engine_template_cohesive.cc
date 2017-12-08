@@ -159,7 +159,8 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
     for (UInt p = 0; p < 2; ++p) {
       Element f = facets(elem, p);
       Element seg = segments(f.element)[0];
-      mesh.getBarycenter(seg.element, seg.type, &(values[p]), seg.ghost_type);
+      Vector<Real> barycenter(values + p, 1);
+      mesh.getBarycenter(seg, barycenter);
     }
 
     Real difference = values[0] - values[1];
