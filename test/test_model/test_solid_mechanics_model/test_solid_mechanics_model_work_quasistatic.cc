@@ -42,6 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "test_solid_mechanics_model_fixture.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -55,6 +56,7 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
                           "work_material.dat");
 
   /// model initialization
+  MeshUtils::buildFacets(*this->mesh);
   this->model->initFull(_analysis_method = _static);
 
   /// Create a node group for Neumann BCs.
@@ -76,9 +78,9 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
   }
 
   this->mesh->createElementGroupFromNodeGroup("el_apply_force", "apply_force",
-                                              spatial_dimension - 1);          
+                                              spatial_dimension - 1);
   this->mesh->createElementGroupFromNodeGroup("el_fixed", "fixed",
-                                              spatial_dimension - 1);          
+                                              spatial_dimension - 1);
 
   std::vector<Real> displacements{0.0, 0.1, -0.1};
   for (auto && u : displacements) {
@@ -93,7 +95,9 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
 
       surface_traction(_x) = (1.0 * i) / N;
 
-      if (spatial_dimension == 1) { //TODO: this is a hack to work around non-implemented stuff     
+      if (spatial_dimension == 1) { //TODO: this is a hack to work
+                                    //      around non-implemented
+                                    //      BC::Neumann::FromTraction for 1D
         auto & force = this->model->getForce();
         for (auto && pair : zip(make_view(pos, spatial_dimension),
                                 make_view(force, spatial_dimension))) {
@@ -104,7 +108,8 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
           }
         }
       } else {
-        this->model->applyBC(BC::Neumann::FromTraction(surface_traction), "el_apply_force");
+        this->model->applyBC(BC::Neumann::FromTraction(surface_traction),
+                             "el_apply_force");
       }
 
       /// Solve.
