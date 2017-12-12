@@ -11,6 +11,7 @@
 
 using namespace akantu;
 
+// This fixture uses very small meshes with a volume of 1.
 template <typename type_> class TestSMMFixture : public ::testing::Test {
 public:
   static constexpr const ElementType type = type_::value;
@@ -51,5 +52,33 @@ protected:
 using types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestSMMFixture, types);
+
+
+// This fixture uses somewhat finer meshes representing bars.
+template <typename type_>
+class TestSMMFixtureBar : public TestSMMFixture<type_> {
+
+public:
+  static constexpr ElementType type = type_::value;
+
+  void SetUp() override {
+    if (this->type == _pentahedron_6 || this->type == _pentahedron_15)
+      throw std::runtime_error("TODO pentahedron meshes for bar do not yet exist!");
+
+    std::cout << "testing type " << this->type << std::endl;
+
+    TestSMMFixture<type_>::SetUp();
+  }
+
+  std::string makeMeshName() override {
+    std::stringstream element_type;
+    element_type << type;
+    SCOPED_TRACE(element_type.str().c_str());
+    return std::string("bar") + element_type.str() + ".msh";
+  }
+};
+
+TYPED_TEST_CASE(TestSMMFixtureBar, types);
+
 
 #endif /* __AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH__ */
