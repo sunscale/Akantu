@@ -139,7 +139,7 @@ public:
   class iterator_internal
       : public std::iterator<std::bidirectional_iterator_tag, R> {
   public:
-    typedef std::iterator<std::bidirectional_iterator_tag, R> _parent;
+    using _parent = std::iterator<std::bidirectional_iterator_tag, R>;
     using pointer = typename _parent::pointer;
     using reference = typename _parent::reference;
 

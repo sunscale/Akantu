@@ -156,11 +156,11 @@ private:
 
 private:
   /// public arguments storage
-  typedef std::map<std::string, Argument *> Arguments;
+  using Arguments = std::map<std::string, Argument *>;
   /// internal arguments storage
-  typedef std::map<std::string, _Argument *> _Arguments;
+  using _Arguments = std::map<std::string, _Argument *>;
   /// association key argument
-  typedef std::map<std::string, _Argument *> ArgumentKeyMap;
+  using ArgumentKeyMap = std::map<std::string, _Argument *>;
   /// position arguments
   using PositionalArgument = std::vector<_Argument *>;
 

@@ -182,16 +182,10 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 /* -------------------------------------------------------------------------- */
 template <class MatrixType>
 void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
-  auto i_it = this->irn.begin();
-  auto j_it = this->jcn.begin();
-  auto a_it = this->a.begin();
-  auto a_end = this->a.end();
-
-  for (; a_it != a_end; ++a_it, ++i_it, ++j_it) {
-    const auto & i = *i_it;
-    const auto & j = *j_it;
-    const auto & A_ij = *a_it;
-
+  UInt i, j;
+  Real A_ij;
+  for (auto && tuple : zip(irn, jcn, a)) {
+    std::tie(i, j, A_ij) = tuple;
     B.add(i - 1, j - 1, alpha * A_ij);
   }
 }

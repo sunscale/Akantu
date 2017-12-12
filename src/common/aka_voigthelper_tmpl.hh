@@ -14,7 +14,7 @@
 namespace akantu {
 
 template <UInt dim>
-const UInt VoigtHelper<dim>::size = dim *(dim - (dim - 1) / 2.);
+constexpr UInt VoigtHelper<dim>::size;
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>

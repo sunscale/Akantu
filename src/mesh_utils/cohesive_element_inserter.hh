@@ -71,7 +71,8 @@ public:
   /// preset insertion of intrinsic cohesive elements along
   /// a predefined group of facet and assign them a defined material index.
   /// insertElement() method has to be called to finalize insertion.
-  void insertIntrinsicElements(std::string physname, UInt material_index);
+  void insertIntrinsicElements(const std::string & physname,
+                               UInt material_index);
 
   /// insert extrinsic cohesive elements (returns the number of new
   /// cohesive elements)

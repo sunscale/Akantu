@@ -40,7 +40,6 @@ if (GMSH)
 endif()
 
 find_package(PackageHandleStandardArgs)
-find_package_handle_standard_args(GMSH DEFAULT_MSG GMSH)
 find_package_handle_standard_args(GMSH
   REQUIRED_VARS GMSH
   VERSION_VAR GMSH_VERSION)

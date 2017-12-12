@@ -213,7 +213,7 @@ protected:
     const std::string & getFolder() const;
   };
 
-  typedef std::map<std::string, DumpOptions> DumpOptionsMap;
+  using DumpOptionsMap = std::map<std::string, DumpOptions>;
 
 protected:
   void registerDumpOptions(const std::string & key,
@@ -247,8 +247,8 @@ protected:
   //! flag to produce zipped files
   UInt mode;
 
-  typedef std::map<std::string, FieldInterface *>  field_map;
-  typedef std::map<std::string, VariableInterface *>  variable_map;
+  using field_map = std::map<std::string, FieldInterface *>;
+  using variable_map = std::map<std::string, VariableInterface *>;
 
   //! vector of additional per node data
   field_map per_node_data;

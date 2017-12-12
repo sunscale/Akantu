@@ -62,7 +62,7 @@ private:
   std::set<UInt> nodes_to_check;
   const SolidMechanicsModelCohesive & model;
   ElementType type;
-  const Array<UInt> & elements;
+  //const Array<UInt> & elements;
 
   const Material & mat_cohesive;
 
@@ -236,7 +236,7 @@ void Checker::updateDisplacement(const Vector<Real> & increment) {
 /* -------------------------------------------------------------------------- */
 Checker::Checker(const SolidMechanicsModelCohesive & model,
                  const Array<UInt> & elements, ElementType type)
-    : model(model), type(std::move(type)), elements(elements),
+  : model(model), type(std::move(type)), //elements(elements),
       mat_cohesive(model.getMaterial(1)), sigma_c(mat_cohesive.get("sigma_c")),
       beta(mat_cohesive.get("beta")), G_c(mat_cohesive.get("G_c")),
       delta_0(mat_cohesive.get("delta_0")), kappa(mat_cohesive.get("kappa")),

@@ -147,6 +147,7 @@ endmacro()
 set(_test_flags
   UNSTABLE
   PARALLEL
+  HEADER_ONLY
   )
 
 set(_test_one_variables
@@ -280,10 +281,25 @@ function(register_gtest_sources)
   register_test_files_to_package(${ARGN})
 
   if(NOT _is_active)
+    if(_register_test_PACKAGE)
+      set(_list ${_gtest_PACKAGE})
+      list(APPEND _list ${_register_test_PACKAGE})
+      list(REMOVE_DUPLICATES _list)
+      set(_gtest_PACKAGE ${_list} PARENT_SCOPE)
+    endif()
     return()
   endif()
 
   foreach (_var ${_test_flags})
+    if(_var STREQUAL "HEADER_ONLY")
+      if(NOT DEFINED_register_test_${_var})
+        set(_gtest_${_var} OFF PARENT_SCOPE)
+      elseif(NOT DEFINED _gtest_${_var})
+        set(_gtest_${_var} ON PARENT_SCOPE)
+      endif()
+      continue()
+    endif()
+
     if(_register_test_${_var})
       set(_gtest_${_var} ON PARENT_SCOPE)
     else()
@@ -301,6 +317,7 @@ function(register_gtest_sources)
     if(_register_test_${_var})
       set(_list ${_gtest_${_var}})
       list(APPEND _list ${_register_test_${_var}})
+      list(REMOVE_DUPLICATES _list)
       set(_gtest_${_var} ${_list} PARENT_SCOPE)
     endif()
   endforeach()
@@ -315,6 +332,11 @@ function(register_gtest_test test_name)
     LINK_LIBRARIES GTest::GTest GTest::Main
     PACKAGE ${_gtest_PACKAGE}
     )
+
+  is_test_active(_is_active ${ARGN} PACKAGE ${_gtest_PACKAGE})
+  if(NOT _is_active)
+    return()
+  endif()
 
   foreach (_var ${_test_flags})
     if(_gtest_${_var})
@@ -381,7 +403,14 @@ function(register_test test_name)
     # set the proper includes to build most of the tests
     target_include_directories(${test_name}
       PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
-    target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+
+    if(NOT _register_test_HEADER_ONLY)
+      target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+    else()
+      get_target_property(_features akantu INTERFACE_COMPILE_FEATURES)
+      target_link_libraries(${test_name} ${_register_test_LINK_LIBRARIES})
+      target_compile_features(${test_name} PRIVATE ${_features})
+    endif()
 
     if(_register_test_DEPENDS)
       add_dependencies(${test_name} ${_register_test_DEPENDS})

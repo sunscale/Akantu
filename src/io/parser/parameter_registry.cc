@@ -102,7 +102,7 @@ void Parameter::printself(std::ostream & stream) const {
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-ParameterRegistry::ParameterRegistry() {}
+ParameterRegistry::ParameterRegistry() = default;
 
 /* -------------------------------------------------------------------------- */
 ParameterRegistry::~ParameterRegistry() {

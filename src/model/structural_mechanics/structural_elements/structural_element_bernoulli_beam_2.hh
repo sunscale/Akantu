@@ -83,15 +83,14 @@ template <>
 void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_2>(
     Array<Real> & rotations) {
   auto type = _bernoulli_beam_2;
-  auto nb_element = mesh.getNbElement(type);
+  auto  nodes_it = mesh.getNodes().begin(this->spatial_dimension);
 
-  auto connec_it = mesh.getConnectivity(type).begin(2);
-  auto nodes_it = mesh.getNodes().begin(spatial_dimension);
-  auto R_it = rotations.begin(nb_degree_of_freedom, nb_degree_of_freedom);
+  for (auto && tuple :
+       zip(make_view(mesh.getConnectivity(type), 2),
+           make_view(rotations, nb_degree_of_freedom, nb_degree_of_freedom))) {
 
-  for (UInt e = 0; e < nb_element; ++e, ++R_it, ++connec_it) {
-    auto & R = *R_it;
-    auto & connec = *connec_it;
+    auto & connec = std::get<0>(tuple);
+    auto & R = std::get<1>(tuple);
 
     Vector<Real> x2 = nodes_it[connec(1)]; // X2
     Vector<Real> x1 = nodes_it[connec(0)]; // X1
@@ -109,7 +108,7 @@ void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_2>(
 template <>
 void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
     Array<Real> & tangent_moduli) {
-  //auto nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
+  // auto nb_element = getFEEngine().getMesh().getNbElement(_bernoulli_beam_2);
   auto nb_quadrature_points =
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
   auto tangent_size = 2;

@@ -103,13 +103,13 @@ namespace {
       /// natural coordinate
       Real xi = natural_coords(0);
 
-#if 0 // Version where we also interpolate the rotations
-
       // Cubic Hermite splines interpolating displacement
       auto M1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 2);
       auto M2 = 1. / 4. * Math::pow<2>(xi + 1) * (2 - xi);
       auto L1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 1);
       auto L2 = 1. / 4. * Math::pow<2>(xi + 1) * (xi - 1);
+
+#if 1 // Version where we also interpolate the rotations
       // Derivatives of previous functions interpolating rotations
       auto M1_ = 3. / 4. * (xi * xi - 1);
       auto L1_ = 1. / 4. * (3 * xi * xi - 2 * xi - 1);
@@ -123,13 +123,6 @@ namespace {
       // clang-format on
 
 #else // Version where we only interpolate displacements
-
-      // Cubic Hermite splines interpolating displacement
-      auto M1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 2);
-      auto M2 = 1. / 4. * Math::pow<2>(xi + 1) * (2 - xi);
-      auto L1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 1);
-      auto L2 = 1. / 4. * Math::pow<2>(xi + 1) * (xi - 1);
-
       // clang-format off
       //    v1  t1  v2  t2
       N = {{M1, L1, M2, L2}};

@@ -475,7 +475,7 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
         line.substr(line.find('/') + 1,
                     std::string::npos); // erase the first slash / of the line
     char tutu[250];
-    strcpy(tutu, line.c_str());
+    strncpy(tutu, line.c_str(), 250);
 
     AKANTU_DEBUG_WARNING("reading line " << line);
     Array<UInt> temp_id(0, 2);
@@ -539,7 +539,7 @@ std::string MeshIODiana::readMaterial(std::ifstream & infile,
 
   UInt mat_id = 0;
 
-  typedef std::map<std::string, Real> MatProp;
+  using MatProp = std::map<std::string, Real>;
   MatProp mat_prop;
   do {
     my_getline(infile, line);

@@ -69,7 +69,6 @@ int main(int argc, char * argv[]) {
 
   model.setBaseName("damage_non_local");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("mass"        );
   model.addDumpField("velocity"    );
   model.addDumpField("acceleration");
   model.addDumpFieldVector("external_force");

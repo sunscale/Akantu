@@ -29,45 +29,48 @@
 #
 #===============================================================================
 
-register_test(test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1
-  test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1.cc
-  PACKAGE structural_mechanics
+register_gtest_sources(
+  SOURCES test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1.cc
+  PACKAGE implicit structural_mechanics
   )
 
-register_test(test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y
-  test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y.cc
-  PACKAGE structural_mechanics
-  )
+register_gtest_test(test_structural_mechanics)
 
-register_test(test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy
-  test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy.cc
-  PACKAGE structural_mechanics
-  )
 
-register_test(test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_zy
-  test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_zy.cc
-  PACKAGE structural_mechanics
-  )
+# register_test(test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y
+#   test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y.cc
+#   PACKAGE structural_mechanics
+#   )
 
-register_test(test_structural_mechanics_model_bernoulli_beam_3_exercice_12_10_13
-  test_structural_mechanics_model_bernoulli_beam_3_exercice_12_10_13.cc
-  PACKAGE structural_mechanics
-  )
+# register_test(test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy
+#   test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy.cc
+#   PACKAGE structural_mechanics
+#   )
 
-register_test(test_structural_mechanics_model_bernoulli_beam_dynamics
-  test_structural_mechanics_model_bernoulli_beam_dynamics.cc
-  PACKAGE structural_mechanics
-  )
+# register_test(test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_zy
+#   test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_zy.cc
+#   PACKAGE structural_mechanics
+#   )
 
-register_test(test_structural_mechanics_model_kirchhoff_shell_patch_test_4_5_5
-  test_structural_mechanics_model_kirchhoff_shell_patch_test_4_5_5.cc
-  PACKAGE structural_mechanics
-  )
+# register_test(test_structural_mechanics_model_bernoulli_beam_3_exercice_12_10_13
+#   test_structural_mechanics_model_bernoulli_beam_3_exercice_12_10_13.cc
+#   PACKAGE structural_mechanics
+#   )
 
-add_mesh(complicated_mesh complicated.geo 1 1)
-register_test(test_structural_mechanics_model_bernoulli_beam_2_complicated
-  test_structural_mechanics_model_bernoulli_beam_2_complicated.cc
-  DEPENDS complicated_mesh
-  PACKAGE structural_mechanics
-  )
+# register_test(test_structural_mechanics_model_bernoulli_beam_dynamics
+#   test_structural_mechanics_model_bernoulli_beam_dynamics.cc
+#   PACKAGE structural_mechanics
+#   )
+
+# register_test(test_structural_mechanics_model_kirchhoff_shell_patch_test_4_5_5
+#   test_structural_mechanics_model_kirchhoff_shell_patch_test_4_5_5.cc
+#   PACKAGE structural_mechanics
+#   )
+
+# add_mesh(complicated_mesh complicated.geo 1 1)
+# register_test(test_structural_mechanics_model_bernoulli_beam_2_complicated
+#   test_structural_mechanics_model_bernoulli_beam_2_complicated.cc
+#   DEPENDS complicated_mesh
+#   PACKAGE structural_mechanics
+#   )
 

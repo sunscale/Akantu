@@ -29,21 +29,17 @@
 #
 #===============================================================================
 
-add_akantu_test(test_vector "Test akantu vector")
-
 add_mesh(test_grid_mesh circle.geo 2 1)
 
-register_test(test_csr test_csr.cc PACKAGE core)
 register_test(test_grid test_grid.cc
   DEPENDS test_grid_mesh
   PACKAGE core)
 
-register_test(test_math test_math.cc PACKAGE core)
-register_test(test_types test_types.cc PACKAGE core)
+#register_test(test_types test_types.cc PACKAGE core)
 
-register_test(test_zip_iterator test_zip_iterator.cc PACKAGE core)
-register_test(test_arange_iterator test_arange_iterator.cc PACKAGE core)
-
+register_gtest_sources(SOURCES test_csr.cc PACKAGE core)
+register_gtest_sources(SOURCES test_arange_iterator.cc PACKAGE core HEADER_ONLY)
+register_gtest_sources(SOURCES test_zip_iterator.cc PACKAGE core HEADER_ONLY)
 register_gtest_sources(SOURCES test_array.cc PACKAGE core)
 register_gtest_sources(SOURCES test_tensors.cc PACKAGE core)
 

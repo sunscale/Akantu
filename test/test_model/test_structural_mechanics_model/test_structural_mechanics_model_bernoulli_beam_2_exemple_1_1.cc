@@ -34,6 +34,8 @@
 #include <fstream>
 
 /* -------------------------------------------------------------------------- */
+#include "test_structural_mechanics_model_fixture.hh"
+
 #include "aka_common.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
@@ -46,24 +48,21 @@
 
 using namespace akantu;
 
+namespace {
+
 //Linear load function
-static void lin_load(double * position, double * load,
-		     __attribute__ ((unused)) Real * normal,
-		     __attribute__ ((unused)) UInt surface_id){
-  memset(load,0,sizeof(Real)*3);
-  if (position[0]<=10){
-  load[1]= -6000;
- }
-}
+// static void lin_load(double * position, double * load,
+// 		     __attribute__ ((unused)) Real * normal,
+// 		     __attribute__ ((unused)) UInt surface_id){
+//   memset(load,0,sizeof(Real)*3);
+//   if (position[0]<=10){
+//   load[1]= -6000;
+//  }
+// }
 
-int main(int argc, char *argv[]){
-  initialize(argc, argv);
-  debug::setDebugLevel(dblWarning);
-
+void test_body(StructuralMechanicsModel & model, Mesh & beams){
   /* -------------------------------------------------------------------------- */
   // Defining the mesh
-
-  Mesh beams(2);
 
   UInt nb_nodes=3;
   UInt nb_nodes_1=1;
@@ -101,7 +100,6 @@ int main(int argc, char *argv[]){
   // Defining the materials
   //  akantu::ElementType type = akantu::_bernoulli_beam_2;
 
-  StructuralMechanicsModel model(beams);
 
   StructuralMaterial mat1;
   mat1.E=3e10;
@@ -123,7 +121,7 @@ int main(int argc, char *argv[]){
 
   const Real M = -3600; // Momentum at 3
 
-  Array<Real> & forces = model.getForce();
+  Array<Real> & forces = model.getExternalForce();
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> & boundary = model.getBlockedDOFs();
   const Array<Real> & N_M  = model.getStress(_bernoulli_beam_2);
@@ -140,7 +138,9 @@ int main(int argc, char *argv[]){
 
   forces(nb_nodes-1,2) += M;
 
+#if 0
   model.computeForcesFromFunction<_bernoulli_beam_2>(lin_load, akantu::_bft_traction);
+#endif
 
   /* -------------------------------------------------------------------------- */
   // Defining the boundary conditions
@@ -152,37 +152,21 @@ int main(int argc, char *argv[]){
   boundary(nb_nodes-1,1) = true;
   /* -------------------------------------------------------------------------- */
   // Solve
-  Real error;
 
   model.assembleStiffnessMatrix();
-  model.getStiffnessMatrix().saveMatrix("Kb.mtx");
-  UInt count = 0;
-
-  model.addDumpField("displacement");
-  model.addDumpField("rotation");
-  model.addDumpField("force");
-  model.addDumpField("momentum");
-
-  do {
-    if(count != 0) std::cerr << count << " - " << error << std::endl;
-    model.updateResidual();
-    model.solve();
-    count++;
-  } while (!model.testConvergenceIncrement(1e-10, error) && count < 10);
-  std::cerr << count << " - " << error << std::endl;
+  model.solveStep();
 
   /* -------------------------------------------------------------------------- */
   // Post-Processing
-
   model.computeStresses();
-
-  model.getStiffnessMatrix().saveMatrix("Ka.mtx");
   std::cout<< " d1 = " << displacement(nb_nodes_1,2) << std::endl;
   std::cout<< " d2 = " << displacement(nb_nodes-1,2) << std::endl;
   std::cout<< " M1 = " << N_M(0,1) << std::endl;
   std::cout<< " M2 = " << N_M(2*(nb_nodes-2),1) << std::endl;
-
-  model.dump();
-
-  finalize();
 }
+
+TEST_F(TestStructuralFixtureBeam2, TestBernouilli) {
+  test_body(*(this->model), *(this->mesh));
+}
+
+} // namespace

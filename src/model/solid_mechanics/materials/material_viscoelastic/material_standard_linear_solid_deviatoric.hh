@@ -111,8 +111,9 @@ public:
   Real getDissipatedEnergy(ElementType type, UInt index) const;
 
   /// get the energy using an energy type string for the time step
-  Real getEnergy(std::string type) override;
-  Real getEnergy(std::string energy_id, ElementType type, UInt index) override;
+  Real getEnergy(const std::string & type) override;
+  Real getEnergy(const std::string & energy_id, ElementType type,
+                 UInt index) override;
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

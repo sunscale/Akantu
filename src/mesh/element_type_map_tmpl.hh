@@ -630,15 +630,17 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
 /* -------------------------------------------------------------------------- */
 template <class T, typename SupportType>
 inline T & ElementTypeMapArray<T, SupportType>::
-operator()(const Element & element) {
-  return this->operator()(element.type, element.ghost_type)(element.element);
+operator()(const Element & element, UInt component) {
+  return this->operator()(element.type, element.ghost_type)(element.element,
+                                                            component);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class T, typename SupportType>
 inline const T & ElementTypeMapArray<T, SupportType>::
-operator()(const Element & element) const {
-  return this->operator()(element.type, element.ghost_type)(element.element);
+operator()(const Element & element, UInt component) const {
+  return this->operator()(element.type, element.ghost_type)(element.element,
+                                                            component);
 }
 
 } // namespace akantu

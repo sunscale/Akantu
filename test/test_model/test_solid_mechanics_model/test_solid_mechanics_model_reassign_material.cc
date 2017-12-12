@@ -173,11 +173,11 @@ int main(int argc, char * argv[]) {
 
   /// assign the two different materials using the
   /// StraightInterfaceMaterialSelector
-  StraightInterfaceMaterialSelector * mat_selector;
-  mat_selector = new StraightInterfaceMaterialSelector(
+
+  auto && mat_selector = std::make_shared<StraightInterfaceMaterialSelector>(
       model, "mat_1", "mat_2", horizontal, pos_interface);
 
-  model.setMaterialSelector(*mat_selector);
+  model.setMaterialSelector(mat_selector);
   model.initFull(_analysis_method = _static);
   MeshUtils::buildFacets(mesh);
 

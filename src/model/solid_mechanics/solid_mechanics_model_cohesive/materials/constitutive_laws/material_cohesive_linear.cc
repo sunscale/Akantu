@@ -164,8 +164,8 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
       // compute bounding volume
       Real volume = 0;
 
-      std::vector<Element>::const_iterator elem = element_list.begin();
-      std::vector<Element>::const_iterator elem_end = element_list.end();
+      auto elem = element_list.begin();
+      auto elem_end = element_list.end();
 
       for (; elem != elem_end; ++elem) {
         if (*elem == ElementNull)

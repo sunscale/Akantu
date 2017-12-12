@@ -42,71 +42,6 @@ namespace {
 template <size_t t> using degree_t = std::integral_constant<size_t, t>;
 
 /* -------------------------------------------------------------------------- */
-
-template <size_t degree> class Polynomial {
-public:
-  Polynomial() = default;
-
-  Polynomial(std::initializer_list<double> && init) {
-    for (auto && pair : zip(init, constants))
-      std::get<1>(pair) = std::get<0>(pair);
-  }
-
-  double operator()(double x) {
-    double res = 0.;
-    for (auto && vals : enumerate(constants)) {
-      double a;
-      int k;
-      std::tie(k, a) = vals;
-      res += a * std::pow(x, k);
-    }
-    return res;
-  }
-
-  Polynomial extract(size_t pdegree) {
-    Polynomial<degree> extract(*this);
-    for (size_t d = pdegree + 1; d < degree + 1; ++d)
-      extract.constants[d] = 0;
-    return extract;
-  }
-
-  auto integral() {
-    Polynomial<degree + 1> integral_;
-    integral_.set(0, 0.);
-    ;
-    for (size_t d = 0; d < degree + 1; ++d) {
-      integral_.set(1 + d, get(d) / double(d + 1));
-    }
-    return integral_;
-  }
-
-  auto integrate(double a, double b) {
-    auto primitive = integral();
-    return (primitive(b) - primitive(a));
-  }
-
-  double get(int i) const { return constants[i]; }
-
-  void set(int i, double a) { constants[i] = a; }
-
-protected:
-  std::array<double, degree + 1> constants;
-};
-
-template <size_t degree>
-std::ostream & operator<<(std::ostream & stream, const Polynomial<degree> & p) {
-  for (size_t d = 0; d < degree + 1; ++d) {
-    if (d != 0)
-      stream << " + ";
-
-    stream << p.get(degree - d);
-    if (d != degree)
-      stream << "x ^ " << degree - d;
-  }
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
 using TestDegreeTypes = std::tuple<degree_t<0>, degree_t<1>, degree_t<2>, degree_t<3>, degree_t<4>, degree_t<5>>;
 
 std::array<Polynomial<5>, 3> global_polys{
@@ -170,7 +105,7 @@ public:
 
       auto res =
           this->fem->getIntegrator()
-          .template integrate<parent::type, this->degree == 0 ? 1 : this->degree>(polynomial);
+          .template integrate<parent::type, (degree == 0 ? 1 : degree)>(polynomial);
       auto expect = poly.integrate(this->lower(d), this->upper(d));
 
       for (size_t o = 0; o < dim; ++o) {
@@ -189,6 +124,9 @@ protected:
   Array<Real> integration_points_pos;
   std::array<Polynomial<5>, 3> polys;
 };
+
+template <typename T>
+constexpr size_t TestGaussIntegrationFixture<T>::degree;
 
 /* -------------------------------------------------------------------------- */
 /* Tests                                                                      */

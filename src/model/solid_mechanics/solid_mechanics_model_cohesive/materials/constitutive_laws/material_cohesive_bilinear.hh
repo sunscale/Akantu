@@ -66,18 +66,17 @@ public:
 public:
 
   /// initialize the material computed parameter
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// set material parameters for new elements
-  virtual void onElementsAdded(const Array<Element> & element_list,
-                               const NewElementsEvent & event);
+  void onElementsAdded(const Array<Element> & element_list,
+                       const NewElementsEvent & event) override;
 
 protected:
 
   /// constitutive law
-  void computeTraction(const Array<Real> & normal,
-		       ElementType el_type,
-		       GhostType ghost_type = _not_ghost);
+  void computeTraction(const Array<Real> & normal, ElementType el_type,
+                       GhostType ghost_type = _not_ghost) override;
 
   /**
    * Scale traction sigma_c according to the volume of the

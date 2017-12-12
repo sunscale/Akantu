@@ -44,18 +44,6 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline SolidMechanicsModelOptions::SolidMechanicsModelOptions(
-    AnalysisMethod analysis_method)
-    : ModelOptions(analysis_method) {}
-
-/* -------------------------------------------------------------------------- */
-template <typename... pack>
-SolidMechanicsModelOptions::SolidMechanicsModelOptions(use_named_args_t,
-                                                       pack &&... _pack)
-    : SolidMechanicsModelOptions(
-          OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
-
-/* -------------------------------------------------------------------------- */
 inline Material & SolidMechanicsModel::getMaterial(UInt mat_index) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
@@ -106,15 +94,6 @@ SolidMechanicsModel::getMaterial(const std::string & name) const {
                       "The model " << id << " has no material named " << name);
   AKANTU_DEBUG_OUT();
   return *materials[it->second];
-}
-
-/* -------------------------------------------------------------------------- */
-inline void
-SolidMechanicsModel::setMaterialSelector(MaterialSelector & selector) {
-  if (is_default_material_selector)
-    delete material_selector;
-  material_selector = &selector;
-  is_default_material_selector = false;
 }
 
 /* -------------------------------------------------------------------------- */

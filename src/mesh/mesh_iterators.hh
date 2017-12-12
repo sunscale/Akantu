@@ -270,19 +270,16 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
     auto element_types =
         mesh.elementTypes(spatial_dimension, ghost_type, element_kind);
 
-    static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
-        .then([&](auto && element_types) {
-          element_types =
+    if(filter != nullptr)
+        element_types =
               filter->elementTypes(spatial_dimension, ghost_type, element_kind);
-        })(std::forward<decltype(element_types)>(element_types));
 
     for (auto type : element_types) {
       const Array<UInt> * filter_array;
-
-      static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
-          .then([&](auto && array) { array = &((*filter)(type, ghost_type)); })
-          .else_([&](auto && array) { array = &empty_filter; })(
-              std::forward<const Array<UInt> *>(filter_array));
+      if(filter != nullptr)
+        filter_array = &((*filter)(type, ghost_type));
+      else
+        filter_array = &empty_filter;
 
       auto nb_elements = mesh.getNbElement(type, ghost_type);
 

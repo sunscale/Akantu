@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
   }
 
   /// creation of material selector
-  MeshDataMaterialSelector<std::string> mat_selector("physical_names", model);
+  auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
   model.setMaterialSelector(mat_selector);
 
   /// dump material index in paraview

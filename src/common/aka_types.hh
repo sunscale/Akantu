@@ -129,8 +129,9 @@ protected:
   }
 
 #ifndef SWIG
-  template <class Other, typename = std::enable_if_t<
-                             tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other,
+            typename = std::enable_if_t<
+                tensors::is_copyable<TensorProxy, Other>::value>>
   explicit TensorProxy(const Other & other) {
     this->values = other.storage();
     for (UInt i = 0; i < ndim; ++i)
@@ -141,9 +142,9 @@ public:
   using RetType = _RetType;
 
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
-                                                          << " dimensions, not "
-                                                          << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim,
+                        "This tensor has only " << ndim << " dimensions, not "
+                                                << (i + 1));
     return n[i];
   }
 
@@ -157,8 +158,9 @@ public:
   T * storage() const { return values; }
 
 #ifndef SWIG
-  template <class Other, typename = std::enable_if_t<
-                             tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other,
+            typename = std::enable_if_t<
+                tensors::is_copyable<TensorProxy, Other>::value>>
   inline TensorProxy & operator=(const Other & other) {
     AKANTU_DEBUG_ASSERT(
         other.size() == this->size(),
@@ -236,11 +238,12 @@ public:
 
 template <typename T>
 class Tensor3Proxy : public TensorProxy<T, 3, Tensor3<T>> {
-  typedef TensorProxy<T, 3, Tensor3<T>> parent;
+  using parent = TensorProxy<T, 3, Tensor3<T>>;
   using type = Tensor3<T>;
 
 public:
-  Tensor3Proxy(const T * data, UInt m, UInt n, UInt k) : parent(data, m, n, k) {}
+  Tensor3Proxy(const T * data, UInt m, UInt n, UInt k)
+      : parent(data, m, n, k) {}
   Tensor3Proxy(const Tensor3Proxy & src) : parent(src) {}
   Tensor3Proxy(const Tensor3<T> & src) : parent(src) {}
 
@@ -281,10 +284,9 @@ protected:
     this->wrapped = true;
   }
 
-protected:
+public:
   TensorStorage(const TensorStorage & src) = delete;
 
-public:
   TensorStorage(const TensorStorage & src, bool deep_copy) : values(nullptr) {
     if (deep_copy)
       this->deepCopy(src);
@@ -441,9 +443,9 @@ public:
   T * storage() const { return values; }
   UInt size() const { return _size; }
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
-                                                          << " dimensions, not "
-                                                          << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim,
+                        "This tensor has only " << ndim << " dimensions, not "
+                                                << (i + 1));
     return n[i];
   };
   /* ------------------------------------------------------------------------ */
@@ -531,7 +533,7 @@ protected:
 /* Vector                                                                     */
 /* -------------------------------------------------------------------------- */
 template <typename T> class Vector : public TensorStorage<T, 1, Vector<T>> {
-  typedef TensorStorage<T, 1, Vector<T>> parent;
+  using parent = TensorStorage<T, 1, Vector<T>>;
 
 public:
   using value_type = typename parent::value_type;
@@ -620,6 +622,12 @@ public:
     return *this;
   }
 
+  inline Vector crossProduct(const Vector<T> & v) {
+    Vector<T> tmp(this->size());
+    tmp.crossProduct(*this, v);
+    return tmp;
+  }
+
   /* ------------------------------------------------------------------------ */
   inline void solve(const Matrix<T> & A, const Vector<T> & b) {
     AKANTU_DEBUG_ASSERT(
@@ -642,9 +650,10 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  inline void normalize() {
+  inline Vector<Real> & normalize() {
     Real n = norm();
     operator/=(n);
+    return *this;
   }
 
   /* ------------------------------------------------------------------------ */
@@ -724,7 +733,7 @@ inline bool Vector<UInt>::equal(const Vector<UInt> & v,
 /* Matrix                                                                   */
 /* ------------------------------------------------------------------------ */
 template <typename T> class Matrix : public TensorStorage<T, 2, Matrix<T>> {
-  typedef TensorStorage<T, 2, Matrix<T>> parent;
+  using parent = TensorStorage<T, 2, Matrix<T>>;
 
 public:
   using value_type = typename parent::value_type;
@@ -812,6 +821,29 @@ public:
                             << j << " in a matrix of size (" << this->n[0]
                             << ", " << this->n[1] << ")");
     return VectorProxy<T>(this->values + j * this->n[0], this->n[0]);
+  }
+
+  inline void block(Matrix & block, UInt pos_i, UInt pos_j) {
+    AKANTU_DEBUG_ASSERT(pos_i + block.rows() <= rows(),
+                        "The block size or position are not correct");
+    AKANTU_DEBUG_ASSERT(pos_i + block.cols() <= cols(),
+                        "The block size or position are not correct");
+    for (UInt i = 0; i < block.rows(); ++i)
+      for (UInt j = 0; j < block.cols(); ++j)
+        this->at(i + pos_i, j + pos_j) = block(i, j);
+  }
+
+  inline Matrix block(UInt pos_i, UInt pos_j, UInt block_rows,
+                      UInt block_cols) const {
+    AKANTU_DEBUG_ASSERT(pos_i + block_rows <= rows(),
+                        "The block size or position are not correct");
+    AKANTU_DEBUG_ASSERT(pos_i + block_cols <= cols(),
+                        "The block size or position are not correct");
+    Matrix block(block_rows, block_cols);
+    for (UInt i = 0; i < block_rows; ++i)
+      for (UInt j = 0; j < block_cols; ++j)
+        block(i, j) = this->at(i + pos_i, j + pos_j);
+    return block;
   }
 
   inline T & operator[](UInt idx) { return *(this->values + idx); };
@@ -997,6 +1029,12 @@ public:
       Math::inv(this->cols(), A.storage(), this->values);
   }
 
+  inline Matrix inverse() {
+    Matrix inv(this->rows(), this->cols());
+    inv.inverse(*this);
+    return inv;
+  }
+
   /* --------------------------------------------------------------------- */
   inline T det() const {
     AKANTU_DEBUG_ASSERT(this->cols() == this->rows(),
@@ -1094,7 +1132,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* Tensor3                                                                  */
 /* ------------------------------------------------------------------------ */
 template <typename T> class Tensor3 : public TensorStorage<T, 3, Tensor3<T>> {
-  typedef TensorStorage<T, 3, Tensor3<T>> parent;
+  using parent = TensorStorage<T, 3, Tensor3<T>>;
 
 public:
   using value_type = typename parent::value_type;

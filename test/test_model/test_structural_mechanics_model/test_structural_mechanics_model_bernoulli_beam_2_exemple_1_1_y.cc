@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
 
   const Real M = -3600; // Momentum at 3
 
-  Array<Real> & forces = model.getForce();
+  Array<Real> & forces = model.getExternalForce();
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> & boundary = model.getBlockedDOFs();
   const Array<Real> & N_M  = model.getStress(_bernoulli_beam_2);
@@ -133,7 +133,9 @@ int main(int argc, char *argv[]){
 
 
   forces(nb_nodes-1,2) += M;
+#if 0
   model.computeForcesFromFunction<_bernoulli_beam_2>(lin_load, akantu::_bft_traction);
+#endif
 
   /* -------------------------------------------------------------------------- */
   // Defining the boundary conditions
@@ -148,7 +150,6 @@ int main(int argc, char *argv[]){
   Real error;
 
   model.assembleStiffnessMatrix();
-  model.getStiffnessMatrix().saveMatrix("Kb.mtx");
   UInt count = 0;
 
   model.addDumpField("displacememt");

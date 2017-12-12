@@ -63,12 +63,12 @@ private:
   SectionType section_type;
   /// ID of parsable object
   ID pid;
-  typedef std::pair<SectionType, std::string> SubSectionKey;
-  typedef std::map<SubSectionKey, Parsable *> SubSections;
+  using SubSectionKey = std::pair<SectionType, std::string>;
+  using SubSections = std::map<SubSectionKey, Parsable *>;
   /// Subsections map
   SubSections sub_sections;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_PARSABLE_HH__ */

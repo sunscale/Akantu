@@ -94,8 +94,9 @@ register_test(test_multi_material_elastic
 # Material unit tests
 # ==============================================================================
 
-register_test(test_elastic_materials test_elastic_materials.cc PACKAGE core GTEST)
-register_test(test_finite_def_materials test_finite_def_materials.cc PACKAGE core GTEST)
-register_test(test_damage_materials test_damage_materials.cc PACKAGE core GTEST)
-register_test(test_plastic_materials test_plastic_materials.cc PACKAGE core GTEST)
+register_gtest_sources(SOURCES test_elastic_materials.cc PACKAGE core)
+register_gtest_sources(SOURCES test_finite_def_materials.cc PACKAGE core)
+register_gtest_sources(SOURCES test_damage_materials.cc PACKAGE core)
+register_gtest_sources(SOURCES test_plastic_materials.cc PACKAGE core)
 
+register_gtest_test(test_material)

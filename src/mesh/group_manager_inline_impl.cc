@@ -53,10 +53,10 @@ dumper::Field * GroupManager::createElementalField(
   if (field_ptr == nullptr)
     return nullptr;
   if (group_name == "all")
-    return this->createElementalField<dump_type<false> >(
+    return this->createElementalField<dump_type<false>>(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
   else
-    return this->createElementalFilteredField<dump_type<true> >(
+    return this->createElementalFilteredField<dump_type<true>>(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
 }
 
@@ -72,10 +72,10 @@ dumper::Field * GroupManager::createElementalField(
   if (field_ptr == nullptr)
     return nullptr;
   if (group_name == "all")
-    return this->createElementalField<dump_type<T, T2, false> >(
+    return this->createElementalField<dump_type<T, T2, false>>(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
   else
-    return this->createElementalFilteredField<dump_type<T, T2, true> >(
+    return this->createElementalFilteredField<dump_type<T, T2, true>>(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
 }
 
@@ -93,10 +93,10 @@ GroupManager::createElementalField(const ElementTypeMapArray<T> & field,
   if (field_ptr == nullptr)
     return nullptr;
   if (group_name == "all")
-    return this->createElementalField<dump_type<T, false> >(
+    return this->createElementalField<dump_type<T, false>>(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
   else
-    return this->createElementalFilteredField<dump_type<T, true> >(
+    return this->createElementalFilteredField<dump_type<T, true>>(
         field, group_name, spatial_dimension, kind, nb_data_per_elem);
 }
 
@@ -150,7 +150,6 @@ dumper::Field * GroupManager::createElementalFilteredField(
 }
 
 /* -------------------------------------------------------------------------- */
-
 template <typename type, bool flag, template <class, bool> class ftype>
 dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
                                                const std::string & group_name,
@@ -159,14 +158,14 @@ dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
   if (field == nullptr)
     return nullptr;
   if (group_name == "all") {
-    typedef typename dumper::NodalField<type, false> DumpType;
+    using DumpType = typename dumper::NodalField<type, false>;
     auto * dumper = new DumpType(*field, 0, 0, nullptr);
     dumper->setPadding(padding_size);
     return dumper;
   } else {
     ElementGroup & group = this->getElementGroup(group_name);
     const Array<UInt> * nodal_filter = &(group.getNodes());
-    typedef typename dumper::NodalField<type, true> DumpType;
+    using DumpType = typename dumper::NodalField<type, true>;
     auto * dumper = new DumpType(*field, 0, 0, nodal_filter);
     dumper->setPadding(padding_size);
     return dumper;
@@ -175,7 +174,6 @@ dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
 }
 
 /* -------------------------------------------------------------------------- */
-
 template <typename type, bool flag, template <class, bool> class ftype>
 dumper::Field *
 GroupManager::createStridedNodalField(const ftype<type, flag> * field,
@@ -185,14 +183,14 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
   if (field == NULL)
     return nullptr;
   if (group_name == "all") {
-    typedef typename dumper::NodalField<type, false> DumpType;
+    using DumpType= typename dumper::NodalField<type, false>;
     auto * dumper = new DumpType(*field, size, stride, NULL);
     dumper->setPadding(padding_size);
     return dumper;
   } else {
     ElementGroup & group = this->getElementGroup(group_name);
     const Array<UInt> * nodal_filter = &(group.getNodes());
-    typedef typename dumper::NodalField<type, true> DumpType;
+    using DumpType = typename dumper::NodalField<type, true> ;
     auto * dumper = new DumpType(*field, size, stride, nodal_filter);
     dumper->setPadding(padding_size);
     return dumper;
@@ -202,6 +200,6 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif

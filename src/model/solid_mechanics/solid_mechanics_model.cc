@@ -42,9 +42,9 @@
 #include "shape_lagrange.hh"
 #include "solid_mechanics_model_tmpl.hh"
 
+#include "communicator.hh"
 #include "element_synchronizer.hh"
 #include "sparse_matrix.hh"
-#include "communicator.hh"
 #include "synchronizer_registry.hh"
 
 #include "dumpable_inline_impl.hh"
@@ -77,11 +77,12 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       blocked_dofs(nullptr), current_position(nullptr),
       material_index("material index", id, memory_id),
       material_local_numbering("material local numbering", id, memory_id),
-      material_selector(new DefaultMaterialSelector(material_index)),
-      is_default_material_selector(true), increment_flag(false),
+      increment_flag(false),
       are_materials_instantiated(false) { //, pbc_synch(nullptr) {
   AKANTU_DEBUG_IN();
 
+  this->options_type = ModelOptionsType::_solid_mechanics_model;
+  
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
                                                Model::spatial_dimension);
 
@@ -91,6 +92,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                          _ek_regular);
 #endif
 
+  material_selector = std::make_shared<DefaultMaterialSelector>(material_index),
+  
   this->initDOFManager();
 
   this->registerDataAccessor(*this);
@@ -111,16 +114,9 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
 SolidMechanicsModel::~SolidMechanicsModel() {
   AKANTU_DEBUG_IN();
 
-  if (is_default_material_selector) {
-    delete material_selector;
-    material_selector = nullptr;
-  }
-
   for (auto & internal : this->registered_internals) {
     delete internal.second;
   }
-
-  //  delete pbc_synch;
 
   AKANTU_DEBUG_OUT();
 }
@@ -147,14 +143,13 @@ void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {
  * @param method the analysis method wanted.  See the akantu::AnalysisMethod for
  * the different possibilities
  */
-void SolidMechanicsModel::initFull(const ModelOptions & options) {
+void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
   material_index.initialize(mesh, _element_kind = _ek_not_defined,
-                            _default_value = UInt(-1), _with_nb_element =
-                            true);
+                            _default_value = UInt(-1), _with_nb_element = true);
   material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
                                       _with_nb_element = true);
 
-  Model::initFull(options);
+  Model::initFullImpl(options);
 
   // initialize pbc
   if (this->pbc_pair.size() != 0)
@@ -167,8 +162,7 @@ void SolidMechanicsModel::initFull(const ModelOptions & options) {
 
   this->initMaterials();
 
-  this->initBC(*this, *displacement, *displacement_increment,
-  *external_force);
+  this->initBC(*this, *displacement, *displacement_increment, *external_force);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -656,7 +650,7 @@ Real SolidMechanicsModel::getExternalWork() {
 
   if (this->method != _static)
     work *= this->getTimeStep();
-  
+
   AKANTU_DEBUG_OUT();
   return work;
 }
@@ -843,9 +837,12 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   stream << space << AKANTU_INDENT << "]" << std::endl;
   stream << space << " + nodals information [" << std::endl;
   displacement->printself(stream, indent + 2);
-  mass->printself(stream, indent + 2);
-  velocity->printself(stream, indent + 2);
-  acceleration->printself(stream, indent + 2);
+  if(velocity)
+    velocity->printself(stream, indent + 2);
+  if(acceleration)
+    acceleration->printself(stream, indent + 2);
+  if(mass)
+    mass->printself(stream, indent + 2);
   external_force->printself(stream, indent + 2);
   internal_force->printself(stream, indent + 2);
   blocked_dofs->printself(stream, indent + 2);

@@ -28,12 +28,13 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "mesh.hh"
-
+#include "element.hh"
 /* -------------------------------------------------------------------------- */
+#include <memory>
+/* -------------------------------------------------------------------------- */
+
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_HH__
 #define __AKANTU_MATERIAL_SELECTOR_HH__
@@ -52,14 +53,29 @@ class MaterialSelector {
 public:
   MaterialSelector() = default;
   virtual ~MaterialSelector() = default;
-  virtual UInt operator()(__attribute__((unused)) const Element & element) {
+  virtual inline UInt operator()(const Element & element) {
+    if (fallback_selector)
+      return (*fallback_selector)(element);
+
     return fallback_value;
   }
 
-  void setFallback(UInt f) { fallback_value = f; }
+  inline void setFallback(UInt f) { fallback_value = f; }
+  inline void
+  setFallback(const std::shared_ptr<MaterialSelector> & fallback_selector) {
+    this->fallback_selector = fallback_selector;
+  }
+  inline std::shared_ptr<MaterialSelector> & getFallbackSelector() {
+    return this->fallback_selector;
+  }
+
+  inline UInt getFallbackValue() {
+    return this->fallback_value;
+  }
 
 protected:
   UInt fallback_value{0};
+  std::shared_ptr<MaterialSelector> fallback_selector;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -68,12 +84,13 @@ protected:
  */
 class DefaultMaterialSelector : public MaterialSelector {
 public:
-  explicit DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index)
+  explicit DefaultMaterialSelector(
+      const ElementTypeMapArray<UInt> & material_index)
       : material_index(material_index) {}
 
   UInt operator()(const Element & element) override {
     if (not material_index.exists(element.type, element.ghost_type))
-      return fallback_value;
+      return MaterialSelector::operator()(element);
 
     const auto & mat_indexes = material_index(element.type, element.ghost_type);
     if (element.element < mat_indexes.size()) {
@@ -82,7 +99,7 @@ public:
         return tmp_mat;
     }
 
-    return fallback_value;
+    return MaterialSelector::operator()(element);
   }
 
 private:

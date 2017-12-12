@@ -81,8 +81,9 @@ public:
   /// give the dissipated energy for the time step
   Real getDissipatedEnergy() const;
 
-  Real getEnergy(std::string type) override;
-  Real getEnergy(std::string energy_id, ElementType type, UInt index) override {
+  Real getEnergy(const std::string & type) override;
+  Real getEnergy(const std::string & energy_id, ElementType type,
+                 UInt index) override {
     return Parent<spatial_dimension>::getEnergy(energy_id, type, index);
   };
 
@@ -105,7 +106,7 @@ protected:
   InternalField<Real> int_sigma;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "material_damage_tmpl.hh"
 

@@ -71,29 +71,9 @@ struct FacetsCohesiveIntegrationOrderFunctor {
   }
 };
 
-namespace {
-  DECLARE_NAMED_ARGUMENT(is_extrinsic);
-}
-/* -------------------------------------------------------------------------- */
-struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
-  SolidMechanicsModelCohesiveOptions(
-      AnalysisMethod analysis_method = _explicit_lumped_mass,
-      bool extrinsic = false)
-      : SolidMechanicsModelOptions(analysis_method), extrinsic(extrinsic) {}
-
-  template <typename... pack>
-  SolidMechanicsModelCohesiveOptions(use_named_args_t, pack &&... _pack)
-      : SolidMechanicsModelCohesiveOptions(
-            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
-            OPTIONAL_NAMED_ARG(is_extrinsic, false)) {}
-
-  bool extrinsic{false};
-};
-
 /* -------------------------------------------------------------------------- */
 /* Solid Mechanics Model for Cohesive elements                                */
 /* -------------------------------------------------------------------------- */
-
 class SolidMechanicsModelCohesive : public SolidMechanicsModel,
                                     public SolidMechanicsModelEventHandler {
   /* ------------------------------------------------------------------------ */
@@ -109,11 +89,11 @@ public:
     Array<UInt> old_nodes;
   };
 
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>
-      MyFEEngineCohesiveType;
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
-                           FacetsCohesiveIntegrationOrderFunctor>
-      MyFEEngineFacetType;
+  using MyFEEngineCohesiveType =
+      FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive>;
+  using MyFEEngineFacetType =
+      FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
+                       FacetsCohesiveIntegrationOrderFunctor>;
 
   SolidMechanicsModelCohesive(Mesh & mesh,
                               UInt spatial_dimension = _all_dimensions,
@@ -125,6 +105,10 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
+protected:
+  /// initialize the cohesive model
+  void initFullImpl(const ModelOptions & options) override;
+
 public:
   /// set the value of the time step
   void setTimeStep(Real time_step, const ID & solver_id = "") override;
@@ -140,15 +124,6 @@ public:
   /// interpolate stress on facets
   void interpolateStress();
 
-  /// initialize the cohesive model
-  void initFull(const ModelOptions & options =
-                    SolidMechanicsModelCohesiveOptions()) override;
-
-  template <typename P, typename T, typename... pack>
-  void initFull(named_argument::param_t<P, T &&> && first, pack &&... _pack) {
-    this->initFull(
-        SolidMechanicsModelCohesiveOptions{use_named_args, first, _pack...});
-  }
 
   /// limit the cohesive element insertion to a given area
   void limitInsertion(BC::Axis axis, Real first_limit, Real second_limit);

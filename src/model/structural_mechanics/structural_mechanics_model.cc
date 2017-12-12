@@ -80,6 +80,8 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 #endif
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_structural);
 
+  this->initDOFManager();
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -313,5 +315,86 @@ dumper::Field * StructuralMechanicsModel::createElementalField(
 }
 
 /* -------------------------------------------------------------------------- */
+/* Virtual methods from SolverCallback */
+/* -------------------------------------------------------------------------- */
+/// get the type of matrix needed
+MatrixType StructuralMechanicsModel::getMatrixType(const ID & /*id*/) {
+  return _symmetric;
+}
+
+/// callback to assemble a Matrix
+void StructuralMechanicsModel::assembleMatrix(const ID & /*id*/) {}
+
+/// callback to assemble a lumped Matrix
+void StructuralMechanicsModel::assembleLumpedMatrix(const ID & /*id*/) {}
+
+/// callback to assemble the residual StructuralMechanicsModel::(rhs)
+void StructuralMechanicsModel::assembleResidual() {}
+
+/* -------------------------------------------------------------------------- */
+/* Virtual methods from MeshEventHandler */
+/* -------------------------------------------------------------------------- */
+
+/// function to implement to react on  akantu::NewNodesEvent
+void StructuralMechanicsModel::onNodesAdded(const Array<UInt> & /*nodes_list*/,
+                                            const NewNodesEvent & /*event*/) {}
+/// function to implement to react on  akantu::RemovedNodesEvent
+void StructuralMechanicsModel::onNodesRemoved(
+    const Array<UInt> & /*nodes_list*/, const Array<UInt> & /*new_numbering*/,
+    const RemovedNodesEvent & /*event*/) {}
+/// function to implement to react on  akantu::NewElementsEvent
+void StructuralMechanicsModel::onElementsAdded(
+    const Array<Element> & /*elements_list*/,
+    const NewElementsEvent & /*event*/) {}
+/// function to implement to react on  akantu::RemovedElementsEvent
+void StructuralMechanicsModel::onElementsRemoved(
+    const Array<Element> & /*elements_list*/,
+    const ElementTypeMapArray<UInt> & /*new_numbering*/,
+    const RemovedElementsEvent & /*event*/) {}
+/// function to implement to react on  akantu::ChangedElementsEvent
+void StructuralMechanicsModel::onElementsChanged(
+    const Array<Element> & /*old_elements_list*/,
+    const Array<Element> & /*new_elements_list*/,
+    const ElementTypeMapArray<UInt> & /*new_numbering*/,
+    const ChangedElementsEvent & /*event*/) {}
+
+/* -------------------------------------------------------------------------- */
+/* Virtual methods from Model */
+/* -------------------------------------------------------------------------- */
+/// get some default values for derived classes
+std::tuple<ID, TimeStepSolverType> StructuralMechanicsModel::getDefaultSolverID(
+    const AnalysisMethod & method) {
+  switch (method) {
+  case _static: {
+    return std::make_tuple("static", _tsst_static);
+  }
+  case _implicit_dynamic: {
+    return std::make_tuple("implicit", _tsst_dynamic);
+  }
+  default:
+    return std::make_tuple("unknown", _tsst_not_defined);
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
+    const TimeStepSolverType & type) const {
+  ModelSolverOptions options;
+
+  switch (type) {
+  case _tsst_static: {
+    options.non_linear_solver_type = _nls_newton_raphson;
+    options.integration_scheme_type["displacement"] = _ist_pseudo_time;
+    options.solution_type["displacement"] = IntegrationScheme::_not_defined;
+    break;
+  }
+  default:
+    AKANTU_EXCEPTION(type << " is not a valid time step solver type");
+  }
+
+  return options;
+}
+/* -------------------------------------------------------------------------- */
+
 
 } // namespace akantu

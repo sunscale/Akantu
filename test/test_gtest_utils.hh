@@ -1,5 +1,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <boost/preprocessor.hpp>
 #include <gtest/gtest.h>
@@ -101,7 +102,13 @@ using cross_product_t = typename cross_product<T...>::type;
 
 using TestElementTypesAll = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_regular_ELEMENT_TYPE))>;
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
+    BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_structural_ELEMENT_TYPE))>;
+#endif
 } // namespace
+
 
 template <typename T>
 using is_point_1 = std::is_same<T, element_type_t<::akantu::_point_1>>;
@@ -111,5 +118,77 @@ using not_is_point_1 =
     aka::negation<std::is_same<T, element_type_t<::akantu::_point_1>>>;
 
 using TestElementTypes = tuple_filter_t<not_is_point_1, TestElementTypesAll>;
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+using StructuralTestElementTypes =
+    tuple_filter_t<not_is_point_1, TestElementTypesStructural>;
+#endif
+
+/* -------------------------------------------------------------------------- */
+template <size_t degree> class Polynomial {
+public:
+  Polynomial() = default;
+
+  Polynomial(std::initializer_list<double> && init) {
+    for (auto && pair : akantu::zip(init, constants))
+      std::get<1>(pair) = std::get<0>(pair);
+  }
+
+  double operator()(double x) {
+    double res = 0.;
+    for (auto && vals : akantu::enumerate(constants)) {
+      double a;
+      int k;
+      std::tie(k, a) = vals;
+      res += a * std::pow(x, k);
+    }
+    return res;
+  }
+
+  Polynomial extract(size_t pdegree) {
+    Polynomial<degree> extract(*this);
+    for (size_t d = pdegree + 1; d < degree + 1; ++d)
+      extract.constants[d] = 0;
+    return extract;
+  }
+
+  auto integral() {
+    Polynomial<degree + 1> integral_;
+    integral_.set(0, 0.);
+    ;
+    for (size_t d = 0; d < degree + 1; ++d) {
+      integral_.set(1 + d, get(d) / double(d + 1));
+    }
+    return integral_;
+  }
+
+  auto integrate(double a, double b) {
+    auto primitive = integral();
+    return (primitive(b) - primitive(a));
+  }
+
+  double get(int i) const { return constants[i]; }
+
+  void set(int i, double a) { constants[i] = a; }
+
+protected:
+  std::array<double, degree + 1> constants;
+};
+
+template <size_t degree>
+std::ostream & operator<<(std::ostream & stream, const Polynomial<degree> & p) {
+  for (size_t d = 0; d < degree + 1; ++d) {
+    if (d != 0)
+      stream << " + ";
+
+    stream << p.get(degree - d);
+    if (d != degree)
+      stream << "x ^ " << degree - d;
+  }
+  return stream;
+}
+
+/* -------------------------------------------------------------------------- */
+
 
 #endif /* __AKANTU_TEST_GTEST_UTILS_HH__ */

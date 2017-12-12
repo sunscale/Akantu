@@ -162,6 +162,9 @@ void SolidMechanicsModelCohesive::packUnpackFacetStressDataHelper(
 
   auto & fe_engine = this->getFEEngine("FacetsFEEngine");
   for (auto && el : elements) {
+    if (el.type == _not_defined)
+      AKANTU_EXCEPTION("packUnpackFacetStressDataHelper called with wrong inputs");
+
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;

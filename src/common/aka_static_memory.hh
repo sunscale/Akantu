@@ -40,8 +40,8 @@
 #define __AKANTU_STATIC_MEMORY_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 
 /* -------------------------------------------------------------------------- */
 #include <map>
@@ -49,8 +49,8 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-typedef std::map<ID, ArrayBase *> ArrayMap;
-typedef std::map<MemoryID, ArrayMap> MemoryMap;
+using ArrayMap = std::map<ID, ArrayBase *>;
+using MemoryMap = std::map<MemoryID, ArrayMap>;
 
 /**
  * @class StaticMemory
@@ -65,6 +65,7 @@ class StaticMemory {
 private:
   /// Default constructor
   StaticMemory() = default;
+
 public:
   virtual ~StaticMemory();
 
@@ -137,8 +138,8 @@ private:
   static UInt nb_reference;
 };
 
-#include "aka_static_memory_tmpl.hh"
 #include "aka_static_memory_inline_impl.cc"
+#include "aka_static_memory_tmpl.hh"
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
@@ -151,6 +152,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_STATIC_MEMORY_HH__ */

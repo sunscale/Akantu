@@ -38,8 +38,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity> class Communications<Entity>::iterator {
-  typedef
-      typename std::map<UInt, Communication>::iterator communication_iterator;
+  using communication_iterator =
+      typename std::map<UInt, Communication>::iterator;
 
 public:
   iterator() : communications(nullptr) {}
@@ -93,7 +93,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 template <class Entity> class Communications<Entity>::tag_iterator {
-  typedef std::map<SynchronizationTag, UInt>::const_iterator internal_iterator;
+  using internal_iterator = std::map<SynchronizationTag, UInt>::const_iterator;
 
 public:
   tag_iterator(const internal_iterator & it) : it(it) {}
@@ -292,32 +292,6 @@ void Communications<Entity>::initializeCommunications(
 template <class Entity>
 Communications<Entity>::Communications(const Communicator & communicator)
     : communicator(communicator) {}
-
-/* ---------------------------------------------------------------------- */
-// template <class Entity>
-// typename Communications<Entity>::iterator
-// Communications<Entity>::begin_send(const SynchronizationTag & tag) {
-//   return this->begin(tag, _send);
-// }
-
-// template <class Entity>
-// typename Communications<Entity>::iterator
-// Communications<Entity>::end_send(const SynchronizationTag & tag) {
-//   return this->end(tag, _send);
-// }
-
-// /* ---------------------------------------------------------------------- */
-// template <class Entity>
-// typename Communications<Entity>::iterator
-// Communications<Entity>::begin_recv(const SynchronizationTag & tag) {
-//   return this->begin(tag, _recv);
-// }
-
-// template <class Entity>
-// typename Communications<Entity>::iterator
-// Communications<Entity>::end_recv(const SynchronizationTag & tag) {
-//   return this->end(tag, _recv);
-// }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>

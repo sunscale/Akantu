@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
   SolidMechanicsModel model(mesh);
 
-  MeshDataMaterialSelector<std::string> mat_sel("physical_names", model);
+  auto && mat_sel = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
   model.setMaterialSelector(mat_sel);
 
   model.initFull(_analysis_method = _static);

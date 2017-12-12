@@ -13,6 +13,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "aka_compatibilty_with_cpp_standard.hh"
+/* -------------------------------------------------------------------------- */
 #include <tuple>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
@@ -152,6 +154,11 @@ template <typename T> struct is_named_argument : public std::false_type {};
 template <typename... type>
 struct is_named_argument<named_argument::param_t<type...>>
     : public std::true_type {};
+
+template <typename... pack>
+using are_named_argument =
+    aka::conjunction<is_named_argument<std::decay_t<pack>>...>;
+
 
 } // namespace akantu
 

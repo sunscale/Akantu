@@ -62,7 +62,7 @@ Model::~Model() = default;
 // void Model::setParser(Parser & parser) { this->parser = &parser; }
 
 /* -------------------------------------------------------------------------- */
-void Model::initFull(const ModelOptions & options) {
+void Model::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
   method = options.analysis_method;
@@ -80,12 +80,16 @@ void Model::initNewSolver(const AnalysisMethod & method) {
   TimeStepSolverType tss_type;
   std::tie(solver_name, tss_type) = this->getDefaultSolverID(method);
 
-  if (!this->hasSolver(solver_name)) {
+  if (not this->hasSolver(solver_name)) {
     ModelSolverOptions options = this->getDefaultSolverOptions(tss_type);
     this->getNewSolver(solver_name, tss_type, options.non_linear_solver_type);
-    this->setIntegrationScheme(solver_name, "displacement",
-                               options.integration_scheme_type["displacement"],
-                               options.solution_type["displacement"]);
+
+    for(auto && is_type : options.integration_scheme_type) {
+      if (!this->hasIntegrationScheme(solver_name, is_type.first)) {
+        this->setIntegrationScheme(solver_name, is_type.first, is_type.second,
+                                   options.solution_type[is_type.first]);
+      }
+    }
   }
 
   this->method = method;

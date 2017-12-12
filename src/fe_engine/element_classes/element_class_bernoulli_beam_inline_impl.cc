@@ -48,24 +48,24 @@
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam_2,
-                                                     _itp_lagrange_segment_2,
-                                                     3, 2);
+                                                     _itp_lagrange_segment_2, 3,
+                                                     2);
 
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam_3,
-                                                     _itp_lagrange_segment_2,
-                                                     6, 4);
+                                                     _itp_lagrange_segment_2, 6,
+                                                     4);
 
 AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_2,
                                                 _gt_segment_2,
                                                 _itp_bernoulli_beam_2,
                                                 _segment_2, _ek_structural, 2,
-                                                _git_segment, 5);
+                                                _git_segment, 3);
 
 AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_3,
                                                 _gt_segment_2,
                                                 _itp_bernoulli_beam_3,
                                                 _segment_2, _ek_structural, 3,
-                                                _git_segment, 5);
+                                                _git_segment, 3);
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -77,7 +77,7 @@ InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeShapes(
       natural_coords, L);
   Matrix<Real> H(2, 4);
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
-    natural_coords, H);
+      natural_coords, H);
 
   // clang-format off
   //    u1   v1      t1      u2   v2      t2
@@ -108,7 +108,6 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeShapes(
        {0   , 0      , H(1, 0), 0   , 0      , H(1, 1), 0   , 0      , H(1, 2), 0   , 0      , H(1, 3)}}; // thetaz
   // clang-format on
 }
-
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -148,17 +147,51 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeDNDS(
   // clang-format on
 }
 
+/* -------------------------------------------------------------------------- */
 template <>
-inline void ElementClass<_bernoulli_beam_2>::computeRotation(
-    const Matrix<Real> & node_coords, Matrix<Real> & rotation) {
-  auto X1 = node_coords(0);
-  auto X2 = node_coords(1);
-  auto vec = Vector<Real>(X2) - Vector<Real>(X1);
-  auto L = vec.norm();
-  auto c = vec(0) / L;
-  auto s = vec(1) / L;
+inline void ElementClass<_bernoulli_beam_2>::computeRotationMatrix(
+    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> &) {
+  Vector<Real> x2 = X(1); // X2
+  Vector<Real> x1 = X(0); // X1
 
-  rotation = {{c, -s}, {s, c}};
+  auto cs = (x2 - x1);
+  cs.normalize();
+
+  auto c = cs(0);
+  auto s = cs(1);
+
+  // clang-format off
+  /// Definition of the rotation matrix
+  R = {{ c,  s,  0.},
+       {-s,  c,  0.},
+       { 0., 0., 1.}};
+  // clang-format on
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+inline void ElementClass<_bernoulli_beam_3>::computeRotationMatrix(
+    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> & n) {
+  Vector<Real> x2 = X(1); // X2
+  Vector<Real> x1 = X(0); // X1
+  auto dim = X.rows();
+  auto x = (x2 - x1);
+  x.normalize();
+  auto x_n = x.crossProduct(n);
+
+  Matrix<Real> Pe = {{1., 0., 0.}, {0., -1., 0.}, {0., 0., 1.}};
+
+  Matrix<Real> Pg(dim, dim);
+  Pg(0) = x;
+  Pg(1) = x_n;
+  Pg(2) = n;
+
+  Pe *= Pg.inverse();
+
+  /// Definition of the rotation matrix
+  for (UInt i = 0; i < dim; ++i)
+    for (UInt j = 0; j < dim; ++j)
+      R(i + dim, j + dim) = R(i, j) = Pe(i, j);
 }
 
 } // namespace akantu

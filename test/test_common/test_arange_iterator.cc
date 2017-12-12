@@ -29,20 +29,41 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
+#include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main() {
-  for (auto i : arange(10))
-    std::cout << i << std::endl;
+TEST(TestArangeIterator, Stop) {
+  size_t ref_i = 0;
+  for (auto i : arange(10)) {
+    EXPECT_EQ(ref_i, i);
+    ++ref_i;
+  }
+}
 
-  for (auto i : arange(1, 22, 2))
-    std::cout << i << std::endl;
+TEST(TestArangeIterator, StartStop) {
+  size_t ref_i = 1;
+  for (auto i : arange(1, 10)) {
+    EXPECT_EQ(ref_i, i);
+    ++ref_i;
+  }
+}
 
-  for (auto && i : zip(arange(-1, -10, -1), arange(1, 18, 2)))
-    std::cout << std::get<0>(i)  << " " << std::get<1>(i) << std::endl;
+TEST(TestArangeIterator, StartStopStep) {
+  size_t ref_i = 1;
+  for (auto i : arange(1, 22, 2)) {
+    EXPECT_EQ(ref_i, i);
+    ref_i += 2;
+  }
+}
 
-  return 0;
+TEST(TestArangeIterator, StartStopStepZipped) {
+  int ref_i1 = -1, ref_i2 = 1;
+  for (auto && i : zip(arange(-1, -10, -1), arange(1, 18, 2))) {
+    EXPECT_EQ(ref_i1, std::get<0>(i));
+    EXPECT_EQ(ref_i2, std::get<1>(i));
+    ref_i1 += -1;
+    ref_i2 += 2;
+  }
 }

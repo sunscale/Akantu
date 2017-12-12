@@ -21,7 +21,8 @@
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
-  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR
  * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
@@ -33,7 +34,6 @@
 /* -------------------------------------------------------------------------- */
 #include "shape_functions.hh"
 /* -------------------------------------------------------------------------- */
-
 
 #ifndef __AKANTU_SHAPE_STRUCTURAL_HH__
 #define __AKANTU_SHAPE_STRUCTURAL_HH__
@@ -48,7 +48,7 @@ public:
   using ElementTypeMapMultiReal = ElementTypeMap<Array<Real> **>;
 
   ShapeStructural(Mesh & mesh, const ID & id = "shape_structural",
-              const MemoryID & memory_id = 0);
+                  const MemoryID & memory_id = 0);
   ~ShapeStructural() override;
 
   /* ------------------------------------------------------------------------ */
@@ -68,6 +68,11 @@ public:
                                  const ElementType & type,
                                  const GhostType & ghost_type);
 
+  /// precompute the rotation matrices for the elements dofs
+  template <ElementType type>
+  void precomputeRotationMatrices(const Array<Real> & nodes,
+                                  const GhostType & ghost_type);
+
   /// pre compute all shapes on the element integration points from natural
   /// coordinates
   template <ElementType type>
@@ -80,11 +85,6 @@ public:
   void
   precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
                                                 const GhostType & ghost_type);
-
-  /// pre compute all rotation matrices
-  template <ElementType type>
-  void precomputeRotationMatrices(const Array<Real> & nodes,
-                                  const GhostType & ghost_type);
 
   /// interpolate nodal values on the integration points
   template <ElementType type>
@@ -108,6 +108,7 @@ public:
                    __attribute__((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
+
 protected:
   ElementTypeMapArray<Real> rotation_matrices;
 };

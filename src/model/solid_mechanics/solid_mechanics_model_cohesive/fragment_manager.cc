@@ -100,7 +100,7 @@ public:
     const Array<UInt> & mat_loc_num =
         model.getMaterialLocalNumbering(el.type, el.ghost_type);
 
-    const MaterialCohesive & mat = static_cast<const MaterialCohesive &>(
+    const auto & mat = static_cast<const MaterialCohesive &>(
         model.getMaterial(mat_indexes(el.element)));
 
     UInt el_index = mat_loc_num(el.element);
