@@ -75,8 +75,10 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
     ++i;
   }
 
-  this->mesh->createElementGroupFromNodeGroup("el_apply_force", "apply_force", spatial_dimension - 1);
-  this->mesh->createElementGroupFromNodeGroup("el_fixed", "fixed", spatial_dimension - 1);
+  this->mesh->createElementGroupFromNodeGroup("el_apply_force", "apply_force",
+                                              spatial_dimension - 1);          
+  this->mesh->createElementGroupFromNodeGroup("el_fixed", "fixed",
+                                              spatial_dimension - 1);          
 
   std::vector<Real> displacements{0.0, 0.1, -0.1};
   for (auto && u : displacements) {
@@ -91,13 +93,26 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
 
       surface_traction(_x) = (1.0 * i) / N;
 
-      this->model->applyBC(BC::Neumann::FromTraction(surface_traction), "el_apply_force");
+      if (spatial_dimension == 1) { //TODO: this is a hack to work around non-implemented stuff     
+        auto & force = this->model->getForce();
+        for (auto && pair : zip(make_view(pos, spatial_dimension),
+                                make_view(force, spatial_dimension))) {
+          auto & posv = std::get<0>(pair);
+          auto & forcev = std::get<1>(pair);
+          if (posv(_x) > upper(_x) - 1e-6) {
+            forcev(_x) = surface_traction(_x);
+          }
+        }
+      } else {
+        this->model->applyBC(BC::Neumann::FromTraction(surface_traction), "el_apply_force");
+      }
 
       /// Solve.
       this->model->solveStep();
 
       Epot = this->model->getEnergy("potential");
-      auto Fds = this->model->getEnergy("external work"); // in static, this is infinitesimal work!
+      // In static, this is infinitesimal work!
+      auto Fds = this->model->getEnergy("external work");
 
       work += Fds; // integrate
 

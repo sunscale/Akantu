@@ -246,13 +246,19 @@ endforeach()
 register_gtest_sources(
   SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
   FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat
-  PACKAGE implicit
+  PACKAGE core
   )
 
 register_gtest_sources(
   SOURCES test_solid_mechanics_model_kinetic_energy.cc
   FILES_TO_COPY test_solid_mechanics_model_kinetic_energy_material.dat
   PACKAGE implicit
+  )
+
+register_gtest_sources(
+  SOURCES test_solid_mechanics_model_work_quasistatic.cc
+  FILES_TO_COPY test_solid_mechanics_model_work_material.dat
+  PACKAGE core
   )
 
 #===============================================================================
