@@ -200,8 +200,10 @@ void SolidMechanicsModelCohesive::initMaterials() {
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initExtrinsicMaterials() {
   const Mesh & mesh_facets = inserter->getMeshFacets();
-  facet_material.initialize(mesh_facets,
-                            _spatial_dimension = Model::spatial_dimension - 1);
+  facet_material.initialize(
+      mesh_facets, _spatial_dimension = spatial_dimension - 1,
+      _with_nb_element = true,
+      _default_value = material_selector->getFallbackValue());
 
   for_each_elements(mesh_facets,
                     [&](auto && element) {
@@ -289,23 +291,21 @@ void SolidMechanicsModelCohesive::initModel() {
                                                  Model::spatial_dimension);
 
   /// add cohesive type connectivity
-  // ElementType type = _not_defined;
-  // for (auto && type_ghost : ghost_types) {
-  //   for (const auto & tmp_type :
-  //        mesh.elementTypes(spatial_dimension, type_ghost)) {
-  //     const Array<UInt> & connectivity =
-  //         mesh.getConnectivity(tmp_type, type_ghost);
-  //     if (connectivity.size() == 0)
-  //       continue;
+  ElementType type = _not_defined;
+  for (auto && type_ghost : ghost_types) {
+    for (const auto & tmp_type :
+         mesh.elementTypes(spatial_dimension, type_ghost)) {
+      const auto & connectivity = mesh.getConnectivity(tmp_type, type_ghost);
+      if (connectivity.size() == 0)
+        continue;
 
-  //     type = tmp_type;
-  //     ElementType type_facet = Mesh::getFacetType(type);
-  //     ElementType type_cohesive =
-  //     FEEngine::getCohesiveElementType(type_facet);
-  //     mesh.addConnectivityType(type_cohesive, type_ghost);
-  //   }
-  // }
-  // AKANTU_DEBUG_ASSERT(type != _not_defined, "No elements in the mesh");
+      type = tmp_type;
+      auto type_facet = Mesh::getFacetType(type);
+      auto type_cohesive = FEEngine::getCohesiveElementType(type_facet);
+      mesh.addConnectivityType(type_cohesive, type_ghost);
+    }
+  }
+  AKANTU_DEBUG_ASSERT(type != _not_defined, "No elements in the mesh");
 
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
@@ -330,7 +330,7 @@ void SolidMechanicsModelCohesive::insertIntrinsicElements() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::updateFacetStressSynchronizer() {
-if (facet_stress_synchronizer != nullptr) {
+  if (facet_stress_synchronizer != nullptr) {
     const auto & rank_to_element =
         mesh.getElementSynchronizer().getElementToRank();
     const auto & facet_checks = inserter->getCheckFacets();
@@ -338,7 +338,7 @@ if (facet_stress_synchronizer != nullptr) {
     UInt rank = mesh.getCommunicator().whoAmI();
 
     facet_stress_synchronizer->updateSchemes(
-        [&](auto & scheme, auto & proc, auto & direction) {
+        [&](auto & scheme, auto & proc, auto & /*direction*/) {
           UInt el = 0;
           for (auto && element : scheme) {
             if (not facet_checks(element))
@@ -359,30 +359,25 @@ if (facet_stress_synchronizer != nullptr) {
   }
 }
 
-
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initAutomaticInsertion() {
   AKANTU_DEBUG_IN();
 
   this->updateFacetStressSynchronizer();
-  this->facet_stress.initialize(inserter->getMeshFacets(),
-                          _nb_component =
-                              2 * spatial_dimension * spatial_dimension,
-                          _spatial_dimension = spatial_dimension - 1);
 
-  resizeFacetStress();
+  this->resizeFacetStress();
 
   /// compute normals on facets
-  computeNormals();
+  this->computeNormals();
 
-  initStressInterpolation();
+  this->initStressInterpolation();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::updateAutomaticInsertion() {
   AKANTU_DEBUG_IN();
 
-  inserter->limitCheckFacets();
+  this->inserter->limitCheckFacets();
   this->updateFacetStressSynchronizer();
 
   AKANTU_DEBUG_OUT();
@@ -426,11 +421,8 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
       Array<Element> & facet_to_element =
           mesh_facets.getSubelementToElement(type, elem_gt);
       UInt nb_facet_per_elem = facet_to_element.getNbComponent();
-
       Array<Real> & el_q_facet = elements_quad_facets(type, elem_gt);
-
       ElementType facet_type = Mesh::getFacetType(type);
-
       UInt nb_quad_per_facet =
           getFEEngine("FacetsFEEngine").getNbIntegrationPoints(facet_type);
 
@@ -456,14 +448,11 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
   }
 
   /// loop over non cohesive materials
-  for (UInt m = 0; m < materials.size(); ++m) {
-    try {
-      auto & mat __attribute__((unused)) =
-          dynamic_cast<MaterialCohesive &>(*materials[m]);
-    } catch (std::bad_cast &) {
-      /// initialize the interpolation function
-      materials[m]->initElementalFieldInterpolation(elements_quad_facets);
-    }
+  for (auto && material : materials) {
+    if (dynamic_cast<MaterialCohesive *>(material.get()))
+      continue;
+    /// initialize the interpolation function
+    material->initElementalFieldInterpolation(elements_quad_facets);
   }
 
   AKANTU_DEBUG_OUT();
@@ -700,21 +689,25 @@ void SolidMechanicsModelCohesive::printself(std::ostream & stream,
 void SolidMechanicsModelCohesive::resizeFacetStress() {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh_facets = inserter->getMeshFacets();
+  this->facet_stress.initialize(getFEEngine("FacetsFEEngine"),
+                                _nb_component =
+                                    2 * spatial_dimension * spatial_dimension,
+                                _spatial_dimension = spatial_dimension - 1);
 
-  for (auto && ghost_type : ghost_types) {
-    for (const auto & type :
-         mesh_facets.elementTypes(spatial_dimension - 1, ghost_type)) {
-      UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
+  // for (auto && ghost_type : ghost_types) {
+  //   for (const auto & type :
+  //        mesh_facets.elementTypes(spatial_dimension - 1, ghost_type)) {
+  //     UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
 
-      UInt nb_quadrature_points = getFEEngine("FacetsFEEngine")
-                                      .getNbIntegrationPoints(type, ghost_type);
+  //     UInt nb_quadrature_points = getFEEngine("FacetsFEEngine")
+  //                                     .getNbIntegrationPoints(type,
+  //                                     ghost_type);
 
-      UInt new_size = nb_facet * nb_quadrature_points;
+  //     UInt new_size = nb_facet * nb_quadrature_points;
 
-      facet_stress(type, ghost_type).resize(new_size);
-    }
-  }
+  //     facet_stress(type, ghost_type).resize(new_size);
+  //   }
+  // }
 
   AKANTU_DEBUG_OUT();
 }

@@ -64,22 +64,21 @@ ModelSolver::~ModelSolver() = default;
 
 /* -------------------------------------------------------------------------- */
 std::tuple<ParserSection, bool> ModelSolver::getParserSection() {
-  auto
-      sub_sections = getStaticParser().getSubSections(ParserType::_model);
+  auto sub_sections = getStaticParser().getSubSections(ParserType::_model);
 
-  auto it = std::find_if(sub_sections.begin(), sub_sections.end(), [&](auto && section) {
-    ModelType type = getOptionToType<ModelType>(section.getName());
-    // default id should be the model type if not defined
-    std::string name = section.getParameter("name", this->parent_id);
-    return type == model_type and name == this->parent_id;
-  });
+  auto it = std::find_if(
+      sub_sections.begin(), sub_sections.end(), [&](auto && section) {
+        ModelType type = getOptionToType<ModelType>(section.getName());
+        // default id should be the model type if not defined
+        std::string name = section.getParameter("name", this->parent_id);
+        return type == model_type and name == this->parent_id;
+      });
 
-  if(it == sub_sections.end())
+  if (it == sub_sections.end())
     return {ParserSection(), true};
 
   return {*it, false};
 }
-
 
 /* -------------------------------------------------------------------------- */
 void ModelSolver::initDOFManager() {
@@ -109,8 +108,9 @@ void ModelSolver::initDOFManager() {
 void ModelSolver::initDOFManager(const ID & solver_type) {
 
   try {
-    this->dof_manager = DefaultDOFManagerFactory::getInstance().allocate(solver_type,
-        this->parent_id + ":dof_manager" + solver_type, this->parent_memory_id);
+    this->dof_manager = DOFManagerFactory::getInstance().allocate(
+        solver_type, mesh, this->parent_id + ":dof_manager" + solver_type,
+        this->parent_memory_id);
   } catch (...) {
     AKANTU_EXCEPTION(
         "To use the solver "
@@ -136,7 +136,8 @@ void ModelSolver::initDOFManager(const ParserSection & section,
     auto tss_type = getOptionToType<TimeStepSolverType>(type);
     auto tss_options = this->getDefaultSolverOptions(tss_type);
 
-    auto sub_solvers_sect = section.getSubSections(ParserType::_non_linear_solver);
+    auto sub_solvers_sect =
+        section.getSubSections(ParserType::_non_linear_solver);
     auto nb_non_linear_solver_section =
         section.getNbSubSections(ParserType::_non_linear_solver);
 
@@ -169,11 +170,11 @@ void ModelSolver::initDOFManager(const ParserSection & section,
         dof_id = tmp;
       } catch (...) {
         AKANTU_EXCEPTION("No degree of freedom name specified for the "
-                         "integration scheme of type " << dof_type_str);
+                         "integration scheme of type "
+                         << dof_type_str);
       }
 
-      auto it_type =
-          getOptionToType<IntegrationSchemeType>(dof_type_str);
+      auto it_type = getOptionToType<IntegrationSchemeType>(dof_type_str);
 
       IntegrationScheme::SolutionType s_type = is_section.getParameter(
           "solution_type", tss_options.solution_type[dof_id]);
@@ -194,8 +195,9 @@ void ModelSolver::initDOFManager(const ParserSection & section,
       this->setDefaultSolver(default_solver);
     } else
       AKANTU_EXCEPTION(
-          "The solver \"" << default_solver
-          <<"\" was not created, it cannot be set as default solver");
+          "The solver \""
+          << default_solver
+          << "\" was not created, it cannot be set as default solver");
   }
 }
 

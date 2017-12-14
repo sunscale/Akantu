@@ -698,9 +698,11 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   AKANTU_DEBUG_IN();
 
   this->material_index.initialize(mesh, _element_kind = _ek_not_defined,
+                                  _with_nb_element = true,
                                   _default_value = UInt(-1));
   this->material_local_numbering.initialize(
-      mesh, _element_kind = _ek_not_defined, _default_value = UInt(-1));
+      mesh, _element_kind = _ek_not_defined, _with_nb_element = true,
+      _default_value = UInt(-1));
 
   ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(),
                                    this->getMemoryID());

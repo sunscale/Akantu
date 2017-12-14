@@ -459,6 +459,7 @@ protected:
 };
 
 using DefaultDOFManagerFactory = Factory<DOFManager, ID, const ID &, const MemoryID &>;
+using DOFManagerFactory = Factory<DOFManager, ID, Mesh &, const ID &, const MemoryID &>;
 
 } // namespace akantu
 

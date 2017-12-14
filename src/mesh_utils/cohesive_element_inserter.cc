@@ -94,6 +94,7 @@ void CohesiveElementInserter::initFacetsCheck() {
 
   check_facets.initialize(mesh_facets,
                           _spatial_dimension = spatial_dimension - 1,
+                          _with_nb_element = true,
                           _default_value = true);
 
   for_each_elements(
