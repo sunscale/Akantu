@@ -61,7 +61,7 @@ int main(int argc, char * argv[]) {
   model.initFull(SolidMechanicsModelCohesiveOptions(_static, true));
 
   ///  CohesiveElementInserter
-  model.limitInsertion(_y, -0.001, 0.001);
+  model.getElementInserter().setLimit(_y, -0.001, 0.001);
   model.updateAutomaticInsertion();
 
   Array<bool> & boundary = model.getBlockedDOFs();

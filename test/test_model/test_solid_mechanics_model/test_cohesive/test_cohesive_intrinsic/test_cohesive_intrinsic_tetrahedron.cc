@@ -54,15 +54,17 @@ public:
   void updateDisplacement(const Vector<Real> & increment);
 
 protected:
-  void checkTractions(const Vector<Real> & opening, const Matrix<Real> & rotation);
+  void checkTractions(const Vector<Real> & opening,
+                      const Matrix<Real> & rotation);
   void checkEquilibrium();
   void checkResidual(const Matrix<Real> & rotation);
   void computeEnergy(const Vector<Real> & opening);
+
 private:
   std::set<UInt> nodes_to_check;
   const SolidMechanicsModelCohesive & model;
   ElementType type;
-  //const Array<UInt> & elements;
+  // const Array<UInt> & elements;
 
   const Material & mat_cohesive;
 
@@ -111,7 +113,7 @@ int main(int argc, char * argv[]) {
 
   /// model initialization
   model.initFull();
-  model.limitInsertion(_x, -0.01, 0.01);
+  model.getElementInserter().setLimit(_x, -0.01, 0.01);
   model.insertIntrinsicElements();
 
   Array<bool> & boundary = model.getBlockedDOFs();
@@ -133,7 +135,7 @@ int main(int argc, char * argv[]) {
   Array<UInt> elements;
   Vector<Real> bary(spatial_dimension);
   for (UInt el = 0; el < nb_element; ++el) {
-    mesh.getBarycenter(el, type, bary.storage());
+    mesh.getBarycenter({type, el, _not_ghost}, bary);
     if (bary(_x) > 0.01)
       elements.push_back(el);
   }
@@ -218,7 +220,7 @@ void Checker::updateDisplacement(const Vector<Real> & increment) {
 
   auto conn_it = connectivity.begin(connectivity.getNbComponent());
   auto conn_end = connectivity.begin(connectivity.getNbComponent());
-  for (;conn_it != conn_end;++conn_it) {
+  for (; conn_it != conn_end; ++conn_it) {
     const auto & conn = *conn_it;
     for (UInt n = 0; n < conn.size(); ++n) {
       UInt node = conn(n);
@@ -236,7 +238,7 @@ void Checker::updateDisplacement(const Vector<Real> & increment) {
 /* -------------------------------------------------------------------------- */
 Checker::Checker(const SolidMechanicsModelCohesive & model,
                  const Array<UInt> & elements, ElementType type)
-  : model(model), type(std::move(type)), //elements(elements),
+    : model(model), type(std::move(type)), // elements(elements),
       mat_cohesive(model.getMaterial(1)), sigma_c(mat_cohesive.get("sigma_c")),
       beta(mat_cohesive.get("beta")), G_c(mat_cohesive.get("G_c")),
       delta_0(mat_cohesive.get("delta_0")), kappa(mat_cohesive.get("kappa")),
@@ -268,7 +270,8 @@ Checker::Checker(const SolidMechanicsModelCohesive & model,
 }
 
 /* -------------------------------------------------------------------------- */
-void Checker::checkTractions(const Vector<Real> & opening, const Matrix<Real> & rotation) {
+void Checker::checkTractions(const Vector<Real> & opening,
+                             const Matrix<Real> & rotation) {
   auto normal_opening = opening * Vector<Real>{1., 0., 0.};
   auto tangential_opening = opening - normal_opening;
   const Real normal_opening_norm = normal_opening.norm();
@@ -292,7 +295,8 @@ void Checker::checkTractions(const Vector<Real> & opening, const Matrix<Real> & 
   std::for_each(
       traction.begin(spatial_dimension), traction.end(spatial_dimension),
       [&theoretical_traction_rotated](auto && traction) {
-        Real diff = Vector<Real>(theoretical_traction_rotated - traction).norm<L_inf>();
+        Real diff =
+            Vector<Real>(theoretical_traction_rotated - traction).norm<L_inf>();
         if (diff > 1e-14)
           throw std::domain_error("Tractions are incorrect");
       });

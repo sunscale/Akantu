@@ -101,7 +101,7 @@ int main(int argc, char * argv[]) {
         model.getMaterial(0).getArray<Real>("damage", type);
     UInt cpt = 0;
     for (auto nel : arange(nb_elem)) {
-      mesh.getBarycenter(nel, type, barycenter.storage());
+      mesh.getBarycenter({type, nel, _not_ghost}, barycenter);
       if ((std::abs(barycenter(_x) - (L / 2) + 0.025) < 0.025) &&
           (std::abs(barycenter(_y) - (H / 2) + 0.045) < 0.045)) {
         if (material_damage_array(cpt, 0) < 0.9) {
