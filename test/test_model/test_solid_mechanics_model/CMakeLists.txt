@@ -233,7 +233,7 @@ register_test(test_material_selector
   )
 
 #===============================================================================
-# Energy tests
+# Meshes
 #===============================================================================
 set(_meshes)
 package_get_variable(ET_ELEMENT_TYPES core _element_list)
@@ -243,21 +243,6 @@ foreach(_et ${_element_list})
   endif()
 endforeach()
 
-register_gtest_sources(
-  SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
-  FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat
-  PACKAGE implicit
-  )
-
-register_gtest_sources(
-  SOURCES test_solid_mechanics_model_kinetic_energy.cc
-  FILES_TO_COPY test_solid_mechanics_model_kinetic_energy_material.dat
-  PACKAGE implicit
-  )
-
-#===============================================================================
-# dynamics tests
-#===============================================================================
 add_mesh(bar_segment_2 patch_tests/data/bar_segment.geo
   DIM 1 ORDER 1 OUTPUT bar_segment_2.msh)
 add_mesh(bar_segment_3 patch_tests/data/bar_segment.geo
@@ -279,14 +264,39 @@ add_mesh(bar_hexahedron_8  patch_tests/data/bar_hexahedron.geo
 add_mesh(bar_hexahedron_20 patch_tests/data/bar_hexahedron.geo
   DIM 3 ORDER 2 OUTPUT bar_hexahedron_20.msh)
 
+#===============================================================================
+# Energy tests
+#===============================================================================
+register_gtest_sources(
+  SOURCES test_solid_mechanics_model_linear_elastic_potential_energy.cc
+  FILES_TO_COPY test_solid_mechanics_model_linear_elastic_potential_energy_material.dat
+  PACKAGE core
+  )
+
+register_gtest_sources(
+  SOURCES test_solid_mechanics_model_kinetic_energy.cc
+  FILES_TO_COPY test_solid_mechanics_model_kinetic_energy_material.dat
+  PACKAGE implicit
+  )
+
+register_gtest_sources(
+  SOURCES test_solid_mechanics_model_work_quasistatic.cc
+  FILES_TO_COPY test_solid_mechanics_model_work_material.dat
+  PACKAGE core
+  )
+
+#===============================================================================
+# dynamics tests
+#===============================================================================
 register_gtest_sources(
   SOURCES test_solid_mechanics_model_dynamics.cc
   FILES_TO_COPY test_solid_mechanics_model_dynamics_material.dat
   PACKAGE core
+  )
+
+register_gtest_test(test_solid_mechanics_model
+  FILES_TO_COPY ${_meshes}
   DEPENDS bar_segment_2 bar_segment_3 bar_triangle_3 bar_triangle_6
           bar_quadrangle_4 bar_quadrangle_8 bar_tetrahedron_4
           bar_tetrahedron_10 bar_hexahedron_8 bar_hexahedron_20
   )
-
-register_gtest_test(test_solid_mechanics_model
-  FILES_TO_COPY ${_meshes})

@@ -38,29 +38,6 @@ using namespace akantu;
 
 namespace {
 
-template <typename type_>
-class TestSMMFixtureDynamics : public TestSMMFixture<type_> {
-
-public:
-  static constexpr ElementType type = type_::value;
-
-  void SetUp() override {
-    if (this->type == _pentahedron_6 || this->type == _pentahedron_15)
-      return;
-
-    std::cout << "testing type " << this->type << std::endl;
-
-    TestSMMFixture<type_>::SetUp();
-  }
-
-  std::string makeMeshName() override {
-    std::stringstream element_type;
-    element_type << type;
-    SCOPED_TRACE(element_type.str().c_str());
-    return std::string("bar") + element_type.str() + ".msh";
-  }
-};
-
 constexpr Real A = 1e-1;
 constexpr Real E = 1.;
 constexpr Real poisson = .3;
@@ -298,17 +275,13 @@ void test_body(SolidMechanicsModel & model, AM analysis_method) {
   std::cout << "max error: " << max_error << std::endl;
 }
 
-TYPED_TEST_CASE(TestSMMFixtureDynamics, types);
-
 #ifdef AKANTU_IMPLICIT
-TYPED_TEST(TestSMMFixture, DynamicsImplicit) {
-  if (this->type != _pentahedron_6 && this->type != _pentahedron_15)
-    test_body<this->type>(*(this->model), _implicit_dynamic);
+TYPED_TEST(TestSMMFixtureBar, DynamicsImplicit) {
+  test_body<this->type>(*(this->model), _implicit_dynamic);
 }
 #endif
 
-TYPED_TEST(TestSMMFixtureDynamics, DynamicsExplicit) {
-  if (this->type != _pentahedron_6 && this->type != _pentahedron_15)
-    test_body<TestFixture::type>(*(this->model), _explicit_lumped_mass);
+TYPED_TEST(TestSMMFixtureBar, DynamicsExplicit) {
+  test_body<TestFixture::type>(*(this->model), _explicit_lumped_mass);
 }
 }
