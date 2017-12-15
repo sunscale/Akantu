@@ -285,6 +285,12 @@ register_gtest_sources(
   PACKAGE core
   )
 
+register_gtest_sources(
+  SOURCES test_solid_mechanics_model_work_dynamics.cc
+  FILES_TO_COPY test_solid_mechanics_model_work_material.dat
+  PACKAGE core
+  )
+
 #===============================================================================
 # dynamics tests
 #===============================================================================
