@@ -104,28 +104,62 @@ namespace tuple {
 
 /* -------------------------------------------------------------------------- */
 namespace iterators {
+
+  namespace {
+    template <typename It, typename category>
+    struct is_at_least_category
+        : std::is_same<std::common_type_t<
+                           typename std::iterator_traits<It>::iterator_category,
+                           category>,
+                       category> {};
+  }
+
   template <class... Iterators> class ZipIterator {
+  public:
+    using value_type =
+        std::tuple<typename std::iterator_traits<Iterators>::value_type...>;
+    using difference_type = std::common_type_t<
+        typename std::iterator_traits<Iterators>::difference_type...>;
+    using pointer =
+        std::tuple<typename std::iterator_traits<Iterators>::pointer...>;
+    using reference =
+        std::tuple<typename std::iterator_traits<Iterators>::reference...>;
+    using iterator_category = std::input_iterator_tag;
+    // std::common_type_t<typename
+    // std::iterator_traits<Iterators>::iterator_category...>;
+
   private:
     using tuple_t = std::tuple<Iterators...>;
 
   public:
     explicit ZipIterator(tuple_t iterators) : iterators(std::move(iterators)) {}
 
-    decltype(auto) operator*() {
-      return tuple::transform([] (auto && it) -> decltype(auto) {return *it;}, iterators);
+    // input iterator ++it
+    ZipIterator & operator++() {
+      tuple::foreach ([](auto && it) { ++it; }, iterators);
+      return *this;
     }
 
-    ZipIterator & operator++() {
-      tuple::foreach ([] (auto && it) { ++it; }, iterators);
-      return *this;
+    // input iterator it++
+    ZipIterator operator++(int) {
+      auto cpy = *this;
+      tuple::foreach ([](auto && it) { ++it; }, iterators);
+      return cpy;
+    }
+
+    // input iterator it != other_it
+    bool operator!=(const ZipIterator & other) const {
+      return tuple::are_not_equal(iterators, other.iterators);
+    }
+
+    // input iterator dereference *it
+    decltype(auto) operator*() {
+      return tuple::transform([](auto && it) -> decltype(auto) { return *it; },
+                              iterators);
     }
 
     bool operator==(const ZipIterator & other) const {
       return not tuple::are_not_equal(iterators, other.iterators);
-    }
-
-    bool operator!=(const ZipIterator & other) const {
-      return tuple::are_not_equal(iterators, other.iterators);
     }
 
   private:
@@ -152,25 +186,25 @@ namespace containers {
 
     decltype(auto) begin() const {
       return zip_iterator(
-          tuple::transform([] (auto && c) { return c.begin(); },
+          tuple::transform([](auto && c) { return c.begin(); },
                            std::forward<containers_t>(containers)));
     }
 
     decltype(auto) end() const {
       return zip_iterator(
-          tuple::transform([] (auto && c) { return c.end(); },
+          tuple::transform([](auto && c) { return c.end(); },
                            std::forward<containers_t>(containers)));
     }
 
     decltype(auto) begin() {
       return zip_iterator(
-          tuple::transform([] (auto && c) { return c.begin(); },
+          tuple::transform([](auto && c) { return c.begin(); },
                            std::forward<containers_t>(containers)));
     }
 
     decltype(auto) end() {
       return zip_iterator(
-          tuple::transform([] (auto && c) { return c.end(); },
+          tuple::transform([](auto && c) { return c.end(); },
                            std::forward<containers_t>(containers)));
     }
 
@@ -194,6 +228,7 @@ namespace iterators {
     using value_type = T;
     using pointer = T *;
     using reference = T &;
+    using difference_type = size_t;
     using iterator_category = std::input_iterator_tag;
 
     constexpr ArangeIterator(T value, T step) : value(value), step(step) {}
@@ -204,7 +239,7 @@ namespace iterators {
       return *this;
     }
 
-    constexpr const T & operator*() const { return value; }
+    constexpr T operator*() const { return value; }
 
     constexpr bool operator==(const ArangeIterator & other) const {
       return (value == other.value) and (step == other.step);
@@ -271,7 +306,6 @@ inline constexpr decltype(auto) arange(const T1 & start, const T2 & stop,
 }
 
 /* -------------------------------------------------------------------------- */
-
 template <class Container>
 inline constexpr decltype(auto) enumerate(Container && container,
                                           size_t start_ = 0) {
@@ -281,5 +315,19 @@ inline constexpr decltype(auto) enumerate(Container && container,
 }
 
 } // namespace akantu
+
+namespace std {
+template <typename... Its>
+struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
+  using iterator_category = forward_iterator_tag;
+  using value_type =
+      typename ::akantu::iterators::ZipIterator<Its...>::value_type;
+  using difference_type =
+      typename ::akantu::iterators::ZipIterator<Its...>::difference_type;
+  using pointer = typename ::akantu::iterators::ZipIterator<Its...>::pointer;
+  using reference =
+      typename ::akantu::iterators::ZipIterator<Its...>::reference;
+};
+}
 
 #endif /* __AKANTU_AKA_ITERATORS_HH__ */

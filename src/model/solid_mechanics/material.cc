@@ -41,7 +41,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Material::Material(SolidMechanicsModel & model, const ID & id)
-    : Memory(id, model.getMemoryID()), Parsable(_st_material, id),
+    : Memory(id, model.getMemoryID()), Parsable(ParserType::_material, id),
       is_init(false), fem(model.getFEEngine()), finite_deformation(false),
       name(""), model(model),
       spatial_dimension(this->model.getSpatialDimension()),
@@ -71,7 +71,7 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
 /* -------------------------------------------------------------------------- */
 Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                    FEEngine & fe_engine, const ID & id)
-    : Memory(id, model.getMemoryID()), Parsable(_st_material, id),
+    : Memory(id, model.getMemoryID()), Parsable(ParserType::_material, id),
       is_init(false), fem(model.getFEEngine()), finite_deformation(false),
       name(""), model(model), spatial_dimension(dim),
       element_filter("element_filter", id, this->memory_id),

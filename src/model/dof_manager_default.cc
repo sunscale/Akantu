@@ -29,12 +29,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_default.hh"
+#include "communicator.hh"
 #include "dof_synchronizer.hh"
 #include "element_group.hh"
 #include "node_synchronizer.hh"
 #include "non_linear_solver_default.hh"
 #include "sparse_matrix_aij.hh"
-#include "communicator.hh"
 #include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
@@ -595,11 +595,11 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
     if (A.getMatrixType() == _symmetric)
       if (elemental_matrix_type == _symmetric)
-        this->addSymmetricElementalMatrixToSymmetric(
-            A, *el_mat_it, element_eq_nb, A.size());
+        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it,
+                                                     element_eq_nb, A.size());
       else
-        this->addUnsymmetricElementalMatrixToSymmetric(
-            A, *el_mat_it, element_eq_nb, A.size());
+        this->addUnsymmetricElementalMatrixToSymmetric(A, *el_mat_it,
+                                                       element_eq_nb, A.size());
     else
       this->addElementalMatrixToUnsymmetric(A, *el_mat_it, element_eq_nb,
                                             A.size());
@@ -816,8 +816,8 @@ void DOFManagerDefault::updateDOFsData(
   for (auto & lumped_matrix : lumped_matrices)
     lumped_matrix.second->resize(this->local_system_size);
 
-  dof_data.local_equation_number.reserve(
-      dof_data.local_equation_number.size() + nb_new_local_dofs);
+  dof_data.local_equation_number.reserve(dof_data.local_equation_number.size() +
+                                         nb_new_local_dofs);
 
   // determine the first local/global dof id to use
   Array<UInt> nb_dofs_per_proc(psize);
@@ -900,6 +900,20 @@ void DOFManagerDefault::updateDOFsData(
   }
 }
 
-} // namespace akantu
+/* -------------------------------------------------------------------------- */
+// register in factory
+static bool default_dof_manager_is_registered =
+    DefaultDOFManagerFactory::getInstance().registerAllocator(
+        "default", [](const ID & id,
+                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(id, mem_id);
+        });
 
-//  LocalWords:  dof dofs
+static bool dof_manager_is_registered =
+    DOFManagerFactory::getInstance().registerAllocator(
+        "default", [](Mesh & mesh, const ID & id,
+                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        });
+
+} // namespace akantu

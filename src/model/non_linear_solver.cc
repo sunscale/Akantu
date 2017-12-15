@@ -39,7 +39,7 @@ NonLinearSolver::NonLinearSolver(
     DOFManager & dof_manager,
     const NonLinearSolverType & non_linear_solver_type, const ID & id,
     UInt memory_id)
-    : Memory(id, memory_id), Parsable(_st_non_linear_solver, id),
+    : Memory(id, memory_id), Parsable(ParserType::_non_linear_solver, id),
       _dof_manager(dof_manager),
       non_linear_solver_type(non_linear_solver_type) {
 

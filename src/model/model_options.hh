@@ -36,12 +36,6 @@
 
 namespace akantu {
 
-enum class ModelOptionsType {
-  _model,
-  _solid_mechanics_model,
-  _solid_mechanics_model_cohesive
-};
-
 namespace {
   DECLARE_NAMED_ARGUMENT(analysis_method);
 }

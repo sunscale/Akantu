@@ -38,12 +38,6 @@
 #ifndef __AKANTU_COMMON_HH__
 #define __AKANTU_COMMON_HH__
 
-/* -------------------------------------------------------------------------- */
-#include <limits>
-#include <list>
-#include <type_traits>
-/* -------------------------------------------------------------------------- */
-
 #include "aka_compatibilty_with_cpp_standard.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -58,6 +52,13 @@
 #include "aka_config.hh"
 #include "aka_error.hh"
 #include "aka_safe_enum.hh"
+/* -------------------------------------------------------------------------- */
+#include <boost/preprocessor.hpp>
+#include <limits>
+#include <list>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -79,9 +80,9 @@ static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
 
 using MemoryID = UInt;
 
-//using Surface = std::string;
-//using SurfacePair= std::pair<Surface, Surface>;
-//using SurfacePairList = std::list<SurfacePair>;
+// using Surface = std::string;
+// using SurfacePair= std::pair<Surface, Surface>;
+// using SurfacePairList = std::list<SurfacePair>;
 
 /* -------------------------------------------------------------------------- */
 extern const UInt _all_dimensions;
@@ -94,6 +95,54 @@ extern const UInt _all_dimensions;
 #include "aka_element_classes_info.hh"
 
 namespace akantu {
+
+#define AKANTU_PP_CAT(s, data, elem) BOOST_PP_CAT(data, elem)
+
+#define AKANTU_PP_ENUM(s, data, i, elem)                                       \
+  BOOST_PP_TUPLE_REM()                                                         \
+  elem BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(i, BOOST_PP_DEC(data)))
+
+#define AKANTU_PP_TYPE_TO_STR(s, data, elem)                                   \
+  ({BOOST_PP_CAT(data::_, elem), BOOST_PP_STRINGIZE(elem)})
+
+#define AKANTU_PP_STR_TO_TYPE(s, data, elem)                                   \
+  ({BOOST_PP_STRINGIZE(elem), BOOST_PP_CAT(data::_, elem)})
+
+#define AKANTU_ENUM_DECLARE(type_name, list)                                   \
+  enum class type_name {                                                       \
+    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_CAT, _, list))          \
+  };
+
+#define AKANTU_ENUM_OUTPUT_STREAM(type_name, list)                             \
+  }                                                                            \
+  namespace std {                                                              \
+    inline string to_string(const ::akantu::type_name & type) {                \
+      static unordered_map<::akantu::type_name, string> convert{               \
+          BOOST_PP_SEQ_FOR_EACH_I(                                             \
+              AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                         \
+              BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR,                    \
+                                     ::akantu::type_name, list))};             \
+      return convert[type];                                                    \
+    }                                                                          \
+  }                                                                            \
+  namespace akantu {                                                           \
+    inline std::ostream & operator<<(std::ostream & stream,                    \
+                                     const type_name & type) {                 \
+      stream << std::to_string(type);                                          \
+      return stream;                                                           \
+    }
+
+#define AKANTU_ENUM_INPUT_STREAM(type_name, list)                              \
+  inline std::istream & operator>>(std::istream & stream, type_name & type) {  \
+    std::string str;                                                           \
+    stream >> str;                                                             \
+    static std::unordered_map<std::string, type_name> convert{                 \
+        BOOST_PP_SEQ_FOR_EACH_I(                                               \
+            AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
+            BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE, type_name, list))};  \
+    type = convert[str];                                                       \
+    return stream;                                                             \
+  }
 
 /// small help to use names for directions
 enum SpacialDirection { _x = 0, _y = 1, _z = 2 };
@@ -119,6 +168,20 @@ enum EventHandlerPriority {
   _ehp_non_local_manager = 100,
   _ehp_lowest = 100
 };
+
+// clang-format off
+#define AKANTU_MODEL_TYPES                                              \
+  (model)                                                               \
+  (solid_mechanics_model)                                               \
+  (solid_mechanics_model_cohesive)                                      \
+  (heat_tranfser_model)                                                 \
+  (structural_mechanics_model)
+// clang-format on
+
+/// enum ModelType defines which type of physics is solved
+AKANTU_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
+AKANTU_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
+AKANTU_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
 
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion

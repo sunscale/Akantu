@@ -221,7 +221,13 @@ Mesh::getSubelementToElementPointer(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline const Array<std::vector<Element>> &
+inline const auto &
+Mesh::getElementToSubelement() const {
+  return getData<std::vector<Element>>("element_to_subelement");
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto &
 Mesh::getElementToSubelement(const ElementType & type,
                              const GhostType & ghost_type) const {
   return getData<std::vector<Element>>("element_to_subelement", type,
@@ -229,7 +235,7 @@ Mesh::getElementToSubelement(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<std::vector<Element>> &
+inline auto &
 Mesh::getElementToSubelement(const ElementType & type,
                              const GhostType & ghost_type) {
   return getData<std::vector<Element>>("element_to_subelement", type,
@@ -237,14 +243,14 @@ Mesh::getElementToSubelement(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline const Array<Element> &
+inline const auto &
 Mesh::getSubelementToElement(const ElementType & type,
                              const GhostType & ghost_type) const {
   return getData<Element>("subelement_to_element", type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<Element> &
+inline auto &
 Mesh::getSubelementToElement(const ElementType & type,
                              const GhostType & ghost_type) {
   return getData<Element>("subelement_to_element", type, ghost_type);

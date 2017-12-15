@@ -93,12 +93,9 @@ Material & SolidMechanicsModel::registerNewMaterial(const ID & mat_name,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::instantiateMaterials() {
-  std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      sub_sect = this->parser.getSubSections(_st_material);
+  auto sub_sections = this->parser.getSubSections(ParserType::_material);
 
-  Parser::const_section_iterator it = sub_sect.first;
-  for (; it != sub_sect.second; ++it) {
-    const ParserSection & section = *it;
+  for (const auto & section : sub_sections) {
     registerNewMaterial(section);
   }
 

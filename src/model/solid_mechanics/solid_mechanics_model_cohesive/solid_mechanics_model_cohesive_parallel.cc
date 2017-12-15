@@ -31,7 +31,6 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
   Int psize = comm.getNbProc();
 
   if (psize > 1) {
-
     /// get global connectivity for not ghost facets
     global_connectivity =
         new ElementTypeMapArray<UInt>("global_connectivity", id);

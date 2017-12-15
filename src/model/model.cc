@@ -43,8 +43,9 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh & mesh, UInt dim, const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), ModelSolver(mesh, id, memory_id), mesh(mesh),
+Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
+             const MemoryID & memory_id)
+    : Memory(id, memory_id), ModelSolver(mesh, type, id, memory_id), mesh(mesh),
       spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
                                                : dim),
       is_pbc_slave_node(0, 1, "is_pbc_slave_node"), parser(getStaticParser()) {
@@ -84,7 +85,7 @@ void Model::initNewSolver(const AnalysisMethod & method) {
     ModelSolverOptions options = this->getDefaultSolverOptions(tss_type);
     this->getNewSolver(solver_name, tss_type, options.non_linear_solver_type);
 
-    for(auto && is_type : options.integration_scheme_type) {
+    for (auto && is_type : options.integration_scheme_type) {
       if (!this->hasIntegrationScheme(solver_name, is_type.first)) {
         this->setIntegrationScheme(solver_name, is_type.first, is_type.second,
                                    options.solution_type[is_type.first]);

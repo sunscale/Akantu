@@ -77,7 +77,10 @@ template <typename T> struct C {
   struct iterator {
     using reference = A<T>;
     using difference_type = void;
-    using iterator_category = std::random_access_iterator_tag;
+    using iterator_category = std::input_iterator_tag;
+    using value_type = A<T>;
+    using pointer = A<T> *;
+
     iterator(T pos) : pos(std::move(pos)) {}
 
     A<T> operator*() { return A<int>(pos); }

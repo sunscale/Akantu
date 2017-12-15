@@ -176,19 +176,21 @@ protected:
   /* Sanity checks                                                            */
   /* ------------------------------------------------------------------------ */
   UInt sanityCheckDataSize(const Array<Element> & elements,
-                                   const SynchronizationTag & tag) const override;
+                           const SynchronizationTag & tag) const override;
   /* ------------------------------------------------------------------------ */
-   void
-  packSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const override;
+  void packSanityCheckData(
+      CommunicationDescriptor<Element> & comm_desc) const override;
   /* ------------------------------------------------------------------------ */
-   void
-  unpackSanityCheckData(CommunicationDescriptor<Element> & comm_desc) const override;
+  void unpackSanityCheckData(
+      CommunicationDescriptor<Element> & comm_desc) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
+  AKANTU_GET_MACRO(ElementToRank, element_to_prank,
+                   const ElementTypeMapArray<Int> &);
 
   Int getRank(const Element & element) const final;
   /* ------------------------------------------------------------------------ */
@@ -198,7 +200,6 @@ protected:
   /// reference to the underlying mesh
   Mesh & mesh;
 
-  friend class FilteredSynchronizer;
   friend class FacetSynchronizer;
 
   ElementTypeMapArray<Int> element_to_prank;

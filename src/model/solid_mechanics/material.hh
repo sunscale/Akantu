@@ -647,7 +647,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 using MaterialFactory =
-    Factory<Material, UInt, const ID &, SolidMechanicsModel &, const ID &>;
+    Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
 } // namespace akantu
 
 #define INSTANTIATE_MATERIAL_ONLY(mat_name)                                    \

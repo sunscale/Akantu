@@ -36,9 +36,9 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class ComputeRhoFunctor {
+class ComputeRhoFunctorStruct {
 public:
-  explicit ComputeRhoFunctor(const StructuralMechanicsModel & model)
+  explicit ComputeRhoFunctorStruct(const StructuralMechanicsModel & model)
       : model(model){};
 
   void operator()(Matrix<Real> & rho, const Element & element) const {
@@ -65,7 +65,7 @@ void StructuralMechanicsModel::assembleMass(){
 void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
-  ComputeRhoFunctor compute_rho(*this);
+  ComputeRhoFunctorStruct compute_rho(*this);
 
   for (auto type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_structural)) {
     fem.assembleFieldMatrix(compute_rho, "M", "displacement",

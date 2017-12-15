@@ -69,7 +69,7 @@ int main(int argc, char * argv[]) {
   /// model initialization
   model.initFull();
 
-  model.limitInsertion(_x, -0.26, -0.24);
+  model.getElementInserter().setLimit(_x, -0.26, -0.24);
   model.insertIntrinsicElements();
 
   mesh.write("mesh_cohesive.msh");
@@ -112,13 +112,12 @@ int main(int argc, char * argv[]) {
 
   /// update displacement
   Array<UInt> elements;
-  Real * bary = new Real[spatial_dimension];
+  Vector<Real> bary(spatial_dimension);
   for (UInt el = 0; el < nb_element; ++el) {
-    mesh.getBarycenter(el, type, bary);
-    if (bary[0] > -0.25)
+    mesh.getBarycenter({type, el, _not_ghost}, bary);
+    if (bary(0) > -0.25)
       elements.push_back(el);
   }
-  delete[] bary;
 
   Real increment = 0.01;
 

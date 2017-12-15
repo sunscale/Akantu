@@ -27,7 +27,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include <regex>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -69,6 +70,21 @@ inline ParserParameter::operator bool() const {
   }
   return b;
 }
+
+/* -------------------------------------------------------------------------- */
+template<>
+inline ParserParameter::operator std::vector<std::string>() const {
+  std::vector<std::string> tmp;
+  std::regex pieces_regex("\\[([^ ,]+)(\\s*,\\s*([^ ,]+))*\\]");
+  std::smatch pieces_match;
+  if (std::regex_match(value, pieces_match, pieces_regex)) {
+    for(size_t i = 1; i < pieces_match.size(); i+=2) {
+      tmp.push_back(pieces_match[i].str());
+    }
+  }
+  return tmp;
+}
+
 
 /* --------------------------------------------------------- ----------------- */
 template<>

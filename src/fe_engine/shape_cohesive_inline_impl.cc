@@ -80,7 +80,7 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
   shape_derivatives.resize(nb_element * nb_points);
   Real * shapesd_val = shape_derivatives.storage();
 
-  auto compute = [&](auto & el) {
+  auto compute = [&](const auto & el) {
     auto ptr = shapesd_val + el * nb_points * size_of_shapesd;
     Tensor3<Real> B(ptr, spatial_dimension, nb_nodes_per_element, nb_points);
     ElementClass<type>::computeDNDS(integration_points, B);
@@ -171,7 +171,7 @@ void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(
 
   ReduceFunction reduce_function;
 
-  auto compute = [&](auto & el) {
+  auto compute = [&](const auto & el) {
     Matrix<Real> & u = *u_it;
     Matrix<UInt> el_conn(conn[el]);
 

@@ -46,11 +46,11 @@ namespace akantu {
 /// Defines interface for classes to manipulate parsable parameters
 class Parsable : public ParameterRegistry {
 public:
-  Parsable(const SectionType & section_type, const ID & id = std::string());
+  Parsable(const ParserType & section_type, const ID & id = std::string());
   ~Parsable() override;
 
   /// Add subsection to the sub_sections map
-  void registerSubSection(const SectionType & type, const std::string & name,
+  void registerSubSection(const ParserType & type, const std::string & name,
                           Parsable & sub_section);
 
   /* ------------------------------------------------------------------------ */
@@ -60,10 +60,10 @@ public:
   virtual void parseParam(const ParserParameter & parameter);
 
 private:
-  SectionType section_type;
+  ParserType section_type;
   /// ID of parsable object
   ID pid;
-  using SubSectionKey = std::pair<SectionType, std::string>;
+  using SubSectionKey = std::pair<ParserType, std::string>;
   using SubSections = std::map<SubSectionKey, Parsable *>;
   /// Subsections map
   SubSections sub_sections;

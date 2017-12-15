@@ -57,7 +57,8 @@ class ModelSolver : public Parsable,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ModelSolver(Mesh & mesh, const ID & id, UInt memory_id);
+  ModelSolver(Mesh & mesh, const ModelType & type, const ID & id,
+              UInt memory_id);
   ~ModelSolver() override;
 
   /// initialize the dof manager based on solver type passed in the input file
@@ -70,9 +71,13 @@ protected:
   void initDOFManager(const ParserSection & section, const ID & solver_type);
 
   /// Callback for the model to instantiate the matricees when needed
-  virtual void initSolver(__attribute__((unused)) TimeStepSolverType time_step_solver_type,
-                          __attribute__((unused)) NonLinearSolverType non_linear_solver_type) {
-  }
+  virtual void initSolver(TimeStepSolverType /*time_step_solver_type*/,
+                          NonLinearSolverType /*non_linear_solver_type*/) {}
+
+  /// get the section in the input file (if it exsits) corresponding to this
+  /// model
+  std::tuple<ParserSection, bool> getParserSection();
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -160,6 +165,9 @@ private:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
+protected:
+  ModelType model_type;
+
 private:
   ID parent_id;
   UInt parent_memory_id;
@@ -168,7 +176,7 @@ private:
   Mesh & mesh;
 
   /// Underlying dof_manager (the brain...)
-  DOFManager * dof_manager;
+  std::unique_ptr<DOFManager> dof_manager;
 
   /// Default time step solver to use
   ID default_solver_id;

@@ -122,8 +122,9 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
       work += Fds; // integrate
 
       /// Check that no work was done for zero force.
-      if (i == 0)
+      if (i == 0) {
         EXPECT_NEAR(work, 0.0, 1e-12);
+      }
     }
 
     // Due to the finite integration steps, we make a rather large error

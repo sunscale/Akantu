@@ -85,7 +85,7 @@ int main(int argc, char * argv[]) {
   UInt nb_element = mesh.getNbElement(type);
   UInt nb_nodes = mesh.getNbNodes();
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
-  Real * bary = new Real[spatial_dimension];
+  Vector<Real> bary(spatial_dimension);
 
   const Array<UInt> & connectivity = mesh.getConnectivity(type);
   Array<Real> & displacement = model.getDisplacement();
@@ -96,12 +96,12 @@ int main(int argc, char * argv[]) {
     update.clear();
 
     for (UInt el = 0; el < nb_element; ++el) {
-      mesh.getBarycenter(el, type, bary);
+      mesh.getBarycenter({type, el, _not_ghost}, bary);
       for (UInt n = 0; n < nb_nodes_per_element; ++n) {
         UInt node = connectivity(el, n);
         if (!update(node)) {
           for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-            displacement(node, dim) = increment * bary[dim];
+            displacement(node, dim) = increment * bary(dim);
             update(node) = true;
           }
         }
@@ -113,8 +113,6 @@ int main(int argc, char * argv[]) {
       model.dump("cohesive elements");
     }
   }
-
-  delete[] bary;
 
   if (nb_nodes != nb_element * Mesh::getNbNodesPerElement(type)) {
     std::cout << "Wrong number of nodes" << std::endl;

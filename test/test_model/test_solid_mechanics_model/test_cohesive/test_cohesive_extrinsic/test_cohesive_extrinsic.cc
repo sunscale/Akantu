@@ -57,7 +57,7 @@ int main(int argc, char * argv[]) {
   model.initFull(
       SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  model.limitInsertion(_y, -0.30, -0.20);
+  model.getElementInserter().setLimit(_y, -0.30, -0.20);
   model.updateAutomaticInsertion();
 
   mesh.setBaseName("test_cohesive_extrinsic");

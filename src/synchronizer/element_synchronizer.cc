@@ -278,8 +278,7 @@ void ElementSynchronizer::packSanityCheckData(
   /// pack barycenters in debug mode
   for(auto && element : send_element) {
     Vector<Real> barycenter(mesh.getSpatialDimension());
-    mesh.getBarycenter(element.element, element.type, barycenter.storage(),
-                       element.ghost_type);
+    mesh.getBarycenter(element, barycenter);
     buffer << barycenter;
   }
 }
@@ -301,8 +300,8 @@ void ElementSynchronizer::unpackSanityCheckData(
 
   for(auto && element : recv_element) {
     Vector<Real> barycenter_loc(spatial_dimension);
-    mesh.getBarycenter(element.element, element.type, barycenter_loc.storage(),
-                       element.ghost_type);
+    mesh.getBarycenter(element, barycenter_loc);
+
     Vector<Real> barycenter(spatial_dimension);
     buffer >> barycenter;
     for (UInt i = 0; i < spatial_dimension; ++i) {

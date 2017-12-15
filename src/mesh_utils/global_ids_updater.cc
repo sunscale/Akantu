@@ -51,9 +51,7 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt old_nb_nodes) {
 }
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
-  this->synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
-  this->synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
-  this->synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
+  this->synchronizer.synchronizeOnce(*this, _gst_giu_global_conn);
 }
 
 } // akantu

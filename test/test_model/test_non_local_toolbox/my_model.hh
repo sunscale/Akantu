@@ -43,7 +43,8 @@ class MyModel : public Model, public NonLocalManagerCallback {
 
 public:
   MyModel(Mesh & mesh, UInt spatial_dimension)
-      : Model(mesh, spatial_dimension), manager(*this, *this) {
+      : Model(mesh, ModelType::_model, spatial_dimension),
+        manager(*this, *this) {
     registerFEEngineObject<MyFEEngineType>("FEEngine", mesh, spatial_dimension);
     manager.registerNeighborhood("test_region", "test_region");
 

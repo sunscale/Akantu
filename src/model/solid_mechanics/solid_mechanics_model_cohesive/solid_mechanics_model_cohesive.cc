@@ -34,7 +34,6 @@
 #include "solid_mechanics_model_cohesive.hh"
 #include "aka_iterators.hh"
 #include "cohesive_element_inserter.hh"
-#include "dumpable_inline_impl.hh"
 #include "element_synchronizer.hh"
 #include "facet_synchronizer.hh"
 #include "fe_engine_template.hh"
@@ -64,7 +63,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       facet_stress("facet_stress", id), facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
 
-  this->options_type = ModelOptionsType::_solid_mechanics_model_cohesive;
+  this->model_type = ModelType::_solid_mechanics_model_cohesive;
 
   auto && tmp_material_selector =
       std::make_shared<DefaultMaterialCohesiveSelector>(*this);
@@ -93,6 +92,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
     this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_stress);
     this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_boundary);
   }
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -127,6 +127,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
         dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
     this->registerSynchronizer(synchronizer, _gst_smmc_facets);
     this->registerSynchronizer(synchronizer, _gst_smmc_facets_conn);
+
     synchronizeGhostFacetsConnectivity();
 
     /// create the facet synchronizer for extrinsic simulations
@@ -142,6 +143,20 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
           });
       this->registerSynchronizer(*facet_stress_synchronizer,
                                  _gst_smmc_facets_stress);
+    }
+
+    inserter->initParallel(*cohesive_synchronizer);
+  }
+
+  ParserSection section;
+  bool is_empty;
+  std::tie(section, is_empty) = this->getParserSection();
+
+  if (not is_empty) {
+    auto inserter_section =
+        section.getSubSections(ParserType::_cohesive_inserter);
+    if (inserter_section.begin() != inserter_section.end()) {
+      inserter->parseSection(*inserter_section.begin());
     }
   }
 
@@ -172,58 +187,41 @@ void SolidMechanicsModelCohesive::initMaterials() {
   material_selector->setFallback(cohesive_index);
 
   // set the facet information in the material in case of dynamic insertion
+  // to know what material to call for stress checks
   if (is_extrinsic) {
-    const Mesh & mesh_facets = inserter->getMeshFacets();
-    facet_material.initialize(mesh_facets, _spatial_dimension =
-                                               Model::spatial_dimension - 1);
-
-    Element element;
-    for (auto ghost_type : ghost_types) {
-      element.ghost_type = ghost_type;
-      for (auto & type :
-           mesh_facets.elementTypes(Model::spatial_dimension - 1, ghost_type)) {
-        element.type = type;
-        Array<UInt> & f_material = facet_material(type, ghost_type);
-        UInt nb_element = mesh_facets.getNbElement(type, ghost_type);
-        f_material.resize(nb_element);
-        f_material.set(cohesive_index);
-        for (UInt el = 0; el < nb_element; ++el) {
-          element.element = el;
-          UInt mat_index = (*material_selector)(element);
-          f_material(el) = mat_index;
-          auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
-          mat.addFacet(element);
-        }
-      }
-    }
-    SolidMechanicsModel::initMaterials();
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-    if (facet_synchronizer != nullptr)
-      inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
-//      inserter->initParallel(facet_synchronizer, synch_parallel);
-#endif
-    initAutomaticInsertion();
+    this->initExtrinsicMaterials();
   } else {
-    // TODO think of something a bit more consistent than just coding the first
-    // thing that comes in Fabian's head....
-    using const_section_iterator = ParserSection::const_section_iterator;
-    std::pair<const_section_iterator, const_section_iterator> sub_sections =
-        this->parser.getSubSections(_st_mesh);
-
-    if (sub_sections.first != sub_sections.second) {
-      std::string cohesive_surfaces =
-          sub_sections.first->getParameter("cohesive_surfaces");
-      this->initIntrinsicCohesiveMaterials(cohesive_surfaces);
-    } else {
-      this->initIntrinsicCohesiveMaterials(cohesive_index);
-    }
+    this->initIntrinsicMaterials();
   }
 
   AKANTU_DEBUG_OUT();
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModelCohesive::initExtrinsicMaterials() {
+  const Mesh & mesh_facets = inserter->getMeshFacets();
+  facet_material.initialize(
+      mesh_facets, _spatial_dimension = spatial_dimension - 1,
+      _with_nb_element = true,
+      _default_value = material_selector->getFallbackValue());
+
+  for_each_elements(mesh_facets,
+                    [&](auto && element) {
+                      auto mat_index = (*material_selector)(element);
+                      auto & mat = dynamic_cast<MaterialCohesive &>(
+                          *materials[mat_index]);
+                      facet_material(element) = mat_index;
+                      mat.addFacet(element);
+                    },
+                    _spatial_dimension = spatial_dimension - 1);
+
+  SolidMechanicsModel::initMaterials();
+
+  this->initAutomaticInsertion();
+}
+
+/* -------------------------------------------------------------------------- */
+#if 0
 void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
     const std::string & cohesive_surfaces) {
 
@@ -260,31 +258,21 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
 
   AKANTU_DEBUG_OUT();
 }
-
+#endif
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::synchronizeInsertionData() {
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != nullptr) {
-    facet_synchronizer->asynchronousSynchronize(*inserter, _gst_ce_groups);
-    facet_synchronizer->waitEndSynchronize(*inserter, _gst_ce_groups);
+  if (inserter->getMeshFacets().isDistributed()) {
+    inserter->getMeshFacets().getElementSynchronizer().synchronizeOnce(
+        *inserter, _gst_ce_groups);
   }
-#endif
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
-    UInt /*cohesive_index*/) {
-
+void SolidMechanicsModelCohesive::initIntrinsicMaterials() {
   AKANTU_DEBUG_IN();
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != nullptr)
-    inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
-//    inserter->initParallel(facet_synchronizer, synch_parallel);
-#endif
-
   SolidMechanicsModel::initMaterials();
+  inserter->insertElements();
 
   AKANTU_DEBUG_OUT();
 }
@@ -293,7 +281,6 @@ void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
 /**
  * Initialize the model,basically it  pre-compute the shapes, shapes derivatives
  * and jacobian
- *
  */
 void SolidMechanicsModelCohesive::initModel() {
   AKANTU_DEBUG_IN();
@@ -305,22 +292,19 @@ void SolidMechanicsModelCohesive::initModel() {
 
   /// add cohesive type connectivity
   ElementType type = _not_defined;
-
   for (auto && type_ghost : ghost_types) {
     for (const auto & tmp_type :
          mesh.elementTypes(spatial_dimension, type_ghost)) {
-      const Array<UInt> & connectivity =
-          mesh.getConnectivity(tmp_type, type_ghost);
+      const auto & connectivity = mesh.getConnectivity(tmp_type, type_ghost);
       if (connectivity.size() == 0)
         continue;
 
       type = tmp_type;
-      ElementType type_facet = Mesh::getFacetType(type);
-      ElementType type_cohesive = FEEngine::getCohesiveElementType(type_facet);
+      auto type_facet = Mesh::getFacetType(type);
+      auto type_cohesive = FEEngine::getCohesiveElementType(type_facet);
       mesh.addConnectivityType(type_cohesive, type_ghost);
     }
   }
-
   AKANTU_DEBUG_ASSERT(type != _not_defined, "No elements in the mesh");
 
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
@@ -338,83 +322,63 @@ void SolidMechanicsModelCohesive::initModel() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::limitInsertion(BC::Axis axis,
-                                                 Real first_limit,
-                                                 Real second_limit) {
-  AKANTU_DEBUG_IN();
-  inserter->setLimit(axis, first_limit, second_limit);
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::insertIntrinsicElements() {
   AKANTU_DEBUG_IN();
-  // UInt nb_new_elements =
   inserter->insertIntrinsicElements();
-  // if (nb_new_elements > 0) {
-  //   this->reinitializeSolver();
-  // }
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::insertElementsFromMeshData(
-    const std::string & physname) {
-  AKANTU_DEBUG_IN();
+void SolidMechanicsModelCohesive::updateFacetStressSynchronizer() {
+  if (facet_stress_synchronizer != nullptr) {
+    const auto & rank_to_element =
+        mesh.getElementSynchronizer().getElementToRank();
+    const auto & facet_checks = inserter->getCheckFacets();
+    const auto & element_to_facet = mesh.getElementToSubelement();
+    UInt rank = mesh.getCommunicator().whoAmI();
 
-  UInt material_index = SolidMechanicsModel::getMaterialIndex(physname);
-  inserter->insertIntrinsicElements(physname, material_index);
-  AKANTU_DEBUG_OUT();
+    facet_stress_synchronizer->updateSchemes(
+        [&](auto & scheme, auto & proc, auto & /*direction*/) {
+          UInt el = 0;
+          for (auto && element : scheme) {
+            if (not facet_checks(element))
+              continue;
+
+            const auto & next_el = element_to_facet(element);
+            UInt rank_left = rank_to_element(next_el[0]);
+            UInt rank_right = rank_to_element(next_el[1]);
+
+            if ((rank_left == rank and rank_right == proc) or
+                (rank_left == proc and rank_right == rank)) {
+              scheme[el] = element;
+              ++el;
+            }
+          }
+          scheme.resize(el);
+        });
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initAutomaticInsertion() {
   AKANTU_DEBUG_IN();
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_stress_synchronizer != nullptr) {
-    DataAccessor * data_accessor = this;
-    const ElementTypeMapArray<UInt> & rank_to_element =
-        synch_parallel->getPrankToElement();
+  this->updateFacetStressSynchronizer();
 
-    facet_stress_synchronizer->updateFacetStressSynchronizer(
-        *inserter, rank_to_element, *data_accessor);
-  }
-#endif
-
-  facet_stress.initialize(inserter->getMeshFacets(),
-                          _nb_component = 2 * Model::spatial_dimension *
-                                          Model::spatial_dimension,
-                          _spatial_dimension = Model::spatial_dimension - 1);
-
-  // inserter->getMeshFacets().initElementTypeMapArray(
-  //     facet_stress, 2 * spatial_dimension * spatial_dimension,
-  //     spatial_dimension - 1);
-
-  resizeFacetStress();
+  this->resizeFacetStress();
 
   /// compute normals on facets
-  computeNormals();
+  this->computeNormals();
 
-  initStressInterpolation();
+  this->initStressInterpolation();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::updateAutomaticInsertion() {
   AKANTU_DEBUG_IN();
 
-  inserter->limitCheckFacets();
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_stress_synchronizer != nullptr) {
-    DataAccessor * data_accessor = this;
-    const ElementTypeMapArray<UInt> & rank_to_element =
-        synch_parallel->getPrankToElement();
-
-    facet_stress_synchronizer->updateFacetStressSynchronizer(
-        *inserter, rank_to_element, *data_accessor);
-  }
-#endif
+  this->inserter->limitCheckFacets();
+  this->updateFacetStressSynchronizer();
 
   AKANTU_DEBUG_OUT();
 }
@@ -457,11 +421,8 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
       Array<Element> & facet_to_element =
           mesh_facets.getSubelementToElement(type, elem_gt);
       UInt nb_facet_per_elem = facet_to_element.getNbComponent();
-
       Array<Real> & el_q_facet = elements_quad_facets(type, elem_gt);
-
       ElementType facet_type = Mesh::getFacetType(type);
-
       UInt nb_quad_per_facet =
           getFEEngine("FacetsFEEngine").getNbIntegrationPoints(facet_type);
 
@@ -487,14 +448,11 @@ void SolidMechanicsModelCohesive::initStressInterpolation() {
   }
 
   /// loop over non cohesive materials
-  for (UInt m = 0; m < materials.size(); ++m) {
-    try {
-      auto & mat __attribute__((unused)) =
-          dynamic_cast<MaterialCohesive &>(*materials[m]);
-    } catch (std::bad_cast &) {
-      /// initialize the interpolation function
-      materials[m]->initElementalFieldInterpolation(elements_quad_facets);
-    }
+  for (auto && material : materials) {
+    if (dynamic_cast<MaterialCohesive *>(material.get()))
+      continue;
+    /// initialize the interpolation function
+    material->initElementalFieldInterpolation(elements_quad_facets);
   }
 
   AKANTU_DEBUG_OUT();
@@ -622,16 +580,12 @@ void SolidMechanicsModelCohesive::onElementsAdded(
     const Array<Element> & element_list, const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   updateCohesiveSynchronizers();
-#endif
 
   SolidMechanicsModel::onElementsAdded(element_list, event);
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (cohesive_element_synchronizer != nullptr)
-    cohesive_element_synchronizer->computeAllBufferSizes(*this);
-#endif
+  if (cohesive_synchronizer != nullptr)
+    cohesive_synchronizer->computeAllBufferSizes(*this);
 
   if (is_extrinsic)
     resizeFacetStress();
@@ -735,21 +689,25 @@ void SolidMechanicsModelCohesive::printself(std::ostream & stream,
 void SolidMechanicsModelCohesive::resizeFacetStress() {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh_facets = inserter->getMeshFacets();
+  this->facet_stress.initialize(getFEEngine("FacetsFEEngine"),
+                                _nb_component =
+                                    2 * spatial_dimension * spatial_dimension,
+                                _spatial_dimension = spatial_dimension - 1);
 
-  for (auto && ghost_type : ghost_types) {
-    for (const auto & type :
-         mesh_facets.elementTypes(spatial_dimension - 1, ghost_type)) {
-      UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
+  // for (auto && ghost_type : ghost_types) {
+  //   for (const auto & type :
+  //        mesh_facets.elementTypes(spatial_dimension - 1, ghost_type)) {
+  //     UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
 
-      UInt nb_quadrature_points = getFEEngine("FacetsFEEngine")
-                                      .getNbIntegrationPoints(type, ghost_type);
+  //     UInt nb_quadrature_points = getFEEngine("FacetsFEEngine")
+  //                                     .getNbIntegrationPoints(type,
+  //                                     ghost_type);
 
-      UInt new_size = nb_facet * nb_quadrature_points;
+  //     UInt new_size = nb_facet * nb_quadrature_points;
 
-      facet_stress(type, ghost_type).resize(new_size);
-    }
-  }
+  //     facet_stress(type, ghost_type).resize(new_size);
+  //   }
+  // }
 
   AKANTU_DEBUG_OUT();
 }

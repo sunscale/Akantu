@@ -20,17 +20,10 @@
 
 namespace akantu {
 
-// /* -------------------------------------------------------------------------- */
-// void CohesiveElementInserter::initParallel(FacetSynchronizer * facet_synchronizer,
-// 					   DistributedSynchronizer * distributed_synchronizer) {
-//   AKANTU_DEBUG_IN();
-
-//   this->facet_synchronizer = facet_synchronizer;
-
-//   global_ids_updater = new GlobalIdsUpdater(mesh, distributed_synchronizer);
-
-//   AKANTU_DEBUG_OUT();
-// }
+/* -------------------------------------------------------------------------- */
+void CohesiveElementInserter::initParallel(ElementSynchronizer & synchronizer) {
+  global_ids_updater = std::make_unique<GlobalIdsUpdater>(mesh, synchronizer);
+}
 
 /* -------------------------------------------------------------------------- */
 void CohesiveElementInserter::updateNodesType(Mesh & /*mesh*/,

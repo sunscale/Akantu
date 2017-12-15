@@ -95,7 +95,7 @@ int main(int argc, char * argv[]) {
           barycenter.begin(spatial_dimension);
 
       for (UInt elem = 0; elem < nb_element; ++elem, ++bary_it)
-        mesh.getBarycenter(elem, *it, bary_it->storage(), ghost_type);
+        mesh.getBarycenter({*it, elem, ghost_type}, *bary_it);
     }
   }
 
@@ -125,8 +125,7 @@ int main(int argc, char * argv[]) {
     std::cout << std::dec << " I am rank " << prank
               << " and here's my MeshData dump for types " << *it
               << " (it should contain " << mesh.getNbElement(*it)
-              << " elements and it has " << tags.size()
-              << "!) :" << std::endl;
+              << " elements and it has " << tags.size() << "!) :" << std::endl;
     std::cout << std::hex;
 
     debug::setDebugLevel(dblTest);
@@ -142,17 +141,17 @@ int main(int argc, char * argv[]) {
   DumperParaview dumper("test-scotch-partition");
   dumper.registerMesh(mesh, spatial_dimension, _not_ghost);
   dumper.registerField("partitions",
-   		       new DumperIOHelper::ElementPartitionField<>(mesh,
-                                                                   spatial_dimension, _not_ghost));
+                       new DumperIOHelper::ElementPartitionField<>(
+                           mesh, spatial_dimension, _not_ghost));
   dumper.dump();
 
   DumperParaview dumper_ghost("test-scotch-partition-ghost");
   dumper_ghost.registerMesh(mesh, spatial_dimension, _ghost);
   dumper_ghost.registerField("partitions",
-   			     new DumperIOHelper::ElementPartitionField<>(mesh,
-                                                                         spatial_dimension, _ghost));
+                             new DumperIOHelper::ElementPartitionField<>(
+                                 mesh, spatial_dimension, _ghost));
   dumper_ghost.dump();
-#endif //AKANTU_USE_IOHELPER
+#endif // AKANTU_USE_IOHELPER
 
   finalize();
 

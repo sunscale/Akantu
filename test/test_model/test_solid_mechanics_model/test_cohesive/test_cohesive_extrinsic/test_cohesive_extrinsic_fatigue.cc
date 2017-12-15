@@ -215,7 +215,7 @@ void imposeOpening(SolidMechanicsModelCohesive & model, Real opening) {
     Vector<Real> barycenter(spatial_dimension);
 
     for (UInt el = 0; el < nb_element; ++el) {
-      mesh.getBarycenter(el, type, barycenter.storage());
+      mesh.getBarycenter({type, el, _not_ghost}, barycenter);
       if (barycenter(0) > 1) {
         for (UInt n = 0; n < nb_nodes_per_element; ++n) {
           UInt node = connectivity(el, n);

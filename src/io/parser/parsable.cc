@@ -27,7 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "parsable.hh"
 #include "aka_random_generator.hh"
@@ -36,7 +35,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Parsable::Parsable(const SectionType & section_type, const ID & id)
+Parsable::Parsable(const ParserType & section_type, const ID & id)
     : section_type(section_type), pid(id) {
   this->consisder_sub = false;
 }
@@ -45,7 +44,7 @@ Parsable::Parsable(const SectionType & section_type, const ID & id)
 Parsable::~Parsable() = default;
 
 /* -------------------------------------------------------------------------- */
-void Parsable::registerSubSection(const SectionType & type,
+void Parsable::registerSubSection(const ParserType & type,
                                   const std::string & name,
                                   Parsable & sub_section) {
   SubSectionKey key(type, name);
@@ -80,14 +79,13 @@ void Parsable::parseSection(const ParserSection & section) {
                      << section_type << ", so it cannot parse section of type "
                      << section.getType());
 
-  std::pair<Parser::const_parameter_iterator, Parser::const_parameter_iterator>
-      params = section.getParameters();
-  Parser::const_parameter_iterator it = params.first;
+  auto params = section.getParameters();
+  auto it = params.first;
   for (; it != params.second; ++it) {
     parseParam(*it);
   }
 
-  Parser::const_section_iterator sit = section.getSubSections().first;
+  auto sit = section.getSubSections().first;
   for (; sit != section.getSubSections().second; ++sit) {
     parseSubSection(*sit);
   }
