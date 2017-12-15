@@ -264,8 +264,8 @@ void ShapeStructural<kind>::interpolateOnIntegrationPoints(
   auto nb_quad_points_per_element = integration_points(type, ghost_type).cols();
 
   Array<Real> u_el(0, nb_nodes_per_element * nb_dof);
-  FEEngine::extractNodalToElementField<type>(mesh, in_u, u_el, ghost_type,
-                                             filter_elements);
+  FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type,
+                                       filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
   out_uq.resize(nb_quad_points);
