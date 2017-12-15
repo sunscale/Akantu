@@ -222,16 +222,20 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8>(
     AKANTU_DEBUG_TO_IMPLEMENT();
   } else {
     for (UInt i = 0; i < coordinates.cols(); ++i) {
-      UInt j = 0;
+      //UInt j = 0;
       Real x = coordinates(0, i);
       Real y = coordinates(1, i);
 
-      for (UInt e = 0; e <= 2; ++e) {
-        for (UInt n = 0; n <= 2; ++n) {
-          coordMatrix(i, j) = std::pow(x, e) * std::pow(y, n);
-          ++j;
-        }
-      }
+      coordMatrix(i, 0) = 1;
+      coordMatrix(i, 1) = x;
+      coordMatrix(i, 2) = y;
+      coordMatrix(i, 3) = x * y;
+      // for (UInt e = 0; e <= 2; ++e) {
+      //   for (UInt n = 0; n <= 2; ++n) {
+      //     coordMatrix(i, j) = std::pow(x, e) * std::pow(y, n);
+      //     ++j;
+      //   }
+      // }
     }
   }
 }
