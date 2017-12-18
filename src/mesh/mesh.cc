@@ -40,6 +40,7 @@
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_utils.hh"
+#include "mesh_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include "communicator.hh"
 #include "element_synchronizer.hh"
