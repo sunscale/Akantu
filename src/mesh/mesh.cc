@@ -41,11 +41,11 @@
 #include "mesh_io.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "element_synchronizer.hh"
 #include "facet_synchronizer.hh"
 #include "mesh_utils_distribution.hh"
 #include "node_synchronizer.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_field.hh"
@@ -54,7 +54,6 @@
 /* -------------------------------------------------------------------------- */
 #include <sstream>
 /* -------------------------------------------------------------------------- */
-
 
 namespace akantu {
 
@@ -77,8 +76,8 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, Communicator & communicator,
-           const ID & id, const MemoryID & memory_id)
+Mesh::Mesh(UInt spatial_dimension, Communicator & communicator, const ID & id,
+           const MemoryID & memory_id)
     : Mesh(spatial_dimension, id, memory_id, communicator) {
   AKANTU_DEBUG_IN();
 
@@ -128,6 +127,66 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
       mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(
           *mesh_facets, mesh.getElementSynchronizer());
     }
+
+    /// transfers the the mesh physical names to the mesh facets
+    if (not this->hasData("physical_names")) {
+      AKANTU_DEBUG_OUT();
+      return *mesh_facets;
+    }
+
+    if (not mesh_facets->hasData("physical_names")) {
+      mesh_facets->registerData<std::string>("physical_names");
+    }
+
+    auto & mesh_phys_data = this->getData<std::string>("physical_names");
+    auto & phys_data = mesh_facets->getData<std::string>("physical_names");
+    phys_data.initialize(*mesh_facets,
+                         _spatial_dimension = spatial_dimension - 1,
+                         _with_nb_element = true);
+
+    for_each_elements(
+        mesh,
+        [&](auto && element) {
+          Vector<Real> barycenter(spatial_dimension);
+          mesh.getBarycenter(element, barycenter);
+          auto norm_barycenter = barycenter.norm();
+
+          const auto & element_to_facet = mesh_facets->getElementToSubelement(
+              element.type, element.ghost_type);
+
+          Vector<Real> barycenter_facet(spatial_dimension);
+          auto nb_facet =
+              mesh_facets->getNbElement(element.type, element.ghost_type);
+
+          auto range = arange(nb_facet);
+
+          // this is a spacial search coded the most inefficient way.
+          auto facet =
+              std::find_if(range.begin(), range.end(), [&](auto && facet) {
+                if (element_to_facet(facet)[1] == ElementNull)
+                  return false;
+
+                mesh_facets->getBarycenter(
+                    Element{element.type, facet, element.ghost_type},
+                    barycenter_facet);
+                auto norm_distance = barycenter_facet.distance(barycenter);
+
+                return (norm_distance <
+                        (Math::getTolerance() * norm_barycenter));
+              });
+          if (facet == range.end())
+            AKANTU_EXCEPTION("The element "
+                             << element
+                             << " did not find its associated facet in the "
+                                "mesh_facets! Try to decrease math tolerance.");
+
+          // set physical name
+          phys_data(Element{element.type, *facet, element.ghost_type}) =
+              mesh_phys_data(element);
+        },
+        _spatial_dimension = spatial_dimension - 1);
+
+    mesh_facets->createGroupsFromMeshData<std::string>("physical_names");
   }
 
   AKANTU_DEBUG_OUT();

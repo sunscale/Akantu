@@ -64,24 +64,12 @@ int main(int argc, char *argv[]) {
   // debug::setDebugLevel(dblWarning);
 
   SolidMechanicsModelCohesive model(mesh);
-
+  model.getElementInserter().setLimit(_x, -0.01, 0.01);
   /// model initialization
   model.initFull();
 
-  model.getElementInserter().setLimit(_x, -0.01, 0.01);
-  model.insertIntrinsicElements();
-
-  // mesh.write("mesh_cohesive_quadrangle.msh");
-
-  // debug::setDebugLevel(dblDump);
-  // std::cout << mesh << std::endl;
-  // debug::setDebugLevel(dblWarning);
-
-
   Real time_step = model.getStableTimeStep()*0.8;
   model.setTimeStep(time_step);
-  //  std::cout << "Time step: " << time_step << std::endl;
-
   model.assembleMassLumped();
 
 

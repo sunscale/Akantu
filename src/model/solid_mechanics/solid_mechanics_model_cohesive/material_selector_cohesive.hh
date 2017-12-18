@@ -67,8 +67,9 @@ public:
   UInt operator()(const Element & element) override;
 
 protected:
+  const SolidMechanicsModelCohesive & model;
   const Mesh & mesh_facets;
-  const ElementTypeMapArray<UInt> & material_index;
+  const ElementTypeMapArray<std::string> & material_index;
   bool third_dimension;
 };
 

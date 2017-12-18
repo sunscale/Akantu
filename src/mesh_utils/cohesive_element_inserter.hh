@@ -51,7 +51,7 @@ class CohesiveElementInserter : public DataAccessor<Element>, public Parsable {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  CohesiveElementInserter(Mesh & mesh, bool is_extrinsic = false,
+  CohesiveElementInserter(Mesh & mesh,
                           const ID & id = "cohesive_element_inserter");
 
   ~CohesiveElementInserter() override;
@@ -60,27 +60,15 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// init function
-  void init(bool is_extrinsic);
-
   /// set range limitation for intrinsic cohesive element insertion
   void setLimit(SpacialDirection axis, Real first_limit, Real second_limit);
 
   /// insert intrinsic cohesive elements in a predefined range
   UInt insertIntrinsicElements();
 
-  /// preset insertion of intrinsic cohesive elements along
-  /// a predefined group of facet and assign them a defined material index.
-  /// insertElement() method has to be called to finalize insertion.
-  void insertIntrinsicElements(const std::string & physname,
-                               UInt material_index);
-
   /// insert extrinsic cohesive elements (returns the number of new
   /// cohesive elements)
   UInt insertElements(bool only_double_facets = false);
-
-  /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
 
   /// limit check facets to match given insertion limits
   void limitCheckFacets();
@@ -88,9 +76,11 @@ public:
   /// init parallel variables
   void initParallel(ElementSynchronizer & element_synchronizer);
 
+  void parseSection(const ParserSection & section) override;
+
 protected:
-  /// init facets check
-  void initFacetsCheck();
+  /// internal version of limitCheckFacets
+  void limitCheckFacets(ElementTypeMapArray<bool> & check_facets);
 
   /// update facet insertion arrays after facets doubling
   void updateInsertionFacets();
@@ -132,18 +122,19 @@ protected:
 public:
   AKANTU_GET_MACRO_NOT_CONST(InsertionFacetsByElement, insertion_facets,
                              ElementTypeMapArray<bool> &);
-
   AKANTU_GET_MACRO(InsertionFacetsByElement, insertion_facets,
                    const ElementTypeMapArray<bool> &);
-
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(InsertionFacets, insertion_facets, bool);
 
-  AKANTU_GET_MACRO(CheckFacets, check_facets, const ElementTypeMapArray<bool> &);
+  AKANTU_GET_MACRO(CheckFacets, check_facets,
+                   const ElementTypeMapArray<bool> &);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(CheckFacets, check_facets, bool);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(CheckFacets, check_facets, bool);
+
   AKANTU_GET_MACRO(MeshFacets, mesh_facets, const Mesh &);
   AKANTU_GET_MACRO_NOT_CONST(MeshFacets, mesh_facets, Mesh &);
 
+  AKANTU_SET_MACRO(IsExtrinsic, is_extrinsic, bool);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -172,18 +163,10 @@ private:
 
   /// global connectivity ids updater
   std::unique_ptr<GlobalIdsUpdater> global_ids_updater;
+
+  /// is this inserter used in extrinsic
+  bool is_extrinsic{false};
 };
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const CohesiveElementInserter & _this) {
-  _this.printself(stream);
-  return stream;
-}
 
 class CohesiveNewNodesEvent : public NewNodesEvent {
 public:

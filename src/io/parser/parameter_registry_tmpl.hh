@@ -32,9 +32,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_error.hh"
+#include "aka_iterators.hh"
 #include "parameter_registry.hh"
 #include "parser.hh"
-#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <string>
@@ -189,8 +189,12 @@ inline void
 ParameterTyped<Vector<Real>>::setAuto(const ParserParameter & in_param) {
   Parameter::setAuto(in_param);
   Vector<Real> tmp = in_param;
-  for (UInt i = 0; i < param.size(); ++i) {
-    param(i) = tmp(i);
+  if (param.size() == 0) {
+    param = tmp;
+  } else {
+    for (UInt i = 0; i < param.size(); ++i) {
+      param(i) = tmp(i);
+    }
   }
 }
 
@@ -200,9 +204,13 @@ inline void
 ParameterTyped<Matrix<Real>>::setAuto(const ParserParameter & in_param) {
   Parameter::setAuto(in_param);
   Matrix<Real> tmp = in_param;
-  for (UInt i = 0; i < param.rows(); ++i) {
-    for (UInt j = 0; j < param.cols(); ++j) {
-      param(i, j) = tmp(i, j);
+  if (param.size() == 0) {
+    param = tmp;
+  } else {
+    for (UInt i = 0; i < param.rows(); ++i) {
+      for (UInt j = 0; j < param.cols(); ++j) {
+        param(i, j) = tmp(i, j);
+      }
     }
   }
 }
@@ -230,10 +238,11 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <typename V> void setTyped(const V & value) { param = value; }
-  void setAuto(const ParserParameter & value) override { Parameter::setAuto(value);
+  void setAuto(const ParserParameter & value) override {
+    Parameter::setAuto(value);
     param.clear();
-    const std::vector<T>  & tmp = value;
-    for(auto && z : tmp) {
+    const std::vector<T> & tmp = value;
+    for (auto && z : tmp) {
       param.emplace_back(z);
     }
   }

@@ -122,7 +122,7 @@ namespace akantu {
               AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                         \
               BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR,                    \
                                      ::akantu::type_name, list))};             \
-      return convert[type];                                                    \
+      return convert.at(type);                                                 \
     }                                                                          \
   }                                                                            \
   namespace akantu {                                                           \
@@ -140,7 +140,7 @@ namespace akantu {
         BOOST_PP_SEQ_FOR_EACH_I(                                               \
             AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
             BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE, type_name, list))};  \
-    type = convert[str];                                                       \
+    type = convert.at(str);                                                    \
     return stream;                                                             \
   }
 

@@ -301,6 +301,11 @@ inline Array<T> & Mesh::getData(const ID & data_name,
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool Mesh::hasData(const ID & data_name) const {
+  return mesh_data.hasData(data_name);
+}
+
+/* -------------------------------------------------------------------------- */
 template <typename T>
 inline const ElementTypeMapArray<T> &
 Mesh::getData(const ID & data_name) const {

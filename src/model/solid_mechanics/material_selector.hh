@@ -35,12 +35,10 @@
 #include <memory>
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_MATERIAL_SELECTOR_HH__
 #define __AKANTU_MATERIAL_SELECTOR_HH__
 
 /* -------------------------------------------------------------------------- */
-
 namespace akantu {
 
 class SolidMechanicsModel;
@@ -49,7 +47,7 @@ class SolidMechanicsModel;
  * main class to assign same or different materials for different
  * elements
  */
-class MaterialSelector {
+class MaterialSelector : public std::enable_shared_from_this<MaterialSelector> {
 public:
   MaterialSelector() = default;
   virtual ~MaterialSelector() = default;
@@ -65,6 +63,12 @@ public:
   setFallback(const std::shared_ptr<MaterialSelector> & fallback_selector) {
     this->fallback_selector = fallback_selector;
   }
+
+  inline void
+  setFallback(MaterialSelector & fallback_selector) {
+    this->fallback_selector = fallback_selector.shared_from_this();
+  }
+
   inline std::shared_ptr<MaterialSelector> & getFallbackSelector() {
     return this->fallback_selector;
   }

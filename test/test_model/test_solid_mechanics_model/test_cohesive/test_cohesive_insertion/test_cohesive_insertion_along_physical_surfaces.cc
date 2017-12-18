@@ -57,6 +57,11 @@ int main(int argc, char * argv[]) {
   mesh.read("3d_spherical_inclusion.msh");
 
   SolidMechanicsModelCohesive model(mesh);
+
+  auto && material_selector = std::make_shared<MeshDataMaterialCohesiveSelector>(model);
+  material_selector->setFallback(model.getMaterialSelector());
+  model.setMaterialSelector(material_selector);
+
   model.initFull(_analysis_method = _static);
 
   std::vector<std::string> surfaces_name = {"interface", "coh1", "coh2",
@@ -99,9 +104,9 @@ int main(int argc, char * argv[]) {
   model.dump("cohesive elements");
   */
 
-  model.assembleStiffnessMatrix();
+  //model.assembleStiffnessMatrix();
 
-  finalize();
+  //finalize();
 
   return EXIT_SUCCESS;
 }

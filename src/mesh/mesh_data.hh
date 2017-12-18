@@ -84,10 +84,13 @@ public:
   template <typename T> void registerElementalData(const ID & name);
   inline void registerElementalData(const ID & name, TypeCode type);
 
-  /// Get an existing elemental data array
+  /// tells if the given array exists
   template <typename T>
   bool hasDataArray(const ID & data_name, const ElementType & el_type,
                     const GhostType & ghost_type = _not_ghost) const;
+
+  /// tells if the given data exists
+  bool hasData(const ID & data_name) const;
 
   /// Get an existing elemental data array
   template <typename T>

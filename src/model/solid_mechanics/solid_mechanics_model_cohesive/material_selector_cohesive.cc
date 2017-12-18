@@ -76,8 +76,8 @@ UInt DefaultMaterialCohesiveSelector::operator()(const Element & element) {
 /* -------------------------------------------------------------------------- */
 MeshDataMaterialCohesiveSelector::MeshDataMaterialCohesiveSelector(
     const SolidMechanicsModelCohesive & model)
-    : mesh_facets(model.getMeshFacets()),
-      material_index(mesh_facets.getData<UInt>("physical_names")) {
+    : model(model), mesh_facets(model.getMeshFacets()),
+      material_index(mesh_facets.getData<std::string>("physical_names")) {
   third_dimension = (model.getSpatialDimension() == 3);
   // backward compatibility v3: to get the former behavior back when the user
   // creates its own selector
@@ -91,12 +91,12 @@ UInt MeshDataMaterialCohesiveSelector::operator()(const Element & element) {
   if (Mesh::getKind(element.type) == _ek_cohesive) {
     const auto & facet = mesh_facets.getSubelementToElement(
         element.type, element.ghost_type)(element.element, third_dimension);
-    auto material_id = material_index(facet);
-    if (material_id != UInt(-1))
-      return material_id;
-
-    else
+    try {
+      std::string material_name = this->material_index(facet);
+      return this->model.getMaterialIndex(material_name);
+    } catch(...) {
       return fallback_value;
+    }
   } else
     return MaterialSelector::operator()(element);
 }
