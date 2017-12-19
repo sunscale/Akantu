@@ -109,10 +109,19 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+  /// compute the shapes on a provided point
   template <ElementType type>
   void computeShapes(const Vector<Real> & /*real_coords*/, UInt /*elem*/,
                      Vector<Real> & /*shapes*/,
                      const GhostType & /*ghost_type*/) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+ 
+  /// compute the shape derivatives on a provided point
+  template <ElementType type>
+  void computeShapeDerivatives(const Matrix<Real> & /*real_coords*/, UInt /*elem*/,
+                               Tensor3<Real> & /*shapes*/,
+                               const GhostType & /*ghost_type*/) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 

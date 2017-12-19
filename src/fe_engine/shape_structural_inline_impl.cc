@@ -336,7 +336,7 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
     for (auto && q : arange(nablau.size(2))) {
       auto nablau_q = Matrix<Real>(nablau(q));
       auto u_q = Matrix<Real>(u(q));
-      auto B_q = Matrix<Real>(N(q));
+      auto B_q = Matrix<Real>(B(q));
 
       nablau_q.mul<false, false>(B_q, u_q);
     }
