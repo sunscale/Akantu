@@ -65,12 +65,10 @@ int main(int argc, char * argv[]) {
 
   std::cout << mesh << std::endl;
   SolidMechanicsModelCohesive model(mesh);
+  model.getElementInserter().setLimit(_x, -0.26, -0.24);
 
   /// model initialization
   model.initFull();
-
-  model.getElementInserter().setLimit(_x, -0.26, -0.24);
-  model.insertIntrinsicElements();
 
   mesh.write("mesh_cohesive.msh");
 

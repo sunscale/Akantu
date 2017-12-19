@@ -110,11 +110,10 @@ int main(int argc, char * argv[]) {
   mesh.read("tetrahedron.msh");
 
   SolidMechanicsModelCohesive model(mesh);
+  model.getElementInserter().setLimit(_x, -0.01, 0.01);
 
   /// model initialization
   model.initFull();
-  model.getElementInserter().setLimit(_x, -0.01, 0.01);
-  model.insertIntrinsicElements();
 
   Array<bool> & boundary = model.getBlockedDOFs();
   boundary.set(true);

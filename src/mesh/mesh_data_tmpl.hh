@@ -125,7 +125,6 @@ ElementTypeMapArray<T> & MeshData::getElementalData(const ID & name) {
 }
 
 /* -------------------------------------------------------------------------- */
-// Get an existing elemental data array for an element type
 template <typename T>
 bool MeshData::hasDataArray(const ID & name, const ElementType & elem_type,
                             const GhostType & ghost_type) const {
@@ -138,7 +137,12 @@ bool MeshData::hasDataArray(const ID & name, const ElementType & elem_type,
 }
 
 /* -------------------------------------------------------------------------- */
-// Get an existing elemental data array for an element type
+inline bool MeshData::hasData(const ID & name) const {
+  auto it = elemental_data.find(name);
+  return (it != elemental_data.end());
+}
+
+/* -------------------------------------------------------------------------- */
 template <typename T>
 const Array<T> &
 MeshData::getElementalDataArray(const ID & name, const ElementType & elem_type,

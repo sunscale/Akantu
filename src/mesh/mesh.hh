@@ -334,6 +334,9 @@ public:
   inline Array<T> & getData(const ID & data_name, const ElementType & el_type,
                             const GhostType & ghost_type = _not_ghost);
 
+  /// tells if the data data_name is contained in the mesh or not
+  inline bool hasData(const ID & data_name) const;
+
   /// get a name field associated to the mesh
   template <typename T>
   inline const ElementTypeMapArray<T> & getData(const ID & data_name) const;

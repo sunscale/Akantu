@@ -96,6 +96,26 @@ extern const UInt _all_dimensions;
 
 namespace akantu {
 
+#if (defined(__GNUC__) || defined(__GNUG__))
+#define AKA_GCC_VERSION                                                            \
+  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#if AKA_GCC_VERSION < 60000
+#define AKANTU_ENUM_HASH(type_name)                                            \
+  template <> struct hash<::akantu::type_name> {                               \
+    using argument_type = ::akantu::type_name;                                 \
+    size_t operator()(const argument_type & e) const noexcept {                \
+      auto ue = underlying_type_t<argument_type>(e);                           \
+      return uh(ue);                                                           \
+    }                                                                          \
+                                                                               \
+  private:                                                                     \
+    const hash<underlying_type_t<argument_type>> uh{};                         \
+  };
+#else
+#define AKANTU_ENUM_HASH(type_name)
+#endif // AKA_GCC_VERSION
+#endif // GNU
+
 #define AKANTU_PP_CAT(s, data, elem) BOOST_PP_CAT(data, elem)
 
 #define AKANTU_PP_ENUM(s, data, i, elem)                                       \
@@ -116,13 +136,14 @@ namespace akantu {
 #define AKANTU_ENUM_OUTPUT_STREAM(type_name, list)                             \
   }                                                                            \
   namespace std {                                                              \
+    AKANTU_ENUM_HASH(type_name)                                                \
     inline string to_string(const ::akantu::type_name & type) {                \
       static unordered_map<::akantu::type_name, string> convert{               \
           BOOST_PP_SEQ_FOR_EACH_I(                                             \
               AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                         \
               BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR,                    \
                                      ::akantu::type_name, list))};             \
-      return convert[type];                                                    \
+      return convert.at(type);                                                 \
     }                                                                          \
   }                                                                            \
   namespace akantu {                                                           \
@@ -140,7 +161,7 @@ namespace akantu {
         BOOST_PP_SEQ_FOR_EACH_I(                                               \
             AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
             BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE, type_name, list))};  \
-    type = convert[str];                                                       \
+    type = convert.at(str);                                                    \
     return stream;                                                             \
   }
 

@@ -55,7 +55,6 @@ int main(int argc, char * argv[]) {
 
   /// model initialization
   model.initFull();
-  model.insertIntrinsicElements();
 
   Real time_step = model.getStableTimeStep() * 0.8;
   model.setTimeStep(time_step);

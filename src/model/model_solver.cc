@@ -75,9 +75,9 @@ std::tuple<ParserSection, bool> ModelSolver::getParserSection() {
       });
 
   if (it == sub_sections.end())
-    return {ParserSection(), true};
+    return std::make_tuple(ParserSection(), true);
 
-  return {*it, false};
+  return std::make_tuple(*it, false);
 }
 
 /* -------------------------------------------------------------------------- */

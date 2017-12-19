@@ -232,6 +232,17 @@ inline void ElementTypeMapArray<T, SupportType>::clear() {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
+inline void ElementTypeMapArray<T, SupportType>::set(const T & value) {
+  for (auto gt : ghost_types) {
+    auto & data = this->getData(gt);
+    for (auto & vect : data) {
+      vect.second->set(value);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
 inline const Array<T> & ElementTypeMapArray<T, SupportType>::
 operator()(const SupportType & type, const GhostType & ghost_type) const {
   auto it = this->getData(ghost_type).find(type);
@@ -574,9 +585,10 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
       }
     else {
       auto & array = this->operator()(type, f.ghostType());
-      array.resize(f.size(type));
       if (not do_not_default)
-        array.set(default_value);
+        array.resize(f.size(type), default_value);
+      else
+        array.resize(f.size(type));
     }
   }
 }

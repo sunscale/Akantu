@@ -93,11 +93,23 @@ Material & SolidMechanicsModel::registerNewMaterial(const ID & mat_name,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::instantiateMaterials() {
-  auto sub_sections = this->parser.getSubSections(ParserType::_material);
+  ParserSection model_section;
+  bool is_empty;
+  std::tie(model_section, is_empty) = this->getParserSection();
 
-  for (const auto & section : sub_sections) {
-    registerNewMaterial(section);
+  if(not is_empty) {
+    auto model_materials = model_section.getSubSections(ParserType::_material);
+    for (const auto & section : model_materials) {
+      this->registerNewMaterial(section);
+    }
   }
+
+  auto sub_sections = this->parser.getSubSections(ParserType::_material);
+  for (const auto & section : sub_sections) {
+    this->registerNewMaterial(section);
+  }
+
+
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   for (auto & material : materials) {

@@ -69,7 +69,7 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       std::make_shared<DefaultMaterialCohesiveSelector>(*this);
 
   tmp_material_selector->setFallback(this->material_selector);
-  material_selector = tmp_material_selector;
+  this->material_selector = tmp_material_selector;
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("cohesive elements", id);
@@ -80,11 +80,11 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
 
   if (this->mesh.isDistributed()) {
     /// create the distributed synchronizer for cohesive elements
-    cohesive_synchronizer = std::make_unique<ElementSynchronizer>(
+    this->cohesive_synchronizer = std::make_unique<ElementSynchronizer>(
         mesh, "cohesive_distributed_synchronizer");
 
     auto & synchronizer = mesh.getElementSynchronizer();
-    cohesive_synchronizer->split(synchronizer, [](auto && el) {
+    this->cohesive_synchronizer->split(synchronizer, [](auto && el) {
       return Mesh::getKind(el.type) == _ek_cohesive;
     });
 
@@ -92,6 +92,9 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
     this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_stress);
     this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_boundary);
   }
+
+  this->inserter = std::make_unique<CohesiveElementInserter>(
+      this->mesh, id + ":cohesive_element_inserter");
 
   AKANTU_DEBUG_OUT();
 }
@@ -118,8 +121,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
 
   this->is_extrinsic = smmc_options.extrinsic;
 
-  inserter = std::make_unique<CohesiveElementInserter>(
-      mesh, is_extrinsic, id + ":cohesive_element_inserter");
+  inserter->setIsExtrinsic(is_extrinsic);
 
   if (mesh.isDistributed()) {
     auto & mesh_facets = inserter->getMeshFacets();
@@ -174,15 +176,17 @@ void SolidMechanicsModelCohesive::initMaterials() {
     instantiateMaterials();
 
   /// find the first cohesive material
-  UInt cohesive_index = 0;
+  UInt cohesive_index = UInt(-1);
 
-  while ((dynamic_cast<MaterialCohesive *>(materials[cohesive_index].get()) ==
-          nullptr) &&
-         cohesive_index <= materials.size())
-    ++cohesive_index;
+  for(auto && material : enumerate(materials)) {
+    if(dynamic_cast<MaterialCohesive *>(std::get<1>(material).get())){
+      cohesive_index = std::get<0>(material);
+      break;
+    }
+  }
 
-  AKANTU_DEBUG_ASSERT(cohesive_index != materials.size(),
-                      "No cohesive materials in the material input file");
+  if(cohesive_index == UInt(-1))
+     AKANTU_EXCEPTION("No cohesive materials in the material input file");
 
   material_selector->setFallback(cohesive_index);
 
@@ -272,7 +276,8 @@ void SolidMechanicsModelCohesive::initIntrinsicMaterials() {
   AKANTU_DEBUG_IN();
 
   SolidMechanicsModel::initMaterials();
-  inserter->insertElements();
+
+  this->insertIntrinsicElements();
 
   AKANTU_DEBUG_OUT();
 }
@@ -362,6 +367,8 @@ void SolidMechanicsModelCohesive::updateFacetStressSynchronizer() {
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::initAutomaticInsertion() {
   AKANTU_DEBUG_IN();
+
+  this->inserter->limitCheckFacets();
 
   this->updateFacetStressSynchronizer();
 

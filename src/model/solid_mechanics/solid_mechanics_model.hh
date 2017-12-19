@@ -441,7 +441,7 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
                                    material_local_numbering, UInt);
 
-  AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, material_selector, std::shared_ptr<MaterialSelector>);
+  AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, *material_selector, MaterialSelector &);
   AKANTU_SET_MACRO(MaterialSelector, material_selector, std::shared_ptr<MaterialSelector>);
 
   /// Access the non_local_manager interface

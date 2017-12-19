@@ -43,9 +43,7 @@
 /* -------------------------------------------------------------------------- */
 
 #if (defined(__GNUC__) || defined(__GNUG__))
-#define GCC_VERSION                                                            \
-  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#if GCC_VERSION < 60000
+#if AKA_GCC_VERSION < 60000
 namespace std {
 template <> struct hash<akantu::SynchronizerOperation> {
   using argument_type = akantu::SynchronizerOperation;
