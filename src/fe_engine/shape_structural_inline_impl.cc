@@ -288,7 +288,7 @@ void ShapeStructural<kind>::interpolateOnIntegrationPoints(
       auto u_q = Matrix<Real>(u(q));
       auto N_q = Matrix<Real>(N(q));
 
-      uq_q.mul<false, false>(N, u);
+      uq_q.mul<false, false>(N_q, u_q);
     }
 
     ++out_it;
@@ -314,7 +314,7 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
 
   Array<Real> u_el(0, nb_nodes_per_element * nb_dof);
-  FEEngine::extractNodalToElementField<type>(mesh, in_u, u_el, ghost_type,
+  FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type,
                                              filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
@@ -334,11 +334,11 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
     auto B = Tensor3<Real>(shapesd_it[el]);
 
     for (auto && q : arange(nablau.size(2))) {
-      auto nablau_q = Matrix<Real>(uq(q));
+      auto nablau_q = Matrix<Real>(nablau(q));
       auto u_q = Matrix<Real>(u(q));
       auto B_q = Matrix<Real>(N(q));
 
-      nablau_q.mul<false, false>(B, u);
+      nablau_q.mul<false, false>(B_q, u_q);
     }
 
     ++out_it;
