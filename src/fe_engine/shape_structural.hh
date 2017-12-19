@@ -45,16 +45,27 @@ template <ElementKind kind> class ShapeStructural : public ShapeFunctions {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  using ElementTypeMapMultiReal = ElementTypeMap<Array<Real> **>;
-
   ShapeStructural(Mesh & mesh, const ID & id = "shape_structural",
-                  const MemoryID & memory_id = 0);
-  ~ShapeStructural() override;
+                  const MemoryID & memory_id = 0)
+      : ShapeFunctions(mesh, id, memory_id),
+        rotation_matrices("rotation_matrices", id, memory_id) {}
+  ~ShapeStructural() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// function to print the contain of the class
+  void printself(std::ostream & stream, int indent = 0) const override {
+    std::string space;
+    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+      ;
+    stream << space << "ShapesStructural [" << std::endl;
+    rotation_matrices.printself(stream, indent + 1);
+    ShapeFunctions::printself(stream, indent + 1);
+    stream << space << "]" << std::endl;
+  }
+
   /// compute shape functions on given integration points
   template <ElementType type>
   void computeShapesOnIntegrationPoints(

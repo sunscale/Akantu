@@ -58,15 +58,14 @@ int main(int argc, char *argv[]) {
   connectivity.push_back(elem);
 
   auto fem =
-      std::make_unique<FEEngineTemplate<IntegratorGauss, ShapeStructural>>(
+    std::make_unique<FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>>(
           mesh, dim, "test_fem");
 
   fem->initShapeFunctions();
 
-  // std::cout << *fem << std::endl;
+  std::cout << *fem << std::endl;
 
-  // delete fem;
-  // finalize();
+  finalize();
 
   return 0;
 }
