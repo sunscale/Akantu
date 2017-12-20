@@ -31,39 +31,68 @@
 
 /* -------------------------------------------------------------------------- */
 #include "fe_engine.hh"
-#include "shape_structural.hh"
 #include "integrator_gauss.hh"
+#include "shape_structural.hh"
 /* -------------------------------------------------------------------------- */
+#include <cmath>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+Matrix<Real> globalToLocalRotation(Real theta) {
+  // clang-format off
+  return {{ std::cos(theta), std::sin(theta), 0},
+          {-std::sin(theta), std::cos(theta), 0},
+          {               0,               0, 1}};
+  // clang-format on
+}
 
-  // debug::setDebugLevel(dblTest);
+int main(int argc, char * argv[]) {
+  akantu::initialize(argc, argv);
 
   constexpr ElementType type = _bernoulli_beam_2;
   UInt dim = ElementClass<type>::getSpatialDimension();
 
   Mesh mesh(dim);
+  // creating nodes
   Vector<Real> node = {0, 0};
   mesh.getNodes().push_back(node);
-  node = {1, 1};
+  node = {3. / 5., 4. / 5.};
+  mesh.getNodes().push_back(node);
+  node = {2 * 3. / 5., 0};
   mesh.getNodes().push_back(node);
 
   mesh.addConnectivityType(type);
   auto & connectivity = mesh.getConnectivity(type);
+
+  // creating elements
   Vector<UInt> elem = {0, 1};
   connectivity.push_back(elem);
+  elem = {1, 2};
+  connectivity.push_back(elem);
 
-  auto fem =
-    std::make_unique<FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>>(
-          mesh, dim, "test_fem");
+  using FE = FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
+  using ShapeStruct = ShapeStructural<_ek_structural>;
+
+  auto fem = std::make_unique<FE>(mesh, dim, "test_fem");
 
   fem->initShapeFunctions();
 
-  std::cout << *fem << std::endl;
+  auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
+
+  Array<Real> angles(2, 1);
+  angles(0, 0) = std::atan(4. / 3.);
+  angles(1, 0) = -std::atan(4. / 3.);
+
+  /// Testing the rotation matrices
+  for (auto && tuple : zip(make_view(shape.getRotations(type), 3, 3), angles)) {
+    auto && rotation = std::get<0>(tuple);
+    auto theta = std::get<1>(tuple);
+    auto reference = globalToLocalRotation(theta);
+
+    if (!Math::are_vector_equal(9, reference.storage(), rotation.storage()))
+      return 1;
+  }
 
   finalize();
 

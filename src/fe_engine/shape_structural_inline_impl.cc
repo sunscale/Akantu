@@ -58,7 +58,6 @@ inline void ShapeStructural<_ek_structural>::initShapeFunctions(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
     const ElementType & type, const GhostType & ghost_type) {
   AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
-  std::cout << "Hello" << std::endl;
 }
 
 #undef INIT_SHAPE_FUNCTIONS

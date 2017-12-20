@@ -145,6 +145,14 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+  /// get the rotations vector
+  inline const Array<Real> &
+  getRotations(const ElementType & el_type,
+               __attribute__((unused))
+               const GhostType & ghost_type = _not_ghost) const {
+    return rotation_matrices(el_type);
+  }
+
 protected:
   ElementTypeMapArray<Real> rotation_matrices;
 };
