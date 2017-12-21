@@ -14,14 +14,12 @@ using namespace akantu;
 // This fixture uses very small meshes with a volume of 1.
 template <typename type_> class TestSMMFixture : public ::testing::Test {
 public:
-  static constexpr const ElementType type = type_::value;
-  static constexpr const size_t spatial_dimension =
+  static constexpr ElementType type = type_::value;
+  static constexpr size_t spatial_dimension =
       ElementClass<type>::getSpatialDimension();
 
   void SetUp() override {
-    const auto spatial_dimension = this->spatial_dimension;
-
-    mesh = std::make_unique<Mesh>(spatial_dimension);
+    mesh = std::make_unique<Mesh>(this->spatial_dimension);
 
     mesh->read(this->makeMeshName());
 
@@ -49,6 +47,9 @@ protected:
   std::unique_ptr<SolidMechanicsModel> model;
 };
 
+template <typename type_> constexpr ElementType TestSMMFixture<type_>::type;
+template <typename type_> constexpr size_t TestSMMFixture<type_>::spatial_dimension;
+
 using types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestSMMFixture, types);
@@ -57,10 +58,7 @@ TYPED_TEST_CASE(TestSMMFixture, types);
 // This fixture uses somewhat finer meshes representing bars.
 template <typename type_>
 class TestSMMFixtureBar : public TestSMMFixture<type_> {
-
 public:
-  static constexpr ElementType type = type_::value;
-
   void SetUp() override {
     if (this->type == _pentahedron_6 || this->type == _pentahedron_15)
       throw std::runtime_error("TODO pentahedron meshes for bar do not yet exist!");
@@ -72,7 +70,7 @@ public:
 
   std::string makeMeshName() override {
     std::stringstream element_type;
-    element_type << type;
+    element_type << this->type;
     SCOPED_TRACE(element_type.str().c_str());
     return std::string("bar") + element_type.str() + ".msh";
   }

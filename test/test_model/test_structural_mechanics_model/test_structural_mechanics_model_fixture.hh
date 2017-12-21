@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- */
-#include "structural_mechanics_model.hh"
 #include "element_class_structural.hh"
+#include "structural_mechanics_model.hh"
 #include "test_gtest_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
@@ -26,7 +26,7 @@ public:
     // mesh->read(this->makeMeshName());
 
     std::stringstream element_type;
-    element_type << type;
+    element_type << this->type;
 
     model = std::make_unique<StructuralMechanicsModel>(*mesh, _all_dimensions,
                                                        element_type.str());
@@ -49,10 +49,16 @@ protected:
   std::unique_ptr<StructuralMechanicsModel> model;
 };
 
-//using types = gtest_list_t<StructuralTestElementTypes>;
+template <typename type_>
+constexpr ElementType TestStructuralFixture<type_>::type;
+template <typename type_>
+constexpr size_t TestStructuralFixture<type_>::spatial_dimension;
 
-//TYPED_TEST_CASE(TestStructuralFixture, types);
+// using types = gtest_list_t<StructuralTestElementTypes>;
 
-using TestStructuralFixtureBeam2 = TestStructuralFixture<element_type_t<_bernoulli_beam_2>>;
+// TYPED_TEST_CASE(TestStructuralFixture, types);
+
+using TestStructuralFixtureBeam2 =
+    TestStructuralFixture<element_type_t<_bernoulli_beam_2>>;
 
 #endif /* __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__ */

@@ -98,7 +98,7 @@ public:
       auto poly = this->polys[d];
       for (auto && pair :
            zip(polynomial, make_view(this->integration_points_pos, dim))) {
-        auto & p = std::get<0>(pair);
+        auto && p = std::get<0>(pair);
         auto & x = std::get<1>(pair);
         p = poly(x(d));
       }

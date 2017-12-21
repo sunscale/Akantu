@@ -65,6 +65,7 @@ register_test(<test_name>
   [COMPILE_OPTIONS <flags>...]
   [EXTRA_FILES <filnames>...]
   [LINK_LIBRARIES <libraries>...]
+  [INCLUDE_DIRECTORIES <include>...]
   [UNSABLE]
   [PARALLEL]
   [PARALLEL_LEVEL <procs>...]
@@ -163,6 +164,7 @@ set(_test_multi_variables
   COMPILE_OPTIONS
   EXTRA_FILES
   LINK_LIBRARIES
+  INCLUDE_DIRECTORIES
   PACKAGE
   PARALLEL_LEVEL
   )
@@ -402,7 +404,7 @@ function(register_test test_name)
 
     # set the proper includes to build most of the tests
     target_include_directories(${test_name}
-      PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
+      PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src ${_register_test_INCLUDE_DIRECTORIES})
 
     if(NOT _register_test_HEADER_ONLY)
       target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})

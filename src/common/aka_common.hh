@@ -87,6 +87,10 @@ using MemoryID = UInt;
 /* -------------------------------------------------------------------------- */
 extern const UInt _all_dimensions;
 
+#define AKANTU_PP_ENUM(s, data, i, elem)                                       \
+  BOOST_PP_TUPLE_REM()                                                         \
+  elem BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(i, BOOST_PP_DEC(data)))
+
 /* -------------------------------------------------------------------------- */
 /* Mesh/FEM/Model types                                                       */
 /* -------------------------------------------------------------------------- */
@@ -97,7 +101,7 @@ extern const UInt _all_dimensions;
 namespace akantu {
 
 #if (defined(__GNUC__) || defined(__GNUG__))
-#define AKA_GCC_VERSION                                                            \
+#define AKA_GCC_VERSION                                                        \
   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #if AKA_GCC_VERSION < 60000
 #define AKANTU_ENUM_HASH(type_name)                                            \
@@ -117,10 +121,6 @@ namespace akantu {
 #endif // GNU
 
 #define AKANTU_PP_CAT(s, data, elem) BOOST_PP_CAT(data, elem)
-
-#define AKANTU_PP_ENUM(s, data, i, elem)                                       \
-  BOOST_PP_TUPLE_REM()                                                         \
-  elem BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(i, BOOST_PP_DEC(data)))
 
 #define AKANTU_PP_TYPE_TO_STR(s, data, elem)                                   \
   ({BOOST_PP_CAT(data::_, elem), BOOST_PP_STRINGIZE(elem)})
