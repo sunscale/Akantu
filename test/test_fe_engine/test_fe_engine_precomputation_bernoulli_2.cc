@@ -36,6 +36,7 @@
 /* -------------------------------------------------------------------------- */
 #include <cmath>
 #include <iostream>
+#include <functional>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
@@ -47,8 +48,46 @@ Matrix<Real> globalToLocalRotation(Real theta) {
   // clang-format on
 }
 
+Vector<Real> axialReference(Real xq) {
+  return {(1. - xq) / 2, 0, 0, (1. + xq) / 2, 0, 0};
+}
+
+Vector<Real> bendingReference(Real xq) {
+  return {0,
+          1. / 4. * Math::pow<2>(xq - 1) * (xq + 2),
+          1. / 4. * Math::pow<2>(xq - 1) * (xq + 1),
+          0,
+          1. / 4. * Math::pow<2>(xq + 1) * (2 - xq),
+          1. / 4. * Math::pow<2>(xq + 1) * (xq - 1)};
+}
+
+Vector<Real> bendingRotationReference(Real xq) {
+  return {0, 3. / 4. * (xq * xq - 1), 1. / 4. * (3 * xq * xq - 2 * xq - 1),
+          0, 3. / 4. * (1 - xq * xq), 1. / 4. * (3 * xq * xq + 2 * xq - 1)};
+}
+
+bool testBending(const Array<Real> & shape_functions, UInt shape_line_index,
+                 std::function<Vector<Real>(Real)> reference) {
+  Real xq = -1. / std::sqrt(3.);
+
+  // Testing values for bending rotations shapes on quadrature points
+  for (auto && N : make_view(shape_functions, 3, 6)) {
+    auto Nt = N.transpose();
+    Vector<Real> N_bending = Nt(shape_line_index);
+    auto bending_reference = reference(xq);
+    if (!Math::are_vector_equal(6, N_bending.storage(),
+                                bending_reference.storage()))
+      return false;
+    xq *= -1;
+  }
+
+  std::cout.flush();
+  return true;
+}
+
 int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
+  //debug::setDebugLevel(dblTest);
 
   constexpr ElementType type = _bernoulli_beam_2;
   UInt dim = ElementClass<type>::getSpatialDimension();
@@ -70,6 +109,8 @@ int main(int argc, char * argv[]) {
   connectivity.push_back(elem);
   elem = {1, 2};
   connectivity.push_back(elem);
+  elem = {0, 2};
+  connectivity.push_back(elem);
 
   using FE = FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
   using ShapeStruct = ShapeStructural<_ek_structural>;
@@ -80,9 +121,10 @@ int main(int argc, char * argv[]) {
 
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
 
-  Array<Real> angles(2, 1);
-  angles(0, 0) = std::atan(4. / 3.);
-  angles(1, 0) = -std::atan(4. / 3.);
+  Array<Real> angles;
+  angles.push_back(std::atan(4. / 3.));
+  angles.push_back(-std::atan(4. / 3.));
+  angles.push_back(0);
 
   /// Testing the rotation matrices
   for (auto && tuple : zip(make_view(shape.getRotations(type), 3, 3), angles)) {
@@ -93,6 +135,17 @@ int main(int argc, char * argv[]) {
     if (!Math::are_vector_equal(9, reference.storage(), rotation.storage()))
       return 1;
   }
+
+  auto & shape_functions = shape.getShapes(type);
+
+  if (!testBending(shape_functions, 0, axialReference))
+    return 1;
+  if (!testBending(shape_functions, 1, bendingReference))
+    return 1;
+  if (!testBending(shape_functions, 2, bendingRotationReference))
+    return 1;
+
+  std::cout.flush();
 
   finalize();
 

@@ -44,12 +44,11 @@ template <ElementKind kind> class ShapeStructural : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
+  // Ctors/Dtors should be explicitely implemented for _ek_structural
 public:
   ShapeStructural(Mesh & mesh, const ID & id = "shape_structural",
-                  const MemoryID & memory_id = 0)
-      : ShapeFunctions(mesh, id, memory_id),
-        rotation_matrices("rotation_matrices", id, memory_id) {}
-  ~ShapeStructural() override = default;
+                  const MemoryID & memory_id = 0);
+  ~ShapeStructural() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

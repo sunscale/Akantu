@@ -183,7 +183,7 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
   }
 
   AKANTU_DEBUG_OUT();
-} // namespace akantu
+}
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
@@ -235,8 +235,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
     ElementClass<type>::computeDNDS(natural_coords, dnds);
 
-    Tensor3<Real> J(x.rows(), natural_coords.rows(),
-                    natural_coords.cols());
+    Tensor3<Real> J(x.rows(), natural_coords.rows(), natural_coords.cols());
 
     ElementClass<type>::computeJMat(dnds, x, J);
     ElementClass<type>::computeShapeDerivatives(J, dnds, B);
@@ -315,7 +314,7 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
 
   Array<Real> u_el(0, nb_nodes_per_element * nb_dof);
   FEEngine::extractNodalToElementField(mesh, in_u, u_el, type, ghost_type,
-                                             filter_elements);
+                                       filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
   out_nablauq.resize(nb_quad_points);
