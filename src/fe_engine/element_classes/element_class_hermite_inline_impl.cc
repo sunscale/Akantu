@@ -112,13 +112,13 @@ namespace {
 #if 1 // Version where we also interpolate the rotations
       // Derivatives of previous functions interpolating rotations
       auto M1_ = 3. / 4. * (xi * xi - 1);
-      auto L1_ = 1. / 4. * (3 * xi * xi - 2 * xi - 1);
       auto M2_ = 3. / 4. * (1 - xi * xi);
+      auto L1_ = 1. / 4. * (3 * xi * xi - 2 * xi - 1);
       auto L2_ = 1. / 4. * (3 * xi * xi + 2 * xi - 1);
 
       // clang-format off
       //    v1   t1   v2   t2
-      N = {{M1 , L1,  M2,  L2}, // displacement interpolation
+      N = {{M1 , L1 , M2 , L2},   // displacement interpolation
 	   {M1_, L1_, M2_, L2_}}; // rotation interpolation
       // clang-format on
 

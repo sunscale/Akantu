@@ -31,42 +31,123 @@
 
 /* -------------------------------------------------------------------------- */
 #include "fe_engine.hh"
-#include "shape_structural.hh"
 #include "integrator_gauss.hh"
+#include "shape_structural.hh"
 /* -------------------------------------------------------------------------- */
+#include <cmath>
 #include <iostream>
+#include <functional>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+Matrix<Real> globalToLocalRotation(Real theta) {
+  // clang-format off
+  return {{ std::cos(theta), std::sin(theta), 0},
+          {-std::sin(theta), std::cos(theta), 0},
+          {               0,               0, 1}};
+  // clang-format on
+}
 
-  // debug::setDebugLevel(dblTest);
+Vector<Real> axialReference(Real xq) {
+  return {(1. - xq) / 2, 0, 0, (1. + xq) / 2, 0, 0};
+}
+
+Vector<Real> bendingReference(Real xq) {
+  return {0,
+          1. / 4. * Math::pow<2>(xq - 1) * (xq + 2),
+          1. / 4. * Math::pow<2>(xq - 1) * (xq + 1),
+          0,
+          1. / 4. * Math::pow<2>(xq + 1) * (2 - xq),
+          1. / 4. * Math::pow<2>(xq + 1) * (xq - 1)};
+}
+
+Vector<Real> bendingRotationReference(Real xq) {
+  return {0, 3. / 4. * (xq * xq - 1), 1. / 4. * (3 * xq * xq - 2 * xq - 1),
+          0, 3. / 4. * (1 - xq * xq), 1. / 4. * (3 * xq * xq + 2 * xq - 1)};
+}
+
+bool testBending(const Array<Real> & shape_functions, UInt shape_line_index,
+                 std::function<Vector<Real>(Real)> reference) {
+  Real xq = -1. / std::sqrt(3.);
+
+  // Testing values for bending rotations shapes on quadrature points
+  for (auto && N : make_view(shape_functions, 3, 6)) {
+    auto Nt = N.transpose();
+    Vector<Real> N_bending = Nt(shape_line_index);
+    auto bending_reference = reference(xq);
+    if (!Math::are_vector_equal(6, N_bending.storage(),
+                                bending_reference.storage()))
+      return false;
+    xq *= -1;
+  }
+
+  std::cout.flush();
+  return true;
+}
+
+int main(int argc, char * argv[]) {
+  akantu::initialize(argc, argv);
+  //debug::setDebugLevel(dblTest);
 
   constexpr ElementType type = _bernoulli_beam_2;
   UInt dim = ElementClass<type>::getSpatialDimension();
 
   Mesh mesh(dim);
+  // creating nodes
   Vector<Real> node = {0, 0};
   mesh.getNodes().push_back(node);
-  node = {1, 1};
+  node = {3. / 5., 4. / 5.};
+  mesh.getNodes().push_back(node);
+  node = {2 * 3. / 5., 0};
   mesh.getNodes().push_back(node);
 
   mesh.addConnectivityType(type);
   auto & connectivity = mesh.getConnectivity(type);
+
+  // creating elements
   Vector<UInt> elem = {0, 1};
   connectivity.push_back(elem);
+  elem = {1, 2};
+  connectivity.push_back(elem);
+  elem = {0, 2};
+  connectivity.push_back(elem);
 
-  auto fem =
-      std::make_unique<FEEngineTemplate<IntegratorGauss, ShapeStructural>>(
-          mesh, dim, "test_fem");
+  using FE = FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
+  using ShapeStruct = ShapeStructural<_ek_structural>;
+
+  auto fem = std::make_unique<FE>(mesh, dim, "test_fem");
 
   fem->initShapeFunctions();
 
-  // std::cout << *fem << std::endl;
+  auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
 
-  // delete fem;
-  // finalize();
+  Array<Real> angles;
+  angles.push_back(std::atan(4. / 3.));
+  angles.push_back(-std::atan(4. / 3.));
+  angles.push_back(0);
+
+  /// Testing the rotation matrices
+  for (auto && tuple : zip(make_view(shape.getRotations(type), 3, 3), angles)) {
+    auto && rotation = std::get<0>(tuple);
+    auto theta = std::get<1>(tuple);
+    auto reference = globalToLocalRotation(theta);
+
+    if (!Math::are_vector_equal(9, reference.storage(), rotation.storage()))
+      return 1;
+  }
+
+  auto & shape_functions = shape.getShapes(type);
+
+  if (!testBending(shape_functions, 0, axialReference))
+    return 1;
+  if (!testBending(shape_functions, 1, bendingReference))
+    return 1;
+  if (!testBending(shape_functions, 2, bendingRotationReference))
+    return 1;
+
+  std::cout.flush();
+
+  finalize();
 
   return 0;
 }

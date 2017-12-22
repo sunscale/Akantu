@@ -63,8 +63,10 @@ public:
       ;
     stream << space << "Shapes [" << std::endl;
     integration_points.printself(stream, indent + 1);
+    // shapes.printself(stream, indent + 1);
+    // shapes_derivatives.printself(stream, indent + 1);
     stream << space << "]" << std::endl;
-  };
+  }
 
   /// set the integration points for a given element
   template <ElementType type>

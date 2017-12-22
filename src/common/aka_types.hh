@@ -1148,6 +1148,8 @@ public:
   Tensor3(const Tensor3 & src, bool deep_copy = true)
       : parent(src, deep_copy) {}
 
+  Tensor3(const proxy & src) : parent(src) {}
+
 public:
   /* ------------------------------------------------------------------------ */
   inline Tensor3 & operator=(const Tensor3 & src) {

@@ -44,9 +44,8 @@ template <ElementKind kind> class ShapeStructural : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
+  // Ctors/Dtors should be explicitely implemented for _ek_structural
 public:
-  using ElementTypeMapMultiReal = ElementTypeMap<Array<Real> **>;
-
   ShapeStructural(Mesh & mesh, const ID & id = "shape_structural",
                   const MemoryID & memory_id = 0);
   ~ShapeStructural() override;
@@ -55,6 +54,17 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// function to print the contain of the class
+  void printself(std::ostream & stream, int indent = 0) const override {
+    std::string space;
+    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+      ;
+    stream << space << "ShapesStructural [" << std::endl;
+    rotation_matrices.printself(stream, indent + 1);
+    ShapeFunctions::printself(stream, indent + 1);
+    stream << space << "]" << std::endl;
+  }
+
   /// compute shape functions on given integration points
   template <ElementType type>
   void computeShapesOnIntegrationPoints(
@@ -109,10 +119,19 @@ public:
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
+  /// compute the shapes on a provided point
   template <ElementType type>
   void computeShapes(const Vector<Real> & /*real_coords*/, UInt /*elem*/,
                      Vector<Real> & /*shapes*/,
                      const GhostType & /*ghost_type*/) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+ 
+  /// compute the shape derivatives on a provided point
+  template <ElementType type>
+  void computeShapeDerivatives(const Matrix<Real> & /*real_coords*/, UInt /*elem*/,
+                               Tensor3<Real> & /*shapes*/,
+                               const GhostType & /*ghost_type*/) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 
@@ -123,6 +142,14 @@ public:
                    __attribute__((unused)) Array<Real> & field_times_shapes,
                    __attribute__((unused)) const GhostType & ghost_type) const {
     AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  /// get the rotations vector
+  inline const Array<Real> &
+  getRotations(const ElementType & el_type,
+               __attribute__((unused))
+               const GhostType & ghost_type = _not_ghost) const {
+    return rotation_matrices(el_type);
   }
 
 protected:
