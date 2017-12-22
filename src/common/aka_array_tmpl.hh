@@ -166,9 +166,9 @@ Array<T, is_scal>::push_back(const Array<T, is_scal>::iterator<Ret> & it) {
 template <class T, bool is_scal> inline void Array<T, is_scal>::erase(UInt i) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT((size_ > 0), "The array is empty");
-  AKANTU_DEBUG_ASSERT((i < size_), "The element at position ["
-                                       << i << "] is out of range (" << i
-                                       << ">=" << size_ << ")");
+  AKANTU_DEBUG_ASSERT((i < size_),
+                      "The element at position [" << i << "] is out of range ("
+                                                  << i << ">=" << size_ << ")");
 
   if (i != (size_ - 1)) {
     for (UInt j = 0; j < nb_component; ++j) {
@@ -434,9 +434,9 @@ void Array<T, is_scal>::allocate(UInt size, UInt nb_component) {
   if (values == nullptr) {
     this->size_ = this->allocated_size = 0;
   } else {
-    AKANTU_DEBUG(dblAccessory, "Allocated "
-                                   << printMemorySize<T>(size * nb_component)
-                                   << " (" << id << ")");
+    AKANTU_DEBUG(dblAccessory,
+                 "Allocated " << printMemorySize<T>(size * nb_component) << " ("
+                              << id << ")");
     this->size_ = this->allocated_size = size;
   }
 
@@ -1120,9 +1120,8 @@ namespace detail {
     using tuple = std::tuple<Ns...>;
 
   public:
-    ArrayView(Array && array, Ns &&... ns)
-        : array(std::forward<Array>(array)),
-          sizes(std::forward<Ns>(ns)...){};
+    ArrayView(Array && array, Ns... ns)
+        : array(std::forward<Array>(array)), sizes(std::move(ns)...){};
 
     decltype(auto) begin() {
       return aka::apply(
@@ -1138,6 +1137,9 @@ namespace detail {
       return std::get<std::tuple_size<tuple>::value - 1>(sizes);
     }
 
+    decltype(auto) dims() {
+      return std::tuple_size<tuple>::value - 1;
+    }
   private:
     Array array;
     tuple sizes;
@@ -1146,14 +1148,14 @@ namespace detail {
 
 /* -------------------------------------------------------------------------- */
 template <typename Array, typename... Ns>
-decltype(auto) make_view(Array && array, Ns &&... ns) {
+decltype(auto) make_view(Array && array, Ns... ns) {
   auto size = std::forward<decltype(array)>(array).size() *
               std::forward<decltype(array)>(array).getNbComponent() /
               detail::product_all(ns...);
 
-  return detail::ArrayView<Array, Ns..., decltype(size)>(
-      std::forward<Array>(array), std::forward<Ns>(ns)...,
-      std::forward<decltype(size)>(size));
+  return detail::ArrayView<Array, std::common_type_t<size_t, Ns>...,
+                           std::common_type_t<size_t, decltype(size)>>(
+      std::forward<Array>(array), std::move(ns)..., size);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1182,8 +1184,9 @@ public:
   template <typename P, typename = std::enable_if_t<not is_tensor<P>{}>>
   const_iterator(P * data) : parent(data) {}
 
-  template <typename UP_P, typename = std::enable_if_t<
-                               is_tensor<typename UP_P::element_type>::value>>
+  template <typename UP_P,
+            typename =
+                std::enable_if_t<is_tensor<typename UP_P::element_type>::value>>
   const_iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
 
   const_iterator & operator=(const const_iterator & it) = default;
@@ -1227,8 +1230,9 @@ public:
   template <typename P, typename = std::enable_if_t<not is_tensor<P>::value>>
   iterator(P * data) : parent(data) {}
 
-  template <typename UP_P, typename = std::enable_if_t<
-                               is_tensor<typename UP_P::element_type>::value>>
+  template <typename UP_P,
+            typename =
+                std::enable_if_t<is_tensor<typename UP_P::element_type>::value>>
   iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
 
   iterator & operator=(const iterator & it) = default;

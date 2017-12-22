@@ -1,0 +1,4 @@
+set(PYBIND11_PYTHON_VERSION 3)
+package_declare(pybind11 EXTERNAL
+  EXTRA_PACKAGE_OPTIONS ARGS CONFIG LINK_LIBRARIES pybind11::embed PREFIX pybind11
+  DESCRIPTION "Akantu's pybind11 interface")

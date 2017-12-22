@@ -49,7 +49,7 @@ package_get_element_types(core _types)
 foreach(_type ${_types})
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
     list(APPEND _meshes ${_type}.msh)
-    register_fem_test(fe_engine_precomputation ${_type})
+    #register_fem_test(fe_engine_precomputation ${_type})
   else()
     if(NOT ${_type} STREQUAL _point_1)
       message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
@@ -87,6 +87,12 @@ register_test(test_facet_element_mapping
   SOURCES test_facet_element_mapping.cc
   DEPENDS test_boundary_msh_physical_names
   PACKAGE core)
+
+register_gtest_sources(
+  SOURCES test_fe_engine_precomputation.cc
+  PACKAGE core pybind11
+  DEPENDS aka_test
+  )
 
 
 register_gtest_sources(
