@@ -8,18 +8,24 @@ import aka_test
 
 class Shapes(object):
     NATURAL_COORDS = {
-        (1, 'quadrangle'): np.array([[-1.], [1.], [0.]]),
-        (2, 'quadrangle'): np.array([[-1., -1.], [ 1., -1.], [ 1.,  1.], [-1.,  1.],
-                                     [ 0., -1.], [ 1.,  0.], [ 0.,  1.], [-1.,  0.]]),
-        (3, 'quadrangle'): np.array([[-1., -1., -1.], [ 1., -1., -1.], [ 1.,  1., -1.], [-1.,  1., -1.],
-                                     [-1., -1.,  1.], [ 1., -1.,  1.], [ 1.,  1.,  1.], [-1.,  1.,  1.],
-                                     [ 0., -1., -1.], [ 1.,  0., -1.], [ 0.,  1., -1.], [-1.,  0., -1.],
-                                     [-1., -1.,  0.], [ 1., -1.,  0.], [ 1.,  1.,  0.], [-1.,  1.,  0.],
-                                     [ 0., -1.,  1.], [ 1.,  0.,  1.], [ 0.,  1.,  1.], [-1.,  0.,  1.]]),
-        (2, 'triangle'):   np.array([[0., 0.], [1., 0.], [0., 1,], [.5, 0.], [.5, .5], [0., .5]]),
-        (3, 'triangle'):   np.array([[0., 0., 0.], [1., 0., 0.], [0., 1., 0.], [0., 0., 1.],
-                                     [.5, 0., 0.], [.5, .5, 0.], [0., .5, 0.],
-                                     [0., 0., .5], [.5, 0., .5], [0., .5, .5]]),
+        (1, 'quadrangle'):  np.array([[-1.], [1.], [0.]]),
+        (2, 'quadrangle'):  np.array([[-1., -1.], [ 1., -1.], [ 1.,  1.], [-1.,  1.],
+                                      [ 0., -1.], [ 1.,  0.], [ 0.,  1.], [-1.,  0.]]),
+        (3, 'quadrangle'):  np.array([[-1., -1., -1.], [ 1., -1., -1.], [ 1.,  1., -1.], [-1.,  1., -1.],
+                                      [-1., -1.,  1.], [ 1., -1.,  1.], [ 1.,  1.,  1.], [-1.,  1.,  1.],
+                                      [ 0., -1., -1.], [ 1.,  0., -1.], [ 0.,  1., -1.], [-1.,  0., -1.],
+                                      [-1., -1.,  0.], [ 1., -1.,  0.], [ 1.,  1.,  0.], [-1.,  1.,  0.],
+                                      [ 0., -1.,  1.], [ 1.,  0.,  1.], [ 0.,  1.,  1.], [-1.,  0.,  1.]]),
+        (2, 'triangle'):    np.array([[0., 0.], [1., 0.], [0., 1,], [.5, 0.], [.5, .5], [0., .5]]),
+        (3, 'triangle'):    np.array([[0., 0., 0.], [1., 0., 0.], [0., 1., 0.], [0., 0., 1.],
+                                      [.5, 0., 0.], [.5, .5, 0.], [0., .5, 0.],
+                                      [0., 0., .5], [.5, 0., .5], [0., .5, .5]]),
+        (3, 'pentahedron'): np.array([[-1.,  1.,  0.], [-1.,  0.,  1.], [-1.,  0.,  0.],
+                                      [ 1.,  1.,  0.], [ 1.,  0.,  1.], [ 1.,  0.,  0.],
+                                      [-1.,  .5,  .5], [-1.,  0.,  .5], [-1.,  .5,  0.],
+                                      [ 0.,  1.,  0.], [ 0.,  0.,  1.], [ 0.,  0.,  0.],
+                                      [ 1.,  .5,  .5], [ 1.,  0.,  .5], [ 1.,  .5,  0.],
+                                      [ 0.,  .5,  .5], [ 0.,  0.,  .5], [ 0.,  .5,  0.]]),
     }
 
     QUADRATURE_W = {
@@ -27,28 +33,68 @@ class Shapes(object):
         (1, 'quadrangle', 2): np.array([1., 1.]),
         (2, 'triangle', 1): np.array([1./2.]),
         (2, 'triangle', 2): np.array([1., 1., 1.])/6.,
-        (3, 'triangle', 1): np.array([]),
-        (3, 'triangle', 2): np.array([]),
+        (3, 'triangle', 1): np.array([1./6.]),
+        (3, 'triangle', 2): np.array([1., 1., 1., 1.])/24.,
         (2, 'quadrangle', 1): np.array([1., 1., 1., 1.]),
-        (2, 'quadrangle', 2): np.array([]),
+        (2, 'quadrangle', 2): np.array([1., 1., 1., 1.]),
         (3, 'quadrangle', 1): np.array([1., 1., 1., 1.,
                                         1., 1., 1., 1.]),
-        (3, 'quadrangle', 2): np.array([]),
-
+        (3, 'quadrangle', 2): np.array([1., 1., 1., 1.,
+                                        1., 1., 1., 1.]),
+        (3, 'pentahedron', 1): np.array([1., 1., 1., 1., 1., 1.])/6.,
+        (3, 'pentahedron', 2): np.array([1., 1., 1., 1., 1., 1.])/6.,
     }
+
+    _tet_a = (5. - np.sqrt(5.))/20.
+    _tet_b = (5. + 3.*np.sqrt(5.))/20.
     QUADRATURE_G = {
         (1, 'quadrangle', 1): np.array([[0.]]),
         (1, 'quadrangle', 2): np.array([[-1.], [1.]])/np.sqrt(3.),
         (2, 'triangle', 1): np.array([[1., 1.]])/3.,
         (2, 'triangle', 2): np.array([[1./6., 1./6.], [2./3, 1./6], [1./6., 2./3.]]),
-        (2, 'quadrangle', 1): np.array([[-1., -1.], [-1.,  1.],
-                                        [ 1.,  1.], [ 1., -1.]])/np.sqrt(3.),
-        (2, 'quadrangle', 2): np.array([]),
-        (3, 'quadrangle', 1): np.array([[-1., -1., -1.], [-1.,  1., -1.],
-                                        [ 1.,  1., -1.], [ 1., -1., -1.],
-                                        [-1., -1.,  1.], [-1.,  1.,  1.],
-                                        [ 1.,  1.,  1.], [ 1., -1.,  1.]])/np.sqrt(3.),
-        (3, 'quadrangle', 2): np.array([]),
+        (3, 'triangle', 1): np.array([[1., 1., 1.]])/4.,
+        (3, 'triangle', 2): np.array([[_tet_a, _tet_a, _tet_a],
+                                      [_tet_b, _tet_a, _tet_a],
+                                      [_tet_a, _tet_b, _tet_a],
+                                      [_tet_a, _tet_a, _tet_b]]),
+        (2, 'quadrangle', 1): np.array([[-1., -1.], [ 1., -1.],
+                                        [-1.,  1.], [ 1.,  1.]])/np.sqrt(3.),
+        (2, 'quadrangle', 2): np.array([[-1., -1.], [ 1., -1.],
+                                        [-1.,  1.], [ 1.,  1.]])/np.sqrt(3.),
+        (3, 'quadrangle', 1): np.array([[-1., -1., -1.],
+                                        [ 1., -1., -1.],
+                                        [-1.,  1., -1.],
+                                        [ 1.,  1., -1.],
+                                        [-1., -1.,  1.],
+                                        [ 1., -1.,  1.],
+                                        [-1.,  1.,  1.],
+                                        [ 1.,  1.,  1.]])/np.sqrt(3.),
+        (3, 'quadrangle', 2): np.array([[-1., -1., -1.],
+                                        [ 1., -1., -1.],
+                                        [-1.,  1., -1.],
+                                        [ 1.,  1., -1.],
+                                        [-1., -1.,  1.],
+                                        [ 1., -1.,  1.],
+                                        [-1.,  1.,  1.],
+                                        [ 1.,  1.,  1.]])/np.sqrt(3.),
+ #       (3, 'pentahedron', 1): np.array([[-1./np.sqrt(3.), 0.5, 0.5],
+ #                                        [-1./np.sqrt(3.), 0. , 0.5],
+ #                                        [-1./np.sqrt(3.), 0.5, 0. ],
+ #                                        [ 1./np.sqrt(3.), 0.5, 0.5],
+ #                                        [ 1./np.sqrt(3.), 0. , 0.5],
+ #                                        [ 1./np.sqrt(3.), 0.5 ,0. ]]),
+        (3, 'pentahedron', 1): np.array([[-1./np.sqrt(3.), 1./6., 1./6.],
+                                         [-1./np.sqrt(3.), 2./3., 1./6.],
+                                         [-1./np.sqrt(3.), 1./6., 2./3.],
+                                         [ 1./np.sqrt(3.), 1./6., 1./6.],
+                                         [ 1./np.sqrt(3.), 2./3., 1./6.],
+                                         [ 1./np.sqrt(3.), 1./6., 2./3.]]),
+        (3, 'pentahedron', 2): np.array([[-1./np.sqrt(3.), 1./6., 1./6.],
+                                         [-1./np.sqrt(3.), 2./3., 1./6.],
+                                         [-1./np.sqrt(3.), 1./6., 2./3.],
+                                         [ 1./np.sqrt(3.), 1./6., 1./6.],
+                                         [ 1./np.sqrt(3.), 2./3., 1./6.],
+                                         [ 1./np.sqrt(3.), 1./6., 2./3.]]),
     }
 
     ELEMENT_TYPES = {
@@ -79,18 +125,115 @@ class Shapes(object):
                                           [1, 0, 1]]),
                (3, 'quadrangle'): np.array([[0, 0, 0],
                                             [1, 0, 0], [0, 1, 0], [0, 0, 1],
-                                            [1, 1, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1],
+                                            [1, 1, 0], [1, 0, 1],
+                                            [0, 1, 1], [1, 1, 1],
                                             [2, 0, 0], [0, 2, 0], [0, 0, 2],
                                             [2, 1, 0], [2, 0, 1], [2, 1, 1],
                                             [1, 2, 0], [0, 2, 1], [1, 2, 1],
                                             [1, 0, 2], [0, 1, 2], [1, 1, 2]]),
     }
 
+    SHAPES = {
+        (3, 'pentahedron', 1): np.array([
+            [[[ 0.,  0.], [ 1.,  0.]], [[ 0.,  0.], [-1.,  0.]]],
+            [[[ 0.,  1.], [ 0.,  0.]], [[ 0., -1.], [ 0.,  0.]]],
+            [[[ 1., -1.], [-1.,  0.]], [[-1.,  1.], [ 1.,  0.]]],
+            [[[ 0.,  0.], [ 1.,  0.]], [[ 0.,  0.], [ 1.,  0.]]],
+            [[[ 0.,  1.], [ 0.,  0.]], [[ 0.,  1.], [ 0.,  0.]]],
+            [[[ 1., -1.], [-1.,  0.]], [[ 1., -1.], [-1.,  0.]]]
+        ])/2.,
+        (3, 'pentahedron', 2): np.array([
+            # 0
+            [[[ 0. ,  0. ,  0. ], [-1. ,  0. ,  0. ], [ 1. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0.5,  0. ,  0. ], [-1. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0.5,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 1
+            [[[ 0. , -1. ,  1. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0.5, -1. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0.5,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 2
+            [[[ 0. , -1. ,  1. ], [-1. ,  2. ,  0. ], [ 1. ,  0. ,  0. ]],
+             [[-0.5,  1.5, -1. ], [ 1.5, -2. ,  0. ], [-1. ,  0. ,  0. ]],
+             [[ 0.5, -0.5,  0. ], [-0.5,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 3
+            [[[ 0. ,  0. ,  0. ], [-1. ,  0. ,  0. ], [ 1. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [-0.5,  0. ,  0. ], [ 1. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0.5,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 4
+            [[[ 0. , -1. ,  1. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. , -0.5,  1. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0.5,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 5
+            [[[ 0. , -1. ,  1. ], [-1. ,  2. ,  0. ], [ 1. ,  0. ,  0. ]],
+             [[ 0.5, -1.5,  1. ], [-1.5,  2. ,  0. ], [ 1. ,  0. ,  0. ]],
+             [[ 0.5, -0.5,  0. ], [-0.5,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 6
+            [[[ 0. ,  0. ,  0. ], [ 0. ,  2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. , -2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 7
+            [[[ 0. ,  2. , -2. ], [ 0. , -2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. , -2. ,  2. ], [ 0. ,  2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 8
+            [[[ 0. ,  0. ,  0. ], [ 2. , -2. ,  0. ], [-2. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [-2. ,  2. ,  0. ], [ 2. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 9
+            [[[ 0. ,  0. ,  0. ], [ 1. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [-1. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 10
+            [[[ 0. ,  1. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. , -1. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 11
+            [[[ 1. , -1. ,  0. ], [-1. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[-1. ,  1. ,  0. ], [ 1. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 12
+            [[[ 0. ,  0. ,  0. ], [ 0. ,  2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 13
+            [[[ 0. ,  2. , -2. ], [ 0. , -2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  2. , -2. ], [ 0. , -2. ,  0. ], [ 0. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+
+            # 14
+            [[[ 0. ,  0. ,  0. ], [ 2. , -2. ,  0. ], [-2. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 2. , -2. ,  0. ], [-2. ,  0. ,  0. ]],
+             [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
+        ])}
+
     def __init__(self,  element):
         self._shape, self._order, self._inter_poly, self._dim, self._nnodes = self.ELEMENT_TYPES[element]
         self._ksi = self.NATURAL_COORDS[(self._dim, self._shape)][:self._nnodes]
         self._g = self.QUADRATURE_G[(self._dim, self._shape, self._order)]
         self._w = self.QUADRATURE_W[(self._dim, self._shape, self._order)]
+
+    def polyval(self, x, p):
+        if 1 == self._dim:
+            return poly.polyval(x[0], p)
+        if 2 == self._dim:
+            return poly.polyval2d(x[0], x[1], p)
+        if 3 == self._dim:
+            return poly.polyval3d(x[0], x[1], x[2], p)
+
+    def shape_from_monomes(self):
         momo = self.MONOMES[(self._dim, self._shape)][:self._nnodes]
 
         _shape = list(momo[0])
@@ -105,19 +248,6 @@ class Shapes(object):
             p[tuple(m)] = 1
             self._monome.append(p)
 
-    def polyval(self, x, p):
-        if 1 == self._dim:
-            return poly.polyval(x[0], p)
-        if 2 == self._dim:
-            return poly.polyval2d(x[0], x[1], p)
-        if 3 == self._dim:
-            return poly.polyval3d(x[0], x[1], x[2], p)
-
-    def precompute(self, **kwargs):
-        X = np.array(kwargs["X"],  copy=False)
-        nb_element = X.shape[0]
-        X = X.reshape(nb_element, self._nnodes, self._dim)
-
         # evaluate polynomial constant for shapes
         _x = self._ksi
         _xe = np.zeros((self._nnodes, self._nnodes))
@@ -131,6 +261,24 @@ class Shapes(object):
             for m in range(len(self._monome)):
                 _n[n] += _a[n, m] * self._monome[m]
 
+        return _n
+
+    def compute_shapes(self):
+        if (self._dim, self._shape) in self.MONOMES:
+            return self.shape_from_monomes()
+        else:
+            _n = self.SHAPES[(self._dim, self._shape, self._order)]
+            self._poly_shape = _n[0].shape
+            return _n
+
+    def precompute(self, **kwargs):
+        X = np.array(kwargs["X"],  copy=False)
+        nb_element = X.shape[0]
+        X = X.reshape(nb_element, self._nnodes, self._dim)
+
+        _x = self._ksi
+        _n = self.compute_shapes()
+
         # sanity check on shapes
         for n in range(self._nnodes):
             for m in range(self._nnodes):
@@ -138,7 +286,7 @@ class Shapes(object):
                 ve = 1. if n == m else 0.
                 test = np.isclose(v, ve)
                 if not test:
-                    raise("Most probably an error in the shapes evaluation")
+                    raise Exception("Most probably an error in the shapes evaluation")
 
         # compute shapes derivatives
         _b = np.zeros((self._dim, self._nnodes,) + self._poly_shape)
@@ -171,18 +319,26 @@ class Shapes(object):
             _g = self._g[q]
             for n in range(self._nnodes):
                 _nq[q, n] = self.polyval(_g, _n[n])
-
                 for d in range(self._dim):
                     _bq[q, d, n] = self.polyval(_g, _b[d, n])
 
         _j = np.array(kwargs['j'], copy=False).reshape((nb_element, _nb_quads))
-        _B = np.array(kwargs['B'], copy=False).reshape((nb_element, _nb_quads, self._dim, self._nnodes))
+        _B = np.array(kwargs['B'], copy=False).reshape((nb_element, _nb_quads, self._nnodes, self._dim))
         _N = np.array(kwargs['N'], copy=False).reshape((nb_element, _nb_quads, self._nnodes))
+        _Q = np.array(kwargs['Q'], copy=False)
+        if np.linalg.norm(_Q - self._g.T) > 1e-15:
+            raise Exception('Not using the same quadrature points')
 
         for e in range(nb_element):
             for q in range(_nb_quads):
                 _J = np.matmul(_bq[q], X[e])
 
+                if(np.linalg.norm(_N[e, q] - _nq[q]) > 1e-10):
+                    print(f"{e},{q}")
+                    print(_N[e, q])
+                    print(_nq[q])
                 _N[e, q] = _nq[q]
-                _B[e, q] = np.matmul(np.linalg.inv(_J), _bq[q])
+                _tmp = np.matmul(np.linalg.inv(_J), _bq[q])
+                _B[e, q] = _tmp.T
+
                 _j[e, q] = np.linalg.det(_J) * self._w[q]

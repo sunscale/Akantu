@@ -1,4 +1,5 @@
 #include "aka_array.hh"
+#include "aka_types.hh"
 /* -------------------------------------------------------------------------- */
 #include <pybind11/cast.h>
 #include <pybind11/numpy.h>
@@ -19,7 +20,8 @@ public:
     this->size_ = size;
   }
 
-  ArrayProxy(const ArrayProxy<T> & array) : Array<T>(0, array.nb_component, array.id){
+  ArrayProxy(const ArrayProxy<T> & array)
+      : Array<T>(0, array.nb_component, array.id) {
     this->values = array.values;
     this->size_ = array.size_;
   }
@@ -61,6 +63,11 @@ public:
 
 template <typename T> decltype(auto) make_proxy(Array<T> & array) {
   return ArrayProxy<T>(array);
+}
+
+template <typename T>
+decltype(auto) make_proxy(const Matrix<T> & array) {
+  return MatrixProxy<T>(array);
 }
 
 } // namespace akantu

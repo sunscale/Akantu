@@ -38,9 +38,7 @@ public:
 
     nb_quadrature_points_total = fem->getNbIntegrationPoints(type) * nb_element;
 
-    std::stringstream sstr;
-    sstr << type;
-    SCOPED_TRACE(sstr.str().c_str());
+    SCOPED_TRACE(aka::to_string(type));
   }
 
   void TearDown() override {
