@@ -69,8 +69,8 @@ namespace akantu {
  * @param id an id to identify the model
  */
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
-                                         const MemoryID & memory_id)
-    : Model(mesh, ModelType::_solid_mechanics_model, dim, id, memory_id),
+                                         const MemoryID & memory_id, const ModelType model_type)
+    : Model(mesh, model_type, dim, id, memory_id),
       BoundaryCondition<SolidMechanicsModel>(), f_m2a(1.0),
       displacement(nullptr), previous_displacement(nullptr),
       displacement_increment(nullptr), mass(nullptr), velocity(nullptr),

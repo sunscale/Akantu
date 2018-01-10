@@ -31,13 +31,25 @@
 #
 #===============================================================================
 
-add_akantu_test(test_cohesive_intrinsic "test_cohesive_intrinsic")
-add_akantu_test(test_cohesive_extrinsic "test_cohesive_extrinsic")
+#add_akantu_test(test_cohesive_intrinsic "test_cohesive_intrinsic")
+#add_akantu_test(test_cohesive_extrinsic "test_cohesive_extrinsic")
+#add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
+#add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
+#add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
+
 add_akantu_test(test_cohesive_buildfragments "test_cohesive_buildfragments")
-add_akantu_test(test_cohesive_intrinsic_impl "test_cohesive_intrinsic_impl")
-add_akantu_test(test_cohesive_1d_element "test_cohesive_1d_element")
-add_akantu_test(test_cohesive_extrinsic_implicit "test_cohesive_extrinsic_implicit")
 add_akantu_test(test_cohesive_insertion "test_cohesive_insertion")
 add_akantu_test(test_cohesive_linear_friction "test_cohesive_linear_friction")
-add_akantu_test(test_parallel_cohesive "parallel_cohesive_test")
+#add_akantu_test(test_parallel_cohesive "parallel_cohesive_test")
+
+add_mesh(cohesive_2d_4 data/cohesive_strait_2D.geo 2 1 OUTPUT _cohesive_2d_4.msh)
+add_mesh(cohesive_2d_6 data/cohesive_strait_2D.geo 2 2 OUTPUT _cohesive_2d_6.msh)
+
+register_gtest_sources(
+  SOURCES test_cohesive.cc
+  PACKAGE cohesive_element
+  DEPENDS cohesive_2d_4 cohesive_2d_6
+  )
+
+register_gtest_test(test_solid_mechanics_model_cohesive)
 #===============================================================================

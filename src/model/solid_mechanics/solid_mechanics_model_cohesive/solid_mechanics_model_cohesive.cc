@@ -59,11 +59,11 @@ const SolidMechanicsModelCohesiveOptions
 /* -------------------------------------------------------------------------- */
 SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
     Mesh & mesh, UInt dim, const ID & id, const MemoryID & memory_id)
-    : SolidMechanicsModel(mesh, dim, id, memory_id), tangents("tangents", id),
-      facet_stress("facet_stress", id), facet_material("facet_material", id) {
+    : SolidMechanicsModel(mesh, dim, id, memory_id,
+                          ModelType::_solid_mechanics_model_cohesive),
+      tangents("tangents", id), facet_stress("facet_stress", id),
+      facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
-
-  this->model_type = ModelType::_solid_mechanics_model_cohesive;
 
   auto && tmp_material_selector =
       std::make_shared<DefaultMaterialCohesiveSelector>(*this);
@@ -178,15 +178,15 @@ void SolidMechanicsModelCohesive::initMaterials() {
   /// find the first cohesive material
   UInt cohesive_index = UInt(-1);
 
-  for(auto && material : enumerate(materials)) {
-    if(dynamic_cast<MaterialCohesive *>(std::get<1>(material).get())){
+  for (auto && material : enumerate(materials)) {
+    if (dynamic_cast<MaterialCohesive *>(std::get<1>(material).get())) {
       cohesive_index = std::get<0>(material);
       break;
     }
   }
 
-  if(cohesive_index == UInt(-1))
-     AKANTU_EXCEPTION("No cohesive materials in the material input file");
+  if (cohesive_index == UInt(-1))
+    AKANTU_EXCEPTION("No cohesive materials in the material input file");
 
   material_selector->setFallback(cohesive_index);
 

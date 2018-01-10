@@ -1,0 +1,19 @@
+model solid_mechanics_model_cohesive [
+  cohesive_inserter [
+    cohesive_surfaces = [insertion]
+  ]
+
+  material elastic [
+    name = steel
+    rho = 1e3   # density
+    E   = 1e3   # young's modulus
+    nu  = 0.001 # poisson's ratio
+  ]
+
+  material cohesive_linear [
+    name = insertion
+    beta = 1
+    G_c = 100
+    sigma_c = 100
+  ]
+]

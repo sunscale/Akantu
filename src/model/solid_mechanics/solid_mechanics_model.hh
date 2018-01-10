@@ -85,7 +85,7 @@ protected:
 public:
   SolidMechanicsModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
                       const ID & id = "solid_mechanics_model",
-                      const MemoryID & memory_id = 0);
+                      const MemoryID & memory_id = 0, const ModelType model_type = ModelType::_solid_mechanics_model);
 
   ~SolidMechanicsModel() override;
 

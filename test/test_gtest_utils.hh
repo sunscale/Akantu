@@ -103,6 +103,11 @@ using cross_product_t = typename cross_product<T...>::type;
 using TestElementTypesAll = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_regular_ELEMENT_TYPE))>;
 
+#if defined(AKANTU_COHESIVE_ELEMENT)
+using TestCohesiveElementTypes = std::tuple<BOOST_PP_SEQ_ENUM(
+    BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_cohesive_ELEMENT_TYPE))>;
+#endif
+
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_structural_ELEMENT_TYPE))>;

@@ -122,6 +122,8 @@ void SolidMechanicsModel::instantiateMaterials() {
   }
 #endif
 
+  if(materials.empty())
+    AKANTU_EXCEPTION("No materials where instantiated for the model" << getID());
   are_materials_instantiated = true;
 }
 

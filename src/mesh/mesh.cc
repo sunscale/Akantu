@@ -39,8 +39,8 @@
 #include "group_manager_inline_impl.cc"
 #include "mesh.hh"
 #include "mesh_io.hh"
-#include "mesh_utils.hh"
 #include "mesh_iterators.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include "communicator.hh"
 #include "element_synchronizer.hh"
@@ -53,6 +53,7 @@
 #include "dumper_internal_material_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
+#include <limits>
 #include <sstream>
 /* -------------------------------------------------------------------------- */
 
@@ -160,7 +161,9 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
               mesh_facets->getNbElement(element.type, element.ghost_type);
 
           auto range = arange(nb_facet);
-
+#ifndef AKANTU_NDEBUG
+          auto min_dist = std::numeric_limits<Real>::max();
+#endif
           // this is a spacial search coded the most inefficient way.
           auto facet =
               std::find_if(range.begin(), range.end(), [&](auto && facet) {
@@ -171,15 +174,21 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
                     Element{element.type, facet, element.ghost_type},
                     barycenter_facet);
                 auto norm_distance = barycenter_facet.distance(barycenter);
-
+#ifndef AKANTU_NDEBUG
+                min_dist = std::min(min_dist, norm_distance);
+#endif
                 return (norm_distance <
                         (Math::getTolerance() * norm_barycenter));
               });
-          if (facet == range.end())
-            AKANTU_EXCEPTION("The element "
-                             << element
-                             << " did not find its associated facet in the "
-                                "mesh_facets! Try to decrease math tolerance.");
+          if (facet == range.end()) {
+            AKANTU_DEBUG_WARNING(
+                "The element "
+                << element << " did not find its associated facet in the "
+                              "mesh_facets! Try to decrease math tolerance. "
+                              "The closest element was at a distance of "
+                << min_dist);
+            return;
+          }
 
           // set physical name
           phys_data(Element{element.type, *facet, element.ghost_type}) =

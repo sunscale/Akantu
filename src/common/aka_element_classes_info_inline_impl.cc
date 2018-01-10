@@ -29,8 +29,15 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
+#include <unordered_map>
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_CC__
+#define __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_CC__
+
+AKANTU_ENUM_HASH(ElementType)
+
 #define AKANTU_PP_ELEMTYPE_TO_STR(s, data, elem)                               \
   ({akantu::elem, BOOST_PP_STRINGIZE(elem)})
 
@@ -102,3 +109,5 @@ inline std::ostream & operator<<(std::ostream & stream,
 #undef STRINGIFY
 
 } // akantu
+
+#endif /* __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_CC__ */

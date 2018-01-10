@@ -690,7 +690,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
   bool has_physical_names = false;
 
   if (!infile.good()) {
-    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+    AKANTU_EXCEPTION("Cannot open file " << filename);
   }
 
   while (infile.good()) {
