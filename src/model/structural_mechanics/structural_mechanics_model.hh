@@ -34,6 +34,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_named_argument.hh"
+#include "boundary_condition.hh"
 #include "model.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -79,6 +80,8 @@ public:
                            const MemoryID & memory_id = 0);
 
   virtual ~StructuralMechanicsModel();
+
+  void initFullImpl(const ModelOptions & options) override;
 
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from SolverCallback */

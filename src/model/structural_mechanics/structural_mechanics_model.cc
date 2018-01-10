@@ -89,6 +89,33 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 StructuralMechanicsModel::~StructuralMechanicsModel() = default;
 
 /* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
+  // <<<< This is the SolidMechanicsModel implementation for future ref >>>>
+  // material_index.initialize(mesh, _element_kind = _ek_not_defined,
+  //                           _default_value = UInt(-1), _with_nb_element = true);
+  // material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
+  //                                     _with_nb_element = true);
+
+  // Model::initFullImpl(options);
+
+  // // initialize pbc
+  // if (this->pbc_pair.size() != 0)
+  //   this->initPBC();
+
+  // // initialize the materials
+  // if (this->parser.getLastParsedFile() != "") {
+  //   this->instantiateMaterials();
+  // }
+
+  // this->initMaterials();
+  // this->initBC(*this, *displacement, *displacement_increment, *external_force);
+
+  // <<<< END >>>>
+
+  Model::initFullImpl(options);
+}
+
+/* -------------------------------------------------------------------------- */
 // void StructuralMechanicsModel::setTimeStep(Real time_step) {
 //   this->time_step = time_step;
 

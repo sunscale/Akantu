@@ -98,10 +98,19 @@ int main(int argc, char * argv[]) {
   Real L = 10;    // m
   auto & forces = model.getExternalForce();
   forces(2, 2) = -M; // moment on last node
+#if 1 // as long as integration is not available
   forces(0, 1) = q * L / 2;
   forces(0, 2) = q * L * L / 12;
   forces(1, 1) = q * L / 2;
   forces(1, 2) = -q * L * L / 12;
+#else
+  auto & group = mesh.createElementGroup("lin_force");
+  group.add({type, 0, _not_ghost});
+  Vector<Real> lin_force = {0, q, 0};
+  // a linear force is not acutally a *boundary* condition
+  // it is equivalent to a volume force
+  model.applyBC(BC::Neumann::FromSameDim(lin_force), group);
+#endif
   forces(2, 0) = mat.E * mat.A / 18;
 
   // Materials
