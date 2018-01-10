@@ -29,18 +29,18 @@
 #
 #===============================================================================
 
-register_gtest_sources(
-  SOURCES test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1.cc
-  PACKAGE implicit structural_mechanics
-  )
-
-register_gtest_test(test_structural_mechanics)
-
-
-# register_test(test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y
-#   test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1_y.cc
-#   PACKAGE structural_mechanics
+# register_gtest_sources(
+#   SOURCES test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1.cc
+#   PACKAGE implicit structural_mechanics
 #   )
+
+# register_gtest_test(test_structural_mechanics)
+
+
+register_test(test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1
+  test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1.cc
+  PACKAGE structural_mechanics
+)
 
 # register_test(test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy
 #   test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy.cc
