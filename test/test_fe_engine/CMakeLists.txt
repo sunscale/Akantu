@@ -88,7 +88,10 @@ register_test(test_facet_element_mapping
   DEPENDS test_boundary_msh_physical_names
   PACKAGE core)
 
-pybind11_add_module(aka_test MODULE pybind11_akantu.cc)
+package_is_activated(pybind11 _pybind11_act)
+if(_pybind11_act)
+  pybind11_add_module(aka_test MODULE pybind11_akantu.cc)
+endif()
 
 register_gtest_sources(
   SOURCES test_fe_engine_precomputation.cc
