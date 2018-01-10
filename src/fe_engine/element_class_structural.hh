@@ -82,8 +82,8 @@ public:
       Matrix<Real> B = Bs(i);
       auto inv_J = J.inverse();
       Matrix<Real> inv_J_full(DNDS.rows(), DNDS.rows());
-      inv_J_full.block(J, 0, 0);
-      inv_J_full.block(J, J.rows(), J.cols());
+      inv_J_full.block(inv_J, 0, 0);
+      inv_J_full.block(inv_J, inv_J.rows(), inv_J.cols());
       B.mul<false, false>(inv_J_full, DNDS);
     }
   }

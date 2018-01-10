@@ -122,17 +122,17 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from Model */
   /* ------------------------------------------------------------------------ */
+protected:
   /// get some default values for derived classes
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & method) override;
 
   ModelSolverOptions
-  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+  getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
   void initSolver(TimeStepSolverType, NonLinearSolverType) override;
 
   /// initialize the model

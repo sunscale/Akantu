@@ -77,10 +77,6 @@ public:
   std::enable_if_t<are_named_argument<pack...>::value>
   initFull(pack &&... _pack) {
     switch (this->model_type) {
-    case ModelType::_model:
-      this->initFullImpl(ModelOptions{use_named_args,
-                                      std::forward<decltype(_pack)>(_pack)...});
-      break;
     case ModelType::_solid_mechanics_model:
       this->initFullImpl(SolidMechanicsModelOptions{use_named_args,
                                       std::forward<decltype(_pack)>(_pack)...});
@@ -92,7 +88,8 @@ public:
       break;
 #endif
     default:
-      AKANTU_EXCEPTION("Does not know what to do with the parameters");
+      this->initFullImpl(ModelOptions{use_named_args,
+                                      std::forward<decltype(_pack)>(_pack)...});
     }
   }
 
