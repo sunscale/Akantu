@@ -5,30 +5,39 @@ configure_file(${PROJECT_SOURCE_DIR}/third-party/gtest.cmake.in ${_working_dir}/
 set(GTEST_ROOT ${PROJECT_BINARY_DIR}/third-party)
 find_package(GTest QUIET)
 
-
 if(NOT GTEST_FOUND)
-  message(STATUS "Downloading googletest")
-  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result WORKING_DIRECTORY ${_working_dir}
-    OUTPUT_FILE ${_working_dir}/configure-out.log
-    ERROR_FILE ${_working_dir}/configure-error.log)
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/google-test)
+    message(STATUS "Downloading googletest")
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+      RESULT_VARIABLE result WORKING_DIRECTORY ${_working_dir}
+      OUTPUT_FILE ${_working_dir}/configure-out.log
+      ERROR_FILE ${_working_dir}/configure-error.log)
 
-  if(result)
-    message(SEND_ERROR "CMake step for googletest failed: ${result}")
-    return()
+    if(result)
+      message(SEND_ERROR "CMake step for googletest failed: ${result}")
+      return()
+    endif()
+
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+      RESULT_VARIABLE result WORKING_DIRECTORY ${_working_dir}
+      OUTPUT_FILE ${_working_dir}/build-out.log
+      ERROR_FILE ${_working_dir}/build-error.log)
+
+    if(result)
+      message(SEND_ERROR "Downloading googletest failed: ${result}")
+      return()
+    endif()
   endif()
 
-  message(STATUS "Building googletest")
-  execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result WORKING_DIRECTORY ${_working_dir}
-    OUTPUT_FILE ${_working_dir}/build-out.log
-    ERROR_FILE ${_working_dir}/build-error.log)
+  set(BUILD_GTEST ON CACHE INTERNAL "" FORCE)
+  set(BUILD_GMOCK OFF CACHE INTERNAL "" FORCE)
 
-  if(result)
-    message(SEND_ERROR "Build step for googletest failed: ${result}")
-    return()
-  endif()
+  add_subdirectory(third-party/google-test)
+
+  add_library(GTest::Main ALIAS gtest_main)
+  add_library(GTest::GTest ALIAS gtest)
+  set(gtest_FOUND TRUE CACHE INTERNAL "" FORCE)
+  set(GTEST_INCLUDE_DIRS third-party/google-test/googletest/include CACHE INTERNAL "" FORCE)
+  set(GTEST_LIBRARIES GTest::Main CACHE INTERNAL "" FORCE)
+  mask_package_options(gtest)
 endif()
-
-set(GTEST_ROOT ${PROJECT_BINARY_DIR}/third-party)
-find_package(GTest REQUIRED)

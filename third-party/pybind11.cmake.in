@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.1)
+
+project(pybind11-download NONE)
+
+include(ExternalProject)
+
+ExternalProject_Add(pybind11
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}/third-party/pybind11
+  BINARY_DIR ${PROJECT_BINARY_DIR}/third-party/pybind11
+  GIT_REPOSITORY ${PYBIND11_GIT}
+  GIT_TAG        ${PYBIND11_VERSION}
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+  )
