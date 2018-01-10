@@ -147,10 +147,10 @@ include(AkantuExampleMacros)
 if(AKANTU_TESTS)
   option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
   find_package(GMSH REQUIRED)
-  package_is_activated(pybind11 _pybind11_act)
-  if(_pybind11_act)
-    find_package(pybind11 CONFIG REQUIRED QUIET) # to get the pybind11_add_module macro
-  endif()
+  # package_is_activated(pybind11 _pybind11_act)
+  # if(_pybind11_act)
+  #   find_package(pybind11 CONFIG REQUIRED QUIET) # to get the pybind11_add_module macro
+  # endif()
 endif()
 
 if(AKANTU_EXAMPLES)
