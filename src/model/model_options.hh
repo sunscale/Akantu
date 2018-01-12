@@ -53,6 +53,7 @@ struct ModelOptions {
   AnalysisMethod analysis_method;
 };
 
+#ifdef AKANTU_SOLID_MECHANICS
 /* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelOptions : public ModelOptions {
   explicit SolidMechanicsModelOptions(
@@ -64,6 +65,7 @@ struct SolidMechanicsModelOptions : public ModelOptions {
       : SolidMechanicsModelOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
 };
+#endif
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_COHESIVE_ELEMENT
@@ -84,6 +86,20 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
             OPTIONAL_NAMED_ARG(is_extrinsic, false)) {}
 
   bool extrinsic{false};
+};
+#endif
+
+#ifdef AKANTU_HEAT_TRANSFER
+/* -------------------------------------------------------------------------- */
+struct HeatTransferModelOptions : public ModelOptions {
+  explicit HeatTransferModelOptions(
+      AnalysisMethod analysis_method = _explicit_lumped_mass)
+      : ModelOptions(analysis_method) {}
+
+  template <typename... pack>
+  HeatTransferModelOptions(use_named_args_t, pack &&... _pack)
+      : HeatTransferModelOptions(
+            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
 };
 #endif
 

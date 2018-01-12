@@ -83,19 +83,16 @@ protected:
   using EventManager = EventHandlerManager<SolidMechanicsModelEventHandler>;
 
 public:
-  SolidMechanicsModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-                      const ID & id = "solid_mechanics_model",
-                      const MemoryID & memory_id = 0, const ModelType model_type = ModelType::_solid_mechanics_model);
+  SolidMechanicsModel(
+      Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+      const ID & id = "solid_mechanics_model", const MemoryID & memory_id = 0,
+      const ModelType model_type = ModelType::_solid_mechanics_model);
 
   ~SolidMechanicsModel() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-  /// initialize the fem object needed for boundary conditions
-  void initFEEngineBoundary();
-
 protected:
   /// initialize completely the model
   void initFullImpl(
@@ -425,9 +422,6 @@ public:
   Real getEnergy(const std::string & energy_id, const ElementType & type,
                  UInt index);
 
-  /// get the FEEngine object to integrate or interpolate on the boundary
-  FEEngine & getFEEngineBoundary(const ID & name = "") override;
-
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
 
@@ -441,8 +435,10 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
                                    material_local_numbering, UInt);
 
-  AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, *material_selector, MaterialSelector &);
-  AKANTU_SET_MACRO(MaterialSelector, material_selector, std::shared_ptr<MaterialSelector>);
+  AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, *material_selector,
+                             MaterialSelector &);
+  AKANTU_SET_MACRO(MaterialSelector, material_selector,
+                   std::shared_ptr<MaterialSelector>);
 
   /// Access the non_local_manager interface
   AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
@@ -451,6 +447,9 @@ protected:
   friend class Material;
 
 protected:
+  /// get the FEEngine object to integrate or interpolate on the boundary
+  FEEngine & getFEEngineBoundary(const ID & name = "") override;
+
   /// compute the stable time step
   Real getStableTimeStep(const GhostType & ghost_type);
 

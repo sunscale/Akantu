@@ -59,8 +59,9 @@ class Model : public Memory, public ModelSolver, public MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Model(Mesh & mesh, const ModelType & type, UInt spatial_dimension = _all_dimensions,
-        const ID & id = "model", const MemoryID & memory_id = 0);
+  Model(Mesh & mesh, const ModelType & type,
+        UInt spatial_dimension = _all_dimensions, const ID & id = "model",
+        const MemoryID & memory_id = 0);
 
   ~Model() override;
 
@@ -81,16 +82,25 @@ public:
       this->initFullImpl(ModelOptions{use_named_args,
                                       std::forward<decltype(_pack)>(_pack)...});
       break;
+#ifdef AKANTU_SOLID_MECHANICS
     case ModelType::_solid_mechanics_model:
-      this->initFullImpl(SolidMechanicsModelOptions{use_named_args,
-                                      std::forward<decltype(_pack)>(_pack)...});
+      this->initFullImpl(SolidMechanicsModelOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
       break;
+#endif
 #ifdef AKANTU_COHESIVE_ELEMENT
     case ModelType::_solid_mechanics_model_cohesive:
       this->initFullImpl(SolidMechanicsModelCohesiveOptions{
           use_named_args, std::forward<decltype(_pack)>(_pack)...});
       break;
 #endif
+#ifdef AKANTU_HEAT_TRANSFER
+    case ModelType::_heat_transfer_model:
+      this->initFullImpl(HeatTransferModelOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
+      break;
+#endif
+
     default:
       AKANTU_EXCEPTION("Does not know what to do with the parameters");
     }
@@ -111,6 +121,8 @@ protected:
   getDefaultSolverID(const AnalysisMethod & method) = 0;
 
   virtual void initModel() = 0;
+
+  virtual void initFEEngineBoundary();
 
   // /// change local equation number so that PBC is assembled properly
   // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,

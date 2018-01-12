@@ -30,41 +30,18 @@
  *
  */
 
-/* -------------------------------------------------------------------------- */
-inline FEEngine &
-HeatTransferModel::getFEEngineBoundary(const std::string & name) {
-  return dynamic_cast<FEEngine &>(
-      getFEEngineClassBoundary<MyFEEngineType>(name));
-}
+#ifndef __AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_CC__
+#define __AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline UInt HeatTransferModel::getNbDataToPack(SynchronizationTag tag) const {
+inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,
+                                         const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   UInt size = 0;
-  UInt nb_nodes = getFEEngine().getMesh().getNbNodes();
-
-  switch (tag) {
-  case _gst_htm_temperature:
-  case _gst_htm_capacity: {
-    size += nb_nodes * sizeof(Real);
-    break;
-  }
-  default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
-  }
-
-  AKANTU_DEBUG_OUT();
-  return size;
-}
-
-/* -------------------------------------------------------------------------- */
-inline UInt HeatTransferModel::getNbDataToUnpack(SynchronizationTag tag) const {
-  AKANTU_DEBUG_IN();
-
-  UInt size = 0;
-  UInt nb_nodes = getFEEngine().getMesh().getNbNodes();
+  UInt nb_nodes = indexes.size();
 
   switch (tag) {
   case _gst_htm_capacity:
@@ -83,53 +60,55 @@ inline UInt HeatTransferModel::getNbDataToUnpack(SynchronizationTag tag) const {
 
 /* -------------------------------------------------------------------------- */
 inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
-                                        const UInt index,
-                                        SynchronizationTag tag) const {
+                                        const Array<UInt> & indexes,
+                                        const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
-  switch (tag) {
-  case _gst_htm_capacity:
-    buffer << (*capacity_lumped)(index);
-    break;
-  case _gst_htm_temperature: {
-    buffer << (*temperature)(index);
-    break;
+  for (auto index : indexes) {
+    switch (tag) {
+    case _gst_htm_capacity:
+      buffer << (*capacity_lumped)(index);
+      break;
+    case _gst_htm_temperature: {
+      buffer << (*temperature)(index);
+      break;
+    }
+    default: {
+      AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    }
+    }
   }
-  default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
-  }
-
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
-                                          const UInt index,
-                                          SynchronizationTag tag) {
+                                          const Array<UInt> & indexes,
+                                          const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  switch (tag) {
-  case _gst_htm_capacity: {
-    buffer >> (*capacity_lumped)(index);
-    break;
-  }
-  case _gst_htm_temperature: {
-    buffer >> (*temperature)(index);
-    break;
-  }
-  default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  for (auto index : indexes) {
+    switch (tag) {
+    case _gst_htm_capacity: {
+      buffer >> (*capacity_lumped)(index);
+      break;
+    }
+    case _gst_htm_temperature: {
+      buffer >> (*temperature)(index);
+      break;
+    }
+    default: {
+      AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    }
+    }
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt
-HeatTransferModel::getNbDataForElements(const Array<Element> & elements,
-                                        SynchronizationTag tag) const {
+inline UInt HeatTransferModel::getNbData(const Array<Element> & elements,
+                                         const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   UInt size = 0;
@@ -166,10 +145,9 @@ HeatTransferModel::getNbDataForElements(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void HeatTransferModel::packElementData(CommunicationBuffer & buffer,
-                                               const Array<Element> & elements,
-                                               SynchronizationTag tag) const {
-
+inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
+                                        const Array<Element> & elements,
+                                        const SynchronizationTag & tag) const {
   switch (tag) {
   case _gst_htm_capacity: {
     packNodalDataHelper(*capacity_lumped, buffer, elements, mesh);
@@ -192,34 +170,9 @@ inline void HeatTransferModel::packElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void
-HeatTransferModel::unpackElementData(CommunicationBuffer & buffer,
-                                     const Array<Element> & elements,
-                                     SynchronizationTag tag) {
-#ifndef AKANTU_NDEBUG
-  Array<Element>::const_iterator<Element> bit = elements.begin();
-  Array<Element>::const_iterator<Element> bend = elements.end();
-  for (; bit != bend; ++bit) {
-    const Element & element = *bit;
-
-    Vector<Real> barycenter_loc(spatial_dimension);
-    mesh.getBarycenter(element.element, element.type, barycenter_loc.storage(),
-                       element.ghost_type);
-
-    Vector<Real> barycenter(spatial_dimension);
-    buffer >> barycenter;
-    Real tolerance = 1e-15;
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      if (!(std::abs(barycenter(i) - barycenter_loc(i)) <= tolerance))
-        AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
-                           << element << "(barycenter[" << i
-                           << "] = " << barycenter_loc(i) << " and buffer[" << i
-                           << "] = " << barycenter(i) << ") - tag: " << tag);
-    }
-  }
-
-#endif
-
+inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
+                                          const Array<Element> & elements,
+                                          const SynchronizationTag & tag) {
   switch (tag) {
   case _gst_htm_capacity: {
     unpackNodalDataHelper(*capacity_lumped, buffer, elements, mesh);
@@ -243,3 +196,7 @@ HeatTransferModel::unpackElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
+
+} // namespace akantu
+
+#endif /* __AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_CC__ */

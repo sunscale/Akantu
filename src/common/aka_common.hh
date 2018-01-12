@@ -90,10 +90,6 @@ extern const UInt _all_dimensions;
 #define AKANTU_PP_ENUM(s, data, i, elem)                                       \
   BOOST_PP_TUPLE_REM()                                                         \
   elem BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(i, BOOST_PP_DEC(data)))
-
-/* -------------------------------------------------------------------------- */
-/* Mesh/FEM/Model types                                                       */
-/* -------------------------------------------------------------------------- */
 } // namespace akantu
 
 #if (defined(__GNUC__) || defined(__GNUG__))
@@ -167,6 +163,10 @@ namespace akantu {
     return stream;                                                             \
   }
 
+/* -------------------------------------------------------------------------- */
+/* Mesh/FEM/Model types                                                       */
+/* -------------------------------------------------------------------------- */
+
 /// small help to use names for directions
 enum SpacialDirection { _x = 0, _y = 1, _z = 2 };
 
@@ -197,7 +197,7 @@ enum EventHandlerPriority {
   (model)                                                               \
   (solid_mechanics_model)                                               \
   (solid_mechanics_model_cohesive)                                      \
-  (heat_tranfser_model)                                                 \
+  (heat_transfer_model)                                                 \
   (structural_mechanics_model)
 // clang-format on
 

@@ -47,8 +47,6 @@ void BoundaryCondition<ModelType>::initBC(ModelType & model,
   this->model = &model;
   this->primal = &primal;
   this->dual = &dual;
-  if (this->model->getSpatialDimension() > 1)
-    this->model->initFEEngineBoundary();
 }
 
 /* -------------------------------------------------------------------------- */

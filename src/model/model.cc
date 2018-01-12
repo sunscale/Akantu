@@ -30,7 +30,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "model.hh"
 #include "communicator.hh"
@@ -71,6 +70,8 @@ void Model::initFullImpl(const ModelOptions & options) {
     this->initNewSolver(this->method);
   }
   initModel();
+
+  initFEEngineBoundary();
 
   AKANTU_DEBUG_OUT();
 }
@@ -124,6 +125,16 @@ void Model::initPBC() {
 #endif
     ++it;
   }
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::initFEEngineBoundary() {
+  FEEngine & fem_boundary = getFEEngineBoundary();
+  fem_boundary.initShapeFunctions(_not_ghost);
+  fem_boundary.initShapeFunctions(_ghost);
+
+  fem_boundary.computeNormalsOnIntegrationPoints(_not_ghost);
+  fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
 }
 
 /* -------------------------------------------------------------------------- */

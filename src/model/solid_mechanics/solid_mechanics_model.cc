@@ -277,16 +277,6 @@ void SolidMechanicsModel::initSolver(TimeStepSolverType time_step_solver_type,
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::initFEEngineBoundary() {
-  FEEngine & fem_boundary = getFEEngineBoundary();
-  fem_boundary.initShapeFunctions(_not_ghost);
-  fem_boundary.initShapeFunctions(_ghost);
-
-  fem_boundary.computeNormalsOnIntegrationPoints(_not_ghost);
-  fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
-}
-
-/* -------------------------------------------------------------------------- */
 /**
  * Initialize the model,basically it  pre-compute the shapes, shapes derivatives
  * and jacobian

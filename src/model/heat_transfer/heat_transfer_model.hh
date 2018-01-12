@@ -40,12 +40,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "data_accessor.hh"
-//#include "aka_voigthelper.hh"
-//#include "dumpable.hh"
-//#include "generalized_trapezoidal.hh"
 #include "integrator_gauss.hh"
 #include "model.hh"
-//#include "parsable.hh"
 #include "shape_lagrange.hh"
 
 namespace akantu {
@@ -54,16 +50,9 @@ class IntegrationScheme1stOrder;
 
 namespace akantu {
 
-struct HeatTransferModelOptions : public ModelOptions {
-  HeatTransferModelOptions(
-      AnalysisMethod analysis_method = _explicit_lumped_capacity)
-      : analysis_method(analysis_method) {}
-  AnalysisMethod analysis_method;
-};
-
-extern const HeatTransferModelOptions default_heat_transfer_model_options;
-
-class HeatTransferModel : public Model, public DataAccessor<Element> {
+class HeatTransferModel : public Model,
+                          public DataAccessor<Element>,
+                          public DataAccessor<UInt> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -79,32 +68,24 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-
-public:
+protected:
   /// generic function to initialize everything ready for explicit dynamics
-  void
-  initFull(const ModelOptions & options = default_heat_transfer_model_options);
-
-  /// initialize the fem object of the boundary
-  void initFEEngineBoundary(bool create_surface = true);
+  void initFullImpl(const ModelOptions & options) override;
 
   /// read one material file to instantiate all the materials
   void readMaterials();
 
   /// allocate all vectors
-  void initSolver(TimeStepSolverType time_step_solver_type,
-                  NonLinearSolverType);
+  void initSolver(TimeStepSolverType, NonLinearSolverType) override;
 
+  /// initialize the model
+  void initModel() override;
 
   /// allocate all vectors
   void assembleJacobian();
 
-  /// initialize the model
-  void initModel();
-
-  /// function to print the contain of the class
-  virtual void printself(__attribute__((unused)) std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {};
+  /// compute the heat flux
+  void assembleResidual() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods for explicit                                                     */
@@ -115,9 +96,6 @@ public:
 
   /// compute the internal heat flux
   void assembleInternalHeatRate();
-
-  /// compute the heat flux
-  void assembleResidual();
 
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
@@ -148,7 +126,7 @@ private:
                       bool compute_conductivity = false);
 
   /// calculate the lumped capacity vector for heat transfer problem (w
-  /// ghosttype)
+  /// ghost type)
   void assembleCapacityLumped(const GhostType & ghost_type);
 
   /// assemble the conductivity matrix (w/ ghost type)
@@ -175,47 +153,46 @@ private:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline UInt getNbDataForElements(const Array<Element> & elements,
-                                   SynchronizationTag tag) const;
-  inline void packElementData(CommunicationBuffer & buffer,
-                              const Array<Element> & elements,
-                              SynchronizationTag tag) const;
-  inline void unpackElementData(CommunicationBuffer & buffer,
-                                const Array<Element> & elements,
-                                SynchronizationTag tag);
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
-  inline UInt getNbDataToPack(SynchronizationTag tag) const;
-  inline UInt getNbDataToUnpack(SynchronizationTag tag) const;
-
-  inline void packData(CommunicationBuffer & buffer, const UInt index,
-                       SynchronizationTag tag) const;
-  inline void unpackData(CommunicationBuffer & buffer, const UInt index,
-                         SynchronizationTag tag);
+  inline UInt getNbData(const Array<UInt> & indexes,
+                        const SynchronizationTag & tag) const override;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<UInt> & indexes,
+                       const SynchronizationTag & tag) const override;
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<UInt> & indexes,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag);
+  dumper::Field * createNodalFieldReal(const std::string & field_name,
+                                       const std::string & group_name,
+                                       bool padding_flag) override;
 
-  virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag);
+  dumper::Field * createNodalFieldBool(const std::string & field_name,
+                                       const std::string & group_name,
+                                       bool padding_flag) override;
 
-  virtual dumper::Field * createElementalField(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag,
-                                               const UInt & spatial_dimension,
-                                               const ElementKind & kind);
+  dumper::Field * createElementalField(const std::string & field_name,
+                                       const std::string & group_name,
+                                       bool padding_flag,
+                                       const UInt & spatial_dimension,
+                                       const ElementKind & kind) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  inline FEEngine & getFEEngineBoundary(const std::string & name = "");
-
   AKANTU_GET_MACRO(Density, density, Real);
   AKANTU_GET_MACRO(Capacity, capacity, Real);
   /// get the dimension of the system space
@@ -261,6 +238,9 @@ public:
   Real getThermalEnergy();
 
 protected:
+  /* ------------------------------------------------------------------------ */
+  FEEngine & getFEEngineBoundary(const ID & name = "") override;
+
   /* ----------------------------------------------------------------------- */
   template <class iterator>
   void getThermalEnergy(iterator Eth, Array<Real>::const_iterator<Real> T_it,
@@ -345,21 +325,11 @@ private:
   bool compute_conductivity;
 };
 
+} // akantu
+
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
 #include "heat_transfer_model_inline_impl.cc"
-#endif
-
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const HeatTransferModel & _this) {
-  _this.printself(stream);
-  return stream;
-}
-
-} // akantu
 
 #endif /* __AKANTU_HEAT_TRANSFER_MODEL_HH__ */
