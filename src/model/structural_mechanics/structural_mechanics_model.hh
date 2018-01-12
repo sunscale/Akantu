@@ -34,6 +34,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_named_argument.hh"
+#include "boundary_condition.hh"
 #include "model.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -80,6 +81,8 @@ public:
 
   virtual ~StructuralMechanicsModel();
 
+  void initFullImpl(const ModelOptions & options) override;
+
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from SolverCallback */
   /* ------------------------------------------------------------------------ */
@@ -122,17 +125,17 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from Model */
   /* ------------------------------------------------------------------------ */
+protected:
   /// get some default values for derived classes
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & method) override;
 
   ModelSolverOptions
-  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+  getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
   void initSolver(TimeStepSolverType, NonLinearSolverType) override;
 
   /// initialize the model

@@ -89,6 +89,33 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 StructuralMechanicsModel::~StructuralMechanicsModel() = default;
 
 /* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
+  // <<<< This is the SolidMechanicsModel implementation for future ref >>>>
+  // material_index.initialize(mesh, _element_kind = _ek_not_defined,
+  //                           _default_value = UInt(-1), _with_nb_element = true);
+  // material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
+  //                                     _with_nb_element = true);
+
+  // Model::initFullImpl(options);
+
+  // // initialize pbc
+  // if (this->pbc_pair.size() != 0)
+  //   this->initPBC();
+
+  // // initialize the materials
+  // if (this->parser.getLastParsedFile() != "") {
+  //   this->instantiateMaterials();
+  // }
+
+  // this->initMaterials();
+  // this->initBC(*this, *displacement, *displacement_increment, *external_force);
+
+  // <<<< END >>>>
+
+  Model::initFullImpl(options);
+}
+
+/* -------------------------------------------------------------------------- */
 // void StructuralMechanicsModel::setTimeStep(Real time_step) {
 //   this->time_step = time_step;
 
@@ -110,7 +137,7 @@ void StructuralMechanicsModel::initSolver(
                         "external_force");
   this->allocNodalField(internal_force_momentum, nb_degree_of_freedom,
                         "internal_force");
-  this->allocNodalField(blocked_dofs, spatial_dimension, "blocked_dofs");
+  this->allocNodalField(blocked_dofs, nb_degree_of_freedom, "blocked_dofs");
 
   auto & dof_manager = this->getDOFManager();
 
@@ -140,6 +167,7 @@ void StructuralMechanicsModel::initModel() {
   for (auto && type :
        mesh.elementTypes(_element_kind = _ek_structural)) {
     computeRotationMatrix(type);
+    element_material.alloc(mesh.getNbElement(type), 1, type);
   }
 
   getFEEngine().initShapeFunctions(_not_ghost);
@@ -323,13 +351,19 @@ MatrixType StructuralMechanicsModel::getMatrixType(const ID & /*id*/) {
 }
 
 /// callback to assemble a Matrix
-void StructuralMechanicsModel::assembleMatrix(const ID & /*id*/) {}
+void StructuralMechanicsModel::assembleMatrix(const ID & id) {
+  if (id == "K")
+    assembleStiffnessMatrix();
+}
 
 /// callback to assemble a lumped Matrix
 void StructuralMechanicsModel::assembleLumpedMatrix(const ID & /*id*/) {}
 
 /// callback to assemble the residual StructuralMechanicsModel::(rhs)
-void StructuralMechanicsModel::assembleResidual() {}
+void StructuralMechanicsModel::assembleResidual() {
+  this->getDOFManager().assembleToResidual("displacement",
+                                           *this->external_force_momentum, 1);
+}
 
 /* -------------------------------------------------------------------------- */
 /* Virtual methods from MeshEventHandler */
@@ -383,7 +417,7 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
 
   switch (type) {
   case _tsst_static: {
-    options.non_linear_solver_type = _nls_newton_raphson;
+    options.non_linear_solver_type = _nls_linear;
     options.integration_scheme_type["displacement"] = _ist_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;

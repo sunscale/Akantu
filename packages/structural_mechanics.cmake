@@ -68,6 +68,12 @@ package_declare_elements(structural_mechanics
   _itp_discrete_kirchhoff_triangle_18
   INTERPOLATION_KIND
   _itk_structural
+  FE_ENGINE_LISTS
+  gradient_on_integration_points
+  interpolate_on_integration_points
+  compute_shapes
+  compute_shapes_derivatives
+  get_shapes_derivatives
   )
 
 package_declare_documentation_files(structural_mechanics

@@ -30,143 +30,107 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
-#include <fstream>
-
-/* -------------------------------------------------------------------------- */
-#include "test_structural_mechanics_model_fixture.hh"
-
 #include "aka_common.hh"
 #include "mesh.hh"
-#include "mesh_io.hh"
-#include "mesh_io_msh.hh"
+#include "sparse_matrix_aij.hh"
 #include "structural_mechanics_model.hh"
-#include "material.hh"
 /* -------------------------------------------------------------------------- */
-
-#define TYPE _bernoulli_beam_2
 
 using namespace akantu;
 
-namespace {
+int main(int argc, char * argv[]) {
+  initialize(argc, argv);
+  constexpr ElementType type = _bernoulli_beam_2;
+  constexpr UInt dim = 2;
 
-//Linear load function
-// static void lin_load(double * position, double * load,
-// 		     __attribute__ ((unused)) Real * normal,
-// 		     __attribute__ ((unused)) UInt surface_id){
-//   memset(load,0,sizeof(Real)*3);
-//   if (position[0]<=10){
-//   load[1]= -6000;
-//  }
-// }
+  Mesh mesh(dim);
 
-void test_body(StructuralMechanicsModel & model, Mesh & beams){
-  /* -------------------------------------------------------------------------- */
-  // Defining the mesh
+  // Pushing nodes
+  auto & nodes = mesh.getNodes();
+  Vector<Real> node = {0, 0};
+  nodes.push_back(node);
+  node = {10, 0};
+  nodes.push_back(node);
+  node = {18, 0};
+  nodes.push_back(node);
 
-  UInt nb_nodes=3;
-  UInt nb_nodes_1=1;
-  UInt nb_nodes_2=nb_nodes-nb_nodes_1 - 1;
-  UInt nb_element=nb_nodes-1;
+  // Pushing connectivity
+  mesh.addConnectivityType(type);
+  auto & connectivity = mesh.getConnectivity(type);
+  Vector<UInt> element = {0, 1};
+  connectivity.push_back(element);
+  element = {1, 2};
+  connectivity.push_back(element);
 
-  Array<Real> & nodes = const_cast<Array<Real> &>(beams.getNodes());
-  nodes.resize(nb_nodes);
+  StructuralMechanicsModel model(mesh);
 
-  beams.addConnectivityType(_bernoulli_beam_2);
-  Array<UInt> & connectivity = const_cast<Array<UInt> &>(beams.getConnectivity(_bernoulli_beam_2));
-  connectivity.resize(nb_element);
+  StructuralMaterial mat;
+  mat.E = 3e10;
+  mat.I = 0.0025;
+  mat.A = 0.01;
 
-  for(UInt i=0; i<nb_nodes; ++i) {
-     nodes(i,1)=0;
-  }
-   for (UInt i = 0; i < nb_nodes_1; ++i) {
-     nodes(i,0)=10.*i/((Real)nb_nodes_1);
+  model.addMaterial(mat);
 
-   }
-   nodes(nb_nodes_1,0)=10;
+  mat.E = 3e10;
+  mat.I = 0.00128;
+  mat.A = 0.01;
 
-   for (UInt i = 0; i < nb_nodes_2; ++i) {
-     nodes(nb_nodes_1 + i + 1,0)=10+ 8.*(i+1)/((Real)nb_nodes_2);
+  model.addMaterial(mat);
+  // mat.E = 1;
+  // mat.I = 1;
+  // mat.A = 1;
+  // model.addMaterial(mat);
+  // model.addMaterial(mat);
 
-   }
-
-  for(UInt i=0; i<nb_element; ++i) {
-
-    connectivity(i,0)=i;
-    connectivity(i,1)=i+1;
-  }
-
-  /* -------------------------------------------------------------------------- */
-  // Defining the materials
-  //  akantu::ElementType type = akantu::_bernoulli_beam_2;
-
-
-  StructuralMaterial mat1;
-  mat1.E=3e10;
-  mat1.I=0.0025;
-  mat1.A=0.01;
-
-  model.addMaterial(mat1);
-
-  StructuralMaterial mat2 ;
-  mat2.E=3e10;
-  mat2.I=0.00128;
-  mat2.A=0.01;
-
-  model.addMaterial(mat2);
-
-  /* -------------------------------------------------------------------------- */
-  // Defining the forces
   model.initFull();
 
-  const Real M = -3600; // Momentum at 3
+  // Boundary conditions
+  auto boundary = model.getBlockedDOFs().begin(3);
+  // clang-format off
+  *boundary = {true, true, true}; ++boundary;
+  *boundary = {false, true, false}; ++boundary;
+  *boundary = {false, true, false}; ++boundary;
+  // clang-format on
 
-  Array<Real> & forces = model.getExternalForce();
-  Array<Real> & displacement = model.getDisplacement();
-  Array<bool> & boundary = model.getBlockedDOFs();
-  const Array<Real> & N_M  = model.getStress(_bernoulli_beam_2);
-
-  Array<UInt> & element_material = model.getElementMaterial(_bernoulli_beam_2);
-
-  forces.clear();
-  displacement.clear();
-
-  for (UInt i = 0; i < nb_nodes_2; ++i) {
-    element_material(i+nb_nodes_1)=1;
-  }
-
-
-  forces(nb_nodes-1,2) += M;
-
-#if 0
-  model.computeForcesFromFunction<_bernoulli_beam_2>(lin_load, akantu::_bft_traction);
+  // Forces
+  Real M = 3600;  // Nm
+  Real q = -6000; // kN/m
+  Real L = 10;    // m
+  auto & forces = model.getExternalForce();
+  forces(2, 2) = -M; // moment on last node
+#if 1 // as long as integration is not available
+  forces(0, 1) = q * L / 2;
+  forces(0, 2) = q * L * L / 12;
+  forces(1, 1) = q * L / 2;
+  forces(1, 2) = -q * L * L / 12;
+#else
+  auto & group = mesh.createElementGroup("lin_force");
+  group.add({type, 0, _not_ghost});
+  Vector<Real> lin_force = {0, q, 0};
+  // a linear force is not acutally a *boundary* condition
+  // it is equivalent to a volume force
+  model.applyBC(BC::Neumann::FromSameDim(lin_force), group);
 #endif
+  forces(2, 0) = mat.E * mat.A / 18;
 
-  /* -------------------------------------------------------------------------- */
-  // Defining the boundary conditions
+  // Materials
+  auto & materials = model.getElementMaterial(type);
+  materials(0) = 0;
+  materials(1) = 1;
 
-  boundary(0,0) = true;
-  boundary(0,1) = true;
-  boundary(0,2) = true;
-  boundary(nb_nodes_1,1) = true;
-  boundary(nb_nodes-1,1) = true;
-  /* -------------------------------------------------------------------------- */
-  // Solve
-
-  model.assembleStiffnessMatrix();
   model.solveStep();
 
-  /* -------------------------------------------------------------------------- */
-  // Post-Processing
-  model.computeStresses();
-  std::cout<< " d1 = " << displacement(nb_nodes_1,2) << std::endl;
-  std::cout<< " d2 = " << displacement(nb_nodes-1,2) << std::endl;
-  std::cout<< " M1 = " << N_M(0,1) << std::endl;
-  std::cout<< " M2 = " << N_M(2*(nb_nodes-2),1) << std::endl;
-}
+  // dynamic_cast<const SparseMatrixAIJ &>(model.getDOFManager().getMatrix("K"))
+  //     .saveMatrix("stiffness.mtx");
 
-TEST_F(TestStructuralFixtureBeam2, TestBernouilli) {
-  test_body(*(this->model), *(this->mesh));
-}
+  auto d1 = model.getDisplacement()(1, 2);
+  auto d2 = model.getDisplacement()(2, 2);
+  auto d3 = model.getDisplacement()(1, 0);
 
-} // namespace
+  if (!Math::are_float_equal(d1, 5.6 / 4800) ||  // first rotation
+      !Math::are_float_equal(d2, -3.7 / 4800) || // second rotation
+      !Math::are_float_equal(d3, 10 / 18.))      // axial deformation
+    return 1;
+
+  return 0;
+}

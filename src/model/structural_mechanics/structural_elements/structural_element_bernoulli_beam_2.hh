@@ -113,6 +113,7 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
   auto tangent_size = 2;
 
+  tangent_moduli.clear();
   auto D_it = tangent_moduli.begin(tangent_size, tangent_size);
   auto el_mat = element_material(_bernoulli_beam_2, _not_ghost).begin();
 
