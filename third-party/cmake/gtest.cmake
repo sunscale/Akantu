@@ -33,6 +33,7 @@ if(NOT GTEST_FOUND)
   set(BUILD_GTEST ON CACHE INTERNAL "" FORCE)
   set(BUILD_GMOCK OFF CACHE INTERNAL "" FORCE)
 
+  set(Python_ADDITIONAL_VERSIONS ${AKANTU_PREFERRED_PYTHON_VERSION})
   add_subdirectory(third-party/google-test)
 
   add_library(GTest::Main ALIAS gtest_main)

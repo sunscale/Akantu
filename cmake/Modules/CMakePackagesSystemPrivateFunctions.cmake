@@ -102,9 +102,7 @@ function(_package_has_system_fallback pkg_name fallback)
   _package_get_real_name(${pkg_name} _real_name)
   string(TOUPPER "${_real_name}" _u_package)
 
-
   if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
-    message("${_project}_USE_SYSTEM_${_u_package} ${${_project}_USE_SYSTEM_${_u_package}}")
     if(${${_project}_USE_SYSTEM_${_u_package}} MATCHES "AUTO")
       set(${fallback} TRUE PARENT_SCOPE)
     else()
@@ -124,6 +122,7 @@ function(_package_add_third_party_script_variable pkg_name var)
   set(${var} ${ARGN} PARENT_SCOPE)
 endfunction()
 
+# ------------------------------------------------------------------------------
 function(_package_load_third_party_script pkg_name)
   if(${pkg_name}_COMPILE_SCRIPT)
     # set the stored variable
@@ -743,10 +742,7 @@ function(_package_load_package pkg_name)
       _package_load_external_package(${pkg_name} _activated)
     endif()
 
-
     _package_has_system_fallback(${pkg_name} _fallback)
-
-    message("${pkg_name} fb ${_fallback} sys ${_use_system} acti ${_activated}" )
     if((NOT _use_system) OR (_fallback AND (NOT _activated)))
       _package_load_third_party_script(${pkg_name})
     endif()
@@ -756,7 +752,7 @@ function(_package_load_package pkg_name)
     elseif()
       _package_deactivate(${pkg_name})
     endif()
-  else(${_nature})
+  else()
     _package_activate(${pkg_name})
   endif()
 endfunction()

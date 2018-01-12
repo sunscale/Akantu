@@ -881,12 +881,11 @@ function(package_declare pkg)
     EXTERNAL
     NOT_OPTIONAL
     META
-    ADVANCED)
+    ADVANCED
+    EXCLUDE_FROM_ALL)
   set(_one_valued_options
     DEFAULT
-    DESCRIPTION
-    FALLBACK_ON_SYSTEM_MISSING
-    EXCLUDE_FROM_ALL)
+    DESCRIPTION)
   set(_multi_valued_options
     DEPENDS
     EXTRA_PACKAGE_OPTIONS
@@ -961,10 +960,6 @@ function(package_declare pkg)
     endif()
   endif()
 
-  if(_opt_pkg_EXCLUDE_FROM_ALL)
-    _package_set_variable(EXCLUDE_FROM_ALL ${_pkg_name} ${_opt_pkg_EXCLUDE_FROM_ALL})
-  endif()
-
   # set the dependecies
   if(_opt_pkg_DEPENDS)
     set(_depends)
@@ -1008,13 +1003,12 @@ function(package_declare pkg)
     _package_set_boost_component_needed(${_pkg_name} "${_opt_pkg_BOOST_COMPONENTS}")
   endif()
 
-  if(_opt_pkg_FEATURES_PUBLIC)
-    _package_set_variable(FEATURES_PUBLIC ${_pkg_name} "${_opt_pkg_FEATURES_PUBLIC}")
-  endif()
-
-  if(_opt_pkg_FEATURES_PRIVATE)
-    _package_set_variable(FEATURES_PRIVATE ${_pkg_name} "${_opt_pkg_FEATURES_PRIVATE}")
-  endif()
+  set(_variables FEATURES_PUBLIC FEATURES_PRIVATE EXCLUDE_FROM_ALL)
+  foreach(_variable ${_variables})
+    if(_opt_pkg_${_variable})
+      _package_set_variable(${_variable} ${_pkg_name} "${_opt_pkg_${_variable}}")
+    endif()
+  endforeach()
 endfunction()
 
 # ------------------------------------------------------------------------------

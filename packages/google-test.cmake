@@ -1,6 +1,7 @@
 package_declare(gtest EXTERNAL
   DESCRIPTION "Add GTest support for tests"
   SYSTEM AUTO third-party/cmake/gtest.cmake
+  EXCLUDE_FROM_ALL
   )
 
 package_get_option_name(gtest _opt_name)
