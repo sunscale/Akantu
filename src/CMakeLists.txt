@@ -74,10 +74,12 @@ if(_blas_activated OR _lapack_activated)
     "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh"
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
-  list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh")
 endif()
 
+list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
+set(AKANTU_INCLUDE_DIRS
+  ${CMAKE_CURRENT_BINARY_DIR} ${AKANTU_LIBRARY_INCLUDE_DIRS}
+  CACHE INTERNAL "Internal include directories to link with Akantu as a subproject")
 
 #===========================================================================
 # configurations
@@ -93,41 +95,6 @@ configure_file(common/aka_element_classes_info.hh.in
 
 configure_file(common/aka_config.hh.in
   "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
-
-list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-  "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh"
-  "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh"
-  "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh")
-list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
-
-#===========================================================================
-# header precompilation
-#===========================================================================
-set(AKANTU_COMMON_HDR_TO_PRECOMPILE
-  common/aka_vector.hh
-  common/aka_math.hh
-  common/aka_types.hh
-  fem/element_class.hh
-  )
-
-set(AKANTU_PRECOMPILE_HDR_INCLUDE_DIRS
-  ${CMAKE_CURRENT_BINARY_DIR}/common/
-  ${CMAKE_CURRENT_BINARY_DIR}/fem/
-  )
-
-set(AKANTU_INCLUDE_DIRS
-  ${CMAKE_CURRENT_BINARY_DIR} ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_PRECOMPILE_HDR_INCLUDE_DIRS}
-  CACHE INTERNAL "Internal include directories to link with Akantu as a subproject")
-
-include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-  include(PCHgcc)
-  foreach(_header ${AKANTU_COMMON_HDR_TO_PRECOMPILE})
-    add_pch_rule(${_header} AKANTU_LIBRARY_SRCS)
-  endforeach()
-elseif(CMAKE_COMPILER_IS_GNUCXX)
-endif()
 
 #===============================================================================
 # Debug infos
@@ -170,13 +137,14 @@ endif()
 #===============================================================================
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 
-# the repetition is ugly but works for static libraries
-target_link_libraries(akantu  ${AKANTU_EXTERNAL_LIBRARIES} ${AKANTU_EXTERNAL_LIBRARIES})
+target_include_directories(akantu PRIVATE $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>
+                                  INTERFACE $<INSTALL_INTERFACE:include/akantu>)
+target_include_directories(akantu SYSTEM PRIVATE $<BUILD_INTERFACE:${AKANTU_EXTERNAL_INCLUDE_DIR}>)
+target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
 set_target_properties(akantu
   PROPERTIES
     ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
-    PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}"
     COMPILE_FLAGS "${_cxx_flags}"
     CXX_STANDARD 14)
 

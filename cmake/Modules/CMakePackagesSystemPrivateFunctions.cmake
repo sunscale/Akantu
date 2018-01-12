@@ -76,9 +76,10 @@ function(_package_set_system_option pkg_name default)
   _package_get_real_name(${pkg_name} _real_name)
   string(TOUPPER "${_real_name}" _u_package)
 
-  option(${_project}_USE_SYSTEM_${_u_package}
-    "Should akantu compile the third-party: \"${_real_name}\"" ${default})
+  set(${_project}_USE_SYSTEM_${_u_package} ${default} CACHE STRING
+    "Should akantu compile the third-party: \"${_real_name}\"")
   mark_as_advanced(${_project}_USE_SYSTEM_${_u_package})
+  set_property(CACHE ${_project}_USE_SYSTEM_${_u_package} PROPERTY STRINGS ON OFF AUTO)
 endfunction()
 
 function(_package_use_system pkg_name use)
@@ -86,9 +87,31 @@ function(_package_use_system pkg_name use)
   _package_get_real_name(${pkg_name} _real_name)
   string(TOUPPER "${_real_name}" _u_package)
   if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
-    set(${use} ${${_project}_USE_SYSTEM_${_u_package}} PARENT_SCOPE)
+    if(${${_project}_USE_SYSTEM_${_u_package}} MATCHES "(ON|AUTO)")
+      set(${use} TRUE PARENT_SCOPE)
+    else()
+      set(${use} FALSE PARENT_SCOPE)
+    endif()
   else()
     set(${use} TRUE PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(_package_has_system_fallback pkg_name fallback)
+  string(TOUPPER "${PROJECT_NAME}" _project)
+  _package_get_real_name(${pkg_name} _real_name)
+  string(TOUPPER "${_real_name}" _u_package)
+
+
+  if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
+    message("${_project}_USE_SYSTEM_${_u_package} ${${_project}_USE_SYSTEM_${_u_package}}")
+    if(${${_project}_USE_SYSTEM_${_u_package}} MATCHES "AUTO")
+      set(${fallback} TRUE PARENT_SCOPE)
+    else()
+      set(${fallback} FALSE PARENT_SCOPE)
+    endif()
+  else()
+    set(${fallback} FALSE PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -721,7 +744,9 @@ function(_package_load_package pkg_name)
     endif()
 
 
-    _package_get_variable(SYSTEM_FALLBACK ${pkg_name} _fallback)
+    _package_has_system_fallback(${pkg_name} _fallback)
+
+    message("${pkg_name} fb ${_fallback} sys ${_use_system} acti ${_activated}" )
     if((NOT _use_system) OR (_fallback AND (NOT _activated)))
       _package_load_third_party_script(${pkg_name})
     endif()
@@ -769,10 +794,9 @@ function(_package_load_external_package pkg_name activate)
     endforeach()
   endif()
 
-
   # find the package
   set(_required REQUIRED)
-  _package_get_variable(SYSTEM_FALLBACK ${pkg_name} _fallback)
+  _package_has_system_fallback(${pkg_name} _fallback)
   if(_fallback)
     set(_required QUIET)
   endif()

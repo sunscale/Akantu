@@ -29,6 +29,7 @@ if(NOT GTEST_FOUND)
     endif()
   endif()
 
+  set(gtest_build_tests OFF CACHE INTERNAL "" FORCE)
   set(BUILD_GTEST ON CACHE INTERNAL "" FORCE)
   set(BUILD_GMOCK OFF CACHE INTERNAL "" FORCE)
 
@@ -36,8 +37,10 @@ if(NOT GTEST_FOUND)
 
   add_library(GTest::Main ALIAS gtest_main)
   add_library(GTest::GTest ALIAS gtest)
+
   set(gtest_FOUND TRUE CACHE INTERNAL "" FORCE)
   set(GTEST_INCLUDE_DIRS third-party/google-test/googletest/include CACHE INTERNAL "" FORCE)
   set(GTEST_LIBRARIES GTest::Main CACHE INTERNAL "" FORCE)
+
   mask_package_options(gtest)
 endif()

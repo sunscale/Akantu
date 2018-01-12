@@ -327,6 +327,7 @@ set(AKANTU_SPIRIT_SOURCES
   io/parser/parser_random.cc
   io/parser/parser_types.cc
   io/parser/parser_input_files.cc
+  PARENT_SCOPE
   )
 
 package_declare_elements(core

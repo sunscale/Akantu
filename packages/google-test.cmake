@@ -1,7 +1,6 @@
 package_declare(gtest EXTERNAL
   DESCRIPTION "Add GTest support for tests"
-  SYSTEM ON third-party/cmake/gtest.cmake
-  FALLBACK_ON_SYSTEM_MISSING ON
+  SYSTEM AUTO third-party/cmake/gtest.cmake
   )
 
 package_get_option_name(gtest _opt_name)

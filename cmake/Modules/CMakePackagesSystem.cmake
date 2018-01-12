@@ -63,10 +63,10 @@
 #       [BOOST_COMPONENTS <pkg> ...]
 #       [EXTRA_PACKAGE_OPTIONS <opt> ...]
 #       [COMPILE_FLAGS <lang> <flags>]
-#       [SYSTEM <bool> [ <script_to_compile> ]]
-#       [FALLBACK_ON_SYSTEM_MISSING <bool>
+#       [SYSTEM <ON|OFF|AUTO> [ <script_to_compile> ]]
 #       [FEATURES_PUBLIC <feature> ...]
 #       [FEATURES_PRIVATE <feature> ...]
+#       [EXCLUDE_FROM_ALL]
 #       )
 #
 #.. command:: package_declare_sources
@@ -850,7 +850,6 @@ endfunction()
 #                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
 #                 [COMPILE_FLAGS <lang> <flags>]
 #                 [SYSTEM <bool> [ <script_to_compile> ]]
-#                 [FALLBACK_ON_SYSTEM_MISSING <bool>]
 #                 [FEATURES_PUBLIC <feature> ...]
 #                 [FEATURES_PRIVATE <feature> ...])
 # ------------------------------------------------------------------------------
@@ -959,11 +958,6 @@ function(package_declare pkg)
     if(_length GREATER 1)
       list(GET _opt_pkg_SYSTEM 1 _script)
       _package_set_system_script(${_pkg_name} ${_script})
-      if(_opt_pkg_FALLBACK_ON_SYSTEM_MISSING)
-        _package_set_variable(SYSTEM_FALLBACK ${_pkg_name} ${_opt_pkg_FALLBACK_ON_SYSTEM_MISSING})
-      else()
-        _package_set_variable(SYSTEM_FALLBACK ${_pkg_name} OFF)
-      endif()
     endif()
   endif()
 
