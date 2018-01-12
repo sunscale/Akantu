@@ -38,8 +38,6 @@
 #ifndef __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
 #define __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
 
-__BEGIN_AKANTU__
-
 class LocalMaterialDamage : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -121,7 +119,5 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "local_material_damage_inline_impl.hh"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__ */
