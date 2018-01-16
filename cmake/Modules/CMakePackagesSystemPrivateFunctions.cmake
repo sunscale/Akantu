@@ -745,6 +745,7 @@ function(_package_load_package pkg_name)
     _package_has_system_fallback(${pkg_name} _fallback)
     if((NOT _use_system) OR (_fallback AND (NOT _activated)))
       _package_load_third_party_script(${pkg_name})
+      set(_activated TRUE)
     endif()
 
     if(_activated)

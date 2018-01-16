@@ -325,14 +325,32 @@ function(register_gtest_sources)
   endforeach()
 endfunction()
 
+function(akantu_pybind11_add_module target)
+  package_is_activated(pybind11 _pybind11_act)
+  if(_pybind11_act)
+    pybind11_add_module(${target} ${ARGN})
+    target_include_directories(${target} SYSTEM INTERFACE ${PYBIND11_INCLUDE_DIR})
+  endif()
+endfunction()
 
 function(register_gtest_test test_name)
   set(_argn ${test_name}_gtest)
 
+  set(_link_libraries GTest::GTest GTest::Main)
+
+  list(FIND _gtest_PACKAGE pybind11 _pos)
+  package_is_activated(pybind11 _pybind11_act)
+
+  if(_pybind11_act AND (NOT _pos EQUAL -1))
+    list(APPEND _link_libraries pybind11::embed)
+    set(_compile_flags COMPILE_OPTIONS "AKANTU_TEST_USE_PYBIND11")
+  endif()
+  
   register_gtest_sources(${ARGN}
     SOURCES ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc
-    LINK_LIBRARIES GTest::GTest GTest::Main
+    LINK_LIBRARIES ${_link_libraries}
     PACKAGE ${_gtest_PACKAGE}
+    ${_compile_flags}
     )
 
   is_test_active(_is_active ${ARGN} PACKAGE ${_gtest_PACKAGE})

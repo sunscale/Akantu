@@ -2,7 +2,7 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
-#if defined(AKANTU_USE_PYBIND11)
+#if defined(AKANTU_TEST_USE_PYBIND11)
 #include <pybind11/embed.h>
 namespace py = pybind11;
 #endif
@@ -35,7 +35,7 @@ protected:
 }
 
 int main(int argc, char ** argv) {
-#if defined(AKANTU_USE_PYBIND11)
+#if defined(AKANTU_TEST_USE_PYBIND11)
   py::scoped_interpreter guard{};
 #endif
 
