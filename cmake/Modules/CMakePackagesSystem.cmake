@@ -153,9 +153,9 @@
 #     package_is_deactivated(<pkg> <retval>)
 #
 #.. command:: package_get_dependencies
-#     package_get_dependencies(<pkg> <retval>)
+#     package_get_dependencies(<pkg> <PRIVATE|INTERFACE> <retval>)
 #.. command:: package_add_dependencies
-#     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#     package_add_dependencies(<pkg> <PRIVATE|INTERFACE> <dep1> <dep2> ... <depn>)
 #     package_remove_dependencies(<pkg> <dep1> <dep2> ... <depn>)
 #     package_remove_dependency(<pkg> <dep>)
 #
@@ -446,24 +446,24 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Direct dependencies
 # ------------------------------------------------------------------------------
-function(package_get_dependencies pkg ret)
+function(package_get_dependencies pkg type ret)
   package_get_name(${pkg} _pkg_name)
-  _package_get_dependencies(${_pkg_name} _tmp_name)
+  _package_get_dependencies(${_pkg_name} ${type} _tmp_name)
   _package_get_real_name(${_tmp_name} _tmp)
   set(${ret} ${_tmp} PARENT_SCOPE)
 endfunction()
 
-function(package_add_dependencies pkg)
+function(package_add_dependencies pkg type)
   package_get_name(${pkg} _pkg_name)
   foreach(_dep ${ARGN})
     package_get_name(${_dep} _dep_pkg_name)
     list(APPEND _tmp_deps ${_dep_pkg_name})
   endforeach()
 
-  _package_add_dependencies(${_pkg_name} ${_tmp_deps})
+  _package_add_dependencies(${_pkg_name} ${type} ${_tmp_deps})
 endfunction()
 
-function(package_remove_dependencies pkg)
+function(package_remove_dependencies pkg type)
   foreach(_dep ${ARGN})
     package_remove_dependency(${pkg} _dep)
   endforeach()
@@ -472,7 +472,8 @@ endfunction()
 function(package_remove_dependency pkg dep)
   package_get_name(${pkg} _pkg_name)
   package_get_name(${dep} _dep_pkg_name)
-  _package_remove_dependency(${_pkg_name} ${_dep_pkg_name})
+  _package_remove_dependency(${_pkg_name} PRIVATE ${_dep_pkg_name})
+  _package_remove_dependency(${_pkg_name} INTERFACE ${_dep_pkg_name})
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -583,12 +584,28 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get external libraries informations
 # ------------------------------------------------------------------------------
-function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
-  _package_get_variable_for_activated(INCLUDE_DIR tmp_INCLUDE_DIR)
-  _package_get_variable_for_activated(LIBRARIES tmp_LIBRARIES)
+function(package_get_all_external_informations)
+  cmake_parse_arguments(_opt "" "PRIVATE_INCLUDE;INTERFACE_INCLUDE;LIBRARIES" "" ${ARGN})
 
-  set(${INCLUDE_DIR} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
-  set(${LIBRARIES}   ${tmp_LIBRARIES}   PARENT_SCOPE)
+  foreach(_type PRIVATE INTERFACE)
+    if(_opt_${_type}_INCLUDE)
+      _package_get_variable_for_external_dependencies(INCLUDE_DIR ${_type} tmp_INCLUDE_DIR)
+      foreach(_dir ${tmp_INCLUDE_DIR})
+	string(FIND "${_dir}" "${CMAKE_CURRENT_SOURCE_DIR}" _pos)
+	if(NOT _pos EQUAL -1)
+	  list(REMOVE_ITEM tmp_INCLUDE_DIR ${_dir})
+	endif()
+      endforeach()
+
+      set(${_opt_${_type}_INCLUDE} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
+    endif()
+  endforeach()
+
+  if(_opt_LIBRARIES)
+    _package_get_variable_for_external_dependencies(LIBRARIES PRIVATE tmp_LIBRARIES)
+    _package_get_variable_for_external_dependencies(LIBRARIES INTERFACE tmp_LIBRARIES_INTERFACE)
+    set(${_opt_LIBRARIES} ${tmp_LIBRARIES} ${tmp_LIBRARIES_INTERFACE} PARENT_SCOPE)
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -728,7 +745,8 @@ function(package_list_packages PACKAGE_FOLDER)
   package_get_all_packages(_already_loaded_pkg)
   foreach(_pkg_name ${_already_loaded_pkg})
     _package_unset_extra_dependencies(${_pkg_name})
-    _package_unset_dependencies(${_pkg_name})
+    _package_unset_dependencies(${_pkg_name} PRIVATE)
+    _package_unset_dependencies(${_pkg_name} INTERFACE)
     _package_unset_activated(${_pkg_name})
   endforeach()
 
@@ -962,12 +980,22 @@ function(package_declare pkg)
 
   # set the dependecies
   if(_opt_pkg_DEPENDS)
-    set(_depends)
-    foreach(_dep ${_opt_pkg_DEPENDS})
-      package_get_name(${_dep} _dep_pkg_name)
-      list(APPEND _depends ${_dep_pkg_name})
+    set(_deps_types PRIVATE INTERFACE)
+    cmake_parse_arguments(_pkg_deps
+      ""
+      ""
+      "${_deps_types}"
+      ${_opt_pkg_DEPENDS})
+
+    list(APPEND _pkg_deps_PRIVATE ${_pkg_deps_UNPARSED_ARGUMENTS})
+    foreach(_type ${_deps_types})
+      set(_depends)
+      foreach(_dep ${_pkg_deps_${_type}})
+	package_get_name(${_dep} _dep_pkg_name)
+	list(APPEND _depends ${_dep_pkg_name})
+      endforeach()
+      _package_add_dependencies(${_pkg_name} ${_type} ${_depends})
     endforeach()
-    _package_add_dependencies(${_pkg_name} ${_depends})
   endif()
 
   # keep the extra option for the future find package

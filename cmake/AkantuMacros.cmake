@@ -71,11 +71,16 @@ function(generate_material_list)
     )
 
   package_get_all_external_informations(
-    AKANTU_EXTERNAL_INCLUDE_DIR
-    AKANTU_EXTERNAL_LIBRARIES
+    PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+    INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+    LIBRARIES AKANTU_EXTERNAL_LIBRARIES
     )
 
-  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
+  set(_include_dirs
+    ${AKANTU_INCLUDE_DIRS}
+    ${AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR}
+    ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}
+    )
 
   try_run(_material_list_run _material_list_compile
     ${CMAKE_BINARY_DIR}

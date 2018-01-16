@@ -396,21 +396,21 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Direct dependencies
 # ------------------------------------------------------------------------------
-function(_package_add_dependencies pkg_name)
-  _package_add_to_variable(DEPENDENCIES ${pkg_name} ${ARGN})
+function(_package_add_dependencies pkg_name type)
+  _package_add_to_variable(DEPENDENCIES_${type} ${pkg_name} ${ARGN})
 endfunction()
 
-function(_package_get_dependencies pkg_name dependencies)
-  _package_get_variable(DEPENDENCIES ${pkg_name} _dependencies)
+function(_package_get_dependencies pkg_name type dependencies)
+  _package_get_variable(DEPENDENCIES_${type} ${pkg_name} _dependencies)
   set(${dependencies} ${_dependencies} PARENT_SCOPE)
 endfunction()
 
-function(_package_unset_dependencies pkg_name)
-  _package_variable_unset(DEPENDENCIES ${pkg_name})
+function(_package_unset_dependencies pkg_name type)
+  _package_variable_unset(DEPENDENCIES_${type} ${pkg_name})
 endfunction()
 
-function(_package_remove_dependency pkg_name dep)
-  set(_deps ${${pkg_name}_DEPENDENCIES})
+function(_package_remove_dependency pkg_name type dep)
+  set(_deps ${${pkg_name}_DEPENDENCIES_${type}})
 
   _package_get_fdependencies(${dep} _fdeps)
 
@@ -430,7 +430,7 @@ function(_package_remove_dependency pkg_name dep)
   list(FIND _deps ${dep} pos)
   if(NOT pos EQUAL -1)
     list(REMOVE_AT _deps ${pos})
-    _package_set_variable(DEPENDENCIES ${pkg_name} ${_deps})
+    _package_set_variable(DEPENDENCIES_${type} ${pkg_name} ${_deps})
   endif()
 endfunction()
 
@@ -531,7 +531,7 @@ endfunction()
 function(_package_set_boost_component_needed pkg_name)
   _package_add_to_variable(BOOST_COMPONENTS_NEEDED ${pkg_name} ${ARGN})
   package_get_name(Boost _boost_pkg_name)
-  _package_add_dependencies(${pkg_name} ${_boost_pkg_name})
+  _package_add_dependencies(${pkg_name} PRIVATE ${_boost_pkg_name})
 endfunction()
 
 function(_package_get_boost_component_needed pkg_name needed)
@@ -601,8 +601,9 @@ function(_package_build_rdependencies)
 
   # fill the dependencies list
   foreach(_pkg_name ${_pkg_list})
-    _package_get_dependencies(${_pkg_name} _deps)
-    foreach(_dep_name ${_deps})
+    _package_get_dependencies(${_pkg_name} PRIVATE _deps_priv)
+    _package_get_dependencies(${_pkg_name} INTERFACE _deps_interface)
+    foreach(_dep_name ${_deps_priv} ${_deps_interface})
       list(APPEND ${_dep_name}_rdeps ${_pkg_name})
     endforeach()
   endforeach()
@@ -668,7 +669,9 @@ endfunction()
 function(_package_load_dependencies_package pkg_name loading_list)
   # Get packages informations
   _package_get_option_name(${pkg_name} _pkg_option_name)
-  _package_get_dependencies(${pkg_name} _dependencies)
+  _package_get_dependencies(${pkg_name} PRIVATE _deps_private)
+  _package_get_dependencies(${pkg_name} INTERFACE _deps_interface)
+  set(_dependencies ${_deps_private} ${_deps_interface})
 
   # handle the dependencies
   foreach(_dep_name ${_dependencies})

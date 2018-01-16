@@ -33,7 +33,7 @@
 package_declare(MPI EXTERNAL
   DESCRIPTION "Add MPI support in akantu"
   EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
-  DEPENDS scotch)
+  )
 
 package_declare_sources(MPI
   synchronizer/mpi_communicator_data.hh

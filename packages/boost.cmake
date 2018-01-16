@@ -28,7 +28,6 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "" FORCE)
 
 package_declare(Boost EXTERNAL

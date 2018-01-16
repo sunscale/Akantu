@@ -44,9 +44,10 @@ package_get_all_include_directories(
   )
 
 package_get_all_external_informations(
-  AKANTU_EXTERNAL_INCLUDE_DIR
-  AKANTU_EXTERNAL_LIBRARIES
-)
+  PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+  INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+  LIBRARIES AKANTU_EXTERNAL_LIBRARIES
+  )
 
 package_get_all_compilation_flags(CXX _cxx_flags)
 set(AKANTU_EXTRA_CXX_FLAGS
@@ -137,27 +138,40 @@ endif()
 #===============================================================================
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 
-target_include_directories(akantu PRIVATE $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>
-                                  INTERFACE $<INSTALL_INTERFACE:include/akantu>)
-target_include_directories(akantu SYSTEM PRIVATE $<BUILD_INTERFACE:${AKANTU_EXTERNAL_INCLUDE_DIR}>)
+target_include_directories(akantu
+  PRIVATE $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>
+  INTERFACE $<INSTALL_INTERFACE:include/akantu>
+  )
+target_include_directories(akantu SYSTEM BEFORE
+  PUBLIC $<BUILD_INTERFACE:${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}>
+  )
+
+target_include_directories(akantu SYSTEM BEFORE
+  PRIVATE ${AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR}
+  )
+
 target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
 set_target_properties(akantu
   PROPERTIES
     ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
     COMPILE_FLAGS "${_cxx_flags}"
-    CXX_STANDARD 14)
+    )
 
 if(NOT CMAKE_VERSION VERSION_LESS 3.1)
-  package_get_all_features_public(_public_features)
-  if(_public_features)
-    target_compile_features(akantu  PUBLIC ${_public_features})
-  endif()
-
-  package_get_all_features_public(_private_features)
-  if(_private_features)
-    target_compile_features(akantu PRIVATE ${_private_features})
-  endif()
+  package_get_all_features_public(_PUBLIC_features)
+  package_get_all_features_private(_PRIVATE_features)
+  foreach(_type PRIVATE PUBLIC)
+    if(_${_type}_features)
+      target_compile_features(akantu ${_type} ${_${_type}_features})
+    endif()
+  endforeach()
+else()
+  set_target_properties(akantu
+    PROPERTIES
+    CXX_STANDARD 14
+    )
 endif()
 
 package_get_all_extra_dependencies(_extra_target_dependencies)
