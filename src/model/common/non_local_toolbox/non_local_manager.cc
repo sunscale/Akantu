@@ -356,9 +356,9 @@ NonLocalManager::registerWeightFunctionInternal(const ID & field_name) {
                                              this->memory_id);
   }
 
-  return *(weight_function_internals[field_name]);
-
   AKANTU_DEBUG_OUT();
+
+  return *(weight_function_internals[field_name]);
 }
 
 /* -------------------------------------------------------------------------- */

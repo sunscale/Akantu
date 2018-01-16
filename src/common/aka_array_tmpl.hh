@@ -1181,7 +1181,7 @@ public:
   const_iterator(const const_iterator & it) = default;
   const_iterator(const_iterator && it) = default;
 
-  template <typename P, typename = std::enable_if_t<not is_tensor<P>{}>>
+  template <typename P, typename = std::enable_if_t<not is_tensor<P>::value>>
   const_iterator(P * data) : parent(data) {}
 
   template <typename UP_P,
@@ -1192,7 +1192,7 @@ public:
   const_iterator & operator=(const const_iterator & it) = default;
 };
 
-template <class T, class R, bool is_tensor_ = is_tensor<R>{}>
+template <class T, class R, bool is_tensor_ = is_tensor<R>::value>
 struct ConstConverterIteratorHelper {
   using const_iterator = typename Array<T>::template const_iterator<R>;
   using iterator = typename Array<T>::template iterator<R>;

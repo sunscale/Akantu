@@ -167,7 +167,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /// \todo protected: does not compile with intel  check why
 public:
-  template <class R, class it, class IR = R, bool is_tensor_ = is_tensor<R>{}>
+  template <class R, class it, class IR = R, bool is_tensor_ = is_tensor<R>::value>
   class iterator_internal;
 
 public:
@@ -233,7 +233,7 @@ public:
 #ifndef SWIG
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>{}>>
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline void push_back(const C<T> & new_elem);
   /// append the value of the iterator
   template <typename Ret> inline void push_back(const iterator<Ret> & it);
@@ -270,7 +270,7 @@ public:
 #ifndef SWIG
   /// @see Array::find(const_reference elem) const
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>{}>>
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline UInt find(const C<T> & elem);
 #endif
 
@@ -285,7 +285,7 @@ public:
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>{}>>
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline void set(const C<T> & vm);
 #endif
 

@@ -327,10 +327,10 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
     for (auto && type : mesh.elementTypes(dimension, ghost_type)) {
       mesh_accessor.getSubelementToElement(type, ghost_type);
 
-      auto facet_types{mesh.getAllFacetTypes(type)};
+      auto facet_types = mesh.getAllFacetTypes(type);
 
       for (auto && ft : arange(facet_types.size())) {
-        auto facet_type{facet_types(ft)};
+        auto facet_type = facet_types(ft);
         mesh_accessor.getElementToSubelement(facet_type, ghost_type);
         mesh_accessor.getConnectivity(facet_type, ghost_type);
       }
@@ -348,7 +348,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
     current_element.ghost_type = ghost_type;
 
     for (auto && type : mesh.elementTypes(dimension, ghost_type)) {
-      auto facet_types{mesh.getAllFacetTypes(type)};
+      auto facet_types = mesh.getAllFacetTypes(type);
       current_element.type = type;
 
       for (auto && ft : arange(facet_types.size())) {

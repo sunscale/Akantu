@@ -82,8 +82,9 @@ public:
   class iterator {
     struct element_comparator {
       bool operator()(const Element & lhs, const Element & rhs) const {
-        return ((rhs == ElementNull) || std::tie(lhs.ghost_type, lhs.type) <
-                                            std::tie(rhs.ghost_type, rhs.type));
+        return ((rhs == ElementNull) ||
+                std::tie(lhs.ghost_type, lhs.type) <
+                    std::tie(rhs.ghost_type, rhs.type));
       }
     };
 
@@ -256,7 +257,8 @@ namespace {
 template <class Func, typename... pack>
 void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
   auto && requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _casper);
-  auto && filter = OPTIONAL_NAMED_ARG(element_filter, nullptr);
+  const ElementTypeMapArray<UInt> * filter =
+      OPTIONAL_NAMED_ARG(element_filter, nullptr);
 
   bool all_ghost_types = requested_ghost_type == _casper;
 
@@ -271,29 +273,30 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
     auto element_types =
         mesh.elementTypes(spatial_dimension, ghost_type, element_kind);
 
-    static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
-        .then([&](auto && element_types) {
-          element_types =
-              filter->elementTypes(spatial_dimension, ghost_type, element_kind);
-        })(std::forward<decltype(element_types)>(element_types));
+    if (filter) {
+      element_types =
+          filter->elementTypes(spatial_dimension, ghost_type, element_kind);
+    }
 
     for (auto type : element_types) {
       const Array<UInt> * filter_array;
 
-      static_if(not std::is_same<decltype(filter), std::nullptr_t>::value)
-          .then([&](auto && array) { array = &((*filter)(type, ghost_type)); })
-          .else_([&](auto && array) { array = &empty_filter; })(
-              std::forward<const Array<UInt> *>(filter_array));
+      if (filter) {
+        filter_array = &((*filter)(type, ghost_type));
+      } else {
+        filter_array = &empty_filter;
+      }
 
       auto nb_elements = mesh.getNbElement(type, ghost_type);
 
       for_each_elements(nb_elements, *filter_array, [&](auto && el) {
-          auto element = Element{type, el, ghost_type};
-          std::forward<Func>(function)(element);
+        auto element = Element{type, el, ghost_type};
+        std::forward<Func>(function)(element);
       });
     }
   }
 }
+
 } // namespace akantu
 
 #endif /* __AKANTU_MESH_ITERATORS_HH__ */
