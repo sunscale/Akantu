@@ -115,25 +115,25 @@ add_akantu_test(test_embedded_interface "test_embedded_interface")
 #  )
 
 #===============================================================================
-add_mesh(test_solid_mechanics_model_segment_mesh1 segment.geo 1 1 OUTPUT segment1.msh)
-add_mesh(test_implicit_mesh1 square_implicit.geo 2 1 OUTPUT square_implicit1.msh)
-add_mesh(test_implicit_mesh2 square_implicit.geo 2 2 OUTPUT square_implicit2.msh)
+# add_mesh(test_solid_mechanics_model_segment_mesh1 segment.geo 1 1 OUTPUT segment1.msh)
+# add_mesh(test_implicit_mesh1 square_implicit.geo 2 1 OUTPUT square_implicit1.msh)
+# add_mesh(test_implicit_mesh2 square_implicit.geo 2 2 OUTPUT square_implicit2.msh)
 
-register_test(test_solid_mechanics_model_implicit_1d
-  SOURCES test_solid_mechanics_model_implicit_1d.cc
-  DEPENDS test_solid_mechanics_model_segment_mesh1
-  FILES_TO_COPY material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE implicit
-  )
+# register_test(test_solid_mechanics_model_implicit_1d
+#   SOURCES test_solid_mechanics_model_implicit_1d.cc
+#   DEPENDS test_solid_mechanics_model_segment_mesh1
+#   FILES_TO_COPY material.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE implicit
+#   )
 
-register_test(test_solid_mechanics_model_implicit_2d
-  SOURCES test_solid_mechanics_model_implicit_2d.cc
-  DEPENDS test_implicit_mesh1 test_implicit_mesh2
-  FILES_TO_COPY material_implicit.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE implicit
-  )
+# register_test(test_solid_mechanics_model_implicit_2d
+#   SOURCES test_solid_mechanics_model_implicit_2d.cc
+#   DEPENDS test_implicit_mesh1 test_implicit_mesh2
+#   FILES_TO_COPY material_implicit.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE implicit
+#   )
 
 #===============================================================================
 #merged in test_solid_mechanics_model_dynamics
@@ -209,7 +209,6 @@ register_test(test_solid_mechanics_model_implicit_2d
 
 #===============================================================================
 add_mesh(test_cube3d_two_mat_mesh cube_two_materials.geo 3 1)
-
 register_test(test_solid_mechanics_model_reassign_material
   SOURCES test_solid_mechanics_model_reassign_material.cc
   DEPENDS test_cube3d_two_mat_mesh
@@ -291,6 +290,13 @@ register_gtest_sources(
   PACKAGE core
   )
 
+register_gtest_test(test_solid_mechanics_model_energies
+  FILES_TO_COPY ${_meshes}
+  DEPENDS bar_segment_2 bar_segment_3 bar_triangle_3 bar_triangle_6
+          bar_quadrangle_4 bar_quadrangle_8 bar_tetrahedron_4
+	  bar_tetrahedron_10 bar_hexahedron_8 bar_hexahedron_20
+  )
+
 #===============================================================================
 # dynamics tests
 #===============================================================================
@@ -301,7 +307,6 @@ register_gtest_sources(
   )
 
 register_gtest_test(test_solid_mechanics_model
-  FILES_TO_COPY ${_meshes}
   DEPENDS bar_segment_2 bar_segment_3 bar_triangle_3 bar_triangle_6
           bar_quadrangle_4 bar_quadrangle_8 bar_tetrahedron_4
           bar_tetrahedron_10 bar_hexahedron_8 bar_hexahedron_20

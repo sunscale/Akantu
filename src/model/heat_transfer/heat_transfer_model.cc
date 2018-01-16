@@ -156,6 +156,35 @@ void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
 }
 
 /* -------------------------------------------------------------------------- */
+MatrixType HeatTransferModel::getMatrixType(const ID & matrix_id) {
+  if (matrix_id == "K" or matrix_id == "M") {
+    return _symmetric;
+  }
+
+  return _mt_not_defined;
+}
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::assembleMatrix(const ID & matrix_id) {
+  if (matrix_id == "K") {
+    this->assembleConductivityMatrix();
+  } else if(matrix_id == "M") {
+    this->assembleCapacity();
+  } else {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::assembleLumpedMatrix(const ID & matrix_id) {
+  if (matrix_id == "M") {
+    this->assembleCapacityLumped();
+  } else {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 void HeatTransferModel::assembleCapacityLumped() {
   AKANTU_DEBUG_IN();
 
@@ -188,7 +217,6 @@ void HeatTransferModel::assembleResidual() {
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
                                    NonLinearSolverType) {
-
   DOFManager & dof_manager = this->getDOFManager();
 
   this->allocNodalField(this->temperature, "temperature");
@@ -203,7 +231,6 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
 
   if (time_step_solver_type == _tsst_dynamic ||
       time_step_solver_type == _tsst_dynamic_lumped) {
-
     this->allocNodalField(this->temperature_rate, "temperature_rate");
 
     if (!dof_manager.hasDOFsDerivatives("temperature", 1)) {
@@ -212,8 +239,7 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
     }
   }
 
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
   // byelementtype vectors
   temperature_on_qpoints.initialize(this->getFEEngine(), _nb_component = 1);
 
@@ -229,7 +255,27 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
 }
 
 /* -------------------------------------------------------------------------- */
-void HeatTransferModel::assembleJacobian() {
+std::tuple<ID, TimeStepSolverType>
+HeatTransferModel::getDefaultSolverID(const AnalysisMethod & method) {
+  switch (method) {
+  case _explicit_lumped_mass: {
+    return std::make_tuple("explicit_lumped", _tsst_dynamic_lumped);
+  }
+  case _static: {
+    return std::make_tuple("static", _tsst_static);
+  }
+  case _implicit_dynamic: {
+    return std::make_tuple("implicit", _tsst_dynamic);
+  }
+  default:
+    return std::make_tuple("unknown", _tsst_not_defined);
+  }
+}
+
+
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::assembleConductivityMatrix(bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
   if (!this->getDOFManager().hasLumpedMatrix("K")) {
@@ -239,13 +285,13 @@ void HeatTransferModel::assembleJacobian() {
 
   switch (mesh.getSpatialDimension()) {
   case 1:
-    this->assembleConductivityMatrix<1>(_not_ghost);
+    this->assembleConductivityMatrix<1>(_not_ghost, compute_conductivity);
     break;
   case 2:
-    this->assembleConductivityMatrix<2>(_not_ghost);
+    this->assembleConductivityMatrix<2>(_not_ghost, compute_conductivity);
     break;
   case 3:
-    this->assembleConductivityMatrix<3>(_not_ghost);
+    this->assembleConductivityMatrix<3>(_not_ghost, compute_conductivity);
     break;
   }
 
@@ -292,7 +338,7 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
 
   Matrix<Real> Bt_D(nb_nodes_per_element, dim);
 
-  Array<Real>::const_iterator<Matrix<Real>> shapes_derivatives_it =
+  auto shapes_derivatives_it =
       shapes_derivatives.begin(dim, nb_nodes_per_element);
 
   auto Bt_D_B_it = bt_d_b->begin(bt_d_b_size, bt_d_b_size);
@@ -303,17 +349,17 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
   auto D_end = conductivity_on_qpoints(type, ghost_type).end(dim, dim);
 
   for (; D_it != D_end; ++D_it, ++Bt_D_B_it, ++shapes_derivatives_it) {
-    Matrix<Real> & D = *D_it;
-    const Matrix<Real> & B = *shapes_derivatives_it;
-    Matrix<Real> & Bt_D_B = *Bt_D_B_it;
+    auto & D = *D_it;
+    const auto & B = *shapes_derivatives_it;
+    auto & Bt_D_B = *Bt_D_B_it;
 
     Bt_D.mul<true, false>(B, D);
     Bt_D_B.mul<false, false>(Bt_D, B);
   }
 
   /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
-  Array<Real> * K_e =
-      new Array<Real>(nb_element, bt_d_b_size * bt_d_b_size, "K_e");
+  auto K_e =
+      std::make_unique<Array<Real>>(nb_element, bt_d_b_size * bt_d_b_size, "K_e");
 
   this->getFEEngine().integrate(*bt_d_b, *K_e, bt_d_b_size * bt_d_b_size, type,
                                 ghost_type);
@@ -322,7 +368,6 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
 
   this->getDOFManager().assembleElementalMatricesToMatrix(
       "K", "temperature", *K_e, type, ghost_type, _symmetric);
-  delete K_e;
 
   AKANTU_DEBUG_OUT();
 }

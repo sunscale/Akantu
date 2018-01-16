@@ -443,12 +443,13 @@ public:
   /// Access the non_local_manager interface
   AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, NonLocalManager &);
 
+  /// get the FEEngine object to integrate or interpolate on the boundary
+  FEEngine & getFEEngineBoundary(const ID & name = "") override;
+
 protected:
   friend class Material;
 
 protected:
-  /// get the FEEngine object to integrate or interpolate on the boundary
-  FEEngine & getFEEngineBoundary(const ID & name = "") override;
 
   /// compute the stable time step
   Real getStableTimeStep(const GhostType & ghost_type);

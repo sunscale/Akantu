@@ -44,23 +44,23 @@ register_test(test_heat_transfer_model_cube3d
   PACKAGE heat_transfer
   )
 
-add_mesh(test_heat_cube_tet4 cube_tet.geo 3 1 OUTPUT cube_tet4.msh)
-register_test(test_heat_transfer_model_cube3d_pbc
-  SOURCES test_heat_transfer_model_cube3d_pbc.cc
-  DEPENDS test_heat_cube_tet4
-  FILES_TO_COPY material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE heat_transfer
-  )
+# add_mesh(test_heat_cube_tet4 cube_tet.geo 3 1 OUTPUT cube_tet4.msh)
+# register_test(test_heat_transfer_model_cube3d_pbc
+#   SOURCES test_heat_transfer_model_cube3d_pbc.cc
+#   DEPENDS test_heat_cube_tet4
+#   FILES_TO_COPY material.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE heat_transfer
+#   )
 
 add_mesh(test_heat_square_tri3 square_tri.geo 2 1 OUTPUT square_tri3.msh)
-register_test(test_heat_transfer_model_square2d_pbc
-  SOURCES test_heat_transfer_model_square2d_pbc.cc
-  DEPENDS test_heat_square_tri3
-  FILES_TO_COPY material.dat
-  DIRECTORIES_TO_CREATE paraview
-  PACKAGE heat_transfer
-  )
+# register_test(test_heat_transfer_model_square2d_pbc
+#   SOURCES test_heat_transfer_model_square2d_pbc.cc
+#   DEPENDS test_heat_square_tri3
+#   FILES_TO_COPY material.dat
+#   DIRECTORIES_TO_CREATE paraview
+#   PACKAGE heat_transfer
+#   )
 
 register_test(test_heat_transfer_model_square2d
   SOURCES test_heat_transfer_model_square2d.cc
@@ -86,4 +86,3 @@ register_test(test_heat_transfer_model_cube3d_istropic_conductivity
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
   )
-

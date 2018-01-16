@@ -1,7 +1,6 @@
 /**
  * @file   test_heat_transfer_model_square2d_implicit.cc
  *
- *
  * @date creation: Sun May 01 2011
  * @date last modification: Fri Jul 17 2015
  *
@@ -30,47 +29,48 @@
 
 /* -------------------------------------------------------------------------- */
 #include "heat_transfer_model.hh"
-#include "pbc_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <fstream>
 #include <string>
-using namespace std;
+/* -------------------------------------------------------------------------- */
+
+
+using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-akantu::UInt spatial_dimension = 2;
-
+UInt spatial_dimension = 2;
 std::string base_name;
 
 int main(int argc, char *argv[])
 {
-  akantu::initialize("material.dat", argc, argv);
+  initialize("material.dat", argc, argv);
 
   //create mesh
-  akantu::Mesh mesh(spatial_dimension);
+  Mesh mesh(spatial_dimension);
   mesh.read("square_tri3.msh");
 
-  akantu::HeatTransferModel model(mesh);
+  HeatTransferModel model(mesh);
   //initialize everything
-  model.initFull(akantu::HeatTransferModelOptions(akantu::_static));
+  model.initFull(_analysis_method = _static);
 
   //boundary conditions
-  const akantu::Array<akantu::Real> & nodes = model.getFEEngine().getMesh().getNodes();
-  akantu::Array<bool> & boundary = model.getBlockedDOFs();
-  akantu::Array<akantu::Real> & temperature = model.getTemperature();
+  const Array<Real> & nodes = model.getFEEngine().getMesh().getNodes();
+  Array<bool> & boundary = model.getBlockedDOFs();
+  Array<Real> & temperature = model.getTemperature();
   double length;
   length = 1.;
-  akantu::UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
-  for (akantu::UInt i = 0; i < nb_nodes; ++i) {
+  UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
+  for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    akantu::Real dx = nodes(i,0) - length/4.;
-    akantu::Real dy = 0.0;
-    akantu::Real dz = 0.0;
+    Real dx = nodes(i,0) - length/4.;
+    Real dy = 0.0;
+    Real dz = 0.0;
 
     if (spatial_dimension > 1) dy = nodes(i,1) - length/4.;
     if (spatial_dimension == 3) dz = nodes(i,2) - length/4.;
-    akantu::Real d = sqrt(dx*dx + dy*dy + dz*dz);
+    Real d = sqrt(dx*dx + dy*dy + dz*dz);
     //    if(dx < 0.0){
     if(d < 0.1){
       boundary(i) = true;
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   }
 
   model.assembleConductivityMatrix();
-  model.updateResidual();
+  model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_square2d");
   model.addDumpField("temperature"     );
   model.addDumpField("temperature_rate");
@@ -87,9 +87,8 @@ int main(int argc, char *argv[])
   model.addDumpField("conductivity" );
   model.dump();
 
-  model.solveStatic();
+  model.solveStep();
   model.dump();
-
 
   return 0;
 }

@@ -162,26 +162,36 @@ private:
   /* ------------------------------------------------------------------------ */
 public:
   /// function to implement to react on  akantu::NewNodesEvent
-  virtual void onNodesAdded(const Array<UInt> & nodes_list,
-                            const NewNodesEvent & event) = 0;
+  virtual void onNodesAdded(const Array<UInt> & /*nodes_list*/,
+                            const NewNodesEvent & /*event*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::RemovedNodesEvent
-  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event) = 0;
+  virtual void onNodesRemoved(const Array<UInt> & /*nodes_list*/,
+                              const Array<UInt> & /*new_numbering*/,
+                              const RemovedNodesEvent & /*event*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::NewElementsEvent
-  virtual void onElementsAdded(const Array<Element> & elements_list,
-                               const NewElementsEvent & event) = 0;
+  virtual void onElementsAdded(const Array<Element> & /*elements_list*/,
+                               const NewElementsEvent & /*event*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::RemovedElementsEvent
   virtual void
-  onElementsRemoved(const Array<Element> & elements_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event) = 0;
+  onElementsRemoved(const Array<Element> & /*elements_list*/,
+                    const ElementTypeMapArray<UInt> & /*new_numbering*/,
+                    const RemovedElementsEvent & /*event*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::ChangedElementsEvent
   virtual void
-  onElementsChanged(const Array<Element> & old_elements_list,
-                    const Array<Element> & new_elements_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const ChangedElementsEvent & event) = 0;
+  onElementsChanged(const Array<Element> & /*old_elements_list*/,
+                    const Array<Element> & /*new_elements_list*/,
+                    const ElementTypeMapArray<UInt> & /*new_numbering*/,
+                    const ChangedElementsEvent & /*event*/) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
 };
 
 } // akantu

@@ -87,6 +87,18 @@ protected:
   /// compute the heat flux
   void assembleResidual() override;
 
+  /// get the type of matrix needed
+  MatrixType getMatrixType(const ID &) override;
+
+  /// callback to assemble a Matrix
+  void assembleMatrix(const ID &) override;
+
+  /// callback to assemble a lumped Matrix
+  void assembleLumpedMatrix(const ID &) override;
+
+  std::tuple<ID, TimeStepSolverType>
+  getDefaultSolverID(const AnalysisMethod & method) override;
+
   /* ------------------------------------------------------------------------ */
   /* Methods for explicit                                                     */
   /* ------------------------------------------------------------------------ */

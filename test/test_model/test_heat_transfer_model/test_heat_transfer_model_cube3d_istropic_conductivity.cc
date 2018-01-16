@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
   akantu::HeatTransferModel model(mesh);
   //initialize everything
   model.initFull();
+
   //assemble the lumped capacity
   model.assembleCapacityLumped();
 
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
   model.setTimeStep(time_step);
 
   /// boundary conditions
-  const akantu::Array<akantu::Real> & nodes = model.getFEEngine().getMesh().getNodes();
+  const akantu::Array<akantu::Real> & nodes = mesh.getNodes();
   akantu::Array<bool> & boundary = model.getBlockedDOFs();
   akantu::Array<akantu::Real> & temperature = model.getTemperature();
   akantu::Real eps = 1e-15;
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
     //  }
   }
 
-  model.updateResidual();
+  //model.updateResidual();
   model.setBaseName("heat_transfer_cube3d_istropic_conductivity");
   model.addDumpField("temperature"     );
   model.addDumpField("temperature_rate");
@@ -106,16 +107,13 @@ int main(int argc, char *argv[])
   // //for testing
   int max_steps = 1000;
 
-  for(int i=0; i<max_steps; i++)
-    {
-      model.explicitPred();
-      model.updateResidual();
-      model.explicitCorr();
+  for(int i=0; i<max_steps; i++) {
+      model.solveStep();
 
       if(i % 100 == 0) model.dump();
       if(i % 10000 == 0)
       std::cout << "Step " << i << "/" << max_steps << std::endl;
-    }
+  }
   cout<< "\n\n Stable Time Step is : " << time_step << "\n \n" <<endl;
 
   return 0;
