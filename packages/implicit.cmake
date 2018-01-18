@@ -49,13 +49,14 @@ set_property(CACHE AKANTU_IMPLICIT_SOLVER PROPERTY STRINGS
   )
 
 if(AKANTU_IMPLICIT_SOLVER MATCHES "Mumps")
-  package_add_dependencies(implicit Mumps)
+  package_add_dependencies(implicit PRIVATE Mumps)
 else()
   package_remove_dependencies(implicit Mumps)
 endif()
 
 if(AKANTU_IMPLICIT_SOLVER MATCHES "PETSc")
-  package_add_dependencies(implicit PETSc)
+  package_add_dependencies(implicit
+    PRIVATE PETSc)
 else()
   package_remove_dependency(implicit PETSc)
 endif()

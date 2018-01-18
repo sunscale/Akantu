@@ -124,16 +124,16 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh
   DESTINATION share/akantu${AKANTU_VERSION})
 
-# include(CMakePackageConfigHelpers)
+include(CMakePackageConfigHelpers)
 
-# configure_package_config_file(cmake/AkantuConfig.cmake.in ${PROJECT_BINARY_DIR}/AkantuConfig.cmake
-#   INSTALL_DESTINATION "${CONF_REL_INCLUDE_DIR}lib/akantu/cmake"
-#   PATH_VARS "${CONF_REL_INCLUDE_DIR}/include" )
+configure_package_config_file(cmake/AkantuConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+  INSTALL_DESTINATION share/cmake/${PROJECT_NAME}
+  )
 
-# write_basic_package_version_file(${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
-#   VERSION "${AKANTU_VERSION}"
-#   COMPATIBILITY SameMajorVersion)
-
+write_basic_package_version_file(${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
+  VERSION ${AKANTU_VERSION}
+  COMPATIBILITY SameMajorVersion)
 
 # Install the export set for use with the install-tree
 install(FILES ${PROJECT_BINARY_DIR}/AkantuConfig.cmake
@@ -141,14 +141,14 @@ install(FILES ${PROJECT_BINARY_DIR}/AkantuConfig.cmake
   ${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
   ${PROJECT_SOURCE_DIR}/cmake/AkantuUse.cmake
   ${PROJECT_SOURCE_DIR}/cmake/AkantuSimulationMacros.cmake
-  DESTINATION  lib/akantu
-  COMPONENT dev)
-
-install(FILES
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/FindIOHelper.cmake
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/FindMumps.cmake
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/FindScotch.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake
-  DESTINATION  lib/akantu/cmake
+  DESTINATION share/cmake/${PROJECT_NAME}
   COMPONENT dev)
 
+# install(FILES
+#   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindIOHelper.cmake
+#   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindMumps.cmake
+#   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindScotch.cmake
+#   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake
+#   DESTINATION  lib/akantu/cmake
+#   COMPONENT dev)

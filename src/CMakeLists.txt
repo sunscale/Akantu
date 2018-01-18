@@ -192,15 +192,18 @@ install(TARGETS akantu
   PUBLIC_HEADER DESTINATION include/akantu/ COMPONENT dev
   )
 
-if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuLibraryDepends")
-  install(EXPORT AkantuLibraryDepends DESTINATION  lib/akantu
+if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
+  install(EXPORT AkantuTargets DESTINATION share/cmake/${PROJECT_NAME}
     COMPONENT dev)
+
+  #Export for build tree
+  export(EXPORT AkantuTargets
+    FILE "${CMAKE_BINARY_DIR}/AkantuTargets.cmake")
+  export(PACKAGE Akantu)
 endif()
 
-#Export for build tree
-export(TARGETS ${AKANTU_EXPORT_LIST}
-  FILE "${CMAKE_BINARY_DIR}/AkantuLibraryDepends.cmake")
-export(PACKAGE Akantu)
+
+
 
 # print out the list of materials
 generate_material_list()

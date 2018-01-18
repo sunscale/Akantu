@@ -61,7 +61,7 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries.")
 mark_as_advanced(BUILD_SHARED_LIBS)
 
 if(NOT AKANTU_TARGETS_EXPORT)
-  set(AKANTU_TARGETS_EXPORT AkantuLibraryDepends)
+  set(AKANTU_TARGETS_EXPORT AkantuTargets)
 endif()
 
 include(CMakeVersionGenerator)

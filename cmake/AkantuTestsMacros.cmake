@@ -177,7 +177,7 @@ function(add_akantu_test dir desc)
   endif()
 
   set(_my_parent_dir ${_akantu_current_parent_test})
-  
+
   # initialize variables
   set(_akantu_current_parent_test ${dir} CACHE INTERNAL "Current test folder" FORCE)
   set(_akantu_${dir}_tests_count 0 CACHE INTERNAL "" FORCE)
@@ -189,7 +189,7 @@ function(add_akantu_test dir desc)
 
   # add the sub-directory
   add_subdirectory(${dir})
-  
+
   # if no test can be activated make the option disappear
   set(_force_deactivate_count FALSE)
   if(${_akantu_${dir}_tests_count} EQUAL 0)
@@ -295,9 +295,9 @@ function(register_gtest_sources)
   foreach (_var ${_test_flags})
     if(_var STREQUAL "HEADER_ONLY")
       if(NOT DEFINED_register_test_${_var})
-        set(_gtest_${_var} OFF PARENT_SCOPE)
+	set(_gtest_${_var} OFF PARENT_SCOPE)
       elseif(NOT DEFINED _gtest_${_var})
-        set(_gtest_${_var} ON PARENT_SCOPE)
+	set(_gtest_${_var} ON PARENT_SCOPE)
       endif()
       continue()
     endif()
@@ -306,7 +306,7 @@ function(register_gtest_sources)
       set(_gtest_${_var} ON PARENT_SCOPE)
     else()
       if(_gtest_${_var})
-        message("Another gtest file required ${_var} to be ON it will be globally set for this folder...")
+	message("Another gtest file required ${_var} to be ON it will be globally set for this folder...")
       endif()
     endif()
   endforeach()
@@ -325,14 +325,21 @@ function(register_gtest_sources)
   endforeach()
 endfunction()
 
+# ==============================================================================
 function(akantu_pybind11_add_module target)
   package_is_activated(pybind11 _pybind11_act)
   if(_pybind11_act)
+    package_get_all_external_informations(
+      INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+      )
+
     pybind11_add_module(${target} ${ARGN})
-    target_include_directories(${target} SYSTEM INTERFACE ${PYBIND11_INCLUDE_DIR})
+    target_include_directories(${target} SYSTEM PRIVATE ${PYBIND11_INCLUDE_DIR}
+      ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR})
   endif()
 endfunction()
 
+# ==============================================================================
 function(register_gtest_test test_name)
   set(_argn ${test_name}_gtest)
 
@@ -345,7 +352,7 @@ function(register_gtest_test test_name)
     list(APPEND _link_libraries pybind11::embed)
     set(_compile_flags COMPILE_OPTIONS "AKANTU_TEST_USE_PYBIND11")
   endif()
-  
+
   register_gtest_sources(${ARGN}
     SOURCES ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc
     LINK_LIBRARIES ${_link_libraries}
@@ -413,19 +420,32 @@ function(register_test test_name)
 
     # get the external packages compilation and linking informations
     package_get_all_external_informations(
-      AKANTU_EXTERNAL_INCLUDE_DIR
-      AKANTU_EXTERNAL_LIBRARIES
+      INTERFACE_INCLUDE AKANTU_EXTERNAL_INCLUDE_DIR
       )
+
+    foreach(_pkg ${_register_test_PACKAGE})
+      package_get_nature(${_pkg} _nature)
+      if(_nature MATCHES "^external.*")
+	package_get_include_dir(${_pkg} _incl)
+	package_get_libraries(${_pkg} _libs)
+	
+	list(APPEND _register_test_INCLUDE_DIRECTORIES ${_incl})
+	list(APPEND _register_test_LINK_LIBRARIES ${_libs})
+      endif()
+    endforeach()
 
     # Register the executable to compile
     add_executable(${test_name} ${_compile_source})
 
     # set the proper includes to build most of the tests
     target_include_directories(${test_name}
-      PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src ${_register_test_INCLUDE_DIRECTORIES})
+      PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS}
+              ${AKANTU_EXTERNAL_INCLUDE_DIR}
+              ${PROJECT_BINARY_DIR}/src
+	      ${_register_test_INCLUDE_DIRECTORIES})
 
     if(NOT _register_test_HEADER_ONLY)
-      target_link_libraries(${test_name} akantu ${_register_test_LINK_LIBRARIES})
+      target_link_libraries(${test_name} PRIVATE akantu ${_register_test_LINK_LIBRARIES})
     else()
       get_target_property(_features akantu INTERFACE_COMPILE_FEATURES)
       target_link_libraries(${test_name} ${_register_test_LINK_LIBRARIES})
@@ -439,7 +459,7 @@ function(register_test test_name)
     # add the extra compilation options
     if(_register_test_COMPILE_OPTIONS)
       set_target_properties(${test_name}
-        PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+	PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
     endif()
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -447,7 +467,7 @@ function(register_test test_name)
     endif()
     if(AKANTU_EXTRA_CXX_FLAGS)
       set_target_properties(${test_name}
-        PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+	PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
     endif()
   else()
     if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
@@ -466,9 +486,9 @@ function(register_test test_name)
   if(_register_test_DIRECTORIES_TO_CREATE)
     foreach(_dir ${_register_test_DIRECTORIES_TO_CREATE})
       if(IS_ABSOLUTE ${dir})
-        file(MAKE_DIRECTORY "${_dir}")
+	file(MAKE_DIRECTORY "${_dir}")
       else()
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
+	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
       endif()
     endforeach()
   endif()
@@ -504,8 +524,8 @@ function(register_test test_name)
       include(ProcessorCount)
       ProcessorCount(N)
       while(N GREATER 1)
-        list(APPEND _procs ${N})
-        math(EXPR N "${N} / 2")
+	list(APPEND _procs ${N})
+	math(EXPR N "${N} / 2")
       endwhile()
     endif()
 
@@ -516,7 +536,7 @@ function(register_test test_name)
 
   if(_register_test_POSTPROCESS)
     list(APPEND _arguments -s "${_register_test_POSTPROCESS}")
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS} 
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${_register_test_POSTPROCESS}
       FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
       DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
   endif()
@@ -560,7 +580,7 @@ function(register_test_files_to_package)
       list(APPEND _test_all_files "${_dep_ressources}")
     endif()
   endforeach()
-  
+
   # add extra files to the list of files referenced by a given test
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
     list(APPEND _test_all_files "${test_name}.sh")

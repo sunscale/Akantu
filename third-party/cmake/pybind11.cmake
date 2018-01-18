@@ -14,9 +14,6 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/pybind11)
     ERROR_FILE ${_working_dir}/build-error.log)
 endif()
 
-list(APPEND AKANTU_EXPORT_LIST pybind11 module embed)
-
-
 add_subdirectory(${PROJECT_SOURCE_DIR}/third-party/pybind11)
 set_property(TARGET pybind11 APPEND
   PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
