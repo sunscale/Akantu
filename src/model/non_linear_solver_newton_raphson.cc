@@ -29,9 +29,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver_newton_raphson.hh"
+#include "communicator.hh"
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
-#include "communicator.hh"
+#include "sparse_solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -43,8 +44,8 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
     UInt memory_id)
     : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
       dof_manager(dof_manager),
-      solver(dof_manager, "J", id + ":sparse_solver", memory_id), n_iter(0),
-      error(0.), converged(false) {
+      solver(std::make_unique<SparseSolverMumps>(
+          dof_manager, "J", id + ":sparse_solver", memory_id)) {
 
   this->supported_type.insert(_nls_newton_raphson_modified);
   this->supported_type.insert(_nls_newton_raphson);
@@ -101,7 +102,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     if (this->non_linear_solver_type == _nls_newton_raphson)
       solver_callback.assembleMatrix("J");
 
-    this->solver.solve();
+    this->solver->solve();
 
     solver_callback.corrector();
 
@@ -137,7 +138,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     // this->sendEvent(NonLinearSolver::ConvergedEvent(method));
   } else if (this->n_iter == this->max_iterations) {
     AKANTU_CUSTOM_EXCEPTION(debug::NLSNotConvergedException(
-                                this->convergence_criteria, this->n_iter, this->error));
+        this->convergence_criteria, this->n_iter, this->error));
 
     AKANTU_DEBUG_WARNING("[" << this->convergence_criteria_type
                              << "] Convergence not reached after "
@@ -163,7 +164,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
   Real norm = 0.;
   for (UInt n = 0; n < nb_degree_of_freedoms; ++n, ++arr_it, ++bld_it) {
     bool is_local_node = this->dof_manager.isLocalOrMasterDOF(n);
-    if ((! *bld_it) && is_local_node) {
+    if ((!*bld_it) && is_local_node) {
       norm += *arr_it * *arr_it;
     }
   }

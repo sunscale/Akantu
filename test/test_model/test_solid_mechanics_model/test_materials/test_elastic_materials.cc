@@ -3,6 +3,7 @@
 #include "material_elastic_orthotropic.hh"
 #include "solid_mechanics_model.hh"
 #include "test_material_fixtures.hh"
+/* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
@@ -10,7 +11,6 @@
 using namespace akantu;
 
 using types = ::testing::Types<
-
     Traits<MaterialElastic, 1>, Traits<MaterialElastic, 2>,
     Traits<MaterialElastic, 3>,
 
@@ -22,10 +22,8 @@ using types = ::testing::Types<
     Traits<MaterialElasticLinearAnisotropic, 2>,
     Traits<MaterialElasticLinearAnisotropic, 3>>;
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialElastic<3>>::testComputeStress() {
-
   Real E = 1.;
   Real nu = .3;
   setParam("E", E);
@@ -51,56 +49,50 @@ template <> void FriendMaterial<MaterialElastic<3>>::testComputeStress() {
   ASSERT_NEAR(stress_error, 0., 1e-14);
 }
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */
 template <>
 void FriendMaterial<MaterialElastic<3>>::testComputeTangentModuli() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialElastic<3>>::testEnergyDensity() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialElastic<2>>::testComputeStress() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */
 template <>
 void FriendMaterial<MaterialElastic<2>>::testComputeTangentModuli() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialElastic<2>>::testEnergyDensity() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialElastic<1>>::testComputeStress() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */
 template <>
 void FriendMaterial<MaterialElastic<1>>::testComputeTangentModuli() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialElastic<1>>::testEnergyDensity() {
   TO_IMPLEMENT;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 namespace {
 
 template <typename T>
@@ -125,6 +117,8 @@ TYPED_TEST(TestElasticMaterialFixture, ElasticComputePushWaveSpeed) {
 TYPED_TEST(TestElasticMaterialFixture, ElasticComputeShearWaveSpeed) {
   this->material->testShearWaveSpeed();
 }
+
+/* -------------------------------------------------------------------------- */
 }
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */

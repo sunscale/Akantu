@@ -1,5 +1,7 @@
+/* -------------------------------------------------------------------------- */
 #include "material_elastic.hh"
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <random>
 #include <type_traits>
@@ -9,11 +11,11 @@
 
 using namespace akantu;
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <typename T> class FriendMaterial : public T {
-
 public:
+  ~FriendMaterial() = default;
+  
   virtual void testComputeStress() { TO_IMPLEMENT; };
   virtual void testComputeTangentModuli() { TO_IMPLEMENT; };
   virtual void testEnergyDensity() { TO_IMPLEMENT; };
@@ -46,26 +48,23 @@ public:
   using T::T;
 };
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getDeviatoricStrain(Real intensity) {
-
   Matrix<Real> dev = {{0, 1, 2}, {1, 0, 3}, {2, 3, 0}};
   dev *= intensity;
   return dev;
 }
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getHydrostaticStrain(Real intensity) {
-
   Matrix<Real> dev = {{1, 0, 0}, {0, 2, 0}, {0, 0, 3}};
   dev *= intensity;
   return dev;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
   constexpr UInt Dim = 3;
   // Seed with a real random value, if available
@@ -92,7 +91,7 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
   d = v1.dot(v2);
   v2 -= v1 * d;
   v2.normalize();
-  
+
   v3.crossProduct(v2, v1);
 
   Matrix<Real> mat(Dim, Dim);
@@ -105,10 +104,8 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
   return mat;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
-
   constexpr UInt Dim = 2;
   // Seed with a real random value, if available
   std::random_device rd;
@@ -139,10 +136,8 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   return mat;
 }
 
-/*****************************************************************/
-
+/* -------------------------------------------------------------------------- */
 template <typename T> class TestMaterialFixture : public ::testing::Test {
-
 public:
   using mat_class = typename T::mat_class;
 
@@ -167,9 +162,10 @@ protected:
   std::unique_ptr<friend_class> material;
 };
 
-/*****************************************************************/
+/* -------------------------------------------------------------------------- */
 template <template <UInt> class T, UInt _Dim> struct Traits {
   using mat_class = T<_Dim>;
   static constexpr UInt Dim = _Dim;
 };
-/*****************************************************************/
+
+/* -------------------------------------------------------------------------- */

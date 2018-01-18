@@ -41,34 +41,35 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt Dim>
-MaterialElasticOrthotropic<Dim>::MaterialElasticOrthotropic(SolidMechanicsModel & model,
-                                                            const ID & id)  :
-  MaterialElasticLinearAnisotropic<Dim>(model, id) {
+template <UInt Dim>
+MaterialElasticOrthotropic<Dim>::MaterialElasticOrthotropic(
+    SolidMechanicsModel & model, const ID & id)
+    : MaterialElasticLinearAnisotropic<Dim>(model, id) {
   AKANTU_DEBUG_IN();
-  this->registerParam("E1",   E1  , Real(0.), _pat_parsmod, "Young's modulus (n1)");
-  this->registerParam("E2",   E2  , Real(0.), _pat_parsmod, "Young's modulus (n2)");
-  this->registerParam("nu12", nu12, Real(0.), _pat_parsmod, "Poisson's ratio (12)");
-  this->registerParam("G12",  G12 , Real(0.), _pat_parsmod, "Shear modulus (12)");
+  this->registerParam("E1", E1, Real(0.), _pat_parsmod, "Young's modulus (n1)");
+  this->registerParam("E2", E2, Real(0.), _pat_parsmod, "Young's modulus (n2)");
+  this->registerParam("nu12", nu12, Real(0.), _pat_parsmod,
+                      "Poisson's ratio (12)");
+  this->registerParam("G12", G12, Real(0.), _pat_parsmod, "Shear modulus (12)");
 
   if (Dim > 2) {
-    this->registerParam("E3"  , E3  , Real(0.), _pat_parsmod, "Young's modulus (n3)");
-    this->registerParam("nu13", nu13, Real(0.), _pat_parsmod, "Poisson's ratio (13)");
-    this->registerParam("nu23", nu23, Real(0.), _pat_parsmod, "Poisson's ratio (23)");
-    this->registerParam("G13" , G13 , Real(0.), _pat_parsmod, "Shear modulus (13)");
-    this->registerParam("G23" , G23 , Real(0.), _pat_parsmod, "Shear modulus (23)");
+    this->registerParam("E3", E3, Real(0.), _pat_parsmod,
+                        "Young's modulus (n3)");
+    this->registerParam("nu13", nu13, Real(0.), _pat_parsmod,
+                        "Poisson's ratio (13)");
+    this->registerParam("nu23", nu23, Real(0.), _pat_parsmod,
+                        "Poisson's ratio (23)");
+    this->registerParam("G13", G13, Real(0.), _pat_parsmod,
+                        "Shear modulus (13)");
+    this->registerParam("G23", G23, Real(0.), _pat_parsmod,
+                        "Shear modulus (23)");
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt Dim>
-MaterialElasticOrthotropic<Dim>::~MaterialElasticOrthotropic() = default;
-
-/* -------------------------------------------------------------------------- */
-template<UInt Dim>
-void MaterialElasticOrthotropic<Dim>::initMaterial() {
+template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
 
@@ -80,14 +81,14 @@ void MaterialElasticOrthotropic<Dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 inline Real vector_norm(Vector<Real> & vec) {
   Real norm = 0;
-  for (UInt i = 0 ;  i < vec.size() ; ++i) {
-    norm += vec(i)*vec(i);
+  for (UInt i = 0; i < vec.size(); ++i) {
+    norm += vec(i) * vec(i);
   }
   return std::sqrt(norm);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt Dim>
+template <UInt Dim>
 void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
   /* 1) construction of temporary material frame stiffness tensor------------ */
   // http://solidmechanics.org/Text/Chapter3_2/Chapter3_2.php#Sect3_2_13
@@ -97,16 +98,18 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
 
   // Full (i.e. dim^2 by dim^2) stiffness tensor in material frame
   if (Dim == 1) {
-    AKANTU_DEBUG_ERROR("Dimensions 1 not implemented: makes no sense to have orthotropy for 1D");
+    AKANTU_DEBUG_ERROR("Dimensions 1 not implemented: makes no sense to have "
+                       "orthotropy for 1D");
   }
 
   Real Gamma;
 
   if (Dim == 3)
-    Gamma = 1/(1 - nu12 * nu21 - nu23 * nu32 - nu31 * nu13 - 2 * nu21 * nu32 * nu13);
+    Gamma = 1 / (1 - nu12 * nu21 - nu23 * nu32 - nu31 * nu13 -
+                 2 * nu21 * nu32 * nu13);
 
   if (Dim == 2)
-    Gamma = 1/(1 - nu12 * nu21);
+    Gamma = 1 / (1 - nu12 * nu21);
 
   // Lamé's first parameters
   this->Cprime(0, 0) = E1 * (1 - nu23 * nu32) * Gamma;
@@ -126,39 +129,38 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
     this->Cprime(3, 3) = G23;
     this->Cprime(4, 4) = G13;
     this->Cprime(5, 5) = G12;
-  }
-  else
+  } else
     this->Cprime(2, 2) = G12;
-
 
   /* 1) rotation of C into the global frame */
   this->rotateCprime();
   this->C.eig(this->eigC);
-
 }
 
 /* -------------------------------------------------------------------------- */
 
-template<UInt dim>
-inline void MaterialElasticOrthotropic<dim>::computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
-                                                               const Matrix<Real> & sigma,
-                                                               Real & epot) {
+template <UInt dim>
+inline void MaterialElasticOrthotropic<dim>::computePotentialEnergyOnQuad(
+    const Matrix<Real> & grad_u, const Matrix<Real> & sigma, Real & epot) {
   epot = .5 * sigma.doubleDot(grad_u);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(ElementType el_type,
-                                                                           GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(
+    ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Material::computePotentialEnergy(el_type, ghost_type);
-  
-  AKANTU_DEBUG_ASSERT(!this->finite_deformation,"finite deformation not possible in material orthotropic (TO BE IMPLEMENTED)");
 
+  AKANTU_DEBUG_ASSERT(!this->finite_deformation,
+                      "finite deformation not possible in material orthotropic "
+                      "(TO BE IMPLEMENTED)");
 
-  if(ghost_type != _not_ghost) return;
-  Array<Real>::scalar_iterator epot = this->potential_energy(el_type, ghost_type).begin();
+  if (ghost_type != _not_ghost)
+    return;
+  Array<Real>::scalar_iterator epot =
+      this->potential_energy(el_type, ghost_type).begin();
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
@@ -171,33 +173,33 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(Eleme
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergyByElement(ElementType type, UInt index,
-										    Vector<Real> & epot_on_quad_points) {
+template <UInt spatial_dimension>
+void MaterialElasticOrthotropic<spatial_dimension>::
+    computePotentialEnergyByElement(ElementType type, UInt index,
+                                    Vector<Real> & epot_on_quad_points) {
 
-  AKANTU_DEBUG_ASSERT(!this->finite_deformation,"finite deformation not possible in material orthotropic (TO BE IMPLEMENTED)");
+  AKANTU_DEBUG_ASSERT(!this->finite_deformation,
+                      "finite deformation not possible in material orthotropic "
+                      "(TO BE IMPLEMENTED)");
 
   Array<Real>::matrix_iterator gradu_it =
-    this->gradu(type).begin(spatial_dimension,
-                             spatial_dimension);
+      this->gradu(type).begin(spatial_dimension, spatial_dimension);
   Array<Real>::matrix_iterator gradu_end =
-    this->gradu(type).begin(spatial_dimension,
-                             spatial_dimension);
+      this->gradu(type).begin(spatial_dimension, spatial_dimension);
   Array<Real>::matrix_iterator stress_it =
-    this->stress(type).begin(spatial_dimension,
-                             spatial_dimension);
+      this->stress(type).begin(spatial_dimension, spatial_dimension);
 
   UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
 
-  gradu_it  += index*nb_quadrature_points;
-  gradu_end += (index+1)*nb_quadrature_points;
-  stress_it  += index*nb_quadrature_points;
+  gradu_it += index * nb_quadrature_points;
+  gradu_end += (index + 1) * nb_quadrature_points;
+  stress_it += index * nb_quadrature_points;
 
   Real * epot_quad = epot_on_quad_points.storage();
 
   Matrix<Real> grad_u(spatial_dimension, spatial_dimension);
 
-  for(;gradu_it != gradu_end; ++gradu_it, ++stress_it, ++epot_quad) {
+  for (; gradu_it != gradu_end; ++gradu_it, ++stress_it, ++epot_quad) {
     grad_u.copy(*gradu_it);
 
     computePotentialEnergyOnQuad(grad_u, *stress_it, *epot_quad);
@@ -205,7 +207,6 @@ void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergyByElem
 }
 
 /* -------------------------------------------------------------------------- */
-
 INSTANTIATE_MATERIAL(elastic_orthotropic, MaterialElasticOrthotropic);
 
 } // akantu

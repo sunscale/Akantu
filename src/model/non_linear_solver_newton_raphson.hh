@@ -30,7 +30,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver.hh"
-#include "sparse_solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__
@@ -38,6 +37,7 @@
 
 namespace akantu {
   class DOFManagerDefault;
+  class SparseSolverMumps;
 }
 
 namespace akantu {
@@ -61,8 +61,8 @@ public:
   /// the solver callback functions
   void solve(SolverCallback & solver_callback) override;
 
-  AKANTU_GET_MACRO_NOT_CONST(Solver, solver, SparseSolverMumps &);
-  AKANTU_GET_MACRO(Solver, solver, const SparseSolverMumps &);
+  AKANTU_GET_MACRO_NOT_CONST(Solver, *solver, SparseSolverMumps &);
+  AKANTU_GET_MACRO(Solver, *solver, const SparseSolverMumps &);
 
 protected:
   /// test the convergence compare norm of array to convergence_criteria
@@ -75,7 +75,7 @@ private:
   DOFManagerDefault & dof_manager;
 
   /// Sparse solver used for the linear solves
-  SparseSolverMumps solver;
+  std::unique_ptr<SparseSolverMumps> solver;
 
   /// Type of convergence criteria
   SolveConvergenceCriteria convergence_criteria_type;
@@ -87,16 +87,16 @@ private:
   int max_iterations;
 
   /// Number of iterations at last solve call
-  int n_iter;
+  int n_iter{0};
 
   /// Convergence error at last solve call
-  Real error;
+  Real error{0.};
 
   /// Did the last call to solve reached convergence
-  bool converged;
+  bool converged{false};
 
   /// Force a re-computation of the jacobian matrix
-  bool force_linear_recompute;
+  bool force_linear_recompute{true};
 };
 
 } // akantu

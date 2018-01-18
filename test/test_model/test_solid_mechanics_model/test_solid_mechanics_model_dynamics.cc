@@ -53,11 +53,14 @@ const Vector<Real> psi1 = {0., 0., 1.};
 const Vector<Real> psi2 = {0., 1., 0.};
 const Real knorm = k.norm();
 
-template <UInt spatial_dimension> auto solution_disp = 1;
-template <UInt spatial_dimension> auto solution_vel = 1;
+using verif_func = std::function<void(
+    Vector<Real> & disp, const Vector<Real> & coord, Real current_time)>;
+
+template <UInt spatial_dimension> verif_func solution_disp;
+template <UInt spatial_dimension> verif_func solution_vel;
 
 template <>
-auto solution_disp<1> =
+verif_func solution_disp<1> =
     [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
       const auto & x = coord(_x);
       const Real omega = c * k[0];
@@ -65,7 +68,7 @@ auto solution_disp<1> =
     };
 
 template <>
-auto solution_vel<1> =
+verif_func solution_vel<1> =
     [](Vector<Real> & vel, const Vector<Real> & coord, Real current_time) {
       const auto & x = coord(_x);
       const Real omega = c * k[0];
@@ -73,10 +76,8 @@ auto solution_vel<1> =
     };
 
 template <>
-auto solution_disp<2> =
-    [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
-
-      const auto & X = coord;
+verif_func solution_disp<2> =
+    [](Vector<Real> & disp, const Vector<Real> & X, Real current_time) {
       Vector<Real> kshear = {k[1], k[0]};
       Vector<Real> kpush = {k[0], k[1]};
 
@@ -90,10 +91,8 @@ auto solution_disp<2> =
     };
 
 template <>
-auto solution_vel<2> = [](Vector<Real> & vel, const Vector<Real> & coord,
-                          Real current_time) {
-
-  const auto & X = coord;
+verif_func solution_vel<2> = [](Vector<Real> & vel, const Vector<Real> & X,
+                                Real current_time) {
   Vector<Real> kshear = {k[1], k[0]};
   Vector<Real> kpush = {k[0], k[1]};
 
@@ -104,13 +103,11 @@ auto solution_vel<2> = [](Vector<Real> & vel, const Vector<Real> & coord,
   Real phase_s = X.dot(kpush) - omega_s * current_time;
 
   vel = A * (kpush * omega_p * cos(phase_p) + kshear * omega_s * cos(phase_s));
-
 };
 
 template <>
-auto solution_disp<3> =
+verif_func solution_disp<3> =
     [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
-
       const auto & X = coord;
       Vector<Real> kpush = k;
       Vector<Real> kshear1(3);
@@ -130,9 +127,8 @@ auto solution_disp<3> =
     };
 
 template <>
-auto solution_vel<3> = [](Vector<Real> & vel, const Vector<Real> & coord,
-                          Real current_time) {
-
+verif_func solution_vel<3> = [](Vector<Real> & vel, const Vector<Real> & coord,
+                                Real current_time) {
   const auto & X = coord;
   Vector<Real> kpush = k;
   Vector<Real> kshear1(3);
@@ -162,7 +158,6 @@ public:
 
   inline void operator()(UInt node, Vector<bool> & flags, Vector<Real> & primal,
                          const Vector<Real> & coord) const {
-
     flags(0) = true;
     auto & vel = model.getVelocity();
     auto itVel = vel.begin(model.getSpatialDimension());
@@ -178,7 +173,6 @@ private:
 
 template <ElementType _type, typename AM>
 void test_body(SolidMechanicsModel & model, AM analysis_method) {
-
   // constexpr UInt dim = DimensionHelper<_type>::dim;
   static constexpr UInt dim = ElementClass<_type>::getSpatialDimension();
 
@@ -277,7 +271,7 @@ void test_body(SolidMechanicsModel & model, AM analysis_method) {
 
 #ifdef AKANTU_IMPLICIT
 TYPED_TEST(TestSMMFixtureBar, DynamicsImplicit) {
-  test_body<this->type>(*(this->model), _implicit_dynamic);
+  test_body<TestFixture::type>(*(this->model), _implicit_dynamic);
 }
 #endif
 

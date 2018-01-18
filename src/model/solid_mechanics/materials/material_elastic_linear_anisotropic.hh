@@ -50,16 +50,13 @@ namespace akantu {
  *   - rho  : density (default: 0)
  *   - C_ij  : entry on the stiffness
  */
-template <UInt Dim>
-class MaterialElasticLinearAnisotropic : public Material {
+template <UInt Dim> class MaterialElasticLinearAnisotropic : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   MaterialElasticLinearAnisotropic(SolidMechanicsModel & model,
                                    const ID & id = "", bool symmetric = true);
-
-  ~MaterialElasticLinearAnisotropic() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -79,7 +76,7 @@ public:
   void updateInternalParameters() override;
 
   bool hasStiffnessMatrixChanged() override {
-    return (! was_stiffness_assembled);
+    return (!was_stiffness_assembled);
   }
 
 protected:
@@ -102,7 +99,7 @@ protected:
   using voigt_h = VoigtHelper<Dim>;
 
   /// direction matrix and vectors
-  std::vector<Vector<Real> *> dir_vecs;
+  std::vector<std::unique_ptr<Vector<Real>>> dir_vecs;
 
   Matrix<Real> rot_mat;
   /// Elastic stiffness tensor in material frame and full vectorised notation

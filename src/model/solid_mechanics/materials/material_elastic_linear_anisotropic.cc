@@ -48,20 +48,20 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
       symmetric(symmetric), alpha(0), was_stiffness_assembled(false) {
   AKANTU_DEBUG_IN();
 
-  this->dir_vecs.push_back(new Vector<Real>(dim));
+  this->dir_vecs.push_back(std::make_unique<Vector<Real>>(dim));
   (*this->dir_vecs.back())[0] = 1.;
   this->registerParam("n1", *(this->dir_vecs.back()), _pat_parsmod,
                       "Direction of main material axis");
 
   if (dim > 1) {
-    this->dir_vecs.push_back(new Vector<Real>(dim));
+    this->dir_vecs.push_back(std::make_unique<Vector<Real>>(dim));
     (*this->dir_vecs.back())[1] = 1.;
     this->registerParam("n2", *(this->dir_vecs.back()), _pat_parsmod,
                         "Direction of secondary material axis");
   }
 
   if (dim > 2) {
-    this->dir_vecs.push_back(new Vector<Real>(dim));
+    this->dir_vecs.push_back(std::make_unique<Vector<Real>>(dim));
     (*this->dir_vecs.back())[2] = 1.;
     this->registerParam("n3", *(this->dir_vecs.back()), _pat_parsmod,
                         "Direction of tertiary material axis");
@@ -84,14 +84,6 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
                       "Proportion of viscous stress");
 
   AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <UInt dim>
-MaterialElasticLinearAnisotropic<dim>::~MaterialElasticLinearAnisotropic() {
-  for (UInt i = 0; i < dim; ++i) {
-    delete this->dir_vecs[i];
-  }
 }
 
 /* -------------------------------------------------------------------------- */

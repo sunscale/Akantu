@@ -34,9 +34,8 @@
 #include "mesh.hh"
 #include "mesh_accessor.hh"
 #include "model_solver.hh"
-#include "non_linear_solver_newton_raphson.hh"
+#include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
-#include "sparse_solver_mumps.hh"
 
 /* -------------------------------------------------------------------------- */
 #include "test_model_solver_my_model.hh"
@@ -83,11 +82,6 @@ int main(int argc, char * argv[]) {
 
 
   model.solveStep();
-
-  dynamic_cast<NonLinearSolverNewtonRaphson &>(
-      model.getDOFManager().getNonLinearSolver("static"))
-      .getSolver()
-      .analysis();
 
   printResults(model, global_nb_nodes);
 
