@@ -902,18 +902,19 @@ void DOFManagerDefault::updateDOFsData(
 
 /* -------------------------------------------------------------------------- */
 // register in factory
-static bool default_dof_manager_is_registered =
-    DefaultDOFManagerFactory::getInstance().registerAllocator(
-        "default", [](const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(id, mem_id);
-        });
+static bool default_dof_manager_is_registered [[gnu::unused]] =
+  DefaultDOFManagerFactory::getInstance().registerAllocator(
+          "default",
+          [](const ID & id,
+             const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+            return std::make_unique<DOFManagerDefault>(id, mem_id);
+          });
 
-static bool dof_manager_is_registered =
-    DOFManagerFactory::getInstance().registerAllocator(
-        "default", [](Mesh & mesh, const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
-        });
-
+  static bool dof_manager_is_registered [[gnu::unused]] =
+      DOFManagerFactory::getInstance().registerAllocator(
+          "default",
+          [](Mesh & mesh, const ID & id,
+             const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+            return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+          });
 } // namespace akantu
