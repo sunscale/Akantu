@@ -85,30 +85,6 @@ foreach(_precision ${MUMPS_PRECISIONS})
   list(APPEND MUMPS_LIBRARIES_ALL ${MUMPS_LIBRARY_${_u_precision}MUMPS})
 endforeach()
 
-#===============================================================================
-include(FindPackageHandleStandardArgs)
-if(CMAKE_VERSION VERSION_GREATER 2.8.12)
-  if(MUMPS_INCLUDE_DIR)
-    file(STRINGS ${MUMPS_INCLUDE_DIR}/dmumps_c.h _versions
-      REGEX "^#define MUMPS_VERSION .*")
-    foreach(_ver ${_versions})
-      string(REGEX MATCH "MUMPS_VERSION *\"([0-9.]+)\"" _tmp "${_ver}")
-      set(_mumps_VERSION ${CMAKE_MATCH_1})
-    endforeach()
-    set(MUMPS_VERSION "${_mumps_VERSION}" CACHE INTERNAL "")
-  endif()
-
-  find_package_handle_standard_args(Mumps
-    REQUIRED_VARS
-    ${_mumps_required_vars}
-    MUMPS_INCLUDE_DIR
-    VERSION_VAR
-    MUMPS_VERSION)
-else()
-  find_package_handle_standard_args(Mumps DEFAULT_MSG
-    ${_mumps_required_vars} MUMPS_INCLUDE_DIR)
-endif()
-
 
 if(MUMPS_LIBRARY_${_u_first_precision}MUMPS MATCHES ".*${_first_precision}mumps.*${CMAKE_STATIC_LIBRARY_SUFFIX}")
   # Assuming mumps was compiled as a static library
@@ -274,18 +250,27 @@ endfunction()
 
 mumps_find_dependencies()
 
-foreach(_precision ${MUMPS_PRECISIONS})
-  string(TOUPPER "${_precision}" _u_precision)
-  set(_target MUMPS::${_precision}mumps)
-  if(NOT TARGET ${_target})
-    add_library(${_target} ${MUMPS_LIBRARY_TYPE} IMPORTED GLOBAL)
-  endif()
-  set_target_properties(${_target} PROPERTIES
-    IMPORTED_LOCATION                 "${MUMPS_LIBRARY_${_u_precision}MUMPS}"
-    INTERFACE_INCLUDE_DIRECTORIES     "${MUMPS_INCLUDE_DIR}"
-    IMPORTED_LINK_INTERFACE_LANGUAGES "C;Fortran"
-    INTERFACE_LINK_LIBRARIES          "${_mumps_interface_link}")
-endforeach()
-
-
 set(MUMPS_LIBRARIES ${MUMPS_LIBRARIES_ALL} CACHE INTERNAL "" FORCE)
+
+#===============================================================================
+include(FindPackageHandleStandardArgs)
+if(CMAKE_VERSION VERSION_GREATER 2.8.12)
+  if(MUMPS_INCLUDE_DIR)
+    file(STRINGS ${MUMPS_INCLUDE_DIR}/dmumps_c.h _versions
+      REGEX "^#define MUMPS_VERSION .*")
+    foreach(_ver ${_versions})
+      string(REGEX MATCH "MUMPS_VERSION *\"([0-9.]+)\"" _tmp "${_ver}")
+      set(_mumps_VERSION ${CMAKE_MATCH_1})
+    endforeach()
+    set(MUMPS_VERSION "${_mumps_VERSION}" CACHE INTERNAL "")
+  endif()
+
+  find_package_handle_standard_args(Mumps
+    REQUIRED_VARS ${_mumps_required_vars}
+                  MUMPS_INCLUDE_DIR
+    VERSION_VAR MUMPS_VERSION
+    )
+else()
+  find_package_handle_standard_args(Mumps DEFAULT_MSG
+    ${_mumps_required_vars} MUMPS_INCLUDE_DIR)
+endif()
