@@ -44,8 +44,8 @@ public:
   ElementType type;
   UInt element;
   GhostType ghost_type;
-  // ElementKind kind;
 
+  // ElementKind kind;
   // ElementType type{_not_defined};
   // UInt element{0};
   // GhostType ghost_type{_not_ghost};
