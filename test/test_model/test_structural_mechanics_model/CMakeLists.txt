@@ -37,8 +37,8 @@
 # register_gtest_test(test_structural_mechanics)
 
 
-register_test(test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1
-  test_structural_mechanics_model_bernoulli_beam_2_exemple_1_1.cc
+register_test(test_structural_mechanics_model_bernoulli_beam_2
+  test_structural_mechanics_model_bernoulli_beam_2.cc
   PACKAGE structural_mechanics
 )
 
