@@ -34,48 +34,37 @@
 #include "dumpable.hh"
 #include "dumpable_inline_impl.hh"
 #include "mesh.hh"
-
 #if defined(AKANTU_USE_IOHELPER)
-#  include "dumper_paraview.hh"
+#include "dumper_iohelper_paraview.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NodeGroup::NodeGroup(const std::string & name,
-		     const Mesh & mesh,
-		     const std::string & id,
-                     const MemoryID & memory_id) :
-  Memory(id, memory_id),
-  name(name),
-  node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1))//,
-  // mesh(mesh)
-{
-
+NodeGroup::NodeGroup(const std::string & name, const Mesh & mesh,
+                     const std::string & id, const MemoryID & memory_id)
+    : Memory(id, memory_id), name(name),
+      node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1)) {
 #if defined(AKANTU_USE_IOHELPER)
-  this->registerDumper<DumperParaview>("paraview_"  + name, name, true);
-  this->getDumper().registerField("positions",new dumper::NodalField<Real,true>(
-                                                                    mesh.getNodes(),
-                                                                    0,
-                                                                    0,
-                                                                    &this->getNodes()));
+  this->registerDumper<DumperParaview>("paraview_" + name, name, true);
+  this->getDumper().registerField(
+      "positions", new dumper::NodalField<Real, true>(mesh.getNodes(), 0, 0,
+                                                      &this->getNodes()));
 #endif
-
 }
 
 /* -------------------------------------------------------------------------- */
 NodeGroup::~NodeGroup() = default;
 
 /* -------------------------------------------------------------------------- */
-void NodeGroup::empty() {
-  node_group.resize(0);
-}
+void NodeGroup::empty() { node_group.resize(0); }
 
 /* -------------------------------------------------------------------------- */
 void NodeGroup::optimize() {
   std::sort(node_group.begin(), node_group.end());
-  Array<UInt>::iterator<> end = std::unique(node_group.begin(), node_group.end());
+  Array<UInt>::iterator<> end =
+      std::unique(node_group.begin(), node_group.end());
   node_group.resize(end - node_group.begin());
 }
 
@@ -87,9 +76,8 @@ void NodeGroup::append(const NodeGroup & other_group) {
 
   /// append new nodes to current list
   node_group.resize(nb_nodes + other_group.node_group.size());
-  std::copy(other_group.node_group.begin(),
-	    other_group.node_group.end(),
-	    node_group.begin() + nb_nodes);
+  std::copy(other_group.node_group.begin(), other_group.node_group.end(),
+            node_group.begin() + nb_nodes);
 
   optimize();
 
@@ -99,13 +87,13 @@ void NodeGroup::append(const NodeGroup & other_group) {
 /* -------------------------------------------------------------------------- */
 void NodeGroup::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
   stream << space << "NodeGroup [" << std::endl;
   stream << space << " + name: " << name << std::endl;
   node_group.printself(stream, indent + 1);
   stream << space << "]" << std::endl;
 }
-
 
 } // akantu

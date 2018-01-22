@@ -44,7 +44,7 @@
 
 #include "dumpable_inline_impl.hh"
 #ifdef AKANTU_USE_IOHELPER
-#include "dumper_paraview.hh"
+#include "dumper_iohelper_paraview.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 #include <algorithm>

@@ -44,8 +44,9 @@
 
 #include "element_group.hh"
 #if defined(AKANTU_USE_IOHELPER)
-#  include "dumper_paraview.hh"
+#  include "dumper_iohelper_paraview.hh"
 #endif
+
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 ElementGroup::ElementGroup(const std::string & group_name,
