@@ -101,9 +101,9 @@ TYPED_TEST(ArrayConstructor, ConstructDefault5) {
 TYPED_TEST(ArrayConstructor, ConstructDefault6) {
   typename TestFixture::type defaultv[2] = {0, 1};
 
-  auto array = this->construct(1000, 10, defaultv);
+  auto array = this->construct(1000, 2, defaultv);
   EXPECT_EQ(1000, array->size());
-  EXPECT_EQ(10, array->getNbComponent());
+  EXPECT_EQ(2, array->getNbComponent());
   EXPECT_EQ(1, array->operator()(10, 1));
   EXPECT_EQ(0, array->operator()(603, 0));
   EXPECT_STREQ("", array->getID().c_str());

@@ -40,6 +40,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/third-party/iohelper)
 
   set(IOHELPER_LIBRARIES iohelper CACHE INTERNAL "IOHelper library")
   package_add_to_export_list(iohelper iohelper)
+  mask_package_options(IOHELPER)
   return()
 endif()
 
@@ -82,10 +83,7 @@ find_path(IOHELPER_INCLUDE_DIR iohelper/io_helper.hh HINTS ${PROJECT_BINARY_DIR}
 
 set(IOHELPER_SOURCE_TYPE "external" CACHE INTERNAL "internal variable for clean export")
 
-mark_as_advanced(
-  IOHELPER_LIBRARIES
-  IOHELPER_INCLUDE_DIR
-  )
+mask_package_options(IOHELPER)
 
 package_add_extra_dependency(IOHelper iohelper)
 
