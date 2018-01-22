@@ -81,7 +81,12 @@ public:
 
   virtual ~StructuralMechanicsModel();
 
+  /// Init full model
   void initFullImpl(const ModelOptions & options) override;
+
+  /// Init boundary FEEngine
+  void initFEEngineBoundary() override;
+
 
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from SolverCallback */
