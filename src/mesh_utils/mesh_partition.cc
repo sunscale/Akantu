@@ -101,43 +101,32 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
                                    const EdgeLoadFunctor & edge_load_func) {
   AKANTU_DEBUG_IN();
 
-  // tweak mesh;
-  // UInt nb_good_types = 0;
-
-  // std::vector<UInt> nb_nodes_per_element_p1;
-  // std::vector<UInt> magic_number;
-  // std::vector<UInt> nb_element;
-  std::map<ElementType, std::tuple<const Array<UInt> *, UInt, UInt, UInt>>
+  std::map<ElementType, std::tuple<const Array<UInt> *, UInt, UInt>>
       connectivities;
   UInt spatial_dimension = mesh.getSpatialDimension();
   UInt nb_total_element{0};
 
   for (auto & type :
        mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
-
-    auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
     auto type_p1 = mesh.getP1ElementType(type);
     auto nb_nodes_per_element_p1 = mesh.getNbNodesPerElement(type_p1);
     auto magic_number = mesh.getNbNodesPerElement(mesh.getFacetType(type_p1));
 
     const auto & conn = mesh.getConnectivity(type, _not_ghost);
     connectivities[type] = std::make_tuple(
-        &conn, nb_nodes_per_element, nb_nodes_per_element_p1, magic_number);
+        &conn, nb_nodes_per_element_p1, magic_number);
     nb_total_element += conn.size();
   }
 
   CSR<Element> node_to_elem;
   MeshUtils::buildNode2Elements(mesh, node_to_elem);
 
-  // UInt nb_total_element =
-  //     std::accumulate(nb_element.begin(), nb_element.end(), 0);
-
   dxadj.resize(nb_total_element + 1);
   /// initialize the dxadj array
   auto dxadj_it = dxadj.begin();
   for (auto & pair : connectivities) {
     const auto & connectivity = *std::get<0>(pair.second);
-    auto nb_nodes_per_element_p1 = std::get<2>(pair.second);
+    auto nb_nodes_per_element_p1 = std::get<1>(pair.second);
 
     std::fill_n(dxadj_it, connectivity.size(), nb_nodes_per_element_p1);
     dxadj_it += connectivity.size();
@@ -160,7 +149,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
     auto type = pair.first;
     const auto & connectivity = *std::get<0>(pair.second);
     auto nb_nodes_per_element = std::get<1>(pair.second);
-    auto magic_number = std::get<3>(pair.second);
+    auto magic_number = std::get<2>(pair.second);
 
     Element element{type, 0, _not_ghost};
 
@@ -197,7 +186,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
 #if defined(AKANTU_COHESIVE_ELEMENT)
         /// Patch in order to prevent neighboring cohesive elements
         /// from detecting each other
-        auto & adjacent_element = unlinearized(adjacent_el);
+        auto adjacent_element = unlinearized(adjacent_el);
 
         auto el_kind = element.kind();
         auto adjacent_el_kind = adjacent_element.kind();
@@ -220,7 +209,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   Int k_start = 0, linerized_el = 0, j = 0;
   for (auto & pair : connectivities) {
     const auto & connectivity = *std::get<0>(pair.second);
-    auto nb_nodes_per_element_p1 = std::get<2>(pair.second);
+    auto nb_nodes_per_element_p1 = std::get<1>(pair.second);
     auto nb_element = connectivity.size();
 
     for (UInt el = 0; el < nb_element; ++el, ++linerized_el) {
