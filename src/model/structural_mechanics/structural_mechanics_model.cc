@@ -116,6 +116,13 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
 }
 
 /* -------------------------------------------------------------------------- */
+
+void StructuralMechanicsModel::initFEEngineBoundary() {
+  /// TODO: this function should not be reimplemented
+  /// we're just avoiding a call to Model::initFEEngineBoundary()
+}
+
+/* -------------------------------------------------------------------------- */
 // void StructuralMechanicsModel::setTimeStep(Real time_step) {
 //   this->time_step = time_step;
 
