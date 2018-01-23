@@ -35,6 +35,8 @@ if(NOT GTEST_FOUND)
 
   set(Python_ADDITIONAL_VERSIONS ${AKANTU_PREFERRED_PYTHON_VERSION})
   add_subdirectory(third-party/google-test)
+  set_property(TARGET gtest_main PROPERTY CXX_STANDARD 14)
+  set_property(TARGET gtest PROPERTY CXX_STANDARD 14)
 
   add_library(GTest::Main ALIAS gtest_main)
   add_library(GTest::GTest ALIAS gtest)

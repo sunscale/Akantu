@@ -1,3 +1,4 @@
+
 /**
  * @file   material.hh
  *
@@ -436,7 +437,8 @@ public:
   /// by the material
   virtual Real getEnergy(const std::string & energy_id);
   /// return the energy (identified by id) for the provided element
-  virtual Real getEnergy(const std::string & energy_id, ElementType type, UInt index);
+  virtual Real getEnergy(const std::string & energy_id, ElementType type,
+                         UInt index);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementFilter, element_filter, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(GradU, gradu, Real);
@@ -595,7 +597,7 @@ inline std::ostream & operator<<(std::ostream & stream,
           .end(this->spatial_dimension, this->spatial_dimension);              \
                                                                                \
   this->stress(el_type, ghost_type)                                            \
-      .resize(this->gradu(el_type, ghost_type).size());                     \
+      .resize(this->gradu(el_type, ghost_type).size());                        \
                                                                                \
   Array<Real>::iterator<Matrix<Real>> stress_it =                              \
       this->stress(el_type, ghost_type)                                        \
@@ -603,7 +605,7 @@ inline std::ostream & operator<<(std::ostream & stream,
                                                                                \
   if (this->isFiniteDeformation()) {                                           \
     this->piola_kirchhoff_2(el_type, ghost_type)                               \
-        .resize(this->gradu(el_type, ghost_type).size());                   \
+        .resize(this->gradu(el_type, ghost_type).size());                      \
     stress_it = this->piola_kirchhoff_2(el_type, ghost_type)                   \
                     .begin(this->spatial_dimension, this->spatial_dimension);  \
   }                                                                            \
@@ -629,7 +631,7 @@ inline std::ostream & operator<<(std::ostream & stream,
       this->stress(el_type, ghost_type)                                        \
           .begin(this->spatial_dimension, this->spatial_dimension);            \
                                                                                \
-  tangent_mat.resize(this->gradu(el_type, ghost_type).size());              \
+  tangent_mat.resize(this->gradu(el_type, ghost_type).size());                 \
                                                                                \
   UInt tangent_size =                                                          \
       this->getTangentStiffnessVoigtSize(this->spatial_dimension);             \
@@ -673,7 +675,7 @@ using MaterialFactory =
 
 #define INSTANTIATE_MATERIAL(id, mat_name)                                     \
   INSTANTIATE_MATERIAL_ONLY(mat_name);                                         \
-  static bool material_is_alocated_##id =                                      \
+  static bool material_is_alocated_##id [[gnu::unused]] =                      \
       MaterialFactory::getInstance().registerAllocator(                        \
           #id, MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name))
 
