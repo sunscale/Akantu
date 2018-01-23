@@ -1,0 +1,24 @@
+seed = 1
+
+material damage_iterative [
+	 name = aggregate
+	 rho = 2.7e-9   # density
+	 E   = 60e9 # young's modulus
+	 nu  = 0.3    # poisson's ratio
+	 Sc = 26.4e6 weibull [6.6e6, 5.]
+	 prescribed_dam = 0.1
+	 max_damage = 0.95
+]
+
+material elastic [
+   	 name = gel
+   	 rho = 2.7e-9   # density
+   	 E   = 22e9 # young's modulus
+   	 nu  = 0.18    # poisson's ratio
+]
+
+material igfem_saw_tooth_damage [
+	 name = igfem_damage
+	 name_sub_mat_1 = gel
+	 name_sub_mat_2 = aggregate
+]

@@ -1,0 +1,22 @@
+seed = 1
+
+material damage_iterative [
+	 name = mat_2
+	 rho = 2.7e-9   # density
+	 E   = 1. # young's modulus
+	 nu  = 0.25    # poisson's ratio
+	 Sc = 100
+]
+
+material elastic [
+	 name = mat_1
+	 rho = 2.7e-9   # density
+	 E   = 10. # young's modulus
+	 nu  = 0.3    # poisson's ratio
+]
+
+material igfem_saw_tooth_damage [
+	 name = test_mat_igfem
+	 name_sub_mat_1 = mat_1
+	 name_sub_mat_2 = mat_2
+]

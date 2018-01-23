@@ -1,0 +1,58 @@
+/**
+ * @file   dumper_igfem_material_internal_field.hh
+ *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
+ *
+ *
+ * @brief  description of  IGFEM material internal field
+ *
+ * @section LICENSE
+ *
+ * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ */
+
+#ifndef __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__
+#define __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__
+/* -------------------------------------------------------------------------- */
+#include "dumper_igfem_quadrature_points_field.hh"
+/* -------------------------------------------------------------------------- */
+__BEGIN_AKANTU__
+__BEGIN_AKANTU_DUMPER__
+/* -------------------------------------------------------------------------- */
+
+template<typename T, bool filtered = false>
+class IGFEMInternalMaterialField
+  : public IGFEMGenericElementalField<SingleType<T,Vector,filtered>,
+				      igfem_quadrature_point_iterator> {
+
+  /* ------------------------------------------------------------------------ */
+  /* Typedefs                                                                 */
+  /* ------------------------------------------------------------------------ */
+
+public:
+
+  typedef SingleType<T,Vector,filtered> types;
+  typedef IGFEMGenericElementalField<types,igfem_quadrature_point_iterator> parent;
+  typedef typename types::field_type field_type;
+
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+
+
+  IGFEMInternalMaterialField(const field_type & field,
+			     UInt spatial_dimension = _all_dimensions,
+			     GhostType ghost_type = _not_ghost,
+			     ElementKind kind =_ek_igfem) :
+    parent(field, spatial_dimension, ghost_type, kind){}
+
+
+};
+
+
+__END_AKANTU_DUMPER__
+__END_AKANTU__
+
+#endif /* __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__ */
