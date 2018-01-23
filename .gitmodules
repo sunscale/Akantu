@@ -1,15 +1,3 @@
-[submodule "extra_packages/extra-materials"]
-	path = extra_packages/extra-materials
-	url = git@lsmssrv1.epfl.ch:akantu-extra-materials.git
-[submodule "extra_packages/igfem"]
-	path = extra_packages/igfem
-	url = git@lsmssrv1.epfl.ch:akantu-igfem.git
 [submodule "extra_packages/students-extra-package"]
 	path = extra_packages/students-extra-package
 	url = git@lsmssrv1.epfl.ch:students-extra-package.git
-[submodule "extra_packages/phase-field"]
-	path = extra_packages/phase-field
-	url = git@lsmssrv1.epfl.ch:akantu-phase-field.git
-[submodule "extra-packages/contact-alejandro"]
-	path = extra_packages/contact-alejandro
-	url = git@lsmssrv1.epfl.ch:akantu-contact-alejandro.git
