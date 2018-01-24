@@ -163,6 +163,7 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_3);
   UInt tangent_size = 4;
 
+  tangent_moduli.clear();
   Array<Real>::matrix_iterator D_it =
       tangent_moduli.begin(tangent_size, tangent_size);
 

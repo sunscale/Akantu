@@ -173,7 +173,7 @@ void StructuralMechanicsModel::initSolver(
 void StructuralMechanicsModel::initModel() {
   for (auto && type :
        mesh.elementTypes(_element_kind = _ek_structural)) {
-    computeRotationMatrix(type);
+    // computeRotationMatrix(type);
     element_material.alloc(mesh.getNbElement(type), 1, type);
   }
 
