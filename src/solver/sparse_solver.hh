@@ -116,6 +116,15 @@ protected:
   Communicator & communicator;
 };
 
+namespace debug {
+  class SingularMatrixException : public Exception {
+  public:
+    SingularMatrixException(const SparseMatrix & matrix)
+        : Exception("Solver encountered singular matrix"), matrix(matrix) {}
+    const SparseMatrix & matrix;
+  };
+}
+
 } // akantu
 
 #endif /* __AKANTU_SOLVER_HH__ */

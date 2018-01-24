@@ -412,7 +412,8 @@ void SparseSolverMumps::printError() {
   if (_info_v[0] < 0) { // < 0 is an error
     switch (_info_v[0]) {
     case -10:
-      AKANTU_DEBUG_ERROR("The matrix is singular");
+      AKANTU_CUSTOM_EXCEPTION(
+          debug::SingularMatrixException(dof_manager.getMatrix(matrix_id)));
       break;
     case -9: {
       icntl(14) += 10;
