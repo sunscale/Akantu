@@ -98,23 +98,31 @@ AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_hermite_2,
 
 namespace {
   namespace details {
-    template <InterpolationType type>
-    void computeShapes(const Vector<Real> & natural_coords, Matrix<Real> & N) {
+    inline Real computeLength(const Matrix<Real> & real_coord) {
+      Vector<Real> x1 = real_coord(0);
+      Vector<Real> x2 = real_coord(1);
+      return x1.distance(x2);
+    }
+
+    inline void computeShapes(const Vector<Real> & natural_coords, Real a, Matrix<Real> & N) {
       /// natural coordinate
       Real xi = natural_coords(0);
 
       // Cubic Hermite splines interpolating displacement
       auto M1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 2);
       auto M2 = 1. / 4. * Math::pow<2>(xi + 1) * (2 - xi);
-      auto L1 = 1. / 4. * Math::pow<2>(xi - 1) * (xi + 1);
-      auto L2 = 1. / 4. * Math::pow<2>(xi + 1) * (xi - 1);
+      auto L1 = a / 4. * Math::pow<2>(xi - 1) * (xi + 1);
+      auto L2 = a / 4. * Math::pow<2>(xi + 1) * (xi - 1);
 
 #if 1 // Version where we also interpolate the rotations
-      // Derivatives of previous functions interpolating rotations
-      auto M1_ = 3. / 4. * (xi * xi - 1);
-      auto M2_ = 3. / 4. * (1 - xi * xi);
-      auto L1_ = 1. / 4. * (3 * xi * xi - 2 * xi - 1);
-      auto L2_ = 1. / 4. * (3 * xi * xi + 2 * xi - 1);
+      // Derivatives (with respect to x) of previous functions interpolating
+      // rotations
+      auto M1_ = 3. / (4. * a) * (xi * xi - 1);
+      auto M2_ = 3. / (4. * a) * (1 - xi * xi);
+      auto L1_ = 1 / 4. *
+                 (3 * xi * xi - 2 * xi - 1);
+      auto L2_ = 1 / 4. *
+                 (3 * xi * xi + 2 * xi - 1);
 
       // clang-format off
       //    v1   t1   v2   t2
@@ -132,18 +140,19 @@ namespace {
 
     /* ---------------------------------------------------------------------- */
 
-    template <InterpolationType type>
-    void computeDNDS(const Vector<Real> & natural_coords, Matrix<Real> & B) {
+    inline void computeDNDS(const Vector<Real> & natural_coords, Real a,
+                     Matrix<Real> & B) {
       // natural coordinate
       Real xi = natural_coords(0);
-      // Derivatives for rotations
+      // Derivatives with respect to xi for rotations
       auto M1__ = 3. / 2. * xi;
-      auto L1__ = 1. / 2. * (3 * xi - 1);
       auto M2__ = 3. / 2. * (-xi);
-      auto L2__ = 1. / 2. * (3 * xi + 1);
+      auto L1__ = a / 2. * (3 * xi - 1);
+      auto L2__ = a / 2. * (3 * xi + 1);
 
       //    v1    t1    v2    t2
       B = {{M1__, L1__, M2__, L2__}}; // computing curvature : {chi} = [B]{d}
+      B /= a; // to account for first order deriv w/r to x
     }
   } // namespace details
 } // namespace
@@ -152,16 +161,19 @@ namespace {
 template <>
 inline void
 InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N) {
-  details::computeShapes<_itp_hermite_2>(natural_coords, N);
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
+    Matrix<Real> & N) {
+  auto L = details::computeLength(real_coord);
+  details::computeShapes(natural_coords, L / 2, N);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void
-InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B) {
-  details::computeDNDS<_itp_hermite_2>(natural_coords, B);
+inline void InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
+    Matrix<Real> & B) {
+  auto L = details::computeLength(real_coord);
+  details::computeDNDS(natural_coords, L / 2, B);
 }
 
 } // namespace akantu

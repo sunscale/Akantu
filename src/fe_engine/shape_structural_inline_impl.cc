@@ -39,6 +39,21 @@
 
 namespace akantu {
 
+namespace {
+  /// Extract nodal coordinates per elements
+  template <ElementType type>
+  std::unique_ptr<Array<Real>>
+  getNodesPerElement(const Mesh & mesh, const Array<Real> & nodes,
+                     const GhostType & ghost_type) {
+    const auto dim = ElementClass<type>::getSpatialDimension();
+    const auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+
+    auto nodes_per_element = std::make_unique<Array<Real>>(0, dim * nb_nodes_per_element);
+    FEEngine::extractNodalToElementField(mesh, nodes, *nodes_per_element, type, ghost_type);
+    return nodes_per_element;
+  }
+}
+
 template <ElementKind kind>
 inline void ShapeStructural<kind>::initShapeFunctions(
     const Array<Real> & /* unused */, const Matrix<Real> & /* unused */,
@@ -66,11 +81,10 @@ inline void ShapeStructural<_ek_structural>::initShapeFunctions(
 template <>
 template <ElementType type>
 void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
-    const Array<Real> & /*nodes*/, const Matrix<Real> & integration_points,
+    const Array<Real> & nodes, const Matrix<Real> & integration_points,
     Array<Real> & shapes, const GhostType & ghost_type,
     const Array<UInt> & filter_elements) const {
 
-  /// \TODO this code differs from ShapeLagrangeBase only in the size of N
   UInt nb_points = integration_points.cols();
   UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
 
@@ -94,12 +108,20 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
     nb_element = filter_elements.size();
   }
 
+  auto nodes_per_element = getNodesPerElement<type>(mesh, nodes, ghost_type);
+  auto nodes_it = nodes_per_element->begin(mesh.getSpatialDimension(),
+                                           Mesh::getNbNodesPerElement(type));
+  auto nodes_begin = nodes_it;
+
   for (UInt elem = 0; elem < nb_element; ++elem) {
-    if (filter_elements != empty_filter)
+    if (filter_elements != empty_filter) {
       shapes_it = shapes_begin + filter_elements(elem);
+      nodes_it = nodes_begin + filter_elements(elem);
+    }
 
     Tensor3<Real> & N = *shapes_it;
-    ElementClass<type>::computeShapes(integration_points, N);
+    auto & real_coord = *nodes_it;
+    ElementClass<type>::computeShapes(integration_points, real_coord, N);
 
     if (filter_elements == empty_filter)
       ++shapes_it;
@@ -145,7 +167,8 @@ void ShapeStructural<kind>::precomputeRotationMatrices(
       ElementClass<type>::computeRotationMatrix(R, X, *extra_normal);
       ++extra_normal;
     } else {
-      ElementClass<type>::computeRotationMatrix(R, X, Vector<Real>());
+      ElementClass<type>::computeRotationMatrix(
+          R, X, Vector<Real>(spatial_dimension));
     }
   }
 
@@ -153,10 +176,11 @@ void ShapeStructural<kind>::precomputeRotationMatrices(
 }
 
 /* -------------------------------------------------------------------------- */
+
 template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
-    const Array<Real> & /*nodes*/, const GhostType & ghost_type) {
+    const Array<Real> & nodes, const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   const auto & natural_coords = integration_points(type, ghost_type);
@@ -164,6 +188,7 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
   auto nb_points = integration_points(type, ghost_type).cols();
   auto nb_element = mesh.getNbElement(type, ghost_type);
   auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
+  const auto dim = ElementClass<type>::getSpatialDimension();
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not shapes.exists(itp_type, ghost_type)) {
@@ -174,12 +199,14 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
   auto & shapes_ = this->shapes(itp_type, ghost_type);
   shapes_.resize(nb_element * nb_points);
 
-  auto shapes_it = shapes_.begin_reinterpret(
-      nb_dof, nb_dof * nb_nodes_per_element, nb_points, nb_element);
+  auto nodes_per_element = getNodesPerElement<type>(mesh, nodes, ghost_type);
 
-  for (UInt elem = 0; elem < nb_element; ++elem, ++shapes_it) {
-    auto & N = *shapes_it;
-    ElementClass<type>::computeShapes(natural_coords, N);
+  for (auto && tuple :
+	 zip(make_view(shapes_, nb_dof, nb_dof * nb_nodes_per_element, nb_points),
+	     make_view(*nodes_per_element, dim, nb_nodes_per_element))) {
+    auto & N = std::get<0>(tuple);
+    auto & real_coord = std::get<1>(tuple);
+    ElementClass<type>::computeShapes(natural_coords, real_coord, N);
   }
 
   AKANTU_DEBUG_OUT();
@@ -216,29 +243,36 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   auto & shapesd = this->shapes_derivatives(itp_type, ghost_type);
   shapesd.resize(nb_element * nb_points);
 
+  auto nodes_per_element = getNodesPerElement<type>(mesh, nodes, ghost_type);
+
   for (auto && tuple :
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
            make_view(shapesd, nb_stress_components,
                      nb_nodes_per_element * nb_dof, nb_points),
-           make_view(rot_matrices, nb_dof, nb_dof))) {
+           make_view(rot_matrices, nb_dof, nb_dof),
+	   make_view(*nodes_per_element, spatial_dimension, nb_nodes_per_element))) {
     // compute shape derivatives
     auto & X = std::get<0>(tuple);
     auto & B = std::get<1>(tuple);
     auto & RDOFs = std::get<2>(tuple);
+    auto & real_coord = std::get<3>(tuple);
 
     auto R = RDOFs.block(0, 0, spatial_dimension, spatial_dimension);
+    Matrix<Real> T(B.size(1), B.size(1));
+    T.block(RDOFs, 0, 0);
+    T.block(RDOFs, RDOFs.rows(), RDOFs.rows());
 
     // Rotate to local basis
     auto x =
         (R * X).block(0, 0, natural_spatial_dimension, nb_nodes_per_element);
 
     Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
-    ElementClass<type>::computeDNDS(natural_coords, dnds);
+    ElementClass<type>::computeDNDS(natural_coords, real_coord, dnds);
 
     Tensor3<Real> J(x.rows(), natural_coords.rows(), natural_coords.cols());
 
     ElementClass<type>::computeJMat(dnds, x, J);
-    ElementClass<type>::computeShapeDerivatives(J, dnds, B);
+    ElementClass<type>::computeShapeDerivatives(J, dnds, T, B);
   }
 
   AKANTU_DEBUG_OUT();

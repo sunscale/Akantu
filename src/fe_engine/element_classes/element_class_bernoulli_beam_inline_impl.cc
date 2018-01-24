@@ -71,13 +71,14 @@ AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_3,
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N) {
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
+    Matrix<Real> & N) {
   Vector<Real> L(2);
   InterpolationElement<_itp_lagrange_segment_2, _itk_lagrangian>::computeShapes(
       natural_coords, L);
   Matrix<Real> H(2, 4);
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
-      natural_coords, H);
+      natural_coords, real_coord, H);
 
   // clang-format off
   //    u1   v1      t1      u2   v2      t2
@@ -90,13 +91,14 @@ InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeShapes(
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeShapes(
-    const Vector<Real> & natural_coords, Matrix<Real> & N) {
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
+    Matrix<Real> & N) {
   Vector<Real> L(2);
   InterpolationElement<_itp_lagrange_segment_2, _itk_lagrangian>::computeShapes(
       natural_coords, L);
   Matrix<Real> H(2, 4);
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeShapes(
-      natural_coords, H);
+      natural_coords, real_coord, H);
 
   // clang-format off
   //   u1    v1      w1      x1   y1      z1      u2   v2      w2      x2   y2      z2
@@ -113,13 +115,14 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeShapes(
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B) {
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
+    Matrix<Real> & B) {
   Matrix<Real> L(1, 2);
   InterpolationElement<_itp_lagrange_segment_2, _itk_lagrangian>::computeDNDS(
       natural_coords, L);
   Matrix<Real> H(1, 4);
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
-      natural_coords, H);
+      natural_coords, real_coord, H);
 
   // clang-format off
   //    u1      v1      t1      u2      v2      t2
@@ -131,19 +134,19 @@ InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeDNDS(
-    const Vector<Real> & natural_coords, Matrix<Real> & B) {
+									  const Vector<Real> & natural_coords, const Matrix<Real> & real_coord, Matrix<Real> & B) {
   Matrix<Real> L(1, 2);
   InterpolationElement<_itp_lagrange_segment_2, _itk_lagrangian>::computeDNDS(
       natural_coords, L);
   Matrix<Real> H(1, 4);
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
-      natural_coords, H);
+      natural_coords, real_coord, H);
   // clang-format off
-  //    u1      v1      w1      x1      y1      z1      u2      v2      w2      x2      y2      z2
+  //    u1       v1       w1       x1       y1       z1       u2       v2       w2       x2       y2       z2
   B = {{L(0, 0), 0      , 0      , 0      , 0      , 0      , L(0, 1), 0      , 0      , 0      , 0      , 0      },  // eps
-       {0      , H(0, 0), 0      , 0      , H(0, 1), 0      , 0      , H(0, 2), 0      , 0      , H(0, 3), 0      },  // chix
-       {0      , 0      , H(0, 0), 0      , 0      , H(0, 1), 0      , 0      , H(0, 2), 0      , 0      , H(0, 3)},  // chiy
-       {0      , 0      , 0      , L(0, 0), 0      , 0      , 0      , 0      , 0      , L(0, 1), 0      , 0      }}; // chiz
+       {0      , H(0, 0), 0      , 0      , 0      , H(0, 1), 0      , H(0, 2), 0      , 0      , 0      , H(0, 3)},  // chi strong axis
+       {0      , 0      ,-H(0, 0), 0      , H(0, 1), 0      , 0      , 0      ,-H(0, 2), 0      , H(0, 3), 0      },  // chi weak axis
+       {0      , 0      , 0      , L(0, 0), 0      , 0      , 0      , 0      , 0      , L(0, 1), 0      , 0      }}; // chi torsion
   // clang-format on
 }
 

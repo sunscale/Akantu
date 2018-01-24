@@ -48,9 +48,11 @@ AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_discrete_kirchhoff_triangle_18,
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeShapes(
-    const Vector<Real> & /*natural_coords*/, Matrix<Real> & /*N*/) {
-  //   // projected_coord (x1 x2 x3) (y1 y2 y3)
+inline void
+InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeShapes(
+    const Vector<Real> & /*natural_coords*/,
+    const Matrix<Real> & /*real_coord*/, Matrix<Real> & /*N*/) {
+//   // projected_coord (x1 x2 x3) (y1 y2 y3)
 
 #if 0
   // natural coordinate
@@ -138,7 +140,8 @@ inline void InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeSh
 template <>
 inline void
 InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
-    const Vector<Real> & /*natural_coords*/, Matrix<Real> & /*B*/) {
+    const Vector<Real> & /*natural_coords*/,
+    const Matrix<Real> & /*real_coord*/, Matrix<Real> & /*B*/) {
 
 #if 0
   // natural coordinate

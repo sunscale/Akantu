@@ -61,30 +61,40 @@ public:
 
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
+				   const Matrix<Real> & real_coord,
                                    Tensor3<Real> & N) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> n_t = N(i);
-      computeShapes(natural_coord(i), n_t);
+      computeShapes(natural_coord(i), real_coord, n_t);
     }
   }
 
   /// compute the shape values for a given point in natural coordinates
   static inline void computeShapes(const Vector<Real> & natural_coord,
+				   const Matrix<Real> & real_coord,
                                    Matrix<Real> & N);
 
   /// compute shape derivatives (input is dxds) for a set of points
   static inline void computeShapeDerivatives(const Tensor3<Real> & Js,
                                              const Tensor3<Real> & DNDSs,
+					     const Matrix<Real> & R,
                                              Tensor3<Real> & Bs) {
     for (UInt i = 0; i < Js.size(2); ++i) {
       Matrix<Real> J = Js(i);
       Matrix<Real> DNDS = DNDSs(i);
+      Matrix<Real> DNDS_R(DNDS.rows(), DNDS.cols());
+      DNDS_R.mul<false, false>(DNDS, R);
       Matrix<Real> B = Bs(i);
       auto inv_J = J.inverse();
       Matrix<Real> inv_J_full(DNDS.rows(), DNDS.rows());
-      inv_J_full.block(inv_J, 0, 0);
-      inv_J_full.block(inv_J, inv_J.rows(), inv_J.cols());
-      B.mul<false, false>(inv_J_full, DNDS);
+
+      // Gotta repeat J^-1 for each stress component
+      for (UInt k = 0, pos = 0; k < getNbStressComponents();
+           k++, pos += inv_J.rows()) {
+        inv_J_full.block(inv_J, pos, pos);
+      }
+
+      B.mul<false, false>(inv_J_full, DNDS_R);
     }
   }
 
@@ -94,10 +104,11 @@ public:
    * of points in natural coordinates
    */
   static inline void computeDNDS(const Matrix<Real> & natural_coord,
+				 const Matrix<Real> & real_coord,
                                  Tensor3<Real> & dnds) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> dnds_t = dnds(i);
-      computeDNDS(natural_coord(i), dnds_t);
+      computeDNDS(natural_coord(i), real_coord, dnds_t);
     }
   }
 
@@ -108,6 +119,7 @@ public:
    * coordinates
    */
   static inline void computeDNDS(const Vector<Real> & natural_coord,
+				 const Matrix<Real> & real_coord,
                                  Matrix<Real> & dnds);
 
 public:
