@@ -283,13 +283,14 @@ function(register_gtest_sources)
   register_test_files_to_package(${ARGN})
 
   if(NOT _is_active)
-    if(_register_test_PACKAGE)
-      set(_list ${_gtest_PACKAGE})
-      list(APPEND _list ${_register_test_PACKAGE})
-      list(REMOVE_DUPLICATES _list)
-      set(_gtest_PACKAGE ${_list} PARENT_SCOPE)
-    endif()
     return()
+  endif()
+
+  if(_register_test_PACKAGE)
+    set(_list ${_gtest_PACKAGE})
+    list(APPEND _list ${_register_test_PACKAGE})
+    list(REMOVE_DUPLICATES _list)
+    set(_gtest_PACKAGE ${_list} PARENT_SCOPE)
   endif()
 
   foreach (_var ${_test_flags})
@@ -341,6 +342,10 @@ endfunction()
 
 # ==============================================================================
 function(register_gtest_test test_name)
+  if(NOT _gtest_PACKAGE)
+    return()
+  endif()
+  
   set(_argn ${test_name}_gtest)
 
   set(_link_libraries GTest::GTest GTest::Main)
@@ -353,18 +358,18 @@ function(register_gtest_test test_name)
     set(_compile_flags COMPILE_OPTIONS "AKANTU_TEST_USE_PYBIND11")
   endif()
 
+  is_test_active(_is_active ${ARGN} PACKAGE ${_gtest_PACKAGE})
+  if(NOT _is_active)
+    return()
+  endif()
+
   register_gtest_sources(${ARGN}
     SOURCES ${PROJECT_SOURCE_DIR}/test/test_gtest_main.cc
     LINK_LIBRARIES ${_link_libraries}
     PACKAGE ${_gtest_PACKAGE}
     ${_compile_flags}
     )
-
-  is_test_active(_is_active ${ARGN} PACKAGE ${_gtest_PACKAGE})
-  if(NOT _is_active)
-    return()
-  endif()
-
+  
   foreach (_var ${_test_flags})
     if(_gtest_${_var})
       list(APPEND _argn ${_var})
