@@ -61,6 +61,9 @@ endforeach()
 register_test(test_fe_engine_precomupation_bernoulli_beam_2
   PACKAGE structural_mechanics
   SOURCES test_fe_engine_precomputation_bernoulli_2.cc)
+register_test(test_fe_engine_precomupation_bernoulli_beam_3
+  PACKAGE structural_mechanics
+  SOURCES test_fe_engine_precomputation_bernoulli_3.cc)
 #add_mesh(test_fem_circle_1_mesh circle.geo 2 1 OUTPUT circle1.msh)
 #add_mesh(test_fem_circle_2_mesh circle.geo 2 2 OUTPUT circle2.msh)
 
