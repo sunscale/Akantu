@@ -5,11 +5,9 @@
 # Rüdiger Sonderfeld <ruediger@c-plusplus.de>
 # and from Pretty-printers for libstc++ from Free Software Foundation, Inc.
 #
-
 import gdb
 import re
-#import sys
-# import libstdcxx.v6.printers as std
+import sys
 
 __use_gdb_pp__ = True
 try:
@@ -111,24 +109,131 @@ class AkaArrayPrinter(AkantuPrinter):
                    ('{0}' if self.nb_component == 1 else '[{0}]').format(
                        ', '.join(_values)))
 
-# @register_pretty_printer
-# class AkaArrayIteratorPrinter(AkantuPrinter):
-#     """Pretty printer for akantu::Array<T>"""
-#     regex = re.compile('^akantu::Array<(.*?), (true|false)>::internal_iterator<(.*?), (.*?), (false|true)>$')
-#     name = 'akantu::Array::iterator'
+if sys.version_info[0] > 2:
+    ### Python 3 stuff
+    Iterator = object
+else:
+    ### Python 2 stuff
+    class Iterator:
+        """Compatibility mixin for iterators
 
-#     def __init__(self, value):
-#         self.typename = self.get_basic_type(value)
-#         self.value = value
-#         self.ret = self.value['ret'].dereference()
+        Instead of writing next() methods for iterators, write
+        __next__() methods and use this mixin to make them work in
+        Python 2 as well as Python 3.
 
-#     def to_string(self):
-#         m = self.regex.search(self.typename)
-#         return 'Array<{0}>::iterator<{3}>'.format(
-#             m.group(1), m.group(1))
+        Idea stolen from the "six" documentation:
+        <http://pythonhosted.org/six/#six.Iterator>
+        """
+        def next(self):
+            return self.__next__()
 
-#     def children(self):
-#         yield ('[data]', self.ret)
+
+class RbtreeIterator(Iterator):
+    """
+    Turn an RB-tree-based container (std::map, std::set etc.) into
+    a Python iterable object.
+    """
+
+    def __init__(self, rbtree):
+        self.size = rbtree['_M_t']['_M_impl']['_M_node_count']
+        self.node = rbtree['_M_t']['_M_impl']['_M_header']['_M_left']
+        self.count = 0
+
+    def __iter__(self):
+        return self
+
+    def __len__(self):
+        return int (self.size)
+
+    def __next__(self):
+        if self.count == self.size:
+            raise StopIteration
+        result = self.node
+        self.count = self.count + 1
+        if self.count < self.size:
+            # Compute the next node.
+            node = self.node
+            if node.dereference()['_M_right']:
+                node = node.dereference()['_M_right']
+                while node.dereference()['_M_left']:
+                    node = node.dereference()['_M_left']
+            else:
+                parent = node.dereference()['_M_parent']
+                while node == parent.dereference()['_M_right']:
+                    node = parent
+                    parent = parent.dereference()['_M_parent']
+                if node.dereference()['_M_right'] != parent:
+                    node = parent
+                    self.node = node
+        return result
+
+def get_value_from_Rb_tree_node(node):
+    """Returns the value held in an _Rb_tree_node<_Val>"""
+    try:
+        member = node.type.fields()[1].name
+        if member == '_M_value_field':
+            # C++03 implementation, node contains the value as a member
+            return node['_M_value_field']
+        elif member == '_M_storage':
+            # C++11 implementation, node stores value in __aligned_membuf
+            valtype = node.type.template_argument(0)
+            return get_value_from_aligned_membuf(node['_M_storage'], valtype)
+    except:
+        pass
+    raise ValueError("Unsupported implementation for %s" % str(node.type))
+
+@register_pretty_printer
+class AkaElementTypeMapArrayPrinter(AkantuPrinter):
+    """Pretty printer for akantu::ElementTypeMap<Array<T>>"""
+    regex = re.compile('^akantu::ElementTypeMap<akantu::Array<(.*?), (true|false)>\*, akantu::(.*?)>$')
+    name = 'akantu::ElementTypeMapArray'
+
+    # Turn an RbtreeIterator into a pretty-print iterator.
+    class _iter(Iterator):
+        def __init__(self, rbiter, type):
+            self.rbiter = rbiter
+            self.count = 0
+            self.type = type
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.count % 2 == 0:
+                n = next(self.rbiter)
+                n = n.cast(self.type).dereference()
+                n = get_value_from_Rb_tree_node(n)
+                self.pair = n
+                item = n['first']
+            else:
+                item = self.pair['second']
+            result = ('[{0}]'.format(self.count), item.dereference())
+            self.count = self.count + 1
+            return result
+
+    def __init__(self, value):
+        self.typename = self.get_basic_type(value)
+        self.value = value
+        self.data = self.value['data']
+        self.ghost_data = self.value['ghost_data']
+
+    def to_string(self):
+        m = self.regex.search(self.typename)
+        return 'ElementTypMapArray<{0}> with {1} _not_ghost and {2} _ghost'.format(
+            m.group(1), len(RbtreeIterator(self.data)), len(RbtreeIterator(self.ghost_data)))
+
+    def children(self):
+        m = self.regex.search(self.typename)
+        try:
+            _type = gdb.lookup_type("akantu::Array<{0}, {1}>".format(
+                m.group(1), m.group(2))).strip_typedefs().pointer()
+            yield ('[_not_ghost]', self._iter(RbtreeIterator(self.data), _type))
+            yield ('[_ghost]', self._iter(RbtreeIterator(self.ghost_data), _type))
+        except RuntimeError:
+            pass
+
+    def display_hint(self):
+        return 'map'
 
 
 # @register_pretty_printer
