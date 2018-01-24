@@ -462,9 +462,6 @@ function(register_test test_name)
 	PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
     endif()
 
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND  CMAKE_BUILD_TYPE STREQUAL "Debug")
-      set(AKANTU_EXTRA_CXX_FLAGS "${AKANTU_EXTRA_CXX_FLAGS} -no-pie")
-    endif()
     if(AKANTU_EXTRA_CXX_FLAGS)
       set_target_properties(${test_name}
 	PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")

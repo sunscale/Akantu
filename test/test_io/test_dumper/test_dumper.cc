@@ -29,11 +29,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "dumper_iohelper_paraview.hh"
 #include "dumper_nodal_field.hh"
-#include "dumper_paraview.hh"
 #include "dumper_text.hh"
 #include "dumper_variable.hh"
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
@@ -45,7 +46,9 @@ int main(int argc, char * argv[]) {
   mesh.read("test_dumper.msh");
 
   SolidMechanicsModel model(mesh);
-  auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string> >("physical_names", model);
+  auto && mat_selector =
+      std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names",
+                                                              model);
   model.setMaterialSelector(mat_selector);
 
   model.initFull();

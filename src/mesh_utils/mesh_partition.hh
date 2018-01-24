@@ -112,6 +112,9 @@ public:
   AKANTU_GET_MACRO(NbPartition, nb_partitions, UInt);
   AKANTU_SET_MACRO(NbPartition, nb_partitions, UInt);
 
+protected:
+  UInt linearized(const Element & element);
+  Element unlinearized(UInt lin_element);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -139,7 +142,8 @@ protected:
 
   ElementTypeMapArray<UInt> saved_connectivity;
 
-  Array<Element> lin_to_element;
+  // vector of pair to ensure the iteration order
+  std::vector<std::pair<ElementType, UInt>> linearized_offsets;
 };
 
 } // namespace akantu

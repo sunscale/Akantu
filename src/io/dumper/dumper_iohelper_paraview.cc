@@ -31,11 +31,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <io_helper.hh>
-
 #include "communicator.hh"
-#include "dumper_paraview.hh"
+#include "dumper_iohelper_paraview.hh"
+/* -------------------------------------------------------------------------- */
+#include <io_helper.hh>
 #include <fstream>
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 

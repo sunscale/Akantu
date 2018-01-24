@@ -65,7 +65,8 @@ CommunicationRequest & CommunicationDescriptor<Entity>::getRequest() {
 /* -------------------------------------------------------------------------- */
 template <class Entity> void CommunicationDescriptor<Entity>::freeRequest() {
   const auto & comm = communications.getCommunicator();
-  comm.test(communication.request());
+
+  // comm.test(communication.request());
   comm.freeCommunicationRequest(communication.request());
 
   communications.decrementPending(tag, communication.type());

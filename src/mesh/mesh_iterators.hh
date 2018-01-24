@@ -256,15 +256,15 @@ namespace {
 /* -------------------------------------------------------------------------- */
 template <class Func, typename... pack>
 void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
-  auto && requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _casper);
+  auto requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _casper);
   const ElementTypeMapArray<UInt> * filter =
       OPTIONAL_NAMED_ARG(element_filter, nullptr);
 
   bool all_ghost_types = requested_ghost_type == _casper;
 
-  auto && spatial_dimension =
+  auto spatial_dimension =
       OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension());
-  auto && element_kind = OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined);
+  auto element_kind = OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined);
 
   for (auto ghost_type : ghost_types) {
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
