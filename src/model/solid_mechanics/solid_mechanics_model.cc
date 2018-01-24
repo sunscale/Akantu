@@ -918,7 +918,7 @@ void SolidMechanicsModel::splitElementByMaterial(
   const Array<UInt> * mat_indexes = nullptr;
   const Array<UInt> * mat_loc_num = nullptr;
 
-  for (auto && el : elements) {
+  for (const auto & el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -927,9 +927,10 @@ void SolidMechanicsModel::splitElementByMaterial(
       mat_loc_num = &(this->material_local_numbering(el.type, el.ghost_type));
     }
 
-    UInt old_id = el.element;
-    el.element = (*mat_loc_num)(old_id);
-    elements_per_mat[(*mat_indexes)(old_id)].push_back(el);
+    Element mat_el = el;
+
+    mat_el.element = (*mat_loc_num)(el.element);
+    elements_per_mat[(*mat_indexes)(el.element)].push_back(mat_el);
   }
 }
 
