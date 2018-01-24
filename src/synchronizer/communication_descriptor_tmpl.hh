@@ -74,7 +74,7 @@ template <class Entity> void CommunicationDescriptor<Entity>::freeRequest() {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-Array<Entity> & CommunicationDescriptor<Entity>::getScheme() {
+const Array<Entity> & CommunicationDescriptor<Entity>::getScheme() {
   return scheme;
 }
 

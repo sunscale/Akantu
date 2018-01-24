@@ -113,7 +113,7 @@ public:
   CommunicationRequest & getRequest();
 
   /// get the communication scheme
-  Array<Entity> & getScheme();
+  const Array<Entity> & getScheme();
 
   /// reset the buffer before pack or after unpack
   void resetBuffer();
@@ -137,7 +137,7 @@ public:
 
 protected:
   Communication & communication;
-  Array<Entity> & scheme;
+  const Array<Entity> & scheme;
   Communications<Entity> & communications;
   const SynchronizationTag & tag;
   UInt proc;

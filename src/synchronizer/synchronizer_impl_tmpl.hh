@@ -212,7 +212,7 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
   for (auto sr : iterate_send_recv) {
     for (auto && pair : this->communications.iterateSchemes(sr)) {
       auto proc = pair.first;
-      auto & scheme = pair.second;
+      const auto & scheme = pair.second;
       UInt size = 0;
 #ifndef AKANTU_NDEBUG
       size += this->sanityCheckDataSize(scheme, tag);
