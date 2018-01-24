@@ -1,0 +1,14 @@
+material elastic [
+	 name = bulk
+	 rho = 1e3   # density
+	 E   = 1e3   # young's modulus
+	 nu  = 0.1 # poisson's ratio
+]
+
+material cohesive_bilinear [
+	 name = cohesive
+	 sigma_c = 1
+	 beta = 1.5
+	 G_c = 1
+	 delta_0 = 0.1
+]

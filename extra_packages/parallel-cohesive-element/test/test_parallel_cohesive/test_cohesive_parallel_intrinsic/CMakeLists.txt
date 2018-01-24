@@ -1,0 +1,33 @@
+#===============================================================================
+# @file   CMakeLists.txt
+#
+# @author Marco Vocialta <marco.vocialta@epfl.ch>
+#
+#
+# @brief  configuration for parallel test for intrinsic cohesive elements
+#
+# @section LICENSE
+#
+# Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+#
+# @section DESCRIPTION
+#
+#===============================================================================
+
+add_mesh(test_cohesive_parallel_intrinsic_mesh mesh.geo 2 2)
+add_mesh(test_cohesive_parallel_intrinsic_tetrahedron_mesh tetrahedron.geo 3 2)
+
+register_test(test_cohesive_parallel_intrinsic
+  SOURCES test_cohesive_parallel_intrinsic.cc
+  DEPENDS test_cohesive_parallel_intrinsic_mesh
+  PACKAGE parallel_cohesive_element
+  FILES_TO_COPY material.dat
+  DIRECTORIES_TO_CREATE paraview)
+
+register_test(test_cohesive_parallel_intrinsic_tetrahedron
+  SOURCES test_cohesive_parallel_intrinsic_tetrahedron.cc
+  DEPENDS test_cohesive_parallel_intrinsic_tetrahedron_mesh
+  PACKAGE parallel_cohesive_element
+  FILES_TO_COPY material_tetrahedron.dat
+  DIRECTORIES_TO_CREATE paraview)

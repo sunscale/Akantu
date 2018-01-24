@@ -1,0 +1,16 @@
+material elastic [
+	 name = steel
+	 rho = 10   # density
+	 E   = 10   # young's modulus
+	 nu  = 0.1 # poisson's ratio
+]
+
+material cohesive_bilinear [
+	 name = cohesive
+	 sigma_c = 1
+	 beta = 1.5
+	 G_c = 1
+	 kappa = 1.2
+	 delta_0 = 0.1
+#	 penalty = 1e10
+]
