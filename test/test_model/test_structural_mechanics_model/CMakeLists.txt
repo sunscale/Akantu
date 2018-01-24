@@ -42,6 +42,11 @@ register_test(test_structural_mechanics_model_bernoulli_beam_2
   PACKAGE structural_mechanics
 )
 
+register_test(test_structural_mechanics_model_bernoulli_beam_3
+  test_structural_mechanics_model_bernoulli_beam_3.cc
+  PACKAGE structural_mechanics
+)
+
 # register_test(test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy
 #   test_structural_mechanics_model_bernoulli_beam_3_exemple_1_1_xy.cc
 #   PACKAGE structural_mechanics

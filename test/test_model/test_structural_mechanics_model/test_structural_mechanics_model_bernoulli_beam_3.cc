@@ -1,11 +1,9 @@
 /**
- * @file   test_structural_mechanics_model_bernoulli_beam_2.cc
+ * @file   test_structural_mechanics_model_bernoulli_beam_3.cc
  *
- * @author Fabian Barras <fabian.barras@epfl.ch>
  * @author Lucas Frérot <lucas.frerot@epfl.ch>
  *
- * @date creation: Fri Jul 15 2011
- * @date last modification: Sun Oct 19 2014
+ * @date creation: Mon Jan 22 2018
  *
  * @brief  Computation of the analytical exemple 1.1 in the TGC vol 6
  *
@@ -35,25 +33,27 @@
 #include "mesh.hh"
 #include "sparse_matrix_aij.hh"
 #include "structural_mechanics_model.hh"
+#include "sparse_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
-  constexpr ElementType type = _bernoulli_beam_2;
+  constexpr ElementType type = _bernoulli_beam_3;
+  constexpr UInt dim = 3;
   const UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
-  constexpr UInt dim = 2;
+  const Real a = std::sqrt(2) / 2; // cos(pi/4)
 
   Mesh mesh(dim);
 
   // Pushing nodes
   auto & nodes = mesh.getNodes();
-  Vector<Real> node = {0, 0};
+  Vector<Real> node = {0, 0, 0};
   nodes.push_back(node);
-  node = {10, 0};
+  node = {1, 0, 0};
   nodes.push_back(node);
-  node = {18, 0};
+  node = {0, 1, 0};
   nodes.push_back(node);
 
   // Pushing connectivity
@@ -61,78 +61,74 @@ int main(int argc, char * argv[]) {
   auto & connectivity = mesh.getConnectivity(type);
   Vector<UInt> element = {0, 1};
   connectivity.push_back(element);
-  element = {1, 2};
+  element = {0, 2};
   connectivity.push_back(element);
 
+  // Pushing normals
+  auto & normals = mesh.registerData<Real>("extra_normal")
+                       .alloc(0, dim, type, _not_ghost);
+  Vector<Real> normal = {0, 0, 1};
+  normals.push_back(normal);
+  normal = {0, 0, 1};
+  normals.push_back(normal);
+
+  // Creating model
   StructuralMechanicsModel model(mesh);
 
+  // Unit material
   StructuralMaterial mat;
-  mat.E = 3e10;
-  mat.I = 0.0025;
-  mat.A = 0.01;
-
+  mat.E = 1;
+  mat.Iz = 1;
+  mat.Iy = 1;
+  mat.A = 1;
+  mat.GJ = 1;
   model.addMaterial(mat);
-
-  mat.E = 3e10;
-  mat.I = 0.00128;
-  mat.A = 0.01;
-
-  model.addMaterial(mat);
-  // mat.E = 1;
-  // mat.I = 1;
+  // mat.E = 0.5;
+  // mat.Iz = 1;
+  // mat.Iy = 1;
   // mat.A = 1;
-  // model.addMaterial(mat);
+  // mat.GJ = 1;
   // model.addMaterial(mat);
 
   model.initFull();
 
-  // Boundary conditions
-  auto boundary = model.getBlockedDOFs().begin(ndof);
+  // Boundary conditions (blocking all DOFs of nodes 2 & 3)
+  auto boundary = ++model.getBlockedDOFs().begin(ndof);
   // clang-format off
-  *boundary = {true, true, true}; ++boundary;
-  *boundary = {false, true, false}; ++boundary;
-  *boundary = {false, true, false}; ++boundary;
+  *boundary = {true, true, true, true, true, true}; ++boundary;
+  *boundary = {true, true, true, true, true, true}; ++boundary;
   // clang-format on
 
   // Forces
-  Real M = 3600;  // Nm
-  Real q = -6000; // kN/m
-  Real L = 10;    // m
+  Real P = 1; // N
   auto & forces = model.getExternalForce();
-  forces(2, 2) = -M; // moment on last node
-#if 1 // as long as integration is not available
-  forces(0, 1) = q * L / 2;
-  forces(0, 2) = q * L * L / 12;
-  forces(1, 1) = q * L / 2;
-  forces(1, 2) = -q * L * L / 12;
-#else
-  auto & group = mesh.createElementGroup("lin_force");
-  group.add({type, 0, _not_ghost});
-  Vector<Real> lin_force = {0, q, 0};
-  // a linear force is not acutally a *boundary* condition
-  // it is equivalent to a volume force
-  model.applyBC(BC::Neumann::FromSameDim(lin_force), group);
-#endif
-  forces(2, 0) = mat.E * mat.A / 18;
+  forces(0, 2) = -P; // vertical force on first node
 
-  // Materials
-  auto & materials = model.getElementMaterial(type);
-  materials(0) = 0;
-  materials(1) = 1;
+  // Setting same material for all elements
+  model.getElementMaterial(type).set(0);
 
-  model.solveStep();
-
-  // dynamic_cast<const SparseMatrixAIJ &>(model.getDOFManager().getMatrix("K"))
-  //     .saveMatrix("stiffness.mtx");
-
-  auto d1 = model.getDisplacement()(1, 2);
-  auto d2 = model.getDisplacement()(2, 2);
-  auto d3 = model.getDisplacement()(1, 0);
-
-  if (!Math::are_float_equal(d1, 5.6 / 4800) ||  // first rotation
-      !Math::are_float_equal(d2, -3.7 / 4800) || // second rotation
-      !Math::are_float_equal(d3, 10 / 18.))      // axial deformation
+  try {
+    model.solveStep();
+  } catch (debug::SingularMatrixException & e) {
+    std::cerr << e.what() << std::endl;
+    e.matrix.saveMatrix("jacobian.mtx");
     return 1;
+  }
+
+  model.getDOFManager().getMatrix("J").saveMatrix("jacobian.mtx");
+
+  auto vz = model.getDisplacement()(0, 2);
+  auto th = model.getDisplacement()(0, 4);
+
+
+  if (!Math::are_float_equal(vz, -5. / 48.) ||        // vertical deflection
+      !Math::are_float_equal(th, -std::sqrt(2) / 8.)) { // y rotation
+    std::cout << "vz = " << vz << "\n"
+	      << "th = " << th << std::endl;
+    for (auto val : make_view(model.getDisplacement(), 1))
+      std::cout << val << std::endl;
+    return 1;
+  }
 
   return 0;
 }
