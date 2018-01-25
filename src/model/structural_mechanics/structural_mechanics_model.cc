@@ -42,7 +42,7 @@
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_elemental_field.hh"
-#include "dumper_paraview.hh"
+#include "dumper_iohelper_paraview.hh"
 #include "dumpable_inline_impl.hh"
 #include "group_manager_inline_impl.cc"
 #endif

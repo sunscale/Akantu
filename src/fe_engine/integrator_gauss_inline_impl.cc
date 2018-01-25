@@ -248,6 +248,75 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 }
 
 /* -------------------------------------------------------------------------- */
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+template <>
+template <ElementType type>
+void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
+    computeJacobiansOnIntegrationPoints(
+        const Array<Real> & nodes, const Matrix<Real> & quad_points,
+        Array<Real> & jacobians, const GhostType & ghost_type,
+        const Array<UInt> & filter_elements) const {
+  AKANTU_DEBUG_IN();
+
+  const UInt spatial_dimension = mesh.getSpatialDimension();
+  const UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  const UInt nb_quadrature_points = quad_points.cols();
+  const UInt nb_dofs = ElementClass<type>::getNbDegreeOfFreedom();
+
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
+  jacobians.resize(nb_element * nb_quadrature_points);
+
+  auto jacobians_it =
+      jacobians.begin_reinterpret(nb_quadrature_points, nb_element);
+  auto jacobians_begin = jacobians_it;
+
+  Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
+  FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type,
+                                       filter_elements);
+
+  auto x_it = x_el.begin(spatial_dimension, nb_nodes_per_element);
+
+  nb_element = x_el.size();
+
+  const bool has_extra_normal =
+      mesh.hasData<Real>("extra_normal", type, ghost_type);
+  Array<Real>::vector_iterator extra_normal, extra_normal_begin;
+  if (has_extra_normal)
+    extra_normal = mesh.getData<Real>("extra_normal", type, ghost_type)
+                       .begin(spatial_dimension);
+  extra_normal_begin = extra_normal;
+
+  //  Matrix<Real> local_coord(spatial_dimension, nb_nodes_per_element);
+  for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
+    const Matrix<Real> & X = *x_it;
+    Vector<Real> & J = *jacobians_it;
+    Matrix<Real> R(nb_dofs, nb_dofs);
+
+    if (has_extra_normal)
+      ElementClass<type>::computeRotationMatrix(R, X, *extra_normal);
+    else
+      ElementClass<type>::computeRotationMatrix(R, X, Vector<Real>(X.rows()));
+    // Extracting relevant lines
+    auto x = (R.block(0, 0, spatial_dimension, spatial_dimension) * X)
+                 .block(0, 0, ElementClass<type>::getNaturalSpaceDimension(),
+                        ElementClass<type>::getNbNodesPerElement());
+
+    computeJacobianOnQuadPointsByElement<type>(x, quad_points, J);
+
+    if (filter_elements == empty_filter) {
+      ++jacobians_it;
+      ++extra_normal;
+    } else {
+      jacobians_it = jacobians_begin + filter_elements(elem);
+      extra_normal = extra_normal_begin + filter_elements(elem);
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+#endif
+  
+/* -------------------------------------------------------------------------- */
 #if defined(AKANTU_COHESIVE_ELEMENT)
 template <>
 template <ElementType type>

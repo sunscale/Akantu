@@ -243,19 +243,16 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   auto & shapesd = this->shapes_derivatives(itp_type, ghost_type);
   shapesd.resize(nb_element * nb_points);
 
-  auto nodes_per_element = getNodesPerElement<type>(mesh, nodes, ghost_type);
 
   for (auto && tuple :
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
            make_view(shapesd, nb_stress_components,
                      nb_nodes_per_element * nb_dof, nb_points),
-           make_view(rot_matrices, nb_dof, nb_dof),
-	   make_view(*nodes_per_element, spatial_dimension, nb_nodes_per_element))) {
+           make_view(rot_matrices, nb_dof, nb_dof))) {
     // compute shape derivatives
     auto & X = std::get<0>(tuple);
     auto & B = std::get<1>(tuple);
     auto & RDOFs = std::get<2>(tuple);
-    auto & real_coord = std::get<3>(tuple);
 
     auto R = RDOFs.block(0, 0, spatial_dimension, spatial_dimension);
     Matrix<Real> T(B.size(1), B.size(1));
@@ -267,7 +264,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
         (R * X).block(0, 0, natural_spatial_dimension, nb_nodes_per_element);
 
     Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
-    ElementClass<type>::computeDNDS(natural_coords, real_coord, dnds);
+    ElementClass<type>::computeDNDS(natural_coords, X, dnds);
 
     Tensor3<Real> J(x.rows(), natural_coords.rows(), natural_coords.cols());
 

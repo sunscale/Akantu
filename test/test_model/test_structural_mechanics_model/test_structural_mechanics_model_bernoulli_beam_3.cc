@@ -51,9 +51,9 @@ int main(int argc, char * argv[]) {
   auto & nodes = mesh.getNodes();
   Vector<Real> node = {0, 0, 0};
   nodes.push_back(node);
-  node = {1, 0, 0};
+  node = {a, a, 0};
   nodes.push_back(node);
-  node = {0, 1, 0};
+  node = {a, -a, 0};
   nodes.push_back(node);
 
   // Pushing connectivity
@@ -83,12 +83,6 @@ int main(int argc, char * argv[]) {
   mat.A = 1;
   mat.GJ = 1;
   model.addMaterial(mat);
-  // mat.E = 0.5;
-  // mat.Iz = 1;
-  // mat.Iy = 1;
-  // mat.A = 1;
-  // mat.GJ = 1;
-  // model.addMaterial(mat);
 
   model.initFull();
 
@@ -115,17 +109,15 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
-  model.getDOFManager().getMatrix("J").saveMatrix("jacobian.mtx");
-
   auto vz = model.getDisplacement()(0, 2);
-  auto th = model.getDisplacement()(0, 4);
+  auto thy = model.getDisplacement()(0, 4);
+  auto thx = model.getDisplacement()(0, 3);
+  auto thz = model.getDisplacement()(0, 5);
 
-
-  if (!Math::are_float_equal(vz, -5. / 48.) ||        // vertical deflection
-      !Math::are_float_equal(th, -std::sqrt(2) / 8.)) { // y rotation
-    std::cout << "vz = " << vz << "\n"
-	      << "th = " << th << std::endl;
-    for (auto val : make_view(model.getDisplacement(), 1))
+  if (!Math::are_float_equal(vz, -5. / 48.) ||           // vertical deflection
+      !Math::are_float_equal(thy, -std::sqrt(2) / 8.) || // y rotation
+      !Math::are_float_equal(thx, 0) || !Math::are_float_equal(thz, 0)) {
+    for (auto val : make_view(model.getDisplacement(), 6))
       std::cout << val << std::endl;
     return 1;
   }
