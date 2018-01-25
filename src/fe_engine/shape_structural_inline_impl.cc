@@ -88,7 +88,7 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
   UInt nb_points = integration_points.cols();
   UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
 
-  shapes.resize(nb_element * nb_points);
+  shapes.resize(nb_element * nb_points, 0);
 
   UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
 
@@ -145,7 +145,7 @@ void ShapeStructural<kind>::precomputeRotationMatrices(
   }
 
   auto & rot_matrices = this->rotation_matrices(type, ghost_type);
-  rot_matrices.resize(nb_element);
+  rot_matrices.resize(nb_element, 0);
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
@@ -197,7 +197,7 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
   }
 
   auto & shapes_ = this->shapes(itp_type, ghost_type);
-  shapes_.resize(nb_element * nb_points);
+  shapes_.resize(nb_element * nb_points, 0);
 
   auto nodes_per_element = getNodesPerElement<type>(mesh, nodes, ghost_type);
 
@@ -241,7 +241,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
 
   auto & shapesd = this->shapes_derivatives(itp_type, ghost_type);
-  shapesd.resize(nb_element * nb_points);
+  shapesd.resize(nb_element * nb_points, 0);
 
 
   for (auto && tuple :
@@ -298,7 +298,7 @@ void ShapeStructural<kind>::interpolateOnIntegrationPoints(
                                        filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
-  out_uq.resize(nb_quad_points);
+  out_uq.resize(nb_quad_points, 0);
 
   auto out_it = out_uq.begin_reinterpret(nb_dof, 1, nb_quad_points_per_element,
                                          u_el.size());
@@ -348,7 +348,7 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
                                        filter_elements);
 
   auto nb_quad_points = nb_quad_points_per_element * u_el.size();
-  out_nablauq.resize(nb_quad_points);
+  out_nablauq.resize(nb_quad_points, 0);
 
   auto out_it = out_nablauq.begin_reinterpret(
       element_dimension, 1, nb_quad_points_per_element, u_el.size());

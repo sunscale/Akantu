@@ -35,17 +35,18 @@
 #include "mesh.hh"
 #include "sparse_matrix_aij.hh"
 #include "structural_mechanics_model.hh"
+#include "test_gtest_utils.hh"
 /* -------------------------------------------------------------------------- */
+#include <gtest/gtest.h>
 
 using namespace akantu;
 
-int main(int argc, char * argv[]) {
-  initialize(argc, argv);
+TEST(TestBernoulliBeam2, TestDisplacements) {
   constexpr ElementType type = _bernoulli_beam_2;
   const UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
   constexpr UInt dim = 2;
 
-  Mesh mesh(dim);
+  Mesh mesh(dim, "test_bernoulli_beam_2");
 
   // Pushing nodes
   auto & nodes = mesh.getNodes();
@@ -64,7 +65,7 @@ int main(int argc, char * argv[]) {
   element = {1, 2};
   connectivity.push_back(element);
 
-  StructuralMechanicsModel model(mesh);
+  StructuralMechanicsModel model(mesh, dim, "test_bernoulli_beam_2");
 
   StructuralMaterial mat;
   mat.E = 3e10;
@@ -109,7 +110,7 @@ int main(int argc, char * argv[]) {
   auto & group = mesh.createElementGroup("lin_force");
   group.add({type, 0, _not_ghost});
   Vector<Real> lin_force = {0, q, 0};
-  // a linear force is not acutally a *boundary* condition
+  // a linear force is not actually a *boundary* condition
   // it is equivalent to a volume force
   model.applyBC(BC::Neumann::FromSameDim(lin_force), group);
 #endif
@@ -129,10 +130,9 @@ int main(int argc, char * argv[]) {
   auto d2 = model.getDisplacement()(2, 2);
   auto d3 = model.getDisplacement()(1, 0);
 
-  if (!Math::are_float_equal(d1, 5.6 / 4800) ||  // first rotation
-      !Math::are_float_equal(d2, -3.7 / 4800) || // second rotation
-      !Math::are_float_equal(d3, 10 / 18.))      // axial deformation
-    return 1;
+  Real tol = Math::getTolerance();
 
-  return 0;
+  EXPECT_NEAR(d1, 5.6 / 4800, tol);  // first rotation
+  EXPECT_NEAR(d2, -3.7 / 4800, tol); // second rotation
+  EXPECT_NEAR(d3, 10. / 18, tol);    // axial deformation
 }

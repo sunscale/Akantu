@@ -32,28 +32,32 @@
 #include "aka_common.hh"
 #include "mesh.hh"
 #include "sparse_matrix_aij.hh"
-#include "structural_mechanics_model.hh"
 #include "sparse_solver.hh"
+#include "structural_mechanics_model.hh"
+// #include "test_gtest_utils.hh"
+/* -------------------------------------------------------------------------- */
+#include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char * argv[]) {
-  initialize(argc, argv);
+TEST(TestBernoulliBeam3, TestDisplacements) {
   constexpr ElementType type = _bernoulli_beam_3;
   constexpr UInt dim = 3;
   const UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
   const Real a = std::sqrt(2) / 2; // cos(pi/4)
 
-  Mesh mesh(dim);
+  Mesh mesh(dim, "test_bernoulli_beam_3");
 
   // Pushing nodes
   auto & nodes = mesh.getNodes();
   Vector<Real> node = {0, 0, 0};
   nodes.push_back(node);
   node = {a, a, 0};
+  // node = {1, 0, 0};
   nodes.push_back(node);
   node = {a, -a, 0};
+  // node = {0, 1, 0};
   nodes.push_back(node);
 
   // Pushing connectivity
@@ -65,15 +69,15 @@ int main(int argc, char * argv[]) {
   connectivity.push_back(element);
 
   // Pushing normals
-  auto & normals = mesh.registerData<Real>("extra_normal")
-                       .alloc(0, dim, type, _not_ghost);
+  auto & normals =
+      mesh.registerData<Real>("extra_normal").alloc(0, dim, type, _not_ghost);
   Vector<Real> normal = {0, 0, 1};
   normals.push_back(normal);
   normal = {0, 0, 1};
   normals.push_back(normal);
 
   // Creating model
-  StructuralMechanicsModel model(mesh);
+  StructuralMechanicsModel model(mesh, dim, "test_bernoulli_beam_3");
 
   // Unit material
   StructuralMaterial mat;
@@ -96,6 +100,7 @@ int main(int argc, char * argv[]) {
   // Forces
   Real P = 1; // N
   auto & forces = model.getExternalForce();
+  forces.clear();
   forces(0, 2) = -P; // vertical force on first node
 
   // Setting same material for all elements
@@ -106,21 +111,20 @@ int main(int argc, char * argv[]) {
   } catch (debug::SingularMatrixException & e) {
     std::cerr << e.what() << std::endl;
     e.matrix.saveMatrix("jacobian.mtx");
-    return 1;
   }
+
+  model.getDOFManager().getMatrix("K").saveMatrix("stiffness.mtx");
+  model.getDOFManager().getMatrix("J").saveMatrix("jacobian.mtx");
 
   auto vz = model.getDisplacement()(0, 2);
   auto thy = model.getDisplacement()(0, 4);
   auto thx = model.getDisplacement()(0, 3);
   auto thz = model.getDisplacement()(0, 5);
 
-  if (!Math::are_float_equal(vz, -5. / 48.) ||           // vertical deflection
-      !Math::are_float_equal(thy, -std::sqrt(2) / 8.) || // y rotation
-      !Math::are_float_equal(thx, 0) || !Math::are_float_equal(thz, 0)) {
-    for (auto val : make_view(model.getDisplacement(), 6))
-      std::cout << val << std::endl;
-    return 1;
-  }
+  Real tol = Math::getTolerance();
 
-  return 0;
+  EXPECT_NEAR(vz, -5. / 48, tol);
+  EXPECT_NEAR(thy, -std::sqrt(2) / 8, tol);
+  EXPECT_NEAR(thz, 0, tol);
+  EXPECT_NEAR(thx, 0, tol);
 }
