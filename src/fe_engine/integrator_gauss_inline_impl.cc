@@ -51,7 +51,7 @@ inline void IntegratorGauss<kind, IntegrationOrderFunctor>::integrateOnElement(
 
   UInt nb_quadrature_points = ElementClass<type>::getNbQuadraturePoints();
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
-                      "The vector f do not have the good number of component.");
+		      "The vector f do not have the good number of component.");
 
   Real * f_val = f.storage() + elem * f.getNbComponent();
   Real * jac_val = jac_loc.storage() + elem * nb_quadrature_points;
@@ -69,7 +69,7 @@ inline Real IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
   UInt nb_quadrature_points =
       GaussIntegrationElement<type>::getNbQuadraturePoints();
   AKANTU_DEBUG_ASSERT(in_f.size() == nb_quadrature_points,
-                      "The vector f do not have nb_quadrature_points entries.");
+		      "The vector f do not have nb_quadrature_points entries.");
 
   Real * jac_val = jac_loc.storage() + index * nb_quadrature_points;
   Real intf;
@@ -105,9 +105,9 @@ IntegratorGauss<kind, IntegrationOrderFunctor>::getIntegrationPoints(
   AKANTU_DEBUG_ASSERT(
       quadrature_points.exists(type, ghost_type),
       "Quadrature points for type "
-          << quadrature_points.printType(type, ghost_type)
-          << " have not been initialized."
-          << " Did you use 'computeQuadraturePoints' function ?");
+	  << quadrature_points.printType(type, ghost_type)
+	  << " have not been initialized."
+	  << " Did you use 'computeQuadraturePoints' function ?");
   return quadrature_points(type, ghost_type);
 }
 
@@ -120,9 +120,9 @@ IntegratorGauss<kind, IntegrationOrderFunctor>::getNbIntegrationPoints(
   AKANTU_DEBUG_ASSERT(
       quadrature_points.exists(type, ghost_type),
       "Quadrature points for type "
-          << quadrature_points.printType(type, ghost_type)
-          << " have not been initialized."
-          << " Did you use 'computeQuadraturePoints' function ?");
+	  << quadrature_points.printType(type, ghost_type)
+	  << " have not been initialized."
+	  << " Did you use 'computeQuadraturePoints' function ?");
   return quadrature_points(type, ghost_type).cols();
 }
 
@@ -132,7 +132,7 @@ template <ElementType type, UInt polynomial_degree>
 inline Matrix<Real>
 IntegratorGauss<kind, IntegrationOrderFunctor>::getIntegrationPoints() const {
   return GaussIntegrationElement<type,
-                                 polynomial_degree>::getQuadraturePoints();
+				 polynomial_degree>::getQuadraturePoints();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -161,8 +161,8 @@ template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
 inline void IntegratorGauss<kind, IntegrationOrderFunctor>::
     computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
-                                         const Matrix<Real> & quad,
-                                         Vector<Real> & jacobians) const {
+					 const Matrix<Real> & quad,
+					 Vector<Real> & jacobians) const {
   // jacobian
   ElementClass<type>::computeJacobian(quad, node_coords, jacobians);
 }
@@ -194,10 +194,10 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::checkJacobians(
        ++i, ++jacobians_val) {
     if (*jacobians_val < 0)
       AKANTU_CUSTOM_EXCEPTION_INFO(debug::IntegratorGaussException{},
-          "Negative jacobian computed,"
-          << " possible problem in the element node ordering (Quadrature Point "
-          << i % nb_quadrature_points << ":" << i / nb_quadrature_points << ":"
-          << type << ":" << ghost_type << ")");
+	  "Negative jacobian computed,"
+	  << " possible problem in the element node ordering (Quadrature Point "
+	  << i % nb_quadrature_points << ":" << i / nb_quadrature_points << ":"
+	  << type << ":" << ghost_type << ")");
   }
   AKANTU_DEBUG_OUT();
 }
@@ -207,9 +207,9 @@ template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::
     computeJacobiansOnIntegrationPoints(
-        const Array<Real> & nodes, const Matrix<Real> & quad_points,
-        Array<Real> & jacobians, const GhostType & ghost_type,
-        const Array<UInt> & filter_elements) const {
+	const Array<Real> & nodes, const Matrix<Real> & quad_points,
+	Array<Real> & jacobians, const GhostType & ghost_type,
+	const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -225,7 +225,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type,
-                                       filter_elements);
+				       filter_elements);
 
   auto x_it = x_el.begin(spatial_dimension, nb_nodes_per_element);
 
@@ -253,9 +253,9 @@ template <>
 template <ElementType type>
 void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
     computeJacobiansOnIntegrationPoints(
-        const Array<Real> & nodes, const Matrix<Real> & quad_points,
-        Array<Real> & jacobians, const GhostType & ghost_type,
-        const Array<UInt> & filter_elements) const {
+	const Array<Real> & nodes, const Matrix<Real> & quad_points,
+	Array<Real> & jacobians, const GhostType & ghost_type,
+	const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   const UInt spatial_dimension = mesh.getSpatialDimension();
@@ -272,7 +272,7 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type,
-                                       filter_elements);
+				       filter_elements);
 
   auto x_it = x_el.begin(spatial_dimension, nb_nodes_per_element);
 
@@ -281,10 +281,11 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
   const bool has_extra_normal =
       mesh.hasData<Real>("extra_normal", type, ghost_type);
   Array<Real>::vector_iterator extra_normal, extra_normal_begin;
-  if (has_extra_normal)
+  if (has_extra_normal) {
     extra_normal = mesh.getData<Real>("extra_normal", type, ghost_type)
-                       .begin(spatial_dimension);
-  extra_normal_begin = extra_normal;
+		       .begin(spatial_dimension);
+    extra_normal_begin = extra_normal;
+  }
 
   //  Matrix<Real> local_coord(spatial_dimension, nb_nodes_per_element);
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
@@ -298,8 +299,8 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
       ElementClass<type>::computeRotationMatrix(R, X, Vector<Real>(X.rows()));
     // Extracting relevant lines
     auto x = (R.block(0, 0, spatial_dimension, spatial_dimension) * X)
-                 .block(0, 0, ElementClass<type>::getNaturalSpaceDimension(),
-                        ElementClass<type>::getNbNodesPerElement());
+		 .block(0, 0, ElementClass<type>::getNaturalSpaceDimension(),
+			ElementClass<type>::getNbNodesPerElement());
 
     computeJacobianOnQuadPointsByElement<type>(x, quad_points, J);
 
@@ -315,16 +316,16 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
   AKANTU_DEBUG_OUT();
 }
 #endif
-  
+
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_COHESIVE_ELEMENT)
 template <>
 template <ElementType type>
 void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
     computeJacobiansOnIntegrationPoints(
-        const Array<Real> & nodes, const Matrix<Real> & quad_points,
-        Array<Real> & jacobians, const GhostType & ghost_type,
-        const Array<UInt> & filter_elements) const {
+	const Array<Real> & nodes, const Matrix<Real> & quad_points,
+	Array<Real> & jacobians, const GhostType & ghost_type,
+	const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -343,7 +344,7 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type,
-                                       filter_elements);
+				       filter_elements);
 
   auto x_it = x_el.begin(spatial_dimension, nb_nodes_per_element);
 
@@ -357,8 +358,8 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
 
     for (UInt s = 0; s < spatial_dimension; ++s)
       for (UInt n = 0; n < nb_nodes_per_subelement; ++n)
-        x(s, n) =
-            ((*x_it)(s, n) + (*x_it)(s, n + nb_nodes_per_subelement)) * .5;
+	x(s, n) =
+	    ((*x_it)(s, n) + (*x_it)(s, n + nb_nodes_per_subelement)) * .5;
 
     if (type == _cohesive_1d_2)
       J(0) = 1;
@@ -377,7 +378,7 @@ template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::
     precomputeJacobiansOnQuadraturePoints(const Array<Real> & nodes,
-                                          const GhostType & ghost_type) {
+					  const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   Array<Real> & jacobians_tmp = jacobians.alloc(0, 1, type, ghost_type);
@@ -456,15 +457,15 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
-                      "No jacobians for the type "
-                          << jacobians.printType(type, ghost_type));
+		      "No jacobians for the type "
+			  << jacobians.printType(type, ghost_type));
 
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
   if (filter_elements != empty_filter) {
     UInt nb_element = filter_elements.size();
     Array<Real> * filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
     FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
-                                  filter_elements);
+				  filter_elements);
     this->integrate(in_f, intf, nb_degree_of_freedom, *filtered_J, nb_element);
     delete filtered_J;
   } else {
@@ -487,11 +488,11 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
 
   Array<Real> jacobians;
   this->computeJacobiansOnIntegrationPoints<type>(mesh.getNodes(), quads,
-                                                  jacobians, ghost_type);
+						  jacobians, ghost_type);
   this->multiplyJacobiansByWeights<type, polynomial_degree>(jacobians);
 
   this->integrate(in_f, intf, nb_degree_of_freedom, jacobians,
-                  mesh.getNbElement(type, ghost_type));
+		  mesh.getNbElement(type, ghost_type));
 
   AKANTU_DEBUG_OUT();
 }
@@ -521,8 +522,8 @@ Real IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
-                      "No jacobians for the type "
-                          << jacobians.printType(type, ghost_type));
+		      "No jacobians for the type "
+			  << jacobians.printType(type, ghost_type));
 
   Array<Real> intfv(0, 1);
   integrate<type>(in_f, intfv, 1, ghost_type, filter_elements);
@@ -537,9 +538,9 @@ Real IntegratorGauss<kind, IntegrationOrderFunctor>::integrate(
 template <ElementKind kind, class IntegrationOrderFunctor>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::
     integrateOnIntegrationPoints(const Array<Real> & in_f, Array<Real> & intf,
-                                 UInt nb_degree_of_freedom,
-                                 const Array<Real> & jacobians,
-                                 UInt nb_element) const {
+				 UInt nb_degree_of_freedom,
+				 const Array<Real> & jacobians,
+				 UInt nb_element) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_points = jacobians.size() / nb_element;
@@ -571,14 +572,14 @@ template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::
     integrateOnIntegrationPoints(const Array<Real> & in_f, Array<Real> & intf,
-                                 UInt nb_degree_of_freedom,
-                                 const GhostType & ghost_type,
-                                 const Array<UInt> & filter_elements) const {
+				 UInt nb_degree_of_freedom,
+				 const GhostType & ghost_type,
+				 const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
-                      "No jacobians for the type "
-                          << jacobians.printType(type, ghost_type));
+		      "No jacobians for the type "
+			  << jacobians.printType(type, ghost_type));
 
   const Array<Real> & jac_loc = this->jacobians(type, ghost_type);
 
@@ -587,14 +588,14 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
     UInt nb_element = filter_elements.size();
     Array<Real> * filtered_J = new Array<Real>(0, jac_loc.getNbComponent());
     FEEngine::filterElementalData(mesh, jac_loc, *filtered_J, type, ghost_type,
-                                  filter_elements);
+				  filter_elements);
 
     this->integrateOnIntegrationPoints(in_f, intf, nb_degree_of_freedom,
-                                       *filtered_J, nb_element);
+				       *filtered_J, nb_element);
   } else {
     UInt nb_element = mesh.getNbElement(type, ghost_type);
     this->integrateOnIntegrationPoints(in_f, intf, nb_degree_of_freedom,
-                                       jac_loc, nb_element);
+				       jac_loc, nb_element);
   }
 
   AKANTU_DEBUG_OUT();
@@ -620,8 +621,8 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAdded(
       jacobians.alloc(0, 1, type, ghost_type);
 
     this->computeJacobiansOnIntegrationPoints(
-        nodes, quadrature_points(type, ghost_type), jacobians(type, ghost_type),
-        type, ghost_type, elements);
+	nodes, quadrature_points(type, ghost_type), jacobians(type, ghost_type),
+	type, ghost_type, elements);
   }
 }
 
@@ -650,8 +651,8 @@ namespace integrator {
   template <> struct GaussIntegratorInitHelper<kind> {                         \
     template <ElementKind k, class IOF>                                        \
     static void call(IntegratorGauss<k, IOF> & _int,                           \
-                     const Array<Real> & nodes, const ElementType & type,      \
-                     const GhostType & ghost_type) {                           \
+		     const Array<Real> & nodes, const ElementType & type,      \
+		     const GhostType & ghost_type) {                           \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(INIT_INTEGRATOR, kind);                 \
     }                                                                          \
   };
@@ -668,7 +669,7 @@ inline void IntegratorGauss<kind, IntegrationOrderFunctor>::initIntegrator(
     const Array<Real> & nodes, const ElementType & type,
     const GhostType & ghost_type) {
   integrator::details::GaussIntegratorInitHelper<kind>::call(*this, nodes, type,
-                                                             ghost_type);
+							     ghost_type);
 }
 
 namespace integrator {
@@ -684,9 +685,9 @@ namespace integrator {
     template <ElementKind k, class IOF>                                        \
     static void                                                                \
     call(const IntegratorGauss<k, IOF> & _int, const Array<Real> & nodes,      \
-         const Matrix<Real> & quad_points, Array<Real> & jacobians,            \
-         const ElementType & type, const GhostType & ghost_type,               \
-         const Array<UInt> & filter_elements) {                                \
+	 const Matrix<Real> & quad_points, Array<Real> & jacobians,            \
+	 const ElementType & type, const GhostType & ghost_type,               \
+	 const Array<UInt> & filter_elements) {                                \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(AKANTU_COMPUTE_JACOBIANS, kind);        \
     }                                                                          \
   };
@@ -701,10 +702,10 @@ namespace integrator {
 template <ElementKind kind, class IntegrationOrderFunctor>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::
     computeJacobiansOnIntegrationPoints(
-        const Array<Real> & nodes, const Matrix<Real> & quad_points,
-        Array<Real> & jacobians, const ElementType & type,
-        const GhostType & ghost_type,
-        const Array<UInt> & filter_elements) const {
+	const Array<Real> & nodes, const Matrix<Real> & quad_points,
+	Array<Real> & jacobians, const ElementType & type,
+	const GhostType & ghost_type,
+	const Array<UInt> & filter_elements) const {
   integrator::details::GaussIntegratorComputeJacobiansHelper<kind>::call(
       *this, nodes, quad_points, jacobians, type, ghost_type, filter_elements);
 }
