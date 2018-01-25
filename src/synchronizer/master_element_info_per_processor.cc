@@ -28,12 +28,12 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
+#include "communicator.hh"
 #include "element_group.hh"
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
 #include "mesh_iterators.hh"
 #include "mesh_utils.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iostream>
@@ -119,28 +119,28 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
 
   std::vector<Array<UInt>> buffers(this->nb_proc);
 
-  auto conn_it = this->mesh.getConnectivity(this->type, _not_ghost)
-                     .begin(this->nb_nodes_per_element);
-  auto conn_end = this->mesh.getConnectivity(this->type, _not_ghost)
-                      .end(this->nb_nodes_per_element);
+  const auto & connectivities =
+      this->mesh.getConnectivity(this->type, _not_ghost);
 
   /// copying the local connectivity
-  auto part_it = partition_num.begin();
-  for (; conn_it != conn_end; ++conn_it, ++part_it) {
-    const auto & conn = *conn_it;
+  for (auto && part_conn :
+       zip(partition_num,
+           make_view(connectivities, this->nb_nodes_per_element))) {
+    auto && part = std::get<0>(part_conn);
+    auto && conn = std::get<1>(part_conn);
     for (UInt i = 0; i < conn.size(); ++i) {
-      buffers[*part_it].push_back(conn[i]);
+      buffers[part].push_back(conn[i]);
     }
   }
 
   /// copying the connectivity of ghost element
-  conn_it = this->mesh.getConnectivity(this->type, _not_ghost)
-                .begin(this->nb_nodes_per_element);
-  for (UInt el = 0; conn_it != conn_end; ++el, ++conn_it) {
+  for (auto && tuple :
+           enumerate(make_view(connectivities, this->nb_nodes_per_element))) {
+    auto && el = std::get<0>(tuple);
+    auto && conn = std::get<1>(tuple);
     for (auto part = ghost_partition.begin(el); part != ghost_partition.end(el);
          ++part) {
       UInt proc = *part;
-      const Vector<UInt> & conn = *conn_it;
       for (UInt i = 0; i < conn.size(); ++i) {
         buffers[proc].push_back(conn[i]);
       }
@@ -148,7 +148,7 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
   }
 
 #ifndef AKANTU_NDEBUG
-  for (UInt p = 0; p < this->nb_proc; ++p) {
+  for (auto p : arange(this->nb_proc)) {
     UInt size = this->nb_nodes_per_element *
                 (this->all_nb_local_element[p] + this->all_nb_ghost_element[p]);
     AKANTU_DEBUG_ASSERT(
@@ -159,7 +159,7 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
 
   /// send all connectivity and ghost information to all processors
   std::vector<CommunicationRequest> requests;
-  for (UInt p = 0; p < this->nb_proc; ++p) {
+  for (auto p : arange(this->nb_proc)) {
     if (p == this->root)
       continue;
     auto && tag =
@@ -175,7 +175,6 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
   AKANTU_DEBUG_INFO("Renumbering local connectivities");
   MeshUtils::renumberMeshNodes(mesh, buffers[root], all_nb_local_element[root],
                                all_nb_ghost_element[root], type, old_nodes);
-
 
   comm.waitAll(requests);
   comm.freeCommunicationRequest(requests);

@@ -70,8 +70,7 @@ ElementSynchronizer::~ElementSynchronizer() = default;
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::substituteElements(
     const std::map<Element, Element> & old_to_new_elements) {
-  auto found_element_end =
-    old_to_new_elements.end();
+  auto found_element_end = old_to_new_elements.end();
 
   // substitute old elements with new ones
   for (auto && sr : iterate_send_recv) {
@@ -146,7 +145,7 @@ void ElementSynchronizer::buildElementToPrank() {
 
 /* -------------------------------------------------------------------------- */
 Int ElementSynchronizer::getRank(const Element & element) const {
-  if(not element_to_prank.exists(element.type, element.ghost_type)) {
+  if (not element_to_prank.exists(element.type, element.ghost_type)) {
     // Nicolas: Ok This is nasty I know....
     const_cast<ElementSynchronizer *>(this)->buildElementToPrank();
   }
@@ -249,11 +248,11 @@ void ElementSynchronizer::removeElements(
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::renumberElements(
     const ElementTypeMapArray<UInt> & new_numbering) {
-  for(auto && sr : iterate_send_recv) {
+  for (auto && sr : iterate_send_recv) {
     for (auto && scheme_pair : communications.iterateSchemes(sr)) {
       auto & list = scheme_pair.second;
       for (auto && el : list) {
-        if(new_numbering.exists(el.type, el.ghost_type))
+        if (new_numbering.exists(el.type, el.ghost_type))
           el.element = new_numbering(el);
       }
     }
@@ -263,8 +262,15 @@ void ElementSynchronizer::renumberElements(
 /* -------------------------------------------------------------------------- */
 UInt ElementSynchronizer::sanityCheckDataSize(
     const Array<Element> & elements, const SynchronizationTag &) const {
-  return (elements.size() * mesh.getSpatialDimension() * sizeof(Real) +
-          sizeof(SynchronizationTag));
+  UInt size = 0;
+  size += sizeof(SynchronizationTag); // tag
+  size += sizeof(UInt);               // comm_desc.getNbData();
+  size += sizeof(UInt);               // comm_desc.getProc();
+  size += sizeof(UInt);               // mesh.getCommunicator().whoAmI();
+
+  // barycenters
+  size += (elements.size() * mesh.getSpatialDimension() * sizeof(Real));
+  return size;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -272,11 +278,14 @@ void ElementSynchronizer::packSanityCheckData(
     CommunicationDescriptor<Element> & comm_desc) const {
   auto & buffer = comm_desc.getBuffer();
   buffer << comm_desc.getTag();
+  buffer << comm_desc.getNbData();
+  buffer << comm_desc.getProc();
+  buffer << mesh.getCommunicator().whoAmI();
 
   auto & send_element = comm_desc.getScheme();
 
   /// pack barycenters in debug mode
-  for(auto && element : send_element) {
+  for (auto && element : send_element) {
     Vector<Real> barycenter(mesh.getSpatialDimension());
     mesh.getBarycenter(element, barycenter);
     buffer << barycenter;
@@ -289,30 +298,50 @@ void ElementSynchronizer::unpackSanityCheckData(
   auto & buffer = comm_desc.getBuffer();
   const auto & tag = comm_desc.getTag();
 
+  auto nb_data = comm_desc.getNbData();
+  auto proc = comm_desc.getProc();
+  auto rank = mesh.getCommunicator().whoAmI();
+
+  decltype(nb_data) recv_nb_data;
+  decltype(proc) recv_proc;
+  decltype(rank) recv_rank;
+
   SynchronizationTag t;
   buffer >> t;
+  buffer >> recv_nb_data;
+  buffer >> recv_proc;
+  buffer >> recv_rank;
 
   AKANTU_DEBUG_ASSERT(
       t == tag, "The tag received does not correspond to the tag expected");
 
+  AKANTU_DEBUG_ASSERT(
+      nb_data == recv_nb_data,
+      "The nb_data received does not correspond to the nb_data expected");
+
+  AKANTU_DEBUG_ASSERT(UInt(recv_rank) == proc,
+                      "The rank received does not correspond to the proc");
+
+  AKANTU_DEBUG_ASSERT(recv_proc == UInt(rank),
+                      "The proc received does not correspond to the rank");
+
   auto & recv_element = comm_desc.getScheme();
   auto spatial_dimension = mesh.getSpatialDimension();
 
-  for(auto && element : recv_element) {
+  for (auto && element : recv_element) {
     Vector<Real> barycenter_loc(spatial_dimension);
     mesh.getBarycenter(element, barycenter_loc);
 
     Vector<Real> barycenter(spatial_dimension);
     buffer >> barycenter;
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      if (!Math::are_float_equal(barycenter_loc(i), barycenter(i)))
-        AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
-                           << element << "(barycenter[" << i
-                           << "] = " << barycenter_loc(i) << " and buffer[" << i
-                           << "] = " << barycenter(i) << ") ["
-                           << std::abs(barycenter(i) - barycenter_loc(i))
-                           << "] - tag: " << tag);
-    }
+
+    auto dist = barycenter_loc.distance(barycenter);
+    if (not Math::are_float_equal(dist, 0.))
+      AKANTU_EXCEPTION("Unpacking an unknown value for the element "
+                       << element << "(barycenter " << barycenter_loc
+                       << " != buffer " << barycenter << ") [" << dist
+                       << "] - tag: " << tag << " comm from " << proc << " to "
+                       << rank);
   }
 }
 
