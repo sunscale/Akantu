@@ -280,7 +280,7 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
 
   const bool has_extra_normal =
       mesh.hasData<Real>("extra_normal", type, ghost_type);
-  Array<Real>::vector_iterator extra_normal, extra_normal_begin;
+  Array<Real>::const_vector_iterator extra_normal, extra_normal_begin;
   if (has_extra_normal) {
     extra_normal = mesh.getData<Real>("extra_normal", type, ghost_type)
 		       .begin(spatial_dimension);

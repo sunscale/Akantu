@@ -151,7 +151,7 @@ void ShapeStructural<kind>::precomputeRotationMatrices(
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type);
 
   bool has_extra_normal = mesh.hasData<Real>("extra_normal", type, ghost_type);
-  Array<Real>::vector_iterator extra_normal;
+  Array<Real>::const_vector_iterator extra_normal;
   if (has_extra_normal)
     extra_normal = mesh.getData<Real>("extra_normal", type, ghost_type)
                        .begin(spatial_dimension);
