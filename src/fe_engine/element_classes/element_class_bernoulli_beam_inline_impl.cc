@@ -191,6 +191,7 @@ inline void ElementClass<_bernoulli_beam_3>::computeRotationMatrix(
 
   Pe *= Pg.inverse();
 
+  R.clear();
   /// Definition of the rotation matrix
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
