@@ -1033,14 +1033,16 @@ namespace detail {
     using type = IteratorHelper_t<sizeof...(Ns) - 1, T>;
     using array_type = std::decay_t<Arr>;
     using iterator =
-        std::conditional_t<std::is_const<Arr>::value,
+        std::conditional_t<std::is_const<std::remove_reference_t<Arr>>::value,
                            typename array_type::template const_iterator<type>,
                            typename array_type::template iterator<type>>;
+    static_assert(sizeof...(Ns), "You should provide a least one size");
+
     if (array.getNbComponent() * array.size() !=
         product_all(std::forward<Ns>(ns)...)) {
       AKANTU_CUSTOM_EXCEPTION_INFO(
           debug::ArrayException(),
-          "The iterator on Array "
+          "The iterator on " << debug::demangle(typeid(Arr).name())
               << to_string_all(array.size(), array.getNbComponent())
               << "is not compatible with the type "
               << debug::demangle(typeid(type).name()) << to_string_all(ns...));
@@ -1149,6 +1151,7 @@ namespace detail {
 /* -------------------------------------------------------------------------- */
 template <typename Array, typename... Ns>
 decltype(auto) make_view(Array && array, Ns... ns) {
+  static_assert(sizeof...(Ns), "You should provide a least one dimension");
   auto size = std::forward<decltype(array)>(array).size() *
               std::forward<decltype(array)>(array).getNbComponent() /
               detail::product_all(ns...);
