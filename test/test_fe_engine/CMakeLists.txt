@@ -44,26 +44,29 @@ function(register_fem_test operation type)
 endfunction()
 
 #===============================================================================
-package_get_element_types(core _types)
+macro(register_mesh_types package)
+  package_get_element_types(${package} _types)
 
-foreach(_type ${_types})
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
-    list(APPEND _meshes ${_type}.msh)
-    #register_fem_test(fe_engine_precomputation ${_type})
-  else()
-    if(NOT ${_type} STREQUAL _point_1)
-      message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
+  foreach(_type ${_types})
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
+      list(APPEND _meshes ${_type}.msh)
+      #register_fem_test(fe_engine_precomputation ${_type })
+    else()
+      if(NOT ${_type} STREQUAL _point_1)
+	message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
+      endif()
     endif()
-  endif()
-endforeach()
+  endforeach()
+endmacro(register_mesh_types)
 
+set(_meshes)
+register_mesh_types(core)
 
-register_test(test_fe_engine_precomupation_bernoulli_beam_2
-  PACKAGE structural_mechanics
-  SOURCES test_fe_engine_precomputation_bernoulli_2.cc)
-register_test(test_fe_engine_precomupation_bernoulli_beam_3
-  PACKAGE structural_mechanics
-  SOURCES test_fe_engine_precomputation_bernoulli_3.cc)
+package_is_activated(structural_mechanics has_structural_mechanics)
+if(has_structural_mechanics)
+  register_mesh_types(structural_mechanics)
+endif()
+
 #add_mesh(test_fem_circle_1_mesh circle.geo 2 1 OUTPUT circle1.msh)
 #add_mesh(test_fem_circle_2_mesh circle.geo 2 2 OUTPUT circle2.msh)
 
@@ -100,6 +103,11 @@ register_gtest_sources(
   PACKAGE core pybind11
   DEPENDS aka_test
   )
+
+register_gtest_sources(
+  SOURCES test_fe_engine_precomputation_structural.cc
+  PACKAGE structural_mechanics
+)
 
 
 register_gtest_sources(

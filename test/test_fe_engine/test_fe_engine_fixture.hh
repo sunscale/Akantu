@@ -13,12 +13,16 @@
 
 using namespace akantu;
 
-template <typename type_> class TestFEMFixture : public ::testing::Test {
+/// Generic class for FEEngine tests
+template <typename type_, template <ElementKind> class shape_t,
+          ElementKind kind = _ek_regular>
+class TestFEMBaseFixture : public ::testing::Test {
 public:
   static constexpr const ElementType type = type_::value;
   static constexpr const size_t dim = ElementClass<type>::getSpatialDimension();
-  using FEM = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
+  using FEM = FEEngineTemplate<IntegratorGauss, shape_t, kind>;
 
+  /// Setup reads mesh corresponding to element type and initializes an FEEngine
   void SetUp() override {
     const auto dim = this->dim;
     const auto type = this->type;
@@ -26,7 +30,7 @@ public:
 
     std::stringstream meshfilename;
     meshfilename << type << ".msh";
-    mesh->read(meshfilename.str());
+    this->readMesh(meshfilename.str());
 
     lower = mesh->getLowerBounds();
     upper = mesh->getUpperBounds();
@@ -46,6 +50,9 @@ public:
     mesh.reset(nullptr);
   }
 
+  /// Should be reimplemented if further treatment of the mesh is needed
+  virtual void readMesh(std::string file_name) { mesh->read(file_name); }
+
 protected:
   std::unique_ptr<FEM> fem;
   std::unique_ptr<Mesh> mesh;
@@ -55,11 +62,20 @@ protected:
   Vector<Real> upper;
 };
 
-template <typename type_>
-constexpr const ElementType TestFEMFixture<type_>::type;
+template <typename type_, template <ElementKind> class shape_t,
+          ElementKind kind>
+constexpr const ElementType TestFEMBaseFixture<type_, shape_t, kind>::type;
 
+template <typename type_, template <ElementKind> class shape_t,
+          ElementKind kind>
+constexpr const size_t TestFEMBaseFixture<type_, shape_t, kind>::dim;
+
+/* -------------------------------------------------------------------------- */
+/// Base class for test with Lagrange FEEngine and regular elements
 template <typename type_>
-constexpr const size_t TestFEMFixture<type_>::dim;
+using TestFEMFixture = TestFEMBaseFixture<type_, ShapeLagrange>;
+
+/* -------------------------------------------------------------------------- */
 
 using types = gtest_list_t<TestElementTypes>;
 
