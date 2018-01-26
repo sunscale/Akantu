@@ -44,4 +44,5 @@ register_gtest_test(test_solid_mechanics_model_energies
 	  bar_tetrahedron_4 bar_tetrahedron_10
 	  bar_hexahedron_8 bar_hexahedron_20
 	  bar_pentahedron_6 bar_pentahedron_15
+  PARALLEL
   )

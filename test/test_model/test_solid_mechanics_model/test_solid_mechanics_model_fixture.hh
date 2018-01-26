@@ -20,13 +20,13 @@ public:
       ElementClass<type>::getSpatialDimension();
 
   void SetUp() override {
-    mesh = std::make_unique<Mesh>(this->spatial_dimension);
+    this->mesh = std::make_unique<Mesh>(this->spatial_dimension);
 
 #if defined(AKANTU_PARALLEL)
     if(Communicator::getStaticCommunicator().whoAmI() == 0) {
 #endif
 
-      mesh->read(this->mesh_file);
+      this->mesh->read(this->mesh_file);
 
 #if defined(AKANTU_PARALLEL)
     }

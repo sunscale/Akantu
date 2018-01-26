@@ -252,7 +252,7 @@ using analysis_method_t = std::integral_constant<AnalysisMethod, t>;
 
 #ifdef AKANTU_IMPLICIT
 using TestAnalysisTypes =
-    std::tuple<analysis_method_t<_implicit_dynamic, _explicit_lumped_mass>>;
+    std::tuple<analysis_method_t<_implicit_dynamic>, analysis_method_t<_explicit_lumped_mass>>;
 #else
 using TestAnalysisTypes = std::tuple<analysis_method_t<_explicit_lumped_mass>>;
 #endif

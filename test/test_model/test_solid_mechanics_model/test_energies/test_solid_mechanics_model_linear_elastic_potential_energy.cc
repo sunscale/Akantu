@@ -54,8 +54,8 @@ TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
 
   this->model->initFull(_analysis_method = _static);
 
-  auto & lower = this->mesh->getLowerBounds();
-  auto & upper = this->mesh->getUpperBounds();
+  const auto & lower = this->mesh->getLowerBounds();
+  const auto & upper = this->mesh->getUpperBounds();
   auto length = upper(_x) - lower(_x);
 
   const auto & pos = this->mesh->getNodes();
@@ -81,7 +81,7 @@ TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
     this->model->solveStep();
 
     /// compare energy to analytical solution
-    const auto E_ref = 0.5 * eps * eps;
+    auto E_ref = 0.5 * eps * eps;
     auto E_pot = this->model->getEnergy("potential");
 
     EXPECT_NEAR(E_ref, E_pot, 1e-8);

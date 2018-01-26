@@ -95,7 +95,6 @@ register_gtest_sources(
   SOURCES test_solid_mechanics_model_dynamics.cc
   FILES_TO_COPY test_solid_mechanics_model_dynamics_material.dat
   PACKAGE core
-  PARALLEL
   )
 
 register_gtest_test(test_solid_mechanics_model
@@ -105,4 +104,5 @@ register_gtest_test(test_solid_mechanics_model
 	  bar_tetrahedron_4 bar_tetrahedron_10
 	  bar_hexahedron_8 bar_hexahedron_20
 	  bar_pentahedron_6 bar_pentahedron_15
+  PARALLEL
   )
