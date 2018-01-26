@@ -27,9 +27,9 @@ FacetSynchronizer::FacetSynchronizer(
   const auto & comm = mesh.getCommunicator();
   auto spatial_dimension = mesh.getSpatialDimension();
 
-  facet_to_rank.initialize(mesh, _spatial_dimension = spatial_dimension - 1,
-                           _ghost_type = _ghost, _with_nb_element = true,
-                           _default_value = rank);
+  element_to_prank.initialize(mesh, _spatial_dimension = spatial_dimension - 1,
+                              _ghost_type = _ghost, _with_nb_element = true,
+                              _default_value = rank);
 
   for (auto && scheme_pair :
        element_synchronizer.communications.iterateSchemes(_recv)) {
@@ -50,21 +50,22 @@ FacetSynchronizer::FacetSynchronizer(
         if (facet.ghost_type == _not_ghost)
           continue;
 
-        auto & facet_rank = facet_to_rank(facet);
-        if ((proc < facet_rank) || (facet_rank == rank))
+        auto & facet_rank = element_to_prank(facet);
+        if ((proc < UInt(facet_rank)) || (UInt(facet_rank) == rank))
           facet_rank = proc;
       }
     }
   }
 
-  ElementTypeMapArray<UInt> facet_global_connectivities;
+  ElementTypeMapArray<UInt> facet_global_connectivities(
+      "facet_global_connectivities", id, memory_id);
   facet_global_connectivities.initialize(
       mesh, _spatial_dimension = spatial_dimension - 1, _with_nb_element = true,
       _with_nb_nodes_per_element = true);
   mesh.getGlobalConnectivity(facet_global_connectivities);
 
   /// init facet check tracking
-  ElementTypeMapArray<bool> facet_checked("facet_checked", id);
+  ElementTypeMapArray<bool> facet_checked("facet_checked", id, memory_id);
   std::vector<CommunicationRequest> send_requests;
 
   std::map<UInt, ElementTypeMapArray<UInt>> send_facets;
@@ -80,16 +81,20 @@ FacetSynchronizer::FacetSynchronizer(
 
       auto && proc = scheme_pair.first;
       auto & elements = scheme_pair.second;
-      auto & facet_scheme = communications.getScheme(proc, sr);
+      auto & facet_scheme = communications.createScheme(proc, sr);
 
       // this creates empty arrays...
       auto & facet_send_elements = send_facets[proc];
       auto & connectivities_for_proc = connectivities[proc];
       if (sr == _send) {
-        connectivities_for_proc.initialize(mesh, _spatial_dimension =
-                                                     spatial_dimension - 1);
-        facet_send_elements.initialize(mesh, _spatial_dimension =
-                                                 spatial_dimension - 1);
+        connectivities_for_proc.setID(id + ":connectivities_for_proc:");
+        connectivities_for_proc.initialize(
+            mesh, _spatial_dimension = spatial_dimension - 1,
+            _with_nb_nodes_per_element = true);
+
+        facet_send_elements.setID(id + ":facet_send_elements");
+        facet_send_elements.initialize(
+            mesh, _spatial_dimension = spatial_dimension - 1);
       }
 
       for (auto && element : elements) {
@@ -106,7 +111,7 @@ FacetSynchronizer::FacetSynchronizer(
           if (facet.ghost_type != interesting_ghost_type)
             continue;
 
-          if (sr == _recv && facet_to_rank(facet) != proc)
+          if (sr == _recv && UInt(element_to_prank(facet)) != proc)
             continue;
 
           auto & checked = facet_checked(facet);
