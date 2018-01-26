@@ -95,6 +95,7 @@ register_gtest_sources(
   SOURCES test_solid_mechanics_model_dynamics.cc
   FILES_TO_COPY test_solid_mechanics_model_dynamics_material.dat
   PACKAGE core
+  PARALLEL
   )
 
 register_gtest_test(test_solid_mechanics_model

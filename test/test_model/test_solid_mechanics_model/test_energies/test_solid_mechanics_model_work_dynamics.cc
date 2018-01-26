@@ -113,7 +113,7 @@ public:
   }
 };
 
-TYPED_TEST_CASE(TestSMMFixtureWorkDynamic, types);
+TYPED_TEST_CASE(TestSMMFixtureWorkDynamic, gtest_element_types);
 
 /* TODO: this is currently disabled for terrible results and performance
 TYPED_TEST(TestSMMFixtureBar, WorkImplicit) {

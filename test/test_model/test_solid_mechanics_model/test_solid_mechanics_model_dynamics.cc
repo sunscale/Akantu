@@ -53,99 +53,100 @@ const Vector<Real> psi1 = {0., 0., 1.};
 const Vector<Real> psi2 = {0., 1., 0.};
 const Real knorm = k.norm();
 
-using verif_func = std::function<void(
-    Vector<Real> & disp, const Vector<Real> & coord, Real current_time)>;
+/* -------------------------------------------------------------------------- */
+template <UInt dim> struct Verification {};
 
-template <UInt spatial_dimension> verif_func solution_disp;
-template <UInt spatial_dimension> verif_func solution_vel;
+/* -------------------------------------------------------------------------- */
+template <> struct Verification<1> {
+  void displacement(Vector<Real> & disp, const Vector<Real> & coord,
+                    Real current_time) {
+    const auto & x = coord(_x);
+    const Real omega = c * k[0];
+    disp(_x) = A * cos(k[0] * x - omega * current_time);
+  }
 
-template <>
-verif_func solution_disp<1> =
-    [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
-      const auto & x = coord(_x);
-      const Real omega = c * k[0];
-      disp(_x) = A * cos(k[0] * x - omega * current_time);
-    };
-
-template <>
-verif_func solution_vel<1> =
-    [](Vector<Real> & vel, const Vector<Real> & coord, Real current_time) {
-      const auto & x = coord(_x);
-      const Real omega = c * k[0];
-      vel(_x) = omega * A * sin(k[0] * x - omega * current_time);
-    };
-
-template <>
-verif_func solution_disp<2> =
-    [](Vector<Real> & disp, const Vector<Real> & X, Real current_time) {
-      Vector<Real> kshear = {k[1], k[0]};
-      Vector<Real> kpush = {k[0], k[1]};
-
-      const Real omega_p = knorm * cp;
-      const Real omega_s = knorm * cs;
-
-      Real phase_p = X.dot(kpush) - omega_p * current_time;
-      Real phase_s = X.dot(kpush) - omega_s * current_time;
-
-      disp = A * (kpush * cos(phase_p) + kshear * cos(phase_s));
-    };
-
-template <>
-verif_func solution_vel<2> = [](Vector<Real> & vel, const Vector<Real> & X,
-                                Real current_time) {
-  Vector<Real> kshear = {k[1], k[0]};
-  Vector<Real> kpush = {k[0], k[1]};
-
-  const Real omega_p = knorm * cp;
-  const Real omega_s = knorm * cs;
-
-  Real phase_p = X.dot(kpush) - omega_p * current_time;
-  Real phase_s = X.dot(kpush) - omega_s * current_time;
-
-  vel = A * (kpush * omega_p * cos(phase_p) + kshear * omega_s * cos(phase_s));
+  void velocity(Vector<Real> & vel, const Vector<Real> & coord,
+                Real current_time) {
+    const auto & x = coord(_x);
+    const Real omega = c * k[0];
+    vel(_x) = omega * A * sin(k[0] * x - omega * current_time);
+  }
 };
 
-template <>
-verif_func solution_disp<3> =
-    [](Vector<Real> & disp, const Vector<Real> & coord, Real current_time) {
-      const auto & X = coord;
-      Vector<Real> kpush = k;
-      Vector<Real> kshear1(3);
-      Vector<Real> kshear2(3);
-      kshear1.crossProduct(k, psi1);
-      kshear2.crossProduct(k, psi2);
+/* -------------------------------------------------------------------------- */
+template <> struct Verification<2> {
+  void displacement(Vector<Real> & disp, const Vector<Real> & X,
+                    Real current_time) {
+    Vector<Real> kshear = {k[1], k[0]};
+    Vector<Real> kpush = {k[0], k[1]};
 
-      const Real omega_p = knorm * cp;
-      const Real omega_s = knorm * cs;
+    const Real omega_p = knorm * cp;
+    const Real omega_s = knorm * cs;
 
-      Real phase_p = X.dot(kpush) - omega_p * current_time;
-      Real phase_s = X.dot(kpush) - omega_s * current_time;
+    Real phase_p = X.dot(kpush) - omega_p * current_time;
+    Real phase_s = X.dot(kpush) - omega_s * current_time;
 
-      disp = A * (kpush * cos(phase_p) + kshear1 * cos(phase_s) +
-                  kshear2 * cos(phase_s));
+    disp = A * (kpush * cos(phase_p) + kshear * cos(phase_s));
+  }
 
-    };
+  void velocity(Vector<Real> & vel, const Vector<Real> & X, Real current_time) {
+    Vector<Real> kshear = {k[1], k[0]};
+    Vector<Real> kpush = {k[0], k[1]};
 
-template <>
-verif_func solution_vel<3> = [](Vector<Real> & vel, const Vector<Real> & coord,
-                                Real current_time) {
-  const auto & X = coord;
-  Vector<Real> kpush = k;
-  Vector<Real> kshear1(3);
-  Vector<Real> kshear2(3);
-  kshear1.crossProduct(k, psi1);
-  kshear2.crossProduct(k, psi2);
+    const Real omega_p = knorm * cp;
+    const Real omega_s = knorm * cs;
 
-  const Real omega_p = knorm * cp;
-  const Real omega_s = knorm * cs;
+    Real phase_p = X.dot(kpush) - omega_p * current_time;
+    Real phase_s = X.dot(kpush) - omega_s * current_time;
 
-  Real phase_p = X.dot(kpush) - omega_p * current_time;
-  Real phase_s = X.dot(kpush) - omega_s * current_time;
+    vel =
+        A * (kpush * omega_p * cos(phase_p) + kshear * omega_s * cos(phase_s));
+  }
+};
 
-  vel = A * (kpush * omega_p * cos(phase_p) + kshear1 * omega_s * cos(phase_s) +
+/* -------------------------------------------------------------------------- */
+template <> struct Verification<3> {
+  void displacement(Vector<Real> & disp, const Vector<Real> & coord,
+                    Real current_time) {
+    const auto & X = coord;
+    Vector<Real> kpush = k;
+    Vector<Real> kshear1(3);
+    Vector<Real> kshear2(3);
+    kshear1.crossProduct(k, psi1);
+    kshear2.crossProduct(k, psi2);
+
+    const Real omega_p = knorm * cp;
+    const Real omega_s = knorm * cs;
+
+    Real phase_p = X.dot(kpush) - omega_p * current_time;
+    Real phase_s = X.dot(kpush) - omega_s * current_time;
+
+    disp = A * (kpush * cos(phase_p) + kshear1 * cos(phase_s) +
+                kshear2 * cos(phase_s));
+  }
+
+  void velocity(Vector<Real> & vel, const Vector<Real> & coord,
+                Real current_time) {
+    const auto & X = coord;
+    Vector<Real> kpush = k;
+    Vector<Real> kshear1(3);
+    Vector<Real> kshear2(3);
+    kshear1.crossProduct(k, psi1);
+    kshear2.crossProduct(k, psi2);
+
+    const Real omega_p = knorm * cp;
+    const Real omega_s = knorm * cs;
+
+    Real phase_p = X.dot(kpush) - omega_p * current_time;
+    Real phase_s = X.dot(kpush) - omega_s * current_time;
+
+    vel =
+        A * (kpush * omega_p * cos(phase_p) + kshear1 * omega_s * cos(phase_s) +
              kshear2 * omega_s * cos(phase_s));
+  }
 };
 
+/* -------------------------------------------------------------------------- */
 template <ElementType _type>
 class SolutionFunctor : public BC::Dirichlet::DirichletFunctor {
 public:
@@ -153,17 +154,18 @@ public:
       : current_time(current_time), model(model) {}
 
 public:
-  // static constexpr UInt dim = DimensionHelper<_type>::dim;
   static constexpr UInt dim = ElementClass<_type>::getSpatialDimension();
 
   inline void operator()(UInt node, Vector<bool> & flags, Vector<Real> & primal,
                          const Vector<Real> & coord) const {
     flags(0) = true;
     auto & vel = model.getVelocity();
-    auto itVel = vel.begin(model.getSpatialDimension());
-    Vector<Real> v = itVel[node];
-    solution_disp<dim>(primal, coord, current_time);
-    solution_vel<dim>(v, coord, current_time);
+    auto it = vel.begin(model.getSpatialDimension());
+    Vector<Real> v = it[node];
+
+    Verification<dim> verif;
+    verif.displacement(primal, coord, current_time);
+    verif.velocity(v, coord, current_time);
   }
 
 private:
@@ -171,111 +173,142 @@ private:
   SolidMechanicsModel & model;
 };
 
-template <ElementType _type, typename AM>
-void test_body(SolidMechanicsModel & model, AM analysis_method) {
-  // constexpr UInt dim = DimensionHelper<_type>::dim;
-  static constexpr UInt dim = ElementClass<_type>::getSpatialDimension();
+/* -------------------------------------------------------------------------- */
+// This fixture uses somewhat finer meshes representing bars.
+template <typename type_>
+class TestSMMFixtureBar
+    : public TestSMMFixture<std::tuple_element_t<0, type_>> {
+  using parent = TestSMMFixture<std::tuple_element_t<0, type_>>;
 
-  getStaticParser().parse("test_solid_mechanics_model_"
-                          "dynamics_material.dat");
+public:
+  void SetUp() override {
+    this->mesh_file = "bar" + aka::to_string(this->type) + ".msh";
+    parent::SetUp();
 
-  model.initFull(SolidMechanicsModelOptions(analysis_method));
+    getStaticParser().parse("test_solid_mechanics_model_"
+                            "dynamics_material.dat");
 
-  bool dump_paraview = false;
+    auto analysis_method = std::tuple_element_t<1, type_>::value;
+    this->model->initFull(_analysis_method = analysis_method);
 
-  if (dump_paraview) {
-    std::stringstream base_name;
-    base_name << "bar" << analysis_method << _type;
-    model.setBaseName(base_name.str());
-    model.addDumpFieldVector("displacement");
-    model.addDumpField("mass");
-    model.addDumpField("velocity");
-    model.addDumpField("acceleration");
-    model.addDumpFieldVector("external_force");
-    model.addDumpFieldVector("internal_force");
-    model.addDumpField("stress");
-    model.addDumpField("strain");
-  }
+    if (this->dump_paraview) {
+      std::stringstream base_name;
+      base_name << "bar" << analysis_method << this->type;
+      this->model->setBaseName(base_name.str());
+      this->model->addDumpFieldVector("displacement");
+      this->model->addDumpField("mass");
+      this->model->addDumpField("velocity");
+      this->model->addDumpField("acceleration");
+      this->model->addDumpFieldVector("external_force");
+      this->model->addDumpFieldVector("internal_force");
+      this->model->addDumpField("stress");
+      this->model->addDumpField("strain");
+    }
 
-  Real time_step = model.getStableTimeStep() / 10.;
-  model.setTimeStep(time_step);
-  std::cout << "timestep: " << time_step << std::endl;
+    time_step = this->model->getStableTimeStep() / 10.;
+    this->model->setTimeStep(time_step);
+    // std::cout << "timestep: " << time_step << std::endl;
 
-  UInt nb_nodes = model.getMesh().getNbNodes();
-  UInt spatial_dimension = model.getSpatialDimension();
+    const auto & position = this->mesh->getNodes();
+    auto & displacement = this->model->getDisplacement();
+    auto & velocity = this->model->getVelocity();
 
-  auto & nodes = model.getMesh().getNodes();
-  auto & disp = model.getDisplacement();
-  auto & vel = model.getVelocity();
+    constexpr auto dim = parent::spatial_dimension;
 
-  Array<Real> disp_solution(nb_nodes, spatial_dimension);
+    Verification<dim> verif;
 
-  Real current_time = 0;
+    for (auto && tuple :
+         zip(make_view(position, dim), make_view(displacement, dim),
+             make_view(velocity, dim))) {
+      verif.displacement(std::get<1>(tuple), std::get<0>(tuple), 0.);
+      verif.velocity(std::get<2>(tuple), std::get<0>(tuple), 0.);
+    }
 
-  auto itNodes = nodes.begin(spatial_dimension);
-  auto itDisp = disp.begin(spatial_dimension);
-  auto itVel = vel.begin(spatial_dimension);
-  for (UInt n = 0; n < nb_nodes; ++n, ++itNodes, ++itDisp, ++itVel) {
-    solution_disp<dim>(*itDisp, *itNodes, current_time);
-    solution_vel<dim>(*itVel, *itNodes, current_time);
-  }
-
-  if (dump_paraview)
-    model.dump();
-
-  /// boundary conditions
-  model.applyBC(SolutionFunctor<_type>(current_time, model), "BC");
-
-  Real max_error = 0.;
-  Real wave_velocity = 1.; // sqrt(E/rho) = sqrt(1/1) = 1
-  Real simulation_time = 5 / wave_velocity;
-
-  UInt max_steps = simulation_time / time_step; // 100
-  UInt ndump = 50;
-  UInt dump_freq = max_steps / ndump;
-
-  std::cout << "max_steps: " << max_steps << std::endl;
-
-  for (UInt s = 0; s < max_steps; ++s, current_time += time_step) {
-
-    if (s % dump_freq == 0 && dump_paraview)
-      model.dump();
+    if (dump_paraview)
+      this->model->dump();
 
     /// boundary conditions
-    model.applyBC(SolutionFunctor<_type>(current_time, model), "BC");
+    this->model->applyBC(SolutionFunctor<parent::type>(0., *this->model), "BC");
 
-    // compute the disp solution
-    auto itDispSolution = disp_solution.begin(spatial_dimension);
-    itNodes = nodes.begin(spatial_dimension);
-    for (UInt n = 0; n < nb_nodes; ++n, ++itNodes, ++itDispSolution) {
-      solution_disp<dim>(*itDispSolution, *itNodes, current_time);
-    }
-    // compute the error solution
-    itDispSolution = disp_solution.begin(spatial_dimension);
-    itDisp = disp.begin(spatial_dimension);
-    Real disp_error = 0.;
-    for (UInt n = 0; n < nb_nodes; ++n, ++itDispSolution, ++itDisp) {
-      auto diff = *itDispSolution - *itDisp;
+    wave_velocity = 1.; // sqrt(E/rho) = sqrt(1/1) = 1
+    simulation_time = 5 / wave_velocity;
 
-      for (UInt i = 0; i < spatial_dimension; ++i) {
-        disp_error += diff(i) * diff(i);
-      }
-    }
-    disp_error = sqrt(disp_error) / nb_nodes;
-    max_error = std::max(disp_error, max_error);
-    ASSERT_NEAR(disp_error, 0., 1e-3);
-    model.solveStep();
+    max_steps = simulation_time / time_step; // 100
+    auto ndump = 50;
+    dump_freq = max_steps / ndump;
   }
-  std::cout << "max error: " << max_error << std::endl;
-}
+
+protected:
+  Real time_step;
+  Real wave_velocity;
+  Real simulation_time;
+  UInt max_steps;
+  UInt dump_freq;
+  bool dump_paraview{false};
+};
+
+template <AnalysisMethod t>
+using analysis_method_t = std::integral_constant<AnalysisMethod, t>;
 
 #ifdef AKANTU_IMPLICIT
-TYPED_TEST(TestSMMFixtureBar, DynamicsImplicit) {
-  test_body<TestFixture::type>(*(this->model), _implicit_dynamic);
-}
+using TestAnalysisTypes =
+    std::tuple<analysis_method_t<_implicit_dynamic, _explicit_lumped_mass>>;
+#else
+using TestAnalysisTypes = std::tuple<analysis_method_t<_explicit_lumped_mass>>;
 #endif
 
+using TestTypes =
+    gtest_list_t<cross_product_t<TestElementTypes, TestAnalysisTypes>>;
+
+TYPED_TEST_CASE(TestSMMFixtureBar, TestTypes);
+
+/* -------------------------------------------------------------------------- */
+
 TYPED_TEST(TestSMMFixtureBar, DynamicsExplicit) {
-  test_body<TestFixture::type>(*(this->model), _explicit_lumped_mass);
+  constexpr auto dim = TestFixture::spatial_dimension;
+  Real current_time = 0.;
+  const auto & position = this->mesh->getNodes();
+  const auto & displacement = this->model->getDisplacement();
+  UInt nb_nodes = this->mesh->getNbNodes();
+  UInt nb_global_nodes = this->mesh->getNbGlobalNodes();
+  Real max_error{0.};
+
+  Array<Real> displacement_solution(nb_nodes, dim);
+
+  Verification<dim> verif;
+
+  for (UInt s = 0; s < this->max_steps; ++s, current_time += this->time_step) {
+    if (s % this->dump_freq == 0 && this->dump_paraview)
+      this->model->dump();
+
+    /// boundary conditions
+    this->model->applyBC(
+        SolutionFunctor<TestFixture::type>(current_time, *this->model), "BC");
+
+    // compute the disp solution
+    for (auto && tuple :
+         zip(make_view(position, dim), make_view(displacement_solution, dim))) {
+      verif.displacement(std::get<1>(tuple), std::get<0>(tuple), current_time);
+    }
+
+    // compute the error solution
+    Real disp_error = 0.;
+    for (auto && tuple : zip(make_view(displacement, dim),
+                             make_view(displacement_solution, dim))) {
+      auto diff = std::get<1>(tuple) - std::get<0>(tuple);
+      disp_error += diff.dot(diff);
+    }
+
+    this->mesh->getCommunicator().allReduce(disp_error,
+                                            SynchronizerOperation::_sum);
+
+    disp_error = sqrt(disp_error) / nb_global_nodes;
+    max_error = std::max(disp_error, max_error);
+
+    ASSERT_NEAR(disp_error, 0., 1e-3);
+
+    this->model->solveStep();
+  }
+  // std::cout << "max error: " << max_error << std::endl;
 }
 }
