@@ -181,7 +181,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
                         (Math::getTolerance() * norm_barycenter));
               });
           if (facet == range.end()) {
-            AKANTU_DEBUG_WARNING(
+            AKANTU_DEBUG_INFO(
                 "The element "
                 << element << " did not find its associated facet in the "
                               "mesh_facets! Try to decrease math tolerance. "
