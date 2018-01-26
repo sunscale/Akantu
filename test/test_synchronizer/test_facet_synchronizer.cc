@@ -12,50 +12,66 @@
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "facet_synchronizer.hh"
-#include "mesh_utils.hh"
-#include "synchronizer_registry.hh"
+#include "test_synchronizers_fixture.hh"
 #include "test_data_accessor.hh"
-#include <iostream>
+/* -------------------------------------------------------------------------- */
+#include "element_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
+#include <random>
+#include <chrono>
+#include <thread>
 /* -------------------------------------------------------------------------- */
 
-using namespace akantu;
+class TestFacetSynchronizerFixture : public TestSynchronizerFixture {
+public:
+  void SetUp() override {
+    TestSynchronizerFixture::SetUp();
+    this->distribute();
 
-int main(int argc, char * argv[]) {
-  akantu::initialize(argc, argv);
+    this->mesh->initMeshFacets();
 
-  UInt spatial_dimension = 3;
-  Mesh mesh(spatial_dimension);
+    /// compute barycenter for each element
+    barycenters = std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
+    this->initBarycenters(*barycenters, this->mesh->getMeshFacets());
 
-  const auto & comm = Communicator::getStaticCommunicator();
-  Int prank = comm.whoAmI();
-
-  /// partition the mesh
-  if (prank == 0) {
-    mesh.read("facet.msh");
+    test_accessor = std::make_unique<TestAccessor>(*this->mesh, *this->barycenters);
   }
 
-  mesh.distribute();
+  void TearDown() override {
+    barycenters.reset(nullptr);
+    test_accessor.reset(nullptr);
+  }
 
-  auto & synchronizer = mesh.getElementSynchronizer();
+protected:
+  std::unique_ptr<ElementTypeMapArray<Real>> barycenters;
+  std::unique_ptr<TestAccessor> test_accessor;
+};
 
-  /// create facets
-  Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
 
-  /// setup facet communications
-  auto & facet_synchronizer = mesh_facets.getElementSynchronizer();
+/* -------------------------------------------------------------------------- */
+TEST_F(TestFacetSynchronizerFixture, SynchroneOnce) {
+  auto & synchronizer = this->mesh->getMeshFacets().getElementSynchronizer();
+  synchronizer.synchronizeOnce(*this->test_accessor, _gst_test);
+}
 
-  // AKANTU_DEBUG_INFO("Creating TestAccessor");
-  // TestAccessor test_accessor(mesh);
-  // SynchronizerRegistry synch_registry(test_accessor);
+/* -------------------------------------------------------------------------- */
+TEST_F(TestFacetSynchronizerFixture, Synchrone) {
+  auto & synchronizer = this->mesh->getMeshFacets().getElementSynchronizer();
+  synchronizer.synchronize(*this->test_accessor, _gst_test);
+}
 
-  // synch_registry.registerSynchronizer(facet_synchronizer, _gst_test);
+/* -------------------------------------------------------------------------- */
+TEST_F(TestFacetSynchronizerFixture, Asynchrone) {
+  auto & synchronizer = this->mesh->getMeshFacets().getElementSynchronizer();
+  synchronizer.asynchronousSynchronize(*this->test_accessor, _gst_test);
 
-  // /// synchronize facets and check results
-  // AKANTU_DEBUG_INFO("Synchronizing tag");
-  // synch_registry.synchronize(_gst_test);
+  std::random_device r;
+  std::default_random_engine engine(r());
+  std::uniform_int_distribution<int> uniform_dist(10, 100);
+  std::chrono::microseconds delay(uniform_dist(engine));
 
-  return 0;
+  std::this_thread::sleep_for(delay);
+
+  synchronizer.waitEndSynchronize(*this->test_accessor, _gst_test);
 }

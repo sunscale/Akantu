@@ -29,145 +29,45 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_iterators.hh"
-#include "aka_random_generator.hh"
-#include "element_group.hh"
-#include "element_synchronizer.hh"
-#include "mesh_iterators.hh"
-#include "mesh_partition_mesh_data.hh"
-/* -------------------------------------------------------------------------- */
-#include <algorithm>
+#include "test_synchronizers_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
-using namespace akantu;
+TEST_F(TestSynchronizerFixture, DataDistribution) {
+  auto & barycenters = this->mesh->registerData<Real>("barycenters");
+  auto spatial_dimension = this->mesh->getSpatialDimension();
+  barycenters.initialize(*this->mesh, _spatial_dimension = _all_dimensions,
+                         _nb_component = spatial_dimension);
 
-int main(int argc, char * argv[]) {
-  initialize(argc, argv);
+  this->initBarycenters(barycenters, *this->mesh);
+  this->distribute();
 
-  const UInt spatial_dimension = 3;
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & type :
+         this->mesh->elementTypes(_all_dimensions, ghost_type)) {
+      auto & barycenters =
+          this->mesh->getData<Real>("barycenters", type, ghost_type);
 
-  Mesh mesh_group_after(spatial_dimension, "after");
-  Mesh mesh_group_before(spatial_dimension, "before");
+      for (auto && data : enumerate(make_view(barycenters, spatial_dimension))) {
+        Element element{type, UInt(std::get<0>(data)), ghost_type};
+        Vector<Real> barycenter(spatial_dimension);
+        this->mesh->getBarycenter(element, barycenter);
 
-  const auto & comm = Communicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
-  Int prank = comm.whoAmI();
-
-  if (prank == 0) {
-    mesh_group_before.read("data_split.msh");
-    mesh_group_after.read("data_split.msh");
-
-    mesh_group_before.registerData<UInt>("global_id");
-    mesh_group_after.registerData<UInt>("global_id");
-
-    for (const auto & type : mesh_group_after.elementTypes(_all_dimensions)) {
-      auto & gidb = mesh_group_before.getDataPointer<UInt>("global_id", type);
-      auto & gida = mesh_group_after.getDataPointer<UInt>("global_id", type);
-
-      for (auto && data : zip(arange(gida.size()), gida, gidb)) {
-        std::get<1>(data) = std::get<0>(data);
-        std::get<2>(data) = std::get<0>(data);
+        auto dist = (std::get<1>(data) - barycenter).template norm<L_inf>();
+        EXPECT_NEAR(dist, 0, 1e-7);
       }
     }
   }
+}
 
-  RandomGenerator<UInt>::seed(1);
-  mesh_group_before.distribute();
+TEST_F(TestSynchronizerFixture, DataDistributionTags) {
+  this->distribute();
 
-  RandomGenerator<UInt>::seed(1);
-  mesh_group_after.distribute();
+  for (const auto & type : this->mesh->elementTypes(_all_dimensions)) {
+    auto & tags = this->mesh->getData<UInt>("tag_0", type);
+    Array<UInt>::const_vector_iterator tags_it = tags.begin(1);
+    Array<UInt>::const_vector_iterator tags_end = tags.end(1);
 
-  if (prank == 0)
-    std::cout << mesh_group_after;
-
-  for (const auto & agrp : ElementGroupsIterable(mesh_group_after)) {
-    const ElementGroup & bgrp =
-        mesh_group_before.getElementGroup(agrp.getName());
-
-    for (auto && ghost_type : ghost_types) {
-      for (const auto & type : bgrp.elementTypes(_all_dimensions, ghost_type)) {
-        Array<UInt> & gidb = mesh_group_before.getDataPointer<UInt>(
-            "global_id", type, ghost_type);
-        Array<UInt> & gida = mesh_group_after.getDataPointer<UInt>(
-            "global_id", type, ghost_type);
-
-        Array<UInt> bgelem(bgrp.getElements(type, ghost_type));
-        Array<UInt> agelem(agrp.getElements(type, ghost_type));
-
-        std::transform(agelem.begin(), agelem.end(), agelem.begin(),
-                       [&gida](auto & i) { return gida(i); });
-        std::transform(bgelem.begin(), bgelem.end(), bgelem.begin(),
-                       [&gidb](auto & i) { return gidb(i); });
-
-        std::sort(bgelem.begin(), bgelem.end());
-        std::sort(agelem.begin(), agelem.end());
-
-        if (not std::equal(bgelem.begin(), bgelem.end(), agelem.begin())) {
-          std::cerr << "The filters array for the group " << agrp.getName()
-                    << " and for the element type " << type << ", "
-                    << ghost_type << " do not match" << std::endl;
-
-          debug::setDebugLevel(dblTest);
-
-          std::cerr << bgelem << std::endl;
-          std::cerr << agelem << std::endl;
-          debug::debugger.exit(EXIT_FAILURE);
-        }
-      }
-    }
+    // The number of tags should match the number of elements on rank"
+    EXPECT_EQ(this->mesh->getNbElement(type), tags.size());
   }
-
-  for (const auto & agrp : NodeGroupsIterable(mesh_group_after)) {
-    const NodeGroup & bgrp = mesh_group_before.getNodeGroup(agrp.getName());
-
-    const Array<UInt> & gidb = mesh_group_before.getGlobalNodesIds();
-    const Array<UInt> & gida = mesh_group_after.getGlobalNodesIds();
-
-    Array<UInt> bgnode(0, 1);
-    Array<UInt> agnode(0, 1);
-
-    for (auto && pair : zip(bgrp, agrp)) {
-      UInt a,b;
-      std::tie(b, a) = pair;
-      if (psize > 1) {
-        if (mesh_group_before.isLocalOrMasterNode(b))
-          bgnode.push_back(gidb(b));
-
-        if (mesh_group_after.isLocalOrMasterNode(a))
-          agnode.push_back(gida(a));
-      }
-    }
-
-    std::sort(bgnode.begin(), bgnode.end());
-    std::sort(agnode.begin(), agnode.end());
-
-    if (!std::equal(bgnode.begin(), bgnode.end(), agnode.begin())) {
-      std::cerr << "The filters array for the group " << agrp.getName() << " do not match"
-                << std::endl;
-
-      debug::setDebugLevel(dblTest);
-
-      std::cerr << bgnode << std::endl;
-      std::cerr << agnode << std::endl;
-      debug::debugger.exit(EXIT_FAILURE);
-    }
-  }
-
-  mesh_group_after.getElementGroup("inside").setBaseName("after_inside");
-  mesh_group_after.getElementGroup("inside").dump();
-  mesh_group_after.getElementGroup("outside").setBaseName("after_outside");
-  mesh_group_after.getElementGroup("outside").dump();
-  mesh_group_after.getElementGroup("volume").setBaseName("after_volume");
-  mesh_group_after.getElementGroup("volume").dump();
-
-  mesh_group_before.getElementGroup("inside").setBaseName("before_inside");
-  mesh_group_before.getElementGroup("inside").dump();
-  mesh_group_before.getElementGroup("outside").setBaseName("before_outside");
-  mesh_group_before.getElementGroup("outside").dump();
-  mesh_group_before.getElementGroup("volume").setBaseName("before_volume");
-  mesh_group_before.getElementGroup("volume").dump();
-
-  finalize();
-
-  return EXIT_SUCCESS;
 }

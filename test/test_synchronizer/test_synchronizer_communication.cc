@@ -29,131 +29,64 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_random_generator.hh"
-#include "element_synchronizer.hh"
-#include "mesh.hh"
-#include "mesh_partition_scotch.hh"
-#include "synchronizer_registry.hh"
-/* -------------------------------------------------------------------------- */
-
-//#define DUMP
-
-#if defined(AKANTU_USE_IOHELPER) && defined(DUMP)
-#include "dumper_paraview.hh"
-#endif // AKANTU_USE_IOHELPER
-
+#include "test_synchronizers_fixture.hh"
 #include "test_data_accessor.hh"
+/* -------------------------------------------------------------------------- */
+#include "element_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
+#include <random>
+#include <chrono>
+#include <thread>
+/* -------------------------------------------------------------------------- */
 
-using namespace akantu;
+class TestElementSynchronizerFixture : public TestSynchronizerFixture {
+public:
+  void SetUp() override {
+    TestSynchronizerFixture::SetUp();
+    this->distribute();
+
+    /// compute barycenter for each element
+    barycenters = std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
+    this->initBarycenters(*barycenters, *mesh);
+
+    test_accessor = std::make_unique<TestAccessor>(*this->mesh, *this->barycenters);
+  }
+
+  void TearDown() override {
+    barycenters.reset(nullptr);
+    test_accessor.reset(nullptr);
+  }
+
+protected:
+  std::unique_ptr<ElementTypeMapArray<Real>> barycenters;
+  std::unique_ptr<TestAccessor> test_accessor;
+};
+
 
 /* -------------------------------------------------------------------------- */
-/* Main                                                                       */
+TEST_F(TestElementSynchronizerFixture, SynchroneOnce) {
+  auto & synchronizer = this->mesh->getElementSynchronizer();
+  synchronizer.synchronizeOnce(*this->test_accessor, _gst_test);
+}
+
 /* -------------------------------------------------------------------------- */
-int main(int argc, char * argv[]) {
-  initialize(argc, argv);
+TEST_F(TestElementSynchronizerFixture, Synchrone) {
+  auto & synchronizer = this->mesh->getElementSynchronizer();
+  synchronizer.synchronize(*this->test_accessor, _gst_test);
+}
 
-  UInt spatial_dimension = 3;
+/* -------------------------------------------------------------------------- */
+TEST_F(TestElementSynchronizerFixture, Asynchrone) {
+auto & synchronizer = this->mesh->getElementSynchronizer();
+synchronizer.asynchronousSynchronize(*this->test_accessor, _gst_test);
 
-  Mesh mesh(spatial_dimension);
+  std::random_device r;
+  std::default_random_engine engine(r());
+  std::uniform_int_distribution<int> uniform_dist(10, 100);
+  std::chrono::microseconds delay(uniform_dist(engine));
 
-  const auto & comm = Communicator::getStaticCommunicator();
-  Int prank = comm.whoAmI();
-  bool wait = true;
-  if (argc > 1) {
-    if (prank == 0)
-      while (wait)
-        ;
-  }
+  std::this_thread::sleep_for(delay);
 
-  if (prank == 0)
-    mesh.read("cube.msh");
-
-  mesh.distribute();
-
-  /// compute barycenter for each facet
-  ElementTypeMapArray<Real> barycenters("barycenters", "", 0);
-  barycenters.initialize(mesh, _nb_component = spatial_dimension);
-
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-    Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type =
-        mesh.lastType(spatial_dimension, ghost_type);
-
-    for (; it != last_type; ++it) {
-      UInt nb_element = mesh.getNbElement(*it, ghost_type);
-      Array<Real> & barycenter = barycenters(*it, ghost_type);
-      barycenter.resize(nb_element);
-
-      Array<Real>::iterator<Vector<Real>> bary_it =
-          barycenter.begin(spatial_dimension);
-
-      for (UInt elem = 0; elem < nb_element; ++elem, ++bary_it)
-        mesh.getBarycenter({*it, elem, ghost_type}, *bary_it);
-    }
-  }
-
-  AKANTU_DEBUG_INFO("Creating TestAccessor");
-  TestAccessor test_accessor(mesh, barycenters);
-  SynchronizerRegistry synch_registry;
-  synch_registry.registerDataAccessor(test_accessor);
-  synch_registry.registerSynchronizer(mesh.getElementSynchronizer(), _gst_test);
-
-  AKANTU_DEBUG_INFO("Synchronizing tag");
-  synch_registry.synchronize(_gst_test);
-
-  // Checking the tags in MeshData (not a very good test because they're all
-  // identical,
-  // but still...)
-  Mesh::type_iterator it = mesh.firstType(_all_dimensions);
-  Mesh::type_iterator last_type = mesh.lastType(_all_dimensions);
-
-  for (; it != last_type; ++it) {
-    Array<UInt> & tags = mesh.getData<UInt>("tag_0", *it);
-    Array<UInt>::const_vector_iterator tags_it = tags.begin(1);
-    Array<UInt>::const_vector_iterator tags_end = tags.end(1);
-    AKANTU_DEBUG_ASSERT(
-        mesh.getNbElement(*it) == tags.size(),
-        "The number of tags does not match the number of elements on rank "
-            << prank << ".");
-    std::cout << std::dec << " I am rank " << prank
-              << " and here's my MeshData dump for types " << *it
-              << " (it should contain " << mesh.getNbElement(*it)
-              << " elements and it has " << tags.size() << "!) :" << std::endl;
-    std::cout << std::hex;
-
-    debug::setDebugLevel(dblTest);
-    for (; tags_it != tags_end; ++tags_it) {
-      std::cout << tags_it->operator()(0) << " ";
-    }
-
-    debug::setDebugLevel(dblInfo);
-    std::cout << std::endl;
-  }
-
-#if defined(AKANTU_USE_IOHELPER) && defined(DUMP)
-  DumperParaview dumper("test-scotch-partition");
-  dumper.registerMesh(mesh, spatial_dimension, _not_ghost);
-  dumper.registerField("partitions",
-                       new DumperIOHelper::ElementPartitionField<>(
-                           mesh, spatial_dimension, _not_ghost));
-  dumper.dump();
-
-  DumperParaview dumper_ghost("test-scotch-partition-ghost");
-  dumper_ghost.registerMesh(mesh, spatial_dimension, _ghost);
-  dumper_ghost.registerField("partitions",
-                             new DumperIOHelper::ElementPartitionField<>(
-                                 mesh, spatial_dimension, _ghost));
-  dumper_ghost.dump();
-#endif // AKANTU_USE_IOHELPER
-
-  finalize();
-
-  return EXIT_SUCCESS;
+  synchronizer.waitEndSynchronize(*this->test_accessor, _gst_test);
 }

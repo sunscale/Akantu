@@ -28,11 +28,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "test_synchronizers_fixture.hh"
+/* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "data_accessor.hh"
 #include "mesh.hh"
 #include "node_synchronizer.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
+#include <random>
+#include <chrono>
+#include <thread>
 #include <limits>
 /* -------------------------------------------------------------------------- */
 
@@ -42,8 +47,7 @@ class DataAccessorTest : public DataAccessor<UInt> {
 public:
   explicit DataAccessorTest(Array<int> & data) : data(data) {}
 
-  UInt getNbData(const Array<UInt> & nodes,
-                 const SynchronizationTag &) const {
+  UInt getNbData(const Array<UInt> & nodes, const SynchronizationTag &) const {
     return nodes.size() * sizeof(int);
   }
 
@@ -65,66 +69,92 @@ protected:
   Array<int> & data;
 };
 
-int main(int argc, char * argv[]) {
-  initialize(argc, argv);
+class TestNodeSynchronizerFixture : public TestSynchronizerFixture {
+public:
+  static constexpr int max_int = std::numeric_limits<int>::max();
 
-  UInt spatial_dimension = 3;
+  void SetUp() override {
+    TestSynchronizerFixture::SetUp();
+    this->distribute();
 
-  Mesh mesh(spatial_dimension);
+    UInt nb_nodes = this->mesh->getNbNodes();
 
-  const auto & comm = Communicator::getStaticCommunicator();
-  Int prank = comm.whoAmI();
+    node_data = std::make_unique<Array<int>>(nb_nodes);
+    for (auto && data : enumerate(*node_data)) {
+      auto n = std::get<0>(data);
+      auto & d = std::get<1>(data);
+      UInt gn = this->mesh->getNodeGlobalId(n);
 
-  if (prank == 0)
-    mesh.read("cube.msh");
+      if (this->mesh->isMasterNode(n))
+        d = gn;
+      else if (this->mesh->isLocalNode(n))
+        d = -gn;
+      else if (this->mesh->isSlaveNode(n))
+        d = max_int;
+      else
+        d = -max_int;
+    }
 
-  mesh.distribute();
-
-  UInt nb_nodes = mesh.getNbNodes();
-  Array<int> node_data(nb_nodes);
-
-  constexpr int max_int = std::numeric_limits<int>::max();
-
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    UInt gn = mesh.getNodeGlobalId(n);
-    if (mesh.isMasterNode(n))
-      node_data(n) = gn;
-    else if (mesh.isLocalNode(n))
-      node_data(n) = -gn;
-    else if (mesh.isSlaveNode(n))
-      node_data(n) = max_int;
-    else
-      node_data(n) = -max_int;
+    data_accessor = std::make_unique<DataAccessorTest>(*node_data);
   }
 
-  DataAccessorTest data_accessor(node_data);
-
-  auto & node_synchronizer = mesh.getNodeSynchronizer();
-  node_synchronizer.synchronize(data_accessor, _gst_test);
-
-
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    int gn = mesh.getNodeGlobalId(n);
-    if(!((mesh.isMasterNode(n) && node_data(n) == gn) ||
-         (mesh.isLocalNode(n)  && node_data(n) == -gn) ||
-         (mesh.isSlaveNode(n)  && node_data(n) == gn) ||
-         (mesh.isPureGhostNode(n) && node_data(n) == -max_int)
-         )
-      )
-      {
-        debug::setDebugLevel(dblTest);
-        std::cout << "prank : " << prank << " (node " << gn << "[" << n << "]) - "
-                  << "( isMaster: " << mesh.isMasterNode(n) << " && " << node_data(n) << " == "  << gn << ") "
-                  << "( isLocal: " << mesh.isLocalNode(n) << " && " << node_data(n) << " == "  <<  - gn << ") "
-                  << "( isSlave: " << mesh.isSlaveNode(n) << " && " << node_data(n) << " == "  << gn << ") "
-                  << "( isPureGhost: " << mesh.isPureGhostNode(n) << " && " << node_data(n) << " == "  << -max_int << ") "
-                  << std::endl;
-        debug::setDebugLevel(dblDebug);
-        return -1;
-      }
+  void TearDown() override {
+    data_accessor.reset(nullptr);
+    node_data.reset(nullptr);
   }
 
-  finalize();
+  void checkData() {
+    for (auto && data : enumerate(*this->node_data)) {
+      auto n = std::get<0>(data);
+      auto & d = std::get<1>(data);
+      UInt gn = this->mesh->getNodeGlobalId(n);
 
-  return 0;
+      if (this->mesh->isMasterNode(n))
+        EXPECT_EQ(d, gn);
+
+      else if (this->mesh->isLocalNode(n))
+        EXPECT_EQ(d, -gn);
+
+      else if (this->mesh->isSlaveNode(n))
+        EXPECT_EQ(d, gn);
+
+      else
+
+        EXPECT_EQ(d, -max_int);
+    }
+  }
+
+protected:
+  std::unique_ptr<Array<int>> node_data;
+  std::unique_ptr<DataAccessorTest> data_accessor;
+};
+
+/* -------------------------------------------------------------------------- */
+TEST_F(TestNodeSynchronizerFixture, SynchroneOnce) {
+  auto & synchronizer = this->mesh->getNodeSynchronizer();
+  synchronizer.synchronizeOnce(*this->data_accessor, _gst_test);
+  this->checkData();
+}
+
+/* -------------------------------------------------------------------------- */
+TEST_F(TestNodeSynchronizerFixture, Synchrone) {
+  auto & node_synchronizer = this->mesh->getNodeSynchronizer();
+  node_synchronizer.synchronize(*this->data_accessor, _gst_test);
+  this->checkData();
+}
+
+/* -------------------------------------------------------------------------- */
+TEST_F(TestNodeSynchronizerFixture, Asynchrone) {
+  auto & synchronizer = this->mesh->getNodeSynchronizer();
+  synchronizer.asynchronousSynchronize(*this->data_accessor, _gst_test);
+
+  std::random_device r;
+  std::default_random_engine engine(r());
+  std::uniform_int_distribution<int> uniform_dist(10, 100);
+  std::chrono::microseconds delay(uniform_dist(engine));
+
+  std::this_thread::sleep_for(delay);
+
+  synchronizer.waitEndSynchronize(*this->data_accessor, _gst_test);
+  this->checkData();
 }

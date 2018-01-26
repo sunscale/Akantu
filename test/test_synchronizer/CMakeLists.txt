@@ -34,20 +34,6 @@
 add_mesh(test_synchronizer_communication_mesh
   cube.geo 3 2)
 
-register_test(test_synchronizer_communication
-  SOURCES test_synchronizer_communication.cc
-  DEPENDS test_synchronizer_communication_mesh
-  PACKAGE parallel
-  PARALLEL
-  )
-
-register_test(test_node_synchronizer
-  SOURCES test_node_synchronizer.cc
-  DEPENDS test_synchronizer_communication_mesh
-  PACKAGE parallel
-  PARALLEL
-  )
-
 register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
   FILES_TO_COPY bar.msh
@@ -70,25 +56,31 @@ register_test(test_dof_synchronizer
 #   PACKAGE damage_non_local
 #   )
 
-# register_test(test_dof_synchronizer_communication
-#   SOURCES test_dof_synchronizer_communication.cc test_dof_data_accessor.hh
-#   DEPENDS test_synchronizer_communication_mesh
-#   PACKAGE parallel
-#   )
-
-register_test(test_data_distribution
-  SOURCES test_data_distribution.cc
-  FILES_TO_COPY data_split.msh
+register_gtest_sources(
+  SOURCES test_synchronizer_communication.cc  test_data_accessor.hh test_synchronizers_fixture.hh
   PACKAGE parallel
-  PARALLEL
+  )
+
+register_gtest_sources(
+  SOURCES test_node_synchronizer.cc test_synchronizers_fixture.hh
+  PACKAGE parallel
+  )
+
+register_gtest_sources(
+  SOURCES test_data_distribution.cc test_synchronizers_fixture.hh
+  DEPENDS test_synchronizer_communication_mesh
+  PACKAGE parallel
   )
 
 add_mesh(test_facet_synchronizer_mesh
   facet.geo 3 2)
 
-register_test(test_facet_synchronizer
-  SOURCES test_facet_synchronizer.cc test_data_accessor.hh
+register_gtest_sources(
+  SOURCES test_facet_synchronizer.cc test_data_accessor.hh test_synchronizers_fixture.hh
   DEPENDS test_facet_synchronizer_mesh
   PACKAGE parallel cohesive_element
-  PARALLEL_LEVEL 3
   )
+
+register_gtest_test(test_synchronizers
+  DEPENDS test_synchronizer_communication_mesh
+  PARALLEL)

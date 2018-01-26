@@ -30,10 +30,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#include "aka_common.hh"
 #include "data_accessor.hh"
 #include "mesh.hh"
+/* -------------------------------------------------------------------------- */
+#include <gtest/gtest.h>
+/* -------------------------------------------------------------------------- */
+
 
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
@@ -105,13 +107,10 @@ inline void TestAccessor::packData(CommunicationBuffer & buffer,
 
 inline void TestAccessor::unpackData(CommunicationBuffer & buffer,
                                      const Array<Element> & elements,
-                                     const SynchronizationTag & tag) {
+                                     const SynchronizationTag &) {
   UInt spatial_dimension = mesh.getSpatialDimension();
-  Array<Element>::const_iterator<Element> bit = elements.begin();
-  Array<Element>::const_iterator<Element> bend = elements.end();
-  for (; bit != bend; ++bit) {
-    const Element & element = *bit;
 
+  for(const auto & element : elements) {
     Vector<Real> barycenter_loc(
         this->barycenters(element.type, element.ghost_type).storage() +
             element.element * spatial_dimension,
@@ -119,14 +118,8 @@ inline void TestAccessor::unpackData(CommunicationBuffer & buffer,
 
     Vector<Real> bary(spatial_dimension);
     buffer >> bary;
-    std::cout << element << barycenter_loc << std::endl;
-    Real tolerance = 1e-15;
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      if (!(std::abs(bary(i) - barycenter_loc(i)) <= tolerance))
-        AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
-                           << element << "(barycenter[" << i
-                           << "] = " << barycenter_loc(i) << " and buffer[" << i
-                           << "] = " << bary(i) << ") - tag: " << tag);
-    }
+
+    auto dist = (barycenter_loc - bary).template norm<L_inf>();
+    EXPECT_NEAR(0, dist, 1e-15);
   }
 }
