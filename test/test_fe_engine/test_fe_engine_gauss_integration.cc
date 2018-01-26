@@ -54,7 +54,7 @@ class TestGaussIntegrationFixture
     : public TestFEMFixture<std::tuple_element_t<0, T>> {
 protected:
   using parent = TestFEMFixture<std::tuple_element_t<0, T>>;
-  static constexpr size_t degree{std::tuple_element_t<1, T>{}};
+  static constexpr size_t degree{std::tuple_element_t<1, T>::value};
 
 public:
   TestGaussIntegrationFixture() : integration_points_pos(0, parent::dim) {}

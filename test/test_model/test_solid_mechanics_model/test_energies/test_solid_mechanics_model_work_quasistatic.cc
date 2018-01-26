@@ -41,7 +41,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "test_solid_mechanics_model_fixture.hh"
+#include "../test_solid_mechanics_model_fixture.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 

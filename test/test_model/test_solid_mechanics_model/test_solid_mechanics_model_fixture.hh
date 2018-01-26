@@ -21,20 +21,12 @@ public:
   void SetUp() override {
     mesh = std::make_unique<Mesh>(this->spatial_dimension);
 
-    mesh->read(this->makeMeshName());
+    mesh->read(this->mesh_file);
 
-    std::stringstream element_type;
-    element_type << type;
+    SCOPED_TRACE(aka::to_string(this->type).c_str());
 
     model = std::make_unique<SolidMechanicsModel>(*mesh, _all_dimensions,
-                                                  element_type.str());
-  }
-
-  virtual std::string makeMeshName() {
-    std::stringstream element_type;
-    element_type << type;
-    SCOPED_TRACE(element_type.str().c_str());
-    return element_type.str() + ".msh";
+                                                  aka::to_string(this->type));
   }
 
   void TearDown() override {
@@ -43,6 +35,7 @@ public:
   }
 
 protected:
+  std::string mesh_file{aka::to_string(this->type) + ".msh"};
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModel> model;
 };
@@ -60,23 +53,11 @@ template <typename type_>
 class TestSMMFixtureBar : public TestSMMFixture<type_> {
 public:
   void SetUp() override {
-    if (this->type == _pentahedron_6 || this->type == _pentahedron_15)
-      throw std::runtime_error("TODO pentahedron meshes for bar do not yet exist!");
-
-    std::cout << "testing type " << this->type << std::endl;
-
+    this->mesh_file = "bar" + aka::to_string(this->type) + ".msh";
     TestSMMFixture<type_>::SetUp();
-  }
-
-  std::string makeMeshName() override {
-    std::stringstream element_type;
-    element_type << this->type;
-    SCOPED_TRACE(element_type.str().c_str());
-    return std::string("bar") + element_type.str() + ".msh";
   }
 };
 
 TYPED_TEST_CASE(TestSMMFixtureBar, types);
-
 
 #endif /* __AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH__ */

@@ -12,8 +12,6 @@ Point(7) = {0, 1., 1., h};
 Point(8) = {10, 1., 1., h};
 
 
-
-Mesh.SecondOrderIncomplete = 1;//+
 Line(1) = {7, 8};
 //+
 Line(2) = {8, 6};
@@ -72,5 +70,5 @@ Physical Volume("bulk") = {1};
 Transfinite Surface "*";
 Transfinite Volume "*";
 
-Recombine Surface "*";
+Recombine Surface {3, 4, 5, 6};
 Mesh.SecondOrderIncomplete = 1;

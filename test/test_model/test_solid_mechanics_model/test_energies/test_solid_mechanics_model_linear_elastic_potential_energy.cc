@@ -39,7 +39,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "test_solid_mechanics_model_fixture.hh"
+#include "../test_solid_mechanics_model_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;

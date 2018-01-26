@@ -518,7 +518,7 @@ function(register_test test_name)
   endif()
 
   if(_register_test_PARALLEL)
-    list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG}")
+    list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG}")
     if(_register_test_PARALLEL_LEVEL)
       set(_procs "${_register_test_PARALLEL_LEVEL}")
     elseif(CMAKE_VERSION VERSION_GREATER "3.0")
