@@ -17,19 +17,28 @@ public:
   static constexpr const ElementType type = type_::value;
   static constexpr const size_t spatial_dimension =
       ElementClass<type>::getSpatialDimension();
+  static const UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
 
   void SetUp() override {
     const auto spatial_dimension = this->spatial_dimension;
-
     mesh = std::make_unique<Mesh>(spatial_dimension);
-
-    // mesh->read(this->makeMeshName());
+    readMesh(makeMeshName());
 
     std::stringstream element_type;
     element_type << this->type;
-
     model = std::make_unique<StructuralMechanicsModel>(*mesh, _all_dimensions,
                                                        element_type.str());
+
+    addMaterials();
+    model->initFull();
+    assignMaterials();
+    setDirichlets();
+    setNeumanns();
+    model->solveStep();
+  }
+
+  virtual void readMesh(std::string filename) {
+    mesh->read(filename, _miot_gmsh_struct);
   }
 
   virtual std::string makeMeshName() {
@@ -44,6 +53,11 @@ public:
     mesh.reset(nullptr);
   }
 
+  virtual void addMaterials() = 0;
+  virtual void assignMaterials() = 0;
+  virtual void setDirichlets() = 0;
+  virtual void setNeumanns() = 0;
+
 protected:
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<StructuralMechanicsModel> model;
@@ -53,12 +67,10 @@ template <typename type_>
 constexpr ElementType TestStructuralFixture<type_>::type;
 template <typename type_>
 constexpr size_t TestStructuralFixture<type_>::spatial_dimension;
+template <typename type_> const UInt TestStructuralFixture<type_>::ndof;
 
 // using types = gtest_list_t<StructuralTestElementTypes>;
 
 // TYPED_TEST_CASE(TestStructuralFixture, types);
-
-using TestStructuralFixtureBeam2 =
-    TestStructuralFixture<element_type_t<_bernoulli_beam_2>>;
 
 #endif /* __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__ */
