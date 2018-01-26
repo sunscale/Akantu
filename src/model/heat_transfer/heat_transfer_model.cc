@@ -73,7 +73,8 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
       integrator(nullptr), temperature_gradient("temperature_gradient", id),
       temperature_on_qpoints("temperature_on_qpoints", id),
       conductivity_on_qpoints("conductivity_on_qpoints", id),
-      k_gradt_on_qpoints("k_gradt_on_qpoints", id), conductivity(dim, dim) {
+      k_gradt_on_qpoints("k_gradt_on_qpoints", id),
+      conductivity(this->spatial_dimension, this->spatial_dimension) {
   AKANTU_DEBUG_IN();
 
   this->initDOFManager();
@@ -122,8 +123,6 @@ FEEngine & HeatTransferModel::getFEEngineBoundary(const ID & name) {
       getFEEngineClassBoundary<MyFEEngineType>(name));
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void HeatTransferModel::allocNodalField(Array<T> *& array, const ID & name) {
@@ -168,7 +167,7 @@ MatrixType HeatTransferModel::getMatrixType(const ID & matrix_id) {
 void HeatTransferModel::assembleMatrix(const ID & matrix_id) {
   if (matrix_id == "K") {
     this->assembleConductivityMatrix();
-  } else if(matrix_id == "M") {
+  } else if (matrix_id == "M") {
     this->assembleCapacity();
   } else {
     AKANTU_DEBUG_TO_IMPLEMENT();
@@ -272,8 +271,6 @@ HeatTransferModel::getDefaultSolverID(const AnalysisMethod & method) {
   }
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::assembleConductivityMatrix(bool compute_conductivity) {
   AKANTU_DEBUG_IN();
@@ -358,8 +355,8 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
   }
 
   /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
-  auto K_e =
-      std::make_unique<Array<Real>>(nb_element, bt_d_b_size * bt_d_b_size, "K_e");
+  auto K_e = std::make_unique<Array<Real>>(nb_element,
+                                           bt_d_b_size * bt_d_b_size, "K_e");
 
   this->getFEEngine().integrate(*bt_d_b, *K_e, bt_d_b_size * bt_d_b_size, type,
                                 ghost_type);
@@ -538,7 +535,7 @@ Real HeatTransferModel::getStableTimeStep() {
 void HeatTransferModel::readMaterials() {
   auto sect = this->getParserSection();
 
-  if (std::get<1>(sect)) {
+  if(not std::get<1>(sect)) {
     const auto & section = std::get<0>(sect);
     this->parseSection(section);
   }

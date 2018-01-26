@@ -79,7 +79,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       material_index("material index", id, memory_id),
       material_local_numbering("material local numbering", id, memory_id),
       increment_flag(false),
-      are_materials_instantiated(false) { //, pbc_synch(nullptr) {
+      are_materials_instantiated(false) {
   AKANTU_DEBUG_IN();
 
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,

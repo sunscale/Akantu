@@ -52,15 +52,12 @@ int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   Mesh mesh(spatial_dimension);
-  MeshIOMSH mesh_io;
-
-  mesh_io.read("cube1.msh", mesh);
+  mesh.read("cube1.msh");
 
   HeatTransferModel model(mesh);
   // initialize everything
   model.initFull();
-  // assemble the lumped capacity
-  model.assembleCapacityLumped();
+
   // get and set stable time step
   Real time_step = model.getStableTimeStep() * 0.8;
   std::cout << "Stable Time Step is : " << time_step/.8 << std::endl;
