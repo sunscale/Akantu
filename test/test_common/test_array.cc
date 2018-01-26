@@ -238,4 +238,18 @@ TYPED_TEST(ArrayFixture, ViewMatrixIter) {
   EXPECT_EQ(100, count);
 }
 
+TYPED_TEST(ArrayFixture, ConstViewVector) {
+  const auto & carray = *this->array;
+  auto && view = make_view(carray, 10);
+  EXPECT_NO_THROW(view.begin());
+  {
+    auto it = view.begin();
+    EXPECT_EQ(10, it->size());
+    EXPECT_PRED_FORMAT2(AssertType, typeid(*it),
+                        typeid(Vector<typename TestFixture::type>));
+    EXPECT_PRED_FORMAT2(AssertType, typeid(it[0]),
+                        typeid(VectorProxy<typename TestFixture::type>));
+  }
+}
+
 } // namespace

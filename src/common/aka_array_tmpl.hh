@@ -1130,16 +1130,26 @@ namespace detail {
           [&](auto &&... ns) { return array.begin_reinterpret(ns...); }, sizes);
     }
 
+    decltype(auto) begin() const {
+      return aka::apply(
+          [&](auto &&... ns) { return array.begin_reinterpret(ns...); }, sizes);
+    }
+
     decltype(auto) end() {
       return aka::apply(
           [&](auto &&... ns) { return array.end_reinterpret(ns...); }, sizes);
     }
 
-    decltype(auto) size() {
+    decltype(auto) end() const {
+      return aka::apply(
+          [&](auto &&... ns) { return array.end_reinterpret(ns...); }, sizes);
+    }
+
+    decltype(auto) size() const {
       return std::get<std::tuple_size<tuple>::value - 1>(sizes);
     }
 
-    decltype(auto) dims() {
+    decltype(auto) dims() const {
       return std::tuple_size<tuple>::value - 1;
     }
   private:
