@@ -29,6 +29,7 @@
 #
 #===============================================================================
 
+# Adding sources
 register_gtest_sources(
   SOURCES test_structural_mechanics_model_bernoulli_beam_2.cc
   PACKAGE implicit structural_mechanics
@@ -39,17 +40,24 @@ register_gtest_sources(
   PACKAGE implicit structural_mechanics
 )
 
-# register_test(test_b3
-#   test_structural_mechanics_model_bernoulli_beam_3.cc
-#   PACKAGE implicit structural_mechanics
-# )
+#===============================================================================
 
-register_gtest_test(test_structural_mechanics)
+# Adding meshes for element types
+package_get_element_types(structural_mechanics _types)
 
-# add_mesh(complicated_mesh complicated.geo 1 1)
-# register_test(test_structural_mechanics_model_bernoulli_beam_2_complicated
-#   test_structural_mechanics_model_bernoulli_beam_2_complicated.cc
-#   DEPENDS complicated_mesh
-#   PACKAGE structural_mechanics
-#   )
+foreach(_type ${_types})
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
+    list(APPEND _meshes ${_type}.msh)
+    #register_fem_test(fe_engine_precomputation ${_type })
+  else()
+    if(NOT ${_type} STREQUAL _point_1)
+      message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
+    endif()
+  endif()
+endforeach()
+
+#===============================================================================
+# Registering google test
+register_gtest_test(test_structural_mechanics
+  FILES_TO_COPY ${_meshes})
 

@@ -1,12 +1,11 @@
 /**
- * @file   mesh_io_msh_struct.hh
+ * @file   test_fe_engine_structural_fixture.hh
  *
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Lucas Frérot
  *
- * @date creation: Fri Jun 18 2010
- * @date last modification: Sun Oct 19 2014
+ * @date creation: Fri Feb 26 2018
  *
- * @brief  Read/Write for MSH files
+ * @brief  test of the fem class
  *
  * @section LICENSE
  *
@@ -30,25 +29,36 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MESH_IO_MSH_STRUCT_HH__
-#define __AKANTU_MESH_IO_MSH_STRUCT_HH__
+#include "test_fe_engine_fixture.hh"
+#include "mesh_io_msh_struct.hh"
 /* -------------------------------------------------------------------------- */
-#include "mesh_io.hh"
+#include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
-namespace akantu {
+#ifndef __AKANTU_TEST_FE_ENGINE_STRUCTURAL_FIXTURE_HH__
+#define __AKANTU_TEST_FE_ENGINE_STRUCTURAL_FIXTURE_HH__
 
-class MeshIOMSHStruct : public MeshIOMSH {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+using namespace akantu;
+
+/// Base class for structural FEEngine tests with structural elements
+template <typename type_>
+class TestFEMStructuralFixture
+    : public TestFEMBaseFixture<type_, ShapeStructural, _ek_structural> {
+  using parent = TestFEMBaseFixture<type_, ShapeStructural, _ek_structural>;
 public:
-  MeshIOMSHStruct();
+  static const UInt ndof = ElementClass<parent::type>::getNbDegreeOfFreedom();
 
-  /// read a mesh from the file
-  void read(const std::string & filename, Mesh & mesh) override;
+  /// Need to tell the mesh to load structural elements
+  void readMesh(std::string file_name) override {
+    this->mesh->read(file_name, _miot_gmsh_struct);
+  }
 };
 
-} // akantu
+template <typename type_>
+const UInt TestFEMStructuralFixture<type_>::ndof;
 
-#endif /* __AKANTU_MESH_IO_MSH_STRUCT_HH__ */
+// using types = gtest_list_t<TestElementTypes>;
+
+// TYPED_TEST_CASE(TestFEMFixture, types);
+
+#endif /* __AKANTU_TEST_FE_ENGINE_STRUCTURAL_FIXTURE_HH__ */

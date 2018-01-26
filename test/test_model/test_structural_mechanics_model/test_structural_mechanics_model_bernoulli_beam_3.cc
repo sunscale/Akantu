@@ -29,97 +29,66 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh.hh"
-#include "sparse_matrix_aij.hh"
-#include "sparse_solver.hh"
-#include "structural_mechanics_model.hh"
-// #include "test_gtest_utils.hh"
+#include "test_structural_mechanics_model_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-TEST(TestBernoulliBeam3, TestDisplacements) {
-  constexpr ElementType type = _bernoulli_beam_3;
-  constexpr UInt dim = 3;
-  const UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
-  const Real a = std::sqrt(2) / 2; // cos(pi/4)
+class TestStructBernoulli3
+    : public TestStructuralFixture<element_type_t<_bernoulli_beam_3>> {
+  using parent = TestStructuralFixture<element_type_t<_bernoulli_beam_3>>;
 
-  Mesh mesh(dim, "test_bernoulli_beam_3");
-
-  // Pushing nodes
-  auto & nodes = mesh.getNodes();
-  Vector<Real> node = {0, 0, 0};
-  nodes.push_back(node);
-  node = {a, a, 0};
-  // node = {1, 0, 0};
-  nodes.push_back(node);
-  node = {a, -a, 0};
-  // node = {0, 1, 0};
-  nodes.push_back(node);
-
-  // Pushing connectivity
-  mesh.addConnectivityType(type);
-  auto & connectivity = mesh.getConnectivity(type);
-  Vector<UInt> element = {0, 1};
-  connectivity.push_back(element);
-  element = {0, 2};
-  connectivity.push_back(element);
-
-  // Pushing normals
-  auto & normals =
-      mesh.registerData<Real>("extra_normal").alloc(0, dim, type, _not_ghost);
-  Vector<Real> normal = {0, 0, 1};
-  normals.push_back(normal);
-  normal = {0, 0, 1};
-  normals.push_back(normal);
-
-  // Creating model
-  StructuralMechanicsModel model(mesh, dim, "test_bernoulli_beam_3");
-
-  // Unit material
-  StructuralMaterial mat;
-  mat.E = 1;
-  mat.Iz = 1;
-  mat.Iy = 1;
-  mat.A = 1;
-  mat.GJ = 1;
-  model.addMaterial(mat);
-
-  model.initFull();
-
-  // Boundary conditions (blocking all DOFs of nodes 2 & 3)
-  auto boundary = ++model.getBlockedDOFs().begin(ndof);
-  // clang-format off
-  *boundary = {true, true, true, true, true, true}; ++boundary;
-  *boundary = {true, true, true, true, true, true}; ++boundary;
-  // clang-format on
-
-  // Forces
-  Real P = 1; // N
-  auto & forces = model.getExternalForce();
-  forces.clear();
-  forces(0, 2) = -P; // vertical force on first node
-
-  // Setting same material for all elements
-  model.getElementMaterial(type).set(0);
-
-  try {
-    model.solveStep();
-  } catch (debug::SingularMatrixException & e) {
-    std::cerr << e.what() << std::endl;
-    e.matrix.saveMatrix("jacobian.mtx");
+public:
+  void readMesh(std::string filename) override {
+    parent::readMesh(filename);
+    auto & normals =
+        this->mesh->registerData<Real>("extra_normal")
+            .alloc(0, parent::spatial_dimension, parent::type, _not_ghost);
+    Vector<Real> normal = {0, 0, 1};
+    normals.push_back(normal);
+    normal = {0, 0, 1};
+    normals.push_back(normal);
   }
 
-  model.getDOFManager().getMatrix("K").saveMatrix("stiffness.mtx");
-  model.getDOFManager().getMatrix("J").saveMatrix("jacobian.mtx");
+  void addMaterials() override {
+    StructuralMaterial mat;
+    mat.E = 1;
+    mat.Iz = 1;
+    mat.Iy = 1;
+    mat.A = 1;
+    mat.GJ = 1;
+    this->model->addMaterial(mat);
+  }
 
-  auto vz = model.getDisplacement()(0, 2);
-  auto thy = model.getDisplacement()(0, 4);
-  auto thx = model.getDisplacement()(0, 3);
-  auto thz = model.getDisplacement()(0, 5);
+  void setDirichlets() {
+    // Boundary conditions (blocking all DOFs of nodes 2 & 3)
+    auto boundary = ++this->model->getBlockedDOFs().begin(parent::ndof);
+    // clang-format off
+    *boundary = {true, true, true, true, true, true}; ++boundary;
+    *boundary = {true, true, true, true, true, true}; ++boundary;
+    // clang-format on
+  }
+
+  void setNeumanns() override {
+    // Forces
+    Real P = 1; // N
+    auto & forces = this->model->getExternalForce();
+    forces.clear();
+    forces(0, 2) = -P; // vertical force on first node
+  }
+
+  void assignMaterials() override { model->getElementMaterial(parent::type).set(0); }
+};
+
+/* -------------------------------------------------------------------------- */
+
+TEST_F(TestStructBernoulli3, TestDisplacements) {
+  auto vz = model->getDisplacement()(0, 2);
+  auto thy = model->getDisplacement()(0, 4);
+  auto thx = model->getDisplacement()(0, 3);
+  auto thz = model->getDisplacement()(0, 5);
 
   Real tol = Math::getTolerance();
 
