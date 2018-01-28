@@ -337,6 +337,7 @@ function(akantu_pybind11_add_module target)
     pybind11_add_module(${target} ${ARGN})
     target_include_directories(${target} SYSTEM PRIVATE ${PYBIND11_INCLUDE_DIR}
       ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR})
+    set_property(TARGET ${target} PROPERTY DEBUG_POSTFIX "")
   endif()
 endfunction()
 
@@ -345,7 +346,7 @@ function(register_gtest_test test_name)
   if(NOT _gtest_PACKAGE)
     return()
   endif()
-  
+
   set(_argn ${test_name}_gtest)
 
   set(_link_libraries GTest::GTest GTest::Main)
