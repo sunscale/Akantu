@@ -30,11 +30,10 @@
 /* -------------------------------------------------------------------------- */
 #include "heat_transfer_model.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 /* -------------------------------------------------------------------------- */
-
 
 using namespace akantu;
 
@@ -42,19 +41,18 @@ using namespace akantu;
 UInt spatial_dimension = 2;
 std::string base_name;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
-  //create mesh
+  // create mesh
   Mesh mesh(spatial_dimension);
   mesh.read("square_tri3.msh");
 
   HeatTransferModel model(mesh);
-  //initialize everything
+  // initialize everything
   model.initFull(_analysis_method = _static);
 
-  //boundary conditions
+  // boundary conditions
   const Array<Real> & nodes = model.getFEEngine().getMesh().getNodes();
   Array<bool> & boundary = model.getBlockedDOFs();
   Array<Real> & temperature = model.getTemperature();
@@ -64,27 +62,28 @@ int main(int argc, char *argv[])
   for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    Real dx = nodes(i,0) - length/4.;
+    Real dx = nodes(i, 0) - length / 4.;
     Real dy = 0.0;
     Real dz = 0.0;
 
-    if (spatial_dimension > 1) dy = nodes(i,1) - length/4.;
-    if (spatial_dimension == 3) dz = nodes(i,2) - length/4.;
-    Real d = sqrt(dx*dx + dy*dy + dz*dz);
+    if (spatial_dimension > 1)
+      dy = nodes(i, 1) - length / 4.;
+    if (spatial_dimension == 3)
+      dz = nodes(i, 2) - length / 4.;
+    Real d = sqrt(dx * dx + dy * dy + dz * dz);
     //    if(dx < 0.0){
-    if(d < 0.1){
+    if (d < 0.1) {
       boundary(i) = true;
       temperature(i) = 300.;
     }
   }
 
-  model.assembleConductivityMatrix();
   model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_square2d");
-  model.addDumpField("temperature"     );
+  model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("residual"        );
-  model.addDumpField("conductivity" );
+  model.addDumpField("internal_heat_rate");
+  model.addDumpField("conductivity");
   model.dump();
 
   model.solveStep();

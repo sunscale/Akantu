@@ -91,7 +91,7 @@ int main(int argc, char * argv[]) {
   model.setBaseName("heat_transfer_square2d");
   model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("initernal_heat_rate");
+  model.addDumpField("internal_heat_rate");
   model.addDumpField("capacity_lumped");
   model.dump();
 

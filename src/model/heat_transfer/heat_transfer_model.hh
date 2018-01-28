@@ -99,6 +99,8 @@ protected:
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & method) override;
 
+  ModelSolverOptions
+  getDefaultSolverOptions(const TimeStepSolverType & type) const;
   /* ------------------------------------------------------------------------ */
   /* Methods for explicit                                                     */
   /* ------------------------------------------------------------------------ */
@@ -235,8 +237,6 @@ public:
   AKANTU_GET_MACRO(Temperature, *temperature, Array<Real> &);
   /// get the temperature derivative
   AKANTU_GET_MACRO(TemperatureRate, *temperature_rate, Array<Real> &);
-  /// get the equation number Array<Int>
-  AKANTU_GET_MACRO(EquationNumber, *equation_number, const Array<Int> &);
 
   /// get the energy denominated by thermal
   Real getEnergy(const std::string & energy_id, const ElementType & type,
@@ -268,19 +268,17 @@ private:
   /// number of iterations
   UInt n_iter;
 
-  IntegrationScheme1stOrder * integrator;
-
   /// time step
   Real time_step;
 
   /// temperatures array
-  Array<Real> * temperature;
+  Array<Real> * temperature{nullptr};
 
   /// temperatures derivatives array
-  Array<Real> * temperature_rate;
+  Array<Real> * temperature_rate{nullptr};
 
   /// increment array (@f$\delta \dot T@f$ or @f$\delta T@f$)
-  Array<Real> * increment;
+  Array<Real> * increment{nullptr};
 
   /// the density
   Real density;
@@ -298,19 +296,16 @@ private:
   ElementTypeMapArray<Real> k_gradt_on_qpoints;
 
   /// external flux vector
-  Array<Real> * external_heat_rate;
+  Array<Real> * external_heat_rate{nullptr};
 
   /// residuals array
-  Array<Real> * internal_heat_rate;
-
-  /// position of a dof in the K matrix
-  Array<Int> * equation_number;
+  Array<Real> * internal_heat_rate{nullptr};
 
   // lumped vector
-  Array<Real> * capacity_lumped;
+  Array<Real> * capacity_lumped{nullptr};
 
   /// boundary vector
-  Array<bool> * blocked_dofs;
+  Array<bool> * blocked_dofs{nullptr};
 
   // realtime
   Real time;

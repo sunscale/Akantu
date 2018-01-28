@@ -54,23 +54,26 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class ComputeRhoFunctor {
-public:
-  ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
+namespace heat_transfer {
+  namespace details {
+    class ComputeRhoFunctor {
+    public:
+      ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
 
-  void operator()(Matrix<Real> & rho, const Element &) const {
-    rho.set(model.getCapacity());
+      void operator()(Matrix<Real> & rho, const Element &) const {
+        rho.set(model.getCapacity());
+      }
+
+    private:
+      const HeatTransferModel & model;
+    };
   }
-
-private:
-  const HeatTransferModel & model;
-};
-
+}
 /* -------------------------------------------------------------------------- */
 HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
                                      const MemoryID & memory_id)
     : Model(mesh, ModelType::_heat_transfer_model, dim, id, memory_id),
-      integrator(nullptr), temperature_gradient("temperature_gradient", id),
+      temperature_gradient("temperature_gradient", id),
       temperature_on_qpoints("temperature_on_qpoints", id),
       conductivity_on_qpoints("conductivity_on_qpoints", id),
       k_gradt_on_qpoints("k_gradt_on_qpoints", id),
@@ -92,10 +95,6 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
   sstr << id << ":fem";
   registerFEEngineObject<MyFEEngineType>(sstr.str(), mesh, spatial_dimension);
 
-  this->temperature = nullptr;
-  this->internal_heat_rate = nullptr;
-  this->blocked_dofs = nullptr;
-
 #ifdef AKANTU_USE_IOHELPER
   this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
@@ -106,15 +105,22 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
                       _pat_parsmod);
   this->registerParam("temperature_reference", T_ref, 0., _pat_parsmod);
   this->registerParam("capacity", capacity, _pat_parsmod);
-  // this->registerParam("density", density, _pat_parsmod);
+  this->registerParam("density", density, _pat_parsmod);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::initModel() {
-  getFEEngine().initShapeFunctions(_not_ghost);
-  getFEEngine().initShapeFunctions(_ghost);
+  auto & fem = this->getFEEngine();
+  fem.initShapeFunctions(_not_ghost);
+  fem.initShapeFunctions(_ghost);
+
+  temperature_on_qpoints.initialize(fem, _nb_component = 1);
+  temperature_gradient.initialize(fem, _nb_component = spatial_dimension);
+  conductivity_on_qpoints.initialize(
+      fem, _nb_component = spatial_dimension * spatial_dimension);
+  k_gradt_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -143,7 +149,7 @@ void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   auto & fem = getFEEngineClass<MyFEEngineType>();
-  ComputeRhoFunctor compute_rho(*this);
+  heat_transfer::details::ComputeRhoFunctor compute_rho(*this);
 
   for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
@@ -237,20 +243,6 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
                                          *this->temperature_rate);
     }
   }
-
-  /* ------------------------------------------------------------------------ */
-  // byelementtype vectors
-  temperature_on_qpoints.initialize(this->getFEEngine(), _nb_component = 1);
-
-  temperature_gradient.initialize(this->getFEEngine(),
-                                  _nb_component = spatial_dimension);
-
-  conductivity_on_qpoints.initialize(this->getFEEngine(),
-                                     _nb_component =
-                                         spatial_dimension * spatial_dimension);
-
-  k_gradt_on_qpoints.initialize(this->getFEEngine(),
-                                _nb_component = spatial_dimension);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -269,6 +261,43 @@ HeatTransferModel::getDefaultSolverID(const AnalysisMethod & method) {
   default:
     return std::make_tuple("unknown", _tsst_not_defined);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
+    const TimeStepSolverType & type) const {
+  ModelSolverOptions options;
+
+  switch (type) {
+  case _tsst_dynamic_lumped: {
+    options.non_linear_solver_type = _nls_lumped;
+    options.integration_scheme_type["temperature"] = _ist_forward_euler;
+    options.solution_type["temperature"] = IntegrationScheme::_temperature_rate;
+    break;
+  }
+  case _tsst_static: {
+    options.non_linear_solver_type = _nls_newton_raphson;
+    options.integration_scheme_type["temperature"] = _ist_pseudo_time;
+    options.solution_type["temperature"] = IntegrationScheme::_not_defined;
+    break;
+  }
+  case _tsst_dynamic: {
+    if (this->method == _explicit_consistent_mass) {
+      options.non_linear_solver_type = _nls_newton_raphson;
+      options.integration_scheme_type["temperature"] = _ist_forward_euler;
+      options.solution_type["temperature"] = IntegrationScheme::_temperature_rate;
+    } else {
+      options.non_linear_solver_type = _nls_newton_raphson;
+      options.integration_scheme_type["temperature"] = _ist_trapezoidal_rule_1;
+      options.solution_type["temperature"] = IntegrationScheme::_temperature;
+    }
+    break;
+  }
+  default:
+    AKANTU_EXCEPTION(type << " is not a valid time step solver type");
+  }
+
+  return options;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -302,10 +331,8 @@ void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type,
   AKANTU_DEBUG_IN();
 
   Mesh & mesh = this->getFEEngine().getMesh();
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-  for (; it != last_type; ++it) {
-    this->assembleConductivityMatrix<dim>(*it, ghost_type,
+  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    this->assembleConductivityMatrix<dim>(type, ghost_type,
                                           compute_conductivity);
   }
 
@@ -496,7 +523,7 @@ Real HeatTransferModel::getStableTimeStep() {
 void HeatTransferModel::readMaterials() {
   auto sect = this->getParserSection();
 
-  if(not std::get<1>(sect)) {
+  if (not std::get<1>(sect)) {
     const auto & section = std::get<0>(sect);
     this->parseSection(section);
   }
@@ -516,7 +543,7 @@ void HeatTransferModel::assembleCapacity() {
 
   auto & fem = getFEEngineClass<MyFEEngineType>();
 
-  ComputeRhoFunctor rho_functor(*this);
+  heat_transfer::details::ComputeRhoFunctor rho_functor(*this);
 
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     fem.assembleFieldMatrix(rho_functor, "M", "temperature",
