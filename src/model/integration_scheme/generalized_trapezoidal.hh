@@ -138,7 +138,7 @@ public:
   ForwardEuler(DOFManager & dof_manager, const ID & dof_id)
       : GeneralizedTrapezoidal(dof_manager, dof_id, 0.){};
 
-  std::vector<std::string> getNeededMatrixList() override { return {"K"}; }
+  std::vector<std::string> getNeededMatrixList() override { return {"M"}; }
 };
 
 /**
