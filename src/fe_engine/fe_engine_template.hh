@@ -163,6 +163,18 @@ public:
       const ElementTypeMapArray<UInt> * filter_elements =
           nullptr) const override;
 
+  /// pre multiplies a tensor by the shapes derivaties
+  void
+  computeBtD(const Array<Real> & Ds, Array<Real> & BtDs,
+             const ElementType & type, const GhostType & ghost_type,
+             const Array<UInt> & filter_elements = empty_filter) const override;
+
+  /// left and right  multiplies a tensor by the shapes derivaties
+  void computeBtDB(
+      const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
+      const ElementType & type, const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const override;
+
   /// compute the position of integration points given by an element_type_map
   /// from nodes position
   inline void computeIntegrationPointsCoordinates(
@@ -231,7 +243,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
-
   /// pre-compute normals on integration points
   void computeNormalsOnIntegrationPoints(
       const GhostType & ghost_type = _not_ghost) override;
@@ -281,11 +292,12 @@ public:
                            const GhostType & ghost_type = _not_ghost) const;
 
   /// compute shapes function in a matrix for structural elements
-  void computeShapesMatrix(const ElementType & type, UInt nb_degree_of_freedom,
-                           UInt nb_nodes_per_element, Array<Real> * n, UInt id,
-                           UInt degree_to_interpolate, UInt degree_interpolated,
-                           const bool sign,
-                           const GhostType & ghost_type = _not_ghost) const override;
+  void
+  computeShapesMatrix(const ElementType & type, UInt nb_degree_of_freedom,
+                      UInt nb_nodes_per_element, Array<Real> * n, UInt id,
+                      UInt degree_to_interpolate, UInt degree_interpolated,
+                      const bool sign,
+                      const GhostType & ghost_type = _not_ghost) const override;
 #endif
 
 private:

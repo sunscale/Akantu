@@ -319,47 +319,30 @@ void HeatTransferModel::assembleConductivityMatrix(const ElementType & type,
                                                    bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
-  const Array<Real> & shapes_derivatives =
-      this->getFEEngine().getShapesDerivatives(type, ghost_type);
+  auto & fem = this->getFEEngine();
+  // const Array<Real> & shapes_derivatives =
+  //     this->getFEEngine().getShapesDerivatives(type, ghost_type);
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_quadrature_points =
-      getFEEngine().getNbIntegrationPoints(type, ghost_type);
+  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
-  /// compute @f$\mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
-  UInt bt_d_b_size = nb_nodes_per_element;
-
-  Array<Real> * bt_d_b = new Array<Real>(nb_element * nb_quadrature_points,
-                                         bt_d_b_size * bt_d_b_size, "B^t*D*B");
-
-  Matrix<Real> Bt_D(nb_nodes_per_element, dim);
-
-  auto shapes_derivatives_it =
-      shapes_derivatives.begin(dim, nb_nodes_per_element);
-
-  auto Bt_D_B_it = bt_d_b->begin(bt_d_b_size, bt_d_b_size);
+  Array<Real> * bt_d_b =
+      new Array<Real>(nb_element * nb_quadrature_points,
+                      nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
 
   if (compute_conductivity)
     this->computeConductivityOnQuadPoints(ghost_type);
-  auto D_it = conductivity_on_qpoints(type, ghost_type).begin(dim, dim);
-  auto D_end = conductivity_on_qpoints(type, ghost_type).end(dim, dim);
 
-  for (; D_it != D_end; ++D_it, ++Bt_D_B_it, ++shapes_derivatives_it) {
-    auto & D = *D_it;
-    const auto & B = *shapes_derivatives_it;
-    auto & Bt_D_B = *Bt_D_B_it;
-
-    Bt_D.mul<true, false>(B, D);
-    Bt_D_B.mul<false, false>(Bt_D, B);
-  }
+  fem.computeBtDB(conductivity_on_qpoints(type, ghost_type), *bt_d_b, 2, type,
+                  ghost_type);
 
   /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
-  auto K_e = std::make_unique<Array<Real>>(nb_element,
-                                           bt_d_b_size * bt_d_b_size, "K_e");
+  auto K_e = std::make_unique<Array<Real>>(
+      nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_e");
 
-  this->getFEEngine().integrate(*bt_d_b, *K_e, bt_d_b_size * bt_d_b_size, type,
-                                ghost_type);
+  fem.integrate(*bt_d_b, *K_e, nb_nodes_per_element * nb_nodes_per_element,
+                type, ghost_type);
 
   delete bt_d_b;
 
@@ -409,26 +392,19 @@ void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
     computeConductivityOnQuadPoints(ghost_type);
 
   for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-
-    Array<Real> & gradient = temperature_gradient(type, ghost_type);
+    auto & gradient = temperature_gradient(type, ghost_type);
     this->getFEEngine().gradientOnIntegrationPoints(*temperature, gradient, 1,
                                                     type, ghost_type);
 
-    Array<Real>::matrix_iterator C_it =
-        conductivity_on_qpoints(type, ghost_type)
-            .begin(spatial_dimension, spatial_dimension);
-
-    Array<Real>::vector_iterator BT_it = gradient.begin(spatial_dimension);
-
-    Array<Real>::vector_iterator k_BT_it =
-        k_gradt_on_qpoints(type, ghost_type).begin(spatial_dimension);
-    Array<Real>::vector_iterator k_BT_end =
-        k_gradt_on_qpoints(type, ghost_type).end(spatial_dimension);
-
-    for (; k_BT_it != k_BT_end; ++k_BT_it, ++BT_it, ++C_it) {
-      Vector<Real> & k_BT = *k_BT_it;
-      Vector<Real> & BT = *BT_it;
-      Matrix<Real> & C = *C_it;
+    for (auto && values :
+         zip(make_view(conductivity_on_qpoints(type, ghost_type),
+                       spatial_dimension, spatial_dimension),
+             make_view(gradient, spatial_dimension),
+             make_view(k_gradt_on_qpoints(type, ghost_type),
+                       spatial_dimension))) {
+      const auto & C = std::get<0>(values);
+      const auto & BT = std::get<1>(values);
+      auto & k_BT = std::get<2>(values);
 
       k_BT.mul<false>(C, BT);
     }
@@ -442,41 +418,26 @@ void HeatTransferModel::assembleInternalHeatRate() {
   AKANTU_DEBUG_IN();
 
   this->synchronize(_gst_htm_temperature);
+  auto & fem = this->getFEEngine();
 
   for (auto ghost_type : ghost_types) {
     for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-
-      Array<Real> & shapes_derivatives = const_cast<Array<Real> &>(
-          getFEEngine().getShapesDerivatives(type, ghost_type));
-
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
       // compute k \grad T
       computeKgradT(ghost_type);
+
       auto & k_gradt_on_qpoints_vect = k_gradt_on_qpoints(type, ghost_type);
-      auto k_BT_it = k_gradt_on_qpoints_vect.begin(spatial_dimension);
-      auto B_it =
-          shapes_derivatives.begin(spatial_dimension, nb_nodes_per_element);
 
       UInt nb_quad_points = k_gradt_on_qpoints_vect.size();
       Array<Real> bt_k_gT(nb_quad_points, nb_nodes_per_element);
-
-      auto Bt_k_BT_it = bt_k_gT.begin(nb_nodes_per_element);
-      auto Bt_k_BT_end = bt_k_gT.end(nb_nodes_per_element);
-
-      for (; Bt_k_BT_it != Bt_k_BT_end; ++Bt_k_BT_it, ++B_it, ++k_BT_it) {
-        Vector<Real> & k_BT = *k_BT_it;
-        Vector<Real> & Bt_k_BT = *Bt_k_BT_it;
-        Matrix<Real> & B = *B_it;
-
-        Bt_k_BT.mul<true>(B, k_BT);
-      }
+      fem.computeBtD(k_gradt_on_qpoints_vect, bt_k_gT, type, ghost_type);
 
       UInt nb_elements = mesh.getNbElement(type, ghost_type);
       Array<Real> int_bt_k_gT(nb_elements, nb_nodes_per_element);
 
-      this->getFEEngine().integrate(bt_k_gT, int_bt_k_gT, nb_nodes_per_element,
-                                    type, ghost_type);
+      fem.integrate(bt_k_gT, int_bt_k_gT, nb_nodes_per_element, type,
+                    ghost_type);
 
       this->getDOFManager().assembleElementalArrayLocalArray(
           int_bt_k_gT, *this->internal_heat_rate, type, ghost_type, -1);

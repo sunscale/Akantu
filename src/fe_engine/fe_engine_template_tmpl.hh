@@ -281,11 +281,10 @@ Real FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::integrate(
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type, ghost_type);
 
-  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
-                      "The vector f("
-                          << f.getID() << ") has not the good size. ("
-                          << f.size()
-                          << "!=" << nb_quadrature_points * nb_element << ")");
+  AKANTU_DEBUG_ASSERT(
+      f.size() == nb_element * nb_quadrature_points,
+      "The vector f(" << f.getID() << ") has not the good size. (" << f.size()
+                      << "!=" << nb_quadrature_points * nb_element << ")");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == 1,
                       "The vector f("
                           << f.getID()
@@ -523,6 +522,79 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+namespace fe_engine {
+  namespace details {
+    template <ElementKind kind> struct ComputeBtDHelper {};
+
+#define COMPUTE_BTD(type)                                                      \
+  shape_functions.template computeBtD<type>(Ds, BtDs, ghost_type,              \
+                                            filter_elements);
+
+#define AKANTU_SPECIALIZE_COMPUTE_BtD_HELPER(kind)                             \
+  template <> struct ComputeBtDHelper<kind> {                                  \
+    template <class S>                                                         \
+    static void call(const S & shape_functions, const Array<Real> & Ds,        \
+                     Array<Real> & BtDs, const ElementType & type,             \
+                     const GhostType & ghost_type,                             \
+                     const Array<UInt> & filter_elements) {                    \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_BTD, kind);                     \
+    }                                                                          \
+  };
+
+    AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_BtD_HELPER)
+
+#undef AKANTU_SPECIALIZE_COMPUTE_BtD_HELPER
+#undef COMPUTE_BTD
+  } // namespace details
+} // namespace fe_engine
+
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeBtD(
+    const Array<Real> & Ds, Array<Real> & BtDs, const ElementType & type,
+    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+  fe_engine::details::ComputeBtDHelper<kind>::call(
+      shape_functions, Ds, BtDs, type, ghost_type, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
+namespace fe_engine {
+  namespace details {
+    template <ElementKind kind> struct ComputeBtDBHelper {};
+
+#define COMPUTE_BTDB(type)                                                     \
+  shape_functions.template computeBtDB<type>(Ds, BtDBs, order_d, ghost_type,   \
+                                             filter_elements);
+
+#define AKANTU_SPECIALIZE_COMPUTE_BtDB_HELPER(kind)                            \
+  template <> struct ComputeBtDBHelper<kind> {                                 \
+    template <class S>                                                         \
+    static void call(const S & shape_functions, const Array<Real> & Ds,        \
+                     Array<Real> & BtDBs, UInt order_d,                        \
+                     const ElementType & type, const GhostType & ghost_type,   \
+                     const Array<UInt> & filter_elements) {                    \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_BTDB, kind);                    \
+    }                                                                          \
+  };
+
+    AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_BtDB_HELPER)
+
+#undef AKANTU_SPECIALIZE_COMPUTE_BtDB_HELPER
+#undef COMPUTE_BTDB
+  } // namespace details
+} // namespace fe_engine
+
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeBtDB(
+    const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
+    const ElementType & type, const GhostType & ghost_type,
+    const Array<UInt> & filter_elements) const {
+  fe_engine::details::ComputeBtDBHelper<kind>::call(
+      shape_functions, Ds, BtDBs, order_d, type, ghost_type, filter_elements);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -789,7 +861,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
                                       const GhostType & ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  if(type == _point_1) {
+  if (type == _point_1) {
     computeNormalsOnIntegrationPointsPoint1(field, normal, ghost_type);
     return;
   }
@@ -827,10 +899,10 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
  */
 template <ElementKind kind> struct InverseMapHelper {
   template <class S>
-  static void call(const S & /*shape_functions*/, const Vector<Real> & /*real_coords*/,
-                   UInt /*element*/, const ElementType & /*type*/,
-                   Vector<Real> & /*natural_coords*/,
-                   const GhostType & /*ghost_type*/) {
+  static void
+  call(const S & /*shape_functions*/, const Vector<Real> & /*real_coords*/,
+       UInt /*element*/, const ElementType & /*type*/,
+       Vector<Real> & /*natural_coords*/, const GhostType & /*ghost_type*/) {
     AKANTU_DEBUG_TO_IMPLEMENT();
   }
 };

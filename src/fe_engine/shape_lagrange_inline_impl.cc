@@ -30,6 +30,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "aka_iterators.hh"
+#include "aka_voigthelper.hh"
 #include "fe_engine.hh"
 #include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
@@ -234,7 +236,7 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
     nb_element = filter_elements.size();
 
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
-    if(filter_elements != empty_filter)
+    if (filter_elements != empty_filter)
       shapesd_val = shape_derivatives.storage() +
                     filter_elements(elem) * size_of_shapesd * nb_points;
 
@@ -375,6 +377,120 @@ void ShapeLagrange<kind>::gradientOnIntegrationPoints(
       filter_elements);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void ShapeLagrange<kind>::computeBtD(
+    const Array<Real> & Ds, Array<Real> & BtDs, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+  const auto & shapes_derivatives =
+      this->shapes_derivatives(itp_type, ghost_type);
+
+  auto spatial_dimension = mesh.getSpatialDimension();
+  auto size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
+  auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+
+  Array<Real> shapes_derivatives_filtered(0,
+                                          shapes_derivatives.getNbComponent());
+  auto && view =
+      make_view(shapes_derivatives, spatial_dimension, nb_nodes_per_element);
+  auto B_it = view.begin();
+  auto B_end = view.end();
+
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes_derivatives,
+                                  shapes_derivatives_filtered, type, ghost_type,
+                                  filter_elements);
+    auto && view = make_view(shapes_derivatives_filtered, spatial_dimension,
+                             nb_nodes_per_element);
+    B_it = view.begin();
+    B_end = view.end();
+  }
+
+  for (auto && values :
+       zip(range(B_it, B_end),
+           make_view(Ds, spatial_dimension,
+                     Ds.getNbComponent() / spatial_dimension),
+           make_view(BtDs, BtDs.getNbComponent() / nb_nodes_per_element, nb_nodes_per_element))) {
+    const auto & B = std::get<0>(values);
+    const auto & D = std::get<1>(values);
+    auto & Bt_D = std::get<2>(values);
+    // transposed due to the storage layout of B
+    Bt_D.template mul<false, false>(D, B);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind>
+template <ElementType type>
+void ShapeLagrange<kind>::computeBtDB(
+    const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+  const auto & shapes_derivatives =
+      this->shapes_derivatives(itp_type, ghost_type);
+
+  constexpr auto dim = ElementClass<type>::getSpatialDimension();
+  auto size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
+  auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+
+  Array<Real> shapes_derivatives_filtered(0,
+                                          shapes_derivatives.getNbComponent());
+  auto && view = make_view(shapes_derivatives, dim, nb_nodes_per_element);
+  auto B_it = view.begin();
+  auto B_end = view.end();
+
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes_derivatives,
+                                  shapes_derivatives_filtered, type, ghost_type,
+                                  filter_elements);
+    auto && view =
+        make_view(shapes_derivatives_filtered, dim, nb_nodes_per_element);
+    B_it = view.begin();
+    B_end = view.end();
+  }
+
+  if (order_d == 4) {
+    UInt tangent_size = VoigtHelper<dim>::size;
+    Matrix<Real> B(tangent_size, dim * nb_nodes_per_element);
+    Matrix<Real> Bt_D(dim * nb_nodes_per_element, tangent_size);
+
+    for (auto && values :
+         zip(range(B_it, B_end), make_view(Ds, tangent_size, tangent_size),
+             make_view(BtDBs, dim * nb_nodes_per_element,
+                       dim * nb_nodes_per_element))) {
+      const auto & Bfull = std::get<0>(values);
+      const auto & D = std::get<1>(values);
+      auto & Bt_D_B = std::get<2>(values);
+
+      VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(Bfull, B,
+                                                         nb_nodes_per_element);
+      Bt_D.template mul<true, false>(B, D);
+      Bt_D_B.template mul<false, false>(Bt_D, B);
+    }
+  } else if (order_d == 2) {
+    Matrix<Real> Bt_D(nb_nodes_per_element, dim);
+    for (auto && values : zip(range(B_it, B_end), make_view(Ds, dim, dim),
+                              make_view(BtDBs, nb_nodes_per_element,
+                                        nb_nodes_per_element))) {
+      const auto & B = std::get<0>(values);
+      const auto & D = std::get<1>(values);
+      auto & Bt_D_B = std::get<2>(values);
+      Bt_D.template mul<true, false>(B, D);
+      Bt_D_B.template mul<false, false>(Bt_D, B);
+    }
+  }
+}
+
+template <>
+template <>
+inline void ShapeLagrange<_ek_regular>::computeBtDB<_point_1>(
+    const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/, UInt /*order_d*/,
+    GhostType /*ghost_type*/, const Array<UInt> & /*filter_elements*/) const {
+  AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

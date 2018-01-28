@@ -114,6 +114,17 @@ public:
       GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
 
+  template <ElementType type>
+  void computeBtD(const Array<Real> & Ds, Array<Real> & BtDs,
+                  GhostType ghost_type,
+                  const Array<UInt> & filter_elements) const;
+
+  template <ElementType type>
+  void computeBtDB(const Array<Real> & Ds, Array<Real> & BtDBs,
+                   UInt order_d,
+                   GhostType ghost_type,
+                   const Array<UInt> & filter_elements) const;
+
   /// multiply a field by shape functions  @f$ fts_{ij} = f_i * \varphi_j @f$
   template <ElementType type>
   void fieldTimesShapes(const Array<Real> & field,
