@@ -1042,7 +1042,8 @@ namespace detail {
         product_all(std::forward<Ns>(ns)...)) {
       AKANTU_CUSTOM_EXCEPTION_INFO(
           debug::ArrayException(),
-          "The iterator on " << debug::demangle(typeid(Arr).name())
+          "The iterator on "
+              << debug::demangle(typeid(Arr).name())
               << to_string_all(array.size(), array.getNbComponent())
               << "is not compatible with the type "
               << debug::demangle(typeid(type).name()) << to_string_all(ns...));
@@ -1123,7 +1124,12 @@ namespace detail {
 
   public:
     ArrayView(Array && array, Ns... ns)
-        : array(std::forward<Array>(array)), sizes(std::move(ns)...){};
+        : array(std::forward<Array>(array)), sizes(std::move(ns)...) {}
+
+    ArrayView(ArrayView && array_view) = default;
+
+    ArrayView & operator=(const ArrayView & array_view) = default;
+    ArrayView & operator=(ArrayView && array_view) = default;
 
     decltype(auto) begin() {
       return aka::apply(
@@ -1149,9 +1155,8 @@ namespace detail {
       return std::get<std::tuple_size<tuple>::value - 1>(sizes);
     }
 
-    decltype(auto) dims() const {
-      return std::tuple_size<tuple>::value - 1;
-    }
+    decltype(auto) dims() const { return std::tuple_size<tuple>::value - 1; }
+
   private:
     Array array;
     tuple sizes;

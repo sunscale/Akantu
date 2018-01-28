@@ -104,7 +104,6 @@ namespace tuple {
 
 /* -------------------------------------------------------------------------- */
 namespace iterators {
-
   namespace {
     template <typename It, typename category>
     struct is_at_least_category
@@ -211,6 +210,21 @@ namespace containers {
   private:
     containers_t containers;
   };
+
+  template <class Iterator> class Range {
+  public:
+    explicit Range(Iterator && it1, Iterator && it2)
+        : iterators(std::forward<Iterator>(it1), std::forward<Iterator>(it2)) {}
+
+    decltype(auto) begin() const { return std::get<0>(iterators); }
+    decltype(auto) begin() { return std::get<0>(iterators); }
+
+    decltype(auto) end() const { return std::get<1>(iterators); }
+    decltype(auto) end() { return std::get<1>(iterators); }
+
+  private:
+    std::tuple<Iterator, Iterator> iterators;
+  };
 } // namespace containers
 
 /* -------------------------------------------------------------------------- */
@@ -219,6 +233,11 @@ template <class... Containers> decltype(auto) zip(Containers &&... conts) {
       std::forward<Containers>(conts)...);
 }
 
+template <class Iterator>
+decltype(auto) range(Iterator && it1, Iterator && it2) {
+  return containers::Range<Iterator>(std::forward<Iterator>(it1),
+                                     std::forward<Iterator>(it2));
+}
 /* -------------------------------------------------------------------------- */
 /* Arange                                                                     */
 /* -------------------------------------------------------------------------- */

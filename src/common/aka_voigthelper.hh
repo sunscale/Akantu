@@ -42,6 +42,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim> class VoigtHelper {
+  static_assert(dim != 0, "Cannot be 0D");
 public:
   /// transfer the B matrix to a Voigt notation B matrix
   inline static void transferBMatrixToSymVoigtBMatrix(
