@@ -42,13 +42,6 @@ register_test(test_local_material
   PACKAGE core
   )
 
-add_mesh(test_material_thermal_mesh square.geo 2 1)
-register_test(test_material_thermal
-  SOURCES test_material_thermal.cc
-  DEPENDS test_material_thermal_mesh
-  FILES_TO_COPY material_thermal.dat
-  PACKAGE core
-  )
 # ==============================================================================
 add_mesh(test_interpolate_stress_mesh interpolation.geo 3 2)
 register_test(test_interpolate_stress test_interpolate_stress.cc
@@ -98,5 +91,6 @@ register_gtest_sources(SOURCES test_elastic_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_finite_def_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_damage_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_plastic_materials.cc PACKAGE core)
+register_gtest_sources(SOURCES test_material_thermal.cc PACKAGE core)
 
 register_gtest_test(test_material)

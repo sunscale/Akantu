@@ -47,10 +47,10 @@ public:
 
   MaterialThermal(SolidMechanicsModel & model, const ID & id = "");
   MaterialThermal(SolidMechanicsModel & model,
-                  UInt dim,
-                  const Mesh & mesh,
-                  FEEngine & fe_engine,
-                  const ID & id = "");
+		  UInt dim,
+		  const Mesh & mesh,
+		  FEEngine & fe_engine,
+		  const ID & id = "");
 
   ~MaterialThermal() override = default;
 
@@ -66,16 +66,8 @@ public:
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type, GhostType ghost_type) override;
 
-  /* ------------------------------------------------------------------------ */
-  /* DataAccessor inherited members                                           */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-
+  /// local computation of thermal stress
+  inline void computeStressOnQuad(Real & sigma, const Real & deltaT);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -100,6 +92,21 @@ protected:
   /// Tell if we need to use the previous thermal stress
   bool use_previous_stress_thermal;
 };
+
+/* ------------------------------------------------------------------------ */
+/* Inline impl                                                              */
+/* ------------------------------------------------------------------------ */
+template <UInt dim>
+inline void MaterialThermal<dim>::computeStressOnQuad(Real & sigma,
+                                                      const Real & deltaT) {
+  sigma = -this->E / (1. - 2. * this->nu) * this->alpha * deltaT;
+}
+
+template <>
+inline void MaterialThermal<1>::computeStressOnQuad(Real & sigma,
+                                                    const Real & deltaT) {
+  sigma = -this->E * this->alpha * deltaT;
+}
 
 } // akantu
 
