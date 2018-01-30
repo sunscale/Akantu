@@ -43,6 +43,8 @@
 #include "group_manager_inline_impl.cc"
 #include "mesh.hh"
 #include "parser.hh"
+#include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
 
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_element_partition.hh"
@@ -69,6 +71,7 @@ namespace heat_transfer {
     };
   }
 }
+
 /* -------------------------------------------------------------------------- */
 HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
                                      const MemoryID & memory_id)
@@ -91,9 +94,7 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
     this->registerSynchronizer(synchronizer, _gst_htm_gradient_temperature);
   }
 
-  std::stringstream sstr;
-  sstr << id << ":fem";
-  registerFEEngineObject<MyFEEngineType>(sstr.str(), mesh, spatial_dimension);
+  registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
 
 #ifdef AKANTU_USE_IOHELPER
   this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
@@ -126,7 +127,7 @@ void HeatTransferModel::initModel() {
 /* -------------------------------------------------------------------------- */
 FEEngine & HeatTransferModel::getFEEngineBoundary(const ID & name) {
   return dynamic_cast<FEEngine &>(
-      getFEEngineClassBoundary<MyFEEngineType>(name));
+      getFEEngineClassBoundary<FEEngineType>(name));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -148,11 +149,10 @@ HeatTransferModel::~HeatTransferModel() = default;
 void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
-  auto & fem = getFEEngineClass<MyFEEngineType>();
+  auto & fem = getFEEngineClass<FEEngineType>();
   heat_transfer::details::ComputeRhoFunctor compute_rho(*this);
 
   for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-
     fem.assembleFieldLumped(compute_rho, "M", "temperature",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -285,7 +285,8 @@ ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
     if (this->method == _explicit_consistent_mass) {
       options.non_linear_solver_type = _nls_newton_raphson;
       options.integration_scheme_type["temperature"] = _ist_forward_euler;
-      options.solution_type["temperature"] = IntegrationScheme::_temperature_rate;
+      options.solution_type["temperature"] =
+          IntegrationScheme::_temperature_rate;
     } else {
       options.non_linear_solver_type = _nls_newton_raphson;
       options.integration_scheme_type["temperature"] = _ist_trapezoidal_rule_1;
@@ -330,7 +331,6 @@ void HeatTransferModel::assembleConductivityMatrix(const GhostType & ghost_type,
                                                    bool compute_conductivity) {
   AKANTU_DEBUG_IN();
 
-  Mesh & mesh = this->getFEEngine().getMesh();
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     this->assembleConductivityMatrix<dim>(type, ghost_type,
                                           compute_conductivity);
@@ -385,27 +385,23 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
 
   for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
-    Array<Real> & temperature_interpolated =
-        temperature_on_qpoints(type, ghost_type);
+    auto & temperature_interpolated = temperature_on_qpoints(type, ghost_type);
 
     // compute the temperature on quadrature points
     this->getFEEngine().interpolateOnIntegrationPoints(
         *temperature, temperature_interpolated, 1, type, ghost_type);
 
-    auto C_it = conductivity_on_qpoints(type, ghost_type)
-                    .begin(spatial_dimension, spatial_dimension);
-    auto C_end = conductivity_on_qpoints(type, ghost_type)
-                     .end(spatial_dimension, spatial_dimension);
-
-    auto T_it = temperature_interpolated.begin();
-
-    for (; C_it != C_end; ++C_it, ++T_it) {
-      Matrix<Real> & C = *C_it;
-      Real & T = *T_it;
+    auto & cond = conductivity_on_qpoints(type, ghost_type);
+    for (auto && tuple :
+         zip(make_view(cond, spatial_dimension, spatial_dimension),
+             temperature_interpolated)) {
+      auto & C = std::get<0>(tuple);
+      auto & T = std::get<1>(tuple);
       C = conductivity;
 
       Matrix<Real> variation(spatial_dimension, spatial_dimension,
                              conductivity_variation * (T - T_ref));
+      // @TODO: Guillaume are you sure ? why due you compute variation then ?
       C += conductivity_variation;
     }
   }
@@ -414,7 +410,6 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
-
   if (this->compute_conductivity)
     computeConductivityOnQuadPoints(ghost_type);
 
@@ -488,16 +483,14 @@ Real HeatTransferModel::getStableTimeStep() {
 
   for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost)) {
 
-    UInt nb_nodes_per_element =
-        getFEEngine().getMesh().getNbNodesPerElement(type);
+    UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
     Array<Real> coord(0, nb_nodes_per_element * spatial_dimension);
-    FEEngine::extractNodalToElementField(getFEEngine().getMesh(),
-                                         getFEEngine().getMesh().getNodes(),
-                                         coord, type, _not_ghost);
+    FEEngine::extractNodalToElementField(mesh, mesh.getNodes(), coord, type,
+                                         _not_ghost);
 
     auto el_coord = coord.begin(spatial_dimension, nb_nodes_per_element);
-    UInt nb_element = getFEEngine().getMesh().getNbElement(type);
+    UInt nb_element = mesh.getNbElement(type);
 
     for (UInt el = 0; el < nb_element; ++el, ++el_coord) {
       el_size = getFEEngine().getElementInradius(*el_coord, type);
@@ -527,6 +520,8 @@ void HeatTransferModel::readMaterials() {
     const auto & section = std::get<0>(sect);
     this->parseSection(section);
   }
+
+  conductivity_on_qpoints.set(conductivity);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -541,7 +536,7 @@ void HeatTransferModel::assembleCapacity() {
   AKANTU_DEBUG_IN();
   auto ghost_type = _not_ghost;
 
-  auto & fem = getFEEngineClass<MyFEEngineType>();
+  auto & fem = getFEEngineClass<FEEngineType>();
 
   heat_transfer::details::ComputeRhoFunctor rho_functor(*this);
 
@@ -559,19 +554,19 @@ void HeatTransferModel::computeRho(Array<Real> & rho, ElementType type,
   AKANTU_DEBUG_IN();
 
   FEEngine & fem = this->getFEEngine();
-  UInt nb_element = fem.getMesh().getNbElement(type, ghost_type);
+  UInt nb_element = mesh.getNbElement(type, ghost_type);
   UInt nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
   rho.resize(nb_element * nb_quadrature_points);
-  Real * rho_1_val = rho.storage();
+  rho.set(this->capacity);
 
-  /// compute @f$ rho @f$ for each nodes of each element
-  for (UInt el = 0; el < nb_element; ++el) {
-
-    for (UInt n = 0; n < nb_quadrature_points; ++n) {
-      *rho_1_val++ = this->capacity;
-    }
-  }
+  // Real * rho_1_val = rho.storage();
+  // /// compute @f$ rho @f$ for each nodes of each element
+  // for (UInt el = 0; el < nb_element; ++el) {
+  //   for (UInt n = 0; n < nb_quadrature_points; ++n) {
+  //     *rho_1_val++ = this->capacity;
+  //   }
+  // }
 
   AKANTU_DEBUG_OUT();
 }
@@ -636,20 +631,18 @@ Real HeatTransferModel::getThermalEnergy(const ElementType & type, UInt index) {
 Real HeatTransferModel::getThermalEnergy() {
   Real Eth = 0;
 
-  Mesh & mesh = getFEEngine().getMesh();
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension);
-  for (; it != last_type; ++it) {
-    UInt nb_element = getFEEngine().getMesh().getNbElement(*it, _not_ghost);
-    UInt nb_quadrature_points =
-        getFEEngine().getNbIntegrationPoints(*it, _not_ghost);
+  auto & fem = getFEEngine();
+
+  for (auto && type : mesh.elementTypes(spatial_dimension)) {
+    auto nb_element = mesh.getNbElement(type, _not_ghost);
+    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, _not_ghost);
     Array<Real> Eth_per_quad(nb_element * nb_quadrature_points, 1);
 
-    auto T_it = this->temperature_on_qpoints(*it).begin();
-    auto T_end = this->temperature_on_qpoints(*it).end();
+    auto T_it = this->temperature_on_qpoints(type).begin();
+    auto T_end = this->temperature_on_qpoints(type).end();
     getThermalEnergy(Eth_per_quad.begin(), T_it, T_end);
 
-    Eth += getFEEngine().integrate(Eth_per_quad, *it);
+    Eth += fem.integrate(Eth_per_quad, type);
   }
 
   return Eth;

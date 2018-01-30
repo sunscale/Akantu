@@ -412,9 +412,10 @@ void ShapeLagrange<kind>::computeBtD(
 
   for (auto && values :
        zip(range(B_it, B_end),
-           make_view(Ds, spatial_dimension,
-                     Ds.getNbComponent() / spatial_dimension),
-           make_view(BtDs, BtDs.getNbComponent() / nb_nodes_per_element, nb_nodes_per_element))) {
+           make_view(Ds, Ds.getNbComponent() / spatial_dimension,
+                     spatial_dimension),
+           make_view(BtDs, BtDs.getNbComponent() / nb_nodes_per_element,
+                     nb_nodes_per_element))) {
     const auto & B = std::get<0>(values);
     const auto & D = std::get<1>(values);
     auto & Bt_D = std::get<2>(values);
@@ -473,9 +474,9 @@ void ShapeLagrange<kind>::computeBtDB(
     }
   } else if (order_d == 2) {
     Matrix<Real> Bt_D(nb_nodes_per_element, dim);
-    for (auto && values : zip(range(B_it, B_end), make_view(Ds, dim, dim),
-                              make_view(BtDBs, nb_nodes_per_element,
-                                        nb_nodes_per_element))) {
+    for (auto && values :
+         zip(range(B_it, B_end), make_view(Ds, dim, dim),
+             make_view(BtDBs, nb_nodes_per_element, nb_nodes_per_element))) {
       const auto & B = std::get<0>(values);
       const auto & D = std::get<1>(values);
       auto & Bt_D_B = std::get<2>(values);

@@ -323,13 +323,13 @@ void ParameterRegistry::set(const std::string & name, const T & value) {
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> T & ParameterRegistry::get(const std::string & name) {
+template <typename T> T & ParameterRegistry::get_(const std::string & name) {
   auto it = params.find(name);
   if (it == params.end()) {
     if (consisder_sub) {
       for (auto it = sub_registries.begin(); it != sub_registries.end(); ++it) {
         try {
-          return it->second->get<T>(name);
+          return it->second->get_<T>(name);
         } catch (...) {
         }
       }

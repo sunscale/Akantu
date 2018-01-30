@@ -360,7 +360,8 @@ public:
   inline void clear();
 
   /*! set all values in the ElementTypeMap to value */
-  inline void set(const T & value);
+  template<typename ST>
+  inline void set(const ST & value);
 
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1)

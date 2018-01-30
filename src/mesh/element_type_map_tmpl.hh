@@ -232,7 +232,8 @@ inline void ElementTypeMapArray<T, SupportType>::clear() {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-inline void ElementTypeMapArray<T, SupportType>::set(const T & value) {
+template<typename ST>
+inline void ElementTypeMapArray<T, SupportType>::set(const ST & value) {
   for (auto gt : ghost_types) {
     auto & data = this->getData(gt);
     for (auto & vect : data) {

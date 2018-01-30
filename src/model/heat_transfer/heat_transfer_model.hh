@@ -32,20 +32,19 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "data_accessor.hh"
+#include "model.hh"
+#include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_HEAT_TRANSFER_MODEL_HH__
 #define __AKANTU_HEAT_TRANSFER_MODEL_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "data_accessor.hh"
-#include "integrator_gauss.hh"
-#include "model.hh"
-#include "shape_lagrange.hh"
-
 namespace akantu {
-class IntegrationScheme1stOrder;
+template <ElementKind kind, class IntegrationOrderFunctor>
+class IntegratorGauss;
+template <ElementKind kind> class ShapeLagrange;
 }
 
 namespace akantu {
@@ -57,7 +56,7 @@ class HeatTransferModel : public Model,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange> MyFEEngineType;
+  using FEEngineType = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
 
   HeatTransferModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
                     const ID & id = "heat_transfer_model",
@@ -231,7 +230,7 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(TemperatureOnQpoints,
                                          temperature_on_qpoints, Real);
   /// internal variables
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(KGradtOnQpoints, k_gradt_on_qpoints,
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(KgradT, k_gradt_on_qpoints,
                                          Real);
   /// get the temperature
   AKANTU_GET_MACRO(Temperature, *temperature, Array<Real> &);

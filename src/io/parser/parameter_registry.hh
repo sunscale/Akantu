@@ -189,7 +189,7 @@ public:
   }
 
 protected:
-  template <typename T> T & get(const std::string & name);
+  template <typename T> T & get_(const std::string & name);
 
 protected:
   void setParameterAccessType(const std::string & name,
