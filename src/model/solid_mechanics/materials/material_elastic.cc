@@ -248,6 +248,16 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(
 }
 
 /* -------------------------------------------------------------------------- */
+template <>
+Real MaterialElastic<1>::getPushWaveSpeed(const Element & /*element*/) const {
+  return std::sqrt(this->E / this->rho);
+}
+
+template <>
+Real MaterialElastic<1>::getShearWaveSpeed(const Element & /*element*/) const {
+  AKANTU_EXCEPTION("There is no shear wave speed in 1D");
+}
+/* -------------------------------------------------------------------------- */
 
 INSTANTIATE_MATERIAL(elastic, MaterialElastic);
 

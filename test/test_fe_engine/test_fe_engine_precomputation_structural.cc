@@ -38,20 +38,6 @@
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-/// Testing if two collections of floats are equal
-template <typename T, typename U>
-::testing::AssertionResult array_equal(const T & a, const U & b) {
-  if (a.size() != b.size())
-    return ::testing::AssertionFailure() << "vector sizes are not equal";
-  auto size = a.size();
-  if (Math::are_vector_equal(size, a.storage(), b.storage()))
-    return ::testing::AssertionSuccess() << "vectors are equal";
-  else
-    return ::testing::AssertionFailure() << "vectors are not equal";
-}
-
-/* -------------------------------------------------------------------------- */
 // Need a special fixture for the extra normal
 class TestBernoulliB3
     : public TestFEMStructuralFixture<element_type_t<_bernoulli_beam_3>> {
@@ -90,11 +76,13 @@ TEST_F(TestBernoulliB2, PrecomputeRotations) {
   Real a = std::atan(4. / 3);
   std::vector<Real> angles = {a, -a, 0};
 
+  Math::setTolerance(1e-15);
+
   for (auto && tuple : zip(make_view(rot, ndof, ndof), angles)) {
     auto rotation = std::get<0>(tuple);
     auto angle = std::get<1>(tuple);
-
-    EXPECT_TRUE(array_equal(rotation, globalToLocalRotation(angle)));
+    auto rotation_error = (rotation - globalToLocalRotation(angle)).norm<L_2>();
+    EXPECT_NEAR(rotation_error, 0., Math::getTolerance());
   }
 }
 
@@ -111,7 +99,11 @@ TEST_F(TestBernoulliB3, PrecomputeRotations) {
   solution.block(ref, 0, 0);
   solution.block(ref, dim, dim);
 
+  // The default tolerance is too much, really
+  Math::setTolerance(1e-15);
+
   for (auto & rotation : make_view(rot, ndof, ndof)) {
-    EXPECT_TRUE(array_equal(rotation, solution));
+    auto rotation_error = (rotation - solution).norm<L_2>();
+    EXPECT_NEAR(rotation_error, 0., Math::getTolerance());
   }
 }
