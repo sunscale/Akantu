@@ -348,10 +348,14 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 /// @enum GhostType type of ghost
 enum GhostType {
-  _not_ghost,
-  _ghost,
+  _not_ghost = 0,
+  _ghost = 1,
   _casper // not used but a real cute ghost
 };
+
+}
+AKANTU_ENUM_HASH(GhostType)
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 struct GhostType_def {

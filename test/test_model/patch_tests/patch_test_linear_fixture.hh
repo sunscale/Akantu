@@ -15,7 +15,7 @@
 
 using namespace akantu;
 
-template <typename type_, typename Model>
+template <typename type_, typename M>
 class TestPatchTestLinear : public ::testing::Test {
 public:
   static constexpr ElementType type = type_::value;
@@ -27,7 +27,7 @@ public:
     MeshUtils::buildFacets(*mesh);
     mesh->createBoundaryGroupFromGeometry();
 
-    model = std::make_unique<Model>(*mesh);
+    model = std::make_unique<M>(*mesh);
   }
 
   virtual void TearDown() {
@@ -131,7 +131,7 @@ public:
 
 protected:
   std::unique_ptr<Mesh> mesh;
-  std::unique_ptr<Model> model;
+  std::unique_ptr<M> model;
   Matrix<Real> alpha{{0.01, 0.02, 0.03, 0.04},
                      {0.05, 0.06, 0.07, 0.08},
                      {0.09, 0.10, 0.11, 0.12}};
@@ -141,10 +141,10 @@ protected:
   Real dofs_tolerance{1e-15};
 };
 
-template <typename type_, typename Model>
-constexpr ElementType TestPatchTestLinear<type_, Model>::type;
+template <typename type_, typename M>
+constexpr ElementType TestPatchTestLinear<type_, M>::type;
 
-template <typename tuple_, typename Model>
-constexpr size_t TestPatchTestLinear<tuple_, Model>::dim;
+template <typename tuple_, typename M>
+constexpr size_t TestPatchTestLinear<tuple_, M>::dim;
 
 #endif /* __AKANTU_PATCH_TEST_LINEAR_FIXTURE_HH__ */

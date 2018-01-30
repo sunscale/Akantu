@@ -37,6 +37,8 @@
 #include "model.hh"
 #include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
+#include <array>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_HEAT_TRANSFER_MODEL_HH__
 #define __AKANTU_HEAT_TRANSFER_MODEL_HH__
@@ -80,8 +82,7 @@ protected:
   /// initialize the model
   void initModel() override;
 
-  /// allocate all vectors
-  void assembleJacobian();
+  void predictor() override;
 
   /// compute the heat flux
   void assembleResidual() override;
@@ -114,11 +115,11 @@ public:
   void assembleCapacityLumped();
 
   /* ------------------------------------------------------------------------ */
-  /* Methods for implicit                                                     */
+  /* Methods for static                                                       */
   /* ------------------------------------------------------------------------ */
 public:
   /// assemble the conductivity matrix
-  void assembleConductivityMatrix(bool compute_conductivity = true);
+  void assembleConductivityMatrix();
 
   /// assemble the conductivity matrix
   void assembleCapacity();
@@ -129,29 +130,14 @@ public:
   /// compute the capacity on quadrature points
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
 
-protected:
-  /// computation of the residual for the convergence loop
-  void updateResidualInternal();
-
 private:
-  /// compute the heat flux on ghost types
-  void updateResidual(const GhostType & ghost_type,
-                      bool compute_conductivity = false);
-
   /// calculate the lumped capacity vector for heat transfer problem (w
   /// ghost type)
   void assembleCapacityLumped(const GhostType & ghost_type);
 
   /// assemble the conductivity matrix (w/ ghost type)
   template <UInt dim>
-  void assembleConductivityMatrix(const GhostType & ghost_type,
-                                  bool compute_conductivity = true);
-
-  /// assemble the conductivity matrix
-  template <UInt dim>
-  void assembleConductivityMatrix(const ElementType & type,
-                                  const GhostType & ghost_type,
-                                  bool compute_conductivity = true);
+  void assembleConductivityMatrix(const GhostType & ghost_type);
 
   /// compute the conductivity tensor for each quadrature point in an array
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);
@@ -325,10 +311,11 @@ private:
   // the biggest parameter of conductivity matrix
   Real conductivitymax;
 
-  /// analysis method
-  AnalysisMethod method;
+  UInt temperature_release{0};
+  UInt conductivity_matrix_release{0};
+  std::unordered_map<GhostType, bool> initial_conductivity{{_not_ghost, true},{_ghost, true}};
+  std::unordered_map<GhostType, UInt> conductivity_release{{_not_ghost, 0},{_ghost, 0}};
 
-  bool compute_conductivity;
 };
 
 } // akantu

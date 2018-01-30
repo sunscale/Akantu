@@ -13,6 +13,6 @@ TYPED_TEST(TestPatchTestHTMLinear, Static) {
   solver.set("convergence_type", _scc_residual);
 
   this->model->solveStep();
-
+  this->model->assembleInternalHeatRate();
   this->checkAll();
 }
