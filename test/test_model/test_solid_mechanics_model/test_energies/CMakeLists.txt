@@ -1,15 +1,4 @@
 #===============================================================================
-# Meshes
-#===============================================================================
-set(_meshes)
-package_get_variable(ET_ELEMENT_TYPES core _element_list)
-foreach(_et ${_element_list})
-  if(NOT _et STREQUAL _point_1)
-    list(APPEND _meshes ../patch_tests/data/${_et}.msh)
-  endif()
-endforeach()
-
-#===============================================================================
 # Energy tests
 #===============================================================================
 register_gtest_sources(
@@ -37,12 +26,13 @@ register_gtest_sources(
   )
 
 register_gtest_test(test_solid_mechanics_model_energies
-  FILES_TO_COPY ${_meshes}
-  DEPENDS bar_segment_2 bar_segment_3
-          bar_triangle_3 bar_triangle_6
-	  bar_quadrangle_4 bar_quadrangle_8
-	  bar_tetrahedron_4 bar_tetrahedron_10
-	  bar_hexahedron_8 bar_hexahedron_20
-	  bar_pentahedron_6 bar_pentahedron_15
+  FILES_TO_COPY ${PATCH_TEST_MESHES}
+  DEPENDS ${PATCH_TEST_BAR_MESHES}
+  #bar_segment_2 bar_segment_3
+  #bar_triangle_3 bar_triangle_6
+  #bar_quadrangle_4 bar_quadrangle_8
+  #bar_tetrahedron_4 bar_tetrahedron_10
+  #bar_hexahedron_8 bar_hexahedron_20
+  #bar_pentahedron_6 bar_pentahedron_15
   PARALLEL
   )

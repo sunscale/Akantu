@@ -31,27 +31,34 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-set(_meshes)
-package_get_variable(ET_ELEMENT_TYPES core _element_list)
-foreach(_et ${_element_list})
-  if(NOT _et STREQUAL _point_1)
-    list(APPEND _meshes data/${_et}.msh)
-  endif()
-endforeach()
+add_subdirectory(data)
 
 register_gtest_sources(SOURCES patch_test_linear_elastic_explicit.cc
-  PACKAGE core
-  FILES_TO_COPY data/material_check_stress_plane_strain.dat data/material_check_stress_plane_stress.dat)
+  PACKAGE solid_mechanics
+  FILES_TO_COPY data/material_check_stress_plane_strain.dat
+                data/material_check_stress_plane_stress.dat)
 register_gtest_sources(SOURCES patch_test_linear_elastic_implicit.cc
-  PACKAGE implicit
-  FILES_TO_COPY data/material_check_stress_plane_strain.dat data/material_check_stress_plane_stress.dat)
+  PACKAGE solid_mechanics implicit
+  FILES_TO_COPY data/material_check_stress_plane_strain.dat
+                data/material_check_stress_plane_stress.dat)
 register_gtest_sources(SOURCES patch_test_linear_anisotropic_explicit.cc
-  PACKAGE core
+  PACKAGE solid_mechanics
   FILES_TO_COPY data/material_anisotropic.dat
   UNSTABLE)
+
 register_gtest_sources(SOURCES test_lumped_mass.cc
-  PACKAGE core
+  PACKAGE solid_mechanics
   FILES_TO_COPY data/material_lumped.dat)
 
-register_gtest_test(patch_test_linear_elastic
-  FILES_TO_COPY ${_meshes})
+register_gtest_sources(
+  SOURCES patch_test_linear_heat_transfer_explicit.cc
+  FILES_TO_COPY data/heat_transfer_input.dat
+  PACKAGE heat_transfer)
+
+register_gtest_sources(
+  SOURCES patch_test_linear_heat_transfer_static.cc
+  FILES_TO_COPY data/heat_transfer_input.dat
+  PACKAGE heat_transfer implicit)
+
+register_gtest_test(patch_test_linear
+  FILES_TO_COPY ${PATCH_TEST_MESHES})

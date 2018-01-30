@@ -30,9 +30,7 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
 add_akantu_test(test_materials "test_materials")
-add_akantu_test(patch_tests "patch_tests")
 add_akantu_test(test_cohesive "cohesive_test")
 add_akantu_test(test_embedded_interface "test_embedded_interface")
 add_akantu_test(test_energies "test energies")
@@ -62,32 +60,6 @@ register_test(test_material_selector
   PACKAGE core
   )
 
-add_mesh(bar_segment_2 patch_tests/data/bar_segment.geo
-  DIM 1 ORDER 1 OUTPUT bar_segment_2.msh)
-add_mesh(bar_segment_3 patch_tests/data/bar_segment.geo
-  DIM 1 ORDER 2 OUTPUT bar_segment_3.msh)
-add_mesh(bar_triangle_3 patch_tests/data/bar_triangle.geo
-  DIM 2 ORDER 1 OUTPUT bar_triangle_3.msh)
-add_mesh(bar_triangle_6 patch_tests/data/bar_triangle.geo
-  DIM 2 ORDER 2 OUTPUT bar_triangle_6.msh)
-add_mesh(bar_quadrangle_4 patch_tests/data/bar_quadrangle.geo
-  DIM 2 ORDER 1 OUTPUT bar_quadrangle_4.msh)
-add_mesh(bar_quadrangle_8 patch_tests/data/bar_quadrangle.geo
-  DIM 2 ORDER 2 OUTPUT bar_quadrangle_8.msh)
-add_mesh(bar_tetrahedron_4 patch_tests/data/bar_tetrahedron.geo
-  DIM 3 ORDER 1 OUTPUT  bar_tetrahedron_4.msh)
-add_mesh(bar_tetrahedron_10 patch_tests/data/bar_tetrahedron.geo
-  DIM 3 ORDER 2 OUTPUT bar_tetrahedron_10.msh)
-add_mesh(bar_hexahedron_8  patch_tests/data/bar_hexahedron.geo
-  DIM 3 ORDER 1 OUTPUT bar_hexahedron_8.msh)
-add_mesh(bar_hexahedron_20 patch_tests/data/bar_hexahedron.geo
-  DIM 3 ORDER 2 OUTPUT bar_hexahedron_20.msh)
-add_mesh(bar_pentahedron_6 patch_tests/data/bar_pentahedron.geo
-  DIM 3 ORDER 1 OUTPUT bar_pentahedron_6.msh)
-add_mesh(bar_pentahedron_15 patch_tests/data/bar_pentahedron.geo
-  DIM 3 ORDER 2 OUTPUT bar_pentahedron_15.msh)
-
-
 #===============================================================================
 # dynamics tests
 #===============================================================================
@@ -98,11 +70,12 @@ register_gtest_sources(
   )
 
 register_gtest_test(test_solid_mechanics_model
-  DEPENDS bar_segment_2 bar_segment_3
-          bar_triangle_3 bar_triangle_6
-	  bar_quadrangle_4 bar_quadrangle_8
-	  bar_tetrahedron_4 bar_tetrahedron_10
-	  bar_hexahedron_8 bar_hexahedron_20
-	  bar_pentahedron_6 bar_pentahedron_15
+  DEPENDS ${PATCH_TEST_BAR_MESHES}
+  #bar_segment_2 bar_segment_3
+  #bar_triangle_3 bar_triangle_6
+  #bar_quadrangle_4 bar_quadrangle_8
+  #bar_tetrahedron_4 bar_tetrahedron_10
+  #bar_hexahedron_8 bar_hexahedron_20
+  #bar_pentahedron_6 bar_pentahedron_15
   PARALLEL
   )

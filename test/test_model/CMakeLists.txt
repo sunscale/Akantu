@@ -32,7 +32,7 @@
 #===============================================================================
 
 #===============================================================================
-
+add_subdirectory(patch_tests)
 add_akantu_test(test_model_solver "Test for the solvers")
 add_akantu_test(test_solid_mechanics_model "Test for the solid mechanics model")
 add_akantu_test(test_heat_transfer_model "Test for the heat transfer model")
