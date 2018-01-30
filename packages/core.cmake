@@ -234,7 +234,6 @@ package_declare_sources(core
   model/dof_manager_inline_impl.cc
   model/model_solver.cc
   model/model_solver.hh
-  model/model_solver_tmpl.hh
   model/non_linear_solver.cc
   model/non_linear_solver.hh
   model/non_linear_solver_default.hh
