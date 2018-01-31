@@ -152,6 +152,20 @@ public:
     return rotation_matrices(el_type);
   }
 
+  template <ElementType type>
+  void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
+                  GhostType /*ghost_type*/,
+                  const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  template <ElementType type>
+  void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
+                   UInt /*order_d*/, GhostType /*ghost_type*/,
+                   const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
 protected:
   ElementTypeMapArray<Real> rotation_matrices;
 };
