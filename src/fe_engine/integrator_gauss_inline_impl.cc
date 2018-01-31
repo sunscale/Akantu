@@ -367,7 +367,7 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
       this->computeJacobianOnQuadPointsByElement<type>(x, quad_points, J);
   };
 
-  for_each_elements(nb_element, filter_elements, compute);
+  for_each_element(nb_element, filter_elements, compute);
 
 
   AKANTU_DEBUG_OUT();

@@ -109,13 +109,13 @@ void EmbeddedInterfaceModel::assignMaterialToElements(
       new InterfaceMeshDataMaterialSelector<std::string>("physical_names",
                                                          *this);
 
-  for_each_elements(mesh,
-                    [&](auto && element) {
-                      auto mat_index = (*interface_material_selector)(element);
-                      material_index(element) = mat_index;
-                      materials[mat_index]->addElement(element);
-                    },
-                    _element_filter = filter);
+  for_each_element(mesh,
+                   [&](auto && element) {
+                     auto mat_index = (*interface_material_selector)(element);
+                     material_index(element) = mat_index;
+                     materials[mat_index]->addElement(element);
+                   },
+                   _element_filter = filter);
 
   SolidMechanicsModel::assignMaterialToElements(filter);
 }

@@ -308,7 +308,7 @@ void ShapeStructural<kind>::interpolateOnIntegrationPoints(
   auto u_it = u_el.begin_reinterpret(nb_dof * nb_nodes_per_element, 1,
                                      nb_quad_points_per_element, u_el.size());
 
-  for_each_elements(nb_element, filter_elements, [&](auto && el) {
+  for_each_element(nb_element, filter_elements, [&](auto && el) {
     auto & uq = *out_it;
     const auto & u = *u_it;
     auto N = Tensor3<Real>(shapes_it[el]);
@@ -358,7 +358,7 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   auto u_it = u_el.begin_reinterpret(nb_dof * nb_nodes_per_element, 1,
                                      nb_quad_points_per_element, u_el.size());
 
-  for_each_elements(nb_element, filter_elements, [&](auto && el) {
+  for_each_element(nb_element, filter_elements, [&](auto && el) {
     auto & nablau = *out_it;
     const auto & u = *u_it;
     auto B = Tensor3<Real>(shapesd_it[el]);

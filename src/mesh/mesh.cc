@@ -146,7 +146,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
                          _spatial_dimension = spatial_dimension - 1,
                          _with_nb_element = true);
 
-    for_each_elements(
+    for_each_element(
         mesh,
         [&](auto && element) {
           Vector<Real> barycenter(spatial_dimension);
