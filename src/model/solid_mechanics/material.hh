@@ -209,8 +209,8 @@ public:
 
   /// compute the stresses for this material
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
-  virtual void
-  computeAllStressesFromTangentModuli(GhostType ghost_type = _not_ghost);
+  // virtual void
+  // computeAllStressesFromTangentModuli(GhostType ghost_type = _not_ghost);
   virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost);
 
   /// set material to steady state

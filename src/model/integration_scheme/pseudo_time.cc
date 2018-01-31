@@ -49,23 +49,16 @@ void PseudoTime::predictor(Real) {}
 
 /* -------------------------------------------------------------------------- */
 void PseudoTime::corrector(const SolutionType &, Real) {
-  Array<Real> & us = this->dof_manager.getDOFs(this->dof_id);
-  const Array<Real> & deltas = this->dof_manager.getSolution(this->dof_id);
-  const Array<bool> & blocked_dofs =
-      this->dof_manager.getBlockedDOFs(this->dof_id);
+  auto & us = this->dof_manager.getDOFs(this->dof_id);
+  const auto & deltas = this->dof_manager.getSolution(this->dof_id);
+  const auto & blocked_dofs = this->dof_manager.getBlockedDOFs(this->dof_id);
 
-  UInt nb_degree_of_freedom = deltas.size();
-
-  auto u_it = us.begin_reinterpret(nb_degree_of_freedom);
-  auto bld_it = blocked_dofs.begin_reinterpret(nb_degree_of_freedom);
-
-  for (const auto & delta : deltas) {
-    const auto & bld = *bld_it;
-    auto & u = *u_it;
-    if (! bld)  u += delta;
-
-    ++u_it;
-    ++bld_it;
+  for (auto && tuple : zip(make_view(us), deltas, make_view(blocked_dofs))) {
+    auto & u = std::get<0>(tuple);
+    const auto & delta = std::get<1>(tuple);
+    const auto & bld = std::get<2>(tuple);
+    if (not bld)
+      u += delta;
   }
 }
 

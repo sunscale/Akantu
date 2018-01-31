@@ -17,8 +17,5 @@ TYPED_TEST(TestPatchTestHTMLinear, Explicit) {
     this->model->solveStep();
   }
 
-  auto eth = this->model->getEnergy("thermal");
-  EXPECT_NEAR(0, eth, 1e-16);
-
   this->checkAll();
 }

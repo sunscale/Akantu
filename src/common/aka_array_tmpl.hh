@@ -994,10 +994,8 @@ namespace detail {
                            std::make_index_sequence<N>{});
   }
 
-  template <typename... V>
-  constexpr auto product_all(V &&... v) ->
-      typename std::common_type<V...>::type {
-    typename std::common_type<V...>::type result = 1;
+  template <typename... V> constexpr auto product_all(V &&... v) {
+    std::common_type_t<int, V...> result = 1;
     (void)std::initializer_list<int>{(result *= v, 0)...};
     return result;
   }
@@ -1166,7 +1164,6 @@ namespace detail {
 /* -------------------------------------------------------------------------- */
 template <typename Array, typename... Ns>
 decltype(auto) make_view(Array && array, Ns... ns) {
-  static_assert(sizeof...(Ns), "You should provide a least one dimension");
   auto size = std::forward<decltype(array)>(array).size() *
               std::forward<decltype(array)>(array).getNbComponent() /
               detail::product_all(ns...);

@@ -440,6 +440,8 @@ void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
 void HeatTransferModel::assembleInternalHeatRate() {
   AKANTU_DEBUG_IN();
 
+  this->internal_heat_rate->clear();
+
   this->synchronize(_gst_htm_temperature);
   auto & fem = this->getFEEngine();
 
