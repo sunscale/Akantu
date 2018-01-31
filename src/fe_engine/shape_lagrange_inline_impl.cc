@@ -390,7 +390,6 @@ void ShapeLagrange<kind>::computeBtD(
       this->shapes_derivatives(itp_type, ghost_type);
 
   auto spatial_dimension = mesh.getSpatialDimension();
-  auto size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
   auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
   Array<Real> shapes_derivatives_filtered(0,
@@ -435,7 +434,6 @@ void ShapeLagrange<kind>::computeBtDB(
       this->shapes_derivatives(itp_type, ghost_type);
 
   constexpr auto dim = ElementClass<type>::getSpatialDimension();
-  auto size_of_shapes_derivatives = shapes_derivatives.getNbComponent();
   auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
   Array<Real> shapes_derivatives_filtered(0,

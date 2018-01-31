@@ -130,6 +130,20 @@ public:
         u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
+  template <ElementType type>
+  void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
+                  GhostType /*ghost_type*/,
+                  const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  template <ElementType type>
+  void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
+                   UInt /*order_d*/, GhostType /*ghost_type*/,
+                   const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
   /// compute the gradient of u on the integration points
   template <ElementType type, class ReduceFunction>
   void variationOnIntegrationPoints(
