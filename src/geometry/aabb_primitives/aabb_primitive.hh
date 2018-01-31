@@ -80,8 +80,8 @@ namespace akantu {
 
 // If the primitive is supported by CGAL::intersection() then the 
 // implementation process is really easy with this macro
-AKANTU_AABB_CLASS(Triangle, Cartesian);
-AKANTU_AABB_CLASS(Line_arc, Spherical);
+AKANTU_AABB_CLASS(Triangle, cgal::Cartesian);
+AKANTU_AABB_CLASS(Line_arc, cgal::Spherical);
 
 #undef AKANTU_AABB_CLASS
 

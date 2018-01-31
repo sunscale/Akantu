@@ -238,8 +238,8 @@ decltype(auto) NodeGroupsIterable(GroupManager && group_manager) {
 
 /* -------------------------------------------------------------------------- */
 template <class Func>
-void for_each_elements(UInt nb_elements, const Array<UInt> & filter_elements,
-                       Func && function) {
+void for_each_element(UInt nb_elements, const Array<UInt> & filter_elements,
+                      Func && function) {
   if (filter_elements != empty_filter) {
     std::for_each(filter_elements.begin(), filter_elements.end(),
                   std::forward<Func>(function));
@@ -255,7 +255,7 @@ namespace {
 
 /* -------------------------------------------------------------------------- */
 template <class Func, typename... pack>
-void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
+void for_each_element(const Mesh & mesh, Func && function, pack &&... _pack) {
   auto requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _casper);
   const ElementTypeMapArray<UInt> * filter =
       OPTIONAL_NAMED_ARG(element_filter, nullptr);
@@ -289,7 +289,7 @@ void for_each_elements(const Mesh & mesh, Func && function, pack &&... _pack) {
 
       auto nb_elements = mesh.getNbElement(type, ghost_type);
 
-      for_each_elements(nb_elements, *filter_array, [&](auto && el) {
+      for_each_element(nb_elements, *filter_array, [&](auto && el) {
         auto element = Element{type, el, ghost_type};
         std::forward<Func>(function)(element);
       });

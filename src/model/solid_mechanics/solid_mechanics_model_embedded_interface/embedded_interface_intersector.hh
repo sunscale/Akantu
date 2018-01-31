@@ -42,7 +42,9 @@
 
 namespace akantu {
 
-typedef Cartesian K;
+namespace {
+  using K = cgal::Cartesian;
+}
 
 /**
  * @brief Computes the intersections of the reinforcements defined in the primitive mesh

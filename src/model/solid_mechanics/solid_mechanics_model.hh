@@ -188,7 +188,7 @@ protected:
   void instantiateMaterials();
 
   /// set the element_id_by_material and add the elements to the good materials
-  void
+  virtual void
   assignMaterialToElements(const ElementTypeMapArray<UInt> * filter = nullptr);
 
   /* ------------------------------------------------------------------------ */

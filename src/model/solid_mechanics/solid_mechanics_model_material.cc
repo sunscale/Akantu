@@ -131,7 +131,7 @@ void SolidMechanicsModel::instantiateMaterials() {
 void SolidMechanicsModel::assignMaterialToElements(
     const ElementTypeMapArray<UInt> * filter) {
 
-  for_each_elements(
+  for_each_element(
       mesh,
       [&](auto && element) {
         UInt mat_index = (*material_selector)(element);
@@ -145,7 +145,7 @@ void SolidMechanicsModel::assignMaterialToElements(
   if (non_local_manager)
     non_local_manager->synchronize(*this, _gst_material_id);
 
-  for_each_elements(
+  for_each_element(
       mesh,
       [&](auto && element) {
         auto mat_index = material_index(element);

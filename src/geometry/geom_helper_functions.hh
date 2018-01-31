@@ -45,37 +45,45 @@ namespace akantu {
 /// Fuzzy compare of two points
 template <class Point>
 inline bool comparePoints(const Point & a, const Point & b) {
- return Math::are_float_equal(a.x(), b.x()) &&
-        Math::are_float_equal(a.y(), b.y()) &&
-        Math::are_float_equal(a.z(), b.z());
+  return Math::are_float_equal(a.x(), b.x()) &&
+         Math::are_float_equal(a.y(), b.y()) &&
+         Math::are_float_equal(a.z(), b.z());
 }
 
 template <>
-inline bool comparePoints(const Spherical::Circular_arc_point_3 & a,
-                          const Spherical::Circular_arc_point_3 & b) {
- return Math::are_float_equal(CGAL::to_double(a.x()), CGAL::to_double(b.x())) &&
-        Math::are_float_equal(CGAL::to_double(a.y()), CGAL::to_double(b.y())) &&
-        Math::are_float_equal(CGAL::to_double(a.z()), CGAL::to_double(b.z()));
+inline bool comparePoints(const cgal::Spherical::Circular_arc_point_3 & a,
+                          const cgal::Spherical::Circular_arc_point_3 & b) {
+  return Math::are_float_equal(CGAL::to_double(a.x()),
+                               CGAL::to_double(b.x())) &&
+         Math::are_float_equal(CGAL::to_double(a.y()),
+                               CGAL::to_double(b.y())) &&
+         Math::are_float_equal(CGAL::to_double(a.z()), CGAL::to_double(b.z()));
 }
 
 /// Fuzzy compare of two segments
 template <class K>
-inline bool compareSegments(const CGAL::Segment_3<K> & a, const CGAL::Segment_3<K> & b) {
-  return (comparePoints(a.source(), b.source()) && comparePoints(a.target(), b.target())) ||
-         (comparePoints(a.source(), b.target()) && comparePoints(a.target(), b.source()));
+inline bool compareSegments(const CGAL::Segment_3<K> & a,
+                            const CGAL::Segment_3<K> & b) {
+  return (comparePoints(a.source(), b.source()) &&
+          comparePoints(a.target(), b.target())) ||
+         (comparePoints(a.source(), b.target()) &&
+          comparePoints(a.target(), b.source()));
 }
 
-typedef Cartesian K;
-
 /// Compare segment pairs
-inline bool compareSegmentPairs(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
+inline bool
+compareSegmentPairs(const std::pair<cgal::Cartesian::Segment_3, UInt> & a,
+                    const std::pair<cgal::Cartesian::Segment_3, UInt> & b) {
   return compareSegments(a.first, b.first);
 }
 
 /// Pair ordering operator based on first member
 struct segmentPairsLess {
-  inline bool operator()(const std::pair<K::Segment_3, UInt> & a, const std::pair<K::Segment_3, UInt> & b) {
-    return CGAL::compare_lexicographically(a.first.min(), b.first.min()) || CGAL::compare_lexicographically(a.first.max(), b.first.max());
+  inline bool
+  operator()(const std::pair<cgal::Cartesian::Segment_3, UInt> & a,
+             const std::pair<cgal::Cartesian::Segment_3, UInt> & b) {
+    return CGAL::compare_lexicographically(a.first.min(), b.first.min()) ||
+           CGAL::compare_lexicographically(a.first.max(), b.first.max());
   }
 };
 
@@ -87,18 +95,18 @@ struct segmentPairsLess {
 class IsSameSegment {
 
 public:
-  IsSameSegment(const K::Segment_3 & segment):
-    segment(segment)
-  {}
+  IsSameSegment(const cgal::Cartesian::Segment_3 & segment)
+      : segment(segment) {}
 
-  bool operator()(const std::pair<K::Segment_3, UInt> & test_pair) {
+  bool
+  operator()(const std::pair<cgal::Cartesian::Segment_3, UInt> & test_pair) {
     return compareSegments(segment, test_pair.first);
   }
+
 protected:
-  const K::Segment_3 segment;
+  const cgal::Cartesian::Segment_3 segment;
 };
 
 } // akantu
 
 #endif // _AKANTU_GEOM_HELPER_FUNCTIONS_HH__
-

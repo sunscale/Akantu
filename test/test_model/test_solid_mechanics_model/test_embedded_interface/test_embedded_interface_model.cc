@@ -32,6 +32,7 @@
 
 #include "aka_common.hh"
 #include "embedded_interface_model.hh"
+#include "sparse_matrix.hh"
 
 using namespace akantu;
 
@@ -63,7 +64,7 @@ int main (int argc, char * argv[]) {
   reinforcement_mesh.getData<std::string>("physical_names")(_segment_2).copy(names_vec);
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
-  model.initFull(EmbeddedInterfaceModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   Array<Real> & nodes  = mesh.getNodes();
   Array<Real> & forces = model.getForce();
@@ -86,14 +87,10 @@ int main (int argc, char * argv[]) {
   model.setBaseNameToDumper("reinforcement", "reinforcement");
   model.addDumpFieldTensorToDumper("reinforcement", "stress_embedded");
 
-  // Assemble the global stiffness matrix
-  model.assembleStiffnessMatrix();
-  model.updateResidual();
+  model.solveStep();
 
-  model.getStiffnessMatrix().saveMatrix("matrix_test");
+  model.getDOFManager().getMatrix("K").saveMatrix("matrix_test");
 
-  model.solveStatic<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-7, 1);
-  model.updateResidual();
   model.dump();
 
   Real pot_energy = model.getEnergy("potential");

@@ -71,9 +71,10 @@ public:
 };
 
 /// Method used to initialise the embedded internal fields from material file
-template<>
-inline void ParsableParamTyped< EmbeddedInternalField<Real> >::parseParam(const ParserParameter & in_param) {
-  ParsableParam::parseParam(in_param);
+template <>
+inline void ParameterTyped<EmbeddedInternalField<Real>>::setAuto(
+    const ParserParameter & in_param) {
+  Parameter::setAuto(in_param);
   Real r = in_param;
   param.setDefaultValue(r);
 }
