@@ -54,10 +54,9 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
 
   virtual ~StressSolution() {}
 
-  void operator()(const IntegrationPoint & quad_point,
-                          Vector<Real> & dual,
-                          const Vector<Real> & coord,
-                          const Vector<Real> & normals) const {
+  void operator()(const IntegrationPoint & /*quad_point*/, Vector<Real> & dual,
+                  const Vector<Real> & coord,
+                  const Vector<Real> & normals) const {
     UInt dim = coord.size();
 
     if (dim < 2) AKANTU_DEBUG_ERROR("Solution not valid for 1D");
@@ -112,7 +111,8 @@ int main (int argc, char * argv[]) {
    * a = 1 m
    */
 
-  Real steel_area = model.getMaterial("reinforcement").getParam<Real>("area");
+  Real steel_area =
+      model.getMaterial("reinforcement").get("area");
   Real pre_stress = 1e6;
   Real stress_norm = 0.;
 
@@ -149,15 +149,12 @@ int main (int argc, char * argv[]) {
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "XBlocked");
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "YBlocked");
 
-  // Assemble the global stiffness matrix
-  model.assembleStiffnessMatrix();
-  
-  model.updateResidual();
-
-  if (!model.solveStatic<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-6, 1))
+  try {
+    model.solveStep();
+  } catch (debug::Exception e) {
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
-
-  model.updateResidual();
+  }
 
 /* -------------------------------------------------------------------------- */
 /* Computation of FEM residual norm                                           */
@@ -168,7 +165,7 @@ int main (int argc, char * argv[]) {
   NodeGroup::const_node_iterator
     nodes_it = boundary_nodes.begin(),
     nodes_end = boundary_nodes.end();
-  Array<Real>::vector_iterator com_res = model.getResidual().begin(dim);
+  Array<Real>::vector_iterator com_res = model.getInternalForce().begin(dim);
   Array<Real>::vector_iterator ana_res = analytical_residual.begin(dim);
   Array<Real>::vector_iterator position = mesh.getNodes().begin(dim);
 

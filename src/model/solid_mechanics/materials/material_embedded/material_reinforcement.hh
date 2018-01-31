@@ -66,7 +66,7 @@ public:
                         const ID & id = "");
 
   /// Destructor
-  virtual ~MaterialReinforcement();
+  ~MaterialReinforcement() override;
 
 protected:
   void initialize(SolidMechanicsModel & a_model);
@@ -76,7 +76,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// Init the material
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// Init the background shape derivatives
   void initBackgroundShapeDerivatives();
@@ -85,24 +85,16 @@ public:
   void initDirectingCosines();
 
   /// Assemble stiffness matrix
-  virtual void assembleStiffnessMatrix(GhostType ghost_type);
-
-  /// Update the residual
-  virtual void updateResidual(GhostType ghost_type = _not_ghost);
-
-  /// Assembled the residual
-  virtual void assembleResidual(GhostType ghost_type);
+  void assembleStiffnessMatrix(GhostType ghost_type) override;
 
   /// Compute all the stresses !
-  virtual void computeAllStresses(GhostType ghost_type);
-
-  /// Compute the stiffness parameter for elements of a type
-  virtual void computeTangentModuli(const ElementType & type,
-                                    Array<Real> & tangent,
-                                    GhostType ghost_type) = 0;
+  void computeAllStresses(GhostType ghost_type) override;
 
   /// Compute energy
-  virtual Real getEnergy(std::string id);
+  Real getEnergy(const std::string & id) override;
+
+  /// Assemble the residual of one type of element (typically _segment_2)
+  void assembleInternalForces(GhostType ghost_type) override;
 
   // virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
   //                                                     const ElementKind &

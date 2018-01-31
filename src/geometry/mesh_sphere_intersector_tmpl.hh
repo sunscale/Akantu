@@ -40,7 +40,6 @@
 #include "mesh_geom_common.hh"
 #include "tree_type_helper.hh"
 #include "mesh_sphere_intersector.hh"
-#include "static_communicator.hh"
 
 namespace akantu {
 
@@ -96,7 +95,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
   Math::setTolerance(tol_intersection_on_node);
   typedef boost::variant<pair_type> sk_inter_res;
 
-  TreeTypeHelper<Line_arc<Spherical>, Spherical>::const_iterator
+  TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::const_iterator
     it = this->factory.getPrimitiveList().begin(),
     end= this->factory.getPrimitiveList().end();
 
@@ -109,7 +108,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
         if (pair->second == 1) { // not a point tangent to the sphere
           // the intersection point written as a vector
           Vector<Real> new_node(dim, 0.0);
-          Cartesian::Point_3 point(CGAL::to_double(pair->first.x()),
+          cgal::Cartesian::Point_3 point(CGAL::to_double(pair->first.x()),
                                    CGAL::to_double(pair->first.y()),
                                    CGAL::to_double(pair->first.z()));
           for (UInt i = 0 ; i < dim ; i++) {
@@ -145,10 +144,10 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  }
 	  
 	  // get the initial and final points of the primitive (segment) and write them as vectors
-	  Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
+	  cgal::Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
 					 CGAL::to_double(it->source().y()),
 					 CGAL::to_double(it->source().z()));
-	  Cartesian::Point_3 target_cgal(CGAL::to_double(it->target().x()),
+	  cgal::Cartesian::Point_3 target_cgal(CGAL::to_double(it->target().x()),
 					 CGAL::to_double(it->target().y()),
 					 CGAL::to_double(it->target().z()));
 	  Vector<Real> source(dim), target(dim);

@@ -104,48 +104,48 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::addPrimitive(const Matrix<Re
   this->addPrimitive(node_coordinates, id, this->primitive_list);
 }
 
-// (2D, _triangle_3) decomposed into Triangle<Cartesian>
+// (2D, _triangle_3) decomposed into Triangle<cgal::Cartesian>
 template<>
-inline void MeshGeomFactory<2, _triangle_3, Triangle<Cartesian>, Cartesian>::addPrimitive(
+inline void MeshGeomFactory<2, _triangle_3, Triangle<cgal::Cartesian>, cgal::Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
-    TreeTypeHelper<Triangle<Cartesian>, Cartesian>::container_type & list) {
+    TreeTypeHelper<Triangle<cgal::Cartesian>, cgal::Cartesian>::container_type & list) {
 
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
+  TreeTypeHelper<Triangle<cgal::Cartesian>, cgal::Cartesian>::point_type
     a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
     b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
     c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
 
-  Triangle<Cartesian> t(a, b, c);
+  Triangle<cgal::Cartesian> t(a, b, c);
   t.setId(id);
   list.push_back(t);
 }
 
-// (2D, _triangle_6) decomposed into Triangle<Cartesian>
+// (2D, _triangle_6) decomposed into Triangle<cgal::Cartesian>
 template<>
-inline void MeshGeomFactory<2, _triangle_6, Triangle<Cartesian>, Cartesian>::addPrimitive(
+inline void MeshGeomFactory<2, _triangle_6, Triangle<cgal::Cartesian>, cgal::Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
-    TreeTypeHelper<Triangle<Cartesian>, Cartesian>::container_type & list) {
+    TreeTypeHelper<Triangle<cgal::Cartesian>, cgal::Cartesian>::container_type & list) {
 
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
+  TreeTypeHelper<Triangle<cgal::Cartesian>, cgal::Cartesian>::point_type
     a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
     b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
     c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
 
-  Triangle<Cartesian> t(a, b, c);
+  Triangle<cgal::Cartesian> t(a, b, c);
   t.setId(id);
   list.push_back(t);
 }
 
-// (2D, _triangle_3) decomposed into Line_arc<Spherical>
+// (2D, _triangle_3) decomposed into Line_arc<cgal::Spherical>
 template<>
-inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::addPrimitive(
+inline void MeshGeomFactory<2, _triangle_3, Line_arc<cgal::Spherical>, cgal::Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
-    TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
+    TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::container_type & list) {
 
-  TreeTypeHelper<Line_arc<Spherical>, Spherical>::point_type
+  TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::point_type
     a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
     b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
     c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
@@ -160,8 +160,8 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
 	    << ", x_arc_node=" << c.x() << ", y_node=" << node_coordinates(1, 2)
 	    << ", y_arc_node=" << c.y() << std::endl ;*/
 
-  CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
-  Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
+  CGAL::Line_3<cgal::Spherical> l1(a, b), l2(b, c), l3(c, a);
+  Line_arc<cgal::Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
   s1.setId(id); s1.setSegId(0);
   s2.setId(id); s2.setSegId(1);
@@ -174,20 +174,20 @@ inline void MeshGeomFactory<2, _triangle_3, Line_arc<Spherical>, Spherical>::add
 
 #if defined(AKANTU_IGFEM)
 
-// (2D, _igfem_triangle_4) decomposed into Line_arc<Spherical>
+// (2D, _igfem_triangle_4) decomposed into Line_arc<cgal::Spherical>
 template<>
-inline void MeshGeomFactory<2, _igfem_triangle_4, Line_arc<Spherical>, Spherical>::addPrimitive(
+inline void MeshGeomFactory<2, _igfem_triangle_4, Line_arc<cgal::Spherical>, cgal::Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
-    TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
+    TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::container_type & list) {
 
-  TreeTypeHelper<Line_arc<Spherical>, Spherical>::point_type
+  TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::point_type
     a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
     b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
     c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
 
-  CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
-  Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
+  CGAL::Line_3<cgal::Spherical> l1(a, b), l2(b, c), l3(c, a);
+  Line_arc<cgal::Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
   s1.setId(id); s1.setSegId(0);
   s2.setId(id); s2.setSegId(1);
@@ -198,20 +198,20 @@ inline void MeshGeomFactory<2, _igfem_triangle_4, Line_arc<Spherical>, Spherical
   list.push_back(s3);
 }
 
-// (2D, _igfem_triangle_4) decomposed into Line_arc<Spherical>
+// (2D, _igfem_triangle_4) decomposed into Line_arc<cgal::Spherical>
 template<>
-inline void MeshGeomFactory<2, _igfem_triangle_5, Line_arc<Spherical>, Spherical>::addPrimitive(
+inline void MeshGeomFactory<2, _igfem_triangle_5, Line_arc<cgal::Spherical>, cgal::Spherical>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
-    TreeTypeHelper<Line_arc<Spherical>, Spherical>::container_type & list) {
+    TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::container_type & list) {
 
-  TreeTypeHelper<Line_arc<Spherical>, Spherical>::point_type
+  TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::point_type
     a(node_coordinates(0, 0), node_coordinates(1, 0), 0.),
     b(node_coordinates(0, 1), node_coordinates(1, 1), 0.),
     c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
 
-  CGAL::Line_3<Spherical> l1(a, b), l2(b, c), l3(c, a);
-  Line_arc<Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
+  CGAL::Line_3<cgal::Spherical> l1(a, b), l2(b, c), l3(c, a);
+  Line_arc<cgal::Spherical> s1(l1,a, b), s2(l2, b, c), s3(l3, c, a);
 
   s1.setId(id); s1.setSegId(0);
   s2.setId(id); s2.setSegId(1);
@@ -224,20 +224,20 @@ inline void MeshGeomFactory<2, _igfem_triangle_5, Line_arc<Spherical>, Spherical
 
 #endif
 
-// (3D, _tetrahedron_4) decomposed into Triangle<Cartesian>
+// (3D, _tetrahedron_4) decomposed into Triangle<cgal::Cartesian>
 template<>
-inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<Cartesian>, Cartesian>::addPrimitive(
+inline void MeshGeomFactory<3, _tetrahedron_4, Triangle<cgal::Cartesian>, cgal::Cartesian>::addPrimitive(
     const Matrix<Real> & node_coordinates,
     UInt id,
-    TreeTypeHelper<Triangle<Cartesian>, Cartesian>::container_type & list) {
+    TreeTypeHelper<Triangle<cgal::Cartesian>, cgal::Cartesian>::container_type & list) {
 
-  TreeTypeHelper<Triangle<Cartesian>, Cartesian>::point_type
+  TreeTypeHelper<Triangle<cgal::Cartesian>, cgal::Cartesian>::point_type
     a(node_coordinates(0, 0), node_coordinates(1, 0), node_coordinates(2, 0)),
     b(node_coordinates(0, 1), node_coordinates(1, 1), node_coordinates(2, 1)),
     c(node_coordinates(0, 2), node_coordinates(1, 2), node_coordinates(2, 2)),
     d(node_coordinates(0, 3), node_coordinates(1, 3), node_coordinates(2, 3));
 
-  Triangle<Cartesian>
+  Triangle<cgal::Cartesian>
     t1(a, b, c),
     t2(b, c, d),
     t3(c, d, a),

@@ -44,8 +44,8 @@
 
 using namespace akantu;
 
-typedef Cartesian K;
-typedef Spherical SK;
+typedef cgal::Cartesian K;
+typedef cgal::Spherical SK;
 
 /* -------------------------------------------------------------------------- */
 
@@ -105,7 +105,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
 
 #if 0
-  // Spherical kernel testing the addition of nodes
+  // cgal::Spherical kernel testing the addition of nodes
   std::cout << "initial mesh size = " << mesh.getNodes().size() << " nodes" << std::endl;
 
   SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2);

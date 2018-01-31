@@ -103,6 +103,35 @@ struct HeatTransferModelOptions : public ModelOptions {
 };
 #endif
 
+#ifdef AKANTU_EMBEDDED
+
+namespace {
+  DECLARE_NAMED_ARGUMENT(init_intersections);
+}
+/* -------------------------------------------------------------------------- */
+struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
+  /**
+   * @brief Constructor for EmbeddedInterfaceModelOptions
+   * @param analysis_method see SolidMechanicsModelOptions
+   * @param init_intersections compute intersections
+   */
+  EmbeddedInterfaceModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
+                                bool init_intersections = true):
+    SolidMechanicsModelOptions(analysis_method),
+    has_intersections(init_intersections)
+  {}
+
+  template <typename... pack>
+  EmbeddedInterfaceModelOptions(use_named_args_t, pack &&... _pack)
+      : EmbeddedInterfaceModelOptions(
+            OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
+            OPTIONAL_NAMED_ARG(init_intersections, true)) {}
+
+  /// Should consider reinforcements
+  bool has_intersections;
+};
+#endif
+
 } // akantu
 
 #endif /* __AKANTU_MODEL_OPTIONS_HH__ */

@@ -49,10 +49,10 @@
 
 using namespace akantu;
 
-typedef Cartesian K;
+typedef cgal::Cartesian K;
 typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
 
-typedef Spherical SK;
+typedef cgal::Spherical SK;
 typedef boost::variant<std::pair<SK::Circular_arc_point_3, UInt> > sk_inter_res;
 /*typedef CGAL::cpp11::result_of<SK::Intersect_3(SK::Line_arc_3,
 					       SK::Sphere_3,

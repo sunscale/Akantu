@@ -40,8 +40,8 @@ namespace {
 
 constexpr Real A = 1e-1;
 constexpr Real E = 1.;
-constexpr Real poisson = .3;
-constexpr Real lambda = E * poisson / (1. + poisson) / (1. - 2. * poisson);
+constexpr Real poisson = 3. / 10;
+constexpr Real lambda = E * poisson / (1 + poisson) / (1 - 2 * poisson);
 constexpr Real mu = E / 2 / (1. + poisson);
 constexpr Real rho = 1.;
 const Real cp = std::sqrt((lambda + 2 * mu) / rho);
