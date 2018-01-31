@@ -38,8 +38,8 @@ package_declare_sources(python_interface
   python/python_functor.cc
   python/python_functor.hh
   python/python_functor_inline_impl.cc
-  model/boundary_condition_python_functor.hh
-  model/boundary_condition_python_functor.cc
+  model/common/boundary_condition/boundary_condition_python_functor.hh
+  model/common/boundary_condition/boundary_condition_python_functor.cc
   model/solid_mechanics/materials/material_python/material_python.cc
   model/solid_mechanics/materials/material_python/material_python.hh
   )

@@ -36,8 +36,8 @@ package_declare(PETSc EXTERNAL
   DEPENDS parallel)
 
 package_declare_sources(petsc
-  model/dof_manager_petsc.hh
-  model/dof_manager_petsc.cc
+  model/common/dof_manager/dof_manager_petsc.hh
+  model/common/dof_manager/dof_manager_petsc.cc
   solver/sparse_matrix_petsc.hh
   solver/sparse_matrix_petsc.cc
   solver/solver_petsc.hh
@@ -46,11 +46,7 @@ package_declare_sources(petsc
   )
 
 package_declare_extra_files_to_package(PETSc
-  PROJECT
-    cmake/Modules/FindPETSc.cmake
-    cmake/Modules/FindPackageMultipass.cmake
-    cmake/Modules/ResolveCompilerPaths.cmake
-    cmake/Modules/CorrectWindowsPaths.cmake
+  PROJECT cmake/Modules/FindPETSc.cmake
   )
 
 package_declare_documentation(PETSc
