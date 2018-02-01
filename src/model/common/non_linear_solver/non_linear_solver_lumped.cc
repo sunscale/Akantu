@@ -44,7 +44,7 @@ NonLinearSolverLumped::NonLinearSolverLumped(
     UInt memory_id)
     : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
       dof_manager(dof_manager) {
-  this->supported_type.insert(_nls_lumped);
+  this->supported_type.insert(NonLinearSolverType::_lumped);
   this->checkIfTypeIsSupported();
 
   this->registerParam("b_a2x", this->alpha, 1., _pat_parsmod,

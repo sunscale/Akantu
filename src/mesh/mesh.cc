@@ -282,9 +282,7 @@ void Mesh::makeReady() {
 
 /* -------------------------------------------------------------------------- */
 void Mesh::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "Mesh [" << std::endl;
   stream << space << " + id                : " << getID() << std::endl;

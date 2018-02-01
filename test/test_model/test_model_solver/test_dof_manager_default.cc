@@ -103,10 +103,10 @@ int main(int argc, char * argv[]) {
   MySolverCallback callback(10., dof_manager, 11);
 
   NonLinearSolver & nls =
-      dof_manager.getNewNonLinearSolver("my_nls", _nls_linear);
+      dof_manager.getNewNonLinearSolver("my_nls", NonLinearSolverType::_linear);
   TimeStepSolver & tss =
-      dof_manager.getNewTimeStepSolver("my_tss", _tsst_static, nls);
-  tss.setIntegrationScheme("disp", _ist_pseudo_time);
+      dof_manager.getNewTimeStepSolver("my_tss", TimeStepSolverType::_static, nls);
+  tss.setIntegrationScheme("disp", IntegrationSchemeType::_pseudo_time);
   tss.solveStep(callback);
 
   dof_manager.getMatrix("K").saveMatrix("K_dof_manager_default.mtx");

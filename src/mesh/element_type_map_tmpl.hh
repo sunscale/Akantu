@@ -136,9 +136,7 @@ ElementTypeMap<Stored, SupportType>::getData(GhostType ghost_type) const {
 template <class Stored, typename SupportType>
 void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream,
                                                     int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "ElementTypeMap<" << debug::demangle(typeid(Stored).name())
          << "> [" << std::endl;
@@ -344,9 +342,7 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(
 template <typename T, typename SupportType>
 void ElementTypeMapArray<T, SupportType>::printself(std::ostream & stream,
                                                     int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "ElementTypeMapArray<" << debug::demangle(typeid(T).name())
          << "> [" << std::endl;

@@ -48,9 +48,9 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
       solver(std::make_unique<SparseSolverMumps>(
           dof_manager, "J", id + ":sparse_solver", memory_id)) {
 
-  this->supported_type.insert(_nls_newton_raphson_modified);
-  this->supported_type.insert(_nls_newton_raphson);
-  this->supported_type.insert(_nls_linear);
+  this->supported_type.insert(NonLinearSolverType::_newton_raphson_modified);
+  this->supported_type.insert(NonLinearSolverType::_newton_raphson);
+  this->supported_type.insert(NonLinearSolverType::_linear);
 
   this->checkIfTypeIsSupported();
 
@@ -86,8 +86,8 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   this->assembleResidual(solver_callback);
 
-  if (this->non_linear_solver_type == _nls_newton_raphson_modified ||
-      (this->non_linear_solver_type == _nls_linear &&
+  if (this->non_linear_solver_type == NonLinearSolverType::_newton_raphson_modified ||
+      (this->non_linear_solver_type == NonLinearSolverType::_linear &&
        this->force_linear_recompute)) {
     solver_callback.assembleMatrix("J");
     this->force_linear_recompute = false;
@@ -104,7 +104,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   }
 
   do {
-    if (this->non_linear_solver_type == _nls_newton_raphson)
+    if (this->non_linear_solver_type == NonLinearSolverType::_newton_raphson)
       solver_callback.assembleMatrix("J");
 
     this->solver->solve();

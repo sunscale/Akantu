@@ -281,16 +281,16 @@ void ModelSolver::getNewSolver(const ID & solver_id,
     this->default_solver_id = solver_id;
   }
 
-  if (non_linear_solver_type == _nls_auto) {
+  if (non_linear_solver_type == NonLinearSolverType::_auto) {
     switch (time_step_solver_type) {
-    case _tsst_dynamic:
-    case _tsst_static:
-      non_linear_solver_type = _nls_newton_raphson;
+    case TimeStepSolverType::_dynamic:
+    case TimeStepSolverType::_static:
+      non_linear_solver_type = NonLinearSolverType::_newton_raphson;
       break;
-    case _tsst_dynamic_lumped:
-      non_linear_solver_type = _nls_lumped;
+    case TimeStepSolverType::_dynamic_lumped:
+      non_linear_solver_type = NonLinearSolverType::_lumped;
       break;
-    case _tsst_not_defined:
+    case TimeStepSolverType::_not_defined:
       AKANTU_EXCEPTION(time_step_solver_type
                        << " is not a valid time step solver type");
       break;
@@ -350,7 +350,7 @@ void ModelSolver::corrector() {}
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolverType ModelSolver::getDefaultSolverType() const {
-  return _tsst_dynamic_lumped;
+  return TimeStepSolverType::_dynamic_lumped;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -358,7 +358,7 @@ ModelSolverOptions
 ModelSolver::getDefaultSolverOptions(__attribute__((unused))
                                      const TimeStepSolverType & type) const {
   ModelSolverOptions options;
-  options.non_linear_solver_type = _nls_auto;
+  options.non_linear_solver_type = NonLinearSolverType::_auto;
   return options;
 }
 

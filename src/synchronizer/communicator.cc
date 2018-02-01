@@ -56,9 +56,7 @@ InternalCommunicationRequest::~InternalCommunicationRequest() = default;
 /* -------------------------------------------------------------------------- */
 void InternalCommunicationRequest::printself(std::ostream & stream,
                                              int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "CommunicationRequest [" << std::endl;
   stream << space << " + id          : " << id << std::endl;

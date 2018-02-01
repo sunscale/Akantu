@@ -302,19 +302,19 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
   std::unique_ptr<NonLinearSolver> nls;
   switch (type) {
 #if defined(AKANTU_IMPLICIT)
-  case _nls_newton_raphson:
-  case _nls_newton_raphson_modified: {
+  case NonLinearSolverType::_newton_raphson:
+  case NonLinearSolverType::_newton_raphson_modified: {
     nls = std::make_unique<NonLinearSolverNewtonRaphson>(
         *this, type, non_linear_solver_id, this->memory_id);
     break;
   }
-  case _nls_linear: {
+  case NonLinearSolverType::_linear: {
     nls = std::make_unique<NonLinearSolverLinear>(
         *this, type, non_linear_solver_id, this->memory_id);
     break;
   }
 #endif
-  case _nls_lumped: {
+  case NonLinearSolverType::_lumped: {
     nls = std::make_unique<NonLinearSolverLumped>(
         *this, type, non_linear_solver_id, this->memory_id);
     break;

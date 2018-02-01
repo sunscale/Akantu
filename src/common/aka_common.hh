@@ -373,7 +373,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 #define AKANTU_MIN_ALLOCATION 2000
 
-#define AKANTU_INDENT " "
+#define AKANTU_INDENT ' '
 #define AKANTU_INCLUDE_INLINE_IMPL
 
   /* --------------------------------------------------------------------------

@@ -73,8 +73,8 @@ int main(int argc, char * argv[]) {
 
   MyModel model(F, mesh, false);
 
-  model.getNewSolver("static", _tsst_static, _nls_newton_raphson);
-  model.setIntegrationScheme("static", "disp", _ist_pseudo_time);
+  model.getNewSolver("static", TimeStepSolverType::_static, NonLinearSolverType::_newton_raphson);
+  model.setIntegrationScheme("static", "disp", IntegrationSchemeType::_pseudo_time);
 
   NonLinearSolver & solver = model.getDOFManager().getNonLinearSolver("static");
   solver.set("max_iterations", 2);

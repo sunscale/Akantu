@@ -124,9 +124,7 @@ void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   if (phys_name_map.size()) {
     stream << space << "Physical map:" << std::endl;

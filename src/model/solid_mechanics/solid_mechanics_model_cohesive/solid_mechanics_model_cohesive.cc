@@ -636,12 +636,10 @@ void SolidMechanicsModelCohesive::afterSolveStep() {
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::printself(std::ostream & stream,
                                             int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
-  stream << space << "SolidMechanicsModelCohesive [" << std::endl;
-  SolidMechanicsModel::printself(stream, indent + 1);
+  stream << space << "SolidMechanicsModelCohesive [" << "\n";
+  SolidMechanicsModel::printself(stream, indent + 2);
   stream << space << "]" << std::endl;
 }
 

@@ -58,7 +58,7 @@ public:
   MatrixType getMatrixType(const ID &) override { return _mt_not_defined; }
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & /*method*/) {
-    return std::make_tuple("test", _tsst_static);
+    return {"test", TimeStepSolverType::_static};
   }
 
   void assembleMatrix(const ID &) override {}

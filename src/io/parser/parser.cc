@@ -69,31 +69,27 @@ std::string Parser::getLastParsedFile() const { return last_parsed_file; }
 /* -------------------------------------------------------------------------- */
 void ParserSection::printself(std::ostream & stream,
                               unsigned int indent) const {
-  std::string space;
-  std::string ind = AKANTU_INDENT;
-  for (unsigned int i = 0; i < indent; i++, space += ind)
-    ;
-
+  std::string space(indent, AKANTU_INDENT);
   stream << space << "Section(" << this->type << ") " << this->name
          << (option != "" ? (" " + option) : "") << " [" << std::endl;
   if (!this->parameters.empty()) {
-    stream << space << ind << "Parameters [" << std::endl;
+    stream << space << " Parameters [" << std::endl;
     auto pit = this->parameters.begin();
     for (; pit != this->parameters.end(); ++pit) {
-      stream << space << ind << " + ";
-      pit->second.printself(stream);
-      stream << std::endl;
+      stream << space << " + ";
+      pit->second.printself(stream, indent);
+      stream << "\n";
     }
-    stream << space << ind << "]" << std::endl;
+    stream << space << " ]" << std::endl;
   }
 
   if (!this->sub_sections_by_type.empty()) {
-    stream << space << ind << "Subsections [" << std::endl;
+    stream << space << " Subsections [" << std::endl;
     auto sit = this->sub_sections_by_type.begin();
     for (; sit != this->sub_sections_by_type.end(); ++sit)
       sit->second.printself(stream, indent + 2);
     stream << std::endl;
-    stream << space << ind << "]" << std::endl;
+    stream << space << " ]" << std::endl;
   }
   stream << space << "]" << std::endl;
 }

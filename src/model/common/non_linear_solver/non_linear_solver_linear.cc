@@ -45,7 +45,7 @@ NonLinearSolverLinear::NonLinearSolverLinear(
       dof_manager(dof_manager),
       solver(dof_manager, "J", id + ":sparse_solver", memory_id) {
 
-  this->supported_type.insert(_nls_linear);
+  this->supported_type.insert(NonLinearSolverType::_linear);
   this->checkIfTypeIsSupported();
 }
 

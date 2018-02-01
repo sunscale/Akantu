@@ -48,12 +48,12 @@ TimeStepSolverDefault::TimeStepSolverDefault(
     : TimeStepSolver(dof_manager, type, non_linear_solver, id, memory_id),
       dof_manager(dof_manager), is_mass_lumped(false) {
   switch (type) {
-  case _tsst_dynamic:
+  case TimeStepSolverType::_dynamic:
     break;
-  case _tsst_dynamic_lumped:
+  case TimeStepSolverType::_dynamic_lumped:
     this->is_mass_lumped = true;
     break;
-  case _tsst_static:
+  case TimeStepSolverType::_static:
     /// initialize a static time solver for callback dofs
     break;
   default:
@@ -75,11 +75,11 @@ void TimeStepSolverDefault::setIntegrationScheme(
   std::unique_ptr<IntegrationScheme> integration_scheme;
   if (this->is_mass_lumped) {
     switch (type) {
-    case _ist_forward_euler: {
+    case IntegrationSchemeType::_forward_euler: {
       integration_scheme = std::make_unique<ForwardEuler>(dof_manager, dof_id);
       break;
     }
-    case _ist_central_difference: {
+    case IntegrationSchemeType::_central_difference: {
       integration_scheme =
           std::make_unique<CentralDifference>(dof_manager, dof_id);
       break;
@@ -90,48 +90,48 @@ void TimeStepSolverDefault::setIntegrationScheme(
     }
   } else {
     switch (type) {
-    case _ist_pseudo_time: {
+    case IntegrationSchemeType::_pseudo_time: {
       integration_scheme = std::make_unique<PseudoTime>(dof_manager, dof_id);
       break;
     }
-    case _ist_forward_euler: {
+    case IntegrationSchemeType::_forward_euler: {
       integration_scheme = std::make_unique<ForwardEuler>(dof_manager, dof_id);
       break;
     }
-    case _ist_trapezoidal_rule_1: {
+    case IntegrationSchemeType::_trapezoidal_rule_1: {
       integration_scheme =
           std::make_unique<TrapezoidalRule1>(dof_manager, dof_id);
       break;
     }
-    case _ist_backward_euler: {
+    case IntegrationSchemeType::_backward_euler: {
       integration_scheme = std::make_unique<BackwardEuler>(dof_manager, dof_id);
       break;
     }
-    case _ist_central_difference: {
+    case IntegrationSchemeType::_central_difference: {
       integration_scheme =
           std::make_unique<CentralDifference>(dof_manager, dof_id);
       break;
     }
-    case _ist_fox_goodwin: {
+    case IntegrationSchemeType::_fox_goodwin: {
       integration_scheme = std::make_unique<FoxGoodwin>(dof_manager, dof_id);
       break;
     }
-    case _ist_trapezoidal_rule_2: {
+    case IntegrationSchemeType::_trapezoidal_rule_2: {
       integration_scheme =
           std::make_unique<TrapezoidalRule2>(dof_manager, dof_id);
       break;
     }
-    case _ist_linear_acceleration: {
+    case IntegrationSchemeType::_linear_acceleration: {
       integration_scheme =
           std::make_unique<LinearAceleration>(dof_manager, dof_id);
       break;
     }
-    case _ist_generalized_trapezoidal: {
+    case IntegrationSchemeType::_generalized_trapezoidal: {
       integration_scheme =
           std::make_unique<GeneralizedTrapezoidal>(dof_manager, dof_id);
       break;
     }
-    case _ist_newmark_beta:
+    case IntegrationSchemeType::_newmark_beta:
       integration_scheme = std::make_unique<NewmarkBeta>(dof_manager, dof_id);
       break;
     }

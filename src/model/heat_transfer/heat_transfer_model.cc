@@ -234,8 +234,8 @@ void HeatTransferModel::initSolver(TimeStepSolverType time_step_solver_type,
     dof_manager.registerBlockedDOFs("temperature", *this->blocked_dofs);
   }
 
-  if (time_step_solver_type == _tsst_dynamic ||
-      time_step_solver_type == _tsst_dynamic_lumped) {
+  if (time_step_solver_type == TimeStepSolverType::_dynamic ||
+      time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
     this->allocNodalField(this->temperature_rate, "temperature_rate");
 
     if (!dof_manager.hasDOFsDerivatives("temperature", 1)) {
@@ -250,16 +250,16 @@ std::tuple<ID, TimeStepSolverType>
 HeatTransferModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", _tsst_dynamic_lumped);
+    return std::make_tuple("explicit_lumped", TimeStepSolverType::_dynamic_lumped);
   }
   case _static: {
-    return std::make_tuple("static", _tsst_static);
+    return std::make_tuple("static", TimeStepSolverType::_static);
   }
   case _implicit_dynamic: {
-    return std::make_tuple("implicit", _tsst_dynamic);
+    return std::make_tuple("implicit", TimeStepSolverType::_dynamic);
   }
   default:
-    return std::make_tuple("unknown", _tsst_not_defined);
+    return std::make_tuple("unknown", TimeStepSolverType::_not_defined);
   }
 }
 
@@ -269,22 +269,22 @@ ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
   ModelSolverOptions options;
 
   switch (type) {
-  case _tsst_dynamic_lumped: {
-    options.non_linear_solver_type = _nls_lumped;
-    options.integration_scheme_type["temperature"] = _ist_forward_euler;
+  case TimeStepSolverType::_dynamic_lumped: {
+    options.non_linear_solver_type = NonLinearSolverType::_lumped;
+    options.integration_scheme_type["temperature"] = IntegrationSchemeType::_forward_euler;
     options.solution_type["temperature"] = IntegrationScheme::_temperature_rate;
     break;
   }
-  case _tsst_static: {
-    options.non_linear_solver_type = _nls_newton_raphson;
-    options.integration_scheme_type["temperature"] = _ist_pseudo_time;
+  case TimeStepSolverType::_static: {
+    options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+    options.integration_scheme_type["temperature"] = IntegrationSchemeType::_pseudo_time;
     options.solution_type["temperature"] = IntegrationScheme::_not_defined;
     break;
   }
-  case _tsst_dynamic: {
+  case TimeStepSolverType::_dynamic: {
     if (this->method == _explicit_consistent_mass) {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["temperature"] = _ist_forward_euler;
+      options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+      options.integration_scheme_type["temperature"] = IntegrationSchemeType::_forward_euler;
       options.solution_type["temperature"] =
           IntegrationScheme::_temperature_rate;
     } else {

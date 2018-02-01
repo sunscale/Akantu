@@ -160,7 +160,7 @@ void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolverType SolidMechanicsModel::getDefaultSolverType() const {
-  return _tsst_dynamic_lumped;
+  return TimeStepSolverType::_dynamic_lumped;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -169,26 +169,26 @@ ModelSolverOptions SolidMechanicsModel::getDefaultSolverOptions(
   ModelSolverOptions options;
 
   switch (type) {
-  case _tsst_dynamic_lumped: {
-    options.non_linear_solver_type = _nls_lumped;
-    options.integration_scheme_type["displacement"] = _ist_central_difference;
+  case TimeStepSolverType::_dynamic_lumped: {
+    options.non_linear_solver_type = NonLinearSolverType::_lumped;
+    options.integration_scheme_type["displacement"] = IntegrationSchemeType::_central_difference;
     options.solution_type["displacement"] = IntegrationScheme::_acceleration;
     break;
   }
-  case _tsst_static: {
-    options.non_linear_solver_type = _nls_newton_raphson;
-    options.integration_scheme_type["displacement"] = _ist_pseudo_time;
+  case TimeStepSolverType::_static: {
+    options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+    options.integration_scheme_type["displacement"] = IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;
   }
-  case _tsst_dynamic: {
+  case TimeStepSolverType::_dynamic: {
     if (this->method == _explicit_consistent_mass) {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["displacement"] = _ist_central_difference;
+      options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+      options.integration_scheme_type["displacement"] = IntegrationSchemeType::_central_difference;
       options.solution_type["displacement"] = IntegrationScheme::_acceleration;
     } else {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["displacement"] = _ist_trapezoidal_rule_2;
+      options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+      options.integration_scheme_type["displacement"] = IntegrationSchemeType::_trapezoidal_rule_2;
       options.solution_type["displacement"] = IntegrationScheme::_displacement;
     }
     break;
@@ -205,19 +205,19 @@ std::tuple<ID, TimeStepSolverType>
 SolidMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", _tsst_dynamic_lumped);
+    return std::make_tuple("explicit_lumped", TimeStepSolverType::_dynamic_lumped);
   }
   case _explicit_consistent_mass: {
-    return std::make_tuple("explicit", _tsst_dynamic);
+    return std::make_tuple("explicit", TimeStepSolverType::_dynamic);
   }
   case _static: {
-    return std::make_tuple("static", _tsst_static);
+    return std::make_tuple("static", TimeStepSolverType::_static);
   }
   case _implicit_dynamic: {
-    return std::make_tuple("implicit", _tsst_dynamic);
+    return std::make_tuple("implicit", TimeStepSolverType::_dynamic);
   }
   default:
-    return std::make_tuple("unknown", _tsst_not_defined);
+    return std::make_tuple("unknown", TimeStepSolverType::_not_defined);
   }
 }
 
@@ -256,8 +256,8 @@ void SolidMechanicsModel::initSolver(TimeStepSolverType time_step_solver_type,
 
   /* ------------------------------------------------------------------------ */
   // for dynamic
-  if (time_step_solver_type == _tsst_dynamic ||
-      time_step_solver_type == _tsst_dynamic_lumped) {
+  if (time_step_solver_type == TimeStepSolverType::_dynamic ||
+      time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
     this->allocNodalField(this->velocity, spatial_dimension, "velocity");
     this->allocNodalField(this->acceleration, spatial_dimension,
                           "acceleration");
@@ -810,17 +810,17 @@ void SolidMechanicsModel::onNodesRemoved(const Array<UInt> & /*element_list*/,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "Solid Mechanics Model [" << std::endl;
   stream << space << " + id                : " << id << std::endl;
   stream << space << " + spatial dimension : " << Model::spatial_dimension
          << std::endl;
+
   stream << space << " + fem [" << std::endl;
   getFEEngine().printself(stream, indent + 2);
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " ]" << std::endl;
+
   stream << space << " + nodals information [" << std::endl;
   displacement->printself(stream, indent + 2);
   if (velocity)
@@ -832,17 +832,16 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   external_force->printself(stream, indent + 2);
   internal_force->printself(stream, indent + 2);
   blocked_dofs->printself(stream, indent + 2);
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " ]" << std::endl;
 
   stream << space << " + material information [" << std::endl;
   material_index.printself(stream, indent + 2);
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " ]" << std::endl;
 
   stream << space << " + materials [" << std::endl;
-  for (auto & material : materials) {
-    material->printself(stream, indent + 1);
-  }
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  for (auto & material : materials)
+    material->printself(stream, indent + 2);
+  stream << space << " ]" << std::endl;
 
   stream << space << "]" << std::endl;
 }

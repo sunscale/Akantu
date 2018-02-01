@@ -55,7 +55,8 @@ NonLinearSolver::~NonLinearSolver() = default;
 /* -------------------------------------------------------------------------- */
 void NonLinearSolver::checkIfTypeIsSupported() {
   if (this->supported_type.find(this->non_linear_solver_type) ==
-      this->supported_type.end()) {
+          this->supported_type.end() and
+      this->non_linear_solver_type != NonLinearSolverType::_auto) {
     AKANTU_EXCEPTION("The resolution method "
                      << this->non_linear_solver_type
                      << " is not implemented in the non linear solver "

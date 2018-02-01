@@ -95,12 +95,16 @@ int main(int argc, char * argv[]) {
   }
 
   if (!_explicit) {
-    model.getNewSolver("dynamic", _tsst_dynamic, _nls_newton_raphson);
-    model.setIntegrationScheme("dynamic", "disp", _ist_trapezoidal_rule_2,
+    model.getNewSolver("dynamic", TimeStepSolverType::_dynamic,
+                       NonLinearSolverType::_newton_raphson);
+    model.setIntegrationScheme("dynamic", "disp",
+                               IntegrationSchemeType::_trapezoidal_rule_2,
                                IntegrationScheme::_displacement);
   } else {
-    model.getNewSolver("dynamic", _tsst_dynamic_lumped, _nls_lumped);
-    model.setIntegrationScheme("dynamic", "disp", _ist_central_difference,
+    model.getNewSolver("dynamic", TimeStepSolverType::_dynamic_lumped,
+                       NonLinearSolverType::_lumped);
+    model.setIntegrationScheme("dynamic", "disp",
+                               IntegrationSchemeType::_central_difference,
                                IntegrationScheme::_acceleration);
   }
 

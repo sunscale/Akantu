@@ -803,9 +803,7 @@ public:
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 void Array<T, is_scal>::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   std::streamsize prec = stream.precision();
   std::ios_base::fmtflags ff = stream.flags();
