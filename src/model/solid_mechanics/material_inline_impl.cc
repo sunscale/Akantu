@@ -141,7 +141,7 @@ inline void Material::setCauchyStressArray(const Matrix<Real> & S_t,
                                            Matrix<Real> & sigma_voight) {
   AKANTU_DEBUG_IN();
   sigma_voight.clear();
-  // see Finite ekement formulations for large deformation dynamic analysis,
+  // see Finite element formulations for large deformation dynamic analysis,
   // Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
 
   /*

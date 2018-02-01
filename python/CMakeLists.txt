@@ -260,7 +260,7 @@ setup(name='akantu',
       ext_modules=[Extension('_akantu', ['${_ext_files}'],
                              include_dirs=['${_inc_dirs}'],
                              language='c++',
-                             libraries=['akantu'],
+                             libraries=['akantu${CMAKE_DEBUG_POSTFIX}'],
                              library_dirs=['${PROJECT_BINARY_DIR}/src'],
                              extra_compile_args=['${_flags}', '-std=c++14'])],
       )

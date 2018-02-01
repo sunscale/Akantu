@@ -286,9 +286,10 @@ public:
   inline void getBarycenter(const Element & element,
                             Vector<Real> & barycenter) const;
 
+#ifndef SWIG
   /// get the element connected to a subelement
   const auto & getElementToSubelement() const;
-
+  
   /// get the element connected to a subelement
   const auto &
   getElementToSubelement(const ElementType & el_type,
@@ -305,6 +306,8 @@ public:
   /// get the subelement connected to an element
   auto & getSubelementToElement(const ElementType & el_type,
                                 const GhostType & ghost_type = _not_ghost);
+
+#endif
 
   /// register a new ElementalTypeMap in the MeshData
   template <typename T>

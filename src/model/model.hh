@@ -74,6 +74,9 @@ protected:
   virtual void initFullImpl(const ModelOptions & options);
 
 public:
+
+#ifndef SWIG
+
   template <typename... pack>
   std::enable_if_t<are_named_argument<pack...>::value>
   initFull(pack &&... _pack) {
@@ -113,6 +116,7 @@ public:
   initFull(pack &&... _pack) {
     this->initFullImpl(std::forward<decltype(_pack)>(_pack)...);
   }
+#endif
 
   /// initialize a new solver if needed
   void initNewSolver(const AnalysisMethod & method);

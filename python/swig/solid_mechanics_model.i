@@ -121,9 +121,10 @@ print_self(SolidMechanicsModel)
 
   /* ------------------------------------------------------------------------ */
   void setPhysicalNamesMaterialSelector(){
-    akantu::MeshDataMaterialSelector<std::string> * selector = new
-      akantu::MeshDataMaterialSelector<std::string>("physical_names", *self);
-    self->setMaterialSelector(*selector);
+    AKANTU_EXCEPTION("API change: This method needs to be fixed.");
+    /* akantu::MeshDataMaterialSelector<std::string> * selector = new */
+    /*   akantu::MeshDataMaterialSelector<std::string>("physical_names", *self); */
+    /* self->setMaterialSelector(*selector); */
   }
   
   /* ------------------------------------------------------------------------ */
