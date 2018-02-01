@@ -52,7 +52,7 @@ namespace akantu {
 /// Replacement class for algorithm that can't use the AABB tree types
 template<typename iterator>
 struct VoidTree {
-  VoidTree(const iterator & begin, const iterator & end) {}
+  VoidTree(const iterator & /*begin*/, const iterator & /*end*/) {}
 };
 
 /// Helper class used to ease the use of CGAL AABB tree algorithm

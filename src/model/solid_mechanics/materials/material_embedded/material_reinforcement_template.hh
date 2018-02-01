@@ -36,9 +36,9 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
-#include "material_reinforcement.hh"
 #include "material_elastic.hh"
 #include "material_linear_isotropic_hardening.hh"
+#include "material_reinforcement.hh"
 
 namespace akantu {
 
@@ -50,8 +50,8 @@ namespace akantu {
  * <strong>Be careful !</strong> Because of multiple inheritance, this class
  * forms a diamond.
  */
-template<UInt dim, class ConstLaw = MaterialElastic<1> >
-class MaterialReinforcementTemplate : public MaterialReinforcement<dim>,
+template <UInt dim, class ConstLaw = MaterialElastic<1>>
+class MaterialReinforcementTemplate : virtual public MaterialReinforcement<dim>,
                                       public ConstLaw {
 
   /* ------------------------------------------------------------------------ */
@@ -59,10 +59,11 @@ class MaterialReinforcementTemplate : public MaterialReinforcement<dim>,
   /* ------------------------------------------------------------------------ */
 public:
   /// Constructor
-  MaterialReinforcementTemplate(SolidMechanicsModel & a_model, const ID & id = "");
+  MaterialReinforcementTemplate(SolidMechanicsModel & a_model,
+                                const ID & id = "");
 
   /// Destructor
-  virtual ~MaterialReinforcementTemplate();
+  ~MaterialReinforcementTemplate() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -72,21 +73,21 @@ public:
   void initMaterial();
 
   /// Compute the stiffness parameter for elements of a type
-  virtual void computeTangentModuli(const ElementType & type,
-                                    Array<Real> & tangent,
-                                    GhostType ghost_type);
+  void computeTangentModuli(const ElementType & type, Array<Real> & tangent,
+                            GhostType ghost_type) override;
 
   /// Computes stress used by constitutive law
-  virtual void computeStress(ElementType type, GhostType ghost_type);
+  void computeStress(ElementType type, GhostType ghost_type) override;
 
   /// Computes gradu to be used by the constitutive law
-  virtual void computeGradU(const ElementType & type, GhostType ghost_type);
+  void computeGradU(const ElementType & type, GhostType ghost_type) override;
 
   /// Compute the potential energy of the reinforcement
-  virtual void computePotentialEnergy(ElementType type, GhostType ghost_type = _not_ghost);
+  void computePotentialEnergy(ElementType type,
+                              GhostType ghost_type = _not_ghost) override;
 
   /// Get energy in reinforcement (currently limited to potential)
-  virtual Real getEnergy(std::string id);
+  Real getEnergy(const std::string & id) override;
 
 protected:
   /**
@@ -96,14 +97,11 @@ protected:
    * \f]
    */
   inline void computeInterfaceGradUOnQuad(const Matrix<Real> & full_gradu,
-                                          Real & gradu,
-                                          const Matrix<Real> & C);
-
+                                          Real & gradu, const Matrix<Real> & C);
 };
 
 #include "material_reinforcement_template_tmpl.hh"
 
 } // akantu
-
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_TEMPLATE_HH__
