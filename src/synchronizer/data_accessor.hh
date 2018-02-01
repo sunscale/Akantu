@@ -274,6 +274,10 @@ protected:
 template <class T>
 using SimpleUIntDataAccessor = ReduceUIntDataAccessor<IdentityOperation, T>;
 
+template <class T>
+using TemporarySwigDataAccessor = DataAccessor<T>;
+
+
 } // akantu
 
 #endif /* __AKANTU_DATA_ACCESSOR_HH__ */

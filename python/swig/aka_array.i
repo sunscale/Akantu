@@ -46,6 +46,9 @@ namespace akantu {
   %ignore Array::end;
   %ignore Array::begin_reinterpret;
   %ignore Array::end_reinterpret;
+  %ignore ArrayBase::getSize;
+  %ignore Array::operator*=;
+  %ignore Array::operator*;
 };
 
 %include "aka_array.hh"
@@ -99,12 +102,12 @@ namespace akantu {
 
     public:
     ArrayForPython(T * wrapped_memory,
-		   UInt size = 0,
+		   UInt size_ = 0,
 		   UInt nb_component = 1,
 		   const ID & id = "")
       : Array<T>(0,nb_component,id){
 	this->values = wrapped_memory;
-	this->size = size;
+	this->size_ = size_;
       };
 
       ~ArrayForPython(){
@@ -112,7 +115,7 @@ namespace akantu {
       };
 
       void resize(UInt new_size){
-	AKANTU_DEBUG_ASSERT(this->size == new_size,"cannot resize a temporary vector");
+	AKANTU_DEBUG_ASSERT(this->size_ == new_size,"cannot resize a temporary vector");
       }
     };
   }
@@ -211,7 +214,7 @@ namespace akantu {
 {
 
   int data_typecode = getPythonDataTypeCode< DATA_TYPE >();
-  npy_intp dims[2] = {npy_intp($1->getSize()), npy_intp($1->getNbComponent())};
+  npy_intp dims[2] = {npy_intp($1->size()), npy_intp($1->getNbComponent())};
   PyObject* obj = PyArray_SimpleNewFromData(2, dims, data_typecode, $1->storage());
   PyArrayObject* array = (PyArrayObject*) obj;
   if (!array) SWIG_fail;

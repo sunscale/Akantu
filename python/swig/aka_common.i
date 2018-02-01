@@ -31,14 +31,15 @@
  */
 
 %{
-  #include "aka_common.hh"
-  #include "aka_csr.hh"
-  #include "element.hh"
+#include "aka_common.hh"
+#include "aka_csr.hh"
+#include "element.hh"
 %}
 
 namespace akantu {
   %ignore getStaticParser;
   %ignore getUserParser;
+  %ignore ghost_types;
   %ignore initialize(int & argc, char ** & argv);
   %ignore initialize(const std::string & input_file, int & argc, char ** & argv);
   extern const Array<UInt> empty_filter;

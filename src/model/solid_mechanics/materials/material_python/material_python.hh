@@ -59,7 +59,6 @@ public:
                  const ID & id = "");
 
   ~MaterialPython() override = default;
-  ;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

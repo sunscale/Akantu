@@ -37,9 +37,9 @@
 
 namespace akantu {
   %ignore Model::createSynchronizerRegistry;
+  %ignore Model::getSynchronizerRegistry;
   %ignore Model::createParallelSynch;
   %ignore Model::getDOFSynchronizer;
-  //%ignore Model::getSynchronizerRegistry;
   %ignore Model::registerFEEngineObject;
   %ignore Model::unregisterFEEngineObject;
   %ignore Model::getFEEngineBoundary;
@@ -47,7 +47,7 @@ namespace akantu {
   %ignore Model::getFEEngineClass;
   %ignore Model::getFEEngineClassBoundary;
   %ignore Model::setParser;
-
+  %ignore Model::updateDataForNonLocalCriterion;
   %ignore IntegrationPoint::operator=;
 
   %ignore FEEngine::getNbIntegrationPoints;
@@ -59,7 +59,12 @@ namespace akantu {
   %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,ElementTypeMapArray<Real> &) const;
   %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &,const Array< UInt > &) const;
   %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &) const;
-
+  %ignore FEEngine::onNodesAdded;
+  %ignore FEEngine::onNodesRemoved;
+  %ignore FEEngine::onElementsAdded;
+  %ignore FEEngine::onElementsChanged;
+  %ignore FEEngine::onElementsRemoved;
+  %ignore FEEngine::elementTypes;
 }
 
 %include "sparse_matrix.i"
@@ -74,7 +79,7 @@ namespace akantu {
 %include "boundary_condition_python_functor.hh"
 %include "communication_buffer.hh"
 %include "data_accessor.hh"
-%include "synchronizer.hh"
-%include "synchronizer_registry.hh"
+//%include "synchronizer.hh"
+//%include "synchronizer_registry.hh"
 %include "model.hh"
 

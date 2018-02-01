@@ -220,7 +220,7 @@ operator-=(const Array<T, is_scal> & vect) {
 template <class T, bool is_scal>
 Array<T, is_scal> & Array<T, is_scal>::
 operator+=(const Array<T, is_scal> & vect) {
-  AKANTU_DEBUG_ASSERT((size_ == vect.size) &&
+  AKANTU_DEBUG_ASSERT((size_ == vect.size()) &&
                           (nb_component == vect.nb_component),
                       "The too array don't have the same sizes");
 
@@ -239,6 +239,8 @@ operator+=(const Array<T, is_scal> & vect) {
  * @param alpha scalar multiplicant
  * @return reference to modified this
  */
+
+#ifndef SWIG
 template <class T, bool is_scal>
 Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
   T * a = values;
@@ -248,6 +250,8 @@ Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
 
   return *this;
 }
+#endif
+
 
 /* -------------------------------------------------------------------------- */
 /**

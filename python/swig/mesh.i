@@ -119,9 +119,9 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
   akantu::Array<akantu::Real> & getGroupedNodes(akantu::Array<akantu::Real, true> & surface_array, Mesh & mesh) {
     akantu::Array<akantu::UInt> group_node = $self->getNodes();
     akantu::Array<akantu::Real> & full_array = mesh.getNodes();
-    surface_array.resize(group_node.getSize());
+    surface_array.resize(group_node.size());
 
-    for (UInt i = 0; i < group_node.getSize(); ++i) {
+    for (UInt i = 0; i < group_node.size(); ++i) {
       for (UInt cmp = 0; cmp < full_array.getNbComponent(); ++cmp) {
 
         surface_array(i,cmp) = full_array(group_node(i),cmp);
@@ -145,9 +145,9 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
       break;
     }
     akantu::Array<akantu::UInt> group_node = $self->getNodes();
-    surface_array.resize(group_node.getSize());
+    surface_array.resize(group_node.size());
 
-    for (UInt i = 0; i < group_node.getSize(); ++i) {
+    for (UInt i = 0; i < group_node.size(); ++i) {
       for (UInt cmp = 0; cmp < full_array->getNbComponent(); ++cmp) {
 
         surface_array(i,cmp) = (*full_array)(group_node(i),cmp);
