@@ -78,7 +78,7 @@ namespace akantu {
  */
 
 class Material : public Memory,
-                 public DataAccessor<Element>,
+                 public TemporarySwigDataAccessor<Element>,
                  public Parsable,
                  public MeshEventHandler,
                  protected SolidMechanicsModelEventHandler {

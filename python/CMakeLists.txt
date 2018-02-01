@@ -232,8 +232,12 @@ swig_generate_wrappers(akantu AKANTU_SWIG_WRAPPERS_CPP AKANTU_WRAPPERS_PYTHON
 if(AKANTU_SWIG_WRAPPERS_CPP)
   string(REPLACE ";" "', '" _ext_files "${AKANTU_SWIG_WRAPPERS_CPP}")
   string(REPLACE ";" "', '" _inc_dirs "${_swig_include_dirs}")
-  string(STRIP "${AKANTU_EXTRA_CXX_FLAGS}" _tmp_flags)
-  string(REGEX REPLACE " +" "', '" _flags "${_tmp_flags} -Wno-maybe-uninitialized")
+  if (AKANTU_EXTRA_CXX_FLAGS)
+    string(STRIP "${AKANTU_EXTRA_CXX_FLAGS}" _tmp_flags)
+    string(REGEX REPLACE " +" "', '" _flags "${_tmp_flags} -Wno-maybe-uninitialized")
+  else()
+    set(_flags "-Wno-maybe-uninitialized")
+  endif()
 
   if(CMAKE_VERBOSE_MAKEFILE)
     set(_quiet)
@@ -256,9 +260,9 @@ setup(name='akantu',
       ext_modules=[Extension('_akantu', ['${_ext_files}'],
                              include_dirs=['${_inc_dirs}'],
                              language='c++',
-                             libraries=['akantu'],
+                             libraries=['akantu${CMAKE_DEBUG_POSTFIX}'],
                              library_dirs=['${PROJECT_BINARY_DIR}/src'],
-                             extra_compile_args=['${_flags}'])],
+                             extra_compile_args=['${_flags}', '-std=c++14'])],
       )
 ")
 

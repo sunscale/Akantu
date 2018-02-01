@@ -36,6 +36,7 @@ namespace akantu {
   %ignore Material::onElementsAdded;
   %ignore Material::onElementsRemoved;
   %ignore Material::onElementsChanged;
+  %ignore Material::getParam;
 }
 
 %include "material.hh"

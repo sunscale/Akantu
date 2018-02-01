@@ -192,6 +192,7 @@ enum EventHandlerPriority {
   _ehp_lowest = 100
 };
 
+#ifndef SWIG
 // clang-format off
 #define AKANTU_MODEL_TYPES                                              \
   (model)                                                               \
@@ -206,6 +207,16 @@ enum EventHandlerPriority {
 AKANTU_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
 AKANTU_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
 AKANTU_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
+#else
+enum class ModelType {
+  _model,
+  _solid_mechanics_model,
+  _solid_mechanics_model_cohesive,
+  _heat_transfer_model,
+  _structural_mechanics_model,
+  _embedded_model
+};
+#endif
 
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion
@@ -353,9 +364,12 @@ enum GhostType {
   _ghost = 1,
   _casper // not used but a real cute ghost
 };
-
 }
+
+#ifndef SWIG
 AKANTU_ENUM_HASH(GhostType)
+#endif
+
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */

@@ -158,15 +158,6 @@ public:
   //                                                   UInt * connectivity,
   //                                                   UInt n_nodes);
 
-  /// convert a element to a linearized element
-  inline UInt elementToLinearized(const Element & elem) const;
-
-  /// convert a linearized element to an element
-  inline Element linearizedToElement(UInt linearized_element) const;
-
-  /// update the types offsets array for the conversions
-  // inline void updateTypesOffsets(const GhostType & ghost_type);
-
   /// add a Array of connectivity for the type <type>.
   inline void addConnectivityType(const ElementType & type,
                                   const GhostType & ghost_type = _not_ghost);
@@ -295,9 +286,10 @@ public:
   inline void getBarycenter(const Element & element,
                             Vector<Real> & barycenter) const;
 
+#ifndef SWIG
   /// get the element connected to a subelement
   const auto & getElementToSubelement() const;
-
+  
   /// get the element connected to a subelement
   const auto &
   getElementToSubelement(const ElementType & el_type,
@@ -314,6 +306,8 @@ public:
   /// get the subelement connected to an element
   auto & getSubelementToElement(const ElementType & el_type,
                                 const GhostType & ghost_type = _not_ghost);
+
+#endif
 
   /// register a new ElementalTypeMap in the MeshData
   template <typename T>
@@ -402,6 +396,8 @@ public:
   /// get number of facets of a given element type
   static inline UInt getNbFacetsPerElement(const ElementType & type, UInt t);
 
+#ifndef SWIG
+
   /// get local connectivity of a facet for a given facet type
   static inline auto getFacetLocalConnectivity(const ElementType & type,
                                                UInt t = 0);
@@ -409,9 +405,13 @@ public:
   /// get connectivity of facets for a given element
   inline auto getFacetConnectivity(const Element & element, UInt t = 0) const;
 
+#endif
+
   /// get the number of type of the surface element associated to a given
   /// element type
   static inline UInt getNbFacetTypes(const ElementType & type, UInt t = 0);
+
+#ifndef SWIG
 
   /// get the type of the surface element associated to a given element
   static inline constexpr auto getFacetType(const ElementType & type,
@@ -419,6 +419,8 @@ public:
 
   /// get all the type of the surface element associated to a given element
   static inline constexpr auto getAllFacetTypes(const ElementType & type);
+
+#endif
 
   /// get the number of nodes in the given element list
   static inline UInt getNbNodesPerElementList(const Array<Element> & elements);

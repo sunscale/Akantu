@@ -58,7 +58,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 class SolidMechanicsModel
     : public Model,
-      public DataAccessor<Element>,
+      public TemporarySwigDataAccessor<Element>,
       public DataAccessor<UInt>,
       public BoundaryCondition<SolidMechanicsModel>,
       public NonLocalManagerCallback,
@@ -508,17 +508,11 @@ protected:
   /// (material's local numbering)
   ElementTypeMapArray<UInt> material_local_numbering;
 
-#ifdef SWIGPYTHON
-public:
-#endif
   /// list of used materials
   std::vector<std::unique_ptr<Material>> materials;
 
   /// mapping between material name and material internal id
   std::map<std::string, UInt> materials_names_to_id;
-#ifdef SWIGPYTHON
-protected:
-#endif
 
   /// class defining of to choose a material
   std::shared_ptr<MaterialSelector> material_selector;
