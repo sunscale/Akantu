@@ -35,27 +35,27 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "heat_transfer_model.hh"
-#include "group_manager_inline_impl.cc"
-#include "dumpable_inline_impl.hh"
-#include "aka_math.hh"
 #include "aka_common.hh"
+#include "aka_common.hh"
+#include "aka_math.hh"
+#include "dumpable_inline_impl.hh"
 #include "fe_engine_template.hh"
-#include "mesh.hh"
-#include "static_communicator.hh"
-#include "parser.hh"
 #include "generalized_trapezoidal.hh"
+#include "group_manager_inline_impl.cc"
+#include "mesh.hh"
+#include "parser.hh"
+#include "static_communicator.hh"
 
 #ifdef AKANTU_USE_MUMPS
 #include "solver_mumps.hh"
 #endif
 
 #ifdef AKANTU_USE_IOHELPER
-#include "dumper_paraview.hh"
-#include "dumper_elemental_field.hh"
 #include "dumper_element_partition.hh"
+#include "dumper_elemental_field.hh"
 #include "dumper_internal_material_field.hh"
+#include "dumper_paraview.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -89,7 +89,7 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
   this->blocked_dofs = NULL;
 
 #ifdef AKANTU_USE_IOHELPER
-  this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
+  this->mesh.registerDumper<DumperParaview>("heat_transfer", id, true);
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif
 
@@ -533,7 +533,7 @@ void HeatTransferModel::updateResidualInternal() {
 
       for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
         if (!(*blocked_dofs_val)) {
-          *res_val -= *temp_rate_val ** capacity_val;
+          *res_val -= *temp_rate_val * *capacity_val;
         }
         blocked_dofs_val++;
         res_val++;
@@ -737,7 +737,7 @@ void HeatTransferModel::solveExplicitLumped() {
 
   for (UInt n = 0; n < nb_nodes * nb_degree_of_freedom; ++n) {
     if (!(*blocked_dofs_val)) {
-      *res_val -= *capacity_val ** temp_rate_val;
+      *res_val -= *capacity_val * *temp_rate_val;
     }
     blocked_dofs_val++;
     res_val++;
@@ -966,7 +966,6 @@ void HeatTransferModel::assembleCapacity(GhostType ghost_type) {
 
   ComputeRhoFunctor rho_functor(*this);
 
-
   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
   Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
   for (; it != end; ++it) {
@@ -1108,7 +1107,7 @@ void HeatTransferModel::getThermalEnergy(
     iterator Eth, Array<Real>::const_iterator<Real> T_it,
     Array<Real>::const_iterator<Real> T_end) const {
   for (; T_it != T_end; ++T_it, ++Eth) {
-    *Eth = capacity * density ** T_it;
+    *Eth = capacity * density * *T_it;
   }
 }
 
@@ -1278,5 +1277,29 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
 }
 
 #endif
+
+void HeatTransferModel::dump(const std::string & dumper_name) {
+  mesh.dump(dumper_name);
+}
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(const std::string & dumper_name, UInt step) {
+  mesh.dump(dumper_name, step);
+}
+
+/* ------------------------------------------------------------------------- */
+void HeatTransferModel::dump(const std::string & dumper_name, Real time,
+                             UInt step) {
+  mesh.dump(dumper_name, time, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump() { mesh.dump(); }
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(UInt step) { mesh.dump(step); }
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(Real time, UInt step) { mesh.dump(time, step); }
 
 __END_AKANTU__
