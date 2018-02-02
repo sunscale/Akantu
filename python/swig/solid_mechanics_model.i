@@ -172,6 +172,16 @@ print_self(SolidMechanicsModel)
   }
 
   /* ------------------------------------------------------------------------ */
+  void updateResidual() {
+    AKANTU_EXCEPTION("Deprecated function. You should replace:\n"
+                     "model.updateResidual()\n"
+                     "with\n"
+                     "model.assembleInternalForces()\n\n"
+                     "beware that the total nodal force is your responsability to compute"
+                     " since it is now handled by the solver.");    
+  }
+  
+  /* ------------------------------------------------------------------------ */
   void applyDirichletBC(PyObject * func_obj, const std::string & group_name) {
     akantu::BC::PythonFunctorDirichlet functor(func_obj);
     $self->applyBC(functor, group_name);

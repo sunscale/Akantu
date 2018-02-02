@@ -248,6 +248,7 @@ import os
 
 os.environ['CC'] = '${CMAKE_CXX_COMPILER}'
 os.environ['CXX'] = '${CMAKE_CXX_COMPILER}'
+
 setup(name='akantu',
       license='LGPLv3',
       version='${AKANTU_VERSION}',
@@ -257,7 +258,7 @@ setup(name='akantu',
                              language='c++',
                              libraries=['akantu${CMAKE_DEBUG_POSTFIX}'],
                              library_dirs=['${PROJECT_BINARY_DIR}/src'],
-                             extra_compile_args=['${_flags}', '-std=c++14'])],
+                             extra_compile_args=['${_flags}', '-O0', '-g', '-std=c++14'])],
       )
 ")
 
