@@ -592,8 +592,8 @@ void Material::assembleStiffnessMatrixNL(const ElementType & type,
     setCauchyStressMatrix<dim>(Piola_kirchhoff_matrix, S);
     VoigtHelper<dim>::transferBMatrixToBNL(*shapes_derivatives_filtered_it, B,
                                            nb_nodes_per_element);
-    Bt_S.mul<true, false>(B, S);
-    Bt_S_B.mul<false, false>(Bt_S, B);
+    Bt_S.template mul<true, false>(B, S);
+    Bt_S_B.template mul<false, false>(Bt_S, B);
   }
 
   delete shapes_derivatives_filtered;
@@ -684,8 +684,8 @@ void Material::assembleStiffnessMatrixL2(const ElementType & type,
     VoigtHelper<dim>::transferBMatrixToBL2(*shapes_derivatives_filtered_it,
                                            grad_u, B2, nb_nodes_per_element);
     B += B2;
-    Bt_D.mul<true, false>(B, D);
-    Bt_D_B.mul<false, false>(Bt_D, B);
+    Bt_D.template mul<true, false>(B, D);
+    Bt_D_B.template mul<false, false>(Bt_D, B);
   }
 
   delete tangent_stiffness_matrix;
@@ -774,7 +774,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 
       B_tensor += B2_tensor;
 
-      r_it.mul<true, false>(B_tensor, S_vect);
+      r_it.template mul<true, false>(B_tensor, S_vect);
     }
 
     delete shapesd_filtered;
