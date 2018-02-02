@@ -32,7 +32,9 @@
 
 %{
   #include "boundary_condition_python_functor.hh"
-%}
+  #include "model_solver.hh"
+  #include "non_linear_solver.hh"
+  %}
 
 
 namespace akantu {
@@ -82,4 +84,26 @@ namespace akantu {
 //%include "synchronizer.hh"
 //%include "synchronizer_registry.hh"
 %include "model.hh"
+%include "non_linear_solver.hh"
 
+%extend akantu::Model {
+
+  void solveStep(){
+    $self->solveStep();
+  }
+
+  akantu::NonLinearSolver & getNonLinearSolver(){
+   return $self->getNonLinearSolver();
+  }
+ }
+
+%extend akantu::NonLinearSolver {
+
+  void set(const std::string & id, akantu::Real val){
+    if (id == "max_iterations")
+      $self->set(id, int(val));
+    else if (id == "convergence_type")
+      $self->set(id, akantu::SolveConvergenceCriteria(UInt(val)));
+    else $self->set(id, val);
+  }
+ }

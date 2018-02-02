@@ -109,6 +109,9 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 
 %extend akantu::GroupManager {
   void createGroupsFromStringMeshData(const std::string & dataset_name) {
+    if (dataset_name == "physical_names"){
+      AKANTU_EXCEPTION("Deprecated behavior: no need to call 'createGroupsFromStringMeshData' for physical names");
+    }
     $self->createGroupsFromMeshData<std::string>(dataset_name);
   }
 
