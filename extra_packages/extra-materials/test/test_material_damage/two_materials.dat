@@ -1,0 +1,35 @@
+material damage_iterative_non_local [
+	 name = aggregate
+	 rho = 2.7e-9   # density
+	 E   = 10 # young's modulus
+	 nu  = 0.    # poisson's ratio
+	 Sc = 70
+	 prescribed_dam = 0.1
+	 max_damage = 0.99
+	 dam_tolerance = 1.e-16
+]
+
+material damage_iterative_non_local [
+	 name = paste
+	 rho = 2.7e-9   # density
+	 E   = 1 # young's modulus
+	 nu  = 0.    # poisson's ratio
+	 Sc = 8
+	 prescribed_dam = 0.1
+	 max_damage = 0.99
+	 dam_tolerance = 1.e-16
+]
+
+non_local aggregate base_wf [
+	  radius = 0.5
+	  weight_function weight_parameter [
+	  update_rate = 1
+	  ]
+]
+
+non_local paste base_wf [
+	  radius = 0.5
+	  weight_function weight_parameter [
+	  update_rate = 1
+	  ]
+]

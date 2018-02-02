@@ -1,0 +1,21 @@
+seed = 1
+
+material elastic [
+	 name = outside
+	 rho = 2.7e-9   # density
+	 E   = 10. # young's modulus
+	 nu  = 0.    # poisson's ratio
+]
+
+material elastic [
+	 name = inside
+	 rho = 2.7e-9   # density
+	 E   = 10. # young's modulus
+	 nu  = 0.    # poisson's ratio
+]
+
+material igfem_elastic [
+	 name = igfem_elastic
+	 name_sub_mat_1 = inside
+	 name_sub_mat_2 = outside
+]

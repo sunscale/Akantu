@@ -1,0 +1,41 @@
+\section{Linear elastic orthotropic}
+
+\begin{MaterialDesc}{elastic\_orthotropic}{}
+\matparam{rho}{Real}{Density}
+\matparam{n1}{Real}{Direction of main material axis}
+\matparam{n2}{Real}{Direction of secondary material axis}
+\matparam{n3}{Real}{Direction of tertiery material axis}
+\matparam{alpha}{Real}{Proportion of viscous stress}
+\matparam{E1}{Real}{Young's modulus $E_1$}
+\matparam{E2}{Real}{Young's modulus $E_2$}
+\matparam{E3}{Real}{Young's modulus $E_3$}
+\matparam{nu12}{Real}{Poisson's ration $\nu_{12}$}
+\matparam{nu13}{Real}{Poisson's ration $\nu_{13}$}
+\matparam{nu23}{Real}{Poisson's ration $\nu_{23}$}
+\matparam{G12}{Real}{Shear modulus $G_{12}$}
+\matparam{G13}{Real}{Shear modulus $G_{13}$}
+\matparam{G23}{Real}{Shear modulus $G_{23}$}
+\end{MaterialDesc}
+
+\section{Linear elastic anisotropic}
+
+\begin{MaterialDesc}{elastic\_anisotropic}{}
+\matparam{rho}{Real}{Density}
+\matparam{n1}{Real}{Direction of main material axis}
+\matparam{n2}{Real}{Direction of secondary material axis}
+\matparam{n3}{Real}{Direction of tertiery material axis}
+\matparam{alpha}{Real}{Proportion of viscous stress}
+\matparam{Cij}{Real}{Stiffness matrix coefficients $C_{ij}$ ($i,j = 1,2,$ \dots voigt size)}
+\end{MaterialDesc}
+
+\section{Visco-plastic}
+
+\begin{MaterialDesc}{visco\_plastic}{}
+\matparam{rho}{Real}{Density}
+\matparam{E}{Real}{Young's modulus}
+\matparam{nu}{Real}{Poisson's ratio}
+\matparam{Plane\_Stress}{Real}{Plane stress simplification (only 2D problems)}
+\matparam{rate}{Real}{Rate sensitivity component}
+\matparam{edot0}{Real}{Reference strain rate}
+\matparam{ts}{Real}{Time}
+\end{MaterialDesc}

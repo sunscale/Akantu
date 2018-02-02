@@ -1,0 +1,289 @@
+The root processor read the mesh.
+Only GMSH physical objects are created in the mesh.
+Element type: _segment_2 ghost type: not_ghost
+2 to partitionate between 2 processsors
+0 1
+1 0
+Element type: _triangle_3 ghost type: not_ghost
+16 to partitionate between 2 processsors
+0 1
+1 0
+2 0
+3 1
+4 0
+5 1
+6 1
+7 0
+8 1
+9 0
+10 0
+11 1
+12 0
+13 1
+14 1
+15 0
+Nodes are also read and set with type -1 (normal node)
+Number of nodes: 13
+Node # 0, x-coord: 0.5, y-coord: 0, of type: -1
+Node # 1, x-coord: 0, y-coord: 0.5, of type: -1
+Node # 2, x-coord: 0, y-coord: -0.5, of type: -1
+Node # 3, x-coord: 1, y-coord: 0, of type: -1
+Node # 4, x-coord: 1, y-coord: 0.5, of type: -1
+Node # 5, x-coord: 1, y-coord: -0.5, of type: -1
+Node # 6, x-coord: 0, y-coord: 0, of type: -1
+Node # 7, x-coord: 0.5, y-coord: 0.5, of type: -1
+Node # 8, x-coord: 0.5, y-coord: -0.5, of type: -1
+Node # 9, x-coord: 0.75, y-coord: 0.25, of type: -1
+Node # 10, x-coord: 0.25, y-coord: 0.25, of type: -1
+Node # 11, x-coord: 0.75, y-coord: -0.25, of type: -1
+Node # 12, x-coord: 0.25, y-coord: -0.25, of type: -1
+
+Before initParallel(), non-root processors have empty Mesh object
+
+Element type: _segment_2, not_ghost: 2 in the mesh of processor 0
+Element no 0 0 3 
+Element no 1 6 0 
+
+Element type: _triangle_3, not_ghost: 16 in the mesh of processor 0
+Element no 0 4 7 9 
+Element no 1 0 7 10 
+Element no 2 1 6 10 
+Element no 3 0 9 7 
+Element no 4 0 10 6 
+Element no 5 0 3 9 
+Element no 6 3 4 9 
+Element no 7 1 10 7 
+Element no 8 5 11 8 
+Element no 9 0 12 8 
+Element no 10 2 12 6 
+Element no 11 0 8 11 
+Element no 12 0 6 12 
+Element no 13 0 11 3 
+Element no 14 3 11 5 
+Element no 15 2 8 12 
+After initParallel(), Mesh object on each processor is a local partionated mesh containing ghost elements
+
+Element type: _segment_2, not_ghost: 1 in the mesh of processor 0
+Element no 0 0 1 
+
+Element type: _triangle_3, not_ghost: 8 in the mesh of processor 0
+Element no 0 1 3 4 
+Element no 1 5 0 4 
+Element no 2 1 4 0 
+Element no 3 5 4 3 
+Element no 4 1 6 7 
+Element no 5 8 6 0 
+Element no 6 1 0 6 
+Element no 7 8 7 6 
+
+Element type: _segment_2, ghost: 1 in the mesh of processor 0
+Element no 0 1 2 
+
+Element type: _triangle_3, ghost: 6 in the mesh of processor 0
+Element no 0 9 3 10 
+Element no 1 1 10 3 
+Element no 2 1 2 10 
+Element no 3 11 12 7 
+Element no 4 1 7 12 
+Element no 5 1 12 2 
+Nodes are also partionated and new node types are defined:
+Number of nodes: 13
+Node # 0, x-coord: 0, y-coord: 0, of type: -1
+Node # 1, x-coord: 0.5, y-coord: 0, of type: -2
+Node # 2, x-coord: 1, y-coord: 0, of type: -3
+Node # 3, x-coord: 0.5, y-coord: 0.5, of type: -2
+Node # 4, x-coord: 0.25, y-coord: 0.25, of type: -1
+Node # 5, x-coord: 0, y-coord: 0.5, of type: -1
+Node # 6, x-coord: 0.25, y-coord: -0.25, of type: -1
+Node # 7, x-coord: 0.5, y-coord: -0.5, of type: -2
+Node # 8, x-coord: 0, y-coord: -0.5, of type: -1
+Node # 9, x-coord: 1, y-coord: 0.5, of type: -3
+Node # 10, x-coord: 0.75, y-coord: 0.25, of type: -3
+Node # 11, x-coord: 1, y-coord: -0.5, of type: -3
+Node # 12, x-coord: 0.75, y-coord: -0.25, of type: -3
+
+-3: pure ghost node -> not a local node
+-2: master node -> node shared with other processor(s) -> local and global node
+>0: slave node -> -> node shared with other processor(s) -> only local node (its id is the rank of the processor owning the master node)
+Each local node has a corresponding global id used during assembly: 
+Global nodes ID: 
+0 6
+1 0
+2 3
+3 7
+4 10
+5 1
+6 12
+7 8
+8 2
+9 4
+10 9
+11 5
+12 11
+
+Within cohesive element model, initParallel() creates a second Mesh object usually called mesh_facet
+This Mesh object contains all sub-dimensional elements where potential cohesive element can be inserted
+
+Element type: _point_1, not_ghost: 8 in the mesh of processor 0
+Element no 0 1 
+Element no 1 3 
+Element no 2 4 
+Element no 3 5 
+Element no 4 0 
+Element no 5 6 
+Element no 6 7 
+Element no 7 8 
+
+Element type: _segment_2, not_ghost: 15 in the mesh of processor 0
+Element no 0 1 3 
+Element no 1 3 4 
+Element no 2 4 1 
+Element no 3 5 0 
+Element no 4 0 4 
+Element no 5 4 5 
+Element no 6 0 1 
+Element no 7 3 5 
+Element no 8 1 6 
+Element no 9 6 7 
+Element no 10 7 1 
+Element no 11 8 6 
+Element no 12 6 0 
+Element no 13 0 8 
+Element no 14 8 7 
+
+Element type: _point_1, ghost: 0 in the mesh of processor 0
+
+Element type: _segment_2, ghost: 7 in the mesh of processor 0
+Element no 0 9 3 
+Element no 1 3 10 
+Element no 2 1 10 
+Element no 3 1 2 
+Element no 4 12 7 
+Element no 5 7 11 
+Element no 6 12 1 
+The distributed synchronizer of solid mechanics model is used to synchronize fields with ghost element:
+From processor 0 to processor 1
+ Sending element(s): 
+Element [_triangle_3, 0, not_ghost]
+Element [_triangle_3, 2, not_ghost]
+Element [_triangle_3, 3, not_ghost]
+Element [_triangle_3, 4, not_ghost]
+Element [_triangle_3, 6, not_ghost]
+Element [_triangle_3, 7, not_ghost]
+ Receiving element(s): 
+Element [_triangle_3, 0, ghost]
+Element [_triangle_3, 1, ghost]
+Element [_triangle_3, 2, ghost]
+Element [_triangle_3, 3, ghost]
+Element [_triangle_3, 4, ghost]
+Element [_triangle_3, 5, ghost]
+
+In case of insertion along physical objects, cohesive elements are created during initFull()
+Elements list after insertion
+
+Element type: _cohesive_2d_4, not_ghost: 1 in the mesh of processor 0
+Element no 0 0 1 14 13 
+
+Element type: _segment_2, not_ghost: 1 in the mesh of processor 0
+Element no 0 0 1 
+
+Element type: _triangle_3, not_ghost: 8 in the mesh of processor 0
+Element no 0 1 3 4 
+Element no 1 5 0 4 
+Element no 2 1 4 0 
+Element no 3 5 4 3 
+Element no 4 13 6 7 
+Element no 5 8 6 14 
+Element no 6 13 14 6 
+Element no 7 8 7 6 
+
+Element type: _cohesive_2d_4, ghost: 1 in the mesh of processor 0
+Element no 0 1 2 13 2 
+
+Element type: _segment_2, ghost: 1 in the mesh of processor 0
+Element no 0 1 2 
+
+Element type: _triangle_3, ghost: 6 in the mesh of processor 0
+Element no 0 9 3 10 
+Element no 1 1 10 3 
+Element no 2 1 2 10 
+Element no 3 11 12 7 
+Element no 4 13 7 12 
+Element no 5 13 12 2 
+Node list after insertion: (Total number of nodes 15)
+Number of nodes: 15
+Node # 0, x-coord: 0, y-coord: 0, of type: -1
+Node # 1, x-coord: 0.5, y-coord: 0, of type: -2
+Node # 2, x-coord: 1, y-coord: 0, of type: -3
+Node # 3, x-coord: 0.5, y-coord: 0.5, of type: -2
+Node # 4, x-coord: 0.25, y-coord: 0.25, of type: -1
+Node # 5, x-coord: 0, y-coord: 0.5, of type: -1
+Node # 6, x-coord: 0.25, y-coord: -0.25, of type: -1
+Node # 7, x-coord: 0.5, y-coord: -0.5, of type: -2
+Node # 8, x-coord: 0, y-coord: -0.5, of type: -1
+Node # 9, x-coord: 1, y-coord: 0.5, of type: -3
+Node # 10, x-coord: 0.75, y-coord: 0.25, of type: -3
+Node # 11, x-coord: 1, y-coord: -0.5, of type: -3
+Node # 12, x-coord: 0.75, y-coord: -0.25, of type: -3
+Node # 13, x-coord: 0.5, y-coord: 0, of type: -2
+Node # 14, x-coord: 0, y-coord: 0, of type: -1
+
+Node global ids after insertion: (Total number of nodes 16)
+Global nodes ID: 
+0 6
+1 0
+2 3
+3 7
+4 10
+5 1
+6 12
+7 8
+8 2
+9 4
+10 9
+11 5
+12 11
+13 13
+14 14
+
+Solid mechanics model cohesive has its own distributed synchronizer to handle ghost cohesive element:
+From processor 0 to processor 1
+ Sending element(s): 
+Element [_cohesive_2d_4, 0, not_ghost]
+ Receiving element(s): 
+Element [_cohesive_2d_4, 0, ghost]
+
+A synchronizer dedicated to degrees of freedom (DOFs) is used by the solver to build matrices in parallel:
+This DOFSynchronizer is built based on nodes global id 
+Number of global dofs 32 for processor 0
+Local dof 0, global id: 12
+Local dof 1, global id: 13
+Local dof 2, global id: 0
+Local dof 3, global id: 1
+Local dof 4, global id: 6
+Local dof 5, global id: 7
+Local dof 6, global id: 14
+Local dof 7, global id: 15
+Local dof 8, global id: 20
+Local dof 9, global id: 21
+Local dof 10, global id: 2
+Local dof 11, global id: 3
+Local dof 12, global id: 24
+Local dof 13, global id: 25
+Local dof 14, global id: 16
+Local dof 15, global id: 17
+Local dof 16, global id: 4
+Local dof 17, global id: 5
+Local dof 18, global id: 8
+Local dof 19, global id: 9
+Local dof 20, global id: 18
+Local dof 21, global id: 19
+Local dof 22, global id: 10
+Local dof 23, global id: 11
+Local dof 24, global id: 22
+Local dof 25, global id: 23
+Local dof 26, global id: 26
+Local dof 27, global id: 27
+Local dof 28, global id: 28
+Local dof 29, global id: 29
+

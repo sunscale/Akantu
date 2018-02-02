@@ -1,0 +1,16 @@
+material damage_iterative_non_local [
+	 name = test_material
+	 rho = 2.7e-9   # density
+	 E   = 1 # young's modulus
+	 nu  = 0.    # poisson's ratio
+	 Sc = 10
+	 prescribed_dam = 0.1
+	 max_damage = 0.99
+]
+
+non_local test_material base_wf [
+	  radius = 1.0
+	  weight_function weight_parameter [
+	  update_rate = 1
+	  ]	  
+]
