@@ -28,12 +28,20 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 package_declare(CGAL EXTERNAL
   DESCRIPTION "Add CGAL support in akantu"
   COMPILE_FLAGS CXX -frounding-math
   BOOST_COMPONENTS system thread
   )
+
+package_is_activated(CGAL _is_activated)
+
+if (_is_activated AND (CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]"))
+  set(CGAL_DISABLE_ROUNDING_MATH_CHECK ON
+    CACHE INTERNAL
+    "Disable rounding math check in CGAL. This permits Valgrind to run." FORCE)
+endif()
+
 
 package_declare_sources(CGAL
   geometry/mesh_geom_common.hh
