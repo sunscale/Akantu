@@ -31,7 +31,7 @@
 /* -------------------------------------------------------------------------- */
 
 #include "embedded_interface_model.hh"
-#include "material_reinforcement.hh"
+#include "material_reinforcement_template.hh"
 #include "mesh_iterators.hh"
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
@@ -53,22 +53,47 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                const MemoryID & memory_id) :
   SolidMechanicsModel(mesh, spatial_dimension, id, memory_id),
   intersector(mesh, primitive_mesh),
-  interface_mesh(NULL),
+  interface_mesh(nullptr),
   primitive_mesh(primitive_mesh),
-  interface_material_selector(NULL)
+  interface_material_selector(nullptr)
 {
   this->model_type = ModelType::_embedded_model;
 
   // This pointer should be deleted by ~SolidMechanicsModel()
   auto mat_sel_pointer =
-    std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", *this);
+      std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names",
+                                                              *this);
 
   this->setMaterialSelector(mat_sel_pointer);
 
   interface_mesh = &(intersector.getInterfaceMesh());
 
   // Create 1D FEEngine on the interface mesh
-  registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine", *interface_mesh, 1);
+  registerFEEngineObject<MyFEEngineType>("EmbeddedInterfaceFEEngine",
+                                         *interface_mesh, 1);
+
+  // Registering allocator for material reinforcement
+  MaterialFactory::getInstance().registerAllocator(
+      "reinforcement",
+      [&](UInt dim, const ID & constitutive, SolidMechanicsModel &,
+          const ID & id) -> std::unique_ptr<Material> {
+        if (constitutive == "elastic") {
+          using mat = MaterialElastic<1>;
+          switch (dim) {
+          case 2:
+            return std::unique_ptr<MaterialReinforcement<2>>{
+                new MaterialReinforcementTemplate<2, mat>(*this, id)};
+          case 3:
+            return std::unique_ptr<MaterialReinforcement<3>>{
+                new MaterialReinforcementTemplate<3, mat>(*this, id)};
+          default:
+            AKANTU_EXCEPTION("Dimension 1 is invalid for reinforcements");
+          }
+        } else {
+          AKANTU_EXCEPTION("Reinforcement type" << constitutive
+                                                << " is not recognized");
+        }
+      });
 }
 
 /* -------------------------------------------------------------------------- */

@@ -1,0 +1,8 @@
+material elastic_orthotropic [
+         name = test_mat_1
+         rho  = 3.8328782866680342684   # density in g/mol/A^2
+         E1   = 10.   # young's in kcal/mol/A^3
+         E2   = 1.   # young's in kcal/mol/A^3
+         nu12 = 0.33333333333333333333  # poisson's ratio
+         G12  = 3.6702824005625512938   # shear modulus in kcal/mol/A^3 
+]
