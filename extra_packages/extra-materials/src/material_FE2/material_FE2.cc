@@ -22,7 +22,7 @@ __BEGIN_AKANTU__
 template<UInt spatial_dimension>
 MaterialFE2<spatial_dimension>::MaterialFE2(SolidMechanicsModel & model,
 					    const ID & id)  :
-  Material(model, id),
+  Material(model, id), Parent(model, id),
   C("material_stiffness", *this)
  {
   AKANTU_DEBUG_IN();
@@ -56,7 +56,7 @@ void MaterialFE2<dim>::initialize() {
 template<UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  Material::initMaterial();
+  Parent::initMaterial();
 
   /// compute the number of integration points in this material and resize the RVE vector
   UInt nb_integration_points = this->element_filter(this->el_type, _not_ghost).getSize() 
@@ -91,11 +91,18 @@ template<UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
 						   GhostType ghost_type) {
   AKANTU_DEBUG_IN();
+
+  // Compute thermal stresses first
+
+  Parent::computeStress(el_type, ghost_type);
+  Array<Real>::const_scalar_iterator sigma_th_it =
+          this->sigma_th(el_type, ghost_type).begin();
+
   // Wikipedia convention:
   // 2*eps_ij (i!=j) = voigt_eps_I
   // http://en.wikipedia.org/wiki/Voigt_notation
 
-  Array<Real>::const_matrix_iterator C_it = this->C(el_type, ghost_type).begin(voigt_h::size, 
+  Array<Real>::const_matrix_iterator C_it = this->C(el_type, ghost_type).begin(voigt_h::size,
 									       voigt_h::size);
 
   // create vectors to store stress and strain in Voigt notation
@@ -106,6 +113,7 @@ void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
   const Matrix<Real> & C_mat = *C_it;
+  const Real & sigma_th = *sigma_th_it;
 
   /// copy strains in Voigt notation
   for(UInt I = 0; I < voigt_h::size; ++I) {
@@ -124,11 +132,12 @@ void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
   for(UInt I = 0; I < voigt_h::size; ++I) {
     UInt i = voigt_h::vec[I][0];
     UInt j = voigt_h::vec[I][1];
-    sigma(i, j) = sigma(j, i) = voigt_stress(I);
+    sigma(i, j) = sigma(j, i) = voigt_stress(I)+ (i == j) * sigma_th;
   }
-  
+
   ++C_it;
-  
+  ++sigma_th_it;
+
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
   AKANTU_DEBUG_OUT();
 }
@@ -182,6 +191,7 @@ void MaterialFE2<spatial_dimension>::advanceASR(const Matrix<Real> & prestrain) 
   }
   AKANTU_DEBUG_OUT();
 }
+
 
 INSTANTIATE_MATERIAL(MaterialFE2);
 
