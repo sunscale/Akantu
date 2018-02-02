@@ -32,7 +32,7 @@
  #ifndef __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__
  #define __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material damage iterative
@@ -100,6 +100,6 @@ protected:
 };
 
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__ */

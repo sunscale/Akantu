@@ -597,4 +597,4 @@ void SolidMechanicsModelRVE::drainCracks(const ElementTypeMapReal & saved_damage
   }
 }
 
-__END_AKANTU__
+} // namespace akantu

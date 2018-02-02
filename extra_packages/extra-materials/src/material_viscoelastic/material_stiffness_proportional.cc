@@ -18,7 +18,7 @@
 #include "material_stiffness_proportional.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -57,12 +57,12 @@ void MaterialStiffnessProportional<spatial_dimension>::computeStress(ElementType
 
   MaterialElastic<spatial_dimension>::computeStress(el_type, ghost_type);
 
-  Array<Real> & velocity = this->model->getVelocity();
+  Array<Real> & velocity = this->model.getVelocity();
 
   Array<Real> strain_rate(0, spatial_dimension * spatial_dimension,
 			   "strain_rate");
 
-  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate,
+  this->model.getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 
@@ -125,4 +125,4 @@ void MaterialStiffnessProportional<spatial_dimension>::computePotentialEnergy(El
 INSTANTIATE_MATERIAL(MaterialStiffnessProportional);
 
 
-__END_AKANTU__
+} // namespace akantu

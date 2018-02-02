@@ -62,14 +62,14 @@ void MaterialVreePeerlingsNonLocal<spatial_dimension, MatParent>::initMaterial()
 //  Real * crit_strain_rate = this->critical_strain_rate(el_type, ghost_type).storage();
 //  Real * rdr_damage = this->recorder_damage(el_type, ghost_type).storage();
 //  Real  * nb_damage = this->number_damage(el_type, ghost_type).storage();
-//  Real dt = this->model->getTimeStep();
+//  Real dt = this->model.getTimeStep();
 //
 //  Vector<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
-//  Vector<Real> & velocity = this->model->getVelocity();
+//  Vector<Real> & velocity = this->model.getVelocity();
 //  Vector<Real> & strain_rate_vrplgs = this->strain_rate_vreepeerlings(el_type, ghost_type);
 //
 //
-//  this->model->getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate_vrplgs,
+//  this->model.getFEEngine().gradientOnQuadraturePoints(velocity, strain_rate_vrplgs,
 //						   spatial_dimension,
 //						   el_type, ghost_type, &elem_filter);
 //
@@ -122,7 +122,7 @@ void MaterialVreePeerlingsNonLocal<spatial_dimension, MatParent>::computeNonLoca
   Real * equi_strain_rate_nl = this->equi_strain_rate_non_local(el_type, ghost_type).storage();
   //Real * equi_strain_rate_nl = this->equi_strain_rate(el_type, ghost_type).storage();
 
-  Real dt = this->model->getTimeStep();
+  Real dt = this->model.getTimeStep();
   Real * FullDam_Valstrain = this->Full_dam_value_strain(el_type, ghost_type).storage();
   Real * FullDam_Valstrain_rate = this->Full_dam_value_strain_rate(el_type, ghost_type).storage();
   Real  * Nb_damage = this->Number_damage(el_type, ghost_type).storage();

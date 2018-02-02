@@ -17,7 +17,7 @@
 #include "material_damage_linear.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -73,4 +73,4 @@ void MaterialDamageLinear<spatial_dimension>::computeStress(ElementType el_type,
 
 INSTANTIATE_MATERIAL(MaterialDamageLinear);
 
-__END_AKANTU__
+} // namespace akantu

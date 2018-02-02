@@ -24,7 +24,7 @@
 #ifndef __AKANTU_MATERIAL_BRITTLE_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_BRITTLE_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material Brittle Non local
@@ -80,6 +80,6 @@ private:
 
 #include "material_brittle_non_local_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_BRITTLE_NON_LOCAL_HH__ */

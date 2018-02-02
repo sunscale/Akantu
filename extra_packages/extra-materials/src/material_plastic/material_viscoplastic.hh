@@ -24,7 +24,7 @@
 #ifndef __AKANTU_MATERIAL_VISCOPLASTIC_HH__
 #define __AKANTU_MATERIAL_VISCOPLASTIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material plastic isotropic
@@ -99,6 +99,6 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "material_viscoplastic_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_VISCOPLASTIC_HH__ */

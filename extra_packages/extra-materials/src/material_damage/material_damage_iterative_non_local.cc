@@ -16,7 +16,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_damage_iterative_non_local.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -37,4 +37,4 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStresses
 /* -------------------------------------------------------------------------- */
 INSTANTIATE_MATERIAL(MaterialDamageIterativeNonLocal);
 
-__END_AKANTU__
+} // namespace akantu

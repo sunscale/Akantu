@@ -21,7 +21,7 @@
 #ifndef __AKANTU_MATERIAL_VREEPEERLINGS_HH__
 #define __AKANTU_MATERIAL_VREEPEERLINGS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material vreepeerlings
@@ -140,7 +140,7 @@ protected:
 #include "material_vreepeerlings_inline_impl.cc"
 #include "material_vreepeerlings_tmpl.hh"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_VREEPEERLINGS_HH__ */
 

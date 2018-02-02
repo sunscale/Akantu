@@ -17,7 +17,7 @@
 #include "material_viscoplastic.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
@@ -101,4 +101,4 @@ void MaterialViscoPlastic<spatial_dimension>::computeTangentModuli(__attribute__
 
 INSTANTIATE_MATERIAL(MaterialViscoPlastic);
 
-__END_AKANTU__
+} // namespace akantu

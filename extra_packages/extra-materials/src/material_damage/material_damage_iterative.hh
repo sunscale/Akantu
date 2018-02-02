@@ -24,7 +24,7 @@
 #ifndef __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
 #define __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material damage iterative
@@ -142,6 +142,6 @@ protected:
 
 #include "material_damage_iterative_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__ */

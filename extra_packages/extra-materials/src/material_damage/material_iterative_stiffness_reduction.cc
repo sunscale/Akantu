@@ -30,7 +30,7 @@
 #include "solid_mechanics_model_RVE.hh"
 #include <math.h>
 
-__BEGIN_AKANTU__
+namespace akantu {
 template<UInt spatial_dimension>
 
 /* -------------------------------------------------------------------------- */
@@ -141,8 +141,8 @@ UInt MaterialIterativeStiffnessReduction<spatial_dimension>::updateDamage() {
     /// update the damage only on non-ghosts elements! Doesn't make sense to update on ghost.
     GhostType ghost_type = _not_ghost;;
 
-    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
+    Mesh::type_iterator it = this->model.getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
+    Mesh::type_iterator last_type = this->model.getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
 
     /// loop over all the elements
     for(; it != last_type; ++it) {
@@ -200,4 +200,4 @@ UInt MaterialIterativeStiffnessReduction<spatial_dimension>::updateDamage() {
 INSTANTIATE_MATERIAL(MaterialIterativeStiffnessReduction);
 
 
-__END_AKANTU__
+} // namespace akantu

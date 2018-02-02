@@ -24,7 +24,7 @@
 #ifndef __AKANTU_MATERIAL_FE_2_HH__
 #define __AKANTU_MATERIAL_FE_2_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /// /!\ This material works ONLY for meshes with a single element type!!!!!					    
@@ -118,6 +118,6 @@ protected:
 
 #include "material_FE2_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_FE_2_HH__ */

@@ -240,7 +240,7 @@ protected:
 };
 
 
-__END_AKANTU__
+} // namespace akantu
 
 
 ///#include "material_selector_tmpl.hh"

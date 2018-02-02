@@ -30,7 +30,7 @@
 #include "material_orthotropic_damage.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension, template<UInt> class Parent>
@@ -393,14 +393,14 @@ MaterialOrthotropicDamage<spatial_dimension, Parent>::computeSqrtOneMinusD(const
 //   AKANTU_DEBUG_IN();
 
 //   Real de = 0.;
-//   const Mesh & mesh = this->model->getFEEngine().getMesh();
+//   const Mesh & mesh = this->model.getFEEngine().getMesh();
 
 //   /// integrate the dissipated energy for each type of elements
 //   Mesh::type_iterator it  = mesh.firstType(spatial_dimension, _not_ghost);
 //   Mesh::type_iterator end = mesh.lastType(spatial_dimension, _not_ghost);
 
 //   for(; it != end; ++it) {
-//     de += this->model->getFEEngine().integrate(dissipated_energy(*it, _not_ghost), *it,
+//     de += this->model.getFEEngine().integrate(dissipated_energy(*it, _not_ghost), *it,
 // 					       _not_ghost, this->element_filter(*it, _not_ghost));
 //   }
 
@@ -417,4 +417,4 @@ MaterialOrthotropicDamage<spatial_dimension, Parent>::computeSqrtOneMinusD(const
 
 // /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

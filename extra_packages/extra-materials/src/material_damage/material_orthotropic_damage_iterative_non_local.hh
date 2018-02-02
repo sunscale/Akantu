@@ -22,7 +22,7 @@
 #ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material Damage Iterative Non local
@@ -76,6 +76,6 @@ private:
 
 #include "material_orthotropic_damage_iterative_non_local_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__ */

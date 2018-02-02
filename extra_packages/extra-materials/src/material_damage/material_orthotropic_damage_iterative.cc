@@ -20,7 +20,7 @@
 #include "material_orthotropic_damage_iterative.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -364,4 +364,4 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::updateEnergiesAfterD
 INSTANTIATE_MATERIAL(MaterialOrthotropicDamageIterative);
 
 
-__END_AKANTU__
+} // namespace akantu

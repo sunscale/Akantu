@@ -16,7 +16,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_FE2.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -196,4 +196,4 @@ void MaterialFE2<spatial_dimension>::advanceASR(const Matrix<Real> & prestrain) 
 INSTANTIATE_MATERIAL(MaterialFE2);
 
 
-__END_AKANTU__
+} // namespace akantu

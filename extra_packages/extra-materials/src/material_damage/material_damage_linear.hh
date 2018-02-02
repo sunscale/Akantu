@@ -22,7 +22,7 @@
 #ifndef __AKANTU_MATERIAL_DAMAGE_LINEAR_HH__
 #define __AKANTU_MATERIAL_DAMAGE_LINEAR_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material liner damage
@@ -87,6 +87,6 @@ protected:
 
 #include "material_damage_linear_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_DAMAGE_LINEAR_HH__ */
