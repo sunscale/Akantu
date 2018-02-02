@@ -98,7 +98,7 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
   registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
 
 #ifdef AKANTU_USE_IOHELPER
-  this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
+  this->mesh.registerDumper<DumperParaview>("heat_transfer", id, true);
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif
 
@@ -781,6 +781,32 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
 }
 #endif
 
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(const std::string & dumper_name) {
+  mesh.dump(dumper_name);
+}
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(const std::string & dumper_name, UInt step) {
+  mesh.dump(dumper_name, step);
+}
+
+/* ------------------------------------------------------------------------- */
+void HeatTransferModel::dump(const std::string & dumper_name, Real time,
+                             UInt step) {
+  mesh.dump(dumper_name, time, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump() { mesh.dump(); }
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(UInt step) { mesh.dump(step); }
+
+/* -------------------------------------------------------------------------- */
+void HeatTransferModel::dump(Real time, UInt step) { mesh.dump(time, step); }
+
 /* -------------------------------------------------------------------------- */
 inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,
                                          const SynchronizationTag & tag) const {
@@ -941,4 +967,5 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
   }
 }
 
+/* -------------------------------------------------------------------------- */
 } // akantu

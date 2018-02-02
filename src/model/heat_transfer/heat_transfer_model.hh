@@ -34,8 +34,8 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "data_accessor.hh"
-#include "model.hh"
 #include "fe_engine.hh"
+#include "model.hh"
 /* -------------------------------------------------------------------------- */
 #include <array>
 /* -------------------------------------------------------------------------- */
@@ -188,6 +188,18 @@ public:
                                        const UInt & spatial_dimension,
                                        const ElementKind & kind) override;
 
+  virtual void dump(const std::string & dumper_name);
+
+  virtual void dump(const std::string & dumper_name, UInt step);
+
+  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+
+  virtual void dump();
+
+  virtual void dump(UInt step);
+
+  virtual void dump(Real time, UInt step);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -216,8 +228,7 @@ public:
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(TemperatureOnQpoints,
                                          temperature_on_qpoints, Real);
   /// internal variables
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(KgradT, k_gradt_on_qpoints,
-                                         Real);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(KgradT, k_gradt_on_qpoints, Real);
   /// get the temperature
   AKANTU_GET_MACRO(Temperature, *temperature, Array<Real> &);
   /// get the temperature derivative
@@ -313,9 +324,10 @@ private:
 
   UInt temperature_release{0};
   UInt conductivity_matrix_release{0};
-  std::unordered_map<GhostType, bool> initial_conductivity{{_not_ghost, true},{_ghost, true}};
-  std::unordered_map<GhostType, UInt> conductivity_release{{_not_ghost, 0},{_ghost, 0}};
-
+  std::unordered_map<GhostType, bool> initial_conductivity{{_not_ghost, true},
+                                                           {_ghost, true}};
+  std::unordered_map<GhostType, UInt> conductivity_release{{_not_ghost, 0},
+                                                           {_ghost, 0}};
 };
 
 } // akantu
