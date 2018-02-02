@@ -31,6 +31,7 @@
  */
 
 %{
+  #include "model_options.hh"
   #include "solid_mechanics_model.hh"
   #include "sparse_matrix.hh"
   #include "boundary_condition.hh"
@@ -46,9 +47,7 @@ namespace akantu {
   %ignore SolidMechanicsModel::initArrays;
   %ignore SolidMechanicsModel::initModel;
   %ignore SolidMechanicsModel::initPBC;
-
-
-  ignore SolidMechanicsModel::initExplicit;
+  %ignore SolidMechanicsModel::initExplicit;
   %ignore SolidMechanicsModel::isExplicit;
   %ignore SolidMechanicsModel::updateCurrentPosition;
   %ignore SolidMechanicsModel::updateAcceleration;
@@ -59,17 +58,13 @@ namespace akantu {
   %ignore SolidMechanicsModel::solveLumped;
   %ignore SolidMechanicsModel::explicitPred;
   %ignore SolidMechanicsModel::explicitCorr;
-
   %ignore SolidMechanicsModel::initSolver;
   %ignore SolidMechanicsModel::initImplicit;
   %ignore SolidMechanicsModel::initialAcceleration;
-
-
   %ignore SolidMechanicsModel::testConvergence;
   %ignore SolidMechanicsModel::testConvergenceIncrement;
   %ignore SolidMechanicsModel::testConvergenceResidual;
   %ignore SolidMechanicsModel::initVelocityDampingMatrix;
-
   %ignore SolidMechanicsModel::getNbDataForElements;
   %ignore SolidMechanicsModel::packElementData;
   %ignore SolidMechanicsModel::unpackElementData;
@@ -77,11 +72,9 @@ namespace akantu {
   %ignore SolidMechanicsModel::getNbDataToUnpack;
   %ignore SolidMechanicsModel::packData;
   %ignore SolidMechanicsModel::unpackData;
-
   %ignore SolidMechanicsModel::setMaterialSelector;
   %ignore SolidMechanicsModel::getSolver;
   %ignore SolidMechanicsModel::getSynchronizer;
-
   %ignore Dumpable::registerExternalDumper;
   %ignore Material::onNodesAdded;
   %ignore Material::onNodesRemoved;
@@ -97,6 +90,7 @@ namespace akantu {
 print_self(SolidMechanicsModel)
 
 %include "material.i"
+%include "model_options.hh"
 %include "solid_mechanics_model.hh"
 
 
@@ -119,6 +113,12 @@ print_self(SolidMechanicsModel)
 
 %extend akantu::SolidMechanicsModel {
 
+  void initFull(
+  const akantu::SolidMechanicsModelOptions & options = akantu::SolidMechanicsModelOptions()){
+    $self->initFull(options);
+  };
+
+  
   /* ------------------------------------------------------------------------ */
   void setPhysicalNamesMaterialSelector(){
     AKANTU_EXCEPTION("API change: This method needs to be fixed.");

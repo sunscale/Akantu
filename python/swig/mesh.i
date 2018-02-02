@@ -35,7 +35,7 @@
 #include "mesh.hh"
 #include "node_group.hh"
 #include "solid_mechanics_model.hh"
-//#include "dumpable_inline_impl.hh"
+// #include "dumpable_inline_impl.hh"
 
 using akantu::IntegrationPoint;
 using akantu::Vector;
@@ -63,6 +63,7 @@ namespace akantu {
   %ignore Mesh::getAllFacetTypes;
   %ignore Mesh::getCommunicator;
   %ignore GroupManager::getElementGroups;
+  %ignore Dumpable::addDumpFieldExternalReal;
 }
 
 print_self(Mesh)

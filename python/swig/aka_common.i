@@ -31,6 +31,7 @@
  */
 
 %{
+//#include "aka_config.hh"
 #include "aka_common.hh"
 #include "aka_csr.hh"
 #include "element.hh"
