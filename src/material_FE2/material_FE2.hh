@@ -17,6 +17,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material.hh"
+#include "material_thermal.hh"
 #include "solid_mechanics_model_RVE.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -36,12 +37,23 @@ __BEGIN_AKANTU__
  * parameters in the material files :
  *   - mesh_file  
  */
+// Emil - 27.01.2018 - re-inheriting from MaterialThermal and PlaneStressToolBox
+
+//template<UInt DIM>
+//class MaterialFE2 : public virtual Material {
+//  /* ------------------------------------------------------------------------ */
+//  /* Constructors/Destructors                                                 */
+//  /* ------------------------------------------------------------------------ */
 template<UInt DIM>
-class MaterialFE2 : public virtual Material {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
+class MaterialFE2 : public MaterialThermal<DIM> {
+    /* ------------------------------------------------------------------------ */
+    /* Constructors/Destructors                                                 */
+    /* ------------------------------------------------------------------------ */
+private:
+  typedef MaterialThermal<DIM> Parent;
+
+// Emil - 27.01.2018
+  public:
 
   MaterialFE2(SolidMechanicsModel & model, const ID & id = "");
 

@@ -38,8 +38,8 @@ MaterialDamageIterative<spatial_dimension>::MaterialDamageIterative(SolidMechani
   this->registerParam("prescribed_dam",      prescribed_dam, 0.1, _pat_parsable | _pat_modifiable, "prescribed damage" );
   this->registerParam("dam_threshold",       dam_threshold,  0.8,  _pat_parsable | _pat_modifiable, "damage threshold at which damage damage will be set to 1" );
   this->registerParam("dam_tolerance",       dam_tolerance,  0.01,  _pat_parsable | _pat_modifiable, "damage tolerance to decide if quadrature point will be damageed" );
-  this->registerParam("max_damage",       max_damage,  0.99999,  _pat_parsable | _pat_modifiable, "maximum damage value" );
-  this->registerParam("max_reductions",                  max_reductions, UInt(10),                  _pat_parsable | _pat_modifiable, "max reductions");
+  this->registerParam("max_damage",          max_damage,  0.99999,  _pat_parsable | _pat_modifiable, "maximum damage value" );
+  this->registerParam("max_reductions",      max_reductions, UInt(10),                  _pat_parsable | _pat_modifiable, "max reductions");
 
   this->use_previous_stress          = true;
   this->use_previous_gradu           = true;
