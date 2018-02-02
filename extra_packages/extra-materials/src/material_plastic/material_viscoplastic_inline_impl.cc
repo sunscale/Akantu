@@ -70,11 +70,11 @@ inline void MaterialViscoPlastic<dim>::computeStressOnQuad(const Matrix<Real> & 
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 inline void MaterialViscoPlastic<dim>::computeTangentModuliOnQuad(Matrix<Real> & tangent,
-                                                                  const Matrix<Real> & grad_u,
-                                                                  const Matrix<Real> & previous_grad_u,
-                                                                  const Matrix<Real> & sigma_tensor,
-                                                                  const Matrix<Real> & previous_sigma_tensor,
-                                                                  const Real & iso_hardening) const {
+                                                                  const Matrix<Real> & /*grad_u*/,
+                                                                  const Matrix<Real> & /*previous_grad_u*/,
+                                                                  const Matrix<Real> & /*sigma_tensor*/,
+                                                                  const Matrix<Real> & /*previous_sigma_tensor*/,
+                                                                  const Real & /*iso_hardening*/) const {
   UInt cols = tangent.cols();
   UInt rows = tangent.rows();
 

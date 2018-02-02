@@ -15,16 +15,17 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_FE2.hh"
+#include "communicator.hh"
+#include "solid_mechanics_model_RVE.hh"
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 MaterialFE2<spatial_dimension>::MaterialFE2(SolidMechanicsModel & model,
-					    const ID & id)  :
-  Material(model, id), Parent(model, id),
-  C("material_stiffness", *this)
- {
+                                            const ID & id)
+    : Parent(model, id), C("material_stiffness", *this) {
   AKANTU_DEBUG_IN();
 
   this->C.initialize(voigt_h::size * voigt_h::size);
@@ -34,76 +35,75 @@ MaterialFE2<spatial_dimension>::MaterialFE2(SolidMechanicsModel & model,
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-MaterialFE2<spatial_dimension>::~MaterialFE2() {
-  AKANTU_DEBUG_IN();
-  for (UInt i = 0; i < RVEs.size(); ++i) {
-    delete meshes[i];
-    delete RVEs[i];
-  }
-  AKANTU_DEBUG_OUT();
+template <UInt spatial_dimension>
+MaterialFE2<spatial_dimension>::~MaterialFE2() = default;
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim> void MaterialFE2<dim>::initialize() {
+  this->registerParam("element_type", el_type, _triangle_3,
+                      _pat_parsable | _pat_modifiable,
+                      "element type in RVE mesh");
+  this->registerParam("mesh_file", mesh_file, _pat_parsable | _pat_modifiable,
+                      "the mesh file for the RVE");
+  this->registerParam("nb_gel_pockets", nb_gel_pockets,
+                      _pat_parsable | _pat_modifiable,
+                      "the number of gel pockets in each RVE");
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-void MaterialFE2<dim>::initialize() {
-  this->registerParam("element_type"      ,el_type, _triangle_3             ,  _pat_parsable | _pat_modifiable, "element type in RVE mesh" );
-  this->registerParam("mesh_file"          ,mesh_file                , _pat_parsable | _pat_modifiable, "the mesh file for the RVE");
-  this->registerParam("nb_gel_pockets"          ,nb_gel_pockets                , _pat_parsable | _pat_modifiable, "the number of gel pockets in each RVE");
-}
-
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
   Parent::initMaterial();
 
-  /// compute the number of integration points in this material and resize the RVE vector
-  UInt nb_integration_points = this->element_filter(this->el_type, _not_ghost).getSize() 
-    * this->fem->getNbIntegrationPoints(this->el_type);
-  RVEs.resize(nb_integration_points);
-  meshes.resize(nb_integration_points);
-
-  /// create a Mesh and SolidMechanicsModel on each integration point of the material
-  std::vector<SolidMechanicsModelRVE *>::iterator RVE_it = RVEs.begin();
-  std::vector<Mesh *>::iterator mesh_it = meshes.begin();
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  /// create a Mesh and SolidMechanicsModel on each integration point of the
+  /// material
+  const auto & comm = this->model.getMesh().getCommunicator();
   UInt prank = comm.whoAmI();
-  Array<Real>::matrix_iterator C_it =
-    this->C(this->el_type).begin(voigt_h::size, voigt_h::size);
-  for (UInt i = 1; i < nb_integration_points+1; ++RVE_it, ++mesh_it, ++i, ++C_it) {
-    std::stringstream mesh_name;
-    mesh_name << "RVE_mesh_" << prank;
-    std::stringstream rve_name;
-    rve_name << "SMM_RVE_" << prank;
-    *mesh_it = new Mesh(spatial_dimension, mesh_name.str(), i);
-    (*mesh_it)->read(mesh_file);
-    *RVE_it = new SolidMechanicsModelRVE(*(*(mesh_it)), true, this->nb_gel_pockets, _all_dimensions, rve_name.str(), i); 
-    (*RVE_it)->initFull();
+  auto C_it = this->C(this->el_type).begin(voigt_h::size, voigt_h::size);
+
+  for (auto && data :
+       enumerate(make_view(C(this->el_type), voigt_h::size, voigt_h::size))) {
+    auto q = std::get<0>(data);
+    auto & C = std::get<1>(data);
+
+    meshes.emplace_back(std::make_unique<Mesh>(
+        spatial_dimension, "RVE_mesh_" + std::to_string(prank), q + 1));
+
+    auto & mesh = *meshes.back();
+    mesh.read(mesh_file);
+
+    RVEs.emplace_back(std::make_unique<SolidMechanicsModelRVE>(
+        mesh, true, this->nb_gel_pockets, _all_dimensions,
+        "SMM_RVE_" + std::to_string(prank), q + 1));
+
+    auto & RVE = *RVEs.back();
+    RVE.initFull();
+
     /// compute intial stiffness of the RVE
-    (*RVE_it)->homogenizeStiffness(*C_it);
+    RVE.homogenizeStiffness(C);
   }
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
-						   GhostType ghost_type) {
+                                                   GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   // Compute thermal stresses first
 
   Parent::computeStress(el_type, ghost_type);
   Array<Real>::const_scalar_iterator sigma_th_it =
-          this->sigma_th(el_type, ghost_type).begin();
+      this->sigma_th(el_type, ghost_type).begin();
 
   // Wikipedia convention:
   // 2*eps_ij (i!=j) = voigt_eps_I
   // http://en.wikipedia.org/wiki/Voigt_notation
 
-  Array<Real>::const_matrix_iterator C_it = this->C(el_type, ghost_type).begin(voigt_h::size,
-									       voigt_h::size);
+  Array<Real>::const_matrix_iterator C_it =
+      this->C(el_type, ghost_type).begin(voigt_h::size, voigt_h::size);
 
   // create vectors to store stress and strain in Voigt notation
   // for efficient computation of stress
@@ -116,7 +116,7 @@ void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
   const Real & sigma_th = *sigma_th_it;
 
   /// copy strains in Voigt notation
-  for(UInt I = 0; I < voigt_h::size; ++I) {
+  for (UInt I = 0; I < voigt_h::size; ++I) {
     /// copy stress in
     Real voigt_factor = voigt_h::factors[I];
     UInt i = voigt_h::vec[I][0];
@@ -129,10 +129,10 @@ void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
   voigt_stress.mul<false>(C_mat, voigt_strain);
 
   /// copy stresses back in full vectorised notation
-  for(UInt I = 0; I < voigt_h::size; ++I) {
+  for (UInt I = 0; I < voigt_h::size; ++I) {
     UInt i = voigt_h::vec[I][0];
     UInt j = voigt_h::vec[I][1];
-    sigma(i, j) = sigma(j, i) = voigt_stress(I)+ (i == j) * sigma_th;
+    sigma(i, j) = sigma(j, i) = voigt_stress(I) + (i == j) * sigma_th;
   }
 
   ++C_it;
@@ -143,14 +143,14 @@ void MaterialFE2<spatial_dimension>::computeStress(ElementType el_type,
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialFE2<spatial_dimension>::computeTangentModuli(const ElementType & el_type,
-							  Array<Real> & tangent_matrix,
-							  GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialFE2<spatial_dimension>::computeTangentModuli(
+    const ElementType & el_type, Array<Real> & tangent_matrix,
+    GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real>::const_matrix_iterator C_it = this->C(el_type, ghost_type).begin(voigt_h::size, 
-									       voigt_h::size);
+  Array<Real>::const_matrix_iterator C_it =
+      this->C(el_type, ghost_type).begin(voigt_h::size, voigt_h::size);
 
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
   tangent.copy(*C_it);
@@ -161,39 +161,36 @@ void MaterialFE2<spatial_dimension>::computeTangentModuli(const ElementType & el
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialFE2<spatial_dimension>::advanceASR(const Matrix<Real> & prestrain) {
+template <UInt spatial_dimension>
+void MaterialFE2<spatial_dimension>::advanceASR(
+    const Matrix<Real> & prestrain) {
+  AKANTU_DEBUG_IN();
 
- AKANTU_DEBUG_IN();
-  std::vector<SolidMechanicsModelRVE *>::iterator RVE_it = RVEs.begin();
-  std::vector<SolidMechanicsModelRVE *>::iterator RVE_end = RVEs.end();
+  for (auto && data :
+       zip(RVEs, make_view(this->gradu(this->el_type), spatial_dimension,
+                           spatial_dimension),
+           make_view(this->eigengradu(this->el_type), spatial_dimension,
+                     spatial_dimension),
+           make_view(this->C(this->el_type), voigt_h::size, voigt_h::size))) {
+    auto & RVE = *(std::get<0>(data));
 
-  Array<Real>::matrix_iterator C_it =
-    this->C(this->el_type).begin(voigt_h::size, voigt_h::size);
-  Array<Real>::matrix_iterator gradu_it =
-    this->gradu(this->el_type).begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator eigen_gradu_it =
-    this->eigengradu(this->el_type).begin(spatial_dimension, spatial_dimension);
-
-  for (; RVE_it != RVE_end; ++RVE_it, ++C_it, ++gradu_it, ++eigen_gradu_it) {
-    /// apply boundary conditions based on the current macroscopic displ. gradient
-    (*RVE_it)->applyBoundaryConditions(*gradu_it);
+    /// apply boundary conditions based on the current macroscopic displ.
+    /// gradient
+    RVE.applyBoundaryConditions(std::get<1>(data));
 
     /// advance the ASR in every RVE
-    (*RVE_it)->advanceASR(prestrain);
+    RVE.advanceASR(prestrain);
 
     /// compute the average eigen_grad_u
-    (*RVE_it)->homogenizeEigenGradU(*eigen_gradu_it);
+    RVE.homogenizeEigenGradU(std::get<2>(data));
 
     /// compute the new effective stiffness of the RVE
-    (*RVE_it)->homogenizeStiffness(*C_it);
-
+    RVE.homogenizeStiffness(std::get<3>(data));
   }
+
   AKANTU_DEBUG_OUT();
 }
 
-
-INSTANTIATE_MATERIAL(MaterialFE2);
-
+INSTANTIATE_MATERIAL(material_FE2, MaterialFE2);
 
 } // namespace akantu

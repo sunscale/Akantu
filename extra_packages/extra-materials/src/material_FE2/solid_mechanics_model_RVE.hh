@@ -29,15 +29,13 @@
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_RVE_HH__
 #define __AKANTU_SOLID_MECHANICS_MODEL_RVE_HH__
 
-
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "aka_grid_dynamic.hh"
+#include "solid_mechanics_model.hh"
 #include <unordered_set>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
-
+namespace akantu {
 
 class SolidMechanicsModelRVE : public SolidMechanicsModel {
 
@@ -47,32 +45,33 @@ class SolidMechanicsModelRVE : public SolidMechanicsModel {
 
 public:
   SolidMechanicsModelRVE(Mesh & mesh, bool use_RVE_mat_selector = true,
-			 UInt nb_gel_pockets = 400,
-			 UInt spatial_dimension = _all_dimensions,
-			 const ID & id = "solid_mechanics_model",
-			 const MemoryID & memory_id = 0);
+                         UInt nb_gel_pockets = 400,
+                         UInt spatial_dimension = _all_dimensions,
+                         const ID & id = "solid_mechanics_model",
+                         const MemoryID & memory_id = 0);
 
   virtual ~SolidMechanicsModelRVE();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-
-  /// initialize completely the model
-  virtual void initFull(const ModelOptions & options = SolidMechanicsModelOptions(_static, true));
+protected:
+  void initFullImpl(const ModelOptions & option) override;
 
   /// initialize the materials
-  virtual void initMaterials();
+  void initMaterials() override;
 
+public:
   /// apply boundary contions based on macroscopic deformation gradient
-  virtual void applyBoundaryConditions(const Matrix<Real> & displacement_gradient);
+  virtual void
+  applyBoundaryConditions(const Matrix<Real> & displacement_gradient);
 
   /// advance the reactions -> grow gel and apply homogenized properties
   void advanceASR(const Matrix<Real> & prestrain);
 
   /// compute average stress or strain in the model
-  Real averageTensorField(UInt row_index, UInt col_index, const ID & field_type);
+  Real averageTensorField(UInt row_index, UInt col_index,
+                          const ID & field_type);
 
   /// compute effective stiffness of the RVE
   void homogenizeStiffness(Matrix<Real> & C_macro);
@@ -80,40 +79,34 @@ public:
   /// compute average eigenstrain
   void homogenizeEigenGradU(Matrix<Real> & eigen_gradu_macro);
 
-  /// initialize the solver and the jacobian_matrix (called by initImplicit)
-  virtual void initSolver(SolverOptions & options = _solver_no_options);
-
-  /// allocate all vectors
-  virtual void initArrays();
-
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 
-  inline virtual void unpackData(CommunicationBuffer & buffer,
-				 const UInt            index,
-				 SynchronizationTag    tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<UInt> & index,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                  */
+  /* Accessors */
   /* ------------------------------------------------------------------------ */
 public:
-
   AKANTU_GET_MACRO(CornerNodes, corner_nodes, const Array<UInt> &);
   AKANTU_GET_MACRO(Volume, volume, Real);
 
 private:
-
   /// find the corner nodes
   void findCornerNodes();
 
   /// perform virtual testing
-  void performVirtualTesting(const Matrix<Real> & H, Matrix<Real> & eff_stresses, Matrix<Real> & eff_strains, const UInt test_no);
+  void performVirtualTesting(const Matrix<Real> & H,
+                             Matrix<Real> & eff_stresses,
+                             Matrix<Real> & eff_strains, const UInt test_no);
 
   void fillCracks(ElementTypeMapReal & saved_damage);
   void drainCracks(const ElementTypeMapReal & saved_damage);
   /* ------------------------------------------------------------------------ */
-  /* Members                                                                    */
+  /* Members */
   /* ------------------------------------------------------------------------ */
 
   /// volume of the RVE
@@ -131,8 +124,6 @@ private:
   /// standard mat selector or user one
   bool use_RVE_mat_selector;
 
-  StaticCommunicator * static_communicator_dummy;
-
   /// the number of gel pockets inside the RVE
   UInt nb_gel_pockets;
 
@@ -140,27 +131,27 @@ private:
   UInt nb_dumps;
 };
 
-
 inline void SolidMechanicsModelRVE::unpackData(CommunicationBuffer & buffer,
-					       const UInt index,
-					       SynchronizationTag tag) {
+                                               const Array<UInt> & index,
+                                               const SynchronizationTag & tag) {
   SolidMechanicsModel::unpackData(buffer, index, tag);
 
   if (tag == _gst_smm_uv) {
-    Array<Real>::vector_iterator disp_it
-      = displacement->begin(spatial_dimension);
+    auto disp_it = displacement->begin(spatial_dimension);
 
-    Vector<Real> current_disp(disp_it[index]);
+    for (auto node : index) {
+      Vector<Real> current_disp(disp_it[node]);
 
-    // if node is at the bottom, u_bottom = u_top +u_2 -u_3
-    if ( bottom_nodes.count(index) ) {
-      current_disp += Vector<Real>(disp_it[corner_nodes(1)]);
-      current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
-    }
-    // if node is at the left, u_left = u_right +u_4 -u_3
-    else if ( left_nodes.count(index) ) {
-      current_disp += Vector<Real>(disp_it[corner_nodes(3)]);
-      current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
+      // if node is at the bottom, u_bottom = u_top +u_2 -u_3
+      if (bottom_nodes.count(node)) {
+        current_disp += Vector<Real>(disp_it[corner_nodes(1)]);
+        current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
+      }
+      // if node is at the left, u_left = u_right +u_4 -u_3
+      else if (left_nodes.count(node)) {
+        current_disp += Vector<Real>(disp_it[corner_nodes(3)]);
+        current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
+      }
     }
   }
 }
@@ -168,32 +159,25 @@ inline void SolidMechanicsModelRVE::unpackData(CommunicationBuffer & buffer,
 /* -------------------------------------------------------------------------- */
 /* ASR material selector                                                      */
 /* -------------------------------------------------------------------------- */
-class GelMaterialSelector : public MeshDataMaterialSelector<std::string>  {
+class GelMaterialSelector : public MeshDataMaterialSelector<std::string> {
 public:
-  GelMaterialSelector(SolidMechanicsModel & model,
-		      const Real box_size,
-		      const std::string & gel_material,
-		      const UInt nb_gel_pockets,
-		      Real tolerance = 0.) :
-    MeshDataMaterialSelector<std::string>("physical_names", model),
-    model(model),
-    gel_material(gel_material),  
-    nb_gel_pockets(nb_gel_pockets),
-    nb_placed_gel_pockets(0),
-    box_size(box_size) {
+  GelMaterialSelector(SolidMechanicsModel & model, const Real box_size,
+                      const std::string & gel_material,
+                      const UInt nb_gel_pockets, Real /*tolerance*/ = 0.)
+      : MeshDataMaterialSelector<std::string>("physical_names", model),
+        model(model), gel_material(gel_material),
+        nb_gel_pockets(nb_gel_pockets), nb_placed_gel_pockets(0),
+        box_size(box_size) {
     Mesh & mesh = this->model.getMesh();
     UInt spatial_dimension = model.getSpatialDimension();
-    ElementType type = _triangle_3;
-    GhostType ghost_type = _not_ghost;
-    UInt nb_element = mesh.getNbElement(type, ghost_type);
-    Element el;
-    el.type = type;
-    el.ghost_type = ghost_type;
-    Array<Real> barycenter(0,spatial_dimension);
-    barycenter.resize(nb_element);
-    Array<Real>::vector_iterator bary_it = barycenter.begin(spatial_dimension);
-    for (UInt elem = 0; elem < nb_element; ++bary_it, ++elem) {
-      mesh.getBarycenter(elem, type, bary_it->storage(), ghost_type);
+    Element el{_triangle_3, 0, _not_ghost};
+    UInt nb_element = mesh.getNbElement(el.type, el.ghost_type);
+    Array<Real> barycenter(nb_element, spatial_dimension);
+
+    for (auto && data : enumerate(make_view(barycenter, spatial_dimension))) {
+      el.element = std::get<0>(data);
+      auto & bary = std::get<1>(data);
+      mesh.getBarycenter(el, bary);
     }
 
     /// generate the gel pockets
@@ -205,11 +189,11 @@ public:
       /// get a random bary center
       UInt bary_id = rand() % nb_element;
       if (checked_baries.find(bary_id) != checked_baries.end())
-	continue;
+        continue;
       checked_baries.insert(bary_id);
       el.element = bary_id;
       if (MeshDataMaterialSelector<std::string>::operator()(el) == 1)
-	continue; /// element belongs to paste
+        continue; /// element belongs to paste
       gel_pockets.push_back(el);
       placed_gel_pockets += 1;
     }
@@ -221,14 +205,14 @@ public:
       return temp_index;
     std::vector<Element>::const_iterator iit = gel_pockets.begin();
     std::vector<Element>::const_iterator eit = gel_pockets.end();
-    if(std::find(iit, eit, elem) != eit) {
+    if (std::find(iit, eit, elem) != eit) {
       nb_placed_gel_pockets += 1;
       std::cout << nb_placed_gel_pockets << " gelpockets placed" << std::endl;
-      return model.getMaterialIndex(gel_material);;
+      return model.getMaterialIndex(gel_material);
+      ;
     }
     return 0;
   }
-
 
 protected:
   SolidMechanicsModel & model;
@@ -239,11 +223,8 @@ protected:
   Real box_size;
 };
 
-
 } // namespace akantu
-
 
 ///#include "material_selector_tmpl.hh"
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_RVE_HH__ */
-

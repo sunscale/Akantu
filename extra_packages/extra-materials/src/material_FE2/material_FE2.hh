@@ -5,7 +5,7 @@
  *
  *
  * @brief Material for multi-scale simulations. It stores an
- * underlying RVE on each integration point of the material.  
+ * underlying RVE on each integration point of the material.
  *
  * @section LICENSE
  *
@@ -15,46 +15,47 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "material.hh"
 #include "material_thermal.hh"
-#include "solid_mechanics_model_RVE.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_FE_2_HH__
 #define __AKANTU_MATERIAL_FE_2_HH__
 
 namespace akantu {
+class SolidMechanicsModelRVE;
+}
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-/// /!\ This material works ONLY for meshes with a single element type!!!!!					    
+/// /!\ This material works ONLY for meshes with a single element type!!!!!
 /* -------------------------------------------------------------------------- */
-
 
 /**
  * MaterialFE2
  *
  * parameters in the material files :
- *   - mesh_file  
+ *   - mesh_file
  */
 // Emil - 27.01.2018 - re-inheriting from MaterialThermal and PlaneStressToolBox
 
-//template<UInt DIM>
-//class MaterialFE2 : public virtual Material {
-//  /* ------------------------------------------------------------------------ */
-//  /* Constructors/Destructors                                                 */
-//  /* ------------------------------------------------------------------------ */
-template<UInt DIM>
-class MaterialFE2 : public MaterialThermal<DIM> {
-    /* ------------------------------------------------------------------------ */
-    /* Constructors/Destructors                                                 */
-    /* ------------------------------------------------------------------------ */
+// template<UInt DIM>
+// class MaterialFE2 : public virtual Material {
+//  /* ------------------------------------------------------------------------
+//  */
+//  /* Constructors/Destructors */
+//  /* ------------------------------------------------------------------------
+//  */
+template <UInt DIM> class MaterialFE2 : public MaterialThermal<DIM> {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
 private:
   typedef MaterialThermal<DIM> Parent;
 
-// Emil - 27.01.2018
-  public:
-
+  // Emil - 27.01.2018
+public:
   MaterialFE2(SolidMechanicsModel & model, const ID & id = "");
 
   virtual ~MaterialFE2();
@@ -65,47 +66,45 @@ private:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
-			    Array<Real> & tangent_matrix,
-			    GhostType ghost_type = _not_ghost);
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost);
 
   /// advance alkali-silica reaction
   void advanceASR(const Matrix<Real> & prestrain);
 
 private:
-
   void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// Underlying RVE at each integration point
-  std::vector<SolidMechanicsModelRVE *> RVEs;
+  std::vector<std::unique_ptr<SolidMechanicsModelRVE>> RVEs;
 
   /// Meshes for all RVEs
-  std::vector<Mesh *> meshes;
+  std::vector<std::unique_ptr<Mesh>> meshes;
 
-  /// the element type of the associated mesh (this material handles only one type!!)
+  /// the element type of the associated mesh (this material handles only one
+  /// type!!)
   ElementType el_type;
-  
+
   /// the name of RVE mesh file
   ID mesh_file;
 
-  /// Elastic stiffness tensor at each Gauss point (in voigt notation) 
+  /// Elastic stiffness tensor at each Gauss point (in voigt notation)
   InternalField<Real> C;
 
   /// number of gel pockets in each underlying RVE

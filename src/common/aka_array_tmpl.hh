@@ -252,7 +252,6 @@ Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
 }
 #endif
 
-
 /* -------------------------------------------------------------------------- */
 /**
  * Compare this array element by element to another.
@@ -1168,6 +1167,8 @@ namespace detail {
 /* -------------------------------------------------------------------------- */
 template <typename Array, typename... Ns>
 decltype(auto) make_view(Array && array, Ns... ns) {
+  static_assert(aka::conjunction<std::is_integral<std::decay_t<Ns>>...>::value,
+                "Ns should be integral types");
   auto size = std::forward<decltype(array)>(array).size() *
               std::forward<decltype(array)>(array).getNbComponent() /
               detail::product_all(ns...);
