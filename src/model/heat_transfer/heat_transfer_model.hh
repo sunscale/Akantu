@@ -194,7 +194,7 @@ public:
 
   virtual void dump(const std::string & dumper_name, Real time, UInt step);
 
-  virtual void dump();
+  void dump() override;
 
   virtual void dump(UInt step);
 
