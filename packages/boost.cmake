@@ -36,7 +36,8 @@ package_declare(Boost EXTERNAL
   EXTRA_PACKAGE_OPTIONS PREFIX Boost
   )
 
-mark_as_advanced(Boost_DIR)
+mask_package_options(Boost)
+mark_as_advanced(AKANTU_USE_BOOST)
 
 package_on_enabled_script(Boost
   "if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER \"4.8\")
