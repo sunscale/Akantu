@@ -31,8 +31,12 @@
 #include "integration_point.hh"
 /* -------------------------------------------------------------------------- */
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <Python.h>
 #include <numpy/arrayobject.h>
 #include <typeinfo>
+#if PY_MAJOR_VERSION >= 3
+#include <codecvt>
+#endif
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PYTHON_FUNCTOR_INLINE_IMPL_CC__
@@ -74,9 +78,8 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<double>() const {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 PyObject * PythonFunctor::convertToPython(const T &) const {
-  AKANTU_DEBUG_ERROR(
-      __func__ << " : not implemented yet !" << std::endl
-      << debug::demangle(typeid(T).name()));
+  AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !" << std::endl
+                              << debug::demangle(typeid(T).name()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -90,7 +93,11 @@ PythonFunctor::convertToPython<double>(const double & akantu_object) const {
 template <>
 inline PyObject *
 PythonFunctor::convertToPython<UInt>(const UInt & akantu_object) const {
+#if PY_MAJOR_VERSION >= 3
+  return PyLong_FromLong(akantu_object);
+#else
   return PyInt_FromLong(akantu_object);
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
@@ -183,7 +190,11 @@ PyObject * PythonFunctor::convertToPython(const Matrix<T> & mat) const {
 template <>
 inline PyObject *
 PythonFunctor::convertToPython<std::string>(const std::string & str) const {
+#if PY_MAJOR_VERSION >= 3
+  return PyUnicode_FromString(str.c_str());
+#else
   return PyString_FromString(str.c_str());
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
@@ -206,7 +217,11 @@ inline PyObject * PythonFunctor::convertToPython<IntegrationPoint>(
 /* -------------------------------------------------------------------------- */
 inline PyObject *
 PythonFunctor::getPythonFunction(const std::string & functor_name) const {
+#if PY_MAJOR_VERSION >= 3
+  if (!PyInstanceMethod_Check(this->python_obj))
+#else
   if (!PyInstance_Check(this->python_obj))
+#endif
     AKANTU_EXCEPTION("Python object is not an instance");
 
   PyObject * pFunctor =
@@ -279,9 +294,19 @@ inline void PythonFunctor::convertToAkantu<void>(PyObject * python_obj) const {
 template <>
 inline std::string
 PythonFunctor::convertToAkantu<std::string>(PyObject * python_obj) const {
+#if PY_MAJOR_VERSION >= 3
+  if (!PyUnicode_Check(python_obj))
+    AKANTU_EXCEPTION("cannot convert object to string");
+
+  std::wstring unicode_str(PyUnicode_AsWideCharString(python_obj, NULL));
+  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+  return converter.to_bytes(unicode_str);
+#else
   if (!PyString_Check(python_obj))
     AKANTU_EXCEPTION("cannot convert object to string");
+
   return PyString_AsString(python_obj);
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
@@ -294,9 +319,15 @@ inline Real PythonFunctor::convertToAkantu<Real>(PyObject * python_obj) const {
 /* -------------------------------------------------------------------------- */
 template <>
 inline UInt PythonFunctor::convertToAkantu<UInt>(PyObject * python_obj) const {
+#if PY_MAJOR_VERSION >= 3
+  if (!PyLong_Check(python_obj))
+    AKANTU_EXCEPTION("cannot convert object to integer");
+  return PyLong_AsLong(python_obj);
+#else
   if (!PyInt_Check(python_obj))
     AKANTU_EXCEPTION("cannot convert object to integer");
   return PyInt_AsLong(python_obj);
+#endif
 }
 
 /* -------------------------------------------------------------------------- */
