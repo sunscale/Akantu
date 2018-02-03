@@ -36,7 +36,7 @@
 #include "dumper_elemental_field.hh"
 #include "dumper_nodal_field.hh"
 
-#include "dumper_paraview.hh"
+#include "dumper_iohelper_paraview.hh"
 #include "locomotive_tools.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -97,8 +97,7 @@ int main(int argc, char * argv[]) {
 
   // ElementalField are constructed with an ElementTypeMapArray.
   ElementTypeMapArray<UInt> colour;
-  mesh.initElementTypeMapArray(colour, 1, spatial_dimension, false, _ek_regular,
-                               true);
+  colour.initialize(mesh, _with_nb_element = true);
 
   /* ------------------------------------------------------------------------ */
   /* Dumper creation                                                          */

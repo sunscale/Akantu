@@ -82,21 +82,17 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  model.updateResidual();
   model.setBaseName("heat_transfer_square2d");
   model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("residual");
+  model.addDumpField("internal_heat_rate");
   model.addDumpField("capacity_lumped");
   model.dump();
 
   // main loop
   int max_steps = 15000;
   for (int i = 0; i < max_steps; i++) {
-    model.explicitPred();
-    model.updateResidual();
-    model.solveExplicitLumped();
-    model.explicitCorr();
+    model.solveStep();
 
     if (i % 100 == 0)
       model.dump();

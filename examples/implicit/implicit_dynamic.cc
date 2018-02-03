@@ -28,65 +28,64 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
+#include "non_linear_solver.hh"
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
 
-#include <iostream>
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 const Real bar_length = 10.;
 const Real bar_height = 1.;
-const Real bar_depth  = 1.;
-const Real F   = 5e3;
-const Real L   = bar_length;
-const Real I   = bar_depth * bar_height * bar_height * bar_height / 12.;
-const Real E   = 12e7;
+const Real bar_depth = 1.;
+const Real F = 5e3;
+const Real L = bar_length;
+const Real I = bar_depth * bar_height * bar_height * bar_height / 12.;
+const Real E = 12e7;
 const Real rho = 1000;
-const Real m   = rho * bar_height * bar_depth;
+const Real m = rho * bar_height * bar_depth;
 
 static Real w(UInt n) {
-  return n*n*M_PI*M_PI/(L*L)*sqrt(E*I/m);
+  return n * n * M_PI * M_PI / (L * L) * sqrt(E * I / m);
 }
 
 static Real analytical_solution(Real time) {
-  return 2*F*L*L*L/(pow(M_PI, 4)*E*I) * ((1. - cos(w(1)*time)) + (1. - cos(w(3)*time))/81. + (1. - cos(w(5)*time))/625.);
+  return 2 * F * L * L * L / (pow(M_PI, 4) * E * I) *
+         ((1. - cos(w(1) * time)) + (1. - cos(w(3) * time)) / 81. +
+          (1. - cos(w(5) * time)) / 625.);
 }
 
 const UInt spatial_dimension = 2;
 const Real time_step = 1e-4;
-const Real max_time  = 0.62;
+const Real max_time = 0.62;
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   initialize("material_dynamic.dat", argc, argv);
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
-  MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0)
     mesh.read("beam.msh");
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
-  }
+
+  mesh.distribute();
 
   SolidMechanicsModel model(mesh);
-  model.initParallel(partition);
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_implicit_dynamic));
-  Material &mat = model.getMaterial(0);
-  mat.setParam("E",   E);
+  model.initFull(_analysis_method = _implicit_dynamic);
+  Material & mat = model.getMaterial(0);
+  mat.setParam("E", E);
   mat.setParam("rho", rho);
 
-  model.getMassMatrix().saveMatrix("M.mtx");
-
-  Array<Real> & force          = model.getForce();
-  Array<Real> & displacment    = model.getDisplacement();
+  Array<Real> & force = model.getForce();
+  Array<Real> & displacment = model.getDisplacement();
 
   // boundary conditions
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "blocked");
@@ -96,7 +95,7 @@ int main(int argc, char *argv[]) {
   const Array<UInt> & trac_nodes = mesh.getElementGroup("traction").getNodes();
 
   bool dump_node = false;
-  if(trac_nodes.size() > 0 && mesh.isLocalOrMasterNode(trac_nodes(0))) {
+  if (trac_nodes.size() > 0 && mesh.isLocalOrMasterNode(trac_nodes(0))) {
     force(trac_nodes(0), 1) = F;
     dump_node = true;
   }
@@ -104,36 +103,39 @@ int main(int argc, char *argv[]) {
   // output setup
   std::ofstream pos;
   pos.open("position.csv");
-  if(!pos.good()) AKANTU_DEBUG_ERROR("Cannot open file \"position.csv\"");
+  if (!pos.good())
+    AKANTU_DEBUG_ERROR("Cannot open file \"position.csv\"");
 
   pos << "id,time,position,solution" << std::endl;
 
   model.setBaseName("dynamic");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
+  model.addDumpField("force");
+  model.addDumpField("residual");
   model.dump();
 
-
   model.setTimeStep(time_step);
+
+  auto & solver = model.getNonLinearSolver();
+  solver.set("max_iterations", 100);
+  solver.set("threshold", 1e-12);
+  solver.set("convergence_type", _scc_solution);
 
   /// time loop
   Real time = 0.;
   for (UInt s = 1; time < max_time; ++s, time += time_step) {
-    if(prank == 0)
+    if (prank == 0)
       std::cout << s << "\r" << std::flush;
 
-    model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-12, 100);
+    model.solveStep();
 
-    if(dump_node)
-      pos << s << ","
-          << time << ","
-          << displacment(trac_nodes(0),  1) << ","
-          << analytical_solution(s*time_step) << std::endl;
+    if (dump_node)
+      pos << s << "," << time << "," << displacment(trac_nodes(0), 1) << ","
+          << analytical_solution(s * time_step) << std::endl;
 
-    if(s % 100 == 0)
+    if (s % 100 == 0)
       model.dump();
   }
 

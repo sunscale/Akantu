@@ -30,11 +30,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
 #include "element_group.hh"
-#include "dumper_paraview.hh"
-#include "dumpable_inline_impl.hh"
 #include "group_manager_inline_impl.cc"
+#include "mesh.hh"
+/* -------------------------------------------------------------------------- */
+#include "dumpable_inline_impl.hh"
+#include "dumper_iohelper_paraview.hh"
 /* -------------------------------------------------------------------------- */
 #include "locomotive_tools.hh"
 /* -------------------------------------------------------------------------- */
@@ -100,8 +101,7 @@ int main(int argc, char * argv[]) {
 
   // Create an ElementTypeMapArray for the colour
   ElementTypeMapArray<UInt> colour("colour");
-  mesh.initElementTypeMapArray(colour, 1, spatial_dimension, false, _ek_regular,
-                               true);
+  colour.initialize(mesh, _with_nb_element = true);
 
   /* ------------------------------------------------------------------------ */
   /* Creating dumpers                                                         */
@@ -114,8 +114,7 @@ int main(int argc, char * argv[]) {
 
   // The dumper for the filtered mesh can be directly taken from the
   // ElementGroup and then registered as "wheels_elements" dumper.
-  DumperIOHelper & wheels =
-      mesh.getGroupDumper("paraview_wheels", "wheels");
+  DumperIOHelper & wheels = mesh.getGroupDumper("paraview_wheels", "wheels");
 
   mesh.registerExternalDumper(wheels, "wheels");
   mesh.setDirectoryToDumper("wheels", "./paraview/dumpable");
@@ -123,15 +122,14 @@ int main(int argc, char * argv[]) {
   // Arrays and ElementTypeMapArrays can be added as external fields directly
   mesh.addDumpFieldExternal("displacement", displacement);
 
-    ElementTypeMapArrayFilter<UInt> filtered_colour(
+  ElementTypeMapArrayFilter<UInt> filtered_colour(
       colour, wheels_elements.getElements());
 
   dumper::Field * colour_field_wheel =
       new dumper::ElementalField<UInt, Vector, true>(filtered_colour);
   mesh.addDumpFieldExternal("color", colour_field_wheel);
 
-  mesh.addDumpFieldExternalToDumper("wheels", "displacement",
-                                    displacement);
+  mesh.addDumpFieldExternalToDumper("wheels", "displacement", displacement);
   mesh.addDumpFieldExternalToDumper("wheels", "colour", colour);
 
   // For some specific cases the Fields should be created, as when you want to
@@ -140,8 +138,7 @@ int main(int argc, char * argv[]) {
       mesh.createNodalField(&displacement, "all", 3);
   mesh.addDumpFieldExternal("displacement_as_paraview_vector",
                             displacement_vector_field);
-  mesh.addDumpFieldExternalToDumper("wheels",
-                                    "displacement_as_paraview_vector",
+  mesh.addDumpFieldExternalToDumper("wheels", "displacement_as_paraview_vector",
                                     displacement_vector_field);
 
   /* ------------------------------------------------------------------------ */

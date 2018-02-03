@@ -63,7 +63,6 @@ int main(int argc, char * argv[]) {
   Array<Real> & displacement = model.getDisplacement();
 
   /// boundary conditions
-  mesh.computeBoundingBox();
   const Vector<Real> & lower = mesh.getLowerBounds();
   const Vector<Real> & upper = mesh.getUpperBounds();
   const Real left = lower[0];
@@ -82,8 +81,8 @@ int main(int argc, char * argv[]) {
 
   model.setBaseName("extr_impl");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("force");
-  model.addDumpField("residual");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.addDumpField("stress");
   model.addDumpField("partitions");
   model.dump();

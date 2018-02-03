@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -44,17 +45,16 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("square.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   model.setBaseName("static");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("force");
-  model.addDumpField("residual");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.addDumpField("grad_u");
 
   /// Dirichlet boundary conditions
@@ -63,15 +63,12 @@ int main(int argc, char * argv[]) {
   model.applyBC(BC::Dirichlet::FixedValue(0.0001, _y), "Traction");
   model.dump();
 
-  model.assembleStiffnessMatrix();
-  model.getStiffnessMatrix().saveMatrix("stiffness.mtx");
+  auto & solver = model.getNonLinearSolver();
+  solver.set("max_iterations", 2);
+  solver.set("threshold", 2e-4);
+  solver.set("convergence_type", _scc_solution);
 
-  bool converged =
-      model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
-          1e-4, 2);
-
-  if (!converged)
-    AKANTU_DEBUG_ERROR("Did not converged in 1 step");
+  model.solveStep();
 
   model.dump();
 

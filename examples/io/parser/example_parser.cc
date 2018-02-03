@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -73,8 +74,11 @@ int main(int argc, char * argv[]) {
   model.setBaseName("swiss_cheese");
   model.addDumpFieldVector("displacement");
 
-  model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(precision,
-                                                               max_iter);
+  auto & solver = model.getNonLinearSolver();
+  solver.set("max_iterations", max_iter);
+  solver.set("threshold", precision);
+
+  model.solveStep();
 
   model.dump();
 
