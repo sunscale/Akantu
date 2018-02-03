@@ -86,7 +86,7 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
     ElementClass<type>::computeDNDS(integration_points, B);
   };
 
-  for_each_elements(nb_element, filter_elements, compute);
+  for_each_element(nb_element, filter_elements, compute);
 
   AKANTU_DEBUG_OUT();
 }
@@ -190,7 +190,7 @@ void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(
     ++u_it;
   };
 
-  for_each_elements(nb_element, filter_elements, compute);
+  for_each_element(nb_element, filter_elements, compute);
 
   AKANTU_DEBUG_OUT();
 }

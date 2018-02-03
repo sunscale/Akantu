@@ -209,15 +209,15 @@ void SolidMechanicsModelCohesive::initExtrinsicMaterials() {
       _with_nb_element = true,
       _default_value = material_selector->getFallbackValue());
 
-  for_each_elements(mesh_facets,
-                    [&](auto && element) {
-                      auto mat_index = (*material_selector)(element);
-                      auto & mat = dynamic_cast<MaterialCohesive &>(
-                          *materials[mat_index]);
-                      facet_material(element) = mat_index;
-                      mat.addFacet(element);
-                    },
-                    _spatial_dimension = spatial_dimension - 1);
+  for_each_element(mesh_facets,
+                   [&](auto && element) {
+                     auto mat_index = (*material_selector)(element);
+                     auto & mat = dynamic_cast<MaterialCohesive &>(
+                         *materials[mat_index]);
+                     facet_material(element) = mat_index;
+                     mat.addFacet(element);
+                   },
+                   _spatial_dimension = spatial_dimension - 1);
 
   SolidMechanicsModel::initMaterials();
 
