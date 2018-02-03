@@ -38,7 +38,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class TestAccessor : public DataAccessor {
   /* ------------------------------------------------------------------------ */
@@ -131,4 +131,4 @@ inline void TestAccessor::unpackElementData(CommunicationBuffer & buffer,
 }
 
 
-__END_AKANTU__
+} // namespace akantu

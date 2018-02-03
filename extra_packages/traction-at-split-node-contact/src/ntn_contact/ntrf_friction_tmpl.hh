@@ -16,7 +16,7 @@
 /* -------------------------------------------------------------------------- */
 //#include "ntrf_friction.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <template <class> class FrictionLaw, class Regularisation>
@@ -83,4 +83,4 @@ void NTRFFriction::addDumpFieldToDumper(const std::string & dumper_name,
 }
 */
 
-__END_AKANTU__
+} // namespace akantu

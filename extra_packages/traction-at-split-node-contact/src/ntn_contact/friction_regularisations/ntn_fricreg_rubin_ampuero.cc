@@ -19,7 +19,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegRubinAmpuero::NTNFricRegRubinAmpuero(NTNBaseContact * contact,
@@ -151,4 +151,4 @@ void NTNFricRegRubinAmpuero::addDumpFieldToDumper(const std::string & dumper_nam
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

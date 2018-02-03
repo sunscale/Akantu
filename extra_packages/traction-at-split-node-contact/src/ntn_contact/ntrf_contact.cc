@@ -17,7 +17,7 @@
 // simtools
 #include "ntrf_contact.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTRFContact::NTRFContact(SolidMechanicsModel & model,
@@ -296,4 +296,4 @@ void NTRFContact::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

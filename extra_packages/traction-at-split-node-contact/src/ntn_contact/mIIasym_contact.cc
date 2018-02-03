@@ -17,7 +17,7 @@
 // simtools
 #include "mIIasym_contact.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MIIASYMContact::MIIASYMContact(SolidMechanicsModel & model,
@@ -105,4 +105,4 @@ void MIIASYMContact::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

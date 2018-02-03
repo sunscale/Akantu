@@ -25,7 +25,7 @@
 // simtools
 #include "synchronized_array.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NTNBaseContact;
 
@@ -224,6 +224,6 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNBaseContact & 
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_NTN_BASE_CONTACT_HH__ */

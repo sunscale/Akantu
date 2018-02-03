@@ -15,7 +15,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
@@ -66,4 +66,4 @@ void NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::printself(std::ostr
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

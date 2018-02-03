@@ -38,7 +38,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class TestDOFAccessor : public DataAccessor {
   /* ------------------------------------------------------------------------ */
@@ -114,4 +114,4 @@ inline void TestDOFAccessor::unpackDOFData(CommunicationBuffer & buffer,
 }
 
 
-__END_AKANTU__
+} // namespace akantu

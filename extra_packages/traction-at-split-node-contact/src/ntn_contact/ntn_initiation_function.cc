@@ -29,7 +29,7 @@
 #include "ntn_friclaw_linear_slip_weakening.hh"
 #include "ntn_friclaw_linear_slip_weakening_no_healing.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
 					ParameterReader & data) {
@@ -395,4 +395,4 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 }
 
 
-__END_AKANTU__
+} // namespace akantu

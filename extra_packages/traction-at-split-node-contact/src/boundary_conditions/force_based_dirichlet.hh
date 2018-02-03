@@ -22,7 +22,7 @@
 // akantu
 #include "aka_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class ForceBasedDirichlet : public BC::Dirichlet::IncrementValue {
@@ -117,6 +117,6 @@ protected:
   Real total_residual;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_FORCE_BASED_DIRICHLET_HH__ */

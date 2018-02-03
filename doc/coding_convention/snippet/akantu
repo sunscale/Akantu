@@ -1,7 +1,7 @@
-#name : __BEGIN_AKANTU__ .. __END_AKANTU__
+#name : namespace akantu { .. } // namespace akantu
 # --
-__BEGIN_AKANTU__
+namespace akantu {
 
 `yas/selected-text`$0
 
-__END_AKANTU__
+} // namespace akantu

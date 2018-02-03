@@ -19,7 +19,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegNoRegularisation::NTNFricRegNoRegularisation(NTNBaseContact * contact,
@@ -144,4 +144,4 @@ void NTNFricRegNoRegularisation::addDumpFieldToDumper(const std::string & dumper
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

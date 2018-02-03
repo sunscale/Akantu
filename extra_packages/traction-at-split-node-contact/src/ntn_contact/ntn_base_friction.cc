@@ -19,7 +19,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNBaseFriction::NTNBaseFriction(NTNBaseContact * contact,
@@ -371,4 +371,4 @@ void NTNBaseFriction::addDumpFieldToDumper(const std::string & dumper_name,
 
 
 
-__END_AKANTU__
+} // namespace akantu

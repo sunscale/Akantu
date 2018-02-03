@@ -18,7 +18,7 @@
 #include "aka_common.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 Real integrateResidual(const std::string & sub_boundary_name,
 		       const SolidMechanicsModel & model,
@@ -28,4 +28,4 @@ Real integrateResidual(const std::string & sub_boundary_name,
 void boundaryFix(Mesh & mesh,
 		 const std::vector<std::string> & sub_boundary_names);
 
-__END_AKANTU__
+} // namespace akantu

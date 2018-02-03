@@ -20,7 +20,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNContactSynchElementFilter::NTNContactSynchElementFilter(NTNBaseContact * contact) :
@@ -553,4 +553,4 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

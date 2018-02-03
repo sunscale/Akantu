@@ -21,7 +21,7 @@
 // simtools
 #include "synchronized_array.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<class T>
@@ -219,4 +219,4 @@ template class SynchronizedArray<UInt>;
 template class SynchronizedArray<Int>;
 template class SynchronizedArray<bool>;
 
-__END_AKANTU__
+} // namespace akantu

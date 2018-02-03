@@ -25,7 +25,7 @@
 // akantu
 #include "aka_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class ParameterReader {
@@ -94,6 +94,6 @@ inline std::ostream & operator <<(std::ostream & stream, const ParameterReader &
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_PARAMETER_READER_HH__ */

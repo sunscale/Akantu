@@ -17,7 +17,7 @@
 // simtools
 #include "ntn_contact.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <template <class> class FrictionLaw, class Regularisation>
@@ -76,4 +76,4 @@ void NTNFriction<FrictionLaw, Regularisation>::printself(std::ostream & stream,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

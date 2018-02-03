@@ -19,7 +19,7 @@
 #include "ntrf_contact.hh"
 #include "ntn_base_friction.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
 					ParameterReader & data);
@@ -30,4 +30,4 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 					const std::string & friction_law,
 					const std::string & friction_reg);
 
-__END_AKANTU__
+} // namespace akantu

@@ -23,7 +23,7 @@
 #include "mesh_filter.hh"
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class GeometryFilter : public NodeFilterFunctor {
@@ -101,6 +101,6 @@ public:
 //   }
 // }; 
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_NODE_FILTER_HH__ */
