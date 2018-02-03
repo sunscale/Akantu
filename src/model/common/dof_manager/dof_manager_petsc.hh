@@ -27,7 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
@@ -35,24 +34,25 @@
 #include <petscvec.h>
 /* -------------------------------------------------------------------------- */
 
-#if not defined(PETSC_CLANGUAGE_CXX)
-extern int aka_PETScError(int ierr);
-
-#define CHKERRXX(x)                                                            \
-  do {                                                                         \
-    int error = aka_PETScError(x);                                             \
-    if (error != 0) {                                                          \
-      AKANTU_EXCEPTION("Error in PETSC");                                      \
-    }                                                                          \
-  } while (0)
-#endif
-
 #ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
 #define __AKANTU_DOF_MANAGER_PETSC_HH__
 
-namespace akantu {
+#define PETSc_call(func, ...)                                                  \
+  do {                                                                         \
+    auto ierr = func(__VA_ARGS__);                                             \
+    if (PetscUnlikely(ierr != 0)) {                                            \
+      const char * desc;                                                       \
+      PetscErrorMessage(ierr, &desc, nullptr);                                 \
+      AKANTU_EXCEPTION("Error in PETSc call to \'" << #func                    \
+                                                   << "\': " << desc);         \
+    }                                                                          \
+  } while (false)
 
+namespace akantu {
 class SparseMatrixPETSc;
+}
+
+namespace akantu {
 
 class DOFManagerPETSc : public DOFManager {
   /* ------------------------------------------------------------------------ */
@@ -141,8 +141,10 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, this->solution, Vec &);
   /// Get the residual array
   AKANTU_GET_MACRO_NOT_CONST(Residual, this->residual, Vec &);
+
   /// Get the blocked dofs array
   //  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
+  AKANTU_GET_MACRO(MPIComm, mpi_communicator, MPI_Comm);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -165,8 +167,7 @@ private:
   /// Communicator associated to PETSc
   MPI_Comm mpi_communicator;
 
-  /// Static handler for petsc to know if it was initialized or not
-  static UInt petsc_dof_manager_instances;
+  static int petsc_dof_manager_instances{0};
 };
 
 } // akantu

@@ -53,12 +53,10 @@ class SparseMatrixPETSc : public SparseMatrix {
 public:
   SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
                     const MatrixType & matrix_type,
-                    const ID & id = "sparse_matrix",
-                    const MemoryID & memory_id = 0);
+                    const ID & id = "sparse_matrix_petsc");
 
   SparseMatrixPETSc(const SparseMatrix & matrix,
-                    const ID & id = "sparse_matrix_petsc",
-                    const MemoryID & memory_id = 0);
+                    const ID & id = "sparse_matrix_petsc");
 
   virtual ~SparseMatrixPETSc();
 
@@ -67,46 +65,60 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// set the matrix to 0
-  virtual void clear();
+  void clear() override;
+
+  /// add a non-zero element to the profile
+  UInt add(UInt i, UInt j) override;
+
+  /// assemble a local matrix in the sparse one
+  void add(UInt i, UInt j, Real value) override;
+
+  /// save the profil in a file using the MatrixMarket file format
+  // void saveProfile(__attribute__((unused)) const std::string &) const
+  // override {
+  //   AKANTU_DEBUG_TO_IMPLEMENT();
+  // }
+
+  /// save the matrix in a file using the MatrixMarket file format
+  void saveMatrix(const std::string & filename) const override;
+
+  /// multiply the matrix by a coefficient
+  void mul(Real alpha) override;
+
+  /// Equivalent of *gemv in blas
+  void matVecMul(const Vec & x, Vec & y, Real alpha = 1.,
+                 Real beta = 0.) const override;
 
   /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
-
-  /// save the matrix in a ASCII file format
-  virtual void saveMatrix(const std::string & filename) const;
-
-  /// add a sparse matrix assuming the profile are the same
-  virtual void add(const SparseMatrix & matrix, Real alpha);
-  /// add a petsc matrix assuming the profile are the same
-  virtual void add(const SparseMatrixPETSc & matrix, Real alpha);
-
-  Real operator()(UInt i, UInt j) const;
+  void applyBoundary(Real block_val = 1.) override;
 
 protected:
-  typedef std::pair<UInt, UInt> KeyCOO;
-  inline KeyCOO key(UInt i, UInt j) const { return std::make_pair(i, j); }
+  /// This is the revert of add B += \alpha * *this;
+  void addMeTo(SparseMatrix & B, Real alpha) const override;
 
-private:
-  virtual void destroyInternalData();
-
-  /// set the size of the PETSc matrix
-  void setSize();
-  void createGlobalAkantuToPETScMap(Int * local_master_eq_nbs_ptr);
-  void createLocalAkantuToPETScMap();
-
-  /// start to assemble the matrix
-  void beginAssembly();
-  /// finishes to assemble the matrix
-  void endAssembly();
-
-  /// perform the assembly stuff from petsc
-  void performAssembly();
+  /// This is the specific implementation
+  void addMeToImpl(SparseMatrixPETSc & B, Real alpha) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// return the values at potition i, j
+  virtual inline Real operator()(__attribute__((unused)) UInt i,
+                                 __attribute__((unused)) UInt j) const {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+  /// return the values at potition i, j
+  virtual inline Real & operator()(__attribute__((unused)) UInt i,
+                                   __attribute__((unused)) UInt j) {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  virtual UInt getRelease() const override;
+
   AKANTU_GET_MACRO(PETScMat, mat, const Mat &);
+  AKANTU_GET_MACRO_NOT_CONST(PETScMat, mat, Mat &);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -116,24 +128,6 @@ private:
 
   /// store the PETSc matrix
   Mat mat;
-
-  AO ao;
-
-  /// size of the diagonal part of the matrix partition
-  Int local_size;
-
-  /// number of nonzeros in every row of the diagonal part
-  Array<Int> d_nnz;
-
-  /// number of nonzeros in every row of the off-diagonal part
-  Array<Int> o_nnz;
-
-  /// the global index of the first local row
-  Int first_global_index;
-
-  /// bool to indicate if the matrix data has been initialized by calling
-  /// MatCreate
-  bool is_petsc_matrix_initialized;
 };
 
 } // akantu

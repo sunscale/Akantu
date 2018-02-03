@@ -32,12 +32,14 @@
 #===============================================================================
 package_declare(PETSc EXTERNAL
   DESCRIPTION "Add PETSc support in akantu"
-  EXTRA_PACKAGE_OPTIONS ARGS COMPONENTS C
+  EXTRA_PACKAGE_OPTIONS ARGS "VERSION;3.5"
   DEPENDS parallel)
 
 package_declare_sources(petsc
   model/common/dof_manager/dof_manager_petsc.hh
   model/common/dof_manager/dof_manager_petsc.cc
+  model/common/non_linear_solver/non_linear_solver_petsc.cc
+  model/common/non_linear_solver/non_linear_solver_petsc.hh
   solver/sparse_matrix_petsc.hh
   solver/sparse_matrix_petsc.cc
   solver/solver_petsc.hh
