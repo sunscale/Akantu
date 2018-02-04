@@ -1,3 +1,4 @@
+
 /**
  * @file   solid_mechanics_model.i
  *
@@ -65,11 +66,7 @@ namespace akantu {
   %ignore SolidMechanicsModel::testConvergenceIncrement;
   %ignore SolidMechanicsModel::testConvergenceResidual;
   %ignore SolidMechanicsModel::initVelocityDampingMatrix;
-  %ignore SolidMechanicsModel::getNbDataForElements;
-  %ignore SolidMechanicsModel::packElementData;
-  %ignore SolidMechanicsModel::unpackElementData;
-  %ignore SolidMechanicsModel::getNbDataToPack;
-  %ignore SolidMechanicsModel::getNbDataToUnpack;
+  %ignore SolidMechanicsModel::getNbData;
   %ignore SolidMechanicsModel::packData;
   %ignore SolidMechanicsModel::unpackData;
   %ignore SolidMechanicsModel::setMaterialSelector;
@@ -81,9 +78,9 @@ namespace akantu {
   %ignore Material::onElementsAdded;
   %ignore Material::onElementsRemoved;
   %ignore Material::onElementsChanged;
-}
 
-%template(SolidMechanicsBoundaryCondition) akantu::BoundaryCondition<akantu::SolidMechanicsModel>;
+  %template(SolidMechanicsBoundaryCondition) BoundaryCondition<SolidMechanicsModel>;
+}
 
 %include "dumpable.hh"
 

@@ -58,7 +58,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 class SolidMechanicsModel
     : public Model,
-      public TemporarySwigDataAccessor<Element>,
+      public DataAccessor<Element>,
       public DataAccessor<UInt>,
       public BoundaryCondition<SolidMechanicsModel>,
       public NonLocalManagerCallback,

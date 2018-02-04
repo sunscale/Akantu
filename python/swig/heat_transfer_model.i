@@ -41,13 +41,9 @@ namespace akantu {
   %ignore HeatTransferModel::initPBC;
 
   %ignore HeatTransferModel::initSolver;
-  %ignore HeatTransferModel::initImplicit;
 
-  %ignore HeatTransferModel::getNbDataForElements;
-  %ignore HeatTransferModel::packElementData;
-  %ignore HeatTransferModel::unpackElementData;
   %ignore HeatTransferModel::getNbDataToPack;
-  %ignore HeatTransferModel::getNbDataToUnpack;
+  %ignore HeatTransferModel::getNbData;
   %ignore HeatTransferModel::packData;
   %ignore HeatTransferModel::unpackData;
 

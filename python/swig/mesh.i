@@ -84,27 +84,6 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
     Array<UInt> & connectivity = const_cast<Array<UInt> &>($self->getConnectivity(type));
     connectivity.resize(nb_element);
   }
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  Array<Real> & getCohesiveBarycenter(SpacialDirection dir) {
-    UInt spatial_dimension = $self->getSpatialDimension();
-    ElementTypeMapArray<Real> & barycenter =
-        $self->registerData<Real>("barycenter");
-    $self->initElementTypeMapArray(barycenter, 1, spatial_dimension, false,
-                                   akantu::_ek_cohesive, true);
-    akantu::ElementType type = *($self->firstType(
-        spatial_dimension, akantu::_not_ghost, akantu::_ek_cohesive));
-
-    Vector<Real> bary(spatial_dimension);
-    Array<Real> & bary_coh = barycenter(type);
-    for (UInt i = 0; i < $self->getNbElement(type); ++i) {
-      bary.clear();
-      $self->getBarycenter(i, type, bary.storage());
-      bary_coh(i) = bary(dir);
-    }
-    return bary_coh;
-  }
-#endif
 }
 
 %extend akantu::GroupManager {

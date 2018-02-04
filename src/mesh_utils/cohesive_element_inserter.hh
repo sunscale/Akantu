@@ -73,6 +73,7 @@ public:
   /// limit check facets to match given insertion limits
   void limitCheckFacets();
 
+protected:
   /// init parallel variables
   void initParallel(ElementSynchronizer & element_synchronizer);
 
@@ -135,6 +136,11 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(MeshFacets, mesh_facets, Mesh &);
 
   AKANTU_SET_MACRO(IsExtrinsic, is_extrinsic, bool);
+
+
+public:
+  friend class SolidMechanicsModelCohesive;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

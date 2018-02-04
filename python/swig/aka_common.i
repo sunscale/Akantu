@@ -44,7 +44,6 @@ namespace akantu {
   %ignore initialize(int & argc, char ** & argv);
   %ignore initialize(const std::string & input_file, int & argc, char ** & argv);
   extern const Array<UInt> empty_filter;
-
 }
 
 %typemap(in) (int argc, char *argv[]) {

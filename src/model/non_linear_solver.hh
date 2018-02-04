@@ -45,7 +45,7 @@ class SolverCallback;
 
 namespace akantu {
 
-class NonLinearSolver : Memory, public Parsable {
+class NonLinearSolver : private Memory, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
