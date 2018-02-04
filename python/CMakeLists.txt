@@ -49,8 +49,12 @@ set(AKANTU_SWIG_MODULES swig/akantu.i)
 
 set(SWIG_REQURIED_VERISON 3.0)
 find_package(SWIG ${SWIG_REQURIED_VERISON})
-find_package(PythonInterp 2.7 REQUIRED)
+find_package(PythonInterp ${AKANTU_PREFERRED_PYTHON_VERSION} REQUIRED)
 mark_as_advanced(SWIG_EXECUTABLE)
+
+if(NOT PYTHON_VERSION_MAJOR LESS 3)
+  list(APPEND AKANTU_SWIG_FLAGS -py3)
+endif()
 
 package_get_all_include_directories(
   AKANTU_LIBRARY_INCLUDE_DIRS
