@@ -71,15 +71,19 @@ namespace akantu {
  *
  * In order to loop on all element you have to loop on all types like this :
  * @code{.cpp}
- Mesh::type_iterator it = mesh.firstType(dim, ghost_type);
- Mesh::type_iterator end = mesh.lastType(dim, ghost_type);
- for(; it != end; ++it) {
-   UInt nb_element  = mesh.getNbElement(*it);
-   const Array<UInt> & conn = mesh.getConnectivity(*it);
+ for(auto & type : mesh.elementTypes()) {
+   UInt nb_element  = mesh.getNbElement(type);
+   const Array<UInt> & conn = mesh.getConnectivity(type);
    for(UInt e = 0; e < nb_element; ++e) {
      ...
    }
  }
+
+ or
+
+ for_each_element(mesh, [](Element & element) {
+    std::cout << element << std::endl
+  });
  @endcode
 */
 class Mesh : protected Memory,
