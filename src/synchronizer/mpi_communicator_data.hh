@@ -67,15 +67,14 @@ namespace akantu {
 class MPICommunicatorData : public CommunicatorInternalData {
 public:
   MPICommunicatorData() {
-    int is_initialized = false;
-    MPI_Initialized(&is_initialized);
-    if (!is_initialized) {
+    MPI_Initialized(&is_externaly_initialized);
+    if (!is_externaly_initialized) {
       MPI_Init(nullptr, nullptr); // valid according to the spec
     }
 
     MPI_Comm_create_errhandler(MPICommunicatorData::errorHandler, &error_handler);
+    MPI_Comm_set_errhandler(MPI_COMM_WORLD, error_handler);
     setMPICommunicator(MPI_COMM_WORLD);
-    is_externaly_initialized = is_initialized;
   }
 
   ~MPICommunicatorData() override {
@@ -115,8 +114,7 @@ public:
 private:
   MPI_Comm communicator{MPI_COMM_WORLD};
   MPI_Errhandler save_error_handler{MPI_ERRORS_ARE_FATAL};
-  bool is_externaly_initialized{false};
-
+  static int is_externaly_initialized;
   /* ------------------------------------------------------------------------ */
   MPI_Errhandler error_handler;
 

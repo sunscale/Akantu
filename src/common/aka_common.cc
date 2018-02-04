@@ -89,7 +89,6 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   std::string infile = static_argparser["aka_input_file"];
   if (infile == "")
     infile = input_file;
-
   debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
   if ("" != infile) {

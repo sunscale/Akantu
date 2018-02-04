@@ -31,9 +31,16 @@
 
 /* -------------------------------------------------------------------------- */
 #include "communicator.hh"
+#if defined(AKANTU_USE_MPI)
+#include "mpi_communicator_data.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
+
+#if defined(AKANTU_USE_MPI)
+int MPICommunicatorData::is_externaly_initialized = 0;
+#endif
 
 UInt InternalCommunicationRequest::counter = 0;
 
@@ -65,7 +72,6 @@ void InternalCommunicationRequest::printself(std::ostream & stream,
 Communicator::~Communicator() {
   auto * event = new FinalizeCommunicatorEvent(*this);
   this->sendEvent(*event);
-  this->barrier();
   delete event;
 }
 

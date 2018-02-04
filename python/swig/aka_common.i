@@ -97,8 +97,10 @@ namespace akantu {
 #else
     const int MPI=0;
 #endif
-    void _initializeWithArgv(const std::string & input_file, int argc, char *argv[]) {
-      initialize(input_file, argc, argv);
+    void _initializeWithoutArgv(const std::string & input_file) {
+      int nb_args = 0;
+      char ** null = nullptr;
+      initialize(input_file, nb_args, null);
     }
   }
 %}
@@ -112,7 +114,7 @@ namespace akantu {
          except ImportError:
            pass
 
-      _initializeWithArgv(input_file, argv)
+      _initializeWithoutArgv(input_file)
 
 %}
 
@@ -120,6 +122,3 @@ namespace akantu {
 %include "aka_common.hh"
 %include "aka_element_classes_info.hh"
 %include "element.hh"
-
-
-

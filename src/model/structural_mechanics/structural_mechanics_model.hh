@@ -246,13 +246,6 @@ public:
     materials.push_back(material);
   }
 
-  /**
-   * @brief set the StructuralMechanicsModel::increment_flag  to on, the
-   * activate the
-   * update of the StructuralMechanicsModel::increment vector
-   */
-  void setIncrementFlagOn();
-
   const StructuralMaterial & getMaterial(const Element & element) const {
     return materials[element_material(element)];
   }

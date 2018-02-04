@@ -139,15 +139,20 @@ endif()
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 
 target_include_directories(akantu
-  PRIVATE $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>
+  PRIVATE   $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>
   INTERFACE $<INSTALL_INTERFACE:include/akantu>
   )
-target_include_directories(akantu SYSTEM BEFORE
+
+# small trick for build includes in public
+set_property(TARGET akantu APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>)
+
+target_include_directories(akantu SYSTEM
   PUBLIC $<BUILD_INTERFACE:${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}>
+         $<INSTALL_INTERFACE:${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}>
   )
 
-target_include_directories(akantu SYSTEM BEFORE
+target_include_directories(akantu SYSTEM
   PRIVATE ${AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR}
   )
 
@@ -157,6 +162,7 @@ set_target_properties(akantu
   PROPERTIES
     ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
     COMPILE_FLAGS "${_cxx_flags}"
+
     )
 
 if(NOT CMAKE_VERSION VERSION_LESS 3.1)

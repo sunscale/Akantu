@@ -124,10 +124,6 @@ public:
   /// interpolate stress on facets
   void interpolateStress();
 
-
-  /// limit the cohesive element insertion to a given area
-  void limitInsertion(BC::Axis axis, Real first_limit, Real second_limit);
-
   /// update automatic insertion after a change in the element inserter
   void updateAutomaticInsertion();
 

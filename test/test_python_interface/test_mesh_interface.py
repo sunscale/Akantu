@@ -29,14 +29,13 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 # ===============================================================================
-
+from __future__ import print_function
 import sys
 import os
 import akantu as aka
 
 def main():
     os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-    print ""
 
     aka.initialize()
 
@@ -45,7 +44,7 @@ def main():
 
     # Tests the getNbElement() function
     if mesh.getNbElement(aka._quadrangle_8) != mesh.getNbElementByDimension(2):
-        print "Number of elements wrong, should be {}".format(mesh.getNbElementByDimension(2))
+        print("Number of elements wrong, should be {}".format(mesh.getNbElementByDimension(2)))
         return -1
 
     # TODO test the other functions in Mesh

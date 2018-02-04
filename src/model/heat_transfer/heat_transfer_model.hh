@@ -124,9 +124,6 @@ public:
   /// assemble the conductivity matrix
   void assembleCapacity();
 
-  /// assemble the conductivity matrix
-  void assembleCapacity(GhostType ghost_type);
-
   /// compute the capacity on quadrature points
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
 
