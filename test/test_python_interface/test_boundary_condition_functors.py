@@ -63,8 +63,6 @@ class FromStress:
 ######################################################################
 
 def main():
-    os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-
     aka.initialize("input_test.dat")
 
     mesh = aka.Mesh(2)

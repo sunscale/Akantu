@@ -34,8 +34,6 @@ import sys
 import os
 import akantu as aka
 
-os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-
 aka.initialize('input_test.dat')
 
 print('First initialisation')

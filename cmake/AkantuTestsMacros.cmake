@@ -148,6 +148,7 @@ endmacro()
 set(_test_flags
   UNSTABLE
   PARALLEL
+  PYTHON
   HEADER_ONLY
   )
 
@@ -296,9 +297,9 @@ function(register_gtest_sources)
   foreach (_var ${_test_flags})
     if(_var STREQUAL "HEADER_ONLY")
       if(NOT DEFINED_register_test_${_var})
-	set(_gtest_${_var} OFF PARENT_SCOPE)
+        set(_gtest_${_var} OFF PARENT_SCOPE)
       elseif(NOT DEFINED _gtest_${_var})
-	set(_gtest_${_var} ON PARENT_SCOPE)
+        set(_gtest_${_var} ON PARENT_SCOPE)
       endif()
       continue()
     endif()
@@ -307,7 +308,7 @@ function(register_gtest_sources)
       set(_gtest_${_var} ON PARENT_SCOPE)
     else()
       if(_gtest_${_var})
-	message("Another gtest file required ${_var} to be ON it will be globally set for this folder...")
+        message("Another gtest file required ${_var} to be ON it will be globally set for this folder...")
       endif()
     endif()
   endforeach()
@@ -370,7 +371,7 @@ function(register_gtest_test test_name)
     PACKAGE ${_gtest_PACKAGE}
     ${_compile_flags}
     )
-  
+
   foreach (_var ${_test_flags})
     if(_gtest_${_var})
       list(APPEND _argn ${_var})
@@ -404,6 +405,8 @@ function(register_test test_name)
     return()
   endif()
 
+  set(_extra_args)
+
   # check that the sources are files that need to be compiled
   if(_register_test_SOURCES} OR _register_test_UNPARSED_ARGUMENTS)
     set(_need_to_compile TRUE)
@@ -432,11 +435,11 @@ function(register_test test_name)
     foreach(_pkg ${_register_test_PACKAGE})
       package_get_nature(${_pkg} _nature)
       if(_nature MATCHES "^external.*")
-	package_get_include_dir(${_pkg} _incl)
-	package_get_libraries(${_pkg} _libs)
-	
-	list(APPEND _register_test_INCLUDE_DIRECTORIES ${_incl})
-	list(APPEND _register_test_LINK_LIBRARIES ${_libs})
+        package_get_include_dir(${_pkg} _incl)
+        package_get_libraries(${_pkg} _libs)
+
+        list(APPEND _register_test_INCLUDE_DIRECTORIES ${_incl})
+        list(APPEND _register_test_LINK_LIBRARIES ${_libs})
       endif()
     endforeach()
 
@@ -448,7 +451,7 @@ function(register_test test_name)
       PRIVATE ${AKANTU_LIBRARY_INCLUDE_DIRS}
               ${AKANTU_EXTERNAL_INCLUDE_DIR}
               ${PROJECT_BINARY_DIR}/src
-	      ${_register_test_INCLUDE_DIRECTORIES})
+              ${_register_test_INCLUDE_DIRECTORIES})
 
     if(NOT _register_test_HEADER_ONLY)
       target_link_libraries(${test_name} PRIVATE akantu ${_register_test_LINK_LIBRARIES})
@@ -458,24 +461,25 @@ function(register_test test_name)
       target_compile_features(${test_name} PRIVATE ${_features})
     endif()
 
-    if(_register_test_DEPENDS)
-      add_dependencies(${test_name} ${_register_test_DEPENDS})
-    endif()
-
     # add the extra compilation options
     if(_register_test_COMPILE_OPTIONS)
       set_target_properties(${test_name}
-	PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
+        PROPERTIES COMPILE_DEFINITIONS "${_register_test_COMPILE_OPTIONS}")
     endif()
 
     if(AKANTU_EXTRA_CXX_FLAGS)
       set_target_properties(${test_name}
-	PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
+        PROPERTIES COMPILE_FLAGS "${AKANTU_EXTRA_CXX_FLAGS}")
     endif()
   else()
+    add_custom_target(${test_name} ALL)
     if(_register_test_UNPARSED_ARGUMENTS AND NOT _register_test_SCRIPT)
       set(_register_test_SCRIPT ${_register_test_UNPARSED_ARGUMENTS})
     endif()
+  endif()
+
+  if(_register_test_DEPENDS)
+    add_dependencies(${test_name} ${_register_test_DEPENDS})
   endif()
 
   # copy the needed files to the build folder
@@ -489,9 +493,9 @@ function(register_test test_name)
   if(_register_test_DIRECTORIES_TO_CREATE)
     foreach(_dir ${_register_test_DIRECTORIES_TO_CREATE})
       if(IS_ABSOLUTE ${dir})
-	file(MAKE_DIRECTORY "${_dir}")
+        file(MAKE_DIRECTORY "${_dir}")
       else()
-	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
       endif()
     endforeach()
   endif()
@@ -500,9 +504,20 @@ function(register_test test_name)
   set(_arguments -n "${test_name}")
   if(_register_test_SCRIPT)
     file(COPY ${_register_test_SCRIPT}
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-      DESTINATION .)
-    list(APPEND _arguments -e "${_register_test_SCRIPT}")
+      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                       GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+      DESTINATION .
+      )
+ 
+    if(_register_test_PYTHON)
+      if(NOT PYTHONINTERP_FOUND)
+        find_package(PythonInterp ${AKANTU_PREFERRED_PYTHON_VERSION} REQUIRED)
+      endif()
+      list(APPEND _arguments -e "${PYTHON_EXECUTABLE}")
+      list(APPEND _extra_args "${_register_test_SCRIPT}")
+    else()
+      list(APPEND _arguments -e "${_register_test_SCRIPT}")
+    endif()
   elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
     file(COPY ${test_name}.sh DESTINATION .)
     list(APPEND _arguments -e "${test_name}.sh")
@@ -527,8 +542,8 @@ function(register_test test_name)
       include(ProcessorCount)
       ProcessorCount(N)
       while(N GREATER 1)
-	list(APPEND _procs ${N})
-	math(EXPR N "${N} / 2")
+        list(APPEND _procs ${N})
+        math(EXPR N "${N} / 2")
       endwhile()
     endif()
 
@@ -555,10 +570,10 @@ function(register_test test_name)
   # register them test
   if(_procs)
     foreach(p ${_procs})
-      add_test(NAME ${test_name}_${p} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p})
+      add_test(NAME ${test_name}_${p} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} -N ${p} ${_extra_args})
     endforeach()
   else()
-    add_test(NAME ${test_name} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments})
+    add_test(NAME ${test_name} COMMAND ${AKANTU_DRIVER_SCRIPT} ${_arguments} ${_extra_args})
   endif()
 endfunction()
 

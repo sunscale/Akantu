@@ -35,8 +35,6 @@ import os
 import akantu as aka
 
 def main():
-    os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-
     aka.initialize()
 
     mesh = aka.Mesh(2)
