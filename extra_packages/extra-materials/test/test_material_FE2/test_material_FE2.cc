@@ -26,93 +26,83 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
+#include "communicator.hh"
 #include "material_FE2.hh"
+#include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
 
-  initialize("material.dat" ,argc, argv);
- 
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
+  initialize("material.dat", argc, argv);
+
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   /// input parameters for the simulation
   const UInt spatial_dimension = 2;
-  const ParserSection & parser =  getUserParser();
-  std::string mesh_file    = parser.getParameter("mesh_file"           );
+  const ParserSection & parser = getUserParser();
+  std::string mesh_file = parser.getParameter("mesh_file");
   Matrix<Real> prestrain_increment = parser.getParameter("prestrain_increment");
-  UInt total_steps         = parser.getParameter("total_steps");
+  UInt total_steps = parser.getParameter("total_steps");
 
   Mesh mesh(spatial_dimension);
-  akantu::MeshPartition * partition = NULL;
 
-  if(prank == 0) {
-
+  if (prank == 0) {
     mesh.read(mesh_file);
-
-
-    /// partition the mesh
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-
-    partition->partitionate(psize);
   }
+
+  mesh.distribute();
 
   /// model creation
   SolidMechanicsModel model(mesh);
 
-  /// model intialization
-  model.initParallel(partition);
-  delete partition;
-
   /// set the material selector
-  MaterialSelector * mat_selector;
-  mat_selector = new MaterialSelector();
+  auto mat_selector = std::make_shared<MaterialSelector>();
   mat_selector->setFallback(3);
-  model.setMaterialSelector(*mat_selector);
-  
+  model.setMaterialSelector(mat_selector);
+
   model.initFull(SolidMechanicsModelOptions(_static));
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   /// boundary conditions
-  mesh.createGroupsFromMeshData<std::string>("physical_names"); // creates groups from mesh names
+  mesh.createGroupsFromMeshData<std::string>(
+      "physical_names"); // creates groups from mesh names
   model.applyBC(BC::Dirichlet::FixedValue(0, _x), "bottom");
   model.applyBC(BC::Dirichlet::FixedValue(0, _y), "bottom");
   //  model.applyBC(BC::Dirichlet::FixedValue(1.e-2, _y), "top");
 
-  model.setBaseName       ("macro_mesh");
+  model.setBaseName("macro_mesh");
   model.addDumpFieldVector("displacement");
-  model.addDumpField      ("stress"      );
-  model.addDumpField      ("grad_u"      );
-  model.addDumpField      ("eigen_grad_u"      );
-  model.addDumpField      ("blocked_dofs"      );
-  model.addDumpField      ("material_index"      );
-  model.addDumpField      ("material_stiffness"      );
+  model.addDumpField("stress");
+  model.addDumpField("grad_u");
+  model.addDumpField("eigen_grad_u");
+  model.addDumpField("blocked_dofs");
+  model.addDumpField("material_index");
+  model.addDumpField("material_stiffness");
 
   model.dump();
 
   /// solve system
   model.assembleStiffnessMatrix();
-  Real error = 0;
+
   std::cout << "first solve step" << std::endl;
-  bool converged= model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
-  std::cout << "the error is: " << error << std::endl;
-  AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+  model.solveStep();
 
   std::cout << "second solve step" << std::endl;
-  converged = model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
-  std::cout << "the error is: " << error << std::endl;
-  AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+  model.solveStep();
 
   std::cout << "finished solve steps" << std::endl;
   /// simulate the advancement of the reaction
-  MaterialFE2<spatial_dimension> & mat = dynamic_cast<MaterialFE2<spatial_dimension> & >(model.getMaterial("FE2_mat"));
+  MaterialFE2<spatial_dimension> & mat =
+      dynamic_cast<MaterialFE2<spatial_dimension> &>(
+          model.getMaterial("FE2_mat"));
   Matrix<Real> current_prestrain(spatial_dimension, spatial_dimension, 0.);
   for (UInt i = 0; i < total_steps; ++i) {
     model.dump();
@@ -120,15 +110,12 @@ int main(int argc, char *argv[]) {
     mat.advanceASR(current_prestrain);
     model.dump();
     /// solve for new displacement at the macro-scale
-    model.assembleStiffnessMatrix();
-    model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-10, error, 2);
-    std::cout << "the error is: " << error << std::endl;
-    AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+    model.solveStep();
   }
 
   model.dump();
 
   finalize();
-  
+
   return EXIT_SUCCESS;
 }
