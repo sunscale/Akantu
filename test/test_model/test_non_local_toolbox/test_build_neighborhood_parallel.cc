@@ -29,7 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "dumper_paraview.hh"
+#include "dumper_iohelper_paraview.hh"
 #include "non_local_neighborhood_base.hh"
 #include "solid_mechanics_model.hh"
 #include "test_material.hh"
