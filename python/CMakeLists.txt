@@ -232,7 +232,7 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
   set(_inc_dirs "${_swig_include_dirs}")
   set(_lib_dirs "${Akantu_BINARY_DIR}/src")
 
-  string(TOUPPER CMAKE_BUILD_TYPE _config)
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" _config)
   set(_akantu_lib_name "akantu${CMAKE_${_config}_POSTFIX}")
 
   get_property(_compile_flags TARGET akantu PROPERTY COMPILE_FLAGS)

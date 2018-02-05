@@ -217,17 +217,18 @@ inline PyObject * PythonFunctor::convertToPython<IntegrationPoint>(
 /* -------------------------------------------------------------------------- */
 inline PyObject *
 PythonFunctor::getPythonFunction(const std::string & functor_name) const {
-#if PY_MAJOR_VERSION >= 3
-  if (!PyInstanceMethod_Check(this->python_obj))
-#else
+#if PY_MAJOR_VERSION < 3
   if (!PyInstance_Check(this->python_obj))
-#endif
     AKANTU_EXCEPTION("Python object is not an instance");
+#else
+// does not make sense to check everything is an instance of object in python 3
+#endif
+
+  if (not PyObject_HasAttrString(this->python_obj, functor_name.c_str()))
+    AKANTU_EXCEPTION("Python dictionary has no " << functor_name << " entry");
 
   PyObject * pFunctor =
       PyObject_GetAttrString(this->python_obj, functor_name.c_str());
-  if (!pFunctor)
-    AKANTU_EXCEPTION("Python dictionary has no " << functor_name << " entry");
 
   return pFunctor;
 }
