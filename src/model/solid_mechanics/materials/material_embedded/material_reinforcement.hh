@@ -54,22 +54,21 @@ namespace akantu {
  *  -  this->spatial_dimension is always 1
  *  -  the template parameter dim is the dimension of the problem
  */
-template <UInt dim> class MaterialReinforcement : virtual public Material {
+
+template <class Mat, UInt dim> class MaterialReinforcement : public Mat {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   /// Constructor
-  MaterialReinforcement(SolidMechanicsModel & model, UInt spatial_dimension,
-                        const Mesh & mesh, FEEngine & fe_engine,
-                        const ID & id = "");
+  MaterialReinforcement(EmbeddedInterfaceModel & model, const ID & id = "");
 
   /// Destructor
   ~MaterialReinforcement() override;
 
 protected:
-  void initialize(SolidMechanicsModel & a_model);
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -77,6 +76,9 @@ protected:
 public:
   /// Init the material
   void initMaterial() override;
+
+  /// Init the filter for background elements
+  void initBackgroundFilter();
 
   /// Init the background shape derivatives
   void initBackgroundShapeDerivatives();
@@ -136,6 +138,12 @@ protected:
   void computeBackgroundShapeDerivatives(const ElementType & type,
                                          GhostType ghost_type);
 
+  /// Compute the background shape derivatives for a type pair
+  void computeBackgroundShapeDerivatives(const ElementType & interface_type,
+					 const ElementType & bg_type,
+					 GhostType ghost_type,
+					 const Array<UInt> & filter);
+
   /// Filter elements crossed by interface of a type
   void filterInterfaceBackgroundElements(Array<UInt> & filter,
                                          const ElementType & type,
@@ -157,14 +165,14 @@ protected:
                                         Vector<Real> & vector);
 
   /// Compute gradu on the interface quadrature points
-  virtual void computeGradU(const ElementType & type, GhostType ghost_type);
+  void computeGradU(const ElementType & type, GhostType ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
   /// Embedded model
-  EmbeddedInterfaceModel * model;
+  EmbeddedInterfaceModel & emodel;
 
   /// Stress in the reinforcement
   InternalField<Real> stress_embedded;
@@ -181,12 +189,18 @@ protected:
   /// Cross-sectional area
   Real area;
 
+  template <typename T>
+  using CrossMap = ElementTypeMap<std::unique_ptr<ElementTypeMapArray<T>>>;
+
   /// Background mesh shape derivatives
-  ElementTypeMap<ElementTypeMapArray<Real> *> shape_derivatives;
+  CrossMap<Real> shape_derivatives;
+
+  /// Background element filter (contains segment-bg pairs)
+  CrossMap<UInt> background_filter;
 };
 
-#include "material_reinforcement_inline_impl.cc"
-
 } // akantu
+
+#include "material_reinforcement_tmpl.hh"
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_HH__

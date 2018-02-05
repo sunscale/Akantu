@@ -118,6 +118,16 @@ public:
    *  @return stored data corresponding to type. */
   inline Stored & operator()(const Stored & insert, const SupportType & type,
                              const GhostType & ghost_type = _not_ghost);
+  /// Insert into map by move
+  inline Stored & operator()(Stored && insert, const SupportType & type,
+                             const GhostType & ghost_type = _not_ghost);
+protected:
+  /// Insert function with universal reference
+  template <typename U>
+  inline Stored & insert(U && insertee, const SupportType & type,
+                         const GhostType & ghost_type = _not_ghost);
+
+public:
 
   /// print helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
