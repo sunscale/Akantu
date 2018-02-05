@@ -40,8 +40,8 @@ template <class Mat, UInt dim>
 MaterialReinforcement<Mat, dim>::MaterialReinforcement(
     EmbeddedInterfaceModel & model, const ID & id)
     : Mat(model, model.getInterfaceMesh().getSpatialDimension(),
-               model.getInterfaceMesh(),
-               model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
+          model.getInterfaceMesh(),
+          model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
       emodel(model),
       stress_embedded("stress_embedded", *this, 1,
                       model.getFEEngine("EmbeddedInterfaceFEEngine"),
@@ -119,9 +119,7 @@ namespace detail {
               emodel.getMesh(), emodel.getSpatialDimension(), 2, // pairs
               ghost_type, _ek_regular) {}
 
-    UInt size(const ElementType & /*bgtype*/) const override {
-      return 0;
-    }
+    UInt size(const ElementType & /*bgtype*/) const override { return 0; }
   };
 }
 
@@ -131,22 +129,21 @@ template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::initBackgroundFilter() {
   for (auto gt : ghost_types) {
     for (auto && type : emodel.getInterfaceMesh().elementTypes(1, gt)) {
-        std::string shaped_id = "embedded_shape_derivatives";
-        if (gt == _ghost)
-          shaped_id += ":ghost";
+      std::string shaped_id = "embedded_shape_derivatives";
+      if (gt == _ghost)
+        shaped_id += ":ghost";
 
-	auto filter =
-	  std::make_unique<ElementTypeMapArray<UInt>>(shaped_id, this->name);
-        background_filter(std::move(filter), type, gt);
+      auto & filter = background_filter(
+          std::make_unique<ElementTypeMapArray<UInt>>(shaped_id, this->name),
+          type, gt);
+      filter->initialize(detail::BackgroundFilterInitializer(emodel, gt), 0,
+                         true);
 
-        filter->initialize(
-            detail::BackgroundFilterInitializer(emodel, gt), 0, true);
-
-	// Computing filters
-        for (auto && bg_type : filter->elementTypes(dim, gt)) {
-          filterInterfaceBackgroundElements((*filter)(bg_type), bg_type, type,
-                                            gt);
-        }
+      // Computing filters
+      for (auto && bg_type : filter->elementTypes(dim, gt)) {
+        filterInterfaceBackgroundElements((*filter)(bg_type), bg_type, type,
+                                          gt);
+      }
     }
   }
 }
@@ -177,7 +174,6 @@ void MaterialReinforcement<Mat, dim>::filterInterfaceBackgroundElements(
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
 
 namespace detail {
@@ -196,14 +192,14 @@ namespace detail {
       }
     }
 
-    auto elementTypes() const -> decltype(auto){
+    auto elementTypes() const -> decltype(auto) {
       return array_size_per_bg_type.elementTypes();
     }
 
-    UInt size(const ElementType & bgtype) const  {
+    UInt size(const ElementType & bgtype) const {
       return array_size_per_bg_type(bgtype, this->ghost_type);
     }
-    
+
     UInt nbComponent(const ElementType & bgtype) const {
       return ShapeFunctions::getShapeDerivativesSize(bgtype);
     }
@@ -225,18 +221,17 @@ void MaterialReinforcement<Mat, dim>::allocBackgroundShapeDerivatives() {
 
   for (auto gt : ghost_types) {
     for (auto && type : emodel.getInterfaceMesh().elementTypes(1, gt)) {
-        std::string shaped_id = "embedded_shape_derivatives";
-        if (gt == _ghost)
-          shaped_id += ":ghost";
+      std::string shaped_id = "embedded_shape_derivatives";
+      if (gt == _ghost)
+        shaped_id += ":ghost";
 
-        auto shaped_etma =
-            std::make_unique<ElementTypeMapArray<Real>>(shaped_id, this->name);
-        shape_derivatives(std::move(shaped_etma), type, gt);
-
-        shaped_etma->initialize(
-            detail::BackgroundShapeDInitializer(emodel.getSpatialDimension(),
-                                                *background_filter(type), gt),
-            0, true);
+      auto & shaped_etma = shape_derivatives(
+          std::make_unique<ElementTypeMapArray<Real>>(shaped_id, this->name),
+          type, gt);
+      shaped_etma->initialize(
+          detail::BackgroundShapeDInitializer(emodel.getSpatialDimension(),
+                                              *background_filter(type), gt),
+          0, true);
     }
   }
 
@@ -259,7 +254,6 @@ void MaterialReinforcement<Mat, dim>::initBackgroundShapeDerivatives() {
 
   AKANTU_DEBUG_OUT();
 }
-
 
 /* -------------------------------------------------------------------------- */
 template <class Mat, UInt dim>
@@ -295,8 +289,8 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
       Matrix<Real> shapesd = Tensor3<Real>(shapesd_begin[elem(0)])(i);
       Vector<Real> quads = Matrix<Real>(quad_begin[elem(0)])(i);
 
-      engine.computeShapeDerivatives(quads, elem(1), bg_type,
-                                     shapesd, ghost_type);
+      engine.computeShapeDerivatives(quads, elem(1), bg_type, shapesd,
+                                     ghost_type);
     }
   }
 }

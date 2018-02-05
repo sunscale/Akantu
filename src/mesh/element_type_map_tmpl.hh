@@ -85,25 +85,11 @@ operator()(const SupportType & type, const GhostType & ghost_type) {
   return this->getData(ghost_type)[type];
 }
 
-/* -------------------------------------------------------------------------- */
-template <class Stored, typename SupportType>
-inline Stored & ElementTypeMap<Stored, SupportType>::
-operator()(const Stored & insertee, const SupportType & type,
-           const GhostType & ghost_type) {
-  return insert(insertee, type, ghost_type);
-}
-
-template <class Stored, typename SupportType>
-inline Stored & ElementTypeMap<Stored, SupportType>::
-operator()(Stored && insertee, const SupportType & type,
-           const GhostType & ghost_type) {
-  return insert(std::move(insertee), type, ghost_type);
-}
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 template <typename U>
-inline Stored & ElementTypeMap<Stored, SupportType>::insert(
+inline Stored & ElementTypeMap<Stored, SupportType>::operator()(
     U && insertee, const SupportType & type, const GhostType & ghost_type) {
   auto it = this->getData(ghost_type).find(type);
 
