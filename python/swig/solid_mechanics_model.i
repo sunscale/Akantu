@@ -109,13 +109,6 @@ print_self(SolidMechanicsModel)
 %}
 
 %extend akantu::SolidMechanicsModel {
-
-  void initFull(
-  const akantu::SolidMechanicsModelOptions & options = akantu::SolidMechanicsModelOptions()){
-    $self->initFull(options);
-  };
-
-  
   /* ------------------------------------------------------------------------ */
   void setPhysicalNamesMaterialSelector(){
     AKANTU_EXCEPTION("API change: This method needs to be fixed.");
@@ -209,4 +202,3 @@ print_self(SolidMechanicsModel)
                    surface_name);
   }
 }
-
