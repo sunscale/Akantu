@@ -15,6 +15,14 @@ endif()
 
 pkg_search_module(_petsc PETSc)
 
+# Some debug code
+#get_property(_vars DIRECTORY PROPERTY VARIABLES)
+#foreach(_var ${_vars})
+#  if ("${_var}" MATCHES "^_petsc")
+#    message("${_var} -> ${${_var}}")
+#  endif()
+#endforeach()
+
 if(_petsc_FOUND AND _petsc_VERSION)
   set(PETSC_VERSION ${_petsc_VERSION})
 endif()
@@ -39,5 +47,5 @@ endif()
 
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PETSc
-  REQUIRED_VARS PETSC_LIBRARIES PETSC_INCLUDE_DIR
+  REQUIRED_VARS PETSC_LIBRARIES PETSC_INCLUDE_DIRS
   VERSION_VAR PETSC_VERSION)
