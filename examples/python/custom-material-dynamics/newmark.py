@@ -26,39 +26,42 @@ class FixedValue:
 
 class LocalElastic:
 
-    def __init__(self):
-
-        # young modulus
-        self.E = 1
-        # Poisson coefficient
-        self.nu = 0.3
-        # density
-        self.rho = 1
+    # declares all the internals
+    def initMaterial(self, internals, params):
+        self.E = params['E']
+        self.nu = params['nu']
+        self.rho = params['rho']
         # First Lame coefficient
-        self._lambda = self.nu * self.E / ((1 + self.nu) * (1 - 2 * self.nu))
+        self.lame_lambda = self.nu * self.E / (
+            (1 + self.nu) * (1 - 2 * self.nu))
         # Second Lame coefficient (shear modulus)
-        self.mu = self.E / (2 * (1 + self.nu))
+        self.lame_mu = self.E / (2 * (1 + self.nu))
 
     # declares all the internals
     @staticmethod
     def registerInternals():
-        return []
+        return ['potential']
+
+    # declares all the internals
+    @staticmethod
+    def registerInternalSizes():
+        return [1]
 
     # declares all the parameters that could be parsed
     @staticmethod
     def registerParam():
-        return []
+        return ['E', 'nu']
 
     # declares all the parameters that are needed
     def getPushWaveSpeed(self, params):
-        return np.sqrt((self._lambda + 2 * self.mu) / self.rho)
+        return np.sqrt((self.lame_lambda + 2 * self.lame_mu) / self.rho)
 
     # compute small deformation tensor
     @staticmethod
     def computeEpsilon(grad_u):
         return 0.5 * (grad_u + np.einsum('aij->aji', grad_u))
 
-    # constitutive law for a given quadrature point
+    # constitutive law
     def computeStress(self, grad_u, sigma, internals, params):
         lbda = 1.
         mu = 1.
@@ -70,11 +73,44 @@ class LocalElastic:
         sigma[:, :, :] = (np.einsum('a,ij->aij', trace, lbda * np.eye(2))
                           + mu * epsilon)
 
+    # constitutive law tangent modulii
+    def computeTangentModuli(self, grad_u, tangent, internals, params):
+        n_quads = tangent.shape[0]
+        tangent = tangent.reshape(n_quads, 3, 3)
+
+        Miiii = self.lame_lambda + 2 * self.lame_mu
+        Miijj = self.lame_lambda
+        Mijij = self.lame_mu
+
+        tangent[:, 0, 0] = Miiii
+        tangent[:, 1, 1] = Miiii
+        tangent[:, 0, 1] = Miijj
+        tangent[:, 1, 0] = Miijj
+        tangent[:, 2, 2] = Mijij
+
+    # computes the energy density
+    def getEnergyDensity(self, energy_type, energy_density,
+                         grad_u, stress, internals, params):
+
+        nquads = stress.shape[0]
+        stress = stress.reshape(nquads, 2, 2)
+        grad_u = grad_u.reshape((nquads, 2, 2))
+
+        if energy_type != 'potential':
+            raise RuntimeError('not known energy')
+
+        epsilon = self.computeEpsilon(grad_u)
+
+        energy_density[:, 0] = (
+            0.5 * np.einsum('aij,aij->a', stress, epsilon))
+
 
 ################################################################
+
 def main():
 
     spatial_dimension = 2
+
     akantu.initialize('material.dat')
 
     mesh_file = 'bar.msh'
@@ -98,8 +134,12 @@ def main():
     akantu.registerNewPythonMaterial(mat, "local_elastic")
 
     model = akantu.SolidMechanicsModel(mesh)
+
     model.initFull(akantu.SolidMechanicsModelOptions(
         akantu._explicit_lumped_mass))
+
+    # model.initFull(akantu.SolidMechanicsModelOptions(
+    #     akantu._implicit_dynamic))
 
     model.setBaseName("waves")
     model.addDumpFieldVector("displacement")
