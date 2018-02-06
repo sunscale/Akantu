@@ -30,6 +30,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "internal_field.hh"
 /* -------------------------------------------------------------------------- */
 #include <Python.h>
 #include <map>
@@ -85,6 +86,10 @@ protected:
   inline PyObject * convertToPython(const std::vector<Array<T> *> & akantu_obj) const;
 
   /// convert a stl vector to python
+  template <typename T>
+  inline PyObject * convertToPython(const std::unique_ptr<T> & akantu_obj) const;
+  
+  /// convert a stl vector to python
   template <typename T1, typename T2>
   inline PyObject * convertToPython(const std::map<T1, T2> & akantu_obj) const;
   
@@ -92,6 +97,10 @@ protected:
   template <typename T>
   inline PyObject * convertToPython(const Vector<T> & akantu_obj) const;
 
+  /// convert an akantu internal to python
+  template <typename T>
+  inline PyObject * convertToPython(const InternalField<T> & akantu_obj) const;
+  
   /// convert an akantu vector to python
   template <typename T>
   inline PyObject * convertToPython(const Array<T> & akantu_obj) const;

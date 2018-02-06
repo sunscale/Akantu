@@ -29,6 +29,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "integration_point.hh"
+#include "internal_field.hh"
 /* -------------------------------------------------------------------------- */
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
@@ -140,7 +141,7 @@ PythonFunctor::convertToPython(const std::map<T1, T2> & map) const {
 
   PyObject * res = PyDict_New();
 
-  for (auto a : map) {
+  for (auto && a : map) {
     PyObject * key = this->convertToPython(a.first);
     PyObject * value = this->convertToPython(a.second);
     PyDict_SetItem(res, key, value);
@@ -161,6 +162,30 @@ PyObject * PythonFunctor::convertToPython(const Vector<T> & array) const {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
+inline PyObject *
+PythonFunctor::convertToPython(const InternalField<T> & internals) const {
+
+  std::map<std::string, Array<T>*> _internals;
+  for (const auto & type : internals.elementTypes()) {
+    std::stringstream sstr;
+    _internals[sstr.str()] = const_cast<Array<T>*>(&internals(type));
+  }
+  return convertToPython(_internals);
+}
+
+/* --------------------------------------------------------------------------
+ */
+
+template <typename T>
+inline PyObject *
+PythonFunctor::convertToPython(const std::unique_ptr<T> & u) const {
+  return convertToPython(*u);
+}
+
+/* --------------------------------------------------------------------------
+ */
+
+template <typename T>
 PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
   int data_typecode = getPythonDataTypeCode<T>();
   npy_intp dims[2] = {array.size(), array.getNbComponent()};
@@ -169,13 +194,15 @@ PyObject * PythonFunctor::convertToPython(const Array<T> & array) const {
   auto * res = (PyArrayObject *)obj;
   return (PyObject *)res;
 }
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <typename T>
 PyObject * PythonFunctor::convertToPython(Array<T> * array) const {
   return this->convertToPython(*array);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <typename T>
 PyObject * PythonFunctor::convertToPython(const Matrix<T> & mat) const {
   int data_typecode = getPythonDataTypeCode<T>();
@@ -186,7 +213,8 @@ PyObject * PythonFunctor::convertToPython(const Matrix<T> & mat) const {
   return (PyObject *)res;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <>
 inline PyObject *
 PythonFunctor::convertToPython<std::string>(const std::string & str) const {
@@ -197,7 +225,8 @@ PythonFunctor::convertToPython<std::string>(const std::string & str) const {
 #endif
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <>
 inline PyObject * PythonFunctor::convertToPython<IntegrationPoint>(
     const IntegrationPoint & qp) const {
@@ -214,7 +243,8 @@ inline PyObject * PythonFunctor::convertToPython<IntegrationPoint>(
   return input;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 inline PyObject *
 PythonFunctor::getPythonFunction(const std::string & functor_name) const {
 #if PY_MAJOR_VERSION < 3
@@ -233,12 +263,14 @@ PythonFunctor::getPythonFunction(const std::string & functor_name) const {
   return pFunctor;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 inline void
 PythonFunctor::packArguments(__attribute__((unused))
                              std::vector<PyObject *> & p_args) const {}
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <typename T, typename... Args>
 inline void PythonFunctor::packArguments(std::vector<PyObject *> & p_args,
                                          T & p, Args &... params) const {
@@ -247,7 +279,8 @@ inline void PythonFunctor::packArguments(std::vector<PyObject *> & p_args,
     this->packArguments(p_args, params...);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <typename return_type, typename... Params>
 return_type PythonFunctor::callFunctor(const std::string & functor_name,
                                        Params &... parameters) const {
@@ -272,7 +305,8 @@ return_type PythonFunctor::callFunctor(const std::string & functor_name,
   return this->convertToAkantu<return_type>(res);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <typename return_type>
 inline return_type PythonFunctor::convertToAkantu(PyObject * python_obj) const {
 
@@ -283,7 +317,8 @@ inline return_type PythonFunctor::convertToAkantu(PyObject * python_obj) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <>
 inline void PythonFunctor::convertToAkantu<void>(PyObject * python_obj) const {
   if (python_obj != Py_None)
@@ -291,7 +326,8 @@ inline void PythonFunctor::convertToAkantu<void>(PyObject * python_obj) const {
         "functor return a value while none was expected: ignored");
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <>
 inline std::string
 PythonFunctor::convertToAkantu<std::string>(PyObject * python_obj) const {
@@ -310,14 +346,16 @@ PythonFunctor::convertToAkantu<std::string>(PyObject * python_obj) const {
 #endif
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <>
 inline Real PythonFunctor::convertToAkantu<Real>(PyObject * python_obj) const {
   if (!PyFloat_Check(python_obj))
     AKANTU_EXCEPTION("cannot convert object to float");
   return PyFloat_AsDouble(python_obj);
 }
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <>
 inline UInt PythonFunctor::convertToAkantu<UInt>(PyObject * python_obj) const {
 #if PY_MAJOR_VERSION >= 3
@@ -331,7 +369,8 @@ inline UInt PythonFunctor::convertToAkantu<UInt>(PyObject * python_obj) const {
 #endif
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <typename T>
 inline std::vector<T>
 PythonFunctor::convertListToAkantu(PyObject * python_obj) const {
@@ -344,7 +383,8 @@ PythonFunctor::convertListToAkantu(PyObject * python_obj) const {
   return res;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 
 } // akantu
 

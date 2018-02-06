@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "python_functor.hh"
 #include "aka_common.hh"
+#include "internal_field.hh"
 #include <vector>
 /* -------------------------------------------------------------------------- */
 namespace akantu {
