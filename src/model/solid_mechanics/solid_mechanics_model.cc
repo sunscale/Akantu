@@ -149,10 +149,6 @@ void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
 
   Model::initFullImpl(options);
 
-  // initialize pbc
-  if (this->pbc_pair.size() != 0)
-    this->initPBC();
-
   // initialize the materials
   if (this->parser.getLastParsedFile() != "") {
     this->instantiateMaterials();
