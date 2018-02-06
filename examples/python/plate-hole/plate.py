@@ -1,4 +1,6 @@
-#!/bin/env python3
+#!/usr/bin/env python3
+
+from __future__ import print_function
 
 import akantu
 import numpy as np
@@ -101,7 +103,6 @@ def main():
                 'execution of GMSH failed: do you have it installed ?')
 
     material_file = 'material.dat'
-    spatial_dimension = 2
 
     traction = 1.
     solve(material_file, mesh_file, traction)
