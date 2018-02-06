@@ -193,6 +193,13 @@ protected:
   virtual void getSolutionPerDOFs(const ID & dof_id,
                                   Array<Real> & solution_array) = 0;
 
+  /// fill a Vector with the equation numbers corresponding to the given
+  /// connectivity
+  inline void extractElementEquationNumber(const Array<Int> & equation_numbers,
+                                           const Vector<UInt> & connectivity,
+                                           UInt nb_degree_of_freedom,
+                                           Vector<Int> & local_equation_number);
+
 protected:
   /* ------------------------------------------------------------------------ */
   /// register a matrix
@@ -215,7 +222,7 @@ protected:
 public:
   /// Get the equation numbers corresponding to a dof_id. This might be used to
   /// access the matrix.
-  inline const Array<UInt> & getEquationsNumbers(const ID & dof_id) const;
+  inline const Array<Int> & getLocalEquationsNumbers(const ID & dof_id) const;
 
   /// Global number of dofs
   AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
@@ -417,7 +424,7 @@ protected:
     Array<Real> solution;
 
     /// local numbering equation numbers
-    Array<UInt> local_equation_number;
+    Array<Int> local_equation_number;
 
     /* ---------------------------------------------------------------------- */
     /* data for dynamic simulations                                           */

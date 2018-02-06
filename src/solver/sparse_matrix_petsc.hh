@@ -87,7 +87,7 @@ public:
 
   /// Equivalent of *gemv in blas
   void matVecMul(const Vec & x, Vec & y, Real alpha = 1.,
-                 Real beta = 0.) const override;
+                 Real beta = 0.) const;
 
   /// modify the matrix to "remove" the blocked dof
   void applyBoundary(Real block_val = 1.) override;

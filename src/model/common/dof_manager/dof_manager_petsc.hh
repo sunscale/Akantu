@@ -66,6 +66,16 @@ public:
 
   virtual ~DOFManagerPETSc();
 
+protected:
+  void init();
+
+  struct DOFDataPETSc : public DOFData {
+    explicit DOFDataPETSc(const ID & dof_id);
+
+    /// local equation numbers in PETSc type
+    IS is;
+  };
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -75,64 +85,43 @@ public:
                     DOFSupportType & support_type);
 
   /// Assemble an array to the global residual array
-  virtual void assembleToResidual(const ID & dof_id,
-                                  const Array<Real> & array_to_assemble,
-                                  Real scale_factor = 1.);
+  void assembleToResidual(const ID & dof_id,
+                          const Array<Real> & array_to_assemble,
+                          Real scale_factor = 1.) override;
 
   /**
    * Assemble elementary values to the global residual array. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
    * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
    **/
-  virtual void assembleElementalArrayResidual(
-      const ID & dof_id, const Array<Real> & array_to_assemble,
-      const ElementType & type, const GhostType & ghost_type,
-      Real scale_factor = 1.);
-  /**
-   * Assemble elementary values to the global residual array. The dof number is
-   * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
-   * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
-   **/
-  virtual void assembleElementalMatricesToMatrix(
+  void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
       const Array<Real> & elementary_mat, const ElementType & type,
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
-      const Array<UInt> & filter_elements);
+      const Array<UInt> & filter_elements) override;
+
+  void clearResidual() override;
+  void clearMatrix(const ID & mtx) override;
+  void clearLumpedMatrix(const ID & mtx) override;
 
 protected:
-  /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolutionPerDOFs(const ID & dof_id,
-                                  Array<Real> & solution_array);
-
-private:
-  /// Add a symmetric matrices to a symmetric sparse matrix
-  inline void addSymmetricElementalMatrixToSymmetric(
-      SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
-      const Vector<UInt> & equation_numbers, UInt max_size);
-
-  /// Add a unsymmetric matrices to a symmetric sparse matrix (i.e. cohesive
-  /// elements)
-  inline void addUnsymmetricElementalMatrixToSymmetric(
-      SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
-      const Vector<UInt> & equation_numbers, UInt max_size);
-
-  /// Add a matrices to a unsymmetric sparse matrix
-  inline void addElementalMatrixToUnsymmetric(
-      SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
-      const Vector<UInt> & equation_numbers, UInt max_size);
+  void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
+                              Array<Real> & lumped) override;
+  void getSolutionPerDOFs(const ID & dof_id,
+                          Array<Real> & solution_array) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// Get an instance of a new SparseMatrix
-  virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
-                                      const MatrixType & matrix_type);
+  SparseMatrix & getNewMatrix(const ID & matrix_id,
+                              const MatrixType & matrix_type) override;
 
   /// Get an instance of a new SparseMatrix as a copy of the SparseMatrix
   /// matrix_to_copy_id
-  virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
-                                      const ID & matrix_to_copy_id);
+  SparseMatrix & getNewMatrix(const ID & matrix_id,
+                              const ID & matrix_to_copy_id) override;
 
   /// Get the reference of an existing matrix
   SparseMatrixPETSc & getMatrix(const ID & matrix_id);
@@ -162,12 +151,12 @@ private:
   Vec residual;
 
   /// PETSc local to global mapping of dofs
-  ISLocalToGlobalMapping is_ltog;
+  ISLocalToGlobalMapping is_ltog_map;
 
   /// Communicator associated to PETSc
   MPI_Comm mpi_communicator;
 
-  static int petsc_dof_manager_instances{0};
+  static int petsc_dof_manager_instances;
 };
 
 } // akantu

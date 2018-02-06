@@ -51,7 +51,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 inline void DOFManagerDefault::addSymmetricElementalMatrixToSymmetric(
     SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
-    const Vector<UInt> & equation_numbers, UInt max_size) {
+    const Vector<Int> & equation_numbers, UInt max_size) {
   for (UInt i = 0; i < elementary_mat.rows(); ++i) {
     UInt c_irn = equation_numbers(i);
     if (c_irn < max_size) {
@@ -68,7 +68,7 @@ inline void DOFManagerDefault::addSymmetricElementalMatrixToSymmetric(
 /* -------------------------------------------------------------------------- */
 inline void DOFManagerDefault::addUnsymmetricElementalMatrixToSymmetric(
     SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
-    const Vector<UInt> & equation_numbers, UInt max_size) {
+    const Vector<Int> & equation_numbers, UInt max_size) {
   for (UInt i = 0; i < elementary_mat.rows(); ++i) {
     UInt c_irn = equation_numbers(i);
     if (c_irn < max_size) {
@@ -87,7 +87,7 @@ inline void DOFManagerDefault::addUnsymmetricElementalMatrixToSymmetric(
 /* -------------------------------------------------------------------------- */
 inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
     SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
-    const Vector<UInt> & equation_numbers, UInt max_size) {
+    const Vector<Int> & equation_numbers, UInt max_size) {
   for (UInt i = 0; i < elementary_mat.rows(); ++i) {
     UInt c_irn = equation_numbers(i);
     if (c_irn < max_size) {
@@ -198,13 +198,9 @@ DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                                              UInt nb_pure_local_dofs) {
-  // auto prank = this->communicator.whoAmI();
-  // auto psize = this->communicator.getNbProc();
-
   // access the relevant data to update
   auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
   const auto & support_type = dof_data.support_type;
-
   const auto & group = dof_data.group_support;
 
   switch (support_type) {
@@ -382,7 +378,7 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
                                         Array<T> & local_array) const {
   AKANTU_DEBUG_IN();
 
-  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
+  const Array<Int> & equation_number = this->getLocalEquationsNumbers(dof_id);
 
   UInt nb_degree_of_freedoms = equation_number.size();
   local_array.resize(nb_degree_of_freedoms / local_array.getNbComponent());
@@ -531,12 +527,10 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
       this->mesh->getConnectivity(type, ghost_type);
   auto conn_begin = connectivity.begin(nb_nodes_per_element);
   auto conn_it = conn_begin;
+  auto size_mat = nb_nodes_per_element * nb_degree_of_freedom;
 
-  UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom;
-
-  Vector<UInt> element_eq_nb(nb_degree_of_freedom * nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator el_mat_it =
-      elementary_mat.begin(size_mat, size_mat);
+  Vector<Int> element_eq_nb(nb_degree_of_freedom * nb_nodes_per_element);
+  auto el_mat_it = elementary_mat.begin(size_mat, size_mat);
 
   for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
     if (filter_it)
@@ -573,15 +567,13 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 void DOFManagerDefault::assemblePreassembledMatrix(
     const ID & dof_id_m, const ID & dof_id_n, const ID & matrix_id,
     const TermsToAssemble & terms) {
-  const Array<UInt> & equation_number_m =
-      this->getLocalEquationNumbers(dof_id_m);
-  const Array<UInt> & equation_number_n =
-      this->getLocalEquationNumbers(dof_id_n);
+  const auto & equation_number_m = this->getLocalEquationsNumbers(dof_id_m);
+  const auto & equation_number_n = this->getLocalEquationsNumbers(dof_id_n);
   SparseMatrixAIJ & A = this->getMatrix(matrix_id);
 
   for (const auto & term : terms) {
-    UInt gi = this->localToGlobalEquationNumber(equation_number_m(term.i()));
-    UInt gj = this->localToGlobalEquationNumber(equation_number_n(term.j()));
+    auto gi = this->localToGlobalEquationNumber(equation_number_m(term.i()));
+    auto gj = this->localToGlobalEquationNumber(equation_number_n(term.j()));
     A.add(gi, gj, term);
   }
 }
@@ -592,7 +584,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
                                      const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
-  const DOFData & dof_data = this->getDOFData(dof_id);
+  const auto & dof_data = this->getDOFData(dof_id);
 
   if (dof_data.support_type != _dst_nodal)
     return;
@@ -606,7 +598,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
           prof_it->second.end())
     return;
 
-  UInt nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
+  auto nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
 
   const auto & equation_number = this->getLocalEquationNumbers(dof_id);
 
@@ -620,7 +612,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   auto cbegin = connectivity.begin(nb_nodes_per_element);
   auto cit = cbegin;
 
-  UInt nb_elements = connectivity.size();
+  auto nb_elements = connectivity.size();
   UInt * ge_it = nullptr;
   if (dof_data.group_support != "__mesh__") {
     const auto & group_elements =
@@ -631,7 +623,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   }
 
   UInt size_mat = nb_nodes_per_element * nb_degree_of_freedom_per_node;
-  Vector<UInt> element_eq_nb(size_mat);
+  Vector<Int> element_eq_nb(size_mat);
 
   for (UInt e = 0; e < nb_elements; ++e) {
     if (ge_it)
@@ -639,11 +631,10 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
     this->extractElementEquationNumber(
         equation_number, *cit, nb_degree_of_freedom_per_node, element_eq_nb);
-    std::transform(element_eq_nb.storage(),
-                   element_eq_nb.storage() + element_eq_nb.size(),
-                   element_eq_nb.storage(), [&](UInt & local) -> UInt {
-                     return this->localToGlobalEquationNumber(local);
-                   });
+    std::transform(
+        element_eq_nb.storage(), element_eq_nb.storage() + element_eq_nb.size(),
+        element_eq_nb.storage(),
+        [&](auto & local) { return this->localToGlobalEquationNumber(local); });
 
     if (ge_it)
       ++ge_it;

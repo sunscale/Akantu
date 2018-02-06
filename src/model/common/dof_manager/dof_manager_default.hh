@@ -158,12 +158,6 @@ protected:
   void getSolutionPerDOFs(const ID & dof_id,
                           Array<Real> & solution_array) override;
 
-  /// fill a Vector with the equation numbers corresponding to the given
-  /// connectivity
-  inline void extractElementEquationNumber(
-      const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
-      UInt nb_degree_of_freedom, Vector<UInt> & local_equation_number);
-
 public:
   /// extract a lumped matrix part corresponding to a given dof
   void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
@@ -173,18 +167,18 @@ private:
   /// Add a symmetric matrices to a symmetric sparse matrix
   void addSymmetricElementalMatrixToSymmetric(
       SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
-      const Vector<UInt> & equation_numbers, UInt max_size);
+      const Vector<Int> & equation_numbers, UInt max_size);
 
   /// Add a unsymmetric matrices to a symmetric sparse matrix (i.e. cohesive
   /// elements)
   void addUnsymmetricElementalMatrixToSymmetric(
       SparseMatrixAIJ & matrix, const Matrix<Real> & element_mat,
-      const Vector<UInt> & equation_numbers, UInt max_size);
+      const Vector<Int> & equation_numbers, UInt max_size);
 
   /// Add a matrices to a unsymmetric sparse matrix
   void addElementalMatrixToUnsymmetric(SparseMatrixAIJ & matrix,
                                        const Matrix<Real> & element_mat,
-                                       const Vector<UInt> & equation_numbers,
+                                       const Vector<Int> & equation_numbers,
                                        UInt max_size);
 
   void addToProfile(const ID & matrix_id, const ID & dof_id,
@@ -267,9 +261,6 @@ public:
 
   /// Answer to the question is a dof a slave dof ?
   inline bool isSlaveDOF(UInt local_dof_num);
-
-  /// get the equation numbers (in local numbering) corresponding to a dof ID
-  inline const Array<UInt> & getLocalEquationNumbers(const ID & dof_id) const;
 
   /// tells if the dof manager knows about a global dof
   bool hasGlobalEquationNumber(UInt global) const;

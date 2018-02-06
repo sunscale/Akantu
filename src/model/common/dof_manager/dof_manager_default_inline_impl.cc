@@ -51,26 +51,9 @@ inline bool DOFManagerDefault::isSlaveDOF(UInt dof_num) {
 
 /* -------------------------------------------------------------------------- */
 inline const Array<UInt> &
-DOFManagerDefault::getLocalEquationNumbers(const ID & dof_id) const {
-  return this->getDOFData(dof_id).local_equation_number;
-}
-
-inline const Array<UInt> &
 DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
   const auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
   return dof_data.associated_nodes;
-}
-/* -------------------------------------------------------------------------- */
-inline void DOFManagerDefault::extractElementEquationNumber(
-    const Array<UInt> & equation_numbers, const Vector<UInt> & connectivity,
-    UInt nb_degree_of_freedom, Vector<UInt> & element_equation_number) {
-  for (UInt i = 0, ld = 0; i < connectivity.size(); ++i) {
-    UInt n = connectivity(i);
-    for (UInt d = 0; d < nb_degree_of_freedom; ++d, ++ld) {
-      element_equation_number(ld) =
-          equation_numbers(n * nb_degree_of_freedom + d);
-    }
-  }
 }
 
 /* -------------------------------------------------------------------------- */

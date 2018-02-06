@@ -30,12 +30,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_petsc.hh"
-
+#include "communicator.hh"
 #include "cppargparse.hh"
+#include "sparse_matrix_petsc.hh"
 
 #if defined(AKANTU_USE_MPI)
-#include "mpi_type_wrapper.hh"
-#include "static_communicator.hh"
+#include "mpi_communicator_data.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 #include <petscsys.h>
@@ -43,9 +43,23 @@
 
 namespace akantu {
 
+int DOFManagerPETSc::petsc_dof_manager_instances = 0;
+
 /* -------------------------------------------------------------------------- */
 DOFManagerPETSc::DOFManagerPETSc(const ID & id, const MemoryID & memory_id)
     : DOFManager(id, memory_id) {
+  init();
+}
+
+/* -------------------------------------------------------------------------- */
+DOFManagerPETSc::DOFManagerPETSc(Mesh & mesh, const ID & id,
+                                 const MemoryID & memory_id)
+    : DOFManager(mesh, id, memory_id) {
+  init();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::init() {
 // check if the akantu types and PETSc one are consistant
 #if __cplusplus > 199711L
   static_assert(sizeof(Int) == sizeof(PetscInt),
@@ -62,26 +76,23 @@ DOFManagerPETSc::DOFManagerPETSc(const ID & id, const MemoryID & memory_id)
 #endif
 
 #if defined(AKANTU_USE_MPI)
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  const StaticCommunicatorMPI & mpi_st_comm =
-      dynamic_cast<const StaticCommunicatorMPI &>(
-          comm.getRealStaticCommunicator());
-
-  this->mpi_communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+  const auto & mpi_data = dynamic_cast<const MPICommunicatorData &>(
+      communicator.getCommunicatorData());
+  MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
+  this->mpi_communicator = mpi_comm;
 #else
   this->mpi_communicator = PETSC_COMM_SELF;
 #endif
 
   PetscBool isInitialized;
   PETSc_call(PetscInitialized, &isInitialized);
-  if(isInitialized) {
+  if (isInitialized) {
     cppargparse::ArgumentParser & argparser = getStaticArgumentParser();
     int & argc = argparser.getArgC();
     char **& argv = argparser.getArgV();
     PETSc_call(PetscInitialize, &argc, &argv, NULL, NULL);
-    PETSc_call(PetscPushErrorHandler, PETScErrorHandler, NULL);
+    PETSc_call(PetscPushErrorHandler, PetscIgnoreErrorHandler, NULL);
   }
-
 
   this->petsc_dof_manager_instances++;
 
@@ -108,52 +119,108 @@ void DOFManagerPETSc::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   PetscInt current_size;
   PETSc_call(VecGetSize, this->residual, &current_size);
 
-  if (current_size == 0) { // first time vector is set
-    PetscInt local_size = this->pure_local_system_size;
-    PETSc_call(VecSetSizes, this->residual, local_size, PETSC_DECIDE);
-    PETSc_call(VecSetFromOptions, this->residual);
+  PetscInt local_size = this->pure_local_system_size;
+  PETSc_call(VecSetSizes, this->residual, local_size, system_size);
 
-#ifndef AKANTU_NDEBUG
-    PetscInt global_size;
-    ierr = VecGetSize(this->residual, &global_size);
-    CHKERRXX(ierr);
-    AKANTU_DEBUG_ASSERT(this->system_size == UInt(global_size),
-                        "The local value of the system size does not match the "
-                        "one determined by PETSc");
-#endif
-    PetscInt start_dof, end_dof;
-    VecGetOwnershipRange(this->residual, &start_dof, &end_dof);
+  PetscInt start_dof, end_dof;
+  VecGetOwnershipRange(this->residual, &start_dof, &end_dof);
 
-    PetscInt * global_indices = new PetscInt[local_size];
-    global_indices[0] = start_dof;
+  std::vector<PetscInt> global_indices(local_size);
+  global_indices[0] = start_dof;
 
-    for (PetscInt d = 0; d < local_size; d++)
-      global_indices[d + 1] = global_indices[d] + 1;
+  for (PetscInt d = 0; d < local_size; d++)
+    global_indices[d + 1] = global_indices[d] + 1;
 
 // To be change if we switch to a block definition
 #if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
-    ISLocalToGlobalMappingCreate(this->communicator, 1, local_size,
-                                 global_indices, PETSC_COPY_VALUES,
-                                 &this->is_ltog);
+  ISLocalToGlobalMappingCreate(this->mpi_communicator, 1, local_size,
+                               global_indices.data(), PETSC_COPY_VALUES,
+                               &this->is_ltog_map);
 
 #else
-    ISLocalToGlobalMappingCreate(this->communicator, local_size, global_indices,
-                                 PETSC_COPY_VALUES, &this->is_ltog);
+  ISLocalToGlobalMappingCreate(this->mpi_communicator, local_size,
+                               global_indices, PETSC_COPY_VALUES,
+                               &this->is_ltog_map);
 #endif
 
-    VecSetLocalToGlobalMapping(this->residual, this->is_ltog);
-    delete[] global_indices;
-
-    ierr = VecDuplicate(this->residual, &this->solution);
-    CHKERRXX(ierr);
-
-  } else { // this is an update of the object already created
-    AKANTU_TO_IMPLEMENT();
-  }
-
-  /// set the solution to zero
-  // ierr = VecZeroEntries(this->solution);
-  // CHKERRXX(ierr);
+  VecSetLocalToGlobalMapping(this->residual, this->is_ltog_map);
 }
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::assembleToResidual(const ID & dof_id,
+                                         const Array<Real> & array_to_assemble,
+                                         Real scale_factor) {
+  const auto & is = getDOFDataTyped<DOFDataPETSc>(dof_id).is;
+  Vec y;
+  PETSc_call(VecGetLocalVector, this->residual, y);
+
+  Vec x;
+  PETSc_call(VecCreateSeqWithArray, PETSC_COMM_SELF, 1,
+             array_to_assemble.size(), array_to_assemble.storage(), &x);
+  PETSc_call(VecISAXPY, y, is, scale_factor, x);
+  PETSc_call(VecRestoreLocalVector, y, this->residual);
+  PETSc_call(VecDestroy, &y);
+  PETSc_call(VecDestroy, &x);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::clearResidual() {
+  PETSc_call(VecZeroEntries, this->residual);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::clearMatrix(const ID & mtx) {
+  auto & matrix = this->getMatrix(mtx);
+  matrix.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::clearLumpedMatrix(const ID & mtx) {
+  auto & global_lumped = this->getLumpedMatrix(mtx);
+  global_lumped.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+static void getLocalValues(Vec & garray, Array<Real> & larray,
+                           Array<Int> & lidx) {
+  PetscInt n = lidx.size();
+  Array<PetscInt> global_idx(n);
+
+  ISLocalToGlobalMapping mapping;
+  PETSc_call(VecGetLocalToGlobalMapping, garray, &mapping);
+  PETSc_call(ISLocalToGlobalMappingApply, mapping, n, lidx.storage(),
+             global_idx.storage());
+
+  PETSc_call(VecAssemblyBegin, garray);
+  PETSc_call(VecAssemblyEnd, garray);
+  PETSc_call(VecGetValues, garray, n, global_idx.storage(),
+             larray.storage());
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::getLumpedMatrixPerDOFs(const ID & dof_id,
+                                             const ID & lumped_mtx,
+                                             Array<Real> & lumped) {
+  auto & dof_data = this->getDOFData(dof_id);
+  auto & global_lumped = this->getLumpedMatrix(lumped_mtx);
+
+  //getLocalValues(global_lumped, lumped, dof_data.local_equation_number);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::getSolutionPerDOFs(const ID & dof_id,
+                                         Array<Real> & solution_array) {
+  auto & dof_data = this->getDOFData(dof_id);
+  getLocalValues(this->solution, solution_array,
+                 dof_data.local_equation_number);
+}
+
+/* -------------------------------------------------------------------------- */
+static bool dof_manager_is_registered[[gnu::unused]] =
+    DOFManagerFactory::getInstance().registerAllocator(
+        "petsc", [](Mesh & mesh, const ID & id,
+                    const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerPETSc>(mesh, id, mem_id);
+        });
 
 } // akantu
