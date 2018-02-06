@@ -143,10 +143,10 @@ public:
   virtual void updateGlobalBlockedDofs();
 
   /// apply boundary conditions to jacobian matrix
-  virtual void applyBoundary(const ID & matrix_id = "J");
+  void applyBoundary(const ID & matrix_id = "J") override;
 
-  // void getEquationsNumbers(const ID & dof_id,
-  //                          Array<UInt> & equation_numbers) override;
+  /// splits the solution storage from a global view to the per dof storages
+  void splitSolutionPerDOFs();
 
 protected:
   /// Get local part of an array corresponding to a given dofdata

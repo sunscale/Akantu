@@ -80,35 +80,57 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// register an array of degree of freedom
   void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                     DOFSupportType & support_type);
 
-  /// Assemble an array to the global residual array
   void assembleToResidual(const ID & dof_id,
                           const Array<Real> & array_to_assemble,
                           Real scale_factor = 1.) override;
 
-  /**
-   * Assemble elementary values to the global residual array. The dof number is
-   * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
-   * With 0 < n < nb_nodes_per_element and 0 < d < nb_dof_per_node
-   **/
   void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
       const Array<Real> & elementary_mat, const ElementType & type,
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements) override;
 
+  void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                    const Array<Real> & x,
+                                    Real scale_factor = 1) override {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  };
+
+  void assembleLumpedMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                          const Array<Real> & x,
+                                          Real scale_factor = 1) override {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
+  void assemblePreassembledMatrix(const ID & dof_id_m, const ID & dof_id_n,
+                                  const ID & matrix_id,
+                                  const TermsToAssemble & terms) override {
+    AKANTU_DEBUG_TO_IMPLEMENT();
+  }
+
   void clearResidual() override;
   void clearMatrix(const ID & mtx) override;
   void clearLumpedMatrix(const ID & mtx) override;
+
+  void applyBoundary(const ID & matrix_id = "J") override;
 
 protected:
   void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
                               Array<Real> & lumped) override;
   void getSolutionPerDOFs(const ID & dof_id,
                           Array<Real> & solution_array) override;
+
+  NonLinearSolver & getNewNonLinearSolver(
+      const ID & nls_solver_id,
+      const NonLinearSolverType & non_linear_solver_type) override;
+
+  TimeStepSolver &
+  getNewTimeStepSolver(const ID & time_step_solver_id,
+                       const TimeStepSolverType & type,
+                       NonLinearSolver & non_linear_solver) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -126,6 +148,9 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixPETSc & getMatrix(const ID & matrix_id);
 
+  /// Get the reference of an existing matrix
+  Vec & getLumpedMatrix(const ID & matrix_id);
+
   /// Get the solution array
   AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, this->solution, Vec &);
   /// Get the residual array
@@ -139,10 +164,14 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::map<ID, SparseMatrixPETSc *> PETScMatrixMap;
+  using PETScMatrixMap = std::map<ID, SparseMatrixPETSc *>;
+  using PETScLumpedMatrixMap = std::map<ID, Vec>;
 
   /// list of matrices registered to the dof manager
   PETScMatrixMap petsc_matrices;
+
+  /// list of lumped matrices registered
+  PETScLumpedMatrixMap petsc_lumped_matrices;
 
   /// PETSc version of the solution
   Vec solution;
@@ -156,6 +185,7 @@ private:
   /// Communicator associated to PETSc
   MPI_Comm mpi_communicator;
 
+  /// counter of instances to know when to finalize
   static int petsc_dof_manager_instances;
 };
 

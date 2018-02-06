@@ -1,6 +1,7 @@
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver.hh"
-#include "petscsnes.h"
+/* -------------------------------------------------------------------------- */
+#include <petscsnes.h>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NON_LINEAR_SOLVER_PETSC_HH__
@@ -8,7 +9,7 @@
 
 namespace akantu {
 
-class NonLinearSolverPETSc : NonLinearSolver {
+class NonLinearSolverPETSc : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

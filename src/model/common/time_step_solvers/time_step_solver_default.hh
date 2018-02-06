@@ -40,7 +40,7 @@
 #define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
 
 namespace akantu {
-class DOFManagerDefault;
+class DOFManager;
 }
 
 namespace akantu {
@@ -50,7 +50,7 @@ class TimeStepSolverDefault : public TimeStepSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  TimeStepSolverDefault(DOFManagerDefault & dof_manager,
+  TimeStepSolverDefault(DOFManager & dof_manager,
                         const TimeStepSolverType & type,
                         NonLinearSolver & non_linear_solver, const ID & id,
                         UInt memory_id);
@@ -91,9 +91,6 @@ private:
       std::map<ID, IntegrationScheme::SolutionType>;
   using DOFsIntegrationSchemesOwner = std::set<ID>;
 
-  /// DOFManager with its real type
-  DOFManagerDefault & dof_manager;
-
   /// Underlying integration scheme per dof, \todo check what happens in dynamic
   /// in case of coupled equations
   DOFsIntegrationSchemes integration_schemes;
@@ -105,7 +102,7 @@ private:
   DOFsIntegrationSchemesSolutionTypes solution_types;
 
   /// define if the mass matrix is lumped or not
-  bool is_mass_lumped;
+  bool is_mass_lumped{false};
 };
 
 } // namespace akantu

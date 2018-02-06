@@ -33,7 +33,8 @@
 #include "communicator.hh"
 #include "cppargparse.hh"
 #include "sparse_matrix_petsc.hh"
-
+#include "non_linear_solver_petsc.hh"
+#include "time_step_solver_default.hh"
 #if defined(AKANTU_USE_MPI)
 #include "mpi_communicator_data.hh"
 #endif
@@ -177,7 +178,7 @@ void DOFManagerPETSc::clearMatrix(const ID & mtx) {
 /* -------------------------------------------------------------------------- */
 void DOFManagerPETSc::clearLumpedMatrix(const ID & mtx) {
   auto & global_lumped = this->getLumpedMatrix(mtx);
-  global_lumped.clear();
+  PETSc_call(VecZeroEntries, global_lumped);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -193,8 +194,7 @@ static void getLocalValues(Vec & garray, Array<Real> & larray,
 
   PETSc_call(VecAssemblyBegin, garray);
   PETSc_call(VecAssemblyEnd, garray);
-  PETSc_call(VecGetValues, garray, n, global_idx.storage(),
-             larray.storage());
+  PETSc_call(VecGetValues, garray, n, global_idx.storage(), larray.storage());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -203,8 +203,7 @@ void DOFManagerPETSc::getLumpedMatrixPerDOFs(const ID & dof_id,
                                              Array<Real> & lumped) {
   auto & dof_data = this->getDOFData(dof_id);
   auto & global_lumped = this->getLumpedMatrix(lumped_mtx);
-
-  //getLocalValues(global_lumped, lumped, dof_data.local_equation_number);
+  getLocalValues(global_lumped, lumped, dof_data.local_equation_number);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -213,6 +212,30 @@ void DOFManagerPETSc::getSolutionPerDOFs(const ID & dof_id,
   auto & dof_data = this->getDOFData(dof_id);
   getLocalValues(this->solution, solution_array,
                  dof_data.local_equation_number);
+}
+
+/* -------------------------------------------------------------------------- */
+NonLinearSolver & DOFManagerPETSc::getNewNonLinearSolver(
+    const ID & id,
+    const NonLinearSolverType & type) {
+  ID non_linear_solver_id = this->id + ":nls:" + id;
+  std::unique_ptr<NonLinearSolver> nls = std::make_unique<NonLinearSolverPETSc>(
+        *this, type, non_linear_solver_id, this->memory_id);
+
+  return this->registerNonLinearSolver(non_linear_solver_id, nls);
+}
+
+/* -------------------------------------------------------------------------- */
+TimeStepSolver &
+DOFManagerPETSc::getNewTimeStepSolver(const ID & id,
+                                      const TimeStepSolverType & type,
+                                      NonLinearSolver & non_linear_solver) {
+  ID time_step_solver_id = this->id + ":tss:" + id;
+
+  std::unique_ptr<TimeStepSolver> tss = std::make_unique<TimeStepSolverDefault>(
+      *this, type, non_linear_solver, time_step_solver_id, this->memory_id);
+
+  return this->registerTimeStepSolver(time_step_solver_id, tss);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -372,6 +372,20 @@ void DOFManagerDefault::updateGlobalBlockedDofs() {
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::splitSolutionPerDOFs() {
+  auto it = this->dofs.begin();
+  auto end = this->dofs.end();
+
+  for (; it != end; ++it) {
+    DOFData & dof_data = *it->second;
+    dof_data.solution.resize(dof_data.dof->size() *
+                             dof_data.dof->getNbComponent());
+    this->getSolutionPerDOFs(it->first, dof_data.solution);
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
 template <typename T>
 void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
                                         const Array<T> & global_array,

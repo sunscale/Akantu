@@ -366,19 +366,6 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::splitSolutionPerDOFs() {
-  auto it = this->dofs.begin();
-  auto end = this->dofs.end();
-
-  for (; it != end; ++it) {
-    DOFData & dof_data = *it->second;
-    dof_data.solution.resize(dof_data.dof->size() *
-                             dof_data.dof->getNbComponent());
-    this->getSolutionPerDOFs(it->first, dof_data.solution);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
 SparseMatrix &
 DOFManager::registerSparseMatrix(const ID & matrix_id,
                                  std::unique_ptr<SparseMatrix> & matrix) {

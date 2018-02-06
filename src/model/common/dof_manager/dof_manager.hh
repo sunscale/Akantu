@@ -180,8 +180,7 @@ public:
   /// sets the lumped matrix to 0
   virtual void clearLumpedMatrix(const ID & mtx) = 0;
 
-  /// splits the solution storage from a global view to the per dof storages
-  void splitSolutionPerDOFs();
+  virtual void applyBoundary(const ID & matrix_id = "J") = 0;
 
   /// extract a lumped matrix part corresponding to a given dof
   virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
