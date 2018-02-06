@@ -1,4 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
+from __future__ import print_function
 ################################################################
 import os
 import subprocess
@@ -6,14 +8,11 @@ import numpy as np
 import akantu
 ################################################################
 
+
 class FixedValue:
 
     def __init__(self, value, axis):
         self.value = value
-        if axis == 'x':
-            axis = 0
-        if axis == 'y':
-            axis = 1
         self.axis = axis
 
     def operator(self, node, flags, disp, coord):
@@ -29,38 +28,38 @@ class LocalElastic:
 
     def __init__(self):
 
-        ## young modulus
+        # young modulus
         self.E = 1
-        ## Poisson coefficient
+        # Poisson coefficient
         self.nu = 0.3
-        ## density
+        # density
         self.rho = 1
-        ## First Lame coefficient
-        self._lambda = self.nu * self.E / ((1 + self.nu) * (1 - 2*self.nu))
-        ## Second Lame coefficient (shear modulus)
+        # First Lame coefficient
+        self._lambda = self.nu * self.E / ((1 + self.nu) * (1 - 2 * self.nu))
+        # Second Lame coefficient (shear modulus)
         self.mu = self.E / (2 * (1 + self.nu))
 
-    ## declares all the internals
+    # declares all the internals
     @staticmethod
     def registerInternals():
         return []
 
-    ## declares all the parameters that could be parsed
+    # declares all the parameters that could be parsed
     @staticmethod
     def registerParam():
         return []
 
-    ## declares all the parameters that are needed
-    def getPushWaveSpeed(self):
-        return np.sqrt((self._lambda + 2*self.mu)/self.rho)
+    # declares all the parameters that are needed
+    def getPushWaveSpeed(self, params):
+        return np.sqrt((self._lambda + 2 * self.mu) / self.rho)
 
-    ## compute small deformation tensor
+    # compute small deformation tensor
     @staticmethod
     def computeEpsilon(grad_u):
         return 0.5 * (grad_u + np.einsum('aij->aji', grad_u))
 
-    ## constitutive law for a given quadrature point
-    def computeStress(self, grad_u,sigma, dummy_internals):
+    # constitutive law for a given quadrature point
+    def computeStress(self, grad_u, sigma, internals, params):
         lbda = 1.
         mu = 1.
         nquads = grad_u.shape[0]
@@ -68,7 +67,7 @@ class LocalElastic:
         epsilon = self.computeEpsilon(grad_u)
         sigma = sigma.reshape((nquads, 2, 2))
         trace = np.trace(grad_u, axis1=1, axis2=2)
-        sigma[:, :, :] = (np.einsum('a,ij->aij', trace, lbda*np.eye(2))
+        sigma[:, :, :] = (np.einsum('a,ij->aij', trace, lbda * np.eye(2))
                           + mu * epsilon)
 
 
@@ -76,54 +75,51 @@ class LocalElastic:
 def main():
 
     spatial_dimension = 2
-    Lbar = 10.
     akantu.initialize('material.dat')
 
     mesh_file = 'bar.msh'
     max_steps = 250
     time_step = 1e-3
 
-    #if mesh was not created the calls gmsh to generate it
+    # if mesh was not created the calls gmsh to generate it
     if not os.path.isfile(mesh_file):
         ret = subprocess.call('gmsh -2 bar.geo bar.msh', shell=True)
         if ret != 0:
-            raise Exception('execution of GMSH failed: do you have it installed ?')
-
+            raise Exception(
+                'execution of GMSH failed: do you have it installed ?')
 
     ################################################################
-    ## Initialization
+    # Initialization
     ################################################################
     mesh = akantu.Mesh(spatial_dimension)
     mesh.read(mesh_file)
 
-    mesh.createGroupsFromStringMeshData("physical_names")
-    model = akantu.SolidMechanicsModel(mesh)
-
-    model.initFull(akantu.SolidMechanicsModelOptions(akantu._explicit_lumped_mass, True))
     mat = LocalElastic()
-    model.registerNewPythonMaterial(mat, "local_elastic")
-    model.initMaterials()
+    akantu.registerNewPythonMaterial(mat, "local_elastic")
 
+    model = akantu.SolidMechanicsModel(mesh)
+    model.initFull(akantu.SolidMechanicsModelOptions(
+        akantu._explicit_lumped_mass))
 
     model.setBaseName("waves")
     model.addDumpFieldVector("displacement")
     model.addDumpFieldVector("acceleration")
     model.addDumpFieldVector("velocity")
-    model.addDumpFieldVector("residual")
-    model.addDumpFieldVector("force")
+    model.addDumpFieldVector("internal_force")
+    model.addDumpFieldVector("external_force")
     model.addDumpField("strain")
     model.addDumpField("stress")
     model.addDumpField("blocked_dofs")
 
     ################################################################
-    ## boundary conditions
+    # boundary conditions
     ################################################################
 
-    model.applyDirichletBC(FixedValue(0, 'x'), "XBlocked")
-    model.applyDirichletBC(FixedValue(0, 'y'), "YBlocked")
+    model.applyDirichletBC(FixedValue(0, akantu._x), "XBlocked")
+    model.applyDirichletBC(FixedValue(0, akantu._y), "YBlocked")
 
     ################################################################
-    ## initial conditions
+    # initial conditions
     ################################################################
 
     displacement = model.getDisplacement()
@@ -137,43 +133,46 @@ def main():
         x = position[i, 0] - 5.
         L = pulse_width
         k = 0.1 * 2 * np.pi * 3 / L
-        displacement[i, 0] = A * np.sin(k * x) * np.exp(-(k * x) * (k * x) / (L * L))
+        displacement[i, 0] = A * \
+            np.sin(k * x) * np.exp(-(k * x) * (k * x) / (L * L))
 
     ################################################################
-    ## timestep value computation
+    # timestep value computation
     ################################################################
     time_factor = 0.8
     stable_time_step = model.getStableTimeStep() * time_factor
 
-    print "Stable Time Step = {0}".format(stable_time_step)
-    print "Required Time Step = {0}".format(time_step)
+    print("Stable Time Step = {0}".format(stable_time_step))
+    print("Required Time Step = {0}".format(time_step))
 
     time_step = stable_time_step * time_factor
 
     model.setTimeStep(time_step)
 
     ################################################################
-    ## loop for evolution of motion dynamics
+    # loop for evolution of motion dynamics
     ################################################################
-    model.updateResidual()
+    model.assembleInternalForces()
 
-    epot = model.getEnergy('potential')
-    ekin = model.getEnergy('kinetic')
-
-    print "step,step * time_step,epot,ekin,epot + ekin"
-    for step in range(0, max_steps+1):
-
-        if step % 10 == 0:
-            model.dump()
-        ## output energy calculation to screen
-        print "{0},{1},{2},{3},{4}".format(step, step * time_step,
-                                           epot, ekin,
-                                           (epot + ekin))
+    print("step,step * time_step,epot,ekin,epot + ekin")
+    for step in range(0, max_steps + 1):
 
         model.solveStep()
 
+        if step % 10 == 0:
+            model.dump()
+
+        epot = model.getEnergy('potential')
+        ekin = model.getEnergy('kinetic')
+
+        # output energy calculation to screen
+        print("{0},{1},{2},{3},{4}".format(step, step * time_step,
+                                           epot, ekin,
+                                           (epot + ekin)))
+
     akantu.finalize()
     return
+
 
 ################################################################
 if __name__ == "__main__":
