@@ -4,6 +4,8 @@ import akantu
 import unittest
 import numpy as np
 import os
+import sys
+
 
 class TestPatchTestLinear(unittest.TestCase):
 
@@ -37,7 +39,7 @@ class TestPatchTestLinear(unittest.TestCase):
 
     def setUp(self):
         self.mesh = akantu.Mesh(self.dim)
-        self.mesh.read(os.path.join('data', str(self.elem_type_str) + ".msh"))
+        self.mesh.read(str(self.elem_type_str) + ".msh")
         akantu.MeshUtils.buildFacets(self.mesh)
         self.mesh.createBoundaryGroupFromGeometry()
         self.model = self.model_type(self.mesh)
@@ -47,7 +49,7 @@ class TestPatchTestLinear(unittest.TestCase):
         del self.mesh
 
     def initModel(self, method, material_file):
-        akantu.initialize(os.path.join('data', material_file))
+        akantu.initialize(material_file)
         akantu.setDebugLevel(akantu.dblError)
         self.model.initFull(akantu.SolidMechanicsModelOptions(method))
         self.applyBC()
@@ -123,4 +125,6 @@ class TestPatchTestLinear(unittest.TestCase):
             test_case = cls(method_name, type_name, functor)
             suite.addTest(test_case)
 
-        return suite
+        result = unittest.TextTestRunner(verbosity=1).run(suite)
+        ret = not result.wasSuccessful()
+        sys.exit(ret)

@@ -23,5 +23,4 @@ def foo(self):
     self.checkAll()
 
 
-suite = TestPatchTestSMMLinear.TYPED_TEST(foo, "Static")
-unittest.TextTestRunner(verbosity=1).run(suite)
+TestPatchTestSMMLinear.TYPED_TEST(foo, "Static")
