@@ -122,6 +122,7 @@ void EmbeddedInterfaceModel::initFullImpl(const ModelOptions & options) {
 
 void EmbeddedInterfaceModel::initModel() {
   // Initialize interface FEEngine
+  SolidMechanicsModel::initModel();
   FEEngine & engine = getFEEngine("EmbeddedInterfaceFEEngine");
   engine.initShapeFunctions(_not_ghost);
   engine.initShapeFunctions(_ghost);
@@ -141,7 +142,8 @@ void EmbeddedInterfaceModel::assignMaterialToElements(
                      material_index(element) = mat_index;
                      materials[mat_index]->addElement(element);
                    },
-                   _element_filter = filter);
+                   _element_filter = filter,
+		   _spatial_dimension = 1);
 
   SolidMechanicsModel::assignMaterialToElements(filter);
 }

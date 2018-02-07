@@ -69,10 +69,14 @@ int main(int argc, char * argv[]) {
   if (model.getInterfaceMesh().getSpatialDimension() != 2)
     return EXIT_FAILURE;
 
-  model.assembleStiffnessMatrix();
+  try {
+    model.solveStep();
+  } catch (...) {
+  }
 
   SparseMatrixAIJ & K =
       dynamic_cast<SparseMatrixAIJ &>(model.getDOFManager().getMatrix("K"));
+  K.saveMatrix("stiffness.mtx");
 
   Math::setTolerance(1e-8);
 

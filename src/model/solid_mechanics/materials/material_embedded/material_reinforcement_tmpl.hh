@@ -39,7 +39,7 @@ namespace akantu {
 template <class Mat, UInt dim>
 MaterialReinforcement<Mat, dim>::MaterialReinforcement(
     EmbeddedInterfaceModel & model, const ID & id)
-    : Mat(model, model.getInterfaceMesh().getSpatialDimension(),
+    : Mat(model, 1,
           model.getInterfaceMesh(),
           model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
       emodel(model),
@@ -53,7 +53,7 @@ MaterialReinforcement<Mat, dim>::MaterialReinforcement(
                         model.getFEEngine("EmbeddedInterfaceFEEngine"),
                         this->element_filter),
       pre_stress("pre_stress", *this, 1,
-                 model.getFEEngine("EmbeddedInterfaceFEEEngine"),
+                 model.getFEEngine("EmbeddedInterfaceFEEngine"),
                  this->element_filter),
       area(1.0), shape_derivatives() {
   AKANTU_DEBUG_IN();
@@ -95,14 +95,14 @@ MaterialReinforcement<Mat, dim>::~MaterialReinforcement() {
 
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::initMaterial() {
-  Material::initMaterial();
+  Mat::initMaterial();
 
   stress_embedded.initialize(dim * dim);
   gradu_embedded.initialize(dim * dim);
   pre_stress.initialize(1);
 
   /// We initialise the stuff that is not going to change during the simulation
-  this->initBackgroundFilter();
+  this->initFilters();
   this->allocBackgroundShapeDerivatives();
   this->initBackgroundShapeDerivatives();
   this->initDirectingCosines();
@@ -111,13 +111,13 @@ void MaterialReinforcement<Mat, dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 
 namespace detail {
-  class BackgroundFilterInitializer : public MeshElementTypeMapArrayInializer {
+  class FilterInitializer : public MeshElementTypeMapArrayInializer {
   public:
-    BackgroundFilterInitializer(EmbeddedInterfaceModel & emodel,
-                                const GhostType & ghost_type)
-        : MeshElementTypeMapArrayInializer(
-              emodel.getMesh(), emodel.getSpatialDimension(), 2, // pairs
-              ghost_type, _ek_regular) {}
+    FilterInitializer(EmbeddedInterfaceModel & emodel,
+                      const GhostType & ghost_type)
+        : MeshElementTypeMapArrayInializer(emodel.getMesh(),
+                                           1, emodel.getSpatialDimension(),
+                                           ghost_type, _ek_regular) {}
 
     UInt size(const ElementType & /*bgtype*/) const override { return 0; }
   };
@@ -126,23 +126,28 @@ namespace detail {
 /* -------------------------------------------------------------------------- */
 /// Initialize the filter for background elements
 template <class Mat, UInt dim>
-void MaterialReinforcement<Mat, dim>::initBackgroundFilter() {
+void MaterialReinforcement<Mat, dim>::initFilters() {
   for (auto gt : ghost_types) {
     for (auto && type : emodel.getInterfaceMesh().elementTypes(1, gt)) {
-      std::string shaped_id = "embedded_shape_derivatives";
+      std::string shaped_id = "filter";
       if (gt == _ghost)
         shaped_id += ":ghost";
 
-      auto & filter = background_filter(
+      auto & background =
+          background_filter(std::make_unique<ElementTypeMapArray<UInt>>(
+                                "bg_" + shaped_id, this->name),
+                            type, gt);
+      auto & foreground = foreground_filter(
           std::make_unique<ElementTypeMapArray<UInt>>(shaped_id, this->name),
           type, gt);
-      filter->initialize(detail::BackgroundFilterInitializer(emodel, gt), 0,
-                         true);
+      foreground->initialize(detail::FilterInitializer(emodel, gt), 0, true);
+      background->initialize(detail::FilterInitializer(emodel, gt), 0, true);
 
       // Computing filters
-      for (auto && bg_type : filter->elementTypes(dim, gt)) {
-        filterInterfaceBackgroundElements((*filter)(bg_type), bg_type, type,
-                                          gt);
+      for (auto && bg_type : background->elementTypes(dim, gt)) {
+	std::cout << "Type " << bg_type << std::endl;
+        filterInterfaceBackgroundElements(
+            (*foreground)(bg_type), (*background)(bg_type), bg_type, type, gt);
       }
     }
   }
@@ -152,14 +157,13 @@ void MaterialReinforcement<Mat, dim>::initBackgroundFilter() {
 /// Construct a filter for a (interface_type, background_type) pair
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::filterInterfaceBackgroundElements(
-    Array<UInt> & filter, const ElementType & type,
-    const ElementType & interface_type, GhostType ghost_type) {
+    Array<UInt> & foreground, Array<UInt> & background,
+    const ElementType & type, const ElementType & interface_type,
+    GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  filter.resize(0);
-
-  AKANTU_DEBUG_ASSERT(filter.getNbComponent() == 2,
-                      "background filter should have 2 components");
+  foreground.resize(0);
+  background.resize(0);
 
   Array<Element> & elements =
       emodel.getInterfaceAssociatedElements(interface_type, ghost_type);
@@ -167,8 +171,10 @@ void MaterialReinforcement<Mat, dim>::filterInterfaceBackgroundElements(
 
   for (auto & elem_id : elem_filter) {
     Element & elem = elements(elem_id);
-    if (elem.type == type)
-      filter.push_back(Vector<UInt>({elem_id, elem.element}));
+    if (elem.type == type) {
+      background.push_back(elem.element);
+      foreground.push_back(elem_id);
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -180,16 +186,23 @@ namespace detail {
   class BackgroundShapeDInitializer : public ElementTypeMapArrayInializer {
   public:
     BackgroundShapeDInitializer(UInt spatial_dimension,
+				FEEngine & engine,
+				const ElementType & foreground_type,
                                 ElementTypeMapArray<UInt> & filter,
                                 const GhostType & ghost_type)
         : ElementTypeMapArrayInializer(spatial_dimension, 0, ghost_type,
                                        _ek_regular) {
-      // Conting how many background elements are affected by elements of
+      auto nb_quad = engine.getNbIntegrationPoints(foreground_type);
+      // Counting how many background elements are affected by elements of
       // interface_type
       for (auto type : filter.elementTypes(this->spatial_dimension)) {
         // Inserting size
-        array_size_per_bg_type(filter(type).size(), type, this->ghost_type);
+        array_size_per_bg_type(filter(type).size() * nb_quad, type,
+                               this->ghost_type);
       }
+
+      std::cout << array_size_per_bg_type << std::endl;
+      std::cout << this->spatial_dimension << std::endl;
     }
 
     auto elementTypes() const -> decltype(auto) {
@@ -229,8 +242,10 @@ void MaterialReinforcement<Mat, dim>::allocBackgroundShapeDerivatives() {
           std::make_unique<ElementTypeMapArray<Real>>(shaped_id, this->name),
           type, gt);
       shaped_etma->initialize(
-          detail::BackgroundShapeDInitializer(emodel.getSpatialDimension(),
-                                              *background_filter(type), gt),
+          detail::BackgroundShapeDInitializer(
+              emodel.getSpatialDimension(),
+              emodel.getFEEngine("EmbeddedInterfaceFEEngine"), type,
+              *background_filter(type, gt), gt),
           0, true);
     }
   }
@@ -279,17 +294,20 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
       (*shape_derivatives(interface_type, ghost_type))(bg_type, ghost_type);
   auto & background_elements =
       (*background_filter(interface_type, ghost_type))(bg_type, ghost_type);
+  auto & foreground_elements =
+      (*foreground_filter(interface_type, ghost_type))(bg_type, ghost_type);
 
   auto shapesd_begin =
       background_shapesd.begin(nb_stress, ndof, nb_quads_per_elem);
   auto quad_begin = quad_pos.begin(dim, Mesh::getNbNodesPerElement(bg_type));
 
-  for (const auto & elem : make_view(background_elements, 2)) {
+  for (auto && tuple : zip(background_elements, foreground_elements)) {
+    UInt bg = std::get<0>(tuple), fg = std::get<1>(tuple);
     for (UInt i = 0; i < nb_quads_per_elem; ++i) {
-      Matrix<Real> shapesd = Tensor3<Real>(shapesd_begin[elem(0)])(i);
-      Vector<Real> quads = Matrix<Real>(quad_begin[elem(0)])(i);
+      Matrix<Real> shapesd = Tensor3<Real>(shapesd_begin[fg])(i);
+      Vector<Real> quads = Matrix<Real>(quad_begin[fg])(i);
 
-      engine.computeShapeDerivatives(quads, elem(1), bg_type, shapesd,
+      engine.computeShapeDerivatives(quads, bg, bg_type, shapesd,
                                      ghost_type);
     }
   }
@@ -361,8 +379,6 @@ void MaterialReinforcement<Mat, dim>::computeGradU(const ElementType & type,
                                                    GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<UInt> & elem_filter = this->element_filter(type, ghost_type);
-  UInt nb_element = elem_filter.size();
   UInt nb_quad_points = emodel.getFEEngine("EmbeddedInterfaceFEEngine")
                             .getNbIntegrationPoints(type);
 
@@ -377,21 +393,18 @@ void MaterialReinforcement<Mat, dim>::computeGradU(const ElementType & type,
     Array<Real> & shapesd =
         shape_derivatives(type, ghost_type)->operator()(*back_it, ghost_type);
 
-    Array<UInt> * background_filter =
-        new Array<UInt>(nb_element, 1, "background_filter");
-    filterInterfaceBackgroundElements(*background_filter, *back_it, type,
-                                      ghost_type);
+    auto & filter = getBackgroundFilter(type, *back_it, ghost_type);
 
-    Array<Real> * disp_per_element =
-        new Array<Real>(0, dim * nodes_per_background_e, "disp_elem");
+    Array<Real> disp_per_element(0, dim * nodes_per_background_e, "disp_elem");
+
     FEEngine::extractNodalToElementField(
-        emodel.getMesh(), emodel.getDisplacement(), *disp_per_element, *back_it,
-        ghost_type, *background_filter);
+        emodel.getMesh(), emodel.getDisplacement(), disp_per_element, *back_it,
+        ghost_type, filter);
 
     Array<Real>::matrix_iterator disp_it =
-        disp_per_element->begin(dim, nodes_per_background_e);
+        disp_per_element.begin(dim, nodes_per_background_e);
     Array<Real>::matrix_iterator disp_end =
-        disp_per_element->end(dim, nodes_per_background_e);
+        disp_per_element.end(dim, nodes_per_background_e);
 
     Array<Real>::matrix_iterator shapes_it =
         shapesd.begin(dim, nodes_per_background_e);
@@ -407,8 +420,6 @@ void MaterialReinforcement<Mat, dim>::computeGradU(const ElementType & type,
       }
     }
 
-    delete background_filter;
-    delete disp_per_element;
   }
 
   AKANTU_DEBUG_OUT();
@@ -518,12 +529,12 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForcesInterface(
 
   Array<UInt> background_filter(nb_element, 1, "background_filter");
 
-  filterInterfaceBackgroundElements(background_filter, background_type,
-                                    interface_type, ghost_type);
+  auto & filter =
+      getBackgroundFilter(interface_type, background_type, ghost_type);
 
   emodel.getDOFManager().assembleElementalArrayLocalArray(
       residual_interface, emodel.getInternalForce(), background_type,
-      ghost_type, -1., background_filter);
+      ghost_type, -1., filter);
 
   AKANTU_DEBUG_OUT();
 }
@@ -683,14 +694,12 @@ void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrixInterface(
   // of the reinforcements, any rotation of the local stiffness matrix
   // can be done here
 
-  Array<UInt> background_filter(nb_element, 1, "background_filter");
-
-  filterInterfaceBackgroundElements(background_filter, background_type,
-                                    interface_type, ghost_type);
+  auto & filter =
+      getBackgroundFilter(interface_type, background_type, ghost_type);
 
   emodel.getDOFManager().assembleElementalMatricesToMatrix(
       "K", "displacement", K_interface, background_type, ghost_type, _symmetric,
-      background_filter);
+      filter);
 
   AKANTU_DEBUG_OUT();
 }
