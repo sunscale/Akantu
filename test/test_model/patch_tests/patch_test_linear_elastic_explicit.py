@@ -2,7 +2,7 @@
 
 from patch_test_linear_solid_mechanics_fixture import TestPatchTestSMMLinear
 import akantu
-import unittest
+
 
 def foo(self):
     filename = "material_check_stress_plane_stress.dat"

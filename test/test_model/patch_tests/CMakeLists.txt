@@ -85,3 +85,12 @@ register_test(test_linear_anisotropic_explicit_python
   FILES_TO_COPY patch_test_linear_fixture.py
   FILES_TO_COPY patch_test_linear_solid_mechanics_fixture.py
   FILES_TO_COPY data/material_anisotropic.dat)
+
+
+register_test(patch_test_linear_heat_transfer_explicit_python
+  SCRIPT patch_test_linear_heat_transfer_explicit.py
+  PYTHON
+  PACKAGE python_interface
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_heat_transfer_fixture.py
+  FILES_TO_COPY data/heat_transfer_input.dat)
