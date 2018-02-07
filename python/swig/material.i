@@ -29,6 +29,8 @@
   #include "solid_mechanics_model.hh"
   #include "material_python.hh"
   #include "parameter_registry.hh"
+  #include "parsable.hh"
+  #include "parser.hh"
   %}
 
 namespace akantu {
@@ -50,15 +52,16 @@ namespace akantu {
    }
 
    Real getParamReal(const ID & param){
-     Real res = $self->getParam(param);
+     Real res = $self->get(param);
      return res;
    }
    UInt getParamUInt(const ID & param){
-     UInt res = $self->getParam(param);
+     UInt res = $self->get(param);
      return res;
    }
    int getParamInt(const ID & param){
-     int res = $self->getParam(param);
+     int res = $self->get(param);
      return res;
    }
 }
+

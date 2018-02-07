@@ -50,3 +50,21 @@ namespace akantu {
 }
 
 %include "heat_transfer_model.hh"
+
+
+%extend akantu::HeatTransferModel {
+
+  Real getParamReal(const ID & param){
+     Real res = $self->get(param);
+     return res;
+   }
+   UInt getParamUInt(const ID & param){
+     UInt res = $self->get(param);
+     return res;
+   }
+   int getParamInt(const ID & param){
+     int res = $self->get(param);
+     return res;
+   }
+}
+

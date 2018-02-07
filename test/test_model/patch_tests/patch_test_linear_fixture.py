@@ -17,10 +17,7 @@ class TestPatchTestLinear(unittest.TestCase):
     result_tolerance = 1e-14
     dofs_tolerance = 1e-15
 
-    def __init__(self, test_name, elem_type_str='_triangle_3', functor=None):
-
-        # for k,v in functor.items():
-        #     self.__setattr__(k, v)
+    def __init__(self, test_name, elem_type_str, functor=None):
 
         self.test_name = test_name
         self.functor = functor
@@ -38,7 +35,7 @@ class TestPatchTestLinear(unittest.TestCase):
             return self._internal_call
 
     def setUp(self):
-        self.mesh = akantu.Mesh(self.dim)
+        self.mesh = akantu.Mesh(self.dim, self.elem_type_str)
         self.mesh.read(str(self.elem_type_str) + ".msh")
         akantu.MeshUtils.buildFacets(self.mesh)
         self.mesh.createBoundaryGroupFromGeometry()

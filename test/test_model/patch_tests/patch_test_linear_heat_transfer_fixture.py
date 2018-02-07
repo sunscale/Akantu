@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 import patch_test_linear_fixture
+import akantu
 
 
 class TestPatchTestHTMLinear(patch_test_linear_fixture.TestPatchTestLinear):
+
+    model_type = akantu.HeatTransferModel
 
     def applyBC(self):
         super().applyBC()
