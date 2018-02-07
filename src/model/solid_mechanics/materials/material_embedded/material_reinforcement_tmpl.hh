@@ -145,7 +145,6 @@ void MaterialReinforcement<Mat, dim>::initFilters() {
 
       // Computing filters
       for (auto && bg_type : background->elementTypes(dim, gt)) {
-	std::cout << "Type " << bg_type << std::endl;
         filterInterfaceBackgroundElements(
             (*foreground)(bg_type), (*background)(bg_type), bg_type, type, gt);
       }
@@ -200,9 +199,6 @@ namespace detail {
         array_size_per_bg_type(filter(type).size() * nb_quad, type,
                                this->ghost_type);
       }
-
-      std::cout << array_size_per_bg_type << std::endl;
-      std::cout << this->spatial_dimension << std::endl;
     }
 
     auto elementTypes() const -> decltype(auto) {

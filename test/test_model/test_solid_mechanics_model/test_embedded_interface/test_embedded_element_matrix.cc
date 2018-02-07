@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 
 #include "embedded_interface_model.hh"
+#include "sparse_solver.hh"
 #include "sparse_matrix_aij.hh"
 
 using namespace akantu;
@@ -69,9 +70,13 @@ int main(int argc, char * argv[]) {
   if (model.getInterfaceMesh().getSpatialDimension() != 2)
     return EXIT_FAILURE;
 
-  try {
+  try { // matrix should be singular
     model.solveStep();
-  } catch (...) {
+  } catch (debug::SingularMatrixException & e) {
+    std::cerr << "Matrix is singular, relax, everything is fine :)" << std::endl;
+  } catch (debug::Exception & e) {
+    std::cerr << "Unexpceted error: " << e.what() << std::endl;
+    throw e;
   }
 
   SparseMatrixAIJ & K =
