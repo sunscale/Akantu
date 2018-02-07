@@ -35,7 +35,10 @@
 #include "aka_common.hh"
 #include "aka_csr.hh"
 #include "element.hh"
+#include "python_functor.hh"
 %}
+
+%include "stl.i"
 
 namespace akantu {
   %ignore getStaticParser;
@@ -102,7 +105,21 @@ namespace akantu {
       char ** null = nullptr;
       initialize(input_file, nb_args, null);
     }
+
+#define AKANTU_PP_STR_TO_TYPE2(s, data, elem)                    \
+    ({ BOOST_PP_STRINGIZE(elem) , elem})
+
+    PyObject * getElementTypes(){
+      
+    std::map<std::string, akantu::ElementType> element_types{          
+      BOOST_PP_SEQ_FOR_EACH_I(                                               
+          AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(AKANTU_ek_regular_ELEMENT_TYPE),
+          BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE2, akantu, AKANTU_ek_regular_ELEMENT_TYPE))};  
+    
+    return akantu::PythonFunctor::convertToPython(element_types);
+    }
   }
+  
 %}
 
 %pythoncode %{
@@ -122,3 +139,4 @@ namespace akantu {
 %include "aka_common.hh"
 %include "aka_element_classes_info.hh"
 %include "element.hh"
+%include "aka_error.hh"

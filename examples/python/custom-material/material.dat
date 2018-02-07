@@ -1,5 +1,5 @@
 material local_elastic [
-	 name = steel
+	 name = fictive
 	 rho = 1.      # density
 	 E = 1.        # young modulus
 	 nu = .3       # poisson ratio

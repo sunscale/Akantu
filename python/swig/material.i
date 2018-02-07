@@ -28,7 +28,8 @@
 %{
   #include "solid_mechanics_model.hh"
   #include "material_python.hh"
-%}
+  #include "parameter_registry.hh"
+  %}
 
 namespace akantu {
   %ignore Material::onNodesAdded;
@@ -46,5 +47,18 @@ namespace akantu {
    Array<Real> & getArrayReal(const ID & id, const ElementType & type,
                               const GhostType & ghost_type = _not_ghost) {
       return $self->getArray<Real>(id, type, ghost_type);
+   }
+
+   Real getParamReal(const ID & param){
+     Real res = $self->getParam(param);
+     return res;
+   }
+   UInt getParamUInt(const ID & param){
+     UInt res = $self->getParam(param);
+     return res;
+   }
+   int getParamInt(const ID & param){
+     int res = $self->getParam(param);
+     return res;
    }
 }

@@ -41,5 +41,4 @@ Recombine Surface "*";
 Physical Surface(113) = {111, 109};
 
 Physical Line("XBlocked") = {103, 102};
-Physical Line("ImposedVelocity") = {105, 106};
 Physical Line("YBlocked") = {104, 101};
