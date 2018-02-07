@@ -3,7 +3,6 @@
 import akantu
 import unittest
 import numpy as np
-import os
 import sys
 
 
@@ -90,6 +89,7 @@ class TestPatchTestLinear(unittest.TestCase):
                 result_error = np.abs(diff).max()
             else:
                 result_error = np.abs(diff).max() / norm
+
             self.assertAlmostEqual(0., result_error,
                                    delta=self.result_tolerance)
 
