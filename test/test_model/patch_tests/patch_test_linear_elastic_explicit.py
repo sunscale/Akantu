@@ -5,11 +5,14 @@ import akantu
 
 
 def foo(self):
+
     filename = "material_check_stress_plane_stress.dat"
     if self.plane_strain:
         filename = "material_check_stress_plane_strain.dat"
 
-    self.initModel(akantu._explicit_lumped_mass, filename)
+    self.initModel(
+        akantu.SolidMechanicsModelOptions(akantu._explicit_lumped_mass),
+        filename)
 
     coordinates = self.mesh.getNodes()
     displacement = self.model.getDisplacement()

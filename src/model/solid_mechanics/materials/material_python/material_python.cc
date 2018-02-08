@@ -50,7 +50,7 @@ MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
     std::stringstream sstr;
     sstr << "PythonParameter" << i;
     this->registerParam(param_names[i], local_params[param_names[i]], 0.,
-                        _pat_parsable, sstr.str());
+                        _pat_parsable |  _pat_readable, sstr.str());
   }
 
   AKANTU_DEBUG_OUT();

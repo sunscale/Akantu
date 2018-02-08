@@ -6,7 +6,9 @@ import akantu
 
 def foo(self):
 
-    self.initModel(akantu._explicit_lumped_mass, "heat_transfer_input.dat")
+    self.initModel(
+        akantu.HeatTransferModelOptions(akantu._explicit_lumped_mass),
+        "heat_transfer_input.dat")
 
     coordinates = self.mesh.getNodes()
     temperature = self.model.getTemperature()

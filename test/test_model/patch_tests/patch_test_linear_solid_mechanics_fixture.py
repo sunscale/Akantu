@@ -13,27 +13,16 @@ class LocalElastic:
         self.E = params['E']
         self.nu = params['nu']
         self.rho = params['rho']
-        print(self.__dict__)
         # First Lame coefficient
         self.lame_lambda = self.nu * self.E / (
             (1. + self.nu) * (1. - 2. * self.nu))
         # Second Lame coefficient (shear modulus)
         self.lame_mu = self.E / (2. * (1. + self.nu))
 
-        all_factor = internals['factor']
-        all_quad_coords = internals['quad_coordinates']
-
-        for elem_type in all_factor.keys():
-            factor = all_factor[elem_type]
-            quad_coords = all_quad_coords[elem_type]
-
-            factor[:] = 1.
-            factor[quad_coords[:, 1] < 0.5] = 1.
-
     # declares all the internals
     @staticmethod
     def registerInternals():
-        return ['potential', 'factor']
+        return ['potential']
 
     # declares all the internals
     @staticmethod
@@ -57,18 +46,25 @@ class LocalElastic:
     # constitutive law
     def computeStress(self, grad_u, sigma, internals, params):
         n_quads = grad_u.shape[0]
-        grad_u = grad_u.reshape((n_quads, 2, 2))
+        grad_u = grad_u.reshape((n_quads, self.dim, self.dim))
         epsilon = self.computeEpsilon(grad_u)
-        sigma = sigma.reshape((n_quads, 2, 2))
-        trace = np.einsum('aii,aii->a', grad_u, grad_u)
+        sigma = sigma.reshape((n_quads, self.dim, self.dim))
 
-        sigma[:, :, :] = (
-            np.einsum('a,ij->aij', trace,
-                      self.lame_lambda * np.eye(2))
-            + 2.*self.lame_mu * epsilon)
+        trace = np.einsum('aii->a', grad_u)
+
+        if self.dim == 1:
+                sigma[:, :, :] = self.E * epsilon
+
+        else:
+            sigma[:, :, :] = (
+                np.einsum('a,ij->aij', trace,
+                          self.lame_lambda * np.eye(self.dim))
+                + 2.*self.lame_mu * epsilon)
+
 
     # constitutive law tangent modulii
     def computeTangentModuli(self, grad_u, tangent, internals, params):
+
         n_quads = tangent.shape[0]
         tangent = tangent.reshape(n_quads, 3, 3)
 
@@ -105,15 +101,10 @@ class TestPatchTestSMMLinear(patch_test_linear_fixture.TestPatchTestLinear):
     model_type = akantu.SolidMechanicsModel
 
     def __init__(self, *args, **kwargs):
-        mat = LocalElastic()
-        # try:
-        #     akantu.registerNewPythonMaterial(mat, "local_elastic")
-        # except Exception as e:
-        #     print(e)
-        #     pass
         super().__init__(*args, **kwargs)
 
     def initModel(self, method, material_file):
+        mat.__dict__['dim'] = self.dim
         super().initModel(method, material_file)
 
     def applyBC(self):
@@ -148,9 +139,13 @@ class TestPatchTestSMMLinear(patch_test_linear_fixture.TestPatchTestLinear):
             else:
                 stress[:, :] = (
                     _lambda * trace * np.eye(self.dim) + 2 * mu * strain)
-
             return stress
 
         self.checkResults(foo,
                           mat.getStress(self.elem_type),
                           displacement)
+
+
+
+mat = LocalElastic()
+akantu.registerNewPythonMaterial(mat, "local_elastic")

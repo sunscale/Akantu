@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 TYPED_TEST(TestPatchTestHTMLinear, Explicit) {
-  this->initModel(_explicit_lumped_mass, "heat_transfer_input.dat");
+  this->initModel(_implicit_dynamic, "heat_transfer_input.dat");
 
   const auto & coordinates = this->mesh->getNodes();
   auto & temperature = this->model->getTemperature();
@@ -16,9 +16,6 @@ TYPED_TEST(TestPatchTestHTMLinear, Explicit) {
   for (UInt s = 0; s < 100; ++s) {
     this->model->solveStep();
   }
-
-  auto eth = this->model->getEnergy("thermal");
-  EXPECT_NEAR(0, eth, 1e-16);
 
   this->checkAll();
 }
