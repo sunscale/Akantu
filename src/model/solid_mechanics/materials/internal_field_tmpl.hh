@@ -284,7 +284,7 @@ void InternalField<T>::removeIntegrationPoints(
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void InternalField<T>::printself(std::ostream & stream, int indent) const {
+void InternalField<T>::printself(std::ostream & stream, int indent [[gnu::unused]]) const {
   stream << "InternalField [ " << this->getID();
 #if !defined(AKANTU_NDEBUG)
   if (AKANTU_DEBUG_TEST(dblDump)) {
