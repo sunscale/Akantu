@@ -2,7 +2,6 @@
 
 from patch_test_linear_solid_mechanics_fixture import TestPatchTestSMMLinear
 import akantu
-import unittest
 
 
 def foo(self):
@@ -11,7 +10,7 @@ def foo(self):
     if self.plane_strain:
         filename = "material_check_stress_plane_strain.dat"
 
-    self.initModel(akantu._static, filename)
+    self.initModel(akantu.SolidMechanicsModelOptions(akantu._static), filename)
 
     solver = self.model.getNonLinearSolver()
     solver.set("max_iterations", 2)

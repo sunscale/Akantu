@@ -15,10 +15,12 @@ class TestPatchTestHTMLinear(patch_test_linear_fixture.TestPatchTestLinear):
 
     def checkAll(self):
         temperature = self.model.getTemperature()
-        C = self.model.getParamReal("conductivity")
+        C = self.model.getParamMatrix("conductivity")
         self.checkDOFs(temperature)
-        self.checkGradient(self.model.getTemperatureGradient(self.type_elem),
+        self.checkGradient(self.model.getTemperatureGradient(self.elem_type),
                            temperature)
 
-        self.checkResults(lambda grad_T: C * grad_T.T,
-                          self.model.getKgradT(self.type_elem), temperature)
+        self.prescribed_gradient(temperature)
+        self.checkResults(lambda grad_T: C.dot(grad_T.T),
+                          self.model.getKgradT(self.elem_type),
+                          temperature)

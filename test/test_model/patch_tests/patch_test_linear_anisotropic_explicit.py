@@ -37,7 +37,9 @@ C = np.array([[[[112.93753505, 1.85842452538e-10, -4.47654358027e-10],
 
 def foo(self):
 
-    self.initModel(akantu._explicit_lumped_mass, "material_anisotropic.dat")
+    self.initModel(
+        akantu.SolidMechanicsModelOptions(akantu._explicit_lumped_mass),
+        "material_anisotropic.dat")
 
     coordinates = self.mesh.getNodes()
     displacement = self.model.getDisplacement()

@@ -47,7 +47,7 @@ class TestPatchTestLinear(unittest.TestCase):
     def initModel(self, method, material_file):
         akantu.initialize(material_file)
         akantu.setDebugLevel(akantu.dblError)
-        self.model.initFull(akantu.SolidMechanicsModelOptions(method))
+        self.model.initFull(method)
         self.applyBC()
 
     def applyBC(self):
@@ -65,7 +65,7 @@ class TestPatchTestLinear(unittest.TestCase):
                                             coordinates[nodes])
 
     def prescribed_gradient(self, dof):
-        gradient = self.alpha[:dof.shape[1], 1:self.dim+1]
+        gradient = self.alpha[:dof.shape[1], 1:self.dim + 1]
         return gradient
 
     def checkGradient(self, gradient, dofs):
@@ -78,10 +78,10 @@ class TestPatchTestLinear(unittest.TestCase):
                                delta=self.gradient_tolerance)
 
     def checkResults(self, presult_func, results, dofs):
-        presult = presult_func(self.prescribed_gradient(dofs))
-        results = results.flatten()
-        results = results.reshape((int(results.shape[0] / self.dim / self.dim),
-                                   self.dim, self.dim))
+        presult = presult_func(self.prescribed_gradient(dofs)).flatten()
+        remaining_size = np.prod(np.array(results.shape[1:]))
+        results = results.reshape((results.shape[0], remaining_size))
+
         for result in results:
             diff = result - presult
             norm = np.abs(result).max()
@@ -96,7 +96,7 @@ class TestPatchTestLinear(unittest.TestCase):
     def setLinearDOF(self, dof, coord):
         nb_dofs = dof.shape[1]
         dof[:] = np.einsum('ik,ak->ai',
-                           self.alpha[:nb_dofs, 1:self.dim+1], coord)
+                           self.alpha[:nb_dofs, 1:self.dim + 1], coord)
         for i in range(0, nb_dofs):
             dof[:, i] += self.alpha[i, 0]
 
