@@ -331,8 +331,11 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
     field = this->mesh.createFieldFromAttachedData<Real>(field_id, group_name,
                                                          element_kind);
 
-  if (!field)
+#ifndef AKANTU_NDEBUG
+  if (!field) {
     AKANTU_DEBUG_WARNING("No field could be found based on name: " << field_id);
+  }
+#endif
   if (field) {
     DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name, group_name);
     this->addDumpGroupFieldToDumper(field_id, field, dumper);

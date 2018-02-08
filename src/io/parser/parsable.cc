@@ -100,9 +100,10 @@ void Parsable::parseSubSection(const ParserSection & section) {
   } else if (!Parser::isPermissive()) {
     AKANTU_EXCEPTION("No parsable defined for sub sections of type <"
                      << key.first << "," << key.second << "> in " << pid);
-  } else
+  } else {
     AKANTU_DEBUG_WARNING("No parsable defined for sub sections of type <"
                          << key.first << "," << key.second << "> in " << pid);
+  }
 }
 
 } // akantu

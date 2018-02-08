@@ -101,7 +101,7 @@ public:
   removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// print the content
-  void printself(std::ostream & stream, int indent = 0) const override;
+  void printself(std::ostream & stream, int /*indent*/ = 0) const override;
 
   /// get the default value
   inline operator T() const;
