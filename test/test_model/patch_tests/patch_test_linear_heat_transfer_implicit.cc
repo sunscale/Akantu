@@ -2,7 +2,7 @@
 #include "patch_test_linear_heat_transfer_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
-TYPED_TEST(TestPatchTestHTMLinear, Explicit) {
+TYPED_TEST(TestPatchTestHTMLinear, Implicit) {
   this->initModel(_implicit_dynamic, "heat_transfer_input.dat");
 
   const auto & coordinates = this->mesh->getNodes();
