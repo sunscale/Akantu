@@ -168,13 +168,6 @@ int main (int argc, char * argv[]) {
   residual.copy(model.getInternalForce());
   residual -= model.getForce();
 
-  Real norm = 0;
-  for (auto & val : make_view(model.getInternalForce(), dim)) {
-    norm += val(0) * val(0) + val(1) * val(1);
-  }
-
-  std::cout << "norm = " << norm << std::endl;
-  
   Array<Real>::vector_iterator com_res = residual.begin(dim);
   Array<Real>::vector_iterator position = mesh.getNodes().begin(dim);
 

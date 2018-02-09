@@ -115,6 +115,9 @@ protected:
   /// Add the prestress to the computed stress
   void addPrestress(const ElementType & type, GhostType ghost_type);
 
+  /// Compute displacement gradient in reinforcement
+  void computeGradU(const ElementType & interface_type, GhostType ghost_type);
+
   /// Assemble the stiffness matrix for an element type (typically _segment_2)
   void assembleStiffnessMatrix(const ElementType & type, GhostType ghost_type);
 
@@ -153,9 +156,6 @@ protected:
                                         Vector<Real> & vector);
   inline void strainTensorToVoigtVector(const Matrix<Real> & tensor,
                                         Vector<Real> & vector);
-
-  /// Compute gradu on the interface quadrature points
-  void computeGradU(const ElementType & type, GhostType ghost_type);
 
   /// Get background filter
   Array<UInt> & getBackgroundFilter(const ElementType & fg_type,

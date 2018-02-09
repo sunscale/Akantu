@@ -71,7 +71,7 @@ void MaterialReinforcement<Mat, dim>::initialize() {
   this->registerParam("pre_stress", pre_stress, _pat_parsable | _pat_modifiable,
                       "Uniform pre-stress");
 
-  this->unregisterInternal(this->stress);
+  // this->unregisterInternal(this->stress);
 
   // Fool the AvgHomogenizingFunctor
   // stress.initialize(dim * dim);
@@ -362,58 +362,6 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForces(
 
   for (; type_it != type_end; ++type_it) {
     this->assembleInternalForces(*type_it, ghost_type);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Mat, UInt dim>
-void MaterialReinforcement<Mat, dim>::computeGradU(const ElementType & type,
-                                                   GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  UInt nb_quad_points = emodel.getFEEngine("EmbeddedInterfaceFEEngine")
-                            .getNbIntegrationPoints(type);
-
-  Array<Real> & gradu_vec = gradu_embedded(type, ghost_type);
-
-  Mesh::type_iterator back_it = emodel.getMesh().firstType(dim, ghost_type);
-  Mesh::type_iterator back_end = emodel.getMesh().lastType(dim, ghost_type);
-
-  for (; back_it != back_end; ++back_it) {
-    UInt nodes_per_background_e = Mesh::getNbNodesPerElement(*back_it);
-
-    Array<Real> & shapesd =
-        shape_derivatives(type, ghost_type)->operator()(*back_it, ghost_type);
-
-    auto & filter = getBackgroundFilter(type, *back_it, ghost_type);
-
-    Array<Real> disp_per_element(0, dim * nodes_per_background_e, "disp_elem");
-
-    FEEngine::extractNodalToElementField(
-        emodel.getMesh(), emodel.getDisplacement(), disp_per_element, *back_it,
-        ghost_type, filter);
-
-    Array<Real>::matrix_iterator disp_it =
-        disp_per_element.begin(dim, nodes_per_background_e);
-    Array<Real>::matrix_iterator disp_end =
-        disp_per_element.end(dim, nodes_per_background_e);
-
-    Array<Real>::matrix_iterator shapes_it =
-        shapesd.begin(dim, nodes_per_background_e);
-    Array<Real>::matrix_iterator grad_u_it = gradu_vec.begin(dim, dim);
-
-    for (; disp_it != disp_end; ++disp_it) {
-      for (UInt i = 0; i < nb_quad_points; i++, ++shapes_it, ++grad_u_it) {
-        Matrix<Real> & B = *shapes_it;
-        Matrix<Real> & du = *grad_u_it;
-        Matrix<Real> & u = *disp_it;
-
-        du.mul<false, true>(u, B);
-      }
-    }
-
   }
 
   AKANTU_DEBUG_OUT();
@@ -729,6 +677,52 @@ Real MaterialReinforcement<Mat, dim>::getEnergy(const std::string & id) {
 
   AKANTU_DEBUG_OUT();
   return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <class Mat, UInt dim>
+void MaterialReinforcement<Mat, dim>::computeGradU(
+    const ElementType & interface_type, GhostType ghost_type) {
+  // Looping over background types
+  for (auto && bg_type :
+       background_filter(interface_type, ghost_type)->elementTypes(dim)) {
+
+    const UInt nodes_per_background_e = Mesh::getNbNodesPerElement(bg_type);
+    const UInt voigt_size = VoigtHelper<dim>::size;
+
+    auto & bg_shapesd =
+        (*shape_derivatives(interface_type, ghost_type))(bg_type, ghost_type);
+
+    auto & filter = getBackgroundFilter(interface_type, bg_type, ghost_type);
+
+    Array<Real> disp_per_element(0, dim * nodes_per_background_e, "disp_elem");
+
+    FEEngine::extractNodalToElementField(
+        emodel.getMesh(), emodel.getDisplacement(), disp_per_element, bg_type,
+        ghost_type, filter);
+
+    Matrix<Real> concrete_du(dim, dim);
+    Matrix<Real> epsilon(dim, dim);
+    Vector<Real> evoigt(voigt_size);
+
+    for (auto && tuple :
+         zip(make_view(disp_per_element, dim, nodes_per_background_e),
+             make_view(bg_shapesd, dim, nodes_per_background_e),
+             this->gradu(interface_type, ghost_type),
+             make_view(this->directing_cosines(interface_type, ghost_type),
+                       voigt_size))) {
+      auto & u = std::get<0>(tuple);
+      auto & B = std::get<1>(tuple);
+      auto & du = std::get<2>(tuple);
+      auto & C = std::get<3>(tuple);
+
+      concrete_du.mul<false, true>(u, B);
+      auto epsilon = 0.5 * (concrete_du + concrete_du.transpose());
+      strainTensorToVoigtVector(epsilon, evoigt);
+      du = C.dot(evoigt);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
