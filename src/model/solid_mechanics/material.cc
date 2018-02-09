@@ -495,7 +495,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   Array<Real> * bt_d_b = new Array<Real>(nb_element * nb_quadrature_points,
                                          bt_d_b_size * bt_d_b_size, "B^t*D*B");
 
-  fem.computeBtDB(*tangent_stiffness_matrix, *bt_d_b, 4, type, ghost_type);
+  fem.computeBtDB(*tangent_stiffness_matrix, *bt_d_b, 4, type, ghost_type, elem_filter);
   // Matrix<Real> B(tangent_size, dim * nb_nodes_per_element);
   // Matrix<Real> Bt_D(dim * nb_nodes_per_element, tangent_size);
 
