@@ -37,7 +37,6 @@
 
 #include "material.hh"
 #include "embedded_interface_model.hh"
-#include "embedded_internal_field.hh"
 
 /* -------------------------------------------------------------------------- */
 
