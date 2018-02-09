@@ -275,9 +275,7 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
   auto & engine = emodel.getFEEngine();
   auto & interface_mesh = emodel.getInterfaceMesh();
 
-  const auto ndof = dim * Mesh::getNbNodesPerElement(bg_type);
-  const auto nb_stress =
-      ShapeFunctions::getShapeDerivativesSize(bg_type) / ndof;
+  const auto nb_nodes_elem_bg = Mesh::getNbNodesPerElement(bg_type);
   // const auto nb_strss = VoigtHelper<dim>::size;
   const auto nb_quads_per_elem =
       interface_engine.getNbIntegrationPoints(interface_type);
@@ -294,8 +292,8 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
       (*foreground_filter(interface_type, ghost_type))(bg_type, ghost_type);
 
   auto shapesd_begin =
-      background_shapesd.begin(nb_stress, ndof, nb_quads_per_elem);
-  auto quad_begin = quad_pos.begin(dim, Mesh::getNbNodesPerElement(bg_type));
+    background_shapesd.begin(dim, nb_nodes_elem_bg, nb_quads_per_elem);
+  auto quad_begin = quad_pos.begin(dim, nb_quads_per_elem);
 
   for (auto && tuple : zip(background_elements, foreground_elements)) {
     UInt bg = std::get<0>(tuple), fg = std::get<1>(tuple);
@@ -321,7 +319,7 @@ void MaterialReinforcement<Mat, dim>::initDirectingCosines() {
   Mesh::type_iterator type_end = mesh.lastType(1, _not_ghost);
 
   const UInt voigt_size = VoigtHelper<dim>::size;
-  directing_cosines.initialize(voigt_size * voigt_size);
+  directing_cosines.initialize(voigt_size);
 
   for (; type_it != type_end; ++type_it) {
     computeDirectingCosines(*type_it, _not_ghost);
@@ -432,9 +430,22 @@ void MaterialReinforcement<Mat, dim>::computeAllStresses(GhostType ghost_type) {
   for (; it != last_type; ++it) {
     computeGradU(*it, ghost_type);
     this->computeStress(*it, ghost_type);
+    addPrestress(*it, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Mat, UInt dim>
+void MaterialReinforcement<Mat, dim>::addPrestress(const ElementType & type,
+                                                   GhostType ghost_type) {
+  auto & stress = this->stress(type, ghost_type);
+  auto & sigma_p = this->pre_stress(type, ghost_type);
+
+  for (auto && tuple : zip(stress, sigma_p)) {
+    std::get<0>(tuple) += std::get<1>(tuple);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -494,28 +505,22 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForcesInterface(
 
   Array<Real>::matrix_iterator B_it =
       shapesd.begin(dim, nodes_per_background_e);
-  Array<Real>::matrix_iterator C_it =
-      directing_cosines(interface_type, ghost_type)
-          .begin(voigt_size, voigt_size);
-  Array<Real>::matrix_iterator sigma_it =
-      stress_embedded(interface_type, ghost_type).begin(dim, dim);
+  Array<Real>::vector_iterator C_it =
+      directing_cosines(interface_type, ghost_type).begin(voigt_size);
 
-  Vector<Real> sigma(voigt_size);
+  auto sigma_it = this->stress(interface_type, ghost_type).begin();
+
   Matrix<Real> Bvoigt(voigt_size, back_dof);
-  Vector<Real> Ct_sigma(voigt_size);
 
   for (; integrant_it != integrant_end;
        ++integrant_it, ++B_it, ++C_it, ++sigma_it) {
     VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(*B_it, Bvoigt,
                                                        nodes_per_background_e);
-    Matrix<Real> & C = *C_it;
+    Vector<Real> & C = *C_it;
     Vector<Real> & BtCt_sigma = *integrant_it;
 
-    stressTensorToVoigtVector(*sigma_it, sigma);
-
-    Ct_sigma.mul<true>(C, sigma);
-    BtCt_sigma.mul<true>(Bvoigt, Ct_sigma);
-    BtCt_sigma *= area;
+    BtCt_sigma.mul<true>(Bvoigt, C);
+    BtCt_sigma *= *sigma_it * area;
   }
 
   Array<Real> residual_interface(nb_element, back_dof, "residual_interface");
@@ -558,7 +563,7 @@ void MaterialReinforcement<Mat, dim>::computeDirectingCosines(
       ghost_type, this->element_filter(type, ghost_type));
 
   Array<Real>::matrix_iterator directing_cosines_it =
-      directing_cosines(type, ghost_type).begin(voigt_size, voigt_size);
+    directing_cosines(type, ghost_type).begin(1, voigt_size);
 
   Array<Real>::matrix_iterator node_coordinates_it =
       node_coordinates.begin(dim, nb_nodes_per_element);
@@ -643,16 +648,14 @@ void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrixInterface(
 
   /// Temporary matrices for integrant product
   Matrix<Real> Bvoigt(voigt_size, back_dof);
-  Matrix<Real> DC(voigt_size, voigt_size);
-  Matrix<Real> DCB(voigt_size, back_dof);
+  Matrix<Real> DCB(1, back_dof);
   Matrix<Real> CtDCB(voigt_size, back_dof);
 
   Array<Real>::scalar_iterator D_it = tangent_moduli.begin();
   Array<Real>::scalar_iterator D_end = tangent_moduli.end();
 
   Array<Real>::matrix_iterator C_it =
-      directing_cosines(interface_type, ghost_type)
-          .begin(voigt_size, voigt_size);
+      directing_cosines(interface_type, ghost_type).begin(1, voigt_size);
   Array<Real>::matrix_iterator B_it =
       shapesd.begin(dim, nodes_per_background_e);
   Array<Real>::matrix_iterator integrant_it =
@@ -667,10 +670,8 @@ void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrixInterface(
     VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(B, Bvoigt,
                                                        nodes_per_background_e);
 
-    DC.clear();
-    DC(0, 0) = D * area;
-    DC *= C;
-    DCB.mul<false, false>(DC, Bvoigt);
+    DCB.mul<false, false>(C, Bvoigt);
+    DCB *= D * area;
     CtDCB.mul<true, false>(C, DCB);
     BtCtDCB.mul<true, false>(Bvoigt, CtDCB);
   }
@@ -755,8 +756,6 @@ inline void MaterialReinforcement<Mat, dim>::computeDirectingCosinesOnQuad(
 
   const Vector<Real> a = nodes(0), b = nodes(1);
   Vector<Real> delta = b - a;
-
-  cosines.clear();
 
   Real sq_length = 0.;
   for (UInt i = 0; i < dim; i++) {

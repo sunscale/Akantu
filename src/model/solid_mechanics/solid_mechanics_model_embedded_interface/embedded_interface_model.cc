@@ -136,11 +136,12 @@ void EmbeddedInterfaceModel::assignMaterialToElements(
       new InterfaceMeshDataMaterialSelector<std::string>("physical_names",
                                                          *this);
 
-  for_each_element(mesh,
+  for_each_element(getInterfaceMesh(),
                    [&](auto && element) {
                      auto mat_index = (*interface_material_selector)(element);
-                     material_index(element) = mat_index;
+                     // material_index(element) = mat_index;
                      materials[mat_index]->addElement(element);
+		     // this->material_local_numbering(element) = index;
                    },
                    _element_filter = filter,
 		   _spatial_dimension = 1);

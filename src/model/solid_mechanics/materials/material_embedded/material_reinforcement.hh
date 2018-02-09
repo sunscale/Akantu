@@ -112,6 +112,9 @@ protected:
   inline void computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
                                             Matrix<Real> & cosines);
 
+  /// Add the prestress to the computed stress
+  void addPrestress(const ElementType & type, GhostType ghost_type);
+
   /// Assemble the stiffness matrix for an element type (typically _segment_2)
   void assembleStiffnessMatrix(const ElementType & type, GhostType ghost_type);
 

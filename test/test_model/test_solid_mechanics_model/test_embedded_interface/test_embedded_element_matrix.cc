@@ -42,7 +42,7 @@ int main(int argc, char * argv[]) {
 
   constexpr UInt dim = 2;
   constexpr ElementType type = _segment_2;
-  const Real height = 0.5;
+  const Real height = 0.4;
 
   Mesh mesh(dim);
   mesh.read("triangle.msh");
