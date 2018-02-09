@@ -43,9 +43,6 @@ MaterialReinforcement<Mat, dim>::MaterialReinforcement(
           model.getInterfaceMesh(),
           model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
       emodel(model),
-      stress_embedded("stress_embedded", *this, 1,
-                      model.getFEEngine("EmbeddedInterfaceFEEngine"),
-                      this->element_filter),
       gradu_embedded("gradu_embedded", *this, 1,
                      model.getFEEngine("EmbeddedInterfaceFEEngine"),
                      this->element_filter),
@@ -97,7 +94,6 @@ template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::initMaterial() {
   Mat::initMaterial();
 
-  stress_embedded.initialize(dim * dim);
   gradu_embedded.initialize(dim * dim);
   pre_stress.initialize(1);
 

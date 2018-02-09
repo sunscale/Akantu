@@ -178,9 +178,6 @@ protected:
   /// Embedded model
   EmbeddedInterfaceModel & emodel;
 
-  /// Stress in the reinforcement
-  InternalField<Real> stress_embedded;
-
   /// Gradu of concrete on reinforcement
   InternalField<Real> gradu_embedded;
 

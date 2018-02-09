@@ -111,9 +111,8 @@ int main (int argc, char * argv[]) {
    * a = 1 m
    */
 
-  Real steel_area =
-      model.getMaterial("reinforcement").get("area");
-  Real pre_stress = 1e6;
+  Real steel_area = model.getMaterial("reinforcement").get("area");
+  Real pre_stress = model.getMaterial("reinforcement").get("pre_stress");
   Real stress_norm = 0.;
 
   StressSolution * concrete_stress = nullptr, * steel_stress = nullptr;
