@@ -716,7 +716,7 @@ void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
         std::equal(global_blocked_dofs.begin(), global_blocked_dofs.end(),
                    previous_global_blocked_dofs.begin());
 
-    if (are_equal)
+    if (not are_equal)
       J.applyBoundary();
 
     previous_global_blocked_dofs.copy(global_blocked_dofs);

@@ -205,7 +205,9 @@ void ElementSynchronizer::removeElements(
                       << tag << ")");
     send_requests.push_back(this->communicator.asyncSend(keep_list, proc, tag));
 
+#ifndef AKANTU_NDEBUG
     auto old_size = recv.size();
+#endif
     filter_list(keep_list, recv);
 
     AKANTU_DEBUG_INFO("I had " << old_size << " elements to recv from proc "
@@ -230,7 +232,9 @@ void ElementSynchronizer::removeElements(
                       << proc << " TAG(" << tag << ")");
     this->communicator.receive(keep_list, proc, tag);
 
+#ifndef AKANTU_NDEBUG
     auto old_size = send.size();
+#endif
     filter_list(keep_list, send);
 
     AKANTU_DEBUG_INFO("I had " << old_size << " elements to send to proc "

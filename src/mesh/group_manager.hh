@@ -65,8 +65,17 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
+
+#ifdef SWIGPYTHON
+public:
   using ElementGroups = std::map<std::string, ElementGroup *>;
   using NodeGroups = std::map<std::string, NodeGroup *>;
+
+private:
+#else
+  using ElementGroups = std::map<std::string, ElementGroup *>;
+  using NodeGroups = std::map<std::string, NodeGroup *>;
+#endif
 
 public:
   using GroupManagerTypeSet = std::set<ElementType>;

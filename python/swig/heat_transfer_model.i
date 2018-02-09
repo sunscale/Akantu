@@ -30,6 +30,7 @@
 %{
   #include "heat_transfer_model.hh"
   #include "data_accessor.hh"
+  #include "python_functor.hh"
 %}
 
 namespace akantu {
@@ -50,3 +51,29 @@ namespace akantu {
 }
 
 %include "heat_transfer_model.hh"
+
+
+%extend akantu::HeatTransferModel {
+
+  Real getParamReal(const ID & param){
+     Real res = $self->get(param);
+     return res;
+   }
+   UInt getParamUInt(const ID & param){
+     UInt res = $self->get(param);
+     return res;
+   }
+   int getParamInt(const ID & param){
+     int res = $self->get(param);
+     return res;
+   }
+
+   PyObject * getParamMatrix(const ID & param){
+     Matrix<Real> res = $self->get(param);
+     // I know it is ugly !!!!! sorry nico: missing time to do something clean
+     Matrix<Real> * res2 = new Matrix<Real>(res);
+     PyObject * pobj = akantu::PythonFunctor::convertToPython(*res2);
+     return pobj;
+   }
+}
+

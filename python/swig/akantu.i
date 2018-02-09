@@ -41,8 +41,6 @@
   }
  }
 
-%include "stl.i"
-
 #define __attribute__(x)
 
 %ignore akantu::operator <<;
