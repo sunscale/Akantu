@@ -31,7 +31,8 @@
 /* -------------------------------------------------------------------------- */
 
 #include "embedded_interface_model.hh"
-#include "material_reinforcement_template.hh"
+#include "material_reinforcement.hh"
+#include "material_elastic.hh"
 #include "mesh_iterators.hh"
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
@@ -81,11 +82,11 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
           using mat = MaterialElastic<1>;
           switch (dim) {
           case 2:
-            return std::unique_ptr<MaterialReinforcement<2>>{
-                new MaterialReinforcementTemplate<2, mat>(*this, id)};
+            return std::unique_ptr<MaterialReinforcement<mat, 2>>{
+                new MaterialReinforcement<mat, 2>(*this, id)};
           case 3:
-            return std::unique_ptr<MaterialReinforcement<3>>{
-                new MaterialReinforcementTemplate<3, mat>(*this, id)};
+            return std::unique_ptr<MaterialReinforcement<mat, 3>>{
+                new MaterialReinforcement<mat, 3>(*this, id)};
           default:
             AKANTU_EXCEPTION("Dimension 1 is invalid for reinforcements");
           }
@@ -121,6 +122,7 @@ void EmbeddedInterfaceModel::initFullImpl(const ModelOptions & options) {
 
 void EmbeddedInterfaceModel::initModel() {
   // Initialize interface FEEngine
+  SolidMechanicsModel::initModel();
   FEEngine & engine = getFEEngine("EmbeddedInterfaceFEEngine");
   engine.initShapeFunctions(_not_ghost);
   engine.initShapeFunctions(_ghost);
@@ -134,13 +136,15 @@ void EmbeddedInterfaceModel::assignMaterialToElements(
       new InterfaceMeshDataMaterialSelector<std::string>("physical_names",
                                                          *this);
 
-  for_each_element(mesh,
+  for_each_element(getInterfaceMesh(),
                    [&](auto && element) {
                      auto mat_index = (*interface_material_selector)(element);
-                     material_index(element) = mat_index;
+                     // material_index(element) = mat_index;
                      materials[mat_index]->addElement(element);
+		     // this->material_local_numbering(element) = index;
                    },
-                   _element_filter = filter);
+                   _element_filter = filter,
+		   _spatial_dimension = 1);
 
   SolidMechanicsModel::assignMaterialToElements(filter);
 }
