@@ -175,6 +175,7 @@ package_declare_sources(core
   mesh/group_manager_inline_impl.cc
   mesh/mesh.cc
   mesh/mesh.hh
+  mesh/mesh_periodic.cc
   mesh/mesh_accessor.hh
   mesh/mesh_events.hh
   mesh/mesh_filter.hh

@@ -862,6 +862,35 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       my_getline(infile, line); /// the end of block line
     }
 
+    if (line == "$Periodic") {
+      UInt nb_periodic_entities;
+      my_getline(infile, line);
+
+      std::stringstream sstr(line);
+      sstr >> nb_periodic_entities;
+
+      for(UInt p = 0; p < nb_periodic_entities; ++p) {
+        // dimension slave-tag master-tag
+        my_getline(infile, line);
+
+        // transformation
+        my_getline(infile, line);
+
+        // nb nodes
+        my_getline(infile, line);
+        UInt nb_nodes;
+
+        std::stringstream sstr(line);
+        sstr >> nb_nodes;
+        for(UInt n = 0; n < nb_nodes; ++n) {
+          // slave master
+          my_getline(infile, line);
+        }
+      }
+
+      my_getline(infile, line);
+    }
+
     if ((line[0] == '$') && (line.find("End") == std::string::npos)) {
       AKANTU_DEBUG_WARNING("Unsuported block_kind " << line << " at line "
                                                     << current_line);

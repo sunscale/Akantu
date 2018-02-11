@@ -1,3 +1,4 @@
+
 /**
  * @file   mesh.hh
  *
@@ -49,6 +50,8 @@
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
+#include <unordered_map>
+
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -108,11 +111,6 @@ public:
   Mesh(UInt spatial_dimension, Communicator & communicator,
        const ID & id = "mesh", const MemoryID & memory_id = 0);
 
-  /// constructor that use an existing nodes coordinates array, by knowing its
-  /// ID
-  // Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
-  //      const MemoryID & memory_id = 0);
-
   /**
    * constructor that use an existing nodes coordinates
    * array, by getting the vector of coordinates
@@ -144,6 +142,14 @@ public:
   virtual void distribute(Communicator & communicator);
   virtual void distribute();
 
+  /// set the periodicity in a given direction
+  void makePeriodic(const SpatialDirection & direction);
+
+protected:
+  void makePeriodic(const SpatialDirection & direction,
+                    const Array<UInt> & list_1, const Array<UInt> & list_2);
+
+public:
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
 
@@ -392,6 +398,12 @@ public:
   /// defines is the mesh is distributed or not
   inline bool isDistributed() const { return this->is_distributed; }
 
+  /// defines if the mesh is periodic or not
+  inline bool isPeriodic() const { return (this->is_periodic != 0); }
+
+  inline bool isPeriodic(const SpatialDirection & direction) const {
+    return ((this->is_periodic & (1 << direction)) != 0);
+  }
 #ifndef SWIG
   /// return the dumper from a group and and a dumper name
   DumperIOHelper & getGroupDumper(const std::string & dumper_name,
@@ -485,6 +497,7 @@ public:
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
 #endif
+
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */
@@ -586,6 +599,9 @@ private:
   /// defines if the mesh is centralized or distributed
   bool is_distributed{false};
 
+  /// defines if the mesh is periodic (3bits, 1 per direction)
+  char is_periodic;
+
   /// Communicator on which mesh is distributed
   Communicator * communicator;
 
@@ -602,6 +618,9 @@ private:
 
   /// This info is stored to simplify the dynamic changes
   NodesToElements nodes_to_elements;
+
+  /// periodicity local info
+  std::unordered_multimap<UInt, std::pair<UInt, SpatialDirection>> periodic_pairs;
 };
 
 /// standard output stream operator
@@ -615,7 +634,6 @@ inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {
 /* -------------------------------------------------------------------------- */
 /* Inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
 #include "element_type_map_tmpl.hh"
 #include "mesh_inline_impl.cc"
 

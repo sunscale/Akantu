@@ -168,7 +168,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 /// small help to use names for directions
-enum SpacialDirection { _x = 0, _y = 1, _z = 2 };
+enum SpatialDirection { _x = 0, _y = 1, _z = 2 };
 
 /// enum MeshIOType type of mesh reader/writer
 enum MeshIOType {
