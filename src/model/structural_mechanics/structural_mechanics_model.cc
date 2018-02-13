@@ -35,21 +35,20 @@
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model.hh"
 #include "dof_manager.hh"
-#include "sparse_matrix.hh"
 #include "integrator_gauss.hh"
-#include "shape_structural.hh"
 #include "mesh.hh"
+#include "shape_structural.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
+#include "dumpable_inline_impl.hh"
 #include "dumper_elemental_field.hh"
 #include "dumper_iohelper_paraview.hh"
-#include "dumpable_inline_impl.hh"
 #include "group_manager_inline_impl.cc"
 #endif
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model_inline_impl.cc"
 /* -------------------------------------------------------------------------- */
-
 
 namespace akantu {
 
@@ -57,8 +56,8 @@ namespace akantu {
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
                                                    const ID & id,
                                                    const MemoryID & memory_id)
-    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id), time_step(NAN), f_m2a(1.0),
-      stress("stress", id, memory_id),
+    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id),
+      time_step(NAN), f_m2a(1.0), stress("stress", id, memory_id),
       element_material("element_material", id, memory_id),
       set_ID("beam sets", id, memory_id),
       rotation_matrix("rotation_matices", id, memory_id) {
@@ -92,7 +91,8 @@ StructuralMechanicsModel::~StructuralMechanicsModel() = default;
 void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
   // <<<< This is the SolidMechanicsModel implementation for future ref >>>>
   // material_index.initialize(mesh, _element_kind = _ek_not_defined,
-  //                           _default_value = UInt(-1), _with_nb_element = true);
+  //                           _default_value = UInt(-1), _with_nb_element =
+  //                           true);
   // material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
   //                                     _with_nb_element = true);
 
@@ -108,7 +108,8 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
   // }
 
   // this->initMaterials();
-  // this->initBC(*this, *displacement, *displacement_increment, *external_force);
+  // this->initBC(*this, *displacement, *displacement_increment,
+  // *external_force);
 
   // <<<< END >>>>
 
@@ -171,8 +172,7 @@ void StructuralMechanicsModel::initSolver(
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::initModel() {
-  for (auto && type :
-       mesh.elementTypes(_element_kind = _ek_structural)) {
+  for (auto && type : mesh.elementTypes(_element_kind = _ek_structural)) {
     // computeRotationMatrix(type);
     element_material.alloc(mesh.getNbElement(type), 1, type);
   }
@@ -187,7 +187,8 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 
   getDOFManager().getMatrix("K").clear();
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
 #define ASSEMBLE_STIFFNESS_MATRIX(type) assembleStiffnessMatrix<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(ASSEMBLE_STIFFNESS_MATRIX);
@@ -201,7 +202,8 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 void StructuralMechanicsModel::computeStresses() {
   AKANTU_DEBUG_IN();
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
 #define COMPUTE_STRESS_ON_QUAD(type) computeStressOnQuad<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(COMPUTE_STRESS_ON_QUAD);
@@ -240,7 +242,7 @@ void StructuralMechanicsModel::computeRotationMatrix(const ElementType & type) {
   if (!rotation_matrix.exists(type)) {
     rotation_matrix.alloc(nb_element,
                           nb_degree_of_freedom * nb_nodes_per_element *
-                          nb_degree_of_freedom * nb_nodes_per_element,
+                              nb_degree_of_freedom * nb_nodes_per_element,
                           type);
   } else {
     rotation_matrix(type).resize(nb_element);
@@ -403,8 +405,8 @@ void StructuralMechanicsModel::onElementsChanged(
 /* Virtual methods from Model */
 /* -------------------------------------------------------------------------- */
 /// get some default values for derived classes
-std::tuple<ID, TimeStepSolverType> StructuralMechanicsModel::getDefaultSolverID(
-    const AnalysisMethod & method) {
+std::tuple<ID, TimeStepSolverType>
+StructuralMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _static: {
     return std::make_tuple("static", _tsst_static);
@@ -436,6 +438,5 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
   return options;
 }
 /* -------------------------------------------------------------------------- */
-
 
 } // namespace akantu

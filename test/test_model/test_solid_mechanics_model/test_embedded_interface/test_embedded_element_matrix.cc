@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 
 #include "embedded_interface_model.hh"
+#include "sparse_solver.hh"
 #include "sparse_matrix_aij.hh"
 
 using namespace akantu;
@@ -41,7 +42,7 @@ int main(int argc, char * argv[]) {
 
   constexpr UInt dim = 2;
   constexpr ElementType type = _segment_2;
-  const Real height = 0.5;
+  const Real height = 0.4;
 
   Mesh mesh(dim);
   mesh.read("triangle.msh");
@@ -69,10 +70,18 @@ int main(int argc, char * argv[]) {
   if (model.getInterfaceMesh().getSpatialDimension() != 2)
     return EXIT_FAILURE;
 
-  model.assembleStiffnessMatrix();
+  try { // matrix should be singular
+    model.solveStep();
+  } catch (debug::SingularMatrixException & e) {
+    std::cerr << "Matrix is singular, relax, everything is fine :)" << std::endl;
+  } catch (debug::Exception & e) {
+    std::cerr << "Unexpceted error: " << e.what() << std::endl;
+    throw e;
+  }
 
   SparseMatrixAIJ & K =
       dynamic_cast<SparseMatrixAIJ &>(model.getDOFManager().getMatrix("K"));
+  K.saveMatrix("stiffness.mtx");
 
   Math::setTolerance(1e-8);
 

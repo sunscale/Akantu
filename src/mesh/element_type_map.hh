@@ -116,8 +116,11 @@ public:
    *  @param ghost_type optional: by default, the data map for non-ghost
    *         elements is searched
    *  @return stored data corresponding to type. */
-  inline Stored & operator()(const Stored & insert, const SupportType & type,
+  template <typename U>
+  inline Stored & operator()(U && insertee, const SupportType & type,
                              const GhostType & ghost_type = _not_ghost);
+
+public:
 
   /// print helper
   virtual void printself(std::ostream & stream, int indent = 0) const;

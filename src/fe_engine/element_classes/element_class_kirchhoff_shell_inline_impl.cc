@@ -48,6 +48,34 @@ AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_discrete_kirchhoff_triangle_18,
 
 /* -------------------------------------------------------------------------- */
 template <>
+inline void ElementClass<_discrete_kirchhoff_triangle_18>::computeRotationMatrix(
+    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> &) {
+  auto dim = X.rows();
+  Vector<Real> X1 = X(0);
+  Vector<Real> X2 = X(1);
+  Vector<Real> X3 = X(2);
+
+  Vector<Real> a1 = X2 - X1;
+  Vector<Real> a2 = X3 - X1;
+
+  a1.normalize();
+  Vector<Real> e3 = a1.crossProduct(a2);
+  e3.normalize();
+  Vector<Real> e2 = e3.crossProduct(a1);
+
+  Matrix<Real> P(dim, dim);
+  P(0) = a1;
+  P(1) = e2;
+  P(2) = e3;
+
+  R.clear();
+  for (UInt i = 0; i < dim; ++i)
+    for (UInt j = 0; j < dim; ++j)
+      R(i + dim, j + dim) = R(i, j) = P(j, i);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
 inline void
 InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeShapes(
     const Vector<Real> & /*natural_coords*/,

@@ -85,11 +85,12 @@ operator()(const SupportType & type, const GhostType & ghost_type) {
   return this->getData(ghost_type)[type];
 }
 
+
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline Stored & ElementTypeMap<Stored, SupportType>::
-operator()(const Stored & insert, const SupportType & type,
-           const GhostType & ghost_type) {
+template <typename U>
+inline Stored & ElementTypeMap<Stored, SupportType>::operator()(
+    U && insertee, const SupportType & type, const GhostType & ghost_type) {
   auto it = this->getData(ghost_type).find(type);
 
   if (it != this->getData(ghost_type).end()) {
@@ -101,7 +102,7 @@ operator()(const Stored & insert, const SupportType & type,
   } else {
     auto & data = this->getData(ghost_type);
     const auto & res =
-        data.insert(std::pair<ElementType, Stored>(type, insert));
+        data.insert(std::make_pair(type, std::forward<U>(insertee)));
     it = res.first;
   }
 

@@ -37,7 +37,6 @@
 
 #include "material.hh"
 #include "embedded_interface_model.hh"
-#include "embedded_internal_field.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -54,22 +53,21 @@ namespace akantu {
  *  -  this->spatial_dimension is always 1
  *  -  the template parameter dim is the dimension of the problem
  */
-template <UInt dim> class MaterialReinforcement : virtual public Material {
+
+template <class Mat, UInt dim> class MaterialReinforcement : public Mat {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   /// Constructor
-  MaterialReinforcement(SolidMechanicsModel & model, UInt spatial_dimension,
-                        const Mesh & mesh, FEEngine & fe_engine,
-                        const ID & id = "");
+  MaterialReinforcement(EmbeddedInterfaceModel & model, const ID & id = "");
 
   /// Destructor
   ~MaterialReinforcement() override;
 
 protected:
-  void initialize(SolidMechanicsModel & a_model);
+  void initialize();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -77,6 +75,9 @@ protected:
 public:
   /// Init the material
   void initMaterial() override;
+
+  /// Init the filters for background elements
+  void initFilters();
 
   /// Init the background shape derivatives
   void initBackgroundShapeDerivatives();
@@ -96,20 +97,6 @@ public:
   /// Assemble the residual of one type of element (typically _segment_2)
   void assembleInternalForces(GhostType ghost_type) override;
 
-  // virtual ElementTypeMap<UInt> getInternalDataPerElem(const ID & field_name,
-  //                                                     const ElementKind &
-  //                                                     kind,
-  //                                                     const ID &
-  //                                                     fe_engine_id) const;
-
-  // /// Reimplementation of Material's function to accomodate for interface
-  // mesh
-  // virtual void flattenInternal(const std::string & field_id,
-  //                              ElementTypeMapArray<Real> & internal_flat,
-  //                              const GhostType ghost_type = _not_ghost,
-  //                              ElementKind element_kind = _ek_not_defined)
-  //                              const;
-
   /* ------------------------------------------------------------------------ */
   /* Protected methods                                                        */
   /* ------------------------------------------------------------------------ */
@@ -124,6 +111,12 @@ protected:
   inline void computeDirectingCosinesOnQuad(const Matrix<Real> & nodes,
                                             Matrix<Real> & cosines);
 
+  /// Add the prestress to the computed stress
+  void addPrestress(const ElementType & type, GhostType ghost_type);
+
+  /// Compute displacement gradient in reinforcement
+  void computeGradU(const ElementType & interface_type, GhostType ghost_type);
+
   /// Assemble the stiffness matrix for an element type (typically _segment_2)
   void assembleStiffnessMatrix(const ElementType & type, GhostType ghost_type);
 
@@ -136,8 +129,15 @@ protected:
   void computeBackgroundShapeDerivatives(const ElementType & type,
                                          GhostType ghost_type);
 
+  /// Compute the background shape derivatives for a type pair
+  void computeBackgroundShapeDerivatives(const ElementType & interface_type,
+					 const ElementType & bg_type,
+					 GhostType ghost_type,
+					 const Array<UInt> & filter);
+
   /// Filter elements crossed by interface of a type
-  void filterInterfaceBackgroundElements(Array<UInt> & filter,
+  void filterInterfaceBackgroundElements(Array<UInt> & foreground,
+					 Array<UInt> & background,
                                          const ElementType & type,
                                          const ElementType & interface_type,
                                          GhostType ghost_type);
@@ -156,18 +156,26 @@ protected:
   inline void strainTensorToVoigtVector(const Matrix<Real> & tensor,
                                         Vector<Real> & vector);
 
-  /// Compute gradu on the interface quadrature points
-  virtual void computeGradU(const ElementType & type, GhostType ghost_type);
+  /// Get background filter
+  Array<UInt> & getBackgroundFilter(const ElementType & fg_type,
+                                    const ElementType & bg_type,
+                                    GhostType ghost_type) {
+    return (*background_filter(fg_type, ghost_type))(bg_type, ghost_type);
+  }
+
+  /// Get foreground filter
+  Array<UInt> & getForegroundFilter(const ElementType & fg_type,
+                                    const ElementType & bg_type,
+                                    GhostType ghost_type) {
+    return (*foreground_filter(fg_type, ghost_type))(bg_type, ghost_type);
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
   /// Embedded model
-  EmbeddedInterfaceModel * model;
-
-  /// Stress in the reinforcement
-  InternalField<Real> stress_embedded;
+  EmbeddedInterfaceModel & emodel;
 
   /// Gradu of concrete on reinforcement
   InternalField<Real> gradu_embedded;
@@ -181,12 +189,21 @@ protected:
   /// Cross-sectional area
   Real area;
 
+  template <typename T>
+  using CrossMap = ElementTypeMap<std::unique_ptr<ElementTypeMapArray<T>>>;
+
   /// Background mesh shape derivatives
-  ElementTypeMap<ElementTypeMapArray<Real> *> shape_derivatives;
+  CrossMap<Real> shape_derivatives;
+
+  /// Foreground mesh filter (contains segment ids)
+  CrossMap<UInt> foreground_filter;
+
+  /// Background element filter (contains bg ids)
+  CrossMap<UInt> background_filter;
 };
 
-#include "material_reinforcement_inline_impl.cc"
-
 } // akantu
+
+#include "material_reinforcement_tmpl.hh"
 
 #endif // __AKANTU_MATERIAL_REINFORCEMENT_HH__

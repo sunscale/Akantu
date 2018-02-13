@@ -34,7 +34,6 @@ public:
     assignMaterials();
     setDirichlets();
     setNeumanns();
-    model->solveStep();
   }
 
   virtual void readMesh(std::string filename) {
