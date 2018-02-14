@@ -27,6 +27,7 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "communication_tag.hh"
 #include "communicator.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
@@ -35,9 +36,6 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void Mesh::makePeriodic(const SpatialDirection & direction) {
-  const auto & lower_bound = this->getLowerBounds();
-  const auto & upper_bound = this->getUpperBounds();
-
   Array<UInt> list_1;
   Array<UInt> list_2;
 
@@ -47,11 +45,13 @@ void Mesh::makePeriodic(const SpatialDirection & direction) {
     UInt node = std::get<0>(data);
     const auto & pos = std::get<1>(data);
 
-    if (Math::are_float_equal(pos(direction), lower_bound(direction))) {
+    if (Math::are_float_equal(pos(direction),
+                              bbox.getLowerBounds()(direction))) {
       list_1.push_back(node);
     }
 
-    if (Math::are_float_equal(pos(direction), upper_bound(direction))) {
+    if (Math::are_float_equal(pos(direction),
+                              bbox.getUpperBounds()(direction))) {
       list_2.push_back(node);
     }
   }
@@ -62,11 +62,12 @@ void Mesh::makePeriodic(const SpatialDirection & direction) {
 namespace {
   struct NodeInfo {
     NodeInfo() {}
+    NodeInfo(UInt spatial_dimension) : position(spatial_dimension) {}
     NodeInfo(UInt node, const Vector<Real> & position,
              const Vector<Real> & lower_node,
              const SpatialDirection & direction)
         : node(node), position(position) {
-      direction_position = position(direction);
+      this->direction_position = position(direction);
       this->position(direction) = 0.;
       this->distance = this->position.distance(lower_node);
     }
@@ -81,62 +82,19 @@ namespace {
     Real direction_position{0.};
   };
 
-  // std::ostream & operator<<(std::ostream & stream, const NodeInfo & info) {
-  //   stream << info.node << " " << info.position << " " << info.distance;
-  //   return stream;
-  // }
+  std::ostream & operator<<(std::ostream & stream, const NodeInfo & info) {
+    stream << info.node << " " << info.position << " "
+           << info.direction_position << " (" << info.distance << ")";
+    return stream;
+  }
 }
 
-class BBox {
-public:
-  BBox(UInt spatial_dimension)
-      : dim(spatial_dimension),
-        lower_bounds(spatial_dimension, std::numeric_limits<Real>::max()),
-        upper_bounds(spatial_dimension, -std::numeric_limits<Real>::max()) {}
-
-  BBox(const BBox & other)
-      : dim(other.dim), lower_bounds(other.lower_bounds),
-        upper_bounds(other.upper_bounds) {}
-
-  BBox & operator=(const BBox & other) {
-    if (this != &other) {
-      this->dim = dim;
-      this->lower_bounds = other.lower_bounds;
-      this->upper_bounds = other.upper_bounds;
-    }
-    return *this;
-  }
-
-  BBox & operator+=(const Vector<Real> & position) {
-    for (auto s : arange(dim)) {
-      lower_bounds(s) = std::min(lower_bounds(s), position(s));
-      upper_bounds(s) = std::min(upper_bounds(s), position(s));
-    }
-    return *this;
-  }
-
-  const Vector<Real> & getLowerBounds() const { return lower_bounds; }
-  const Vector<Real> & getUpperBounds() const { return upper_bounds; }
-
-  Vector<Real> & getLowerBounds() { return lower_bounds; }
-  Vector<Real> & getUpperBounds() { return upper_bounds; }
-
-  void reset() {
-    lower_bounds.set(std::numeric_limits<Real>::max());
-    upper_bounds.set(-std::numeric_limits<Real>::max());
-  }
-
-protected:
-  UInt dim;
-  Vector<Real> lower_bounds;
-  Vector<Real> upper_bounds;
-};
-
 /* -------------------------------------------------------------------------- */
+// left is for lower values on direction and right for highest values
 void Mesh::makePeriodic(const SpatialDirection & direction,
-                        const Array<UInt> & list_1,
-                        const Array<UInt> & list_2) {
-  Real tolerance = Math::getTolerance();
+                        const Array<UInt> & list_left,
+                        const Array<UInt> & list_right) {
+  Real tolerance = 1e-10;
 
   const auto & positions = *nodes;
   auto lower_bound = this->getLowerBounds();
@@ -146,86 +104,215 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
   lower_bound(direction) = 0;
   upper_bound(direction) = 0;
 
-  std::vector<NodeInfo> nodes_1(list_1.size());
-  std::vector<NodeInfo> nodes_2(list_2.size());
+  auto prank = communicator->whoAmI();
+  std::cout << prank << " - left:" << list_left.size()
+            << " - right:" << list_right.size() << std::endl;
+
+  std::vector<NodeInfo> nodes_left(list_left.size());
+  std::vector<NodeInfo> nodes_right(list_right.size());
 
   BBox bbox(spatial_dimension);
   auto to_position = [&](UInt node) {
     Vector<Real> pos(spatial_dimension);
     for (UInt s : arange(spatial_dimension)) {
-      pos(s) = direction == s ? 0 : positions(node, s);
+      pos(s) = positions(node, s);
     }
-    bbox += pos;
-    return NodeInfo(node, pos, lower_bound, direction);
+    auto && info = NodeInfo(node, pos, lower_bound, direction);
+    bbox += info.position;
+    return info;
   };
 
-  std::transform(list_1.begin(), list_1.end(), nodes_1.begin(), to_position);
-  BBox bbox1 = bbox;
+  std::transform(list_left.begin(), list_left.end(), nodes_left.begin(),
+                 to_position);
+  BBox bbox_left = bbox;
 
   bbox.reset();
-  std::transform(list_2.begin(), list_2.end(), nodes_2.begin(), to_position);
-  BBox bbox2 = bbox;
+  std::transform(list_right.begin(), list_right.end(), nodes_right.begin(),
+                 to_position);
+  BBox bbox_right = bbox;
 
+  std::vector<UInt> new_nodes;
   if (is_distributed) {
+    auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
+                                      auto & send_buffers, auto proc,
+                                      auto cnt) {
+      send_buffers.emplace_back();
+      auto & buffer = send_buffers.back();
+
+      for (auto & info : node_list) {
+        if (bbox.contains(info.position) and isLocalOrMasterNode(info.node)) {
+          Vector<Real> pos = info.position;
+          pos(direction) = info.direction_position;
+          buffer << getNodeGlobalId(info.node);
+          buffer << pos;
+        }
+      }
+
+      auto tag = Tag::genTag(prank, cnt, Tag::_PERIODIC_NODES);
+      return communicator->asyncSend(buffer, proc, tag);
+    };
+
+    auto recv_and_extract_nodes = [&](auto & bbox, auto & node_list,
+                                      auto & buffer, const auto proc,
+                                      auto cnt) {
+      if (not bbox)
+        return;
+
+      buffer.reset();
+      auto tag = Tag::genTag(proc, cnt, Tag::_PERIODIC_NODES);
+      communicator->receive(buffer, proc, tag);
+
+      while (not buffer.empty()) {
+        NodeInfo info(spatial_dimension);
+        Vector<Real> pos(spatial_dimension);
+        UInt global_node;
+        buffer >> global_node;
+
+        buffer >> pos;
+        info.position = pos;
+
+        info.direction_position = pos(direction);
+        info.position(direction) = 0;
+        info.distance = lower_bound.distance(info.position);
+
+        info.node = getNodeLocalId(global_node);
+        if (info.node != UInt(-1))
+          continue;
+
+        info.node = nodes->size();
+
+        nodes->push_back(pos);
+        nodes_global_ids->push_back(global_node);
+        nodes_type.push_back(NodeType(-100));
+        new_nodes.push_back(info.node);
+        node_list.push_back(info);
+
+        nodes_prank[info.node] = proc;
+      }
+    };
+
+    auto && intersection_right =
+        bbox_left.intersection(bbox_right, *communicator);
+    auto && intersection_left =
+        bbox_right.intersection(bbox_left, *communicator);
+
     auto prank = communicator->whoAmI();
     auto nb_proc = communicator->getNbProc();
-    Array<Real> bboxes(nb_proc, spatial_dimension * 4);
-    auto * base = bboxes.storage() + prank * 4 * spatial_dimension;
-    Vector<Real>(base + spatial_dimension * 0, spatial_dimension) =
-        bbox1.getLowerBounds();
-    Vector<Real>(base + spatial_dimension * 1, spatial_dimension) =
-        bbox1.getUpperBounds();
-    Vector<Real>(base + spatial_dimension * 2, spatial_dimension) =
-        bbox2.getLowerBounds();
-    Vector<Real>(base + spatial_dimension * 3, spatial_dimension) =
-        bbox2.getUpperBounds();
 
-    communicator->allGather(bboxes);
+    using buffers_t = std::vector<DynamicCommunicationBuffer>;
+    std::vector<CommunicationRequest> send_requests;
+    buffers_t send_buffers;
 
-    for (auto p : arange(nb_proc)) {
-      if (p == prank)
+    for (auto && data :
+         zip(arange(nb_proc), intersection_left, intersection_right)) {
+      auto proc = std::get<0>(data);
+      if (proc == prank)
         continue;
+
+      buffers_t::iterator it;
+
+      const auto & bbox_p_send_left = std::get<1>(data);
+
+      if (bbox_p_send_left) {
+        send_requests.push_back(extract_and_send_nodes(
+            bbox_p_send_left, nodes_left, send_buffers, proc, 0));
+      }
+
+      const auto & bbox_p_send_right = std::get<2>(data);
+      if (bbox_p_send_right) {
+        send_requests.push_back(extract_and_send_nodes(
+            bbox_p_send_right, nodes_right, send_buffers, proc, 1));
+      }
     }
+
+    DynamicCommunicationBuffer buffer;
+    for (auto && data :
+         zip(arange(nb_proc), intersection_left, intersection_right)) {
+      auto proc = std::get<0>(data);
+      if (proc == prank)
+        continue;
+
+      const auto & bbox_p_send_left = std::get<1>(data);
+      recv_and_extract_nodes(bbox_p_send_left, nodes_left, buffer, proc, 0);
+
+      const auto & bbox_p_send_right = std::get<2>(data);
+      recv_and_extract_nodes(bbox_p_send_right, nodes_right, buffer, proc, 1);
+    }
+
+    communicator->waitAll(send_requests);
+    communicator->freeCommunicationRequest(send_requests);
   }
 
   auto to_sort = [&](auto && info1, auto && info2) -> bool {
-    return info1.distance < info2.distance;
+    return info1.position < info2.position;
   };
 
-  std::sort(nodes_1.begin(), nodes_1.end(), to_sort);
-  std::sort(nodes_2.begin(), nodes_2.end(), to_sort);
+  std::sort(nodes_left.begin(), nodes_left.end(), to_sort);
+  std::sort(nodes_right.begin(), nodes_right.end(), to_sort);
 
-  auto it = nodes_2.begin();
-  for (auto && info1 : nodes_1) {
-    auto & pos1 = info1.position;
-    auto it_cur = it;
-
-    bool found = false;
-    for (; it_cur != nodes_2.end(); ++it_cur) {
-      auto & info2 = *it_cur;
-      auto & pos2 = info2.position;
-      auto dist = pos1.distance(pos2) / length;
-      if (dist < tolerance) {
-        found = true;
-        it = it_cur;
-        break;
-      }
+  auto match_found = [&](auto & info1, auto & info2) {
+    auto node1 = info1.node;
+    auto node2 = info2.node;
+    if (info1.direction_position < info2.direction_position) {
+      std::swap(node1, node2);
     }
 
-    if (found) {
-      auto node1 = info1.node;
-      auto node2 = it_cur->node;
-      if (info1.direction_position < it_cur->direction_position) {
-        std::swap(node1, node2);
+    auto mits = periodic_master_slave.equal_range(node2);
+    if (mits.first != periodic_master_slave.end()) {
+      for (auto mit = mits.first; mit != mits.second; ++mit) {
+        periodic_master_slave.insert(node1, mit->second);
+        // \TODO tell processor prank[mit->second] that master is now node1
+        // instead of node2
+        periodic_slave_master[mit->second] = node1;
+        // \TODO tell processor prank[node1] that it also has a slave on
+        // prank[mit->second]
       }
-
-      periodic_pairs.emplace(node1, std::make_pair(node2, direction));
-
-      std::cout << "master: " << node1 << " - slave: " << node2 << std::endl;
+      periodic_master_slave.erase(node2);
     }
+
+    periodic_slave_master[node2] = node1;
+  };
+
+  auto match_pairs = [&](auto & nodes_1, auto & nodes_2) {
+    auto it = nodes_2.begin();
+    for (auto && info1 : nodes_1) {
+      if (not isLocalOrMasterNode(info1.node))
+        continue;
+
+      auto & pos1 = info1.position;
+      auto it_cur = it;
+
+      bool found = false;
+      for (; it_cur != nodes_2.end(); ++it_cur) {
+        auto & info2 = *it_cur;
+        auto & pos2 = info2.position;
+        auto dist = pos1.distance(pos2) / length;
+
+        if (dist < tolerance) {
+          match_found(info1, *it_cur);
+          it = it_cur;
+          break;
+        }
+      }
+    }
+  };
+
+  match_pairs(nodes_left, nodes_right);
+  match_pairs(nodes_right, nodes_left);
+
+  std::cout << periodic_slave_master.size() << std::endl;
+
+  std::cout << prank << " - Left" << std::endl;
+  for (auto && data : nodes_left) {
+    std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
+              << std::endl;
   }
 
-  std::cout << periodic_pairs.size() << std::endl;
+  std::cout << prank << " - Right" << std::endl;
+  for (auto && data : nodes_right) {
+    std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
+              << std::endl;
+  }
 
   this->is_periodic |= 1 < direction;
 }

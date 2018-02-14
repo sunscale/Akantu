@@ -27,6 +27,9 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_COMMUNICATION_TAG_HH__
 #define __AKANTU_COMMUNICATION_TAG_HH__
@@ -94,7 +97,8 @@ public:
     _GATHER = 2,
     _SCATTER = 3,
     _SYNCHRONIZE = 15,
-    _REDUCE
+    _REDUCE,
+    _PERIODIC_NODES,
   };
 
 private:

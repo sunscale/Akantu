@@ -29,6 +29,10 @@
 /* -------------------------------------------------------------------------- */
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
+#include "dumpable_inline_impl.hh"
+#include "dumper_element_partition.hh"
+#include "dumper_iohelper_paraview.hh"
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
@@ -38,7 +42,19 @@ int main(int argc, char ** argv) {
   constexpr UInt dim = 3;
 
   Mesh mesh(dim);
-  mesh.read("cube_periodic.msh");
+  if (Communicator::getStaticCommunicator().whoAmI() == 0) {
+    mesh.read("cube_periodic.msh");
+  }
+
+  mesh.distribute();
+
+  auto * dumper = new DumperParaview("periodic", "./paraview");
+  mesh.registerExternalDumper(*dumper, "periodic", true);
+  mesh.addDumpMesh(mesh);
+  mesh.addDumpFieldExternalToDumper("periodic", "node_type", const_cast<const Mesh &>(mesh).getNodesType());
+  mesh.dump();
 
   mesh.makePeriodic(_x);
+
+  mesh.dump();
 }
