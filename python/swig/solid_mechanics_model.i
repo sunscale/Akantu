@@ -197,7 +197,7 @@ print_self(SolidMechanicsModel)
   }
 
   /* ------------------------------------------------------------------------ */
-  void blockDOF(const std::string surface_name, SpacialDirection direction) {
+  void blockDOF(const std::string surface_name, SpatialDirection direction) {
     $self->applyBC(akantu::BC::Dirichlet::FixedValue(0.0, direction),
                    surface_name);
   }
