@@ -92,7 +92,16 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
   v2 -= v1 * d;
   v2.normalize();
 
-  v3.crossProduct(v2, v1);
+  v3.crossProduct(v1, v2);
+
+  Vector<Real> test_axis(3);
+  test_axis.crossProduct(v1, v2);
+  test_axis -= v3;
+  if (test_axis.norm() > 8 * std::numeric_limits<Real>::epsilon()) {
+    AKANTU_DEBUG_ERROR("The axis vectors do not form a right-handed coordinate "
+                       << "system. I. e., ||n1 x n2 - n3|| should be zero, but "
+                       << "it is " << test_axis.norm() << ".");
+  }
 
   Matrix<Real> mat(Dim, Dim);
   for (UInt i = 0; i < Dim; ++i) {
