@@ -76,8 +76,11 @@ public:
   /// reset to "empty"
   inline void reset();
 
-  /// resize the internal buffer
+  /// resize the internal buffer do not allocate on dynamic buffers
   inline void resize(UInt size);
+
+  /// resize the internal buffer allocate always
+  inline void reserve(UInt size);
 
   /// clear buffer context
   inline void clear();
@@ -151,6 +154,11 @@ public:
   };
   /// return the global size allocated
   inline UInt size() const { return buffer.size(); };
+
+  /// is the buffer empty
+  inline bool empty() const {
+    return (getPackedSize() == 0) and (getLeftToUnpack() == 0);
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
