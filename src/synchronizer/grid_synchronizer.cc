@@ -57,20 +57,19 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
 
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
-  Tensor3<Real> bounding_boxes(spatial_dimension, 2, nb_proc);
-  Matrix<Real> my_bounding_box = bounding_boxes(my_rank);
+  BBox my_bounding_box(spatial_dimension);
 
   const auto & lower = grid.getLowerBounds();
   const auto & upper = grid.getUpperBounds();
   const auto & spacing = grid.getSpacing();
 
-  Vector<Real>(my_bounding_box(0)) = lower - spacing;
-  Vector<Real>(my_bounding_box(1)) = upper + spacing;
+  my_bounding_box.getLowerBounds() = lower - spacing;
+  my_bounding_box.getUpperBounds() = upper + spacing;
 
   AKANTU_DEBUG_INFO(
       "Exchange of bounding box to detect the overlapping regions.");
 
-  comm.allGather(bounding_boxes);
+  auto && bboxes = my_bounding_box.allGather(comm);
 
   std::vector<bool> intersects_proc(nb_proc);
   std::fill(intersects_proc.begin(), intersects_proc.end(), true);
@@ -85,84 +84,18 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
     if (p == my_rank)
       continue;
 
-    Matrix<Real> proc_bounding_box = bounding_boxes(p);
+    const auto & proc_bounding_box = bboxes[p];
+    auto intersection = my_bounding_box.intersection(proc_bounding_box);
 
-    bool intersects = false;
     Vector<Int> first_cell_p = first_cells(p);
     Vector<Int> last_cell_p = last_cells(p);
-    for (UInt s = 0; s < spatial_dimension; ++s) {
-      // check overlapping of grid
-      intersects =
-          Math::intersects(my_bounding_box(s, 0), my_bounding_box(s, 1),
-                           proc_bounding_box(s, 0), proc_bounding_box(s, 1));
 
-      intersects_proc[p] = intersects_proc[p] & intersects;
+    intersects_proc[p] = intersection;
 
-      if (intersects) {
-        AKANTU_DEBUG_INFO("I intersects with processor "
-                          << p << " in direction " << s);
-
-        // is point 1 of proc p in the dimension s in the range ?
-        bool point1 =
-            Math::is_in_range(proc_bounding_box(s, 0), my_bounding_box(s, 0),
-                              my_bounding_box(s, 1));
-
-        // is point 2 of proc p in the dimension s in the range ?
-        bool point2 =
-            Math::is_in_range(proc_bounding_box(s, 1), my_bounding_box(s, 0),
-                              my_bounding_box(s, 1));
-
-        Real start = 0.;
-        Real end = 0.;
-
-        if (point1 && !point2) {
-          /* |-----------|         my_bounding_box(i)
-           *       |-----------|   proc_bounding_box(i)
-           *       1           2
-           */
-          start = proc_bounding_box(s, 0);
-          end = my_bounding_box(s, 1);
-
-          AKANTU_DEBUG_INFO("Intersection scheme 1 in direction "
-                            << s << " with processor " << p << " [" << start
-                            << ", " << end << "]");
-        } else if (point1 && point2) {
-          /* |-----------------|   my_bounding_box(i)
-           *   |-----------|       proc_bounding_box(i)
-           *   1           2
-           */
-          start = proc_bounding_box(s, 0);
-          end = proc_bounding_box(s, 1);
-
-          AKANTU_DEBUG_INFO("Intersection scheme 2 in direction "
-                            << s << " with processor " << p << " [" << start
-                            << ", " << end << "]");
-        } else if (!point1 && point2) {
-          /*       |-----------|   my_bounding_box(i)
-           * |-----------|         proc_bounding_box(i)
-           * 1           2
-           */
-          start = my_bounding_box(s, 0);
-          end = proc_bounding_box(s, 1);
-
-          AKANTU_DEBUG_INFO("Intersection scheme 3 in direction "
-                            << s << " with processor " << p << " [" << start
-                            << ", " << end << "]");
-        } else {
-          /*   |-----------|       my_bounding_box(i)
-           * |-----------------|   proc_bounding_box(i)
-           * 1                 2
-           */
-          start = my_bounding_box(s, 0);
-          end = my_bounding_box(s, 1);
-
-          AKANTU_DEBUG_INFO("Intersection scheme 4 in direction "
-                            << s << " with processor " << p << " [" << start
-                            << ", " << end << "]");
-        }
-
-        first_cell_p(s) = grid.getCellID(start, s);
-        last_cell_p(s) = grid.getCellID(end, s);
+    if(intersects_proc[p]) {
+      for (UInt s = 0; s < spatial_dimension; ++s) {
+        first_cell_p(s) = grid.getCellID(intersection.getLowerBounds()(s), s);
+        last_cell_p(s) = grid.getCellID(intersection.getUpperBounds()(s), s);
       }
     }
 

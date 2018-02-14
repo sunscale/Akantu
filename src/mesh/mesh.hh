@@ -48,10 +48,10 @@
 #include "group_manager.hh"
 #include "mesh_data.hh"
 #include "mesh_events.hh"
+#include "aka_bbox.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 #include <unordered_map>
-
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -265,10 +265,13 @@ public:
   inline bool isMasterNode(UInt n) const;
   inline bool isSlaveNode(UInt n) const;
 
-  AKANTU_GET_MACRO(LowerBounds, lower_bounds, const Vector<Real> &);
-  AKANTU_GET_MACRO(UpperBounds, upper_bounds, const Vector<Real> &);
-  AKANTU_GET_MACRO(LocalLowerBounds, local_lower_bounds, const Vector<Real> &);
-  AKANTU_GET_MACRO(LocalUpperBounds, local_upper_bounds, const Vector<Real> &);
+  const Vector<Real> & getLowerBounds() const { return bbox.getLowerBounds(); }
+  const Vector<Real> & getUpperBounds() const { return bbox.getUpperBounds(); }
+  AKANTU_GET_MACRO(BBox, bbox, const BBox &);
+
+  const Vector<Real> & getLocalLowerBounds() const { return bbox_local.getLowerBounds(); }
+  const Vector<Real> & getLocalUpperBounds() const { return bbox_local.getUpperBounds(); }
+  AKANTU_GET_MACRO(LocalBBox, bbox_local, const BBox &);
 
   /// get the connectivity Array for a given type
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Connectivity, connectivities, UInt);
@@ -557,6 +560,9 @@ private:
   /// [0-N] slave node and master is proc i
   std::shared_ptr<Array<NodeType>> nodes_type;
 
+  /// processor handling the node when not local or master
+  std::unordered_map<UInt, Int> nodes_prank;
+
   /// global number of nodes;
   UInt nb_global_nodes{0};
 
@@ -572,17 +578,13 @@ private:
   /// the spatial dimension of this mesh
   UInt spatial_dimension{0};
 
-  /// min of coordinates
-  Vector<Real> lower_bounds;
-  /// max of coordinates
-  Vector<Real> upper_bounds;
   /// size covered by the mesh on each direction
   Vector<Real> size;
+  /// global bounding box
+  BBox bbox;
 
-  /// local min of coordinates
-  Vector<Real> local_lower_bounds;
-  /// local max of coordinates
-  Vector<Real> local_upper_bounds;
+  /// local bounding box
+  BBox bbox_local;
 
   /// Extra data loaded from the mesh file
   MeshData mesh_data;
@@ -620,7 +622,8 @@ private:
   NodesToElements nodes_to_elements;
 
   /// periodicity local info
-  std::unordered_multimap<UInt, std::pair<UInt, SpatialDirection>> periodic_pairs;
+  std::unordered_map<UInt, UInt> periodic_slave_master;
+  std::unordered_multimap<UInt, UInt> periodic_master_slave;
 };
 
 /// standard output stream operator

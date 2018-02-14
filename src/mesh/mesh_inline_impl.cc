@@ -643,12 +643,7 @@ inline UInt Mesh::getNbNodesPerElementList(const Array<Element> & elements) {
   UInt nb_nodes = 0;
   ElementType current_element_type = _not_defined;
 
-  Array<Element>::const_iterator<Element> el_it = elements.begin();
-  Array<Element>::const_iterator<Element> el_end = elements.end();
-
-  for (; el_it != el_end; ++el_it) {
-    const Element & el = *el_it;
-
+  for(const auto & el : elements) {
     if (el.type != current_element_type) {
       current_element_type = el.type;
       nb_nodes_per_element = Mesh::getNbNodesPerElement(current_element_type);

@@ -67,9 +67,8 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
       connectivities("connectivities", id, memory_id),
       ghosts_counters("ghosts_counters", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
-      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
-      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
-      local_upper_bounds(spatial_dimension, 0.),
+      size(spatial_dimension, 0.),
+      bbox(spatial_dimension), bbox_local(spatial_dimension),
       mesh_data("mesh_data", id, memory_id), communicator(&communicator) {
   AKANTU_DEBUG_IN();
 
@@ -296,38 +295,21 @@ void Mesh::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 void Mesh::computeBoundingBox() {
   AKANTU_DEBUG_IN();
-  for (UInt k = 0; k < spatial_dimension; ++k) {
-    local_lower_bounds(k) = std::numeric_limits<double>::max();
-    local_upper_bounds(k) = -std::numeric_limits<double>::max();
-  }
 
-  for (UInt i = 0; i < nodes->size(); ++i) {
+  bbox_local.reset();
+
+  for(auto & pos :  make_view(*nodes, spatial_dimension)) {
     //    if(!isPureGhostNode(i))
-    for (UInt k = 0; k < spatial_dimension; ++k) {
-      local_lower_bounds(k) = std::min(local_lower_bounds[k], (*nodes)(i, k));
-      local_upper_bounds(k) = std::max(local_upper_bounds[k], (*nodes)(i, k));
-    }
+    bbox_local += pos;
   }
 
   if (this->is_distributed) {
-    Matrix<Real> reduce_bounds(spatial_dimension, 2);
-    for (UInt k = 0; k < spatial_dimension; ++k) {
-      reduce_bounds(k, 0) = local_lower_bounds(k);
-      reduce_bounds(k, 1) = -local_upper_bounds(k);
-    }
-
-    communicator->allReduce(reduce_bounds, SynchronizerOperation::_min);
-
-    for (UInt k = 0; k < spatial_dimension; ++k) {
-      lower_bounds(k) = reduce_bounds(k, 0);
-      upper_bounds(k) = -reduce_bounds(k, 1);
-    }
+    bbox = bbox_local.allSum(*communicator);
   } else {
-    this->lower_bounds = this->local_lower_bounds;
-    this->upper_bounds = this->local_upper_bounds;
+    bbox = bbox_local;
   }
 
-  size = upper_bounds - lower_bounds;
+  size = bbox.size();
 
   AKANTU_DEBUG_OUT();
 }
