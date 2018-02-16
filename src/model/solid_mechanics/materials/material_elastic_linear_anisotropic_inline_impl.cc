@@ -79,6 +79,18 @@ inline void MaterialElasticLinearAnisotropic<dim>::computeTangentModuliOnQuad(Ma
 
 }
 
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+inline void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergyOnQuad(
+    const Matrix<Real> & grad_u, const Matrix<Real> & sigma, Real & epot) {
+
+  AKANTU_DEBUG_ASSERT(this->symmetric,
+                      "The elastic constants matrix is not symmetric,"
+                      "energy is not path independent.");
+
+  epot = .5 * sigma.doubleDot(grad_u);
+}
+
 } // akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_CC__ */

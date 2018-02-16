@@ -66,7 +66,6 @@ package_declare_sources(solid_mechanics
   model/solid_mechanics/materials/material_elastic_linear_anisotropic_inline_impl.cc
   model/solid_mechanics/materials/material_elastic_orthotropic.cc
   model/solid_mechanics/materials/material_elastic_orthotropic.hh
-  model/solid_mechanics/materials/material_elastic_orthotropic_inline_impl.cc
   model/solid_mechanics/materials/material_damage/material_damage.hh
   model/solid_mechanics/materials/material_damage/material_damage_tmpl.hh
   model/solid_mechanics/materials/material_damage/material_marigo.cc

@@ -130,33 +130,6 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
-void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(
-    ElementType el_type, GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  Material::computePotentialEnergy(el_type, ghost_type);
-
-  AKANTU_DEBUG_ASSERT(!this->finite_deformation,
-                      "finite deformation not possible in material orthotropic "
-                      "(TO BE IMPLEMENTED)");
-
-  if (ghost_type != _not_ghost)
-    return;
-  Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-
-  computePotentialEnergyOnQuad(grad_u, sigma, *epot);
-  ++epot;
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
 void MaterialElasticOrthotropic<spatial_dimension>::
     computePotentialEnergyByElement(ElementType type, UInt index,
                                     Vector<Real> & epot_on_quad_points) {
@@ -185,7 +158,7 @@ void MaterialElasticOrthotropic<spatial_dimension>::
   for (; gradu_it != gradu_end; ++gradu_it, ++stress_it, ++epot_quad) {
     grad_u.copy(*gradu_it);
 
-    computePotentialEnergyOnQuad(grad_u, *stress_it, *epot_quad);
+    this->computePotentialEnergyOnQuad(grad_u, *stress_it, *epot_quad);
   }
 }
 
