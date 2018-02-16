@@ -83,6 +83,13 @@ protected:
   // compute C from Cprime
   void rotateCprime();
 
+  /// constitutive law for a given quadrature point
+  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
+                                  Matrix<Real> & sigma) const;
+
+  /// tangent matrix for a given quadrature point
+  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -118,5 +125,7 @@ protected:
   bool was_stiffness_assembled;
 };
 } // akantu
+
+#include "material_elastic_linear_anisotropic_inline_impl.cc"
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__ */

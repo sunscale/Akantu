@@ -142,4 +142,6 @@ protected:
 
 } // akantu
 
+#include "material_elastic_orthotropic_inline_impl.cc"
+
 #endif /* __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__ */

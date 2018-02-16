@@ -79,15 +79,6 @@ template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real vector_norm(Vector<Real> & vec) {
-  Real norm = 0;
-  for (UInt i = 0; i < vec.size(); ++i) {
-    norm += vec(i) * vec(i);
-  }
-  return std::sqrt(norm);
-}
-
-/* -------------------------------------------------------------------------- */
 template <UInt Dim>
 void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
   /* 1) construction of temporary material frame stiffness tensor------------ */
@@ -135,14 +126,6 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
   /* 1) rotation of C into the global frame */
   this->rotateCprime();
   this->C.eig(this->eigC);
-}
-
-/* -------------------------------------------------------------------------- */
-
-template <UInt dim>
-inline void MaterialElasticOrthotropic<dim>::computePotentialEnergyOnQuad(
-    const Matrix<Real> & grad_u, const Matrix<Real> & sigma, Real & epot) {
-  epot = .5 * sigma.doubleDot(grad_u);
 }
 
 /* -------------------------------------------------------------------------- */

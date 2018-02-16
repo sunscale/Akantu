@@ -191,92 +191,110 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void MaterialElasticLinearAnisotropic<dim>::computeStress(
-    ElementType el_type, GhostType ghost_type) {
+void MaterialElasticLinearAnisotropic<dim>::computeStress(ElementType el_type,
+                                                          GhostType ghost_type) {
   // Wikipedia convention:
   // 2*eps_ij (i!=j) = voigt_eps_I
   // http://en.wikipedia.org/wiki/Voigt_notation
   AKANTU_DEBUG_IN();
 
-  Array<Real>::iterator<Matrix<Real>> gradu_it =
-      this->gradu(el_type, ghost_type).begin(dim, dim);
-  Array<Real>::iterator<Matrix<Real>> gradu_end =
-      this->gradu(el_type, ghost_type).end(dim, dim);
-
-  UInt nb_quad_pts = gradu_end - gradu_it;
-
-  // create array for strains and stresses of all dof of all gauss points
-  // for efficient computation of stress
-  Matrix<Real> voigt_strains(voigt_h::size, nb_quad_pts);
-  Matrix<Real> voigt_stresses(voigt_h::size, nb_quad_pts);
-
-  // copy strains
   Matrix<Real> strain(dim, dim);
 
-  for (UInt q = 0; gradu_it != gradu_end; ++gradu_it, ++q) {
-    Matrix<Real> & grad_u = *gradu_it;
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
-    for (UInt I = 0; I < voigt_h::size; ++I) {
-      Real voigt_factor = voigt_h::factors[I];
-      UInt i = voigt_h::vec[I][0];
-      UInt j = voigt_h::vec[I][1];
+  this->computeStressOnQuad(strain,sigma);
 
-      voigt_strains(I, q) = voigt_factor * (grad_u(i, j) + grad_u(j, i)) / 2.;
-    }
-  }
-
-  // compute the strain rate proportional part if needed
-  // bool viscous = this->alpha == 0.; // only works if default value
-  bool viscous = false;
-  if (viscous) {
-    Array<Real> strain_rate(0, dim * dim, "strain_rate");
-
-    Array<Real> & velocity = this->model.getVelocity();
-    const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
-
-    this->fem.gradientOnIntegrationPoints(velocity, strain_rate, dim, el_type,
-                                          ghost_type, elem_filter);
-
-    Array<Real>::matrix_iterator gradu_dot_it = strain_rate.begin(dim, dim);
-    Array<Real>::matrix_iterator gradu_dot_end = strain_rate.end(dim, dim);
-
-    Matrix<Real> strain_dot(dim, dim);
-    for (UInt q = 0; gradu_dot_it != gradu_dot_end; ++gradu_dot_it, ++q) {
-      Matrix<Real> & grad_u_dot = *gradu_dot_it;
-
-      for (UInt I = 0; I < voigt_h::size; ++I) {
-        Real voigt_factor = voigt_h::factors[I];
-        UInt i = voigt_h::vec[I][0];
-        UInt j = voigt_h::vec[I][1];
-
-        voigt_strains(I, q) = this->alpha * voigt_factor *
-                              (grad_u_dot(i, j) + grad_u_dot(j, i)) / 2.;
-      }
-    }
-  }
-
-  // compute stresses
-  voigt_stresses = this->C * voigt_strains;
-
-  // copy stresses back
-  Array<Real>::iterator<Matrix<Real>> stress_it =
-      this->stress(el_type, ghost_type).begin(dim, dim);
-
-  Array<Real>::iterator<Matrix<Real>> stress_end =
-      this->stress(el_type, ghost_type).end(dim, dim);
-
-  for (UInt q = 0; stress_it != stress_end; ++stress_it, ++q) {
-    Matrix<Real> & stress = *stress_it;
-
-    for (UInt I = 0; I < voigt_h::size; ++I) {
-      UInt i = voigt_h::vec[I][0];
-      UInt j = voigt_h::vec[I][1];
-      stress(i, j) = stress(j, i) = voigt_stresses(I, q);
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 }
+
+// /* -------------------------------------------------------------------------- */
+// template <UInt dim>
+// void MaterialElasticLinearAnisotropic<dim>::computeStress(ElementType el_type,
+//                                                           GhostType ghost_type) {
+//   // Wikipedia convention:
+//   // 2*eps_ij (i!=j) = voigt_eps_I
+//   // http://en.wikipedia.org/wiki/Voigt_notation
+//   AKANTU_DEBUG_IN();
+
+//   Array<Real>::iterator<Matrix<Real>> gradu_it =
+//     this->gradu(el_type, ghost_type).begin(dim, dim);
+//   Array<Real>::iterator<Matrix<Real>> gradu_end =
+//     this->gradu(el_type, ghost_type).end(dim, dim);
+
+//   UInt nb_quad_pts = gradu_end - gradu_it;
+
+//   // create array for strains and stresses of all dof of all gauss points
+//   // for efficient computation of stress
+//   Matrix<Real> voigt_strains(voigt_h::size, nb_quad_pts);
+//   Matrix<Real> voigt_stresses(voigt_h::size, nb_quad_pts);
+
+//   // copy strains
+//   Matrix<Real> strain(dim, dim);
+
+//   for (UInt q = 0; gradu_it != gradu_end; ++gradu_it, ++q) {
+//     Matrix<Real> & grad_u = *gradu_it;
+
+//     for (UInt I = 0; I < voigt_h::size; ++I) {
+//       Real voigt_factor = voigt_h::factors[I];
+//       UInt i = voigt_h::vec[I][0];
+//       UInt j = voigt_h::vec[I][1];
+
+//       voigt_strains(I, q) = voigt_factor * (grad_u(i, j) + grad_u(j, i)) / 2.;
+//     }
+//   }
+
+// compute the strain rate proportional part if needed
+// bool viscous = this->alpha == 0.; // only works if default value
+// bool viscous = false;
+// if (viscous) {
+//   Array<Real> strain_rate(0, dim * dim, "strain_rate");
+
+//   Array<Real> & velocity = this->model.getVelocity();
+//   const Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
+
+//   this->fem.gradientOnIntegrationPoints(velocity, strain_rate, dim, el_type,
+//                                         ghost_type, elem_filter);
+
+//   Array<Real>::matrix_iterator gradu_dot_it = strain_rate.begin(dim, dim);
+//   Array<Real>::matrix_iterator gradu_dot_end = strain_rate.end(dim, dim);
+
+//   Matrix<Real> strain_dot(dim, dim);
+//   for (UInt q = 0; gradu_dot_it != gradu_dot_end; ++gradu_dot_it, ++q) {
+//     Matrix<Real> & grad_u_dot = *gradu_dot_it;
+
+//     for (UInt I = 0; I < voigt_h::size; ++I) {
+//       Real voigt_factor = voigt_h::factors[I];
+//       UInt i = voigt_h::vec[I][0];
+//       UInt j = voigt_h::vec[I][1];
+
+//       voigt_strains(I, q) = this->alpha * voigt_factor *
+//                             (grad_u_dot(i, j) + grad_u_dot(j, i)) / 2.;
+//     }
+//   }
+  // }
+
+//   // compute stresses
+//   voigt_stresses = this->C * voigt_strains;
+
+//   // copy stresses back
+//   Array<Real>::iterator<Matrix<Real>> stress_it =
+//     this->stress(el_type, ghost_type).begin(dim, dim);
+
+//   Array<Real>::iterator<Matrix<Real>> stress_end =
+//     this->stress(el_type, ghost_type).end(dim, dim);
+
+//   for (UInt q = 0; stress_it != stress_end; ++stress_it, ++q) {
+//     Matrix<Real> & stress = *stress_it;
+
+//     for (UInt I = 0; I < voigt_h::size; ++I) {
+//       UInt i = voigt_h::vec[I][0];
+//       UInt j = voigt_h::vec[I][1];
+//       stress(i, j) = stress(j, i) = voigt_stresses(I, q);
+//     }
+//   }
+
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -286,7 +304,9 @@ void MaterialElasticLinearAnisotropic<dim>::computeTangentModuli(
   AKANTU_DEBUG_IN();
 
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
-  tangent.copy(this->C);
+
+  this->computeTangentModuliOnQuad(tangent);
+
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END;
 
   this->was_stiffness_assembled = true;
