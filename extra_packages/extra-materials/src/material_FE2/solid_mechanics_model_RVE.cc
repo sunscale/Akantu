@@ -32,6 +32,7 @@
 #include "node_group.hh"
 #include "non_linear_solver.hh"
 #include "parser.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -46,8 +47,6 @@ SolidMechanicsModelRVE::SolidMechanicsModelRVE(Mesh & mesh,
       use_RVE_mat_selector(use_RVE_mat_selector),
       nb_gel_pockets(nb_gel_pockets), nb_dumps(0) {
   AKANTU_DEBUG_IN();
-  /// create node groups for PBCs
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
   /// find the four corner nodes of the RVE
   findCornerNodes();
 
@@ -90,14 +89,15 @@ void SolidMechanicsModelRVE::initFullImpl(const ModelOptions & options) {
   auto options_cp(options);
   options_cp.analysis_method = AnalysisMethod::_static;
 
-  SolidMechanicsModel::initFullImpl(options);
+  SolidMechanicsModel::initFullImpl(options_cp);
 
   this->initMaterials();
 
   auto & fem = this->getFEEngine("SolidMechanicsFEEngine");
 
   /// compute the volume of the RVE
-  for (auto element_type : mesh.elementTypes(_element_kind = _ek_not_defined)) {
+  GhostType gt = _not_ghost;
+  for (auto element_type : this->mesh.elementTypes(spatial_dimension, gt, _ek_not_defined)) {
     Array<Real> Volume(this->mesh.getNbElement(element_type) *
                            fem.getNbIntegrationPoints(element_type),
                        1, 1.);
@@ -118,9 +118,9 @@ void SolidMechanicsModelRVE::initFullImpl(const ModelOptions & options) {
   this->addDumpField("material_index");
   this->addDumpField("damage");
   this->addDumpField("Sc");
-  this->addDumpField("force");
+  this->addDumpField("external_force");
   this->addDumpField("equivalent_stress");
-  this->addDumpField("internal_forces");
+  this->addDumpField("internal_force");
 
   this->dump();
   this->nb_dumps += 1;
@@ -378,7 +378,8 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
 
   /// clear the eigenstrain
   Matrix<Real> zero_eigengradu(dim, dim, 0.);
-  for (auto element_type : mesh.elementTypes(_element_kind = _ek_not_defined)) {
+  GhostType gt = _not_ghost;
+  for (auto element_type : mesh.elementTypes(dim, gt, _ek_not_defined)) {
     auto & prestrain_vect =
         const_cast<Array<Real> &>(this->getMaterial("gel").getInternal<Real>(
             "eigen_grad_u")(element_type));
@@ -434,11 +435,11 @@ void SolidMechanicsModelRVE::performVirtualTesting(const Matrix<Real> & H,
   AKANTU_DEBUG_IN();
   this->applyBoundaryConditions(H);
 
-  auto & solver = this->getNonLinearSolver("static");
+  auto & solver = this->getNonLinearSolver();
   solver.set("max_iterations", 2);
   solver.set("threshold", 1e-6);
   solver.set("convergence_type", _scc_solution);
-  this->solveStep("static");
+  this->solveStep();
 
   /// get average stress and strain
   eff_stresses(0, test_no) = this->averageTensorField(0, 0, "stress");

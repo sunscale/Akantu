@@ -72,14 +72,14 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
 Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                    FEEngine & fe_engine, const ID & id)
     : Memory(id, model.getMemoryID()), Parsable(ParserType::_material, id),
-      is_init(false), fem(model.getFEEngine()), finite_deformation(false),
+      is_init(false), fem(fe_engine), finite_deformation(false),
       name(""), model(model), spatial_dimension(dim),
       element_filter("element_filter", id, this->memory_id),
       stress("stress", *this, dim, fe_engine, this->element_filter),
       eigengradu("eigen_grad_u", *this, dim, fe_engine, this->element_filter),
       gradu("gradu", *this, dim, fe_engine, this->element_filter),
       green_strain("green_strain", *this, dim, fe_engine, this->element_filter),
-      piola_kirchhoff_2("poila_kirchhoff_2", *this, dim, fe_engine,
+      piola_kirchhoff_2("piola_kirchhoff_2", *this, dim, fe_engine,
                         this->element_filter),
       potential_energy("potential_energy", *this, dim, fe_engine,
                        this->element_filter),
@@ -495,7 +495,7 @@ void Material::assembleStiffnessMatrix(const ElementType & type,
   Array<Real> * bt_d_b = new Array<Real>(nb_element * nb_quadrature_points,
                                          bt_d_b_size * bt_d_b_size, "B^t*D*B");
 
-  fem.computeBtDB(*tangent_stiffness_matrix, *bt_d_b, 4, type, ghost_type);
+  fem.computeBtDB(*tangent_stiffness_matrix, *bt_d_b, 4, type, ghost_type, elem_filter);
   // Matrix<Real> B(tangent_size, dim * nb_nodes_per_element);
   // Matrix<Real> Bt_D(dim * nb_nodes_per_element, tangent_size);
 

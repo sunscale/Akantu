@@ -121,7 +121,7 @@ int main(int argc, char * argv[]) {
 #endif
 
   for (UInt i = 1; i < max_steps + 1; ++i) {
-    model.solveStep();
+    model.solveStep("dynamic");
 
 #if EXPLICIT == false
     //int nb_iter = solver.get("nb_iterations");

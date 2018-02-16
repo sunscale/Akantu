@@ -78,7 +78,7 @@ void MaterialFE2<spatial_dimension>::initMaterial() {
         "SMM_RVE_" + std::to_string(prank), q + 1));
 
     auto & RVE = *RVEs.back();
-    RVE.initFull();
+    RVE.initFull(_analysis_method = _static);
 
     /// compute intial stiffness of the RVE
     RVE.homogenizeStiffness(C);

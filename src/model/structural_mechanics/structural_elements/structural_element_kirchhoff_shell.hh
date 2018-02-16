@@ -33,71 +33,39 @@
 #ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__
 #define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__
 
+#include "structural_mechanics_model.hh"
+
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void StructuralMechanicsModel::assembleMass<_discrete_kirchhoff_triangle_18>() {
-
+inline void
+StructuralMechanicsModel::assembleMass<_discrete_kirchhoff_triangle_18>() {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
-void StructuralMechanicsModel::computeRotationMatrix<_discrete_kirchhoff_triangle_18>(
-    Array<Real> & rotations) {
-  ElementType type = _discrete_kirchhoff_triangle_18;
-  Mesh & mesh = getFEEngine().getMesh();
-  UInt nb_element = mesh.getNbElement(type);
+void StructuralMechanicsModel::computeTangentModuli<
+    _discrete_kirchhoff_triangle_18>(Array<Real> & tangent_moduli) {
 
-  Array<UInt>::iterator<Vector<UInt> > connec_it =
-      mesh.getConnectivity(type).begin(3);
-  Array<Real>::vector_iterator nodes_it =
-      mesh.getNodes().begin(spatial_dimension);
+  auto tangent_size =
+    ElementClass<_discrete_kirchhoff_triangle_18>::getNbStressComponents();
+  auto nb_quad =
+      getFEEngine().getNbIntegrationPoints(_discrete_kirchhoff_triangle_18);
 
-  Matrix<Real> Pe(spatial_dimension, spatial_dimension);
-  Matrix<Real> Pg(spatial_dimension, spatial_dimension);
-  Matrix<Real> inv_Pg(spatial_dimension, spatial_dimension);
+  auto H_it = tangent_moduli.begin(tangent_size, tangent_size);
 
-  Array<Real>::matrix_iterator R_it =
-      rotations.begin(nb_degree_of_freedom, nb_degree_of_freedom);
+  for (UInt mat :
+       element_material(_discrete_kirchhoff_triangle_18, _not_ghost)) {
+    auto & m = materials[mat];
 
-  for (UInt e = 0; e < nb_element; ++e, ++connec_it, ++R_it) {
-
-    Pe.eye();
-
-    Matrix<Real> & R = *R_it;
-    Vector<UInt> & connec = *connec_it;
-
-    Vector<Real> x2;
-    x2 = nodes_it[connec(1)]; // X2
-    Vector<Real> x1;
-    x1 = nodes_it[connec(0)]; // X1
-    Vector<Real> x3;
-    x3 = nodes_it[connec(2)]; // X3
-
-    Vector<Real> Pg_col_1 = x2 - x1;
-
-    Vector<Real> Pg_col_2 = x3 - x1;
-
-    Vector<Real> Pg_col_3(spatial_dimension);
-    Pg_col_3.crossProduct(Pg_col_1, Pg_col_2);
-
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      Pg(i, 0) = Pg_col_1(i);
-      Pg(i, 1) = Pg_col_2(i);
-      Pg(i, 2) = Pg_col_3(i);
-    }
-
-    inv_Pg.inverse(Pg);
-    // Pe *= inv_Pg;
-    Pe.eye();
-
-    for (UInt i = 0; i < spatial_dimension; ++i) {
-      for (UInt j = 0; j < spatial_dimension; ++j) {
-        R(i, j) = Pe(i, j);
-        R(i + spatial_dimension, j + spatial_dimension) = Pe(i, j);
-      }
+    for (UInt q = 0; q < nb_quad; ++q, ++H_it) {
+      auto & H = *H_it;
+      Matrix<Real> D = {{1, m.nu, 0}, {m.nu, 1, 0}, {0, 0, (1 - m.nu) / 2}};
+      D *= m.E / (1 - m.nu * m.nu);
+      H.block(0, 0, 3, 3) = D; // in plane membrane behavior
+      H.block(3, 3, 3, 3) = D * Math::pow<3>(m.t) / 12.; // bending behavior
     }
   }
 }

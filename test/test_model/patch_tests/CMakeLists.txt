@@ -41,10 +41,10 @@ register_gtest_sources(SOURCES patch_test_linear_elastic_implicit.cc
   PACKAGE solid_mechanics implicit
   FILES_TO_COPY data/material_check_stress_plane_strain.dat
                 data/material_check_stress_plane_stress.dat)
+
 register_gtest_sources(SOURCES patch_test_linear_anisotropic_explicit.cc
-  PACKAGE solid_mechanics
-  FILES_TO_COPY data/material_anisotropic.dat
-  UNSTABLE)
+  PACKAGE solid_mechanics lapack
+  FILES_TO_COPY data/material_anisotropic.dat)
 
 register_gtest_sources(SOURCES test_lumped_mass.cc
   PACKAGE solid_mechanics
@@ -60,5 +60,58 @@ register_gtest_sources(
   FILES_TO_COPY data/heat_transfer_input.dat
   PACKAGE heat_transfer implicit)
 
+register_gtest_sources(
+  SOURCES patch_test_linear_heat_transfer_implicit.cc
+  FILES_TO_COPY data/heat_transfer_input.dat
+  PACKAGE heat_transfer implicit)
+
 register_gtest_test(patch_test_linear
   FILES_TO_COPY ${PATCH_TEST_MESHES})
+
+register_test(test_linear_elastic_explicit_python
+  SCRIPT patch_test_linear_elastic_explicit.py
+  PYTHON
+  PACKAGE python_interface
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_solid_mechanics_fixture.py
+  FILES_TO_COPY ${PATCH_TEST_MESHES})
+
+register_test(test_linear_elastic_static_python
+  SCRIPT patch_test_linear_elastic_static.py
+  PYTHON
+  PACKAGE python_interface implicit
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_solid_mechanics_fixture.py)
+
+register_test(test_linear_anisotropic_explicit_python
+  SCRIPT patch_test_linear_anisotropic_explicit.py
+  PYTHON
+  PACKAGE python_interface lapack
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_solid_mechanics_fixture.py
+  FILES_TO_COPY data/material_anisotropic.dat)
+
+
+register_test(patch_test_linear_heat_transfer_explicit_python
+  SCRIPT patch_test_linear_heat_transfer_explicit.py
+  PYTHON
+  PACKAGE python_interface heat_transfer
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_heat_transfer_fixture.py
+  FILES_TO_COPY data/heat_transfer_input.dat)
+
+register_test(patch_test_linear_heat_transfer_static_python
+  SCRIPT patch_test_linear_heat_transfer_static.py
+  PYTHON
+  PACKAGE python_interface heat_transfer implicit
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_heat_transfer_fixture.py
+  FILES_TO_COPY data/heat_transfer_input.dat)
+
+register_test(patch_test_linear_heat_transfer_implicit_python
+  SCRIPT patch_test_linear_heat_transfer_implicit.py
+  PYTHON
+  PACKAGE python_interface heat_transfer implicit
+  FILES_TO_COPY patch_test_linear_fixture.py
+  FILES_TO_COPY patch_test_linear_heat_transfer_fixture.py
+  FILES_TO_COPY data/heat_transfer_input.dat)

@@ -38,61 +38,45 @@
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class TestStructBernoulli2
-    : public TestStructuralFixture<element_type_t<_bernoulli_beam_2>> {
-  using parent = TestStructuralFixture<element_type_t<_bernoulli_beam_2>>;
+class TestStructDKT18
+    : public TestStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>> {
+  using parent = TestStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>>;
 
 public:
   void addMaterials() override {
-    mat.E = 3e10;
-    mat.I = 0.0025;
-    mat.A = 0.01;
-
-    this->model->addMaterial(mat);
-
-    mat.E = 3e10;
-    mat.I = 0.00128;
-    mat.A = 0.01;
+    mat.E = 1;
+    mat.t = 1;
+    mat.nu = 0.3;
 
     this->model->addMaterial(mat);
   }
 
   void assignMaterials() override {
     auto & materials = this->model->getElementMaterial(parent::type);
-    materials(0) = 0;
-    materials(1) = 1;
+    std::fill(materials.begin(), materials.end(), 0);
   }
 
   void setDirichlets() override {
-    auto boundary = this->model->getBlockedDOFs().begin(parent::ndof);
+    std::fill(this->model->getBlockedDOFs().begin(),
+              this->model->getBlockedDOFs().end(), true);
+    auto center_node = this->model->getBlockedDOFs().end(parent::ndof) - 1;
     // clang-format off
-    *boundary = {true, true, true}; ++boundary;
-    *boundary = {false, true, false}; ++boundary;
-    *boundary = {false, true, false}; ++boundary;
+    *center_node = {false, false, false, false, false, true};
     // clang-format on
+
+    this->model->getDisplacement().clear();
+    auto disp = ++this->model->getDisplacement().begin(parent::ndof);
+
+    // Displacement field from Batoz Vol. 2 p. 392
+    // with theta to beta correction from discrete Kirchhoff condition
+    //clang-format off
+    *disp = {40, 20, -800 , -20, 40, 0}; ++disp;
+    *disp = {50, 40, -1400, -40, 50, 0}; ++disp;
+    *disp = {10, 20, -200 , -20, 10, 0}; ++disp;
+    //clang-format on
   }
 
-  void setNeumanns() override {
-    Real M = 3600;  // Nm
-    Real q = -6000; // kN/m
-    Real L = 10;    // m
-    auto & forces = this->model->getExternalForce();
-    forces(2, 2) = -M; // moment on last node
-#if 1 // as long as integration is not available
-    forces(0, 1) = q * L / 2;
-    forces(0, 2) = q * L * L / 12;
-    forces(1, 1) = q * L / 2;
-    forces(1, 2) = -q * L * L / 12;
-#else
-    auto & group = mesh.createElementGroup("lin_force");
-    group.add({type, 0, _not_ghost});
-    Vector<Real> lin_force = {0, q, 0};
-    // a linear force is not actually a *boundary* condition
-    // it is equivalent to a volume force
-    model.applyBC(BC::Neumann::FromSameDim(lin_force), group);
-#endif
-    forces(2, 0) = mat.E * mat.A / 18;
-  }
+  void setNeumanns() override {}
 
 protected:
   StructuralMaterial mat;
@@ -100,15 +84,18 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 
-TEST_F(TestStructBernoulli2, TestDisplacements) {
+// Batoz Vol 2. patch test, ISBN 2-86601-259-3
+
+TEST_F(TestStructDKT18, TestDisplacements) {
   model->solveStep();
-  auto d1 = model->getDisplacement()(1, 2);
-  auto d2 = model->getDisplacement()(2, 2);
-  auto d3 = model->getDisplacement()(1, 0);
+  Vector<Real> solution = {22.5, 22.5, -337.5, -22.5, 22.5, 0};
+
+  Vector<Real> center_node_disp =
+      model->getDisplacement().end(model->getSpatialDimension())[-1];
+
+  auto error = solution - center_node_disp;
 
   Real tol = Math::getTolerance();
 
-  EXPECT_NEAR(d1, 5.6 / 4800, tol);  // first rotation
-  EXPECT_NEAR(d2, -3.7 / 4800, tol); // second rotation
-  EXPECT_NEAR(d3, 10. / 18, tol);    // axial deformation
+  EXPECT_NEAR(error.norm<L_2>(), 0., tol);
 }
