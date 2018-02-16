@@ -122,7 +122,8 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   std::uniform_real_distribution<> dis;
 
   // v1 and v2 are such that they form a right-hand basis with prescribed v3,
-  // it's need (at least) for the 2d lin. elastic orthotropic material
+  // it's need (at least) for 2d linear elastic anisotropic and (orthotropic)
+  // materials to rotate the tangent stiffness
   
   Vector<Real> v1(3);
   Vector<Real> v2(3);
