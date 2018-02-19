@@ -823,7 +823,7 @@ public:
     return VectorProxy<T>(this->values + j * this->n[0], this->n[0]);
   }
 
-  inline void block(Matrix & block, UInt pos_i, UInt pos_j) {
+  inline void block(const Matrix & block, UInt pos_i, UInt pos_j) {
     AKANTU_DEBUG_ASSERT(pos_i + block.rows() <= rows(),
                         "The block size or position are not correct");
     AKANTU_DEBUG_ASSERT(pos_i + block.cols() <= cols(),
