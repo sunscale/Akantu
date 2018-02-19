@@ -124,12 +124,9 @@ InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
       natural_coords, real_coord, H);
 
-  Matrix<Real> deriv(1, 6);
-
   // Storing the derivatives in dnds
-  deriv.block(L, 0, 0);
-  deriv.block(H, 0, 2);
-  dnds.deepCopy(deriv);
+  dnds.block(L, 0, 0);
+  dnds.block(H, 0, 2);
 }
 
 /* -------------------------------------------------------------------------- */
