@@ -34,27 +34,30 @@
 inline UInt MaterialCohesive::addFacet(const Element & element) {
   Array<UInt> & f_filter = facet_filter(element.type, element.ghost_type);
   f_filter.push_back(element.element);
-  return f_filter.size()-1;
+  return f_filter.size() - 1;
 }
 
-
 /* -------------------------------------------------------------------------- */
-template<ElementType type>
+template <ElementType type>
 void MaterialCohesive::computeNormal(const Array<Real> & /*position*/,
-				     Array<Real> & /*normal*/,
-				     GhostType /*ghost_type*/) {
-}
+                                     Array<Real> & /*normal*/,
+                                     GhostType /*ghost_type*/) {}
 
 /* -------------------------------------------------------------------------- */
-inline UInt MaterialCohesive::getNbDataForElements(const Array<Element> & elements,
-						   SynchronizationTag tag) const {
+inline UInt
+MaterialCohesive::getNbDataForElements(const Array<Element> & elements,
+                                       SynchronizationTag tag) const {
 
   switch (tag) {
   case _gst_smm_stress: {
-    return 2 * spatial_dimension * sizeof(Real) * this->getModel().getNbIntegrationPoints(elements, "CohesiveFEEngine");
+    return 2 * spatial_dimension * sizeof(Real) *
+           this->getModel().getNbIntegrationPoints(elements,
+                                                   "CohesiveFEEngine");
   }
   case _gst_smmc_damage: {
-    return sizeof(Real) * this->getModel().getNbIntegrationPoints(elements, "CohesiveFEEngine");
+    return sizeof(Real) *
+           this->getModel().getNbIntegrationPoints(elements,
+                                                   "CohesiveFEEngine");
   }
   default: {}
   }
@@ -64,32 +67,36 @@ inline UInt MaterialCohesive::getNbDataForElements(const Array<Element> & elemen
 
 /* -------------------------------------------------------------------------- */
 inline void MaterialCohesive::packElementData(CommunicationBuffer & buffer,
-					      const Array<Element> & elements,
-					      SynchronizationTag tag) const {
+                                              const Array<Element> & elements,
+                                              SynchronizationTag tag) const {
   switch (tag) {
   case _gst_smm_stress: {
     packElementDataHelper(tractions, buffer, elements, "CohesiveFEEngine");
-    packElementDataHelper(contact_tractions, buffer, elements, "CohesiveFEEngine");
+    packElementDataHelper(contact_tractions, buffer, elements,
+                          "CohesiveFEEngine");
     break;
   }
   case _gst_smmc_damage:
-    packElementDataHelper(damage, buffer, elements, "CohesiveFEEngine"); break;
+    packElementDataHelper(damage, buffer, elements, "CohesiveFEEngine");
+    break;
   default: {}
   }
 }
 
 /* -------------------------------------------------------------------------- */
 inline void MaterialCohesive::unpackElementData(CommunicationBuffer & buffer,
-						const Array<Element> & elements,
-						SynchronizationTag tag) {
+                                                const Array<Element> & elements,
+                                                SynchronizationTag tag) {
   switch (tag) {
   case _gst_smm_stress: {
     unpackElementDataHelper(tractions, buffer, elements, "CohesiveFEEngine");
-    unpackElementDataHelper(contact_tractions, buffer, elements, "CohesiveFEEngine");
+    unpackElementDataHelper(contact_tractions, buffer, elements,
+                            "CohesiveFEEngine");
     break;
   }
   case _gst_smmc_damage:
-    unpackElementDataHelper(damage, buffer, elements, "CohesiveFEEngine"); break;
+    unpackElementDataHelper(damage, buffer, elements, "CohesiveFEEngine");
+    break;
   default: {}
   }
 }

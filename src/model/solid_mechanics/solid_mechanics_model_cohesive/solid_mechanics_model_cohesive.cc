@@ -480,16 +480,6 @@ void SolidMechanicsModelCohesive::assembleInternalForces() {
 
   SolidMechanicsModel::assembleInternalForces();
 
-  if (isDefaultSolverExplicit()) {
-    for (auto & material : materials) {
-      try {
-        auto & mat = dynamic_cast<MaterialCohesive &>(*material);
-        mat.computeEnergies();
-      } catch (std::bad_cast & bce) {
-      }
-    }
-  }
-
   AKANTU_DEBUG_OUT();
 }
 
