@@ -38,9 +38,8 @@ public:
     nb_element = this->mesh->getNbElement(type);
 
     fem = std::make_unique<FEM>(*mesh, dim, "my_fem");
-    fem->initShapeFunctions();
-
-    nb_quadrature_points_total = fem->getNbIntegrationPoints(type) * nb_element;
+    nb_quadrature_points_total =
+        GaussIntegrationElement<type>::getNbQuadraturePoints() * nb_element;
 
     SCOPED_TRACE(aka::to_string(type));
   }

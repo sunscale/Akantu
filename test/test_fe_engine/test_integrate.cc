@@ -42,6 +42,8 @@ using namespace akantu;
 namespace {
 
 TYPED_TEST(TestFEMFixture, IntegrateConstant) {
+  this->fem->initShapeFunctions();
+
   const auto type = this->type;
 
   const auto & position = this->fem->getMesh().getNodes();
