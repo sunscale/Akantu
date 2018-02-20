@@ -72,9 +72,12 @@ template <> void FriendMaterial<MaterialElastic<2>>::testComputeStress() {
   setParam("E", E);
   setParam("nu", nu);
 
+  Real bulk_modulus_K = E / 3. / (1 - 2. * nu);
+  Real shear_modulus_mu = 0.5 * E / (1 + nu);
+
   Matrix<Real> rotation_matrix = getRandomRotation2d();
 
-  auto grad_u = this->getDeviatoricStrain(1.).block(0, 0, 2, 2);
+  auto grad_u = this->getComposedStrain(1.).block(0, 0, 2, 2);
 
   auto grad_u_rot = this->applyRotation(grad_u, rotation_matrix);
 
@@ -86,8 +89,11 @@ template <> void FriendMaterial<MaterialElastic<2>>::testComputeStress() {
   Matrix<Real> identity(2, 2);
   identity.eye();
 
-  Matrix<Real> sigma_expected =
-      0.5 * E / (1 + nu) * (grad_u + grad_u.transpose()) + sigma_th * identity;
+  Matrix<Real> strain = 0.5 * (grad_u + grad_u.transpose());
+  Matrix<Real> deviatoric_strain = strain - 1. / 3. * strain.trace() * identity;
+
+  Matrix<Real> sigma_expected = 2 * shear_modulus_mu * deviatoric_strain +
+                                (sigma_th + 2. * bulk_modulus_K) * identity;
 
   auto diff = sigma - sigma_expected;
   Real stress_error = diff.norm<L_inf>();
@@ -178,9 +184,12 @@ template <> void FriendMaterial<MaterialElastic<3>>::testComputeStress() {
   setParam("E", E);
   setParam("nu", nu);
 
+  Real bulk_modulus_K = E / 3. / (1 - 2. * nu);
+  Real shear_modulus_mu = 0.5 * E / (1 + nu);
+
   Matrix<Real> rotation_matrix = getRandomRotation3d();
 
-  auto grad_u = this->getDeviatoricStrain(1.);
+  auto grad_u = this->getComposedStrain(1.);
 
   auto grad_u_rot = this->applyRotation(grad_u, rotation_matrix);
 
@@ -192,8 +201,11 @@ template <> void FriendMaterial<MaterialElastic<3>>::testComputeStress() {
   Matrix<Real> identity(3, 3);
   identity.eye();
 
-  Matrix<Real> sigma_expected =
-      0.5 * E / (1 + nu) * (grad_u + grad_u.transpose()) + sigma_th * identity;
+  Matrix<Real> strain = 0.5 * (grad_u + grad_u.transpose());
+  Matrix<Real> deviatoric_strain = strain - 1. / 3. * strain.trace() * identity;
+
+  Matrix<Real> sigma_expected = 2 * shear_modulus_mu * deviatoric_strain +
+                                (sigma_th + 3. * bulk_modulus_K) * identity;
 
   auto diff = sigma - sigma_expected;
   Real stress_error = diff.norm<L_inf>();
@@ -298,8 +310,7 @@ void FriendMaterial<MaterialElasticOrthotropic<2>>::testComputeStress() {
   this->updateInternalParameters();
 
   // gradient in material frame of reference
-  auto grad_u = (this->getDeviatoricStrain(2.) + this->getHydrostaticStrain(1.))
-                    .block(0, 0, 2, 2);
+  auto grad_u = this->getComposedStrain(2.).block(0, 0, 2, 2);
 
   // gradient in canonical basis (we need to rotate *back* to the canonical
   // basis)
@@ -494,7 +505,7 @@ void FriendMaterial<MaterialElasticOrthotropic<3>>::testComputeStress() {
   this->updateInternalParameters();
 
   // gradient in material frame of reference
-  auto grad_u = this->getDeviatoricStrain(2.) + this->getHydrostaticStrain(1.);
+  auto grad_u = this->getComposedStrain(2.);
 
   // gradient in canonical basis (we need to rotate *back* to the canonical
   // basis)
@@ -733,8 +744,7 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<2>>::testComputeStress() {
   this->updateInternalParameters();
 
   // gradient in material frame of reference
-  auto grad_u = (this->getDeviatoricStrain(2.) + this->getHydrostaticStrain(1.))
-                    .block(0, 0, 2, 2);
+  auto grad_u = this->getComposedStrain(1.).block(0, 0, 2, 2);
 
   // gradient in canonical basis (we need to rotate *back* to the canonical
   // basis)
@@ -894,7 +904,7 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<3>>::testComputeStress() {
   this->updateInternalParameters();
 
   // gradient in material frame of reference
-  auto grad_u = this->getDeviatoricStrain(2.) + this->getHydrostaticStrain(1.);
+  auto grad_u = this->getComposedStrain(2.);
 
   // gradient in canonical basis (we need to rotate *back* to the canonical
   // basis)

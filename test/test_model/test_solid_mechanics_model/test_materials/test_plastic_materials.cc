@@ -47,11 +47,12 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
   Matrix<Real> inelastic_strain = Matrix<Real>(3, 3, 0.);
   Matrix<Real> previous_inelastic_strain = Matrix<Real>(3, 3, 0.);
   Matrix<Real> previous_inelastic_strain_rot = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> sigma_rot(3, 3);
-  Real iso_hardening = sigma_0;
-  Real previous_iso_hardening = sigma_0;
+  Matrix<Real> sigma_rot(3, 3, 0.);
+  Real iso_hardening = 0.;
+  Real previous_iso_hardening = 0.;
 
   // hydrostatic loading (should not plastify)
+
   for (auto && i : steps) {
     auto t = i * dt;
 
@@ -69,17 +70,18 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
         t * 3. * bulk_modulus_K * Matrix<Real>::eye(3, 1.);
 
     Real stress_error = (sigma - sigma_expected).norm<L_inf>();
-    std::cout << sigma << std::endl;
-    std::cout << sigma_expected << std::endl;
 
     ASSERT_NEAR(stress_error, 0., 1e-13);
     ASSERT_NEAR(inelastic_strain_rot.norm<L_inf>(), 0., 1e-13);
 
+
+    previous_grad_u_rot = grad_u_rot;
+    previous_sigma_rot = sigma_rot;
+    previous_inelastic_strain_rot = inelastic_strain_rot;
+    previous_iso_hardening = iso_hardening;
   }
 
-  // std::cout << "deviatoric testing" << std::endl;
   // deviatoric loading (should plastify)
-
   // stress at onset of plastication
   Real beta = sqrt(42);
   Real t_P = sigma_0 / 2. / shear_modulus_mu / beta;
