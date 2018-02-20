@@ -90,7 +90,7 @@ Parser static_parser;
 bool Parser::permissive_parser = false;
 
 /* -------------------------------------------------------------------------- */
-Real Math::tolerance = std::numeric_limits<Real>::epsilon();
+Real Math::tolerance = 1e2 * std::numeric_limits<Real>::epsilon();
 
 /* -------------------------------------------------------------------------- */
 const UInt _all_dimensions = UInt(-1);

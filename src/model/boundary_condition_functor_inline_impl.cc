@@ -101,6 +101,18 @@ namespace BC {
       flags(this->axis) = true;
       primal(this->axis) += value;
     }
+
+    /* ---------------------------------------------------------------------- */
+    inline void Increment::operator()(__attribute__((unused)) UInt node,
+                                      Vector<bool> & flags,
+                                      Vector<Real> & primal,
+                                      __attribute__((unused))
+                                      const Vector<Real> & coord) const {
+      DIRICHLET_SANITY_CHECK;
+      flags.set(true);
+      primal += value;
+    }
+
   } // end namespace Dirichlet
 
   /* ------------------------------------------------------------------------ */

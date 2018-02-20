@@ -1,4 +1,4 @@
-h = 0.5;
+h = 0.4;
 
 Point(1) = { 1, 1, 0, h};
 Point(2) = {-1, 1, 0, h};
@@ -28,3 +28,7 @@ Physical Line("insertion") = {3};
 Physical Line("sides") = {2, 5, 7, 4};
 
 Physical Surface("body") = {1, 2};
+
+Recombine Surface {2};
+Transfinite Surface {2};
+Mesh.SecondOrderIncomplete = 1;

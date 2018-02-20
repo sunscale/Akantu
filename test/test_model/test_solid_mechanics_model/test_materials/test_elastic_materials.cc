@@ -14,11 +14,9 @@ using types =
     ::testing::Types<Traits<MaterialElastic, 1>, Traits<MaterialElastic, 2>,
                      Traits<MaterialElastic, 3>,
 
-                     Traits<MaterialElasticOrthotropic, 1>,
                      Traits<MaterialElasticOrthotropic, 2>,
                      Traits<MaterialElasticOrthotropic, 3>,
 
-                     Traits<MaterialElasticLinearAnisotropic, 1>,
                      Traits<MaterialElasticLinearAnisotropic, 2>,
                      Traits<MaterialElasticLinearAnisotropic, 3>>;
 
@@ -844,6 +842,57 @@ void FriendMaterial<
 }
 
 /* -------------------------------------------------------------------------- */
+template <> void FriendMaterial<MaterialElasticLinearAnisotropic<3>>::testCelerity() {
+
+  // Note: for this test material and canonical basis coincide
+  Matrix<Real> C = {
+    {1.0, 0.3, 0.4, 0.3, 0.2, 0.1},
+    {0.3, 2.0, 0.1, 0.2, 0.3, 0.2},
+    {0.4, 0.1, 1.5, 0.1, 0.4, 0.3},
+    {0.3, 0.2, 0.1, 2.4, 0.1, 0.4},
+    {0.2, 0.3, 0.4, 0.1, 0.9, 0.1},
+    {0.1, 0.2, 0.3, 0.4, 0.1, 1.2},
+  };
+  Real rho = 2.9;
+
+  setParamNoUpdate("C11", C(0,0));
+  setParamNoUpdate("C12", C(0,1));
+  setParamNoUpdate("C13", C(0,2));
+  setParamNoUpdate("C14", C(0,3));
+  setParamNoUpdate("C15", C(0,4));
+  setParamNoUpdate("C16", C(0,5));
+  setParamNoUpdate("C22", C(1,1));
+  setParamNoUpdate("C23", C(1,2));
+  setParamNoUpdate("C24", C(1,3));
+  setParamNoUpdate("C25", C(1,4));
+  setParamNoUpdate("C26", C(1,5));
+  setParamNoUpdate("C33", C(2,2));
+  setParamNoUpdate("C34", C(2,3));
+  setParamNoUpdate("C35", C(2,4));
+  setParamNoUpdate("C36", C(2,5));
+  setParamNoUpdate("C44", C(3,3));
+  setParamNoUpdate("C45", C(3,4));
+  setParamNoUpdate("C46", C(3,5));
+  setParamNoUpdate("C55", C(4,4));
+  setParamNoUpdate("C56", C(4,5));
+  setParamNoUpdate("C66", C(5,5));
+  setParamNoUpdate("rho", rho);
+
+  // set internal Cijkl matrix expressed in the canonical frame of reference
+  this->updateInternalParameters();
+
+  Vector<Real> eig_expected(6);
+  C.eig(eig_expected);
+
+  auto celerity_expected = std::sqrt(eig_expected(0)/rho);
+
+  auto celerity = this->getCelerity(Element());
+
+  ASSERT_NEAR(celerity_expected, celerity, 1e-14);
+}
+
+/* -------------------------------------------------------------------------- */
+
 namespace {
 
 template <typename T>

@@ -359,7 +359,8 @@ inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline bool Material::isInternal(__attribute__((unused)) const ID & id,
-                                 __attribute__((unused)) const ElementKind & element_kind) const {
+                                 __attribute__((unused))
+                                 const ElementKind & element_kind) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 
