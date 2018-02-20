@@ -102,6 +102,7 @@ public:
 
 public:
   explicit Communications(const Communicator & communicator);
+  explicit Communications(const Communications & communications);
 
   /* ------------------------------------------------------------------------ */
   class IterableCommunicationDesc {

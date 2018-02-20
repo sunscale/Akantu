@@ -37,6 +37,27 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+template <class Entity>
+Communications<Entity>::Communications(const Communicator & communicator)
+    : communicator(communicator) {}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+Communications<Entity>::Communications(const Communications & other)
+    : communicator(other.communicator) {
+  for(auto && sr : iterate_send_recv) {
+    for (const auto & scheme_pair : other.iterateSchemes(sr)) {
+      auto proc = scheme_pair.first;
+      auto & other_scheme = scheme_pair.second;
+      auto & scheme = this->createScheme(proc, sr);
+      scheme.copy(other_scheme);
+    }
+  }
+
+  this->invalidateSizes();
+}
+
+/* -------------------------------------------------------------------------- */
 template <class Entity> class Communications<Entity>::iterator {
   using communication_iterator =
       typename std::map<UInt, Communication>::iterator;
@@ -287,11 +308,6 @@ void Communications<Entity>::initializeCommunications(
 
   comm_counter.insert(std::make_pair(tag, 0));
 }
-
-/* -------------------------------------------------------------------------- */
-template <class Entity>
-Communications<Entity>::Communications(const Communicator & communicator)
-    : communicator(communicator) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>

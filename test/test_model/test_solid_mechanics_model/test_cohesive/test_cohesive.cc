@@ -1,50 +1,64 @@
 /* -------------------------------------------------------------------------- */
-#include "test_cohesive_fixture.hh"
 #include "aka_iterators.hh"
+#include "test_cohesive_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
-TYPED_TEST(TestSMMCFixture, ModeI) {
-  auto max_steps = 100;
-  auto disp_inc = 0.1;
-  for(auto _ [[gnu::unused]] : arange(max_steps)) {
-    this->model->applyBC(BC::Dirichlet::IncrementValue(disp_inc, _x), "loading");
-    if(this->is_extrinsic)
-      this->model->checkCohesiveStress();
+TYPED_TEST(TestSMMCFixture, ExtrinsicModeI) {
+  getStaticParser().parse("material_0.dat");
+  this->is_extrinsic = true;
+  this->analysis_method = _explicit_lumped_mass;
 
-    this->model->solveStep();
-  }
+  this->testModeI();
 
-  auto nb_cohesive_element = this->mesh->getNbElement(TestFixture::cohesive_type);
-  auto & mesh_facets = this->mesh->getMeshFacets();
-  auto facet_type = mesh_facets.getFacetType(this->cohesive_type);
-  const auto & group = mesh_facets.getElementGroup("insertion").getElements(facet_type);
+  this->checkInsertion();
 
-  std::cout << nb_cohesive_element << " " << group.size() << std::endl;
+  auto & mat_co = this->model->getMaterial("insertion");
+  Real G_c = mat_co.get("G_c");
 
-  Real sigma = this->model->getMaterial("insertion").get("sigma_c");
-  Real edis = this->model->getEnergy("dissipated");
-  EXPECT_NEAR(this->surface * sigma, edis, 1e-8);
+  this->checkDissipated(G_c);
 }
 
-TYPED_TEST(TestSMMCFixture, ModeII) {
-  auto max_steps = 100;
-  auto disp_inc = 0.1;
-  for(auto _ [[gnu::unused]] : arange(max_steps)) {
-    this->model->applyBC(BC::Dirichlet::IncrementValue(disp_inc, _y ), "loading");
-    if(this->is_extrinsic)
-      this->model->checkCohesiveStress();
+TYPED_TEST(TestSMMCFixture, ExtrinsicModeII) {
+  getStaticParser().parse("material_0.dat");
+  this->is_extrinsic = true;
+  this->analysis_method = _explicit_lumped_mass;
 
-    this->model->solveStep();
-  }
+  this->testModeII();
 
-  auto nb_cohesive_element = this->mesh->getNbElement(TestFixture::cohesive_type);
-  auto & mesh_facets = this->mesh->getMeshFacets();
-  auto facet_type = mesh_facets.getFacetType(this->cohesive_type);
-  const auto & group = mesh_facets.getElementGroup("insertion").getElements(facet_type);
+  this->checkInsertion();
 
-  std::cout << nb_cohesive_element << " " << group.size() << std::endl;
+  auto & mat_co = this->model->getMaterial("insertion");
+  Real G_c = mat_co.get("G_c");
 
-  Real sigma = this->model->getMaterial("insertion").get("sigma_c");
-  Real edis = this->model->getEnergy("dissipated");
-  EXPECT_NEAR(this->surface * sigma, edis, 1e-8);
+  this->checkDissipated(G_c);
+}
+
+TYPED_TEST(TestSMMCFixture, IntrinsicModeI) {
+  getStaticParser().parse("material_1.dat");
+  this->is_extrinsic = false;
+  this->analysis_method = _explicit_lumped_mass;
+
+  this->testModeI();
+
+  this->checkInsertion();
+
+  auto & mat_co = this->model->getMaterial("insertion");
+  Real G_c = mat_co.get("G_c");
+
+  this->checkDissipated(G_c);
+}
+
+TYPED_TEST(TestSMMCFixture, IntrinsicModeII) {
+  getStaticParser().parse("material_1.dat");
+  this->is_extrinsic = false;
+  this->analysis_method = _explicit_lumped_mass;
+
+  this->testModeII();
+
+  this->checkInsertion();
+
+  auto & mat_co = this->model->getMaterial("insertion");
+  Real G_c = mat_co.get("G_c");
+
+  this->checkDissipated(G_c);
 }

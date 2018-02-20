@@ -38,9 +38,18 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-SynchronizerImpl<Entity>::SynchronizerImpl(const Communicator & comm, const ID & id, MemoryID memory_id)
+SynchronizerImpl<Entity>::SynchronizerImpl(const Communicator & comm,
+                                           const ID & id, MemoryID memory_id)
 
     : Synchronizer(comm, id, memory_id), communications(comm) {}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+SynchronizerImpl<Entity>::SynchronizerImpl(const SynchronizerImpl & other,
+                                            const ID & id)
+    : Synchronizer(other), communications(other.communications) {
+  this->id = id;
+}
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
@@ -160,7 +169,7 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
 
 #ifndef AKANTU_NDEBUG
   if (this->communications.begin(tag, _recv) !=
-      this->communications.end(tag, _recv) &&
+          this->communications.end(tag, _recv) &&
       !this->communications.hasPendingRecv(tag))
     AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
                                  "No pending communication with the tag \""
@@ -257,7 +266,7 @@ void SynchronizerImpl<Entity>::split(SynchronizerImpl<Entity> & in_synchronizer,
       auto proc = scheme_pair.first;
       auto & scheme = scheme_pair.second;
       auto & new_scheme = communications.createScheme(proc, sr);
-      filter_list(new_scheme, scheme);
+      filter_list(scheme, new_scheme);
     }
   }
 

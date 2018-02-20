@@ -290,10 +290,13 @@ public:
   inline void getBarycenter(const Element & element,
                             Vector<Real> & barycenter) const;
 
+  void getBarycenters(Array<Real> & barycenter, const ElementType & type,
+                      const GhostType & ghost_type) const;
+
 #ifndef SWIG
   /// get the element connected to a subelement
   const auto & getElementToSubelement() const;
-  
+
   /// get the element connected to a subelement
   const auto &
   getElementToSubelement(const ElementType & el_type,

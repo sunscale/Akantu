@@ -985,6 +985,7 @@ void Material::initElementalFieldInterpolation(
   this->fem.initElementalFieldInterpolationFromIntegrationPoints(
       interpolation_points_coordinates, this->interpolation_points_matrices,
       this->interpolation_inverse_coordinates, &(this->element_filter));
+
   AKANTU_DEBUG_OUT();
 }
 

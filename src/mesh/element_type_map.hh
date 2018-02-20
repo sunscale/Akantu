@@ -51,6 +51,7 @@ namespace {
   DECLARE_NAMED_ARGUMENT(element_kind);
   DECLARE_NAMED_ARGUMENT(ghost_type);
   DECLARE_NAMED_ARGUMENT(nb_component);
+  DECLARE_NAMED_ARGUMENT(nb_component_functor);
   DECLARE_NAMED_ARGUMENT(with_nb_element);
   DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
   DECLARE_NAMED_ARGUMENT(spatial_dimension);
@@ -121,7 +122,6 @@ public:
                              const GhostType & ghost_type = _not_ghost);
 
 public:
-
   /// print helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -296,6 +296,9 @@ public:
   void operator=(const ElementTypeMapArray &) = delete;
   ElementTypeMapArray(const ElementTypeMapArray &) = delete;
 
+  /// explicit copy
+  void copy(const ElementTypeMapArray & other);
+
   /*! Constructor
    *  @param id optional: identifier (string)
    *  @param parent_id optional: parent identifier. for organizational purposes
@@ -335,7 +338,8 @@ public:
              const GhostType & ghost_type = _not_ghost) const;
 
   /// access the data of an element, this combine the map and array accessor
-  inline const T & operator()(const Element & element, UInt component = 0) const;
+  inline const T & operator()(const Element & element,
+                              UInt component = 0) const;
 
   /// access the data of an element, this combine the map and array accessor
   inline T & operator()(const Element & element, UInt component = 0);
@@ -363,8 +367,7 @@ public:
   inline void clear();
 
   /*! set all values in the ElementTypeMap to value */
-  template<typename ST>
-  inline void set(const ST & value);
+  template <typename ST> inline void set(const ST & value);
 
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1)
@@ -400,8 +403,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the arrays in accordance to a functor
-  template <class Func>
-  void initialize(const Func & f, const T & default_value, bool do_not_default);
+  template <class Func, class CompFunc>
+  void initialize(const Func & f, const T & default_value, bool do_not_default,
+                  CompFunc && func);
 
   /// initialize with sizes and number of components in accordance of a mesh
   /// content
