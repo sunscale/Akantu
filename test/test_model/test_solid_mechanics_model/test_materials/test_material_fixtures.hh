@@ -19,8 +19,7 @@ public:
   virtual void testComputeStress() { TO_IMPLEMENT; };
   virtual void testComputeTangentModuli() { TO_IMPLEMENT; };
   virtual void testEnergyDensity() { TO_IMPLEMENT; };
-  virtual void testPushWaveSpeed() { TO_IMPLEMENT; }
-  virtual void testShearWaveSpeed() { TO_IMPLEMENT; }
+  virtual void testCelerity() { TO_IMPLEMENT; }
 
   static inline Matrix<Real> getDeviatoricStrain(Real intensity);
 

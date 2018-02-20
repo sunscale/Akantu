@@ -50,12 +50,8 @@ TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
 
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputePushWaveSpeed) {
-  this->material->testPushWaveSpeed();
-}
-
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputeShearWaveSpeed) {
-  this->material->testShearWaveSpeed();
+TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputeCelerity) {
+  this->material->testCelerity();
 }
 }
 /*****************************************************************/
