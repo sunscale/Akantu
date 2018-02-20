@@ -296,6 +296,9 @@ public:
   void operator=(const ElementTypeMapArray &) = delete;
   ElementTypeMapArray(const ElementTypeMapArray &) = delete;
 
+  /// explicit copy
+  void copy(const ElementTypeMapArray & other);
+
   /*! Constructor
    *  @param id optional: identifier (string)
    *  @param parent_id optional: parent identifier. for organizational purposes

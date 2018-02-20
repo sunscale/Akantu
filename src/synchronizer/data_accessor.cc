@@ -49,10 +49,7 @@ void DataAccessor<Element>::packUnpackNodalDataHelper(
   GhostType current_ghost_type = _casper;
   UInt * conn = nullptr;
 
-  Array<Element>::const_iterator<Element> it = elements.begin();
-  Array<Element>::const_iterator<Element> end = elements.end();
-  for (; it != end; ++it) {
-    const Element & el = *it;
+  for (auto & el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -88,19 +85,17 @@ void DataAccessor<Element>::packUnpackElementalDataHelper(
 
   Array<T> * vect = nullptr;
 
-  Array<Element>::const_iterator<Element> it = element.begin();
-  Array<Element>::const_iterator<Element> end = element.end();
-  for (; it != end; ++it) {
-    const Element & el = *it;
+  for (auto & el : element) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
       current_ghost_type = el.ghost_type;
       vect = &data_to_pack(el.type, el.ghost_type);
-      if (per_quadrature_point_data)
-        nb_quad_per_elem = fem.getNbIntegrationPoints(el.type, el.ghost_type);
-      else
-        nb_quad_per_elem = 1;
+
+      nb_quad_per_elem =
+          per_quadrature_point_data
+              ? fem.getNbIntegrationPoints(el.type, el.ghost_type)
+              : 1;
       nb_component = vect->getNbComponent();
     }
 
@@ -119,15 +114,12 @@ template <typename T, bool pack_helper>
 void DataAccessor<UInt>::packUnpackDOFDataHelper(Array<T> & data,
                                                  CommunicationBuffer & buffer,
                                                  const Array<UInt> & dofs) {
-  Array<UInt>::const_scalar_iterator it_dof = dofs.begin();
-  Array<UInt>::const_scalar_iterator end_dof = dofs.end();
   T * data_ptr = data.storage();
-
-  for (; it_dof != end_dof; ++it_dof) {
+  for (const auto & dof : dofs) {
     if (pack_helper)
-      buffer << data_ptr[*it_dof];
+      buffer << data_ptr[dof];
     else
-      buffer >> data_ptr[*it_dof];
+      buffer >> data_ptr[dof];
   }
 }
 

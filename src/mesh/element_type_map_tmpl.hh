@@ -85,12 +85,12 @@ operator()(const SupportType & type, const GhostType & ghost_type) {
   return this->getData(ghost_type)[type];
 }
 
-
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 template <typename U>
-inline Stored & ElementTypeMap<Stored, SupportType>::operator()(
-    U && insertee, const SupportType & type, const GhostType & ghost_type) {
+inline Stored & ElementTypeMap<Stored, SupportType>::
+operator()(U && insertee, const SupportType & type,
+           const GhostType & ghost_type) {
   auto it = this->getData(ghost_type).find(type);
 
   if (it != this->getData(ghost_type).end()) {
@@ -163,6 +163,21 @@ ElementTypeMap<Stored, SupportType>::~ElementTypeMap() = default;
 /* ElementTypeMapArray                                                        */
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
+void ElementTypeMapArray<T, SupportType>::copy(
+    const ElementTypeMapArray & other) {
+  for (auto && ghost_type : ghost_types) {
+    for (auto && type :
+         this->elementTypes(_all_dimensions, ghost_types, _ek_not_defined)) {
+      const auto & array_to_copy = other(type, ghost_type);
+      auto & array =
+          this->alloc(0, array_to_copy.getNbComponent(), type, ghost_type);
+      array.copy(array_to_copy);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
 inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
     UInt size, UInt nb_component, const SupportType & type,
     const GhostType & ghost_type, const T & default_value) {
@@ -233,7 +248,7 @@ inline void ElementTypeMapArray<T, SupportType>::clear() {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-template<typename ST>
+template <typename ST>
 inline void ElementTypeMapArray<T, SupportType>::set(const ST & value) {
   for (auto gt : ghost_types) {
     auto & data = this->getData(gt);

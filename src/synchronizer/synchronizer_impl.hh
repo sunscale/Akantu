@@ -45,6 +45,8 @@ public:
   SynchronizerImpl(const Communicator & communicator,
                    const ID & id = "synchronizer", MemoryID memory_id = 0);
 
+  SynchronizerImpl(const SynchronizerImpl & other, const ID & id);
+
   ~SynchronizerImpl() override = default;
 
   /* ------------------------------------------------------------------------ */

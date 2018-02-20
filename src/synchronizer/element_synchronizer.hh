@@ -62,6 +62,11 @@ public:
                       bool register_to_event_manager = true,
                       EventHandlerPriority event_priority = _ehp_synchronizer);
 
+  ElementSynchronizer(const ElementSynchronizer & other,
+                      const ID & id = "element_synchronizer_copy",
+                      bool register_to_event_manager = true,
+                      EventHandlerPriority event_priority = _ehp_synchronizer);
+
 public:
   ~ElementSynchronizer() override;
 

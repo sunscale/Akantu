@@ -182,7 +182,7 @@ class TestSMMFixtureBar
 
 public:
   void SetUp() override {
-    this->mesh_file = "bar" + aka::to_string(this->type) + ".msh";
+    this->mesh_file = "../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
     parent::SetUp();
 
     getStaticParser().parse("test_solid_mechanics_model_"

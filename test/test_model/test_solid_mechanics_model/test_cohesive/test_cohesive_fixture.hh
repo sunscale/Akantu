@@ -1,4 +1,5 @@
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "solid_mechanics_model_cohesive.hh"
 #include "test_gtest_utils.hh"
 /* -------------------------------------------------------------------------- */
@@ -26,10 +27,16 @@ public:
 
   void SetUp() override {
     normal = Vector<Real>(this->dim, 0.);
-    normal(this->dim - 1) = 1.;
+    if (dim == 1)
+      normal(_x) = 1.;
+    else
+      normal(_y) = 1.;
 
     mesh = std::make_unique<Mesh>(this->dim);
-    EXPECT_NO_THROW({ mesh->read(this->mesh_name); });
+    if (Communicator::getStaticCommunicator().whoAmI() == 0) {
+      EXPECT_NO_THROW({ mesh->read(this->mesh_name); });
+    }
+    mesh->distribute();
   }
 
   void TearDown() override {
@@ -60,6 +67,7 @@ public:
     ones.set(1.);
 
     surface = fe_engine.integrate(ones, facet_type, _not_ghost, group);
+    mesh->getCommunicator().allReduce(surface, SynchronizerOperation::_sum);
   }
 
   void setInitialCondition(const Vector<Real> & direction, Real strain) {
@@ -116,11 +124,16 @@ public:
   }
   void checkInsertion() {
     auto nb_cohesive_element = this->mesh->getNbElement(cohesive_type);
+    mesh->getCommunicator().allReduce(nb_cohesive_element,
+                                      SynchronizerOperation::_sum);
+
     auto facet_type = this->mesh->getFacetType(this->cohesive_type);
     const auto & group =
         this->mesh->getElementGroup("insertion").getElements(facet_type);
+    auto group_size = group.size();
+    mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
 
-    EXPECT_EQ(nb_cohesive_element, group.size());
+    EXPECT_EQ(nb_cohesive_element, group_size);
   }
 
   void checkDissipated(Real expected_density) {
@@ -131,7 +144,10 @@ public:
 
   void testModeI() {
     Vector<Real> direction(this->dim, 0.);
-    direction(this->dim - 1) = 1.;
+    if (dim == 1)
+      direction(_x) = 1.;
+    else
+      direction(_y) = 1.;
 
     //  EXPECT_NO_THROW(this->createModel());
     this->createModel();
@@ -167,7 +183,7 @@ public:
 
   void testModeII() {
     Vector<Real> direction(this->dim, 0.);
-    direction(0) = 1.;
+    direction(_x) = 1.;
 
     EXPECT_NO_THROW(this->createModel());
 
@@ -190,7 +206,7 @@ public:
 
     auto delta_c = 2. * G_c / sigma_c;
     Real strain = .99999 * L * beta * beta * sigma_c / E;
-    if(this->dim > 1) {
+    if (this->dim > 1) {
       strain *= (1. + nu);
     }
     auto max_travel = 1.2 * delta_c;

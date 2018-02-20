@@ -345,7 +345,9 @@ void Mesh::getGlobalConnectivity(
 
   for (auto && ghost_type : ghost_types) {
     for (auto type :
-         global_connectivity.elementTypes(_ghost_type = ghost_type)) {
+             global_connectivity.elementTypes(_spatial_dimension = _all_dimensions,
+                                              _element_kind = _ek_not_defined,
+                                              _ghost_type = ghost_type)) {
       if (not connectivities.exists(type, ghost_type))
         continue;
 
