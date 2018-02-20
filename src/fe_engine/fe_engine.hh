@@ -249,7 +249,7 @@ public:
   virtual void computeNormalsOnIntegrationPoints(
       __attribute__((unused)) const Array<Real> & field,
       __attribute__((unused)) const GhostType & ghost_type = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// pre-compute normals on integration points
@@ -258,7 +258,7 @@ public:
       __attribute__((unused)) Array<Real> & normal,
       __attribute__((unused)) const ElementType & type,
       __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
@@ -274,7 +274,7 @@ public:
       __attribute__((unused)) ElementType type,
       __attribute__((unused)) const GhostType & ghost_type) const {
 
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
   /// compute shapes function in a matrix for structural elements
   virtual void computeShapesMatrix(
@@ -287,7 +287,7 @@ public:
       __attribute__((unused)) const bool sign,
       __attribute__((unused)) const GhostType & ghost_type) const {
 
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 #endif

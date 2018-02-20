@@ -113,7 +113,7 @@ void Dumpable::addDumpFieldToDumper(__attribute__((unused))
                                     const std::string & dumper_name,
                                     __attribute__((unused))
                                     const std::string & field_id) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -153,7 +153,7 @@ void Dumpable::addDumpFieldVectorToDumper(__attribute__((unused))
                                           const std::string & dumper_name,
                                           __attribute__((unused))
                                           const std::string & field_id) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -166,7 +166,7 @@ void Dumpable::addDumpFieldTensorToDumper(__attribute__((unused))
                                           const std::string & dumper_name,
                                           __attribute__((unused))
                                           const std::string & field_id) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

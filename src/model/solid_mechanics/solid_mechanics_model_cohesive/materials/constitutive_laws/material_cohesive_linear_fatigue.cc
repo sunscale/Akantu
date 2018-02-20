@@ -72,7 +72,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::initMaterial() {
   // check that delta_f has a proper value or assign a defaul value
   if (delta_f < 0) delta_f = this->delta_c_eff;
   else if (delta_f < this->delta_c_eff)
-    AKANTU_DEBUG_ERROR("Delta_f must be greater or equal to delta_c");
+    AKANTU_ERROR("Delta_f must be greater or equal to delta_c");
 
   delta_prec.initialize(1);
   K_plus.initialize(1);

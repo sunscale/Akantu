@@ -49,10 +49,10 @@ int main(int argc, char *argv[]) {
   mesh.write("purify_mesh_after.msh");
 
   if(mesh.getNbNodes() != 21)
-    AKANTU_DEBUG_ERROR("The purified mesh does not contain the good number of nodes.");
+    AKANTU_ERROR("The purified mesh does not contain the good number of nodes.");
 
   if(mesh.getNbElement(_quadrangle_8) != 4)
-    AKANTU_DEBUG_ERROR("The purified mesh does not contain the good number of element.");
+    AKANTU_ERROR("The purified mesh does not contain the good number of element.");
 
   
   akantu::finalize();

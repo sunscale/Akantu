@@ -74,7 +74,7 @@ public:
                                               GhostType /*ghost_type*/) {
     AKANTU_DEBUG_IN();
 
-    AKANTU_DEBUG_ERROR("The function \"computeCauchyStressPlaneStress\" can "
+    AKANTU_ERROR("The function \"computeCauchyStressPlaneStress\" can "
                        "only be used in 2D Plane stress problems, which means "
                        "that you made a mistake somewhere!! ");
 

@@ -164,13 +164,13 @@ int main(int argc, char *argv[]) {
 
     if (frag < total_nb_fragment) {
       if (nb_big_fragment != 1) {
-	AKANTU_DEBUG_ERROR("The number of big fragments is wrong: " << nb_big_fragment);
+	AKANTU_ERROR("The number of big fragments is wrong: " << nb_big_fragment);
 	return EXIT_FAILURE;
       }
     }
     else {
       if (nb_big_fragment != 0) {
-	AKANTU_DEBUG_ERROR("The number of big fragments is wrong: " << nb_big_fragment);
+	AKANTU_ERROR("The number of big fragments is wrong: " << nb_big_fragment);
 	return EXIT_FAILURE;
       }
     }
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
     UInt nb_fragment_num = fragment_manager.getNbFragment();
 
     if (nb_fragment_num != frag) {
-      AKANTU_DEBUG_ERROR("The number of fragments is wrong! Numerical: " << nb_fragment_num << " Theoretical: " << frag);
+      AKANTU_ERROR("The number of fragments is wrong! Numerical: " << nb_fragment_num << " Theoretical: " << frag);
       return EXIT_FAILURE;
     }
 
@@ -195,13 +195,13 @@ int main(int argc, char *argv[]) {
 
 	  /// check center of mass
 	  if (fragment_center(f, 0) > (L * frag / total_nb_fragment - L / 2)) {
-	    AKANTU_DEBUG_ERROR("Fragment center is wrong!");
+	    AKANTU_ERROR("Fragment center is wrong!");
 	    return EXIT_FAILURE;
 	  }
 
 	  /// check moment of inertia
 	  if (!isInertiaEqual(current_inertia, small_frag_inertia)) {
-	    AKANTU_DEBUG_ERROR("Inertia moments are wrong");
+	    AKANTU_ERROR("Inertia moments are wrong");
 	    return EXIT_FAILURE;
 	  }
 
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
 		    std::greater<Real>());
 
 	  if (!isInertiaEqual(current_inertia, big_frag_inertia)) {
-	    AKANTU_DEBUG_ERROR("Inertia moments are wrong");
+	    AKANTU_ERROR("Inertia moments are wrong");
 	    return EXIT_FAILURE;
 	  }
 
@@ -233,13 +233,13 @@ int main(int argc, char *argv[]) {
       }
 
       if (small_fragments != nb_fragment_num - 1) {
-	AKANTU_DEBUG_ERROR("The number of small fragments is wrong!");
+	AKANTU_ERROR("The number of small fragments is wrong!");
 	return EXIT_FAILURE;
       }
 
       if (!Math::are_float_equal(total_mass,
 				 small_fragments * frag_theo_mass)) {
-	AKANTU_DEBUG_ERROR("The mass of small fragments is wrong!");
+	AKANTU_ERROR("The mass of small fragments is wrong!");
 	return EXIT_FAILURE;
       }
     }
@@ -274,7 +274,7 @@ int main(int argc, char *argv[]) {
       ++f_index;
 
     if (f_index == total_nb_fragment) {
-      AKANTU_DEBUG_ERROR("The fragments' center is wrong!");
+      AKANTU_ERROR("The fragments' center is wrong!");
       return EXIT_FAILURE;
     }
 
@@ -285,7 +285,7 @@ int main(int argc, char *argv[]) {
       ++f_index;
 
     if (f_index == total_nb_fragment) {
-      AKANTU_DEBUG_ERROR("The fragments' velocity is wrong!");
+      AKANTU_ERROR("The fragments' velocity is wrong!");
       return EXIT_FAILURE;
     }
   }

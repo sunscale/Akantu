@@ -7,20 +7,18 @@
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
 
-#define TO_IMPLEMENT AKANTU_EXCEPTION("TEST TO IMPLEMENT")
-
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 template <typename T> class FriendMaterial : public T {
 public:
   ~FriendMaterial() = default;
-  
-  virtual void testComputeStress() { TO_IMPLEMENT; };
-  virtual void testComputeTangentModuli() { TO_IMPLEMENT; };
-  virtual void testEnergyDensity() { TO_IMPLEMENT; };
-  virtual void testPushWaveSpeed() { TO_IMPLEMENT; }
-  virtual void testShearWaveSpeed() { TO_IMPLEMENT; }
+
+  virtual void testComputeStress() { AKANTU_TO_IMPLEMENT(); };
+  virtual void testComputeTangentModuli() { AKANTU_TO_IMPLEMENT(); };
+  virtual void testEnergyDensity() { AKANTU_TO_IMPLEMENT(); };
+  virtual void testPushWaveSpeed() { AKANTU_TO_IMPLEMENT(); }
+  virtual void testShearWaveSpeed() { AKANTU_TO_IMPLEMENT(); }
 
   static inline Matrix<Real> getDeviatoricStrain(Real intensity);
 
@@ -51,7 +49,7 @@ public:
 /* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getDeviatoricStrain(Real intensity) {
-  Matrix<Real> dev = {{0, 1, 2}, {1, 0, 3}, {2, 3, 0}};
+  Matrix<Real> dev = {{0., 1., 2.}, {1., 0., 3.}, {2., 3., 0.}};
   dev *= intensity;
   return dev;
 }
@@ -59,7 +57,7 @@ Matrix<Real> FriendMaterial<T>::getDeviatoricStrain(Real intensity) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getHydrostaticStrain(Real intensity) {
-  Matrix<Real> dev = {{1, 0, 0}, {0, 2, 0}, {0, 0, 3}};
+  Matrix<Real> dev = {{1., 0., 0.}, {0., 2., 0.}, {0., 0., 3.}};
   dev *= intensity;
   return dev;
 }
@@ -98,9 +96,9 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
   test_axis.crossProduct(v1, v2);
   test_axis -= v3;
   if (test_axis.norm() > 8 * std::numeric_limits<Real>::epsilon()) {
-    AKANTU_DEBUG_ERROR("The axis vectors do not form a right-handed coordinate "
-                       << "system. I. e., ||n1 x n2 - n3|| should be zero, but "
-                       << "it is " << test_axis.norm() << ".");
+    AKANTU_ERROR("The axis vectors do not form a right-handed coordinate "
+                 << "system. I. e., ||n1 x n2 - n3|| should be zero, but "
+                 << "it is " << test_axis.norm() << ".");
   }
 
   Matrix<Real> mat(Dim, Dim);
@@ -124,10 +122,10 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   // v1 and v2 are such that they form a right-hand basis with prescribed v3,
   // it's need (at least) for 2d linear elastic anisotropic and (orthotropic)
   // materials to rotate the tangent stiffness
-  
+
   Vector<Real> v1(3);
   Vector<Real> v2(3);
-  Vector<Real> v3 = {0,0,1};
+  Vector<Real> v3 = {0, 0, 1};
 
   for (UInt i = 0; i < Dim; ++i) {
     v1(i) = dis(gen);
@@ -135,7 +133,7 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   }
 
   v1.normalize();
-  v2.crossProduct(v3,v1);
+  v2.crossProduct(v3, v1);
 
   Matrix<Real> mat(Dim, Dim);
   for (UInt i = 0; i < Dim; ++i) {
@@ -147,14 +145,15 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> class TestMaterialFixture : public ::testing::Test {
+template <typename T, class Model>
+class TestMaterialBaseFixture : public ::testing::Test {
 public:
   using mat_class = typename T::mat_class;
 
   void SetUp() override {
     constexpr auto spatial_dimension = T::Dim;
     mesh = std::make_unique<Mesh>(spatial_dimension);
-    model = std::make_unique<SolidMechanicsModel>(*mesh);
+    model = std::make_unique<Model>(*mesh);
     material = std::make_unique<friend_class>(*model);
   }
 
@@ -168,7 +167,7 @@ public:
 
 protected:
   std::unique_ptr<Mesh> mesh;
-  std::unique_ptr<SolidMechanicsModel> model;
+  std::unique_ptr<Model> model;
   std::unique_ptr<friend_class> material;
 };
 
@@ -177,5 +176,9 @@ template <template <UInt> class T, UInt _Dim> struct Traits {
   using mat_class = T<_Dim>;
   static constexpr UInt Dim = _Dim;
 };
+
+/* -------------------------------------------------------------------------- */
+template <typename T, class Model>
+using TestMaterialFixture = TestMaterialBaseFixture<T, SolidMechanicsModel>;
 
 /* -------------------------------------------------------------------------- */

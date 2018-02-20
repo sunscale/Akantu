@@ -645,7 +645,7 @@ MeshIOMSH::~MeshIOMSH() = default;
 //   infile.open(filename.c_str());
 
 //   if(!infile.good()) {
-//     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+//     AKANTU_ERROR("Cannot open file " << filename);
 //   }
 
 //   std::string storage; // We will read the contents here.
@@ -706,7 +706,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       Int format;
       sstr >> format;
       if (format != 0)
-        AKANTU_DEBUG_ERROR("This reader can only read ASCII files.");
+        AKANTU_ERROR("This reader can only read ASCII files.");
       my_getline(infile, line); /// the end of block line
       current_line += 2;
       file_format = 2;

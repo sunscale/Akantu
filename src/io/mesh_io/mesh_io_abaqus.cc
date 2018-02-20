@@ -431,7 +431,7 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
   infile.open(filename.c_str());
 
   if (!infile.good()) {
-    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+    AKANTU_ERROR("Cannot open file " << filename);
   }
 
   std::string storage;             // We will read the contents here.

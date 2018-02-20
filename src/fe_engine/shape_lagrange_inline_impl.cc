@@ -489,7 +489,7 @@ template <>
 inline void ShapeLagrange<_ek_regular>::computeBtDB<_point_1>(
     const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/, UInt /*order_d*/,
     GhostType /*ghost_type*/, const Array<UInt> & /*filter_elements*/) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

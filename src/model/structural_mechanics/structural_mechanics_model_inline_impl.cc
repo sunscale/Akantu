@@ -43,7 +43,7 @@ namespace akantu {
 template <ElementType type>
 void StructuralMechanicsModel::computeTangentModuli(
     Array<Real> & /*tangent_moduli*/) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 } // namespace akantu
 

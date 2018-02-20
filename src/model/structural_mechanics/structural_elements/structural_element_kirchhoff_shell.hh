@@ -41,7 +41,7 @@ namespace akantu {
 template <>
 inline void
 StructuralMechanicsModel::assembleMass<_discrete_kirchhoff_triangle_18>() {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

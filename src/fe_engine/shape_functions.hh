@@ -146,11 +146,11 @@ protected:
 
 public:
   virtual void onElementsAdded(const Array<Element> &) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
   virtual void onElementsRemoved(const Array<Element> &,
                                  const ElementTypeMapArray<UInt> &) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

@@ -155,7 +155,7 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
   diana_element_number_to_elements.clear();
 
   if (!infile.good()) {
-    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+    AKANTU_ERROR("Cannot open file " << filename);
   }
 
   while (infile.good()) {
@@ -193,7 +193,7 @@ void MeshIODiana::read(const std::string & filename, Mesh & mesh) {
 /* -------------------------------------------------------------------------- */
 void MeshIODiana::write(__attribute__((unused)) const std::string & filename,
                         __attribute__((unused)) const Mesh & mesh) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

@@ -187,7 +187,7 @@ public:
   static inline void
   computeRotationMatrix(Matrix<Real> & /*R*/, const Matrix<Real> & /*X*/,
                         const Vector<Real> & /*extra_normal*/) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute jacobian (or integration variable change factor) for a given point

@@ -388,7 +388,7 @@ void MasterElementInfoPerProc::fillTagBuffer(
     BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,
                           AKANTU_MESH_DATA_TYPES)
   default:
-    AKANTU_DEBUG_ERROR("Could not obtain the type of tag" << tag_name << "!");
+    AKANTU_ERROR("Could not obtain the type of tag" << tag_name << "!");
     break;
   }
 #undef AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA

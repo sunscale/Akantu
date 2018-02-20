@@ -81,7 +81,7 @@ public:
    * @param query (sphere) to compute the intersections with the mesh
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & /*query*/) {
-    AKANTU_DEBUG_ERROR("This function is not implemented for spheres (It was "
+    AKANTU_ERROR("This function is not implemented for spheres (It was "
                        "to generic and has been replaced by "
                        "computeMeshQueryIntersectionPoint");
   }
@@ -96,7 +96,7 @@ public:
   /// Build the IGFEM mesh
   virtual void
   buildResultFromQueryList(const std::list<SK::Sphere_3> & /*query*/) {
-    AKANTU_DEBUG_ERROR("This function is no longer implemented to split "
+    AKANTU_ERROR("This function is no longer implemented to split "
                        "geometrical operations and dedicated result "
                        "construction");
   }

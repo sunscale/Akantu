@@ -61,7 +61,7 @@ DOFManager::~DOFManager() = default;
 
 /* -------------------------------------------------------------------------- */
 // void DOFManager::getEquationsNumbers(const ID &, Array<UInt> &) {
-//   AKANTU_DEBUG_TO_IMPLEMENT();
+//   AKANTU_TO_IMPLEMENT();
 // }
 
 /* -------------------------------------------------------------------------- */

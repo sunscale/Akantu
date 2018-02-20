@@ -118,7 +118,7 @@ GroupManager::createFilteredNodeGroup(const std::string & group_name,
   if (T::type == FilterFunctor::_node_filter_functor) {
     node_group.applyNodeFilter(filter);
   } else {
-    AKANTU_DEBUG_ERROR("ElementFilter cannot be applied to NodeGroup yet."
+    AKANTU_ERROR("ElementFilter cannot be applied to NodeGroup yet."
                        << " Needs to be implemented.");
   }
 
@@ -247,7 +247,7 @@ ElementGroup & GroupManager::createFilteredElementGroup(
     element_group =
         &(this->createElementGroup(group_name, dimension, filtered_node_group));
   } else if (T::type == FilterFunctor::_element_filter_functor) {
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "Cannot handle an ElementFilter yet. Needs to be implemented.");
   }
 

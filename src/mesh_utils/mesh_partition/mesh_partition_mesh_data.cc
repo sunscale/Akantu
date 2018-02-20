@@ -124,7 +124,7 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshPartitionMeshData::reorder() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+void MeshPartitionMeshData::reorder() { AKANTU_TO_IMPLEMENT(); }
 
 /* -------------------------------------------------------------------------- */
 void MeshPartitionMeshData::setPartitionMapping(

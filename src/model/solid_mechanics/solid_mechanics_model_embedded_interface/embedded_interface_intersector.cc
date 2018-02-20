@@ -73,7 +73,7 @@ void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
   const UInt dim = this->mesh.getSpatialDimension();
 
   if (dim == 1)
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "No embedded model in 1D. Deactivate intersection initialization");
 
   Array<std::string> * physical_names = NULL;
@@ -83,7 +83,7 @@ void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
         this->primitive_mesh.getData<std::string>("physical_names",
                                                   _segment_2));
   } catch (debug::Exception & e) {
-    AKANTU_DEBUG_ERROR("You must define physical names to reinforcements in "
+    AKANTU_ERROR("You must define physical names to reinforcements in "
                        "order to use the embedded model");
     throw e;
   }

@@ -58,7 +58,7 @@ template <ElementKind kind>
 inline void ShapeStructural<kind>::initShapeFunctions(
     const Array<Real> & /* unused */, const Matrix<Real> & /* unused */,
     const ElementType & /* unused */, const GhostType & /* unused */) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

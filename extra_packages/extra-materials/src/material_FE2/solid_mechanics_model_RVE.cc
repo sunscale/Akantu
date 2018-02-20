@@ -221,7 +221,7 @@ void SolidMechanicsModelRVE::findCornerNodes() {
 
   for (UInt i = 0; i < corner_nodes.size(); ++i) {
     if (corner_nodes(i) == UInt(-1))
-      AKANTU_DEBUG_ERROR("The corner node " << i + 1 << " wasn't found");
+      AKANTU_ERROR("The corner node " << i + 1 << " wasn't found");
   }
   AKANTU_DEBUG_OUT();
 }
@@ -357,7 +357,7 @@ Real SolidMechanicsModelRVE::averageTensorField(UInt row_index, UInt col_index,
               int_eigen_gradu_vec(k, row_index * spatial_dimension + col_index);
       }
     } else {
-      AKANTU_DEBUG_ERROR("Averaging not implemented for this field!!!");
+      AKANTU_ERROR("Averaging not implemented for this field!!!");
     }
   }
 

@@ -386,7 +386,7 @@ inline return_type PythonFunctor::convertToAkantu(PyObject * python_obj) {
     return PythonFunctor::convertListToAkantu<typename return_type::value_type>(
         python_obj);
   }
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* --------------------------------------------------------------------------

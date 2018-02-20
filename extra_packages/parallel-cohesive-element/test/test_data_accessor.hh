@@ -122,7 +122,7 @@ inline void TestAccessor::unpackElementData(CommunicationBuffer & buffer,
     Real tolerance = 1e-15;
     for (UInt i = 0; i < spatial_dimension; ++i) {
       if(!(std::abs(bary(i) - barycenter_loc(i)) <= tolerance))
-        AKANTU_DEBUG_ERROR("Unpacking an unknown value for the element: "
+        AKANTU_ERROR("Unpacking an unknown value for the element: "
                            << element
                            << "(barycenter = " << barycenter_loc
                            << " and buffer = " << bary << ") direction (" << i << ")- tag: " << tag);

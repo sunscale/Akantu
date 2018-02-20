@@ -76,21 +76,21 @@ int main(int argc, char * argv[]) {
 
   // checking the solution
   if (nb_segments != 24)
-    AKANTU_DEBUG_ERROR("The number of segments is wrong");
+    AKANTU_ERROR("The number of segments is wrong");
 
   if (prank == 0) {
     if (nb_facets_per_nodetype[-1] != 3 || nb_facets_per_nodetype[-2] != 9 ||
         nb_facets_per_nodetype[-3] != 12)
-      AKANTU_DEBUG_ERROR(
+      AKANTU_ERROR(
           "The segments of processor 0 have the wrong node type");
 
     if (nb_facets_per_nodetype.size() > 3)
-      AKANTU_DEBUG_ERROR("Processor 0 cannot have any slave segment");
+      AKANTU_ERROR("Processor 0 cannot have any slave segment");
   }
 
   if (prank == psize - 1 &&
       nb_facets_per_nodetype.find(-2) != nb_facets_per_nodetype.end())
-    AKANTU_DEBUG_ERROR("The last processor must not have any master facets");
+    AKANTU_ERROR("The last processor must not have any master facets");
 
   finalize();
   return 0;

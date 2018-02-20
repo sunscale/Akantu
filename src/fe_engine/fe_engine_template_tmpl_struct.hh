@@ -83,7 +83,7 @@ FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
     UInt, UInt, UInt, const bool,
     const GhostType &) const {
 
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -95,7 +95,7 @@ FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
     const Array<Real> & , UInt , SparseMatrix &,
     Array<Real> * , ElementTypeMapArray<Real> & ,
     const GhostType & ) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 } // akantu

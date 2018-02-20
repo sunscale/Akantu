@@ -554,7 +554,7 @@ Real SolidMechanicsModel::getKineticEnergy() {
       ekin += v_it->dot(*mv_it);
     }
   } else {
-    AKANTU_DEBUG_ERROR("No function called to assemble the mass matrix.");
+    AKANTU_ERROR("No function called to assemble the mass matrix.");
   }
 
   mesh.getCommunicator().allReduce(ekin, SynchronizerOperation::_sum);
@@ -1112,7 +1112,7 @@ UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 
@@ -1149,7 +1149,7 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 
@@ -1185,7 +1185,7 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 

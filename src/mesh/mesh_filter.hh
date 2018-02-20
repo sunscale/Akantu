@@ -52,7 +52,7 @@ struct FilterFunctor {
 class NodeFilterFunctor : public FilterFunctor {
 public:
   bool operator()(__attribute__((unused)) UInt node) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 public:
@@ -63,7 +63,7 @@ public:
 class ElementFilterFunctor : public FilterFunctor {
 public:
   bool operator()(__attribute__((unused)) const Element & element) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 public:

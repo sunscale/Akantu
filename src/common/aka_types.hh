@@ -1061,7 +1061,7 @@ public:
     else if (this->cols() == 3)
       return Math::matrixDoubleDot33(this->values, other.storage());
     else
-      AKANTU_DEBUG_ERROR("doubleDot is not defined for other spatial dimensions"
+      AKANTU_ERROR("doubleDot is not defined for other spatial dimensions"
                          << " than 1, 2 or 3.");
     return T();
   }

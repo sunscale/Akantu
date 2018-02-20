@@ -80,7 +80,7 @@ public:
 
   /// set to steady state
   virtual void setToSteadyState() {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   };
 
   /// get the number of sticking nodes (in parallel)
@@ -120,7 +120,7 @@ public:
 
   // replaced by the setMixed of the Parsable
   // virtual void setParam(const std::string & param, Real value) {
-  //   AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
+  //   AKANTU_ERROR("Friction does not know the following parameter: " << param);
   // };
 
   /* ------------------------------------------------------------------------ */

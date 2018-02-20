@@ -33,25 +33,22 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
 
   if (psize > 1) {
     /// get global connectivity for not ghost facets
-    global_connectivity =
-        new ElementTypeMapArray<UInt>("global_connectivity", id);
+    ElementTypeMapArray<UInt> global_connectivity("global_connectivity", id);
 
     auto & mesh_facets = inserter->getMeshFacets();
 
-    global_connectivity->initialize(
+    global_connectivity.initialize(
         mesh_facets, _spatial_dimension = spatial_dimension - 1,
         _with_nb_element = true, _with_nb_nodes_per_element = true,
         _element_kind = _ek_regular);
 
-    mesh_facets.getGlobalConnectivity(*global_connectivity);
+    mesh_facets.getGlobalConnectivity(global_connectivity);
 
     /// communicate
     synchronize(_gst_smmc_facets_conn);
 
     /// flip facets
-    MeshUtils::flipFacets(mesh_facets, *global_connectivity, _ghost);
-
-    delete global_connectivity;
+    MeshUtils::flipFacets(mesh_facets, global_connectivity, _ghost);
   }
 
   AKANTU_DEBUG_OUT();

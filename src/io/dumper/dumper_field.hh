@@ -65,18 +65,18 @@ public:
 
   /// set the number of data per item (used for elements fields at the moment)
   virtual void setNbData(__attribute__((unused)) UInt nb_data) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   };
 
   /// set the number of data per elem (used for elements fields at the moment)
   virtual void setNbDataPerElem(__attribute__((unused))
                                 const ElementTypeMap<UInt> & nb_data) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   };
 
   /// set the number of data per elem (used for elements fields at the moment)
   virtual void setNbDataPerElem(__attribute__((unused)) UInt nb_data) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   };
 
   /// get the number of components of the hosted field

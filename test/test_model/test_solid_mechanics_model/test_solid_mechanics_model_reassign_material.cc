@@ -184,7 +184,7 @@ int main(int argc, char * argv[]) {
   /// check if different materials have been assigned correctly
   test_passed = mat_selector->isConditonVerified();
   if (!test_passed) {
-    AKANTU_DEBUG_ERROR("materials not correctly assigned");
+    AKANTU_ERROR("materials not correctly assigned");
     return EXIT_FAILURE;
   }
 
@@ -197,7 +197,7 @@ int main(int argc, char * argv[]) {
   /// test if material has been reassigned correctly
   test_passed = mat_selector->isConditonVerified();
   if (!test_passed) {
-    AKANTU_DEBUG_ERROR("materials not correctly reassigned");
+    AKANTU_ERROR("materials not correctly reassigned");
     return EXIT_FAILURE;
   }
 

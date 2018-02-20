@@ -67,7 +67,7 @@ namespace BC {
                       __attribute__((unused)) Vector<Real> & primal,
                       __attribute__((unused))
                       const Vector<Real> & coord) const {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
 
     public:

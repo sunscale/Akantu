@@ -74,7 +74,7 @@ public:
 
 protected:
   Int getRank(const UInt & /*node*/) const final {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 protected:

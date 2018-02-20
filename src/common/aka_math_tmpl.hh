@@ -365,7 +365,7 @@ template <typename T> inline T Math::det(UInt n, const T * A) {
   // LU factorization of A
   aka_getrf(&N, &N, LU, &N, ipiv, &info);
   if (info > 0) {
-    AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: " << info
+    AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
                                                                        << " )");
   }
 
@@ -475,13 +475,13 @@ template <typename T> inline void Math::inv(UInt n, const T * A, T * invA) {
 
   aka_getrf(&N, &N, invA, &N, ipiv, &info);
   if (info > 0) {
-    AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: " << info
+    AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
                                                                        << " )");
   }
 
   aka_getri(&N, invA, &N, ipiv, work, &lwork, &info);
   if (info != 0) {
-    AKANTU_DEBUG_ERROR("Cannot invert the matrix (info: " << info << " )");
+    AKANTU_ERROR("Cannot invert the matrix (info: " << info << " )");
   }
 
   delete[] ipiv;
@@ -500,7 +500,7 @@ inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
 
   aka_getrf(&N, &N, lu_A, &N, ipiv, &info);
   if (info > 0) {
-    AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: " << info
+    AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
                                                                        << " )");
   }
 
@@ -511,7 +511,7 @@ inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
 
   aka_getrs(&trans, &N, &nrhs, lu_A, &N, ipiv, x, &N, &info);
   if (info != 0) {
-    AKANTU_DEBUG_ERROR("Cannot solve the system (info: " << info << " )");
+    AKANTU_ERROR("Cannot solve the system (info: " << info << " )");
   }
 
   delete[] ipiv;

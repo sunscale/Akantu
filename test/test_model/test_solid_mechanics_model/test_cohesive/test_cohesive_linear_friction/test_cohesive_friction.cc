@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
     model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance){
-      AKANTU_DEBUG_ERROR("Convergence not reached in the mode I loading phase");
+      AKANTU_ERROR("Convergence not reached in the mode I loading phase");
       passed = false;
     }
 
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
     model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance){
-      AKANTU_DEBUG_ERROR("Convergence not reached in the mode I unloading phase");
+      AKANTU_ERROR("Convergence not reached in the mode I unloading phase");
       passed = false;
     }
 
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
     model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance){
-      AKANTU_DEBUG_ERROR("Convergence not reached in the shear loading phase");
+      AKANTU_ERROR("Convergence not reached in the shear loading phase");
       passed = false;
     }
 
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
     model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance){
-      AKANTU_DEBUG_ERROR("Convergence not reached in the shear unloading phase");
+      AKANTU_ERROR("Convergence not reached in the shear unloading phase");
       passed = false;
     }
 

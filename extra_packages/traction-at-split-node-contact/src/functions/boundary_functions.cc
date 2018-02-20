@@ -37,7 +37,7 @@ Real integrateResidual(const std::string & sub_boundary_name,
     }
   }
   // } catch(debug::Exception e) {
-  //   // AKANTU_DEBUG_ERROR("Error computing integrateResidual. Cannot get SubBoundary: " 
+  //   // AKANTU_ERROR("Error computing integrateResidual. Cannot get SubBoundary: " 
   //   // 		       << sub_boundary_name << " [" << e.what() << "]");
   // }
 

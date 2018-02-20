@@ -100,7 +100,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
     UInt dim = bc_instance.getModel().getSpatialDimension();
     switch (dim) {
     case 1: {
-      AKANTU_DEBUG_TO_IMPLEMENT();
+      AKANTU_TO_IMPLEMENT();
       break;
     }
     case 2:

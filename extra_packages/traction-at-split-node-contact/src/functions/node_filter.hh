@@ -22,25 +22,19 @@
 #include "aka_common.hh"
 #include "mesh_filter.hh"
 
-
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class GeometryFilter : public NodeFilterFunctor {
 
 public:
-  GeometryFilter(const Mesh & mesh,
-		 UInt dir,
-		 Real limit) :
-    NodeFilterFunctor(),
-    mesh(mesh), dir(dir), limit(limit) { 
+  GeometryFilter(const Mesh & mesh, UInt dir, Real limit)
+      : NodeFilterFunctor(), mesh(mesh), dir(dir), limit(limit) {
     this->positions = &(mesh.getNodes());
   };
-  ~GeometryFilter() {};
-  
-  bool operator() (UInt node) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  };
+  ~GeometryFilter(){};
+
+  bool operator()(UInt node) { AKANTU_TO_IMPLEMENT(); };
 
 protected:
   const Mesh & mesh;
@@ -52,15 +46,14 @@ protected:
 /* -------------------------------------------------------------------------- */
 class FilterPositionsGreaterThan : public GeometryFilter {
 public:
-  FilterPositionsGreaterThan(const Mesh & mesh,
-			     UInt dir,
-			     Real limit) : GeometryFilter(mesh, dir, limit) {};
-  ~FilterPositionsGreaterThan() {};
+  FilterPositionsGreaterThan(const Mesh & mesh, UInt dir, Real limit)
+      : GeometryFilter(mesh, dir, limit){};
+  ~FilterPositionsGreaterThan(){};
 
-  bool operator() (UInt node) {
+  bool operator()(UInt node) {
     AKANTU_DEBUG_IN();
     bool to_filter = true;
-    if((*this->positions)(node,this->dir) > this->limit)
+    if ((*this->positions)(node, this->dir) > this->limit)
       to_filter = false;
     AKANTU_DEBUG_OUT();
     return to_filter;
@@ -70,15 +63,14 @@ public:
 /* -------------------------------------------------------------------------- */
 class FilterPositionsLessThan : public GeometryFilter {
 public:
-  FilterPositionsLessThan(const Mesh & mesh,
-			     UInt dir,
-			     Real limit) : GeometryFilter(mesh, dir, limit) {};
-  ~FilterPositionsLessThan() {};
+  FilterPositionsLessThan(const Mesh & mesh, UInt dir, Real limit)
+      : GeometryFilter(mesh, dir, limit){};
+  ~FilterPositionsLessThan(){};
 
-  bool operator() (UInt node) {
+  bool operator()(UInt node) {
     AKANTU_DEBUG_IN();
     bool to_filter = true;
-    if((*this->positions)(node,this->dir) < this->limit)
+    if ((*this->positions)(node, this->dir) < this->limit)
       to_filter = false;
     AKANTU_DEBUG_OUT();
     return to_filter;
@@ -99,7 +91,7 @@ public:
 //       it = nodes.erase(it);
 //     }
 //   }
-// }; 
+// };
 
 } // namespace akantu
 

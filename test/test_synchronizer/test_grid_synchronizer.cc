@@ -114,7 +114,7 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
             std::pair<Element, Element> pair = std::make_pair(e, elem);
             pair_list::iterator p = neighbors.find(pair);
             if(p != neighbors.end()) {
-              AKANTU_DEBUG_ERROR("Pair already registered [" << e << " " << elem << "] -> " << p->second << " " << distance);
+              AKANTU_ERROR("Pair already registered [" << e << " " << elem << "] -> " << p->second << " " << distance);
             } else {
               neighbors[pair] = distance;
             }

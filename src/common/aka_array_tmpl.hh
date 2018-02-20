@@ -533,7 +533,7 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
         tmp_ptr != nullptr,
         "Cannot allocate " << printMemorySize<T>(size_to_alloc * nb_component));
     if (tmp_ptr == nullptr) {
-      AKANTU_DEBUG_ERROR("Cannot allocate more data ("
+      AKANTU_ERROR("Cannot allocate more data ("
                          << id << ")"
                          << " [current allocated size : " << allocated_size
                          << " | "
@@ -662,7 +662,7 @@ void Array<T, is_scal>::copy(const Array<T, is_scal> & vect,
 
   if (!no_sanity_check)
     if (vect.nb_component != nb_component)
-      AKANTU_DEBUG_ERROR(
+      AKANTU_ERROR(
           "The two arrays do not have the same number of components");
 
   resize((vect.size_ * vect.nb_component) / nb_component);
@@ -778,7 +778,7 @@ public:
 
   iterator_internal(pointer_type data, UInt _offset)
       : _offset(_offset), initial(data), ret(nullptr), ret_ptr(data) {
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "The constructor should never be called it is just an ugly trick...");
   }
 

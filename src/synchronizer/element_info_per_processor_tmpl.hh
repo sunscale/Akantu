@@ -101,7 +101,7 @@ void ElementInfoPerProc::fillMeshData(BufferType & buffer,
     BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,
                           AKANTU_MESH_DATA_TYPES)
   default:
-    AKANTU_DEBUG_ERROR("Could not determine the type of tag" << tag_name
+    AKANTU_ERROR("Could not determine the type of tag" << tag_name
                                                              << "!");
     break;
   }

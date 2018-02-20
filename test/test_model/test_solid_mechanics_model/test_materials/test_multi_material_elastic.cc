@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
       auto git = grad_u.begin(spatial_dimension, spatial_dimension);
       auto gend = grad_u.end(spatial_dimension, spatial_dimension);
 
-      if(!check(sit, send, ref_stress)) AKANTU_DEBUG_ERROR("The stresses are not correct");
-      if(!check(git, gend, ref_strain[mat_id])) AKANTU_DEBUG_ERROR("The grad_u are not correct");
+      if(!check(sit, send, ref_stress)) AKANTU_ERROR("The stresses are not correct");
+      if(!check(git, gend, ref_strain[mat_id])) AKANTU_ERROR("The grad_u are not correct");
     }
   }
 

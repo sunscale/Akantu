@@ -112,7 +112,7 @@ protected:
   virtual void computeStress(__attribute__((unused)) ElementType el_type,
                              __attribute__((unused))
                              GhostType ghost_type = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the tangent stiffness matrix
@@ -122,7 +122,7 @@ protected:
                                     Array<Real> & tangent_matrix,
                                     __attribute__((unused))
                                     GhostType ghost_type = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the potential energy
@@ -135,7 +135,7 @@ protected:
                                   __attribute__((unused)) UInt index,
                                   __attribute__((unused))
                                   Vector<Real> & epot_on_quad_points) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   virtual void updateEnergies(__attribute__((unused)) ElementType el_type,
@@ -166,13 +166,13 @@ public:
   /// compute the p-wave speed in the material
   virtual Real getPushWaveSpeed(__attribute__((unused))
                                 const Element & element) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the s-wave speed in the material
   virtual Real getShearWaveSpeed(__attribute__((unused))
                                  const Element & element) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// get a material celerity to compute the stable time step (default: is the
@@ -187,12 +187,12 @@ public:
 public:
   template <typename T>
   void registerInternal(__attribute__((unused)) InternalField<T> & vect) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   template <typename T>
   void unregisterInternal(__attribute__((unused)) InternalField<T> & vect) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// initialize the material computed parameter

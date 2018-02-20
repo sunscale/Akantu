@@ -116,7 +116,7 @@ public:
                    const Matrix<Real> & /*nodal_values*/,
                    Vector<Real> & /*interpolated*/,
                    const GhostType & /*ghost_type*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the shapes on a provided point
@@ -124,7 +124,7 @@ public:
   void computeShapes(const Vector<Real> & /*real_coords*/, UInt /*elem*/,
                      Vector<Real> & /*shapes*/,
                      const GhostType & /*ghost_type*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
  
   /// compute the shape derivatives on a provided point
@@ -132,7 +132,7 @@ public:
   void computeShapeDerivatives(const Matrix<Real> & /*real_coords*/, UInt /*elem*/,
                                Tensor3<Real> & /*shapes*/,
                                const GhostType & /*ghost_type*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// multiply a field by shape functions
@@ -141,7 +141,7 @@ public:
   fieldTimesShapes(__attribute__((unused)) const Array<Real> & field,
                    __attribute__((unused)) Array<Real> & field_times_shapes,
                    __attribute__((unused)) const GhostType & ghost_type) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// get the rotations vector
@@ -156,14 +156,14 @@ public:
   void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
                   GhostType /*ghost_type*/,
                   const Array<UInt> & /*filter_elements*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   template <ElementType type>
   void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
                    UInt /*order_d*/, GhostType /*ghost_type*/,
                    const Array<UInt> & /*filter_elements*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 protected:

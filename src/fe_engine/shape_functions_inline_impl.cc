@@ -118,7 +118,7 @@ ShapeFunctions::buildInterpolationMatrix(const Matrix<Real> & coordinates,
     break;
   }
   default: {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
     break;
   }
   }
@@ -128,7 +128,7 @@ ShapeFunctions::buildInterpolationMatrix(const Matrix<Real> & coordinates,
 template <ElementType type>
 inline void ShapeFunctions::buildElementalFieldInterpolationMatrix(
     const Matrix<Real> &, Matrix<Real> &, UInt) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -196,7 +196,7 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_4>(
 
   if (integration_order !=
       ElementClassProperty<_quadrangle_4>::polynomial_degree) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   } else {
     for (UInt i = 0; i < coordinates.cols(); ++i) {
       Real x = coordinates(0, i);
@@ -219,7 +219,7 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8>(
 
   if (integration_order !=
       ElementClassProperty<_quadrangle_8>::polynomial_degree) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   } else {
     for (UInt i = 0; i < coordinates.cols(); ++i) {
       //UInt j = 0;

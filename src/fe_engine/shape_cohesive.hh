@@ -134,14 +134,14 @@ public:
   void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
                   GhostType /*ghost_type*/,
                   const Array<UInt> & /*filter_elements*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   template <ElementType type>
   void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
                    UInt /*order_d*/, GhostType /*ghost_type*/,
                    const Array<UInt> & /*filter_elements*/) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the gradient of u on the integration points
@@ -164,7 +164,7 @@ public:
                         __attribute__((unused))
                         Array<Real> & fiedl_times_shapes,
                         __attribute__((unused)) GhostType ghost_type) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 };
 

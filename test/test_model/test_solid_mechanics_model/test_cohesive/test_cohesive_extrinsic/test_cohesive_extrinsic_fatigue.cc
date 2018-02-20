@@ -176,7 +176,7 @@ int main(int argc, char * argv[]) {
 
     // test traction
     if (std::abs(numerical_traction - theoretical_traction) > 1e-13)
-      AKANTU_DEBUG_ERROR("The numerical traction "
+      AKANTU_ERROR("The numerical traction "
                          << numerical_traction << " and theoretical traction "
                          << theoretical_traction << " are not coincident");
 
@@ -184,7 +184,7 @@ int main(int argc, char * argv[]) {
   }
 
   if (switches(0) != 7)
-    AKANTU_DEBUG_ERROR("The number of switches is wrong");
+    AKANTU_ERROR("The number of switches is wrong");
 
   std::cout << "OK: the test_cohesive_extrinsic_fatigue passed." << std::endl;
   return 0;

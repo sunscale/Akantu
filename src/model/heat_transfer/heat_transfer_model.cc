@@ -176,7 +176,7 @@ void HeatTransferModel::assembleMatrix(const ID & matrix_id) {
   } else if (matrix_id == "M") {
     this->assembleCapacity();
   } else {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 }
 
@@ -185,7 +185,7 @@ void HeatTransferModel::assembleLumpedMatrix(const ID & matrix_id) {
   if (matrix_id == "M") {
     this->assembleCapacityLumped();
   } else {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 }
 
@@ -822,7 +822,7 @@ inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 
@@ -846,7 +846,7 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
       break;
     }
     default: {
-      AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+      AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
     }
     }
   }
@@ -870,7 +870,7 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
       break;
     }
     default: {
-      AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+      AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
     }
     }
   }
@@ -908,7 +908,7 @@ inline UInt HeatTransferModel::getNbData(const Array<Element> & elements,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 
@@ -936,7 +936,7 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 }
@@ -962,7 +962,7 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
     break;
   }
   default: {
-    AKANTU_DEBUG_ERROR("Unknown ghost synchronization tag : " << tag);
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
   }
   }
 }

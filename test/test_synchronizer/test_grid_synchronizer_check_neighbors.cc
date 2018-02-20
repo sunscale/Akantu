@@ -97,22 +97,22 @@ int main(int argc, char *argv[]) {
 
     neighbors_map_t<spatial_dimension>::type::iterator it_nr = neighbors_map_read.find(it_n->first);
     if(it_nr == neighbors_map_read.end())
-      AKANTU_DEBUG_ERROR("Argh what is this point that is not present in the ref file " << it_n->first);
+      AKANTU_ERROR("Argh what is this point that is not present in the ref file " << it_n->first);
 
     std::vector< Point<spatial_dimension> >::iterator it_vr = it_nr->second.begin();
     std::vector< Point<spatial_dimension> >::iterator end_vr = it_nr->second.end();
 
     for(;it_v != end_v && it_vr != end_vr; ++it_v, ++it_vr) {
-      if(*it_vr != *it_v) AKANTU_DEBUG_ERROR("Neighbors does not match " << *it_v << " != " << *it_vr
+      if(*it_vr != *it_v) AKANTU_ERROR("Neighbors does not match " << *it_v << " != " << *it_vr
                                              << " neighbor of " << it_n->first);
     }
 
     if(it_v == end_v && it_vr != end_vr) {
-      AKANTU_DEBUG_ERROR("Some neighbors of " << it_n->first << " are missing!");
+      AKANTU_ERROR("Some neighbors of " << it_n->first << " are missing!");
     }
 
     if(it_v != end_v && it_vr == end_vr)
-      AKANTU_DEBUG_ERROR("Some neighbors of " << it_n->first << " are in excess!");
+      AKANTU_ERROR("Some neighbors of " << it_n->first << " are in excess!");
   }
 
   akantu::finalize();

@@ -1072,7 +1072,7 @@ const Array<T> &
 Material::getArray(__attribute__((unused)) const ID & vect_id,
                    __attribute__((unused)) const ElementType & type,
                    __attribute__((unused)) const GhostType & ghost_type) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return NULL;
 }
 
@@ -1082,7 +1082,7 @@ Array<T> & Material::getArray(__attribute__((unused)) const ID & vect_id,
                               __attribute__((unused)) const ElementType & type,
                               __attribute__((unused))
                               const GhostType & ghost_type) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return NULL;
 }
 
@@ -1176,7 +1176,7 @@ Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type,
 template <typename T>
 const InternalField<T> & Material::getInternal(__attribute__((unused))
                                                const ID & int_id) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return NULL;
 }
 
@@ -1184,7 +1184,7 @@ const InternalField<T> & Material::getInternal(__attribute__((unused))
 template <typename T>
 InternalField<T> & Material::getInternal(__attribute__((unused))
                                          const ID & int_id) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return NULL;
 }
 

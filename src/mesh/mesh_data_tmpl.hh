@@ -47,7 +47,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 // get the type of the data stored in elemental_data
 template <typename T> inline MeshDataTypeCode MeshData::getTypeCode() const {
-  AKANTU_DEBUG_ERROR("Type " << debug::demangle(typeid(T).name())
+  AKANTU_ERROR("Type " << debug::demangle(typeid(T).name())
                              << "not implemented by MeshData.");
 }
 
@@ -89,7 +89,7 @@ inline void MeshData::registerElementalData(const ID & name,
     BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, name,
                           AKANTU_MESH_DATA_TYPES)
   default:
-    AKANTU_DEBUG_ERROR("Type " << type << "not implemented by MeshData.");
+    AKANTU_ERROR("Type " << type << "not implemented by MeshData.");
   }
 }
 #undef AKANTU_MESH_DATA_CASE_MACRO
@@ -217,7 +217,7 @@ inline UInt MeshData::getNbComponent(const ID & name,
     BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, name,
                           AKANTU_MESH_DATA_TYPES)
   default:
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "Could not call the correct instance of getNbComponentTemplated.");
     break;
   }
@@ -259,7 +259,7 @@ inline void MeshData::getTagNames(StringVector & tags,
       BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, ,
                             AKANTU_MESH_DATA_TYPES)
     default:
-      AKANTU_DEBUG_ERROR(
+      AKANTU_ERROR(
           "Could not determine the proper type to (dynamic-)cast.");
       break;
     }

@@ -66,7 +66,7 @@ namespace fe_engine {
       static void call(const S &, Mesh &, const Array<Real> &, Array<Real> &,
                        const UInt, const ElementType &, const GhostType &,
                        const Array<UInt> &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -420,7 +420,7 @@ namespace fe_engine {
       static void call(const S &, const Array<Real> &, Array<Real> &,
                        const UInt, const ElementType &, const GhostType &,
                        const Array<UInt> &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -712,7 +712,7 @@ namespace fe_engine {
       static void call(const S &, const Vector<Real> &, UInt,
                        const Matrix<Real> &, Vector<Real> &,
                        const ElementType &, const GhostType &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -811,7 +811,7 @@ namespace fe_engine {
       static void call(const FEEngineTemplate<I, S, k, IOF> &,
                        const Array<Real> &, Array<Real> &, const ElementType &,
                        const GhostType &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -903,7 +903,7 @@ template <ElementKind kind> struct InverseMapHelper {
   call(const S & /*shape_functions*/, const Vector<Real> & /*real_coords*/,
        UInt /*element*/, const ElementType & /*type*/,
        Vector<Real> & /*natural_coords*/, const GhostType & /*ghost_type*/) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 };
 
@@ -952,7 +952,7 @@ namespace fe_engine {
       template <class S>
       static void call(const S &, const Vector<Real> &, UInt,
                        const ElementType &, const GhostType &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -999,7 +999,7 @@ namespace fe_engine {
       template <class S>
       static void call(const S &, const Vector<Real> &, UInt, const ElementType,
                        Vector<Real> &, const GhostType &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -1054,7 +1054,7 @@ namespace fe_engine {
                        __attribute__((unused)) const ElementType type,
                        __attribute__((unused)) Matrix<Real> & shape_derivatives,
                        __attribute__((unused)) const GhostType & ghost_type) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 
@@ -1188,7 +1188,7 @@ namespace fe_engine {
       template <template <ElementKind> class S, ElementKind k>
       static const Array<Real> & call(const S<k> &, const ElementType &,
                                       const GhostType &, UInt) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 

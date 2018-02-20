@@ -78,7 +78,7 @@ int main(int argc, char * argv[]) {
   std::ifstream infile("K_matrix_verified.dat");
   std::string line;
   if (!infile.good())
-    AKANTU_DEBUG_ERROR("Cannot open file K_matrix_verified.dat");
+    AKANTU_ERROR("Cannot open file K_matrix_verified.dat");
   else {
     for (UInt i = 0; i < 2; ++i) {
       getline(infile, line);
@@ -125,7 +125,7 @@ int main(int argc, char * argv[]) {
   /// load the stiffness matrix to be tested
   std::ifstream infile2("K_matrix_test.dat");
   if (!infile2.good())
-    AKANTU_DEBUG_ERROR("Cannot open file K_matrix_test.dat");
+    AKANTU_ERROR("Cannot open file K_matrix_test.dat");
   else {
     for (UInt i = 0; i < 2; ++i) {
       getline(infile2, line);

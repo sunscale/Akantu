@@ -52,11 +52,11 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
   if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
     const_cast<UInt &>(this->nb_seg_by_el) = 3;
   } else {
-    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
+    AKANTU_ERROR("Not ready for mesh type " << type);
   }
 #else
   if( (type != _triangle_3) )
-    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
+    AKANTU_ERROR("Not ready for mesh type " << type);
 #endif
 
   // initialize the intersection pointsss array with the spatial dimension

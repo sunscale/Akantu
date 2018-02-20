@@ -94,7 +94,7 @@ void DumperIOHelper::dump() {
   try {
     dumper->dump(filename, count);
   } catch (iohelper::IOHelperException & e) {
-    AKANTU_DEBUG_ERROR("I was not able to dump your data with a Dumper: " << e.what());
+    AKANTU_ERROR("I was not able to dump your data with a Dumper: " << e.what());
   }
 
   ++count;
@@ -221,7 +221,7 @@ void DumperIOHelper::unRegisterVariable(const std::string & variable_id) {
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 iohelper::ElemType getIOHelperType() {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return iohelper::MAX_ELEM_TYPE;
 }
 

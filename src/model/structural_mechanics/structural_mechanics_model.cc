@@ -71,7 +71,7 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
   else if (spatial_dimension == 3)
     nb_degree_of_freedom = 6;
   else {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 #ifdef AKANTU_USE_IOHELPER

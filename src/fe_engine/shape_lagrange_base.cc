@@ -52,7 +52,7 @@ namespace shape_lagrange {
       static void call(const S &, const Array<Real> &, const Matrix<Real> &,
                        Array<Real> &, const ElementType &, const GhostType &,
                        const Array<UInt> &) {
-        AKANTU_DEBUG_TO_IMPLEMENT();
+        AKANTU_TO_IMPLEMENT();
       }
     };
 

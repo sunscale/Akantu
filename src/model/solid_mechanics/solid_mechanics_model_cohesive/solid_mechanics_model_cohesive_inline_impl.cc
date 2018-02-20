@@ -116,7 +116,7 @@ namespace akantu {
   // //     this->assembleStiffnessMatrix();
   // //     break;
   // //   default:
-  // //     AKANTU_DEBUG_ERROR("The resolution method "
+  // //     AKANTU_ERROR("The resolution method "
   // //                        << cmethod << " has not been implemented!");
   // //   }
 
@@ -158,7 +158,7 @@ namespace akantu {
   // //       need_factorize = false;
   // //       break;
   // //     default:
-  // //       AKANTU_DEBUG_ERROR("The resolution method "
+  // //       AKANTU_ERROR("The resolution method "
   // //                          << cmethod << " has not been implemented!");
   // //     }
 

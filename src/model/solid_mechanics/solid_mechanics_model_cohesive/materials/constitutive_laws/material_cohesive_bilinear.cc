@@ -119,7 +119,7 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
       delta_c_vec(q) = 2 * this->G_c / sigma_c_vec(q);
 
       if (delta_c_vec(q) - delta_0 < Math::getTolerance())
-        AKANTU_DEBUG_ERROR("delta_0 = "
+        AKANTU_ERROR("delta_0 = "
                            << delta_0 << " must be lower than delta_c = "
                            << delta_c_vec(q) << ", modify your material file");
 

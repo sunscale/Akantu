@@ -59,7 +59,7 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
                   const Vector<Real> & normals) const {
     UInt dim = coord.size();
 
-    if (dim < 2) AKANTU_DEBUG_ERROR("Solution not valid for 1D");
+    if (dim < 2) AKANTU_ERROR("Solution not valid for 1D");
 
     Matrix<Real> stress(dim, dim); stress.clear();
     stress(0, 0) = this->stress(coord(1));

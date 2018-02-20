@@ -170,7 +170,7 @@ public:
   /* ------------------------------------------------------------------------ */
   virtual void updateDataForNonLocalCriterion(__attribute__((unused))
                                               ElementTypeMapReal & criterion) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
 protected:

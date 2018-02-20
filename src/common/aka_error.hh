@@ -140,6 +140,7 @@ namespace debug {
 
   class CriticalError : public Exception {};
   class AssertException : public Exception {};
+  class NotImplementedException : public Exception {};
 
   /// standard output stream operator
   inline std::ostream & operator<<(std::ostream & stream,
@@ -257,10 +258,8 @@ namespace debug {
 #define AKANTU_DEBUG_WARNING(info)
 #define AKANTU_DEBUG_TRACE(info)
 #define AKANTU_DEBUG_ASSERT(test, info)
-#define AKANTU_DEBUG_ERROR(info)                                               \
+#define AKANTU_ERROR(info)                                               \
   AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::CriticalError(), info)
-#define AKANTU_DEBUG_TO_IMPLEMENT() ::akantu::debug::debugger.exit(EXIT_FAILURE)
-
 /* -------------------------------------------------------------------------- */
 #else
 #define AKANTU_DEBUG(level, info) AKANTU_DEBUG_("   ", level, info)
@@ -292,20 +291,21 @@ namespace debug {
 
 #define AKANTU_DEBUG_ASSERT(test, info)                                        \
   do {                                                                         \
-    if (not (test))                                                     \
+    if (not(test))                                                             \
       AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::AssertException(),         \
                                    "assert [" << #test << "] " << info);       \
   } while (false)
 
-#define AKANTU_DEBUG_ERROR(info)                                               \
+#define AKANTU_ERROR(info)                                               \
   do {                                                                         \
     AKANTU_DEBUG_("!!! ", ::akantu::dblError, info);                           \
-    std::terminate();                                                          \
+    AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::CriticalError(), info);      \
   } while (false)
-
-#define AKANTU_DEBUG_TO_IMPLEMENT()                                            \
-  AKANTU_DEBUG_ERROR(__func__ << " : not implemented yet !")
 #endif // AKANTU_NDEBUG
+
+#define AKANTU_TO_IMPLEMENT()                                           \
+  AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::NotImplementedException(),     \
+                               __func__ << " : not implemented yet !")
 
 /* -------------------------------------------------------------------------- */
 

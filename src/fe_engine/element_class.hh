@@ -120,7 +120,7 @@ public:
   /// compute the in-radius
   static inline Real getInradius(__attribute__((unused))
                                  const Matrix<Real> & coord) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// true if the natural coordinates are in the element
@@ -176,7 +176,7 @@ public:
   /// compute the shape values for a given point in natural coordinates
   template <class vector_type>
   static inline void computeShapes(const vector_type &, vector_type &) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /**
@@ -194,13 +194,13 @@ public:
    */
   template <class vector_type, class matrix_type>
   static inline void computeDNDS(const vector_type &, matrix_type &) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute jacobian (or integration variable change factor) for a given point
   /// in the case of spatial_dimension != natural_space_dimension
   static inline void computeSpecialJacobian(const Matrix<Real> &, Real &) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// interpolate a field given (arbitrary) natural coordinates

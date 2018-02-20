@@ -60,7 +60,7 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * dir,
                                         PetscErrorCode number,
                                         PetscErrorType type,
                                         const char * message, void *) {
-  AKANTU_DEBUG_ERROR("An error occured in PETSc in file \""
+  AKANTU_ERROR("An error occured in PETSc in file \""
                      << file << ":" << line << "\" - PetscErrorCode " << number
                      << " - \"" << message << "\"");
 }
@@ -70,7 +70,7 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * func,
                                         PetscErrorCode number,
                                         PetscErrorType type,
                                         const char * message, void *) {
-  AKANTU_DEBUG_ERROR("An error occured in PETSc in file \""
+  AKANTU_ERROR("An error occured in PETSc in file \""
                      << file << ":" << line << "\" - PetscErrorCode " << number
                      << " - \"" << message << "\"");
 }
@@ -115,7 +115,7 @@ DOFManagerPETSc::DOFManagerPETSc(const ID & id,
     PetscErrorCode petsc_error = PetscInitialize(&argc, &argv, NULL, NULL);
 
     if (petsc_error != 0) {
-      AKANTU_DEBUG_ERROR(
+      AKANTU_ERROR(
           "An error occured while initializing Petsc (PetscErrorCode "
           << petsc_error << ")");
     }
@@ -197,7 +197,7 @@ void DOFManagerPETSc::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
     CHKERRXX(ierr);
 
   } else { // this is an update of the object already created
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// set the solution to zero
@@ -365,7 +365,7 @@ void DOFManagerPETSc::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
 //                                      d_nnz.storage(), 0, o_nnz.storage());
 //     CHKERRXX(ierr);
 //   } else {
-//     AKANTU_DEBUG_ERROR("The type " << type
+//     AKANTU_ERROR("The type " << type
 //                                    << " of PETSc matrix is not handled by"
 //                                    << " akantu in the preallocation step");
 //   }

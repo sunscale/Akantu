@@ -98,7 +98,7 @@ inline std::istream & operator>>(std::istream & stream,
   else if (str == "dynamic_lumped")
     type = _tsst_dynamic_lumped;
   else {
-    AKANTU_DEBUG_ERROR("The type "
+    AKANTU_ERROR("The type "
                        << str << " is not a recognized TimeStepSolverType");
 
     stream.setstate(std::ios::failbit);
@@ -220,7 +220,7 @@ inline std::istream & operator>>(std::istream & stream,
   else if (str == "generalized_trapezoidal")
     type = _ist_generalized_trapezoidal;
   else {
-    AKANTU_DEBUG_ERROR("The type "
+    AKANTU_ERROR("The type "
                        << str << " is not a recognized IntegrationSchemeType");
     stream.setstate(std::ios::failbit);
   }
@@ -442,7 +442,7 @@ template <typename T> std::string printMemorySize(UInt size) {
     sstr << "Yi";
     break;
   default:
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "The programmer in 2014 didn't thought so far (even wikipedia does not "
         "go further)."
         << " You have at least 1024 times more than a yobibit of RAM!!!"

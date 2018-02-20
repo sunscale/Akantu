@@ -104,11 +104,11 @@ public:
   }
 
   virtual void addDumpField(const std::string & field_id){
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
                                     const std::string & field_id){
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   virtual void addDumpFieldExternal(const std::string & field_id,
@@ -223,20 +223,20 @@ protected:
 public:
 
   DumperIOHelper & getDumper() {
-    AKANTU_DEBUG_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
+    AKANTU_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
   }
 
   DumperIOHelper & getDumper(const std::string & dumper_name){
-    AKANTU_DEBUG_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
+    AKANTU_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
   }
 
   template<class T>
   T & getDumper(const std::string & dumper_name) {
-    AKANTU_DEBUG_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
+    AKANTU_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
   }
 
   std::string getDefaultDumperName() {
-    AKANTU_DEBUG_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
+    AKANTU_ERROR("No dumper activated at compilation, turn on AKANTU_USE_IOHELPER in cmake.");
   }
 
   /* ------------------------------------------------------------------------ */

@@ -82,42 +82,42 @@ template <> UInt Array<Real>::find(const Real & elem) const {
 template <>
 Array<ElementType> & Array<ElementType>::operator*=(__attribute__((unused))
                                                     const ElementType & alpha) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
 Array<ElementType> & Array<ElementType>::
 operator-=(__attribute__((unused)) const Array<ElementType> & vect) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
 Array<ElementType> & Array<ElementType>::
 operator+=(__attribute__((unused)) const Array<ElementType> & vect) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
 Array<char> & Array<char>::operator*=(__attribute__((unused))
                                       const char & alpha) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
 Array<char> & Array<char>::operator-=(__attribute__((unused))
                                       const Array<char> & vect) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
 Array<char> & Array<char>::operator+=(__attribute__((unused))
                                       const Array<char> & vect) {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
   return *this;
 }
 

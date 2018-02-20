@@ -125,7 +125,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
     gradientOnIntegrationPoints(const Array<Real> &, Array<Real> &, const UInt,
                                 const ElementType &, const GhostType &,
                                 const Array<UInt> &) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */

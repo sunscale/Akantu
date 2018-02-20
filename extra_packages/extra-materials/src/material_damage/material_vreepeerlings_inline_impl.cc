@@ -97,7 +97,7 @@ MaterialVreePeerlings<spatial_dimension, MatParent>::computeStressOnQuad(Matrix<
   if(I1 * I1rate > 0 || J2rate > 0){
     Equistrain_rate =tmp_1 * std::abs(I1rate) / (2*Kct) + 1./(4*Kct)*(2*tmp_1*tmp_1*I1*I1rate + tmp_2*J2rate) / std::sqrt(tmp_1*tmp_1*I1*I1 + tmp_2*J2);
   }else{
-    AKANTU_DEBUG_ERROR("This instruction here was commented but has to be checked");
+    AKANTU_ERROR("This instruction here was commented but has to be checked");
     //Equistrain_rate = Equistrain_rate;
   }
 

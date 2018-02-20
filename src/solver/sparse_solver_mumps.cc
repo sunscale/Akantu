@@ -252,7 +252,7 @@ void SparseSolverMumps::initMumpsData() {
     }
     break;
   default:
-    AKANTU_DEBUG_ERROR("This case should not happen!!");
+    AKANTU_ERROR("This case should not happen!!");
   }
 }
 
@@ -276,7 +276,7 @@ void SparseSolverMumps::initialize() {
     MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
     this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
 #else
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "You cannot use parallel method to solve without activating MPI");
 #endif
     break;
@@ -428,13 +428,13 @@ void SparseSolverMumps::printError() {
 
         this->solve();
       } else {
-        AKANTU_DEBUG_ERROR("The MUMPS workarray is too small INFO(2)="
+        AKANTU_ERROR("The MUMPS workarray is too small INFO(2)="
                            << info(2) << "No further increase possible");
       }
       break;
     }
     default:
-      AKANTU_DEBUG_ERROR("Error in mumps during solve process, check mumps "
+      AKANTU_ERROR("Error in mumps during solve process, check mumps "
                          "user guide INFO(1) = "
                          << _info_v[1]);
     }

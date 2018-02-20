@@ -76,12 +76,12 @@ public:
 
   /// save the profil in a file using the MatrixMarket file format
   virtual void saveProfile(__attribute__((unused)) const std::string &) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// save the matrix in a file using the MatrixMarket file format
   virtual void saveMatrix(__attribute__((unused)) const std::string &) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   };
 
   /// multiply the matrix by a coefficient
@@ -111,12 +111,12 @@ public:
   /// return the values at potition i, j
   virtual inline Real operator()(__attribute__((unused)) UInt i,
                                  __attribute__((unused)) UInt j) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
   /// return the values at potition i, j
   virtual inline Real & operator()(__attribute__((unused)) UInt i,
                                    __attribute__((unused)) UInt j) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   AKANTU_GET_MACRO(NbNonZero, nb_non_zero, UInt);

@@ -55,7 +55,7 @@ SolidMechanicsModel::registerNewMaterial(const ParserSection & section) {
                      * weirdness of this code
                      */
   } catch (debug::Exception &) {
-    AKANTU_DEBUG_ERROR(
+    AKANTU_ERROR(
         "A material of type \'"
         << mat_type << "\' in the input file has been defined without a name!");
   }

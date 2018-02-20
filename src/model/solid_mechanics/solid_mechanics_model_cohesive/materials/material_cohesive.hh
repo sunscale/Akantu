@@ -75,19 +75,19 @@ public:
     /// check stress for cohesive elements' insertion, by default it
   /// also updates the cohesive elements' data
   virtual void checkInsertion(bool /*check_only*/ = false) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// check delta_max for cohesive elements in case of no convergence
   /// in the solveStep (only for extrinsic-implicit)
   virtual void checkDeltaMax(GhostType /*ghost_type*/ = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// reset variables when convergence is reached (only for
   /// extrinsic-implicit)
   virtual void resetVariables(GhostType /*ghost_type*/ = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// interpolate   stress  on   given   positions  for   each  element   (empty
@@ -107,7 +107,7 @@ protected:
                                       Array<Real> & /*tangent_matrix*/,
                                       const Array<Real> & /*normal*/,
                                       GhostType /*ghost_type*/ = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the normal

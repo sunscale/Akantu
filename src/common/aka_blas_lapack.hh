@@ -81,7 +81,7 @@ namespace akantu {
 /// vectors
 template <typename T>
 inline T aka_dot(int * n, T * x, int * incx, T * y, int * incy) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "BLAS in the compilation options!");
 }
@@ -90,7 +90,7 @@ inline T aka_dot(int * n, T * x, int * incx, T * y, int * incy) {
 /// y\f$
 template <typename T>
 inline void aka_axpy(int * n, T * alpha, T * x, int * incx, T * y, int * incy) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "BLAS in the compilation options!");
 }
@@ -101,7 +101,7 @@ template <typename T>
 inline void aka_gemv(char * trans, int * m, int * n, T * alpha, T * a,
                      int * lda, T * x, int * incx, T * beta, T * y,
                      int * incy) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "BLAS in the compilation options!");
 }
@@ -112,7 +112,7 @@ template <typename T>
 inline void aka_gemm(char * transa, char * transb, int * m, int * n, int * k,
                      T * alpha, T * a, int * lda, T * b, int * ldb, T * beta,
                      T * c, int * ldc) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "BLAS in the compilation options!");
 }
@@ -241,7 +241,7 @@ template <typename T>
 inline void aka_geev(char * jobvl, char * jobvr, int * n, T * a, int * lda,
                      T * wr, T * wi, T * vl, int * ldvl, T * vr, int * ldvr,
                      T * work, int * lwork, int * info) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                      "LAPACK in the compilation options!");
 }
@@ -251,7 +251,7 @@ inline void aka_geev(char * jobvl, char * jobvr, int * n, T * a, int * lda,
 template <typename T>
 inline void aka_getrf(int * m, int * n, T * a, int * lda, int * ipiv,
                       int * info) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "LAPACK in the compilation options!");
 }
@@ -261,7 +261,7 @@ inline void aka_getrf(int * m, int * n, T * a, int * lda, int * ipiv,
 template <typename T>
 inline void aka_getri(int * n, T * a, int * lda, int * ipiv, T * work,
                       int * lwork, int * info) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "LAPACK in the compilation options!");
 }
@@ -271,7 +271,7 @@ inline void aka_getri(int * n, T * a, int * lda, int * ipiv, T * work,
 template <typename T>
 inline void aka_getrs(char * trans, int * n, int * nrhs, T * A, int * lda,
                       int * ipiv, T * b, int * ldb, int * info) {
-  AKANTU_DEBUG_ERROR(debug::demangle(typeid(T).name())
+  AKANTU_ERROR(debug::demangle(typeid(T).name())
                      << "is not a type recognized, or you didn't activated "
                         "LAPACK in the compilation options!");
 }

@@ -106,7 +106,7 @@ inline void TestDOFAccessor::unpackDOFData(CommunicationBuffer & buffer,
     std::cout << *bit << global_dof_eq_nb_local << std::endl;
     Real tolerance = Math::getTolerance();
       if(!(std::abs(global_dof_eq_nb - global_dof_eq_nb_local) <= tolerance))
-        AKANTU_DEBUG_ERROR("Unpacking an unknown value for the dof: "
+        AKANTU_ERROR("Unpacking an unknown value for the dof: "
                            << *bit
                            << "(global_dof_equation_number = " << global_dof_eq_nb_local
                            << " and buffer = " << global_dof_eq_nb << ") - tag: " << tag);

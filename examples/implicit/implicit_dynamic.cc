@@ -104,7 +104,7 @@ int main(int argc, char * argv[]) {
   std::ofstream pos;
   pos.open("position.csv");
   if (!pos.good())
-    AKANTU_DEBUG_ERROR("Cannot open file \"position.csv\"");
+    AKANTU_ERROR("Cannot open file \"position.csv\"");
 
   pos << "id,time,position,solution" << std::endl;
 
