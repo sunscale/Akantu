@@ -57,23 +57,20 @@ public:
   }
 
   void setDirichlets() override {
-    std::fill(this->model->getBlockedDOFs().begin(),
-              this->model->getBlockedDOFs().end(), true);
+    this->model->getBlockedDOFs().set(true);
     auto center_node = this->model->getBlockedDOFs().end(parent::ndof) - 1;
-    // clang-format off
     *center_node = {false, false, false, false, false, true};
-    // clang-format on
 
     this->model->getDisplacement().clear();
     auto disp = ++this->model->getDisplacement().begin(parent::ndof);
 
     // Displacement field from Batoz Vol. 2 p. 392
     // with theta to beta correction from discrete Kirchhoff condition
-    //clang-format off
+    // clang-format off
     *disp = {40, 20, -800 , -20, 40, 0}; ++disp;
     *disp = {50, 40, -1400, -40, 50, 0}; ++disp;
     *disp = {10, 20, -200 , -20, 10, 0}; ++disp;
-    //clang-format on
+    // clang-format on
   }
 
   void setNeumanns() override {}
@@ -85,15 +82,16 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 // Batoz Vol 2. patch test, ISBN 2-86601-259-3
-
 TEST_F(TestStructDKT18, TestDisplacements) {
   model->solveStep();
   Vector<Real> solution = {22.5, 22.5, -337.5, -22.5, 22.5, 0};
+  auto nb_nodes = this->model->getDisplacement().size();
 
   Vector<Real> center_node_disp =
-      model->getDisplacement().end(model->getSpatialDimension())[-1];
+      model->getDisplacement().begin(solution.size())[nb_nodes - 1];
 
   auto error = solution - center_node_disp;
+  std::cout << center_node_disp << std::endl;
 
   Real tol = Math::getTolerance();
 

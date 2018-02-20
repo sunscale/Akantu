@@ -49,11 +49,11 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam_2,
                                                      _itp_lagrange_segment_2, 3,
-                                                     2);
+                                                     2, 6);
 
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam_3,
                                                      _itp_lagrange_segment_2, 6,
-                                                     4);
+                                                     4, 6);
 
 AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_bernoulli_beam_2,
                                                 _gt_segment_2,
@@ -116,7 +116,7 @@ template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
     const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
-    Matrix<Real> & B) {
+    Matrix<Real> & dnds) {
   Matrix<Real> L(1, 2);
   InterpolationElement<_itp_lagrange_segment_2, _itk_lagrangian>::computeDNDS(
       natural_coords, L);
@@ -124,23 +124,43 @@ InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
   InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
       natural_coords, real_coord, H);
 
+  // Storing the derivatives in dnds
+  dnds.block(L, 0, 0);
+  dnds.block(H, 0, 2);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+inline void
+InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::arrangeInVoigt(
+    const Matrix<Real> & dnds, Matrix<Real> & B) {
+  auto L = dnds.block(0, 0, 1, 2); // Lagrange shape derivatives
+  auto H = dnds.block(0, 2, 1, 4); // Hermite shape derivatives
   // clang-format off
-  //    u1      v1      t1      u2      v2      t2
-  B = {{L(0, 0), 0      , 0      , L(0, 1), 0      , 0      },   // epsilon
-       {0      , H(0, 0), H(0, 1), 0      , H(0, 2), H(0, 3)}};  // chi (curv.)
+  //    u1       v1       t1       u2       v2       t2
+  B = {{L(0, 0), 0,       0,       L(0, 1), 0,       0      },
+       {0,       H(0, 0), H(0, 1), 0,       H(0, 2), H(0, 3)}};
   // clang-format on
 }
 
+/* -------------------------------------------------------------------------- */
 template <>
 inline void
 InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeDNDS(
-									  const Vector<Real> & natural_coords, const Matrix<Real> & real_coord, Matrix<Real> & B) {
-  Matrix<Real> L(1, 2);
-  InterpolationElement<_itp_lagrange_segment_2, _itk_lagrangian>::computeDNDS(
-      natural_coords, L);
-  Matrix<Real> H(1, 4);
-  InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
-      natural_coords, real_coord, H);
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
+    Matrix<Real> & dnds) {
+  InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::computeDNDS(
+      natural_coords, real_coord, dnds);
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+inline void
+InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::arrangeInVoigt(
+    const Matrix<Real> & dnds, Matrix<Real> & B) {
+  auto L = dnds.block(0, 0, 1, 2); // Lagrange shape derivatives
+  auto H = dnds.block(0, 2, 1, 4); // Hermite shape derivatives
+
   // clang-format off
   //    u1       v1       w1       x1       y1       z1       u2       v2       w2       x2       y2       z2
   B = {{L(0, 0), 0      , 0      , 0      , 0      , 0      , L(0, 1), 0      , 0      , 0      , 0      , 0      },  // eps

@@ -71,6 +71,7 @@ Matrix<Real> globalToLocalRotation(Real theta) {
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestBernoulliB2, PrecomputeRotations) {
+  this->fem->initShapeFunctions();
   using ShapeStruct = ShapeStructural<_ek_structural>;
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
   auto & rot = shape.getRotations(type);
@@ -90,6 +91,7 @@ TEST_F(TestBernoulliB2, PrecomputeRotations) {
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestBernoulliB3, PrecomputeRotations) {
+  this->fem->initShapeFunctions();
   using ShapeStruct = ShapeStructural<_ek_structural>;
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
   auto & rot = shape.getRotations(type);
@@ -112,6 +114,7 @@ TEST_F(TestBernoulliB3, PrecomputeRotations) {
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestDKT18, PrecomputeRotations) {
+  this->fem->initShapeFunctions();
   using ShapeStruct = ShapeStructural<_ek_structural>;
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
   auto & rot = shape.getRotations(type);

@@ -61,6 +61,8 @@ public:
 
   void SetUp() override {
     parent::SetUp();
+    this->fem->initShapeFunctions();
+
     auto integration_points =
              this->fem->getIntegrator().template getIntegrationPoints <
              parent::type,
