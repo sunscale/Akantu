@@ -37,6 +37,8 @@
 /* -------------------------------------------------------------------------- */
 #include "element_type_conversion.hh"
 /* -------------------------------------------------------------------------- */
+#include <functional>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_TMPL_HH__
@@ -587,21 +589,24 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 template <typename T, typename SupportType>
-template <class Func>
+template <class Func, class CompFunc>
 void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
                                                      const T & default_value,
-                                                     bool do_not_default) {
+                                                     bool do_not_default,
+                                                     CompFunc && comp_func) {
+  auto ghost_type = f.ghostType();
   for (auto & type : f.elementTypes()) {
-    if (not this->exists(type, f.ghostType()))
+    if (not this->exists(type, ghost_type))
       if (do_not_default) {
-        auto & array = this->alloc(0, f.nbComponent(type), type, f.ghostType());
+        auto & array =
+            this->alloc(0, comp_func(type, ghost_type), type, ghost_type);
         array.resize(f.size(type));
       } else {
-        this->alloc(f.size(type), f.nbComponent(type), type, f.ghostType(),
+        this->alloc(f.size(type), comp_func(type, ghost_type), type, ghost_type,
                     default_value);
       }
     else {
-      auto & array = this->operator()(type, f.ghostType());
+      auto & array = this->operator()(type, ghost_type);
       if (not do_not_default)
         array.resize(f.size(type), default_value);
       else
@@ -622,15 +627,22 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
       continue;
 
+    auto functor = MeshElementTypeMapArrayInializer(
+        mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
+        OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension()),
+        ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
+        OPTIONAL_NAMED_ARG(with_nb_element, false),
+        OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false));
+
+    std::function<UInt(const ElementType &, const GhostType &)>
+        nb_component_functor =
+            [&](const ElementType & type, const GhostType &
+                /*ghost_type*/) -> UInt { return functor.nbComponent(type); };
+
     this->initialize(
-        MeshElementTypeMapArrayInializer(
-            mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
-            OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension()),
-            ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
-            OPTIONAL_NAMED_ARG(with_nb_element, false),
-            OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false)),
-        OPTIONAL_NAMED_ARG(default_value, T()),
-        OPTIONAL_NAMED_ARG(do_not_default, false));
+        functor, OPTIONAL_NAMED_ARG(default_value, T()),
+        OPTIONAL_NAMED_ARG(do_not_default, false),
+        OPTIONAL_NAMED_ARG(nb_component_functor, nb_component_functor));
   }
 }
 
@@ -646,13 +658,20 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
       continue;
 
-    this->initialize(FEEngineElementTypeMapArrayInializer(
-                         fe_engine, OPTIONAL_NAMED_ARG(nb_component, 1),
-                         OPTIONAL_NAMED_ARG(spatial_dimension, UInt(-2)),
-                         ghost_type,
-                         OPTIONAL_NAMED_ARG(element_kind, _ek_regular)),
-                     OPTIONAL_NAMED_ARG(default_value, T()),
-                     OPTIONAL_NAMED_ARG(do_not_default, false));
+    auto functor = FEEngineElementTypeMapArrayInializer(
+        fe_engine, OPTIONAL_NAMED_ARG(nb_component, 1),
+        OPTIONAL_NAMED_ARG(spatial_dimension, UInt(-2)), ghost_type,
+        OPTIONAL_NAMED_ARG(element_kind, _ek_regular));
+
+    std::function<UInt(const ElementType &, const GhostType &)>
+        nb_component_functor =
+            [&](const ElementType & type, const GhostType &
+                /*ghost_type*/) -> UInt { return functor.nbComponent(type); };
+
+    this->initialize(
+        functor, OPTIONAL_NAMED_ARG(default_value, T()),
+        OPTIONAL_NAMED_ARG(do_not_default, false),
+        OPTIONAL_NAMED_ARG(nb_component_functor, nb_component_functor));
   }
 }
 
