@@ -42,11 +42,10 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real> & stress,
-							      const Vector<Real> & normal,
-							      const Vector<Real> & tangent,
-							      Vector<Real> & normal_traction) const {
+template <UInt dim>
+inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(
+    const Matrix<Real> & stress, const Vector<Real> & normal,
+    const Vector<Real> & tangent, Vector<Real> & normal_traction) const {
   normal_traction.mul<false>(stress, normal);
 
   Real normal_contrib = normal_traction.dot(normal);
@@ -57,8 +56,7 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real>
   if (dim == 2) {
     Real tangent_contrib_tmp = normal_traction.dot(tangent);
     tangent_contrib += tangent_contrib_tmp * tangent_contrib_tmp;
-  }
-  else if (dim == 3) {
+  } else if (dim == 3) {
     for (UInt s = 0; s < dim - 1; ++s) {
       const Vector<Real> tangent_v(tangent.storage() + s * dim, dim);
       Real tangent_contrib_tmp = normal_traction.dot(tangent_v);
@@ -69,38 +67,28 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(const Matrix<Real>
   tangent_contrib = std::sqrt(tangent_contrib);
   normal_contrib = std::max(Real(0.), normal_contrib);
 
-  return std::sqrt(normal_contrib * normal_contrib + tangent_contrib * tangent_contrib * beta2_inv);
+  return std::sqrt(normal_contrib * normal_contrib +
+                   tangent_contrib * tangent_contrib * beta2_inv);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
+template <UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
-    Vector<Real> & traction,
-    Real & delta_max,
-    __attribute__((unused)) const Real & delta_max_prev,
-    const Real & delta_c,
-    const Vector<Real> & insertion_stress,
-    const Real & sigma_c,
-    Vector<Real> & opening,
-    Vector<Real> & opening_prec,
-    const Vector<Real> & normal,
-    Vector<Real> & normal_opening,
-    Vector<Real> & tangential_opening,
-    Real & normal_opening_norm,
-    Real & tangential_opening_norm,
-    Real & damage,
-    bool & penetration,
-    bool & reduction_penalty,
-    Real & current_penalty,
-    Vector<Real> & contact_traction,
-    Vector<Real> & contact_opening) {
+    Vector<Real> & traction, Vector<Real> & opening,
+    Vector<Real> & opening_prec, const Vector<Real> & normal, Real & delta_max,
+    const Real & delta_c, const Vector<Real> & insertion_stress,
+    const Real & sigma_c, Vector<Real> & normal_opening,
+    Vector<Real> & tangential_opening, Real & normal_opening_norm,
+    Real & tangential_opening_norm, Real & damage, bool & penetration,
+    bool & reduction_penalty, Real & current_penalty,
+    Vector<Real> & contact_traction, Vector<Real> & contact_opening) {
 
   /// compute normal and tangential opening vectors
   normal_opening_norm = opening.dot(normal);
-  normal_opening  = normal;
+  normal_opening = normal;
   normal_opening *= normal_opening_norm;
 
-  tangential_opening  = opening;
+  tangential_opening = opening;
   tangential_opening -= normal_opening;
   tangential_opening_norm = tangential_opening.norm();
 
@@ -109,13 +97,15 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
    * @f$ \delta = \sqrt{
    * \frac{\beta^2}{\kappa^2} \Delta_t^2 + \Delta_n^2 } @f$
    */
-  Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+  Real delta =
+      tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
   penetration = normal_opening_norm < 0.0;
-  if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
+  if (this->contact_after_breaking == false &&
+      Math::are_float_equal(damage, 1.))
     penetration = false;
 
-  /** 
+  /**
    * if during the convergence loop a cohesive element continues to
    * jumps from penetration to opening, and convergence is not
    * reached, its penalty parameter will be reduced in the
@@ -125,7 +115,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
    * goes back to the main file where the variable load_reduction
    * is set equal to true.
    */
-    
+
   Real normal_opening_prec_norm = opening_prec.dot(normal);
   opening_prec = opening;
 
@@ -135,11 +125,10 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     }
 
   if (penetration) {
-    if (this->recompute && reduction_penalty){
+    if (this->recompute && reduction_penalty) {
       /// the penalty parameter is locally reduced
       current_penalty = this->penalty / 100.;
-    }
-    else
+    } else
       current_penalty = this->penalty;
 
     /// use penalty coefficient in case of penetration
@@ -151,8 +140,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     opening = tangential_opening;
     normal_opening.clear();
 
-  }
-  else {
+  } else {
     delta += normal_opening_norm * normal_opening_norm;
     contact_traction.clear();
     contact_opening.clear();
@@ -178,37 +166,26 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
       traction.clear();
     else
       traction = insertion_stress;
-  }
-  else {
-    traction  = tangential_opening;
+  } else {
+    traction = tangential_opening;
     traction *= this->beta2_kappa;
     traction += normal_opening;
 
     AKANTU_DEBUG_ASSERT(delta_max != 0.,
-			"Division by zero, tolerance might be too low");
+                        "Division by zero, tolerance might be too low");
 
     traction *= sigma_c / delta_max * (1. - damage);
   }
 }
 
-
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
+template <UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
-    Matrix<Real> & tangent,
-    Real & delta_max,
-    const Real & delta_c,
-    const Real & sigma_c,
-    Vector<Real> & opening,
-    const Vector<Real> & normal,
-    Vector<Real> & normal_opening,
-    Vector<Real> & tangential_opening,
-    Real & normal_opening_norm,
-    Real & tangential_opening_norm,
-    Real & damage,
-    bool & penetration,
-    bool & reduction_penalty,
-    Real & current_penalty,
+    Matrix<Real> & tangent, Real & delta_max, const Real & delta_c,
+    const Real & sigma_c, Vector<Real> & opening, const Vector<Real> & normal,
+    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+    bool & penetration, bool & reduction_penalty, Real & current_penalty,
     Vector<Real> & contact_opening) {
 
   /**
@@ -228,10 +205,12 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   tangential_opening -= normal_opening;
   tangential_opening_norm = tangential_opening.norm();
 
-  Real delta = tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
+  Real delta =
+      tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
   penetration = normal_opening_norm < 0.0;
-  if (this->contact_after_breaking == false && Math::are_float_equal(damage, 1.))
+  if (this->contact_after_breaking == false &&
+      Math::are_float_equal(damage, 1.))
     penetration = false;
 
   Real derivative = 0; // derivative = d(t/delta)/ddelta
@@ -240,7 +219,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
   n_outer_n.outerProduct(normal, normal);
 
-  if (penetration){
+  if (penetration) {
     if (this->recompute && reduction_penalty)
       current_penalty = this->penalty / 100.;
     else
@@ -254,8 +233,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
     normal_opening_norm = opening.dot(normal);
     normal_opening = normal;
     normal_opening *= normal_opening_norm;
-  }
-  else{
+  } else {
     delta += normal_opening_norm * normal_opening_norm;
   }
 
@@ -270,19 +248,18 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   if (delta < Math::getTolerance())
     delta = delta_c / 1000.;
 
-  if (delta >= delta_max){
-    if (delta <= delta_c){
+  if (delta >= delta_max) {
+    if (delta <= delta_c) {
       derivative = -sigma_c / (delta * delta);
       t = sigma_c * (1 - delta / delta_c);
     } else {
       derivative = 0.;
       t = 0.;
     }
-  } else if (delta < delta_max){
+  } else if (delta < delta_max) {
     Real tmax = sigma_c * (1 - delta_max / delta_c);
     t = tmax / delta_max * delta;
   }
-
 
   /// computation of the derivative of the constitutive law (dT/ddelta)
   Matrix<Real> I(spatial_dimension, spatial_dimension);
@@ -291,7 +268,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   Matrix<Real> nn(n_outer_n);
   nn *= (1. - this->beta2_kappa);
   nn += I;
-  nn *= t/delta;
+  nn *= t / delta;
 
   Vector<Real> t_tilde(normal_opening);
   t_tilde *= (1. - this->beta2_kappa2);
@@ -305,7 +282,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
 
   Matrix<Real> prov(spatial_dimension, spatial_dimension);
   prov.outerProduct(t_hat, t_tilde);
-  prov *= derivative/delta;
+  prov *= derivative / delta;
   prov += nn;
 
   Matrix<Real> prov_t = prov.transpose();

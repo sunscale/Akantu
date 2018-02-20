@@ -286,7 +286,7 @@ Real MaterialStandardLinearSolidDeviatoric<
   AKANTU_DEBUG_IN();
 
   UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
-  Array<Real>::const_vector_iterator it =
+  auto it =
       this->dissipated_energy(type, _not_ghost).begin(nb_quadrature_points);
   UInt gindex = (this->element_filter(type, _not_ghost))(index);
 

@@ -96,12 +96,12 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
     UInt nb_element = this->model->getMesh().getNbElement(type);
     UInt nb_quad_per_element = this->fem_cohesive.getNbIntegrationPoints(type);
 
-    Array<Real>::vector_iterator sigma_c_begin =
+    auto sigma_c_begin =
         this->sigma_c_eff(type).begin_reinterpret(nb_quad_per_element,
                                                   nb_element);
     Vector<Real> sigma_c_vec = sigma_c_begin[index];
 
-    Array<Real>::vector_iterator delta_c_begin =
+    auto delta_c_begin =
         this->delta_c_eff(type).begin_reinterpret(nb_quad_per_element,
                                                   nb_element);
     Vector<Real> delta_c_vec = delta_c_begin[index];

@@ -99,11 +99,11 @@ void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_3>(
   Mesh & mesh = getFEEngine().getMesh();
   UInt nb_element = mesh.getNbElement(type);
 
-  Array<Real>::vector_iterator n_it =
+  auto n_it =
       mesh.getNormals(type).begin(spatial_dimension);
   Array<UInt>::iterator<Vector<UInt> > connec_it =
       mesh.getConnectivity(type).begin(2);
-  Array<Real>::vector_iterator nodes_it =
+  auto nodes_it =
       mesh.getNodes().begin(spatial_dimension);
 
   Matrix<Real> Pe(spatial_dimension, spatial_dimension);

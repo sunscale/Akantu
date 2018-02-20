@@ -17,9 +17,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "material_damage_iterative.hh"
-#include "solid_mechanics_model_RVE.hh"
 #include "communicator.hh"
 #include "data_accessor.hh"
+#include "solid_mechanics_model_RVE.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -28,8 +28,8 @@ namespace akantu {
 template <UInt spatial_dimension>
 MaterialDamageIterative<spatial_dimension>::MaterialDamageIterative(
     SolidMechanicsModel & model, const ID & id)
-    : MaterialDamage<spatial_dimension>(model, id),
-      Sc("Sc", *this), reduction_step("damage_step", *this),
+    : MaterialDamage<spatial_dimension>(model, id), Sc("Sc", *this),
+      reduction_step("damage_step", *this),
       equivalent_stress("equivalent_stress", *this), max_reductions(0),
       norm_max_equivalent_stress(0) {
   AKANTU_DEBUG_IN();
@@ -66,9 +66,8 @@ void MaterialDamageIterative<spatial_dimension>::
   /// Vector to store eigenvalues of current stress tensor
   Vector<Real> eigenvalues(spatial_dimension);
 
-  Array<Real>::const_iterator<Real> Sc_it = Sc(el_type, ghost_type).begin();
-  Array<Real>::iterator<Real> equivalent_stress_it =
-      equivalent_stress(el_type, ghost_type).begin();
+  auto Sc_it = Sc(el_type, ghost_type).begin();
+  auto equivalent_stress_it = equivalent_stress(el_type, ghost_type).begin();
 
   Array<Real>::const_matrix_iterator grad_u_it =
       grad_u.begin(spatial_dimension, spatial_dimension);
@@ -108,8 +107,7 @@ void MaterialDamageIterative<spatial_dimension>::computeAllStresses(
   MaterialDamage<spatial_dimension>::computeAllStresses(ghost_type);
 
   /// find global Gauss point with highest stress
-  auto rve_model =
-      dynamic_cast<SolidMechanicsModelRVE *>(&this->model);
+  auto rve_model = dynamic_cast<SolidMechanicsModelRVE *>(&this->model);
   if (rve_model == NULL) {
     /// is no RVE model
     const auto & comm = this->model.getMesh().getCommunicator();
@@ -130,7 +128,7 @@ void MaterialDamageIterative<spatial_dimension>::
     // const Array<Real> & e_stress = equivalent_stress(el_type);
 
     // if (e_stress.begin() != e_stress.end() ) {
-    //   Array<Real>::const_iterator<Real> equivalent_stress_it_max =
+    //   auto equivalent_stress_it_max =
     //   std::max_element(e_stress.begin(),e_stress.end());
     //   /// check if max equivalent stress for this element type is greater
     //   than the current norm_max_eq_stress
@@ -138,10 +136,10 @@ void MaterialDamageIterative<spatial_dimension>::
     // 	norm_max_equivalent_stress = *equivalent_stress_it_max;
     // }
     const Array<Real> & e_stress = equivalent_stress(el_type);
-    Array<Real>::const_iterator<Real> equivalent_stress_it = e_stress.begin();
-    Array<Real>::const_iterator<Real> equivalent_stress_end = e_stress.end();
+    auto equivalent_stress_it = e_stress.begin();
+    auto equivalent_stress_end = e_stress.end();
     Array<Real> & dam = this->damage(el_type);
-    Array<Real>::iterator<Real> dam_it = dam.begin();
+    auto dam_it = dam.begin();
 
     for (; equivalent_stress_it != equivalent_stress_end;
          ++equivalent_stress_it, ++dam_it) {
@@ -207,12 +205,11 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
       ElementType el_type = *it;
 
       const Array<Real> & e_stress = equivalent_stress(el_type);
-      Array<Real>::const_iterator<Real> equivalent_stress_it = e_stress.begin();
-      Array<Real>::const_iterator<Real> equivalent_stress_end = e_stress.end();
+      auto equivalent_stress_it = e_stress.begin();
+      auto equivalent_stress_end = e_stress.end();
       Array<Real> & dam = this->damage(el_type);
-      Array<Real>::iterator<Real> dam_it = dam.begin();
-      Array<UInt>::scalar_iterator reduction_it =
-          this->reduction_step(el_type, ghost_type).begin();
+      auto dam_it = dam.begin();
+      auto reduction_it = this->reduction_step(el_type, ghost_type).begin();
 
       for (; equivalent_stress_it != equivalent_stress_end;
            ++equivalent_stress_it, ++dam_it, ++reduction_it) {
@@ -235,13 +232,12 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
     }
   }
 
-  auto * rve_model =
-      dynamic_cast<SolidMechanicsModelRVE *>(&this->model);
+  auto * rve_model = dynamic_cast<SolidMechanicsModelRVE *>(&this->model);
   if (rve_model == NULL) {
     const auto & comm = this->model.getMesh().getCommunicator();
     comm.allReduce(nb_damaged_elements, SynchronizerOperation::_sum);
   }
-  
+
   AKANTU_DEBUG_OUT();
   return nb_damaged_elements;
 }

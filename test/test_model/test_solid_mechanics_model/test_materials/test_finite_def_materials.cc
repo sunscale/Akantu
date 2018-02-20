@@ -16,19 +16,19 @@ using types = ::testing::Types<
 /*****************************************************************/
 
 template <> void FriendMaterial<MaterialNeohookean<3>>::testComputeStress() {
-  TO_IMPLEMENT;
+  AKANTU_TO_IMPLEMENT();
 }
 
 /*****************************************************************/
 template <>
 void FriendMaterial<MaterialNeohookean<3>>::testComputeTangentModuli() {
-  TO_IMPLEMENT;
+  AKANTU_TO_IMPLEMENT();
 }
 
 /*****************************************************************/
 
 template <> void FriendMaterial<MaterialNeohookean<3>>::testEnergyDensity() {
-  TO_IMPLEMENT;
+  AKANTU_TO_IMPLEMENT();
 }
 
 /*****************************************************************/

@@ -199,7 +199,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
   Array<Real>::const_matrix_iterator T_it =
       rotation_matrix(type).begin(nb_degree_of_freedom * nb_nodes_per_element,
                                   nb_degree_of_freedom * nb_nodes_per_element);
-  Array<Real>::const_vector_iterator te_it =
+  auto te_it =
       tractions.begin(nb_degree_of_freedom);
 
   Array<Real> funct(nb_element * nb_quad,

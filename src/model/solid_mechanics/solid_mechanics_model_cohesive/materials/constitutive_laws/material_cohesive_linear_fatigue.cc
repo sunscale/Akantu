@@ -95,21 +95,21 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
   AKANTU_DEBUG_IN();
 
   /// define iterators
-  Array<Real>::vector_iterator traction_it =
+  auto traction_it =
     this->tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_it =
+  auto opening_it =
     this->opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator contact_traction_it =
+  auto contact_traction_it =
     this->contact_tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator contact_opening_it =
+  auto contact_opening_it =
     this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::const_vector_iterator normal_it = normal.begin(spatial_dimension);
+  auto normal_it = normal.begin(spatial_dimension);
 
-  Array<Real>::vector_iterator traction_end =
+  auto traction_end =
     this->tractions(el_type, ghost_type).end(spatial_dimension);
 
   const Array<Real> & sigma_c_array = this->sigma_c_eff(el_type, ghost_type);
@@ -117,7 +117,7 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>
   const Array<Real> & delta_c_array = this->delta_c_eff(el_type, ghost_type);
   Array<Real> & damage_array = this->damage(el_type, ghost_type);
 
-  Array<Real>::vector_iterator insertion_stress_it =
+  auto insertion_stress_it =
     this->insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
   Array<Real> & delta_prec_array = delta_prec(el_type, ghost_type);

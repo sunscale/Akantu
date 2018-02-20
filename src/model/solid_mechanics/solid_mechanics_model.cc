@@ -577,9 +577,9 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type,
                                                Model::spatial_dimension, type,
                                                _not_ghost, filter_element);
 
-  Array<Real>::vector_iterator vit =
+  auto vit =
       vel_on_quad.begin(Model::spatial_dimension);
-  Array<Real>::vector_iterator vend = vel_on_quad.end(Model::spatial_dimension);
+  auto vend = vel_on_quad.end(Model::spatial_dimension);
 
   Vector<Real> rho_v2(nb_quadrature_points);
 

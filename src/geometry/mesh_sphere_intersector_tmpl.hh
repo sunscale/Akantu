@@ -124,7 +124,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  UInt n = nb_old_nodes;
 
           // check if we already compute this intersection and add it as a node for a neighboor element of another type
-	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
+	  auto existing_node = nodes.begin(dim);
 
 	  for (; n < nodes.size() ; ++n) {// loop on the nodes from nb_old_nodes
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
@@ -133,8 +133,8 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	    }
 	  }
 	  if(is_new){
-	    Array<Real>::vector_iterator intersection_points_it = this->intersection_points->begin(dim);
-	    Array<Real>::vector_iterator intersection_points_end = this->intersection_points->end(dim);
+	    auto intersection_points_it = this->intersection_points->begin(dim);
+	    auto intersection_points_end = this->intersection_points->end(dim);
 	    for (; intersection_points_it != intersection_points_end ; ++intersection_points_it, ++n) {
 	      if (Math::are_vector_equal(dim, new_node.storage(), intersection_points_it->storage())) {
 		is_new = false;

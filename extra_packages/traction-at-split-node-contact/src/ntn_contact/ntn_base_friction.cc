@@ -183,7 +183,7 @@ void NTNBaseFriction::computeStickTraction() {
 
   // compute friction traction to stop sliding
   Array<Real> & traction = const_cast< Array<Real> & >(this->friction_traction.getArray());
-  Array<Real>::vector_iterator it_fric_trac = traction.begin(dim);
+  auto it_fric_trac = traction.begin(dim);
   for (UInt n=0; n<nb_contact_nodes; ++n) {
     Vector<Real> fric_trac = it_fric_trac[n];
     // node pair is NOT in contact

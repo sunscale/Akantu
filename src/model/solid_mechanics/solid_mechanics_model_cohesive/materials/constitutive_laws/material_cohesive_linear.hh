@@ -35,7 +35,6 @@
 #include "material_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__
 #define __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__
 
@@ -46,25 +45,24 @@ namespace akantu {
  *
  * parameters in the material files :
  *   - sigma_c   : critical stress sigma_c  (default: 0)
- *   - beta      : weighting parameter for sliding and normal opening (default: 0)
+ *   - beta      : weighting parameter for sliding and normal opening (default:
+ * 0)
  *   - G_cI      : fracture energy for mode I (default: 0)
  *   - G_cII     : fracture energy for mode II (default: 0)
  *   - penalty   : stiffness in compression to prevent penetration
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialCohesiveLinear : public MaterialCohesive {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialCohesiveLinear(SolidMechanicsModel & model, const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the material parameters
   void initMaterial() override;
 
@@ -73,12 +71,11 @@ public:
 
   /// compute effective stress norm for insertion check
   Real computeEffectiveNorm(const Matrix<Real> & stress,
-			    const Vector<Real> & normal,
-			    const Vector<Real> & tangent,
-			    Vector<Real> & normal_stress) const;
+                            const Vector<Real> & normal,
+                            const Vector<Real> & tangent,
+                            Vector<Real> & normal_stress) const;
 
 protected:
-
   /// constitutive law
   void computeTraction(const Array<Real> & normal, ElementType el_type,
                        GhostType ghost_type = _not_ghost) override;
@@ -109,29 +106,28 @@ protected:
   void scaleInsertionTraction();
 
   /// compute the traction for a given quadrature point
-  inline void computeTractionOnQuad(Vector<Real> & traction, Real & delta_max,
-    const Real & delta_max_prev, const Real & delta_c,
-    const Vector<Real> & insertion_stress, const Real & sigma_c,
-    Vector<Real> & opening, Vector<Real> & opening_prec, const Vector<Real> & normal,
-    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
-    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
-    bool & penetration, bool & reduction_penalty, Real & current_penalty,
-    Vector<Real> & contact_traction, Vector<Real> & contact_opening);
+  inline void computeTractionOnQuad(
+      Vector<Real> & traction, Vector<Real> & opening,
+      Vector<Real> & opening_prec, const Vector<Real> & normal,
+      Real & delta_max, const Real & delta_c,
+      const Vector<Real> & insertion_stress, const Real & sigma_c,
+      Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+      Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+      bool & penetration, bool & reduction_penalty, Real & current_penalty,
+      Vector<Real> & contact_traction, Vector<Real> & contact_opening);
 
-  inline void computeTangentTractionOnQuad(Matrix<Real> & tangent,
-    Real & delta_max, const Real & delta_c,
-    const Real & sigma_c,
-    Vector<Real> & opening, const Vector<Real> & normal,
-    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
-    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
-    bool & penetration, bool & reduction_penalty, Real & current_penalty,
-    Vector<Real> & contact_opening);
+  inline void computeTangentTractionOnQuad(
+      Matrix<Real> & tangent, Real & delta_max, const Real & delta_c,
+      const Real & sigma_c, Vector<Real> & opening, const Vector<Real> & normal,
+      Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+      Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+      bool & penetration, bool & reduction_penalty, Real & current_penalty,
+      Vector<Real> & contact_opening);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// get sigma_c_eff
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(InsertionTraction, sigma_c_eff, Real);
 
@@ -197,9 +193,7 @@ protected:
   /// insertion of cohesive element when stress is high enough just on
   /// one quadrature point
   bool max_quad_stress_insertion;
-
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

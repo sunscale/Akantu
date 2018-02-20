@@ -89,15 +89,15 @@ void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused)) Gh
 //   for(; it != last_type; ++it) {
 //     Array<Real>::const_matrix_iterator sigma =
 //       this->material.getStress(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
-//     Array<Real>::vector_iterator eigenvalues =
+//     auto eigenvalues =
 //       stress_diag(*it, ghost_type).begin(spatial_dimension);
-//     Array<Real>::vector_iterator eigenvalues_end =
+//     auto eigenvalues_end =
 //       stress_diag(*it, ghost_type).end(spatial_dimension);
 //     Array<Real>::matrix_iterator eigenvector =
 //       stress_base(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
 
 // #ifndef __trick__
-//     Array<Real>::iterator<Real> cl = characteristic_size(*it, ghost_type).begin();
+//     auto cl = characteristic_size(*it, ghost_type).begin();
 // #endif
 //     UInt q = 0;
 //     for(;eigenvalues != eigenvalues_end; ++sigma, ++eigenvalues, ++eigenvector, ++cl, ++q) {

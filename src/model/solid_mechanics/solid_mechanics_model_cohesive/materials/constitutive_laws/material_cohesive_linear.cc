@@ -135,12 +135,12 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
     return;
 
   const Mesh & mesh_facets = model->getMeshFacets();
-  const FEEngine & fe_engine = model->getFEEngine();
-  const FEEngine & fe_engine_facet = model->getFEEngine("FacetsFEEngine");
+  const auto & fe_engine = model->getFEEngine();
+  const auto & fe_engine_facet = model->getFEEngine("FacetsFEEngine");
 
   // loop over facet type
-  Mesh::type_iterator first = mesh_facets.firstType(spatial_dimension - 1);
-  Mesh::type_iterator last = mesh_facets.lastType(spatial_dimension - 1);
+  auto first = mesh_facets.firstType(spatial_dimension - 1);
+  auto last = mesh_facets.lastType(spatial_dimension - 1);
 
   Real base_sigma_c = sigma_c;
 
@@ -154,7 +154,7 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
     UInt nb_quad_per_facet = fe_engine_facet.getNbIntegrationPoints(type_facet);
 
     // iterator to modify sigma_c for all the quadrature points of a facet
-    Array<Real>::vector_iterator sigma_c_iterator =
+    auto sigma_c_iterator =
         sigma_c(type_facet).begin_reinterpret(nb_quad_per_facet, nb_facet);
 
     for (UInt f = 0; f < nb_facet; ++f, ++sigma_c_iterator) {
@@ -201,7 +201,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
 
   for (auto && type_facet : mesh_facets.elementTypes(spatial_dimension - 1)) {
     ElementType type_cohesive = FEEngine::getCohesiveElementType(type_facet);
-    const Array<bool> & facets_check = inserter.getCheckFacets(type_facet);
+    const auto & facets_check = inserter.getCheckFacets(type_facet);
     auto & f_insertion = inserter.getInsertionFacets(type_facet);
     auto & f_filter = facet_filter(type_facet);
     auto & sig_c_eff = sigma_c_eff(type_cohesive);
@@ -351,7 +351,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
           //  Array<Real>::iterator<Matrix<Real> > normal_traction_it =
           //  normal_traction.begin_reinterpret(nb_quad_facet,
           //  spatial_dimension, nb_facet);
-          Array<Real>::const_iterator<Real> sigma_lim_it = sigma_lim.begin();
+          auto sigma_lim_it = sigma_lim.begin();
 
           for (UInt q = 0; q < nb_quad_cohesive; ++q) {
 
@@ -423,7 +423,6 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(
   auto traction_end = tractions(el_type, ghost_type).end(spatial_dimension);
   auto sigma_c_it = sigma_c_eff(el_type, ghost_type).begin();
   auto delta_max_it = delta_max(el_type, ghost_type).begin();
-  auto delta_max_prev_it = delta_max.previous(el_type, ghost_type).begin();
   auto delta_c_it = delta_c_eff(el_type, ghost_type).begin();
   auto damage_it = damage(el_type, ghost_type).begin();
   auto insertion_stress_it =
@@ -442,17 +441,17 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(
        ++traction_it, ++opening_it, ++opening_prec_it, ++normal_it,
        ++sigma_c_it, ++delta_max_it, ++delta_c_it, ++damage_it,
        ++contact_traction_it, ++insertion_stress_it, ++contact_opening_it,
-       ++delta_max_prev_it, ++reduction_penalty_it) {
+       ++reduction_penalty_it) {
 
     Real normal_opening_norm, tangential_opening_norm;
     bool penetration;
     Real current_penalty = 0.;
     this->computeTractionOnQuad(
-        *traction_it, *delta_max_it, *delta_max_prev_it, *delta_c_it,
-        *insertion_stress_it, *sigma_c_it, *opening_it, *opening_prec_it,
-        *normal_it, normal_opening, tangential_opening, normal_opening_norm,
-        tangential_opening_norm, *damage_it, penetration, *reduction_penalty_it,
-        current_penalty, *contact_traction_it, *contact_opening_it);
+        *traction_it, *opening_it, *opening_prec_it, *normal_it, *delta_max_it,
+        *delta_c_it, *insertion_stress_it, *sigma_c_it, normal_opening,
+        tangential_opening, normal_opening_norm, tangential_opening_norm,
+        *damage_it, penetration, *reduction_penalty_it, current_penalty,
+        *contact_traction_it, *contact_opening_it);
   }
 
   AKANTU_DEBUG_OUT();

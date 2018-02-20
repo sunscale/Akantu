@@ -405,8 +405,8 @@ void rotateArray(Array<Real> & array, Real angle) {
   Matrix<Real> rotation(rotation_values, spatial_dimension, spatial_dimension);
 
   RVector displaced_node(spatial_dimension);
-  Array<Real>::vector_iterator node_it = array.begin(spatial_dimension);
-  Array<Real>::vector_iterator node_end = array.end(spatial_dimension);
+  auto node_it = array.begin(spatial_dimension);
+  auto node_end = array.end(spatial_dimension);
 
   for (; node_it != node_end; ++node_it) {
     displaced_node.mul<false>(rotation, *node_it);

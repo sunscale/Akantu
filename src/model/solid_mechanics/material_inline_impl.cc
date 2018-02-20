@@ -459,9 +459,9 @@ void Material::flattenInternal(const std::string & field_id,
     Array<UInt>::const_scalar_iterator it = filter.begin();
     Array<UInt>::const_scalar_iterator end = filter.end();
 
-    Array<Real>::const_vector_iterator it_src =
+    auto it_src =
         src_vect.begin_reinterpret(nb_data, nb_element_src);
-    Array<Real>::vector_iterator it_dst =
+    auto it_dst =
         dst_vect.begin_reinterpret(nb_data, nb_element_dst);
 
     for (; it != end; ++it, ++it_src) {

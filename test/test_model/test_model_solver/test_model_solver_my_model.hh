@@ -118,7 +118,7 @@ public:
 
     Array<Real> m_all_el(this->mesh.getNbElement(_segment_2, ghost_type), 2);
 
-    Array<Real>::vector_iterator m_it = m_all_el.begin(2);
+    auto m_it = m_all_el.begin(2);
 
     auto cit = this->mesh.getConnectivity(_segment_2, ghost_type).begin(2);
     auto cend = this->mesh.getConnectivity(_segment_2, ghost_type).end(2);

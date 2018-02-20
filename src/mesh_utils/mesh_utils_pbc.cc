@@ -82,8 +82,8 @@ void MeshUtils::computePBCMap(const Mesh & mesh, const UInt dir,
   Array<UInt> selected_right;
 
   const UInt dim = mesh.getSpatialDimension();
-  Array<Real>::const_vector_iterator it = mesh.getNodes().begin(dim);
-  Array<Real>::const_vector_iterator end = mesh.getNodes().end(dim);
+  auto it = mesh.getNodes().begin(dim);
+  auto end = mesh.getNodes().end(dim);
 
   if (dim <= dir)
     return;
@@ -152,7 +152,7 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
   }
 
   // find min and max of surface nodes
-  for (Array<UInt>::scalar_iterator it = selected_first.begin();
+  for (auto it = selected_first.begin();
        it != selected_first.end(); ++it) {
     for (UInt i = 0; i < dim; ++i) {
       if (first_min[i] > coords(*it, i))
@@ -161,7 +161,7 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
         first_max[i] = coords(*it, i);
     }
   }
-  for (Array<UInt>::scalar_iterator it = selected_second.begin();
+  for (auto it = selected_second.begin();
        it != selected_second.end(); ++it) {
     for (UInt i = 0; i < dim; ++i) {
       if (second_min[i] > coords(*it, i))
@@ -246,13 +246,13 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
   std::sort(selected_left.begin(), selected_left.end(), compare_nodes);
   std::sort(selected_right.begin(), selected_right.end(), compare_nodes);
 
-  Array<UInt>::scalar_iterator it_left = selected_left.begin();
-  Array<UInt>::scalar_iterator end_left = selected_left.end();
+  auto it_left = selected_left.begin();
+  auto end_left = selected_left.end();
 
-  Array<UInt>::scalar_iterator it_right = selected_right.begin();
-  Array<UInt>::scalar_iterator end_right = selected_right.end();
+  auto it_right = selected_right.begin();
+  auto end_right = selected_right.end();
 
-  Array<Real>::const_vector_iterator nit = mesh.getNodes().begin(dim);
+  auto nit = mesh.getNodes().begin(dim);
 
   while ((it_left != end_left) && (it_right != end_right)) {
     UInt i1 = *it_left;

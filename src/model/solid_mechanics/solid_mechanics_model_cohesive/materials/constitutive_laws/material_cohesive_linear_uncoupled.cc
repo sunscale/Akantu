@@ -87,27 +87,27 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
   damage_t.resize();
 
   /// define iterators
-  Array<Real>::vector_iterator traction_it =
+  auto traction_it =
       this->tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator traction_end =
+  auto traction_end =
       this->tractions(el_type, ghost_type).end(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_it =
+  auto opening_it =
       this->opening(el_type, ghost_type).begin(spatial_dimension);
 
   /// opening_prec is the opening of the previous step in the
   /// Newton-Raphson loop
-  Array<Real>::vector_iterator opening_prec_it =
+  auto opening_prec_it =
       this->opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator contact_traction_it =
+  auto contact_traction_it =
       this->contact_tractions(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator contact_opening_it =
+  auto contact_opening_it =
       this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::const_vector_iterator normal_it =
+  auto normal_it =
       this->normal.begin(spatial_dimension);
 
   Array<Real>::scalar_iterator sigma_c_it =
@@ -128,7 +128,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
   Array<Real>::scalar_iterator damage_t_it =
       damage_t(el_type, ghost_type).begin();
 
-  Array<Real>::vector_iterator insertion_stress_it =
+  auto insertion_stress_it =
       this->insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
   Array<bool>::scalar_iterator reduction_penalty_it =
@@ -338,10 +338,10 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::checkDeltaMax(
     Array<Real>::scalar_iterator delta_c_it =
         this->delta_c_eff(el_type, ghost_type).begin();
 
-    Array<Real>::vector_iterator opening_prec_it =
+    auto opening_prec_it =
         this->opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
-    Array<Real>::vector_iterator opening_prec_prev_it =
+    auto opening_prec_prev_it =
         this->opening_prec.previous(el_type, ghost_type)
             .begin(spatial_dimension);
 
@@ -390,10 +390,10 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
   Array<Real>::matrix_iterator tangent_end =
       tangent_matrix.end(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_vector_iterator normal_it =
+  auto normal_it =
       this->normal.begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_it =
+  auto opening_it =
       this->opening(el_type, ghost_type).begin(spatial_dimension);
 
   /// NB: delta_max_it points on delta_max_previous, i.e. the
@@ -414,7 +414,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
   Array<Real>::scalar_iterator damage_n_it =
       damage_n(el_type, ghost_type).begin();
 
-  Array<Real>::vector_iterator contact_opening_it =
+  auto contact_opening_it =
       this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
   Array<bool>::scalar_iterator reduction_penalty_it =

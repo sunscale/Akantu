@@ -167,8 +167,8 @@ int main (int argc, char * argv[]) {
   residual.copy(model.getInternalForce());
   residual -= model.getForce();
 
-  Array<Real>::vector_iterator com_res = residual.begin(dim);
-  Array<Real>::vector_iterator position = mesh.getNodes().begin(dim);
+  auto com_res = residual.begin(dim);
+  auto position = mesh.getNodes().begin(dim);
 
   Real res_sum = 0.;
   UInt lower_node = -1;

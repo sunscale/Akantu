@@ -147,7 +147,7 @@ void NeighborhoodMaxCriterion::insertAllQuads(const GhostType & ghost_type) {
     const Array<Real> & quads = this->quad_coordinates(*it, ghost_type);
     q.type = *it;
 
-    Array<Real>::const_vector_iterator quad = quads.begin(spatial_dimension);
+    auto quad = quads.begin(spatial_dimension);
 
     for (UInt e = 0; e < nb_element; ++e) {
       q.element = e;

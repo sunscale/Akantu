@@ -129,7 +129,7 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
     /// corresponding weights
     auto first_pair = pair_list[ghost_type].begin();
     auto last_pair = pair_list[ghost_type].end();
-    Array<Real>::vector_iterator weight_it =
+    auto weight_it =
         pair_weight[ghost_type]->begin(nb_weights_per_pair);
 
     // Compute the weights
@@ -139,11 +139,11 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
       const IntegrationPoint & q2 = first_pair->second;
 
       /// get the coordinates for the given pair of quads
-      Array<Real>::const_vector_iterator coords_type_1_it =
+      auto coords_type_1_it =
           this->quad_coordinates(q1.type, q1.ghost_type)
               .begin(this->spatial_dimension);
       q1_coord = coords_type_1_it[q1.global_num];
-      Array<Real>::const_vector_iterator coords_type_2_it =
+      auto coords_type_2_it =
           this->quad_coordinates(q2.type, q2.ghost_type)
               .begin(this->spatial_dimension);
       q2_coord = coords_type_2_it[q2.global_num];
@@ -221,7 +221,7 @@ void NonLocalNeighborhood<WeightFunction>::saveWeights(
                         "the weights have not been computed yet");
 
     Array<Real> & weights = *(pair_weight[ghost_type]);
-    Array<Real>::const_vector_iterator weights_it = weights.begin(2);
+    auto weights_it = weights.begin(2);
     for (UInt i = 0; i < weights.size(); ++i, ++weights_it)
       pout << "w1: " << (*weights_it)(0) << " w2: " << (*weights_it)(1)
            << std::endl;

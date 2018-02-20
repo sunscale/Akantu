@@ -166,7 +166,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
     UInt nb_elements_1 = mesh.getNbElement(type_1, ghost_type_1);
     UInt nb_quads_1 = model.getFEEngine().getNbIntegrationPoints(type_1);
     Array<Real> & quad_coords_1 = quad_coords(q1.type, q1.ghost_type);
-    Array<Real>::const_vector_iterator coord_it_1 =
+    auto coord_it_1 =
         quad_coords_1.begin(spatial_dimension);
     for (UInt e_1 = 0; e_1 < nb_elements_1; ++e_1) {
       q1.element = e_1;
@@ -192,7 +192,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
             UInt nb_quads_2 =
                 model.getFEEngine().getNbIntegrationPoints(type_2);
             Array<Real> & quad_coords_2 = quad_coords(q2.type, q2.ghost_type);
-            Array<Real>::const_vector_iterator coord_it_2 =
+            auto coord_it_2 =
                 quad_coords_2.begin(spatial_dimension);
             for (UInt e_2 = 0; e_2 < nb_elements_2; ++e_2) {
               q2.element = e_2;

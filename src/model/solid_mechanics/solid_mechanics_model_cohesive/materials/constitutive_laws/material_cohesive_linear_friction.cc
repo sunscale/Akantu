@@ -78,62 +78,48 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
   friction_force.resize();
 
   /// define iterators
-  Array<Real>::vector_iterator traction_it =
+  auto traction_it =
       this->tractions(el_type, ghost_type).begin(spatial_dimension);
-
-  Array<Real>::vector_iterator traction_end =
+  auto traction_end =
       this->tractions(el_type, ghost_type).end(spatial_dimension);
-
-  Array<Real>::vector_iterator opening_it =
-      this->opening(el_type, ghost_type).begin(spatial_dimension);
+  auto opening_it = this->opening(el_type, ghost_type).begin(spatial_dimension);
 
   /// opening_prec is the opening at the end of the previous step in
   /// the Newton-Raphson loop
-  Array<Real>::vector_iterator opening_prec_it =
+  auto opening_prec_it =
       this->opening_prec(el_type, ghost_type).begin(spatial_dimension);
 
   /// opening_prec_prev is the opening (opening + penetration)
   /// referred to the convergence of the previous incremental step
-  Array<Real>::vector_iterator opening_prec_prev_it =
+  auto opening_prec_prev_it =
       this->opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
-
-  Array<Real>::vector_iterator contact_traction_it =
+  auto contact_traction_it =
       this->contact_tractions(el_type, ghost_type).begin(spatial_dimension);
-
-  Array<Real>::vector_iterator contact_opening_it =
+  auto contact_opening_it =
       this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
   Array<Real>::const_iterator<Vector<Real>> normal_it =
       this->normal.begin(spatial_dimension);
 
-  Array<Real>::iterator<Real> sigma_c_it =
-      this->sigma_c_eff(el_type, ghost_type).begin();
-
-  Array<Real>::iterator<Real> delta_max_it =
-      this->delta_max(el_type, ghost_type).begin();
-
-  Array<Real>::iterator<Real> delta_max_prev_it =
+  auto sigma_c_it = this->sigma_c_eff(el_type, ghost_type).begin();
+  auto delta_max_it = this->delta_max(el_type, ghost_type).begin();
+  auto delta_max_prev_it =
       this->delta_max.previous(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real> delta_c_it =
-      this->delta_c_eff(el_type, ghost_type).begin();
+  auto delta_c_it = this->delta_c_eff(el_type, ghost_type).begin();
+  auto damage_it = this->damage(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real> damage_it =
-      this->damage(el_type, ghost_type).begin();
-
-  Array<Real>::vector_iterator insertion_stress_it =
+  auto insertion_stress_it =
       this->insertion_stress(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator<Real> res_sliding_it =
-      this->residual_sliding(el_type, ghost_type).begin();
-
-  Array<Real>::iterator<Real> res_sliding_prev_it =
+  auto res_sliding_it = this->residual_sliding(el_type, ghost_type).begin();
+  auto res_sliding_prev_it =
       this->residual_sliding.previous(el_type, ghost_type).begin();
 
-  Array<Real>::vector_iterator friction_force_it =
+  auto friction_force_it =
       this->friction_force(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<bool>::iterator<bool> reduction_penalty_it =
+  auto reduction_penalty_it =
       this->reduction_penalty(el_type, ghost_type).begin();
 
   Vector<Real> normal_opening(spatial_dimension);
@@ -155,11 +141,11 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
     bool penetration;
     Real current_penalty = 0.;
     this->computeTractionOnQuad(
-        *traction_it, *delta_max_it, *delta_max_prev_it, *delta_c_it,
-        *insertion_stress_it, *sigma_c_it, *opening_it, *opening_prec_it,
-        *normal_it, normal_opening, tangential_opening, normal_opening_norm,
-        tangential_opening_norm, *damage_it, penetration, *reduction_penalty_it,
-        current_penalty, *contact_traction_it, *contact_opening_it);
+        *traction_it, *opening_it, *opening_prec_it, *normal_it, *delta_max_it,
+        *delta_c_it, *insertion_stress_it, *sigma_c_it, normal_opening,
+        tangential_opening, normal_opening_norm, tangential_opening_norm,
+        *damage_it, penetration, *reduction_penalty_it, current_penalty,
+        *contact_traction_it, *contact_opening_it);
 
     if (penetration) {
 
@@ -219,10 +205,8 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::checkDeltaMax(
   MaterialParent::checkDeltaMax();
 
   Mesh & mesh = this->fem_cohesive.getMesh();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, ghost_type, _ek_cohesive);
+  auto it = mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
+  auto last_type = mesh.lastType(spatial_dimension, ghost_type, _ek_cohesive);
 
   for (; it != last_type; ++it) {
     Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
@@ -234,16 +218,11 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::checkDeltaMax(
     ElementType el_type = *it;
 
     /// define iterators
-    Array<Real>::iterator<Real> delta_max_it =
-        this->delta_max(el_type, ghost_type).begin();
+    auto delta_max_it = this->delta_max(el_type, ghost_type).begin();
+    auto delta_max_end = this->delta_max(el_type, ghost_type).end();
 
-    Array<Real>::iterator<Real> delta_max_end =
-        this->delta_max(el_type, ghost_type).end();
-
-    Array<Real>::iterator<Real> res_sliding_it =
-        this->residual_sliding(el_type, ghost_type).begin();
-
-    Array<Real>::iterator<Real> res_sliding_prev_it =
+    auto res_sliding_it = this->residual_sliding(el_type, ghost_type).begin();
+    auto res_sliding_prev_it =
         this->residual_sliding.previous(el_type, ghost_type).begin();
 
     /// loop on each quadrature point
@@ -274,13 +253,11 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
   Array<Real>::matrix_iterator tangent_end =
       tangent_matrix.end(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_vector_iterator normal_it =
-      this->normal.begin(spatial_dimension);
+  auto normal_it = this->normal.begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_it =
-      this->opening(el_type, ghost_type).begin(spatial_dimension);
+  auto opening_it = this->opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::vector_iterator opening_prec_prev_it =
+  auto opening_prec_prev_it =
       this->opening_prec.previous(el_type, ghost_type).begin(spatial_dimension);
 
   /**
@@ -288,25 +265,18 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
    * delta_max related to the solution of the previous incremental
    * step
    */
-  Array<Real>::iterator<Real> delta_max_it =
-      this->delta_max.previous(el_type, ghost_type).begin();
+  auto delta_max_it = this->delta_max.previous(el_type, ghost_type).begin();
+  auto sigma_c_it = this->sigma_c_eff(el_type, ghost_type).begin();
+  auto delta_c_it = this->delta_c_eff(el_type, ghost_type).begin();
+  auto damage_it = this->damage(el_type, ghost_type).begin();
 
-  Array<Real>::iterator<Real> sigma_c_it =
-      this->sigma_c_eff(el_type, ghost_type).begin();
-
-  Array<Real>::iterator<Real> delta_c_it =
-      this->delta_c_eff(el_type, ghost_type).begin();
-
-  Array<Real>::iterator<Real> damage_it =
-      this->damage(el_type, ghost_type).begin();
-
-  Array<Real>::iterator<Vector<Real>> contact_opening_it =
+  auto contact_opening_it =
       this->contact_opening(el_type, ghost_type).begin(spatial_dimension);
 
-  Array<Real>::iterator<Real> res_sliding_prev_it =
+  auto res_sliding_prev_it =
       this->residual_sliding.previous(el_type, ghost_type).begin();
 
-  Array<bool>::iterator<bool> reduction_penalty_it =
+  auto reduction_penalty_it =
       this->reduction_penalty(el_type, ghost_type).begin();
 
   Vector<Real> normal_opening(spatial_dimension);

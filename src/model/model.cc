@@ -105,7 +105,7 @@ void Model::initPBC() {
 
   is_pbc_slave_node.resize(mesh.getNbNodes());
 #ifndef AKANTU_NDEBUG
-  Array<Real>::const_vector_iterator coord_it =
+  auto coord_it =
       mesh.getNodes().begin(this->spatial_dimension);
 #endif
 

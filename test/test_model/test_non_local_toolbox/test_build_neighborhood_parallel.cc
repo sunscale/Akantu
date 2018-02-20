@@ -122,7 +122,7 @@ int main(int argc, char * argv[]) {
     UInt nb_elements = mesh.getNbElement(type, _not_ghost);
     UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(type);
     Array<Real> & coords = quad_coords(type, _not_ghost);
-    Array<Real>::const_vector_iterator coord_it =
+    auto coord_it =
         coords.begin(spatial_dimension);
     for (UInt e = 0; e < nb_elements; ++e) {
       for (UInt q = 0; q < nb_quads; ++q, ++coord_it) {

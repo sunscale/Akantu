@@ -313,7 +313,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   const Array<Real> & mesh_facets_nodes = mesh_facets.getNodes();
-  const Array<Real>::const_vector_iterator mesh_facets_nodes_it =
+  const auto mesh_facets_nodes_it =
       mesh_facets_nodes.begin(spatial_dimension);
 
   CSR<Element> node_to_elem;

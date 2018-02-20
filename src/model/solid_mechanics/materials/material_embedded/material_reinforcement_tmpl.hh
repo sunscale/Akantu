@@ -444,12 +444,12 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForcesInterface(
   Array<Real> integrant(nb_quadrature_points * nb_element, back_dof,
                         "integrant");
 
-  Array<Real>::vector_iterator integrant_it = integrant.begin(back_dof);
-  Array<Real>::vector_iterator integrant_end = integrant.end(back_dof);
+  auto integrant_it = integrant.begin(back_dof);
+  auto integrant_end = integrant.end(back_dof);
 
   Array<Real>::matrix_iterator B_it =
       shapesd.begin(dim, nodes_per_background_e);
-  Array<Real>::vector_iterator C_it =
+  auto C_it =
       directing_cosines(interface_type, ghost_type).begin(voigt_size);
 
   auto sigma_it = this->stress(interface_type, ghost_type).begin();

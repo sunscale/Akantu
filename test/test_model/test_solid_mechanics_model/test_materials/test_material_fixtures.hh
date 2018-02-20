@@ -178,7 +178,7 @@ template <template <UInt> class T, UInt _Dim> struct Traits {
 };
 
 /* -------------------------------------------------------------------------- */
-template <typename T, class Model>
+template <typename T>
 using TestMaterialFixture = TestMaterialBaseFixture<T, SolidMechanicsModel>;
 
 /* -------------------------------------------------------------------------- */
