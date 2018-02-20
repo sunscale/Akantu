@@ -254,6 +254,17 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     auto & B = std::get<1>(tuple);
     auto & RDOFs = std::get<2>(tuple);
 
+
+    // /!\ This is a temporary variable with no specified size for columns !
+    // It is up to the element to resize
+    Tensor3<Real> dnds(natural_spatial_dimension,
+                       ElementClass<type>::interpolation_property::dnds_columns,
+                       B.size(2));
+    ElementClass<type>::computeDNDS(natural_coords, X, dnds);
+
+    Tensor3<Real> J(natural_spatial_dimension, natural_coords.rows(), natural_coords.cols());
+
+    // Computing the coordinates of the element in the natural space
     auto R = RDOFs.block(0, 0, spatial_dimension, spatial_dimension);
     Matrix<Real> T(B.size(1), B.size(1));
     T.block(RDOFs, 0, 0);
@@ -263,12 +274,7 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     auto x =
         (R * X).block(0, 0, natural_spatial_dimension, nb_nodes_per_element);
 
-    Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
-    ElementClass<type>::computeDNDS(natural_coords, X, dnds);
-
-    Tensor3<Real> J(x.rows(), natural_coords.rows(), natural_coords.cols());
-
-    ElementClass<type>::computeJMat(dnds, x, J);
+    ElementClass<type>::computeJMat(natural_coords, x, J);
     ElementClass<type>::computeShapeDerivatives(J, dnds, T, B);
   }
 

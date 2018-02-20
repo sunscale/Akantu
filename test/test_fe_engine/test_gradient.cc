@@ -47,6 +47,7 @@ using namespace akantu;
 namespace {
 
 TYPED_TEST(TestFEMFixture, GradientPoly) {
+  this->fem->initShapeFunctions();
   Real alpha[2][3] = {{13, 23, 31}, {11, 7, 5}};
 
   const auto dim = this->dim;
@@ -80,6 +81,7 @@ TYPED_TEST(TestFEMFixture, GradientPoly) {
 }
 
 TYPED_TEST(TestFEMFixture, GradientPositions) {
+  this->fem->initShapeFunctions();
   const auto dim = this->dim;
   const auto type = this->type;
 

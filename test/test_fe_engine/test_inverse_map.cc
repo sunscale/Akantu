@@ -37,6 +37,8 @@ using namespace akantu;
 namespace {
 
 TYPED_TEST(TestFEMFixture, InverseMap) {
+  this->fem->initShapeFunctions();
+
   Matrix<Real> quad = GaussIntegrationElement<TestFixture::type>::getQuadraturePoints();
 
   const auto & position = this->fem->getMesh().getNodes();

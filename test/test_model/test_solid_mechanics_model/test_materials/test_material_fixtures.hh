@@ -92,7 +92,16 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
   v2 -= v1 * d;
   v2.normalize();
 
-  v3.crossProduct(v2, v1);
+  v3.crossProduct(v1, v2);
+
+  Vector<Real> test_axis(3);
+  test_axis.crossProduct(v1, v2);
+  test_axis -= v3;
+  if (test_axis.norm() > 8 * std::numeric_limits<Real>::epsilon()) {
+    AKANTU_DEBUG_ERROR("The axis vectors do not form a right-handed coordinate "
+                       << "system. I. e., ||n1 x n2 - n3|| should be zero, but "
+                       << "it is " << test_axis.norm() << ".");
+  }
 
   Matrix<Real> mat(Dim, Dim);
   for (UInt i = 0; i < Dim; ++i) {
@@ -112,20 +121,21 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> dis;
 
-  Vector<Real> v1(Dim);
-  Vector<Real> v2(Dim);
+  // v1 and v2 are such that they form a right-hand basis with prescribed v3,
+  // it's need (at least) for 2d linear elastic anisotropic and (orthotropic)
+  // materials to rotate the tangent stiffness
+  
+  Vector<Real> v1(3);
+  Vector<Real> v2(3);
+  Vector<Real> v3 = {0,0,1};
 
   for (UInt i = 0; i < Dim; ++i) {
     v1(i) = dis(gen);
-    v2(i) = dis(gen);
+    // v2(i) = dis(gen);
   }
 
   v1.normalize();
-  v2.normalize();
-
-  auto d = v1.dot(v2);
-  v2 -= v1 * d;
-  v2.normalize();
+  v2.crossProduct(v3,v1);
 
   Matrix<Real> mat(Dim, Dim);
   for (UInt i = 0; i < Dim; ++i) {

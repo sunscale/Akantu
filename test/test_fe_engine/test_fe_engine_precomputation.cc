@@ -79,6 +79,7 @@ TYPED_TEST_CASE(TestFEMPyFixture, types);
 
 TYPED_TEST(TestFEMPyFixture, Precompute) {
   SCOPED_TRACE(aka::to_string(this->type));
+  this->fem->initShapeFunctions();
   const auto & N = this->fem->getShapeFunctions().getShapes(this->type);
   const auto & B =
       this->fem->getShapeFunctions().getShapesDerivatives(this->type);

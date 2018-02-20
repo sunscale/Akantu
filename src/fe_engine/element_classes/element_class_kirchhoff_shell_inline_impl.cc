@@ -38,7 +38,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(
-    _itp_discrete_kirchhoff_triangle_18, _itp_lagrange_triangle_3, 6, 6);
+    _itp_discrete_kirchhoff_triangle_18, _itp_lagrange_triangle_3, 6, 6, 21);
 AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(
     _discrete_kirchhoff_triangle_18, _gt_triangle_3,
     _itp_discrete_kirchhoff_triangle_18, _triangle_3, _ek_structural, 3,
@@ -168,7 +168,29 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
   // clang-format on
 
   // Derivative of linear (membrane mode) functions
-  Matrix<Real> dNm = {{1, -1, 0}, {-1, 0, 1}};
+  Matrix<Real> dNm(2, 3);
+  InterpolationElement<_itp_lagrange_triangle_3, _itk_lagrangian>::computeDNDS(
+      natural_coords, dNm);
+  
+  UInt i = 0;
+  for (const Matrix<Real> & mat : {dNm, dNx1, dNx2, dNx3, dNy1, dNy2, dNy3}) {
+    B.block(mat, 0, i);
+    i += mat.cols();
+  }
+}
+/* -------------------------------------------------------------------------- */
+template <>
+inline void
+InterpolationElement<_itp_discrete_kirchhoff_triangle_18,
+                     _itk_structural>::arrangeInVoigt(const Matrix<Real> & dnds,
+                                                      Matrix<Real> & B) {
+  Matrix<Real> dNm(2, 3), dNx1(2, 3), dNx2(2, 3), dNx3(2, 3), dNy1(2, 3),
+      dNy2(2, 3), dNy3(2, 3);
+  UInt i = 0;
+  for (Matrix<Real> * mat : {&dNm, &dNx1, &dNx2, &dNx3, &dNy1, &dNy2, &dNy3}) {
+    *mat = dnds.block(0, i, 2, 3);
+    i += mat->cols();
+  }
 
   // clang-format off
   B = {

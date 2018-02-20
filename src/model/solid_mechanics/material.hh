@@ -475,6 +475,7 @@ public:
   bool isInelasticDeformation() const { return inelastic_deformation; }
 
   template <typename T> inline void setParam(const ID & param, T value);
+  template <typename T> inline void setParamNoUpdate(const ID & param, T value);
   inline const Parameter & getParam(const ID & param) const;
 
   template <typename T>

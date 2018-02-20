@@ -41,7 +41,7 @@ namespace akantu {
 /// Macro to generate the InterpolationProperty structures for different
 /// interpolation types
 #define AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(                  \
-    itp_type, itp_geom_type, ndof, nb_stress)                                  \
+    itp_type, itp_geom_type, ndof, nb_stress, nb_dnds_cols)                    \
   template <> struct InterpolationProperty<itp_type> {                         \
     static const InterpolationKind kind{_itk_structural};                      \
     static const UInt nb_nodes_per_element{                                    \
@@ -51,6 +51,7 @@ namespace akantu {
         InterpolationProperty<itp_geom_type>::natural_space_dimension};        \
     static const UInt nb_degree_of_freedom{ndof};                              \
     static const UInt nb_stress_components{nb_stress};                         \
+    static const UInt dnds_columns{nb_dnds_cols};                              \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -82,19 +83,13 @@ public:
     for (UInt i = 0; i < Js.size(2); ++i) {
       Matrix<Real> J = Js(i);
       Matrix<Real> DNDS = DNDSs(i);
-      Matrix<Real> DNDS_R(DNDS.rows(), DNDS.cols());
-      DNDS_R.mul<false, false>(DNDS, R);
-      Matrix<Real> B = Bs(i);
+      Matrix<Real> DNDX(DNDS.rows(), DNDS.cols());
       auto inv_J = J.inverse();
-      Matrix<Real> inv_J_full(DNDS.rows(), DNDS.rows());
-
-      // Gotta repeat J^-1 for each stress component
-      for (UInt k = 0, pos = 0; k < getNbStressComponents();
-           k++, pos += inv_J.rows()) {
-        inv_J_full.block(inv_J, pos, pos);
-      }
-
-      B.mul<false, false>(inv_J_full, DNDS_R);
+      DNDX.mul<false, false>(inv_J, DNDS);
+      Matrix<Real> B_R = Bs(i);
+      Matrix<Real> B(B_R.rows(), B_R.cols());
+      arrangeInVoigt(DNDX, B);
+      B_R.mul<false, false>(B, R);
     }
   }
 
@@ -121,6 +116,15 @@ public:
   static inline void computeDNDS(const Vector<Real> & natural_coord,
 				 const Matrix<Real> & real_coord,
                                  Matrix<Real> & dnds);
+
+  /**
+   * arrange B in Voigt notation from DNDS
+   */
+  static inline void arrangeInVoigt(const Matrix<Real> & dnds,
+				    Matrix<Real> & B) {
+    // Default implementation assumes dnds is already in Voigt notation
+    B.deepCopy(dnds);
+  }
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(
@@ -187,43 +191,19 @@ public:
   }
 
   /// compute jacobian (or integration variable change factor) for a given point
-  static inline void computeJMat(const Matrix<Real> & DNDS,
+  static inline void computeJMat(const Vector<Real> & natural_coords,
                                  const Matrix<Real> & Xs, Matrix<Real> & J) {
-    auto nb_nodes = Xs.cols();
-    auto dim = Xs.rows();
-    auto nb_dof =
-        interpolation_element::interpolation_property::nb_degree_of_freedom;
-    Matrix<Real> B(dim, nb_nodes);
-    for (UInt s = 0; s < dim; ++s) {
-      for (UInt n = 0; n < nb_nodes; ++n) {
-        B(s, n) = DNDS(s, n * nb_dof + s);
-      }
-    }
-
-    J.mul<false, true>(B, Xs);
+    Matrix<Real> dnds(Xs.rows(), Xs.cols());
+    parent_element::computeDNDS(natural_coords, dnds);
+    J.mul<false, true>(dnds, Xs);
   }
 
-  static inline void computeJMat(const Tensor3<Real> & DNDSs,
+  static inline void computeJMat(const Matrix<Real> & natural_coords,
                                  const Matrix<Real> & Xs, Tensor3<Real> & Js) {
-    using itp = typename interpolation_element::interpolation_property;
-    auto nb_nodes = Xs.cols();
-    auto dim = Xs.rows();
-    auto nb_dof = itp::nb_degree_of_freedom;
-    Matrix<Real> B(dim, nb_nodes);
-
-    for (UInt i = 0; i < Xs.cols(); ++i) {
-      Matrix<Real> DNDS = DNDSs(i);
+    for (UInt i = 0 ; i < natural_coords.cols(); ++i) {
+      // because non-const l-value reference does not bind to r-value
       Matrix<Real> J = Js(i);
-
-      B.clear();
-      for (UInt s = 0; s < dim; ++s) {
-        for (UInt n = 0; n < nb_nodes; ++n) {
-          B(s, n) = DNDS(s, n * nb_dof + s);
-        }
-      }
-
-      parent_element::computeJMat(B, Xs, J);
-      // computeJMat(DNDS, Xs, J);
+      computeJMat(Vector<Real>(natural_coords(i)), Xs, J);
     }
   }
 
@@ -231,19 +211,12 @@ public:
                                      const Matrix<Real> & node_coords,
                                      Vector<Real> & jacobians) {
     using itp = typename interpolation_element::interpolation_property;
-    UInt nb_points = natural_coords.cols();
-    Matrix<Real> dnds(itp::natural_space_dimension, itp::nb_nodes_per_element);
-    Matrix<Real> J(natural_coords.rows(), itp::natural_space_dimension);
-
-    // Extract relevant first lines
-    auto x = node_coords.block(0, 0, itp::natural_space_dimension,
-                               itp::nb_nodes_per_element);
-
-    for (UInt p = 0; p < nb_points; ++p) {
-      Vector<Real> ncoord_p(natural_coords(p));
-      parent_element::computeDNDS(ncoord_p, dnds);
-      parent_element::computeJMat(dnds, x, J);
-      jacobians(p) = J.det();
+    Tensor3<Real> Js(itp::natural_space_dimension, itp::natural_space_dimension,
+                     natural_coords.cols());
+    computeJMat(natural_coords, node_coords, Js);
+    for (UInt i = 0; i < natural_coords.cols(); ++i) {
+      Matrix<Real> J = Js(i);
+      jacobians(i) = J.det();
     }
   }
 
