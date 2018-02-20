@@ -15,16 +15,15 @@ using namespace akantu;
 template <typename T> class FriendMaterial : public T {
 public:
   ~FriendMaterial() = default;
-  
+
   virtual void testComputeStress() { TO_IMPLEMENT; };
   virtual void testComputeTangentModuli() { TO_IMPLEMENT; };
   virtual void testEnergyDensity() { TO_IMPLEMENT; };
-  virtual void testPushWaveSpeed() { TO_IMPLEMENT; }
-  virtual void testShearWaveSpeed() { TO_IMPLEMENT; }
+  virtual void testCelerity() { TO_IMPLEMENT; }
 
   static inline Matrix<Real> getDeviatoricStrain(Real intensity);
-
   static inline Matrix<Real> getHydrostaticStrain(Real intensity);
+  static inline Matrix<Real> getComposedStrain(Real intensity);
 
   static inline const Matrix<Real>
   reverseRotation(Matrix<Real> mat, Matrix<Real> rotation_matrix) {
@@ -59,9 +58,19 @@ Matrix<Real> FriendMaterial<T>::getDeviatoricStrain(Real intensity) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getHydrostaticStrain(Real intensity) {
-  Matrix<Real> dev = {{1, 0, 0}, {0, 2, 0}, {0, 0, 3}};
+  Matrix<Real> dev = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
   dev *= intensity;
   return dev;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <typename T>
+Matrix<Real> FriendMaterial<T>::getComposedStrain(Real intensity) {
+  Matrix<Real> s = FriendMaterial<T>::getHydrostaticStrain(intensity) +
+                   FriendMaterial<T>::getDeviatoricStrain(intensity);
+  s *= intensity;
+  return s;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -124,10 +133,10 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   // v1 and v2 are such that they form a right-hand basis with prescribed v3,
   // it's need (at least) for 2d linear elastic anisotropic and (orthotropic)
   // materials to rotate the tangent stiffness
-  
+
   Vector<Real> v1(3);
   Vector<Real> v2(3);
-  Vector<Real> v3 = {0,0,1};
+  Vector<Real> v3 = {0, 0, 1};
 
   for (UInt i = 0; i < Dim; ++i) {
     v1(i) = dis(gen);
@@ -135,7 +144,7 @@ template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
   }
 
   v1.normalize();
-  v2.crossProduct(v3,v1);
+  v2.crossProduct(v3, v1);
 
   Matrix<Real> mat(Dim, Dim);
   for (UInt i = 0; i < Dim; ++i) {
