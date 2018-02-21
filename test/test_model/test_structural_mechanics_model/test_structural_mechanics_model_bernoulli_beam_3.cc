@@ -85,6 +85,7 @@ public:
 /* -------------------------------------------------------------------------- */
 
 TEST_F(TestStructBernoulli3, TestDisplacements) {
+  model->solveStep();
   auto vz = model->getDisplacement()(0, 2);
   auto thy = model->getDisplacement()(0, 4);
   auto thx = model->getDisplacement()(0, 3);

@@ -72,10 +72,7 @@ public:
   /// assemble residual
   void assembleInternalForces(GhostType ghost_type = _not_ghost) override;
 
-  /// compute reversible and total energies by element
-  void computeEnergies();
-
-  /// check stress for cohesive elements' insertion, by default it
+    /// check stress for cohesive elements' insertion, by default it
   /// also updates the cohesive elements' data
   virtual void checkInsertion(bool /*check_only*/ = false) {
     AKANTU_DEBUG_TO_IMPLEMENT();
@@ -144,6 +141,9 @@ protected:
                                 const Array<Element> & elements,
                                 SynchronizationTag tag);
 
+protected:
+  void updateEnergies(ElementType el_type, GhostType ghost_type) override;
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -175,10 +175,11 @@ public:
   Real getContactEnergy();
 
   /// get energy
-  Real getEnergy(const std::string &type) override;
+  Real getEnergy(const std::string & type) override;
 
   /// return the energy (identified by id) for the provided element
-  Real getEnergy(const std::string &energy_id, ElementType type, UInt index) override {
+  Real getEnergy(const std::string & energy_id, ElementType type,
+                 UInt index) override {
     return Material::getEnergy(energy_id, type, index);
   }
 
@@ -203,14 +204,8 @@ protected:
   /// opening in all elements and quadrature points
   CohesiveInternalField<Real> opening;
 
-  /// opening in all elements and quadrature points (previous time step)
-  CohesiveInternalField<Real> opening_old;
-
   /// traction in all elements and quadrature points
   CohesiveInternalField<Real> tractions;
-
-  /// traction in all elements and quadrature points (previous time step)
-  CohesiveInternalField<Real> tractions_old;
 
   /// traction due to contact
   CohesiveInternalField<Real> contact_tractions;

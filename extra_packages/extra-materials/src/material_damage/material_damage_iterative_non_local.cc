@@ -29,12 +29,12 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStresses
   MaterialDamageIterativeNonLocalParent::computeNonLocalStresses(ghost_type);
 
   /// find global Gauss point with highest stress
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  comm.allReduce(&(this->norm_max_equivalent_stress), 1, _so_max);
+  const auto & comm = this->model.getMesh().getCommunicator();
+  comm.allReduce(this->norm_max_equivalent_stress, SynchronizerOperation::_max);
 
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-INSTANTIATE_MATERIAL(MaterialDamageIterativeNonLocal);
+INSTANTIATE_MATERIAL(damage_iterative_non_local, MaterialDamageIterativeNonLocal);
 
 } // namespace akantu

@@ -138,6 +138,8 @@ protected:
   ModelSolverOptions
   getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
+  UInt getNbDegreeOfFreedom(const ElementType & type) const;
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -149,15 +151,19 @@ protected:
   /// compute the stresses per elements
   void computeStresses();
 
+  /// compute the nodal forces
+  void assembleInternalForce();
+
+  /// compute the nodal forces for an element type
+  void assembleInternalForce(const ElementType & type, GhostType gt);
+
   /// assemble the stiffness matrix
   void assembleStiffnessMatrix();
 
   /// assemble the mass matrix for consistent mass resolutions
   void assembleMass();
 
-  /// update the residual vector
-  void updateResidual();
-
+  /// TODO remove
   void computeRotationMatrix(const ElementType & type);
 
 protected:
@@ -226,10 +232,10 @@ public:
   AKANTU_GET_MACRO(Acceleration, *acceleration, Array<Real> &);
 
   /// get the StructuralMechanicsModel::external_force vector
-  AKANTU_GET_MACRO(ExternalForce, *external_force_momentum, Array<Real> &);
+  AKANTU_GET_MACRO(ExternalForce, *external_force, Array<Real> &);
 
   /// get the StructuralMechanicsModel::internal_force vector (boundary forces)
-  AKANTU_GET_MACRO(InternalForce, *internal_force_momentum, Array<Real> &);
+  AKANTU_GET_MACRO(InternalForce, *internal_force, Array<Real> &);
 
   /// get the StructuralMechanicsModel::boundary vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
@@ -287,10 +293,10 @@ private:
   Array<Real> * acceleration{nullptr};
 
   /// forces array
-  Array<Real> * internal_force_momentum{nullptr};
+  Array<Real> * internal_force{nullptr};
 
   /// forces array
-  Array<Real> * external_force_momentum{nullptr};
+  Array<Real> * external_force{nullptr};
 
   /// lumped mass array
   Array<Real> * mass{nullptr};

@@ -66,9 +66,10 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
-  UInt size_of_shapesd      = ElementClass<type>::getShapeDerivativesSize();
-  UInt spatial_dimension    = ElementClass<type>::getNaturalSpaceDimension();
-  UInt nb_nodes_per_element = ElementClass<type>::getNbNodesPerInterpolationElement();
+  UInt size_of_shapesd = ElementClass<type>::getShapeDerivativesSize();
+  UInt spatial_dimension = ElementClass<type>::getNaturalSpaceDimension();
+  UInt nb_nodes_per_element =
+      ElementClass<type>::getNbNodesPerInterpolationElement();
 
   UInt nb_points = integration_points.cols();
   UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
@@ -248,7 +249,6 @@ void ShapeLagrange<_ek_cohesive>::variationOnIntegrationPoints(
 }
 
 /* -------------------------------------------------------------------------- */
-
 template <ElementType type, class ReduceFunction>
 void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
     const Array<Real> & u, Array<Real> & normals_u, GhostType ghost_type,
@@ -264,35 +264,62 @@ void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
 
   normals_u.resize(nb_points * nb_element);
 
-  Array<Real> tangents_u(nb_element * nb_points,
-                         (spatial_dimension * (spatial_dimension - 1)));
+  Array<Real> tangents_u(0, (spatial_dimension * (spatial_dimension - 1)));
 
-  this->template variationOnIntegrationPoints<type, ReduceFunction>(
-      u, tangents_u, spatial_dimension, ghost_type, filter_elements);
-
-  Array<Real>::vector_iterator normal = normals_u.begin(spatial_dimension);
-  Array<Real>::vector_iterator normal_end = normals_u.end(spatial_dimension);
+  if (spatial_dimension > 1) {
+    tangents_u.resize(nb_element * nb_points);
+    this->template variationOnIntegrationPoints<type, ReduceFunction>(
+        u, tangents_u, spatial_dimension, ghost_type, filter_elements);
+  }
 
   Real * tangent = tangents_u.storage();
 
-  if (spatial_dimension == 3)
-    for (; normal != normal_end; ++normal) {
+  if (spatial_dimension == 3) {
+    for (auto & normal : make_view(normals_u, spatial_dimension)) {
       Math::vectorProduct3(tangent, tangent + spatial_dimension,
-                           normal->storage());
+                           normal.storage());
 
-      (*normal) /= normal->norm();
+      normal /= normal.norm();
       tangent += spatial_dimension * 2;
     }
-  else if (spatial_dimension == 2)
-    for (; normal != normal_end; ++normal) {
+  } else if (spatial_dimension == 2) {
+    for (auto & normal : make_view(normals_u, spatial_dimension)) {
       Vector<Real> a1(tangent, spatial_dimension);
 
-      (*normal)(0) = -a1(1);
-      (*normal)(1) = a1(0);
-      (*normal) /= normal->norm();
+      normal(0) = -a1(1);
+      normal(1) = a1(0);
+      normal.normalize();
 
       tangent += spatial_dimension;
     }
+  } else if (spatial_dimension == 1) {
+    const auto facet_type = Mesh::getFacetType(type);
+    const auto & mesh_facets = mesh.getMeshFacets();
+    const auto & facets = mesh_facets.getSubelementToElement(type, ghost_type);
+    const auto & segments =
+        mesh_facets.getElementToSubelement(facet_type, ghost_type);
+
+    Real values[2];
+
+    for (auto el : arange(nb_element)) {
+      if (filter_elements != empty_filter)
+        el = filter_elements(el);
+
+      for (UInt p = 0; p < 2; ++p) {
+        Element facet = facets(el, p);
+        Element segment = segments(facet.element)[0];
+        Vector<Real> barycenter(values + p, 1);
+        mesh.getBarycenter(segment, barycenter);
+      }
+
+      Real difference = values[0] - values[1];
+
+      AKANTU_DEBUG_ASSERT(difference != 0.,
+                          "Error in normal computation for cohesive elements");
+
+      normals_u(el) = difference / std::abs(difference);
+    }
+  }
 
   AKANTU_DEBUG_OUT();
 }

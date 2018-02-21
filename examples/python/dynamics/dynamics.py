@@ -49,11 +49,8 @@ def main():
 
     model = akantu.SolidMechanicsModel(mesh)
 
-    model.initFull(akantu.SolidMechanicsModelOptions(
-        akantu._explicit_lumped_mass))
-
-    # model.initFull(akantu.SolidMechanicsModelOptions(
-    #     akantu._implicit_dynamic))
+    model.initFull(_analysis_method=akantu._explicit_lumped_mass)
+    # model.initFull(_analysis_method=akantu._implicit_dynamic)
 
     model.setBaseName("waves")
     model.addDumpFieldVector("displacement")

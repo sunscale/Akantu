@@ -297,6 +297,17 @@ inline void Material::setParam(const ID & param, T value) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
+inline void Material::setParamNoUpdate(const ID & param, T value) {
+  try {
+    set<T>(param, value);
+  } catch (...) {
+    AKANTU_EXCEPTION("No parameter " << param << " in the material "
+                     << getID());
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
 inline void Material::packElementDataHelper(
     const ElementTypeMapArray<T> & data_to_pack, CommunicationBuffer & buffer,
     const Array<Element> & elements, const ID & fem_id) const {
@@ -348,7 +359,8 @@ inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline bool Material::isInternal(__attribute__((unused)) const ID & id,
-                                 __attribute__((unused)) const ElementKind & element_kind) const {
+                                 __attribute__((unused))
+                                 const ElementKind & element_kind) const {
   AKANTU_DEBUG_TO_IMPLEMENT();
 }
 

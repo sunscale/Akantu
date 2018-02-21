@@ -41,10 +41,10 @@ register_gtest_sources(SOURCES patch_test_linear_elastic_implicit.cc
   PACKAGE solid_mechanics implicit
   FILES_TO_COPY data/material_check_stress_plane_strain.dat
                 data/material_check_stress_plane_stress.dat)
+
 register_gtest_sources(SOURCES patch_test_linear_anisotropic_explicit.cc
-  PACKAGE solid_mechanics
-  FILES_TO_COPY data/material_anisotropic.dat
-  UNSTABLE)
+  PACKAGE solid_mechanics lapack
+  FILES_TO_COPY data/material_anisotropic.dat)
 
 register_gtest_sources(SOURCES test_lumped_mass.cc
   PACKAGE solid_mechanics
@@ -57,6 +57,11 @@ register_gtest_sources(
 
 register_gtest_sources(
   SOURCES patch_test_linear_heat_transfer_static.cc
+  FILES_TO_COPY data/heat_transfer_input.dat
+  PACKAGE heat_transfer implicit)
+
+register_gtest_sources(
+  SOURCES patch_test_linear_heat_transfer_implicit.cc
   FILES_TO_COPY data/heat_transfer_input.dat
   PACKAGE heat_transfer implicit)
 
@@ -81,7 +86,7 @@ register_test(test_linear_elastic_static_python
 register_test(test_linear_anisotropic_explicit_python
   SCRIPT patch_test_linear_anisotropic_explicit.py
   PYTHON
-  PACKAGE python_interface
+  PACKAGE python_interface lapack
   FILES_TO_COPY patch_test_linear_fixture.py
   FILES_TO_COPY patch_test_linear_solid_mechanics_fixture.py
   FILES_TO_COPY data/material_anisotropic.dat)

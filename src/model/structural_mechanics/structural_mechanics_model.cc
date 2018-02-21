@@ -35,21 +35,20 @@
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model.hh"
 #include "dof_manager.hh"
-#include "sparse_matrix.hh"
 #include "integrator_gauss.hh"
-#include "shape_structural.hh"
 #include "mesh.hh"
+#include "shape_structural.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
+#include "dumpable_inline_impl.hh"
 #include "dumper_elemental_field.hh"
 #include "dumper_iohelper_paraview.hh"
-#include "dumpable_inline_impl.hh"
 #include "group_manager_inline_impl.cc"
 #endif
 /* -------------------------------------------------------------------------- */
 #include "structural_mechanics_model_inline_impl.cc"
 /* -------------------------------------------------------------------------- */
-
 
 namespace akantu {
 
@@ -57,8 +56,8 @@ namespace akantu {
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
                                                    const ID & id,
                                                    const MemoryID & memory_id)
-    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id), time_step(NAN), f_m2a(1.0),
-      stress("stress", id, memory_id),
+    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id),
+      time_step(NAN), f_m2a(1.0), stress("stress", id, memory_id),
       element_material("element_material", id, memory_id),
       set_ID("beam sets", id, memory_id),
       rotation_matrix("rotation_matices", id, memory_id) {
@@ -92,7 +91,8 @@ StructuralMechanicsModel::~StructuralMechanicsModel() = default;
 void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
   // <<<< This is the SolidMechanicsModel implementation for future ref >>>>
   // material_index.initialize(mesh, _element_kind = _ek_not_defined,
-  //                           _default_value = UInt(-1), _with_nb_element = true);
+  //                           _default_value = UInt(-1), _with_nb_element =
+  //                           true);
   // material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
   //                                     _with_nb_element = true);
 
@@ -108,11 +108,36 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
   // }
 
   // this->initMaterials();
-  // this->initBC(*this, *displacement, *displacement_increment, *external_force);
+  // this->initBC(*this, *displacement, *displacement_increment,
+  // *external_force);
 
   // <<<< END >>>>
 
   Model::initFullImpl(options);
+
+  // Initializing stresses
+  ElementTypeMap<UInt> stress_components;
+
+  /// TODO this is ugly af, maybe add a function to FEEngine
+  for (auto & type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
+				       _element_kind = _ek_structural)) {
+    UInt nb_components = 0;
+
+    // Getting number of components for each element type
+#define GET_(type) nb_components = ElementClass<type>::getNbStressComponents()
+    AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(GET_);
+#undef GET_
+
+    stress_components(nb_components, type);
+  }
+
+  stress.initialize(getFEEngine(), _spatial_dimension = _all_dimensions,
+                    _element_kind = _ek_structural,
+		    _all_ghost_types = true,
+                    _nb_component = [&stress_components](
+                        const ElementType & type, const GhostType &) -> UInt {
+                      return stress_components(type);
+                    });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -140,9 +165,9 @@ void StructuralMechanicsModel::initSolver(
 
   this->allocNodalField(displacement_rotation, nb_degree_of_freedom,
                         "displacement");
-  this->allocNodalField(external_force_momentum, nb_degree_of_freedom,
+  this->allocNodalField(external_force, nb_degree_of_freedom,
                         "external_force");
-  this->allocNodalField(internal_force_momentum, nb_degree_of_freedom,
+  this->allocNodalField(internal_force, nb_degree_of_freedom,
                         "internal_force");
   this->allocNodalField(blocked_dofs, nb_degree_of_freedom, "blocked_dofs");
 
@@ -171,8 +196,7 @@ void StructuralMechanicsModel::initSolver(
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::initModel() {
-  for (auto && type :
-       mesh.elementTypes(_element_kind = _ek_structural)) {
+  for (auto && type : mesh.elementTypes(_element_kind = _ek_structural)) {
     // computeRotationMatrix(type);
     element_material.alloc(mesh.getNbElement(type), 1, type);
   }
@@ -187,7 +211,8 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 
   getDOFManager().getMatrix("K").clear();
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
 #define ASSEMBLE_STIFFNESS_MATRIX(type) assembleStiffnessMatrix<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(ASSEMBLE_STIFFNESS_MATRIX);
@@ -201,31 +226,13 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
 void StructuralMechanicsModel::computeStresses() {
   AKANTU_DEBUG_IN();
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
 #define COMPUTE_STRESS_ON_QUAD(type) computeStressOnQuad<type>();
 
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(COMPUTE_STRESS_ON_QUAD);
 #undef COMPUTE_STRESS_ON_QUAD
   }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::updateResidual() {
-  AKANTU_DEBUG_IN();
-
-  auto & K = getDOFManager().getMatrix("K");
-
-  internal_force_momentum->clear();
-  K.matVecMul(*displacement_rotation, *internal_force_momentum);
-  *internal_force_momentum *= -1.;
-
-  getDOFManager().assembleToResidual("displacement", *external_force_momentum,
-                                     1.);
-
-  getDOFManager().assembleToResidual("displacement", *internal_force_momentum,
-                                     1.);
 
   AKANTU_DEBUG_OUT();
 }
@@ -240,7 +247,7 @@ void StructuralMechanicsModel::computeRotationMatrix(const ElementType & type) {
   if (!rotation_matrix.exists(type)) {
     rotation_matrix.alloc(nb_element,
                           nb_degree_of_freedom * nb_nodes_per_element *
-                          nb_degree_of_freedom * nb_nodes_per_element,
+                              nb_degree_of_freedom * nb_nodes_per_element,
                           type);
   } else {
     rotation_matrix(type).resize(nb_element);
@@ -311,23 +318,23 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "force") {
-    return mesh.createStridedNodalField(external_force_momentum, group_name, n,
+    return mesh.createStridedNodalField(external_force, group_name, n,
                                         0, padding_flag);
   }
 
   if (field_name == "momentum") {
-    return mesh.createStridedNodalField(external_force_momentum, group_name,
+    return mesh.createStridedNodalField(external_force, group_name,
                                         nb_degree_of_freedom - n, n,
                                         padding_flag);
   }
 
   if (field_name == "internal_force") {
-    return mesh.createStridedNodalField(internal_force_momentum, group_name, n,
+    return mesh.createStridedNodalField(internal_force, group_name, n,
                                         0, padding_flag);
   }
 
   if (field_name == "internal_momentum") {
-    return mesh.createStridedNodalField(internal_force_momentum, group_name,
+    return mesh.createStridedNodalField(internal_force, group_name,
                                         nb_degree_of_freedom - n, n,
                                         padding_flag);
   }
@@ -368,8 +375,19 @@ void StructuralMechanicsModel::assembleLumpedMatrix(const ID & /*id*/) {}
 
 /// callback to assemble the residual StructuralMechanicsModel::(rhs)
 void StructuralMechanicsModel::assembleResidual() {
-  this->getDOFManager().assembleToResidual("displacement",
-                                           *this->external_force_momentum, 1);
+  AKANTU_DEBUG_IN();
+
+  internal_force->clear();
+  computeStresses();
+  assembleInternalForce();
+
+  getDOFManager().assembleToResidual("displacement", *external_force,
+                                     1.);
+
+  getDOFManager().assembleToResidual("displacement", *internal_force,
+                                     -1);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -403,8 +421,8 @@ void StructuralMechanicsModel::onElementsChanged(
 /* Virtual methods from Model */
 /* -------------------------------------------------------------------------- */
 /// get some default values for derived classes
-std::tuple<ID, TimeStepSolverType> StructuralMechanicsModel::getDefaultSolverID(
-    const AnalysisMethod & method) {
+std::tuple<ID, TimeStepSolverType>
+StructuralMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _static: {
     return std::make_tuple("static", _tsst_static);
@@ -435,7 +453,38 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
 
   return options;
 }
-/* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::assembleInternalForce() {
+  for (auto type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
+				     _element_kind = _ek_structural)) {
+    assembleInternalForce(type, _not_ghost);
+    // assembleInternalForce(type, _ghost);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::assembleInternalForce(const ElementType & type,
+                                                     GhostType gt) {
+  auto & fem = getFEEngine();
+  auto & sigma = stress(type, gt);
+  auto ndof = getNbDegreeOfFreedom(type);
+  auto nb_nodes = mesh.getNbNodesPerElement(type);
+  auto ndof_per_elem = ndof * nb_nodes;
+
+  Array<Real> BtSigma(fem.getNbIntegrationPoints(type) *
+                          mesh.getNbElement(type),
+                      ndof_per_elem, "BtSigma");
+  fem.computeBtD(sigma, BtSigma, type, gt);
+
+  Array<Real> intBtSigma(0, ndof_per_elem,
+                         "intBtSigma");
+  fem.integrate(BtSigma, intBtSigma, ndof_per_elem, type, gt);
+  BtSigma.resize(0);
+
+  getDOFManager().assembleElementalArrayLocalArray(intBtSigma, *internal_force,
+                                                   type, gt, 1);
+}
+/* -------------------------------------------------------------------------- */
 
 } // namespace akantu

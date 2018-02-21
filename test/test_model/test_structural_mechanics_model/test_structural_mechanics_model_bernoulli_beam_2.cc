@@ -101,6 +101,7 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 TEST_F(TestStructBernoulli2, TestDisplacements) {
+  model->solveStep();
   auto d1 = model->getDisplacement()(1, 2);
   auto d2 = model->getDisplacement()(2, 2);
   auto d3 = model->getDisplacement()(1, 0);

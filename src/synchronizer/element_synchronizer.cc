@@ -55,8 +55,24 @@ ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
                                          EventHandlerPriority event_priority)
     : SynchronizerImpl<Element>(mesh.getCommunicator(), id, memory_id),
       mesh(mesh), element_to_prank("element_to_prank", id, memory_id) {
-
   AKANTU_DEBUG_IN();
+
+  if (register_to_event_manager)
+    this->mesh.registerEventHandler(*this, event_priority);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+ElementSynchronizer::ElementSynchronizer(const ElementSynchronizer & other,
+                                         const ID & id,
+                                         bool register_to_event_manager,
+                                         EventHandlerPriority event_priority)
+    : SynchronizerImpl<Element>(other, id), mesh(other.mesh),
+      element_to_prank("element_to_prank", id, other.memory_id) {
+  AKANTU_DEBUG_IN();
+
+  element_to_prank.copy(other.element_to_prank);
 
   if (register_to_event_manager)
     this->mesh.registerEventHandler(*this, event_priority);

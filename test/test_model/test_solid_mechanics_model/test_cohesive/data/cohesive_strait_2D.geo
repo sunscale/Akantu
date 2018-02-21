@@ -1,4 +1,4 @@
-h = 1.;
+h = 0.5;
 
 Point(1) = { 1, 1, 0, h};
 Point(2) = {-1, 1, 0, h};
@@ -25,5 +25,6 @@ Plane Surface(2) = {2};
 Physical Line("fixed") = {6};
 Physical Line("loading") = {1};
 Physical Line("insertion") = {3};
+Physical Line("sides") = {2, 5, 7, 4};
 
 Physical Surface("body") = {1, 2};

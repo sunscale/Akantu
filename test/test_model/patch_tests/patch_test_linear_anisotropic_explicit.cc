@@ -33,7 +33,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "patch_test_linear_fixture.hh"
+#include "patch_test_linear_solid_mechanics_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -69,7 +69,7 @@ Real C[3][3][3]
                {-2.13683293282e-10, 3.69840984851, 112.93753505}}}};
 
 /* -------------------------------------------------------------------------- */
-TYPED_TEST(TestPatchTestLinear, AnisotropicExplicit) {
+TYPED_TEST(TestPatchTestSMMLinear, AnisotropicExplicit) {
   this->initModel(_explicit_lumped_mass, "material_anisotropic.dat");
 
   const auto & coordinates = this->mesh->getNodes();
@@ -78,7 +78,7 @@ TYPED_TEST(TestPatchTestLinear, AnisotropicExplicit) {
   // set the position of all nodes to the static solution
   for (auto && tuple : zip(make_view(coordinates, this->dim),
                            make_view(displacement, this->dim))) {
-    this->setDisplacement(std::get<1>(tuple), std::get<0>(tuple));
+    this->setLinearDOF(std::get<1>(tuple), std::get<0>(tuple));
   }
 
   for (UInt s = 0; s < 100; ++s) {
@@ -88,9 +88,13 @@ TYPED_TEST(TestPatchTestLinear, AnisotropicExplicit) {
   auto ekin = this->model->getEnergy("kinetic");
   EXPECT_NEAR(0, ekin, 1e-16);
 
-  this->checkDisplacements();
-  this->checkStrains();
-  this->checkStresses([&](const Matrix<Real> & pstrain) {
+  auto & mat = this->model->getMaterial(0);
+    
+  this->checkDOFs(displacement);
+  this->checkGradient(mat.getGradU(this->type), displacement);
+
+
+  this->checkResults([&](const Matrix<Real> & pstrain) {
     auto strain = (pstrain + pstrain.transpose()) / 2.;
     decltype(strain) stress(this->dim, this->dim);
 
@@ -105,5 +109,6 @@ TYPED_TEST(TestPatchTestLinear, AnisotropicExplicit) {
       }
     }
     return stress;
-  });
+    },
+    mat.getStress(this->type), displacement);
 }

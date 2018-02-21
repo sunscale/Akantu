@@ -58,6 +58,8 @@ public:
 /// Type alias
 using TestBernoulliB2 =
     TestFEMStructuralFixture<element_type_t<_bernoulli_beam_2>>;
+ using TestDKT18 =
+   TestFEMStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>>;
 /* -------------------------------------------------------------------------- */
 
 /// Solution for 2D rotation matrices
@@ -69,6 +71,7 @@ Matrix<Real> globalToLocalRotation(Real theta) {
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestBernoulliB2, PrecomputeRotations) {
+  this->fem->initShapeFunctions();
   using ShapeStruct = ShapeStructural<_ek_structural>;
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
   auto & rot = shape.getRotations(type);
@@ -88,6 +91,7 @@ TEST_F(TestBernoulliB2, PrecomputeRotations) {
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestBernoulliB3, PrecomputeRotations) {
+  this->fem->initShapeFunctions();
   using ShapeStruct = ShapeStructural<_ek_structural>;
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
   auto & rot = shape.getRotations(type);
@@ -106,4 +110,17 @@ TEST_F(TestBernoulliB3, PrecomputeRotations) {
     auto rotation_error = (rotation - solution).norm<L_2>();
     EXPECT_NEAR(rotation_error, 0., Math::getTolerance());
   }
+}
+
+/* -------------------------------------------------------------------------- */
+TEST_F(TestDKT18, PrecomputeRotations) {
+  this->fem->initShapeFunctions();
+  using ShapeStruct = ShapeStructural<_ek_structural>;
+  auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
+  auto & rot = shape.getRotations(type);
+
+  for (auto & rotation : make_view(rot, ndof, ndof)) {
+    std::cout << rotation << "\n";
+  }
+  std::cout.flush();
 }

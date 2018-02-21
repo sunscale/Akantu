@@ -51,8 +51,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
           model.getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine")),
       reversible_energy("reversible_energy", *this),
       total_energy("total_energy", *this), opening("opening", *this),
-      opening_old("opening (old)", *this), tractions("tractions", *this),
-      tractions_old("tractions (old)", *this),
+      tractions("tractions", *this),
       contact_tractions("contact_tractions", *this),
       contact_opening("contact_opening", *this), delta_max("delta max", *this),
       use_previous_delta_max(false), use_previous_opening(false),
@@ -84,12 +83,16 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
 
   this->reversible_energy.initialize(1);
   this->total_energy.initialize(1);
-  this->tractions_old.initialize(spatial_dimension);
+
   this->tractions.initialize(spatial_dimension);
-  this->opening_old.initialize(spatial_dimension);
+  this->tractions.initializeHistory();
+
   this->contact_tractions.initialize(spatial_dimension);
   this->contact_opening.initialize(spatial_dimension);
+
   this->opening.initialize(spatial_dimension);
+  this->opening.initializeHistory();
+
   this->delta_max.initialize(1);
   this->damage.initialize(1);
 
@@ -234,8 +237,9 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     UInt * elem_filter_val = elem_filter.storage();
 
     for (UInt el = 0; el < nb_element; ++el) {
-      auto shapes_val = shapes.storage() +
-                   elem_filter_val[el] * size_of_shapes * nb_quadrature_points;
+      auto shapes_val =
+          shapes.storage() +
+          elem_filter_val[el] * size_of_shapes * nb_quadrature_points;
       memcpy(shapes_filtered_val, shapes_val,
              size_of_shapes * nb_quadrature_points * sizeof(Real));
       shapes_filtered_val += size_of_shapes * nb_quadrature_points;
@@ -410,10 +414,6 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
   auto & fem_cohesive =
       this->model->getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine");
 
-  if (type == _cohesive_1d_2)
-    fem_cohesive.computeNormalsOnIntegrationPoints(position, normal, type,
-                                                   ghost_type);
-  else {
 #define COMPUTE_NORMAL(type)                                                   \
   fem_cohesive.getShapeFunctions()                                             \
       .computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(    \
@@ -421,7 +421,6 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
 
     AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(COMPUTE_NORMAL);
 #undef COMPUTE_NORMAL
-  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -448,48 +447,40 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 }
 
 /* -------------------------------------------------------------------------- */
-void MaterialCohesive::computeEnergies() {
+void MaterialCohesive::updateEnergies(ElementType type,
+                                      GhostType ghost_type) {
   AKANTU_DEBUG_IN();
+
+  if(Mesh::getKind(type) != _ek_cohesive) return;
 
   Vector<Real> b(spatial_dimension);
   Vector<Real> h(spatial_dimension);
+  auto erev = reversible_energy(type, ghost_type).begin();
+  auto etot = total_energy(type, ghost_type).begin();
+  auto traction_it = tractions(type, ghost_type).begin(spatial_dimension);
+  auto traction_old_it =
+      tractions.previous(type, ghost_type).begin(spatial_dimension);
+  auto opening_it = opening(type, ghost_type).begin(spatial_dimension);
+  auto opening_old_it = opening.previous(type, ghost_type).begin(spatial_dimension);
 
-  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
-                                                 _ek_cohesive)) {
-    auto erev = reversible_energy(type, _not_ghost).begin();
-    auto etot = total_energy(type, _not_ghost).begin();
-    auto traction_it = tractions(type, _not_ghost).begin(spatial_dimension);
-    auto traction_old_it =
-        tractions_old(type, _not_ghost).begin(spatial_dimension);
-    auto opening_it = opening(type, _not_ghost).begin(spatial_dimension);
-    auto opening_old_it =
-        opening_old(type, _not_ghost).begin(spatial_dimension);
+  auto traction_end = tractions(type, ghost_type).end(spatial_dimension);
 
-    auto traction_end = tractions(type, _not_ghost).end(spatial_dimension);
+  /// loop on each quadrature point
+  for (; traction_it != traction_end; ++traction_it, ++traction_old_it,
+                                      ++opening_it, ++opening_old_it, ++erev,
+                                      ++etot) {
+    /// trapezoidal integration
+    b = *opening_it;
+    b -= *opening_old_it;
 
-    /// loop on each quadrature point
-    for (; traction_it != traction_end; ++traction_it, ++traction_old_it,
-                                        ++opening_it, ++opening_old_it, ++erev,
-                                        ++etot) {
-      /// trapezoidal integration
-      b = *opening_it;
-      b -= *opening_old_it;
+    h = *traction_old_it;
+    h += *traction_it;
 
-      h = *traction_old_it;
-      h += *traction_it;
-
-      *etot += .5 * b.dot(h);
-      *erev = .5 * traction_it->dot(*opening_it);
-    }
+    *etot += .5 * b.dot(h);
+    *erev = .5 * traction_it->dot(*opening_it);
   }
 
   /// update old values
-  GhostType ghost_type = _not_ghost;
-  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
-                                                 _ek_cohesive)) {
-    tractions_old(type, ghost_type).copy(tractions(type, ghost_type));
-    opening_old(type, ghost_type).copy(opening(type, ghost_type));
-  }
 
   AKANTU_DEBUG_OUT();
 }

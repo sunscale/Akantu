@@ -40,6 +40,11 @@ register_gtest_sources(
   PACKAGE implicit structural_mechanics
 )
 
+register_gtest_sources(
+  SOURCES test_structural_mechanics_model_discrete_kirchhoff_triangle_18.cc
+  PACKAGE implicit structural_mechanics
+)
+
 #===============================================================================
 
 # Adding meshes for element types

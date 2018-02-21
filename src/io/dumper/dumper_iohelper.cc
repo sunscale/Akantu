@@ -259,6 +259,9 @@ iohelper::ElemType getIOHelperType<_pentahedron_15>() { return iohelper::PRISM2;
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 template <>
+iohelper::ElemType getIOHelperType<_cohesive_1d_2>() { return iohelper::COH1D2; }
+
+template <>
 iohelper::ElemType getIOHelperType<_cohesive_2d_4>() { return iohelper::COH2D4; }
 template <>
 iohelper::ElemType getIOHelperType<_cohesive_2d_6>() { return iohelper::COH2D6; }

@@ -161,7 +161,7 @@ akantu.initialize('material.dat')
 
 # init the SolidMechanicsModel
 model = akantu.SolidMechanicsModel(mesh)
-model.initFull(akantu.SolidMechanicsModelOptions(akantu._static))
+model.initFull(_analysis_method=akantu._static)
 
 # configure the solver
 solver = model.getNonLinearSolver()

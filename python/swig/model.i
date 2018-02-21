@@ -103,8 +103,7 @@ namespace akantu {
                 for key, val in kwargs.items():
                     if key[0] == '_':
                         key = key[1:]
-                    _attr = getattr(options, key)
-                    _attr = val
+                    setattr(options, key, val)
         else:
             options = args[0]
 

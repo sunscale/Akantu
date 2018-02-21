@@ -156,6 +156,9 @@ void CohesiveElementInserter::limitCheckFacets(
                    _spatial_dimension = spatial_dimension - 1);
 
   if (not mesh_facets.hasData("physical_names")) {
+    AKANTU_DEBUG_ASSERT(
+        physical_groups.size() == 0,
+        "No physical names in the mesh but insertion limited to a group");
     AKANTU_DEBUG_OUT();
     return;
   }
@@ -165,18 +168,18 @@ void CohesiveElementInserter::limitCheckFacets(
 
   // set the limits to the physical surfaces
   for_each_element(mesh_facets,
-                    [&](auto && facet) {
-                      auto & need_check = check_facets(facet);
-                      if (not need_check)
-                        return;
+                   [&](auto && facet) {
+                     auto & need_check = check_facets(facet);
+                     if (not need_check)
+                       return;
 
-                      const auto & physical_id = physical_ids(facet);
-                      auto it = find(physical_groups.begin(),
-                                     physical_groups.end(), physical_id);
+                     const auto & physical_id = physical_ids(facet);
+                     auto it = find(physical_groups.begin(),
+                                    physical_groups.end(), physical_id);
 
-                      need_check = (it != physical_groups.end());
-                    },
-                    _spatial_dimension = spatial_dimension - 1);
+                     need_check = (it != physical_groups.end());
+                   },
+                   _spatial_dimension = spatial_dimension - 1);
 
   AKANTU_DEBUG_OUT();
 }

@@ -199,8 +199,6 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
   const Mesh & mesh_facets = model->getMeshFacets();
   CohesiveElementInserter & inserter = model->getElementInserter();
 
-  Real tolerance = Math::getTolerance();
-
   for (auto && type_facet : mesh_facets.elementTypes(spatial_dimension - 1)) {
     ElementType type_cohesive = FEEngine::getCohesiveElementType(type_facet);
     const Array<bool> & facets_check = inserter.getCheckFacets(type_facet);
@@ -209,7 +207,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
     auto & sig_c_eff = sigma_c_eff(type_cohesive);
     auto & del_c = delta_c_eff(type_cohesive);
     auto & ins_stress = insertion_stress(type_cohesive);
-    auto & trac_old = tractions_old(type_cohesive);
+    auto & trac_old = tractions.previous(type_cohesive);
     auto & open_prec = opening_prec(type_cohesive);
     auto & red_penalty = reduction_penalty(type_cohesive);
     const auto & f_stress = model->getStressOnFacets(type_facet);
@@ -288,7 +286,7 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
         final_stress = *std::max_element(
             stress_check.storage(), stress_check.storage() + nb_quad_facet);
 
-      if (final_stress > (*sigma_lim_it - tolerance)) {
+      if (final_stress > *sigma_lim_it) {
         if (model->isDefaultSolverExplicit()) {
           f_insertion(facet) = true;
 

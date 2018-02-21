@@ -1624,6 +1624,7 @@ void MeshUtils::flipFacets(
 
   global_connectivity_tmp.initialize(
       mesh_facets, _spatial_dimension = spatial_dimension - 1,
+      _ghost_type = gt_facet,
       _with_nb_nodes_per_element = true, _with_nb_element = true);
 
   mesh_facets.getGlobalConnectivity(global_connectivity_tmp);

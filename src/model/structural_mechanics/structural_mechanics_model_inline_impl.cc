@@ -40,6 +40,17 @@
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
+inline UInt
+StructuralMechanicsModel::getNbDegreeOfFreedom(const ElementType & type) const {
+  UInt ndof = 0;
+#define GET_(type) ndof = ElementClass<type>::getNbDegreeOfFreedom()
+  AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_, _ek_structural);
+#undef GET_
+
+  return ndof;
+}
+
+/* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeTangentModuli(
     Array<Real> & /*tangent_moduli*/) {
@@ -141,19 +152,17 @@ void StructuralMechanicsModel::computeStressOnQuad() {
   /// compute DBu
   D_B = d_b->begin(tangent_size, d_b_size);
   auto DBu = sigma.begin(tangent_size);
-  Vector<Real> ul(d_b_size);
 
   Array<Real> u_el(0, d_b_size);
   FEEngine::extractNodalToElementField(mesh, *displacement_rotation, u_el,
                                        type);
 
   auto ug = u_el.begin(d_b_size);
-  auto T = rotation_matrix(type).begin(d_b_size, d_b_size);
 
-  for (UInt e = 0; e < nb_element; ++e, ++T, ++ug) {
-    ul.mul<false>(*T, *ug);
+  // No need to rotate because B is post-multiplied
+  for (UInt e = 0; e < nb_element; ++e, ++ug) {
     for (UInt q = 0; q < nb_quadrature_points; ++q, ++D_B, ++DBu) {
-      DBu->template mul<false>(*D_B, ul);
+      DBu->template mul<false>(*D_B, *ug);
     }
   }
 
