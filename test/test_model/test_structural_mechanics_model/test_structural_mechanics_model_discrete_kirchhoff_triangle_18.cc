@@ -68,13 +68,24 @@ public:
     // Displacement field from Batoz Vol. 2 p. 392
     // with theta to beta correction from discrete Kirchhoff condition
     // see also the master thesis of Michael Lozano
+
     // clang-format off
-    // *disp = {40, 20, -800 , -20, 40, 0}; ++disp;
-    // *disp = {50, 40, -1400, -40, 50, 0}; ++disp;
-    // *disp = {10, 20, -200 , -20, 10, 0}; ++disp;
-    *disp = {0, 0, -800 , -20, 40, 0}; ++disp;
-    *disp = {0, 0, -1400, -40, 50, 0}; ++disp;
-    *disp = {0, 0, -200 , -20, 10, 0}; ++disp;
+
+    // This displacement field tests membrane and bending modes
+    *disp = {40, 20, -800 , -20, 40, 0}; ++disp;
+    *disp = {50, 40, -1400, -40, 50, 0}; ++disp;
+    *disp = {10, 20, -200 , -20, 10, 0}; ++disp;
+
+    // This displacement tests the bending mode
+    // *disp = {0, 0, -800 , -20, 40, 0}; ++disp;
+    // *disp = {0, 0, -1400, -40, 50, 0}; ++disp;
+    // *disp = {0, 0, -200 , -20, 10, 0}; ++disp;
+
+    // This displacement tests the membrane mode
+    // *disp = {40, 20, 0, 0, 0, 0}; ++disp;
+    // *disp = {50, 40, 0, 0, 0, 0}; ++disp;
+    // *disp = {10, 20, 0, 0, 0, 0}; ++disp;
+
     // clang-format on
   }
 
@@ -89,19 +100,13 @@ protected:
 // Batoz Vol 2. patch test, ISBN 2-86601-259-3
 TEST_F(TestStructDKT18, TestDisplacements) {
   model->solveStep();
-  model->getDOFManager().getMatrix("K").saveMatrix("K.mtx");
-  model->getDOFManager().getMatrix("J").saveMatrix("J.mtx");
   Vector<Real> solution = {22.5, 22.5, -337.5, -22.5, 22.5, 0};
   auto nb_nodes = this->model->getDisplacement().size();
 
   Vector<Real> center_node_disp =
       model->getDisplacement().begin(solution.size())[nb_nodes - 1];
 
-  std::cout << center_node_disp << std::endl;
-
   auto error = solution - center_node_disp;
 
-  Real tol = Math::getTolerance();
-
-  EXPECT_NEAR(error.norm<L_2>(), 0., tol);
+  EXPECT_NEAR(error.norm<L_2>(), 0., 1e-12);
 }

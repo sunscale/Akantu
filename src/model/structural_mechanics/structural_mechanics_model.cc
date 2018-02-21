@@ -39,6 +39,7 @@
 #include "mesh.hh"
 #include "shape_structural.hh"
 #include "sparse_matrix.hh"
+#include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumpable_inline_impl.hh"
@@ -377,15 +378,13 @@ void StructuralMechanicsModel::assembleLumpedMatrix(const ID & /*id*/) {}
 void StructuralMechanicsModel::assembleResidual() {
   AKANTU_DEBUG_IN();
 
+  auto & dof_manager = getDOFManager();
+
   internal_force->clear();
   computeStresses();
   assembleInternalForce();
-
-  getDOFManager().assembleToResidual("displacement", *external_force,
-                                     1.);
-
-  getDOFManager().assembleToResidual("displacement", *internal_force,
-                                     -1);
+  dof_manager.assembleToResidual("displacement", *internal_force, -1);
+  dof_manager.assembleToResidual("displacement", *external_force, 1);
 
   AKANTU_DEBUG_OUT();
 }
