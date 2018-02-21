@@ -74,13 +74,12 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
-    Vector<Real> & traction, Vector<Real> & opening,
-    Vector<Real> & opening_prec, const Vector<Real> & normal, Real & delta_max,
+    Vector<Real> & traction, const Vector<Real> & opening,
+    const Vector<Real> & normal, Real & delta_max,
     const Real & delta_c, const Vector<Real> & insertion_stress,
     const Real & sigma_c, Vector<Real> & normal_opening,
     Vector<Real> & tangential_opening, Real & normal_opening_norm,
     Real & tangential_opening_norm, Real & damage, bool & penetration,
-    bool & reduction_penalty, Real & current_penalty,
     Vector<Real> & contact_traction, Vector<Real> & contact_opening) {
 
   /// compute normal and tangential opening vectors
@@ -116,28 +115,14 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
    * is set equal to true.
    */
 
-  Real normal_opening_prec_norm = opening_prec.dot(normal);
-  opening_prec = opening;
-
-  if (!this->model->isDefaultSolverExplicit() && !this->recompute)
-    if ((normal_opening_prec_norm * normal_opening_norm) < 0.0) {
-      reduction_penalty = true;
-    }
-
   if (penetration) {
-    if (this->recompute && reduction_penalty) {
-      /// the penalty parameter is locally reduced
-      current_penalty = this->penalty / 100.;
-    } else
-      current_penalty = this->penalty;
-
     /// use penalty coefficient in case of penetration
     contact_traction = normal_opening;
-    contact_traction *= current_penalty;
+    contact_traction *= this->penalty;
     contact_opening = normal_opening;
 
     /// don't consider penetration contribution for delta
-    opening = tangential_opening;
+    // opening = tangential_opening;
     normal_opening.clear();
 
   } else {
@@ -185,7 +170,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
     const Real & sigma_c, Vector<Real> & opening, const Vector<Real> & normal,
     Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
     Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
-    bool & penetration, bool & reduction_penalty, Real & current_penalty,
+    bool & penetration,
     Vector<Real> & contact_opening) {
 
   /**
@@ -220,14 +205,9 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
   n_outer_n.outerProduct(normal, normal);
 
   if (penetration) {
-    if (this->recompute && reduction_penalty)
-      current_penalty = this->penalty / 100.;
-    else
-      current_penalty = this->penalty;
-
     /// stiffness in compression given by the penalty parameter
     tangent += n_outer_n;
-    tangent *= current_penalty;
+    tangent *= penalty;
 
     opening = tangential_opening;
     normal_opening_norm = opening.dot(normal);

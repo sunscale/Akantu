@@ -74,10 +74,6 @@ protected:
   void computeTraction(const Array<Real> & normal, ElementType el_type,
                        GhostType ghost_type = _not_ghost) override;
 
-  /// check delta_max for cohesive elements in case of no convergence
-  /// in the solveStep (only for extrinsic-implicit)
-  void checkDeltaMax(GhostType ghost_type = _not_ghost) override;
-
   /// compute tangent stiffness matrix
   void computeTangentTraction(const ElementType & el_type,
                               Array<Real> & tangent_matrix,

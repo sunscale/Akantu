@@ -66,6 +66,8 @@ public:
   /// initialize the material parameters
   void initMaterial() override;
 
+  void updateInternalParameters() override;
+
   /// check stress for cohesive elements' insertion
   void checkInsertion(bool check_only = false) override;
 
@@ -79,14 +81,6 @@ protected:
   /// constitutive law
   void computeTraction(const Array<Real> & normal, ElementType el_type,
                        GhostType ghost_type = _not_ghost) override;
-
-  /// check delta_max for cohesive elements in case of no convergence
-  /// in the solveStep (only for extrinsic-implicit)
-  void checkDeltaMax(GhostType ghost_type = _not_ghost) override;
-
-  /// reset variables when convergence is reached (only for
-  /// extrinsic-implicit)
-  void resetVariables(GhostType ghost_type = _not_ghost) override;
 
   /// compute tangent stiffness matrix
   void computeTangentTraction(const ElementType & el_type,
@@ -107,22 +101,20 @@ protected:
 
   /// compute the traction for a given quadrature point
   inline void computeTractionOnQuad(
-      Vector<Real> & traction, Vector<Real> & opening,
-      Vector<Real> & opening_prec, const Vector<Real> & normal,
-      Real & delta_max, const Real & delta_c,
+      Vector<Real> & traction, const Vector<Real> & opening,
+      const Vector<Real> & normal, Real & delta_max, const Real & delta_c,
       const Vector<Real> & insertion_stress, const Real & sigma_c,
       Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
       Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
-      bool & penetration, bool & reduction_penalty, Real & current_penalty,
-      Vector<Real> & contact_traction, Vector<Real> & contact_opening);
+      bool & penetration, Vector<Real> & contact_traction,
+      Vector<Real> & contact_opening);
 
   inline void computeTangentTractionOnQuad(
       Matrix<Real> & tangent, Real & delta_max, const Real & delta_c,
       const Real & sigma_c, Vector<Real> & opening, const Vector<Real> & normal,
       Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
       Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
-      bool & penetration, bool & reduction_penalty, Real & current_penalty,
-      Vector<Real> & contact_opening);
+      bool & penetration, Vector<Real> & contact_opening);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -175,16 +167,6 @@ protected:
 
   /// stress at insertion
   CohesiveInternalField<Real> insertion_stress;
-
-  /// delta of the previous step
-  CohesiveInternalField<Real> opening_prec;
-
-  /**
-   * variable that defines if the penalty parameter for compression
-   * has to be decreased for problems of convergence in the solution
-   * loops
-   */
-  CohesiveInternalField<bool> reduction_penalty;
 
   /// variable saying if there should be penalty contact also after
   /// breaking the cohesive elements

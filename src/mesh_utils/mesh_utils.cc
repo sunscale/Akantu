@@ -63,23 +63,16 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
   node_to_elem.resizeRows(nb_nodes);
   node_to_elem.clearRows();
 
-  AKANTU_DEBUG_ASSERT(
-      mesh.firstType(spatial_dimension) != mesh.lastType(spatial_dimension),
-      "Some elements must be found in right dimension to compute facets!");
+  // AKANTU_DEBUG_ASSERT(
+  //     mesh.firstType(spatial_dimension) != mesh.lastType(spatial_dimension),
+  //     "Some elements must be found in right dimension to compute facets!");
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator first =
-        mesh.firstType(spatial_dimension, *gt, _ek_not_defined);
-    Mesh::type_iterator last =
-        mesh.lastType(spatial_dimension, *gt, _ek_not_defined);
-
-    for (; first != last; ++first) {
-      ElementType type = *first;
-      UInt nb_element = mesh.getNbElement(type, *gt);
-      Array<UInt>::const_iterator<Vector<UInt>> conn_it =
-          mesh.getConnectivity(type, *gt).begin(
-              Mesh::getNbNodesPerElement(type));
+  for (auto && ghost_type : ghost_types) {
+    for (auto && type :
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
+      auto conn_it = mesh.getConnectivity(type, ghost_type)
+                         .begin(Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it)
         for (UInt n = 0; n < conn_it->size(); ++n)
@@ -94,20 +87,15 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
   Element e;
   node_to_elem.beginInsertions();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator first =
-        mesh.firstType(spatial_dimension, *gt, _ek_not_defined);
-    Mesh::type_iterator last =
-        mesh.lastType(spatial_dimension, *gt, _ek_not_defined);
-    e.ghost_type = *gt;
-    for (; first != last; ++first) {
-      ElementType type = *first;
+  for (auto && ghost_type : ghost_types) {
+    e.ghost_type = ghost_type;
+    for (auto && type :
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
+
       e.type = type;
-      UInt nb_element = mesh.getNbElement(type, *gt);
-      Array<UInt>::const_iterator<Vector<UInt>> conn_it =
-          mesh.getConnectivity(type, *gt).begin(
-              Mesh::getNbNodesPerElement(type));
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
+      auto conn_it = mesh.getConnectivity(type, ghost_type).begin(
+          Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
         e.element = el;
@@ -121,76 +109,6 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
 
   AKANTU_DEBUG_OUT();
 }
-
-/* -------------------------------------------------------------------------- */
-/**
- * This function should disappear in the future (used in mesh partitioning)
- */
-// void MeshUtils::buildNode2Elements(const Mesh & mesh, CSR<UInt> &
-// node_to_elem,
-//                                    UInt spatial_dimension) {
-//   AKANTU_DEBUG_IN();
-//   if (spatial_dimension == _all_dimensions)
-//     spatial_dimension = mesh.getSpatialDimension();
-//   UInt nb_nodes = mesh.getNbNodes();
-
-//   const Mesh::ConnectivityTypeList & type_list =
-//   mesh.getConnectivityTypeList(); Mesh::ConnectivityTypeList::const_iterator
-//   it;
-
-//   UInt nb_types = type_list.size();
-//   UInt nb_good_types = 0;
-
-//   Vector<UInt> nb_nodes_per_element(nb_types);
-//   UInt ** conn_val = new UInt *[nb_types];
-//   Vector<UInt> nb_element(nb_types);
-
-//   for (it = type_list.begin(); it != type_list.end(); ++it) {
-//     ElementType type = *it;
-//     if (Mesh::getSpatialDimension(type) != spatial_dimension)
-//       continue;
-
-//     nb_nodes_per_element[nb_good_types] = Mesh::getNbNodesPerElement(type);
-//     conn_val[nb_good_types] = mesh.getConnectivity(type,
-//     _not_ghost).storage(); nb_element[nb_good_types] =
-//         mesh.getConnectivity(type, _not_ghost).size();
-//     nb_good_types++;
-//   }
-
-//   AKANTU_DEBUG_ASSERT(
-//       nb_good_types != 0,
-//       "Some elements must be found in right dimension to compute facets!");
-
-//   /// array for the node-element list
-//   node_to_elem.resizeRows(nb_nodes);
-//   node_to_elem.clearRows();
-
-//   /// count number of occurrence of each node
-//   for (UInt t = 0; t < nb_good_types; ++t) {
-//     for (UInt el = 0; el < nb_element[t]; ++el) {
-//       UInt el_offset = el * nb_nodes_per_element[t];
-//       for (UInt n = 0; n < nb_nodes_per_element[t]; ++n) {
-//         ++node_to_elem.rowOffset(conn_val[t][el_offset + n]);
-//       }
-//     }
-//   }
-
-//   node_to_elem.countToCSR();
-//   node_to_elem.resizeCols();
-//   node_to_elem.beginInsertions();
-
-//   /// rearrange element to get the node-element list
-//   for (UInt t = 0, linearized_el = 0; t < nb_good_types; ++t)
-//     for (UInt el = 0; el < nb_element[t]; ++el, ++linearized_el) {
-//       UInt el_offset = el * nb_nodes_per_element[t];
-//       for (UInt n = 0; n < nb_nodes_per_element[t]; ++n)
-//         node_to_elem.insertInRow(conn_val[t][el_offset + n], linearized_el);
-//     }
-
-//   node_to_elem.endInsertions();
-//   delete[] conn_val;
-//   AKANTU_DEBUG_OUT();
-// }
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::buildNode2ElementsElementTypeMap(const Mesh & mesh,
@@ -313,8 +231,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   const Array<Real> & mesh_facets_nodes = mesh_facets.getNodes();
-  const auto mesh_facets_nodes_it =
-      mesh_facets_nodes.begin(spatial_dimension);
+  const auto mesh_facets_nodes_it = mesh_facets_nodes.begin(spatial_dimension);
 
   CSR<Element> node_to_elem;
   buildNode2Elements(mesh, node_to_elem, dimension);
@@ -875,7 +792,7 @@ UInt MeshUtils::updateFacetToDouble(
 #if defined(AKANTU_COHESIVE_ELEMENT)
             || element_to_facet(f)[1].kind() == _ek_cohesive
 #endif
-        ) {
+            ) {
           AKANTU_DEBUG_WARNING("attempt to double a facet on the boundary");
           continue;
         }
@@ -1624,8 +1541,8 @@ void MeshUtils::flipFacets(
 
   global_connectivity_tmp.initialize(
       mesh_facets, _spatial_dimension = spatial_dimension - 1,
-      _ghost_type = gt_facet,
-      _with_nb_nodes_per_element = true, _with_nb_element = true);
+      _ghost_type = gt_facet, _with_nb_nodes_per_element = true,
+      _with_nb_element = true);
 
   mesh_facets.getGlobalConnectivity(global_connectivity_tmp);
 
@@ -2155,9 +2072,10 @@ void MeshUtils::updateElementalConnectivity(
                         nb_nodes_per_element,
                     old_node);
 
-      AKANTU_DEBUG_ASSERT(n_update != conn_elem->storage() +
-                                          elem.element * nb_nodes_per_element +
-                                          nb_nodes_per_element,
+      AKANTU_DEBUG_ASSERT(n_update !=
+                              conn_elem->storage() +
+                                  elem.element * nb_nodes_per_element +
+                                  nb_nodes_per_element,
                           "Node not found in current element");
 
       /// update connectivity

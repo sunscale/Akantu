@@ -72,29 +72,16 @@ public:
   /// assemble residual
   void assembleInternalForces(GhostType ghost_type = _not_ghost) override;
 
-    /// check stress for cohesive elements' insertion, by default it
+  /// check stress for cohesive elements' insertion, by default it
   /// also updates the cohesive elements' data
   virtual void checkInsertion(bool /*check_only*/ = false) {
-    AKANTU_TO_IMPLEMENT();
-  }
-
-  /// check delta_max for cohesive elements in case of no convergence
-  /// in the solveStep (only for extrinsic-implicit)
-  virtual void checkDeltaMax(GhostType /*ghost_type*/ = _not_ghost) {
-    AKANTU_TO_IMPLEMENT();
-  }
-
-  /// reset variables when convergence is reached (only for
-  /// extrinsic-implicit)
-  virtual void resetVariables(GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
   virtual void interpolateStress(const ElementType /*type*/,
-
-                                 Array<Real> & /*result*/){};
+                                 Array<Real> & /*result*/){}
 
   /// compute the stresses
   void computeAllStresses(GhostType /*ghost_type*/ = _not_ghost) override{};

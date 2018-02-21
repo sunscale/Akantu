@@ -61,6 +61,9 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       facet_material("facet_material", id) {
   AKANTU_DEBUG_IN();
 
+  registerFEEngineObject<MyFEEngineCohesiveType>("CohesiveFEEngine", mesh,
+                                                 Model::spatial_dimension);
+
   auto && tmp_material_selector =
       std::make_shared<DefaultMaterialCohesiveSelector>(*this);
 
@@ -91,6 +94,9 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
 
   this->inserter = std::make_unique<CohesiveElementInserter>(
       this->mesh, id + ":cohesive_element_inserter");
+
+  registerFEEngineObject<MyFEEngineFacetType>(
+      "FacetsFEEngine", mesh.getMeshFacets(), Model::spatial_dimension - 1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -282,9 +288,6 @@ void SolidMechanicsModelCohesive::initModel() {
 
   SolidMechanicsModel::initModel();
 
-  registerFEEngineObject<MyFEEngineCohesiveType>("CohesiveFEEngine", mesh,
-                                                 Model::spatial_dimension);
-
   /// add cohesive type connectivity
   ElementType type = _not_defined;
   for (auto && type_ghost : ghost_types) {
@@ -304,9 +307,6 @@ void SolidMechanicsModelCohesive::initModel() {
 
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_not_ghost);
   getFEEngine("CohesiveFEEngine").initShapeFunctions(_ghost);
-
-  registerFEEngineObject<MyFEEngineFacetType>(
-      "FacetsFEEngine", mesh.getMeshFacets(), Model::spatial_dimension - 1);
 
   if (is_extrinsic) {
     getFEEngine("FacetsFEEngine").initShapeFunctions(_not_ghost);

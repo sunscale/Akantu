@@ -49,44 +49,34 @@ namespace akantu {
  * parameters in the material files :
  *  - roughness : define the interaction between mode I and mode II (default: 0)
  */
-template<UInt spatial_dimension>
-class MaterialCohesiveLinearUncoupled : public MaterialCohesiveLinear<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialCohesiveLinearUncoupled
+    : public MaterialCohesiveLinear<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
   //  typedef MaterialCohesiveLinear<spatial_dimension> MaterialParent;
 public:
-
-  MaterialCohesiveLinearUncoupled(SolidMechanicsModel & model, const ID & id = "");
+  MaterialCohesiveLinearUncoupled(SolidMechanicsModel & model,
+                                  const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the material parameters
   void initMaterial() override;
 
 protected:
-
   /// constitutive law
   void computeTraction(const Array<Real> & normal, ElementType el_type,
                        GhostType ghost_type = _not_ghost) override;
-
-  /// check delta_max for cohesive elements in case of no convergence
-  /// in the solveStep (only for extrinsic-implicit)
-  void checkDeltaMax(GhostType ghost_type = _not_ghost) override;
 
   /// compute tangent stiffness matrix
   void computeTangentTraction(const ElementType & el_type,
                               Array<Real> & tangent_matrix,
                               const Array<Real> & normal,
                               GhostType ghost_type) override;
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -101,12 +91,11 @@ protected:
   /// maximum tangential displacement
   CohesiveInternalField<Real> delta_t_max;
 
-  /// damage associated to normal tractions 
+  /// damage associated to normal tractions
   CohesiveInternalField<Real> damage_n;
 
-  /// damage associated to shear tractions 
+  /// damage associated to shear tractions
   CohesiveInternalField<Real> damage_t;
-
 };
 
 } // akantu
