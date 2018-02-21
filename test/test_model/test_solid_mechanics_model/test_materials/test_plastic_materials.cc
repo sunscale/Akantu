@@ -52,7 +52,6 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
   Real previous_iso_hardening = 0.;
 
   // hydrostatic loading (should not plastify)
-
   for (auto && i : steps) {
     auto t = i * dt;
 
@@ -74,7 +73,6 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
     ASSERT_NEAR(stress_error, 0., 1e-13);
     ASSERT_NEAR(inelastic_strain_rot.norm<L_inf>(), 0., 1e-13);
 
-
     previous_grad_u_rot = grad_u_rot;
     previous_sigma_rot = sigma_rot;
     previous_inelastic_strain_rot = inelastic_strain_rot;
@@ -94,14 +92,6 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
     auto grad_u_rot = this->applyRotation(grad_u, rotation_matrix);
     Real iso_hardening, previous_iso_hardening;
 
-    // YieldFunctorCall<decltype(f), std::tuple<Real>> fc(f,
-    // std::tuple<Real>(0.));
-
-    // this->computeStressOnQuad(grad_u_rot, previous_grad_u_rot, sigma_rot,
-    //                           previous_sigma_rot, inelastic_strain_rot, 0.,
-    //                           0.,
-    //                           fc, fc);
-
     this->computeStressOnQuad(grad_u_rot, previous_grad_u_rot, sigma_rot,
                               previous_sigma_rot, inelastic_strain_rot,
                               previous_inelastic_strain_rot, iso_hardening,
@@ -111,44 +101,23 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
     auto inelastic_strain =
         this->reverseRotation(inelastic_strain_rot, rotation_matrix);
 
-    // auto F = fc(sigma_rot);
-    // std::cout << "F = " << F << std::endl;
-
     if (t < t_P) {
 
       Matrix<Real> sigma_expected =
           shear_modulus_mu * (grad_u + grad_u.transpose());
 
-      // std::cout << "sigma = " << sigma << std::endl;
-      // std::cout << "sigma_expected = " << sigma_expected << std::endl;
-      // std::cout << "inelastic_strain = " << inelastic_strain_rot <<
-      // std::endl;
       Real stress_error = (sigma - sigma_expected).norm<L_inf>();
       ASSERT_NEAR(stress_error, 0., 1e-13);
       ASSERT_NEAR(inelastic_strain_rot.norm<L_inf>(), 0., 1e-13);
-      //auto F_expected = 2. * mu * t * beta - sigma_0;
-      // ASSERT_NEAR(F, F_expected, 1e-13);
+    } else if (t > t_P + dt) {
+      // skip the transition from non plastic to plastic
 
-    } else if (t >
-               t_P + dt) { // skip the transition from non plastic to plastic
-
-      // ASSERT_NEAR(F, 0, 1e-13);
       auto delta_lambda_expected =
           dt / t * previous_sigma.doubleDot(grad_u + grad_u.transpose()) / 2.;
-      // std::cout << "delta_lambda_expected = " << delta_lambda_expected
-      //           << std::endl;
       auto delta_inelastic_strain_expected =
           delta_lambda_expected * 3. / 2. / sigma_0 * previous_sigma;
-      // std::cout << "delta_inelastic_strain_expected = "
-      //           << delta_inelastic_strain_expected << std::endl;
-      // std::cout << "delta_inelastic_strain = "
-      //           << inelastic_strain - previous_inelastic_strain << std::endl;
       auto inelastic_strain_expected =
           delta_inelastic_strain_expected + previous_inelastic_strain;
-      // std::cout << "inelastic_strain_expected = " <<
-      // inelastic_strain_expected
-      //           << std::endl;
-      // std::cout << "inelastic_strain = " << inelastic_strain << std::endl;
       ASSERT_NEAR((inelastic_strain - inelastic_strain_expected).norm<L_inf>(),
                   0., 1e-13);
       auto delta_sigma_expected =
@@ -157,9 +126,6 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
            delta_inelastic_strain_expected);
 
       auto delta_sigma = sigma - previous_sigma;
-      // std::cout << "delta_sigma = " << delta_sigma << std::endl;
-      // std::cout << "delta_sigma_expected = " << delta_sigma_expected <<
-      // std::endl;
       ASSERT_NEAR((delta_sigma_expected - delta_sigma).norm<L_inf>(), 0.,
                   1e-13);
     }
