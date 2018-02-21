@@ -37,7 +37,8 @@ template <typename... T>
 using tuple_concat_t = typename tuple_concat<T...>::type;
 
 /* -------------------------------------------------------------------------- */
-template <template <typename> class Pred, typename... Ts> struct tuple_filter {};
+template <template <typename> class Pred, typename... Ts>
+struct tuple_filter {};
 
 template <template <typename> class Pred, typename T>
 struct tuple_filter<Pred, std::tuple<T>> {
@@ -46,9 +47,9 @@ struct tuple_filter<Pred, std::tuple<T>> {
 
 template <template <typename> class Pred, typename T, typename... Ts>
 struct tuple_filter<Pred, std::tuple<T, Ts...>> {
-  using type = tuple_concat_t<
-    typename tuple_filter<Pred, std::tuple<T>>::type,
-    typename tuple_filter<Pred, std::tuple<Ts...>>::type>;
+  using type =
+      tuple_concat_t<typename tuple_filter<Pred, std::tuple<T>>::type,
+                     typename tuple_filter<Pred, std::tuple<Ts...>>::type>;
 };
 
 template <template <typename> class Pred, typename... Ts>
@@ -114,6 +115,9 @@ using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
 #endif
 } // namespace
 
+using TestAllDimensions =
+    std::tuple<std::integral_constant<unsigned int, 1>, std::integral_constant<unsigned int, 2>,
+               std::integral_constant<unsigned int, 3>>;
 
 template <typename T>
 using is_point_1 = std::is_same<T, element_type_t<::akantu::_point_1>>;
@@ -129,6 +133,7 @@ using StructuralTestElementTypes =
     tuple_filter_t<not_is_point_1, TestElementTypesStructural>;
 #endif
 
+/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 template <size_t degree> class Polynomial {
 public:
@@ -194,6 +199,5 @@ std::ostream & operator<<(std::ostream & stream, const Polynomial<degree> & p) {
 }
 
 /* -------------------------------------------------------------------------- */
-
 
 #endif /* __AKANTU_TEST_GTEST_UTILS_HH__ */
