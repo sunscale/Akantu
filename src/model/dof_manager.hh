@@ -152,6 +152,10 @@ public:
                                             const Array<Real> & x,
                                             Real scale_factor = 1) = 0;
 
+  /// multiply the dofs by a matrix and assemble the result to the residual
+  virtual void assembleMatMulDOFsToResidual(const ID & A_id,
+                                            Real scale_factor = 1);
+
   /// multiply a vector by a lumped matrix and assemble the result to the
   /// residual
   virtual void assembleLumpedMatMulVectToResidual(const ID & dof_id,

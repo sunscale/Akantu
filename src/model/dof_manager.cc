@@ -29,13 +29,13 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
+#include "communicator.hh"
 #include "element_group.hh"
 #include "mesh.hh"
 #include "mesh_utils.hh"
 #include "node_group.hh"
 #include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
-#include "communicator.hh"
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
@@ -180,6 +180,18 @@ void DOFManager::assembleElementalArrayToLumpedMatrix(
   this->assembleToLumpedMatrix(dof_id, array_localy_assembeled, lumped_mtx, 1);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::assembleMatMulDOFsToResidual(const ID & A_id,
+                                              Real scale_factor) {
+  for (auto & pair : this->dofs) {
+    const auto & dof_id = pair.first;
+    auto & dof_data = *pair.second;
+
+    this->assembleMatMulVectToResidual(dof_id, A_id, *dof_data.dof,
+                                       scale_factor);
+  }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -163,5 +163,14 @@ void TimeStepSolver::assembleResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
+void TimeStepSolver::assembleResidual(const ID & residual_part) {
+  AKANTU_DEBUG_ASSERT(
+      this->solver_callback != nullptr,
+      "This function cannot be called if the solver_callback is not set");
+
+  this->solver_callback->assembleResidual(residual_part);
+}
+
+/* -------------------------------------------------------------------------- */
 
 } // namespace akantu
