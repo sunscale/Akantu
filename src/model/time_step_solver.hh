@@ -88,9 +88,13 @@ public:
   void assembleLumpedMatrix(const ID & matrix_id) final;
   /// implementation of the SolverCallback::assembleResidual()
   void assembleResidual() override;
+  /// implementation of the SolverCallback::assembleResidual()
+  void assembleResidual(const ID & residual_part) override;
 
   void beforeSolveStep() override;
   void afterSolveStep() override;
+
+  bool canSplitResidual() { return solver_callback->canSplitResidual(); }
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */

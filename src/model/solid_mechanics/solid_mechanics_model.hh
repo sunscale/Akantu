@@ -124,6 +124,10 @@ protected:
   /// callback for the solver, this adds f_{ext} - f_{int} to the residual
   void assembleResidual() override;
 
+  /// callback for the solver, this adds f_{ext} or  f_{int} to the residual
+  void assembleResidual(const ID & residual_part) override;
+  bool canSplitResidual() override { return true; }
+
   /// get the type of matrix needed
   MatrixType getMatrixType(const ID & matrix_id) override;
 

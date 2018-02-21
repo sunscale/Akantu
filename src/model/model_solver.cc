@@ -106,7 +106,6 @@ void ModelSolver::initDOFManager() {
 
 /* -------------------------------------------------------------------------- */
 void ModelSolver::initDOFManager(const ID & solver_type) {
-
   try {
     this->dof_manager = DOFManagerFactory::getInstance().allocate(
         solver_type, mesh, this->parent_id + ":dof_manager" + solver_type,
@@ -129,7 +128,6 @@ void ModelSolver::initDOFManager(const ParserSection & section,
 
   // parsing the time step solvers
   for (auto && section : sub_sections) {
-
     ID type = section.getName();
     ID solver_id = section.getParameter("name", type);
 

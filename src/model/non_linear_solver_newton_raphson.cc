@@ -79,7 +79,11 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   solver_callback.predictor();
 
-  solver_callback.assembleResidual();
+  if (non_linear_solver_type == _nls_linear and
+      solver_callback.canSplitResidual())
+    solver_callback.assembleMatrix("K");
+
+  this->assembleResidual(solver_callback);
 
   if (this->non_linear_solver_type == _nls_newton_raphson_modified ||
       (this->non_linear_solver_type == _nls_linear &&
@@ -109,15 +113,16 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     // EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
 
     if (this->convergence_criteria_type == _scc_residual) {
-      solver_callback.assembleResidual();
+      this->assembleResidual(solver_callback);
       this->converged = this->testConvergence(this->dof_manager.getResidual());
     } else {
       this->converged =
           this->testConvergence(this->dof_manager.getGlobalSolution());
     }
 
-    if (this->convergence_criteria_type == _scc_solution && !this->converged)
-      solver_callback.assembleResidual();
+    if (this->convergence_criteria_type == _scc_solution and
+        not this->converged)
+      this->assembleResidual(solver_callback);
     // this->dump();
 
     this->n_iter++;
@@ -127,12 +132,12 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
             << ": error " << this->error << (this->converged ? " < " : " > ")
             << this->convergence_criteria);
 
-  } while (!this->converged && this->n_iter < this->max_iterations);
+  } while (not this->converged and this->n_iter < this->max_iterations);
 
   // this makes sure that you have correct strains and stresses after the
   // solveStep function (e.g., for dumping)
   if (this->convergence_criteria_type == _scc_solution)
-    solver_callback.assembleResidual();
+    this->assembleResidual(solver_callback);
 
   if (this->converged) {
     // this->sendEvent(NonLinearSolver::ConvergedEvent(method));
