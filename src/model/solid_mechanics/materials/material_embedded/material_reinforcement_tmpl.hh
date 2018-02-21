@@ -105,21 +105,6 @@ void MaterialReinforcement<Mat, dim>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-
-namespace detail {
-  class FilterInitializer : public MeshElementTypeMapArrayInializer {
-  public:
-    FilterInitializer(EmbeddedInterfaceModel & emodel,
-                      const GhostType & ghost_type)
-        : MeshElementTypeMapArrayInializer(emodel.getMesh(),
-                                           1, emodel.getSpatialDimension(),
-                                           ghost_type, _ek_regular) {}
-
-    UInt size(const ElementType & /*bgtype*/) const override { return 0; }
-  };
-}
-
-/* -------------------------------------------------------------------------- */
 /// Initialize the filter for background elements
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::initFilters() {
@@ -136,8 +121,10 @@ void MaterialReinforcement<Mat, dim>::initFilters() {
       auto & foreground = foreground_filter(
           std::make_unique<ElementTypeMapArray<UInt>>(shaped_id, this->name),
           type, gt);
-      foreground->initialize(detail::FilterInitializer(emodel, gt), 0, true);
-      background->initialize(detail::FilterInitializer(emodel, gt), 0, true);
+      foreground->initialize(emodel.getMesh(), _nb_component = 1,
+                             _ghost_type = gt);
+      background->initialize(emodel.getMesh(), _nb_component = 1,
+                             _ghost_type = gt);
 
       // Computing filters
       for (auto && bg_type : background->elementTypes(dim, gt)) {
@@ -178,15 +165,17 @@ void MaterialReinforcement<Mat, dim>::filterInterfaceBackgroundElements(
 /* -------------------------------------------------------------------------- */
 
 namespace detail {
-  class BackgroundShapeDInitializer : public ElementTypeMapArrayInializer {
+  class BackgroundShapeDInitializer : public ElementTypeMapArrayInitializer {
   public:
-    BackgroundShapeDInitializer(UInt spatial_dimension,
-				FEEngine & engine,
-				const ElementType & foreground_type,
-                                ElementTypeMapArray<UInt> & filter,
+    BackgroundShapeDInitializer(UInt spatial_dimension, FEEngine & engine,
+                                const ElementType & foreground_type,
+                                const ElementTypeMapArray<UInt> & filter,
                                 const GhostType & ghost_type)
-        : ElementTypeMapArrayInializer(spatial_dimension, 0, ghost_type,
-                                       _ek_regular) {
+        : ElementTypeMapArrayInitializer(
+              [](const ElementType & bgtype, const GhostType &) {
+                return ShapeFunctions::getShapeDerivativesSize(bgtype);
+              },
+              spatial_dimension, ghost_type, _ek_regular) {
       auto nb_quad = engine.getNbIntegrationPoints(foreground_type);
       // Counting how many background elements are affected by elements of
       // interface_type
@@ -203,10 +192,6 @@ namespace detail {
 
     UInt size(const ElementType & bgtype) const {
       return array_size_per_bg_type(bgtype, this->ghost_type);
-    }
-
-    UInt nbComponent(const ElementType & bgtype) const {
-      return ShapeFunctions::getShapeDerivativesSize(bgtype);
     }
 
   protected:

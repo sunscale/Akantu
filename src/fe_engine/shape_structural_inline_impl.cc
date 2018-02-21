@@ -384,6 +384,48 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+template <>
+template <ElementType type>
+void ShapeStructural<_ek_structural>::computeBtD(
+    const Array<Real> & Ds, Array<Real> & BtDs,
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+
+  auto nb_stress = ElementClass<type>::getNbStressComponents();
+  auto nb_dof_per_element = ElementClass<type>::getNbDegreeOfFreedom() *
+                            mesh.getNbNodesPerElement(type);
+
+  const auto & shapes_derivatives =
+      this->shapes_derivatives(itp_type, ghost_type);
+
+  Array<Real> shapes_derivatives_filtered(0,
+                                          shapes_derivatives.getNbComponent());
+  auto && view = make_view(shapes_derivatives, nb_stress, nb_dof_per_element);
+  auto B_it = view.begin();
+  auto B_end = view.end();
+
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes_derivatives,
+                                  shapes_derivatives_filtered, type, ghost_type,
+                                  filter_elements);
+    auto && view =
+        make_view(shapes_derivatives_filtered, nb_stress, nb_dof_per_element);
+    B_it = view.begin();
+    B_end = view.end();
+  }
+
+  for (auto && values :
+       zip(range(B_it, B_end),
+           make_view(Ds, nb_stress),
+           make_view(BtDs, BtDs.getNbComponent()))) {
+    const auto & B = std::get<0>(values);
+    const auto & D = std::get<1>(values);
+    auto & Bt_D = std::get<2>(values);
+    Bt_D.template mul<true>(B, D);
+  }
+}
+
 } // namespace akantu
 
 #endif /* __AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_CC__ */

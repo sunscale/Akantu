@@ -195,9 +195,9 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18,
   // clang-format off
   B = {
     // Membrane shape functions; TODO use the triangle_3 shapes
-    {dNm(0, 0), 0,         0, 0, 0, 0, dNm(0, 1), 0,         0, 0, 0, 0, dNm(0, 2), 0,         0, 0, 0, 0, },
-    {0,         dNm(1, 0), 0, 0, 0, 0, 0,         dNm(1, 1), 0, 0, 0, 0, 0,         dNm(1, 2), 0, 0, 0, 0, },
-    {dNm(1, 0), dNm(0, 0), 0, 0, 0, 0, dNm(1, 1), dNm(0, 1), 0, 0, 0, 0, dNm(1, 2), dNm(0, 2), 0, 0, 0, 0, },
+    {dNm(0, 0), 0,         0, 0, 0, 0, dNm(0, 1), 0,         0, 0, 0, 0, dNm(0, 2), 0,         0, 0, 0, 0},
+    {0,         dNm(1, 0), 0, 0, 0, 0, 0,         dNm(1, 1), 0, 0, 0, 0, 0,         dNm(1, 2), 0, 0, 0, 0},
+    {dNm(1, 0), dNm(0, 0), 0, 0, 0, 0, dNm(1, 1), dNm(0, 1), 0, 0, 0, 0, dNm(1, 2), dNm(0, 2), 0, 0, 0, 0},
 
     // Bending shape functions
     {0, 0, dNx1(0, 0),              -dNx3(0, 0),              dNx2(0, 0),              0, 0, 0, dNx1(0, 1),              -dNx3(0, 1),              dNx2(0, 1),              0, 0, 0, dNx1(0, 2),              -dNx3(0, 2),              dNx2(0, 2),              0},

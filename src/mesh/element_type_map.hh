@@ -212,6 +212,12 @@ private:
   elementTypesImpl(const use_named_args_t & /*unused*/, pack &&... _pack) const;
 
 public:
+  /*!
+   * \param _spatial_dimension optional: filter for elements of given spatial
+   * dimension
+   * \param _ghost_type optional: filter for a certain ghost_type
+   * \param _element_kind optional: filter for elements of given kind
+   */
   template <typename... pack>
   std::enable_if_t<are_named_argument<pack...>::value,
                    ElementTypesIteratorHelper>
@@ -403,9 +409,8 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// initialize the arrays in accordance to a functor
-  template <class Func, class CompFunc>
-  void initialize(const Func & f, const T & default_value, bool do_not_default,
-                  CompFunc && func);
+  template <class Func>
+  void initialize(const Func & f, const T & default_value, bool do_not_default);
 
   /// initialize with sizes and number of components in accordance of a mesh
   /// content
