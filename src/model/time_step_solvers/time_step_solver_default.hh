@@ -75,6 +75,7 @@ public:
   void assembleMatrix(const ID & matrix_id) override;
   /// implementation of the TimeStepSolver::assembleResidual()
   void assembleResidual() override;
+  void assembleResidual(const ID & residual_part) override;
 
   /// implementation of the generic TimeStepSolver::solveStep()
   void solveStep(SolverCallback & solver_callback) override;

@@ -22,17 +22,11 @@ public:
   void SetUp() override {
     this->mesh = std::make_unique<Mesh>(this->spatial_dimension);
 
-#if defined(AKANTU_PARALLEL)
     if(Communicator::getStaticCommunicator().whoAmI() == 0) {
-#endif
-
       this->mesh->read(this->mesh_file);
-
-#if defined(AKANTU_PARALLEL)
     }
 
     mesh->distribute();
-#endif
 
     SCOPED_TRACE(aka::to_string(this->type).c_str());
 

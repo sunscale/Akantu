@@ -37,41 +37,49 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_discrete_kirchhoff_triangle_18,
-                                                     _itp_lagrange_triangle_3,
-                                                     6, 6);
-AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(_discrete_kirchhoff_triangle_18,
-                                                _gt_triangle_3,
-                                                _itp_discrete_kirchhoff_triangle_18,
-                                                _triangle_3, _ek_structural, 3,
-                                                _git_triangle, 2);
+AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(
+    _itp_discrete_kirchhoff_triangle_18, _itp_lagrange_triangle_3, 6, 6, 21);
+AKANTU_DEFINE_STRUCTURAL_ELEMENT_CLASS_PROPERTY(
+    _discrete_kirchhoff_triangle_18, _gt_triangle_3,
+    _itp_discrete_kirchhoff_triangle_18, _triangle_3, _ek_structural, 3,
+    _git_triangle, 2);
+
+/* -------------------------------------------------------------------------- */
+namespace detail {
+  inline void computeBasisChangeMatrix(Matrix<Real> & P,
+                                       const Matrix<Real> & X) {
+    Vector<Real> X1 = X(0);
+    Vector<Real> X2 = X(1);
+    Vector<Real> X3 = X(2);
+
+    Vector<Real> a1 = X2 - X1;
+    Vector<Real> a2 = X3 - X1;
+
+    a1.normalize();
+    Vector<Real> e3 = a1.crossProduct(a2);
+    e3.normalize();
+    Vector<Real> e2 = e3.crossProduct(a1);
+
+    P(0) = a1;
+    P(1) = e2;
+    P(2) = e3;
+    P = P.transpose();
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void ElementClass<_discrete_kirchhoff_triangle_18>::computeRotationMatrix(
+inline void
+ElementClass<_discrete_kirchhoff_triangle_18>::computeRotationMatrix(
     Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> &) {
   auto dim = X.rows();
-  Vector<Real> X1 = X(0);
-  Vector<Real> X2 = X(1);
-  Vector<Real> X3 = X(2);
-
-  Vector<Real> a1 = X2 - X1;
-  Vector<Real> a2 = X3 - X1;
-
-  a1.normalize();
-  Vector<Real> e3 = a1.crossProduct(a2);
-  e3.normalize();
-  Vector<Real> e2 = e3.crossProduct(a1);
-
   Matrix<Real> P(dim, dim);
-  P(0) = a1;
-  P(1) = e2;
-  P(2) = e3;
+  detail::computeBasisChangeMatrix(P, X);
 
   R.clear();
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
-      R(i + dim, j + dim) = R(i, j) = P(j, i);
+      R(i + dim, j + dim) = R(i, j) = P(i, j);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -79,236 +87,124 @@ template <>
 inline void
 InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeShapes(
     const Vector<Real> & /*natural_coords*/,
-    const Matrix<Real> & /*real_coord*/, Matrix<Real> & /*N*/) {
-//   // projected_coord (x1 x2 x3) (y1 y2 y3)
-
-#if 0
-  // natural coordinate
-  Real xi = natural_coords(0);
-  Real eta = natural_coords(1);
-
-  Real x21 = projected_coord(0, 0) - projected_coord(0, 1); // x1-x2
-  Real x32 = projected_coord(0, 1) - projected_coord(0, 2);
-  Real x13 = projected_coord(0, 2) - projected_coord(0, 0);
-
-  Real y21 = projected_coord(1, 0) - projected_coord(1, 1); // y1-y2
-  Real y32 = projected_coord(1, 1) - projected_coord(1, 2);
-  Real y13 = projected_coord(1, 2) - projected_coord(1, 0);
-
-  /* Real x21=projected_coord(0,1)-projected_coord(0,0);
-  Real x32=projected_coord(0,2)-projected_coord(0,1);
-  Real x13=projected_coord(0,0)-projected_coord(0,2);
-
-  Real y21=projected_coord(1,1)-projected_coord(1,0);
-  Real y32=projected_coord(1,2)-projected_coord(1,1);
-  Real y13=projected_coord(1,0)-projected_coord(1,2);*/
-
-  // natural triangle side length
-  Real L4 = std::sqrt(x21 * x21 + y21 * y21);
-  Real L5 = std::sqrt(x32 * x32 + y32 * y32);
-  Real L6 = std::sqrt(x13 * x13 + y13 * y13);
-
-  // sinus and cosinus
-  Real C4 = x21 / L4; // 1.
-  Real C5 = x32 / L5; //-1./std::sqrt(2);
-  Real C6 = x13 / L6; // 0.
-  Real S4 = y21 / L4; // 0.;
-  Real S5 = y32 / L5; // 1./std::sqrt(2);
-  Real S6 = y13 / L6; //-1.;
-
-  Real N1 = 1. - xi - eta;
-  Real N2 = xi;
-  Real N3 = eta;
-
-  Real P4 = 4. * xi * (1. - xi - eta);
-  Real P5 = 4. * xi * eta;
-  Real P6 = 4. * eta * (1. - xi - eta);
-
-  Vector<Real> N0{N1, N2, N3};
-  Vector<Real> Nw2{-(1. / 8.) * P4 * L4 * C4 + (1. / 8.) * P6 * L6 * C6,
-                   -(1. / 8.) * P5 * L5 * C5 + (1. / 8.) * P4 * L4 * C4,
-                   -(1. / 8.) * P6 * L6 * C6 + (1. / 8.) * P5 * L5 * C5};
-  Vector<Real> Nw3{-(1. / 8.) * P4 * L4 * S4 + (1. / 8.) * P6 * L6 * S6,
-                   -(1. / 8.) * P5 * L5 * S5 + (1. / 8.) * P4 * L4 * S4,
-                   -(1. / 8.) * P6 * L6 * S6 + (1. / 8.) * P5 * L5 * S5};
-  Vector<Real> Nx1{3. / (2. * L4) * P4 * C4 - 3. / (2. * L6) * P6 * C6,
-                   3. / (2. * L5) * P5 * C5 - 3. / (2. * L4) * P4 * C4,
-                   3. / (2. * L6) * P6 * C6 - 3. / (2. * L5) * P5 * C5};
-  Vector<Real> Nx2{N1 - (3. / 4.) * P4 * C4 * C4 - (3. / 4.) * P6 * C6 * C6,
-                   N2 - (3. / 4.) * P5 * C5 * C5 - (3. / 4.) * P4 * C4 * C4,
-                   N3 - (3. / 4.) * P6 * C6 * C6 - (3. / 4.) * P5 * C5 * C5};
-  Vector<Real> Nx3{-(3. / 4.) * P4 * C4 * S4 - (3. / 4.) * P6 * C6 * S6,
-                   -(3. / 4.) * P5 * C5 * S5 - (3. / 4.) * P4 * C4 * S4,
-                   -(3. / 4.) * P6 * C6 * S6 - (3. / 4.) * P5 * C5 * S5};
-  Vector<Real> Ny1{3. / (2. * L4) * P4 * S4 - 3. / (2. * L6) * P6 * S6,
-                   3. / (2. * L5) * P5 * S5 - 3. / (2. * L4) * P4 * S4,
-                   3. / (2. * L6) * P6 * S6 - 3. / (2. * L5) * P5 * S5};
-  Vector<Real> Ny2{-(3. / 4.) * P4 * C4 * S4 - (3. / 4.) * P6 * C6 * S6,
-                   -(3. / 4.) * P5 * C5 * S5 - (3. / 4.) * P4 * C4 * S4,
-                   -(3. / 4.) * P6 * C6 * S6 - (3. / 4.) * P5 * C5 * S5};
-  Vector<Real> Ny3{N1 - (3. / 4.) * P4 * S4 * S4 - (3. / 4.) * P6 * S6 * S6,
-                   N2 - (3. / 4.) * P5 * S5 * S5 - (3. / 4.) * P4 * S4 * S4,
-                   N3 - (3. / 4.) * P6 * S6 * S6 - (3. / 4.) * P5 * S5 * S5};
-
-  // clang-format off
-  N = Matrix<Real> {
-  //      0    1       2       3       4      5      6       7       8       9     10     11      12      13      14
-    {N0(0),    0.,     0.,     0.,     0., N0(1),    0.,     0.,     0.,     0., N0(2),    0.,     0.,     0.,     0.},  // 0
-    {   0., N0(0),     0.,     0.,     0.,    0., N0(1),     0.,     0.,     0.,    0., N0(2),     0.,     0.,     0.},  // 1
-    {   0.,    0.,  N0(0), Nw2(0), Nw3(0),    0.,    0.,  N0(1), Nw2(1), Nw3(1),    0.,    0.,  N0(2), Nw2(2), Nw3(2)},  // 2
-    {   0.,    0., Nx1(0), Nx2(0), Nx3(0),    0.,    0., Nx1(1), Nx2(1), Nx3(1),    0.,    0., Nx1(2), Nx2(2), Nx3(2)},  // 3
-    {   0.,    0., Ny1(0), Ny2(0), Ny3(0),    0.,    0., Ny1(1), Ny2(1), Ny3(1),    0.,    0., Ny1(2), Ny2(2), Ny3(2)},  // 4
-    {   0,     0.,     0.,     0.,     0.,    0.,    0.,     0.,     0.,     0.,    0.,    0.,     0.,     0.,     0.}}; // 5 ???
-  // clang-format on
-
-#endif
-}
+    const Matrix<Real> & /*real_coord*/, Matrix<Real> & /*N*/) {}
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
 InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
-    const Vector<Real> & /*natural_coords*/,
-    const Matrix<Real> & /*real_coord*/, Matrix<Real> & /*B*/) {
+    const Vector<Real> & natural_coords, const Matrix<Real> & real_coordinates,
+    Matrix<Real> & B) {
 
-#if 0
-  // natural coordinate
+  auto dim = real_coordinates.cols();
+  Matrix<Real> P(dim, dim);
+  detail::computeBasisChangeMatrix(P, real_coordinates);
+  auto X = P * real_coordinates;
+  Vector<Real> X1 = X(0);
+  Vector<Real> X2 = X(1);
+  Vector<Real> X3 = X(2);
+
+  std::array<Vector<Real>, 3> A = {X2 - X1, X3 - X2, X1 - X3};
+  std::array<Real, 3> L, C, S;
+
+  // Setting all last coordinates to 0
+  std::for_each(A.begin(), A.end(), [](auto & a) { a(2) = 0; });
+  // Computing lengths
+  std::transform(A.begin(), A.end(), L.begin(),
+                 [](auto & a) { return a.template norm<L_2>(); });
+  // Computing cosines
+  std::transform(A.begin(), A.end(), L.begin(), C.begin(),
+                 [](auto & a, auto & l) { return a(0) / l; });
+  // Computing sines
+  std::transform(A.begin(), A.end(), L.begin(), S.begin(),
+                 [](auto & a, auto & l) { return a(1) / l; });
+
+  // Natural coordinates
   Real xi = natural_coords(0);
   Real eta = natural_coords(1);
 
-  // projected_coord (x1 x2 x3) (y1 y2 y3)
+  // Derivative of quadratic interpolation functions
+  Matrix<Real> dP = {{4 * (1 - 2 * xi - eta), 4 * eta, -4 * eta},
+                     {-4 * xi, 4 * xi, 4 * (1 - xi - 2 * eta)}};
 
-  // donne juste pour pour le patch test 4_5_5 mais donne quelque changement
-  // de signe dans la matrice de rotation
-
-  Real x21 = projected_coord(0, 0) - projected_coord(0, 1); // x1-x2
-  Real x32 = projected_coord(0, 1) - projected_coord(0, 2);
-  Real x13 = projected_coord(0, 2) - projected_coord(0, 0);
-
-  Real y21 = projected_coord(1, 0) - projected_coord(1, 1); // y1-y2
-  Real y32 = projected_coord(1, 1) - projected_coord(1, 2);
-  Real y13 = projected_coord(1, 2) - projected_coord(1, 0);
-
-  // donne juste pour la matrice de rigidité... mais pas pour le patch test
-  // 4_5_5
-
-  /* Real x21=projected_coord(0,1)-projected_coord(0,0);
-    Real x32=projected_coord(0,2)-projected_coord(0,1);
-    Real x13=projected_coord(0,0)-projected_coord(0,2);
-
-    Real y21=projected_coord(1,1)-projected_coord(1,0);
-    Real y32=projected_coord(1,2)-projected_coord(1,1);
-    Real y13=projected_coord(1,0)-projected_coord(1,2);*/
-
-  // natural triangle side length
-  Real L4 = std::sqrt(x21 * x21 + y21 * y21);
-  Real L5 = std::sqrt(x32 * x32 + y32 * y32);
-  Real L6 = std::sqrt(x13 * x13 + y13 * y13);
-
-  // sinus and cosinus
-  Real C4 = x21 / L4;
-  Real C5 = x32 / L5;
-  Real C6 = x13 / L6;
-  Real S4 = y21 / L4;
-  Real S5 = y32 / L5;
-  Real S6 = y13 / L6;
-
-  Real dN1xi = -1;
-  Real dN2xi = 1;
-  Real dN3xi = 0;
-
-  Real dN1eta = -1;
-  Real dN2eta = 0;
-  Real dN3eta = 1;
-
-  Real dP4xi = 4 - 8. * xi - 4 * eta;
-  Real dP5xi = 4 * eta;
-  Real dP6xi = -4 * eta;
-
-  Real dP4eta = -4 * xi;
-  Real dP5eta = 4 * xi;
-  Real dP6eta = 4 - 4 * xi - 8. * eta;
-
-  // N'xi
-  auto Np00 = dN1xi;
-  auto Np01 = dN2xi;
-  auto Np02 = dN3xi;
-  //   N'eta
-  auto Np10 = dN1eta;
-  auto Np11 = dN2eta;
-  auto Np12 = dN3eta;
-
-  // Nxi1'xi
-  auto Nx1p00 = 3. / (2 * L4) * dP4xi * C4 - 3. / (2. * L6) * dP6xi * C6;
-  auto Nx1p01 = 3. / (2 * L5) * dP5xi * C5 - 3. / (2. * L4) * dP4xi * C4;
-  auto Nx1p02 = 3. / (2 * L6) * dP6xi * C6 - 3. / (2. * L5) * dP5xi * C5;
-  //    Nxi1'eta
-  auto Nx1p10 = 3. / (2 * L4) * dP4eta * C4 - 3. / (2. * L6) * dP6eta * C6;
-  auto Nx1p11 = 3. / (2 * L5) * dP5eta * C5 - 3. / (2. * L4) * dP4eta * C4;
-  auto Nx1p12 = 3. / (2 * L6) * dP6eta * C6 - 3. / (2. * L5) * dP5eta * C5;
-
-  // Nxi2'xi
-  auto Nx2p00 = -1 - (3. / 4.) * dP4xi * C4 * C4 - (3. / 4.) * dP6xi * C6 * C6;
-  auto Nx2p01 = 1 - (3. / 4.) * dP5xi * C5 * C5 - (3. / 4.) * dP4xi * C4 * C4;
-  auto Nx2p02 = -(3. / 4.) * dP6xi * C6 * C6 - (3. / 4.) * dP5xi * C5 * C5;
-  //    Nxi2'eta
-  auto Nx2p10 =
-      -1 - (3. / 4.) * dP4eta * C4 * C4 - (3. / 4.) * dP6eta * C6 * C6;
-  auto Nx2p11 = -(3. / 4.) * dP5eta * C5 * C5 - (3. / 4.) * dP4eta * C4 * C4;
-  auto Nx2p12 = 1 - (3. / 4.) * dP6eta * C6 * C6 - (3. / 4.) * dP5eta * C5 * C5;
-
-  // Nxi3'xi
-  auto Nx3p00 = -(3. / 4.) * dP4xi * C4 * S4 - (3. / 4.) * dP6xi * C6 * S6;
-  auto Nx3p01 = -(3. / 4.) * dP5xi * C5 * S5 - (3. / 4.) * dP4xi * C4 * S4;
-  auto Nx3p02 = -(3. / 4.) * dP6xi * C6 * S6 - (3. / 4.) * dP5xi * C5 * S5;
-  //  Nxi3'eta
-  auto Nx3p10 = -(3. / 4.) * dP4eta * C4 * S4 - (3. / 4.) * dP6eta * C6 * S6;
-  auto Nx3p11 = -(3. / 4.) * dP5eta * C5 * S5 - (3. / 4.) * dP4eta * C4 * S4;
-  auto Nx3p12 = -(3. / 4.) * dP6eta * C6 * S6 - (3. / 4.) * dP5eta * C5 * S5;
-
-  // Nyi1'xi
-  auto Ny1p00 = 3 / (2 * L4) * dP4xi * S4 - 3 / (2 * L6) * dP6xi * S6;
-  auto Ny1p01 = 3 / (2 * L5) * dP5xi * S5 - 3 / (2 * L4) * dP4xi * S4;
-  auto Ny1p02 = 3 / (2 * L6) * dP6xi * S6 - 3 / (2 * L5) * dP5xi * S5;
-  //    Nyi1'eta
-  auto Ny1p10 = 3 / (2 * L4) * dP4eta * S4 - 3 / (2 * L6) * dP6eta * S6;
-  auto Ny1p11 = 3 / (2 * L5) * dP5eta * S5 - 3 / (2 * L4) * dP4eta * S4;
-  auto Ny1p12 = 3 / (2 * L6) * dP6eta * S6 - 3 / (2 * L5) * dP5eta * S5;
-
-  // Nyi2'xi
-  auto Ny2p00 = -(3. / 4.) * dP4xi * C4 * S4 - (3. / 4.) * dP6xi * C6 * S6;
-  auto Ny2p01 = -(3. / 4.) * dP5xi * C5 * S5 - (3. / 4.) * dP4xi * C4 * S4;
-  auto Ny2p02 = -(3. / 4.) * dP6xi * C6 * S6 - (3. / 4.) * dP5xi * C5 * S5;
-  //  Nyi2'eta
-  auto Ny2p10 = -(3. / 4.) * dP4eta * C4 * S4 - (3. / 4.) * dP6eta * C6 * S6;
-  auto Ny2p11 = -(3. / 4.) * dP5eta * C5 * S5 - (3. / 4.) * dP4eta * C4 * S4;
-  auto Ny2p12 = -(3. / 4.) * dP6eta * C6 * S6 - (3. / 4.) * dP5eta * C5 * S5;
-
-  // Nyi3'xi
-  auto Ny3p00 =
-      dN1xi - (3. / 4.) * dP4xi * S4 * S4 - (3. / 4.) * dP6xi * S6 * S6;
-  auto Ny3p01 =
-      dN2xi - (3. / 4.) * dP5xi * S5 * S5 - (3. / 4.) * dP4xi * S4 * S4;
-  auto Ny3p02 =
-      dN3xi - (3. / 4.) * dP6xi * S6 * S6 - (3. / 4.) * dP5xi * S5 * S5;
-  //      Nyi3'eta
-  auto Ny3p10 =
-      dN1eta - (3. / 4.) * dP4eta * S4 * S4 - (3. / 4.) * dP6eta * S6 * S6;
-  auto Ny3p11 =
-      dN2eta - (3. / 4.) * dP5eta * S5 * S5 - (3. / 4.) * dP4eta * S4 * S4;
-  auto Ny3p12 =
-      dN3eta - (3. / 4.) * dP6eta * S6 * S6 - (3. / 4.) * dP5eta * S5 * S5;
-
-  // clang-format off
-  //       0    1                2                3                4       5     6                7                8                9    10    11               12               13               14
-  B = {{Np00,   0.,              0.,              0.,              0.,   Np01,   0.,              0.,              0.,              0., Np02,   0.,              0.,              0.,              0.},  // 0
-       {  0., Np10,              0.,              0.,              0.,     0., Np11,              0.,              0.,              0.,   0., Np12,              0.,              0.,              0.},  // 1
-       {Np10, Np00,              0.,              0.,              0.,   Np11, Np01,              0.,              0.,              0., Np12, Np02,              0.,              0.,              0.},  // 2
-       {  0.,   0.,          Nx1p00,          Nx2p00,          Nx3p00,     0.,   0.,          Nx1p01,          Nx2p01,          Nx3p01,   0.,   0.,          Nx1p02,          Nx2p02,          Nx3p02},  // 3
-       {  0.,   0.,          Ny1p10,          Ny2p10,          Ny3p10,     0.,   0.,          Ny1p11,          Ny2p11,          Ny3p11,   0.,   0.,          Ny1p12,          Ny2p12,          Ny3p12},  // 4
-       {  0.,   0., Nx1p10 + Ny1p00, Nx2p10 + Ny2p00, Nx3p10 + Ny3p00,     0.,   0., Nx1p11 + Ny1p01, Nx2p11 + Ny2p01, Nx3p11 + Ny3p01,   0.,   0., Nx1p12 + Ny1p02, Nx2p12 + Ny2p02, Nx3p12 + Ny3p02}}; // 5
+  Matrix<Real> dNx1 = {
+      {3. / 2 * (dP(0, 0) * C[0] / L[0] - dP(0, 2) * C[2] / L[2]),
+       3. / 2 * (dP(0, 1) * C[1] / L[1] - dP(0, 0) * C[0] / L[0]),
+       3. / 2 * (dP(0, 2) * C[2] / L[2] - dP(0, 1) * C[1] / L[1])},
+      {3. / 2 * (dP(1, 0) * C[0] / L[0] - dP(1, 2) * C[2] / L[2]),
+       3. / 2 * (dP(1, 1) * C[1] / L[1] - dP(1, 0) * C[0] / L[0]),
+       3. / 2 * (dP(1, 2) * C[2] / L[2] - dP(1, 1) * C[1] / L[1])}};
+  Matrix<Real> dNx2 = {
+      // clang-format off
+      {-1 - 3. / 4 * (dP(0, 0) * C[0] * C[0] + dP(0, 2) * C[2] * C[2]),
+	1 - 3. / 4 * (dP(0, 1) * C[1] * C[1] + dP(0, 0) * C[0] * C[0]),
+	  - 3. / 4 * (dP(0, 2) * C[2] * C[2] + dP(0, 1) * C[1] * C[1])},
+      {-1 - 3. / 4 * (dP(1, 0) * C[0] * C[0] + dP(1, 2) * C[2] * C[2]),
+	  - 3. / 4 * (dP(1, 1) * C[1] * C[1] + dP(1, 0) * C[0] * C[0]),
+	1 - 3. / 4 * (dP(1, 2) * C[2] * C[2] + dP(1, 1) * C[1] * C[1])}};
   // clang-format on
-#endif
+  Matrix<Real> dNx3 = {
+      {-3. / 4 * (dP(0, 0) * C[0] * S[0] + dP(0, 2) * C[2] * S[2]),
+       -3. / 4 * (dP(0, 1) * C[1] * S[1] + dP(0, 0) * C[0] * S[0]),
+       -3. / 4 * (dP(0, 2) * C[2] * S[2] + dP(0, 1) * C[1] * S[1])},
+      {-3. / 4 * (dP(1, 0) * C[0] * S[0] + dP(1, 2) * C[2] * S[2]),
+       -3. / 4 * (dP(1, 1) * C[1] * S[1] + dP(1, 0) * C[0] * S[0]),
+       -3. / 4 * (dP(1, 2) * C[2] * S[2] + dP(1, 1) * C[1] * S[1])}};
+  Matrix<Real> dNy1 = {
+      {3. / 2 * (dP(0, 0) * S[0] / L[0] - dP(0, 2) * S[2] / L[2]),
+       3. / 2 * (dP(0, 1) * S[1] / L[1] - dP(0, 0) * S[0] / L[0]),
+       3. / 2 * (dP(0, 2) * S[2] / L[2] - dP(0, 1) * S[1] / L[1])},
+      {3. / 2 * (dP(1, 0) * S[0] / L[0] - dP(1, 2) * S[2] / L[2]),
+       3. / 2 * (dP(1, 1) * S[1] / L[1] - dP(1, 0) * S[0] / L[0]),
+       3. / 2 * (dP(1, 2) * S[2] / L[2] - dP(1, 1) * S[1] / L[1])}};
+  Matrix<Real> dNy2 = dNx3;
+  Matrix<Real> dNy3 = {
+      // clang-format off
+      {-1 - 3. / 4 * (dP(0, 0) * S[0] * S[0] + dP(0, 2) * S[2] * S[2]),
+	1 - 3. / 4 * (dP(0, 1) * S[1] * S[1] + dP(0, 0) * S[0] * S[0]),
+	  - 3. / 4 * (dP(0, 2) * S[2] * S[2] + dP(0, 1) * S[1] * S[1])},
+      {-1 - 3. / 4 * (dP(1, 0) * S[0] * S[0] + dP(1, 2) * S[2] * S[2]),
+	  - 3. / 4 * (dP(1, 1) * S[1] * S[1] + dP(1, 0) * S[0] * S[0]),
+	1 - 3. / 4 * (dP(1, 2) * S[2] * S[2] + dP(1, 1) * S[1] * S[1])}};
+  // clang-format on
+
+  // Derivative of linear (membrane mode) functions
+  Matrix<Real> dNm(2, 3);
+  InterpolationElement<_itp_lagrange_triangle_3, _itk_lagrangian>::computeDNDS(
+      natural_coords, dNm);
+  
+  UInt i = 0;
+  for (const Matrix<Real> & mat : {dNm, dNx1, dNx2, dNx3, dNy1, dNy2, dNy3}) {
+    B.block(mat, 0, i);
+    i += mat.cols();
+  }
+}
+/* -------------------------------------------------------------------------- */
+template <>
+inline void
+InterpolationElement<_itp_discrete_kirchhoff_triangle_18,
+                     _itk_structural>::arrangeInVoigt(const Matrix<Real> & dnds,
+                                                      Matrix<Real> & B) {
+  Matrix<Real> dNm(2, 3), dNx1(2, 3), dNx2(2, 3), dNx3(2, 3), dNy1(2, 3),
+      dNy2(2, 3), dNy3(2, 3);
+  UInt i = 0;
+  for (Matrix<Real> * mat : {&dNm, &dNx1, &dNx2, &dNx3, &dNy1, &dNy2, &dNy3}) {
+    *mat = dnds.block(0, i, 2, 3);
+    i += mat->cols();
+  }
+
+  for (UInt i = 0; i < 3; ++i) {
+    // clang-format off
+    Matrix<Real> Bm = {{dNm(0, i), 0,         0, 0, 0, 0},
+                       {0,         dNm(1, i), 0, 0, 0, 0},
+                       {dNm(1, i), dNm(0, i), 0, 0, 0, 0}};
+    Matrix<Real> Bf = {{0, 0, dNx1(0, i),              -dNx3(0, i),              dNx2(0, i),              0},
+                       {0, 0, dNy1(1, i),              -dNy3(1, i),              dNy2(1, i),              0},
+                       {0, 0, dNx1(1, i) + dNy1(0, i), -dNx3(1, i) - dNy3(0, i), dNx2(1, i) + dNy2(0, i), 0}};
+    // clang-format on
+    B.block(Bm, 0, i * 6);
+    B.block(Bf, 3, i * 6);
+  }
 }
 
 } // namespace akantu

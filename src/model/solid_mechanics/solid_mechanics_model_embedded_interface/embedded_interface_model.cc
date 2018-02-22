@@ -82,11 +82,9 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
           using mat = MaterialElastic<1>;
           switch (dim) {
           case 2:
-            return std::unique_ptr<MaterialReinforcement<mat, 2>>{
-                new MaterialReinforcement<mat, 2>(*this, id)};
+            return std::make_unique<MaterialReinforcement<mat, 2>>(*this, id);
           case 3:
-            return std::unique_ptr<MaterialReinforcement<mat, 3>>{
-                new MaterialReinforcement<mat, 3>(*this, id)};
+            return std::make_unique<MaterialReinforcement<mat, 3>>(*this, id);
           default:
             AKANTU_EXCEPTION("Dimension 1 is invalid for reinforcements");
           }

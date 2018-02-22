@@ -254,21 +254,28 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     auto & B = std::get<1>(tuple);
     auto & RDOFs = std::get<2>(tuple);
 
+
+    Tensor3<Real> dnds(natural_spatial_dimension,
+                       ElementClass<type>::interpolation_property::dnds_columns,
+                       B.size(2));
+    ElementClass<type>::computeDNDS(natural_coords, X, dnds);
+
+    Tensor3<Real> J(natural_spatial_dimension, natural_spatial_dimension,
+                    natural_coords.cols());
+
+    // Computing the coordinates of the element in the natural space
     auto R = RDOFs.block(0, 0, spatial_dimension, spatial_dimension);
-    Matrix<Real> T(B.size(1), B.size(1));
-    T.block(RDOFs, 0, 0);
-    T.block(RDOFs, RDOFs.rows(), RDOFs.rows());
+    Matrix<Real> T(B.size(1), B.size(1), 0);
+
+    for (UInt i = 0; i < nb_nodes_per_element; ++i) {
+      T.block(RDOFs, i * RDOFs.rows(), i * RDOFs.rows());
+    }
 
     // Rotate to local basis
     auto x =
         (R * X).block(0, 0, natural_spatial_dimension, nb_nodes_per_element);
 
-    Tensor3<Real> dnds(B.size(0), B.size(1), B.size(2));
-    ElementClass<type>::computeDNDS(natural_coords, X, dnds);
-
-    Tensor3<Real> J(x.rows(), natural_coords.rows(), natural_coords.cols());
-
-    ElementClass<type>::computeJMat(dnds, x, J);
+    ElementClass<type>::computeJMat(natural_coords, x, J);
     ElementClass<type>::computeShapeDerivatives(J, dnds, T, B);
   }
 
@@ -376,6 +383,48 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
   });
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <>
+template <ElementType type>
+void ShapeStructural<_ek_structural>::computeBtD(
+    const Array<Real> & Ds, Array<Real> & BtDs,
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+
+  auto nb_stress = ElementClass<type>::getNbStressComponents();
+  auto nb_dof_per_element = ElementClass<type>::getNbDegreeOfFreedom() *
+                            mesh.getNbNodesPerElement(type);
+
+  const auto & shapes_derivatives =
+      this->shapes_derivatives(itp_type, ghost_type);
+
+  Array<Real> shapes_derivatives_filtered(0,
+                                          shapes_derivatives.getNbComponent());
+  auto && view = make_view(shapes_derivatives, nb_stress, nb_dof_per_element);
+  auto B_it = view.begin();
+  auto B_end = view.end();
+
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes_derivatives,
+                                  shapes_derivatives_filtered, type, ghost_type,
+                                  filter_elements);
+    auto && view =
+        make_view(shapes_derivatives_filtered, nb_stress, nb_dof_per_element);
+    B_it = view.begin();
+    B_end = view.end();
+  }
+
+  for (auto && values :
+       zip(range(B_it, B_end),
+           make_view(Ds, nb_stress),
+           make_view(BtDs, BtDs.getNbComponent()))) {
+    const auto & B = std::get<0>(values);
+    const auto & D = std::get<1>(values);
+    auto & Bt_D = std::get<2>(values);
+    Bt_D.template mul<true>(B, D);
+  }
 }
 
 } // namespace akantu

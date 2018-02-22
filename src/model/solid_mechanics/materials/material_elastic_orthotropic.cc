@@ -79,15 +79,6 @@ template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real vector_norm(Vector<Real> & vec) {
-  Real norm = 0;
-  for (UInt i = 0; i < vec.size(); ++i) {
-    norm += vec(i) * vec(i);
-  }
-  return std::sqrt(norm);
-}
-
-/* -------------------------------------------------------------------------- */
 template <UInt Dim>
 void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
   /* 1) construction of temporary material frame stiffness tensor------------ */
@@ -138,41 +129,6 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
 }
 
 /* -------------------------------------------------------------------------- */
-
-template <UInt dim>
-inline void MaterialElasticOrthotropic<dim>::computePotentialEnergyOnQuad(
-    const Matrix<Real> & grad_u, const Matrix<Real> & sigma, Real & epot) {
-  epot = .5 * sigma.doubleDot(grad_u);
-}
-
-/* -------------------------------------------------------------------------- */
-template <UInt spatial_dimension>
-void MaterialElasticOrthotropic<spatial_dimension>::computePotentialEnergy(
-    ElementType el_type, GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  Material::computePotentialEnergy(el_type, ghost_type);
-
-  AKANTU_DEBUG_ASSERT(!this->finite_deformation,
-                      "finite deformation not possible in material orthotropic "
-                      "(TO BE IMPLEMENTED)");
-
-  if (ghost_type != _not_ghost)
-    return;
-  Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-
-  computePotentialEnergyOnQuad(grad_u, sigma, *epot);
-  ++epot;
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialElasticOrthotropic<spatial_dimension>::
     computePotentialEnergyByElement(ElementType type, UInt index,
@@ -202,7 +158,7 @@ void MaterialElasticOrthotropic<spatial_dimension>::
   for (; gradu_it != gradu_end; ++gradu_it, ++stress_it, ++epot_quad) {
     grad_u.copy(*gradu_it);
 
-    computePotentialEnergyOnQuad(grad_u, *stress_it, *epot_quad);
+    this->computePotentialEnergyOnQuad(grad_u, *stress_it, *epot_quad);
   }
 }
 

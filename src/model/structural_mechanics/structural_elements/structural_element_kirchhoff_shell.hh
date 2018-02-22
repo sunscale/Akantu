@@ -62,10 +62,11 @@ void StructuralMechanicsModel::computeTangentModuli<
 
     for (UInt q = 0; q < nb_quad; ++q, ++H_it) {
       auto & H = *H_it;
+      H.clear();
       Matrix<Real> D = {{1, m.nu, 0}, {m.nu, 1, 0}, {0, 0, (1 - m.nu) / 2}};
-      D *= m.E / (1 - m.nu * m.nu);
-      H.block(0, 0, 3, 3) = D; // in plane membrane behavior
-      H.block(3, 3, 3, 3) = D * Math::pow<3>(m.t) / 12.; // bending behavior
+      D *= m.E * m.t / (1 - m.nu * m.nu);
+      H.block(D, 0, 0);                           // in plane membrane behavior
+      H.block(D * Math::pow<3>(m.t) / 12., 3, 3); // bending behavior
     }
   }
 }

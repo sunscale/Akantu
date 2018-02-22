@@ -57,8 +57,11 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
 
   solver_callback.predictor();
 
-  solver_callback.assembleResidual();
   solver_callback.assembleMatrix("J");
+
+  // Residual computed after J to allow the model to use K to compute the
+  // residual
+  this->assembleResidual(solver_callback);
 
   this->solver.solve();
 

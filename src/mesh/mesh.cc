@@ -112,6 +112,16 @@ Mesh::Mesh(UInt spatial_dimension, const std::shared_ptr<Array<Real>> & nodes,
 }
 
 /* -------------------------------------------------------------------------- */
+void Mesh::getBarycenters(Array<Real> & barycenter, const ElementType & type,
+                          const GhostType & ghost_type) const {
+  barycenter.resize(getNbElement(type, ghost_type));
+  for (auto && data : enumerate(make_view(barycenter, spatial_dimension))) {
+    getBarycenter(Element{type, UInt(std::get<0>(data)), ghost_type},
+                  std::get<1>(data));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 Mesh & Mesh::initMeshFacets(const ID & id) {
   AKANTU_DEBUG_IN();
 
@@ -146,53 +156,67 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
                          _spatial_dimension = spatial_dimension - 1,
                          _with_nb_element = true);
 
+    ElementTypeMapArray<Real> barycenters(getID(), "temporary_barycenters");
+    barycenters.initialize(*mesh_facets, _nb_component = spatial_dimension,
+                           _spatial_dimension = spatial_dimension - 1,
+                           _with_nb_element = true);
+
+    for (auto && ghost_type : ghost_types) {
+      for (auto && type : barycenters.elementTypes(
+               spatial_dimension - 1, ghost_type)) {
+        mesh_facets->getBarycenters(barycenters(type, ghost_type), type,
+                                    ghost_type);
+      }
+    }
+
     for_each_element(
         mesh,
         [&](auto && element) {
           Vector<Real> barycenter(spatial_dimension);
           mesh.getBarycenter(element, barycenter);
           auto norm_barycenter = barycenter.norm();
+          auto tolerance = Math::getTolerance();
+          if (norm_barycenter > tolerance)
+            tolerance *= norm_barycenter;
 
           const auto & element_to_facet = mesh_facets->getElementToSubelement(
               element.type, element.ghost_type);
 
           Vector<Real> barycenter_facet(spatial_dimension);
-          auto nb_facet =
-              mesh_facets->getNbElement(element.type, element.ghost_type);
 
-          auto range = arange(nb_facet);
+          auto range =
+              enumerate(make_view(barycenters(element.type, element.ghost_type),
+                                  spatial_dimension));
 #ifndef AKANTU_NDEBUG
           auto min_dist = std::numeric_limits<Real>::max();
 #endif
           // this is a spacial search coded the most inefficient way.
           auto facet =
-              std::find_if(range.begin(), range.end(), [&](auto && facet) {
+              std::find_if(range.begin(), range.end(), [&](auto && data) {
+                auto facet = std::get<0>(data);
                 if (element_to_facet(facet)[1] == ElementNull)
                   return false;
 
-                mesh_facets->getBarycenter(
-                    Element{element.type, facet, element.ghost_type},
-                    barycenter_facet);
-                auto norm_distance = barycenter_facet.distance(barycenter);
+                auto norm_distance = barycenter.distance(std::get<1>(data));
 #ifndef AKANTU_NDEBUG
                 min_dist = std::min(min_dist, norm_distance);
 #endif
-                return (norm_distance <
-                        (Math::getTolerance() * norm_barycenter));
+                return (norm_distance < tolerance);
               });
+
           if (facet == range.end()) {
-            AKANTU_DEBUG_INFO(
-                "The element "
-                << element << " did not find its associated facet in the "
-                              "mesh_facets! Try to decrease math tolerance. "
-                              "The closest element was at a distance of "
-                << min_dist);
+            AKANTU_DEBUG_INFO("The element "
+                              << element
+                              << " did not find its associated facet in the "
+                                 "mesh_facets! Try to decrease math tolerance. "
+                                 "The closest element was at a distance of "
+                              << min_dist);
             return;
           }
 
           // set physical name
-          phys_data(Element{element.type, *facet, element.ghost_type}) =
-              mesh_phys_data(element);
+          phys_data(Element{element.type, UInt(std::get<0>(*facet)),
+                            element.ghost_type}) = mesh_phys_data(element);
         },
         _spatial_dimension = spatial_dimension - 1);
 
@@ -321,7 +345,9 @@ void Mesh::getGlobalConnectivity(
 
   for (auto && ghost_type : ghost_types) {
     for (auto type :
-         global_connectivity.elementTypes(_ghost_type = ghost_type)) {
+             global_connectivity.elementTypes(_spatial_dimension = _all_dimensions,
+                                              _element_kind = _ek_not_defined,
+                                              _ghost_type = ghost_type)) {
       if (not connectivities.exists(type, ghost_type))
         continue;
 

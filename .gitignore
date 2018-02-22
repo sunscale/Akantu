@@ -14,3 +14,4 @@ release
 *.tar.bz2
 .idea
 __pycache__
+.mailmap

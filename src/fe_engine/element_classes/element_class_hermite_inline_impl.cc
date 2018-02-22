@@ -92,7 +92,7 @@ namespace akantu {
 
 AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(_itp_hermite_2,
                                                      _itp_lagrange_segment_2, 2,
-                                                     1);
+                                                     1, 4);
 
 /* -------------------------------------------------------------------------- */
 

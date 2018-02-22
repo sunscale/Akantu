@@ -93,6 +93,7 @@ enum ElemType : unsigned int {
   BEAM3     ,
   PRISM1    ,
   PRISM2    ,
+  COH1D2    ,
   COH2D4    ,
   COH2D6    ,
   COH3D6    ,
@@ -131,6 +132,7 @@ static UInt nb_node_per_elem[MAX_ELEM_TYPE] __attribute__((unused)) = {
   2,   // BEAM3
   6,   // PRISM1
  15,   // PRISM2
+  2,   // COH1D2
   4,   // COH2D4
   6,   // COH2D6
   6,   // COH3D6
@@ -155,6 +157,7 @@ static UInt nb_quad_points[MAX_ELEM_TYPE] __attribute__((unused)) = {
   3,   // BEAM3
   6,   // PRISM1
   8,   // PRISM2
+  1,   // COH1D2
   1,   // COH2D4
   2,   // COH2D6
   1,   // COH3D6

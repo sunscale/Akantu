@@ -129,49 +129,5 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 }
 
 /* -------------------------------------------------------------------------- */
-template <>
-template <>
-void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
-                      DefaultIntegrationOrderFunctor>::
-    computeNormalsOnIntegrationPoints<_cohesive_1d_2>(
-        const Array<Real> &, Array<Real> & normal,
-        const GhostType & ghost_type) const {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_ASSERT(
-      mesh.getSpatialDimension() == 1,
-      "Mesh dimension must be 1 to compute normals on 1D cohesive elements!");
-  const ElementType type = _cohesive_1d_2;
-  const ElementType facet_type = Mesh::getFacetType(type);
-
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
-  normal.resize(nb_element);
-
-  Array<Element> & facets =
-      mesh.getMeshFacets().getSubelementToElement(type, ghost_type);
-  Array<std::vector<Element> > & segments =
-      mesh.getMeshFacets().getElementToSubelement(facet_type, ghost_type);
-
-  Real values[2];
-
-  for (UInt elem = 0; elem < nb_element; ++elem) {
-
-    for (UInt p = 0; p < 2; ++p) {
-      Element f = facets(elem, p);
-      Element seg = segments(f.element)[0];
-      Vector<Real> barycenter(values + p, 1);
-      mesh.getBarycenter(seg, barycenter);
-    }
-
-    Real difference = values[0] - values[1];
-
-    AKANTU_DEBUG_ASSERT(difference != 0.,
-                        "Error in normal computation for cohesive elements");
-
-    normal(elem) = difference / std::abs(difference);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
 
 } // akantu

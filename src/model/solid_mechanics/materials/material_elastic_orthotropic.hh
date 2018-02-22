@@ -81,18 +81,9 @@ public:
 
   void updateInternalParameters() override;
 
-  /// compute the elastic potential energy
-  void computePotentialEnergy(ElementType el_type,
-                              GhostType ghost_type = _not_ghost) override;
-
   void
   computePotentialEnergyByElement(ElementType type, UInt index,
                                   Vector<Real> & epot_on_quad_points) override;
-
-protected:
-  inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
-                                           const Matrix<Real> & sigma,
-                                           Real & epot);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

@@ -51,6 +51,7 @@ namespace {
   DECLARE_NAMED_ARGUMENT(element_kind);
   DECLARE_NAMED_ARGUMENT(ghost_type);
   DECLARE_NAMED_ARGUMENT(nb_component);
+  DECLARE_NAMED_ARGUMENT(nb_component_functor);
   DECLARE_NAMED_ARGUMENT(with_nb_element);
   DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
   DECLARE_NAMED_ARGUMENT(spatial_dimension);
@@ -121,7 +122,6 @@ public:
                              const GhostType & ghost_type = _not_ghost);
 
 public:
-
   /// print helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -212,6 +212,12 @@ private:
   elementTypesImpl(const use_named_args_t & /*unused*/, pack &&... _pack) const;
 
 public:
+  /*!
+   * \param _spatial_dimension optional: filter for elements of given spatial
+   * dimension
+   * \param _ghost_type optional: filter for a certain ghost_type
+   * \param _element_kind optional: filter for elements of given kind
+   */
   template <typename... pack>
   std::enable_if_t<are_named_argument<pack...>::value,
                    ElementTypesIteratorHelper>
@@ -296,6 +302,9 @@ public:
   void operator=(const ElementTypeMapArray &) = delete;
   ElementTypeMapArray(const ElementTypeMapArray &) = delete;
 
+  /// explicit copy
+  void copy(const ElementTypeMapArray & other);
+
   /*! Constructor
    *  @param id optional: identifier (string)
    *  @param parent_id optional: parent identifier. for organizational purposes
@@ -335,7 +344,8 @@ public:
              const GhostType & ghost_type = _not_ghost) const;
 
   /// access the data of an element, this combine the map and array accessor
-  inline const T & operator()(const Element & element, UInt component = 0) const;
+  inline const T & operator()(const Element & element,
+                              UInt component = 0) const;
 
   /// access the data of an element, this combine the map and array accessor
   inline T & operator()(const Element & element, UInt component = 0);
@@ -363,8 +373,7 @@ public:
   inline void clear();
 
   /*! set all values in the ElementTypeMap to value */
-  template<typename ST>
-  inline void set(const ST & value);
+  template <typename ST> inline void set(const ST & value);
 
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1)
