@@ -62,7 +62,7 @@ public:
 
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
-				   const Matrix<Real> & real_coord,
+                                   const Matrix<Real> & real_coord,
                                    Tensor3<Real> & N) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> n_t = N(i);
@@ -72,13 +72,13 @@ public:
 
   /// compute the shape values for a given point in natural coordinates
   static inline void computeShapes(const Vector<Real> & natural_coord,
-				   const Matrix<Real> & real_coord,
+                                   const Matrix<Real> & real_coord,
                                    Matrix<Real> & N);
 
   /// compute shape derivatives (input is dxds) for a set of points
   static inline void computeShapeDerivatives(const Tensor3<Real> & Js,
                                              const Tensor3<Real> & DNDSs,
-					     const Matrix<Real> & R,
+                                             const Matrix<Real> & R,
                                              Tensor3<Real> & Bs) {
     for (UInt i = 0; i < Js.size(2); ++i) {
       Matrix<Real> J = Js(i);
@@ -99,7 +99,7 @@ public:
    * of points in natural coordinates
    */
   static inline void computeDNDS(const Matrix<Real> & natural_coord,
-				 const Matrix<Real> & real_coord,
+                                 const Matrix<Real> & real_coord,
                                  Tensor3<Real> & dnds) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> dnds_t = dnds(i);
@@ -114,40 +114,42 @@ public:
    * coordinates
    */
   static inline void computeDNDS(const Vector<Real> & natural_coord,
-				 const Matrix<Real> & real_coord,
+                                 const Matrix<Real> & real_coord,
                                  Matrix<Real> & dnds);
 
   /**
    * arrange B in Voigt notation from DNDS
    */
   static inline void arrangeInVoigt(const Matrix<Real> & dnds,
-				    Matrix<Real> & B) {
+                                    Matrix<Real> & B) {
     // Default implementation assumes dnds is already in Voigt notation
     B.deepCopy(dnds);
   }
 
 public:
-  static AKANTU_GET_MACRO_NOT_CONST(
-      NbNodesPerInterpolationElement,
-      interpolation_property::nb_nodes_per_element, UInt);
+  static inline constexpr auto getNbNodesPerInterpolationElement() {
+    return interpolation_property::nb_nodes_per_element;
+  }
 
-  static AKANTU_GET_MACRO_NOT_CONST(
-      ShapeSize, (interpolation_property::nb_nodes_per_element *
-                  interpolation_property::nb_degree_of_freedom *
-                  interpolation_property::nb_degree_of_freedom),
-      UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(
-      ShapeDerivativesSize, (interpolation_property::nb_nodes_per_element *
-                             interpolation_property::nb_degree_of_freedom *
-                             interpolation_property::nb_stress_components),
-      UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(
-      NaturalSpaceDimension, interpolation_property::natural_space_dimension,
-      UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(
-      NbDegreeOfFreedom, interpolation_property::nb_degree_of_freedom, UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(
-      NbStressComponents, interpolation_property::nb_stress_components, UInt);
+  static inline constexpr auto getShapeSize() {
+    return interpolation_property::nb_nodes_per_element *
+           interpolation_property::nb_degree_of_freedom *
+           interpolation_property::nb_degree_of_freedom;
+  }
+  static inline constexpr auto getShapeDerivativesSize() {
+    return interpolation_property::nb_nodes_per_element *
+           interpolation_property::nb_degree_of_freedom *
+           interpolation_property::nb_stress_components;
+  }
+  static inline constexpr auto getNaturalSpaceDimension() {
+    return interpolation_property::natural_space_dimension;
+  }
+  static inline constexpr auto getNbDegreeOfFreedom() {
+    return interpolation_property::nb_degree_of_freedom;
+  }
+  static inline constexpr auto getNbStressComponents() {
+    return interpolation_property::nb_stress_components;
+  }
 };
 
 /// Macro to generate the element class structures for different structural
@@ -200,7 +202,7 @@ public:
 
   static inline void computeJMat(const Matrix<Real> & natural_coords,
                                  const Matrix<Real> & Xs, Tensor3<Real> & Js) {
-    for (UInt i = 0 ; i < natural_coords.cols(); ++i) {
+    for (UInt i = 0; i < natural_coords.cols(); ++i) {
       // because non-const l-value reference does not bind to r-value
       Matrix<Real> J = Js(i);
       computeJMat(Vector<Real>(natural_coords(i)), Xs, J);
