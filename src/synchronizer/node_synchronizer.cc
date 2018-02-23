@@ -62,7 +62,7 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & nodes_list,
 
   for (auto & local_id : nodes_list) {
     auto type = mesh.getNodeType(local_id);
-    if (type <= 0)
+    if (type < 0)
       continue; // local, master or pure ghost
 
     auto global_id = mesh.getNodeGlobalId(local_id);
@@ -88,17 +88,16 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & nodes_list,
         nodes_needed_by_proc[proc], proc, Tag::genTag(rank, 0, 0)));
   }
 
-
   for (auto & pair : nodes_per_proc) {
     auto proc = pair.first;
     auto & nodes = pair.second;
 
-    send_request_per_proc.push_back(communicator.asyncSend(
-        nodes, proc, Tag::genTag(proc, 0, 0)));
+    send_request_per_proc.push_back(
+        communicator.asyncSend(nodes, proc, Tag::genTag(proc, 0, 0)));
   }
 
   UInt req_nb;
-  while((req_nb = communicator.waitAny(recv_request_per_proc)) != UInt(-1)) {
+  while ((req_nb = communicator.waitAny(recv_request_per_proc)) != UInt(-1)) {
     auto & request = recv_request_per_proc[req_nb];
     auto proc = request.getSource();
 
@@ -107,8 +106,12 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & nodes_list,
     auto & scheme = communications.getScheme(proc, _send);
     for (auto global_id : nodes) {
       auto local_id = mesh.getNodeLocalId(global_id);
+      AKANTU_DEBUG_ASSERT(local_id != UInt(-1),
+                          "The global node "
+                              << global_id << "is not known on rank " << rank);
       scheme.push_back(local_id);
     }
+    recv_request_per_proc.erase(recv_request_per_proc.begin() + req_nb);
   }
 
   communicator.waitAll(send_request_per_proc);

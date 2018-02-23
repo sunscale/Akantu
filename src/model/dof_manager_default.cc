@@ -181,7 +181,10 @@ public:
 
   void addDOFToNode(UInt node, UInt dof) { dofs_per_node[node].push_back(dof); }
   UInt getNthDOFForNode(UInt nth_dof, UInt node) const {
-    return dofs_per_node.find(node)->second[nth_dof];
+    auto it = dofs_per_node.find(node);
+    AKANTU_DEBUG_ASSERT(it != dofs_per_node.end(),
+                        "Did not find the node " << node);
+    return it->second[nth_dof];
   }
 
   UInt getNbData(const Array<UInt> & nodes,
@@ -511,10 +514,10 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
 
   this->assembleToGlobalArray(dof_id, x, data_cache, scale_factor);
 
-  Array<Real>::const_scalar_iterator A_it = A.begin();
-  Array<Real>::const_scalar_iterator A_end = A.end();
-  Array<Real>::const_scalar_iterator x_it = data_cache.begin();
-  Array<Real>::scalar_iterator r_it = this->residual.begin();
+  auto A_it = A.begin();
+  auto A_end = A.end();
+  auto x_it = data_cache.begin();
+  auto r_it = this->residual.begin();
 
   for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {
     *r_it += *A_it * *x_it;
@@ -902,19 +905,17 @@ void DOFManagerDefault::updateDOFsData(
 
 /* -------------------------------------------------------------------------- */
 // register in factory
-static bool default_dof_manager_is_registered [[gnu::unused]] =
-  DefaultDOFManagerFactory::getInstance().registerAllocator(
-          "default",
-          [](const ID & id,
-             const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-            return std::make_unique<DOFManagerDefault>(id, mem_id);
-          });
+static bool default_dof_manager_is_registered[[gnu::unused]] =
+    DefaultDOFManagerFactory::getInstance().registerAllocator(
+        "default", [](const ID & id,
+                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(id, mem_id);
+        });
 
-  static bool dof_manager_is_registered [[gnu::unused]] =
-      DOFManagerFactory::getInstance().registerAllocator(
-          "default",
-          [](Mesh & mesh, const ID & id,
-             const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-            return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
-          });
+static bool dof_manager_is_registered[[gnu::unused]] =
+    DOFManagerFactory::getInstance().registerAllocator(
+        "default", [](Mesh & mesh, const ID & id,
+                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        });
 } // namespace akantu

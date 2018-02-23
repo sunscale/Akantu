@@ -33,22 +33,25 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
 
   if (psize > 1) {
     /// get global connectivity for not ghost facets
-    ElementTypeMapArray<UInt> global_connectivity("global_connectivity", id);
+    global_connectivity =
+        new ElementTypeMapArray<UInt>("global_connectivity", id);
 
     auto & mesh_facets = inserter->getMeshFacets();
 
-    global_connectivity.initialize(
+    global_connectivity->initialize(
         mesh_facets, _spatial_dimension = spatial_dimension - 1,
         _with_nb_element = true, _with_nb_nodes_per_element = true,
         _element_kind = _ek_regular);
 
-    mesh_facets.getGlobalConnectivity(global_connectivity);
+    mesh_facets.getGlobalConnectivity(*global_connectivity);
 
     /// communicate
     synchronize(_gst_smmc_facets_conn);
 
     /// flip facets
-    MeshUtils::flipFacets(mesh_facets, global_connectivity, _ghost);
+    MeshUtils::flipFacets(mesh_facets, *global_connectivity, _ghost);
+
+    delete global_connectivity;
   }
 
   AKANTU_DEBUG_OUT();
@@ -77,15 +80,19 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
           facet.ghost_type)(facet.element); // slow access here
       const auto & cohesive_element = connected_elements[1];
 
+      if (cohesive_element == ElementNull or
+          cohesive_element.kind() == _ek_cohesive)
+        continue;
+
       auto && cohesive_type = FEEngine::getCohesiveElementType(facet.type);
       auto old_nb_cohesive_elements =
           mesh.getNbElement(cohesive_type, facet.ghost_type);
       old_nb_cohesive_elements -=
-          mesh.getData<UInt>("facet_to_double", facet.type, facet.ghost_type)
+          mesh_facets
+              .getData<UInt>("facet_to_double", facet.type, facet.ghost_type)
               .size();
 
-      if (cohesive_element.kind() == _ek_cohesive and
-          cohesive_element.element >= old_nb_cohesive_elements) {
+      if (cohesive_element.element >= old_nb_cohesive_elements) {
         scheme.push_back(cohesive_element);
       }
     }

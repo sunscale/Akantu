@@ -1,5 +1,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #if defined(AKANTU_TEST_USE_PYBIND11)
@@ -41,6 +42,12 @@ int main(int argc, char ** argv) {
 
   ::testing::InitGoogleTest(&argc, argv);
   ::testing::AddGlobalTestEnvironment(new AkaEnvironment(argc, argv));
+
+  ::testing::TestEventListeners& listeners =
+        ::testing::UnitTest::GetInstance()->listeners();
+  if (::akantu::Communicator::getStaticCommunicator().whoAmI() != 0) {
+    delete listeners.Release(listeners.default_result_printer());
+  }
 
   return RUN_ALL_TESTS();
 }

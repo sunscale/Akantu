@@ -131,6 +131,7 @@ public:
     const auto & group =
         this->mesh->getElementGroup("insertion").getElements(facet_type);
     auto group_size = group.size();
+
     mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
 
     EXPECT_EQ(nb_cohesive_element, group_size);
