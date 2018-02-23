@@ -45,7 +45,7 @@ Communications<Entity>::Communications(const Communicator & communicator)
 template <class Entity>
 Communications<Entity>::Communications(const Communications & other)
     : communicator(other.communicator) {
-  for(auto && sr : iterate_send_recv) {
+  for(auto sr : iterate_send_recv) {
     for (const auto & scheme_pair : other.iterateSchemes(sr)) {
       auto proc = scheme_pair.first;
       auto & other_scheme = scheme_pair.second;
