@@ -32,16 +32,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_memory.hh"
+#include "aka_factory.hh"
 #include "aka_voigthelper.hh"
-#include "parser.hh"
-#include "parsable.hh"
 #include "data_accessor.hh"
+#include "integration_point.hh"
+#include "parsable.hh"
+#include "parser.hh"
+/* -------------------------------------------------------------------------- */
 #include "internal_field.hh"
 #include "random_internal_field.hh"
+/* -------------------------------------------------------------------------- */
+#include "mesh_events.hh"
 #include "solid_mechanics_model_event_handler.hh"
-
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_HH__
@@ -51,9 +53,9 @@
 namespace akantu {
 class Model;
 class SolidMechanicsModel;
-}
+} // namespace akantu
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Interface of all materials
@@ -62,7 +64,7 @@ __BEGIN_AKANTU__
  * - implement the following methods:
  * \code
  *  virtual Real getStableTimeStep(Real h, const Element & element =
- *ElementNull);
+ * ElementNull);
  *
  *  virtual void computeStress(ElementType el_type,
  *                             GhostType ghost_type = _not_ghost);
@@ -73,9 +75,8 @@ __BEGIN_AKANTU__
  * \endcode
  *
  */
-
 class Material : public Memory,
-                 public DataAccessor,
+                 public DataAccessor<Element>,
                  public Parsable,
                  public MeshEventHandler,
                  protected SolidMechanicsModelEventHandler {
@@ -96,7 +97,7 @@ public:
            FEEngine & fe_engine, const ID & id = "");
 
   /// Destructor
-  virtual ~Material();
+  ~Material() override;
 
 protected:
   void initialize();
@@ -109,7 +110,7 @@ protected:
   virtual void computeStress(__attribute__((unused)) ElementType el_type,
                              __attribute__((unused))
                              GhostType ghost_type = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the tangent stiffness matrix
@@ -119,7 +120,7 @@ protected:
                                     Array<Real> & tangent_matrix,
                                     __attribute__((unused))
                                     GhostType ghost_type = _not_ghost) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the potential energy
@@ -132,7 +133,7 @@ protected:
                                   __attribute__((unused)) UInt index,
                                   __attribute__((unused))
                                   Vector<Real> & epot_on_quad_points) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   virtual void updateEnergies(__attribute__((unused)) ElementType el_type,
@@ -163,13 +164,13 @@ public:
   /// compute the p-wave speed in the material
   virtual Real getPushWaveSpeed(__attribute__((unused))
                                 const Element & element) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the s-wave speed in the material
   virtual Real getShearWaveSpeed(__attribute__((unused))
                                  const Element & element) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// get a material celerity to compute the stable time step (default: is the
@@ -184,30 +185,30 @@ public:
 public:
   template <typename T>
   void registerInternal(__attribute__((unused)) InternalField<T> & vect) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   template <typename T>
   void unregisterInternal(__attribute__((unused)) InternalField<T> & vect) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// initialize the material computed parameter
   virtual void initMaterial();
 
   /// compute the residual for this material
-  virtual void updateResidual(GhostType ghost_type = _not_ghost);
+  //  virtual void updateResidual(GhostType ghost_type = _not_ghost);
 
   /// assemble the residual for this material
-  virtual void assembleResidual(GhostType ghost_type);
+  virtual void assembleInternalForces(GhostType ghost_type);
 
   /// save the stress in the previous_stress if needed
   virtual void savePreviousState();
 
   /// compute the stresses for this material
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
-  virtual void
-  computeAllStressesFromTangentModuli(GhostType ghost_type = _not_ghost);
+  // virtual void
+  // computeAllStressesFromTangentModuli(GhostType ghost_type = _not_ghost);
   virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost);
 
   /// set material to steady state
@@ -219,6 +220,7 @@ public:
   /// add an element to the local mesh filter
   inline UInt addElement(const ElementType & type, UInt element,
                          const GhostType & ghost_type);
+  inline UInt addElement(const Element & element);
 
   /// add many elements at once
   void addElements(const Array<Element> & elements_to_add);
@@ -227,7 +229,7 @@ public:
   void removeElements(const Array<Element> & elements_to_remove);
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /**
    * interpolate stress on given positions for each element by means
@@ -273,13 +275,12 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// assemble the residual
-  template <UInt dim> void assembleResidual(GhostType ghost_type);
+  template <UInt dim> void assembleInternalForces(GhostType ghost_type);
 
   /// Computation of Cauchy stress tensor in the case of finite deformation from
   /// the 2nd Piola-Kirchhoff for a given element type
   template <UInt dim>
-  void computeCauchyStress(__attribute__((unused)) ElementType el_type,
-                           __attribute__((unused))
+  void computeCauchyStress(ElementType el_type,
                            GhostType ghost_type = _not_ghost);
 
   /// Computation the Cauchy stress the 2nd Piola-Kirchhoff and the deformation
@@ -356,16 +357,16 @@ protected:
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   template <typename T>
   inline void packElementDataHelper(const ElementTypeMapArray<T> & data_to_pack,
@@ -384,38 +385,31 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  virtual void onNodesAdded(__attribute__((unused))
-                            const Array<UInt> & nodes_list,
-                            __attribute__((unused))
-                            const NewNodesEvent & event){};
-  virtual void
-  onNodesRemoved(__attribute__((unused)) const Array<UInt> & nodes_list,
-                 __attribute__((unused)) const Array<UInt> & new_numbering,
-                 __attribute__((unused)) const RemovedNodesEvent & event){};
+  void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) override{};
+  void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
+                      const RemovedNodesEvent &) override{};
 
-  virtual void onElementsAdded(const Array<Element> & element_list,
-                               const NewElementsEvent & event);
+  void onElementsAdded(const Array<Element> & element_list,
+                       const NewElementsEvent & event) override;
 
-  virtual void
-  onElementsRemoved(const Array<Element> & element_list,
-                    const ElementTypeMapArray<UInt> & new_numbering,
-                    const RemovedElementsEvent & event);
+  void onElementsRemoved(const Array<Element> & element_list,
+                         const ElementTypeMapArray<UInt> & new_numbering,
+                         const RemovedElementsEvent & event) override;
 
-  virtual void onElementsChanged(
-      __attribute__((unused)) const Array<Element> & old_elements_list,
-      __attribute__((unused)) const Array<Element> & new_elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const ChangedElementsEvent & event){};
+  void onElementsChanged(const Array<Element> &, const Array<Element> &,
+                         const ElementTypeMapArray<UInt> &,
+                         const ChangedElementsEvent &) override{};
 
   /* ------------------------------------------------------------------------ */
   /* SolidMechanicsModelEventHandler inherited members                        */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void onBeginningSolveStep(const AnalysisMethod & method);
-  virtual void onEndSolveStep(const AnalysisMethod & method);
-  virtual void onDamageIteration();
-  virtual void onDamageUpdate();
-  virtual void onDump();
+  virtual void beforeSolveStep();
+  virtual void afterSolveStep();
+
+  void onDamageIteration() override;
+  void onDamageUpdate() override;
+  void onDump() override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -423,7 +417,7 @@ public:
 public:
   AKANTU_GET_MACRO(Name, name, const std::string &);
 
-  AKANTU_GET_MACRO(Model, *model, const SolidMechanicsModel &)
+  AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &)
 
   AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
   AKANTU_GET_MACRO(Rho, rho, Real);
@@ -439,9 +433,10 @@ public:
 
   /// return the energy (identified by id) for the subset of elements contained
   /// by the material
-  virtual Real getEnergy(std::string energy_id);
+  virtual Real getEnergy(const std::string & energy_id);
   /// return the energy (identified by id) for the provided element
-  virtual Real getEnergy(std::string energy_id, ElementType type, UInt index);
+  virtual Real getEnergy(const std::string & energy_id, ElementType type,
+                         UInt index);
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementFilter, element_filter, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(GradU, gradu, Real);
@@ -452,7 +447,7 @@ public:
   AKANTU_GET_MACRO(Stress, stress, const ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(ElementFilter, element_filter,
                    const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO(FEEngine, *fem, FEEngine &);
+  AKANTU_GET_MACRO(FEEngine, fem, FEEngine &);
 
   bool isNonLocal() const { return is_non_local; }
 
@@ -478,8 +473,7 @@ public:
   bool isInelasticDeformation() const { return inelastic_deformation; }
 
   template <typename T> inline void setParam(const ID & param, T value);
-
-  template <typename T> inline const T & getParam(const ID & param) const;
+  inline const Parameter & getParam(const ID & param) const;
 
   template <typename T>
   void flattenInternal(const std::string & field_id,
@@ -490,6 +484,9 @@ public:
   /// apply a constant eigengrad_u everywhere in the material
   virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
                                const GhostType = _not_ghost);
+
+  /// specify if the matrix need to be recomputed for this material
+  virtual bool hasStiffnessMatrixChanged() { return true; }
 
 protected:
   bool isInit() const { return is_init; }
@@ -507,7 +504,7 @@ protected:
 
 protected:
   /// Link to the fem object in the model
-  FEEngine * fem;
+  FEEngine & fem;
 
   /// Finite deformation
   bool finite_deformation;
@@ -519,7 +516,7 @@ protected:
   std::string name;
 
   /// The model to witch the material belong
-  SolidMechanicsModel * model;
+  SolidMechanicsModel & model;
 
   /// density : rho
   Real rho;
@@ -576,7 +573,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "material_inline_impl.cc"
 
@@ -598,22 +595,22 @@ __END_AKANTU__
           .end(this->spatial_dimension, this->spatial_dimension);              \
                                                                                \
   this->stress(el_type, ghost_type)                                            \
-      .resize(this->gradu(el_type, ghost_type).getSize());                     \
+      .resize(this->gradu(el_type, ghost_type).size());                        \
                                                                                \
-  Array<Real>::iterator<Matrix<Real> > stress_it =                             \
+  Array<Real>::iterator<Matrix<Real>> stress_it =                              \
       this->stress(el_type, ghost_type)                                        \
           .begin(this->spatial_dimension, this->spatial_dimension);            \
                                                                                \
   if (this->isFiniteDeformation()) {                                           \
     this->piola_kirchhoff_2(el_type, ghost_type)                               \
-        .resize(this->gradu(el_type, ghost_type).getSize());                   \
+        .resize(this->gradu(el_type, ghost_type).size());                      \
     stress_it = this->piola_kirchhoff_2(el_type, ghost_type)                   \
                     .begin(this->spatial_dimension, this->spatial_dimension);  \
   }                                                                            \
                                                                                \
   for (; gradu_it != gradu_end; ++gradu_it, ++stress_it) {                     \
     Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;                 \
-  Matrix<Real> & __attribute__((unused)) sigma = *stress_it
+    Matrix<Real> & __attribute__((unused)) sigma = *stress_it
 
 #define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END }
 
@@ -632,7 +629,7 @@ __END_AKANTU__
       this->stress(el_type, ghost_type)                                        \
           .begin(this->spatial_dimension, this->spatial_dimension);            \
                                                                                \
-  tangent_mat.resize(this->gradu(el_type, ghost_type).getSize());              \
+  tangent_mat.resize(this->gradu(el_type, ghost_type).size());                 \
                                                                                \
   UInt tangent_size =                                                          \
       this->getTangentStiffnessVoigtSize(this->spatial_dimension);             \
@@ -642,14 +639,42 @@ __END_AKANTU__
   for (; gradu_it != gradu_end; ++gradu_it, ++sigma_it, ++tangent_it) {        \
     Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;                 \
     Matrix<Real> & __attribute__((unused)) sigma_tensor = *sigma_it;           \
-  Matrix<Real> & tangent = *tangent_it
+    Matrix<Real> & tangent = *tangent_it
 
 #define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END }
 
 /* -------------------------------------------------------------------------- */
-#define INSTANTIATE_MATERIAL(mat_name)                                         \
+namespace akantu {
+using MaterialFactory =
+    Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
+} // namespace akantu
+
+#define INSTANTIATE_MATERIAL_ONLY(mat_name)                                    \
   template class mat_name<1>;                                                  \
   template class mat_name<2>;                                                  \
   template class mat_name<3>
+
+#define MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name)                       \
+  [](UInt dim, const ID &, SolidMechanicsModel & model,                        \
+     const ID & id) -> std::unique_ptr<Material> {                             \
+    switch (dim) {                                                             \
+    case 1:                                                                    \
+      return std::make_unique<mat_name<1>>(model, id);                         \
+    case 2:                                                                    \
+      return std::make_unique<mat_name<2>>(model, id);                         \
+    case 3:                                                                    \
+      return std::make_unique<mat_name<3>>(model, id);                         \
+    default:                                                                   \
+      AKANTU_EXCEPTION("The dimension "                                        \
+                       << dim << "is not a valid dimension for the material "  \
+                       << #id);                                                \
+    }                                                                          \
+  }
+
+#define INSTANTIATE_MATERIAL(id, mat_name)                                     \
+  INSTANTIATE_MATERIAL_ONLY(mat_name);                                         \
+  static bool material_is_alocated_##id [[gnu::unused]] =                      \
+      MaterialFactory::getInstance().registerAllocator(                        \
+          #id, MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name))
 
 #endif /* __AKANTU_MATERIAL_HH__ */

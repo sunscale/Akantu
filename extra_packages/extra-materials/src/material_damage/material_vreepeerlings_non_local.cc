@@ -19,10 +19,10 @@
 #include "solid_mechanics_model.hh"
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 
 /* -------------------------------------------------------------------------- */
 //INSTANTIATE_MATERIAL(MaterialVreePeerlingsNonLocal);
 
-__END_AKANTU__
+} // namespace akantu

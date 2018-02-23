@@ -1,0 +1,12 @@
+{
+    "linters": {
+        "format": {
+            "type": "clang-format",
+            "include": [ "(\\.cc$)", "(\\.hh$)" ],
+            "exclude": "(^third-party/)"
+        },
+        "merges": {
+            "type": "merge-conflict"
+        }
+    }
+}

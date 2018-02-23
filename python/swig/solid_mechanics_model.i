@@ -1,3 +1,4 @@
+
 /**
  * @file   solid_mechanics_model.i
  *
@@ -31,6 +32,7 @@
  */
 
 %{
+  #include "model_options.hh"
   #include "solid_mechanics_model.hh"
   #include "sparse_matrix.hh"
   #include "boundary_condition.hh"
@@ -46,9 +48,7 @@ namespace akantu {
   %ignore SolidMechanicsModel::initArrays;
   %ignore SolidMechanicsModel::initModel;
   %ignore SolidMechanicsModel::initPBC;
-
-
-  ignore SolidMechanicsModel::initExplicit;
+  %ignore SolidMechanicsModel::initExplicit;
   %ignore SolidMechanicsModel::isExplicit;
   %ignore SolidMechanicsModel::updateCurrentPosition;
   %ignore SolidMechanicsModel::updateAcceleration;
@@ -59,101 +59,118 @@ namespace akantu {
   %ignore SolidMechanicsModel::solveLumped;
   %ignore SolidMechanicsModel::explicitPred;
   %ignore SolidMechanicsModel::explicitCorr;
-
   %ignore SolidMechanicsModel::initSolver;
   %ignore SolidMechanicsModel::initImplicit;
   %ignore SolidMechanicsModel::initialAcceleration;
-
-
   %ignore SolidMechanicsModel::testConvergence;
   %ignore SolidMechanicsModel::testConvergenceIncrement;
   %ignore SolidMechanicsModel::testConvergenceResidual;
   %ignore SolidMechanicsModel::initVelocityDampingMatrix;
-
-  %ignore SolidMechanicsModel::getNbDataForElements;
-  %ignore SolidMechanicsModel::packElementData;
-  %ignore SolidMechanicsModel::unpackElementData;
-  %ignore SolidMechanicsModel::getNbDataToPack;
-  %ignore SolidMechanicsModel::getNbDataToUnpack;
+  %ignore SolidMechanicsModel::getNbData;
   %ignore SolidMechanicsModel::packData;
   %ignore SolidMechanicsModel::unpackData;
-
   %ignore SolidMechanicsModel::setMaterialSelector;
   %ignore SolidMechanicsModel::getSolver;
   %ignore SolidMechanicsModel::getSynchronizer;
-
   %ignore Dumpable::registerExternalDumper;
   %ignore Material::onNodesAdded;
   %ignore Material::onNodesRemoved;
   %ignore Material::onElementsAdded;
   %ignore Material::onElementsRemoved;
   %ignore Material::onElementsChanged;
-}
 
-%template(SolidMechanicsBoundaryCondition) akantu::BoundaryCondition<akantu::SolidMechanicsModel>;
+  %template(SolidMechanicsBoundaryCondition) BoundaryCondition<SolidMechanicsModel>;
+}
 
 %include "dumpable.hh"
 
 print_self(SolidMechanicsModel)
 
 %include "material.i"
+%include "model_options.hh"
 %include "solid_mechanics_model.hh"
 
 
-%extend akantu::SolidMechanicsModel {
+%inline %{
+  namespace akantu{
+    void registerNewPythonMaterial(PyObject * obj, const akantu::ID & mat_type) {
 
+
+      MaterialFactory::getInstance().registerAllocator(
+          mat_type,
+          [obj](UInt, const ID &, SolidMechanicsModel & model,
+                const ID & id) -> std::unique_ptr<Material>
+          {
+            return std::make_unique<MaterialPython>(model, obj, id);
+          }
+        );
+    }
+  }
+%}
+
+%extend akantu::SolidMechanicsModel {
   /* ------------------------------------------------------------------------ */
   void setPhysicalNamesMaterialSelector(){
-    akantu::MeshDataMaterialSelector<std::string> * selector = new
-      akantu::MeshDataMaterialSelector<std::string>("physical_names", *self);
-    self->setMaterialSelector(*selector);
+    AKANTU_EXCEPTION("API change: This method needs to be fixed.");
+    /* akantu::MeshDataMaterialSelector<std::string> * selector = new */
+    /*   akantu::MeshDataMaterialSelector<std::string>("physical_names", *self); */
+    /* self->setMaterialSelector(*selector); */
   }
   
   /* ------------------------------------------------------------------------ */
-  bool testConvergenceSccRes(Real tolerance) {
-    Real error = 0;
-    bool res = self->testConvergence<akantu::_scc_residual>(tolerance, error);
-    return res;
+  void getResidual() {
+    AKANTU_EXCEPTION("Deprecated function. You should replace:\n"
+                     "model.getResidual()\n"
+                     "with\n"
+                     "model.getInternalForce()\n");
   }
 
-  /* ------------------------------------------------------------------------ */
-  void solveStaticDisplacement(Real tolerance, UInt max_iteration) {
-    $self->solveStatic<akantu::_scm_newton_raphson_tangent_not_computed,
-                       akantu::_scc_residual>(tolerance, max_iteration);
-  }
-
-  /* ------------------------------------------------------------------------ */
-  /// register an empty material of a given type
   void registerNewPythonMaterial(PyObject * obj, const akantu::ID & mat_type) {
-    std::pair<akantu::Parser::const_section_iterator,
-              akantu::Parser::const_section_iterator>
-        sub_sect = akantu::getStaticParser().getSubSections(akantu::_st_material);
+    AKANTU_EXCEPTION("Deprecated function. You should replace:\n"
+                     "model.registerNewPythonMaterial(obj, mat_id)\n"
+                     "with\n"
+                     "akantu.registerNewPythonMaterial(obj, mat_id)\n\n"
+                     "This MUST be done before instanciating the model.");
 
-    akantu::Parser::const_section_iterator it = sub_sect.first;
-    for (; it != sub_sect.second; ++it) {
-      if (it->getName() == mat_type) {
+      /* std::pair<akantu::Parser::const_section_iterator, */
+    /*           akantu::Parser::const_section_iterator> */
+    /*     sub_sect = akantu::getStaticParser().getSubSections(akantu::_st_material); */
 
-        AKANTU_DEBUG_ASSERT($self->materials_names_to_id.find(mat_type) ==
-                            $self->materials_names_to_id.end(),
-                            "A material with this name '"
-                            << mat_type << "' has already been registered. "
-                            << "Please use unique names for materials");
+    /* akantu::Parser::const_section_iterator it = sub_sect.first; */
+    /* for (; it != sub_sect.second; ++it) { */
+    /*   if (it->getName() == mat_type) { */
 
-        UInt mat_count = $self->materials.size();
-        $self->materials_names_to_id[mat_type] = mat_count;
+    /*     AKANTU_DEBUG_ASSERT($self->materials_names_to_id.find(mat_type) == */
+    /*                         $self->materials_names_to_id.end(), */
+    /*                         "A material with this name '" */
+    /*                         << mat_type << "' has already been registered. " */
+    /*                         << "Please use unique names for materials"); */
 
-        std::stringstream sstr_mat;
-        sstr_mat << $self->getID() << ":" << mat_count << ":" << mat_type;
-        akantu::ID mat_id = sstr_mat.str();
+    /*     UInt mat_count = $self->materials.size(); */
+    /*     $self->materials_names_to_id[mat_type] = mat_count; */
 
-        akantu::Material * material = new akantu::MaterialPython(*$self, obj, mat_id);
-        $self->materials.push_back(material);
+    /*     std::stringstream sstr_mat; */
+    /*     sstr_mat << $self->getID() << ":" << mat_count << ":" << mat_type; */
+    /*     akantu::ID mat_id = sstr_mat.str(); */
 
-        material->parseSection(*it);
-      }
-    }
+    /*     akantu::Material * material = new akantu::MaterialPython(*$self, obj, mat_id); */
+    /*     $self->materials.push_back(material); */
+
+    /*     material->parseSection(*it); */
+    /*   } */
+    /* } */
   }
 
+  /* ------------------------------------------------------------------------ */
+  void updateResidual() {
+    AKANTU_EXCEPTION("Deprecated function. You should replace:\n"
+                     "model.updateResidual()\n"
+                     "with\n"
+                     "model.assembleInternalForces()\n\n"
+                     "beware that the total nodal force is your responsability to compute"
+                     " since it is now handled by the solver.");    
+  }
+  
   /* ------------------------------------------------------------------------ */
   void applyDirichletBC(PyObject * func_obj, const std::string & group_name) {
     akantu::BC::PythonFunctorDirichlet functor(func_obj);
@@ -164,44 +181,6 @@ print_self(SolidMechanicsModel)
   void applyNeumannBC(PyObject * func_obj, const std::string & group_name) {
     akantu::BC::PythonFunctorNeumann functor(func_obj);
     $self->applyBC(functor, group_name);
-  }
-
-  /* ------------------------------------------------------------------------ */
-  void solveDisplCorr(bool need_factorize, bool has_profile_changed) {
-    akantu::Array<akantu::Real> & increment = $self->getIncrement();
-
-    $self->solve<akantu::IntegrationScheme2ndOrder::_displacement_corrector>(
-        increment, 1., need_factorize, has_profile_changed);
-  }
-
-  /* ------------------------------------------------------------------------ */
-  void clearDispl() {
-    akantu::Array<akantu::Real> & displ = $self->getDisplacement();
-    displ.clear();
-  }
-
-  /* ------------------------------------------------------------------------ */
-  void solveStep_TgModifIncr(Real tolerance, UInt max_iteration) {
-    $self->solveStep<akantu::_scm_newton_raphson_tangent_modified,
-                     akantu::_scc_increment>(tolerance, max_iteration);
-  }
-
-  /* ------------------------------------------------------------------------ */
-  void solveStep_TgIncr(Real tolerance, Real & error, UInt max_iteration) {
-    
-    $self->solveStep<akantu::_scm_newton_raphson_tangent,
-      akantu::_scc_increment>(tolerance, error, max_iteration);
-  }
-
-  /* ------------------------------------------------------------------------ */
-  void clearDisplVeloAcc() {
-    akantu::Array<akantu::Real> & displ = $self->getDisplacement();
-    akantu::Array<akantu::Real> & velo = $self->getVelocity();
-    akantu::Array<akantu::Real> & acc = $self->getAcceleration();
-
-    displ.clear();
-    velo.clear();
-    acc.clear();
   }
 
   /* ------------------------------------------------------------------------ */

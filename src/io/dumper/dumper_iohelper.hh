@@ -48,7 +48,7 @@ namespace iohelper {
 class Dumper;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 UInt getIOHelperType(ElementType type);
 
@@ -124,7 +124,7 @@ public:
 public:
   /* ------------------------------------------------------------------------ */
   /* Variable wrapper */
-  template <typename T, bool is_scal = is_scalar<T>::value> class Variable;
+  template <typename T, bool is_scal = std::is_arithmetic<T>::value> class Variable;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -133,15 +133,15 @@ protected:
   /// internal iohelper::Dumper
   iohelper::Dumper * dumper;
 
-  typedef std::map<std::string, dumper::Field *> Fields;
-  typedef std::map<std::string, dumper::VariableBase *> Variables;
+  using Fields = std::map<std::string, dumper::Field *>;
+  using Variables = std::map<std::string, dumper::VariableBase *> ;
 
   /// list of registered fields to dump
   Fields fields;
   Variables variables;
 
   /// dump counter
-  UInt count;
+  UInt count{0};
 
   /// directory name
   std::string directory;
@@ -150,9 +150,9 @@ protected:
   std::string filename;
 
   /// is time tracking activated in the dumper
-  bool time_activated;
+  bool time_activated{false};
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_IOHELPER_HH__ */

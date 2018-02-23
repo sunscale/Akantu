@@ -27,81 +27,109 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "mesh.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MESH_ACCESSOR_HH__
 #define __AKANTU_MESH_ACCESSOR_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
+class NodeSynchronizer;
+class ElementSynchronizer;
+} // namespace akantu
+
+namespace akantu {
 
 class MeshAccessor {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MeshAccessor() {};
-  virtual ~MeshAccessor() {};
+  explicit MeshAccessor(Mesh & mesh) : _mesh(mesh) {}
+  virtual ~MeshAccessor() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// get the global number of nodes
-  inline UInt getNbGlobalNodes(const Mesh & mesh) const { return mesh.nb_global_nodes; };
+  inline UInt getNbGlobalNodes() const { return this->_mesh.nb_global_nodes; }
 
   /// set the global number of nodes
-  inline void setNbGlobalNodes(Mesh & mesh, UInt nb_global_nodes) const
-  { mesh.nb_global_nodes = nb_global_nodes; };
+  inline void setNbGlobalNodes(UInt nb_global_nodes) {
+    this->_mesh.nb_global_nodes = nb_global_nodes;
+  }
 
-  /// get a pointer to the nodes_global_ids Array<UInt> and create it if necessary
-  inline Array<UInt> & getNodesGlobalIds(Mesh & mesh) {
-    return *(mesh.getNodesGlobalIdsPointer());
+  /// set the mesh as being distributed
+  inline void setDistributed() { this->_mesh.is_distributed = true; }
+
+  /// get a pointer to the nodes_global_ids Array<UInt> and create it if
+  /// necessary
+  inline auto & getNodesGlobalIds() {
+    return this->_mesh.getNodesGlobalIdsPointer();
   }
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline Array<Int> & getNodesType(Mesh & mesh) {
-    return *(mesh.getNodesTypePointer());
+  inline auto & getNodesType() { return this->_mesh.getNodesTypePointer(); }
+
+  /// get a pointer to the coordinates Array
+  inline auto & getNodes() { return this->_mesh.getNodesPointer(); }
+
+  /// get a pointer to the coordinates Array
+  inline auto getNodesSharedPtr() { return this->_mesh.nodes; }
+
+  /// get a pointer to the connectivity Array for the given type and create it
+  /// if necessary
+  inline auto & getConnectivity(const ElementType & type,
+                                const GhostType & ghost_type = _not_ghost) {
+    return this->_mesh.getConnectivityPointer(type, ghost_type);
   }
 
-  /// get a pointer to the connectivity Array for the given type and create it if necessary
-  inline Array<UInt> & getConnectivity(Mesh & mesh,
-				       const ElementType & type,
-				       const GhostType & ghost_type = _not_ghost) {
-    return *(mesh.getConnectivityPointer(type, ghost_type));
+  /// get the ghost element counter
+  inline auto & getGhostsCounters(const ElementType & type,
+                                  const GhostType & ghost_type = _ghost) {
+    return this->_mesh.getGhostsCounters(type, ghost_type);
   }
 
-  /// get a pointer to the element_to_subelement Array for the given type and create it if necessary
-  inline Array< std::vector<Element> > & getElementToSubelement(Mesh & mesh,
-								const ElementType & type,
-								const GhostType & ghost_type = _not_ghost) {
-    return *(mesh.getElementToSubelementPointer(type, ghost_type));
+  /// get a pointer to the element_to_subelement Array for the given type and
+  /// create it if necessary
+  inline auto &
+  getElementToSubelement(const ElementType & type,
+                         const GhostType & ghost_type = _not_ghost) {
+    return this->_mesh.getElementToSubelementPointer(type, ghost_type);
   }
 
-  /// get a pointer to the subelement_to_element Array for the given type and create it if necessary
-  inline Array<Element > & getSubelementToElement(Mesh & mesh,
-						  const ElementType & type,
-						  const GhostType & ghost_type = _not_ghost) {
-    return *(mesh.getSubelementToElementPointer(type, ghost_type));
+  /// get a pointer to the subelement_to_element Array for the given type and
+  /// create it if necessary
+  inline auto &
+  getSubelementToElement(const ElementType & type,
+                         const GhostType & ghost_type = _not_ghost) {
+    return this->_mesh.getSubelementToElementPointer(type, ghost_type);
   }
 
-  template<typename T>
-  inline Array<T> & getData(Mesh & mesh,
-			    const std::string & data_name,
-			    const ElementType & el_type,
-			    const GhostType & ghost_type = _not_ghost,
-			    UInt nb_component = 1,
-			    bool size_to_nb_element = true,
-			    bool resize_with_parent = false) {
-    return *(mesh.getDataPointer<T>(data_name,
-				    el_type,
-				    ghost_type,
-				    nb_component,
-				    size_to_nb_element,
-				    resize_with_parent));
+  template <typename T>
+  inline auto &
+  getData(const std::string & data_name, const ElementType & el_type,
+          const GhostType & ghost_type = _not_ghost, UInt nb_component = 1,
+          bool size_to_nb_element = true, bool resize_with_parent = false) {
+    return this->_mesh.getDataPointer<T>(data_name, el_type, ghost_type,
+                                         nb_component, size_to_nb_element,
+                                         resize_with_parent);
   }
+
+  auto & getMeshData() { return this->_mesh.getMeshData(); }
+
+  /// get the node synchonizer
+  auto & getNodeSynchronizer() { return *this->_mesh.node_synchronizer; }
+
+  /// get the element synchonizer
+  auto & getElementSynchronizer() { return *this->_mesh.element_synchronizer; }
+
+private:
+  Mesh & _mesh;
 };
 
-
-__END_AKANTU__
-
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_ACCESSOR_HH__ */

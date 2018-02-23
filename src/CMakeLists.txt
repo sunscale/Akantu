@@ -44,13 +44,19 @@ package_get_all_include_directories(
   )
 
 package_get_all_external_informations(
-  AKANTU_EXTERNAL_INCLUDE_DIR
-  AKANTU_EXTERNAL_LIBRARIES
-)
+  PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+  INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+  LIBRARIES AKANTU_EXTERNAL_LIBRARIES
+  )
 
 package_get_all_compilation_flags(CXX _cxx_flags)
-set(AKANTU_EXTRA_CXX_FLAGS "${_cxx_flags}" CACHE STRING "Extra flags defined by loaded packages" FORCE)
+set(AKANTU_EXTRA_CXX_FLAGS
+  "${_cxx_flags}" CACHE STRING "Extra flags defined by loaded packages" FORCE)
 mark_as_advanced(AKANTU_EXTRA_CXX_FLAGS)
+
+foreach(src_ ${AKANTU_SPIRIT_SOURCES})
+  set_property(SOURCE ${src_} PROPERTY COMPILE_FLAGS "-g0 -Werror")
+endforeach()
 
 #===========================================================================
 # header for blas/lapack (any other fortran libraries)
@@ -69,10 +75,12 @@ if(_blas_activated OR _lapack_activated)
     "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh"
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
-  list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh")
 endif()
 
+list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
+set(AKANTU_INCLUDE_DIRS
+  ${CMAKE_CURRENT_BINARY_DIR} ${AKANTU_LIBRARY_INCLUDE_DIRS}
+  CACHE INTERNAL "Internal include directories to link with Akantu as a subproject")
 
 #===========================================================================
 # configurations
@@ -88,41 +96,6 @@ configure_file(common/aka_element_classes_info.hh.in
 
 configure_file(common/aka_config.hh.in
   "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
-
-list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
-  "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh"
-  "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh"
-  "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh")
-list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
-
-#===========================================================================
-# header precompilation
-#===========================================================================
-set(AKANTU_COMMON_HDR_TO_PRECOMPILE
-  common/aka_vector.hh
-  common/aka_math.hh
-  common/aka_types.hh
-  fem/element_class.hh
-  )
-
-set(AKANTU_PRECOMPILE_HDR_INCLUDE_DIRS
-  ${CMAKE_CURRENT_BINARY_DIR}/common/
-  ${CMAKE_CURRENT_BINARY_DIR}/fem/
-  )
-
-set(AKANTU_INCLUDE_DIRS
-  ${CMAKE_CURRENT_BINARY_DIR} ${AKANTU_LIBRARY_INCLUDE_DIRS} ${AKANTU_PRECOMPILE_HDR_INCLUDE_DIRS}
-  CACHE INTERNAL "Internal include directories to link with Akantu as a subproject")
-
-include_directories(${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-  include(PCHgcc)
-  foreach(_header ${AKANTU_COMMON_HDR_TO_PRECOMPILE})
-    add_pch_rule(${_header} AKANTU_LIBRARY_SRCS)
-  endforeach()
-elseif(CMAKE_COMPILER_IS_GNUCXX)
-endif()
 
 #===============================================================================
 # Debug infos
@@ -165,15 +138,46 @@ endif()
 #===============================================================================
 add_library(akantu ${AKANTU_LIBRARY_SRCS})
 
-# the repetition is ugly but works for static libraries
-target_link_libraries(akantu  ${AKANTU_EXTERNAL_LIBRARIES} ${AKANTU_EXTERNAL_LIBRARIES})
+target_include_directories(akantu
+  PRIVATE   $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>
+  INTERFACE $<INSTALL_INTERFACE:include/akantu>
+  )
+
+# small trick for build includes in public
+set_property(TARGET akantu APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${AKANTU_INCLUDE_DIRS}>)
+
+target_include_directories(akantu SYSTEM
+  PUBLIC ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}
+  )
+
+target_include_directories(akantu SYSTEM
+  PRIVATE ${AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR}
+  )
+
+target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
 
 set_target_properties(akantu
   PROPERTIES
     ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
-    PUBLIC_HEADER "${AKANTU_LIBRARY_PUBLIC_HDRS}"
     COMPILE_FLAGS "${_cxx_flags}"
-    LINK_INTERFACE_MULTIPLICITY 2)
+
+    )
+
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+  package_get_all_features_public(_PUBLIC_features)
+  package_get_all_features_private(_PRIVATE_features)
+  foreach(_type PRIVATE PUBLIC)
+    if(_${_type}_features)
+      target_compile_features(akantu ${_type} ${_${_type}_features})
+    endif()
+  endforeach()
+else()
+  set_target_properties(akantu
+    PROPERTIES
+    CXX_STANDARD 14
+    )
+endif()
 
 package_get_all_extra_dependencies(_extra_target_dependencies)
 if(_extra_target_dependencies)
@@ -193,15 +197,20 @@ install(TARGETS akantu
   PUBLIC_HEADER DESTINATION include/akantu/ COMPONENT dev
   )
 
-if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuLibraryDepends")
-  install(EXPORT AkantuLibraryDepends DESTINATION  lib/akantu
+if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
+  install(EXPORT AkantuTargets DESTINATION share/cmake/${PROJECT_NAME}
     COMPONENT dev)
+
+  #Export for build tree
+  export(EXPORT AkantuTargets
+    FILE "${CMAKE_BINARY_DIR}/AkantuTargets.cmake")
+  export(PACKAGE Akantu)
 endif()
 
-#Export for build tree
-export(TARGETS ${AKANTU_EXPORT_LIST}
-  FILE "${CMAKE_BINARY_DIR}/AkantuLibraryDepends.cmake")
-export(PACKAGE Akantu)
+
+
 
 # print out the list of materials
 generate_material_list()
+
+register_target_to_tidy(akantu)

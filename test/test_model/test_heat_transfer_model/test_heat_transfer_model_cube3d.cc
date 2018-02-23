@@ -31,14 +31,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <iostream>
 #include <fstream>
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "heat_transfer_model.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
-#include "heat_transfer_model.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
@@ -48,22 +48,19 @@ ElementType type = _tetrahedron_4;
 
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   Mesh mesh(spatial_dimension);
-  MeshIOMSH mesh_io;
-
-  mesh_io.read("cube1.msh", mesh);
+  mesh.read("cube1.msh");
 
   HeatTransferModel model(mesh);
-  //initialize everything
+  // initialize everything
   model.initFull();
-  //assemble the lumped capacity
-  model.assembleCapacityLumped();
-  //get and set stable time step
-  Real time_step = model.getStableTimeStep()*0.8;
+
+  // get and set stable time step
+  Real time_step = model.getStableTimeStep() * 0.8;
+  std::cout << "Stable Time Step is : " << time_step/.8 << std::endl;
   std::cout << "time step is:" << time_step << std::endl;
   model.setTimeStep(time_step);
 
@@ -73,54 +70,47 @@ int main(int argc, char *argv[])
   Array<Real> & temperature = model.getTemperature();
   UInt nb_nodes = mesh.getNbNodes();
 
-  //double t1, t2;
+  // double t1, t2;
   double length;
   // t1 = 300.;
   // t2 = 100.;
   length = 1.;
 
   for (UInt i = 0; i < nb_nodes; ++i) {
-    //temperature(i) = t1 - (t1 - t2) * sin(nodes(i, 0) * M_PI / length);
     temperature(i) = 100.;
 
-    //to insert a heat source
-    Real dx = nodes(i,0) - length/2.;
-    Real dy = nodes(i,1) - length/2.;
-    Real dz = nodes(i,2) - length/2.;
-    Real d = sqrt(dx*dx + dy*dy + dz*dz);
-    if(d < 0.1){
+    // to insert a heat source
+    Real dx = nodes(i, 0) - length / 2.;
+    Real dy = nodes(i, 1) - length / 2.;
+    Real dz = nodes(i, 2) - length / 2.;
+    Real d = sqrt(dx * dx + dy * dy + dz * dz);
+    if (d < 0.1) {
       boundary(i) = true;
       temperature(i) = 300.;
     }
   }
 
-
-  model.updateResidual();
+  model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_cube3d");
-  model.addDumpField("temperature"     );
+  model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("residual"        );
-  model.addDumpField("capacity_lumped" );
+  model.addDumpField("internal_heat_rate");
+  model.addDumpField("capacity_lumped");
   model.dump();
-
 
   // //for testing
   int max_steps = 1000;
 
-  for(int i=0; i<max_steps; i++)
-    {
-      model.explicitPred();
-      model.updateResidual();
-      model.solveExplicitLumped();
-      model.explicitCorr();
+  for (int i = 0; i < max_steps; i++) {
+    model.solveStep();
 
+    if (i % 100 == 0)
+      model.dump();
 
-      if(i % 100 == 0) model.dump();
-
-      if(i % 10 == 0)  std::cout << "Step " << i << "/" << max_steps << std::endl;
+    if (i % 10 == 0) {
+      std::cout << "Step " << i << "/" << max_steps << std::endl;
     }
-
-  std::cout << "Stable Time Step is : " << time_step << std::endl;
+  }
 
   return 0;
 }

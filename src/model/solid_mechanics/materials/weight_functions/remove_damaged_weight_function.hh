@@ -35,7 +35,7 @@
 #ifndef __AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_HH__
 #define __AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*  Remove damaged weight function                                            */
@@ -45,37 +45,38 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "remove_damaged"),
-							   damage(NULL){
-    this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable, "Damage Threshold");
+  RemoveDamagedWeightFunction(NonLocalManager & manager)
+      : BaseWeightFunction(manager, "remove_damaged"), damage(nullptr) {
+    this->registerParam("damage_limit", this->damage_limit, 1., _pat_parsable,
+                        "Damage Threshold");
     this->init();
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Base Weight Function inherited methods                                     */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Base Weight Function inherited methods */
+  /* --------------------------------------------------------------------------
+   */
 
-  virtual inline void init();
+  inline void init() override;
 
-  inline Real operator()(Real r,
-			 const __attribute__((unused)) IntegrationPoint & q1,
-			 const IntegrationPoint & q2); 
+  inline Real operator()(Real r, const IntegrationPoint & q1,
+                         const IntegrationPoint & q2);
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const; 
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag);
-
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
 private:
   /* ------------------------------------------------------------------------ */
@@ -86,14 +87,10 @@ private:
 
   /// internal pointer to the current damage vector
   ElementTypeMapReal * damage;
-
 };
 
+} // namespace akantu
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "remove_damaged_weight_function_inline_impl.cc"
-#endif
-
-__END_AKANTU__
+#include "remove_damaged_weight_function_inline_impl.cc"
 
 #endif /* __AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_HH__ */

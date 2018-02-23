@@ -38,41 +38,38 @@
 #ifndef __AKANTU_PARSER_HH__
 #define __AKANTU_PARSER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-#define AKANTU_SECTION_TYPES                                                   \
-  (global)(material)(model)(mesh)(heat)(contact)(friction)(                    \
-      embedded_interface)(rules)(neighborhoods)(non_local)(weight_function)(   \
-      neighborhood)(user)(not_defined)
+// clang-format off
+#define AKANTU_SECTION_TYPES                                            \
+  (cohesive_inserter)                                                   \
+  (contact)                                                             \
+  (embedded_interface)                                                  \
+  (friction)                                                            \
+  (global)                                                              \
+  (heat)                                                                \
+  (integration_scheme)                                                  \
+  (material)                                                            \
+  (mesh)                                                                \
+  (model)                                                               \
+  (model_solver)                                                        \
+  (neighborhood)                                                        \
+  (neighborhoods)                                                       \
+  (non_linear_solver)                                                   \
+  (non_local)                                                           \
+  (rules)                                                               \
+  (solver)                                                              \
+  (time_step_solver)                                                    \
+  (user)                                                                \
+  (weight_function)                                                     \
+  (not_defined)
+// clang-format on
 
-#define AKANTU_SECTION_TYPES_PREFIX(elem) BOOST_PP_CAT(_st_, elem)
-
-#define AKANTU_SECT_PREFIX(s, data, elem) AKANTU_SECTION_TYPES_PREFIX(elem)
 /// Defines the possible section types
-enum SectionType {
-  BOOST_PP_SEQ_ENUM(
-      BOOST_PP_SEQ_TRANSFORM(AKANTU_SECT_PREFIX, _, AKANTU_SECTION_TYPES))
-};
-#undef AKANTU_SECT_PREFIX
+AKANTU_ENUM_DECLARE(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_ENUM_OUTPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_ENUM_INPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
 
-#define AKANTU_SECTION_TYPE_PRINT_CASE(r, data, elem)                          \
-  case AKANTU_SECTION_TYPES_PREFIX(elem): {                                    \
-    stream << BOOST_PP_STRINGIZE(AKANTU_SECTION_TYPES_PREFIX(elem));           \
-    break;                                                                     \
-  }
-
-inline std::ostream & operator<<(std::ostream & stream, SectionType type) {
-  switch (type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_SECTION_TYPE_PRINT_CASE, _,
-                          AKANTU_SECTION_TYPES)
-  default:
-    stream << "not a SectionType";
-    break;
-  }
-  return stream;
-}
-
-#undef AKANTU_SECTION_TYPE_PRINT_CASE
 /// Defines the possible search contexts/scopes (for parameter search)
 enum ParserParameterSearchCxt {
   _ppsc_current_scope = 0x1,
@@ -91,20 +88,17 @@ class ParserSection;
 class ParserParameter {
 public:
   ParserParameter()
-      : parent_section(NULL), name(std::string()), value(std::string()),
-        dbg_filename(std::string()) {}
+      : name(std::string()), value(std::string()), dbg_filename(std::string()) {
+  }
 
   ParserParameter(const std::string & name, const std::string & value,
                   const ParserSection & parent_section)
       : parent_section(&parent_section), name(name), value(value),
         dbg_filename(std::string()) {}
 
-  ParserParameter(const ParserParameter & param)
-      : parent_section(param.parent_section), name(param.name),
-        value(param.value), dbg_filename(param.dbg_filename),
-        dbg_line(param.dbg_line), dbg_column(param.dbg_column) {}
+  ParserParameter(const ParserParameter & param) = default;
 
-  virtual ~ParserParameter() {}
+  virtual ~ParserParameter() = default;
 
   /// Get parameter name
   const std::string & getName() const { return name; }
@@ -137,7 +131,7 @@ private:
 
 private:
   /// Pointer to the parent section
-  const ParserSection * parent_section;
+  const ParserSection * parent_section{nullptr};
   /// Name of the parameter
   std::string name;
   /// Value of the parameter
@@ -154,11 +148,11 @@ private:
 /// ParserSection represents a branch of the parsing tree.
 class ParserSection {
 public:
-  typedef std::multimap<SectionType, ParserSection> SubSections;
-  typedef std::map<std::string, ParserParameter> Parameters;
+  using SubSections = std::multimap<ParserType, ParserSection>;
+  using Parameters = std::map<std::string, ParserParameter>;
 
 private:
-  typedef SubSections::const_iterator const_section_iterator_;
+  using const_section_iterator_ = SubSections::const_iterator;
 
 public:
   /* ------------------------------------------------------------------------ */
@@ -167,28 +161,33 @@ public:
   /// Iterator on sections
   class const_section_iterator {
   public:
-    const_section_iterator(const const_section_iterator & other)
-        : it(other.it) {}
-    const_section_iterator(const const_section_iterator_ & it) : it(it) {}
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = ParserSection;
+    using pointer = ParserSection *;
+    using reference = ParserSection &;
 
-    const_section_iterator & operator=(const const_section_iterator & other) {
-      if (this != &other) {
-        it = other.it;
-      }
-      return *this;
-    }
+    const_section_iterator() = default;
+    const_section_iterator(const const_section_iterator_ & it) : it(it) {}
+    const_section_iterator(const const_section_iterator & other) = default;
+    const_section_iterator &
+    operator=(const const_section_iterator & other) = default;
+
     const ParserSection & operator*() const { return it->second; }
     const ParserSection * operator->() const { return &(it->second); }
+
     bool operator==(const const_section_iterator & other) const {
       return it == other.it;
     }
+
     bool operator!=(const const_section_iterator & other) const {
       return it != other.it;
     }
+
     const_section_iterator & operator++() {
       ++it;
       return *this;
     }
+
     const_section_iterator operator++(int) {
       const_section_iterator tmp = *this;
       operator++();
@@ -205,8 +204,7 @@ public:
   /// Iterator on parameters
   class const_parameter_iterator {
   public:
-    const_parameter_iterator(const const_parameter_iterator & other)
-        : it(other.it) {}
+    const_parameter_iterator(const const_parameter_iterator & other) = default;
     const_parameter_iterator(const Parameters::const_iterator & it) : it(it) {}
 
     const_parameter_iterator &
@@ -239,13 +237,12 @@ public:
   };
 
   /* ---------------------------------------------------------------------- */
-  ParserSection()
-      : parent_section(NULL), name(std::string()), type(_st_not_defined) {}
+  ParserSection() : name(std::string()) {}
 
-  ParserSection(const std::string & name, SectionType type)
-      : parent_section(NULL), name(name), type(type) {}
+  ParserSection(const std::string & name, ParserType type)
+      : parent_section(nullptr), name(name), type(type) {}
 
-  ParserSection(const std::string & name, SectionType type,
+  ParserSection(const std::string & name, ParserType type,
                 const std::string & option,
                 const ParserSection & parent_section)
       : parent_section(&parent_section), name(name), type(type),
@@ -292,36 +289,50 @@ protected:
 
 private:
   void setChldrenPointers() {
-    Parameters::iterator pit = this->parameters.begin();
-    for (; pit != this->parameters.end(); ++pit)
-      pit->second.setParent(*this);
+    for (auto && param_pair : this->parameters)
+      param_pair.second.setParent(*this);
 
-    SubSections::iterator sit = this->sub_sections_by_type.begin();
-    for (; sit != this->sub_sections_by_type.end(); ++sit)
-      sit->second.setParent(*this);
+    for (auto && sub_sect_pair : this->sub_sections_by_type)
+      sub_sect_pair.second.setParent(*this);
   }
 
   /* ---------------------------------------------------------------------- */
   /* Accessors                                                              */
   /* ---------------------------------------------------------------------- */
 public:
+  class SubSectionsRange
+      : public std::pair<const_section_iterator, const_section_iterator> {
+  public:
+    SubSectionsRange(const const_section_iterator & first,
+                     const const_section_iterator & second)
+        : std::pair<const_section_iterator, const_section_iterator>(first,
+                                                                    second) {}
+    auto begin() { return this->first; }
+    auto end() { return this->second; }
+  };
+
   /// Get begin and end iterators on subsections of certain type
-  std::pair<const_section_iterator, const_section_iterator>
-  getSubSections(SectionType type = _st_not_defined) const {
-    if (type != _st_not_defined) {
-      std::pair<const_section_iterator_, const_section_iterator_> range =
-          sub_sections_by_type.equal_range(type);
-      return std::pair<const_section_iterator, const_section_iterator>(
-          range.first, range.second);
+  auto getSubSections(ParserType type = ParserType::_not_defined) const {
+    if (type != ParserType::_not_defined) {
+      auto range = sub_sections_by_type.equal_range(type);
+      return SubSectionsRange(range.first, range.second);
     } else {
-      return std::pair<const_section_iterator, const_section_iterator>(
-          sub_sections_by_type.begin(), sub_sections_by_type.end());
+      return SubSectionsRange(sub_sections_by_type.begin(),
+                              sub_sections_by_type.end());
+    }
+  }
+
+  /// Get number of subsections of certain type
+  UInt getNbSubSections(ParserType type = ParserType::_not_defined) const {
+    if (type != ParserType::_not_defined) {
+      return this->sub_sections_by_type.count(type);
+    } else {
+      return this->sub_sections_by_type.size();
     }
   }
 
   /// Get begin and end iterators on parameters
-  std::pair<const_parameter_iterator, const_parameter_iterator>
-  getParameters() const {
+  auto getParameters() const {
     return std::pair<const_parameter_iterator, const_parameter_iterator>(
         parameters.begin(), parameters.end());
   }
@@ -345,6 +356,21 @@ public:
       }
     }
     return it->second;
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /// Get parameter within specified context, with a default value in case the
+  /// parameter does not exists
+  template <class T>
+  const T getParameter(
+      const std::string & name, const T & default_value,
+      ParserParameterSearchCxt search_ctx = _ppsc_current_scope) const {
+    try {
+      T tmp = this->getParameter(name, search_ctx);
+      return tmp;
+    } catch (debug::Exception &) {
+      return default_value;
+    }
   }
 
   /* ------------------------------------------------------------------------ */
@@ -382,11 +408,13 @@ public:
   /* --------------------------------------------------------------------------
    */
   /// Get section name
-  const std::string & getName() const { return name; }
+  const std::string getName() const { return name; }
   /// Get section type
-  const SectionType & getType() const { return type; }
+  ParserType getType() const { return type; }
   /// Get section option
-  const std::string & getOption() const { return option; }
+  const std::string getOption(const std::string & def = "") const {
+    return option != "" ? option : def;
+  }
 
 protected:
   void setParent(const ParserSection & sect) { parent_section = &sect; }
@@ -396,11 +424,11 @@ protected:
   /* ---------------------------------------------------------------------- */
 private:
   /// Pointer to the parent section
-  const ParserSection * parent_section;
+  const ParserSection * parent_section{nullptr};
   /// Name of section
   std::string name;
   /// Type of section, see AKANTU_SECTION_TYPES
-  SectionType type;
+  ParserType type{ParserType::_not_defined};
   /// Section option
   std::string option;
   /// Map of parameters in section
@@ -415,7 +443,7 @@ private:
 /// Root of parsing tree, represents the global ParserSection
 class Parser : public ParserSection {
 public:
-  Parser() : ParserSection("global", _st_global) {}
+  Parser() : ParserSection("global", ParserType::_global) {}
 
   void parse(const std::string & filename);
 
@@ -461,7 +489,17 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
+
+namespace std {
+template <> struct iterator_traits<::akantu::Parser::const_section_iterator> {
+  using iterator_category = input_iterator_tag;
+  using value_type = ::akantu::ParserParameter;
+  using difference_type = ptrdiff_t;
+  using pointer = const ::akantu::ParserParameter *;
+  using reference = const ::akantu::ParserParameter &;
+};
+}
 
 #include "parser_tmpl.hh"
 

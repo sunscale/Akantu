@@ -33,7 +33,7 @@
 #include "material_neohookean.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -176,12 +176,7 @@ void MaterialNeohookean<2>::computeStress(ElementType el_type,
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialNeohookean<dim>::computeThirdAxisDeformation(
-    __attribute__((unused)) ElementType el_type,
-    __attribute__((unused)) GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+    ElementType /*el_type*/, GhostType /*ghost_type*/) {}
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -287,6 +282,6 @@ Real MaterialNeohookean<spatial_dimension>::getShearWaveSpeed(
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialNeohookean);
+INSTANTIATE_MATERIAL(neohookean, MaterialNeohookean);
 
-__END_AKANTU__
+} // namespace akantu

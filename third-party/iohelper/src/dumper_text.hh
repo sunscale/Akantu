@@ -55,17 +55,17 @@ public:
   DumperText(TextDumpMode md = _tdm_space, 
 	     const std::string & prefix = "./",
 	     bool file_per_time_step = false);
-  virtual ~DumperText();
-  
+  ~DumperText() override;
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-  
-  void dump(const std::string & name, UInt count);
+
+  void dump(const std::string & name, UInt count) override;
   void setEmbeddedValue(__attribute__((unused)) const std::string & name,
 			__attribute__((unused)) int value) {};
 
-  virtual void dumpDescription(const char descr_sep = ' ');
+  void dumpDescription(const char descr_sep = ' ') override;
   virtual void dumpFieldDescription(const char descr_sep = ' ');
   virtual void dumpTimeDescription(const char descr_sep = ' ');
   
@@ -89,7 +89,7 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
 
-  typedef std::map<std::string, File *> FileMap;
+  using FileMap = std::map<std::string, File *>;
 
   /**
    * another base name so that you will never understand how iohelper
@@ -161,12 +161,12 @@ void DumperText::visitVariable(T & visited) {
 
   const std::string & name = visited.getName();
 
-  FileMap::iterator it  = this->file_map.find(name);
-  FileMap::iterator end =  this->file_map.end();
+  auto it = this->file_map.find(name);
+  auto end = this->file_map.end();
 
   File * file;
   if (it == end) {
-    File * new_file = new File;
+    auto * new_file = new File;
     new_file->open(this->getAbsoluteFilePath(this->getBaseName() + "_" + name,
 					     "data_variables"), 
 		   std::fstream::out);

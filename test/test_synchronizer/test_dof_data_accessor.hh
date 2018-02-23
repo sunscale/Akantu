@@ -38,7 +38,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class TestDOFAccessor : public DataAccessor {
   /* ------------------------------------------------------------------------ */
@@ -77,9 +77,9 @@ inline TestDOFAccessor::TestDOFAccessor(const Array<Int> & global_dof_equation_n
 
 inline UInt TestDOFAccessor::getNbDataForDOFs(const Array<UInt> & dofs,
 					       __attribute__ ((unused)) SynchronizationTag tag) const {
-  if(dofs.getSize())
-    // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) * elements.getSize();
-    return sizeof(Int) * dofs.getSize();
+  if(dofs.size())
+    // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) * elements.size();
+    return sizeof(Int) * dofs.size();
   else
     return 0;
 }
@@ -106,7 +106,7 @@ inline void TestDOFAccessor::unpackDOFData(CommunicationBuffer & buffer,
     std::cout << *bit << global_dof_eq_nb_local << std::endl;
     Real tolerance = Math::getTolerance();
       if(!(std::abs(global_dof_eq_nb - global_dof_eq_nb_local) <= tolerance))
-        AKANTU_DEBUG_ERROR("Unpacking an unknown value for the dof: "
+        AKANTU_ERROR("Unpacking an unknown value for the dof: "
                            << *bit
                            << "(global_dof_equation_number = " << global_dof_eq_nb_local
                            << " and buffer = " << global_dof_eq_nb << ") - tag: " << tag);
@@ -114,4 +114,4 @@ inline void TestDOFAccessor::unpackDOFData(CommunicationBuffer & buffer,
 }
 
 
-__END_AKANTU__
+} // namespace akantu

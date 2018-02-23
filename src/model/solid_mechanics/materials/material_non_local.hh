@@ -32,55 +32,91 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "material.hh"
-#include "fe_engine.hh"
-#include "non_local_manager.hh"
-
 /* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_MATERIAL_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template <UInt dim> class MaterialNonLocal : public virtual Material {
+class MaterialNonLocalInterface {
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// initialize the material the non local parts of the material
+  void initMaterialNonLocal() {
+    this->registerNeighborhood();
+    this->registerNonLocalVariables();
+  };
+
+  /// insert the quadrature points in the neighborhoods of the non-local manager
+  virtual void insertIntegrationPointsInNeighborhoods(
+      const GhostType & ghost_type,
+      const ElementTypeMapReal & quadrature_points_coordinates) = 0;
+
+  /// update the values in the non-local internal fields
+  virtual void updateNonLocalInternals(ElementTypeMapReal & non_local_flattened,
+                                       const ID & field_id,
+                                       const GhostType & ghost_type,
+                                       const ElementKind & kind) = 0;
+  /// constitutive law
+  virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
+
+protected:
+  /// get the name of the neighborhood for this material
+  virtual ID getNeighborhoodName() =0;
+
+  /// register the neighborhoods for the material
+  virtual void registerNeighborhood() = 0;
+
+  /// register the non local internal variable
+  virtual void registerNonLocalVariables() = 0;
+
+  virtual inline void onElementsAdded(const Array<Element> &,
+                                      const NewElementsEvent &) {}
+};
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim, class LocalParent>
+class MaterialNonLocal : public MaterialNonLocalInterface, public LocalParent {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MaterialNonLocal(SolidMechanicsModel & model, const ID & id = "");
-  virtual ~MaterialNonLocal();
+  explicit MaterialNonLocal(SolidMechanicsModel & model, const ID & id);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// initialize the material computed parameter
-  virtual void initMaterial();
-
-  virtual void updateResidual(GhostType ghost_type);
-
   /// insert the quadrature points in the neighborhoods of the non-local manager
-  virtual void insertQuadsInNeighborhoods(GhostType ghost_type = _not_ghost);
+  void insertIntegrationPointsInNeighborhoods(
+      const GhostType & ghost_type,
+      const ElementTypeMapReal & quadrature_points_coordinates) override;
 
   /// update the values in the non-local internal fields
   void updateNonLocalInternals(ElementTypeMapReal & non_local_flattened,
-                               const ID & field_id, const UInt nb_component);
-  /// constitutive law
-  virtual void computeNonLocalStresses(GhostType ghost_type = _not_ghost) = 0;
+                               const ID & field_id,
+                               const GhostType & ghost_type,
+                               const ElementKind & kind) override;
 
   /// register the neighborhoods for the material
-  virtual void registerNeighborhood();
+  void registerNeighborhood() override;
 
 protected:
-  virtual inline void onElementsAdded(const Array<Element> &,
-                                      const NewElementsEvent &) {
+  /// get the name of the neighborhood for this material
+  ID getNeighborhoodName() override {
+    return this->name;
   }
-
-protected:
 };
 
-__END_AKANTU__
+} // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+#include "material_non_local_tmpl.hh"
 
 #endif /* __AKANTU_MATERIAL_NON_LOCAL_HH__ */

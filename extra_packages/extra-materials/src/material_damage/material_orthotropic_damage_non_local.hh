@@ -35,7 +35,7 @@
 #ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<UInt spatial_dimension,
          class MaterialOrthotropicDamageLocal>
@@ -63,8 +63,8 @@ protected:
   void computeNonLocalStresses(GhostType ghost_type) {
     AKANTU_DEBUG_IN();
 
-    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type = this->model->getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
+    Mesh::type_iterator it = this->model.getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
+    Mesh::type_iterator last_type = this->model.getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
     for(; it != last_type; ++it) {
       computeNonLocalStress(*it, ghost_type);
     }
@@ -95,6 +95,6 @@ public:
 
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_NON_LOCAL_HH__ */

@@ -31,48 +31,58 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "material_elastic.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__
+#define __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void MaterialElastic<spatial_dimension>::computeStressOnQuad(const Matrix<Real> & grad_u,
-								    Matrix<Real> & sigma,
-								    const Real sigma_th) const {
+template <UInt spatial_dimension>
+inline void MaterialElastic<spatial_dimension>::computeStressOnQuad(
+    const Matrix<Real> & grad_u, Matrix<Real> & sigma,
+    const Real sigma_th) const {
   Real trace = grad_u.trace(); // trace = (\nabla u)_{kk}
 
-  // \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla u_{ij} + \nabla u_{ji})
+  // \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla
+  // u_{ij} + \nabla u_{ji})
   for (UInt i = 0; i < spatial_dimension; ++i) {
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      sigma(i, j) =  (i == j)*lambda*trace + mu*(grad_u(i, j) + grad_u(j, i)) + (i == j) * sigma_th;
+      sigma(i, j) = (i == j) * lambda * trace +
+                    mu * (grad_u(i, j) + grad_u(j, i)) + (i == j) * sigma_th;
     }
   }
-
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
+template <>
 inline void MaterialElastic<1>::computeStressOnQuad(const Matrix<Real> & grad_u,
-						    Matrix<Real> & sigma,
-						    Real sigma_th) const {
+                                                    Matrix<Real> & sigma,
+                                                    Real sigma_th) const {
   sigma(0, 0) = this->E * grad_u(0, 0) + sigma_th;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
+template <UInt spatial_dimension>
+inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(
+    Matrix<Real> & tangent) const {
   UInt n = tangent.cols();
 
-  //Real Ep = E/((1+nu)*(1-2*nu));
-  Real Miiii = lambda + 2*mu;
+  // Real Ep = E/((1+nu)*(1-2*nu));
+  Real Miiii = lambda + 2 * mu;
   Real Miijj = lambda;
   Real Mijij = mu;
 
-  if(spatial_dimension == 1)
+  if (spatial_dimension == 1)
     tangent(0, 0) = this->E;
   else
     tangent(0, 0) = Miiii;
 
-  // test of dimension should by optimized out by the compiler due to the template
-  if(spatial_dimension >= 2) {
+  // test of dimension should by optimized out by the compiler due to the
+  // template
+  if (spatial_dimension >= 2) {
     tangent(1, 1) = Miiii;
     tangent(0, 1) = Miijj;
     tangent(1, 0) = Miijj;
@@ -80,7 +90,7 @@ inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matri
     tangent(n - 1, n - 1) = Mijij;
   }
 
-  if(spatial_dimension == 3) {
+  if (spatial_dimension == 3) {
     tangent(2, 2) = Miiii;
     tangent(0, 2) = Miijj;
     tangent(1, 2) = Miijj;
@@ -93,16 +103,19 @@ inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(Matri
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline void MaterialElastic<dim>::computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
-							       const Matrix<Real> & sigma,
-							       Real & epot) {
+template <UInt dim>
+inline void MaterialElastic<dim>::computePotentialEnergyOnQuad(
+    const Matrix<Real> & grad_u, const Matrix<Real> & sigma, Real & epot) {
   epot = .5 * sigma.doubleDot(grad_u);
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline void MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
+template <>
+inline void
+MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   tangent(0, 0) = E;
 }
 
+} // akantu
+
+#endif /* __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__ */

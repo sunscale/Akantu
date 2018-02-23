@@ -29,47 +29,47 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
+#include "dumper_iohelper_paraview.hh"
+#include "dumper_nodal_field.hh"
 #include "dumper_text.hh"
 #include "dumper_variable.hh"
-#include "dumper_paraview.hh"
-#include "dumper_nodal_field.hh" 
+#include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("input_file.dat", argc, argv);
 
   UInt spatial_dimension = 3;
   Mesh mesh(spatial_dimension);
   mesh.read("test_dumper.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
-  MeshDataMaterialSelector<std::string> mat_selector("physical_names", model);
-  model.setMaterialSelector(mat_selector);  
+  auto && mat_selector =
+      std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names",
+                                                              model);
+  model.setMaterialSelector(mat_selector);
 
   model.initFull();
-  model.setIncrementFlagOn();
-  model.updateResidual();
-  
+  model.assembleInternalForces();
+
   Real time_step = 0.1;
 
   const Array<Real> & coord = mesh.getNodes();
-  Array<Real> & disp        = model.getDisplacement();
-  Array<bool> & bound       = model.getBlockedDOFs();
+  Array<Real> & disp = model.getDisplacement();
+  Array<bool> & bound = model.getBlockedDOFs();
 
-  for (UInt n=0; n<mesh.getNbNodes(); ++n) {
+  for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
     Real dist = 0.;
-    for (UInt d=0; d<spatial_dimension; ++d) {
-      dist += coord(n,d) * coord(n,d);
+    for (UInt d = 0; d < spatial_dimension; ++d) {
+      dist += coord(n, d) * coord(n, d);
     }
     dist = sqrt(dist);
-    
-    for (UInt d=0; d<spatial_dimension; ++d) {
-      disp(n,d) = (d+1) * dist;
-      bound(n,d) = bool((n % 2) + d);
+
+    for (UInt d = 0; d < spatial_dimension; ++d) {
+      disp(n, d) = (d + 1) * dist;
+      bound(n, d) = bool((n % 2) + d);
     }
   }
 
@@ -80,61 +80,55 @@ int main(int argc, char *argv[]) {
   model.addDumpGroupField("blocked_dofs", "Bottom");
 
   UInt nbp = 3;
-  DumperParaview prvdumper("paraview_bottom_parallel",
-			   "paraview",
-			   false);
+  DumperParaview prvdumper("paraview_bottom_parallel", "paraview", false);
   iohelper::Dumper & prvdpr = prvdumper.getDumper();
-  for (UInt p=0; p<nbp; ++p) {
+  for (UInt p = 0; p < nbp; ++p) {
     prvdpr.setParallelContext(p, nbp, 0);
     if (p != 0) {
       prvdumper.unRegisterField("connectivities");
       prvdumper.unRegisterField("element_type");
       prvdumper.unRegisterField("positions");
       prvdumper.unRegisterField("displacement");
-    } 
+    }
     prvdumper.registerFilteredMesh(mesh,
-				   mesh.getElementGroup("Bottom").getElements(),
-				   mesh.getElementGroup("Bottom").getNodes());
-    prvdumper.registerField("displacement", 
-			    new dumper::NodalField<Real,true>(model.getDisplacement(),
-							      0,
-							      0,
-							      &(mesh.getElementGroup("Bottom").getNodes())));
+                                   mesh.getElementGroup("Bottom").getElements(),
+                                   mesh.getElementGroup("Bottom").getNodes());
+    prvdumper.registerField("displacement",
+                            new dumper::NodalField<Real, true>(
+                                model.getDisplacement(), 0, 0,
+                                &(mesh.getElementGroup("Bottom").getNodes())));
     prvdumper.dump(0);
   }
-
 
   DumperText txtdumper("text_bottom", iohelper::_tdm_csv);
   txtdumper.setDirectory("paraview");
   txtdumper.setPrecision(8);
   txtdumper.setTimeStep(time_step);
   txtdumper.registerFilteredMesh(mesh,
-   				 mesh.getElementGroup("Bottom").getElements(),
-   				 mesh.getElementGroup("Bottom").getNodes());
+                                 mesh.getElementGroup("Bottom").getElements(),
+                                 mesh.getElementGroup("Bottom").getNodes());
   txtdumper.registerField("displacement",
-			  new dumper::NodalField<Real,true>(model.getDisplacement(), 
-							    0, 
-							    0, 
-							    &(mesh.getElementGroup("Bottom").getNodes())));
+                          new dumper::NodalField<Real, true>(
+                              model.getDisplacement(), 0, 0,
+                              &(mesh.getElementGroup("Bottom").getNodes())));
   txtdumper.registerField("blocked_dofs",
-			  new dumper::NodalField<bool,true>(model.getBlockedDOFs(), 
-								    0, 
-								    0, 
-								    &(mesh.getElementGroup("Bottom").getNodes())));
-  
+                          new dumper::NodalField<bool, true>(
+                              model.getBlockedDOFs(), 0, 0,
+                              &(mesh.getElementGroup("Bottom").getNodes())));
+
   Real pot_energy = 1.2345567891;
-  Vector<Real> gforces(2,1.);
+  Vector<Real> gforces(2, 1.);
   txtdumper.registerVariable("potential_energy",
-			     new dumper::Variable<Real>(pot_energy));
+                             new dumper::Variable<Real>(pot_energy));
   txtdumper.registerVariable("global_forces",
-			     new dumper::Variable< Vector<Real> >(gforces));
+                             new dumper::Variable<Vector<Real>>(gforces));
 
   // dump a first time before the main loop
   model.dumpGroup("Bottom");
   txtdumper.dump();
 
   Real time = 0.;
-  for (UInt i=1; i<5; ++i) {
+  for (UInt i = 1; i < 5; ++i) {
     pot_energy += 2.;
     gforces(0) += 0.1;
     gforces(1) += 0.2;
@@ -145,14 +139,14 @@ int main(int argc, char *argv[]) {
     time += time_step;
 
     // dump after time increment
-    if (i%2 == 0) {
-      txtdumper.dump(time,i);
+    if (i % 2 == 0) {
+      txtdumper.dump(time, i);
       model.dumpGroup("Bottom");
-      
+
       // parallel test
-      for (UInt p=0; p<nbp; ++p) {
-	prvdpr.setParallelContext(p, nbp, 0);
-	prvdumper.dump(i);
+      for (UInt p = 0; p < nbp; ++p) {
+        prvdpr.setParallelContext(p, nbp, 0);
+        prvdumper.dump(i);
       }
     }
   }

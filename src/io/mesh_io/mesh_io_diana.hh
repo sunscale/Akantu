@@ -45,7 +45,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshIODiana : public MeshIO {
   /* ------------------------------------------------------------------------ */
@@ -53,17 +53,17 @@ class MeshIODiana : public MeshIO {
   /* ------------------------------------------------------------------------ */
 public:
   MeshIODiana();
-  virtual ~MeshIODiana();
+  ~MeshIODiana() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// read a mesh from the file
-  virtual void read(const std::string & filename, Mesh & mesh);
+  void read(const std::string & filename, Mesh & mesh) override;
 
   /// write a mesh to a file
-  virtual void write(const std::string & filename, const Mesh & mesh);
+  void write(const std::string & filename, const Mesh & mesh) override;
 
 private:
   std::string readCoordinates(std::ifstream & infile, Mesh & mesh,
@@ -102,6 +102,6 @@ private:
   std::map<Element, UInt> akantu_number_to_diana_number;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_DIANA_HH__ */

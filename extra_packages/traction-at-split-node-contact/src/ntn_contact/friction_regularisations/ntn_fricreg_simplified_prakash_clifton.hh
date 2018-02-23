@@ -21,7 +21,7 @@
 // simtools
 #include "ntn_fricreg_no_regularisation.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class NTNFricRegSimplifiedPrakashClifton : public NTNFricRegNoRegularisation {
@@ -95,6 +95,6 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__ */

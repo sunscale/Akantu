@@ -33,7 +33,7 @@
 #ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_HH__
 #define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 template<UInt spatial_dimension, template<UInt> class Parent = MaterialElastic>
 class MaterialOrthotropicDamage : public Parent<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
@@ -136,7 +136,7 @@ protected:
 
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "material_orthotropic_damage_tmpl.hh"
 

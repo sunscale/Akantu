@@ -38,7 +38,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<UInt dim, ElementType type, class Primitive, class Query, class Kernel>
 MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::MeshGeomIntersector(Mesh & mesh) :
@@ -56,7 +56,7 @@ void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData(Gho
   factory.constructData(ghost_type);
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH__
 

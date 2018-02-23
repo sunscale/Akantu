@@ -37,7 +37,7 @@
 
 #include "mesh_geom_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
   
 /* -------------------------------------------------------------------------- */
 
@@ -66,6 +66,6 @@ protected:
   UInt meshId;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_TRIANGLE_HH__

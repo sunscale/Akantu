@@ -37,72 +37,38 @@
 #ifndef __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-template <UInt spatial_dimension, class MaterialDamageLocal>
-class MaterialDamageNonLocal : public MaterialDamageLocal,
-                               public MaterialNonLocal<spatial_dimension> {
+template <UInt dim, class MaterialDamageLocal>
+class MaterialDamageNonLocal : public MaterialNonLocal<dim, MaterialDamageLocal> {
 public:
-  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
-  typedef MaterialDamageLocal MaterialDamageParent;
+  using MaterialParent = MaterialNonLocal<dim, MaterialDamageLocal>;
 
   MaterialDamageNonLocal(SolidMechanicsModel & model, const ID & id)
-      : Material(model, id), MaterialDamageParent(model, id),
-        MaterialNonLocalParent(model, id){};
-
-  /* ------------------------------------------------------------------------ */
-  virtual void initMaterial() {
-    MaterialDamageParent::initMaterial();
-    MaterialNonLocalParent::initMaterial();
-  }
+      : MaterialParent(model, id) {};
 
 protected:
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
   virtual void computeNonLocalStress(ElementType type,
                                      GhostType ghost_type = _not_ghost) = 0;
 
   /* ------------------------------------------------------------------------ */
-  void computeNonLocalStresses(GhostType ghost_type) {
+  void computeNonLocalStresses(GhostType ghost_type) override {
     AKANTU_DEBUG_IN();
 
-    Mesh::type_iterator it = this->model->getFEEngine().getMesh().firstType(
-        spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type =
-        this->model->getFEEngine().getMesh().lastType(spatial_dimension,
-                                                      ghost_type);
-    for (; it != last_type; ++it) {
-      Array<UInt> & elem_filter = this->element_filter(*it, ghost_type);
-      if (elem_filter.getSize() == 0)
+    for (auto type :
+         this->element_filter.elementTypes(dim, ghost_type)) {
+      auto & elem_filter = this->element_filter(type, ghost_type);
+      if (elem_filter.size() == 0)
         continue;
-      computeNonLocalStress(*it, ghost_type);
+
+      computeNonLocalStress(type, ghost_type);
     }
 
     AKANTU_DEBUG_OUT();
   }
-
-public:
-  /* ------------------------------------------------------------------------ */
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const {
-    return MaterialNonLocalParent::getNbDataForElements(elements, tag) +
-           MaterialDamageParent::getNbDataForElements(elements, tag);
-  }
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const {
-    MaterialNonLocalParent::packElementData(buffer, elements, tag);
-    MaterialDamageParent::packElementData(buffer, elements, tag);
-  }
-
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag) {
-    MaterialNonLocalParent::unpackElementData(buffer, elements, tag);
-    MaterialDamageParent::unpackElementData(buffer, elements, tag);
-  }
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__ */

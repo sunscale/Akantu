@@ -29,16 +29,14 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
-set(Python_ADDITIONAL_VERSIONS 2.7)
-
+set(Python_ADDITIONAL_VERSIONS ${AKANTU_PREFERRED_PYTHON_VERSION})
 package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
   DEPENDS numpy
   EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND
   )
 
-package_set_package_system_dependency(PythonLibs deb libpython2.7)
-package_set_package_system_dependency(PythonLibs deb-src libpython2.7-dev)
+package_set_package_system_dependency(PythonLibs deb libpython3)
+package_set_package_system_dependency(PythonLibs deb-src libpython3-dev)
 
 package_declare_documentation(PythonLibs
   "This package is a dependency of the python interface"

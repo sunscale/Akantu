@@ -66,11 +66,6 @@ AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_pentahedron_6, _gt_pentahedron_6,
                                      _itp_lagrange_pentahedron_6, _ek_regular,
                                      3, _git_pentahedron, 1);
 
-template <> struct GeometricalShape<_gt_pentahedron_6> {
-  static const GeometricalShapeType shape = _gst_prism;
-};
-// AKANTU_DEFINE_SHAPE(_gt_pentahedron_6, _gst_prism);
-
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>

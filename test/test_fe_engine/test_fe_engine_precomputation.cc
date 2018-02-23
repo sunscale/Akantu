@@ -30,35 +30,84 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "fe_engine.hh"
-#include "shape_lagrange.hh"
-#include "integrator_gauss.hh"
+#include "pybind11_akantu.hh"
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
+#include <pybind11/embed.h>
+#include <pybind11/numpy.h>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+namespace py = pybind11;
+using namespace py::literals;
 
-  debug::setDebugLevel(dblTest);
+template <typename type_>
+class TestFEMPyFixture : public TestFEMFixture<type_> {
+  using parent = TestFEMFixture<type_>;
 
-  const ElementType type = TYPE;
-  UInt dim = ElementClass<type>::getSpatialDimension();
+public:
+  void SetUp() override {
+    parent::SetUp();
 
-  Mesh my_mesh(dim);
+    const auto & connectivities = this->mesh->getConnectivity(this->type);
+    const auto & nodes = this->mesh->getNodes().begin(this->dim);
+    coordinates = std::make_unique<Array<Real>>(
+        connectivities.size(), connectivities.getNbComponent() * this->dim);
 
-  std::stringstream meshfilename; meshfilename << type << ".msh";
-  my_mesh.read(meshfilename.str());
+    for (auto && tuple :
+         zip(make_view(connectivities, connectivities.getNbComponent()),
+             make_view(*coordinates, this->dim,
+                       connectivities.getNbComponent()))) {
+      const auto & conn = std::get<0>(tuple);
+      const auto & X = std::get<1>(tuple);
+      for (auto s : arange(conn.size())) {
+        Vector<Real>(X(s)) = Vector<Real>(nodes[conn(s)]);
+      }
+    }
+  }
 
-  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
+  void TearDown() override {
+    parent::TearDown();
+    coordinates.reset(nullptr);
+  }
 
-  fem->initShapeFunctions();
+protected:
+  std::unique_ptr<Array<Real>> coordinates;
+};
 
-  std::cout << *fem << std::endl;
+TYPED_TEST_CASE(TestFEMPyFixture, types);
 
-  delete fem;
-  finalize();
+TYPED_TEST(TestFEMPyFixture, Precompute) {
+  SCOPED_TRACE(aka::to_string(this->type));
+  this->fem->initShapeFunctions();
+  const auto & N = this->fem->getShapeFunctions().getShapes(this->type);
+  const auto & B =
+      this->fem->getShapeFunctions().getShapesDerivatives(this->type);
+  const auto & j = this->fem->getIntegrator().getJacobians(this->type);
 
-  return 0;
+  // Array<Real> ref_N(this->nb_quadrature_points_total, N.getNbComponent());
+  // Array<Real> ref_B(this->nb_quadrature_points_total, B.getNbComponent());
+  Array<Real> ref_j(this->nb_quadrature_points_total, j.getNbComponent());
+  auto ref_N(N);
+  auto ref_B(B);
+  py::module py_engine = py::module::import("py_engine");
+  auto py_shape = py_engine.attr("Shapes")(py::str(aka::to_string(this->type)));
+  auto kwargs = py::dict(
+      "N"_a = make_proxy(ref_N), "B"_a = make_proxy(ref_B),
+      "j"_a = make_proxy(ref_j), "X"_a = make_proxy(*this->coordinates),
+      "Q"_a = make_proxy(
+          this->fem->getIntegrationPoints(this->type)));
+
+  auto ret = py_shape.attr("precompute")(**kwargs);
+  auto check = [&](auto & ref_A, auto & A, const auto & id) {
+    SCOPED_TRACE(aka::to_string(this->type) + " " + id);
+    for (auto && n : zip(make_view(ref_A, ref_A.getNbComponent()),
+                         make_view(A, A.getNbComponent()))) {
+      auto diff = (std::get<0>(n) - std::get<1>(n)).template norm<L_inf>();
+      EXPECT_NEAR(0., diff, 1e-10);
+    }
+  };
+  check(ref_N, N, "N");
+  check(ref_B, B, "B");
+  check(ref_j, j, "j");
 }

@@ -29,13 +29,21 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+#include "global_ids_updater.hh"
+#include "mesh.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__
+#define __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline UInt GlobalIdsUpdater::getNbDataForElements(const Array<Element> & elements,
-						   SynchronizationTag tag) const {
+inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
+                                        const SynchronizationTag & tag) const {
   UInt size = 0;
-  if (elements.getSize() == 0) return size;
+  if (elements.size() == 0)
+    return size;
 
   if (tag == _gst_giu_global_conn)
     size += Mesh::getNbNodesPerElementList(elements) * sizeof(UInt);
@@ -44,25 +52,25 @@ inline UInt GlobalIdsUpdater::getNbDataForElements(const Array<Element> & elemen
 }
 
 /* -------------------------------------------------------------------------- */
-inline void GlobalIdsUpdater::packElementData(CommunicationBuffer & buffer,
-					      const Array<Element> & elements,
-					      SynchronizationTag tag) const {
+inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
+                                       const Array<Element> & elements,
+                                       const SynchronizationTag & tag) const {
   if (tag == _gst_giu_global_conn)
     packUnpackGlobalConnectivity<true>(buffer, elements);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void GlobalIdsUpdater::unpackElementData(CommunicationBuffer & buffer,
-						const Array<Element> & elements,
-						SynchronizationTag tag) {
+inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
+                                         const Array<Element> & elements,
+                                         const SynchronizationTag & tag) {
   if (tag == _gst_giu_global_conn)
     packUnpackGlobalConnectivity<false>(buffer, elements);
 }
 
 /* -------------------------------------------------------------------------- */
-template<bool pack_mode>
-inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
-							   const Array<Element> & elements) const {
+template <bool pack_mode>
+inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
+    CommunicationBuffer & buffer, const Array<Element> & elements) const {
   AKANTU_DEBUG_IN();
 
   ElementType current_element_type = _not_defined;
@@ -74,17 +82,18 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer &
 
   Array<UInt> & global_nodes_ids = mesh.getGlobalNodesIds();
 
-  Array<Element>::const_scalar_iterator it  = elements.begin();
+  Array<Element>::const_scalar_iterator it = elements.begin();
   Array<Element>::const_scalar_iterator end = elements.end();
   for (; it != end; ++it) {
     const Element & el = *it;
 
-    if (el.type != current_element_type || el.ghost_type != current_ghost_type) {
+    if (el.type != current_element_type ||
+        el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
-      current_ghost_type   = el.ghost_type;
+      current_ghost_type = el.ghost_type;
 
-      const Array<UInt> & connectivity = mesh.getConnectivity(current_element_type,
-							      current_ghost_type);
+      const Array<UInt> & connectivity =
+          mesh.getConnectivity(current_element_type, current_ghost_type);
       nb_nodes_per_elem = connectivity.getNbComponent();
       conn_begin = connectivity.begin(nb_nodes_per_elem);
     }
@@ -97,21 +106,20 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer &
       UInt node = current_conn(n);
 
       if (pack_mode) {
-	/// if node is local or master pack its global id, otherwise
-	/// dummy data
-	if (mesh.isLocalOrMasterNode(node))
-	  index = global_nodes_ids(node);
-	else
-	  index = UInt(-1);
+        /// if node is local or master pack its global id, otherwise
+        /// dummy data
+        if (mesh.isLocalOrMasterNode(node))
+          index = global_nodes_ids(node);
+        else
+          index = UInt(-1);
 
-	buffer << index;
-      }
-      else {
-	buffer >> index;
+        buffer << index;
+      } else {
+        buffer >> index;
 
-	/// update slave nodes' index
-	if (index != UInt(-1) && mesh.isSlaveNode(node))
-	  global_nodes_ids(node) = index;
+        /// update slave nodes' index
+        if (index != UInt(-1) && mesh.isSlaveNode(node))
+          global_nodes_ids(node) = index;
       }
     }
   }
@@ -119,5 +127,6 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(CommunicationBuffer &
   AKANTU_DEBUG_OUT();
 }
 
+} // akantu
 
-__END_AKANTU__
+#endif /* __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__ */

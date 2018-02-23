@@ -31,8 +31,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "solid_mechanics_model.hh"
+#include "non_linear_solver.hh"
+#include "mesh_utils.hh"
+/* -------------------------------------------------------------------------- */
+
+
 
 using namespace akantu;
 
@@ -41,7 +45,7 @@ Real alpha [3][4] = { { 0.01, 0.02, 0.03, 0.04 },
 		      { 0.09, 0.10, 0.11, 0.12 } };
 
 /* -------------------------------------------------------------------------- */
-template<ElementType type, bool is_plane_strain>
+template<ElementType type>
 static Matrix<Real> prescribed_strain() {
   UInt spatial_dimension = ElementClass<type>::getSpatialDimension();
   Matrix<Real> strain(spatial_dimension, spatial_dimension);
@@ -54,7 +58,7 @@ static Matrix<Real> prescribed_strain() {
   return strain;
 }
 
-template<ElementType type, bool is_plane_strain>
+template<ElementType type>
 static Matrix<Real> prescribed_stress(Matrix<Real> prescribed_eigengradu) {
   UInt spatial_dimension = ElementClass<type>::getSpatialDimension();
   Matrix<Real> stress(spatial_dimension, spatial_dimension);
@@ -62,7 +66,7 @@ static Matrix<Real> prescribed_stress(Matrix<Real> prescribed_eigengradu) {
   //plane strain in 2d
   Matrix<Real> strain(spatial_dimension, spatial_dimension);
   Matrix<Real> pstrain;
-  pstrain = prescribed_strain<type, is_plane_strain>();
+  pstrain = prescribed_strain<type>();
   Real nu = 0.3;
   Real E  = 2.1e11;
   Real trace = 0;
@@ -79,11 +83,6 @@ static Matrix<Real> prescribed_stress(Matrix<Real> prescribed_eigengradu) {
   Real lambda   = nu * E / ((1 + nu) * (1 - 2*nu));
   Real mu       = E / (2 * (1 + nu));
 
-  if(!is_plane_strain) {
-    std::cout << "toto" << std::endl;
-    lambda = nu * E / (1 - nu*nu);
-  }
-
   if(spatial_dimension == 1) {
     stress(0, 0) =  E * strain(0, 0);
   } else {
@@ -99,52 +98,48 @@ static Matrix<Real> prescribed_stress(Matrix<Real> prescribed_eigengradu) {
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   initialize("material_elastic_plane_strain.dat", argc, argv);
 
   UInt dim = 3;
   const ElementType element_type = _tetrahedron_4;
-  const bool plane_strain = true;
-  Matrix<Real> prescribed_eigengradu(dim, dim);
-  prescribed_eigengradu.clear();
-  for (UInt i = 0; i < dim; ++i) {
-    for (UInt j = 0; j < dim; ++j)
-      prescribed_eigengradu(i,j) += 0.1;
-  }
 
+  Matrix<Real> prescribed_eigengradu(dim, dim);
+  prescribed_eigengradu.set(0.1);
 
   /// load mesh
-  Mesh my_mesh(dim);
-
-  std::stringstream filename; filename << "cube_3d_tet_4.msh";
-  my_mesh.read(filename.str());
+  Mesh mesh(dim);
+  mesh.read("cube_3d_tet_4.msh");
 
   /// declaration of model
-  SolidMechanicsModel  my_model(my_mesh);
+  SolidMechanicsModel  model(mesh);
   /// model initialization
-  my_model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
-  const Array<Real> & coordinates = my_mesh.getNodes();
-  Array<Real> & displacement = my_model.getDisplacement();
-  Array<bool> & boundary = my_model.getBlockedDOFs();
-  MeshUtils::buildFacets(my_mesh);
+  //model.getNewSolver("static", _tsst_static, _nls_newton_raphson_modified);
+  auto & solver = model.getNonLinearSolver("static");
+  solver.set("threshold", 2e-4);
+  solver.set("max_iterations", 2);
+  solver.set("convergence_type", _scc_residual);
 
-  my_mesh.createBoundaryGroupFromGeometry();
+  const Array<Real> & coordinates = mesh.getNodes();
+  Array<Real> & displacement = model.getDisplacement();
+  Array<bool> & boundary = model.getBlockedDOFs();
+  MeshUtils::buildFacets(mesh);
+
+  mesh.createBoundaryGroupFromGeometry();
 
   // Loop over (Sub)Boundar(ies)
-  for(GroupManager::const_element_group_iterator it(my_mesh.element_group_begin());
-      it != my_mesh.element_group_end(); ++it) {
-    for(ElementGroup::const_node_iterator nodes_it(it->second->node_begin());
-	nodes_it!= it->second->node_end(); ++nodes_it) {
-      UInt n(*nodes_it);
-      std::cout << "Node " << *nodes_it << std::endl;
+  for(GroupManager::const_element_group_iterator it(mesh.element_group_begin());
+      it != mesh.element_group_end(); ++it) {
+    for(const auto & n : it->second->getNodeGroup()) {
+      std::cout << "Node " << n << std::endl;
       for (UInt i = 0; i < dim; ++i) {
-	displacement(n, i) = alpha[i][0];
-	for (UInt j = 0; j < dim; ++j) {
-	  displacement(n, i) += alpha[i][j + 1] * coordinates(n, j);
-	}
-	boundary(n, i) = true;
+        displacement(n, i) = alpha[i][0];
+        for (UInt j = 0; j < dim; ++j) {
+          displacement(n, i) += alpha[i][j + 1] * coordinates(n, j);
+        }
+        boundary(n, i) = true;
       }
     }
   }
@@ -152,39 +147,38 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   /* Apply eigenstrain in each element                                          */
   /* ------------------------------------------------------------------------ */
-
-
-  Array<Real> & eigengradu_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getInternal<Real>("eigen_grad_u")(element_type));
-  Array<Real>::iterator< Matrix<Real> > eigengradu_it = eigengradu_vect.begin(dim, dim);
-  Array<Real>::iterator< Matrix<Real> > eigengradu_end = eigengradu_vect.end(dim, dim);
+  Array<Real> & eigengradu_vect =
+    model.getMaterial(0).getInternal<Real>("eigen_grad_u")(element_type);
+  auto eigengradu_it = eigengradu_vect.begin(dim, dim);
+  auto eigengradu_end = eigengradu_vect.end(dim, dim);
 
   for (; eigengradu_it != eigengradu_end; ++eigengradu_it) {
-    for (UInt i = 0; i < dim; ++i)
-      for (UInt j = 0; j < dim; ++j)
-	(*eigengradu_it)(i,j) += prescribed_eigengradu(i,j);
+    *eigengradu_it = prescribed_eigengradu;
   }
+
   /* ------------------------------------------------------------------------ */
   /* Static solve                                                             */
   /* ------------------------------------------------------------------------ */
-  my_model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(2e-4, 2);
+  model.solveStep();
+
+  std::cout << "Converged in " << Int(solver.get("nb_iterations"))
+            << " (" << Real(solver.get("error")) << ")" << std::endl;
 
   /* ------------------------------------------------------------------------ */
   /* Checks                                                                   */
   /* ------------------------------------------------------------------------ */
+  const Array<Real> & stress_vect = model.getMaterial(0).getStress(element_type);
 
-
-  Array<Real> & stress_vect = const_cast<Array<Real> &>(my_model.getMaterial(0).getStress(element_type));
-
-  Array<Real>::iterator< Matrix<Real> > stress_it = stress_vect.begin(dim, dim);
-  Array<Real>::iterator< Matrix<Real> > stress_end = stress_vect.end(dim, dim);
+  auto stress_it = stress_vect.begin(dim, dim);
+  auto stress_end = stress_vect.end(dim, dim);
 
   Matrix<Real> presc_stress;
-  presc_stress = prescribed_stress<element_type, plane_strain>(prescribed_eigengradu);
+  presc_stress = prescribed_stress<element_type>(prescribed_eigengradu);
 
   Real stress_tolerance = 1e-13;
 
   for (; stress_it != stress_end; ++stress_it) {
-    Matrix<Real> & stress = *stress_it;
+    const auto & stress = *stress_it;
     Matrix<Real> diff(dim, dim);
 
     diff  = stress;
@@ -192,17 +186,16 @@ int main(int argc, char *argv[])
     Real stress_error = diff.norm<L_inf>() / stress.norm<L_inf>();
 
     if(stress_error > stress_tolerance) {
-      std::cerr << "stress error: " << stress_error << " > " << stress_tolerance << std::endl;
+      std::cerr << "stress error: " << stress_error
+                << " > " << stress_tolerance << std::endl;
       std::cerr << "stress: " << stress << std::endl
-		<< "prescribed stress: " << presc_stress << std::endl;
+                << "prescribed stress: " << presc_stress << std::endl;
       return EXIT_FAILURE;
-    } else {
-      std::cerr << "stress error: " << stress_error << " < " << stress_tolerance << std::endl;
-    }
-
-
+    } // else {
+    //   std::cerr << "stress error: " << stress_error
+    //             << " < " << stress_tolerance << std::endl;
+    // }
   }
-
 
   finalize();
 

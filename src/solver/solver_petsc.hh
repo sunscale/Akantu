@@ -31,28 +31,29 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "sparse_solver.hh"
+/* -------------------------------------------------------------------------- */
+#include <petscksp.h>
+/* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_SOLVER_PETSC_HH__
 #define __AKANTU_SOLVER_PETSC_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "solver.hh"
+namespace akantu {
+  class SparseMatrixPETSc;
+  class DOFManagerPETSc;
+}
 
+namespace akantu {
 
-/* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
-
-class PETScSolverWrapper;
-
-class SolverPETSc : public Solver {
+class SolverPETSc : public SparseSolver {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  SolverPETSc(SparseMatrix & sparse_matrix,
-	      const ID & id = "solver_petsc",
-	      const MemoryID & memory_id = 0);
+  SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
+              const ID & id = "solver_petsc", const MemoryID & memory_id = 0);
 
   virtual ~SolverPETSc();
 
@@ -61,27 +62,29 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// create the solver context and set the matrices
-  virtual void initialize(SolverOptions & options = _solver_no_options);
+  virtual void initialize();
   virtual void setOperators();
   virtual void setRHS(Array<Real> & rhs);
   virtual void solve();
   virtual void solve(Array<Real> & solution);
+
 private:
   /// clean the petsc data
   virtual void destroyInternalData();
 
 private:
+  /// DOFManager correctly typed
+  DOFManagerPETSc & dof_manager;
+
+  /// PETSc linear solver
+  KSP ksp;
+
+  /// Matrix defining the system of equations
+  SparseMatrixPETSc & matrix;
 
   /// specify if the petsc_data is initialized or not
   bool is_petsc_data_initialized;
-
-  /// store the PETSc structures
-  PETScSolverWrapper * petsc_solver_wrapper;
-
-
-
 };
-
 
 //   SolverPETSc(int argc, char *argv[]) : allocated_(false) {
 
@@ -97,24 +100,32 @@ private:
 //     //      ierr = KSPGetPC(ksp_,&pc);CHKERRCONTINUE(ierr);
 //     //      ierr = PCSetType(pc,PCILU);CHKERRCONTINUE(ierr);
 //     //    ierr = PCSetType(pc,PCJACOBI);CHKERRCONTINUE(ierr);
-//     ierr = KSPSetTolerances(ksp_,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRCONTINUE(ierr);
+//     ierr =
+//     KSPSetTolerances(ksp_,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRCONTINUE(ierr);
 //   }
 
 //   //! Overload operator() to solve system of linear equations
-//   sparse_vector_type operator()(const sparse_matrix_type& AA, const sparse_vector_type& bb);
+//   sparse_vector_type operator()(const sparse_matrix_type& AA, const
+//   sparse_vector_type& bb);
 
 //   //! Overload operator() to obtain reaction vector
-//   sparse_vector_type operator()(const sparse_matrix_type& Kpf, const sparse_matrix_type& Kpp, const sparse_vector_type& Up);
+//   sparse_vector_type operator()(const sparse_matrix_type& Kpf, const
+//   sparse_matrix_type& Kpp, const sparse_vector_type& Up);
 
 //   //! Overload operator() to obtain the addition two vectors
-//   sparse_vector_type operator()(const sparse_vector_type& aa, const sparse_vector_type& bb);
+//   sparse_vector_type operator()(const sparse_vector_type& aa, const
+//   sparse_vector_type& bb);
 
-//   value_type norm(const sparse_matrix_type& aa, Element_insertion_type it = Add_t);
+//   value_type norm(const sparse_matrix_type& aa, Element_insertion_type it =
+//   Add_t);
 
-//   value_type norm(const sparse_vector_type& aa, Element_insertion_type it = Add_t);
+//   value_type norm(const sparse_vector_type& aa, Element_insertion_type it =
+//   Add_t);
 
-//   // NOTE: the destructor will return an error if it is called after MPI_Finalize is
-//   // called because it uses collect communication to free-up allocated memory.
+//   // NOTE: the destructor will return an error if it is called after
+//   MPI_Finalize is
+//   // called because it uses collect communication to free-up allocated
+//   memory.
 //   ~SolverPETSc() {
 
 //     static bool exit = false;
@@ -137,8 +148,10 @@ private:
 //    Options Database Keys
 
 //    -options_table	                - Calls PetscOptionsView()
-//    -options_left	                - Prints unused options that remain in the database
-//    -objects_left                  - Prints list of all objects that have not been freed
+//    -options_left	                - Prints unused options that remain in the
+//    database
+//    -objects_left                  - Prints list of all objects that have not
+//    been freed
 //    -mpidump	                    - Calls PetscMPIDump()
 //    -malloc_dump	                - Calls PetscMallocDump()
 //    -malloc_info	                - Prints total memory usage
@@ -146,22 +159,24 @@ private:
 
 //    Options Database Keys for Profiling
 
-//    -log_summary [filename]	    - Prints summary of flop and timing information to screen.
-//    If the filename is specified the summary is written to the file. See PetscLogView().
-//    -log_summary_python [filename]	- Prints data on of flop and timing usage to a file or screen.
-//    -log_all [filename]	        - Logs extensive profiling information See PetscLogDump().
-//    -log [filename]	            - Logs basic profiline information See PetscLogDump().
-//    -log_sync	                    - Log the synchronization in scatters, inner products and norms
-//    -log_mpe [filename]            - Creates a logfile viewable by the utility Upshot/Nupshot (in MPICH distribution)
+//    -log_summary [filename]	    - Prints summary of flop and timing
+//    information to screen.
+//    If the filename is specified the summary is written to the file. See
+//    PetscLogView().
+//    -log_summary_python [filename]	- Prints data on of flop and timing usage
+//    to a file or screen.
+//    -log_all [filename]	        - Logs extensive profiling information See
+//    PetscLogDump().
+//    -log [filename]	            - Logs basic profiline information See
+//    PetscLogDump().
+//    -log_sync	                    - Log the synchronization in scatters,
+//    inner products and norms
+//    -log_mpe [filename]            - Creates a logfile viewable by the utility
+//    Upshot/Nupshot (in MPICH distribution)
 //     }
 //   }
 // };
 
-
-
-
-
-
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_SOLVER_PETSC_HH__ */

@@ -31,34 +31,37 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 #include "aka_math.hh"
+#include "aka_named_argument.hh"
 #include "aka_random_generator.hh"
-#include "parser.hh"
+#include "communication_tag.hh"
 #include "cppargparse.hh"
-#include "static_solver.hh"
-
+#include "parser.hh"
+#include "solid_mechanics_model.hh"
+#if defined(AKANTU_COHESIVE_ELEMENT)
+#include "solid_mechanics_model_cohesive.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <limits>
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_DEBUG_TOOLS)
-#  include "aka_debug_tools.hh"
+#include "aka_debug_tools.hh"
 #endif
 
-__BEGIN_AKANTU__
-
-/** \todo write function to get this
- *   values from the environment or a config file
- */
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* error.hpp variables                                                        */
 /* -------------------------------------------------------------------------- */
 namespace debug {
+  /** \todo write function to get this
+   *   values from the environment or a config file
+   */
   /// standard output for debug messages
-  std::ostream *_akantu_debug_cout = &std::cerr;
+  std::ostream * _akantu_debug_cout = &std::cerr;
 
   /// standard output for normal messages
   std::ostream & _akantu_cout = std::cout;
@@ -71,8 +74,13 @@ namespace debug {
 #if defined(AKANTU_DEBUG_TOOLS)
   DebugElementManager element_manager;
 #endif
-}
+} // namespace debug
 
+/* -------------------------------------------------------------------------- */
+/// list of ghost iterable types
+ghost_type_t ghost_types(_casper);
+
+/* -------------------------------------------------------------------------- */
 /// Paser for commandline arguments
 ::cppargparse::ArgumentParser static_argparser;
 
@@ -81,26 +89,21 @@ Parser static_parser;
 
 bool Parser::permissive_parser = false;
 
-Real Math::tolerance = std::numeric_limits<Real>::epsilon();
+/* -------------------------------------------------------------------------- */
+Real Math::tolerance = 1e2 * std::numeric_limits<Real>::epsilon();
 
+/* -------------------------------------------------------------------------- */
 const UInt _all_dimensions = UInt(-1);
 
+/* -------------------------------------------------------------------------- */
 const Array<UInt> empty_filter(0, 1, "empty_filter");
 
-template<> long int RandGenerator<Real>::_seed = 0;
-template<> long int RandGenerator<bool>::_seed = 0; // useless just defined due to a template instantiation
-template<> long int RandGenerator<UInt>::_seed = 0;
-template<> long int RandGenerator<Int>::_seed = 0;
-#if not defined(_WIN32)
-template<> long int Rand48Generator<Real>::_seed = 0;
-#endif
-
 /* -------------------------------------------------------------------------- */
-ghost_type_t ghost_types(_casper);
+template <> long int RandomGenerator<UInt>::_seed = 5489u;
+template <> std::default_random_engine RandomGenerator<UInt>::generator(5489u);
 /* -------------------------------------------------------------------------- */
-UInt StaticSolver::nb_references = 0;
-StaticSolver * StaticSolver::static_solver = NULL;
+int Tag::max_tag = 0;
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

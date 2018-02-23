@@ -30,51 +30,51 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh_io.hh"
-
-
+#include "mesh_io_msh_struct.hh"
+/* -------------------------------------------------------------------------- */
+#include <numeric>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
+/* -------------------------------------------------------------------------- */
 MeshIOMSHStruct::MeshIOMSHStruct() : MeshIOMSH() {
-  canReadSurface      = true;
+  canReadSurface = true;
   canReadExtendedData = true;
 
   _msh_to_akantu_element_types.clear();
-  _msh_to_akantu_element_types[_msh_not_defined   ] = _not_defined;
-  _msh_to_akantu_element_types[_msh_segment_2     ] = _bernoulli_beam_2;
-  _msh_to_akantu_element_types[_msh_triangle_3    ] = _kirchhoff_shell;
+  _msh_to_akantu_element_types[_msh_not_defined] = _not_defined;
+  _msh_to_akantu_element_types[_msh_segment_2] = _bernoulli_beam_2;
+  _msh_to_akantu_element_types[_msh_triangle_3] =
+      _discrete_kirchhoff_triangle_18;
 
   _akantu_to_msh_element_types.clear();
-  _akantu_to_msh_element_types[_not_defined     ] = _msh_not_defined;
+  _akantu_to_msh_element_types[_not_defined] = _msh_not_defined;
   _akantu_to_msh_element_types[_bernoulli_beam_2] = _msh_segment_2;
   _akantu_to_msh_element_types[_bernoulli_beam_3] = _msh_segment_2;
-  _akantu_to_msh_element_types[_kirchhoff_shell] = _msh_triangle_3;
+  _akantu_to_msh_element_types[_discrete_kirchhoff_triangle_18] =
+      _msh_triangle_3;
 
-  std::map<ElementType, MSHElementType>::iterator it;
-  for(it = _akantu_to_msh_element_types.begin();
-      it != _akantu_to_msh_element_types.end(); ++it) {
-    UInt nb_nodes = _msh_nodes_per_elem[it->second];
+  for (auto & kv_pair : _akantu_to_msh_element_types) {
+    UInt nb_nodes = _msh_nodes_per_elem[kv_pair.second];
     std::vector<UInt> tmp(nb_nodes);
-    for (UInt i = 0; i < nb_nodes; ++i) tmp[i] = i;
-    _read_order[it->first] = tmp;
+    std::iota(tmp.begin(), tmp.end(), 0);
+    _read_order[kv_pair.first] = tmp;
   }
 }
 
-
 /* -------------------------------------------------------------------------- */
 void MeshIOMSHStruct::read(const std::string & filename, Mesh & mesh) {
-  if(mesh.getSpatialDimension() == 2) {
-    _msh_to_akantu_element_types[_msh_segment_2     ] = _bernoulli_beam_2;
+  if (mesh.getSpatialDimension() == 2) {
+    _msh_to_akantu_element_types[_msh_segment_2] = _bernoulli_beam_2;
   } else if (mesh.getSpatialDimension() == 3) {
-    _msh_to_akantu_element_types[_msh_segment_2     ] = _bernoulli_beam_3;
-    AKANTU_DEBUG_WARNING("The MeshIOMSHStruct is reading bernoulli beam 3D be sure to provide the missing normals");
+    _msh_to_akantu_element_types[_msh_segment_2] = _bernoulli_beam_3;
+    AKANTU_DEBUG_WARNING("The MeshIOMSHStruct is reading bernoulli beam 3D be "
+                         "sure to provide the missing normals with the element "
+                         "data \"extra_normal\"");
   }
 
   MeshIOMSH::read(filename, mesh);
 }
 
-
-__END_AKANTU__
-
+} // akantu

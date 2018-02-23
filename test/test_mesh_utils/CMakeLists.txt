@@ -45,6 +45,11 @@ register_test(test_purify_mesh
   PACKAGE core
   )
 
+add_mesh(test_mesh_iterators_mesh iterators_mesh.geo 3 1 OUTPUT iterators_mesh.msh)
+register_test(test_mesh_iterators
+  SOURCES test_mesh_iterators.cc
+  PACKAGE core
+  DEPENDS test_mesh_iterators_mesh
+  )
+
 add_akantu_test(test_mesh_partitionate "Test mesh partition creation")
-
-

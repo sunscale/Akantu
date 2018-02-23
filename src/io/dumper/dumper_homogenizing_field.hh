@@ -35,15 +35,16 @@
 #include "dumper_compute.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
 inline type typeConverter(const type & input,
+                          __attribute__((unused))
                           Vector<typename type::value_type> & res,
-                          UInt nb_data) {
+                          __attribute__((unused)) UInt nb_data) {
 
   throw;
   return input;
@@ -63,10 +64,10 @@ inline Matrix<type> typeConverter(const Matrix<type> & input,
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
-inline Vector<type>
-typeConverter(__attribute__((unused)) const Vector<type> & input,
-              __attribute__((unused)) Vector<type> & res,
-              __attribute__((unused)) UInt nb_data) {
+inline Vector<type> typeConverter(__attribute__((unused))
+                                  const Vector<type> & input,
+                                  __attribute__((unused)) Vector<type> & res,
+                                  __attribute__((unused)) UInt nb_data) {
 
   return res;
 }
@@ -80,7 +81,7 @@ class AvgHomogenizingFunctor : public ComputeFunctor<type, type> {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  typedef typename type::value_type value_type;
+  using value_type = typename type::value_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -103,9 +104,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  virtual type func(const type & d,
-                    __attribute__((unused)) Element global_index) {
-
+  type func(const type & d, Element /*global_index*/) override {
     Vector<value_type> res(this->nb_data);
 
     if (d.size() % this->nb_data)
@@ -122,8 +121,8 @@ public:
     return typeConverter(d, res, this->nb_data);
   };
 
-  UInt getDim() { return nb_data; };
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) { throw; };
+  UInt getDim() override { return nb_data; };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { throw; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -143,7 +142,7 @@ class HomogenizerProxy {
   /* ------------------------------------------------------------------------ */
 
 public:
-  HomogenizerProxy(){};
+  HomogenizerProxy() = default;
 
 public:
   inline static ComputeFunctorInterface * createHomogenizer(Field & field);
@@ -152,7 +151,7 @@ public:
   inline ComputeFunctorInterface * connectToField(T * field) {
     ElementTypeMap<UInt> nb_components = field->getNbComponents();
 
-    typedef typename T::types::return_type ret_type;
+    using ret_type = typename T::types::return_type;
     return this->instantiateHomogenizer<ret_type>(nb_components);
   }
 
@@ -167,17 +166,17 @@ template <typename ret_type>
 inline ComputeFunctorInterface *
 HomogenizerProxy::instantiateHomogenizer(ElementTypeMap<UInt> & nb_components) {
 
-  typedef dumper::AvgHomogenizingFunctor<ret_type> Homogenizer;
-  Homogenizer * foo = new Homogenizer(nb_components);
+  using Homogenizer = dumper::AvgHomogenizingFunctor<ret_type>;
+  auto * foo = new Homogenizer(nb_components);
   return foo;
 }
 
 template <>
 inline ComputeFunctorInterface *
-HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType> >(
+HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType>>(
     __attribute__((unused)) ElementTypeMap<UInt> & nb_components) {
   throw;
-  return NULL;
+  return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -212,6 +211,6 @@ HomogenizerProxy::createHomogenizer(Field & field) {
 // */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__ */

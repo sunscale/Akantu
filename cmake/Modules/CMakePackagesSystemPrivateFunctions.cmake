@@ -76,9 +76,10 @@ function(_package_set_system_option pkg_name default)
   _package_get_real_name(${pkg_name} _real_name)
   string(TOUPPER "${_real_name}" _u_package)
 
-  option(${_project}_USE_SYSTEM_${_u_package}
-    "Should akantu compile the third-party: \"${_real_name}\"" ${default})
+  set(${_project}_USE_SYSTEM_${_u_package} ${default} CACHE STRING
+    "Should akantu compile the third-party: \"${_real_name}\"")
   mark_as_advanced(${_project}_USE_SYSTEM_${_u_package})
+  set_property(CACHE ${_project}_USE_SYSTEM_${_u_package} PROPERTY STRINGS ON OFF AUTO)
 endfunction()
 
 function(_package_use_system pkg_name use)
@@ -86,9 +87,29 @@ function(_package_use_system pkg_name use)
   _package_get_real_name(${pkg_name} _real_name)
   string(TOUPPER "${_real_name}" _u_package)
   if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
-    set(${use} ${${_project}_USE_SYSTEM_${_u_package}} PARENT_SCOPE)
+    if(${${_project}_USE_SYSTEM_${_u_package}} MATCHES "(ON|AUTO)")
+      set(${use} TRUE PARENT_SCOPE)
+    else()
+      set(${use} FALSE PARENT_SCOPE)
+    endif()
   else()
     set(${use} TRUE PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(_package_has_system_fallback pkg_name fallback)
+  string(TOUPPER "${PROJECT_NAME}" _project)
+  _package_get_real_name(${pkg_name} _real_name)
+  string(TOUPPER "${_real_name}" _u_package)
+
+  if(DEFINED ${_project}_USE_SYSTEM_${_u_package})
+    if(${${_project}_USE_SYSTEM_${_u_package}} MATCHES "AUTO")
+      set(${fallback} TRUE PARENT_SCOPE)
+    else()
+      set(${fallback} FALSE PARENT_SCOPE)
+    endif()
+  else()
+    set(${fallback} FALSE PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -101,6 +122,7 @@ function(_package_add_third_party_script_variable pkg_name var)
   set(${var} ${ARGN} PARENT_SCOPE)
 endfunction()
 
+# ------------------------------------------------------------------------------
 function(_package_load_third_party_script pkg_name)
   if(${pkg_name}_COMPILE_SCRIPT)
     # set the stored variable
@@ -374,17 +396,42 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Direct dependencies
 # ------------------------------------------------------------------------------
-function(_package_add_dependencies pkg_name)
-  _package_add_to_variable(DEPENDENCIES ${pkg_name} ${ARGN})
+function(_package_add_dependencies pkg_name type)
+  _package_add_to_variable(DEPENDENCIES_${type} ${pkg_name} ${ARGN})
 endfunction()
 
-function(_package_get_dependencies pkg_name dependencies)
-  _package_get_variable(DEPENDENCIES ${pkg_name} _dependencies)
+function(_package_get_dependencies pkg_name type dependencies)
+  _package_get_variable(DEPENDENCIES_${type} ${pkg_name} _dependencies)
   set(${dependencies} ${_dependencies} PARENT_SCOPE)
 endfunction()
 
-function(_package_unset_dependencies pkg_name)
-  _package_variable_unset(DEPENDENCIES ${pkg_name})
+function(_package_unset_dependencies pkg_name type)
+  _package_variable_unset(DEPENDENCIES_${type} ${pkg_name})
+endfunction()
+
+function(_package_remove_dependency pkg_name type dep)
+  set(_deps ${${pkg_name}_DEPENDENCIES_${type}})
+
+  _package_get_fdependencies(${dep} _fdeps)
+
+  # check if this is the last reverse dependency
+  list(LENGTH _fdeps len)
+  list(FIND _fdeps ${pkg_name} pos)
+  if((len EQUAL 1) AND (NOT pos EQUAL -1))
+    _package_get_description(${dep} _dep_desc)
+    _package_get_option_name(${dep} _dep_option_name)
+    set(${_dep_option_name} ${${dep}_OLD} CACHE BOOL "${_dep_desc}" FORCE)
+    unset(${dep}_OLD CACHE)
+  endif()
+
+  # remove the pkg_name form the reverse dependency
+  _package_remove_fdependency(${dep} ${pkg_name})
+
+  list(FIND _deps ${dep} pos)
+  if(NOT pos EQUAL -1)
+    list(REMOVE_AT _deps ${pos})
+    _package_set_variable(DEPENDENCIES_${type} ${pkg_name} ${_deps})
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -484,7 +531,7 @@ endfunction()
 function(_package_set_boost_component_needed pkg_name)
   _package_add_to_variable(BOOST_COMPONENTS_NEEDED ${pkg_name} ${ARGN})
   package_get_name(Boost _boost_pkg_name)
-  _package_add_dependencies(${pkg_name} ${_boost_pkg_name})
+  _package_add_dependencies(${pkg_name} PRIVATE ${_boost_pkg_name})
 endfunction()
 
 function(_package_get_boost_component_needed pkg_name needed)
@@ -554,8 +601,9 @@ function(_package_build_rdependencies)
 
   # fill the dependencies list
   foreach(_pkg_name ${_pkg_list})
-    _package_get_dependencies(${_pkg_name} _deps)
-    foreach(_dep_name ${_deps})
+    _package_get_dependencies(${_pkg_name} PRIVATE _deps_priv)
+    _package_get_dependencies(${_pkg_name} INTERFACE _deps_interface)
+    foreach(_dep_name ${_deps_priv} ${_deps_interface})
       list(APPEND ${_dep_name}_rdeps ${_pkg_name})
     endforeach()
   endforeach()
@@ -599,7 +647,9 @@ function(_package_load_packages)
   set(_packages_deactivated)
   foreach(_pkg_name ${_pkg_list})
     _package_is_activated(${_pkg_name} _active)
-    if(_active)
+    set(_exclude FALSE)
+    _package_get_variable(EXCLUDE_FROM_ALL ${_pkg_name} _exclude)
+    if(_active AND NOT _exclude)
       list(APPEND _packages_activated ${_pkg_name})
     else()
       list(APPEND _packages_deactivated ${_pkg_name})
@@ -619,7 +669,9 @@ endfunction()
 function(_package_load_dependencies_package pkg_name loading_list)
   # Get packages informations
   _package_get_option_name(${pkg_name} _pkg_option_name)
-  _package_get_dependencies(${pkg_name} _dependencies)
+  _package_get_dependencies(${pkg_name} PRIVATE _deps_private)
+  _package_get_dependencies(${pkg_name} INTERFACE _deps_interface)
+  set(_dependencies ${_deps_private} ${_deps_interface})
 
   # handle the dependencies
   foreach(_dep_name ${_dependencies})
@@ -633,6 +685,11 @@ function(_package_load_dependencies_package pkg_name loading_list)
       endif()
 
       # set the option to on
+      set(_type BOOL)
+      _package_get_nature(${_dep_name} _nature)
+      if(_nature MATCHES ".*not_optional$")
+	set(_type INTERNAL)
+      endif()
       set(${_dep_option_name} ON CACHE BOOL "${_dep_desc}" FORCE)
 
       # store the reverse dependency
@@ -691,8 +748,12 @@ function(_package_load_package pkg_name)
     set(_activated TRUE)
     if(_use_system)
       _package_load_external_package(${pkg_name} _activated)
-    else()
+    endif()
+
+    _package_has_system_fallback(${pkg_name} _fallback)
+    if((NOT _use_system) OR (_fallback AND (NOT _activated)))
       _package_load_third_party_script(${pkg_name})
+      set(_activated TRUE)
     endif()
 
     if(_activated)
@@ -700,7 +761,7 @@ function(_package_load_package pkg_name)
     elseif()
       _package_deactivate(${pkg_name})
     endif()
-  else(${_nature})
+  else()
     _package_activate(${pkg_name})
   endif()
 endfunction()
@@ -726,7 +787,7 @@ function(_package_load_external_package pkg_name activate)
 
   _package_get_find_package_extra_options(${pkg_name} _options)
   if(_options)
-    cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "PREFIX;FOUND;ARGS" ${_options})
+    cmake_parse_arguments(_opt_pkg "" "LANGUAGE" "LINK_LIBRARIES;PREFIX;FOUND;ARGS" ${_options})
     if(_opt_pkg_UNPARSED_ARGUMENTS)
       message("You passed too many options for the find_package related to ${${pkg_name}} \"${_opt_pkg_UNPARSED_ARGUMENTS}\"")
     endif()
@@ -738,9 +799,14 @@ function(_package_load_external_package pkg_name activate)
     endforeach()
   endif()
 
-
   # find the package
-  find_package(${_real_name} REQUIRED ${_opt_pkg_ARGS})
+  set(_required REQUIRED)
+  _package_has_system_fallback(${pkg_name} _fallback)
+  if(_fallback)
+    set(_required QUIET)
+  endif()
+
+  find_package(${_real_name} ${_required} ${_opt_pkg_ARGS})
 
   # check if the package is found
   if(_opt_pkg_PREFIX)
@@ -777,7 +843,9 @@ function(_package_load_external_package pkg_name activate)
       endif()
 
       # Generate the libraries for the package
-      if(DEFINED ${_prefix}_LIBRARIES)
+      if(_opt_pkg_LINK_LIBRARIES)
+        _package_set_libraries(${pkg_name} ${_opt_pkg_LINK_LIBRARIES})
+      elseif(DEFINED ${_prefix}_LIBRARIES)
         _package_set_libraries(${pkg_name} ${${_prefix}_LIBRARIES})
       elseif(DEFINED ${_prefix}_LIBRARY)
         _package_set_libraries(${pkg_name} ${${_prefix}_LIBRARY})
@@ -852,7 +920,7 @@ function(_package_check_files_registered)
   endif()
 
   set(_not_registerd_files)
-  # check only sources files ine the source folders
+  # check only sources files in the source folders
   foreach(_src_folder ${ARGN})
     foreach(_file ${_all_src_files})
       if("${_file}" MATCHES  "${_src_folder}")

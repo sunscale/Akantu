@@ -31,6 +31,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__
+#define __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline void LocalMaterialDamage::computeStressOnQuad(Matrix<Real> & grad_u,
@@ -81,3 +85,7 @@ inline Real LocalMaterialDamage::getCelerity(__attribute__((unused))
   // Here the fastest celerity is the push wave speed
   return (std::sqrt((2 * mu + lambda) / rho));
 }
+
+} // akantu
+
+#endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__ */

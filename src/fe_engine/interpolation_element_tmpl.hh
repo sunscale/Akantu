@@ -29,11 +29,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "element_class.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__
+#define __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* Regular Elements                                                           */
 /* -------------------------------------------------------------------------- */
-
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_not_defined,             _itk_not_defined, 0, 0);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_point_1,        _itk_lagrangian,  1, 0);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_2,      _itk_lagrangian,  2, 1);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_3,      _itk_lagrangian,  3, 1);
@@ -48,10 +55,5 @@ AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_hexahedron_20,  _itk_lag
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_6,  _itk_lagrangian,  6, 3);
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15, _itk_lagrangian,  15, 3);
 
-/* -------------------------------------------------------------------------- */
-/* Structural elements                                                        */
-/* -------------------------------------------------------------------------- */
-#if defined(AKANTU_STRUCTURAL_MECHANICS)
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_bernoulli_beam, _itk_structural, 2, 1);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_kirchhoff_shell, _itk_structural, 3, 2);
-#endif
+}  // akantu
+#endif /* __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__ */

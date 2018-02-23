@@ -43,123 +43,103 @@
 #define __AKANTU_AKA_MATH_H__
 
 /* -------------------------------------------------------------------------- */
+#include <utility>
+
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 
-template<typename T, bool is_scal>
-class Array;
+template <typename T, bool is_scal> class Array;
 
 class Math {
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Matrix algebra                                                           */
   /* ------------------------------------------------------------------------ */
   /// @f$ y = A*x @f$
-  static void matrix_vector(UInt m, UInt n,
-			    const Array<Real, true> & A,
-			    const Array<Real, true> & x,
-			    Array<Real, true> & y, Real alpha = 1.);
+  static void matrix_vector(UInt m, UInt n, const Array<Real, true> & A,
+                            const Array<Real, true> & x, Array<Real, true> & y,
+                            Real alpha = 1.);
 
   /// @f$ y = A*x @f$
-  static inline void matrix_vector(UInt m, UInt n,
-				   Real * A,
-				   Real * x,
-				   Real * y, Real alpha = 1.);
+  static inline void matrix_vector(UInt m, UInt n, Real * A, Real * x, Real * y,
+                                   Real alpha = 1.);
 
   /// @f$ y = A^t*x @f$
-  static inline void matrixt_vector(UInt m, UInt n,
-				    Real * A,
-				    Real * x,
-				    Real * y, Real alpha = 1.);
+  static inline void matrixt_vector(UInt m, UInt n, Real * A, Real * x,
+                                    Real * y, Real alpha = 1.);
 
   /// @f$ C = A*B @f$
-  static void matrix_matrix(UInt m, UInt n, UInt k,
-			   const Array<Real, true> & A,
-			   const Array<Real, true> & B,
-			   Array<Real, true> & C, Real alpha = 1.);
+  static void matrix_matrix(UInt m, UInt n, UInt k, const Array<Real, true> & A,
+                            const Array<Real, true> & B, Array<Real, true> & C,
+                            Real alpha = 1.);
 
   /// @f$ C = A*B^t @f$
   static void matrix_matrixt(UInt m, UInt n, UInt k,
-			     const Array<Real, true> & A,
-			     const Array<Real, true> & B,
-			     Array<Real, true> & C, Real alpha = 1.);
+                             const Array<Real, true> & A,
+                             const Array<Real, true> & B, Array<Real, true> & C,
+                             Real alpha = 1.);
 
   /// @f$ C = A*B @f$
-  static inline void matrix_matrix(UInt m, UInt n, UInt k,
-				   Real * A,
-				   Real * B,
-				   Real * C, Real alpha = 1.);
+  static inline void matrix_matrix(UInt m, UInt n, UInt k, Real * A, Real * B,
+                                   Real * C, Real alpha = 1.);
 
   /// @f$ C = A^t*B @f$
-  static inline void matrixt_matrix(UInt m, UInt n, UInt k,
-				    Real * A,
-				    Real * B,
-				    Real * C, Real alpha = 1.);
+  static inline void matrixt_matrix(UInt m, UInt n, UInt k, Real * A, Real * B,
+                                    Real * C, Real alpha = 1.);
 
   /// @f$ C = A*B^t @f$
-  static inline void matrix_matrixt(UInt m, UInt n, UInt k,
-				    Real * A,
-				    Real * B,
-				    Real * C, Real alpha = 1.);
+  static inline void matrix_matrixt(UInt m, UInt n, UInt k, Real * A, Real * B,
+                                    Real * C, Real alpha = 1.);
 
   /// @f$ C = A^t*B^t @f$
-  static inline void matrixt_matrixt(UInt m, UInt n, UInt k,
-				     Real * A,
-				     Real * B,
-				     Real * C, Real alpha = 1.);
+  static inline void matrixt_matrixt(UInt m, UInt n, UInt k, Real * A, Real * B,
+                                     Real * C, Real alpha = 1.);
 
   template <bool tr_A, bool tr_B>
-  static inline void matMul(UInt m, UInt n, UInt k,
-			    Real alpha, Real * A, Real * B,
-			    Real beta, Real * C);
+  static inline void matMul(UInt m, UInt n, UInt k, Real alpha, Real * A,
+                            Real * B, Real beta, Real * C);
 
   template <bool tr_A>
-  static inline void matVectMul(UInt m, UInt n,
-				Real alpha, Real * A, Real * x,
-				Real beta, Real * y);
+  static inline void matVectMul(UInt m, UInt n, Real alpha, Real * A, Real * x,
+                                Real beta, Real * y);
 
-  static inline void matrix33_eigenvalues(Real * A,
-					  Real * Adiag);
+  static inline void aXplusY(UInt n, Real alpha, Real * x, Real * y);
 
-  static inline void matrix22_eigenvalues(Real * A,
-					  Real * Adiag);
-  template<UInt dim>
-  static inline void eigenvalues(Real * A, Real * d);
+  static inline void matrix33_eigenvalues(Real * A, Real * Adiag);
 
-  /// solve @f$ A x = \Lambda x @f$ and return d and V such as @f$ A V[i:] = d[i] V[i:]@f$
-  template<typename T>
-  static void matrixEig(UInt n, T * A, T * d, T * V = NULL);
+  static inline void matrix22_eigenvalues(Real * A, Real * Adiag);
+  template <UInt dim> static inline void eigenvalues(Real * A, Real * d);
+
+  /// solve @f$ A x = \Lambda x @f$ and return d and V such as @f$ A V[i:] =
+  /// d[i] V[i:]@f$
+  template <typename T>
+  static void matrixEig(UInt n, T * A, T * d, T * V = nullptr);
 
   /// determinent of a 2x2 matrix
   static inline Real det2(const Real * mat);
   /// determinent of a 3x3 matrix
   static inline Real det3(const Real * mat);
   /// determinent of a nxn matrix
-  template<UInt n>
-  static inline Real det(const Real * mat);
+  template <UInt n> static inline Real det(const Real * mat);
   /// determinent of a nxn matrix
-  template<typename T>
-  static inline T det(UInt n, const T * mat);
+  template <typename T> static inline T det(UInt n, const T * mat);
 
   /// inverse a nxn matrix
-  template<UInt n>
-  static inline void inv(const Real * mat, Real * inv);
+  template <UInt n> static inline void inv(const Real * mat, Real * inv);
   /// inverse a nxn matrix
-  template<typename T>
-  static inline void inv(UInt n, const T * mat, T * inv);
+  template <typename T> static inline void inv(UInt n, const T * mat, T * inv);
   /// inverse a 3x3 matrix
   static inline void inv3(const Real * mat, Real * inv);
   /// inverse a 2x2 matrix
   static inline void inv2(const Real * mat, Real * inv);
 
   /// solve A x = b using a LU factorization
-  template<typename T>
+  template <typename T>
   static inline void solve(UInt n, const T * A, T * x, const T * b);
 
   /// return the double dot product between 2 tensors in 2d
@@ -171,12 +151,12 @@ public:
   /// extension of the double dot product to two 2nd order tensor in dimension n
   static inline Real matrixDoubleDot(UInt n, Real * A, Real * B);
 
-
   /* ------------------------------------------------------------------------ */
   /* Array algebra                                                            */
   /* ------------------------------------------------------------------------ */
   /// vector cross product
-  static inline void vectorProduct3(const Real * v1, const Real * v2, Real * res);
+  static inline void vectorProduct3(const Real * v1, const Real * v2,
+                                    Real * res);
 
   /// normalize a vector
   static inline void normalize2(Real * v);
@@ -209,10 +189,11 @@ public:
   static inline void normal2(const Real * v1, Real * res);
 
   /// compute normal a normal to a vector
-  static inline void normal3(const Real * v1,const Real * v2, Real * res);
+  static inline void normal3(const Real * v1, const Real * v2, Real * res);
 
   /// compute the tangents to an array of normal vectors
-  static void compute_tangents(const Array<Real> & normals, Array<Real> & tangents);
+  static void compute_tangents(const Array<Real> & normals,
+                               Array<Real> & tangents);
 
   /// distance in 2D between x and y
   static inline Real distance_2d(const Real * x, const Real * y);
@@ -221,18 +202,24 @@ public:
   static inline Real distance_3d(const Real * x, const Real * y);
 
   /// radius of the in-circle of a triangle
-  static inline Real triangle_inradius(const Real * coord1, const Real * coord2, const Real * coord3);
+  static inline Real triangle_inradius(const Real * coord1, const Real * coord2,
+                                       const Real * coord3);
 
   /// radius of the in-circle of a tetrahedron
-  static inline Real tetrahedron_inradius(const Real * coord1, const Real * coord2, const Real * coord3, const Real * coord4);
+  static inline Real tetrahedron_inradius(const Real * coord1,
+                                          const Real * coord2,
+                                          const Real * coord3,
+                                          const Real * coord4);
 
   /// volume of a tetrahedron
-  static inline Real tetrahedron_volume(const Real * coord1, const Real * coord2, const Real * coord3, const Real * coord4);
+  static inline Real tetrahedron_volume(const Real * coord1,
+                                        const Real * coord2,
+                                        const Real * coord3,
+                                        const Real * coord4);
 
   /// compute the barycenter of n points
-  static inline void barycenter(const Real * coord,
-				UInt nb_points, UInt spatial_dimension,
-				Real * barycenter);
+  static inline void barycenter(const Real * coord, UInt nb_points,
+                                UInt spatial_dimension, Real * barycenter);
 
   /// vector between x and y
   static inline void vector_2d(const Real * x, const Real * y, Real * vec);
@@ -247,7 +234,8 @@ public:
   static inline bool are_vector_equal(UInt n, Real * x, Real * y);
 
 #ifdef isnan
-#  error "You probably  included <math.h> which  is incompatible with aka_math  please use\
+#error                                                                         \
+    "You probably  included <math.h> which  is incompatible with aka_math  please use\
 <cmath> or add a \"#undef isnan\" before akantu includes"
 #endif
   /// test if a real is a NaN
@@ -262,8 +250,7 @@ public:
   static inline Real getTolerance() { return tolerance; };
   static inline void setTolerance(Real tol) { tolerance = tol; };
 
-  template<UInt p, typename T> static inline T pow(T x);
-
+  template <UInt p, typename T> static inline T pow(T x);
 
   /// reduce all the values of an array, the summation is done in place and the
   /// array is modified
@@ -271,20 +258,19 @@ public:
 
   class NewtonRaphson {
   public:
-    NewtonRaphson(Real tolerance, Real max_iteration) :
-      tolerance(tolerance),
-      max_iteration(max_iteration) {
-    }
+    NewtonRaphson(Real tolerance, Real max_iteration)
+        : tolerance(tolerance), max_iteration(max_iteration) {}
 
-    template<class Functor>
-    Real solve(const Functor & funct, Real x_0);
+    template <class Functor> Real solve(const Functor & funct, Real x_0);
+
   private:
     Real tolerance;
     Real max_iteration;
   };
 
   struct NewtonRaphsonFunctor {
-    NewtonRaphsonFunctor(const std::string & name) : name(name) {}
+    explicit NewtonRaphsonFunctor(std::string name) : name(std::move(name)) {}
+    virtual ~NewtonRaphsonFunctor() = default;
     virtual Real f(Real x) const = 0;
     virtual Real f_prime(Real x) const = 0;
     std::string name;
@@ -301,6 +287,6 @@ private:
 
 #include "aka_math_tmpl.hh"
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_MATH_H__ */

@@ -35,8 +35,9 @@
 #include "mesh.hh"
 #include "node_group.hh"
 #include "solid_mechanics_model.hh"
-#include "dumpable_inline_impl.hh"
-
+#include "python_functor.hh"
+#include "mesh_utils.hh"
+  
 using akantu::IntegrationPoint;
 using akantu::Vector;
 using akantu::ElementTypeMapArray;
@@ -46,7 +47,6 @@ using akantu::UInt;
 using akantu::Real;
 using akantu::Array;
 using akantu::SolidMechanicsModel;
-
 %}
 
 
@@ -62,6 +62,9 @@ namespace akantu {
   %ignore Mesh::getGroupDumer;
   %ignore Mesh::getFacetLocalConnectivity;
   %ignore Mesh::getAllFacetTypes;
+  %ignore Mesh::getCommunicator;
+  %ignore GroupManager::getElementGroups;
+  %ignore Dumpable::addDumpFieldExternalReal;
 }
 
 print_self(Mesh)
@@ -74,6 +77,10 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 
 %extend akantu::Mesh {
 
+  PyObject * getElementGroups(){
+    return akantu::PythonFunctor::convertToPython($self->getElementGroups());
+  }
+
   void resizeMesh(UInt nb_nodes, UInt nb_element, const ElementType & type) {
     Array<Real> & nodes = const_cast<Array<Real> &>($self->getNodes());
     nodes.resize(nb_nodes);
@@ -82,31 +89,13 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
     Array<UInt> & connectivity = const_cast<Array<UInt> &>($self->getConnectivity(type));
     connectivity.resize(nb_element);
   }
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  Array<Real> & getCohesiveBarycenter(SpacialDirection dir) {
-    UInt spatial_dimension = $self->getSpatialDimension();
-    ElementTypeMapArray<Real> & barycenter =
-        $self->registerData<Real>("barycenter");
-    $self->initElementTypeMapArray(barycenter, 1, spatial_dimension, false,
-                                   akantu::_ek_cohesive, true);
-    akantu::ElementType type = *($self->firstType(
-        spatial_dimension, akantu::_not_ghost, akantu::_ek_cohesive));
-
-    Vector<Real> bary(spatial_dimension);
-    Array<Real> & bary_coh = barycenter(type);
-    for (UInt i = 0; i < $self->getNbElement(type); ++i) {
-      bary.clear();
-      $self->getBarycenter(i, type, bary.storage());
-      bary_coh(i) = bary(dir);
-    }
-    return bary_coh;
-  }
-#endif
 }
 
 %extend akantu::GroupManager {
   void createGroupsFromStringMeshData(const std::string & dataset_name) {
+    if (dataset_name == "physical_names"){
+      AKANTU_EXCEPTION("Deprecated behavior: no need to call 'createGroupsFromStringMeshData' for physical names");
+    }
     $self->createGroupsFromMeshData<std::string>(dataset_name);
   }
 
@@ -119,9 +108,9 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
   akantu::Array<akantu::Real> & getGroupedNodes(akantu::Array<akantu::Real, true> & surface_array, Mesh & mesh) {
     akantu::Array<akantu::UInt> group_node = $self->getNodes();
     akantu::Array<akantu::Real> & full_array = mesh.getNodes();
-    surface_array.resize(group_node.getSize());
+    surface_array.resize(group_node.size());
 
-    for (UInt i = 0; i < group_node.getSize(); ++i) {
+    for (UInt i = 0; i < group_node.size(); ++i) {
       for (UInt cmp = 0; cmp < full_array.getNbComponent(); ++cmp) {
 
         surface_array(i,cmp) = full_array(group_node(i),cmp);
@@ -145,9 +134,9 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
       break;
     }
     akantu::Array<akantu::UInt> group_node = $self->getNodes();
-    surface_array.resize(group_node.getSize());
+    surface_array.resize(group_node.size());
 
-    for (UInt i = 0; i < group_node.getSize(); ++i) {
+    for (UInt i = 0; i < group_node.size(); ++i) {
       for (UInt cmp = 0; cmp < full_array->getNbComponent(); ++cmp) {
 
         surface_array(i,cmp) = (*full_array)(group_node(i),cmp);
@@ -160,12 +149,12 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 }
 
 %include "group_manager.hh"
-
-%include "element_group.hh"
 %include "node_group.hh"
 %include "dumper_iohelper.hh"
 %include "dumpable_iohelper.hh"
+%include "element_group.hh"
 %include "mesh.hh"
+%include "mesh_utils.hh"
 
 namespace akantu{
 %extend Dumpable {

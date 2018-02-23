@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
   UInt nb_elements = mesh.getNbElement(element_type, _not_ghost);
   UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(element_type);
   Array<Real> & coords = quad_coords(element_type, _not_ghost);
-  Array<Real>::const_vector_iterator coord_it = coords.begin(spatial_dimension);
+  auto coord_it = coords.begin(spatial_dimension);
   Vector<Real> q1(spatial_dimension);
   Vector<Real> q2(spatial_dimension);
   q1 = coord_it[34];

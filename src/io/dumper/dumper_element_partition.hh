@@ -30,7 +30,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 #ifdef AKANTU_IGFEM
 #  include "dumper_igfem_element_partition.hh"
@@ -44,12 +44,11 @@ class element_partition_field_iterator
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef element_iterator<types, dumper::element_partition_field_iterator> parent;
-  typedef typename types::return_type return_type;
-  typedef typename types::array_iterator array_iterator;
-  typedef typename types::field_type field_type;
-
-
+  using parent = element_iterator<types, dumper::element_partition_field_iterator>;
+  using return_type =
+      typename SingleType<unsigned int, Vector, true>::return_type;
+  using array_iterator = typename types::array_iterator;
+  using field_type = typename types::field_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -62,7 +61,7 @@ public:
 				   const array_iterator & array_it_end,
 				   const GhostType ghost_type = _not_ghost) :
     parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) {
-    prank = StaticCommunicator::getStaticCommunicator().whoAmI();
+    prank = Communicator::getStaticCommunicator().whoAmI();
   }
 
   /* ------------------------------------------------------------------------ */
@@ -92,10 +91,10 @@ public:
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  typedef SingleType<UInt,Vector,filtered> types;
-  typedef element_partition_field_iterator<types> iterator;
-  typedef GenericElementalField<types,element_partition_field_iterator> parent;
-  typedef typename types::field_type field_type;
+  using types = SingleType<UInt,Vector,filtered>;
+  using iterator = element_partition_field_iterator<types>;
+  using parent = GenericElementalField<types,element_partition_field_iterator>;
+  using field_type = typename types::field_type;
 
 public:
 
@@ -115,10 +114,10 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  UInt getDim() { return 1; }
+  UInt getDim() override { return 1; }
 };
 
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu

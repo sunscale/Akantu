@@ -37,9 +37,9 @@
 #ifndef __AKANTU_MATERIAL_THERMAL_HH__
 #define __AKANTU_MATERIAL_THERMAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 template<UInt spatial_dimension>
-class MaterialThermal : public virtual Material {
+class MaterialThermal : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -47,12 +47,12 @@ public:
 
   MaterialThermal(SolidMechanicsModel & model, const ID & id = "");
   MaterialThermal(SolidMechanicsModel & model,
-                  UInt dim,
-                  const Mesh & mesh,
-                  FEEngine & fe_engine,
-                  const ID & id = "");
+		  UInt dim,
+		  const Mesh & mesh,
+		  FEEngine & fe_engine,
+		  const ID & id = "");
 
-  virtual ~MaterialThermal() {};
+  ~MaterialThermal() override = default;
 
 protected:
   void initialize();
@@ -61,21 +61,13 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type);
+  void computeStress(ElementType el_type, GhostType ghost_type) override;
 
-  /* ------------------------------------------------------------------------ */
-  /* DataAccessor inherited members                                           */
-  /* ------------------------------------------------------------------------ */
-public:
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-
+  /// local computation of thermal stress
+  inline void computeStressOnQuad(Real & sigma, const Real & deltaT);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -101,6 +93,21 @@ protected:
   bool use_previous_stress_thermal;
 };
 
-__END_AKANTU__
+/* ------------------------------------------------------------------------ */
+/* Inline impl                                                              */
+/* ------------------------------------------------------------------------ */
+template <UInt dim>
+inline void MaterialThermal<dim>::computeStressOnQuad(Real & sigma,
+                                                      const Real & deltaT) {
+  sigma = -this->E / (1. - 2. * this->nu) * this->alpha * deltaT;
+}
+
+template <>
+inline void MaterialThermal<1>::computeStressOnQuad(Real & sigma,
+                                                    const Real & deltaT) {
+  sigma = -this->E * this->alpha * deltaT;
+}
+
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_THERMAL_HH__ */

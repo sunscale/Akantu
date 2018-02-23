@@ -44,7 +44,7 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /// class that afford to store vectors in static memory
 class ArrayBase {
@@ -52,7 +52,7 @@ class ArrayBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ArrayBase(const ID & id = "");
+  explicit ArrayBase(ID id = "");
 
   virtual ~ArrayBase();
 
@@ -76,16 +76,14 @@ public:
   /// Get the real size allocated in memory
   AKANTU_GET_MACRO(AllocatedSize, allocated_size, UInt);
   /// Get the Size of the Array
-  AKANTU_GET_MACRO(Size, size, UInt);
+  UInt getSize() const __attribute__((deprecated)) { return size_; }
+  UInt size() const { return size_; }
   /// Get the number of components
   AKANTU_GET_MACRO(NbComponent, nb_component, UInt);
   /// Get the name of th array
   AKANTU_GET_MACRO(ID, id, const ID &);
   /// Set the name of th array
   AKANTU_SET_MACRO(ID, id, const ID &);
-
-  // AKANTU_GET_MACRO(Tag, tag, const std::string &);
-  // AKANTU_SET_MACRO(Tag, tag, const std::string &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -95,22 +93,32 @@ protected:
   ID id;
 
   /// the size allocated
-  UInt allocated_size;
+  UInt allocated_size{0};
 
   /// the size used
-  UInt size;
+  UInt size_{0};
 
   /// number of components
-  UInt nb_component;
+  UInt nb_component{1};
 
   /// size of the stored type
-  UInt size_of_type;
-
-  // /// User defined tag
-  // std::string tag;
+  UInt size_of_type{0};
 };
 
 /* -------------------------------------------------------------------------- */
+namespace {
+  template <std::size_t dim, typename T> struct IteratorHelper {};
+
+  template <typename T> struct IteratorHelper<0, T> { using type = T; };
+  template <typename T> struct IteratorHelper<1, T> { using type = Vector<T>; };
+  template <typename T> struct IteratorHelper<2, T> { using type = Matrix<T>; };
+  template <typename T> struct IteratorHelper<3, T> {
+    using type = Tensor3<T>;
+  };
+
+  template <std::size_t dim, typename T>
+  using IteratorHelper_t = typename IteratorHelper<dim, T>::type;
+} // namespace
 
 /* -------------------------------------------------------------------------- */
 template <typename T, bool is_scal> class Array : public ArrayBase {
@@ -118,13 +126,14 @@ template <typename T, bool is_scal> class Array : public ArrayBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef T value_type;
-  typedef value_type & reference;
-  typedef value_type * pointer_type;
-  typedef const value_type & const_reference;
+  using value_type = T;
+  using reference = value_type &;
+  using pointer_type = value_type *;
+  using const_reference = const value_type &;
 
   /// Allocation of a new vector
-  inline Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
+  explicit inline Array(UInt size = 0, UInt nb_component = 1,
+                        const ID & id = "");
 
   /// Allocation of a new vector with a default value
   Array(UInt size, UInt nb_component, const value_type def_values[],
@@ -140,24 +149,25 @@ public:
 
 #ifndef SWIG
   /// Copy constructor (deep copy)
-  Array(const std::vector<value_type> & vect);
+  explicit Array(const std::vector<value_type> & vect);
 #endif
 
-  virtual inline ~Array();
+  inline ~Array() override;
 
   Array & operator=(const Array & a) {
     /// this is to let STL allocate and copy arrays in the case of
     /// std::vector::resize
-    AKANTU_DEBUG_ASSERT(this->size == 0, "Cannot copy akantu::Array");
+    AKANTU_DEBUG_ASSERT(this->size_ == 0, "Cannot copy akantu::Array");
     return const_cast<Array &>(a);
   }
 
+#ifndef SWIG
   /* ------------------------------------------------------------------------ */
   /* Iterator                                                                 */
   /* ------------------------------------------------------------------------ */
   /// \todo protected: does not compile with intel  check why
 public:
-  template <class R, class IR = R, bool issame = is_same<IR, T>::value>
+  template <class R, class it, class IR = R, bool is_tensor_ = is_tensor<R>::value>
   class iterator_internal;
 
 public:
@@ -170,84 +180,46 @@ public:
   /* ------------------------------------------------------------------------ */
 
   /// iterator for Array of nb_component = 1
-  typedef iterator<T> scalar_iterator;
+  using scalar_iterator = iterator<T>;
   /// const_iterator for Array of nb_component = 1
-  typedef const_iterator<T> const_scalar_iterator;
+  using const_scalar_iterator = const_iterator<T>;
 
-  /// iterator rerturning Vectors of size n  on entries of Array with
+  /// iterator returning Vectors of size n  on entries of Array with
   /// nb_component = n
-  typedef iterator<Vector<T> > vector_iterator;
-  /// const_iterator rerturning Vectors of n size on entries of Array with
+  using vector_iterator = iterator<Vector<T>>;
+  /// const_iterator returning Vectors of n size on entries of Array with
   /// nb_component = n
-  typedef const_iterator<Vector<T> > const_vector_iterator;
+  using const_vector_iterator = const_iterator<Vector<T>>;
 
-  /// iterator rerturning Matrices of size (m, n) on entries of Array with
+  /// iterator returning Matrices of size (m, n) on entries of Array with
   /// nb_component = m*n
-  typedef iterator<Matrix<T> > matrix_iterator;
-  /// const iterator rerturning Matrices of size (m, n) on entries of Array with
+  using matrix_iterator = iterator<Matrix<T>>;
+  /// const iterator returning Matrices of size (m, n) on entries of Array with
   /// nb_component = m*n
-  typedef const_iterator<Matrix<T> > const_matrix_iterator;
+  using const_matrix_iterator = const_iterator<Matrix<T>>;
+
+  /// iterator returning Tensor3 of size (m, n, k) on entries of Array with
+  /// nb_component = m*n*k
+  using tensor3_iterator = iterator<Tensor3<T>>;
+  /// const iterator returning Tensor3 of size (m, n, k) on entries of Array
+  /// with nb_component = m*n*k
+  using const_tensor3_iterator = const_iterator<Tensor3<T>>;
 
   /* ------------------------------------------------------------------------ */
+  template <typename... Ns> inline decltype(auto) begin(Ns&&... n);
+  template <typename... Ns> inline decltype(auto) end(Ns&&... n);
 
-  /// Get an iterator that behaves like a pointer T * to the first entry
-  inline scalar_iterator begin();
-  /// Get an iterator that behaves like a pointer T * to the end of the Array
-  inline scalar_iterator end();
-  /// Get a const_iterator to the beginging of an Array of scalar
-  inline const_scalar_iterator begin() const;
-  /// Get a const_iterator to the end of an Array of scalar
-  inline const_scalar_iterator end() const;
+  template <typename... Ns> inline decltype(auto) begin(Ns&&... n) const;
+  template <typename... Ns> inline decltype(auto) end(Ns&&... n) const;
 
-  /* ------------------------------------------------------------------------ */
-  /// Get a vector_iterator on the begining of the Array
-  inline vector_iterator begin(UInt n);
-  /// Get a vector_iterator on the end of the Array
-  inline vector_iterator end(UInt n);
-  /// Get a vector_iterator on the begining of the Array
-  inline const_vector_iterator begin(UInt n) const;
-  /// Get a vector_iterator on the end of the Array
-  inline const_vector_iterator end(UInt n) const;
+  template <typename... Ns> inline decltype(auto) begin_reinterpret(Ns&&... n);
+  template <typename... Ns> inline decltype(auto) end_reinterpret(Ns&&... n);
 
-  /// Get a vector_iterator on the begining of the Array considered of shape
-  /// (new_size, n)
-  inline vector_iterator begin_reinterpret(UInt n, UInt new_size);
-  /// Get a vector_iterator on the end of the Array considered of shape
-  /// (new_size, n)
-  inline vector_iterator end_reinterpret(UInt n, UInt new_size);
-  /// Get a const_vector_iterator on the begining of the Array considered of
-  /// shape (new_size, n)
-  inline const_vector_iterator begin_reinterpret(UInt n, UInt new_size) const;
-  /// Get a const_vector_iterator on the end of the Array considered of shape
-  /// (new_size, n)
-  inline const_vector_iterator end_reinterpret(UInt n, UInt new_size) const;
-
-  /* ------------------------------------------------------------------------ */
-  /// Get a matrix_iterator on the begining of the Array (Matrices of size (m,
-  /// n))
-  inline matrix_iterator begin(UInt m, UInt n);
-  /// Get a matrix_iterator on the end of the Array (Matrices of size (m, n))
-  inline matrix_iterator end(UInt m, UInt n);
-  /// Get a const_matrix_iterator on the begining of the Array (Matrices of size
-  /// (m, n))
-  inline const_matrix_iterator begin(UInt m, UInt n) const;
-  /// Get a const_matrix_iterator on the end of the Array (Matrices of size (m,
-  /// n))
-  inline const_matrix_iterator end(UInt m, UInt n) const;
-
-  /// Get a matrix_iterator on the begining of the Array considered of shape
-  /// (new_size, m*n)
-  inline matrix_iterator begin_reinterpret(UInt m, UInt n, UInt size);
-  /// Get a matrix_iterator on the end of the Array considered of shape
-  /// (new_size, m*n)
-  inline matrix_iterator end_reinterpret(UInt m, UInt n, UInt size);
-  /// Get a const_matrix_iterator on the begining of the Array considered of
-  /// shape (new_size, m*n)
-  inline const_matrix_iterator begin_reinterpret(UInt m, UInt n,
-                                                 UInt size) const;
-  /// Get a const_matrix_iterator on the end of the Array considered of shape
-  /// (new_size, m*n)
-  inline const_matrix_iterator end_reinterpret(UInt m, UInt n, UInt size) const;
+  template <typename... Ns>
+  inline decltype(auto) begin_reinterpret(Ns&&... n) const;
+  template <typename... Ns>
+  inline decltype(auto) end_reinterpret(Ns&&... n) const;
+#endif // SWIG
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -256,9 +228,12 @@ public:
   /// append a tuple of size nb_component containing value
   inline void push_back(const_reference value);
   /// append a vector
-  inline void push_back(const value_type new_elem[]);
+  // inline void push_back(const value_type new_elem[]);
+
+#ifndef SWIG
   /// append a Vector or a Matrix
-  template <template <typename> class C>
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline void push_back(const C<T> & new_elem);
   /// append the value of the iterator
   template <typename Ret> inline void push_back(const iterator<Ret> & it);
@@ -267,9 +242,16 @@ public:
   inline void erase(UInt i);
   /// ask Nico, clarify
   template <typename R> inline iterator<R> erase(const iterator<R> & it);
+#endif
+
+  /// changes the allocated size but not the size
+  virtual void reserve(UInt size);
 
   /// change the size of the Array
   virtual void resize(UInt size);
+
+  /// change the size of the Array and initialize the values
+  virtual void resize(UInt size, const T & val);
 
   /// change the number of components by interlacing data
   /// @param multiplicator number of interlaced components add
@@ -280,22 +262,35 @@ public:
 
   /// search elem in the vector, return  the position of the first occurrence or
   /// -1 if not found
-  Int find(const_reference elem)
-      const; /// @see Array::find(const_reference elem) const
-  Int find(T elem[]) const;
+  UInt find(const_reference elem) const;
+
   /// @see Array::find(const_reference elem) const
-  template <template <typename> class C> inline Int find(const C<T> & elem);
+  UInt find(T elem[]) const;
+
+#ifndef SWIG
+  /// @see Array::find(const_reference elem) const
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+  inline UInt find(const C<T> & elem);
+#endif
 
   /// set all entries of the array to 0
-  inline void clear() { std::fill_n(values, size * nb_component, T()); }
+  inline void clear() { std::fill_n(values, size_ * nb_component, T()); }
 
   /// set all entries of the array to the value t
   /// @param t value to fill the array with
-  inline void set(T t) { std::fill_n(values, size * nb_component, t); }
+  inline void set(T t) { std::fill_n(values, size_ * nb_component, t); }
 
+#ifndef SWIG
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
-  template <template <typename> class C> inline void set(const C<T> & vm);
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+  inline void set(const C<T> & vm);
+#endif
+
+  /// Append the content of the other array to the current one
+  void append(const Array<T> & other);
 
   /// copy another Array in the current Array, the no_sanity_check allows you to
   /// force the copy in cases where you know what you do with two non matching
@@ -306,14 +301,14 @@ public:
   T * storage() const { return values; };
 
   /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 protected:
   /// perform the allocation for the constructors
   void allocate(UInt size, UInt nb_component = 1);
 
-  /// resize without initializing the memory
-  void resizeUnitialized(UInt new_size);
+  /// resize initializing with uninitialized_fill if fill is set
+  void resizeUnitialized(UInt new_size, bool fill, const T & val = T());
 
   /* ------------------------------------------------------------------------ */
   /* Operators                                                                */
@@ -349,14 +344,6 @@ protected:
   T * values; // /!\ very dangerous
 };
 
-#include "aka_array_tmpl.hh"
-
-__END_AKANTU__
-
-#include "aka_types.hh"
-
-__BEGIN_AKANTU__
-
 /* -------------------------------------------------------------------------- */
 /* Inline Functions Array<T, is_scal>                                         */
 /* -------------------------------------------------------------------------- */
@@ -376,6 +363,9 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
+
+#include "aka_array_tmpl.hh"
+#include "aka_types.hh"
 
 #endif /* __AKANTU_VECTOR_HH__ */

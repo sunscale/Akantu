@@ -192,8 +192,8 @@ For instance, a loop over the nodal coordinates can be performed like:
   Array<Real> nodes = mesh.getNodes();
 
   //creating the iterators
-  Array<Real>::vector_iterator it  = nodes.begin(spatial_dimension);
-  Array<Real>::vector_iterator end = nodes.end(spatial_dimension);
+  auto it  = nodes.begin(spatial_dimension);
+  auto end = nodes.end(spatial_dimension);
 
   for (; it != end; ++it){
     Vector<Real> & coords = (*it);
@@ -403,8 +403,8 @@ having a positive $X$ coordinate with the following code:
   Array<Real> & nodes = mesh.getNodes();
   NodeGroup & group = mesh.createNodeGroup("XpositiveNode");
 
-  Array<Real>::const_vector_iterator it  = nodes.begin(spatial_dimension);
-  Array<Real>::const_vector_iterator end = nodes.end(spatial_dimension);
+  auto it  = nodes.begin(spatial_dimension);
+  auto end = nodes.end(spatial_dimension);
 
   UInt index = 0;
 

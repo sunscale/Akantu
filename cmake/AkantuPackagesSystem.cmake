@@ -40,7 +40,6 @@ function(package_declare_elements pkg)
     INTERPOLATION_TYPES
     GEOMETRICAL_SHAPES
     GAUSS_INTEGRATION_TYPES
-    INTERPOLATION_TYPES
     INTERPOLATION_KIND
     FE_ENGINE_LISTS
     )
@@ -206,16 +205,6 @@ function(package_get_element_lists)
       set(_aka_fe_defines "${_fe_engine_list_${_fe_list}})\n${_aka_fe_defines}")
     endforeach()
   endif()
-
-#   package_get_all_deactivated_packages(_deactivated_list)
-#   foreach(_pkg_name ${_deactivated_list})
-#     _package_get_variable(ET_KIND ${_pkg_name} _kind)
-#     if(_kind)
-#       string(TOUPPER "${_kind}" _u_kind)
-#       set(_element_kinds "${_element_kinds}
-# #define AKANTU_${_u_kind}_KIND")
-#     endif()
-#   endforeach()
 
   foreach(_list ${_lists})
     string(TOLOWER "${_list}" _l_list)

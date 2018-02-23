@@ -14,7 +14,7 @@
 
 #include "boundary_functions.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Real integrateResidual(const std::string & sub_boundary_name,
@@ -37,7 +37,7 @@ Real integrateResidual(const std::string & sub_boundary_name,
     }
   }
   // } catch(debug::Exception e) {
-  //   // AKANTU_DEBUG_ERROR("Error computing integrateResidual. Cannot get SubBoundary: " 
+  //   // AKANTU_ERROR("Error computing integrateResidual. Cannot get SubBoundary: " 
   //   // 		       << sub_boundary_name << " [" << e.what() << "]");
   // }
 
@@ -60,4 +60,4 @@ void boundaryFix(Mesh & mesh,
 }
 
 
-__END_AKANTU__
+} // namespace akantu

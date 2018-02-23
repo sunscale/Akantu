@@ -29,16 +29,22 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifndef __AKANTU_INTEGRATOR_GAUSS_HH__
-#define __AKANTU_INTEGRATOR_GAUSS_HH__
-
 /* -------------------------------------------------------------------------- */
 #include "integrator.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+#ifndef __AKANTU_INTEGRATOR_GAUSS_HH__
+#define __AKANTU_INTEGRATOR_GAUSS_HH__
 
+namespace akantu {
+namespace integrator {
+  namespace details {
+    template <ElementKind> struct GaussIntegratorComputeJacobiansHelper;
+  } // namespace details
+} // namespace fe_engine
+
+
+/* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 class IntegratorGauss : public Integrator {
   /* ------------------------------------------------------------------------ */
@@ -48,18 +54,18 @@ public:
   IntegratorGauss(const Mesh & mesh, const ID & id = "integrator_gauss",
                   const MemoryID & memory_id = 0);
 
-  virtual ~IntegratorGauss(){};
+  ~IntegratorGauss() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void initIntegrator(const Array<Real> & nodes,
-                             const ElementType & type,
-                             const GhostType & ghost_type);
+  void initIntegrator(const Array<Real> & nodes, const ElementType & type,
+                      const GhostType & ghost_type);
 
   template <ElementType type>
-  void initIntegrator(const Array<Real> & nodes, const GhostType & ghost_type);
+  inline void initIntegrator(const Array<Real> & nodes,
+                             const GhostType & ghost_type);
 
   /// integrate f on the element "elem" of type "type"
   template <ElementType type>
@@ -73,7 +79,13 @@ public:
                  UInt nb_degree_of_freedom, const GhostType & ghost_type,
                  const Array<UInt> & filter_elements) const;
 
-  /// integrate one element scalar value on all elements of type "type"
+  /// integrate scalar field in_f
+  template <ElementType type, UInt polynomial_degree>
+  Real integrate(const Array<Real> & in_f,
+                 const GhostType & ghost_type = _not_ghost) const;
+
+  /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
+  /// w_q @f$)
   template <ElementType type>
   Real integrate(const Vector<Real> & in_f, UInt index,
                  const GhostType & ghost_type) const;
@@ -87,10 +99,6 @@ public:
   template <ElementType type, UInt polynomial_degree>
   void integrate(const Array<Real> & in_f, Array<Real> & intf,
                  UInt nb_degree_of_freedom, const GhostType & ghost_type) const;
-
-  /// integrate scalar field in_f
-  template <ElementType type, UInt polynomial_degree>
-  Real integrate(const Array<Real> & in_f, const GhostType & ghost_type = _not_ghost) const;
 
   /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
   /// w_q @f$)
@@ -110,14 +118,23 @@ public:
   UInt getNbIntegrationPoints(const GhostType & ghost_type) const;
 
   template <ElementType type, UInt n> Matrix<Real> getIntegrationPoints() const;
-  template <ElementType type, UInt n> Vector<Real> getIntegrationWeights() const;
+  template <ElementType type, UInt n>
+  Vector<Real> getIntegrationWeights() const;
 
 protected:
+  friend struct integrator::details::GaussIntegratorComputeJacobiansHelper<kind>;
+
   template <ElementType type>
-  void computeJacobiansOnIntegrationPoints(const Array<Real> & nodes,
-                                           const Matrix<Real> & quad_points,
-                                           Array<Real> & jacobians,
-                                           const GhostType & ghost_type) const;
+  void computeJacobiansOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & quad_points,
+      Array<Real> & jacobians, const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const;
+
+  void computeJacobiansOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & quad_points,
+      Array<Real> & jacobians, const ElementType & type,
+      const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// precompute jacobians on elements of type "type"
   template <ElementType type>
@@ -153,9 +170,13 @@ protected:
 public:
   /// compute the jacobians on quad points for a given element
   template <ElementType type>
-  void computeJacobianOnQuadPointsByElement(
-      const Matrix<Real> & node_coords,
-      const Matrix<Real> & integration_points, Vector<Real> & jacobians) const;
+  void
+  computeJacobianOnQuadPointsByElement(const Matrix<Real> & node_coords,
+                                       const Matrix<Real> & integration_points,
+                                       Vector<Real> & jacobians) const;
+
+public:
+  void onElementsAdded(const Array<Element> & elements) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -168,11 +189,10 @@ protected:
 
 private:
   /// ElementTypeMap of the quadrature points
-  ElementTypeMap<Matrix<Real> > quadrature_points;
+  ElementTypeMap<Matrix<Real>> quadrature_points;
 };
 
-
-__END_AKANTU__
+} // namespace akantu
 
 #include "integrator_gauss_inline_impl.cc"
 

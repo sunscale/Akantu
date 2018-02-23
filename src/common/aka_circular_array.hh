@@ -43,7 +43,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<class T>
 class CircularArray : protected Array<T> {
@@ -99,7 +99,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  UInt getSize() const{ return this->size; };
+  UInt size() const{ return this->size_; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -131,7 +131,7 @@ inline std::ostream & operator <<(std::ostream & stream, const CircularArray<T> 
 
 
 
-__END_AKANTU__
+} // akantu
 
 
 

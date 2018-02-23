@@ -39,17 +39,17 @@
 #ifndef __AKANTU_ELEMENT_CLASS_HH__
 #define __AKANTU_ELEMENT_CLASS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /// default element class structure
 template <ElementType element_type> struct ElementClassProperty {
-  static const GeometricalType geometrical_type = _gt_not_defined;
-  static const InterpolationType interpolation_type = _itp_not_defined;
-  static const ElementKind element_kind = _ek_regular;
-  static const UInt spatial_dimension = 0;
-  static const GaussIntegrationType gauss_integration_type = _git_not_defined;
-  static const UInt polynomial_degree = 0;
+  static const GeometricalType geometrical_type{_gt_not_defined};
+  static const InterpolationType interpolation_type{_itp_not_defined};
+  static const ElementKind element_kind{_ek_regular};
+  static const UInt spatial_dimension{0};
+  static const GaussIntegrationType gauss_integration_type{_git_not_defined};
+  static const UInt polynomial_degree{0};
 };
 
 /// Macro to generate the element class structures for different element types
@@ -57,13 +57,12 @@ template <ElementType element_type> struct ElementClassProperty {
                                              interp_type, elem_kind, sp,       \
                                              gauss_int_type, min_int_order)    \
   template <> struct ElementClassProperty<elem_type> {                         \
-    static const GeometricalType geometrical_type = geom_type;                 \
-    static const InterpolationType interpolation_type = interp_type;           \
-    static const ElementKind element_kind = elem_kind;                         \
-    static const UInt spatial_dimension = sp;                                  \
-    static const GaussIntegrationType gauss_integration_type =                \
-        gauss_int_type;                                                        \
-    static const UInt polynomial_degree = min_int_order;                       \
+    static const GeometricalType geometrical_type{geom_type};                  \
+    static const InterpolationType interpolation_type{interp_type};            \
+    static const ElementKind element_kind{elem_kind};                          \
+    static const UInt spatial_dimension{sp};                                   \
+    static const GaussIntegrationType gauss_integration_type{gauss_int_type};  \
+    static const UInt polynomial_degree{min_int_order};                        \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -71,7 +70,7 @@ template <ElementType element_type> struct ElementClassProperty {
 /* -------------------------------------------------------------------------- */
 /// Default GeometricalShape structure
 template <GeometricalType geometrical_type> struct GeometricalShape {
-  static const GeometricalShapeType shape = _gst_point;
+  static const GeometricalShapeType shape{_gst_point};
 };
 
 /// Templated GeometricalShape with function contains
@@ -85,8 +84,29 @@ template <GeometricalShapeType shape> struct GeometricalShapeContains {
 /// types
 #define AKANTU_DEFINE_SHAPE(geom_type, geom_shape)                             \
   template <> struct GeometricalShape<geom_type> {                             \
-    static const GeometricalShapeType shape = geom_shape;                      \
+    static const GeometricalShapeType shape{geom_shape};                       \
   }
+
+AKANTU_DEFINE_SHAPE(_gt_hexahedron_20, _gst_square);
+AKANTU_DEFINE_SHAPE(_gt_hexahedron_8, _gst_square);
+AKANTU_DEFINE_SHAPE(_gt_pentahedron_15, _gst_prism);
+AKANTU_DEFINE_SHAPE(_gt_pentahedron_6, _gst_prism);
+AKANTU_DEFINE_SHAPE(_gt_point, _gst_point);
+AKANTU_DEFINE_SHAPE(_gt_quadrangle_4, _gst_square);
+AKANTU_DEFINE_SHAPE(_gt_quadrangle_8, _gst_square);
+AKANTU_DEFINE_SHAPE(_gt_segment_2, _gst_square);
+AKANTU_DEFINE_SHAPE(_gt_segment_3, _gst_square);
+AKANTU_DEFINE_SHAPE(_gt_tetrahedron_10, _gst_triangle);
+AKANTU_DEFINE_SHAPE(_gt_tetrahedron_4, _gst_triangle);
+AKANTU_DEFINE_SHAPE(_gt_triangle_3, _gst_triangle);
+AKANTU_DEFINE_SHAPE(_gt_triangle_6, _gst_triangle);
+
+/* -------------------------------------------------------------------------- */
+template <GeometricalType geometrical_type>
+struct GeometricalElementProperty {};
+
+template <ElementType element_type>
+struct ElementClassExtraGeometryProperties {};
 
 /* -------------------------------------------------------------------------- */
 /// Templated GeometricalElement with function getInradius
@@ -94,11 +114,13 @@ template <GeometricalType geometrical_type,
           GeometricalShapeType shape =
               GeometricalShape<geometrical_type>::shape>
 class GeometricalElement {
+  using geometrical_property = GeometricalElementProperty<geometrical_type>;
+
 public:
   /// compute the in-radius
   static inline Real getInradius(__attribute__((unused))
                                  const Matrix<Real> & coord) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// true if the natural coordinates are in the element
@@ -106,55 +128,35 @@ public:
   static inline bool contains(const vector_type & coord);
 
 public:
-  static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension, spatial_dimension, UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement, nb_nodes_per_element,
+  static AKANTU_GET_MACRO_NOT_CONST(SpatialDimension,
+                                    geometrical_property::spatial_dimension,
                                     UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(NbFacetTypes, nb_facet_types, UInt);
+  static AKANTU_GET_MACRO_NOT_CONST(NbNodesPerElement,
+                                    geometrical_property::nb_nodes_per_element,
+                                    UInt);
+  static inline constexpr auto getNbFacetTypes() {
+    return geometrical_property::nb_facet_types;
+  };
   static inline UInt getNbFacetsPerElement(UInt t);
   static inline UInt getNbFacetsPerElement();
-  static inline const MatrixProxy<UInt>
-  getFacetLocalConnectivityPerElement(UInt t = 0);
-
-protected:
-  /// Number of nodes per element
-  static UInt nb_nodes_per_element;
-  /// spatial dimension of the element
-  static UInt spatial_dimension;
-  /// number of different facet types
-  static UInt nb_facet_types;
-  /// number of facets for element
-  static UInt nb_facets[];
-  /// storage of the facet local connectivity
-  static UInt facet_connectivity_vect[];
-  /// local connectivity of facets
-  static UInt * facet_connectivity[];
-
-private:
-  /// Type of the facet elements
-  static UInt nb_nodes_per_facet[];
+  static inline constexpr auto getFacetLocalConnectivityPerElement(UInt t = 0);
 };
 
 /* -------------------------------------------------------------------------- */
 /* Interpolation                                                              */
 /* -------------------------------------------------------------------------- */
-/// default InterpolationPorperty structure
-template <InterpolationType interpolation_type> struct InterpolationPorperty {
-  static const InterpolationKind kind = _itk_not_defined;
-  static const UInt nb_nodes_per_element = 0;
-  static const UInt natural_space_dimension = 0;
-};
+/// default InterpolationProperty structure
+template <InterpolationType interpolation_type> struct InterpolationProperty {};
 
-/// Macro to generate the InterpolationPorperty structures for different
+/// Macro to generate the InterpolationProperty structures for different
 /// interpolation types
 #define AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(itp_type, itp_kind,          \
                                                   nb_nodes, ndim)              \
-  template <> struct InterpolationPorperty<itp_type> {                         \
-    static const InterpolationKind kind = itp_kind;                            \
-    static const UInt nb_nodes_per_element = nb_nodes;                         \
-    static const UInt natural_space_dimension = ndim;                          \
+  template <> struct InterpolationProperty<itp_type> {                         \
+    static constexpr InterpolationKind kind{itp_kind};                         \
+    static constexpr UInt nb_nodes_per_element{nb_nodes};                      \
+    static constexpr UInt natural_space_dimension{ndim};                       \
   }
-
-#include "interpolation_element_tmpl.hh"
 
 /* -------------------------------------------------------------------------- */
 /// Generic (templated by the enum InterpolationType which specifies the order
@@ -162,10 +164,10 @@ template <InterpolationType interpolation_type> struct InterpolationPorperty {
 /// interpolation
 template <InterpolationType interpolation_type,
           InterpolationKind kind =
-              InterpolationPorperty<interpolation_type>::kind>
+              InterpolationProperty<interpolation_type>::kind>
 class InterpolationElement {
 public:
-  typedef InterpolationPorperty<interpolation_type> interpolation_property;
+  using interpolation_property = InterpolationProperty<interpolation_type>;
 
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
@@ -173,10 +175,8 @@ public:
 
   /// compute the shape values for a given point in natural coordinates
   template <class vector_type>
-  static inline void computeShapes(__attribute__((unused))
-                                   const vector_type & natural_coord,
-                                   __attribute__((unused)) vector_type & N) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  static inline void computeShapes(const vector_type &, vector_type &) {
+    AKANTU_TO_IMPLEMENT();
   }
 
   /**
@@ -193,19 +193,14 @@ public:
    * coordinates
    */
   template <class vector_type, class matrix_type>
-  static inline void computeDNDS(__attribute__((unused))
-                                 const vector_type & natural_coord,
-                                 __attribute__((unused)) matrix_type & dnds) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  static inline void computeDNDS(const vector_type &, matrix_type &) {
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute jacobian (or integration variable change factor) for a given point
   /// in the case of spatial_dimension != natural_space_dimension
-  static inline void computeSpecialJacobian(__attribute__((unused))
-                                            const Matrix<Real> & J,
-                                            __attribute__((unused))
-                                            Real & jacobians) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  static inline void computeSpecialJacobian(const Matrix<Real> &, Real &) {
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// interpolate a field given (arbitrary) natural coordinates
@@ -232,18 +227,18 @@ public:
 public:
   static AKANTU_GET_MACRO_NOT_CONST(
       ShapeSize,
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element, UInt);
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       ShapeDerivativesSize,
-      (InterpolationPorperty<interpolation_type>::nb_nodes_per_element *
-       InterpolationPorperty<interpolation_type>::natural_space_dimension),
+      (InterpolationProperty<interpolation_type>::nb_nodes_per_element *
+       InterpolationProperty<interpolation_type>::natural_space_dimension),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NaturalSpaceDimension,
-      InterpolationPorperty<interpolation_type>::natural_space_dimension, UInt);
+      InterpolationProperty<interpolation_type>::natural_space_dimension, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NbNodesPerInterpolationElement,
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element, UInt);
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element, UInt);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -278,14 +273,14 @@ class ElementClass
       public InterpolationElement<
           ElementClassProperty<element_type>::interpolation_type> {
 protected:
-  typedef GeometricalElement<
-      ElementClassProperty<element_type>::geometrical_type> geometrical_element;
-  typedef InterpolationElement<ElementClassProperty<
-      element_type>::interpolation_type> interpolation_element;
+  using geometrical_element =
+      GeometricalElement<ElementClassProperty<element_type>::geometrical_type>;
+  using interpolation_element = InterpolationElement<
+      ElementClassProperty<element_type>::interpolation_type>;
 
-  typedef ElementClassProperty<element_type> element_property;
-  typedef typename interpolation_element::interpolation_property
-      interpolation_property;
+  using element_property = ElementClassProperty<element_type>;
+  using interpolation_property =
+      typename interpolation_element::interpolation_property;
 
 public:
   /**
@@ -338,57 +333,65 @@ public:
   static inline void inverseMap(const Vector<Real> & real_coords,
                                 const Matrix<Real> & node_coords,
                                 Vector<Real> & natural_coords,
-                                Real tolerance = 1e-8);
+                                Real tolerance = 1e-10);
 
   /// get natural coordinates from real coordinates
   static inline void inverseMap(const Matrix<Real> & real_coords,
                                 const Matrix<Real> & node_coords,
                                 Matrix<Real> & natural_coords,
-                                Real tolerance = 1e-8);
+                                Real tolerance = 1e-10);
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, element_kind, ElementKind);
-  static AKANTU_GET_MACRO_NOT_CONST(
+  static constexpr AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, p1_type,
-                                    const ElementType &);
-  static const ElementType & getFacetType(UInt t = 0) { return facet_type[t]; }
-  static ElementType * getFacetTypeInternal() { return facet_type; }
 
-protected:
-  /// Type of the facet elements
-  static ElementType facet_type[];
-  /// type of element P1 associated
-  static ElementType p1_type;
+  using element_class_extra_geom_property =
+      ElementClassExtraGeometryProperties<element_type>;
+
+  static constexpr auto getP1ElementType() {
+    return element_class_extra_geom_property::p1_type;
+  }
+  static constexpr auto getFacetType(UInt t = 0) {
+    return element_class_extra_geom_property::facet_type[t];
+  }
+  static constexpr auto getFacetTypes();
 };
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
-
-#include "element_class_tmpl.hh"
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+#include "geometrical_element_property.hh"
+#include "interpolation_element_tmpl.hh"
+/* -------------------------------------------------------------------------- */
+#include "element_class_tmpl.hh"
+/* -------------------------------------------------------------------------- */
+namespace akantu {
+#include "element_class_pentahedron_6_inline_impl.cc"
+/* keep order */
+#include "element_class_hexahedron_20_inline_impl.cc"
+#include "element_class_hexahedron_8_inline_impl.cc"
+#include "element_class_pentahedron_15_inline_impl.cc"
 #include "element_class_point_1_inline_impl.cc"
-#include "element_class_segment_2_inline_impl.cc"
-#include "element_class_segment_3_inline_impl.cc"
-#include "element_class_triangle_3_inline_impl.cc"
-#include "element_class_triangle_6_inline_impl.cc"
-#include "element_class_tetrahedron_4_inline_impl.cc"
-#include "element_class_tetrahedron_10_inline_impl.cc"
 #include "element_class_quadrangle_4_inline_impl.cc"
 #include "element_class_quadrangle_8_inline_impl.cc"
-#include "element_class_hexahedron_8_inline_impl.cc"
-#include "element_class_hexahedron_20_inline_impl.cc"
-#include "element_class_pentahedron_6_inline_impl.cc"
-#include "element_class_pentahedron_15_inline_impl.cc"
-__END_AKANTU__
+#include "element_class_segment_2_inline_impl.cc"
+#include "element_class_segment_3_inline_impl.cc"
+#include "element_class_tetrahedron_10_inline_impl.cc"
+#include "element_class_tetrahedron_4_inline_impl.cc"
+#include "element_class_triangle_3_inline_impl.cc"
+#include "element_class_triangle_6_inline_impl.cc"
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
-
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
 #include "element_class_structural.hh"
+#endif
+
+#if defined(AKANTU_COHESIVE_ELEMENT)
+#include "cohesive_element.hh"
 #endif
 
 #if defined(AKANTU_IGFEM)

@@ -69,13 +69,13 @@ void MaterialVreePeerlings<spatial_dimension, MatParent>::computeStress(ElementT
   Real * FullDam_Valstrain = Full_dam_value_strain(el_type, ghost_type).storage();
   Real * FullDam_Valstrain_rate = Full_dam_value_strain_rate(el_type, ghost_type).storage();
   Real * Nb_damage = Number_damage(el_type, ghost_type).storage();
-  Real dt = this->model->getTimeStep();
+  Real dt = this->model.getTimeStep();
 
   Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
-  Array<Real> & velocity = this->model->getVelocity();
+  Array<Real> & velocity = this->model.getVelocity();
   Array<Real> & strain_rate_vrplgs = this->strain_rate_vreepeerlings(el_type, ghost_type);
 
-  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_vrplgs,
+  this->model.getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_vrplgs,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 

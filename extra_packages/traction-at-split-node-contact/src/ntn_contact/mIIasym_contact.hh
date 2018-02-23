@@ -22,7 +22,7 @@
 // simtools
 #include "ntrf_contact.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class MIIASYMContact : public NTRFContact {
@@ -71,6 +71,6 @@ inline std::ostream & operator <<(std::ostream & stream, const MIIASYMContact & 
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_MIIASYM_CONTACT_HH__ */

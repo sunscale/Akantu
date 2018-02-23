@@ -10,7 +10,8 @@
  * @date creation: Fri Jun 18 2010
  * @date last modification: Mon Jun 01 2015
  *
- * @brief  Specialization of the material class for isotropic finite deformation linear hardening plasticity
+ * @brief  Specialization of the material class for isotropic finite deformation
+ * linear hardening plasticity
  *
  * @section LICENSE
  *
@@ -42,23 +43,22 @@
 #ifndef __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__
 #define __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material plastic with a linear evolution of the yielding stress
  */
 template <UInt spatial_dimension>
-class MaterialLinearIsotropicHardening : public MaterialPlastic<spatial_dimension> {
+class MaterialLinearIsotropicHardening
+    : public MaterialPlastic<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  MaterialLinearIsotropicHardening(SolidMechanicsModel & model, const ID & id = "");
   MaterialLinearIsotropicHardening(SolidMechanicsModel & model,
-                                   UInt dim,
-                                   const Mesh & mesh,
-                                   FEEngine & fe_engine,
+                                   const ID & id = "");
+  MaterialLinearIsotropicHardening(SolidMechanicsModel & model, UInt dim,
+                                   const Mesh & mesh, FEEngine & fe_engine,
                                    const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
@@ -66,56 +66,48 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
                             Array<Real> & tangent_matrix,
-                            GhostType ghost_type = _not_ghost);
+                            GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// Infinitesimal deformations
-  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
-                                  const Matrix<Real> & previous_grad_u,
-                                  Matrix<Real> & sigma,
-                                  const Matrix<Real> & previous_sigma,
-                                  Matrix<Real> & inelas_strain,
-                                  const Matrix<Real> & previous_inelas_strain,
-                                  Real & iso_hardening,
-                                  const Real & previous_iso_hardening,
-                                  const Real & sigma_th,
-                                  const Real & previous_sigma_th);
+  inline void computeStressOnQuad(
+      const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
+      Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
+      Real & iso_hardening, const Real & previous_iso_hardening,
+      const Real & sigma_th, const Real & previous_sigma_th);
   /// Finite deformations
-  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
-                                  const Matrix<Real> & previous_grad_u,
-                                  Matrix<Real> & sigma,
-                                  const Matrix<Real> & previous_sigma,
-                                  Matrix<Real> & inelas_strain,
-                                  const Matrix<Real> & previous_inelas_strain,
-                                  Real & iso_hardening,
-                                  const Real & previous_iso_hardening,
-                                  const Real & sigma_th,
-                                  const Real & previous_sigma_th,
-				  const Matrix<Real> & F_tensor);
+  inline void computeStressOnQuad(
+      const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
+      Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
+      Real & iso_hardening, const Real & previous_iso_hardening,
+      const Real & sigma_th, const Real & previous_sigma_th,
+      const Matrix<Real> & F_tensor);
 
-  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
-                                         const Matrix<Real> & grad_u,
-                                         const Matrix<Real> & previous_grad_u,
-                                         const Matrix<Real> & sigma_tensor,
-                                         const Matrix<Real> & previous_sigma_tensor,
-                                         const Real & iso_hardening) const;
+  inline void computeTangentModuliOnQuad(
+      Matrix<Real> & tangent, const Matrix<Real> & grad_u,
+      const Matrix<Real> & previous_grad_u, const Matrix<Real> & sigma_tensor,
+      const Matrix<Real> & previous_sigma_tensor,
+      const Real & iso_hardening) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "material_linear_isotropic_hardening_inline_impl.cc"
 
-__END_AKANTU__
+} // akantu
+
+#include "material_linear_isotropic_hardening_inline_impl.cc"
 
 #endif /* __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__ */

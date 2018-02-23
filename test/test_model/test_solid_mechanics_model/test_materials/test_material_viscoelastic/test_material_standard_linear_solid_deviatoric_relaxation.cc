@@ -32,18 +32,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <limits>
+#include <sstream>
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
-  akantu::initialize("material_standard_linear_solid_deviatoric_relaxation.dat", argc, argv);
+int main(int argc, char * argv[]) {
+  akantu::initialize("material_standard_linear_solid_deviatoric_relaxation.dat",
+                     argc, argv);
   akantu::debug::setDebugLevel(akantu::dblWarning);
 
   // sim data
@@ -71,25 +71,27 @@ int main(int argc, char *argv[])
   model.assembleMassLumped();
 
   std::stringstream filename_sstr;
-  filename_sstr << "test_material_standard_linear_solid_deviatoric_relaxation.out";
+  filename_sstr
+      << "test_material_standard_linear_solid_deviatoric_relaxation.out";
   std::ofstream output_data;
   output_data.open(filename_sstr.str().c_str());
-  output_data << "#[1]-time [2]-sigma_analytic [3+]-sigma_measurements" << std::endl;
+  output_data << "#[1]-time [2]-sigma_analytic [3+]-sigma_measurements"
+              << std::endl;
 
   Material & mat = model.getMaterial(0);
 
   const Array<Real> & stress = mat.getStress(element_type);
 
-  Real Eta  = mat.getParam<Real>("Eta");
-  Real EV   = mat.getParam<Real>("Ev");
-  Real Einf = mat.getParam<Real>("Einf");
-  Real nu   = mat.getParam<Real>("nu");
-  Real Ginf = Einf/(2*(1+nu));
-  Real G = EV/(2*(1+nu));
+  Real Eta = mat.get("Eta");
+  Real EV = mat.get("Ev");
+  Real Einf = mat.get("Einf");
+  Real nu = mat.get("nu");
+  Real Ginf = Einf / (2 * (1 + nu));
+  Real G = EV / (2 * (1 + nu));
   Real G0 = G + Ginf;
-  Real gamma = G/G0;
+  Real gamma = G / G0;
   Real tau = Eta / EV;
-  Real gammainf = Ginf/G0;
+  Real gammainf = Ginf / G0;
 
   UInt nb_nodes = mesh.getNbNodes();
   const Array<Real> & coordinate = mesh.getNodes();
@@ -108,9 +110,9 @@ int main(int argc, char *argv[])
   /* ------------------------------------------------------------------------ */
   /* Main loop                                                                */
   /* ------------------------------------------------------------------------ */
-  for(UInt s = 0; s <= max_steps; ++s) {
+  for (UInt s = 0; s <= max_steps; ++s) {
 
-    if(s % 1000 == 0)
+    if (s % 1000 == 0)
       std::cerr << "passing step " << s << "/" << max_steps << std::endl;
 
     time = s * time_step;
@@ -118,43 +120,45 @@ int main(int argc, char *argv[])
     Real epsilon = 0.;
     if (time < T) {
       epsilon = eps * time / T;
-    }
-    else {
+    } else {
       epsilon = eps;
     }
-    for (UInt n=0; n<nb_nodes; ++n) {
-      displacement(n,0) = epsilon * coordinate(n,1);
-      displacement(n,1) = epsilon * coordinate(n,0);
+    for (UInt n = 0; n < nb_nodes; ++n) {
+      displacement(n, 0) = epsilon * coordinate(n, 1);
+      displacement(n, 1) = epsilon * coordinate(n, 0);
     }
 
     // compute stress
-    model.updateResidual();
+    model.assembleInternalForces();
 
     // print output
-    if(s % out_interval == 0) {
+    if (s % out_interval == 0) {
       // analytical solution
-      Real solution= 0.;
+      Real solution = 0.;
       if (time < T) {
-	solution = 2 * G0 * eps / T * (gammainf * time + gamma * tau * (1 - exp(-time/tau)));
+        solution = 2 * G0 * eps / T *
+                   (gammainf * time + gamma * tau * (1 - exp(-time / tau)));
+      } else {
+        solution = 2 * G0 * eps *
+                   (gammainf + gamma * tau / T *
+                                   (exp((T - time) / tau) - exp(-time / tau)));
       }
-      else {
-	solution = 2 * G0 * eps * (gammainf + gamma * tau / T * (exp((T-time)/tau) - exp(-time/tau)));
-      }
-      output_data << s*time_step << " " << solution;
+      output_data << s * time_step << " " << solution;
 
       // data output
       Array<Real>::const_matrix_iterator stress_it = stress.begin(dim, dim);
       Array<Real>::const_matrix_iterator stress_end = stress.end(dim, dim);
-      for(;stress_it != stress_end; ++stress_it) {
-	output_data << " " << (*stress_it)(0,1) << " " << (*stress_it)(1,0);
+      for (; stress_it != stress_end; ++stress_it) {
+        output_data << " " << (*stress_it)(0, 1) << " " << (*stress_it)(1, 0);
 
-	// test error
-	Real rel_error_1 = std::abs(((*stress_it)(0,1) - solution) / solution);
-	Real rel_error_2 = std::abs(((*stress_it)(1,0) - solution) / solution);
-	if (rel_error_1 > tolerance || rel_error_2 > tolerance) {
-	  std::cerr << "Relative error: " << rel_error_1 << " " << rel_error_2 << std::endl;
-	  return EXIT_FAILURE;
-	}
+        // test error
+        Real rel_error_1 = std::abs(((*stress_it)(0, 1) - solution) / solution);
+        Real rel_error_2 = std::abs(((*stress_it)(1, 0) - solution) / solution);
+        if (rel_error_1 > tolerance || rel_error_2 > tolerance) {
+          std::cerr << "Relative error: " << rel_error_1 << " " << rel_error_2
+                    << std::endl;
+          return EXIT_FAILURE;
+        }
       }
       output_data << std::endl;
     }

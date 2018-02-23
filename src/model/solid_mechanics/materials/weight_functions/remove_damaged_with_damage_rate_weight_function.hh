@@ -36,7 +36,7 @@
 #ifndef __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_RATE_WEIGHT_FUNCTION_HH__
 #define __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_RATE_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Remove damaged with damage rate weight function                                             */
 /* -------------------------------------------------------------------------- */
@@ -46,8 +46,9 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  RemoveDamagedWithDamageRateWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "remove_damage_with_damage_rate"),
-									 damage_with_damage_rate(NULL) {
+  RemoveDamagedWithDamageRateWeightFunction(NonLocalManager & manager)
+      : BaseWeightFunction(manager, "remove_damage_with_damage_rate"),
+        damage_with_damage_rate(nullptr) {
     this->registerParam<Real>("damage_limit", this->damage_limit_with_damage_rate, 1, _pat_parsable, "Damage Threshold");
     this->init();
   }
@@ -59,7 +60,7 @@ public:
 			 const __attribute__((unused)) IntegrationPoint & q1,
 			 const IntegrationPoint & q2);
 
-  virtual inline void init();
+  inline void init() override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -77,6 +78,6 @@ private:
 #  include "remove_damaged_with_damage_rate_weight_function_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_WEIGHT_FUNCTION_HH__ */

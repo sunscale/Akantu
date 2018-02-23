@@ -29,16 +29,14 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 # ===============================================================================
-
+from __future__ import print_function
 import sys
 import os
 import akantu as aka
 
-os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-
 aka.initialize('input_test.dat')
 
-print 'First initialisation'
+print('First initialisation')
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
 model = aka.SolidMechanicsModel(mesh)
@@ -46,7 +44,7 @@ model.initFull(aka.SolidMechanicsModelOptions(aka._static))
 del model
 del mesh
 
-print 'Second initialisation'
+print('Second initialisation')
 mesh = aka.Mesh(2)
 mesh.read('mesh_dcb_2d.msh')
 model = aka.SolidMechanicsModel(mesh)
@@ -54,5 +52,4 @@ model.initFull(aka.SolidMechanicsModelOptions(aka._static))
 del model
 del mesh
 
-aka.finalize()
-print 'All right'
+print('All right')

@@ -40,15 +40,18 @@
 #ifndef __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__
 #define __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Orthotropic elastic material
  *
  * parameters in the material files :
- *   - n1   : direction of x-axis in material base, normalisation not necessary (default: {1, 0, 0})
- *   - n2   : direction of y-axis in material base, normalisation not necessary (default: {0, 1, 0})
- *   - n3   : direction of z-axis in material base, normalisation not necessary (default: {0, 0, 1})
+ *   - n1   : direction of x-axis in material base, normalisation not necessary
+ * (default: {1, 0, 0})
+ *   - n2   : direction of y-axis in material base, normalisation not necessary
+ * (default: {0, 1, 0})
+ *   - n3   : direction of z-axis in material base, normalisation not necessary
+ * (default: {0, 0, 1})
  *   - rho  : density (default: 0)
  *   - E1   : Young's modulus along n1 (default: 0)
  *   - E2   : Young's modulus along n2 (default: 0)
@@ -61,41 +64,26 @@ __BEGIN_AKANTU__
  *   - G23  : Shear modulus along 23 (default: 0)
  */
 
-template<UInt Dim>
-class MaterialElasticOrthotropic :
-  public MaterialElasticLinearAnisotropic<Dim> {
+template <UInt Dim>
+class MaterialElasticOrthotropic
+    : public MaterialElasticLinearAnisotropic<Dim> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialElasticOrthotropic(SolidMechanicsModel & model, const ID & id = "");
-
-  ~MaterialElasticOrthotropic();
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  void initMaterial() override;
 
-  virtual void initMaterial();
+  void updateInternalParameters() override;
 
-  virtual void updateInternalParameters();
-
-
-  /// compute the elastic potential energy
-  virtual void computePotentialEnergy(ElementType el_type,
-				      GhostType ghost_type = _not_ghost);
-
-  virtual void computePotentialEnergyByElement(ElementType type, UInt index,
-					       Vector<Real> & epot_on_quad_points);
-
-
-protected:
-
-  inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
-					   const Matrix<Real> & sigma,
-					   Real & epot);
+  void
+  computePotentialEnergyByElement(ElementType type, UInt index,
+                                  Vector<Real> & epot_on_quad_points) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -143,7 +131,6 @@ protected:
   Real G23;
 };
 
-
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__ */

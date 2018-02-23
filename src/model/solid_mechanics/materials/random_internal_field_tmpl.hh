@@ -38,7 +38,7 @@
 #ifndef __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
 #define __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T, template <typename> class BaseField,
@@ -50,7 +50,7 @@ RandomInternalField<T, BaseField, Generator>::RandomInternalField(
 /* -------------------------------------------------------------------------- */
 template <typename T, template <typename> class BaseField,
           template <typename> class Generator>
-RandomInternalField<T, BaseField, Generator>::~RandomInternalField() {}
+RandomInternalField<T, BaseField, Generator>::~RandomInternalField() = default;
 
 /* -------------------------------------------------------------------------- */
 template <typename T, template <typename> class BaseField,
@@ -82,7 +82,7 @@ void RandomInternalField<T, BaseField, Generator>::setRandomDistribution(
 template <typename T, template <typename> class BaseField,
           template <typename> class Generator>
 void RandomInternalField<T, BaseField, Generator>::printself(
-    std::ostream & stream, int indent) const {
+    std::ostream & stream, int indent [[gnu::unused]]) const {
   stream << "RandomInternalField [ ";
   random_parameter.printself(stream);
   stream << " ]";
@@ -111,15 +111,15 @@ inline RandomInternalField<T, BaseField, Generator>::operator Real() const {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void ParsableParamTyped<RandomInternalField<Real> >::parseParam(
+inline void ParameterTyped<RandomInternalField<Real>>::setAuto(
     const ParserParameter & in_param) {
-  ParsableParam::parseParam(in_param);
+  Parameter::setAuto(in_param);
   RandomParameter<Real> r = in_param;
   param.setRandomDistribution(r);
 }
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__ */

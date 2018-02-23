@@ -17,37 +17,35 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_damage.hh"
 #include "material.hh"
+#include "material_damage.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
 #define __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material damage iterative
  *
  * parameters in the material files :
- *   - Sc  
+ *   - Sc
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialDamageIterative : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialDamageIterative(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialDamageIterative() {};
+  virtual ~MaterialDamageIterative(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   ///  virtual void updateInternalParameters();
 
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
@@ -55,43 +53,45 @@ public:
   /// update internal field damage
   virtual UInt updateDamage();
 
-  UInt updateDamage(UInt quad_index, const Real eq_stress, const ElementType & el_type, const GhostType & ghost_type);
+  UInt updateDamage(UInt quad_index, const Real eq_stress,
+                    const ElementType & el_type, const GhostType & ghost_type);
 
   /// update energies after damage has been updated
-  virtual void updateEnergiesAfterDamage(ElementType el_type, GhostType ghost_typ);
-  
-  virtual void onBeginningSolveStep(const AnalysisMethod & method) { };
+  virtual void updateEnergiesAfterDamage(ElementType el_type,
+                                         GhostType ghost_typ);
 
-  virtual void onEndSolveStep(const AnalysisMethod & method) { };
-
-  ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
-  virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
-						 ElementType el_type, GhostType ghost_type = _not_ghost);
+  /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
+  /// stress) and normalize it by the tensile strength
+  virtual void
+  computeNormalizedEquivalentStress(const Array<Real> & grad_u,
+                                    ElementType el_type,
+                                    GhostType ghost_type = _not_ghost);
 
   /// find max normalized equivalent stress
-  void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void findMaxNormalizedEquivalentStress(ElementType el_type,
+                                         GhostType ghost_type = _not_ghost);
 
 protected:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-                                           Real & dam);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Real & dam);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 
-  inline UInt getNbDataForElements(const Array<Element> & elements,
-                                   SynchronizationTag tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline void packElementData(CommunicationBuffer & buffer,
-                              const Array<Element> & elements,
-                              SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline void unpackElementData(CommunicationBuffer & buffer,
-                                const Array<Element> & elements,
-                                SynchronizationTag tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -100,14 +100,14 @@ public:
   /// get max normalized equivalent stress
   AKANTU_GET_MACRO(NormMaxEquivalentStress, norm_max_equivalent_stress, Real);
 
- /// get a non-const reference to the max normalized equivalent stress
-  AKANTU_GET_MACRO_NOT_CONST(NormMaxEquivalentStress, norm_max_equivalent_stress, Real &);
+  /// get a non-const reference to the max normalized equivalent stress
+  AKANTU_GET_MACRO_NOT_CONST(NormMaxEquivalentStress,
+                             norm_max_equivalent_stress, Real &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// resistance to damage
   RandomInternalField<Real> Sc;
 
@@ -126,22 +126,22 @@ protected:
   /// maximum equivalent stress
   Real norm_max_equivalent_stress;
 
-  /// deviation from max stress at which Gauss point will still get damaged 
+  /// deviation from max stress at which Gauss point will still get damaged
   Real dam_tolerance;
 
-  /// define damage threshold at which damage will be set to 1 
-  Real dam_threshold; 
+  /// define damage threshold at which damage will be set to 1
+  Real dam_threshold;
 
   /// maximum damage value
   Real max_damage;
 };
+
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
 #include "material_damage_iterative_inline_impl.cc"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__ */

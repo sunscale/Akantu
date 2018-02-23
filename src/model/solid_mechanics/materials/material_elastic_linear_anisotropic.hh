@@ -28,21 +28,18 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material.hh"
 #include "material_elastic.hh"
+/* -------------------------------------------------------------------------- */
 #include <vector>
-
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
 #define __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * General linear anisotropic elastic material
@@ -53,46 +50,60 @@ __BEGIN_AKANTU__
  *   - rho  : density (default: 0)
  *   - C_ij  : entry on the stiffness
  */
-template<UInt Dim>
-class MaterialElasticLinearAnisotropic : public virtual Material {
+template <UInt Dim> class MaterialElasticLinearAnisotropic : public Material {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  MaterialElasticLinearAnisotropic(SolidMechanicsModel & model, const ID & id = "",
-                                   bool symmetric = true);
-
-  ~MaterialElasticLinearAnisotropic();
+  MaterialElasticLinearAnisotropic(SolidMechanicsModel & model,
+                                   const ID & id = "", bool symmetric = true);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
-			    Array<Real> & tangent_matrix,
-			    GhostType ghost_type = _not_ghost);
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
 
+  /// compute the elastic potential energy
+  void computePotentialEnergy(ElementType el_type,
+                              GhostType ghost_type = _not_ghost) override;
 
+  void updateInternalParameters() override;
 
-  virtual void updateInternalParameters();
+  bool hasStiffnessMatrixChanged() override {
+    return (!was_stiffness_assembled);
+  }
+
 protected:
   // compute C from Cprime
   void rotateCprime();
+
+  /// constitutive law for a given quadrature point
+  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
+                                  Matrix<Real> & sigma) const;
+
+  /// tangent matrix for a given quadrature point
+  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
+
+  inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
+                                           const Matrix<Real> & sigma,
+                                           Real & epot);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// compute max wave celerity
-  virtual Real getCelerity(const Element & element) const;
+  Real getCelerity(const Element & element) const override;
 
   AKANTU_GET_MACRO(VoigtStiffness, C, Matrix<Real>);
 
@@ -100,9 +111,10 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  const static VoigtHelper<Dim> voigt_h;
+  using voigt_h = VoigtHelper<Dim>;
+
   /// direction matrix and vectors
-  std::vector<Vector<Real>*>  dir_vecs;
+  std::vector<std::unique_ptr<Vector<Real>>> dir_vecs;
 
   Matrix<Real> rot_mat;
   /// Elastic stiffness tensor in material frame and full vectorised notation
@@ -111,12 +123,17 @@ protected:
   Matrix<Real> C;
   /// eigenvalues of stiffness tensor
   Vector<Real> eigC;
+
   bool symmetric;
 
   /// viscous proportion
   Real alpha;
 
+  /// defines if the stiffness was computed
+  bool was_stiffness_assembled;
 };
-__END_AKANTU__
+} // akantu
+
+#include "material_elastic_linear_anisotropic_inline_impl.cc"
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__ */

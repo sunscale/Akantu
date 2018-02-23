@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline NodeGroup::const_node_iterator NodeGroup::begin() const {
@@ -72,8 +72,8 @@ inline void NodeGroup::remove(UInt node) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt NodeGroup::getSize() const {
-  return node_group.getSize();
+inline UInt NodeGroup::size() const {
+  return node_group.size();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -99,4 +99,4 @@ void NodeGroup::applyNodeFilter(T & filter) {
 }
 
 
-__END_AKANTU__
+} // akantu

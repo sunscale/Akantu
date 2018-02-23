@@ -27,92 +27,90 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+#include <type_traits>
+
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__
 #define __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
-__BEGIN_AKANTU_DUMPER__
+namespace akantu {
+namespace dumper {
 /* -------------------------------------------------------------------------- */
 
 /// Variable interface
-  class VariableBase {
+class VariableBase {
 public:
-  VariableBase() {};
-  virtual ~VariableBase() {};
-  virtual void registerToDumper(const std::string & id, iohelper::Dumper & dumper) = 0;
+  VariableBase() = default;
+  virtual ~VariableBase() = default;
+  virtual void registerToDumper(const std::string & id,
+                                iohelper::Dumper & dumper) = 0;
 };
 
 /* -------------------------------------------------------------------------- */
 
-
-template<typename T, bool is_scal = is_scalar<T>::value >
+template <typename T, bool is_scal = std::is_arithmetic<T>::value>
 class Variable : public VariableBase {
 public:
   Variable(const T & t) : vari(t) {}
 
-  virtual void registerToDumper(const std::string & id,
-				iohelper::Dumper & dumper) {
+  void registerToDumper(const std::string & id,
+                        iohelper::Dumper & dumper) override {
     dumper.addVariable(id, *this);
   }
 
-  const T & operator[](UInt i) const {
-    return vari[i];
-  }
+  const T & operator[](UInt i) const { return vari[i]; }
 
   UInt getDim() { return vari.size(); }
   iohelper::DataType getDataType() { return iohelper::getDataType<T>(); }
+
 protected:
   const T & vari;
 };
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-class Variable<Vector<T>, false> : public VariableBase {
+template <typename T> class Variable<Vector<T>, false> : public VariableBase {
 public:
   Variable(const Vector<T> & t) : vari(t) {}
 
-  virtual void registerToDumper(const std::string & id,
-				iohelper::Dumper & dumper) {
+  void registerToDumper(const std::string & id,
+                        iohelper::Dumper & dumper) override {
     dumper.addVariable(id, *this);
   }
 
-  const T & operator[](UInt i) const {
-    return vari[i];
-  }
+  const T & operator[](UInt i) const { return vari[i]; }
 
   UInt getDim() { return vari.size(); }
   iohelper::DataType getDataType() { return iohelper::getDataType<T>(); }
-    
+
 protected:
   const Vector<T> & vari;
 };
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
-class Variable<T, true> : public VariableBase {
+template <typename T> class Variable<T, true> : public VariableBase {
 public:
   Variable(const T & t) : vari(t) {}
 
-  virtual void registerToDumper(const std::string & id,
-				iohelper::Dumper & dumper) {
+  void registerToDumper(const std::string & id,
+                        iohelper::Dumper & dumper) override {
     dumper.addVariable(id, *this);
   }
 
-  const T & operator[](__attribute__((unused)) UInt i) const {
-    return vari;
-  }
+  const T & operator[](__attribute__((unused)) UInt i) const { return vari; }
 
   UInt getDim() { return 1; }
   iohelper::DataType getDataType() { return iohelper::getDataType<T>(); }
+
 protected:
   const T & vari;
 };
 
-__END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace dumper
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_IOHELPER_TMPL_VARIABLE_HH__ */

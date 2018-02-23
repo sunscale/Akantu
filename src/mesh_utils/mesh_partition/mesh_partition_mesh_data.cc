@@ -39,7 +39,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MeshPartitionMeshData::MeshPartitionMeshData(const Mesh & mesh,
@@ -82,7 +82,7 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 
   UInt linearized_el = 0;
   UInt nb_elements = mesh.getNbElement(mesh.getSpatialDimension(), ghost_type);
-  Int * partition_list = new Int[nb_elements];
+  auto * partition_list = new Int[nb_elements];
 
 #if !defined(AKANTU_NDEBUG)
   std::set<UInt> partitions;
@@ -124,7 +124,7 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshPartitionMeshData::reorder() { AKANTU_DEBUG_TO_IMPLEMENT(); }
+void MeshPartitionMeshData::reorder() { AKANTU_TO_IMPLEMENT(); }
 
 /* -------------------------------------------------------------------------- */
 void MeshPartitionMeshData::setPartitionMapping(
@@ -138,4 +138,4 @@ void MeshPartitionMeshData::setPartitionMappingFromMeshData(
   partition_mapping = &(mesh.getData<UInt>(data_name));
 }
 
-__END_AKANTU__
+} // akantu

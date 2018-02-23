@@ -31,216 +31,85 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
-#include "static_communicator.hh"
-#include "synchronizer.hh"
-
+#include "aka_common.hh"
+#include "synchronizer_impl.hh"
 /* -------------------------------------------------------------------------- */
 
-
+namespace akantu {
+class Mesh;
+class DOFManagerDefault;
+}
 
 #ifndef __AKANTU_DOF_SYNCHRONIZER_HH__
 #define __AKANTU_DOF_SYNCHRONIZER_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-class Mesh;
-
-template<typename T>
-class AddOperation {
-public:
-  inline T operator()(T & b, T & a) { return a + b; };
-};
-
-
-class DOFSynchronizer : public Synchronizer {
+class DOFSynchronizer : public SynchronizerImpl<UInt> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  DOFSynchronizer(
+      DOFManagerDefault & dof_manager, const ID & id = "dof_synchronizer",
+      MemoryID memory_id = 0);
+  ~DOFSynchronizer() override;
 
-  DOFSynchronizer(const Mesh & mesh, UInt nb_degree_of_freedom,
-		  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator());
-  virtual ~DOFSynchronizer();
-
+  virtual void registerDOFs(const ID & dof_id);
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  template <typename T>
+  /// Gather the DOF value on the root proccessor
+  void gather(const Array<T> & to_gather, Array<T> & gathered);
 
-  /// asynchronous synchronization of ghosts
-  virtual void asynchronousSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+  /// Gather the DOF value on the root proccessor
+  template <typename T> void gather(const Array<T> & to_gather);
 
-  /// wait end of asynchronous synchronization of ghosts
-  virtual void waitEndSynchronize(DataAccessor & data_accessor,SynchronizationTag tag);
+  /// Scatter a DOF Array form root to all processors
+  template <typename T>
+  void scatter(Array<T> & scattered, const Array<T> & to_scatter);
 
-  /// compute buffer size for a given tag and data accessor
-  virtual void computeBufferSize(DataAccessor & data_accessor, SynchronizationTag tag);
+  /// Scatter a DOF Array form root to all processors
+  template <typename T> void scatter(Array<T> & scattered);
+
+  template <typename T> void synchronize(Array<T> & vector) const;
+
+  template <template <class> class Op, typename T>
+  void reduceSynchronize(Array<T> & vector) const;
+
+  void onNodesAdded(const Array<UInt> & nodes);
+
+protected:
+  /// check if dof changed set on at least one processor
+  bool hasChanged();
 
   /// init the scheme for scatter and gather operation, need extra memory
   void initScatterGatherCommunicationScheme();
 
-  /// initialize the equation number with local ids
-  void initLocalDOFEquationNumbers();
-
-  /// initialize the equation number with local ids
-  void initGlobalDOFEquationNumbers();
-
-  /**
-   * Gather the DOF value on the root proccessor
-   *
-   * @param to_gather data to gather
-   * @param root processor on which data are gathered
-   * @param gathered Array containing the gathered data, only valid on root processor
-   */
-  template<typename T>
-  /// Gather the DOF value on the root proccessor
-  void gather(const Array<T> & to_gather, UInt root,
-	      Array<T> * gathered = NULL) const;
-
-  /**
-   * Scatter a DOF Array form root to all processors
-   *
-   * @param scattered data to scatter, only valid on root processor
-   * @param root processor scattering data
-   * @param to_scatter result of scattered data
-   */
-  template<typename T>
-  /// Scatter a DOF Array form root to all processors
-  void scatter(Array<T> & scattered, UInt root,
-	       const Array<T> * to_scatter = NULL) const;
-
-  
-  template<typename T> void synchronize(Array<T> & vector) const ;
-  template<template <class> class Op, typename T> void reduceSynchronize(Array<T> & vector) const;
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get the equation_number Array
-  AKANTU_GET_MACRO(LocalDOFEquationNumbers, local_dof_equation_numbers, const Array<Int> &);
-  AKANTU_GET_MACRO(GlobalDOFEquationNumbers, global_dof_equation_numbers, const Array<Int> &);
-
-  Array<Int> * getLocalDOFEquationNumbersPointer(){return &local_dof_equation_numbers;};
-  Array<Int> * getGlobalDOFEquationNumbersPointer(){return &global_dof_equation_numbers;};
-
-  typedef unordered_map<Int, UInt>::type GlobalEquationNumberMap;
-
-  AKANTU_GET_MACRO(GlobalEquationNumberToLocal, global_dof_equation_number_to_local, const GlobalEquationNumberMap &)
-
-  /// get the Array of global ids of the dofs
-  AKANTU_GET_MACRO(DOFGlobalIDs, dof_global_ids, const Array<UInt> &);
-
-  /// get the global id of a dof
-  inline UInt getDOFGlobalID(UInt local_id) const {
-    return dof_global_ids(local_id);
+  Int getRank(const UInt & /*node*/) const final {
+    AKANTU_TO_IMPLEMENT();
   }
 
-  /// get the local id of a global dof
-  inline UInt getDOFLocalID(UInt global_id) const {
-    return global_dof_to_local.find(global_id)->second;
-  }
-
-  /// get the DOF type Array
-  AKANTU_GET_MACRO(DOFTypes, dof_types, const Array<Int> &);
-
-  AKANTU_GET_MACRO(NbDOFs, nb_dofs, UInt);
-
-  AKANTU_GET_MACRO(NbGlobalDOFs, nb_global_dofs, UInt);
-
-  /// say if a node is a pure ghost node
-  inline bool isPureGhostDOF(UInt n) const;
-
-  /// say if a node is pure local or master node
-  inline bool isLocalOrMasterDOF(UInt n) const;
-
-  /// say if a node is pure local 
-  inline bool isLocalDOF(UInt n) const;
-
-  /// say if a node is a master node
-  inline bool isMasterDOF(UInt n) const;
-
-  /// say if a node is a slave node
-  inline bool isSlaveDOF(UInt n) const;
-
-
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
 private:
+  /// Root processor for scatter/gather operations
+  Int root;
 
-  /// equation number position where a dof is synchronized in the matrix (by default = global id)
-  Array<Int> global_dof_equation_numbers;
-  Array<Int> local_dof_equation_numbers;
-  GlobalEquationNumberMap global_dof_equation_number_to_local;
+  /// information on the dofs
+  DOFManagerDefault & dof_manager;
 
-  /// DOF global id
-  Array<UInt> dof_global_ids;
+  /// dofs from root
+  Array<UInt> root_dofs;
 
-  /*
-   * DOF type  -3 pure ghost, -2  master for the dof, -1 normal dof,  i in
-   * [0-N] slave dof and master is proc i
-   */
-  Array<Int> dof_types;
+  /// Dofs received from slaves proc (only on master)
+  std::map<UInt, Array<UInt>> master_receive_dofs;
 
-  /// number of dofs
-  UInt nb_dofs;
-
-  UInt nb_global_dofs;
-
-  unordered_map<UInt, UInt>::type global_dof_to_local;
-
-  UInt prank;
-  UInt psize;
-
-  struct PerProcInformations {
-    /// dofs to send to the proc
-    Array<UInt> slave_dofs;
-    /// dofs to recvs from the proc
-    Array<UInt> master_dofs;
-
-    /* ---------------------------------------------------------------------- */
-    /* Data for gather/scatter                                                */
-    /* ---------------------------------------------------------------------- */
-    /// the dof that the node handle
-    Array<UInt> dofs;
-    /// the dof that the proc need
-    Array<UInt> needed_dofs;
-  };
-
-  std::vector<PerProcInformations> proc_informations;
-
-  /// nb dofs with type -1 or -2
-  UInt nb_local_dofs;
-  /// nb dof with type >= 0
-  UInt nb_needed_dofs;
-
-  bool gather_scatter_scheme_initialized;
-
-
-  std::map<SynchronizationTag, Communication> communications; 
+  bool dof_changed;
 };
+} // akantu
 
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "dof_synchronizer_inline_impl.cc"
-#endif
-
-/// standard output stream operator
-// inline std::ostream & operator <<(std::ostream & stream, const DOFSynchronizer & _this)
-// {
-//   _this.printself(stream);
-//   return stream;
-// }
-
-
-__END_AKANTU__
+#include "dof_synchronizer_inline_impl.cc"
 
 #endif /* __AKANTU_DOF_SYNCHRONIZER_HH__ */

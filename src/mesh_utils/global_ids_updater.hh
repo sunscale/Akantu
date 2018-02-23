@@ -35,14 +35,17 @@
 
 /* -------------------------------------------------------------------------- */
 #include "data_accessor.hh"
-
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
+class ElementSynchronizer;
+}  // akantu
 
-class GlobalIdsUpdater : public DataAccessor {
+namespace akantu {
+
+class GlobalIdsUpdater : public DataAccessor<Element> {
 public:
-  GlobalIdsUpdater(Mesh & mesh, DistributedSynchronizer * synchronizer) :
-    mesh(mesh), synchronizer(synchronizer) {}
+  GlobalIdsUpdater(Mesh & mesh, ElementSynchronizer & synchronizer)
+      : mesh(mesh), synchronizer(synchronizer) {}
 
   /// function to update and synchronize the global connectivity of
   /// new inserted nodes. It must be called after updating the node
@@ -63,20 +66,21 @@ public:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag);
-
-  template<bool pack_mode>
-  inline void packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
-					   const Array<Element> & elements) const;
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
+  /* ------------------------------------------------------------------------ */
+  template <bool pack_mode>
+  inline void
+  packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
+                               const Array<Element> & elements) const;
 
   /* ------------------------------------------------------------------------ */
   /* Members                                                                  */
@@ -86,10 +90,10 @@ private:
   Mesh & mesh;
 
   /// distributed synchronizer to communicate the connectivity
-  DistributedSynchronizer * synchronizer;
+  ElementSynchronizer & synchronizer;
 };
 
-__END_AKANTU__
+}  // akantu
 
 #include "global_ids_updater_inline_impl.cc"
 

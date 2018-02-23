@@ -30,72 +30,48 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "dof_manager_default.hh"
+#include "mesh.hh"
+#include "sparse_matrix.hh"
+/* -------------------------------------------------------------------------- */
 #include <cstdlib>
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh.hh"
-#include "mesh_io.hh"
 
-#include "sparse_matrix.hh"
-#include "dof_synchronizer.hh"
-
-#ifdef AKANTU_USE_SCOTCH
-#include "mesh_partition_scotch.hh"
-#endif
+using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
+int main(int argc, char * argv[]) {
+  initialize(argc, argv);
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+  UInt spatial_dimension = 2;
+  Mesh mesh(spatial_dimension);
+  mesh.read("triangle.msh");
 
-  akantu::UInt spatial_dimension = 2;
-  akantu::Mesh mesh(spatial_dimension);
-  akantu::MeshIOMSH mesh_io;
-  mesh_io.read("triangle.msh", mesh);
+  UInt nb_nodes = mesh.getNbNodes();
 
-  akantu::SparseMatrix sparse_matrix_hand(10, akantu::_symmetric, "hand");
+  DOFManagerDefault dof_manager(mesh, "test_dof_manager");
+  Array<Real> test_synchronize(nb_nodes, spatial_dimension, "Test vector");
+  dof_manager.registerDOFs("test_synchronize", test_synchronize, _dst_nodal);
 
-  for(akantu::UInt i = 0; i < 10; ++i) {
-    sparse_matrix_hand.addToProfile(i, i);
+  auto & A = dof_manager.getNewMatrix("A", _symmetric);
+
+  for (UInt i = 0; i < 10; ++i) {
+    A.add(i, i);
   }
 
-  sparse_matrix_hand.addToProfile(0,9);
+  A.add(0, 9);
+  A.saveProfile("profile_hand.mtx");
 
-  for(akantu::UInt i = 0; i < 10; ++i) {
-    sparse_matrix_hand.addToMatrix(i, i, i*10);
+  for (UInt i = 0; i < 10; ++i) {
+    A.add(i, i, i * 10);
   }
-  sparse_matrix_hand.addToMatrix(0,9, 100);
+  A.add(0, 9, 100);
 
-  sparse_matrix_hand.saveProfile("profile_hand.mtx");
-  sparse_matrix_hand.saveMatrix("matrix_hand.mtx");
 
+  A.saveMatrix("matrix_hand.mtx");
 
   /* ------------------------------------------------------------------------ */
-  akantu::UInt nb_nodes = mesh.getNbNodes();
-  akantu::SparseMatrix sparse_matrix(nb_nodes * spatial_dimension, akantu::_symmetric, "mesh");
-  akantu::DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
-  dof_synchronizer.initGlobalDOFEquationNumbers();
-
-  sparse_matrix.buildProfile(mesh, dof_synchronizer, spatial_dimension);
-  sparse_matrix.saveProfile("profile.mtx");
-  /* ------------------------------------------------------------------------ */
-
-#ifdef AKANTU_USE_SCOTCH
-  mesh_io.write("triangle_breorder.msh", mesh);
-
-  akantu::MeshPartition * partition = new akantu::MeshPartitionScotch(mesh, spatial_dimension);
-  partition->reorder();
-  delete partition;
-
-  akantu::DOFSynchronizer dof_synchronizer_re(mesh, spatial_dimension);
-  dof_synchronizer_re.initGlobalDOFEquationNumbers();
-
-  sparse_matrix.buildProfile(mesh, dof_synchronizer_re, spatial_dimension);
-  sparse_matrix.saveProfile("profile_reorder.mtx");
-  mesh_io.write("triangle_reorder.msh", mesh);
-#endif
-
-  akantu::finalize();
+  finalize();
 
   return EXIT_SUCCESS;
 }

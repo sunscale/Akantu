@@ -30,19 +30,21 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
-
-//// includes
+#include "aka_grid_dynamic.hh"
+#include "neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+#ifndef __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_CC__
+#define __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_CC__
 
-/* -------------------------------------------------------------------------- */
-inline void NeighborhoodBase::insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords) {
+namespace akantu {
+
+inline void
+NeighborhoodBase::insertIntegrationPoint(const IntegrationPoint & quad,
+                                         const Vector<Real> & coords) {
   this->spatial_grid->insert(quad, coords);
 }
 
-/* -------------------------------------------------------------------------- */
+} // namespace akantu
 
-
-/* -------------------------------------------------------------------------- */
+#endif /* __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_CC__ */

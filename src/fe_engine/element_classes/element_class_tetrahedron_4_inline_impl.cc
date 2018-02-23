@@ -65,7 +65,6 @@
 AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_tetrahedron_4, _gt_tetrahedron_4, _itp_lagrange_tetrahedron_4, _ek_regular, 3,
 				     _git_tetrahedron, 1);
 
-AKANTU_DEFINE_SHAPE(_gt_tetrahedron_4, _gst_triangle);
 
 /* -------------------------------------------------------------------------- */
 template <>

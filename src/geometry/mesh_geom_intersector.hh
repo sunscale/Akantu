@@ -41,7 +41,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * @brief Class used to perform intersections on a mesh and construct output data
@@ -65,7 +65,7 @@ protected:
   MeshGeomFactory<dim, type, Primitive, Kernel> factory;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "mesh_geom_intersector_tmpl.hh"
 

@@ -28,13 +28,20 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "material.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PLANE_STRESS_TOOLBOX_HH__
 #define __AKANTU_PLANE_STRESS_TOOLBOX_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
+class SolidMechanicsModel;
+class FEEngine;
+}  // akantu
+
+
+namespace akantu {
 
 /**
  * Empty class in dimensions different from 2
@@ -47,42 +54,37 @@ class PlaneStressToolbox : public ParentMaterial {
   /* ------------------------------------------------------------------------ */
 public:
   PlaneStressToolbox(SolidMechanicsModel & model, const ID & id = "")
-      : Material(model, id), ParentMaterial(model, id) {}
+      : ParentMaterial(model, id) {}
   PlaneStressToolbox(SolidMechanicsModel & model, UInt spatial_dimension,
                      const Mesh & mesh, FEEngine & fe_engine,
                      const ID & id = "")
-      : Material(model, spatial_dimension, mesh, fe_engine, id),
-        ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
+      : ParentMaterial(model, spatial_dimension, mesh, fe_engine, id) {}
 
-  virtual ~PlaneStressToolbox() {}
+  ~PlaneStressToolbox() override = default;
 
 protected:
   void initialize();
 
 public:
-  virtual void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) {
-    AKANTU_DEBUG_IN();
-
+  void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) override {
     ParentMaterial::computeAllCauchyStresses(ghost_type);
-
-    AKANTU_DEBUG_OUT();
   }
 
-  virtual void computeCauchyStressPlaneStress(__attribute__((unused))
-                                              ElementType el_type,
-                                              __attribute__((unused))
-                                              GhostType ghost_type) {
+  virtual void computeCauchyStressPlaneStress(ElementType /*el_type*/,
+                                              GhostType /*ghost_type*/) {
     AKANTU_DEBUG_IN();
 
-    AKANTU_DEBUG_ERROR("The function \"computeCauchyStressPlaneStress\" can "
+    AKANTU_ERROR("The function \"computeCauchyStressPlaneStress\" can "
                        "only be used in 2D Plane stress problems, which means "
                        "that you made a mistake somewhere!! ");
 
     AKANTU_DEBUG_OUT();
   }
 
+  virtual void computeThirdAxisDeformation(ElementType, GhostType) {}
+
 protected:
-  bool initialize_third_axis_deformation;
+  bool initialize_third_axis_deformation{false};
 };
 
 #define AKANTU_PLANE_STRESS_TOOL_SPEC(dim)                                     \
@@ -94,7 +96,7 @@ protected:
 AKANTU_PLANE_STRESS_TOOL_SPEC(1)
 AKANTU_PLANE_STRESS_TOOL_SPEC(3)
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "plane_stress_toolbox_tmpl.hh"
 

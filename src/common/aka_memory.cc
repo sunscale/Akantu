@@ -30,18 +30,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <utility>
+
 #include "aka_memory.hh"
 #include "aka_static_memory.hh"
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Memory::Memory(ID id, MemoryID memory_id) : static_memory(StaticMemory::getStaticMemory()),
-                                            id(id),
-                                            memory_id(memory_id) {
-}
+Memory::Memory(ID id, MemoryID memory_id)
+    : static_memory(StaticMemory::getStaticMemory()), id(std::move(id)),
+      memory_id(memory_id) {}
 
 /* -------------------------------------------------------------------------- */
 Memory::~Memory() {
@@ -59,6 +60,6 @@ Memory::~Memory() {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 

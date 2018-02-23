@@ -37,7 +37,7 @@
 #ifndef __AKANTU_INTERNAL_FIELD_HH__
 #define __AKANTU_INTERNAL_FIELD_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Material;
 class FEEngine;
@@ -52,7 +52,7 @@ template <typename T> class InternalField : public ElementTypeMapArray<T> {
   /* ------------------------------------------------------------------------ */
 public:
   InternalField(const ID & id, Material & material);
-  virtual ~InternalField();
+  ~InternalField() override;
 
   /// This constructor is only here to let cohesive elements compile
   InternalField(const ID & id, Material & material, FEEngine & fem,
@@ -101,7 +101,7 @@ public:
   removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// print the content
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int /*indent*/ = 0) const override;
 
   /// get the default value
   inline operator T() const;
@@ -123,8 +123,9 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef typename ElementTypeMapArray<T>::type_iterator type_iterator;
-  typedef typename ElementTypeMapArray<UInt>::type_iterator filter_type_iterator;
+  using type_iterator = typename ElementTypeMapArray<T>::type_iterator;
+  using filter_type_iterator =
+      typename ElementTypeMapArray<UInt>::type_iterator;
 
   /// get the type iterator on all types contained in the internal field
   type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
@@ -170,7 +171,7 @@ public:
 
   virtual Array<T> & previous(const ElementType & type,
                               const GhostType & ghost_type = _not_ghost) {
-    AKANTU_DEBUG_ASSERT(previous_values != NULL,
+    AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return this->previous_values->operator()(type, ghost_type);
@@ -179,28 +180,28 @@ public:
   virtual const Array<T> &
   previous(const ElementType & type,
            const GhostType & ghost_type = _not_ghost) const {
-    AKANTU_DEBUG_ASSERT(previous_values != NULL,
+    AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return this->previous_values->operator()(type, ghost_type);
   }
 
   virtual InternalField<T> & previous() {
-    AKANTU_DEBUG_ASSERT(previous_values != NULL,
+    AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return *(this->previous_values);
   }
 
   virtual const InternalField<T> & previous() const {
-    AKANTU_DEBUG_ASSERT(previous_values != NULL,
+    AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
     return *(this->previous_values);
   }
 
   /// check if the history is used or not
-  bool hasHistory() const { return (previous_values != NULL); }
+  bool hasHistory() const { return (previous_values != nullptr); }
 
   /// get the kind treated by the internal
   const ElementKind & getElementKind() const { return element_kind; }
@@ -252,6 +253,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INTERNAL_FIELD_HH__ */

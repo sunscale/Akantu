@@ -31,260 +31,184 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
-#include "material_list.hh"
+#include "aka_factory.hh"
 #include "aka_math.hh"
-#ifdef AKANTU_DAMAGE_NON_LOCAL
-#  include "non_local_manager.hh"
-#endif
+#include "material_non_local.hh"
+#include "mesh_iterators.hh"
+#include "non_local_manager.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem)            \
-  registerNewMaterial< BOOST_PP_ARRAY_ELEM(1, elem)< dim > >(section)
+Material &
+SolidMechanicsModel::registerNewMaterial(const ParserSection & section) {
+  std::string mat_name;
+  std::string mat_type = section.getName();
+  std::string opt_param = section.getOption();
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH(r, data, i, elem)   \
-  BOOST_PP_EXPR_IF(BOOST_PP_NOT_EQUAL(0, i), else )                     \
-  if(opt_param == BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, elem))) { \
-    registerNewMaterial< BOOST_PP_ARRAY_ELEM(1, data)< BOOST_PP_ARRAY_ELEM(0, data), \
-                                                       BOOST_PP_SEQ_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, elem)) > >(section); \
-    }
-
-
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL(dim, elem)               \
-  BOOST_PP_SEQ_FOR_EACH_I(AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL_EACH,  \
-                          (2, (dim, BOOST_PP_ARRAY_ELEM(1, elem))),     \
-                          BOOST_PP_ARRAY_ELEM(2, elem))                 \
-  else {                                                                \
-    AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL(dim, elem);               \
+  try {
+    std::string tmp = section.getParameter("name");
+    mat_name = tmp; /** this can seam weird, but there is an ambiguous operator
+                     * overload that i couldn't solve. @todo remove the
+                     * weirdness of this code
+                     */
+  } catch (debug::Exception &) {
+    AKANTU_ERROR(
+        "A material of type \'"
+        << mat_type << "\' in the input file has been defined without a name!");
   }
+  Material & mat = this->registerNewMaterial(mat_name, mat_type, opt_param);
 
-#define AKANTU_INTANTIATE_MATERIAL_BY_DIM(dim, elem)                    \
-  BOOST_PP_IF(BOOST_PP_EQUAL(3, BOOST_PP_ARRAY_SIZE(elem) ),            \
-              AKANTU_INTANTIATE_MATERIAL_BY_DIM_TMPL,                   \
-              AKANTU_INTANTIATE_MATERIAL_BY_DIM_NO_TMPL)(dim, elem)
+  mat.parseSection(section);
 
+  return mat;
+}
 
-#define AKANTU_INTANTIATE_MATERIAL(elem)                                \
-  switch(spatial_dimension) {                                           \
-  case 1: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(1, elem); break; }        \
-  case 2: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(2, elem); break; }        \
-  case 3: { AKANTU_INTANTIATE_MATERIAL_BY_DIM(3, elem); break; }        \
-  }
+/* -------------------------------------------------------------------------- */
+Material & SolidMechanicsModel::registerNewMaterial(const ID & mat_name,
+                                                    const ID & mat_type,
+                                                    const ID & opt_param) {
+  AKANTU_DEBUG_ASSERT(materials_names_to_id.find(mat_name) ==
+                          materials_names_to_id.end(),
+                      "A material with this name '"
+                          << mat_name << "' has already been registered. "
+                          << "Please use unique names for materials");
 
+  UInt mat_count = materials.size();
+  materials_names_to_id[mat_name] = mat_count;
 
-#define AKANTU_INTANTIATE_MATERIAL_IF(elem)                             \
-  if (mat_type == BOOST_PP_STRINGIZE(BOOST_PP_ARRAY_ELEM(0, elem))) {   \
-    AKANTU_INTANTIATE_MATERIAL(elem);                                   \
-  }
+  std::stringstream sstr_mat;
+  sstr_mat << this->id << ":" << mat_count << ":" << mat_type;
+  ID mat_id = sstr_mat.str();
 
-#define AKANTU_INTANTIATE_OTHER_MATERIAL(r, data, elem)                 \
-  else AKANTU_INTANTIATE_MATERIAL_IF(elem)
+  std::unique_ptr<Material> material = MaterialFactory::getInstance().allocate(
+      mat_type, spatial_dimension, opt_param, *this, mat_id);
 
-#define AKANTU_INSTANTIATE_MATERIALS()                                  \
-  do {                                                                  \
-    AKANTU_INTANTIATE_MATERIAL_IF(BOOST_PP_SEQ_HEAD(AKANTU_MATERIAL_LIST)) \
-      BOOST_PP_SEQ_FOR_EACH(AKANTU_INTANTIATE_OTHER_MATERIAL,           \
-                            _,                                          \
-                            BOOST_PP_SEQ_TAIL(AKANTU_MATERIAL_LIST))    \
-    else {                                                              \
-      if(getStaticParser().isPermissive())                              \
-        AKANTU_DEBUG_INFO("Malformed material file " <<                 \
-                          ": unknown material type '"                   \
-                          << mat_type << "'");                          \
-      else                                                              \
-        AKANTU_DEBUG_WARNING("Malformed material file "                 \
-                             <<": unknown material type " << mat_type   \
-                             << ". This is perhaps a user"              \
-                             << " defined material ?");                 \
-    }                                                                   \
-  } while(0)
+  materials.push_back(std::move(material));
+
+  return *(materials.back());
+}
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::instantiateMaterials() {
-  std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-    sub_sect = this->parser->getSubSections(_st_material);
+  ParserSection model_section;
+  bool is_empty;
+  std::tie(model_section, is_empty) = this->getParserSection();
 
-  Parser::const_section_iterator it = sub_sect.first;
-  for (; it != sub_sect.second; ++it) {
-    const ParserSection & section = *it;
-    std::string mat_type  = section.getName();
-    std::string opt_param = section.getOption();
-    AKANTU_INSTANTIATE_MATERIALS();
+  if(not is_empty) {
+    auto model_materials = model_section.getSubSections(ParserType::_material);
+    for (const auto & section : model_materials) {
+      this->registerNewMaterial(section);
+    }
   }
 
+  auto sub_sections = this->parser.getSubSections(ParserType::_material);
+  for (const auto & section : sub_sections) {
+    this->registerNewMaterial(section);
+  }
+
+
+
+#ifdef AKANTU_DAMAGE_NON_LOCAL
+  for (auto & material : materials) {
+    if (dynamic_cast<MaterialNonLocalInterface *>(material.get()) == nullptr)
+      continue;
+
+    this->non_local_manager = std::make_unique<NonLocalManager>(
+        *this, *this, id + ":non_local_manager", memory_id);
+    break;
+  }
+#endif
+
+  if(materials.empty())
+    AKANTU_EXCEPTION("No materials where instantiated for the model" << getID());
   are_materials_instantiated = true;
 }
 
-
-
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assignMaterialToElements(const ElementTypeMapArray<UInt> * filter) {
-  Material ** mat_val = &(materials.at(0));
+void SolidMechanicsModel::assignMaterialToElements(
+    const ElementTypeMapArray<UInt> * filter) {
 
-  Element element;
-  element.ghost_type = _not_ghost;
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
-  if(filter != NULL) {
-     it  = filter->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-     end = filter->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
-  }
+  for_each_element(
+      mesh,
+      [&](auto && element) {
+        UInt mat_index = (*material_selector)(element);
+        AKANTU_DEBUG_ASSERT(
+            mat_index < materials.size(),
+            "The material selector returned an index that does not exists");
+        material_index(element) = mat_index;
+      },
+      _element_filter = filter, _ghost_type = _not_ghost);
 
-  // Fill the element material array from the material selector
-  for(; it != end; ++it) {
-    UInt nb_element = mesh.getNbElement(*it, _not_ghost);
+  if (non_local_manager)
+    non_local_manager->synchronize(*this, _gst_material_id);
 
-    const Array<UInt> * filter_array = NULL;
-    if (filter != NULL) {
-      filter_array = &((*filter)(*it, _not_ghost));
-      nb_element = filter_array->getSize();
-    }
-
-    element.type = *it;
-    element.kind = mesh.getKind(element.type);
-    Array<UInt> & mat_indexes = material_index(*it, _not_ghost);
-    for (UInt el = 0; el < nb_element; ++el) {
-      if (filter != NULL)
-        element.element = (*filter_array)(el);
-      else
-        element.element = el;
-
-      UInt mat_index = (*material_selector)(element);
-      AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
-                          "The material selector returned an index that does not exists");
-      mat_indexes(element.element) = mat_index;
-
-    }
-  }
-
-  // synchronize the element material arrays
-  synch_registry->synchronize(_gst_material_id);
-
-
-  /// fill the element filters of the materials using the element_material arrays
-  for(UInt g = _not_ghost; g <= _ghost; ++g) {
-    GhostType gt = (GhostType) g;
-    it  = mesh.firstType(spatial_dimension, gt, _ek_not_defined);
-    end = mesh.lastType(spatial_dimension, gt, _ek_not_defined);
-
-     if(filter != NULL) {
-       it  = filter->firstType(spatial_dimension, gt, _ek_not_defined);
-       end = filter->lastType(spatial_dimension, gt, _ek_not_defined);
-     }
-
-    for(; it != end; ++it) {
-      UInt nb_element = mesh.getNbElement(*it, gt);
-
-      const Array<UInt> * filter_array = NULL;
-      if (filter != NULL) {
-        filter_array = &((*filter)(*it, gt));
-        nb_element = filter_array->getSize();
-      }
-
-      Array<UInt> & mat_indexes   = material_index(*it, gt);
-      Array<UInt> & mat_local_num = material_local_numbering(*it, gt);
-      for (UInt el = 0; el < nb_element; ++el) {
-        UInt element;
-
-        if (filter != NULL) element = (*filter_array)(el);
-        else element = el;
-
-        UInt mat_index = mat_indexes(element);
-        UInt index = mat_val[mat_index]->addElement(*it, element, gt);
-        mat_local_num(element) = index;
-      }
-    }
-  }
+  for_each_element(
+      mesh,
+      [&](auto && element) {
+        auto mat_index = material_index(element);
+        auto index = materials[mat_index]->addElement(element);
+        material_local_numbering(element) = index;
+      },
+      _element_filter = filter, _ghost_type = _not_ghost);
 }
-
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initMaterials() {
   AKANTU_DEBUG_ASSERT(materials.size() != 0, "No material to initialize !");
 
-  if(!are_materials_instantiated) instantiateMaterials();
+  if (!are_materials_instantiated)
+    instantiateMaterials();
 
   this->assignMaterialToElements();
+  // synchronize the element material arrays
+  this->synchronize(_gst_material_id);
 
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
+  for (auto & material : materials) {
     /// init internals properties
-    (*mat_it)->initMaterial();
+    material->initMaterial();
   }
 
-  synch_registry->synchronize(_gst_smm_init_mat);
+  this->synchronize(_gst_smm_init_mat);
 
-  // initialize mass
-  switch(method) {
-    case _explicit_lumped_mass:
-      assembleMassLumped();
-      break;
-    case _explicit_consistent_mass:
-    case _implicit_dynamic:
-      assembleMass();
-      break;
-    case _static:
-      break;
-    default:
-      AKANTU_EXCEPTION("analysis method not recognised by SolidMechanicsModel");
-      break;
+  if (this->non_local_manager) {
+    this->non_local_manager->initialize();
   }
-
-  // initialize the previous displacement array if at least on material needs it
-  for (mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    Material & mat = **mat_it;
-    if (mat.isFiniteDeformation() || mat.isInelasticDeformation()) {
-      initArraysPreviousDisplacment();
-      break;
-    }
-  }
-
-
-#ifdef AKANTU_DAMAGE_NON_LOCAL
-  /// initialize the non-local manager for non-local computations
-  this->non_local_manager->init();
-#endif
 }
 
 /* -------------------------------------------------------------------------- */
 Int SolidMechanicsModel::getInternalIndexFromID(const ID & id) const {
   AKANTU_DEBUG_IN();
 
-  std::vector<Material *>::const_iterator first = materials.begin();
-  std::vector<Material *>::const_iterator last  = materials.end();
+  auto it = materials.begin();
+  auto end = materials.end();
 
-  for (; first != last; ++first)
-    if ((*first)->getID() == id) {
+  for (; it != end; ++it)
+    if ((*it)->getID() == id) {
       AKANTU_DEBUG_OUT();
-      return (first - materials.begin());
+      return (it - materials.begin());
     }
 
   AKANTU_DEBUG_OUT();
   return -1;
 }
 
-
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::reassignMaterial() {
   AKANTU_DEBUG_IN();
 
-  std::vector< Array<Element> > element_to_add   (materials.size());
-  std::vector< Array<Element> > element_to_remove(materials.size());
+  std::vector<Array<Element>> element_to_add(materials.size());
+  std::vector<Array<Element>> element_to_remove(materials.size());
 
   Element element;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin(); gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type, _ek_not_defined);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type, _ek_not_defined);
-    for(; it != end; ++it) {
-      ElementType type = *it;
+    for (auto type :
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
       element.type = type;
-      element.kind = Mesh::getKind(type);
 
       UInt nb_element = mesh.getNbElement(type, ghost_type);
       Array<UInt> & mat_indexes = material_index(type, ghost_type);
@@ -295,37 +219,38 @@ void SolidMechanicsModel::reassignMaterial() {
         UInt old_material = mat_indexes(el);
         UInt new_material = (*material_selector)(element);
 
-        if(old_material != new_material) {
-          element_to_add   [new_material].push_back(element);
+        if (old_material != new_material) {
+          element_to_add[new_material].push_back(element);
           element_to_remove[old_material].push_back(element);
         }
       }
     }
   }
 
-  std::vector<Material *>::iterator mat_it;
   UInt mat_index = 0;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it, ++mat_index) {
+  for (auto mat_it = materials.begin(); mat_it != materials.end();
+       ++mat_it, ++mat_index) {
     (*mat_it)->removeElements(element_to_remove[mat_index]);
-    (*mat_it)->addElements   (element_to_add[mat_index]);
+    (*mat_it)->addElements(element_to_add[mat_index]);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name, 
-                                          const GhostType ghost_type) {
+void SolidMechanicsModel::applyEigenGradU(
+    const Matrix<Real> & prescribed_eigen_grad_u, const ID & material_name,
+    const GhostType ghost_type) {
 
-  AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() == spatial_dimension * spatial_dimension, 
+  AKANTU_DEBUG_ASSERT(prescribed_eigen_grad_u.size() ==
+                          spatial_dimension * spatial_dimension,
                       "The prescribed grad_u is not of the good size");
-  std::vector<Material *>::iterator mat_it;
-  for(mat_it = materials.begin(); mat_it != materials.end(); ++mat_it) {
-    if ((*mat_it)->getName() == material_name)
-      (*mat_it)->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+  for (auto & material : materials) {
+    if (material->getName() == material_name)
+      material->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
   }
 }
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

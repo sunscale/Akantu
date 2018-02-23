@@ -39,33 +39,33 @@
 #ifndef __AKANTU_MATERIAL_DAMAGE_HH__
 #define __AKANTU_MATERIAL_DAMAGE_HH__
 
-__BEGIN_AKANTU__
-template<UInt spatial_dimension, template<UInt> class Parent = MaterialElastic>
+namespace akantu {
+template <UInt spatial_dimension,
+          template <UInt> class Parent = MaterialElastic>
 class MaterialDamage : public Parent<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialDamage(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialDamage() {};
+  ~MaterialDamage() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// compute the tangent stiffness matrix for an element type
-  virtual void computeTangentModuli(const ElementType & el_type,
-			    Array<Real> & tangent_matrix,
-			    GhostType ghost_type = _not_ghost);
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
+  bool hasStiffnessMatrixChanged() override { return true; }
 
 protected:
-  /// update the dissipated energy, must be called after the stress have been computed
-  virtual void updateEnergies(ElementType el_type, GhostType ghost_type);
+  /// update the dissipated energy, must be called after the stress have been
+  /// computed
+  void updateEnergies(ElementType el_type, GhostType ghost_type) override;
 
   /// compute the tangent stiffness matrix for a given quadrature point
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent, Real & dam);
@@ -74,7 +74,6 @@ protected:
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -82,8 +81,9 @@ public:
   /// give the dissipated energy for the time step
   Real getDissipatedEnergy() const;
 
-  virtual Real getEnergy(std::string type);
-  virtual Real getEnergy(std::string energy_id, ElementType type, UInt index) {
+  Real getEnergy(const std::string & type) override;
+  Real getEnergy(const std::string & energy_id, ElementType type,
+                 UInt index) override {
     return Parent<spatial_dimension>::getEnergy(energy_id, type, index);
   };
 
@@ -101,12 +101,12 @@ protected:
   /// dissipated energy
   InternalField<Real> dissipated_energy;
 
-  /// contain the current value of @f$ \int_0^{\epsilon}\sigma(\omega)d\omega @f$ the dissipated energy
+  /// contain the current value of @f$ \int_0^{\epsilon}\sigma(\omega)d\omega
+  /// @f$ the dissipated energy
   InternalField<Real> int_sigma;
-
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "material_damage_tmpl.hh"
 

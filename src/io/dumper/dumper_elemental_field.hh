@@ -33,14 +33,14 @@
 #ifndef __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__
 #define __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__
 /* -------------------------------------------------------------------------- */
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "dumper_field.hh"
 #include "dumper_generic_elemental_field.hh"
 #ifdef AKANTU_IGFEM
 #  include "dumper_igfem_elemental_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -53,9 +53,9 @@ class ElementalField
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef SingleType<T,ret,filtered> types;
-  typedef typename types::field_type field_type;
-  typedef elemental_field_iterator<types> iterator;
+  using types = SingleType<T,ret,filtered>;
+  using field_type = typename types::field_type;
+  using iterator = elemental_field_iterator<types>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -75,6 +75,6 @@ public:
 
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__ */

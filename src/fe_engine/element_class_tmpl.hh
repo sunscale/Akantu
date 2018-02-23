@@ -32,24 +32,42 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifdef AKANTU_CORE_CXX11
+#include "element_class.hh"
+#include "gauss_integration_tmpl.hh"
+/* -------------------------------------------------------------------------- */
 #include <type_traits>
-#endif
 /* -------------------------------------------------------------------------- */
 
-#include "gauss_integration_tmpl.hh"
+#ifndef __AKANTU_ELEMENT_CLASS_TMPL_HH__
+#define __AKANTU_ELEMENT_CLASS_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
+
+template <ElementType element_type, ElementKind element_kind>
+inline constexpr auto
+ElementClass<element_type, element_kind>::getFacetTypes() {
+  return VectorProxy<const ElementType>(
+      element_class_extra_geom_property::facet_type.data(),
+      geometrical_element::getNbFacetTypes());
+}
 
 /* -------------------------------------------------------------------------- */
 /* GeometricalElement                                                         */
 /* -------------------------------------------------------------------------- */
 template <GeometricalType geometrical_type, GeometricalShapeType shape>
-inline const MatrixProxy<UInt>
+inline constexpr auto
 GeometricalElement<geometrical_type,
                    shape>::getFacetLocalConnectivityPerElement(UInt t) {
-  return MatrixProxy<UInt>(facet_connectivity[t], nb_facets[t],
-                           nb_nodes_per_facet[t]);
+  int pos = 0;
+  for (UInt i = 0; i < t; ++i) {
+    pos += geometrical_property::nb_facets[i] *
+           geometrical_property::nb_nodes_per_facet[i];
+  }
+
+  return MatrixProxy<const UInt>(
+      geometrical_property::facet_connectivity_vect.data() + pos,
+      geometrical_property::nb_facets[t],
+      geometrical_property::nb_nodes_per_facet[t]);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -57,8 +75,8 @@ template <GeometricalType geometrical_type, GeometricalShapeType shape>
 inline UInt
 GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement() {
   UInt total_nb_facets = 0;
-  for (UInt n = 0; n < nb_facet_types; ++n) {
-    total_nb_facets += nb_facets[n];
+  for (UInt n = 0; n < geometrical_property::nb_facet_types; ++n) {
+    total_nb_facets += geometrical_property::nb_facets[n];
   }
 
   return total_nb_facets;
@@ -68,7 +86,7 @@ GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement() {
 template <GeometricalType geometrical_type, GeometricalShapeType shape>
 inline UInt
 GeometricalElement<geometrical_type, shape>::getNbFacetsPerElement(UInt t) {
-  return nb_facets[t];
+  return geometrical_property::nb_facets[t];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -176,7 +194,7 @@ inline void InterpolationElement<interpolation_type, kind>::interpolate(
   Matrix<Real> interpm(interpolated.storage(), nodal_values.rows(), 1);
   Matrix<Real> shapesm(
       shapes.storage(),
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element, 1);
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element, 1);
   interpm.mul<false, false>(nodal_values, shapesm);
 }
 
@@ -222,7 +240,7 @@ InterpolationElement<interpolation_type, kind>::interpolateOnNaturalCoordinates(
     const Vector<Real> & natural_coords, const Matrix<Real> & nodal_values,
     Vector<Real> & interpolated) {
   Vector<Real> shapes(
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element);
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element);
   computeShapes(natural_coords, shapes);
 
   interpolate(nodal_values, shapes, interpolated);
@@ -237,8 +255,8 @@ InterpolationElement<interpolation_type, kind>::gradientOnNaturalCoordinates(
     const Vector<Real> & natural_coords, const Matrix<Real> & f,
     Matrix<Real> & gradient) {
   Matrix<Real> dnds(
-      InterpolationPorperty<interpolation_type>::natural_space_dimension,
-      InterpolationPorperty<interpolation_type>::nb_nodes_per_element);
+      InterpolationProperty<interpolation_type>::natural_space_dimension,
+      InterpolationProperty<interpolation_type>::nb_nodes_per_element);
   computeDNDS(natural_coords, dnds);
   gradient.mul<false, true>(f, dnds);
 }
@@ -449,16 +467,22 @@ inline void ElementClass<type, kind>::inverseMap(
   /* init before iteration loop  */
   /* --------------------------- */
   // do interpolation
-  Vector<Real> physical_guess_v(physical_guess.storage(), dimension);
-  interpolation_element::interpolateOnNaturalCoordinates(
-      natural_coords, node_coords, physical_guess_v);
+  auto update_f = [&f, &physical_guess, &natural_coords, &node_coords,
+                   &mreal_coords, dimension]() {
+    Vector<Real> physical_guess_v(physical_guess.storage(), dimension);
+    interpolation_element::interpolateOnNaturalCoordinates(
+        natural_coords, node_coords, physical_guess_v);
 
-  // compute initial objective function value f = real_coords - physical_guess
-  f = mreal_coords;
-  f -= physical_guess;
+    // compute initial objective function value f = real_coords - physical_guess
+    f = mreal_coords;
+    f -= physical_guess;
 
-  // compute initial error
-  Real inverse_map_error = f.norm<L_2>();
+    // compute initial error
+    auto error = f.norm<L_2>();
+    return error;
+  };
+
+  auto inverse_map_error = update_f();
 
   /* --------------------------- */
   /* iteration loop              */
@@ -483,14 +507,7 @@ inline void ElementClass<type, kind>::inverseMap(
     // update our guess
     natural_coords += Vector<Real>(dxi(0));
 
-    // interpolate
-    interpolation_element::interpolateOnNaturalCoordinates(
-        natural_coords, node_coords, physical_guess_v);
-
-    // compute error
-    f = mreal_coords;
-    f -= physical_guess;
-    inverse_map_error = f.norm<L_2>();
+    inverse_map_error = update_f();
   }
   //  memcpy(natural_coords.storage(), natural_guess.storage(), sizeof(Real) *
   //  natural_coords.size());
@@ -509,4 +526,6 @@ inline void ElementClass<type, kind>::inverseMap(
   }
 }
 
-__END_AKANTU__
+} // namespace akantu
+
+#endif /* __AKANTU_ELEMENT_CLASS_TMPL_HH__ */

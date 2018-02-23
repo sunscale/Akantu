@@ -33,7 +33,7 @@ using namespace akantu;
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   akantu::initialize("mesoscale_materials.dat", argc, argv);
 
@@ -41,9 +41,9 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.read("one_inclusion.msh");
   SolidMechanicsModelRVE model(mesh, false);
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  auto mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>(
+      "physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// model initialization
   model.initFull();
@@ -52,34 +52,34 @@ int main(int argc, char *argv[]) {
   Matrix<Real> grad_u_macro(spatial_dimension, spatial_dimension, 0.);
   model.applyBoundaryConditions(grad_u_macro);
 
-  model.setBaseName       ("one-inclusion"      );
+  model.setBaseName("one-inclusion");
   model.addDumpFieldVector("displacement");
-  model.addDumpField      ("stress"      );
-  model.addDumpField      ("grad_u"      );
-  model.addDumpField      ("blocked_dofs"      );
-  model.addDumpField      ("material_index"      );
-  model.addDumpField      ("eigen_grad_u"      );
+  model.addDumpField("stress");
+  model.addDumpField("grad_u");
+  model.addDumpField("blocked_dofs");
+  model.addDumpField("material_index");
+  model.addDumpField("eigen_grad_u");
   model.dump();
 
   /// apply eigenstrain
   Matrix<Real> prestrain(spatial_dimension, spatial_dimension, 0.);
   for (UInt i = 0; i < spatial_dimension; ++i)
-    prestrain(i,i) = 0.02;
+    prestrain(i, i) = 0.02;
   model.advanceASR(prestrain);
 
   model.dump();
 
   Matrix<Real> macro_strain(spatial_dimension, spatial_dimension, 0.);
   model.homogenizeEigenGradU(macro_strain);
-  
+
   std::cout << "the average eigen_gradu is " << macro_strain << std::endl;
 
   Matrix<Real> exact_eigenstrain(spatial_dimension, spatial_dimension, 0.);
-  for(UInt i = 0; i < spatial_dimension; ++i)
-    exact_eigenstrain(i,i) = 0.00125;
+  for (UInt i = 0; i < spatial_dimension; ++i)
+    exact_eigenstrain(i, i) = 0.00125;
 
   macro_strain -= exact_eigenstrain;
-  
+
   if (macro_strain.norm<L_2>() > 1.e-10) {
     std::cout << "the test failed!!" << std::endl;
     finalize();

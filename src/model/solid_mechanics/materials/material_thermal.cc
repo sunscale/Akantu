@@ -32,7 +32,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_thermal.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -95,22 +95,10 @@ template <UInt dim>
 void MaterialThermal<dim>::computeStress(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real>::iterator<> delta_t_it = this->delta_T(el_type, ghost_type).begin();
-  Array<Real>::iterator<> sigma_th_it = this->sigma_th(el_type, ghost_type).begin();
-
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
-
-  /// TODO : implement with the matrix alpha
-  if (dim == 1) {
-    *sigma_th_it = - this->E * this->alpha * *delta_t_it;
+  for (auto && tuple : zip(this->delta_T(el_type, ghost_type),
+                           this->sigma_th(el_type, ghost_type))) {
+    computeStressOnQuad(std::get<1>(tuple), std::get<0>(tuple));
   }
-  else {
-    *sigma_th_it = - this->E/(1.-2.*this->nu) * this->alpha * *delta_t_it;
-  }
-
-  ++delta_t_it;
-  ++sigma_th_it;
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
   AKANTU_DEBUG_OUT();
 }
@@ -118,6 +106,6 @@ void MaterialThermal<dim>::computeStress(ElementType el_type, GhostType ghost_ty
 /* -------------------------------------------------------------------------- */
 
 
-INSTANTIATE_MATERIAL(MaterialThermal);
+INSTANTIATE_MATERIAL_ONLY(MaterialThermal);
 
-__END_AKANTU__
+} // akantu

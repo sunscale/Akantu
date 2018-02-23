@@ -17,19 +17,18 @@
 #include "material_damage_linear.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-MaterialDamageLinear<spatial_dimension>::MaterialDamageLinear(SolidMechanicsModel & model,
-							      const ID & id)  :
-  Material(model, id),
-  MaterialDamage<spatial_dimension>(model, id),
-  K("K", *this) {
+template <UInt spatial_dimension>
+MaterialDamageLinear<spatial_dimension>::MaterialDamageLinear(
+    SolidMechanicsModel & model, const ID & id)
+    : MaterialDamage<spatial_dimension>(model, id),
+      K("K", *this) {
   AKANTU_DEBUG_IN();
 
   this->registerParam("Sigc", Sigc, 1e5, _pat_parsable, "Sigma Critique");
-  this->registerParam("Gc"  , Gc  , 2. , _pat_parsable, "Gc");
+  this->registerParam("Gc", Gc, 2., _pat_parsable, "Gc");
 
   this->K.initialize(1);
 
@@ -37,13 +36,13 @@ MaterialDamageLinear<spatial_dimension>::MaterialDamageLinear(SolidMechanicsMode
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 void MaterialDamageLinear<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
   MaterialDamage<spatial_dimension>::initMaterial();
 
   Epsmin = Sigc / this->E;
-  Epsmax = 2 * Gc/ Sigc + Epsmin;
+  Epsmax = 2 * Gc / Sigc + Epsmin;
 
   this->K.setDefaultValue(Epsmin);
 
@@ -51,9 +50,9 @@ void MaterialDamageLinear<spatial_dimension>::initMaterial() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialDamageLinear<spatial_dimension>::computeStress(ElementType el_type,
-							    GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialDamageLinear<spatial_dimension>::computeStress(
+    ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real * dam = this->damage(el_type, ghost_type).storage();
@@ -71,6 +70,6 @@ void MaterialDamageLinear<spatial_dimension>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialDamageLinear);
+INSTANTIATE_MATERIAL(damage_linear, MaterialDamageLinear);
 
-__END_AKANTU__
+} // namespace akantu

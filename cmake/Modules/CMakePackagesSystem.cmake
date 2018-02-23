@@ -63,7 +63,10 @@
 #       [BOOST_COMPONENTS <pkg> ...]
 #       [EXTRA_PACKAGE_OPTIONS <opt> ...]
 #       [COMPILE_FLAGS <lang> <flags>]
-#       [SYSTEM <bool> [ <script_to_compile> ]]
+#       [SYSTEM <ON|OFF|AUTO> [ <script_to_compile> ]]
+#       [FEATURES_PUBLIC <feature> ...]
+#       [FEATURES_PRIVATE <feature> ...]
+#       [EXCLUDE_FROM_ALL]
 #       )
 #
 #.. command:: package_declare_sources
@@ -93,7 +96,7 @@
 #     package_get_name(<pkg> <retval>)
 #
 #.. command:: package_get_real_name
-#     package_get_real_name(<pkg> <retval>)
+#    package_get_real_name(<pkg> <retval>)
 #
 #.. command:: package_get_option_name
 #     package_get_option_name(<pkg> <retval>)
@@ -150,9 +153,11 @@
 #     package_is_deactivated(<pkg> <retval>)
 #
 #.. command:: package_get_dependencies
-#     package_get_dependencies(<pkg> <retval>)
+#     package_get_dependencies(<pkg> <PRIVATE|INTERFACE> <retval>)
 #.. command:: package_add_dependencies
-#     package_add_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#     package_add_dependencies(<pkg> <PRIVATE|INTERFACE> <dep1> <dep2> ... <depn>)
+#     package_remove_dependencies(<pkg> <dep1> <dep2> ... <depn>)
+#     package_remove_dependency(<pkg> <dep>)
 #
 #.. command:: package_on_enabled_script
 #     package_on_enabled_script(<pkg> <script>)
@@ -177,13 +182,19 @@
 #     package_get_all_deactivated_packages(<deactivated_list>)
 #.. command:: package_get_all_packages
 #     package_get_all_packages(<packages_list>)
+#.. command:: package_get_all_features_public
+#     package_get_all_features_public(<features>)
+#.. command:: package_get_all_features_private
+#     package_get_all_features_private(<features>)
 #
 #
-#.. command:: package_set_package_system_dependency(<pkg> <system> <dep1>
-#                                                   <dep2> ... <depn>)
+#     .. command:: package_set_package_system_dependency
+#
 #     package_set_package_system_dependency(<pkg> <system> <dep1>
 #                                           <dep2> ... <depn>)
-#.. command:: package_get_package_system_dependency(<pkg> <var>)
+#
+#                                       .. command:: package_get_package_system_dependency
+#
 #     package_get_package_system_dependency(<pkg> <var>)
 #
 #
@@ -435,21 +446,34 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Direct dependencies
 # ------------------------------------------------------------------------------
-function(package_get_dependencies pkg ret)
+function(package_get_dependencies pkg type ret)
   package_get_name(${pkg} _pkg_name)
-  _package_get_dependencies(${_pkg_name} _tmp_name)
+  _package_get_dependencies(${_pkg_name} ${type} _tmp_name)
   _package_get_real_name(${_tmp_name} _tmp)
   set(${ret} ${_tmp} PARENT_SCOPE)
 endfunction()
 
-function(package_add_dependencies pkg)
+function(package_add_dependencies pkg type)
   package_get_name(${pkg} _pkg_name)
   foreach(_dep ${ARGN})
     package_get_name(${_dep} _dep_pkg_name)
     list(APPEND _tmp_deps ${_dep_pkg_name})
   endforeach()
 
-  _package_add_dependencies(${_pkg_name} ${_tmp_deps})
+  _package_add_dependencies(${_pkg_name} ${type} ${_tmp_deps})
+endfunction()
+
+function(package_remove_dependencies pkg type)
+  foreach(_dep ${ARGN})
+    package_remove_dependency(${pkg} _dep)
+  endforeach()
+endfunction()
+
+function(package_remove_dependency pkg dep)
+  package_get_name(${pkg} _pkg_name)
+  package_get_name(${dep} _dep_pkg_name)
+  _package_remove_dependency(${_pkg_name} PRIVATE ${_dep_pkg_name})
+  _package_remove_dependency(${_pkg_name} INTERFACE ${_dep_pkg_name})
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -560,12 +584,28 @@ endfunction()
 # ------------------------------------------------------------------------------
 # Get external libraries informations
 # ------------------------------------------------------------------------------
-function(package_get_all_external_informations INCLUDE_DIR LIBRARIES)
-  _package_get_variable_for_activated(INCLUDE_DIR tmp_INCLUDE_DIR)
-  _package_get_variable_for_activated(LIBRARIES tmp_LIBRARIES)
+function(package_get_all_external_informations)
+  cmake_parse_arguments(_opt "" "PRIVATE_INCLUDE;INTERFACE_INCLUDE;LIBRARIES" "" ${ARGN})
 
-  set(${INCLUDE_DIR} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
-  set(${LIBRARIES}   ${tmp_LIBRARIES}   PARENT_SCOPE)
+  foreach(_type PRIVATE INTERFACE)
+    if(_opt_${_type}_INCLUDE)
+      _package_get_variable_for_external_dependencies(INCLUDE_DIR ${_type} tmp_INCLUDE_DIR)
+      foreach(_dir ${tmp_INCLUDE_DIR})
+        string(FIND "${_dir}" "${CMAKE_CURRENT_SOURCE_DIR}" _pos)
+        if(NOT _pos EQUAL -1)
+          list(REMOVE_ITEM tmp_INCLUDE_DIR ${_dir})
+        endif()
+      endforeach()
+
+      set(${_opt_${_type}_INCLUDE} ${tmp_INCLUDE_DIR} PARENT_SCOPE)
+    endif()
+  endforeach()
+
+  if(_opt_LIBRARIES)
+    _package_get_variable_for_external_dependencies(LIBRARIES PRIVATE tmp_LIBRARIES)
+    _package_get_variable_for_external_dependencies(LIBRARIES INTERFACE tmp_LIBRARIES_INTERFACE)
+    set(${_opt_LIBRARIES} ${tmp_LIBRARIES} ${tmp_LIBRARIES_INTERFACE} PARENT_SCOPE)
+  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------
@@ -660,6 +700,19 @@ function(package_get_all_packages packages_list)
 endfunction()
 
 # ------------------------------------------------------------------------------
+# List all the needed features
+# ------------------------------------------------------------------------------
+function(package_get_all_features_public features)
+  _package_get_variable_for_activated(FEATURES_PUBLIC _tmp)
+  set(${features} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+function(package_get_all_features_private features)
+  _package_get_variable_for_activated(FEATURES_PRIVATE _tmp)
+  set(${features} ${_tmp} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
 # Callbacks
 # ------------------------------------------------------------------------------
 function(package_on_enabled_script pkg script)
@@ -692,7 +745,8 @@ function(package_list_packages PACKAGE_FOLDER)
   package_get_all_packages(_already_loaded_pkg)
   foreach(_pkg_name ${_already_loaded_pkg})
     _package_unset_extra_dependencies(${_pkg_name})
-    _package_unset_dependencies(${_pkg_name})
+    _package_unset_dependencies(${_pkg_name} PRIVATE)
+    _package_unset_dependencies(${_pkg_name} INTERFACE)
     _package_unset_activated(${_pkg_name})
   endforeach()
 
@@ -813,7 +867,9 @@ endfunction()
 #                 [BOOST_COMPONENTS <pkg> ...]
 #                 [EXTRA_PACKAGE_OPTIONS <opt> ...]
 #                 [COMPILE_FLAGS <lang> <flags>]
-#                 [SYSTEM <bool> [ <script_to_compile> ]])
+#                 [SYSTEM <bool> [ <script_to_compile> ]]
+#                 [FEATURES_PUBLIC <feature> ...]
+#                 [FEATURES_PRIVATE <feature> ...])
 # ------------------------------------------------------------------------------
 function(package_declare pkg)
   package_get_name(${pkg} _pkg_name)
@@ -839,10 +895,28 @@ function(package_declare pkg)
   list(REMOVE_DUPLICATES _tmp_pkg_list)
   package_set_project_variable(ALL_PACKAGES_LIST ${_tmp_pkg_list})
 
+  set(_options
+    EXTERNAL
+    NOT_OPTIONAL
+    META
+    ADVANCED
+    EXCLUDE_FROM_ALL)
+  set(_one_valued_options
+    DEFAULT
+    DESCRIPTION)
+  set(_multi_valued_options
+    DEPENDS
+    EXTRA_PACKAGE_OPTIONS
+    COMPILE_FLAGS
+    BOOST_COMPONENTS
+    SYSTEM
+    FEATURES_PUBLIC
+    FEATURES_PRIVATE)
+
   cmake_parse_arguments(_opt_pkg
-    "EXTERNAL;NOT_OPTIONAL;META;ADVANCED"
-    "DEFAULT;DESCRIPTION"
-    "DEPENDS;EXTRA_PACKAGE_OPTIONS;COMPILE_FLAGS;BOOST_COMPONENTS;SYSTEM"
+    "${_options}"
+    "${_one_valued_options}"
+    "${_multi_valued_options}"
     ${ARGN})
 
   if(_opt_pkg_UNPARSED_ARGUMENTS)
@@ -886,6 +960,7 @@ function(package_declare pkg)
     _package_get_nature(${_pkg_name} _nature)
     _package_set_nature(${_pkg_name} "${_nature}_not_optional")
     set(${_option_name} ${_default} CACHE INTERNAL "${_description}" FORCE)
+    mark_as_advanced(${_option_name})
   else()
     option(${_option_name} "${_description}" ${_default})
     if(_opt_pkg_ADVANCED OR _opt_pkg_EXTERNAL)
@@ -906,12 +981,22 @@ function(package_declare pkg)
 
   # set the dependecies
   if(_opt_pkg_DEPENDS)
-    set(_depends)
-    foreach(_dep ${_opt_pkg_DEPENDS})
-      package_get_name(${_dep} _dep_pkg_name)
-      list(APPEND _depends ${_dep_pkg_name})
+    set(_deps_types PRIVATE INTERFACE)
+    cmake_parse_arguments(_pkg_deps
+      ""
+      ""
+      "${_deps_types}"
+      ${_opt_pkg_DEPENDS})
+
+    list(APPEND _pkg_deps_PRIVATE ${_pkg_deps_UNPARSED_ARGUMENTS})
+    foreach(_type ${_deps_types})
+      set(_depends)
+      foreach(_dep ${_pkg_deps_${_type}})
+	package_get_name(${_dep} _dep_pkg_name)
+	list(APPEND _depends ${_dep_pkg_name})
+      endforeach()
+      _package_add_dependencies(${_pkg_name} ${_type} ${_depends})
     endforeach()
-    _package_add_dependencies(${_pkg_name} ${_depends})
   endif()
 
   # keep the extra option for the future find package
@@ -947,6 +1032,12 @@ function(package_declare pkg)
     _package_set_boost_component_needed(${_pkg_name} "${_opt_pkg_BOOST_COMPONENTS}")
   endif()
 
+  set(_variables FEATURES_PUBLIC FEATURES_PRIVATE EXCLUDE_FROM_ALL)
+  foreach(_variable ${_variables})
+    if(_opt_pkg_${_variable})
+      _package_set_variable(${_variable} ${_pkg_name} "${_opt_pkg_${_variable}}")
+    endif()
+  endforeach()
 endfunction()
 
 # ------------------------------------------------------------------------------

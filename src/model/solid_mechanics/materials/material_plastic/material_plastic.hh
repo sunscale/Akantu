@@ -38,7 +38,7 @@
 #ifndef __AKANTU_MATERIAL_PLASTIC_HH__
 #define __AKANTU_MATERIAL_PLASTIC_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Parent class for the plastic constitutive laws
@@ -69,13 +69,14 @@ protected:
 public:
 
   /// get the energy specifying the type for the time step
-  virtual Real getEnergy(std::string type);
+  Real getEnergy(const std::string & type) override;
 
   /// Compute the plastic energy
-  virtual void updateEnergies(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void updateEnergies(ElementType el_type,
+                      GhostType ghost_type = _not_ghost) override;
 
   /// Compute the true potential energy
-  virtual void computePotentialEnergy(ElementType el_type, GhostType ghost_type);
+  void computePotentialEnergy(ElementType el_type, GhostType ghost_type) override;
 
 protected:
   
@@ -136,7 +137,7 @@ protected:
 
 
 
-__END_AKANTU__
+} // akantu
 
 #include "material_plastic_inline_impl.cc"
 #endif /* __AKANTU_MATERIAL_PLASTIC_HH__ */

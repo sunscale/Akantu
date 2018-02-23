@@ -28,19 +28,18 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "mesh.hh"
-
+#include "element.hh"
+/* -------------------------------------------------------------------------- */
+#include <memory>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_HH__
 #define __AKANTU_MATERIAL_SELECTOR_HH__
 
 /* -------------------------------------------------------------------------- */
-
-__BEGIN_AKANTU__
+namespace akantu {
 
 class SolidMechanicsModel;
 
@@ -48,18 +47,39 @@ class SolidMechanicsModel;
  * main class to assign same or different materials for different
  * elements
  */
-class MaterialSelector {
+class MaterialSelector : public std::enable_shared_from_this<MaterialSelector> {
 public:
-  MaterialSelector() : fallback_value(0) {}
-  virtual ~MaterialSelector() {}
-  virtual UInt operator()(__attribute__((unused)) const Element & element) {
+  MaterialSelector() = default;
+  virtual ~MaterialSelector() = default;
+  virtual inline UInt operator()(const Element & element) {
+    if (fallback_selector)
+      return (*fallback_selector)(element);
+
     return fallback_value;
   }
 
-  void setFallback(UInt f) { fallback_value = f; }
+  inline void setFallback(UInt f) { fallback_value = f; }
+  inline void
+  setFallback(const std::shared_ptr<MaterialSelector> & fallback_selector) {
+    this->fallback_selector = fallback_selector;
+  }
+
+  inline void
+  setFallback(MaterialSelector & fallback_selector) {
+    this->fallback_selector = fallback_selector.shared_from_this();
+  }
+
+  inline std::shared_ptr<MaterialSelector> & getFallbackSelector() {
+    return this->fallback_selector;
+  }
+
+  inline UInt getFallbackValue() {
+    return this->fallback_value;
+  }
 
 protected:
-  UInt fallback_value;
+  UInt fallback_value{0};
+  std::shared_ptr<MaterialSelector> fallback_selector;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -68,26 +88,22 @@ protected:
  */
 class DefaultMaterialSelector : public MaterialSelector {
 public:
-  DefaultMaterialSelector(const ElementTypeMapArray<UInt> & material_index)
+  explicit DefaultMaterialSelector(
+      const ElementTypeMapArray<UInt> & material_index)
       : material_index(material_index) {}
 
-  UInt operator()(const Element & element) {
-    try {
-      DebugLevel dbl = debug::getDebugLevel();
-      debug::setDebugLevel(dblError);
-
-      const Array<UInt> & mat_indexes =
-          material_index(element.type, element.ghost_type);
-      UInt mat = this->fallback_value;
-
-      if (element.element < mat_indexes.getSize())
-        mat = mat_indexes(element.element);
-
-      debug::setDebugLevel(dbl);
-      return mat;
-    } catch (...) {
+  UInt operator()(const Element & element) override {
+    if (not material_index.exists(element.type, element.ghost_type))
       return MaterialSelector::operator()(element);
+
+    const auto & mat_indexes = material_index(element.type, element.ghost_type);
+    if (element.element < mat_indexes.size()) {
+      auto && tmp_mat = mat_indexes(element.element);
+      if (tmp_mat != UInt(-1))
+        return tmp_mat;
     }
+
+    return MaterialSelector::operator()(element);
   }
 
 private:
@@ -114,7 +130,7 @@ public:
     return data;
   }
 
-  inline UInt operator()(const Element & element) {
+  inline UInt operator()(const Element & element) override {
     return MaterialSelector::operator()(element);
   }
 
@@ -142,6 +158,6 @@ public:
                            UInt first_index = 1);
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_HH__ */

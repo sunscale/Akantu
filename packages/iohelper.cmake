@@ -28,7 +28,6 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 package_declare(IOHelper EXTERNAL
   DESCRIPTION "Add IOHelper support in akantu"
   SYSTEM OFF third-party/cmake/iohelper.cmake
@@ -39,38 +38,5 @@ package_add_third_party_script_variable(IOHelper
   IOHELPER_VERSION ${_version})
 package_add_third_party_script_variable(IOHelper
   IOHELPER_GIT "https://c4science.ch/source/iohelper.git")
-package_add_third_party_script_variable(Scotch
+package_add_third_party_script_variable(IOHelper
   IOHELPER_ARCHIVE "iohelper_${_version}.tar.gz")
-
-package_declare_sources(IOHelper
-  io/dumper/dumpable_iohelper.hh
-  io/dumper/dumper_iohelper.hh
-  io/dumper/dumper_iohelper.cc
-  io/dumper/dumper_paraview.hh
-  io/dumper/dumper_text.cc
-  io/dumper/dumper_text.hh
-  io/dumper/dumper_paraview.cc
-  io/dumper/dumper_homogenizing_field.hh
-  io/dumper/dumper_type_traits.hh
-  io/dumper/dumper_compute.hh
-  io/dumper/dumper_nodal_field.hh
-  io/dumper/dumper_quadrature_point_iterator.hh
-  io/dumper/dumper_variable.hh
-  io/dumper/dumper_padding_helper.hh
-  io/dumper/dumper_elemental_field.hh
-  io/dumper/dumper_element_iterator.hh
-  io/dumper/dumper_internal_material_field.hh
-  io/dumper/dumper_generic_elemental_field.hh
-  io/dumper/dumper_generic_elemental_field_tmpl.hh
-  )
-
-package_declare_documentation(IOHelper
-  "This package activates the IOHelper facilities withing Akantu. This is mandatory if you want to be able to output Paraview files"
-  "as well as any Dumper within Akantu."
-  )
-
-package_declare_extra_files_to_package(IOHelper
-  PROJECT
-    third-party/cmake/iohelper.cmake
-    cmake/Modules/FindIOHelper.cmake
-  )

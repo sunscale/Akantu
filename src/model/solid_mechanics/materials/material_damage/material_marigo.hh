@@ -33,14 +33,14 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_damage.hh"
 #include "material.hh"
+#include "material_damage.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_MARIGO_HH__
 #define __AKANTU_MATERIAL_MARIGO_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material marigo
@@ -50,68 +50,58 @@ __BEGIN_AKANTU__
  *   - Sd  : (default: 5000)
  *   - Ydrandomness  : (default:0)
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialMarigo : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialMarigo(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialMarigo() {};
+  ~MaterialMarigo() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  void initMaterial() override;
 
-  void initMaterial();
-
-  virtual void updateInternalParameters();
+  void updateInternalParameters() override;
 
   /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// constitutive law for a given quadrature point
-  inline void computeStressOnQuad(Matrix<Real> & grad_u,
-				  Matrix<Real> & sigma,
-				  Real & dam,
-				  Real & Y,
-				  Real & Ydq);
+  inline void computeStressOnQuad(Matrix<Real> & grad_u, Matrix<Real> & sigma,
+                                  Real & dam, Real & Y, Real & Ydq);
 
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-					   Real & dam,
-					   Real & Y,
-					   Real & Ydq);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Real & dam,
+                                           Real & Y, Real & Ydq);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
-
-  inline virtual void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// resistance to damage
   RandomInternalField<Real> Yd;
 
@@ -127,12 +117,8 @@ protected:
   bool yc_limit;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+} // akantu
 
 #include "material_marigo_inline_impl.cc"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_MATERIAL_MARIGO_HH__ */

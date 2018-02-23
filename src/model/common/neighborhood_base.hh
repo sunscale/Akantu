@@ -34,44 +34,49 @@
 #define __AKANTU_NEIGHBORHOOD_BASE_HH__
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "solid_mechanics_model.hh"
-#include "aka_grid_dynamic.hh"
-#include "grid_synchronizer.hh"
 #include "aka_memory.hh"
 #include "data_accessor.hh"
+#include "integration_point.hh"
 #include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
-class NeighborhoodBase : public Memory,
-			 public DataAccessor {
+namespace akantu {
+class Model;
+template <class T> class SpatialGrid;
+class GridSynchronizer;
+class RemovedElementsEvent;
+} // namespace akantu
+
+namespace akantu {
+class NeighborhoodBase : protected Memory,
+                         public DataAccessor<Element>,
+                         public SynchronizerRegistry {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  NeighborhoodBase(Model & model,
+                   const ElementTypeMapArray<Real> & quad_coordinates,
+                   const ID & id = "neighborhood",
+                   const MemoryID & memory_id = 0);
+  ~NeighborhoodBase() override;
 
-  NeighborhoodBase(const SolidMechanicsModel & model, 
-		   const ElementTypeMapReal & quad_coordinates,
-		   const ID & id = "neighborhood",
-		   const MemoryID & memory_id = 0);
-  virtual ~NeighborhoodBase();
-
-  typedef std::vector< std::pair<IntegrationPoint, IntegrationPoint> > PairList;
+  using PairList = std::vector<std::pair<IntegrationPoint, IntegrationPoint>>;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
 public:
-
   /// intialize the neighborhood
   virtual void initNeighborhood();
-  
-  /// create a synchronizer registry
-  void createSynchronizerRegistry(DataAccessor * data_accessor);
+
+  // /// create a synchronizer registry
+  // void createSynchronizerRegistry(DataAccessor * data_accessor);
 
   /// initialize the material computed parameter
-  inline void insertQuad(const IntegrationPoint & quad, const Vector<Real> & coords);
+  inline void insertIntegrationPoint(const IntegrationPoint & quad,
+                                     const Vector<Real> & coords);
 
   /// create the pairs of quadrature points
   void updatePairList();
@@ -84,36 +89,37 @@ public:
 
   /// create grid synchronizer and exchange ghost cells
   virtual void createGridSynchronizer() = 0;
+  virtual void synchronize(DataAccessor<Element> & data_accessor,
+                           const SynchronizationTag & tag) = 0;
 
   /// inherited function from MeshEventHandler
-  virtual void onElementsRemoved(const Array<Element> & element_list,
-				 const ElementTypeMapArray<UInt> & new_numbering,
-				 const RemovedElementsEvent & event);
+  virtual void
+  onElementsRemoved(const Array<Element> & element_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event);
 
 protected:
-
   /// create the grid
   void createGrid();
 
-/* -------------------------------------------------------------------------- */
-/* Accessors                                                                  */
-/* -------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
+  /* Accessors                                                                */
+  /* ------------------------------------------------------------------------ */
 public:
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
-  AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &);
+  AKANTU_GET_MACRO(Model, model, const Model &);
   /// return the object handling synchronizers
-  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry, SynchronizerRegistry &);
   AKANTU_GET_MACRO(PairLists, pair_list, const PairList *);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  
   /// the model to which the neighborhood belongs
-  const SolidMechanicsModel & model;
+  Model & model;
 
-  /// Radius of impact: to determine if two quadrature points influence each other 
+  /// Radius of impact: to determine if two quadrature points influence each
+  /// other
   Real neighborhood_radius;
 
   /**
@@ -124,29 +130,22 @@ protected:
   PairList pair_list[2];
 
   /// the regular grid to construct/update the pair lists
-  SpatialGrid<IntegrationPoint> * spatial_grid;
+  std::unique_ptr<SpatialGrid<IntegrationPoint>> spatial_grid;
 
   bool is_creating_grid;
 
   /// the grid synchronizer for parallel computations
-  GridSynchronizer * grid_synchronizer;
+  std::unique_ptr<GridSynchronizer> grid_synchronizer;
 
   /// the quadrature point positions
-  const ElementTypeMapReal & quad_coordinates;
+  const ElementTypeMapArray<Real> & quad_coordinates;
 
   /// the spatial dimension of the problem
   const UInt spatial_dimension;
-
-  /// synchronizer registry
-  SynchronizerRegistry * synch_registry;
-
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
+} // namespace akantu
 
 #include "neighborhood_base_inline_impl.cc"
 
-__END_AKANTU__
 #endif /* __AKANTU_NEIGHBORHOOD_BASE_HH__ */

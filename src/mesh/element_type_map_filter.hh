@@ -34,7 +34,7 @@
 #define __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* ArrayFilter                                                                */
@@ -49,8 +49,12 @@ template <typename T> class ArrayFilter {
 public:
   /// standard iterator
   template <typename R = T> class iterator {
-    inline bool operator!=(iterator<R> & other) { throw; };
-    inline bool operator==(iterator<R> & other) { throw; };
+    inline bool operator!=(__attribute__((unused)) iterator<R> & other) {
+      throw;
+    };
+    inline bool operator==(__attribute__((unused)) iterator<R> & other) {
+      throw;
+    };
 
     inline iterator<R> & operator++() { throw; };
     inline T operator*() {
@@ -70,7 +74,7 @@ public:
               this->sub_element_counter);
     }
 
-    inline const_iterator(){};
+    inline const_iterator() = default;
     inline const_iterator(const original_iterator<Shape> & origin_it,
                           const filter_iterator & filter_it,
                           UInt nb_item_per_elem)
@@ -119,15 +123,15 @@ public:
     UInt sub_element_counter;
   };
 
-  typedef iterator<Vector<T> > vector_iterator;
+  using vector_iterator = iterator<Vector<T>>;
 
-  typedef Array<T> array_type;
+  using array_type = Array<T>;
 
-  typedef const_iterator<array_type::template const_iterator, Vector<T>,
-                         Array<UInt>::const_iterator<UInt> >
-      const_vector_iterator;
+  using const_vector_iterator =
+      const_iterator<array_type::template const_iterator, Vector<T>,
+                     Array<UInt>::const_iterator<UInt>>;
 
-  typedef typename array_type::value_type value_type;
+  using value_type = typename array_type::value_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -143,17 +147,16 @@ public:
   /* ------------------------------------------------------------------------ */
   const_vector_iterator begin_reinterpret(UInt n, UInt new_size) const {
     AKANTU_DEBUG_ASSERT(
-        n * new_size == this->getNbComponent() * this->getSize(),
+        n * new_size == this->getNbComponent() * this->size(),
         "The new values for size ("
             << new_size << ") and nb_component (" << n
             << ") are not compatible with the one of this array("
-            << this->getSize() << "," << this->getNbComponent() << ")");
-    UInt new_full_array_size =
-        this->array.getSize() * array.getNbComponent() / n;
+            << this->size() << "," << this->getNbComponent() << ")");
+    UInt new_full_array_size = this->array.size() * array.getNbComponent() / n;
     UInt new_nb_item_per_elem = this->nb_item_per_elem;
     if (new_size != 0 && n != 0)
       new_nb_item_per_elem = this->array.getNbComponent() *
-                             this->filter.getSize() * this->nb_item_per_elem /
+                             this->filter.size() * this->nb_item_per_elem /
                              (n * new_size);
 
     return const_vector_iterator(
@@ -163,17 +166,17 @@ public:
 
   const_vector_iterator end_reinterpret(UInt n, UInt new_size) const {
     AKANTU_DEBUG_ASSERT(
-        n * new_size == this->getNbComponent() * this->getSize(),
+        n * new_size == this->getNbComponent() * this->size(),
         "The new values for size ("
             << new_size << ") and nb_component (" << n
             << ") are not compatible with the one of this array("
-            << this->getSize() << "," << this->getNbComponent() << ")");
+            << this->size() << "," << this->getNbComponent() << ")");
     UInt new_full_array_size =
-        this->array.getSize() * this->array.getNbComponent() / n;
+        this->array.size() * this->array.getNbComponent() / n;
     UInt new_nb_item_per_elem = this->nb_item_per_elem;
     if (new_size != 0 && n != 0)
       new_nb_item_per_elem = this->array.getNbComponent() *
-                             this->filter.getSize() * this->nb_item_per_elem /
+                             this->filter.size() * this->nb_item_per_elem /
                              (n * new_size);
 
     return const_vector_iterator(
@@ -186,9 +189,7 @@ public:
   vector_iterator end_reinterpret(UInt, UInt) { throw; };
 
   /// return the size of the filtered array which is the filter size
-  UInt getSize() const {
-    return this->filter.getSize() * this->nb_item_per_elem;
-  };
+  UInt size() const { return this->filter.size() * this->nb_item_per_elem; };
   /// the number of components of the filtered array
   UInt getNbComponent() const { return this->array.getNbComponent(); };
 
@@ -217,45 +218,16 @@ class ElementTypeMapArrayFilter {
   /* ------------------------------------------------------------------------ */
 
 public:
-  typedef T type;
-  typedef ArrayFilter<T> array_type;
-  typedef typename array_type::value_type value_type;
+  using type = T;
+  using array_type = ArrayFilter<T>;
+  using value_type = typename array_type::value_type;
 
-  typedef typename ElementTypeMapArray<UInt, SupportType>::type_iterator
-      type_iterator;
-
-  // class type_iterator{
-
-  // public:
-
-  //    typedef typename ElementTypeMapArray<T,SupportType>::type_iterator
-  //    type_it;
-
-  //  public:
-  //   type_iterator(){};
-  //   //    type_iterator(const type_iterator & it){original_it =
-  //   it.original_it;};
-  //   type_iterator(const type_it & it){original_it = it;};
-
-  //   inline ElementType & operator*(){throw;};
-  //   inline ElementType & operator*() const{throw;};
-  //   inline type_iterator & operator++(){throw;return *this;};
-  //   type_iterator operator++(int){throw; return *this;};
-  //   inline bool operator==(const type_iterator & other) const{throw;return
-  //   false;};
-  //   inline bool operator!=(const type_iterator & other) const{throw;return
-  //   false;};
-  //   //    type_iterator & operator=(const type_iterator & other){throw;return
-  //   *this;};
-
-  //   type_it original_it;
-
-  // };
+  using type_iterator =
+      typename ElementTypeMapArray<UInt, SupportType>::type_iterator;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
   ElementTypeMapArrayFilter(
       const ElementTypeMapArray<T, SupportType> & array,
@@ -268,7 +240,7 @@ public:
       const ElementTypeMapArray<UInt, SupportType> & filter)
       : array(array), filter(filter) {}
 
-  ~ElementTypeMapArrayFilter() {}
+  ~ElementTypeMapArrayFilter() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -330,6 +302,6 @@ protected:
   Array<UInt> empty_filter;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__ */

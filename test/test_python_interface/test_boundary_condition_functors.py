@@ -29,7 +29,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 # ===============================================================================
-
+from __future__ import print_function
 import sys
 import os
 
@@ -63,9 +63,6 @@ class FromStress:
 ######################################################################
 
 def main():
-    os.system('gmsh -order 2 -2 -o mesh_dcb_2d.msh mesh_dcb_2d.geo')
-    print ""
-
     aka.initialize("input_test.dat")
 
     mesh = aka.Mesh(2)

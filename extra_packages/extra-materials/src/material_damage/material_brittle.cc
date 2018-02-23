@@ -18,18 +18,17 @@
 #include "material_brittle.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 MaterialBrittle<spatial_dimension>::MaterialBrittle(SolidMechanicsModel & model,
                                                     const ID & id):
-  Material(model, id),
   MaterialDamage<spatial_dimension>(model, id),
   strain_rate_brittle("strain_rate_brittle", *this){
   AKANTU_DEBUG_IN();
 
-  this->registerParam("S_0",        S_0, 157e6, ParamAccessType(_pat_parsable | _pat_modifiable));
+  this->registerParam("S_0",        S_0, 157e6, _pat_parsable | _pat_modifiable);
   this->registerParam("E_0",        E_0,    27e3, _pat_parsable, "Strain rate threshold");
   this->registerParam("A",          A, 1.622e-5, _pat_parsable, "Polynome cubic constant");
   this->registerParam("B",          B, -1.3274, _pat_parsable, "Polynome quadratic constant");
@@ -50,14 +49,14 @@ void MaterialBrittle<spatial_dimension>::initMaterial() {
   updateInternalParameters();
 
   //this->Yd.resize();
-  // const Mesh & mesh = this->model->getFEEngine().getMesh();
+  // const Mesh & mesh = this->model.getFEEngine().getMesh();
 
   // Mesh::type_iterator it = mesh.firstType(spatial_dimension);
   // Mesh::type_iterator last_type = mesh.lastType(spatial_dimension);
 
   // for(; it != last_type; ++it) {
   //   UInt nb_element  = this->element_filter(*it).getSize();
-  //   UInt nb_quad = this->model->getFEEngine().getNbQuadraturePoints(*it);
+  //   UInt nb_quad = this->model.getFEEngine().getNbQuadraturePoints(*it);
 
   //   Array <Real> & Yd_rand_vec = Yd_rand(*it);
   //   for(UInt e = 0; e < nb_element; ++e) {
@@ -86,11 +85,11 @@ void MaterialBrittle<spatial_dimension>::computeStress(ElementType el_type,
 
   Real * dam = this->damage(el_type, ghost_type).storage();
 
-  Array<Real> & velocity = this->model->getVelocity();
+  Array<Real> & velocity = this->model.getVelocity();
   Array<Real> & strain_rate_brittle = this->strain_rate_brittle(el_type, ghost_type);
   Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_brittle,
+  this->model.getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_brittle,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 
@@ -116,7 +115,7 @@ void MaterialBrittle<spatial_dimension>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(MaterialBrittle);
+INSTANTIATE_MATERIAL(brittle, MaterialBrittle);
 
 
-__END_AKANTU__
+} // namespace akantu

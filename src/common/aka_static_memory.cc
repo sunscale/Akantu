@@ -37,10 +37,10 @@
 #include "aka_static_memory.hh"
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 bool StaticMemory::is_instantiated = false;
-StaticMemory * StaticMemory::single_static_memory = NULL;
+StaticMemory * StaticMemory::single_static_memory = nullptr;
 UInt StaticMemory::nb_reference = 0;
 
 /* -------------------------------------------------------------------------- */
@@ -79,7 +79,7 @@ StaticMemory::~StaticMemory() {
   }
   memories.clear();
   is_instantiated = false;
-  StaticMemory::single_static_memory = NULL;
+  StaticMemory::single_static_memory = nullptr;
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
@@ -88,7 +88,7 @@ void StaticMemory::sfree(const MemoryID & memory_id,
   AKANTU_DEBUG_IN();
 
   try {
-    ArrayMap & vectors = const_cast<ArrayMap &>(getMemory(memory_id));
+    auto & vectors = const_cast<ArrayMap &>(getMemory(memory_id));
     ArrayMap::iterator vector_it;
     vector_it = vectors.find(name);
     if(vector_it != vectors.end()) {
@@ -153,4 +153,4 @@ void StaticMemory::printself(std::ostream & stream, int indent) const{
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

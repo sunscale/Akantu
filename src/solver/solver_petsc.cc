@@ -31,22 +31,30 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <petscksp.h>
 #include "solver_petsc.hh"
-#include "petsc_wrapper.hh"
-#include "petsc_matrix.hh"
-#include "static_communicator.hh"
-#include "static_communicator_mpi.hh"
+#include "dof_manager_petsc.hh"
+#include "sparse_matrix_petsc.hh"
 #include "mpi_type_wrapper.hh"
-#include "dof_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
+#include <petscksp.h>
+//#include <petscsys.h>
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-SolverPETSc::SolverPETSc(SparseMatrix & matrix, const ID & id,
-                         const MemoryID & memory_id)
-    : Solver(matrix, id, memory_id), is_petsc_data_initialized(false),
-      petsc_solver_wrapper(new PETScSolverWrapper) {}
+SolverPETSc::SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
+                         const ID & id, const MemoryID & memory_id)
+    : SparseSolver(dof_manager, matrix_id, id, memory_id),
+      dof_manager(dof_manager),
+      matrix(dof_manager.getMatrix(matrix_id)),
+      is_petsc_data_initialized(false) {
+  PetscErrorCode ierr;
+
+  /// create a solver context
+  ierr = KSPCreate(PETSC_COMM_WORLD, &this->ksp);
+  CHKERRXX(ierr);
+}
 
 /* -------------------------------------------------------------------------- */
 SolverPETSc::~SolverPETSc() {
@@ -56,20 +64,15 @@ SolverPETSc::~SolverPETSc() {
 
   AKANTU_DEBUG_OUT();
 }
+
 /* -------------------------------------------------------------------------- */
 void SolverPETSc::destroyInternalData() {
   AKANTU_DEBUG_IN();
 
   if (this->is_petsc_data_initialized) {
     PetscErrorCode ierr;
-    ierr = KSPDestroy(&(this->petsc_solver_wrapper->ksp));
+    ierr = KSPDestroy(&(this->ksp));
     CHKERRXX(ierr);
-    ierr = VecDestroy(&(this->petsc_solver_wrapper->rhs));
-    CHKERRXX(ierr);
-    ierr = VecDestroy(&(this->petsc_solver_wrapper->solution));
-    CHKERRXX(ierr);
-    delete petsc_solver_wrapper;
-
     this->is_petsc_data_initialized = false;
   }
 
@@ -77,127 +80,64 @@ void SolverPETSc::destroyInternalData() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverPETSc::initialize(__attribute__((unused)) SolverOptions & options) {
+void SolverPETSc::initialize() {
   AKANTU_DEBUG_IN();
 
-#if defined(AKANTU_USE_MPI)
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  const StaticCommunicatorMPI & mpi_st_comm =
-      dynamic_cast<const StaticCommunicatorMPI &>(
-          comm.getRealStaticCommunicator());
-  this->petsc_solver_wrapper->communicator =
-      mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
-#else
-  this->petsc_solver_wrapper->communicator = PETSC_COMM_SELF;
-#endif
-
-  PetscErrorCode ierr;
-  PETScMatrix * petsc_matrix = static_cast<PETScMatrix *>(this->matrix);
-  /// create a solver context
-  ierr = KSPCreate(this->petsc_solver_wrapper->communicator,
-                   &(this->petsc_solver_wrapper->ksp));
-  CHKERRXX(ierr);
-
-  /// create the PETSc vector for the right-hand side
-  ierr = VecCreate(this->petsc_solver_wrapper->communicator,
-                   &(this->petsc_solver_wrapper->rhs));
-  CHKERRXX(ierr);
-
-  ierr = VecSetSizes((this->petsc_solver_wrapper->rhs),
-                     petsc_matrix->getLocalSize(), petsc_matrix->getSize());
-  CHKERRXX(ierr);
-  ierr = VecSetFromOptions((this->petsc_solver_wrapper->rhs));
-  CHKERRXX(ierr);
-
-  /// create the PETSc vector for the solution
-  ierr = VecDuplicate((this->petsc_solver_wrapper->rhs),
-                      &(this->petsc_solver_wrapper->solution));
-  CHKERRXX(ierr);
-  /// set the solution to zero
-  ierr = VecZeroEntries(this->petsc_solver_wrapper->solution);
   this->is_petsc_data_initialized = true;
+
   AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverPETSc::setRHS(Array<Real> & rhs) {
-  PetscErrorCode ierr;
-  PETScMatrix * petsc_matrix = static_cast<PETScMatrix *>(this->matrix);
-
-  UInt nb_component = rhs.getNbComponent();
-  UInt size = rhs.getSize();
-  for (UInt i = 0; i < size; ++i) {
-    for (UInt j = 0; j < nb_component; ++j) {
-      UInt i_local = i * nb_component + j;
-      if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i_local)) {
-        Int i_global =
-            this->matrix->getDOFSynchronizer().getDOFGlobalID(i_local);
-        AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao, 1,
-                             &(i_global));
-        ierr = VecSetValue((this->petsc_solver_wrapper->rhs), i_global,
-                           rhs(i, j), INSERT_VALUES);
-        CHKERRXX(ierr);
-      }
-    }
-  }
-
-  ierr = VecAssemblyBegin(this->petsc_solver_wrapper->rhs);
-  CHKERRXX(ierr);
-  ierr = VecAssemblyEnd(this->petsc_solver_wrapper->rhs);
-  CHKERRXX(ierr);
-  ///  ierr = VecCopy((this->petsc_solver_wrapper->rhs),
-  ///  (this->petsc_solver_wrapper->solution)); CHKERRXX(ierr);
 }
 
 /* -------------------------------------------------------------------------- */
 void SolverPETSc::solve() {
   AKANTU_DEBUG_IN();
 
+  Vec & rhs = this->dof_manager.getResidual();
+  Vec & solution = this->dof_manager.getGlobalSolution();
+
   PetscErrorCode ierr;
-  ierr =
-      KSPSolve(this->petsc_solver_wrapper->ksp, this->petsc_solver_wrapper->rhs,
-               this->petsc_solver_wrapper->solution);
+  ierr = KSPSolve(this->ksp, rhs, solution);
   CHKERRXX(ierr);
 
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-void SolverPETSc::solve(Array<Real> & solution) {
-  AKANTU_DEBUG_IN();
+// /* -------------------------------------------------------------------------- */
+// void SolverPETSc::solve(Array<Real> & solution) {
+//   AKANTU_DEBUG_IN();
 
-  this->solution = &solution;
-  this->solve();
+//   this->solution = &solution;
+//   this->solve();
 
-  PetscErrorCode ierr;
-  PETScMatrix * petsc_matrix = static_cast<PETScMatrix *>(this->matrix);
+//   PetscErrorCode ierr;
+//   PETScMatrix * petsc_matrix = static_cast<PETScMatrix *>(this->matrix);
 
-  // ierr = VecGetOwnershipRange(this->petsc_solver_wrapper->solution,
-  // solution_begin, solution_end); CHKERRXX(ierr);
-  // ierr = VecGetArray(this->petsc_solver_wrapper->solution, PetscScalar
-  // **array); CHKERRXX(ierr);
-  UInt nb_component = solution.getNbComponent();
-  UInt size = solution.getSize();
+//   // ierr = VecGetOwnershipRange(this->petsc_solver_wrapper->solution,
+//   // solution_begin, solution_end); CHKERRXX(ierr);
+//   // ierr = VecGetArray(this->petsc_solver_wrapper->solution, PetscScalar
+//   // **array); CHKERRXX(ierr);
+//   UInt nb_component = solution.getNbComponent();
+//   UInt size = solution.size();
 
-  for (UInt i = 0; i < size; ++i) {
-    for (UInt j = 0; j < nb_component; ++j) {
-      UInt i_local = i * nb_component + j;
-      if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i_local)) {
-        Int i_global =
-            this->matrix->getDOFSynchronizer().getDOFGlobalID(i_local);
-        ierr = AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao,
-                                    1, &(i_global));
-        CHKERRXX(ierr);
-        ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1, &i_global,
-                            &solution(i, j));
-        CHKERRXX(ierr);
-      }
-    }
-  }
-  synch_registry->synchronize(_gst_solver_solution);
+//   for (UInt i = 0; i < size; ++i) {
+//     for (UInt j = 0; j < nb_component; ++j) {
+//       UInt i_local = i * nb_component + j;
+//       if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i_local)) {
+//         Int i_global =
+//             this->matrix->getDOFSynchronizer().getDOFGlobalID(i_local);
+//         ierr = AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao,
+//                                     1, &(i_global));
+//         CHKERRXX(ierr);
+//         ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1, &i_global,
+//                             &solution(i, j));
+//         CHKERRXX(ierr);
+//       }
+//     }
+//   }
+//   synch_registry->synchronize(_gst_solver_solution);
 
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void SolverPETSc::setOperators() {
@@ -205,26 +145,23 @@ void SolverPETSc::setOperators() {
   PetscErrorCode ierr;
   /// set the matrix that defines the linear system and the matrix for
   /// preconditioning (here they are the same)
-  PETScMatrix * petsc_matrix = static_cast<PETScMatrix *>(this->matrix);
-
 #if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
-  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp,
-                         petsc_matrix->getPETScMatrixWrapper()->mat,
-                         petsc_matrix->getPETScMatrixWrapper()->mat);
+  ierr = KSPSetOperators(this->ksp,
+                         this->matrix.getPETScMat(),
+                         this->matrix.getPETScMat());
   CHKERRXX(ierr);
 #else
-  ierr = KSPSetOperators(this->petsc_solver_wrapper->ksp,
-                         petsc_matrix->getPETScMatrixWrapper()->mat,
-                         petsc_matrix->getPETScMatrixWrapper()->mat,
+  ierr = KSPSetOperators(this->ksp,
+                         this->matrix.getPETScMat(),
+                         this->matrix.getPETScMat(),
                          SAME_NONZERO_PATTERN);
   CHKERRXX(ierr);
 #endif
+
   /// If this is not called the solution vector is zeroed in the call to
   /// KSPSolve().
-  ierr = KSPSetInitialGuessNonzero(this->petsc_solver_wrapper->ksp, PETSC_TRUE);
-  CHKERRXX(ierr);
-  ierr = KSPSetFromOptions(this->petsc_solver_wrapper->ksp);
-  CHKERRXX(ierr);
+  ierr = KSPSetInitialGuessNonzero(this->ksp, PETSC_TRUE);
+  KSPSetFromOptions(this->ksp);
 
   AKANTU_DEBUG_OUT();
 }
@@ -1066,7 +1003,7 @@ void SolverPETSc::setOperators() {
 // //
 // //  /*
 // ------------------------------------------------------------------------ */
-// //  UInt size = matrix->getSize();
+// //  UInt size = matrix->size();
 // //
 // //  if(prank == 0) {
 // //    std::stringstream sstr_rhs; sstr_rhs << id << ":rhs";
@@ -1167,4 +1104,4 @@ void SolverPETSc::setOperators() {
 // //  AKANTU_DEBUG_OUT();
 // //}
 
-__END_AKANTU__
+} // akantu

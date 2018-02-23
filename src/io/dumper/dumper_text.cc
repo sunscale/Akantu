@@ -34,9 +34,9 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 #include "mesh.hh"
-#include "static_communicator.hh"
+#include "communicator.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DumperText::DumperText(const std::string & basename,
@@ -64,10 +64,10 @@ void DumperText::registerMesh(const Mesh & mesh,
   registerField("position", new dumper::NodalField<Real>(mesh.getNodes()));
 
   // in parallel we need node type
-  UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
+  UInt nb_proc = mesh.getCommunicator().getNbProc();
   if (nb_proc > 1) {
     registerField("nodes_type",
-                  new dumper::NodalField<Int>(mesh.getNodesType()));
+                  new dumper::NodalField<NodeType>(mesh.getNodesType()));
   }
 }
 
@@ -84,9 +84,9 @@ void DumperText::registerFilteredMesh(
                                 mesh.getNodes(), 0, 0, &nodes_filter));
 
   // in parallel we need node type
-  UInt nb_proc = StaticCommunicator::getStaticCommunicator().getNbProc();
+  UInt nb_proc = mesh.getCommunicator().getNbProc();
   if (nb_proc > 1) {
-    registerField("nodes_type", new dumper::NodalField<Int, true>(
+    registerField("nodes_type", new dumper::NodalField<NodeType, true>(
                                     mesh.getNodesType(), 0, 0, &nodes_filter));
   }
 }
@@ -110,4 +110,4 @@ void DumperText::setPrecision(UInt prec) {
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

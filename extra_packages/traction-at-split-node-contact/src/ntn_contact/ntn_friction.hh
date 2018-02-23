@@ -23,7 +23,7 @@
 #include "ntn_base_friction.hh"
 #include "ntn_friclaw_coulomb.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <template<class> class FrictionLaw = NTNFricLawCoulomb, 
@@ -84,7 +84,7 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "ntn_friction_tmpl.hh"
 

@@ -29,172 +29,45 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "distributed_synchronizer.hh"
-#include "mesh_partition_mesh_data.hh"
-#include "element_group.hh"
-
+#include "test_synchronizers_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
-using namespace akantu;
+TEST_F(TestSynchronizerFixture, DataDistribution) {
+  auto & barycenters = this->mesh->registerData<Real>("barycenters");
+  auto spatial_dimension = this->mesh->getSpatialDimension();
+  barycenters.initialize(*this->mesh, _spatial_dimension = _all_dimensions,
+                         _nb_component = spatial_dimension);
 
-int main(int argc, char *argv[]) {
-  initialize(argc, argv);
+  this->initBarycenters(barycenters, *this->mesh);
+  this->distribute();
 
-  const UInt spatial_dimension = 3;
+  for (auto && ghost_type : ghost_types) {
+    for (const auto & type :
+         this->mesh->elementTypes(_all_dimensions, ghost_type)) {
+      auto & barycenters =
+          this->mesh->getData<Real>("barycenters", type, ghost_type);
 
-  Mesh mesh_group_after (spatial_dimension, "after");
-  Mesh mesh_group_before(spatial_dimension, "before");
+      for (auto && data : enumerate(make_view(barycenters, spatial_dimension))) {
+        Element element{type, UInt(std::get<0>(data)), ghost_type};
+        Vector<Real> barycenter(spatial_dimension);
+        this->mesh->getBarycenter(element, barycenter);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
-  Int prank = comm.whoAmI();
-
-  DistributedSynchronizer *communicator_a, *communicator_b;
-  if(prank == 0) {
-    mesh_group_before.read("data_split.msh");
-    mesh_group_after .read("data_split.msh");
-
-    mesh_group_before.createGroupsFromMeshData<std::string>("physical_names");
-
-    mesh_group_before.registerData<UInt>("global_id");
-    mesh_group_after. registerData<UInt>("global_id");
-
-    for (Mesh::type_iterator tit = mesh_group_after.firstType(_all_dimensions); tit != mesh_group_after.lastType(_all_dimensions); ++tit) {
-      Array<UInt> & gidb = *(mesh_group_before.getDataPointer<UInt>("global_id", *tit));
-      Array<UInt> & gida = *(mesh_group_after .getDataPointer<UInt>("global_id", *tit));
-
-
-      Array<UInt>::scalar_iterator ait = gida.begin();
-      Array<UInt>::scalar_iterator bit = gidb.begin();
-      Array<UInt>::scalar_iterator end = gida.end();
-      for (UInt i = 0; ait != end; ++ait, ++i, ++bit) {
-	*bit = i;
-	*ait = i;
-      }
-    }
-
-    MeshPartitionScotch * partition = new MeshPartitionScotch(mesh_group_after, spatial_dimension);
-    partition->partitionate(psize);
-
-    communicator_a = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_after , partition);
-    communicator_b = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_before, partition);
-    delete partition;
-  } else {
-    communicator_a = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_after , NULL);
-    communicator_b = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh_group_before, NULL);
-  }
-
-  mesh_group_after.createGroupsFromMeshData<std::string>("physical_names");
-
-  if(prank == 0) std::cout << mesh_group_after;
-
-  GroupManager::element_group_iterator grp_ait = mesh_group_after.element_group_begin();
-  GroupManager::element_group_iterator grp_end = mesh_group_after.element_group_end();
-  for (; grp_ait != grp_end; ++grp_ait) {
-    std::string grp = grp_ait->first;
-    const ElementGroup & bgrp = mesh_group_before.getElementGroup(grp);
-    const ElementGroup & agrp = *grp_ait->second;
-
-    for (ghost_type_t::iterator git = ghost_type_t::begin(); git != ghost_type_t::end(); ++git) {
-      GhostType ghost_type = *git;
-
-      for (Mesh::type_iterator tit = bgrp.firstType(_all_dimensions, ghost_type);
-	   tit != bgrp.lastType(_all_dimensions, ghost_type); ++tit) {
-	Array<UInt> & gidb = *(mesh_group_before.getDataPointer<UInt>("global_id", *tit, ghost_type));
-	Array<UInt> & gida = *(mesh_group_after .getDataPointer<UInt>("global_id", *tit, ghost_type));
-
-	Array<UInt> bgelem(bgrp.getElements(*tit, ghost_type));
-	Array<UInt> agelem(agrp.getElements(*tit, ghost_type));
-
-	Array<UInt>::scalar_iterator ait = agelem.begin();
-	Array<UInt>::scalar_iterator bit = bgelem.begin();
-	Array<UInt>::scalar_iterator end = agelem.end();
-	for (; ait != end; ++ait, ++bit) {
-	  *bit = gidb(*bit);
-	  *ait = gida(*ait);
-	}
-
-	std::sort(bgelem.begin(), bgelem.end());
-	std::sort(agelem.begin(), agelem.end());
-
-	if(!std::equal(bgelem.begin(), bgelem.end(), agelem.begin())) {
-	  std::cerr << "The filters array for the group " << grp <<
-	    " and for the element type " << *tit << ", " << ghost_type <<
-	    " do not match" <<std::endl;
-
-	  debug::setDebugLevel(dblTest);
-
-	  std::cerr << bgelem << std::endl;
-	  std::cerr << agelem << std::endl;
-	  debug::debugger.exit(EXIT_FAILURE);
-	}
+        auto dist = (std::get<1>(data) - barycenter).template norm<L_inf>();
+        EXPECT_NEAR(dist, 0, 1e-7);
       }
     }
   }
+}
 
+TEST_F(TestSynchronizerFixture, DataDistributionTags) {
+  this->distribute();
 
-  GroupManager::node_group_iterator ngrp_ait = mesh_group_after.node_group_begin();
-  GroupManager::node_group_iterator ngrp_end = mesh_group_after.node_group_end();
-  for (; ngrp_ait != ngrp_end; ++ngrp_ait) {
-    std::string grp = ngrp_ait->first;
-    const NodeGroup & bgrp = mesh_group_before.getNodeGroup(grp);
-    const NodeGroup & agrp = *ngrp_ait->second;
+  for (const auto & type : this->mesh->elementTypes(_all_dimensions)) {
+    auto & tags = this->mesh->getData<UInt>("tag_0", type);
+    Array<UInt>::const_vector_iterator tags_it = tags.begin(1);
+    Array<UInt>::const_vector_iterator tags_end = tags.end(1);
 
-    const Array<UInt> & gidb = mesh_group_before.getGlobalNodesIds();
-    const Array<UInt> & gida = mesh_group_after.getGlobalNodesIds();
-
-    Array<UInt> bgnode(0, 1);
-    Array<UInt> agnode(0, 1);
-
-    Array<UInt>::const_scalar_iterator ait = agrp.begin();
-    Array<UInt>::const_scalar_iterator bit = bgrp.begin();
-    Array<UInt>::const_scalar_iterator end = agrp.end();
-    for (; ait != end; ++ait, ++bit) {
-      if(psize > 1) {
-	if(mesh_group_before.isLocalOrMasterNode(*bit))
-	  bgnode.push_back(gidb(*bit));
-
-	if(mesh_group_after.isLocalOrMasterNode(*ait))
-	  agnode.push_back(gida(*ait));
-      }
-    }
-
-    std::sort(bgnode.begin(), bgnode.end());
-    std::sort(agnode.begin(), agnode.end());
-
-    if(!std::equal(bgnode.begin(), bgnode.end(), agnode.begin())) {
-      std::cerr << "The filters array for the group " << grp <<
-	" do not match" <<std::endl;
-
-      debug::setDebugLevel(dblTest);
-
-      std::cerr << bgnode << std::endl;
-      std::cerr << agnode << std::endl;
-      debug::debugger.exit(EXIT_FAILURE);
-    }
+    // The number of tags should match the number of elements on rank"
+    EXPECT_EQ(this->mesh->getNbElement(type), tags.size());
   }
-
-
-  mesh_group_after.getElementGroup("inside").setBaseName("after_inside");
-  mesh_group_after.getElementGroup("inside").dump();
-  mesh_group_after.getElementGroup("outside").setBaseName("after_outside");
-  mesh_group_after.getElementGroup("outside").dump();
-  mesh_group_after.getElementGroup("volume").setBaseName("after_volume");
-  mesh_group_after.getElementGroup("volume").dump();
-
-  mesh_group_before.getElementGroup("inside").setBaseName("before_inside");
-  mesh_group_before.getElementGroup("inside").dump();
-  mesh_group_before.getElementGroup("outside").setBaseName("before_outside");
-  mesh_group_before.getElementGroup("outside").dump();
-  mesh_group_before.getElementGroup("volume").setBaseName("before_volume");
-  mesh_group_before.getElementGroup("volume").dump();
-
-
-  delete communicator_a;
-  delete communicator_b;
-
-  finalize();
-
-  return EXIT_SUCCESS;
 }

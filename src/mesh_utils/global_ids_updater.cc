@@ -32,8 +32,11 @@
 /* -------------------------------------------------------------------------- */
 #include "global_ids_updater.hh"
 #include "mesh_utils.hh"
+#include "element_synchronizer.hh"
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+
+namespace akantu {
 
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
   UInt total_nb_new_nodes = this->updateGlobalIDsLocally(old_nb_nodes);
@@ -48,9 +51,7 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt old_nb_nodes) {
 }
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
-  this->synchronizer->computeBufferSize(*this, _gst_giu_global_conn);
-  this->synchronizer->asynchronousSynchronize(*this, _gst_giu_global_conn);
-  this->synchronizer->waitEndSynchronize(*this, _gst_giu_global_conn);
+  this->synchronizer.synchronizeOnce(*this, _gst_giu_global_conn);
 }
 
-__END_AKANTU__
+} // akantu

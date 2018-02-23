@@ -32,13 +32,13 @@
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
-#include "static_communicator.hh"
+#include "communicator.hh"
 #include "aka_common.hh"
 #include "aka_csr.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_utils.hh"
-#include "distributed_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "petsc_matrix.hh"
 #include "fe_engine.hh"
 #include "dof_synchronizer.hh"
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   UInt spatial_dimension = 2;
 
 
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  const auto & comm = akantu::Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
@@ -64,16 +64,16 @@ int main(int argc, char *argv[]) {
   /* ------------------------------------------------------------------------ */
   /* Parallel initialization                                                  */
   /* ------------------------------------------------------------------------ */
-  DistributedSynchronizer * communicator = NULL;
+  ElementSynchronizer * communicator = NULL;
   if(prank == 0) {
     /// creation mesh
     mesh.read("triangle.msh");
     MeshPartitionScotch * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    communicator = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
   
   // DumperParaview mesh_dumper("mesh_dumper");

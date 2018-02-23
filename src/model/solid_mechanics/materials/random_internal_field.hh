@@ -38,7 +38,7 @@
 #ifndef __AKANTU_RANDOM_INTERNAL_FIELD_HH__
 #define __AKANTU_RANDOM_INTERNAL_FIELD_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * class for the internal fields of materials with a random
@@ -46,7 +46,7 @@ __BEGIN_AKANTU__
  */
 template<typename T,
 	 template<typename> class BaseField = InternalField,
-	 template<typename> class Generator = RandGenerator>
+	 template<typename> class Generator = RandomGenerator>
 class RandomInternalField : public BaseField<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -54,31 +54,30 @@ class RandomInternalField : public BaseField<T> {
 public:
   RandomInternalField(const ID & id, Material & material);
 
-  virtual ~RandomInternalField();
+  ~RandomInternalField() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-private:
-  RandomInternalField operator=(__attribute__((unused)) const RandomInternalField & other) {};
+  RandomInternalField operator=(const RandomInternalField &) = delete;
 
 public:
   AKANTU_GET_MACRO(RandomParameter, random_parameter, const RandomParameter<T>);
 
   /// initialize the field to a given number of component
-  virtual void initialize(UInt nb_component);
+  void initialize(UInt nb_component) override;
 
   /// set the field to a given value
-  void setDefaultValue(const T & value);
+  void setDefaultValue(const T & value) override;
 
   /// set the specified random distribution to a given parameter
   void setRandomDistribution(const RandomParameter<T> & param);
 
   /// print the content
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 protected:
-  virtual void setArrayValues(T * begin, T * end);
+  void setArrayValues(T * begin, T * end) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -104,6 +103,6 @@ inline std::ostream & operator <<(std::ostream & stream, const RandomInternalFie
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_RANDOM_INTERNAL_FIELD_HH__ */

@@ -38,14 +38,19 @@
 #ifndef __AKANTU_MATERIAL_INLINE_IMPL_CC__
 #define __AKANTU_MATERIAL_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline UInt Material::addElement(const ElementType & type, UInt element,
                                  const GhostType & ghost_type) {
   Array<UInt> & el_filter = this->element_filter(type, ghost_type);
   el_filter.push_back(element);
-  return el_filter.getSize() - 1;
+  return el_filter.size() - 1;
+}
+
+/* -------------------------------------------------------------------------- */
+inline UInt Material::addElement(const Element & element) {
+  return this->addElement(element.type, element.element, element.ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -136,7 +141,7 @@ inline void Material::setCauchyStressArray(const Matrix<Real> & S_t,
                                            Matrix<Real> & sigma_voight) {
   AKANTU_DEBUG_IN();
   sigma_voight.clear();
-  // see Finite ekement formulations for large deformation dynamic analysis,
+  // see Finite element formulations for large deformation dynamic analysis,
   // Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
 
   /*
@@ -182,20 +187,19 @@ inline Element
 Material::convertToLocalElement(const Element & global_element) const {
   UInt ge = global_element.element;
 #ifndef AKANTU_NDEBUG
-  UInt model_mat_index = this->model->getMaterialByElement(
+  UInt model_mat_index = this->model.getMaterialByElement(
       global_element.type, global_element.ghost_type)(ge);
 
-  UInt mat_index = this->model->getMaterialIndex(this->name);
+  UInt mat_index = this->model.getMaterialIndex(this->name);
   AKANTU_DEBUG_ASSERT(model_mat_index == mat_index,
                       "Conversion of a global  element in a local element for "
                       "the wrong material "
                           << this->name << std::endl);
 #endif
-  UInt le = this->model->getMaterialLocalNumbering(
+  UInt le = this->model.getMaterialLocalNumbering(
       global_element.type, global_element.ghost_type)(ge);
 
-  Element tmp_quad(global_element.type, le, global_element.ghost_type,
-                   global_element.kind);
+  Element tmp_quad{global_element.type, le, global_element.ghost_type};
   return tmp_quad;
 }
 
@@ -206,15 +210,14 @@ Material::convertToGlobalElement(const Element & local_element) const {
   UInt ge =
       this->element_filter(local_element.type, local_element.ghost_type)(le);
 
-  Element tmp_quad(local_element.type, ge, local_element.ghost_type,
-                   local_element.kind);
+  Element tmp_quad{local_element.type, ge, local_element.ghost_type};
   return tmp_quad;
 }
 
 /* -------------------------------------------------------------------------- */
 inline IntegrationPoint
 Material::convertToLocalPoint(const IntegrationPoint & global_point) const {
-  const FEEngine & fem = this->model->getFEEngine();
+  const FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = fem.getNbIntegrationPoints(global_point.type);
   Element el =
       this->convertToLocalElement(static_cast<const Element &>(global_point));
@@ -225,7 +228,7 @@ Material::convertToLocalPoint(const IntegrationPoint & global_point) const {
 /* -------------------------------------------------------------------------- */
 inline IntegrationPoint
 Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
-  const FEEngine & fem = this->model->getFEEngine();
+  const FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = fem.getNbIntegrationPoints(local_point.type);
   Element el =
       this->convertToGlobalElement(static_cast<const Element &>(local_point));
@@ -234,8 +237,8 @@ Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Material::getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const {
+inline UInt Material::getNbData(const Array<Element> & elements,
+                                const SynchronizationTag & tag) const {
   if (tag == _gst_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
            spatial_dimension * sizeof(Real) *
@@ -245,9 +248,9 @@ inline UInt Material::getNbDataForElements(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Material::packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const {
+inline void Material::packData(CommunicationBuffer & buffer,
+                               const Array<Element> & elements,
+                               const SynchronizationTag & tag) const {
   if (tag == _gst_smm_stress) {
     if (this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -258,9 +261,9 @@ inline void Material::packElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Material::unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag) {
+inline void Material::unpackData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements,
+                                 const SynchronizationTag & tag) {
   if (tag == _gst_smm_stress) {
     if (this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -271,10 +274,9 @@ inline void Material::unpackElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T>
-inline const T & Material::getParam(const ID & param) const {
+inline const Parameter & Material::getParam(const ID & param) const {
   try {
-    return get<T>(param);
+    return get(param);
   } catch (...) {
     AKANTU_EXCEPTION("No parameter " << param << " in the material "
                                      << getID());
@@ -299,7 +301,7 @@ inline void Material::packElementDataHelper(
     const ElementTypeMapArray<T> & data_to_pack, CommunicationBuffer & buffer,
     const Array<Element> & elements, const ID & fem_id) const {
   DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
-                                           model->getFEEngine(fem_id));
+                                           model.getFEEngine(fem_id));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -308,7 +310,7 @@ inline void Material::unpackElementDataHelper(
     ElementTypeMapArray<T> & data_to_unpack, CommunicationBuffer & buffer,
     const Array<Element> & elements, const ID & fem_id) {
   DataAccessor::unpackElementalDataHelper<T>(data_to_unpack, buffer, elements,
-                                             true, model->getFEEngine(fem_id));
+                                             true, model.getFEEngine(fem_id));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -345,16 +347,16 @@ inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline bool Material::isInternal(const ID & id,
+inline bool Material::isInternal(__attribute__((unused)) const ID & id,
+                                 __attribute__((unused))
                                  const ElementKind & element_kind) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 template <>
 inline bool Material::isInternal<Real>(const ID & id,
                                        const ElementKind & element_kind) const {
-  std::map<ID, InternalField<Real> *>::const_iterator internal_array =
-      internal_vectors_real.find(this->getID() + ":" + id);
+  auto internal_array = internal_vectors_real.find(this->getID() + ":" + id);
 
   if (internal_array == internal_vectors_real.end() ||
       internal_array->second->getElementKind() != element_kind)
@@ -381,7 +383,7 @@ Material::getInternalDataPerElem(const ID & field_id,
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
 
-    typedef typename InternalField<T>::type_iterator type_iterator;
+    using type_iterator = typename InternalField<T>::type_iterator;
     type_iterator tit = internal_field.firstType(*gt);
     type_iterator tend = internal_field.lastType(*gt);
 
@@ -410,7 +412,7 @@ void Material::flattenInternal(const std::string & field_id,
   const FEEngine & fe_engine = internal_field.getFEEngine();
   const Mesh & mesh = fe_engine.getMesh();
 
-  typedef typename InternalField<T>::filter_type_iterator type_iterator;
+  using type_iterator = typename InternalField<T>::filter_type_iterator;
   type_iterator tit = internal_field.filterFirstType(ghost_type);
   type_iterator tend = internal_field.filterLastType(ghost_type);
 
@@ -423,15 +425,15 @@ void Material::flattenInternal(const std::string & field_id,
     // total number of elements in the corresponding mesh
     UInt nb_element_dst = mesh.getNbElement(type, ghost_type);
     // number of element in the internal field
-    UInt nb_element_src = filter.getSize();
+    UInt nb_element_src = filter.size();
     // number of quadrature points per elem
     UInt nb_quad_per_elem = fe_engine.getNbIntegrationPoints(type);
     // number of data per quadrature point
     UInt nb_data_per_quad = internal_field.getNbComponent();
 
     if (!internal_flat.exists(type, ghost_type)) {
-      internal_flat.alloc(nb_element_dst * nb_quad_per_elem,
-                          nb_data_per_quad, type, ghost_type);
+      internal_flat.alloc(nb_element_dst * nb_quad_per_elem, nb_data_per_quad,
+                          type, ghost_type);
     }
 
     if (nb_element_src == 0)
@@ -446,9 +448,9 @@ void Material::flattenInternal(const std::string & field_id,
     Array<UInt>::const_scalar_iterator it = filter.begin();
     Array<UInt>::const_scalar_iterator end = filter.end();
 
-    Array<Real>::const_vector_iterator it_src =
+    auto it_src =
         src_vect.begin_reinterpret(nb_data, nb_element_src);
-    Array<Real>::vector_iterator it_dst =
+    auto it_dst =
         dst_vect.begin_reinterpret(nb_data, nb_element_dst);
 
     for (; it != end; ++it, ++it_src) {
@@ -457,6 +459,6 @@ void Material::flattenInternal(const std::string & field_id,
   }
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_INLINE_IMPL_CC__ */

@@ -35,11 +35,8 @@
  * and check that it gives the identity
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "fe_engine.hh"
-#include "shape_lagrange.hh"
-#include "integrator_gauss.hh"
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <iostream>
@@ -47,98 +44,62 @@
 
 using namespace akantu;
 
-int main(int argc, char * argv[]) {
-  akantu::initialize(argc, argv);
-  debug::setDebugLevel(dblTest);
+namespace {
 
-  const ElementType type = TYPE;
-  UInt dim = ElementClass<type>::getSpatialDimension();
-
-  Real eps = 1e-12;
-  std::cout << "Epsilon : " << eps << std::endl;
-
-  Mesh my_mesh(dim);
-
-  std::stringstream meshfilename;
-  meshfilename << type << ".msh";
-  my_mesh.read(meshfilename.str());
-
-  FEEngine * fem = new FEEngineTemplate<IntegratorGauss, ShapeLagrange>(
-      my_mesh, dim, "my_fem");
-
-  fem->initShapeFunctions();
-
+TYPED_TEST(TestFEMFixture, GradientPoly) {
+  this->fem->initShapeFunctions();
   Real alpha[2][3] = {{13, 23, 31}, {11, 7, 5}};
 
-  /// create the 2 component field
-  const Array<Real> & position = fem->getMesh().getNodes();
-  Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
+  const auto dim = this->dim;
+  const auto type = this->type;
 
-  UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
+  const auto & position = this->fem->getMesh().getNodes();
+  Array<Real> const_val(this->fem->getMesh().getNbNodes(), 2, "const_val");
+  for(auto && pair : zip(make_view(position, dim), make_view(const_val, 2))) {
+    auto & pos = std::get<0>(pair);
+    auto & const_ = std::get<1>(pair);
 
-  Array<Real> grad_on_quad(nb_quadrature_points, 2 * dim, "grad_on_quad");
-  for (UInt i = 0; i < const_val.getSize(); ++i) {
-    const_val(i, 0) = 0;
-    const_val(i, 1) = 0;
+    const_.set(0.);
 
     for (UInt d = 0; d < dim; ++d) {
-      const_val(i, 0) += alpha[0][d] * position(i, d);
-      const_val(i, 1) += alpha[1][d] * position(i, d);
+      const_(0) += alpha[0][d] * pos(d);
+      const_(1) += alpha[1][d] * pos(d);
     }
   }
 
   /// compute the gradient
-  fem->gradientOnIntegrationPoints(const_val, grad_on_quad, 2, type);
-
-  // std::cout << "Linear array on nodes : " << const_val << std::endl;
-  // std::cout << "Gradient on quad : " << grad_on_quad << std::endl;
+  Array<Real> grad_on_quad(this->nb_quadrature_points_total, 2 * dim, "grad_on_quad");
+  this->fem->gradientOnIntegrationPoints(const_val, grad_on_quad, 2, type);
 
   /// check the results
-  Array<Real>::matrix_iterator it = grad_on_quad.begin(2, dim);
-  Array<Real>::matrix_iterator it_end = grad_on_quad.end(2, dim);
-  for (; it != it_end; ++it) {
+  for(auto && grad : make_view(grad_on_quad, 2, dim)) {
     for (UInt d = 0; d < dim; ++d) {
-      Matrix<Real> & grad = *it;
-      if (!(std::abs(grad(0, d) - alpha[0][d]) < eps) ||
-          !(std::abs(grad(1, d) - alpha[1][d]) < eps)) {
-        std::cout << "Error gradient is not correct " << (*it)(0, d) << " "
-                  << alpha[0][d] << " (" << std::abs((*it)(0, d) - alpha[0][d])
-                  << ")"
-                  << " - " << (*it)(1, d) << " " << alpha[1][d] << " ("
-                  << std::abs((*it)(1, d) - alpha[1][d]) << ")"
-                  << " - " << d << std::endl;
-        std::cout << *it << std::endl;
-        exit(EXIT_FAILURE);
-      }
+      EXPECT_NEAR(grad(0, d), alpha[0][d], 5e-13);
+      EXPECT_NEAR(grad(1, d), alpha[1][d], 5e-13);
     }
   }
+}
 
-  // compute gradient of coordinates
+TYPED_TEST(TestFEMFixture, GradientPositions) {
+  this->fem->initShapeFunctions();
+  const auto dim = this->dim;
+  const auto type = this->type;
+
+  UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(type) * this->nb_element;
   Array<Real> grad_coord_on_quad(nb_quadrature_points, dim * dim,
                                  "grad_coord_on_quad");
-  fem->gradientOnIntegrationPoints(my_mesh.getNodes(), grad_coord_on_quad,
-                                   my_mesh.getSpatialDimension(), type);
 
-  // std::cout << "Node positions : " << my_mesh.getNodes() << std::endl;
-  // std::cout << "Gradient of nodes : " << grad_coord_on_quad << std::endl;
+  const auto & position = this->mesh->getNodes();
+  this->fem->gradientOnIntegrationPoints(position, grad_coord_on_quad,
+                                         dim, type);
 
-  Array<Real>::matrix_iterator itp = grad_coord_on_quad.begin(dim, dim);
-  Array<Real>::matrix_iterator itp_end = grad_coord_on_quad.end(dim, dim);
+   auto I = Matrix<Real>::eye(UInt(dim));
 
-  for (; itp != itp_end; ++itp) {
-    for (UInt i = 0; i < dim; ++i) {
-      for (UInt j = 0; j < dim; ++j) {
-        if (!(std::abs((*itp)(i, j) - (i == j)) < eps)) {
-          std::cout << *itp << std::endl;
-          exit(EXIT_FAILURE);
-        }
-      }
-    }
-  }
+   for(auto && grad : make_view(grad_coord_on_quad, dim, dim)) {
+     auto diff = (I - grad).template norm<L_inf>();
 
-  delete fem;
-  finalize();
+     EXPECT_NEAR(0., diff, 2e-14);
+   }
+}
 
-  return EXIT_SUCCESS;
 }

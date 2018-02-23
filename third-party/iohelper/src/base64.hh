@@ -129,14 +129,14 @@ class Base64Writer{
 
 /* -------------------------------------------------------------------------- */
 template<typename T> inline void Base64Writer::push(T t) {
-  unsigned char * c = (unsigned char*) & t;
+  auto * c = (unsigned char *)&t;
   for (unsigned int i = 0 ; i < sizeof(T) ; ++i){
     this->PushByteInBase64(c[i]);
   }
 }
 
-template<> inline void Base64Writer::push<char *>(char * str) { 
-  unsigned char * c = (unsigned char*)str;
+template<> inline void Base64Writer::push<char *>(char * str) {
+  auto * c = (unsigned char *)str;
   for (unsigned int i = 0 ; i < 512 ; ++i){
     if (str[i] == '\0') break;
     PushByteInBase64(c[i]);

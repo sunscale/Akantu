@@ -34,7 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "element.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -44,12 +44,11 @@ class element_iterator {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  typedef typename types::it_type      it_type;
-  typedef typename types::field_type field_type;
-  typedef typename types::array_type array_type;
-  typedef typename types::array_iterator array_iterator;
-  typedef final_iterator<types> iterator;
+  using it_type = typename types::it_type;
+  using field_type = typename types::field_type;
+  using array_type = typename types::array_type;
+  using array_iterator = typename types::array_iterator;
+  using iterator = final_iterator<types>;
 
 public:
 
@@ -91,7 +90,7 @@ public:
         const array_type & vect = field(*tit, ghost_type);
         UInt _nb_data_per_elem = getNbDataPerElem(*tit);
         UInt nb_component = vect.getNbComponent();
-        UInt size = (vect.getSize() * nb_component) / _nb_data_per_elem;
+        UInt size = (vect.size() * nb_component) / _nb_data_per_elem;
 
         array_it       = vect.begin_reinterpret(_nb_data_per_elem,size);
         array_it_end   = vect.end_reinterpret  (_nb_data_per_elem,size);
@@ -105,7 +104,7 @@ public:
   UInt element_type() { return getIOHelperType(*tit); }
 
   Element getCurrentElement(){
-    return Element(*tit,array_it.getCurrentIndex());
+    return Element{*tit, array_it.getCurrentIndex(), _not_ghost};
   }
 
   UInt getNbDataPerElem(const ElementType & type) const {
@@ -151,11 +150,11 @@ public:
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  typedef element_iterator<types, ::akantu::dumper::elemental_field_iterator> parent;
-  typedef typename types::it_type     it_type;
-  typedef typename types::return_type return_type;
-  typedef typename types::field_type  field_type;
-  typedef typename types::array_iterator array_iterator;
+  using parent = element_iterator<types, ::akantu::dumper::elemental_field_iterator>;
+  using it_type = typename types::it_type;
+  using return_type = typename types::return_type;
+  using field_type = typename types::field_type;
+  using array_iterator = typename types::array_iterator;
 
 public:
 
@@ -185,7 +184,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 /* -------------------------------------------------------------------------- */
 
 

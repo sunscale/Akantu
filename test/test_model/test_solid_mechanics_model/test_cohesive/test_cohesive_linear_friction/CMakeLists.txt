@@ -30,8 +30,8 @@
 #
 #===============================================================================
 
-register_test(test_cohesive_linear_friction
-  SOURCES test_cohesive_friction.cc
-  FILES_TO_COPY mesh_cohesive_friction.msh material.dat
-  PACKAGE cohesive_element
-  )
+#register_test(test_cohesive_linear_friction
+  #SOURCES test_cohesive_friction.cc
+  #FILES_TO_COPY mesh_cohesive_friction.msh material.dat
+  #PACKAGE cohesive_element
+  #)

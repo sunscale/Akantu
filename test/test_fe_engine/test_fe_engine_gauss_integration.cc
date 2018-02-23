@@ -30,175 +30,126 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "fe_engine.hh"
-#include "shape_lagrange.hh"
-#include "integrator_gauss.hh"
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
+#include <gtest/gtest.h>
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange> FEM;
-const ElementType type = TYPE;
+namespace {
+/* -------------------------------------------------------------------------- */
+template <size_t t> using degree_t = std::integral_constant<size_t, t>;
 
-//                        cst           x           x^2           x^3
-//                        x^4          x^5
-Real alpha[3][6] = {{0.40062394, 0.13703225, 0.51731446, 0.87830084, 0.5410543,
-                     0.71842292}, // x
-                    {0.41861835, 0.11080576, 0.49874043, 0.49077504, 0.85073835,
-                     0.66259755}, // y
-                    {0.92620845, 0.7503478, 0.62962232, 0.31662719, 0.64069644,
-                     0.30878135}}; // z
+/* -------------------------------------------------------------------------- */
+using TestDegreeTypes = std::tuple<degree_t<0>, degree_t<1>, degree_t<2>, degree_t<3>, degree_t<4>, degree_t<5>>;
 
-static Vector<Real> eval_poly(UInt degree, const Vector<Real> & x) {
-  Vector<Real> res(x.size());
-  for (UInt i = 0; i < degree + 1; ++i) {
-    for (UInt d = 0; d < x.size(); ++d) {
-      res(d) += std::pow(x(d), i) * alpha[d][i];
+std::array<Polynomial<5>, 3> global_polys{
+    {{0.40062394, 0.13703225, 0.51731446, 0.87830084, 0.5410543, 0.71842292},
+     {0.41861835, 0.11080576, 0.49874043, 0.49077504, 0.85073835, 0.66259755},
+     {0.92620845, 0.7503478, 0.62962232, 0.31662719, 0.64069644, 0.30878135}}};
+
+template <typename T>
+class TestGaussIntegrationFixture
+    : public TestFEMFixture<std::tuple_element_t<0, T>> {
+protected:
+  using parent = TestFEMFixture<std::tuple_element_t<0, T>>;
+  static constexpr size_t degree{std::tuple_element_t<1, T>::value};
+
+public:
+  TestGaussIntegrationFixture() : integration_points_pos(0, parent::dim) {}
+
+  void SetUp() override {
+    parent::SetUp();
+    this->fem->initShapeFunctions();
+
+    auto integration_points =
+             this->fem->getIntegrator().template getIntegrationPoints <
+             parent::type,
+         degree == 0 ? 1 : degree > ();
+
+    nb_integration_points = integration_points.cols();
+
+    auto shapes_size = ElementClass<parent::type>::getShapeSize();
+    Array<Real> shapes(0, shapes_size);
+    this->fem->getShapeFunctions()
+        .template computeShapesOnIntegrationPoints<parent::type>(
+            this->mesh->getNodes(), integration_points, shapes, _not_ghost);
+
+    auto vect_size = this->nb_integration_points * this->nb_element;
+    integration_points_pos.resize(vect_size);
+    this->fem->getShapeFunctions()
+        .template interpolateOnIntegrationPoints<parent::type>(
+            this->mesh->getNodes(), integration_points_pos, this->dim, shapes);
+
+    for (size_t d = 0; d < this->dim; ++d) {
+      polys[d] = global_polys[d].extract(degree);
     }
   }
-  return res;
+
+  void testIntegrate() {
+    std::stringstream sstr;
+    sstr << this->type << ":" << this->degree;
+    SCOPED_TRACE(sstr.str().c_str());
+
+    auto vect_size = this->nb_integration_points * this->nb_element;
+    Array<Real> polynomial(vect_size);
+    size_t dim = parent::dim;
+
+    for (size_t d = 0; d < dim; ++d) {
+      auto poly = this->polys[d];
+      for (auto && pair :
+           zip(polynomial, make_view(this->integration_points_pos, dim))) {
+        auto && p = std::get<0>(pair);
+        auto & x = std::get<1>(pair);
+        p = poly(x(d));
+      }
+
+      auto res =
+          this->fem->getIntegrator()
+          .template integrate<parent::type, (degree == 0 ? 1 : degree)>(polynomial);
+      auto expect = poly.integrate(this->lower(d), this->upper(d));
+
+      for (size_t o = 0; o < dim; ++o) {
+        if (o == d)
+          continue;
+        expect *= this->upper(d) - this->lower(d);
+      }
+
+      EXPECT_NEAR(expect, res, 5e-14);
+    }
+  }
+
+protected:
+  UInt nb_integration_points;
+  std::array<Array<Real>, parent::dim> polynomial;
+  Array<Real> integration_points_pos;
+  std::array<Polynomial<5>, 3> polys;
+};
+
+template <typename T>
+constexpr size_t TestGaussIntegrationFixture<T>::degree;
+
+/* -------------------------------------------------------------------------- */
+/* Tests                                                                      */
+/* -------------------------------------------------------------------------- */
+TYPED_TEST_CASE_P(TestGaussIntegrationFixture);
+
+TYPED_TEST_P(TestGaussIntegrationFixture, ArbitraryOrder) {
+  this->testIntegrate();
 }
 
-static Vector<Real> eval_int(UInt degree, const Vector<Real> & a,
-                             const Vector<Real> & b) {
-  Vector<Real> res(a.size());
-  for (UInt i = 0; i < degree + 1; ++i) {
-    for (UInt d = 0; d < a.size(); ++d) {
-      res(d) += (std::pow(b(d), i + 1) - std::pow(a(d), i + 1)) * alpha[d][i] / Real(i + 1);
-    }
-  }
+REGISTER_TYPED_TEST_CASE_P(TestGaussIntegrationFixture, ArbitraryOrder);
 
-  if (a.size() == 3) {
-    res(_x) *= std::abs(b(_y) - a(_y)) * std::abs(b(_z) - a(_z));
-    res(_y) *= std::abs(b(_x) - a(_x)) * std::abs(b(_z) - a(_z));
-    res(_z) *= std::abs(b(_y) - a(_y)) * std::abs(b(_x) - a(_x));
-  } else if (a.size() == 2) {
-    res(_x) *= std::abs(b(_y) - a(_y));
-    res(_y) *= std::abs(b(_x) - a(_x));
-  }
 
-  return res;
-}
+using TestTypes =
+    gtest_list_t<tuple_split_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
-template <UInt degree>
-static Vector<Real> integrate_poly(UInt poly_degree, FEM & fem) {
-  Mesh & mesh = fem.getMesh();
-  UInt dim = mesh.getSpatialDimension();
+INSTANTIATE_TYPED_TEST_CASE_P(Split1, TestGaussIntegrationFixture, TestTypes);
 
-  Matrix<Real> integration_points =
-      fem.getIntegrator().getIntegrationPoints<type, degree>();
+using TestTypesTail =
+    gtest_list_t<tuple_split_tail_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
-  Vector<Real> integration_weights =
-      fem.getIntegrator().getIntegrationWeights<type, degree>();
+INSTANTIATE_TYPED_TEST_CASE_P(Split2, TestGaussIntegrationFixture, TestTypesTail);
 
-  // for (UInt i = 0; i < integration_points.cols(); ++i) {
-  //   std::cout << "q(" << i << ") = " << Vector<Real>(integration_points(i))
-  //   << " - w(" << i << ") = "<< integration_weights[i] << std::endl;
-  // }
-
-  UInt nb_integration_points = integration_points.cols();
-  UInt nb_element = mesh.getNbElement(type);
-
-  UInt shapes_size = ElementClass<type>::getShapeSize();
-  Array<Real> shapes(0, shapes_size);
-  fem.getShapeFunctions().computeShapesOnIntegrationPoints<type>(
-      mesh.getNodes(), integration_points, shapes, _not_ghost);
-
-  UInt vect_size = nb_integration_points * nb_element;
-  Array<Real> integration_points_pos(vect_size, dim);
-  fem.getShapeFunctions().interpolateOnIntegrationPoints<type>(
-      mesh.getNodes(), integration_points_pos, dim, shapes);
-
-  Array<Real> polynomial(vect_size, dim);
-
-  Array<Real>::vector_iterator P_it = polynomial.begin(dim);
-  Array<Real>::vector_iterator P_end = polynomial.end(dim);
-  Array<Real>::const_vector_iterator x_it = integration_points_pos.begin(dim);
-
-  for (; P_it != P_end; ++P_it, ++x_it) {
-    *P_it = eval_poly(poly_degree, *x_it);
-     //   std::cout << "Q = " << *x_it << std::endl;
-     //   std::cout << "P(Q) = " << *P_it << std::endl;
-  }
-
-  Vector<Real> res(dim);
-
-  Array<Real> polynomial_1d(vect_size, 1);
-  for (UInt d = 0; d < dim; ++d) {
-    Array<Real>::const_vector_iterator P_it = polynomial.begin(dim);
-    Array<Real>::const_vector_iterator P_end = polynomial.end(dim);
-    Array<Real>::scalar_iterator P1_it = polynomial_1d.begin();
-    for (; P_it != P_end; ++P_it, ++P1_it) {
-      *P1_it = (*P_it)(d);
-      // std::cout << "P(Q, d) = " << *P1_it << std::endl;
-    }
-    res(d) = fem.getIntegrator().integrate<type, degree>(polynomial_1d);
-  }
-
-  return res;
-}
-
-int main(int argc, char * argv[]) {
-  akantu::initialize(argc, argv);
-
-  const UInt dim = ElementClass<type>::getSpatialDimension();
-  Mesh mesh(dim);
-
-  std::stringstream meshfilename;
-  meshfilename << type << ".msh";
-  mesh.read(meshfilename.str());
-
-  FEM fem(mesh, dim, "my_fem");
-
-  mesh.computeBoundingBox();
-  const Vector<Real> & lower = mesh.getLowerBounds();
-  const Vector<Real> & upper = mesh.getUpperBounds();
-
-  bool ok = true;
-
-  for (UInt d = 0; d < 6; ++d) {
-    Vector<Real> res(dim);
-    switch (d) {
-    case 0:
-      res = integrate_poly<1>(d, fem);
-      break;
-    case 1:
-      res = integrate_poly<1>(d, fem);
-      break;
-    case 2:
-      res = integrate_poly<2>(d, fem);
-      break;
-    case 3:
-      res = integrate_poly<3>(d, fem);
-      break;
-    case 4:
-      res = integrate_poly<4>(d, fem);
-      break;
-    case 5:
-      res = integrate_poly<5>(d, fem);
-      break;
-    }
-
-    Vector<Real> exact(dim);
-    exact = eval_int(d, lower, upper);
-
-    Vector<Real> error(dim);
-    error = exact - res;
-
-    Real error_n = error.norm<L_inf>();
-    if (error_n > 5e-14) {
-      std::cout << d << " -> Resultat " << res << " - ";
-      std::cout << "Exact" << exact << " -- ";
-      std::cout << error << " {" << error_n << "}" << std::endl;
-      ok = false;
-    }
-  }
-
-  finalize();
-
-  if (ok)
-    return 0;
-  else
-    return 1;
 }

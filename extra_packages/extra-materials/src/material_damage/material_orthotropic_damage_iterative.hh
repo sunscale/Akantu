@@ -19,37 +19,37 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_orthotropic_damage.hh"
 #include "material.hh"
+#include "material_orthotropic_damage.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_HH__
 #define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material damage iterative
  *
  * parameters in the material files :
- *   - Sc  
+ *   - Sc
  */
-template<UInt spatial_dimension>
-class MaterialOrthotropicDamageIterative : public MaterialOrthotropicDamage<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialOrthotropicDamageIterative
+    : public MaterialOrthotropicDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  MaterialOrthotropicDamageIterative(SolidMechanicsModel & model,
+                                     const ID & id = "");
 
-  MaterialOrthotropicDamageIterative(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialOrthotropicDamageIterative() {};
+  virtual ~MaterialOrthotropicDamageIterative(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   ///  virtual void updateInternalParameters();
 
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
@@ -58,22 +58,30 @@ public:
   UInt updateDamage();
 
   /// update energies after damage has been updated
-  virtual void updateEnergiesAfterDamage(ElementType el_type, GhostType ghost_typ);
-  
-  virtual void onBeginningSolveStep(const AnalysisMethod & method) { };
+  virtual void updateEnergiesAfterDamage(ElementType el_type,
+                                         GhostType ghost_typ);
 
-  virtual void onEndSolveStep(const AnalysisMethod & method) { };
 protected:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
-  ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
-  void computeNormalizedEquivalentStress(const Array<Real> & grad_u, ElementType el_type, GhostType ghost_type = _not_ghost);
+  /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
+  /// stress) and normalize it by the tensile strength
+  void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
+                                         ElementType el_type,
+                                         GhostType ghost_type = _not_ghost);
 
   /// find max normalized equivalent stress
-  void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void findMaxNormalizedEquivalentStress(ElementType el_type,
+                                         GhostType ghost_type = _not_ghost);
 
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Matrix<Real> & one_minus_D, Matrix<Real> & root_one_minus_D, Matrix<Real> & damage, Matrix<Real> & first_term, Matrix<Real> & third_term);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
+                                           Matrix<Real> & one_minus_D,
+                                           Matrix<Real> & root_one_minus_D,
+                                           Matrix<Real> & damage,
+                                           Matrix<Real> & first_term,
+                                           Matrix<Real> & third_term);
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
@@ -88,7 +96,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// resistance to damage
   RandomInternalField<Real> Sc;
 
@@ -104,12 +111,11 @@ protected:
   /// maximum equivalent stress
   Real norm_max_equivalent_stress;
 
-  /// define damage threshold at which damage will be set to 1 
-  Real dam_threshold; 
+  /// define damage threshold at which damage will be set to 1
+  Real dam_threshold;
 
   /// quadrature point with highest equivalent Stress
   IntegrationPoint q_max;
-
 };
 
 /* -------------------------------------------------------------------------- */
@@ -118,6 +124,6 @@ protected:
 
 #include "material_orthotropic_damage_iterative_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_HH__ */

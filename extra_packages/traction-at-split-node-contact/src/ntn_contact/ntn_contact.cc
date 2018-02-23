@@ -19,7 +19,7 @@
 #include "dumper_text.hh"
 #include "dumper_nodal_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNContact::NTNContact(SolidMechanicsModel & model,
@@ -321,8 +321,8 @@ void NTNContact::updateNormals() {
   }
 
   // // normalize normals
-  // Array<Real>::iterator<Real> nit  = this->normals.begin();
-  // Array<Real>::iterator<Real> nend = this->normals.end();
+  // auto nit  = this->normals.begin();
+  // auto nend = this->normals.end();
   // for (; nit != nend; ++nit) {
   //   nit->normalize();
   // }
@@ -422,8 +422,8 @@ void NTNContact::computeRelativeTangentialField(const Array<Real> & field,
 
   UInt dim = this->model.getSpatialDimension();
 
-  Array<Real>::const_vector_iterator it_field  = field.begin(dim);
-  Array<Real>::const_vector_iterator it_normal = this->normals.getArray().begin(dim);
+  auto it_field  = field.begin(dim);
+  auto it_normal = this->normals.getArray().begin(dim);
 
   Vector<Real> rfv(dim);
   Vector<Real> np_rfv(dim);
@@ -561,4 +561,4 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

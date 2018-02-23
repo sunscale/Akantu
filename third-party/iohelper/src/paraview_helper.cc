@@ -65,6 +65,7 @@ ParaviewHelper::ParaviewHelper(File & f, UInt mode):
   this->paraview_code_type[BEAM3    ] = VTK_LINE;
   this->paraview_code_type[PRISM1   ] = VTK_WEDGE;
   this->paraview_code_type[PRISM2   ] = VTK_QUADRATIC_WEDGE;
+  this->paraview_code_type[COH1D2   ] = VTK_LINE;
   this->paraview_code_type[COH2D4   ] = VTK_POLYGON;
   this->paraview_code_type[COH2D6   ] = VTK_POLYGON;
   this->paraview_code_type[COH3D6   ] = VTK_WEDGE;

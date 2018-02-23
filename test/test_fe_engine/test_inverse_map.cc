@@ -28,79 +28,44 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "fe_engine.hh"
-#include "shape_lagrange.hh"
-#include "integrator_gauss.hh"
-/* -------------------------------------------------------------------------- */
-#include <cstdlib>
-#include <iostream>
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+namespace {
 
-  debug::setDebugLevel(dblTest);
-  const ElementType type = TYPE;
-  UInt dim = ElementClass<type>::getSpatialDimension();
+TYPED_TEST(TestFEMFixture, InverseMap) {
+  this->fem->initShapeFunctions();
 
-  Mesh my_mesh(dim);
+  Matrix<Real> quad = GaussIntegrationElement<TestFixture::type>::getQuadraturePoints();
 
-  my_mesh.computeBoundingBox();
-  const Vector<Real> & lower = my_mesh.getLowerBounds();
-  const Vector<Real> & upper = my_mesh.getUpperBounds();
+  const auto & position = this->fem->getMesh().getNodes();
 
-  std::stringstream meshfilename; meshfilename << type << ".msh";
-  my_mesh.read(meshfilename.str());
+/// get the quadrature points coordinates
+  Array<Real> coord_on_quad(quad.cols() * this->nb_element, this->dim,
+                            "coord_on_quad");
 
-  UInt nb_elements = my_mesh.getNbElement(type);
-  ///
-  FEEngineTemplate<IntegratorGauss,ShapeLagrange> *fem =
-    new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
+  this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, this->dim, this->type);
 
-  fem->initShapeFunctions();
+  Vector<Real> natural_coords(this->dim);
 
-  UInt nb_quad_points = fem->getNbIntegrationPoints(type);
+  auto length = (this->upper - this->lower).template norm<L_inf>();
 
-  /// get the quadrature points coordinates
-  Array<Real> coord_on_quad(nb_quad_points*nb_elements,
-			     my_mesh.getSpatialDimension(),
-			     "coord_on_quad");
+  for(auto && enum_ : enumerate(make_view(coord_on_quad, this->dim, quad.cols()))) {
+    auto el = std::get<0>(enum_);
+    const auto & quads_coords = std::get<1>(enum_);
 
-  fem->interpolateOnIntegrationPoints(my_mesh.getNodes(),
-				     coord_on_quad,
-				     my_mesh.getSpatialDimension(),
-				     type);
+    for (auto q : arange(quad.cols())) {
+      Vector<Real> quad_coord = quads_coords(q);
+      Vector<Real> ref_quad_coord = quad(q);
+      this->fem->inverseMap(quad_coord, el, this->type, natural_coords);
 
-
-  /// loop over the quadrature points
-  Array<Real>::iterator< Vector<Real> > it = coord_on_quad.begin(dim);
-  Vector<Real> natural_coords(dim);
-
-  Matrix<Real> quad = GaussIntegrationElement<type>::getQuadraturePoints();
-
-  for(UInt el = 0 ; el < nb_elements ; ++el){
-    for(UInt q = 0 ; q < nb_quad_points ; ++q){
-      fem->inverseMap(*it, el, type, natural_coords);
-      for (UInt i = 0; i < dim; ++i) {
-	__attribute__ ((unused)) const Real eps = 1e-13;
-	AKANTU_DEBUG_ASSERT(std::abs((natural_coords(i) - quad(i,q))/(upper(i)-lower(i))) < eps,
-			    "real coordinates inversion test failed:"
-			    << natural_coords(i) << " - " << quad(i, q)
-			    << " = " << (natural_coords(i) - quad(i, q))/(upper(i)-lower(i)));
-      }
-      ++it;
+      auto dis_normalized = ref_quad_coord.distance(natural_coords) / length;
+      EXPECT_NEAR(0., dis_normalized, 5e-12);
     }
   }
-
-  std::cout << "inverse completed over " << nb_elements << " elements" << std::endl;
-
-  delete fem;
-  finalize();
-
-  return EXIT_SUCCESS;
 }
+
+} // namespace

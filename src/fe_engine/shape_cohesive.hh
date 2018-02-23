@@ -31,15 +31,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
 #include "aka_array.hh"
-#include "shape_functions.hh"
+#include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SHAPE_COHESIVE_HH__
 #define __AKANTU_SHAPE_COHESIVE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 struct CohesiveReduceFunctionMean {
   inline Real operator()(Real u_plus, Real u_minus) {
@@ -53,7 +52,7 @@ struct CohesiveReduceFunctionOpening {
   }
 };
 
-template <> class ShapeLagrange<_ek_cohesive> : public ShapeFunctions {
+template <> class ShapeLagrange<_ek_cohesive> : public ShapeLagrangeBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -61,7 +60,7 @@ public:
   ShapeLagrange(const Mesh & mesh, const ID & id = "shape_cohesive",
                 const MemoryID & memory_id = 0);
 
-  virtual ~ShapeLagrange() {}
+  ~ShapeLagrange() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -78,6 +77,19 @@ public:
       const Array<Real> & nodal_f, Array<Real> & elemental_f,
       const GhostType & ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
+
+  /// computes the shape functions derivatives for given interpolation points
+  template <ElementType type>
+  void computeShapeDerivativesOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & integration_points,
+      Array<Real> & shape_derivatives, const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const;
+
+  void computeShapeDerivativesOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & integration_points,
+      Array<Real> & shape_derivatives, const ElementType & type,
+      const GhostType & ghost_type,
+      const Array<UInt> & filter_elements) const override;
 
   /// pre compute all shapes on the element integration points from natural
   /// coordinates
@@ -118,6 +130,20 @@ public:
         u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
+  template <ElementType type>
+  void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
+                  GhostType /*ghost_type*/,
+                  const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  template <ElementType type>
+  void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
+                   UInt /*order_d*/, GhostType /*ghost_type*/,
+                   const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_TO_IMPLEMENT();
+  }
+
   /// compute the gradient of u on the integration points
   template <ElementType type, class ReduceFunction>
   void variationOnIntegrationPoints(
@@ -138,55 +164,9 @@ public:
                         __attribute__((unused))
                         Array<Real> & fiedl_times_shapes,
                         __attribute__((unused)) GhostType ghost_type) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
-
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /// get a the shapes vector
-  inline const Array<Real> &
-  getShapes(const ElementType & el_type,
-            const GhostType & ghost_type = _not_ghost) const;
-
-  /// get a the shapes derivatives vector
-  inline const Array<Real> &
-  getShapesDerivatives(const ElementType & el_type,
-                       const GhostType & ghost_type = _not_ghost) const;
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-protected:
-  /// shape functions for all elements
-  ElementTypeMapArray<Real, InterpolationType> shapes;
-
-  /// shape functions derivatives for all elements
-  ElementTypeMapArray<Real, InterpolationType> shapes_derivatives;
 };
-
-// __END_AKANTU__
-// #include "shape_lagrange.hh"
-// __BEGIN_AKANTU__
-
-// template<>
-// class ShapeLagrange<_ek_cohesive> : public ShapeCohesive<
-// ShapeLagrange<_ek_regular> > {
-// public:
-//   ShapeLagrange(const Mesh & mesh,
-// 		const ID & id = "shape_cohesive",
-// 		const MemoryID & memory_id = 0) :
-//     ShapeCohesive< ShapeLagrange<_ek_regular> >(mesh, id, memory_id) { }
-
-//   virtual ~ShapeLagrange() { };
-// };
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "shape_cohesive_inline_impl.cc"
 
 /// standard output stream operator
 template <class ShapeFunction>
@@ -196,6 +176,8 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
+
+#include "shape_cohesive_inline_impl.cc"
 
 #endif /* __AKANTU_SHAPE_COHESIVE_HH__ */

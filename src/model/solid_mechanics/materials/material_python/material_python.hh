@@ -56,7 +56,7 @@ public:
   MaterialPython(SolidMechanicsModel & model, PyObject * obj,
                  const ID & id = "");
 
-  virtual ~MaterialPython(){};
+  ~MaterialPython() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -64,53 +64,34 @@ public:
 public:
   void registerInternals();
 
-  virtual void initMaterial();
+  void initMaterial() override;
 
   /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
-
-  /// constitutive law for a given quad point
-  template <typename it_type>
-  void computeStress(Matrix<Real> & grad_u, Matrix<Real> & sigma,
-                     std::vector<it_type> & internal_iterators);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  virtual void computeTangentModuli(const ElementType & el_type,
-                                    Array<Real> & tangent_matrix,
-                                    GhostType ghost_type = _not_ghost);
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
 
   /// compute the push wave speed of the material
-  Real getPushWaveSpeed(const Element & element) const;
+  Real getPushWaveSpeed(const Element & element) const override;
 
-protected:
-  /// update the dissipated energy, must be called after the stress have been
-  /// computed
-  // virtual void updateEnergies(ElementType el_type, GhostType ghost_type){};
+  /// compute an energy of the material
+  Real getEnergy(const std::string & type) override;
 
-  /// compute the tangent stiffness matrix for a given quadrature point
-  // inline void computeTangentModuliOnQuad(Matrix<Real> & tangent, Real &
-  // dam){};
-
-  /* ------------------------------------------------------------------------ */
-  /* DataAccessor inherited members                                           */
-  /* ------------------------------------------------------------------------ */
-public:
-  /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  // virtual Real getEnergy(std::string type){};
-  // virtual Real getEnergy(std::string energy_id, ElementType type, UInt
-  // index){};
+  /// compute an energy of the material
+  Real getEnergyForType(const std::string & type, ElementType el_type);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
   std::map<std::string, Real> local_params;
-  std::map<std::string, InternalField<Real> *> internals;
+  std::map<std::string, std::unique_ptr<InternalField<Real>>> internals;
 };
 
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_PYTHON_HH__ */

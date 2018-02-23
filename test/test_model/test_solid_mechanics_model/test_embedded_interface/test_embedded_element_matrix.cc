@@ -30,8 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "aka_common.hh"
 #include "embedded_interface_model.hh"
+#include "sparse_solver.hh"
+#include "sparse_matrix_aij.hh"
 
 using namespace akantu;
 
@@ -39,41 +40,48 @@ int main(int argc, char * argv[]) {
   debug::setDebugLevel(dblWarning);
   initialize("embedded_element.dat", argc, argv);
 
-  const UInt dim = 2;
-  const Real height = 0.5;
+  constexpr UInt dim = 2;
+  constexpr ElementType type = _segment_2;
+  const Real height = 0.4;
 
   Mesh mesh(dim);
   mesh.read("triangle.msh");
 
-  Array<Real> nodes_vec(2, dim, "reinforcement_nodes");
-  nodes_vec.storage()[0] = 0; nodes_vec.storage()[1] = height;
-  nodes_vec.storage()[2] = 1; nodes_vec.storage()[3] = height;
+  Mesh reinforcement_mesh(dim, "reinforcement_mesh");
+  auto & nodes = reinforcement_mesh.getNodes();
+  nodes.push_back(Vector<Real>({0, height}));
+  nodes.push_back(Vector<Real>({1, height}));
 
-  Array<UInt> conn_vec(1, 2, "reinforcement_connectivity");
-  conn_vec.storage()[0] = 0; conn_vec.storage()[1] = 1;
+  reinforcement_mesh.addConnectivityType(type);
+  auto & connectivity = reinforcement_mesh.getConnectivity(type);
+  connectivity.push_back(Vector<UInt>({0, 1}));
 
   Array<std::string> names_vec(1, 1, "reinforcement", "reinforcement_names");
-
-  Mesh reinforcement_mesh(dim, "reinforcement_mesh");
-  reinforcement_mesh.getNodes().copy(nodes_vec);
-  reinforcement_mesh.addConnectivityType(_segment_2);
-  reinforcement_mesh.getConnectivity(_segment_2).copy(conn_vec);
-  reinforcement_mesh.registerData<std::string>("physical_names").alloc(1, 1, _segment_2);
-  reinforcement_mesh.getData<std::string>("physical_names")(_segment_2).copy(names_vec);
+  reinforcement_mesh.registerData<std::string>("physical_names").alloc(1, 1, type);
+  reinforcement_mesh.getData<std::string>("physical_names")(type).copy(names_vec);
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
 
-  model.initFull(EmbeddedInterfaceModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
-  if (model.getInterfaceMesh().getNbElement(_segment_2) != 1)
+  if (model.getInterfaceMesh().getNbElement(type) != 1)
     return EXIT_FAILURE;
 
   if (model.getInterfaceMesh().getSpatialDimension() != 2)
     return EXIT_FAILURE;
 
-  model.assembleStiffnessMatrix();
+  try { // matrix should be singular
+    model.solveStep();
+  } catch (debug::SingularMatrixException & e) {
+    std::cerr << "Matrix is singular, relax, everything is fine :)" << std::endl;
+  } catch (debug::Exception & e) {
+    std::cerr << "Unexpceted error: " << e.what() << std::endl;
+    throw e;
+  }
 
-  SparseMatrix & K = model.getStiffnessMatrix();
+  SparseMatrixAIJ & K =
+      dynamic_cast<SparseMatrixAIJ &>(model.getDOFManager().getMatrix("K"));
+  K.saveMatrix("stiffness.mtx");
 
   Math::setTolerance(1e-8);
 
@@ -83,8 +91,6 @@ int main(int argc, char * argv[]) {
       !Math::are_float_equal(K(2, 0), height - 1.) ||
       !Math::are_float_equal(K(2, 2), 1. - height))
     return EXIT_FAILURE;
-
-  model.updateResidual();
 
   return EXIT_SUCCESS;
 }

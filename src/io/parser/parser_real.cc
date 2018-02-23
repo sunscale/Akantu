@@ -46,7 +46,7 @@
 #include "algebraic_parser.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Real Parser::parseReal(const std::string & value, const ParserSection & section) {
@@ -56,4 +56,4 @@ Real Parser::parseReal(const std::string & value, const ParserSection & section)
   return Parser::parseType<Real>(value, grammar);
 }
 
-__END_AKANTU__
+} // akantu

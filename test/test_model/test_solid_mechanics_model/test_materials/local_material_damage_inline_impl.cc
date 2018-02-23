@@ -33,41 +33,39 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
 inline void LocalMaterialDamage::computeStressOnQuad(Matrix<Real> & grad_u,
-					       Matrix<Real> & sigma,
-					       Real & dam) {
+                                                     Matrix<Real> & sigma,
+                                                     Real & dam) {
 
   Real trace = grad_u.trace();
 
-  /// \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla u_{ij} + \nabla u_{ji})
-  for (UInt i = 0; i < spatial_dimension; ++i) {
-    for (UInt j = 0; j < spatial_dimension; ++j) {
-      sigma(i, j) =  (i == j)*lambda*trace + mu*(grad_u(i, j) + grad_u(j, i));
-    }
-  }
+  /// \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla
+  /// u_{ij} + \nabla u_{ji})
+  auto && epsilon = (grad_u + grad_u.transpose()) / 2.;
+
+  sigma = Matrix<Real>::eye(spatial_dimension) * trace * lambda + mu * epsilon;
 
   Real Y = 0;
   for (UInt i = 0; i < spatial_dimension; ++i) {
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      Y += sigma(i,j) * grad_u(i,j);
+      Y += sigma(i, j) * epsilon(i, j);
     }
   }
   Y *= 0.5;
 
-  Real Fd = Y - Yd - Sd*dam;
+  Real Fd = Y - Yd - Sd * dam;
 
-  if (Fd > 0) dam = (Y - Yd) / Sd;
-  dam = std::min(dam,1.);
+  if (Fd > 0)
+    dam = (Y - Yd) / Sd;
+  dam = std::min(dam, 1.);
 
-  sigma *= 1-dam;
+  sigma *= 1 - dam;
 }
 
 /* -------------------------------------------------------------------------- */
-inline void LocalMaterialDamage::computePotentialEnergyOnQuad(Matrix<Real> & grad_u,
-							      Matrix<Real> & sigma,
-							      Real & epot) {
+inline void LocalMaterialDamage::computePotentialEnergyOnQuad(
+    Matrix<Real> & grad_u, Matrix<Real> & sigma, Real & epot) {
   epot = 0.;
   for (UInt i = 0, t = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j, ++t)
@@ -76,6 +74,7 @@ inline void LocalMaterialDamage::computePotentialEnergyOnQuad(Matrix<Real> & gra
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real LocalMaterialDamage::getCelerity(__attribute__ ((unused)) const Element & element) const {
-  return (std::sqrt(E/rho));
+inline Real LocalMaterialDamage::getCelerity(__attribute__((unused))
+                                             const Element & element) const {
+  return (std::sqrt(E / rho));
 }

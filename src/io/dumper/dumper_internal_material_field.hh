@@ -38,7 +38,7 @@
 #  include "dumper_igfem_material_internal_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -52,10 +52,9 @@ class InternalMaterialField
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  typedef SingleType<T,Vector,filtered> types;
-  typedef GenericElementalField<types,quadrature_point_iterator> parent;
-  typedef typename types::field_type field_type;
+  using types = SingleType<T,Vector,filtered>;
+  using parent = GenericElementalField<types,quadrature_point_iterator>;
+  using field_type = typename types::field_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -73,6 +72,6 @@ public:
 
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_INTERNAL_MATERIAL_FIELD_HH__ */

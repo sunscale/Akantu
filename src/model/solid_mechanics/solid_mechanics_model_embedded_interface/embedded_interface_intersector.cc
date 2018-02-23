@@ -33,63 +33,73 @@
 #include "embedded_interface_intersector.hh"
 #include "mesh_segment_intersector.hh"
 
-/// Helper macro for types in the mesh. Creates an intersector and computes intersection queries
-#define INTERFACE_INTERSECTOR_CASE(dim, type) do {                                 \
-  MeshSegmentIntersector<dim, type> intersector(this->mesh, interface_mesh);        \
-  name_to_primitives_it = name_to_primitives_map.begin();                            \
-  for (; name_to_primitives_it != name_to_primitives_end ; ++name_to_primitives_it) { \
-    intersector.setPhysicalName(name_to_primitives_it->first);                         \
-    intersector.buildResultFromQueryList(name_to_primitives_it->second);                \
-  } } while(0)
+/// Helper macro for types in the mesh. Creates an intersector and computes
+/// intersection queries
+#define INTERFACE_INTERSECTOR_CASE(dim, type)                                  \
+  do {                                                                         \
+    MeshSegmentIntersector<dim, type> intersector(this->mesh, interface_mesh); \
+    name_to_primitives_it = name_to_primitives_map.begin();                    \
+    for (; name_to_primitives_it != name_to_primitives_end;                    \
+         ++name_to_primitives_it) {                                            \
+      intersector.setPhysicalName(name_to_primitives_it->first);               \
+      intersector.buildResultFromQueryList(name_to_primitives_it->second);     \
+    }                                                                          \
+  } while (0)
 
 #define INTERFACE_INTERSECTOR_CASE_2D(type) INTERFACE_INTERSECTOR_CASE(2, type)
 #define INTERFACE_INTERSECTOR_CASE_3D(type) INTERFACE_INTERSECTOR_CASE(3, type)
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(Mesh & mesh, const Mesh & primitive_mesh) :
-  MeshGeomAbstract(mesh),
-  interface_mesh(mesh.getSpatialDimension(), "interface_mesh"),
-  primitive_mesh(primitive_mesh)
-{
+EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(
+    Mesh & mesh, const Mesh & primitive_mesh)
+    : MeshGeomAbstract(mesh),
+      interface_mesh(mesh.getSpatialDimension(), "interface_mesh"),
+      primitive_mesh(primitive_mesh) {
   // Initiating mesh connectivity and data
   interface_mesh.addConnectivityType(_segment_2, _not_ghost);
   interface_mesh.addConnectivityType(_segment_2, _ghost);
-  interface_mesh.registerData<Element>("associated_element").alloc(0, 1, _segment_2);
-  interface_mesh.registerData<std::string>("physical_names").alloc(0, 1, _segment_2);
+  interface_mesh.registerData<Element>("associated_element")
+      .alloc(0, 1, _segment_2);
+  interface_mesh.registerData<std::string>("physical_names")
+      .alloc(0, 1, _segment_2);
 }
 
-EmbeddedInterfaceIntersector::~EmbeddedInterfaceIntersector()
-{}
+EmbeddedInterfaceIntersector::~EmbeddedInterfaceIntersector() {}
 
-void EmbeddedInterfaceIntersector::constructData(GhostType ghost_type) {
+void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
   AKANTU_DEBUG_IN();
 
   const UInt dim = this->mesh.getSpatialDimension();
 
   if (dim == 1)
-    AKANTU_DEBUG_ERROR("No embedded model in 1D. Deactivate intersection initialization");
+    AKANTU_ERROR(
+        "No embedded model in 1D. Deactivate intersection initialization");
 
   Array<std::string> * physical_names = NULL;
 
   try {
-    physical_names = &const_cast<Array<std::string> &>(this->primitive_mesh.getData<std::string>("physical_names", _segment_2));
+    physical_names = &const_cast<Array<std::string> &>(
+        this->primitive_mesh.getData<std::string>("physical_names",
+                                                  _segment_2));
   } catch (debug::Exception & e) {
-    AKANTU_DEBUG_ERROR("You must define physical names to reinforcements in order to use the embedded model");
+    AKANTU_ERROR("You must define physical names to reinforcements in "
+                       "order to use the embedded model");
     throw e;
   }
 
   const UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(_segment_2);
-  Array<UInt>::const_vector_iterator connectivity = primitive_mesh.getConnectivity(_segment_2).begin(nb_nodes_per_element);
+  Array<UInt>::const_vector_iterator connectivity =
+      primitive_mesh.getConnectivity(_segment_2).begin(nb_nodes_per_element);
 
-  Array<std::string>::scalar_iterator
-    names_it = physical_names->begin(),
-    names_end = physical_names->end();
+  Array<std::string>::scalar_iterator names_it = physical_names->begin(),
+                                      names_end = physical_names->end();
 
-  std::map<std::string, std::list<K::Segment_3> > name_to_primitives_map;
+  std::map<std::string, std::list<K::Segment_3>> name_to_primitives_map;
 
-  // Loop over the physical names and register segment lists in name_to_primitives_map
-  for (; names_it != names_end ; ++names_it) {
+  // Loop over the physical names and register segment lists in
+  // name_to_primitives_map
+  for (; names_it != names_end; ++names_it) {
     UInt element_id = names_it - physical_names->begin();
     const Vector<UInt> el_connectivity = connectivity[element_id];
 
@@ -98,51 +108,60 @@ void EmbeddedInterfaceIntersector::constructData(GhostType ghost_type) {
   }
 
   // Loop over the background types of the mesh
-  Mesh::type_iterator
-    type_it = this->mesh.firstType(dim, _not_ghost),
-    type_end = this->mesh.lastType(dim, _not_ghost);
+  Mesh::type_iterator type_it = this->mesh.firstType(dim, _not_ghost),
+                      type_end = this->mesh.lastType(dim, _not_ghost);
 
-  std::map<std::string, std::list<K::Segment_3> >::iterator
-    name_to_primitives_it,
-    name_to_primitives_end = name_to_primitives_map.end();
+  std::map<std::string, std::list<K::Segment_3>>::iterator
+      name_to_primitives_it,
+      name_to_primitives_end = name_to_primitives_map.end();
 
-  for (; type_it != type_end ; ++type_it) {
+  for (; type_it != type_end; ++type_it) {
     // Used in AKANTU_BOOST_ELEMENT_SWITCH
     ElementType type = *type_it;
 
-    AKANTU_DEBUG_INFO("Computing intersections with background element type " << type);
+    AKANTU_DEBUG_INFO("Computing intersections with background element type "
+                      << type);
 
-    switch(dim) {
-      case 1:
-        break;
+    switch (dim) {
+    case 1:
+      break;
 
-      case 2:
-        // Compute intersections for supported 2D elements
-        AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_2D, (_triangle_3) (_triangle_6));
-        break;
+    case 2:
+      // Compute intersections for supported 2D elements
+      AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_2D,
+                                  (_triangle_3)(_triangle_6));
+      break;
 
-      case 3:
-        // Compute intersections for supported 3D elements
-        AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_3D, (_tetrahedron_4));
-        break;
+    case 3:
+      // Compute intersections for supported 3D elements
+      AKANTU_BOOST_ELEMENT_SWITCH(INTERFACE_INTERSECTOR_CASE_3D,
+                                  (_tetrahedron_4));
+      break;
     }
   }
 
   AKANTU_DEBUG_OUT();
 }
 
-K::Segment_3 EmbeddedInterfaceIntersector::createSegment(const Vector<UInt> & connectivity) {
+K::Segment_3
+EmbeddedInterfaceIntersector::createSegment(const Vector<UInt> & connectivity) {
   AKANTU_DEBUG_IN();
 
-  K::Point_3 * source = NULL, * target = NULL;
+  K::Point_3 *source = NULL, *target = NULL;
   const Array<Real> & nodes = this->primitive_mesh.getNodes();
 
   if (this->mesh.getSpatialDimension() == 2) {
-    source = new K::Point_3(nodes(connectivity(0), 0), nodes(connectivity(0), 1), 0.);
-    target = new K::Point_3(nodes(connectivity(1), 0), nodes(connectivity(1), 1), 0.);
+    source = new K::Point_3(nodes(connectivity(0), 0),
+                            nodes(connectivity(0), 1), 0.);
+    target = new K::Point_3(nodes(connectivity(1), 0),
+                            nodes(connectivity(1), 1), 0.);
   } else if (this->mesh.getSpatialDimension() == 3) {
-    source = new K::Point_3(nodes(connectivity(0), 0), nodes(connectivity(0), 1), nodes(connectivity(0), 2));
-    target = new K::Point_3(nodes(connectivity(1), 0), nodes(connectivity(1), 1), nodes(connectivity(1), 2));
+    source =
+        new K::Point_3(nodes(connectivity(0), 0), nodes(connectivity(0), 1),
+                       nodes(connectivity(0), 2));
+    target =
+        new K::Point_3(nodes(connectivity(1), 0), nodes(connectivity(1), 1),
+                       nodes(connectivity(1), 2));
   }
 
   K::Segment_3 segment(*source, *target);
@@ -153,7 +172,7 @@ K::Segment_3 EmbeddedInterfaceIntersector::createSegment(const Vector<UInt> & co
   return segment;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #undef INTERFACE_INTERSECTOR_CASE
 #undef INTERFACE_INTERSECTOR_CASE_2D

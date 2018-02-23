@@ -28,58 +28,71 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "material.hh"
+#include "material_cohesive.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
 #include "mesh_utils.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "material.hh"
-#include "material_cohesive.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   initialize("input_file.dat", argc, argv);
 
   Math::setTolerance(1e-15);
-  
+
   const UInt spatial_dimension = 3;
 
   Mesh mesh(spatial_dimension);
 
   mesh.read("3d_spherical_inclusion.msh");
-  
+
   SolidMechanicsModelCohesive model(mesh);
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
-  model.initFull(SolidMechanicsModelCohesiveOptions(_static));
-  
-  std::vector<std::string> surfaces_name = {"interface", "coh1", "coh2", "coh3", "coh4", "coh5"};
+
+  auto && material_selector = std::make_shared<MeshDataMaterialCohesiveSelector>(model);
+  material_selector->setFallback(model.getMaterialSelector());
+  model.setMaterialSelector(material_selector);
+
+  model.initFull(_analysis_method = _static);
+
+  std::vector<std::string> surfaces_name = {"interface", "coh1", "coh2",
+                                            "coh3",      "coh4", "coh5"};
   UInt nb_surf = surfaces_name.size();
 
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
+  Mesh::type_iterator it =
+      mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
+  Mesh::type_iterator end =
+      mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
 
-  for(; it != end; ++it) {
+  for (; it != end; ++it) {
     for (UInt i = 0; i < nb_surf; ++i) {
-      
-      UInt expected_insertion = mesh.getElementGroup(surfaces_name[i]).getElements(mesh.getFacetType(*it)).getSize();
-      UInt inserted_elements = model.getMaterial(surfaces_name[i]).getElementFilter()(*it).getSize();
+
+      UInt expected_insertion = mesh.getElementGroup(surfaces_name[i])
+                                    .getElements(mesh.getFacetType(*it))
+                                    .size();
+      UInt inserted_elements =
+          model.getMaterial(surfaces_name[i]).getElementFilter()(*it).size();
       AKANTU_DEBUG_ASSERT((expected_insertion == inserted_elements),
-			  std::endl << "!!! Mismatch in insertion of surface named " 
-			  << surfaces_name[i] 
-			  << " --> " << inserted_elements << " inserted elements out of " 
-			  << expected_insertion << std::endl);
-    }      
+                          std::endl
+                              << "!!! Mismatch in insertion of surface named "
+                              << surfaces_name[i] << " --> "
+                              << inserted_elements
+                              << " inserted elements out of "
+                              << expected_insertion << std::endl);
+    }
   }
 
-  /*std::string paraview_folder = "paraview/test_intrinsic_insertion_along_physical_surfaces/"; 
+  /*std::string paraview_folder =
+  "paraview/test_intrinsic_insertion_along_physical_surfaces/";
   model.setDirectory(paraview_folder);
   model.setBaseName("bulk");
   model.addDumpField("partitions");
@@ -91,9 +104,9 @@ int main(int argc, char *argv[]) {
   model.dump("cohesive elements");
   */
 
-  model.assembleStiffnessMatrix();
+  //model.assembleStiffnessMatrix();
 
-  finalize();
+  //finalize();
 
   return EXIT_SUCCESS;
 }

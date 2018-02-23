@@ -37,7 +37,7 @@
 #include "dumper_element_iterator.hh"
 #include "dumper_homogenizing_field.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
@@ -48,14 +48,14 @@ class GenericElementalField : public Field {
   /* ------------------------------------------------------------------------ */
 public:
   // check dumper_type_traits.hh for additional information over these types
-  typedef _types types;
-  typedef typename types::data_type data_type;
-  typedef typename types::it_type it_type;
-  typedef typename types::field_type field_type;
-  typedef typename types::array_type array_type;
-  typedef typename types::array_iterator array_iterator;
-  typedef typename field_type::type_iterator field_type_iterator;
-  typedef iterator_type<types> iterator;
+  using types = _types;
+  using data_type = typename types::data_type;
+  using it_type = typename types::it_type;
+  using field_type = typename types::field_type;
+  using array_type = typename types::array_type;
+  using array_iterator = typename types::array_iterator;
+  using field_type_iterator = typename field_type::type_iterator;
+  using iterator = iterator_type<types>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -75,9 +75,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the number of components of the hosted field
-  virtual ElementTypeMap<UInt>
+  ElementTypeMap<UInt>
   getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
-                  ElementKind kind = _ek_not_defined) {
+                  ElementKind kind = _ek_not_defined) override {
     return this->field.getNbComponents(dim, ghost_type, kind);
   };
 
@@ -103,21 +103,21 @@ protected:
   }
 
   /// check if the same quantity of data for all element types
-  virtual void checkHomogeneity();
+  void checkHomogeneity() override;
 
 public:
-  virtual void registerToDumper(const std::string & id,
-                                iohelper::Dumper & dumper) {
+  void registerToDumper(const std::string & id,
+                        iohelper::Dumper & dumper) override {
     dumper.addElemDataField(id, *this);
   };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(FieldComputeProxy & proxy) {
+  inline Field * connect(FieldComputeProxy & proxy) override {
     return proxy.connectToField(this);
   }
 
   /// for connection to a Homogenizer
-  inline virtual ComputeFunctorInterface * connect(HomogenizerProxy & proxy) {
+  inline ComputeFunctorInterface * connect(HomogenizerProxy & proxy) override {
     return proxy.connectToField(this);
   };
 
@@ -133,7 +133,7 @@ public:
 
     /// skip all types without data
     ElementType type = *tit;
-    for (; tit != end && this->field(*tit, this->ghost_type).getSize() == 0;
+    for (; tit != end && this->field(*tit, this->ghost_type).size() == 0;
          ++tit) {
     }
 
@@ -146,7 +146,7 @@ public:
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data_per_elem = this->getNbDataPerElem(type);
     UInt nb_component = vect.getNbComponent();
-    UInt size = (vect.getSize() * nb_component) / nb_data_per_elem;
+    UInt size = (vect.size() * nb_component) / nb_data_per_elem;
 
     /// define element-wise iterator
     array_iterator it = vect.begin_reinterpret(nb_data_per_elem, size);
@@ -174,7 +174,7 @@ public:
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data = this->getNbDataPerElem(type);
     UInt nb_component = vect.getNbComponent();
-    UInt size = (vect.getSize() * nb_component) / nb_data;
+    UInt size = (vect.size() * nb_component) / nb_data;
     array_iterator it = vect.end_reinterpret(nb_data, size);
 
     iterator rit = iterator(this->field, end, end, it, it, this->ghost_type);
@@ -193,7 +193,7 @@ public:
     return 0;
   }
 
-  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) {
+  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) override {
     nb_data_per_elem = nb_data;
   }
 
@@ -219,6 +219,6 @@ protected:
 #include "dumper_generic_elemental_field_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__ __END_AKANTU__
+__END_AKANTU_DUMPER__ } // akantu
 
 #endif /* __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__ */

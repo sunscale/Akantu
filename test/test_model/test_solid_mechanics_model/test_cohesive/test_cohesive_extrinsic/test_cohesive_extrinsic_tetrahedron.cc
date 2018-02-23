@@ -31,14 +31,13 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
-
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_cohesive.hh"
 #include "material_cohesive_linear.hh"
+#include "solid_mechanics_model_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -47,7 +46,7 @@ Real function(Real constant, Real x, Real y, Real z) {
   return constant + 2. * x + 3. * y + 4 * z;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   // const UInt max_steps = 1000;
@@ -65,17 +64,19 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  const MaterialCohesiveLinear<3> & mat_cohesive
-    = dynamic_cast < const MaterialCohesiveLinear<3> & > (model.getMaterial(1));
+  const MaterialCohesiveLinear<3> & mat_cohesive =
+      dynamic_cast<const MaterialCohesiveLinear<3> &>(model.getMaterial(1));
 
   std::cout << mat_cohesive << std::endl;
   std::cout << model.getMaterial(2) << std::endl;
 
-  const Real sigma_c = mat_cohesive.getParam< RandomInternalField<Real, FacetInternalField> >("sigma_c");
-  const Real beta = mat_cohesive.getParam<Real>("beta");
-  //  const Real G_cI = mat_cohesive.getParam<Real>("G_cI");
+  const Real sigma_c = mat_cohesive.get("sigma_c");
+  const Real beta = mat_cohesive.get("beta");
+
+  std::cout << sigma_c << " " << beta << std::endl;
 
   Array<Real> & position = mesh.getNodes();
 
@@ -86,20 +87,19 @@ int main(int argc, char *argv[]) {
   /// compute quadrature points positions on facets
   const Mesh & mesh_facets = model.getMeshFacets();
   UInt nb_facet = mesh_facets.getNbElement(type_facet);
-  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
+  UInt nb_quad_per_facet =
+      model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
   UInt nb_tot_quad = nb_quad_per_facet * nb_facet;
 
   Array<Real> quad_facets(nb_tot_quad, spatial_dimension);
 
-  model.getFEEngine("FacetsFEEngine").interpolateOnIntegrationPoints(position,
-							  quad_facets,
-							  spatial_dimension,
-							  type_facet);
+  model.getFEEngine("FacetsFEEngine")
+      .interpolateOnIntegrationPoints(position, quad_facets, spatial_dimension,
+                                      type_facet);
 
   /* ------------------------------------------------------------------------ */
   /* End of facet part                                                        */
   /* ------------------------------------------------------------------------ */
-
 
   /// compute quadrature points position of the elements
   UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
@@ -108,63 +108,57 @@ int main(int argc, char *argv[]) {
 
   Array<Real> quad_elements(nb_tot_quad_el, spatial_dimension);
 
-
-  model.getFEEngine().interpolateOnIntegrationPoints(position,
-					       quad_elements,
-					       spatial_dimension,
-					       type);
+  model.getFEEngine().interpolateOnIntegrationPoints(position, quad_elements,
+                                                     spatial_dimension, type);
 
   /// assign some values to stresses
-  Array<Real> & stress
-    = const_cast<Array<Real>&>(model.getMaterial(0).getStress(type));
+  Array<Real> & stress =
+      const_cast<Array<Real> &>(model.getMaterial(0).getStress(type));
 
-  Array<Real>::iterator<Matrix<Real> > stress_it
-    = stress.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::iterator<Matrix<Real>> stress_it =
+      stress.begin(spatial_dimension, spatial_dimension);
 
   for (UInt q = 0; q < nb_tot_quad_el; ++q, ++stress_it) {
 
     /// compute values
     for (UInt i = 0; i < spatial_dimension; ++i) {
       for (UInt j = i; j < spatial_dimension; ++j) {
-    	UInt index = i * spatial_dimension + j;
-    	(*stress_it)(i, j) = index * function(sigma_c * 5,
-    					      quad_elements(q, 0),
-    					      quad_elements(q, 1),
-    					      quad_elements(q, 2));
+        UInt index = i * spatial_dimension + j;
+        (*stress_it)(i, j) =
+            index * function(sigma_c * 5, quad_elements(q, 0),
+                             quad_elements(q, 1), quad_elements(q, 2));
       }
     }
 
     /// fill symmetrical part
     for (UInt i = 0; i < spatial_dimension; ++i) {
       for (UInt j = 0; j < i; ++j) {
-    	(*stress_it)(i, j) = (*stress_it)(j, i);
+        (*stress_it)(i, j) = (*stress_it)(j, i);
       }
     }
   }
 
-
   /// compute stress on facet quads
   Array<Real> stress_facets(nb_tot_quad, spatial_dimension * spatial_dimension);
 
-  Array<Real>::iterator<Matrix<Real> > stress_facets_it
-    = stress_facets.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::iterator<Matrix<Real>> stress_facets_it =
+      stress_facets.begin(spatial_dimension, spatial_dimension);
 
   for (UInt q = 0; q < nb_tot_quad; ++q, ++stress_facets_it) {
     /// compute values
     for (UInt i = 0; i < spatial_dimension; ++i) {
       for (UInt j = i; j < spatial_dimension; ++j) {
-    	UInt index = i * spatial_dimension + j;
-    	(*stress_facets_it)(i, j) = index * function(sigma_c * 5,
-    						     quad_facets(q, 0),
-    						     quad_facets(q, 1),
-    						     quad_facets(q, 2));
+        UInt index = i * spatial_dimension + j;
+        (*stress_facets_it)(i, j) =
+            index * function(sigma_c * 5, quad_facets(q, 0), quad_facets(q, 1),
+                             quad_facets(q, 2));
       }
     }
 
     /// fill symmetrical part
     for (UInt i = 0; i < spatial_dimension; ++i) {
       for (UInt j = 0; j < i; ++j) {
-    	(*stress_facets_it)(i, j) = (*stress_facets_it)(j, i);
+        (*stress_facets_it)(i, j) = (*stress_facets_it)(j, i);
       }
     }
   }
@@ -172,33 +166,34 @@ int main(int argc, char *argv[]) {
   /// insert cohesive elements
   model.checkCohesiveStress();
 
-
   /// check insertion stress
-  const Array<Real> & normals =
-    model.getFEEngine("FacetsFEEngine").getNormalsOnIntegrationPoints(type_facet);
+  const Array<Real> & normals = model.getFEEngine("FacetsFEEngine")
+                                    .getNormalsOnIntegrationPoints(type_facet);
   const Array<Real> & tangents = model.getTangents(type_facet);
-  const Array<Real> & sigma_c_eff = mat_cohesive.getInsertionTraction(type_cohesive);
+  const Array<Real> & sigma_c_eff =
+      mat_cohesive.getInsertionTraction(type_cohesive);
 
   Vector<Real> normal_stress(spatial_dimension);
 
-  const Array<std::vector<Element> > & coh_element_to_facet
-    = mesh_facets.getElementToSubelement(type_facet);
+  const Array<std::vector<Element>> & coh_element_to_facet =
+      mesh_facets.getElementToSubelement(type_facet);
 
-  Array<Real>::iterator<Matrix<Real> > quad_facet_stress
-    = stress_facets.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::iterator<Matrix<Real>> quad_facet_stress =
+      stress_facets.begin(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_iterator<Vector<Real> > quad_normal
-    = normals.begin(spatial_dimension);
+  Array<Real>::const_iterator<Vector<Real>> quad_normal =
+      normals.begin(spatial_dimension);
 
-  Array<Real>::const_iterator<Vector<Real> > quad_tangents
-    = tangents.begin(tangents.getNbComponent());
+  Array<Real>::const_iterator<Vector<Real>> quad_tangents =
+      tangents.begin(tangents.getNbComponent());
 
   for (UInt f = 0; f < nb_facet; ++f) {
     const Element & cohesive_element = coh_element_to_facet(f)[1];
 
-    for (UInt q = 0; q < nb_quad_per_facet; ++q, ++quad_facet_stress,
-	   ++quad_normal, ++quad_tangents) {
-      if (cohesive_element == ElementNull) continue;
+    for (UInt q = 0; q < nb_quad_per_facet;
+         ++q, ++quad_facet_stress, ++quad_normal, ++quad_tangents) {
+      if (cohesive_element == ElementNull)
+        continue;
 
       normal_stress.mul<false>(*quad_facet_stress, *quad_normal);
 
@@ -207,30 +202,33 @@ int main(int argc, char *argv[]) {
       Real first_tangent_contrib = 0;
 
       for (UInt dim = 0; dim < spatial_dimension; ++dim)
-	first_tangent_contrib += normal_stress(dim) * (*quad_tangents)(dim);
+        first_tangent_contrib += normal_stress(dim) * (*quad_tangents)(dim);
 
       Real second_tangent_contrib = 0;
 
       for (UInt dim = 0; dim < spatial_dimension; ++dim)
-	second_tangent_contrib
-	  += normal_stress(dim) * (*quad_tangents)(dim + spatial_dimension);
+        second_tangent_contrib +=
+            normal_stress(dim) * (*quad_tangents)(dim + spatial_dimension);
 
-      Real tangent_contrib = std::sqrt(first_tangent_contrib * first_tangent_contrib +
-				       second_tangent_contrib * second_tangent_contrib);
+      Real tangent_contrib =
+          std::sqrt(first_tangent_contrib * first_tangent_contrib +
+                    second_tangent_contrib * second_tangent_contrib);
 
       normal_contrib = std::max(0., normal_contrib);
 
-      Real effective_norm = std::sqrt(normal_contrib * normal_contrib
-				      + tangent_contrib * tangent_contrib / beta / beta);
+      Real effective_norm =
+          std::sqrt(normal_contrib * normal_contrib +
+                    tangent_contrib * tangent_contrib / beta / beta);
 
-      if (effective_norm < sigma_c) continue;
+      if (effective_norm < sigma_c)
+        continue;
 
-      if (!Math::are_float_equal(effective_norm,
-				 sigma_c_eff(cohesive_element.element
-					     * nb_quad_per_facet + q))) {
-	std::cout << "Insertion tractions do not match" << std::endl;
-	finalize();
-	return EXIT_FAILURE;
+      if (!Math::are_float_equal(
+              effective_norm,
+              sigma_c_eff(cohesive_element.element * nb_quad_per_facet + q))) {
+        std::cout << "Insertion tractions do not match" << std::endl;
+        finalize();
+        return EXIT_FAILURE;
       }
     }
   }

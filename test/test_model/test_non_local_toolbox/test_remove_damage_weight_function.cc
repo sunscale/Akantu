@@ -51,16 +51,12 @@ int main(int argc, char * argv[]) {
   /// model creation
   SolidMechanicsModel model(mesh);
   /// creation of material selector
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector =
-    new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  auto &&
+  mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// model initialization changed to use our material
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
-  model.registerNewCustomMaterials<TestMaterialDamage<spatial_dimension> >(
-      "test_material");
-  model.initMaterials();
+  model.initFull();
   /// dump material index in paraview
   model.addDumpField("material_index");
   model.addDumpField("grad_u");
@@ -84,31 +80,25 @@ int main(int argc, char * argv[]) {
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
     Material & mat = model.getMaterial(m);
     Array<Real> & grad_u = const_cast<Array<Real> &>(
-        mat.getInternal<Real>("grad_u")(element_type, ghost_type));
+        mat.getInternal<Real>("eigen_grad_u")(element_type, ghost_type));
 
-    Array<Real>::iterator<Matrix<Real> > grad_u_it =
-        grad_u.begin(spatial_dimension, spatial_dimension);
-    Array<Real>::iterator<Matrix<Real> > grad_u_end =
-        grad_u.end(spatial_dimension, spatial_dimension);
+    auto grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
+    auto grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
     UInt element_counter = 0;
     for (; grad_u_it != grad_u_end; ++grad_u_it, ++element_counter)
       if (element_counter == 12 || element_counter == 13 ||
           element_counter == 14 || element_counter == 15)
-        (*grad_u_it) += modified_strain;
+        (*grad_u_it) = -1. * modified_strain;
       else
-        (*grad_u_it) += applied_strain;
+        (*grad_u_it) = -1. * applied_strain;
   }
 
   /// compute the non-local strains
-  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.assembleInternalForces();
   model.dump();
   /// save the weights in a file
-  NonLocalNeighborhood<RemoveDamagedWeightFunction> & neighborhood_1 =
-      dynamic_cast<NonLocalNeighborhood<RemoveDamagedWeightFunction> &>(
-          model.getNonLocalManager().getNeighborhood("mat_1"));
-  NonLocalNeighborhood<RemoveDamagedWeightFunction> & neighborhood_2 =
-      dynamic_cast<NonLocalNeighborhood<RemoveDamagedWeightFunction> &>(
-          model.getNonLocalManager().getNeighborhood("mat_2"));
+  auto & neighborhood_1 = model.getNonLocalManager().getNeighborhood("mat_1");
+  auto & neighborhood_2 = model.getNonLocalManager().getNeighborhood("mat_2");
   neighborhood_1.saveWeights("before_0");
   neighborhood_2.saveWeights("before_1");
   for (UInt n = 0; n < 2; ++n) {
@@ -126,14 +116,14 @@ int main(int argc, char * argv[]) {
   /// apply damage to not have the elements with lower strain impact the
   /// averaging
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    MaterialDamage<spatial_dimension> & mat =
+    auto & mat =
         dynamic_cast<MaterialDamage<spatial_dimension> &>(model.getMaterial(m));
 
-    Array<Real> & damage = const_cast<Array<Real> &>(
+    auto & damage = const_cast<Array<Real> &>(
         mat.getInternal<Real>("damage")(element_type, ghost_type));
 
-    Array<Real>::scalar_iterator dam_it = damage.begin();
-    Array<Real>::scalar_iterator dam_end = damage.end();
+    auto dam_it = damage.begin();
+    auto dam_end = damage.end();
     UInt element_counter = 0;
     for (; dam_it != dam_end; ++dam_it, ++element_counter)
       if (element_counter == 12 || element_counter == 13 ||
@@ -142,7 +132,7 @@ int main(int argc, char * argv[]) {
   }
 
   /// compute the non-local strains
-  model.getNonLocalManager().computeAllNonLocalStresses();
+  model.assembleInternalForces();
   neighborhood_1.saveWeights("after_0");
   neighborhood_2.saveWeights("after_1");
   for (UInt n = 0; n < 2; ++n) {
@@ -167,16 +157,12 @@ int main(int argc, char * argv[]) {
                                               spatial_dimension, 0.);
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
     difference_in_damaged_elements.clear();
-    MaterialNonLocal<spatial_dimension> & mat =
-        dynamic_cast<MaterialNonLocal<spatial_dimension> &>(
-            model.getMaterial(m));
-    Array<Real> & grad_u_nl = const_cast<Array<Real> &>(
+    auto & mat = model.getMaterial(m);
+    auto & grad_u_nl = const_cast<Array<Real> &>(
         mat.getInternal<Real>("grad_u non local")(element_type, ghost_type));
 
-    Array<Real>::iterator<Matrix<Real> > grad_u_nl_it =
-        grad_u_nl.begin(spatial_dimension, spatial_dimension);
-    Array<Real>::iterator<Matrix<Real> > grad_u_nl_end =
-        grad_u_nl.end(spatial_dimension, spatial_dimension);
+    auto grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
+    auto grad_u_nl_end = grad_u_nl.end(spatial_dimension, spatial_dimension);
     UInt element_counter = 0;
     for (; grad_u_nl_it != grad_u_nl_end; ++grad_u_nl_it, ++element_counter) {
       if (element_counter == 12 || element_counter == 13 ||

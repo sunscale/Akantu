@@ -31,9 +31,9 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
@@ -41,9 +41,8 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
-
   debug::setDebugLevel(dblWarning);
 
   const UInt spatial_dimension = 2;
@@ -55,12 +54,24 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  model.limitInsertion(_y, -0.30, -0.20);
+  model.getElementInserter().setLimit(_y, -0.30, -0.20);
   model.updateAutomaticInsertion();
 
-  Real time_step = model.getStableTimeStep()*0.05;
+  mesh.setBaseName("test_cohesive_extrinsic");
+  model.addDumpFieldVector("displacement");
+  model.addDumpField("mass");
+  model.addDumpField("velocity");
+  model.addDumpField("acceleration");
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
+  model.addDumpField("grad_u");
+  model.dump();
+
+
+  Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
@@ -90,66 +101,25 @@ int main(int argc, char *argv[]) {
     velocity(n, 1) = loading_rate * position(n, 1);
   }
 
-  model.updateResidual();
-
-  model.setBaseName("extrinsic");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
-  model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
-  model.addDumpFieldTensor("stress");
-  model.addDumpField("strain");
-  model.addDumpField("damage");
-  model.addDumpFieldToDumper("cohesive elements", "damage");
-  model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
-  model.dump();
-  model.dump("cohesive elements");
-
-  // std::ofstream edis("edis.txt");
-  // std::ofstream erev("erev.txt");
-
-  //  Array<Real> & residual = model.getResidual();
-
-  //  const Array<Real> & stress = model.getMaterial(0).getStress(type);
-
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
 
     /// update displacement on extreme nodes
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
       if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
-    	displacement(n, 1) += disp_update * position(n, 1);
+        displacement(n, 1) += disp_update * position(n, 1);
     }
 
     model.checkCohesiveStress();
     model.solveStep();
 
-    if(s % 100 == 0) {
-      model.dump();
-      model.dump("cohesive elements");
+    if (s % 100 == 0) {
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
-
-
-    // Real Ed = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getDissipatedEnergy();
-    // Real Er = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getReversibleEnergy();
-
-    // edis << s << " "
-    // 	 << Ed << std::endl;
-
-    // erev << s << " "
-    // 	 << Er << std::endl;
-
+    model.dump();
   }
 
-  // edis.close();
-  // erev.close();
-
-  //  mesh.write("mesh_final.msh");
-
-  model.dump();
   Real Ed = model.getEnergy("dissipated");
-
   Real Edt = 200 * std::sqrt(2);
 
   std::cout << Ed << " " << Edt << std::endl;

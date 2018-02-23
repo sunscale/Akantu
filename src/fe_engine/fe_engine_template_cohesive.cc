@@ -33,8 +33,10 @@
 /* -------------------------------------------------------------------------- */
 #include "fe_engine_template.hh"
 #include "shape_cohesive.hh"
+#include "integrator_gauss.hh"
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* compatibility functions */
@@ -50,11 +52,11 @@ Real FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements != empty_filter)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
                       "The vector f(" << f.getID()
                                       << ") has not the good size.");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == 1,
@@ -87,12 +89,12 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   if (filter_elements == filter_elements)
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type);
 
-  AKANTU_DEBUG_ASSERT(f.getSize() == nb_element * nb_quadrature_points,
-                      "The vector f(" << f.getID() << " size " << f.getSize()
+  AKANTU_DEBUG_ASSERT(f.size() == nb_element * nb_quadrature_points,
+                      "The vector f(" << f.getID() << " size " << f.size()
                                       << ") has not the good size ("
                                       << nb_element << ").");
   AKANTU_DEBUG_ASSERT(f.getNbComponent() == nb_degree_of_freedom,
@@ -103,7 +105,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
                       "The vector intf("
                           << intf.getID()
                           << ") has not the good number of component.");
-  AKANTU_DEBUG_ASSERT(intf.getSize() == nb_element,
+  AKANTU_DEBUG_ASSERT(intf.size() == nb_element,
                       "The vector intf(" << intf.getID()
                                          << ") has not the good size.");
 #endif
@@ -123,52 +125,9 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
     gradientOnIntegrationPoints(const Array<Real> &, Array<Real> &, const UInt,
                                 const ElementType &, const GhostType &,
                                 const Array<UInt> &) const {
-  AKANTU_DEBUG_TO_IMPLEMENT();
+  AKANTU_TO_IMPLEMENT();
 }
 
 /* -------------------------------------------------------------------------- */
-template <>
-template <>
-void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
-                      DefaultIntegrationOrderFunctor>::
-    computeNormalsOnIntegrationPoints<_cohesive_1d_2>(
-        const Array<Real> &, Array<Real> & normal,
-        const GhostType & ghost_type) const {
-  AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_ASSERT(
-      mesh.getSpatialDimension() == 1,
-      "Mesh dimension must be 1 to compute normals on 1D cohesive elements!");
-  const ElementType type = _cohesive_1d_2;
-  const ElementType facet_type = Mesh::getFacetType(type);
-
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).getSize();
-  normal.resize(nb_element);
-
-  Array<Element> & facets =
-      mesh.getMeshFacets().getSubelementToElement(type, ghost_type);
-  Array<std::vector<Element> > & segments =
-      mesh.getMeshFacets().getElementToSubelement(facet_type, ghost_type);
-
-  Real values[2];
-
-  for (UInt elem = 0; elem < nb_element; ++elem) {
-
-    for (UInt p = 0; p < 2; ++p) {
-      Element f = facets(elem, p);
-      Element seg = segments(f.element)[0];
-      mesh.getBarycenter(seg.element, seg.type, &(values[p]), seg.ghost_type);
-    }
-
-    Real difference = values[0] - values[1];
-
-    AKANTU_DEBUG_ASSERT(difference != 0.,
-                        "Error in normal computation for cohesive elements");
-
-    normal(elem) = difference / std::abs(difference);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-__END_AKANTU__
+} // akantu

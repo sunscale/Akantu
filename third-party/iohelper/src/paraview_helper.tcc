@@ -27,7 +27,8 @@ inline void ParaviewHelper::visitField(T & visited){
   this->position_flag = false;
   switch (current_stage){
   case _s_writeFieldProperty:   writeFieldProperty(visited); break;
-  case _s_writePosition:        this->position_flag = true;
+  case _s_writePosition:        this->position_flag = true;  /* FALLTHRU */
+  // [[fallthrough]] un-comment when compiler gets it
   case _s_writeField:           writeField(visited);         break;
   case _s_writeConnectivity:    writeConnectivity(visited);  break;
   case _s_writeElemType:        writeElemType(visited);      break;
@@ -81,7 +82,7 @@ inline void ParaviewHelper::writeConnectivity(T & data) {
   typename T::iterator end = data.end();
 
   for (; it != end; ++it) {
-    ElemType type = (ElemType) it.element_type();
+    auto type = (ElemType)it.element_type();
     //typename T::iterator::type & n = *it;
     UInt dim = (*it).size();
     assert(nb_node_per_elem[type] == dim);
@@ -101,7 +102,7 @@ inline void ParaviewHelper::writeElemType(T & data){
   typename T::iterator end = data.end();
 
   for (; it != end; ++it) {
-    ElemType type = (ElemType) it.element_type();
+    auto type = (ElemType)it.element_type();
     this->pushDatum(this->paraview_code_type[type], 1);
   }
 }

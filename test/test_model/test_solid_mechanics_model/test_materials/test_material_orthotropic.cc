@@ -28,12 +28,11 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#include <iostream>
-
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+#include <fstream>
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
@@ -69,8 +68,8 @@ int main(int argc, char *argv[]) {
   model.addDumpField      ("mass"        );
   model.addDumpField      ("velocity"    );
   model.addDumpField      ("acceleration");
-  model.addDumpFieldVector("force"       );
-  model.addDumpField      ("residual"    );
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpField      ("stress"      );
   model.addDumpField      ("grad_u"      );
   model.dump();
@@ -80,11 +79,7 @@ int main(int argc, char *argv[]) {
   energy << "id,epot,ekin,tot" << std::endl;
 
   for(UInt s = 0; s < max_steps; ++s) {
-    model.explicitPred();
-
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     epot = model.getEnergy("potential");
     ekin = model.getEnergy("kinetic");

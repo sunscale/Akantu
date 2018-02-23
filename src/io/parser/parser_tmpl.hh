@@ -27,80 +27,85 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include <regex>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template <typename T>
-inline ParserParameter::operator T() const {
+template <typename T> inline ParserParameter::operator T() const {
   T t;
   std::stringstream sstr(value);
   sstr >> t;
-  if(sstr.bad())
+  if (sstr.bad())
     AKANTU_EXCEPTION("No known conversion of a ParserParameter \""
-                     << name << "\" to the type "
-                     << typeid(T).name());
+                     << name << "\" to the type " << typeid(T).name());
   return t;
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline ParserParameter::operator const char *() const {
+template <> inline ParserParameter::operator const char *() const {
   return value.c_str();
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline ParserParameter::operator Real() const {
+template <> inline ParserParameter::operator Real() const {
   return Parser::parseReal(value, *parent_section);
 }
 
-/* --------------------------------------------------------- ----------------- */
-template<>
-inline ParserParameter::operator bool() const {
+/* --------------------------------------------------------- -----------------
+ */
+template <> inline ParserParameter::operator bool() const {
   bool b;
   std::stringstream sstr(value);
   sstr >> std::boolalpha >> b;
-  if(sstr.fail()) {
+  if (sstr.fail()) {
     sstr.clear();
     sstr >> std::noboolalpha >> b;
   }
   return b;
 }
 
-/* --------------------------------------------------------- ----------------- */
-template<>
-inline ParserParameter::operator Vector<Real>() const {
+/* -------------------------------------------------------------------------- */
+template <> inline ParserParameter::operator std::vector<std::string>() const {
+  std::vector<std::string> tmp;
+  auto string =
+      std::regex_replace(value, std::regex("[[:space:]]|\\[|\\]"), "");
+  std::smatch sm;
+  while (std::regex_search(string, sm, std::regex("[^,]+"))) {
+    tmp.push_back(sm.str());
+    string = sm.suffix();
+  }
+  return tmp;
+}
+
+/* --------------------------------------------------------- -----------------
+ */
+template <> inline ParserParameter::operator Vector<Real>() const {
   return Parser::parseVector(value, *parent_section);
 }
 
-/* --------------------------------------------------------- ----------------- */
-template<>
-inline ParserParameter::operator Vector<UInt>() const {
+/* --------------------------------------------------------- -----------------
+ */
+template <> inline ParserParameter::operator Vector<UInt>() const {
   Vector<Real> tmp = Parser::parseVector(value, *parent_section);
   Vector<UInt> tmp_uint(tmp.size());
-  for (UInt i=0; i<tmp.size(); ++i) {
+  for (UInt i = 0; i < tmp.size(); ++i) {
     tmp_uint(i) = UInt(tmp(i));
   }
   return tmp_uint;
 }
 
-/* --------------------------------------------------------- ----------------- */
-template<>
-inline ParserParameter::operator Matrix<Real>() const {
+/* --------------------------------------------------------- -----------------
+ */
+template <> inline ParserParameter::operator Matrix<Real>() const {
   return Parser::parseMatrix(value, *parent_section);
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline ParserParameter::operator RandomParameter<Real>() const {
+template <> inline ParserParameter::operator RandomParameter<Real>() const {
   return Parser::parseRandomParameter(value, *parent_section);
 }
 
-
-
-
-
-__END_AKANTU__
+} // akantu

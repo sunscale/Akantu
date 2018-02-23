@@ -28,68 +28,59 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
+#include "non_local_neighborhood.hh"
+/* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_CC__
 #define __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
-template<class WeightFunction>
-inline UInt NonLocalNeighborhood<WeightFunction>::getNbDataForElements(const Array<Element> & elements,
-								       SynchronizationTag tag) const {
+template <class WeightFunction>
+inline UInt NonLocalNeighborhood<WeightFunction>::getNbData(
+    const Array<Element> & elements, const SynchronizationTag & tag) const {
   UInt size = 0;
 
-  if(tag == _gst_mnl_for_average) {
-    std::set<ID>::const_iterator it = non_local_variables.begin();
-    std::set<ID>::const_iterator end = non_local_variables.end();
-   
-    for(;it != end; ++it) {   
-      size += this->non_local_manager->getNbDataForElements(elements, *it);
+  if (tag == _gst_mnl_for_average) {
+    for (auto & variable_id : non_local_variables) {
+      size += this->non_local_manager.getNbData(elements, variable_id);
     }
   }
 
-  size += this->weight_function->getNbDataForElements(elements, tag);
+  size += this->weight_function->getNbData(elements, tag);
 
   return size;
 }
 
 /* -------------------------------------------------------------------------- */
-template<class WeightFunction>
-inline void NonLocalNeighborhood<WeightFunction>::packElementData(CommunicationBuffer & buffer,
-								  const Array<Element> & elements,
-								  SynchronizationTag tag) const {
-  if(tag == _gst_mnl_for_average) {
-
-    std::set<ID>::const_iterator it = non_local_variables.begin();
-    std::set<ID>::const_iterator end = non_local_variables.end();
-
-    for(;it != end; ++it) {
-      this->non_local_manager->packElementData(buffer, elements, tag, *it);
+template <class WeightFunction>
+inline void NonLocalNeighborhood<WeightFunction>::packData(
+    CommunicationBuffer & buffer, const Array<Element> & elements,
+    const SynchronizationTag & tag) const {
+  if (tag == _gst_mnl_for_average) {
+    for (auto & variable_id : non_local_variables) {
+      this->non_local_manager.packData(buffer, elements, variable_id);
     }
   }
 
-  this->weight_function->packElementData(buffer, elements, tag);
+  this->weight_function->packData(buffer, elements, tag);
 }
 
 /* -------------------------------------------------------------------------- */
-template<class WeightFunction>
-inline void NonLocalNeighborhood<WeightFunction>::unpackElementData(CommunicationBuffer & buffer,
-								    const Array<Element> & elements,
-								    SynchronizationTag tag) {
-  if(tag == _gst_mnl_for_average) {
-
-    std::set<ID>::const_iterator it = non_local_variables.begin();
-    std::set<ID>::const_iterator end = non_local_variables.end();
-
-    for(;it != end; ++it) {
-      this->non_local_manager->unpackElementData(buffer, elements, tag, *it);
+template <class WeightFunction>
+inline void NonLocalNeighborhood<WeightFunction>::unpackData(
+    CommunicationBuffer & buffer, const Array<Element> & elements,
+    const SynchronizationTag & tag) {
+  if (tag == _gst_mnl_for_average) {
+    for (auto & variable_id : non_local_variables) {
+      this->non_local_manager.unpackData(buffer, elements, variable_id);
     }
   }
- 
-  this->weight_function->unpackElementData(buffer, elements, tag);
+
+  this->weight_function->unpackData(buffer, elements, tag);
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_CC__ */

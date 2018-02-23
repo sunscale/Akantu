@@ -64,24 +64,12 @@ int main(int argc, char *argv[]) {
   // debug::setDebugLevel(dblWarning);
 
   SolidMechanicsModelCohesive model(mesh);
-
+  model.getElementInserter().setLimit(_x, -0.01, 0.01);
   /// model initialization
   model.initFull();
 
-  model.limitInsertion(_x, -0.01, 0.01);
-  model.insertIntrinsicElements();
-
-  // mesh.write("mesh_cohesive_quadrangle.msh");
-
-  // debug::setDebugLevel(dblDump);
-  // std::cout << mesh << std::endl;
-  // debug::setDebugLevel(dblWarning);
-
-
   Real time_step = model.getStableTimeStep()*0.8;
   model.setTimeStep(time_step);
-  //  std::cout << "Time step: " << time_step << std::endl;
-
   model.assembleMassLumped();
 
 
@@ -98,16 +86,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  model.updateResidual();
+  model.assembleInternalForces();
 
   model.setBaseName("intrinsic_quadrangle");
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity"    );
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("internal_force"    );
   model.addDumpField("stress");
   model.addDumpField("grad_u");
-  model.addDumpField("force");
+  model.addDumpField("external_force");
 
   model.setBaseNameToDumper("cohesive elements", "cohesive_elements_quadrangle");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
@@ -118,12 +106,11 @@ int main(int argc, char *argv[]) {
 
   /// update displacement
   Array<UInt> elements;
-  Real * bary = new Real[spatial_dimension];
+  Vector<Real> bary(spatial_dimension);
   for (UInt el = 0; el < nb_element; ++el) {
-    mesh.getBarycenter(el, type, bary);
-    if (bary[0] > 0.) elements.push_back(el);
+    mesh.getBarycenter({type, el, _not_ghost}, bary);
+    if (bary(_x) > 0.) elements.push_back(el);
   }
-  delete[] bary;
 
   Real increment = 0.01;
 
@@ -145,11 +132,7 @@ int main(int argc, char *argv[]) {
 
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
-
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     updateDisplacement(model, elements, type, increment);
 
@@ -204,7 +187,7 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
 			       Real increment) {
 
   Mesh & mesh = model.getFEEngine().getMesh();
-  UInt nb_element = elements.getSize();
+  UInt nb_element = elements.size();
   UInt nb_nodes = mesh.getNbNodes();
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 

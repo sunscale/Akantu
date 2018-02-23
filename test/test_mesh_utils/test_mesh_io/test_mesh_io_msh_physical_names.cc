@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
   for(Mesh::type_iterator type_it = mesh.firstType(); type_it != mesh.lastType(); ++type_it) {
     const Array<std::string> & name_vec = mesh.getData<std::string>("physical_names", *type_it);
-    for(UInt i(0); i < name_vec.getSize(); i++) {
+    for(UInt i(0); i < name_vec.size(); i++) {
       std::cout << "Element " << i << " (of type " << *type_it << ") has physical name " << name_vec(i) << "." << std::endl;
     }
   }

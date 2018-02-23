@@ -28,184 +28,242 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "mesh_data.hh"
+/* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+#ifndef __AKANTU_MESH_DATA_TMPL_HH__
+#define __AKANTU_MESH_DATA_TMPL_HH__
 
-#include <iostream>
+namespace akantu {
 
-#define MESH_DATA_GET_TYPE(r, data, type) \
-template<> \
-inline MeshDataTypeCode MeshData::getTypeCode<BOOST_PP_TUPLE_ELEM(2, 1, type)>() const { \
-  return BOOST_PP_TUPLE_ELEM(2, 0, type); \
-}
-
-__BEGIN_AKANTU__
+#define MESH_DATA_GET_TYPE(r, data, type)                                      \
+  template <>                                                                  \
+  inline MeshDataTypeCode                                                      \
+  MeshData::getTypeCode<BOOST_PP_TUPLE_ELEM(2, 1, type)>() const {             \
+    return BOOST_PP_TUPLE_ELEM(2, 0, type);                                    \
+  }
 
 /* -------------------------------------------------------------------------- */
 // get the type of the data stored in elemental_data
-template<typename T>
-inline MeshDataTypeCode MeshData::getTypeCode() const {
-  AKANTU_DEBUG_ERROR("Type " << debug::demangle(typeid(T).name()) << "not implemented by MeshData.");
+template <typename T> inline MeshDataTypeCode MeshData::getTypeCode() const {
+  AKANTU_ERROR("Type " << debug::demangle(typeid(T).name())
+                             << "not implemented by MeshData.");
 }
 
 /* -------------------------------------------------------------------------- */
 BOOST_PP_SEQ_FOR_EACH(MESH_DATA_GET_TYPE, void, AKANTU_MESH_DATA_TYPES)
 #undef MESH_DATA_GET_TYPE
 
-inline MeshDataTypeCode MeshData::getTypeCode(const std::string name) const {
-  TypeCodeMap::const_iterator it = typecode_map.find(name);
-  if(it == typecode_map.end()) AKANTU_EXCEPTION("No dataset named " << name << " found.");
+inline MeshDataTypeCode MeshData::getTypeCode(const ID & name) const {
+  auto it = typecode_map.find(name);
+  if (it == typecode_map.end())
+    AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return it->second;
 }
 
 /* -------------------------------------------------------------------------- */
-  //  Register new elemental data templated (and alloc data) with check if the name is new
-template<typename T>
-void MeshData::registerElementalData(const std::string & name) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
-  if(it == elemental_data.end()) {
+//  Register new elemental data templated (and alloc data) with check if the
+//  name is new
+template <typename T> void MeshData::registerElementalData(const ID & name) {
+  auto it = elemental_data.find(name);
+  if (it == elemental_data.end()) {
     allocElementalData<T>(name);
-  } else{
+  } else {
     AKANTU_DEBUG_INFO("Data named " << name << " already registered.");
   }
 }
 
 /* -------------------------------------------------------------------------- */
-  //  Register new elemental data of a given MeshDataTypeCode with check if the name is new
-#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)	\
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem) : { registerElementalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name); break; }
+  //  Register new elemental data of a given MeshDataTypeCode with check if the
+  //  name is new
+#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)                             \
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+    registerElementalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name);              \
+    break;                                                                     \
+  }
 
-inline void MeshData::registerElementalData(const std::string & name, MeshDataTypeCode type) {
-  switch(type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, name, AKANTU_MESH_DATA_TYPES)
-  default : AKANTU_DEBUG_ERROR("Type " << type << "not implemented by MeshData.");
+inline void MeshData::registerElementalData(const ID & name,
+                                            MeshDataTypeCode type) {
+  switch (type) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, name,
+                          AKANTU_MESH_DATA_TYPES)
+  default:
+    AKANTU_ERROR("Type " << type << "not implemented by MeshData.");
   }
 }
 #undef AKANTU_MESH_DATA_CASE_MACRO
+
 /* -------------------------------------------------------------------------- */
-  /// Register new elemental data (and alloc data)
-template<typename T>
-ElementTypeMapArray<T> * MeshData::allocElementalData(const std::string & name) {
-  ElementTypeMapArray<T> * dataset = new ElementTypeMapArray<T>(name, id, memory_id);
+/// Register new elemental data (and alloc data)
+template <typename T>
+ElementTypeMapArray<T> * MeshData::allocElementalData(const ID & name) {
+  auto * dataset = new ElementTypeMapArray<T>(name, id, memory_id);
   elemental_data[name] = dataset;
   typecode_map[name] = getTypeCode<T>();
   return dataset;
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-const ElementTypeMapArray<T> & MeshData::getElementalData(const std::string & name) const {
-  ElementalDataMap::const_iterator it = elemental_data.find(name);
-  if(it == elemental_data.end()) AKANTU_EXCEPTION("No dataset named " << name << " found.");
+template <typename T>
+const ElementTypeMapArray<T> &
+MeshData::getElementalData(const ID & name) const {
+  auto it = elemental_data.find(name);
+  if (it == elemental_data.end())
+    AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second));
 }
 
 /* -------------------------------------------------------------------------- */
 // Get an existing elemental data
-template<typename T>
-ElementTypeMapArray<T> & MeshData::getElementalData(const std::string & name) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
-  if(it == elemental_data.end()) AKANTU_EXCEPTION("No dataset named " << name << " found.");
+template <typename T>
+ElementTypeMapArray<T> & MeshData::getElementalData(const ID & name) {
+  auto it = elemental_data.find(name);
+  if (it == elemental_data.end())
+    AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second));
 }
 
 /* -------------------------------------------------------------------------- */
-// Get an existing elemental data array for an element type
-template<typename T>
-const Array<T> & MeshData::getElementalDataArray(const std::string & name,
-                                                 const ElementType & elem_type,
-                                                 const GhostType & ghost_type) const {
-  ElementalDataMap::const_iterator it = elemental_data.find(name);
-  if(it == elemental_data.end()) {
-    AKANTU_EXCEPTION("Data named " << name << " not registered for type: " << elem_type << " - ghost_type:" << ghost_type << "!");
-  }
-  return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second))(elem_type, ghost_type);
+template <typename T>
+bool MeshData::hasDataArray(const ID & name, const ElementType & elem_type,
+                            const GhostType & ghost_type) const {
+  auto it = elemental_data.find(name);
+  if (it == elemental_data.end())
+    return false;
+
+  auto & elem_map = dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second));
+  return elem_map.exists(elem_type, ghost_type);
 }
 
-template<typename T>
-Array<T> & MeshData::getElementalDataArray(const std::string & name,
+/* -------------------------------------------------------------------------- */
+inline bool MeshData::hasData(const ID & name) const {
+  auto it = elemental_data.find(name);
+  return (it != elemental_data.end());
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+const Array<T> &
+MeshData::getElementalDataArray(const ID & name, const ElementType & elem_type,
+                                const GhostType & ghost_type) const {
+  auto it = elemental_data.find(name);
+  if (it == elemental_data.end()) {
+    AKANTU_EXCEPTION("Data named " << name
+                                   << " not registered for type: " << elem_type
+                                   << " - ghost_type:" << ghost_type << "!");
+  }
+  return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second))(
+      elem_type, ghost_type);
+}
+
+template <typename T>
+Array<T> & MeshData::getElementalDataArray(const ID & name,
                                            const ElementType & elem_type,
                                            const GhostType & ghost_type) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
-  if(it == elemental_data.end()) {
-    AKANTU_EXCEPTION("Data named " << name << " not registered for type: " << elem_type << " - ghost_type:" << ghost_type << "!");
+  auto it = elemental_data.find(name);
+  if (it == elemental_data.end()) {
+    AKANTU_EXCEPTION("Data named " << name
+                                   << " not registered for type: " << elem_type
+                                   << " - ghost_type:" << ghost_type << "!");
   }
-  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second))(elem_type, ghost_type);
+  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second))(elem_type,
+                                                               ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 // Get an elemental data array, if it does not exist: allocate it
-template<typename T>
-Array<T> & MeshData::getElementalDataArrayAlloc(const std::string & name,
-                                                  const ElementType & elem_type,
-                                                  const GhostType & ghost_type,
-                                                  UInt nb_component) {
-  ElementalDataMap::iterator it = elemental_data.find(name);
+template <typename T>
+Array<T> & MeshData::getElementalDataArrayAlloc(const ID & name,
+                                                const ElementType & elem_type,
+                                                const GhostType & ghost_type,
+                                                UInt nb_component) {
+  auto it = elemental_data.find(name);
   ElementTypeMapArray<T> * dataset;
-  if(it == elemental_data.end()) {
+  if (it == elemental_data.end()) {
     dataset = allocElementalData<T>(name);
   } else {
     dataset = dynamic_cast<ElementTypeMapArray<T> *>(it->second);
   }
-  AKANTU_DEBUG_ASSERT(getTypeCode<T>() == typecode_map.find(name)->second, "Function getElementalDataArrayAlloc called with the wrong type!");
-  if(!(dataset->exists(elem_type, ghost_type))) {
+  AKANTU_DEBUG_ASSERT(
+      getTypeCode<T>() == typecode_map.find(name)->second,
+      "Function getElementalDataArrayAlloc called with the wrong type!");
+  if (!(dataset->exists(elem_type, ghost_type))) {
     dataset->alloc(0, nb_component, elem_type, ghost_type);
   }
   return (*dataset)(elem_type, ghost_type);
 }
 
-
 /* -------------------------------------------------------------------------- */
-#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)			\
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem) : {				\
-    nb_comp = getNbComponentTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name, el_type, ghost_type); \
-    break;								\
-  }									\
+#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)                             \
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+    nb_comp = getNbComponentTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(        \
+        name, el_type, ghost_type);                                            \
+    break;                                                                     \
+  }
 
-inline UInt MeshData::getNbComponent(const std::string name, const ElementType & el_type, const GhostType & ghost_type) const {
-  TypeCodeMap::const_iterator it = typecode_map.find(name);
+inline UInt MeshData::getNbComponent(const ID & name,
+                                     const ElementType & el_type,
+                                     const GhostType & ghost_type) const {
+  auto it = typecode_map.find(name);
   UInt nb_comp(0);
-  if(it == typecode_map.end()) {
-    AKANTU_EXCEPTION("Could not determine the type held in dataset " << name << " for type: " << el_type << " - ghost_type:" << ghost_type << ".");
+  if (it == typecode_map.end()) {
+    AKANTU_EXCEPTION("Could not determine the type held in dataset "
+                     << name << " for type: " << el_type
+                     << " - ghost_type:" << ghost_type << ".");
   }
   MeshDataTypeCode type = it->second;
-  switch(type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, name, AKANTU_MESH_DATA_TYPES)
-  default : AKANTU_DEBUG_ERROR("Could not call the correct instance of getNbComponentTemplated."); break;
+  switch (type) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, name,
+                          AKANTU_MESH_DATA_TYPES)
+  default:
+    AKANTU_ERROR(
+        "Could not call the correct instance of getNbComponentTemplated.");
+    break;
   }
   return nb_comp;
 }
 #undef AKANTU_MESH_DATA_CASE_MACRO
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-inline UInt MeshData::getNbComponentTemplated(const std::string name, const ElementType & el_type, const GhostType & ghost_type) const {
+template <typename T>
+inline UInt
+MeshData::getNbComponentTemplated(const ID & name, const ElementType & el_type,
+                                  const GhostType & ghost_type) const {
   return getElementalDataArray<T>(name, el_type, ghost_type).getNbComponent();
 }
 
 /* -------------------------------------------------------------------------- */
 // get the names of the data stored in elemental_data
-#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)	\
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem) : { \
-    ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> * dataset; \
-    dataset = dynamic_cast< ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> * >(it->second); \
-    exists = dataset->exists(el_type, ghost_type); \
-    break; \
-  } \
-  
-inline void MeshData::getTagNames(StringVector & tags, const ElementType & el_type, const GhostType & ghost_type) const {
+#define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)                             \
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+    ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> * dataset;            \
+    dataset =                                                                  \
+        dynamic_cast<ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> *>(  \
+            it->second);                                                       \
+    exists = dataset->exists(el_type, ghost_type);                             \
+    break;                                                                     \
+  }
+
+inline void MeshData::getTagNames(StringVector & tags,
+                                  const ElementType & el_type,
+                                  const GhostType & ghost_type) const {
   tags.clear();
   bool exists(false);
 
-  ElementalDataMap::const_iterator it     = elemental_data.begin();
-  ElementalDataMap::const_iterator it_end = elemental_data.end();
-  for(; it != it_end; ++it) {
+  auto it = elemental_data.begin();
+  auto it_end = elemental_data.end();
+  for (; it != it_end; ++it) {
     MeshDataTypeCode type = getTypeCode(it->first);
-    switch(type) {
-      BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, , AKANTU_MESH_DATA_TYPES)
-      default : AKANTU_DEBUG_ERROR("Could not determine the proper type to (dynamic-)cast."); break;
+    switch (type) {
+      BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, ,
+                            AKANTU_MESH_DATA_TYPES)
+    default:
+      AKANTU_ERROR(
+          "Could not determine the proper type to (dynamic-)cast.");
+      break;
     }
-    if(exists) {
+    if (exists) {
       tags.push_back(it->first);
     }
   }
@@ -213,6 +271,6 @@ inline void MeshData::getTagNames(StringVector & tags, const ElementType & el_ty
 #undef AKANTU_MESH_DATA_CASE_MACRO
 
 /* -------------------------------------------------------------------------- */
+} // namespace akantu
 
-
-
+#endif /* __AKANTU_MESH_DATA_TMPL_HH__ */

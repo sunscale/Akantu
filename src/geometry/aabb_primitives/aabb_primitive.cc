@@ -33,7 +33,7 @@
 
 #include "aabb_primitive.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 Triangle_primitive::Point Triangle_primitive::reference_point() const {
   return primitive.vertex(0);
@@ -43,7 +43,7 @@ Line_arc_primitive::Point Line_arc_primitive::reference_point() const {
   Real x = to_double(primitive.source().x());
   Real y = to_double(primitive.source().y());
   Real z = to_double(primitive.source().z());
-  return Spherical::Point_3(x, y, z);
+  return cgal::Spherical::Point_3(x, y, z);
 }
 
-__END_AKANTU__
+} // akantu

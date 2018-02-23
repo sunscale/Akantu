@@ -34,7 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_padding_helper.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 class MaterialFunctor {
@@ -53,15 +53,15 @@ public:
   /* ------------------------------------------------------------------------ */
   /// return the material from the global element index
   const Material & getMaterialFromGlobalIndex(Element global_index) {
-    UInt index = global_index.getIndex();
-    UInt material_id = material_index(global_index.getType())(index);
+    UInt index = global_index.element;
+    UInt material_id = material_index(global_index.type)(index);
     const Material & material = model.getMaterial(material_id);
     return material;
   }
 
   /// return the type of the element from global index
   ElementType getElementTypeFromGlobalIndex(Element global_index) {
-    return global_index.getType();
+    return global_index.type;
   }
 
 protected:
@@ -101,7 +101,8 @@ public:
     this->setPadding(3, 3);
   }
 
-  inline Matrix<Real> func(const Vector<Real> & in, Element global_element_id) {
+  inline Matrix<Real> func(const Vector<Real> & in,
+                           Element global_element_id) override {
     UInt nrows = spatial_dimension;
     UInt ncols = in.size() / nrows;
     UInt nb_data = in.size() / (nrows * nrows);
@@ -111,10 +112,10 @@ public:
         this->getMaterialFromGlobalIndex(global_element_id);
     bool plane_strain = true;
     if (spatial_dimension == 2)
-      plane_strain = !material.getParam<bool>("Plane_Stress");
+      plane_strain = !((bool) material.getParam("Plane_Stress"));
 
     if (plane_strain) {
-      Real nu = material.getParam<Real>("nu");
+      Real nu = material.getParam("nu");
       for (UInt d = 0; d < nb_data; ++d) {
         stress(2, 2 + 3 * d) =
             nu * (stress(0, 0 + 3 * d) + stress(1, 1 + 3 * d));
@@ -123,9 +124,9 @@ public:
     return stress;
   }
 
-  UInt getDim() { return 9; };
+  UInt getDim() override { return 9; };
 
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -139,17 +140,18 @@ public:
     this->setPadding(3, 3);
   }
 
-  inline Matrix<Real> func(const Matrix<Real> & in, Element global_element_id) {
+  inline Matrix<Real> func(const Matrix<Real> & in,
+                           Element global_element_id) override {
     UInt nrows = spatial_dimension;
     UInt nb_data = in.size() / (nrows * nrows);
 
     Matrix<Real> strain = this->pad(in, nb_data);
     const Material & material =
         this->getMaterialFromGlobalIndex(global_element_id);
-    bool plane_stress = material.getParam<bool>("Plane_Stress");
+    bool plane_stress = material.getParam("Plane_Stress");
 
     if (plane_stress) {
-      Real nu = material.getParam<Real>("nu");
+      Real nu = material.getParam("nu");
       for (UInt d = 0; d < nb_data; ++d) {
         strain(2, 2 + 3 * d) =
             nu / (nu - 1) * (strain(0, 0 + 3 * d) + strain(1, 1 + 3 * d));
@@ -159,9 +161,9 @@ public:
     return strain;
   }
 
-  UInt getDim() { return 9; };
+  UInt getDim() override { return 9; };
 
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -173,8 +175,7 @@ class ComputeStrain : public MaterialFunctor,
 public:
   ComputeStrain(const SolidMechanicsModel & model) : MaterialFunctor(model) {}
 
-  inline Matrix<Real> func(const Vector<Real> & in,
-                           __attribute__((unused)) Element global_element_id) {
+  inline Matrix<Real> func(const Vector<Real> & in, Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt ncols = in.size() / nrows;
     UInt nb_data = in.size() / (nrows * nrows);
@@ -203,9 +204,9 @@ public:
     return ret_all_strain;
   }
 
-  UInt getDim() { return spatial_dimension * spatial_dimension; };
+  UInt getDim() override { return spatial_dimension * spatial_dimension; };
 
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -220,7 +221,7 @@ public:
       : MaterialFunctor(model) {}
 
   inline Matrix<Real> func(const Vector<Real> & in,
-                           __attribute__((unused)) Element global_element_id) {
+                           Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt nb_data = in.size() / (nrows * nrows);
 
@@ -250,9 +251,9 @@ public:
     return ret_all_strain;
   }
 
-  UInt getDim() { return spatial_dimension; };
+  UInt getDim() override { return spatial_dimension; };
 
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -266,7 +267,7 @@ public:
       : MaterialFunctor(model) {}
 
   inline Vector<Real> func(const Vector<Real> & in,
-                           __attribute__((unused)) Element global_element_id) {
+                           Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt nb_data = in.size() / (nrows * nrows);
 
@@ -282,9 +283,9 @@ public:
     return von_mises_stress;
   }
 
-  UInt getDim() { return 1; };
+  UInt getDim() override { return 1; };
 
-  UInt getNbComponent(__attribute__((unused)) UInt old_nb_comp) {
+  UInt getNbComponent(UInt /*old_nb_comp*/) override {
     return this->getDim();
   };
 };
@@ -292,6 +293,6 @@ public:
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_MATERIAL_PADDERS_HH__ */

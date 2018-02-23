@@ -28,6 +28,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
+@PACKAGE_INIT@
 
 # Compute paths
 get_filename_component(AKANTU_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
@@ -36,17 +37,17 @@ set(AKANTU_USE_FILE "${AKANTU_CMAKE_DIR}/AkantuUse.cmake")
 include(${AKANTU_USE_FILE})
 
 if(EXISTS "${AKANTU_CMAKE_DIR}/CMakeCache.txt")
-   # In build tree
-   include("${AKANTU_CMAKE_DIR}/AkantuBuildTreeSettings.cmake")
-   include(AkantuSimulationMacros)
- else()
-   # In install tree
-   set(AKANTU_INCLUDE_DIRS "${AKANTU_CMAKE_DIR}/../../include/akantu")
-   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${AKANTU_CMAKE_DIR}")
-   include(AkantuSimulationMacros)
+  # In build tree
+  include("${AKANTU_CMAKE_DIR}/AkantuBuildTreeSettings.cmake")
+  include(AkantuSimulationMacros)
+else()
+  # In install tree
+  set(AKANTU_INCLUDE_DIRS "${AKANTU_CMAKE_DIR}/../../include/akantu")
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${AKANTU_CMAKE_DIR}")
+  include(AkantuSimulationMacros)
 endif()
 
-include("${AKANTU_CMAKE_DIR}/AkantuLibraryDepends.cmake")
+include("${AKANTU_CMAKE_DIR}/AkantuTargets.cmake")
 
 # Dependencies
 include("${AKANTU_CMAKE_DIR}/AkantuConfigInclude.cmake")
@@ -60,6 +61,5 @@ list(APPEND AKANTU_LIBRARIES ${AKANTU_LIBRARY} ${AKANTU_EXTRA_LIBRARIES})
 list(APPEND AKANTU_INCLUDE_DIRS ${AKANTU_EXTRA_INCLUDE_DIR})
 
 # set(AKANTU_VERSION @AKANTU_VERSION@)
-# @PACKAGE_INIT@
 # set_and_check(AKANTU_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
-# check_required_components(Akantu)
+check_required_components(Akantu)

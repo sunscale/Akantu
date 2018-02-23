@@ -48,7 +48,7 @@
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 void Parser::parse(const std::string & filename) {
@@ -66,8 +66,8 @@ void Parser::parse(const std::string & filename) {
   spirit::istream_iterator fwd_end;
 
   // wrap forward iterator with position iterator, to record the position
-  typedef spirit::classic::position_iterator2<spirit::istream_iterator>
-      pos_iterator_type;
+  using pos_iterator_type =
+      spirit::classic::position_iterator2<spirit::istream_iterator>;
   pos_iterator_type position_begin(fwd_begin, fwd_end, filename);
   pos_iterator_type position_end;
 
@@ -90,10 +90,7 @@ void Parser::parse(const std::string & filename) {
   }
 
   try {
-    DebugLevel dbl = debug::getDebugLevel();
-    debug::setDebugLevel(dblError);
     bool permissive = getParameter("permissive_parser", _ppsc_current_scope);
-    debug::setDebugLevel(dbl);
 
     permissive_parser = permissive;
     AKANTU_DEBUG_INFO("Parser switched permissive mode to "
@@ -105,7 +102,7 @@ void Parser::parse(const std::string & filename) {
   input.close();
 }
 
-__END_AKANTU__
+} // akantu
 
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )

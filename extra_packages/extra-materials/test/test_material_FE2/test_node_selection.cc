@@ -27,7 +27,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 
@@ -36,69 +35,40 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   akantu::initialize("material_test_boundary.dat", argc, argv);
 
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("periodic_plate.msh");
-  
+
   SolidMechanicsModelRVE model(mesh, false);
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  auto mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>(
+      "physical_names", model);
+  model.setMaterialSelector(mat_selector);
 
   /// model initialization
   model.initFull();
 
   /// apply macroscopic deformation gradient at corner nodes
-  /// consider a constant strain field 
+  /// consider a constant strain field
   Matrix<Real> grad_u_macro(spatial_dimension, spatial_dimension, 0.);
-  grad_u_macro(0,1) = 1.;
-  // grad_u_macro(1,1) = 0.5;
-  // grad_u_macro(0,0) = 1.;
-  /// fix top right node
-  // UInt node = corner_nodes(2);
-  // boun(node,0) = true; disp(node,0) = 0.;
-  // boun(node,1) = true; disp(node,1) = 0.;
-  // /// apply gradu*x at bottom right and  top left
-  // node = corner_nodes(0);
-  // x(0) = pos(node,0); x(1) = pos(node,1);
-  // appl_disp.mul<false>(grad_u_macro,x);
-  // boun(node,0) = true; disp(node,0) = appl_disp(0);
-  // boun(node,1) = true; disp(node,1) = appl_disp(1);
- 
-  // node = corner_nodes(1);
-  // x(0) = pos(node,0); x(1) = pos(node,1);
-  // appl_disp.mul<false>(grad_u_macro,x);
-  // boun(node,0) = true; disp(node,0) = appl_disp(0);
-  // boun(node,1) = true; disp(node,1) = appl_disp(1);
- 
-  // node = corner_nodes(3);
-  // x(0) = pos(node,0); x(1) = pos(node,1);
-  // appl_disp.mul<false>(grad_u_macro,x);
-  // boun(node,0) = true; disp(node,0) = appl_disp(0);
-  // boun(node,1) = true; disp(node,1) = appl_disp(1);
-
+  grad_u_macro(0, 1) = 1.;
   model.applyBoundaryConditions(grad_u_macro);
 
-  model.setBaseName       ("periodic-plate"      );
+  model.setBaseName("periodic-plate");
   model.addDumpFieldVector("displacement");
-  model.addDumpField      ("stress"      );
-  model.addDumpField      ("grad_u"      );
-  model.addDumpField      ("blocked_dofs"      );
-  model.addDumpField      ("material_index"      );
+  model.addDumpField("stress");
+  model.addDumpField("grad_u");
+  model.addDumpField("blocked_dofs");
+  model.addDumpField("material_index");
   // model.addDumpField      (""      );
   model.dump();
 
-  /// solve system
-  model.assembleStiffnessMatrix();
-  Real error = 0;
-  bool converged= model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_increment>(1e-12, error, 2);
-  AKANTU_DEBUG_ASSERT(converged, "Did not converge");
+  model.solveStep();
 
-  Real average_strain = model.averageTensorField(0,1, "strain");
+  Real average_strain = model.averageTensorField(0, 1, "strain");
   std::cout << "the average strain is: " << average_strain << std::endl;
 
   model.dump();

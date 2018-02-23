@@ -43,9 +43,8 @@ class VariableInterface {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  VariableInterface() {};
-  virtual ~VariableInterface() {};
+  VariableInterface() = default;
+  virtual ~VariableInterface() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

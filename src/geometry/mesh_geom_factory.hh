@@ -44,7 +44,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * @brief Class used to construct AABB tree for intersection computations
@@ -100,7 +100,7 @@ protected:
   typename TreeTypeHelper<Primitive, Kernel>::container_type primitive_list;
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "mesh_geom_factory_tmpl.hh"
 

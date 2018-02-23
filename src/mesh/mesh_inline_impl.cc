@@ -33,41 +33,103 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#if defined(AKANTU_COHESIVE_ELEMENT)
-#include "cohesive_element.hh"
-#endif
+#include "mesh.hh"
+#include "aka_iterators.hh"
+#include "element_class.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MESH_INLINE_IMPL_CC__
 #define __AKANTU_MESH_INLINE_IMPL_CC__
 
-__BEGIN_AKANTU__
+namespace akantu {
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+inline ElementKind Element::kind() const { return Mesh::getKind(type); }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+template <typename... pack>
+Mesh::ElementTypesIteratorHelper Mesh::elementTypes(pack &&... _pack) const {
+  return connectivities.elementTypes(_pack...);
+}
 
 /* -------------------------------------------------------------------------- */
 inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
     : new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
-inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh, ID new_numbering_id) :
-  new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {
+inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
+                                                  const ID & new_numbering_id)
+    : new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
+
+/* -------------------------------------------------------------------------- */
+template <>
+inline void Mesh::sendEvent<NewElementsEvent>(NewElementsEvent & event) {
+  this->nodes_to_elements.resize(nodes->size());
+  for (const auto & elem : event.getList()) {
+    const Array<UInt> & conn = connectivities(elem.type, elem.ghost_type);
+
+    UInt nb_nodes_per_elem = this->getNbNodesPerElement(elem.type);
+
+    for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
+      UInt node = conn(elem.element, n);
+      if (not nodes_to_elements[node])
+        nodes_to_elements[node] = std::make_unique<std::set<Element>>();
+      nodes_to_elements[node]->insert(elem);
+    }
+  }
+
+  EventHandlerManager<MeshEventHandler>::sendEvent(event);
+}
+
+/* -------------------------------------------------------------------------- */
+template <> inline void Mesh::sendEvent<NewNodesEvent>(NewNodesEvent & event) {
+  this->computeBoundingBox();
+
+  EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
 Mesh::sendEvent<RemovedElementsEvent>(RemovedElementsEvent & event) {
-  connectivities.onElementsRemoved(event.getNewNumbering());
+  this->connectivities.onElementsRemoved(event.getNewNumbering());
+  this->fillNodesToElements();
+  this->computeBoundingBox();
+
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
-  if (created_nodes)
-    removeNodesFromArray(*nodes, event.getNewNumbering());
+  const auto & new_numbering = event.getNewNumbering();
+  this->removeNodesFromArray(*nodes, new_numbering);
   if (nodes_global_ids)
-    removeNodesFromArray(*nodes_global_ids, event.getNewNumbering());
-  if (nodes_type.getSize() != 0)
-    removeNodesFromArray(nodes_type, event.getNewNumbering());
+    this->removeNodesFromArray(*nodes_global_ids, new_numbering);
+  if (nodes_type.size() != 0)
+    this->removeNodesFromArray(nodes_type, new_numbering);
+
+  if (not nodes_to_elements.empty()) {
+    std::vector<std::unique_ptr<std::set<Element>>> tmp(
+        nodes_to_elements.size());
+    auto it = nodes_to_elements.begin();
+
+    UInt new_nb_nodes = 0;
+    for (auto new_i : new_numbering) {
+      if (new_i != UInt(-1)) {
+        tmp[new_i] = std::move(*it);
+        ++new_nb_nodes;
+      }
+      ++it;
+    }
+
+    tmp.resize(new_nb_nodes);
+    std::move(tmp.begin(), tmp.end(), nodes_to_elements.begin());
+  }
+
+  computeBoundingBox();
 
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
@@ -76,14 +138,15 @@ inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
 template <typename T>
 inline void Mesh::removeNodesFromArray(Array<T> & vect,
                                        const Array<UInt> & new_numbering) {
-  Array<T> tmp(vect.getSize(), vect.getNbComponent());
+  Array<T> tmp(vect.size(), vect.getNbComponent());
   UInt nb_component = vect.getNbComponent();
   UInt new_nb_nodes = 0;
-  for (UInt i = 0; i < new_numbering.getSize(); ++i) {
+  for (UInt i = 0; i < new_numbering.size(); ++i) {
     UInt new_i = new_numbering(i);
     if (new_i != UInt(-1)) {
-      memcpy(tmp.storage() + new_i * nb_component,
-             vect.storage() + i * nb_component, nb_component * sizeof(T));
+      T * to_copy = vect.storage() + i * nb_component;
+      std::uninitialized_copy(to_copy, to_copy + nb_component,
+                              tmp.storage() + new_i * nb_component);
       ++new_nb_nodes;
     }
   }
@@ -93,178 +156,101 @@ inline void Mesh::removeNodesFromArray(Array<T> & vect,
 }
 
 /* -------------------------------------------------------------------------- */
-#ifdef AKANTU_CORE_CXX11
-template <typename... Args> inline void Mesh::translate(Args... params) {
-  // check that the number of parameters corresponds to the dimension
-  AKANTU_DEBUG_ASSERT(sizeof...(Args) <= spatial_dimension,
-                      "Number of arguments greater than dimension.");
-
-  // unpack parameters
-  Real s[] = {params...};
-
-  Array<Real> & nodes = getNodes();
-  for (UInt i = 0; i < nodes.getSize(); ++i)
-    for (UInt k = 0; k < sizeof...(Args); ++k)
-      nodes(i, k) += s[k];
-}
-#endif
-
-/* -------------------------------------------------------------------------- */
-inline UInt Mesh::elementToLinearized(const Element & elem) const {
-  AKANTU_DEBUG_ASSERT(elem.type < _max_element_type &&
-                          elem.element < types_offsets.storage()[elem.type + 1],
-                      "The element " << elem << "does not exists in the mesh "
-                                     << getID());
-
-  return types_offsets.storage()[elem.type] + elem.element;
-}
-
-/* -------------------------------------------------------------------------- */
-inline Element Mesh::linearizedToElement(UInt linearized_element) const {
-
-  UInt t;
-
-  for (t = _not_defined;
-       t != _max_element_type && linearized_element >= types_offsets(t); ++t)
-    ;
-
-  AKANTU_DEBUG_ASSERT(linearized_element < types_offsets(t),
-                      "The linearized element "
-                          << linearized_element
-                          << "does not exists in the mesh " << getID());
-
-  --t;
-  ElementType type = ElementType(t);
-  return Element(type, linearized_element - types_offsets.storage()[t],
-                 _not_ghost, getKind(type));
-}
-
-/* -------------------------------------------------------------------------- */
-inline void Mesh::updateTypesOffsets(const GhostType & ghost_type) {
-  Array<UInt> * types_offsets_ptr = &this->types_offsets;
-  if (ghost_type == _ghost)
-    types_offsets_ptr = &this->ghost_types_offsets;
-  Array<UInt> & types_offsets = *types_offsets_ptr;
-
-  types_offsets.clear();
-  type_iterator it = firstType(_all_dimensions, ghost_type, _ek_not_defined);
-  type_iterator last = lastType(_all_dimensions, ghost_type, _ek_not_defined);
-
-  for (; it != last; ++it)
-    types_offsets(*it) = connectivities(*it, ghost_type).getSize();
-
-  for (UInt t = _not_defined + 1; t < _max_element_type; ++t)
-    types_offsets(t) += types_offsets(t - 1);
-  for (UInt t = _max_element_type; t > _not_defined; --t)
-    types_offsets(t) = types_offsets(t - 1);
-  types_offsets(0) = 0;
-}
-
-/* -------------------------------------------------------------------------- */
-inline const Mesh::ConnectivityTypeList &
-Mesh::getConnectivityTypeList(const GhostType & ghost_type) const {
-  if (ghost_type == _not_ghost)
-    return type_set;
-  else
-    return ghost_type_set;
-}
-
-/* -------------------------------------------------------------------------- */
-inline Array<UInt> * Mesh::getNodesGlobalIdsPointer() {
+inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
   AKANTU_DEBUG_IN();
-  if (nodes_global_ids == NULL) {
-    std::stringstream sstr;
-    sstr << getID() << ":nodes_global_ids";
-    nodes_global_ids = &(alloc<UInt>(sstr.str(), nodes->getSize(), 1));
+  if (not nodes_global_ids) {
+    nodes_global_ids = std::make_unique<Array<UInt>>(
+        nodes->size(), 1, getID() + ":nodes_global_ids");
+
+    for (auto && global_ids : enumerate(*nodes_global_ids)) {
+      std::get<1>(global_ids) = std::get<0>(global_ids);
+    }
   }
+
   AKANTU_DEBUG_OUT();
-  return nodes_global_ids;
+  return *nodes_global_ids;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<Int> * Mesh::getNodesTypePointer() {
+inline Array<NodeType> & Mesh::getNodesTypePointer() {
   AKANTU_DEBUG_IN();
-  if (nodes_type.getSize() == 0) {
-    nodes_type.resize(nodes->getSize());
-    nodes_type.set(-1);
+  if (nodes_type.size() == 0) {
+    nodes_type.resize(nodes->size());
+    nodes_type.set(_nt_normal);
   }
+
   AKANTU_DEBUG_OUT();
-  return &nodes_type;
+  return nodes_type;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<UInt> *
+inline Array<UInt> &
 Mesh::getConnectivityPointer(const ElementType & type,
                              const GhostType & ghost_type) {
-  AKANTU_DEBUG_IN();
+  if (connectivities.exists(type, ghost_type))
+    return connectivities(type, ghost_type);
 
-  Array<UInt> * tmp;
-  if (!connectivities.exists(type, ghost_type)) {
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-
-    tmp = &(connectivities.alloc(0, nb_nodes_per_element, type, ghost_type));
-
-    AKANTU_DEBUG_INFO("The connectivity vector for the type " << type
-                                                              << " created");
-
-    if (ghost_type == _not_ghost)
-      type_set.insert(type);
-    else
-      ghost_type_set.insert(type);
-
-    updateTypesOffsets(ghost_type);
-  } else {
-    tmp = &connectivities(type, ghost_type);
+  if (ghost_type != _not_ghost) {
+    ghosts_counters.alloc(0, 1, type, ghost_type, 1);
   }
 
-  AKANTU_DEBUG_OUT();
-  return tmp;
+  AKANTU_DEBUG_INFO("The connectivity vector for the type " << type
+                                                            << " created");
+
+  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  return connectivities.alloc(0, nb_nodes_per_element, type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<std::vector<Element> > *
+inline Array<std::vector<Element>> &
 Mesh::getElementToSubelementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
-  Array<std::vector<Element> > * tmp = getDataPointer<std::vector<Element> >(
-      "element_to_subelement", type, ghost_type, 1, true);
-  return tmp;
+  return getDataPointer<std::vector<Element>>("element_to_subelement", type,
+                                              ghost_type, 1, true);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<Element> *
+inline Array<Element> &
 Mesh::getSubelementToElementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
-  Array<Element> * tmp = getDataPointer<Element>(
+  auto & array = getDataPointer<Element>(
       "subelement_to_element", type, ghost_type, getNbFacetsPerElement(type),
       true, is_mesh_facets);
-  return tmp;
+  array.set(ElementNull);
+  return array;
 }
 
 /* -------------------------------------------------------------------------- */
-inline const Array<std::vector<Element> > &
+inline const auto &
+Mesh::getElementToSubelement() const {
+  return getData<std::vector<Element>>("element_to_subelement");
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto &
 Mesh::getElementToSubelement(const ElementType & type,
                              const GhostType & ghost_type) const {
-  return getData<std::vector<Element> >("element_to_subelement", type,
-                                        ghost_type);
+  return getData<std::vector<Element>>("element_to_subelement", type,
+                                       ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<std::vector<Element> > &
+inline auto &
 Mesh::getElementToSubelement(const ElementType & type,
                              const GhostType & ghost_type) {
-  return getData<std::vector<Element> >("element_to_subelement", type,
-                                        ghost_type);
+  return getData<std::vector<Element>>("element_to_subelement", type,
+                                       ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline const Array<Element> &
+inline const auto &
 Mesh::getSubelementToElement(const ElementType & type,
                              const GhostType & ghost_type) const {
   return getData<Element>("subelement_to_element", type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<Element> &
+inline auto &
 Mesh::getSubelementToElement(const ElementType & type,
                              const GhostType & ghost_type) {
   return getData<Element>("subelement_to_element", type, ghost_type);
@@ -272,8 +258,8 @@ Mesh::getSubelementToElement(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline Array<T> *
-Mesh::getDataPointer(const std::string & data_name, const ElementType & el_type,
+inline Array<T> &
+Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
                      const GhostType & ghost_type, UInt nb_component,
                      bool size_to_nb_element, bool resize_with_parent) {
   Array<T> & tmp = mesh_data.getElementalDataArrayAlloc<T>(
@@ -288,12 +274,19 @@ Mesh::getDataPointer(const std::string & data_name, const ElementType & el_type,
     tmp.resize(0);
   }
 
-  return &tmp;
+  return tmp;
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline const Array<T> & Mesh::getData(const std::string & data_name,
+inline bool Mesh::hasData(const ID & data_name, const ElementType & el_type,
+                          const GhostType & ghost_type) const {
+  return mesh_data.hasDataArray<T>(data_name, el_type, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+inline const Array<T> & Mesh::getData(const ID & data_name,
                                       const ElementType & el_type,
                                       const GhostType & ghost_type) const {
   return mesh_data.getElementalDataArray<T>(data_name, el_type, ghost_type);
@@ -301,29 +294,33 @@ inline const Array<T> & Mesh::getData(const std::string & data_name,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline Array<T> & Mesh::getData(const std::string & data_name,
+inline Array<T> & Mesh::getData(const ID & data_name,
                                 const ElementType & el_type,
                                 const GhostType & ghost_type) {
   return mesh_data.getElementalDataArray<T>(data_name, el_type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool Mesh::hasData(const ID & data_name) const {
+  return mesh_data.hasData(data_name);
+}
+
+/* -------------------------------------------------------------------------- */
 template <typename T>
 inline const ElementTypeMapArray<T> &
-Mesh::getData(const std::string & data_name) const {
+Mesh::getData(const ID & data_name) const {
   return mesh_data.getElementalData<T>(data_name);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline ElementTypeMapArray<T> & Mesh::getData(const std::string & data_name) {
+inline ElementTypeMapArray<T> & Mesh::getData(const ID & data_name) {
   return mesh_data.getElementalData<T>(data_name);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline ElementTypeMapArray<T> &
-Mesh::registerData(const std::string & data_name) {
+inline ElementTypeMapArray<T> & Mesh::registerData(const ID & data_name) {
   this->mesh_data.registerElementalData<T>(data_name);
   return this->getData<T>(data_name);
 }
@@ -332,8 +329,9 @@ Mesh::registerData(const std::string & data_name) {
 inline UInt Mesh::getNbElement(const ElementType & type,
                                const GhostType & ghost_type) const {
   try {
+
     const Array<UInt> & conn = connectivities(type, ghost_type);
-    return conn.getSize();
+    return conn.size();
   } catch (...) {
     return 0;
   }
@@ -343,15 +341,13 @@ inline UInt Mesh::getNbElement(const ElementType & type,
 inline UInt Mesh::getNbElement(const UInt spatial_dimension,
                                const GhostType & ghost_type,
                                const ElementKind & kind) const {
-  AKANTU_DEBUG_ASSERT(spatial_dimension <= 3,
+  AKANTU_DEBUG_ASSERT(spatial_dimension <= 3 || spatial_dimension == UInt(-1),
                       "spatial_dimension is " << spatial_dimension
-                      << " and is greater than 3 !");
+                                              << " and is greater than 3 !");
   UInt nb_element = 0;
 
-  type_iterator it = firstType(spatial_dimension, ghost_type, kind);
-  type_iterator last = lastType(spatial_dimension, ghost_type, kind);
-  for (; it != last; ++it)
-    nb_element += getNbElement(*it, ghost_type);
+  for (auto type : elementTypes(spatial_dimension, ghost_type, kind))
+    nb_element += getNbElement(type, ghost_type);
 
   return nb_element;
 }
@@ -362,7 +358,7 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
   UInt * conn_val = getConnectivity(type, ghost_type).storage();
   UInt nb_nodes_per_element = getNbNodesPerElement(type);
 
-  Real * local_coord = new Real[spatial_dimension * nb_nodes_per_element];
+  auto * local_coord = new Real[spatial_dimension * nb_nodes_per_element];
 
   UInt offset = element * nb_nodes_per_element;
   for (UInt n = 0; n < nb_nodes_per_element; ++n) {
@@ -374,7 +370,7 @@ inline void Mesh::getBarycenter(UInt element, const ElementType & type,
   Math::barycenter(local_coord, nb_nodes_per_element, spatial_dimension,
                    barycenter);
 
-  delete [] local_coord;
+  delete[] local_coord;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -436,26 +432,25 @@ inline UInt Mesh::getNbFacetTypes(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline ElementType Mesh::getFacetType(const ElementType & type, UInt t) {
-  ElementType surface_type = _not_defined;
-#define GET_FACET_TYPE(type) surface_type = ElementClass<type>::getFacetType(t)
-  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
+inline constexpr auto Mesh::getFacetType(const ElementType & type, UInt t) {
+#define GET_FACET_TYPE(type) return ElementClass<type>::getFacetType(t);
+
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH_NO_DEFAULT(GET_FACET_TYPE);
+
 #undef GET_FACET_TYPE
 
-  return surface_type;
+  return _not_defined;
 }
 
 /* -------------------------------------------------------------------------- */
-inline VectorProxy<ElementType>
-Mesh::getAllFacetTypes(const ElementType & type) {
+inline constexpr auto Mesh::getAllFacetTypes(const ElementType & type) {
 #define GET_FACET_TYPE(type)                                                   \
-  UInt nb = ElementClass<type>::getNbFacetTypes();                             \
-  ElementType * elt_ptr =                                                      \
-      const_cast<ElementType *>(ElementClass<type>::getFacetTypeInternal());   \
-  return VectorProxy<ElementType>(elt_ptr, nb);
+  return ElementClass<type>::getFacetTypes();
 
-  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_FACET_TYPE);
+  AKANTU_BOOST_ALL_ELEMENT_SWITCH_NO_DEFAULT(GET_FACET_TYPE);
 #undef GET_FACET_TYPE
+
+  return ElementClass<_not_defined>::getFacetTypes();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -488,8 +483,7 @@ inline UInt Mesh::getNbFacetsPerElement(const ElementType & type, UInt t) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline MatrixProxy<UInt>
-Mesh::getFacetLocalConnectivity(const ElementType & type, UInt t) {
+inline auto Mesh::getFacetLocalConnectivity(const ElementType & type, UInt t) {
   AKANTU_DEBUG_IN();
 
 #define GET_FACET_CON(type)                                                    \
@@ -500,16 +494,16 @@ Mesh::getFacetLocalConnectivity(const ElementType & type, UInt t) {
 #undef GET_FACET_CON
 
   AKANTU_DEBUG_OUT();
-  return Matrix<UInt>(); // This avoid a compilation warning but will certainly
-                         // also cause a segfault if reached
+  return ElementClass<_not_defined>::getFacetLocalConnectivityPerElement(0);
+  // This avoid a compilation warning but will certainly
+  // also cause a segfault if reached
 }
 
 /* -------------------------------------------------------------------------- */
-inline Matrix<UInt> Mesh::getFacetConnectivity(const Element & element,
-                                               UInt t) const {
+inline auto Mesh::getFacetConnectivity(const Element & element, UInt t) const {
   AKANTU_DEBUG_IN();
 
-  Matrix<UInt> local_facets(getFacetLocalConnectivity(element.type, t), false);
+  Matrix<const UInt> local_facets(getFacetLocalConnectivity(element.type, t));
   Matrix<UInt> facets(local_facets.rows(), local_facets.cols());
 
   const Array<UInt> & conn = connectivities(element.type, element.ghost_type);
@@ -544,33 +538,34 @@ inline void Mesh::addConnectivityType(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPureGhostNode(UInt n) const {
-  return nodes_type.getSize() ? (nodes_type(n) == -3) : false;
+  return nodes_type.size() ? (nodes_type(n) == _nt_pure_gost) : false;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalOrMasterNode(UInt n) const {
-  return nodes_type.getSize() ? (nodes_type(n) == -2) || (nodes_type(n) == -1)
-                              : true;
+  return nodes_type.size()
+             ? (nodes_type(n) == _nt_master) || (nodes_type(n) == _nt_normal)
+             : true;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) == -1 : true;
+  return nodes_type.size() ? nodes_type(n) == _nt_normal : true;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isMasterNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) == -2 : false;
+  return nodes_type.size() ? nodes_type(n) == _nt_master : false;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isSlaveNode(UInt n) const {
-  return nodes_type.getSize() ? nodes_type(n) >= 0 : false;
+  return nodes_type.size() ? nodes_type(n) >= 0 : false;
 }
 
 /* -------------------------------------------------------------------------- */
-inline Int Mesh::getNodeType(UInt local_id) const {
-  return nodes_type.getSize() ? nodes_type(local_id) : -1;
+inline NodeType Mesh::getNodeType(UInt local_id) const {
+  return nodes_type.size() ? nodes_type(local_id) : _nt_normal;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -579,8 +574,15 @@ inline UInt Mesh::getNodeGlobalId(UInt local_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline UInt Mesh::getNodeLocalId(UInt global_id) const {
+  AKANTU_DEBUG_ASSERT(nodes_global_ids != nullptr,
+                      "The global ids are note set.");
+  return nodes_global_ids->find(global_id);
+}
+
+/* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbGlobalNodes() const {
-  return nodes_global_ids ? nb_global_nodes : nodes->getSize();
+  return nodes_global_ids ? nb_global_nodes : nodes->size();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -605,8 +607,35 @@ inline UInt Mesh::getNbNodesPerElementList(const Array<Element> & elements) {
 
   return nb_nodes;
 }
+
+/* -------------------------------------------------------------------------- */
+inline Mesh & Mesh::getMeshFacets() {
+  if (!this->mesh_facets)
+    AKANTU_SILENT_EXCEPTION(
+        "No facet mesh is defined yet! check the buildFacets functions");
+
+  return *this->mesh_facets;
+}
+
+/* -------------------------------------------------------------------------- */
+inline const Mesh & Mesh::getMeshFacets() const {
+  if (!this->mesh_facets)
+    AKANTU_SILENT_EXCEPTION(
+        "No facet mesh is defined yet! check the buildFacets functions");
+
+  return *this->mesh_facets;
+}
+/* -------------------------------------------------------------------------- */
+inline const Mesh & Mesh::getMeshParent() const {
+  if (!this->mesh_parent)
+    AKANTU_SILENT_EXCEPTION(
+        "No parent mesh is defined! This is only valid in a mesh_facets");
+
+  return *this->mesh_parent;
+}
+
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_INLINE_IMPL_CC__ */

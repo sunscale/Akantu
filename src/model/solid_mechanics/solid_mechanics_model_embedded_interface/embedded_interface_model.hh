@@ -43,28 +43,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
-
-/// Options for the EmbeddedInterfaceModel
-struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
-  /**
-   * @brief Constructor for EmbeddedInterfaceModelOptions
-   * @param analysis_method see SolidMeechanicsModelOptions
-   * @param no_init_intersections ignores the embedded elements
-   * @param no_init_materials see SolidMeechanicsModelOptions
-   */
-  EmbeddedInterfaceModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
-                                bool no_init_intersections = false,
-                                bool no_init_materials = false):
-    SolidMechanicsModelOptions(analysis_method, no_init_materials),
-    no_init_intersections(no_init_intersections)
-  {}
-
-  /// Ignore the reinforcements
-  bool no_init_intersections;
-};
-
-extern const EmbeddedInterfaceModelOptions default_embedded_interface_model_options;
+namespace akantu {
 
 /**
  * @brief Solid mechanics model using the embedded model.
@@ -82,8 +61,7 @@ extern const EmbeddedInterfaceModelOptions default_embedded_interface_model_opti
  */
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
-  /// Same type as SolidMechanicsModel
-  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular> MyFEEngineType;
+  using MyFEEngineType = SolidMechanicsModel::MyFEEngineType;
 
 
   /* ------------------------------------------------------------------------ */
@@ -103,24 +81,29 @@ public:
                          const MemoryID & memory_id = 0);
 
   /// Destructor
-  virtual ~EmbeddedInterfaceModel();
+  ~EmbeddedInterfaceModel() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// Initialise the model
-  virtual void initFull(const ModelOptions & options = default_embedded_interface_model_options);
+  void initFullImpl(
+      const ModelOptions & options = EmbeddedInterfaceModelOptions()) override;
 
   /// Initialise the materials
-  virtual void initMaterials();
+  void
+  assignMaterialToElements(const ElementTypeMapArray<UInt> * filter) override;
+
+  /// Initialize the embedded shape functions
+  void initModel() override;
 
   /// Allows filtering of dump fields which need to be dumpes on interface mesh
-  virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
-                                         const std::string & field_id,
-                                         const std::string & group_name,
-                                         const ElementKind & element_kind,
-                                         bool padding_flag);
+  void addDumpGroupFieldToDumper(const std::string & dumper_name,
+                                 const std::string & field_id,
+                                 const std::string & group_name,
+                                 const ElementKind & element_kind,
+                                 bool padding_flag) override;
 
   // virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
   //                                                     const ElementKind & kind);
@@ -162,6 +145,6 @@ public:
   {}
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_EMBEDDED_INTERFACE_MODEL_HH__

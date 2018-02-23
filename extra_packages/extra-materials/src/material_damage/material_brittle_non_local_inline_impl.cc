@@ -14,14 +14,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // namespace akantu
 
 #if defined(AKANTU_DEBUG_TOOLS)
 #include "aka_debug_tools.hh"
 #include <string>
 #endif
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -43,7 +43,7 @@ MaterialBrittleNonLocal<spatial_dimension>::MaterialBrittleNonLocal(SolidMechani
 template<UInt spatial_dimension>
 void MaterialBrittleNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->model->getNonLocalManager().registerNonLocalVariable(this->Sigma_max.getName(), Sigma_maxnl.getName(),1);
+  this->model.getNonLocalManager().registerNonLocalVariable(this->Sigma_max.getName(), Sigma_maxnl.getName(),1);
   MaterialBrittleNonLocalParent::initMaterial();
   AKANTU_DEBUG_OUT();
 }
@@ -57,11 +57,11 @@ void MaterialBrittleNonLocal<spatial_dimension>::computeStress(ElementType el_ty
   Real * Sigma_maxt  = this->Sigma_max(el_type, ghost_type).storage();
   Real * fracture_stress  = this->Sigma_fracture(el_type, ghost_type).storage();
 
-  Array<Real> & velocity = this->model->getVelocity();
+  Array<Real> & velocity = this->model.getVelocity();
   Array<Real> & strain_rate_brittle = this->strain_rate_brittle(el_type, ghost_type);
   Array<UInt> & elem_filter = this->element_filter(el_type, ghost_type);
 
-  this->model->getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_brittle,
+  this->model.getFEEngine().gradientOnIntegrationPoints(velocity, strain_rate_brittle,
 						   spatial_dimension,
 						   el_type, ghost_type, elem_filter);
 
@@ -106,6 +106,6 @@ void MaterialBrittleNonLocal<spatial_dimension>::computeNonLocalStress(ElementTy
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialBrittleNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
-  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(Sigma_maxnl.getName(), this->name);
+  this->model.getNonLocalManager().nonLocalVariableToNeighborhood(Sigma_maxnl.getName(), this->name);
 }
 

@@ -15,14 +15,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU__
+} // namespace akantu
 
 #if defined(AKANTU_DEBUG_TOOLS)
 #include "aka_debug_tools.hh"
 #include <string>
 #endif
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
@@ -40,7 +40,7 @@ MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::MaterialOrthotrop
 template<UInt spatial_dimension>
 void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
-  this->model->getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
+  this->model.getNonLocalManager().registerNonLocalVariable(this->gradu.getName(), grad_u_nl.getName(), spatial_dimension*spatial_dimension);
   MaterialOrthotropicDamageIterativeNonLocalParent::initMaterial();
   AKANTU_DEBUG_OUT();
 }
@@ -125,5 +125,5 @@ void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::computeNonLo
 /* -------------------------------------------------------------------------- */
 template<UInt spatial_dimension>
 void MaterialOrthotropicDamageIterativeNonLocal<spatial_dimension>::nonLocalVariableToNeighborhood() {
-  this->model->getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
+  this->model.getNonLocalManager().nonLocalVariableToNeighborhood(grad_u_nl.getName(), this->name);
 }

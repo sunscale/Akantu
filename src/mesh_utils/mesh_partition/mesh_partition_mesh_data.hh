@@ -40,7 +40,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshPartitionMeshData : public MeshPartition {
 
@@ -62,12 +62,12 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  void
+  partitionate(UInt nb_part,
+               const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor(),
+               const Array<UInt> & pairs = Array<UInt>()) override;
 
-  virtual void partitionate(UInt nb_part,
-                            const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor(),
-                            const Array<UInt> & pairs = Array<UInt>());
-
-  virtual void reorder();
+  void reorder() override;
 
   void setPartitionMapping(const ElementTypeMapArray<UInt> & mapping);
 
@@ -93,6 +93,6 @@ private:
 /* -------------------------------------------------------------------------- */
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_PARTITION_MESH_DATA_HH__ */

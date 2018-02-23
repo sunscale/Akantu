@@ -29,10 +29,11 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include <Python.h>
-/* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "internal_field.hh"
+#include "element_group.hh"
 /* -------------------------------------------------------------------------- */
+#include <Python.h>
 #include <map>
 #include <vector>
 /* -------------------------------------------------------------------------- */
@@ -40,8 +41,7 @@
 #ifndef __AKANTU_PYTHON_FUNCTOR_HH__
 #define __AKANTU_PYTHON_FUNCTOR_HH__
 
-namespace  akantu {
-/* -------------------------------------------------------------------------- */
+namespace akantu {
 
 class PythonFunctor {
   /* ------------------------------------------------------------------------ */
@@ -53,7 +53,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-protected:
+
   /// call the python functor
   PyObject * callFunctor(PyObject * functor, PyObject * args,
                          PyObject * kwargs) const;
@@ -64,58 +64,70 @@ protected:
                           Params &... parameters) const;
 
   /// empty function to cose the recursive template loop
-  inline void packArguments(std::vector<PyObject *> & pArgs) const;
+  static inline void packArguments(std::vector<PyObject *> & pArgs);
 
   /// get the python function object
   inline PyObject * getPythonFunction(const std::string & functor_name) const;
 
   /// variadic template for unknown number of arguments to unpack
   template <typename T, typename... Args>
-  inline void packArguments(std::vector<PyObject *> & pArgs, T & p,
-                            Args &... params) const;
+  static inline void packArguments(std::vector<PyObject *> & pArgs, T & p,
+                                   Args &... params);
 
   /// convert an akantu object to python
   template <typename T>
-  inline PyObject * convertToPython(const T & akantu_obj) const;
+  static inline PyObject * convertToPython(const T & akantu_obj);
 
   /// convert a stl vector to python
   template <typename T>
-  inline PyObject * convertToPython(const std::vector<T> & akantu_obj) const;
+  static inline PyObject * convertToPython(const std::vector<T> & akantu_obj);
 
   /// convert a stl vector to python
   template <typename T>
-  inline PyObject * convertToPython(const std::vector<Array<T> *> & akantu_obj) const;
+  static inline PyObject * convertToPython(const std::vector<Array<T> *> & akantu_obj);
 
+  /// convert a stl vector to python
+  template <typename T>
+  static inline PyObject * convertToPython(const std::unique_ptr<T> & akantu_obj);
+  
   /// convert a stl vector to python
   template <typename T1, typename T2>
-  inline PyObject * convertToPython(const std::map<T1, T2> & akantu_obj) const;
+  static inline PyObject * convertToPython(const std::map<T1, T2> & akantu_obj);
   
   /// convert an akantu vector to python
   template <typename T>
-  inline PyObject * convertToPython(const Vector<T> & akantu_obj) const;
+  static inline PyObject * convertToPython(const Vector<T> & akantu_obj);
+
+  /// convert an akantu internal to python
+  template <typename T>
+  static inline PyObject * convertToPython(const InternalField<T> & akantu_obj);
 
   /// convert an akantu vector to python
   template <typename T>
-  inline PyObject * convertToPython(const Array<T> & akantu_obj) const;
+  static inline PyObject * convertToPython(const ElementTypeMapArray<T> & akantu_obj);
+  
+  /// convert an akantu vector to python
+  template <typename T>
+  static inline PyObject * convertToPython(const Array<T> & akantu_obj);
 
   /// convert an akantu vector to python
   template <typename T>
-  inline PyObject * convertToPython(Array<T> * akantu_obj) const;
+  static inline PyObject * convertToPython(Array<T> * akantu_obj);
 
   /// convert a akantu matrix to python
   template <typename T>
-  inline PyObject * convertToPython(const Matrix<T> & akantu_obj) const;
+  static inline PyObject * convertToPython(const Matrix<T> & akantu_obj);
 
   /// convert a python object to an akantu object
   template <typename return_type>
-  inline return_type convertToAkantu(PyObject * python_obj) const;
+  static inline return_type convertToAkantu(PyObject * python_obj);
 
   /// convert a python object to an akantu object
   template <typename T>
-  inline std::vector<T> convertListToAkantu(PyObject * python_obj) const;
+  static inline std::vector<T> convertListToAkantu(PyObject * python_obj);
 
   /// returns the numpy data type code
-  template <typename T> inline int getPythonDataTypeCode() const;
+  template <typename T> static inline int getPythonDataTypeCode();
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -124,8 +136,8 @@ protected:
   PyObject * python_obj;
 };
 
-} //akantu
-
-#include "python_functor_inline_impl.cc"
+} // akantu
 
 #endif /* __AKANTU_PYTHON_FUNCTOR_HH__ */
+
+#include "python_functor_inline_impl.cc"

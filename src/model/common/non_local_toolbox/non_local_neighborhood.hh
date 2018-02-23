@@ -41,85 +41,87 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-  class NonLocalManager;
-  class TestWeightFunction;
-}
+class NonLocalManager;
+class BaseWeightFunction;
+} // namespace akantu
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-
-template<class WeightFunction = BaseWeightFunction>
+template <class WeightFunction = BaseWeightFunction>
 class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  NonLocalNeighborhood(NonLocalManager & manager, 
-		       const ElementTypeMapReal & quad_coordinates,
-		       const ID & id = "neighborhood",
-		       const MemoryID & memory_id = 0);
-  virtual ~NonLocalNeighborhood();
+  NonLocalNeighborhood(NonLocalManager & manager,
+                       const ElementTypeMapReal & quad_coordinates,
+                       const ID & id = "neighborhood",
+                       const MemoryID & memory_id = 0);
+  ~NonLocalNeighborhood() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// compute the weights for non-local averaging
+  void computeWeights() override;
 
-   /// compute the weights for non-local averaging
-  void computeWeights();
-  
   /// save the pair of weights in a file
-  void saveWeights(const std::string & filename) const;
+  void saveWeights(const std::string & filename) const override;
 
   /// compute the non-local counter part for a given element type map
-  virtual void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-					   ElementTypeMapReal & accumulated,
-					   UInt nb_degree_of_freedom,
-					   const GhostType & ghost_type2) const;
+  // compute the non-local counter part for a given element type map
+  void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+                                   ElementTypeMapReal & accumulated,
+                                   UInt nb_degree_of_freedom,
+                                   const GhostType & ghost_type2) const override;
 
   /// update the weights based on the weight function
-  void updateWeights();
+  void updateWeights() override;
 
-  
   /// register a new non-local variable in the neighborhood
-  virtual void registerNonLocalVariable(const ID & id);
-
+  //void registerNonLocalVariable(const ID & id);
 protected:
-  virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					  SynchronizationTag tag) const;
+  template <class Func>
+  inline void foreach_weight(const GhostType & ghost_type, Func && func);
 
-  virtual inline void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const;
+  template <class Func>
+  inline void foreach_weight(const GhostType & ghost_type, Func && func) const;
 
-  virtual inline void unpackElementData(CommunicationBuffer & buffer,
-					const Array<Element> & elements,
-					SynchronizationTag tag);
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  /* -------------------------------------------------------------------------- */
-  /* Accessor                                                                   */
-  /* -------------------------------------------------------------------------- */
-  AKANTU_GET_MACRO(NonLocalManager, *non_local_manager, const NonLocalManager &);
-  AKANTU_GET_MACRO_NOT_CONST(NonLocalManager, *non_local_manager, NonLocalManager &);
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
+
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
+
+  /* ------------------------------------------------------------------------ */
+  /* Accessor                                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  AKANTU_GET_MACRO(NonLocalManager, non_local_manager, const NonLocalManager &);
+  AKANTU_GET_MACRO_NOT_CONST(NonLocalManager, non_local_manager,
+                             NonLocalManager &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// Pointer to non-local manager class
-  NonLocalManager * non_local_manager;
+  NonLocalManager & non_local_manager;
 
   /// the weights associated to the pairs
-  Array<Real> * pair_weight[2];
+  std::array<std::unique_ptr<Array<Real>>, 2> pair_weight;
 
   /// weight function
-  WeightFunction * weight_function;
-
+  std::unique_ptr<WeightFunction> weight_function;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* Implementation of template functions                                       */
@@ -130,7 +132,4 @@ __END_AKANTU__
 /* -------------------------------------------------------------------------- */
 #include "non_local_neighborhood_inline_impl.cc"
 
-
-
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__ */
-

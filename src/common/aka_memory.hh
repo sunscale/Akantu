@@ -44,15 +44,13 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
-
+namespace akantu {
 
 class Memory {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 protected:
-
   Memory(ID id, MemoryID memory_id = 0);
 
   virtual ~Memory();
@@ -61,33 +59,26 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 protected:
+  /// malloc
+  template <class T>
+  inline Array<T> & alloc(const ID & name, UInt size, UInt nb_component);
 
   /// malloc
-  template<class T>
-  inline Array<T> & alloc(const ID & name,
-			   UInt size,
-			   UInt nb_component);
-
-  /// malloc
-  template<class T>
-  inline Array<T> & alloc(const ID & name,
-			   UInt size,
-			   UInt nb_component,
-			   const T & init_value);
+  template <class T>
+  inline Array<T> & alloc(const ID & name, UInt size, UInt nb_component,
+                          const T & init_value);
 
   /* ------------------------------------------------------------------------ */
   /// free an array
-  inline void dealloc(ID name);
+  inline void dealloc(const ID & name);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 protected:
-  template<typename T>
-  inline Array<T> & getArray(const ID & name);
+  template <typename T> inline Array<T> & getArray(const ID & name);
 
-  template<typename T>
-  inline const Array<T> & getArray(const ID & name) const;
+  template <typename T> inline const Array<T> & getArray(const ID & name) const;
 
 public:
   AKANTU_GET_MACRO(MemoryID, memory_id, const MemoryID &);
@@ -103,6 +94,7 @@ private:
 
   /// list of allocated vectors id
   std::list<ID> handeld_vectors_id;
+
 protected:
   ID id;
 
@@ -110,15 +102,14 @@ protected:
   MemoryID memory_id;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* Inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "aka_memory_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "aka_memory_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MEMORY_HH__ */

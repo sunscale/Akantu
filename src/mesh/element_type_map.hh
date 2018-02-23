@@ -30,56 +30,76 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
+#include "aka_memory.hh"
+#include "aka_named_argument.hh"
+#include "element.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_ELEMENT_TYPE_MAP_HH__
 #define __AKANTU_ELEMENT_TYPE_MAP_HH__
 
-#include "aka_common.hh"
-#include "aka_array.hh"
-#include "aka_memory.hh"
+namespace akantu {
+class FEEngine;
+} // namespace akantu
 
-__BEGIN_AKANTU__
+namespace akantu {
 
+namespace {
+  DECLARE_NAMED_ARGUMENT(all_ghost_types);
+  DECLARE_NAMED_ARGUMENT(default_value);
+  DECLARE_NAMED_ARGUMENT(element_kind);
+  DECLARE_NAMED_ARGUMENT(ghost_type);
+  DECLARE_NAMED_ARGUMENT(nb_component);
+  DECLARE_NAMED_ARGUMENT(nb_component_functor);
+  DECLARE_NAMED_ARGUMENT(with_nb_element);
+  DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
+  DECLARE_NAMED_ARGUMENT(spatial_dimension);
+  DECLARE_NAMED_ARGUMENT(do_not_default);
+} // namespace
 
-template<class Stored, typename SupportType = ElementType>
+template <class Stored, typename SupportType = ElementType>
 class ElementTypeMap;
 
 /* -------------------------------------------------------------------------- */
-/* ElementTypeMapBase                                                          */
+/* ElementTypeMapBase */
 /* -------------------------------------------------------------------------- */
 /// Common non templated base class for the ElementTypeMap class
 class ElementTypeMapBase {
 public:
-  virtual ~ElementTypeMapBase() {};
+  virtual ~ElementTypeMapBase() = default;
 };
 
 /* -------------------------------------------------------------------------- */
-/* ElementTypeMap                                                              */
+/* ElementTypeMap */
 /* -------------------------------------------------------------------------- */
 
-template<class Stored, typename SupportType>
+template <class Stored, typename SupportType>
 class ElementTypeMap : public ElementTypeMapBase {
 
 public:
   ElementTypeMap();
-  ~ElementTypeMap();
+  ~ElementTypeMap() override;
 
-  inline static std::string printType(const SupportType & type, const GhostType & ghost_type);
+  inline static std::string printType(const SupportType & type,
+                                      const GhostType & ghost_type);
 
   /*! Tests whether a type is present in the object
    *  @param type the type to check for
    *  @param ghost_type optional: by default, the data map for non-ghost
    *         elements is searched
    *  @return true if the type is present. */
-  inline bool exists(const SupportType & type, const GhostType & ghost_type = _not_ghost) const;
+  inline bool exists(const SupportType & type,
+                     const GhostType & ghost_type = _not_ghost) const;
 
   /*! get the stored data corresponding to a type
    *  @param type the type to check for
    *  @param ghost_type optional: by default, the data map for non-ghost
    *         elements is searched
    *  @return stored data corresponding to type. */
-  inline const Stored & operator()(const SupportType & type,
-				   const GhostType & ghost_type = _not_ghost) const;
+  inline const Stored &
+  operator()(const SupportType & type,
+             const GhostType & ghost_type = _not_ghost) const;
 
   /*! get the stored data corresponding to a type
    *  @param type the type to check for
@@ -87,7 +107,7 @@ public:
    *         elements is searched
    *  @return stored data corresponding to type. */
   inline Stored & operator()(const SupportType & type,
-			     const GhostType & ghost_type = _not_ghost);
+                             const GhostType & ghost_type = _not_ghost);
 
   /*! insert data of a new type (not yet present) into the map. THIS METHOD IS
    *  NOT ARRAY SAFE, when using ElementTypeMapArray, use setArray instead
@@ -97,10 +117,11 @@ public:
    *  @param ghost_type optional: by default, the data map for non-ghost
    *         elements is searched
    *  @return stored data corresponding to type. */
-  inline Stored & operator()(const Stored & insert,
-			     const SupportType & type,
-			     const GhostType & ghost_type = _not_ghost);
+  template <typename U>
+  inline Stored & operator()(U && insertee, const SupportType & type,
+                             const GhostType & ghost_type = _not_ghost);
 
+public:
   /// print helper
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -109,22 +130,24 @@ public:
   /* ------------------------------------------------------------------------ */
   /*! iterator allows to iterate over type-data pairs of the map. The interface
    *  expects the SupportType to be ElementType. */
-  typedef std::map<SupportType, Stored> DataMap;
-  class type_iterator : private std::iterator<std::forward_iterator_tag, const SupportType> {
+  using DataMap = std::map<SupportType, Stored>;
+  class type_iterator
+      : private std::iterator<std::forward_iterator_tag, const SupportType> {
   public:
-    typedef const SupportType   value_type;
-    typedef const SupportType*  pointer;
-    typedef const SupportType&  reference;
+    using value_type = const SupportType;
+    using pointer = const SupportType *;
+    using reference = const SupportType &;
+
   protected:
-    typedef typename ElementTypeMap<Stored>::DataMap::const_iterator DataMapIterator;
+    using DataMapIterator =
+        typename ElementTypeMap<Stored>::DataMap::const_iterator;
+
   public:
-    type_iterator(DataMapIterator & list_begin,
-		  DataMapIterator & list_end,
-		  UInt dim,
-		  ElementKind ek);
+    type_iterator(DataMapIterator & list_begin, DataMapIterator & list_end,
+                  UInt dim, ElementKind ek);
 
     type_iterator(const type_iterator & it);
-    type_iterator() {}
+    type_iterator() = default;
 
     inline reference operator*();
     inline reference operator*() const;
@@ -141,6 +164,76 @@ public:
     ElementKind kind;
   };
 
+  /// helper class to use in range for constructions
+  class ElementTypesIteratorHelper {
+  public:
+    using Container = ElementTypeMap<Stored, SupportType>;
+    using iterator = typename Container::type_iterator;
+
+    ElementTypesIteratorHelper(const Container & container, UInt dim,
+                               GhostType ghost_type, ElementKind kind)
+        : container(std::cref(container)), dim(dim), ghost_type(ghost_type),
+          kind(kind) {}
+
+    template <typename... pack>
+    ElementTypesIteratorHelper(const Container & container, use_named_args_t,
+                               pack &&... _pack)
+        : ElementTypesIteratorHelper(
+              container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+              OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
+              OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
+
+    ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
+    ElementTypesIteratorHelper &
+    operator=(const ElementTypesIteratorHelper &) = default;
+    ElementTypesIteratorHelper &
+    operator=(ElementTypesIteratorHelper &&) = default;
+
+    iterator begin() {
+      return container.get().firstType(dim, ghost_type, kind);
+    }
+    iterator end() { return container.get().lastType(dim, ghost_type, kind); }
+
+  private:
+    std::reference_wrapper<const Container> container;
+    UInt dim;
+    GhostType ghost_type;
+    ElementKind kind;
+  };
+
+private:
+  ElementTypesIteratorHelper
+  elementTypesImpl(UInt dim = _all_dimensions,
+                   GhostType ghost_type = _not_ghost,
+                   ElementKind kind = _ek_regular) const;
+
+  template <typename... pack>
+  ElementTypesIteratorHelper
+  elementTypesImpl(const use_named_args_t & /*unused*/, pack &&... _pack) const;
+
+public:
+  /*!
+   * \param _spatial_dimension optional: filter for elements of given spatial
+   * dimension
+   * \param _ghost_type optional: filter for a certain ghost_type
+   * \param _element_kind optional: filter for elements of given kind
+   */
+  template <typename... pack>
+  std::enable_if_t<are_named_argument<pack...>::value,
+                   ElementTypesIteratorHelper>
+  elementTypes(pack &&... _pack) const {
+    return elementTypesImpl(use_named_args,
+                            std::forward<decltype(_pack)>(_pack)...);
+  }
+
+  template <typename... pack>
+  std::enable_if_t<not are_named_argument<pack...>::value,
+                   ElementTypesIteratorHelper>
+  elementTypes(pack &&... _pack) const {
+    return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);
+  }
+
+public:
   /*! Get an iterator to the beginning of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when
@@ -153,8 +246,8 @@ public:
    *  @return an iterator to the first stored data matching the filters
    *          or an iterator to the end of the map if none match*/
   inline type_iterator firstType(UInt dim = _all_dimensions,
-				 GhostType ghost_type = _not_ghost,
-				 ElementKind kind = _ek_not_defined) const;
+                                 GhostType ghost_type = _not_ghost,
+                                 ElementKind kind = _ek_not_defined) const;
   /*! Get an iterator to the end of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when
@@ -167,9 +260,8 @@ public:
    *  @return an iterator to the last stored data matching the filters
    *          or an iterator to the end of the map if none match */
   inline type_iterator lastType(UInt dim = _all_dimensions,
-				GhostType ghost_type = _not_ghost,
-				ElementKind kind = _ek_not_defined) const;
-
+                                GhostType ghost_type = _not_ghost,
+                                ElementKind kind = _ek_not_defined) const;
 
 protected:
   /*! Direct access to the underlying data map. for internal use by daughter
@@ -192,22 +284,26 @@ protected:
 /* -------------------------------------------------------------------------- */
 /* Some typedefs                                                              */
 /* -------------------------------------------------------------------------- */
-template <typename T, typename SupportType = ElementType>
-class ElementTypeMapArray : public ElementTypeMap<Array<T> *, SupportType>, public Memory {
+template <typename T, typename SupportType>
+class ElementTypeMapArray : public ElementTypeMap<Array<T> *, SupportType>,
+                            public Memory {
 public:
-  typedef T type;
-  typedef Array<T> array_type;
+  using type = T;
+  using array_type = Array<T>;
 
 protected:
-  typedef ElementTypeMap<Array<T> *, SupportType> parent;
-  typedef typename parent::DataMap DataMap;
-private:
-private:
-  /// standard assigment (copy) operator
-  void operator=(const ElementTypeMap<T, SupportType> &) {};
+  using parent = ElementTypeMap<Array<T> *, SupportType>;
+  using DataMap = typename parent::DataMap;
 
 public:
-  typedef typename parent::type_iterator type_iterator;
+  using type_iterator = typename parent::type_iterator;
+
+  /// standard assigment (copy) operator
+  void operator=(const ElementTypeMapArray &) = delete;
+  ElementTypeMapArray(const ElementTypeMapArray &) = delete;
+
+  /// explicit copy
+  void copy(const ElementTypeMapArray & other);
 
   /*! Constructor
    *  @param id optional: identifier (string)
@@ -215,9 +311,10 @@ public:
    *         only
    *  @param memory_id optional: choose a specific memory, defaults to memory 0
    */
-  ElementTypeMapArray(const ID & id = "by_element_type_array", const ID & parent_id = "no_parent",
-                     const MemoryID & memory_id = 0) :
-    parent(), Memory(parent_id + ":" + id, memory_id), name(id) {};
+  ElementTypeMapArray(const ID & id = "by_element_type_array",
+                      const ID & parent_id = "no_parent",
+                      const MemoryID & memory_id = 0)
+      : parent(), Memory(parent_id + ":" + id, memory_id), name(id){};
 
   /*! allocate memory for a new array
    *  @param size number of tuples of the new array
@@ -226,27 +323,32 @@ public:
    *  @param ghost_type whether to add the field to the data map or the
    *         ghost_data map
    *  @return a reference to the allocated array */
-  inline Array<T> & alloc(UInt size,
-			  UInt nb_component,
-			  const SupportType & type,
-			  const GhostType & ghost_type,
-			  const T & default_value = T());
+  inline Array<T> & alloc(UInt size, UInt nb_component,
+                          const SupportType & type,
+                          const GhostType & ghost_type,
+                          const T & default_value = T());
 
   /*! allocate memory for a new array in both the data and the ghost_data map
    *  @param size number of tuples of the new array
    *  @param nb_component tuple size
    *  @param type the type under which the array is indexed in the map*/
-  inline void alloc(UInt size,
-		    UInt nb_component,
-		    const SupportType & type,
-		    const T & default_value = T());
+  inline void alloc(UInt size, UInt nb_component, const SupportType & type,
+                    const T & default_value = T());
 
   /* get a reference to the array of certain type
    * @param type data filed under type is returned
    * @param ghost_type optional: by default the non-ghost map is searched
    * @return a reference to the array */
-  inline const Array<T> & operator()(const SupportType & type,
-				      const GhostType & ghost_type = _not_ghost) const;
+  inline const Array<T> &
+  operator()(const SupportType & type,
+             const GhostType & ghost_type = _not_ghost) const;
+
+  /// access the data of an element, this combine the map and array accessor
+  inline const T & operator()(const Element & element,
+                              UInt component = 0) const;
+
+  /// access the data of an element, this combine the map and array accessor
+  inline T & operator()(const Element & element, UInt component = 0);
 
   /* get a reference to the array of certain type
    * @param type data filed under type is returned
@@ -262,70 +364,86 @@ public:
    *         elements is searched
    *  @param vect the vector to include into the map
    *  @return stored data corresponding to type. */
-  inline void setArray(const SupportType & type,
-			const GhostType & ghost_type,
-			const Array<T> & vect);
+  inline void setArray(const SupportType & type, const GhostType & ghost_type,
+                       const Array<T> & vect);
   /*! frees all memory related to the data*/
   inline void free();
 
   /*! set all values in the ElementTypeMap to zero*/
   inline void clear();
 
-  /*! deletes and reorders entries in the stored arrays
-   *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1) indicates
-   *         deleted entries. */
-  inline void onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering);
+  /*! set all values in the ElementTypeMap to value */
+  template <typename ST> inline void set(const ST & value);
 
+  /*! deletes and reorders entries in the stored arrays
+   *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1)
+   * indicates
+   *         deleted entries. */
+  inline void
+  onElementsRemoved(const ElementTypeMapArray<UInt> & new_numbering);
 
   /// text output helper
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /*! set the id
    *  @param id the new name
    */
   inline void setID(const ID & id) { this->id = id; }
 
-  ElementTypeMap<UInt> getNbComponents(UInt dim = _all_dimensions,
-				       GhostType ghost_type = _not_ghost,
-				       ElementKind kind = _ek_not_defined) const{
+  ElementTypeMap<UInt>
+  getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+                  ElementKind kind = _ek_not_defined) const {
 
     ElementTypeMap<UInt> nb_components;
 
-    type_iterator tit = this->firstType(dim,ghost_type,kind);
-    type_iterator end = this->lastType(dim,ghost_type,kind);
-
-    while (tit != end){
-      UInt nb_comp = (*this)(*tit,ghost_type).getNbComponent();
-      nb_components(*tit,ghost_type) = nb_comp;
-      ++tit;
+    for (auto & type : this->elementTypes(dim, ghost_type, kind)) {
+      UInt nb_comp = (*this)(type, ghost_type).getNbComponent();
+      nb_components(type, ghost_type) = nb_comp;
     }
+
     return nb_components;
   }
-/* -------------------------------------------------------------------------- */
-/* Accesssors                                                                 */
-/* -------------------------------------------------------------------------- */
+
+  /* ------------------------------------------------------------------------ */
+  /* more evolved allocators                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// initialize the arrays in accordance to a functor
+  template <class Func>
+  void initialize(const Func & f, const T & default_value, bool do_not_default);
+
+  /// initialize with sizes and number of components in accordance of a mesh
+  /// content
+  template <typename... pack>
+  void initialize(const Mesh & mesh, pack &&... _pack);
+
+  /// initialize with sizes and number of components in accordance of a fe
+  /// engine content (aka integration points)
+  template <typename... pack>
+  void initialize(const FEEngine & fe_engine, pack &&... _pack);
+
+  /* ------------------------------------------------------------------------ */
+  /* Accesssors                                                               */
+  /* ------------------------------------------------------------------------ */
 public:
   /// get the name of the internal field
   AKANTU_GET_MACRO(Name, name, ID);
-
-private:
-  ElementTypeMapArray operator=(__attribute__((unused)) const ElementTypeMapArray & other) {};
 
   /// name of the elment type map: e.g. connectivity, grad_u
   ID name;
 };
 
 /// to store data Array<Real> by element type
-typedef ElementTypeMapArray<Real> ElementTypeMapReal;
+using ElementTypeMapReal = ElementTypeMapArray<Real>;
 /// to store data Array<Int> by element type
-typedef ElementTypeMapArray<Int>  ElementTypeMapInt;
+using ElementTypeMapInt = ElementTypeMapArray<Int>;
 /// to store data Array<UInt> by element type
-typedef ElementTypeMapArray<UInt, ElementType> ElementTypeMapUInt;
+using ElementTypeMapUInt = ElementTypeMapArray<UInt, ElementType>;
 
 /// Map of data of type UInt stored in a mesh
-typedef std::map<std::string, Array<UInt> *> UIntDataMap;
-typedef ElementTypeMap<UIntDataMap, ElementType> ElementTypeMapUIntDataMap;
+using UIntDataMap = std::map<std::string, Array<UInt> *>;
+using ElementTypeMapUIntDataMap = ElementTypeMap<UIntDataMap, ElementType>;
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_ELEMENT_TYPE_MAP_HH__ */

@@ -35,7 +35,7 @@
 #ifndef __AKANTU_INTERNAL_FIELD_TMPL_HH__
 #define __AKANTU_INTERNAL_FIELD_TMPL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -45,7 +45,7 @@ InternalField<T>::InternalField(const ID & id, Material & material)
       element_filter(material.getElementFilter()), default_value(T()),
       spatial_dimension(material.getModel().getSpatialDimension()),
       element_kind(_ek_regular), nb_component(0), is_init(false),
-      previous_values(NULL) {}
+      previous_values(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -56,7 +56,7 @@ InternalField<T>::InternalField(
       material(material), fem(&fem), element_filter(element_filter),
       default_value(T()), spatial_dimension(material.getSpatialDimension()),
       element_kind(_ek_regular), nb_component(0), is_init(false),
-      previous_values(NULL) {}
+      previous_values(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -66,7 +66,7 @@ InternalField<T>::InternalField(
     : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
       material(material), fem(&fem), element_filter(element_filter),
       default_value(T()), spatial_dimension(dim), element_kind(_ek_regular),
-      nb_component(0), is_init(false), previous_values(NULL) {}
+      nb_component(0), is_init(false), previous_values(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -77,7 +77,7 @@ InternalField<T>::InternalField(const ID & id, const InternalField<T> & other)
       element_filter(other.element_filter), default_value(other.default_value),
       spatial_dimension(other.spatial_dimension),
       element_kind(other.element_kind), nb_component(other.nb_component),
-      is_init(false), previous_values(NULL) {
+      is_init(false), previous_values(nullptr) {
 
   AKANTU_DEBUG_ASSERT(other.is_init,
                       "Cannot create a copy of a non initialized field");
@@ -127,17 +127,17 @@ template <typename T> void InternalField<T>::resize() {
     filter_type_iterator end = this->filterLastType(*gt);
 
     for (; it != end; ++it) {
-      UInt nb_element = this->element_filter(*it, *gt).getSize();
+      UInt nb_element = this->element_filter(*it, *gt).size();
 
       UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(*it, *gt);
       UInt new_size = nb_element * nb_quadrature_points;
 
       UInt old_size = 0;
-      Array<T> * vect = NULL;
+      Array<T> * vect = nullptr;
 
       if (this->exists(*it, *gt)) {
         vect = &(this->operator()(*it, *gt));
-        old_size = vect->getSize();
+        old_size = vect->size();
         vect->resize(new_size);
       } else {
         vect = &(this->alloc(nb_element * nb_quadrature_points, nb_component,
@@ -166,9 +166,8 @@ template <typename T> void InternalField<T>::reset() {
     for (; it != end; ++it) {
       Array<T> & vect = this->operator()(*it, *gt);
       vect.clear();
-      this->setArrayValues(vect.storage(),
-                           vect.storage() +
-                               vect.getSize() * vect.getNbComponent());
+      this->setArrayValues(
+          vect.storage(), vect.storage() + vect.size() * vect.getNbComponent());
     }
   }
 }
@@ -185,7 +184,7 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
       filter_type_iterator end = this->filterLastType(*gt);
 
       for (; it != end; ++it) {
-        UInt nb_element = this->element_filter(*it, *gt).getSize();
+        UInt nb_element = this->element_filter(*it, *gt).size();
         UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(*it, *gt);
         if (this->exists(*it, *gt))
           this->operator()(*it, *gt).resize(nb_element * nb_quadrature_points);
@@ -213,7 +212,7 @@ void InternalField<T>::setArrayValues(T * begin, T * end) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void InternalField<T>::saveCurrentValues() {
-  AKANTU_DEBUG_ASSERT(this->previous_values != NULL,
+  AKANTU_DEBUG_ASSERT(this->previous_values != nullptr,
                       "The history of the internal "
                           << this->getID() << " has not been activated");
 
@@ -225,8 +224,8 @@ template <typename T> void InternalField<T>::saveCurrentValues() {
     type_iterator it = this->firstType(*gt);
     type_iterator end = this->lastType(*gt);
     for (; it != end; ++it) {
-      this->previous_values->operator()(*it, *gt)
-          .copy(this->operator()(*it, *gt));
+      this->previous_values->operator()(*it, *gt).copy(
+          this->operator()(*it, *gt));
     }
   }
 }
@@ -235,56 +234,54 @@ template <typename T> void InternalField<T>::saveCurrentValues() {
 template <typename T>
 void InternalField<T>::removeIntegrationPoints(
     const ElementTypeMapArray<UInt> & new_numbering) {
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    ElementTypeMapArray<UInt>::type_iterator it =
-        new_numbering.firstType(_all_dimensions, *gt, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end =
-        new_numbering.lastType(_all_dimensions, *gt, _ek_not_defined);
-    for (; it != end; ++it) {
-      ElementType type = *it;
-      if (this->exists(type, *gt)) {
-        Array<T> & vect = this->operator()(type, *gt);
-        if (!vect.getSize())
-          continue;
-        const Array<UInt> & renumbering = new_numbering(type, *gt);
+  for (auto ghost_type : ghost_types) {
+    for (auto type : new_numbering.elementTypes(_all_dimensions, ghost_type,
+                                                _ek_not_defined)) {
+      if (not this->exists(type, ghost_type))
+        continue;
 
-        UInt nb_quad_per_elem = fem->getNbIntegrationPoints(type, *gt);
-        UInt nb_component = vect.getNbComponent();
+      Array<T> & vect = this->operator()(type, ghost_type);
+      if (vect.size() == 0)
+        continue;
 
-        Array<T> tmp(renumbering.getSize() * nb_quad_per_elem, nb_component);
+      const Array<UInt> & renumbering = new_numbering(type, ghost_type);
 
-        AKANTU_DEBUG_ASSERT(
-            tmp.getSize() == vect.getSize(),
-            "Something strange append some mater was created from nowhere!!");
+      UInt nb_quad_per_elem = fem->getNbIntegrationPoints(type, ghost_type);
+      UInt nb_component = vect.getNbComponent();
 
-        AKANTU_DEBUG_ASSERT(
-            tmp.getSize() == vect.getSize(),
-            "Something strange append some mater was created or disappeared in "
-                << vect.getID() << "(" << vect.getSize()
-                << "!=" << tmp.getSize() << ") "
-                                            "!!");
+      Array<T> tmp(renumbering.size() * nb_quad_per_elem, nb_component);
 
-        UInt new_size = 0;
-        for (UInt i = 0; i < renumbering.getSize(); ++i) {
-          UInt new_i = renumbering(i);
-          if (new_i != UInt(-1)) {
-            memcpy(tmp.storage() + new_i * nb_component * nb_quad_per_elem,
-                   vect.storage() + i * nb_component * nb_quad_per_elem,
-                   nb_component * nb_quad_per_elem * sizeof(T));
-            ++new_size;
-          }
+      AKANTU_DEBUG_ASSERT(
+          tmp.size() == vect.size(),
+          "Something strange append some mater was created from nowhere!!");
+
+      AKANTU_DEBUG_ASSERT(
+          tmp.size() == vect.size(),
+          "Something strange append some mater was created or disappeared in "
+              << vect.getID() << "(" << vect.size() << "!=" << tmp.size()
+              << ") "
+                 "!!");
+
+      UInt new_size = 0;
+      for (UInt i = 0; i < renumbering.size(); ++i) {
+        UInt new_i = renumbering(i);
+        if (new_i != UInt(-1)) {
+          memcpy(tmp.storage() + new_i * nb_component * nb_quad_per_elem,
+                 vect.storage() + i * nb_component * nb_quad_per_elem,
+                 nb_component * nb_quad_per_elem * sizeof(T));
+          ++new_size;
         }
-        tmp.resize(new_size * nb_quad_per_elem);
-        vect.copy(tmp);
       }
+      tmp.resize(new_size * nb_quad_per_elem);
+      vect.copy(tmp);
     }
   }
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void InternalField<T>::printself(std::ostream & stream, int indent) const {
+void InternalField<T>::printself(std::ostream & stream,
+                                 int indent[[gnu::unused]]) const {
   stream << "InternalField [ " << this->getID();
 #if !defined(AKANTU_NDEBUG)
   if (AKANTU_DEBUG_TEST(dblDump)) {
@@ -303,9 +300,9 @@ void InternalField<T>::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void ParsableParamTyped<InternalField<Real> >::parseParam(
-    const ParserParameter & in_param) {
-  ParsableParam::parseParam(in_param);
+inline void
+ParameterTyped<InternalField<Real>>::setAuto(const ParserParameter & in_param) {
+  Parameter::setAuto(in_param);
   Real r = in_param;
   param.setDefaultValue(r);
 }
@@ -315,6 +312,6 @@ template <typename T> inline InternalField<T>::operator T() const {
   return default_value;
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_INTERNAL_FIELD_TMPL_HH__ */

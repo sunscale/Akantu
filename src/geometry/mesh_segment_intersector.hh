@@ -42,13 +42,13 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
-/// Here, we know what kernel we have to use
-typedef Cartesian K;
-
-template<UInt dim, ElementType type>
-class MeshSegmentIntersector : public MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> {
+template <UInt dim, ElementType type>
+class MeshSegmentIntersector
+    : public MeshGeomIntersector<dim, type, Triangle<cgal::Cartesian>,
+                                 cgal::Cartesian::Segment_3, cgal::Cartesian> {
+  using K = cgal::Cartesian;
   /// Parent class type
   typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> parent_type;
 
@@ -96,7 +96,7 @@ protected:
   std::string current_physical_name;
 };
  
-__END_AKANTU__
+} // akantu
 
 #include "mesh_segment_intersector_tmpl.hh"
 

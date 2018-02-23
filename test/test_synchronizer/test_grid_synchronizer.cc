@@ -114,7 +114,7 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
             std::pair<Element, Element> pair = std::make_pair(e, elem);
             pair_list::iterator p = neighbors.find(pair);
             if(p != neighbors.end()) {
-              AKANTU_DEBUG_ERROR("Pair already registered [" << e << " " << elem << "] -> " << p->second << " " << distance);
+              AKANTU_ERROR("Pair already registered [" << e << " " << elem << "] -> " << p->second << " " << distance);
             } else {
               neighbors[pair] = distance;
             }
@@ -137,19 +137,19 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
-  DistributedSynchronizer * dist = NULL;
+  ElementSynchronizer * dist = NULL;
 
   if(prank == 0) {
     mesh.read("bar.msh");
     MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    dist = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    dist = DistributedSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    dist = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
   mesh.computeBoundingBox();

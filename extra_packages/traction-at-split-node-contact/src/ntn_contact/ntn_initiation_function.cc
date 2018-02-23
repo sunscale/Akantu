@@ -29,7 +29,7 @@
 #include "ntn_friclaw_linear_slip_weakening.hh"
 #include "ntn_friclaw_linear_slip_weakening_no_healing.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
 					ParameterReader & data) {
@@ -76,7 +76,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
       friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
 
@@ -114,7 +114,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
       friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
 
@@ -154,7 +154,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
       friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
 
@@ -194,7 +194,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
       friction->setMixed< SynchronizedArray<Real> >("t_star", data.get<Real>("t_star"));
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
 
@@ -204,7 +204,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
   }
   
   else {
-    AKANTU_DEBUG_ERROR("Do not know the following friction law: " 
+    AKANTU_ERROR("Do not know the following friction law: " 
 		       << friction_law);
   }
 
@@ -284,7 +284,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 				    NTNFricRegSimplifiedPrakashClifton>(contact);
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
   }
@@ -316,7 +316,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 				    NTNFricRegSimplifiedPrakashClifton>(contact);
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
   }
@@ -349,7 +349,7 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 				    NTNFricRegSimplifiedPrakashClifton>(contact);
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
   }
@@ -381,12 +381,12 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 				    NTNFricRegSimplifiedPrakashClifton>(contact);
     }
     else {
-      AKANTU_DEBUG_ERROR("Do not know the following friction regularisation: " 
+      AKANTU_ERROR("Do not know the following friction regularisation: " 
 			 << friction_reg);
     }
   }
   else {
-    AKANTU_DEBUG_ERROR("Do not know the following friction law: " 
+    AKANTU_ERROR("Do not know the following friction law: " 
 		       << friction_law);
   }
   
@@ -395,4 +395,4 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
 }
 
 
-__END_AKANTU__
+} // namespace akantu

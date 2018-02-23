@@ -41,7 +41,7 @@
 
 #include "mesh_geom_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * This macro defines a class that is used in the CGAL AABB tree algorithm.
@@ -80,11 +80,11 @@ __BEGIN_AKANTU__
 
 // If the primitive is supported by CGAL::intersection() then the 
 // implementation process is really easy with this macro
-AKANTU_AABB_CLASS(Triangle, Cartesian);
-AKANTU_AABB_CLASS(Line_arc, Spherical);
+AKANTU_AABB_CLASS(Triangle, cgal::Cartesian);
+AKANTU_AABB_CLASS(Line_arc, cgal::Spherical);
 
 #undef AKANTU_AABB_CLASS
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_AABB_PRIMITIVE_HH__

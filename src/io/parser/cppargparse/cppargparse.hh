@@ -37,6 +37,7 @@
 #ifndef __CPPARGPARSE_HH__
 #define __CPPARGPARSE_HH__
 
+/* -------------------------------------------------------------------------- */
 namespace cppargparse {
 
 /// define the types of the arguments
@@ -54,9 +55,11 @@ enum ParseFlags {
 
 /// Helps to combine parse flags
 inline ParseFlags operator|(const ParseFlags & a, const ParseFlags & b) {
-  ParseFlags tmp = ParseFlags(int(a) | int(b));
+  auto tmp = ParseFlags(int(a) | int(b));
   return tmp;
 }
+
+/* -------------------------------------------------------------------------- */
 
 /**
  * ArgumentParser is a class that mimics the Python argparse module
@@ -67,7 +70,7 @@ public:
   class Argument {
   public:
     Argument() : name(std::string()) {}
-    virtual ~Argument() {}
+    virtual ~Argument() = default;
     virtual void printself(std::ostream & stream) const = 0;
     template <class T> operator T() const;
     std::string name;
@@ -97,6 +100,12 @@ public:
   void parse(int & argc, char **& argv, int flags = _stop_on_not_parsed,
              bool parse_help = true);
 
+  /// get the last argc parsed
+  int & getArgC() { return *(this->argc); }
+
+  /// get the last argv parsed
+  char** & getArgV() { return *(this->argv); }
+
   /// print the content in the stream
   void printself(std::ostream & stream) const;
 
@@ -115,6 +124,7 @@ public:
   /// the argument does not exist or was not set (parsed or default value)
   const Argument & operator[](const std::string & name) const;
 
+  /// is the argument present
   bool has(const std::string &) const;
 
   /// set the parallel context to avoid multiple help messages in
@@ -146,13 +156,13 @@ private:
 
 private:
   /// public arguments storage
-  typedef std::map<std::string, Argument *> Arguments;
+  using Arguments = std::map<std::string, Argument *>;
   /// internal arguments storage
-  typedef std::map<std::string, _Argument *> _Arguments;
+  using _Arguments = std::map<std::string, _Argument *>;
   /// association key argument
-  typedef std::map<std::string, _Argument *> ArgumentKeyMap;
+  using ArgumentKeyMap = std::map<std::string, _Argument *>;
   /// position arguments
-  typedef std::vector<_Argument *> PositionalArgument;
+  using PositionalArgument = std::vector<_Argument *>;
 
   /// internal storage of arguments declared by the user
   _Arguments arguments;
@@ -163,14 +173,20 @@ private:
   /// positional arguments
   PositionalArgument pos_args;
 
-  /// argv[0]
+  /// program name
   std::string program_name;
 
   /// exit function to use
-  void (*external_exit)(int);
+  void (*external_exit)(int){nullptr};
 
-  /// parallel context
-  int prank, psize;
+  /// Parallel context, rank and size of communicator
+  int prank{0}, psize{1};
+
+  /// The last argc parsed (those are the modified version after parse)
+  int * argc;
+
+  /// The last argv parsed (those are the modified version after parse)
+  char *** argv;
 };
 }
 

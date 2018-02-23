@@ -38,7 +38,7 @@
 
 using std::sqrt;
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* clang-format off */
 /* -------------------------------------------------------------------------- */
@@ -235,4 +235,4 @@ template<> Real GaussIntegrationTypeData<_git_pentahedron, 21>::quad_weights[]  
                                                                                        pent_21_w1_1*pent_21_w2_2, pent_21_w1_1*pent_21_w2_2, pent_21_w1_1*pent_21_w2_2};
 
 
-__END_AKANTU__
+} // akantu

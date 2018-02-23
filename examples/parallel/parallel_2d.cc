@@ -29,6 +29,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -43,24 +44,16 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
-
-  akantu::MeshPartition * partition = NULL;
   if (prank == 0) {
     // Read the mesh
     mesh.read("square_2d.msh");
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
   }
 
+  mesh.distribute();
+
   SolidMechanicsModel model(mesh);
-
-  /// model initialization
-  model.initParallel(partition);
-  delete partition;
-
   model.initFull();
 
   if (prank == 0)
@@ -79,7 +72,6 @@ int main(int argc, char * argv[]) {
   Array<Real> & disp = model.getDisplacement();
   Array<bool> & boun = model.getBlockedDOFs();
 
-  mesh.computeBoundingBox();
   Real left_side = mesh.getLowerBounds()(0);
   Real right_side = mesh.getUpperBounds()(0);
 
@@ -101,11 +93,7 @@ int main(int argc, char * argv[]) {
 
   model.dump();
   for (UInt s = 1; s <= max_steps; ++s) {
-    model.explicitPred();
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
-
+    model.solveStep();
     if (s % 200 == 0)
       model.dump();
 

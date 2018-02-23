@@ -1,0 +1,28 @@
+from distutils.core import setup
+from distutils.core import setup, Extension
+import os
+import sys
+
+os.environ['CC'] = '@CMAKE_CXX_COMPILER@'
+os.environ['CXX'] = '@CMAKE_CXX_COMPILER@'
+
+def cmake_to_list(cmake_list):
+    if cmake_list == '':
+        return []
+    return cmake_list.split(';')
+
+setup(
+    name='akantu',
+    license='LGPLv3',
+    version='@AKANTU_VERSION@',
+    py_modules=['akantu'],
+    ext_modules=[Extension(
+        '_akantu',
+        cmake_to_list('@_ext_files@'),
+        include_dirs=cmake_to_list('@_inc_dirs@'),
+        language='c++',
+        libraries=cmake_to_list('@_akantu_lib_name@'),
+        library_dirs=cmake_to_list('@_lib_dirs@'),
+        extra_compile_args=cmake_to_list('@_flags@')
+    )]
+)

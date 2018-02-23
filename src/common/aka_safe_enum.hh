@@ -34,13 +34,18 @@
 #ifndef __AKANTU_AKA_SAFE_ENUM_HH__
 #define __AKANTU_AKA_SAFE_ENUM_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
+
 /// Safe enumerated type
 template<typename def, typename inner = typename def::type>
 class safe_enum : public def {
-  typedef typename def::type type;
+  using type = typename def::type;
+
 public:
-  safe_enum(type v) : val(v) {}
+  explicit safe_enum(type v = def::_end_) : val(v) {}
+  safe_enum(safe_enum && other) = default;
+  safe_enum& operator=(safe_enum && other) = default;
+
   inner underlying() const { return val; }
 
   bool operator == (const safe_enum & s) const { return this->val == s.val; }
@@ -56,8 +61,8 @@ public:
   // Works only if enumerations are contiguous.
   class iterator {
   public:
-    iterator(type v) : it(v) { }
-    void operator++() { ++it; }
+    explicit iterator(type v) : it(v) { }
+    iterator & operator++() { ++it; return *this; }
     safe_enum operator*() { return safe_enum(static_cast<type>(it)); }
     bool operator!=(iterator const & it) { return it.it != this->it; }
   private:
@@ -65,17 +70,17 @@ public:
   };
 
   static iterator begin() {
-    return def::_begin_;
+    return iterator(def::_begin_);
   }
 
   static iterator end() {
-    return def::_end_;
+    return iterator(def::_end_);
   }
 
 protected:
   inner val;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_AKA_SAFE_ENUM_HH__ */

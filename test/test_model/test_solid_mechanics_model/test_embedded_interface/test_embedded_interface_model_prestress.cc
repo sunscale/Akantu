@@ -54,13 +54,12 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
 
   virtual ~StressSolution() {}
 
-  void operator()(const IntegrationPoint & quad_point,
-                          Vector<Real> & dual,
-                          const Vector<Real> & coord,
-                          const Vector<Real> & normals) const {
+  void operator()(const IntegrationPoint & /*quad_point*/, Vector<Real> & dual,
+                  const Vector<Real> & coord,
+                  const Vector<Real> & normals) const {
     UInt dim = coord.size();
 
-    if (dim < 2) AKANTU_DEBUG_ERROR("Solution not valid for 1D");
+    if (dim < 2) AKANTU_ERROR("Solution not valid for 1D");
 
     Matrix<Real> stress(dim, dim); stress.clear();
     stress(0, 0) = this->stress(coord(1));
@@ -90,14 +89,14 @@ int main (int argc, char * argv[]) {
 
   Mesh mesh(dim);
   mesh.read("embedded_mesh_prestress.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
+  // mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   Mesh reinforcement_mesh(dim, "reinforcement_mesh");
   try {
     reinforcement_mesh.read("embedded_mesh_prestress_reinforcement.msh");
   } catch(debug::Exception & e) {}
 
-  reinforcement_mesh.createGroupsFromMeshData<std::string>("physical_names");
+  // reinforcement_mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
   model.initFull(EmbeddedInterfaceModelOptions(_static));
@@ -112,11 +111,11 @@ int main (int argc, char * argv[]) {
    * a = 1 m
    */
 
-  Real steel_area = model.getMaterial("reinforcement").getParam<Real>("area");
-  Real pre_stress = 1e6;
+  Real steel_area = model.getMaterial("reinforcement").get("area");
+  Real pre_stress = model.getMaterial("reinforcement").get("pre_stress");
   Real stress_norm = 0.;
 
-  StressSolution * concrete_stress = NULL, * steel_stress = NULL;
+  StressSolution * concrete_stress = nullptr, * steel_stress = nullptr;
 
   Real pre_force = pre_stress * steel_area;
   Real pre_moment = -pre_force * (YG - 0.25);
@@ -130,11 +129,9 @@ int main (int argc, char * argv[]) {
     + std::abs(steel_stress->stress(0.25)) * steel_area;
 
   model.applyBC(*concrete_stress, "XBlocked");
-  ElementGroup & end_node = mesh.getElementGroup("EndNode");
-  NodeGroup & end_node_group = end_node.getNodeGroup();
-  NodeGroup::const_node_iterator end_node_it = end_node_group.begin();
+  auto end_node = *mesh.getElementGroup("EndNode").getNodeGroup().begin();
 
-  Vector<Real> end_node_force = model.getForce().begin(dim)[*end_node_it];
+  Vector<Real> end_node_force = model.getForce().begin(dim)[end_node];
   end_node_force(0) += steel_stress->stress(0.25) * steel_area; 
 
   Array<Real> analytical_residual(mesh.getNbNodes(), dim, "analytical_residual");
@@ -149,15 +146,12 @@ int main (int argc, char * argv[]) {
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "XBlocked");
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "YBlocked");
 
-  // Assemble the global stiffness matrix
-  model.assembleStiffnessMatrix();
-  
-  model.updateResidual();
-
-  if (!model.solveStatic<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-6, 1))
+  try {
+    model.solveStep();
+  } catch (debug::Exception e) {
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
-
-  model.updateResidual();
+  }
 
 /* -------------------------------------------------------------------------- */
 /* Computation of FEM residual norm                                           */
@@ -168,9 +162,13 @@ int main (int argc, char * argv[]) {
   NodeGroup::const_node_iterator
     nodes_it = boundary_nodes.begin(),
     nodes_end = boundary_nodes.end();
-  Array<Real>::vector_iterator com_res = model.getResidual().begin(dim);
-  Array<Real>::vector_iterator ana_res = analytical_residual.begin(dim);
-  Array<Real>::vector_iterator position = mesh.getNodes().begin(dim);
+  model.assembleInternalForces();
+  Array<Real> residual(mesh.getNbNodes(), dim, "my_residual");
+  residual.copy(model.getInternalForce());
+  residual -= model.getForce();
+
+  auto com_res = residual.begin(dim);
+  auto position = mesh.getNodes().begin(dim);
 
   Real res_sum = 0.;
   UInt lower_node = -1;
@@ -181,7 +179,6 @@ int main (int argc, char * argv[]) {
   for (; nodes_it != nodes_end ; ++nodes_it) {
     UInt node_number = *nodes_it;
     const Vector<Real> res = com_res[node_number];
-    const Vector<Real> ana = ana_res[node_number];
     const Vector<Real> pos = position[node_number];
 
     if (!Math::are_float_equal(pos(1), 0.25)) {
@@ -204,7 +201,7 @@ int main (int argc, char * argv[]) {
   }
 
   const Vector<Real> upper_res = com_res[upper_node], lower_res = com_res[lower_node];
-  const Vector<Real> end_node_res = com_res[*end_node_it];
+  const Vector<Real> end_node_res = com_res[end_node];
   Vector<Real> delta = upper_res - lower_res;
   delta *= lower_dist / (upper_dist + lower_dist);
   Vector<Real> concrete_residual = lower_res + delta;
@@ -217,8 +214,10 @@ int main (int argc, char * argv[]) {
 
   Real relative_error = std::abs(res_sum - stress_norm) / stress_norm;
 
-  if (relative_error > 1e-3)
+  if (relative_error > 1e-3) {
+    std::cerr << "Relative error = " << relative_error << std::endl;
     return EXIT_FAILURE;
+  }
 
   finalize();
   return 0;

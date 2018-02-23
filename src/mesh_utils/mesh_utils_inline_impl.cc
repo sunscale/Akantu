@@ -32,141 +32,36 @@
 
 /* -------------------------------------------------------------------------- */
 inline bool MeshUtils::hasElement(const Array<UInt> & connectivity,
-				  const Element & el,
-				  const Vector<UInt> & nodes) {
+                                  const Element & el,
+                                  const Vector<UInt> & nodes) {
 
   UInt nb_nodes_per_element = connectivity.getNbComponent();
 
-  const Vector<UInt> el_nodes(connectivity.storage()
-			      + el.element * nb_nodes_per_element,
-			      nb_nodes_per_element);
+  const Vector<UInt> el_nodes(connectivity.storage() +
+                                  el.element * nb_nodes_per_element,
+                              nb_nodes_per_element);
   UInt * el_nodes_end = el_nodes.storage() + nb_nodes_per_element;
 
   UInt n = 0;
 
   while (n < nodes.size() &&
-	 std::find(el_nodes.storage(), el_nodes_end, nodes[n]) != el_nodes_end) ++n;
+         std::find(el_nodes.storage(), el_nodes_end, nodes[n]) != el_nodes_end)
+    ++n;
 
   return (n == nodes.size());
 }
 
 /* -------------------------------------------------------------------------- */
 
-// Deactivating -Wunused-parameter
-#if defined(__INTEL_COMPILER)
-//#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
-#elif (defined(__GNUC__) || defined(__GNUG__))
-#  define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#  if GCC_VERSION > 40600
-#    pragma GCC diagnostic push
-#  endif
-#  pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
-inline void MeshUtils::updateElementalConnectivity(Mesh & mesh,
-                                                   UInt old_node,
-                                                   UInt new_node,
-                                                   const std::vector<Element> & element_list,
-                                                   const std::vector<Element> * facet_list) {
-  AKANTU_DEBUG_IN();
-
-  ElementType el_type = _not_defined;
-  GhostType gt_type = _casper;
-  Array<UInt> * conn_elem = NULL;
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  const Array<Element> * cohesive_facets = NULL;
-#endif
-  UInt nb_nodes_per_element = 0;
-  UInt * n_update = NULL;
-
-  for (UInt el = 0; el < element_list.size(); ++el) {
-    const Element & elem = element_list[el];
-    if (elem.type == _not_defined) continue;
-
-    if (elem.type != el_type || elem.ghost_type != gt_type) {
-      el_type = elem.type;
-      gt_type = elem.ghost_type;
-      conn_elem = & mesh.getConnectivity(el_type, gt_type);
-      nb_nodes_per_element = conn_elem->getNbComponent();
-#if defined(AKANTU_COHESIVE_ELEMENT)
-      if (elem.kind == _ek_cohesive)
-	cohesive_facets = & mesh.getMeshFacets().getSubelementToElement(el_type, gt_type);
-#endif
-    }
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-    if (elem.kind == _ek_cohesive) {
-
-      AKANTU_DEBUG_ASSERT(facet_list != NULL,
-			  "Provide a facet list in order to update cohesive elements");
-
-      /// loop over cohesive element's facets
-      for (UInt f = 0, n = 0; f < 2; ++f, n += nb_nodes_per_element / 2) {
-	const Element & facet = (*cohesive_facets)(elem.element, f);
-
-	/// skip facets if not present in the list
-	if (std::find(facet_list->begin(), facet_list->end(), facet)
-	    == facet_list->end()) continue;
-
-	n_update
-	  = std::find(conn_elem->storage() + elem.element * nb_nodes_per_element + n,
-		      conn_elem->storage() + elem.element * nb_nodes_per_element + n
-		      + nb_nodes_per_element / 2,
-		      old_node);
-
-	AKANTU_DEBUG_ASSERT(n_update != conn_elem->storage()
-			    + elem.element * nb_nodes_per_element + n
-			    + nb_nodes_per_element / 2,
-			    "Node not found in current element");
-
-	/// update connectivity
-	*n_update = new_node;
-      }
-    }
-    else {
-#endif
-      n_update
-	= std::find(conn_elem->storage() + elem.element * nb_nodes_per_element,
-		    conn_elem->storage() + elem.element * nb_nodes_per_element
-		    + nb_nodes_per_element,
-		    old_node);
-
-      AKANTU_DEBUG_ASSERT(n_update != conn_elem->storage()
-			  + elem.element * nb_nodes_per_element
-			  + nb_nodes_per_element,
-			  "Node not found in current element");
-
-      /// update connectivity
-      *n_update = new_node;
-#if defined(AKANTU_COHESIVE_ELEMENT)
-    }
-#endif
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-// Reactivating -Wunused-parameter
-#if defined(__INTEL_COMPILER)
-//#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
-#elif defined(__GNUG__)
-#  if GCC_VERSION > 40600
-#    pragma GCC diagnostic pop
-#  else
-#    pragma GCC diagnostic warning "-Wunused-parameter"
-#  endif
-#endif
-
 /* -------------------------------------------------------------------------- */
-inline bool MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
-					      std::vector<Element> & elem_list) {
+inline bool
+MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
+                                  std::vector<Element> & elem_list) {
   if (elem_list.size() <= elem_to_remove.size())
     return true;
 
-  std::vector<Element>::const_iterator el_it = elem_to_remove.begin();
-  std::vector<Element>::const_iterator el_last = elem_to_remove.end();
+  auto el_it = elem_to_remove.begin();
+  auto el_last = elem_to_remove.end();
   std::vector<Element>::iterator el_del;
 
   UInt deletions = 0;
@@ -181,7 +76,7 @@ inline bool MeshUtils::removeElementsInVector(const std::vector<Element> & elem_
   }
 
   AKANTU_DEBUG_ASSERT(deletions == 0 || deletions == elem_to_remove.size(),
-		      "Not all elements have been erased");
+                      "Not all elements have been erased");
 
   return deletions == 0;
 }

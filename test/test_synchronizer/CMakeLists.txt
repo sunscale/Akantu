@@ -34,30 +34,6 @@
 add_mesh(test_synchronizer_communication_mesh
   cube.geo 3 2)
 
-register_test(test_synchronizer_communication
-  SOURCES test_synchronizer_communication.cc
-  DEPENDS test_synchronizer_communication_mesh
-  PACKAGE parallel
-  PARALLEL
-  )
-
-register_test(test_grid_synchronizer
-  SOURCES test_grid_synchronizer.cc test_data_accessor.hh
-  DEPENDS test_synchronizer_communication_mesh
-  EXTRA_FILES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
-  PACKAGE damage_non_local parallel
-  PARALLEL
-  PARALLEL_LEVEL 1 2 3 4 5 6 7 8
-  )
-
-register_test(test_grid_synchronizer_check_neighbors
-  SOURCES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
-  DEPENDS test_grid_synchronizer
-  PACKAGE damage_non_local parallel
-  PARALLEL
-  PARALLEL_LEVEL 2 3 4 5 6 7 8
-  )
-
 register_test(test_dof_synchronizer
   SOURCES test_dof_synchronizer.cc test_data_accessor.hh
   FILES_TO_COPY bar.msh
@@ -65,17 +41,46 @@ register_test(test_dof_synchronizer
   PARALLEL
   )
 
-register_test(test_dof_synchronizer_communication
-  SOURCES test_dof_synchronizer_communication.cc test_dof_data_accessor.hh
-  DEPENDS test_synchronizer_communication_mesh
+# if(DEFINED AKANTU_DAMAGE_NON_LOCAL)
+#   add_executable(test_grid_synchronizer_check_neighbors test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh)
+#   target_link_libraries(test_grid_synchronizer_check_neighbors akantu)
+#   if(AKANTU_EXTRA_CXX_FLAGS)
+#     set_target_properties(test_grid_synchronizer_check_neighbors PROPERTIES COMPILE_FLAGS ${AKANTU_EXTRA_CXX_FLAGS})
+#   endif()
+# endif()
+
+# register_test(test_grid_synchronizer
+#   SOURCES test_grid_synchronizer.cc test_data_accessor.hh
+#   DEPENDS test_synchronizer_communication_mesh test_grid_synchronizer_check_neighbors
+#   EXTRA_FILES test_grid_synchronizer_check_neighbors.cc test_grid_tools.hh
+#   PACKAGE damage_non_local
+#   )
+
+register_gtest_sources(
+  SOURCES test_synchronizer_communication.cc  test_data_accessor.hh test_synchronizers_fixture.hh
   PACKAGE parallel
-  PARALLEL
   )
 
-register_test(test_data_distribution
-  SOURCES test_data_distribution.cc
-  FILES_TO_COPY data_split.msh
+register_gtest_sources(
+  SOURCES test_node_synchronizer.cc test_synchronizers_fixture.hh
   PACKAGE parallel
-  PARALLEL
-  PARALLEL_LEVEL 5
   )
+
+register_gtest_sources(
+  SOURCES test_data_distribution.cc test_synchronizers_fixture.hh
+  DEPENDS test_synchronizer_communication_mesh
+  PACKAGE parallel
+  )
+
+add_mesh(test_facet_synchronizer_mesh
+  facet.geo 3 2)
+
+register_gtest_sources(
+  SOURCES test_facet_synchronizer.cc test_data_accessor.hh test_synchronizers_fixture.hh
+  DEPENDS test_facet_synchronizer_mesh
+  PACKAGE parallel cohesive_element
+  )
+
+register_gtest_test(test_synchronizers
+  DEPENDS test_synchronizer_communication_mesh
+  PARALLEL)

@@ -26,6 +26,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "material_damage_iterative.hh"
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
@@ -33,43 +34,33 @@ using namespace akantu;
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   Math::setTolerance(1e-13);
   debug::setDebugLevel(dblWarning);
 
-  initialize("material_stiffness_reduction.dat" ,argc, argv);
- 
+  initialize("material_stiffness_reduction.dat", argc, argv);
+
   const UInt spatial_dimension = 2;
   ElementType element_type = _triangle_3;
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
-  Int psize = comm.getNbProc();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   /// read the mesh and partion it
   Mesh mesh(spatial_dimension);
-  akantu::MeshPartition * partition = NULL;
-
-  if(prank == 0) {
-
+  if (prank == 0) {
     mesh.read("two_elements.msh");
-
-    /// partition the mesh
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-
-    partition->partitionate(psize);
   }
 
+  mesh.distribute();
   /// model creation
   SolidMechanicsModel model(mesh);
-  model.initParallel(partition);
-  delete partition;
-
   /// initialization of the model
   model.initFull(SolidMechanicsModelOptions(_static));
 
   /// boundary conditions
   /// Dirichlet BC
-  mesh.createGroupsFromMeshData<std::string>("physical_names"); // creates groups from mesh names
+  mesh.createGroupsFromMeshData<std::string>(
+      "physical_names"); // creates groups from mesh names
   model.applyBC(BC::Dirichlet::FixedValue(0, _x), "left");
   model.applyBC(BC::Dirichlet::FixedValue(0, _y), "bottom");
   model.applyBC(BC::Dirichlet::FixedValue(2., _y), "top");
@@ -77,7 +68,8 @@ int main(int argc, char *argv[]) {
   /// add fields that should be dumped
   model.setBaseName("material_iterative_stiffness_reduction_test");
   model.addDumpField("material_index");
-  model.addDumpFieldVector("displacement");;
+  model.addDumpFieldVector("displacement");
+  ;
   model.addDumpField("stress");
   model.addDumpField("blocked_dofs");
   model.addDumpField("residual");
@@ -90,33 +82,31 @@ int main(int argc, char *argv[]) {
   model.addDumpField("ultimate_strain");
 
   model.dump();
- 
-  MaterialDamageIterative<spatial_dimension> & material = dynamic_cast<MaterialDamageIterative<spatial_dimension> & >(model.getMaterial(0));
- 
-  Real error;
-  bool converged = false;
+
+  MaterialDamageIterative<spatial_dimension> & material =
+      dynamic_cast<MaterialDamageIterative<spatial_dimension> &>(
+          model.getMaterial(0));
+
   UInt nb_damaged_elements = 0;
-  Real E = material.getParam<Real>("E");
+  Real E = material.get("E");
   std::cout << std::setprecision(12);
-  const Array<Real> & damage = material.getInternal<Real>("damage")(element_type, _not_ghost);
-  const Array<Real> & Sc = material.getInternal<Real>("Sc")(element_type, _not_ghost);
+  const Array<Real> & damage =
+      material.getInternal<Real>("damage")(element_type, _not_ghost);
+  const Array<Real> & Sc =
+      material.getInternal<Real>("Sc")(element_type, _not_ghost);
+
   /// solve the system
   do {
-    converged = model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-12, error, 2);
-    
-    if (converged == false) {
-      std::cout << "The error is: " << error << std::endl;
-      AKANTU_DEBUG_ASSERT(converged, "Did not converge");
-    }
-  
+    model.solveStep();
+
     nb_damaged_elements = material.updateDamage();
 
     for (UInt e = 0; e < mesh.getNbElement(element_type, _not_ghost); ++e) {
-      std::cout << "the new modulus is " << (1-damage(0)) * E << std::endl;
+      std::cout << "the new modulus is " << (1 - damage(0)) * E << std::endl;
       std::cout << "the new strength is " << Sc(0) << std::endl;
     }
-    model.dump();   
-  
+    model.dump();
+
   } while (nb_damaged_elements);
 
   finalize();

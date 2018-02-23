@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
     Array<UInt> & type_partition_reference = partition(*tit, gt);
     for (UInt i(0); i < nb_element; ++i) {
       Vector<Real> barycenter(dim);
-      Element element(*tit, i, gt);
+      Element element{*tit, i, gt};
       mesh.getBarycenter(element, barycenter);
 
       Real real_proc = barycenter[0] * nb_partitions;

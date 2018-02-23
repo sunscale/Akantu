@@ -33,8 +33,8 @@
 
 template<class types, template <class> class iterator>
 void GenericElementalField<types,iterator>::checkHomogeneity() {
-  typedef typename field_type::type_iterator field_type_iterator;
-  typedef typename field_type::array_type array_type;
+  using field_type_iterator = typename field_type::type_iterator;
+  using array_type = typename field_type::array_type;
 
   field_type_iterator tit;
   field_type_iterator end;
@@ -50,7 +50,7 @@ void GenericElementalField<types,iterator>::checkHomogeneity() {
     nb_comp = this->field(*tit, ghost_type).getNbComponent();
     for(;tit != end; ++tit) {
       const array_type & vect = this->field(*tit, ghost_type);
-      UInt nb_element = vect.getSize();
+      UInt nb_element = vect.size();
       UInt nb_comp_cur = vect.getNbComponent();
       if(homogen && nb_comp != nb_comp_cur) homogen = false;
       this->nb_total_element += nb_element;

@@ -33,7 +33,7 @@
 #include "local_material_damage.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 LocalMaterialDamage::LocalMaterialDamage(SolidMechanicsModel & model,
@@ -105,4 +105,4 @@ void LocalMaterialDamage::computePotentialEnergy(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

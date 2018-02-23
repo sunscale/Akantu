@@ -30,90 +30,82 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "model.hh"
+#include "communicator.hh"
+#include "data_accessor.hh"
 #include "element_group.hh"
+#include "element_synchronizer.hh"
+#include "synchronizer_registry.hh"
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh & m, UInt dim, const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), mesh(m),
-      spatial_dimension(dim == _all_dimensions ? m.getSpatialDimension() : dim),
-      synch_registry(NULL), dof_synchronizer(NULL),
-      is_pbc_slave_node(0, 1, "is_pbc_slave_node"), parser(&getStaticParser()) {
-  AKANTU_DEBUG_IN();
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-Model::~Model() {
+Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
+             const MemoryID & memory_id)
+    : Memory(id, memory_id), ModelSolver(mesh, type, id, memory_id), mesh(mesh),
+      spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
+                                               : dim),
+      is_pbc_slave_node(0, 1, "is_pbc_slave_node"), parser(getStaticParser()) {
   AKANTU_DEBUG_IN();
 
-  FEEngineMap::iterator it;
-  for (it = fems.begin(); it != fems.end(); ++it) {
-    if (it->second)
-      delete it->second;
-  }
-
-  for (it = fems_boundary.begin(); it != fems_boundary.end(); ++it) {
-    if (it->second)
-      delete it->second;
-  }
-
-  delete synch_registry;
-
-  delete dof_synchronizer;
-  dof_synchronizer = NULL;
+  this->mesh.registerEventHandler(*this, _ehp_model);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void Model::setParser(Parser & parser) { this->parser = &parser; }
+Model::~Model() = default;
 
 /* -------------------------------------------------------------------------- */
-void Model::initFull(__attribute__((unused)) const ModelOptions & options) {
+// void Model::setParser(Parser & parser) { this->parser = &parser; }
+
+/* -------------------------------------------------------------------------- */
+void Model::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
+  method = options.analysis_method;
+  if (!this->hasDefaultSolver()) {
+    this->initNewSolver(this->method);
+  }
   initModel();
 
+  initFEEngineBoundary();
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void Model::createSynchronizerRegistry(DataAccessor * data_accessor) {
-  synch_registry = new SynchronizerRegistry(*data_accessor);
-}
+void Model::initNewSolver(const AnalysisMethod & method) {
+  ID solver_name;
+  TimeStepSolverType tss_type;
+  std::tie(solver_name, tss_type) = this->getDefaultSolverID(method);
 
-/* -------------------------------------------------------------------------- */
-void Model::setPBC(UInt x, UInt y, UInt z) {
-  mesh.computeBoundingBox();
-  if (x)
-    MeshUtils::computePBCMap(this->mesh, 0, this->pbc_pair);
-  if (y)
-    MeshUtils::computePBCMap(this->mesh, 1, this->pbc_pair);
-  if (z)
-    MeshUtils::computePBCMap(this->mesh, 2, this->pbc_pair);
-}
+  if (not this->hasSolver(solver_name)) {
+    ModelSolverOptions options = this->getDefaultSolverOptions(tss_type);
+    this->getNewSolver(solver_name, tss_type, options.non_linear_solver_type);
 
-/* -------------------------------------------------------------------------- */
-void Model::setPBC(SurfacePairList & surface_pairs) {
-  SurfacePairList::iterator s_it;
-  for (s_it = surface_pairs.begin(); s_it != surface_pairs.end(); ++s_it) {
-    MeshUtils::computePBCMap(this->mesh, *s_it, this->pbc_pair);
+    for (auto && is_type : options.integration_scheme_type) {
+      if (!this->hasIntegrationScheme(solver_name, is_type.first)) {
+        this->setIntegrationScheme(solver_name, is_type.first, is_type.second,
+                                   options.solution_type[is_type.first]);
+      }
+    }
   }
+
+  this->method = method;
+  this->setDefaultSolver(solver_name);
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::initPBC() {
-  std::map<UInt, UInt>::iterator it = pbc_pair.begin();
-  std::map<UInt, UInt>::iterator end = pbc_pair.end();
+  auto it = pbc_pair.begin();
+  auto end = pbc_pair.end();
 
   is_pbc_slave_node.resize(mesh.getNbNodes());
 #ifndef AKANTU_NDEBUG
-  Array<Real>::const_vector_iterator coord_it =
+  auto coord_it =
       mesh.getNodes().begin(this->spatial_dimension);
 #endif
 
@@ -136,27 +128,13 @@ void Model::initPBC() {
 }
 
 /* -------------------------------------------------------------------------- */
-DistributedSynchronizer &
-Model::createParallelSynch(MeshPartition * partition,
-                           __attribute__((unused))
-                           DataAccessor * data_accessor) {
-  AKANTU_DEBUG_IN();
-  /* ------------------------------------------------------------------------ */
-  /* Parallel initialization                                                  */
-  /* ------------------------------------------------------------------------ */
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
-  Int prank = comm.whoAmI();
+void Model::initFEEngineBoundary() {
+  FEEngine & fem_boundary = getFEEngineBoundary();
+  fem_boundary.initShapeFunctions(_not_ghost);
+  fem_boundary.initShapeFunctions(_ghost);
 
-  DistributedSynchronizer * synch = NULL;
-  if (prank == 0)
-    synch = DistributedSynchronizer::createDistributedSynchronizerMesh(
-        getFEEngine().getMesh(), partition);
-  else
-    synch = DistributedSynchronizer::createDistributedSynchronizerMesh(
-        getFEEngine().getMesh(), NULL);
-
-  AKANTU_DEBUG_OUT();
-  return *synch;
+  fem_boundary.computeNormalsOnIntegrationPoints(_not_ghost);
+  fem_boundary.computeNormalsOnIntegrationPoints(_ghost);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -174,8 +152,8 @@ void Model::dumpGroup(const std::string & group_name,
 
 /* -------------------------------------------------------------------------- */
 void Model::dumpGroup() {
-  GroupManager::element_group_iterator bit = mesh.element_group_begin();
-  GroupManager::element_group_iterator bend = mesh.element_group_end();
+  auto bit = mesh.element_group_begin();
+  auto bend = mesh.element_group_end();
   for (; bit != bend; ++bit) {
     bit->second->dump();
   }
@@ -183,8 +161,8 @@ void Model::dumpGroup() {
 
 /* -------------------------------------------------------------------------- */
 void Model::setGroupDirectory(const std::string & directory) {
-  GroupManager::element_group_iterator bit = mesh.element_group_begin();
-  GroupManager::element_group_iterator bend = mesh.element_group_end();
+  auto bit = mesh.element_group_begin();
+  auto bend = mesh.element_group_end();
   for (; bit != bend; ++bit) {
     bit->second->setDirectory(directory);
   }
@@ -288,7 +266,8 @@ void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 void Model::addDumpFieldVectorToDumper(const std::string & dumper_name,
                                        const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular, 3);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
+                                  true);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -334,7 +313,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       bool padding_flag) {
 
 #ifdef AKANTU_USE_IOHELPER
-  dumper::Field * field = NULL;
+  dumper::Field * field = nullptr;
 
   if (!field)
     field = this->createNodalFieldReal(field_id, group_name, padding_flag);
@@ -352,8 +331,11 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
     field = this->mesh.createFieldFromAttachedData<Real>(field_id, group_name,
                                                          element_kind);
 
-  if (!field)
+#ifndef AKANTU_NDEBUG
+  if (!field) {
     AKANTU_DEBUG_WARNING("No field could be found based on name: " << field_id);
+  }
+#endif
   if (field) {
     DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name, group_name);
     this->addDumpGroupFieldToDumper(field_id, field, dumper);
@@ -385,4 +367,4 @@ void Model::setTextModeToDumper() { mesh.setTextModeToDumper(); }
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

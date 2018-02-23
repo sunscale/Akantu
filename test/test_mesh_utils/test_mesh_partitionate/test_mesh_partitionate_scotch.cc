@@ -37,16 +37,15 @@
 #include "mesh_partition_scotch.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumper_paraview.hh"
-#  include "dumper_elemental_field.hh" 
-#endif //AKANTU_USE_IOHELPER
+#include "dumper_elemental_field.hh"
+#include "dumper_iohelper_paraview.hh"
+#endif // AKANTU_USE_IOHELPER
 
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
   debug::setDebugLevel(akantu::dblDump);
 
@@ -55,17 +54,18 @@ int main(int argc, char *argv[])
   akantu::Mesh mesh(dim);
   mesh.read("triangle.msh");
 
-  akantu::MeshPartition * partition = new akantu::MeshPartitionScotch(mesh, dim);
+  akantu::MeshPartition * partition =
+      new akantu::MeshPartitionScotch(mesh, dim);
   partition->partitionate(8);
 
 #ifdef AKANTU_USE_IOHELPER
   DumperParaview dumper("test-scotch-partition");
-  dumper::Field * field = new dumper::ElementalField<UInt>(partition->getPartitions(),
-							   dim);
+  dumper::Field * field =
+      new dumper::ElementalField<UInt>(partition->getPartitions(), dim);
   dumper.registerMesh(mesh, dim);
   dumper.registerField("partitions", field);
   dumper.dump();
-#endif //AKANTU_USE_IOHELPER
+#endif // AKANTU_USE_IOHELPER
 
   partition->reorder();
   mesh.write("triangle_reorder.msh");

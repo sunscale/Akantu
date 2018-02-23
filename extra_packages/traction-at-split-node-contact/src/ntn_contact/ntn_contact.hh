@@ -22,7 +22,7 @@
 // simtools
 #include "ntn_base_contact.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class NTNContact : public NTNBaseContact {
@@ -148,6 +148,6 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNContact & _thi
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_NTN_CONTACT_HH__ */

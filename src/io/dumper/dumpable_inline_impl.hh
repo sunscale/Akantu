@@ -39,7 +39,7 @@
 #include "dumper_nodal_field.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class T>
@@ -117,9 +117,9 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
 
   try {
-    T & templated_dumper = dynamic_cast<T &>(dumper);
+    auto & templated_dumper = dynamic_cast<T &>(dumper);
     return templated_dumper;
-  } catch (...) {
+  } catch (std::bad_cast &) {
     AKANTU_EXCEPTION("Dumper " << dumper_name << " is not of type: "
                                << debug::demangle(typeid(T).name()));
   }
@@ -127,7 +127,7 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu
 
 #endif
 

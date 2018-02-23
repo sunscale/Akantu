@@ -17,7 +17,7 @@
 #include "dumper_nodal_field.hh"
 
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
@@ -144,4 +144,4 @@ void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(const std::string &
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

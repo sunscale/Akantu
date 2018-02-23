@@ -51,9 +51,9 @@
 
 __BEGIN_IOHELPER__
 
-typedef unsigned int UInt;
-typedef int Int;
-typedef double Real;
+using UInt = unsigned int;
+using Int = int;
+using Real = double;
 
 /* -------------------------------------------------------------------------- */
 enum DataType {
@@ -93,6 +93,7 @@ enum ElemType : unsigned int {
   BEAM3     ,
   PRISM1    ,
   PRISM2    ,
+  COH1D2    ,
   COH2D4    ,
   COH2D6    ,
   COH3D6    ,
@@ -131,6 +132,7 @@ static UInt nb_node_per_elem[MAX_ELEM_TYPE] __attribute__((unused)) = {
   2,   // BEAM3
   6,   // PRISM1
  15,   // PRISM2
+  2,   // COH1D2
   4,   // COH2D4
   6,   // COH2D6
   6,   // COH3D6
@@ -155,6 +157,7 @@ static UInt nb_quad_points[MAX_ELEM_TYPE] __attribute__((unused)) = {
   3,   // BEAM3
   6,   // PRISM1
   8,   // PRISM2
+  1,   // COH1D2
   1,   // COH2D4
   2,   // COH2D6
   1,   // COH3D6
@@ -166,7 +169,7 @@ static UInt nb_quad_points[MAX_ELEM_TYPE] __attribute__((unused)) = {
 template <typename T>
 class IOHelperVector {
 public:
-  virtual ~IOHelperVector() {}
+  virtual ~IOHelperVector() = default;
 
   inline IOHelperVector(T * ptr, UInt size){
     this->ptr = ptr;
@@ -193,9 +196,9 @@ private:
 /* -------------------------------------------------------------------------- */
 template< typename T, class daughter, class ret_cont = IOHelperVector<T> > class iterator {
 public:
-  typedef ret_cont type;
+  using type = ret_cont;
 
-  virtual ~iterator() {}
+  virtual ~iterator() = default;
   virtual bool operator!=(const daughter & it) const = 0;
   virtual daughter & operator++() = 0;
   virtual ret_cont operator*() = 0;
@@ -218,17 +221,15 @@ public:
 };
 
 public:
-
-  IOHelperException(const std::string & message, const ErrorType type) throw() {
+  IOHelperException(const std::string & message,
+                    const ErrorType type) noexcept {
     this->message = message;
     this->type    = type;
   };
 
-  ~IOHelperException() throw(){};
+  ~IOHelperException() noexcept override = default;
 
-  virtual const char* what() const throw(){
-    return message.c_str();
-  };
+  const char * what() const noexcept override { return message.c_str(); };
 
 private:
 

@@ -44,13 +44,13 @@ __BEGIN_IOHELPER__
 
 template <class Cont>
 inline void Field<Cont>::accept(Visitor & v){
-  if (ParaviewHelper * ptr_ph = dynamic_cast<ParaviewHelper*>(&v)){
+  if (auto * ptr_ph = dynamic_cast<ParaviewHelper *>(&v)) {
     ptr_ph->visitField(*this);
-  } else if (iohelper::DumperLammps<iohelper::bond> * ptr_dlb = dynamic_cast<DumperLammps<bond>*>(&v)) {
+  } else if (auto * ptr_dlb = dynamic_cast<DumperLammps<bond> *>(&v)) {
     ptr_dlb->visitField(*this);
-  } else if (DumperLammps<iohelper::atomic> * ptr_dla = dynamic_cast<DumperLammps<atomic>*>(&v)){
+  } else if (auto * ptr_dla = dynamic_cast<DumperLammps<atomic> *>(&v)) {
     ptr_dla->visitField(*this);
-  } else if (DumperText * ptr_txt = dynamic_cast<DumperText*>(&v)){
+  } else if (auto * ptr_txt = dynamic_cast<DumperText *>(&v)) {
     ptr_txt->visitField(*this);
   }
 }

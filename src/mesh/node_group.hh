@@ -42,7 +42,7 @@
 #ifndef __AKANTU_NODE_GROUP_HH__
 #define __AKANTU_NODE_GROUP_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NodeGroup : public Memory, public Dumpable {
   /* ------------------------------------------------------------------------ */
@@ -54,13 +54,13 @@ public:
 	    const Mesh & mesh,
             const std::string & id = "node_group",
             const MemoryID & memory_id = 0);
-  virtual ~NodeGroup();
+  ~NodeGroup() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef Array<UInt>::const_iterator<UInt> const_node_iterator;
+  using const_node_iterator = Array<UInt>::const_iterator<UInt>;
 
   /// empty the node group
   void empty();
@@ -76,6 +76,11 @@ public:
   /// remove a node
   inline void remove(UInt node);
 
+#ifndef SWIG
+  inline decltype(auto) find(UInt node) const {
+    return node_group.find(node);
+  }
+#endif
   /// remove duplicated nodes
   void optimize();
 
@@ -99,7 +104,7 @@ public:
   AKANTU_GET_MACRO(Name, name, const std::string &);
 
   /// give the number of nodes in the current group
-  inline UInt getSize() const;
+  inline UInt size() const;
 
   UInt * storage(){return node_group.storage();};
   
@@ -124,7 +129,7 @@ inline std::ostream & operator <<(std::ostream & stream, const NodeGroup & _this
   return stream;
 }
 
-__END_AKANTU__
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

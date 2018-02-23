@@ -37,8 +37,7 @@
 
 #ifndef __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
 #define __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
-
-__BEGIN_AKANTU__
+namespace akantu {
 
 class LocalMaterialDamage : public Material {
   /* ------------------------------------------------------------------------ */
@@ -117,11 +116,10 @@ private:
   InternalField<Real> damage;
 };
 
+} // akantu
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "local_material_damage_inline_impl.hh"
-
-__END_AKANTU__
 
 #endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__ */

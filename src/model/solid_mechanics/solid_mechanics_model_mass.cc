@@ -30,89 +30,25 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
+#include "integrator_gauss.hh"
 #include "material.hh"
+#include "model_solver.hh"
+#include "shape_lagrange.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMassLumped() {
-  AKANTU_DEBUG_IN();
-
-  UInt nb_nodes = mesh.getNbNodes();
-
-  if (!mass) {
-    std::stringstream sstr_mass; sstr_mass << id << ":mass";
-    mass         = &(alloc<Real>(sstr_mass.str(), nb_nodes, spatial_dimension, 0));
-  } else
-    mass->clear();
-
-  assembleMassLumped(_not_ghost);
-  assembleMassLumped(_ghost);
-
-  /// for not connected nodes put mass to one in order to avoid
-  /// wrong range in paraview
-  Real * mass_values = mass->storage();
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    if (fabs(mass_values[i]) < std::numeric_limits<Real>::epsilon() || Math::isnan(mass_values[i]))
-      mass_values[i] = 1.;
-  }
-
-  synch_registry->synchronize(_gst_smm_mass);
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  FEEngine & fem = getFEEngine();
-
-  Array<Real> rho_1(0,1);
-
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
-  for(; it != end; ++it) {
-    ElementType type = *it;
-
-    computeRho(rho_1, type, ghost_type);
-
-    AKANTU_DEBUG_ASSERT(dof_synchronizer,
-			"DOFSynchronizer number must not be initialized");
-    fem.assembleFieldLumped(rho_1, spatial_dimension,*mass,
-			    dof_synchronizer->getLocalDOFEquationNumbers(),
-			    type, ghost_type);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMass() {
-  AKANTU_DEBUG_IN();
-
-  if(!mass_matrix) {
-    std::stringstream sstr; sstr << id << ":mass_matrix";
-    mass_matrix = new SparseMatrix(*jacobian_matrix, sstr.str(), memory_id);
-  }
-
-  assembleMass(_not_ghost);
-  //  assembleMass(_ghost);
-
-  AKANTU_DEBUG_OUT();
-}
+namespace akantu {
 
 class ComputeRhoFunctor {
 public:
-  ComputeRhoFunctor(const SolidMechanicsModel & model) : model(model){};
+  explicit ComputeRhoFunctor(const SolidMechanicsModel & model)
+      : model(model){};
 
-  void operator()(Matrix<Real> & rho, const Element & element,
-                  __attribute__((unused)) const Matrix<Real> quad_coords) const {
+  void operator()(Matrix<Real> & rho, const Element & element) const {
     const Array<UInt> & mat_indexes =
         model.getMaterialByElement(element.type, element.ghost_type);
     Real mat_rho =
-      model.getMaterial(mat_indexes(element.element)).getParam<Real>("rho");
+        model.getMaterial(mat_indexes(element.element)).getParam("rho");
     rho.set(mat_rho);
   }
 
@@ -121,55 +57,103 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
+void SolidMechanicsModel::assembleMassLumped() {
   AKANTU_DEBUG_IN();
 
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
+  if(not need_to_reassemble_lumped_mass) return;
 
+  UInt nb_nodes = mesh.getNbNodes();
+
+  if (this->mass == nullptr) {
+    std::stringstream sstr_mass;
+    sstr_mass << id << ":mass";
+    mass =
+        &(alloc<Real>(sstr_mass.str(), nb_nodes, Model::spatial_dimension, 0));
+  } else {
+    mass->clear();
+  }
+
+  if (!this->getDOFManager().hasLumpedMatrix("M")) {
+    this->getDOFManager().getNewLumpedMatrix("M");
+  }
+
+  this->getDOFManager().clearLumpedMatrix("M");
+
+  assembleMassLumped(_not_ghost);
+  assembleMassLumped(_ghost);
+
+  this->getDOFManager().getLumpedMatrixPerDOFs("displacement", "M",
+                                               *(this->mass));
+
+/// for not connected nodes put mass to one in order to avoid
+#if !defined(AKANTU_NDEBUG)
+  bool has_unconnected_nodes = false;
+  auto mass_it =
+      mass->begin_reinterpret(mass->size() * mass->getNbComponent());
+  auto mass_end =
+      mass->end_reinterpret(mass->size() * mass->getNbComponent());
+  for (; mass_it != mass_end; ++mass_it) {
+    if (std::abs(*mass_it) < std::numeric_limits<Real>::epsilon() ||
+        Math::isnan(*mass_it)) {
+      has_unconnected_nodes = true;
+      break;
+    }
+  }
+
+  if (has_unconnected_nodes)
+    AKANTU_DEBUG_WARNING("There are nodes that seem to not be connected to any "
+                         "elements, beware that they have lumped mass of 0.");
+#endif
+
+  this->synchronize(_gst_smm_mass);
+
+  need_to_reassemble_lumped_mass = false;
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::assembleMass() {
+  AKANTU_DEBUG_IN();
+
+  if(not need_to_reassemble_mass) return;
+
+  this->getDOFManager().clearMatrix("M");
+  assembleMass(_not_ghost);
+
+  need_to_reassemble_mass = false;
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctor compute_rho(*this);
 
-  Mesh::type_iterator it  = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension, ghost_type);
-  for(; it != end; ++it) {
-    ElementType type = *it;
-    
-    //computeRho(compute_rho, type, ghost_type);
-    fem.assembleFieldMatrix(compute_rho, spatial_dimension, *mass_matrix, type, ghost_type);
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+    fem.assembleFieldLumped(compute_rho, "M", "displacement",
+                            this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::computeRho(Array<Real> & rho,
-				     ElementType type,
-				     GhostType ghost_type) {
+void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Material ** mat_val = &(this->materials.at(0));
+  auto & fem = getFEEngineClass<MyFEEngineType>();
+  ComputeRhoFunctor compute_rho(*this);
 
-  FEEngine & fem = this->getFEEngine();
-  UInt nb_element = fem.getMesh().getNbElement(type,ghost_type);
-
-  Array<UInt> & mat_indexes = this->material_index(type, ghost_type);
-
-  UInt nb_quadrature_points = fem.getNbIntegrationPoints(type);
-
-  rho.resize(nb_element * nb_quadrature_points);
-  Real * rho_1_val = rho.storage();
-
-  /// compute @f$ rho @f$ for each nodes of each element
-  for (UInt el = 0; el < nb_element; ++el) {
-    /// here rho is constant in an element
-    Real mat_rho = mat_val[mat_indexes(el)]->getParam<Real>("rho");
-
-    for (UInt n = 0; n < nb_quadrature_points; ++n) {
-      *rho_1_val++ = mat_rho;
-    }
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+    fem.assembleFieldMatrix(compute_rho, "M", "displacement",
+                            this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
 }
 
-
-__END_AKANTU__
+} // namespace akantu

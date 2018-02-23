@@ -30,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "stress_based_weight_function.hh"
-__BEGIN_AKANTU__
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 StressBasedWeightFunction::StressBasedWeightFunction(NonLocalManager & manager) :
   BaseWeightFunction(manager, "stress_based")
@@ -58,7 +58,7 @@ void StressBasedWeightFunction::init() {
   //     UInt nb_quadrature_points =
   // 	this->material.getModel().getFEEngine().getNbQuadraturePoints(*it, gt);
   //     const Array<UInt> & element_filter = this->material.getElementFilter(*it, gt);
-  //     UInt nb_element = element_filter.getSize();
+  //     UInt nb_element = element_filter.size();
 
   //     Array<Real> ones(nb_element*nb_quadrature_points, 1, 1.);
   //     Array<Real> & lc = characteristic_size(*it, gt);
@@ -89,15 +89,15 @@ void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused)) Gh
 //   for(; it != last_type; ++it) {
 //     Array<Real>::const_matrix_iterator sigma =
 //       this->material.getStress(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
-//     Array<Real>::vector_iterator eigenvalues =
+//     auto eigenvalues =
 //       stress_diag(*it, ghost_type).begin(spatial_dimension);
-//     Array<Real>::vector_iterator eigenvalues_end =
+//     auto eigenvalues_end =
 //       stress_diag(*it, ghost_type).end(spatial_dimension);
 //     Array<Real>::matrix_iterator eigenvector =
 //       stress_base(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
 
 // #ifndef __trick__
-//     Array<Real>::iterator<Real> cl = characteristic_size(*it, ghost_type).begin();
+//     auto cl = characteristic_size(*it, ghost_type).begin();
 // #endif
 //     UInt q = 0;
 //     for(;eigenvalues != eigenvalues_end; ++sigma, ++eigenvalues, ++eigenvector, ++cl, ++q) {
@@ -114,4 +114,4 @@ void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused)) Gh
 //   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu

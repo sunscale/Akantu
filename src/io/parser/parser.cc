@@ -39,7 +39,7 @@
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ParserSection::~ParserSection() { this->clean(); }
@@ -56,7 +56,7 @@ ParserParameter & ParserSection::addParameter(const ParserParameter & param) {
 
 /* -------------------------------------------------------------------------- */
 ParserSection & ParserSection::addSubSection(const ParserSection & section) {
-  return ((sub_sections_by_type.insert(std::pair<SectionType, ParserSection>(
+  return ((sub_sections_by_type.insert(std::pair<ParserType, ParserSection>(
                section.getType(), section)))->second);
 }
 
@@ -75,7 +75,7 @@ void ParserSection::printself(std::ostream & stream,
          << (option != "" ? (" " + option) : "") << " [" << std::endl;
   if (!this->parameters.empty()) {
     stream << space << ind << "Parameters [" << std::endl;
-    Parameters::const_iterator pit = this->parameters.begin();
+    auto pit = this->parameters.begin();
     for (; pit != this->parameters.end(); ++pit) {
       stream << space << ind << " + ";
       pit->second.printself(stream);
@@ -86,7 +86,7 @@ void ParserSection::printself(std::ostream & stream,
 
   if (!this->sub_sections_by_type.empty()) {
     stream << space << ind << "Subsections [" << std::endl;
-    SubSections::const_iterator sit = this->sub_sections_by_type.begin();
+    auto sit = this->sub_sections_by_type.begin();
     for (; sit != this->sub_sections_by_type.end(); ++sit)
       sit->second.printself(stream, indent + 2);
     stream << std::endl;
@@ -95,4 +95,4 @@ void ParserSection::printself(std::ostream & stream,
   stream << space << "]" << std::endl;
 }
 
-__END_AKANTU__
+} // akantu

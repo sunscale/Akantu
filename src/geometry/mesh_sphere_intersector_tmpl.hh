@@ -40,9 +40,8 @@
 #include "mesh_geom_common.hh"
 #include "tree_type_helper.hh"
 #include "mesh_sphere_intersector.hh"
-#include "static_communicator.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<UInt dim, ElementType type>
 MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
@@ -53,11 +52,11 @@ MeshSphereIntersector<dim, type>::MeshSphereIntersector(Mesh & mesh):
   if( (type == _triangle_3) || (type == _igfem_triangle_4) || (type == _igfem_triangle_5) ){
     const_cast<UInt &>(this->nb_seg_by_el) = 3;
   } else {
-    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
+    AKANTU_ERROR("Not ready for mesh type " << type);
   }
 #else
   if( (type != _triangle_3) )
-    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
+    AKANTU_ERROR("Not ready for mesh type " << type);
 #endif
 
   // initialize the intersection pointsss array with the spatial dimension
@@ -89,14 +88,14 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
   AKANTU_DEBUG_IN();
 
   Array<Real> & nodes = this->mesh.getNodes();
-  UInt nb_node = nodes.getSize() + this->intersection_points->getSize();
+  UInt nb_node = nodes.size() + this->intersection_points->size();
 
   // Tolerance for proximity checks should be defined by user
   Real global_tolerance = Math::getTolerance();
   Math::setTolerance(tol_intersection_on_node);
   typedef boost::variant<pair_type> sk_inter_res;
 
-  TreeTypeHelper<Line_arc<Spherical>, Spherical>::const_iterator
+  TreeTypeHelper<Line_arc<cgal::Spherical>, cgal::Spherical>::const_iterator
     it = this->factory.getPrimitiveList().begin(),
     end= this->factory.getPrimitiveList().end();
 
@@ -109,7 +108,7 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
         if (pair->second == 1) { // not a point tangent to the sphere
           // the intersection point written as a vector
           Vector<Real> new_node(dim, 0.0);
-          Cartesian::Point_3 point(CGAL::to_double(pair->first.x()),
+          cgal::Cartesian::Point_3 point(CGAL::to_double(pair->first.x()),
                                    CGAL::to_double(pair->first.y()),
                                    CGAL::to_double(pair->first.z()));
           for (UInt i = 0 ; i < dim ; i++) {
@@ -125,17 +124,17 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  UInt n = nb_old_nodes;
 
           // check if we already compute this intersection and add it as a node for a neighboor element of another type
-	  Array<Real>::vector_iterator existing_node = nodes.begin(dim);
+	  auto existing_node = nodes.begin(dim);
 
-	  for (; n < nodes.getSize() ; ++n) {// loop on the nodes from nb_old_nodes
+	  for (; n < nodes.size() ; ++n) {// loop on the nodes from nb_old_nodes
 	    if (Math::are_vector_equal(dim, new_node.storage(), existing_node[n].storage())) {
 	      is_new = false;
 	      break;
 	    }
 	  }
 	  if(is_new){
-	    Array<Real>::vector_iterator intersection_points_it = this->intersection_points->begin(dim);
-	    Array<Real>::vector_iterator intersection_points_end = this->intersection_points->end(dim);
+	    auto intersection_points_it = this->intersection_points->begin(dim);
+	    auto intersection_points_end = this->intersection_points->end(dim);
 	    for (; intersection_points_it != intersection_points_end ; ++intersection_points_it, ++n) {
 	      if (Math::are_vector_equal(dim, new_node.storage(), intersection_points_it->storage())) {
 		is_new = false;
@@ -145,10 +144,10 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
 	  }
 	  
 	  // get the initial and final points of the primitive (segment) and write them as vectors
-	  Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
+	  cgal::Cartesian::Point_3 source_cgal(CGAL::to_double(it->source().x()),
 					 CGAL::to_double(it->source().y()),
 					 CGAL::to_double(it->source().z()));
-	  Cartesian::Point_3 target_cgal(CGAL::to_double(it->target().x()),
+	  cgal::Cartesian::Point_3 target_cgal(CGAL::to_double(it->target().x()),
 					 CGAL::to_double(it->target().y()),
 					 CGAL::to_double(it->target().z()));
 	  Vector<Real> source(dim), target(dim);
@@ -191,6 +190,6 @@ void MeshSphereIntersector<dim, type>:: computeMeshQueryIntersectionPoint(const 
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__

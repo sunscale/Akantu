@@ -63,4 +63,5 @@ package_add_files_to_package(
 package_is_activated(parallel _is_parallel)
 if (_is_parallel)
   option(AKANTU_TESTS_ALWAYS_USE_MPI "Defines if sequential tests should also use MPIEXEC" FALSE)
+  mark_as_advanced(AKANTU_TESTS_ALWAYS_USE_MPI)
 endif()

@@ -11,7 +11,7 @@ class AkantuSparseMatrix (scipy.sparse.coo_matrix) :
         
         self.aka_sparse = aka_sparse
         matrix_type = self.aka_sparse.getSparseMatrixType()
-        sz = self.aka_sparse.getSize()
+        sz = self.aka_sparse.size()
         row = self.aka_sparse.getIRN()[:,0] -1
         col = self.aka_sparse.getJCN()[:,0] -1
         data = self.aka_sparse.getA()[:,0]

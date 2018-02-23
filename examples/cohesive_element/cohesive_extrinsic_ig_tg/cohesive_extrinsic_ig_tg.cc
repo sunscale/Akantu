@@ -106,12 +106,12 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  MultiGrainMaterialSelector material_selector(model,
-                                               "tg_cohesive",
-                                               "ig_cohesive");
+  auto material_selector = std::make_shared<MultiGrainMaterialSelector>(
+      model, "tg_cohesive", "ig_cohesive");
+
   model.setMaterialSelector(material_selector);
-  model.initFull(
-      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true, false));
+  model.initFull(_analysis_method = _explicit_lumped_mass,
+                 _is_extrinsic = true);
 
   Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
@@ -135,13 +135,11 @@ int main(int argc, char * argv[]) {
       boundary(n, 0) = true;
   }
 
-  model.updateResidual();
-
   model.setBaseName("extrinsic");
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual");
+  model.addDumpField("internal_force");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.dump();

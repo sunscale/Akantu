@@ -1,6 +1,0 @@
-material elastic [
-	 name = fictif
-	 rho = 1000  # density
-	 E   = 12e7  # young's modulus
-	 nu  = 0   # poisson's ratio
-]

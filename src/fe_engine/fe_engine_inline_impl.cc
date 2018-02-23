@@ -29,9 +29,18 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+#include "fe_engine.hh"
+#include "mesh.hh"
+#include "element_class.hh"
+/* -------------------------------------------------------------------------- */
+#include "element_type_conversion.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
+#define __AKANTU_FE_ENGINE_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
@@ -52,17 +61,7 @@ inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
 /* -------------------------------------------------------------------------- */
 inline InterpolationType
 FEEngine::getInterpolationType(const ElementType & type) {
-  AKANTU_DEBUG_IN();
-
-  InterpolationType itp_type = _itp_not_defined;
-
-#define GET_ITP(type) itp_type = ElementClassProperty<type>::interpolation_type;
-
-  AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_ITP);
-#undef GET_ITP
-
-  AKANTU_DEBUG_OUT();
-  return itp_type;
+  return convertType<ElementType, InterpolationType>(type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,9 +91,9 @@ FEEngine::getCohesiveElementType(__attribute__((unused))
 
 /* -------------------------------------------------------------------------- */
 #if defined(AKANTU_IGFEM)
-__END_AKANTU__
+} // akantu
 #include "igfem_helper.hh"
-__BEGIN_AKANTU__
+namespace akantu {
 
 inline Vector<ElementType>
 FEEngine::getIGFEMElementTypes(const ElementType & type) {
@@ -124,7 +123,7 @@ void FEEngine::extractNodalToElementField(const Mesh & mesh,
   UInt * conn_val = mesh.getConnectivity(type, ghost_type).storage();
 
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   }
 
   elemental_f.resize(nb_element);
@@ -166,10 +165,10 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
   }
 
   UInt nb_degree_of_freedom = elem_f.getNbComponent();
-  UInt nb_data_per_element = elem_f.getSize() / nb_element;
+  UInt nb_data_per_element = elem_f.size() / nb_element;
 
   if (filter_elements != empty_filter) {
-    nb_element = filter_elements.getSize();
+    nb_element = filter_elements.size();
   }
 
   filtered_f.resize(nb_element * nb_data_per_element);
@@ -195,4 +194,6 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
+
+#endif /* __AKANTU_FE_ENGINE_INLINE_IMPL_CC__ */

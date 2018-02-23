@@ -37,13 +37,12 @@
 %}
 
 namespace akantu {
-  %ignore SolidMechanicsModelCohesive::initFacetFilter;
-  %ignore SolidMechanicsModelCohesive::initParallel;
-  %ignore CohesiveElementInserter::initParallel;
+%ignore SolidMechanicsModelCohesive::initFacetFilter;
+%ignore SolidMechanicsModelCohesive::initParallel;
+%ignore CohesiveElementInserter::initParallel;
 }
 
 %extend akantu::SolidMechanicsModelCohesive {
-
   Array<Real> & getRealInternalCohesiveField(const std::string field_name) {
     akantu::Mesh & mesh = $self->getMesh();
     akantu::ElementType type = *(mesh.firstType(mesh.getSpatialDimension(), akantu::_not_ghost, akantu::_ek_cohesive));
@@ -53,4 +52,3 @@ namespace akantu {
 
 %include "cohesive_element_inserter.hh"
 %include "solid_mechanics_model_cohesive.hh"
-

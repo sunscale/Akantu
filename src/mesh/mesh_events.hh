@@ -29,14 +29,23 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <utility>
+
+#include "aka_array.hh"
+#include "element.hh"
+#include "element_type_map.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MESH_EVENTS_HH__
 #define __AKANTU_MESH_EVENTS_HH__
 
+
+namespace akantu {
+
 /// akantu::MeshEvent is the base event for meshes
 template <class Entity> class MeshEvent {
 public:
-  virtual ~MeshEvent() {}
+  virtual ~MeshEvent() = default;
   /// Get the list of entity modified by the event nodes or elements
   const Array<Entity> & getList() const { return list; }
   /// Get the list of entity modified by the event nodes or elements
@@ -51,13 +60,13 @@ class Mesh;
 /// akantu::MeshEvent related to new nodes in the mesh
 class NewNodesEvent : public MeshEvent<UInt> {
 public:
-  virtual ~NewNodesEvent(){};
+  ~NewNodesEvent() override = default;
 };
 
 /// akantu::MeshEvent related to nodes removed from the mesh
 class RemovedNodesEvent : public MeshEvent<UInt> {
 public:
-  virtual ~RemovedNodesEvent(){};
+  ~RemovedNodesEvent() override = default;
   inline RemovedNodesEvent(const Mesh & mesh);
   /// Get the new numbering following suppression of nodes from nodes arrays
   AKANTU_GET_MACRO_NOT_CONST(NewNumbering, new_numbering, Array<UInt> &);
@@ -71,15 +80,15 @@ private:
 /// akantu::MeshEvent related to new elements in the mesh
 class NewElementsEvent : public MeshEvent<Element> {
 public:
-  virtual ~NewElementsEvent(){};
+  ~NewElementsEvent() override = default;
 };
 
 /// akantu::MeshEvent related to elements removed from the mesh
 class RemovedElementsEvent : public MeshEvent<Element> {
 public:
-  virtual ~RemovedElementsEvent(){};
+  ~RemovedElementsEvent() override = default;
   inline RemovedElementsEvent(const Mesh & mesh,
-                              ID new_numbering_id = "new_numbering");
+                              const ID & new_numbering_id = "new_numbering");
   /// Get the new numbering following suppression of elements from elements
   /// arrays
   AKANTU_GET_MACRO(NewNumbering, new_numbering,
@@ -103,10 +112,10 @@ protected:
 /// combination of removed and added elements
 class ChangedElementsEvent : public RemovedElementsEvent {
 public:
-  virtual ~ChangedElementsEvent(){};
+  ~ChangedElementsEvent() override = default;
   inline ChangedElementsEvent(
       const Mesh & mesh, ID new_numbering_id = "changed_event:new_numbering")
-      : RemovedElementsEvent(mesh, new_numbering_id){};
+      : RemovedElementsEvent(mesh, std::move(new_numbering_id)){};
   AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
   AKANTU_GET_MACRO_NOT_CONST(ListOld, list, Array<Element> &);
   AKANTU_GET_MACRO(ListNew, new_list, const Array<Element> &);
@@ -120,7 +129,7 @@ protected:
 
 class MeshEventHandler {
 public:
-  virtual ~MeshEventHandler(){};
+  virtual ~MeshEventHandler() = default;
   /* ------------------------------------------------------------------------ */
   /* Internal code                                                            */
   /* ------------------------------------------------------------------------ */
@@ -153,28 +162,38 @@ private:
   /* ------------------------------------------------------------------------ */
 public:
   /// function to implement to react on  akantu::NewNodesEvent
-  virtual void onNodesAdded(const Array<UInt> & nodes_list,
-                            const NewNodesEvent & event) = 0;
+  virtual void onNodesAdded(const Array<UInt> & /*nodes_list*/,
+                            const NewNodesEvent & /*event*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::RemovedNodesEvent
-  virtual void onNodesRemoved(const Array<UInt> & nodes_list,
-                              const Array<UInt> & new_numbering,
-                              const RemovedNodesEvent & event) = 0;
+  virtual void onNodesRemoved(const Array<UInt> & /*nodes_list*/,
+                              const Array<UInt> & /*new_numbering*/,
+                              const RemovedNodesEvent & /*event*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::NewElementsEvent
-  virtual void onElementsAdded(__attribute__((unused))
-                               const Array<Element> & elements_list,
-                               __attribute__((unused))
-                               const NewElementsEvent & event) = 0;
+  virtual void onElementsAdded(const Array<Element> & /*elements_list*/,
+                               const NewElementsEvent & /*event*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::RemovedElementsEvent
-  virtual void onElementsRemoved(
-      __attribute__((unused)) const Array<Element> & elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const RemovedElementsEvent & event) = 0;
+  virtual void
+  onElementsRemoved(const Array<Element> & /*elements_list*/,
+                    const ElementTypeMapArray<UInt> & /*new_numbering*/,
+                    const RemovedElementsEvent & /*event*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
   /// function to implement to react on  akantu::ChangedElementsEvent
-  virtual void onElementsChanged(
-      __attribute__((unused)) const Array<Element> & old_elements_list,
-      __attribute__((unused)) const Array<Element> & new_elements_list,
-      __attribute__((unused)) const ElementTypeMapArray<UInt> & new_numbering,
-      __attribute__((unused)) const ChangedElementsEvent & event) = 0;
+  virtual void
+  onElementsChanged(const Array<Element> & /*old_elements_list*/,
+                    const Array<Element> & /*new_elements_list*/,
+                    const ElementTypeMapArray<UInt> & /*new_numbering*/,
+                    const ChangedElementsEvent & /*event*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
 };
+
+} // akantu
 
 #endif /* __AKANTU_MESH_EVENTS_HH__ */

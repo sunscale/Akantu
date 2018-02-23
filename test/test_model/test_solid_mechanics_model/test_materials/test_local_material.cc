@@ -35,105 +35,86 @@
 
 /* -------------------------------------------------------------------------- */
 #include <iostream>
-
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "local_material_damage.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
   UInt max_steps = 1100;
-  
+
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("mesh_section_gap.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
-
-  SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
-  model.registerNewCustomMaterials<LocalMaterialDamage>("local_damage");
-  model.initMaterials();
+  MaterialFactory::getInstance().registerAllocator(
+      "local_damage",
+      [](UInt, const ID &, SolidMechanicsModel & model,
+         const ID & id) -> std::unique_ptr<Material> {
+        return std::make_unique<LocalMaterialDamage>(model, id);
+      });
+
+  SolidMechanicsModel model(mesh);
+  model.initFull();
+
+  std::cout << model.getMaterial(0) << std::endl;
+
+  model.addDumpField("damage");
+
+  model.addDumpField("strain");
+  model.addDumpField("stress");
+  model.addDumpFieldVector("displacement");
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
+  model.dump();
 
   Real time_step = model.getStableTimeStep();
-  model.setTimeStep(time_step/2.5);
-
-  model.assembleMassLumped();
-
-  std::cout << model << std::endl;
+  model.setTimeStep(time_step / 2.5);
 
   /// Dirichlet boundary conditions
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed");
   // model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed");
-
-  // Boundary condition (Neumann)
-  Matrix<Real> stress(2,2);
-  stress.eye(7e5);
+  Matrix<Real> stress(2, 2);
+  stress.eye(5e7);
   model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
-  /*model.setBaseName("damage_local");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
-  model.addDumpField("acceleration");
-  model.addDumpField("force"       );
-  model.addDumpField("residual"    );
-  model.addDumpField("damage"      );
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
-  model.dump();*/
+  for (UInt s = 0; s < max_steps; ++s) model.solveStep();
 
-  for(UInt s = 0; s < max_steps; ++s) {
-    if(s < 100){
-    // Boundary condition (Neumann)
-      stress.eye(7e5);
-    model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
-    }
+  model.dump();
+  const auto & lower_bounds = mesh.getLowerBounds();
+  const auto & upper_bounds = mesh.getUpperBounds();
+  Real L = upper_bounds(_x) - lower_bounds(_x);
+  Real H = upper_bounds(_y) - lower_bounds(_y);
 
-    model.solveStep();
+  const auto & filter = model.getMaterial("concrete").getElementFilter();
 
-    /*epot = model.getPotentialEnergy();
-    ekin = model.getKineticEnergy();
-
-    if(s % 10 == 0) std::cout << s << " " << epot << " " << ekin << " " << epot + ekin
-	      << std::endl;
-
-    if(s % 10 == 0) std::cout << "Step " << s+1 << "/" << max_steps <<std::endl;
-    if(s % 10 == 0) model.dump();*/
-  }
-
-  const Vector<Real> & lower_bounds = mesh.getLowerBounds();
-  const Vector<Real> & upper_bounds = mesh.getUpperBounds();
-  Real L = upper_bounds(0) - lower_bounds(0);
-
-  const ElementTypeMapArray<UInt> & filter =  model.getMaterial(0).getElementFilter();
-  ElementTypeMapArray<UInt>::type_iterator it = filter.firstType(spatial_dimension);
-  ElementTypeMapArray<UInt>::type_iterator end = filter.lastType(spatial_dimension);
   Vector<Real> barycenter(spatial_dimension);
-  bool is_fully_damaged = false;
-  for(; it != end; ++it) {
-    UInt nb_elem = mesh.getNbElement(*it);
-    const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(*it);
-    Array<Real> & material_damage_array = model.getMaterial(0).getArray<Real>("damage", *it);
+
+  for (auto & type : filter.elementTypes(spatial_dimension)) {
+    UInt nb_elem = mesh.getNbElement(type);
+    const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(type);
+    const auto & material_damage_array =
+        model.getMaterial(0).getArray<Real>("damage", type);
     UInt cpt = 0;
-    for(UInt nel = 0; nel < nb_elem ; ++nel){
-      if (material_damage_array(cpt,0) > 0.9){
-	is_fully_damaged = true;
-	mesh.getBarycenter(nel,*it,barycenter.storage());
-	if( (std::abs(barycenter(0)-(L/2)) < (L/10) ) ) {
-	  return EXIT_FAILURE;
-	}
+    for (auto nel : arange(nb_elem)) {
+      mesh.getBarycenter({type, nel, _not_ghost}, barycenter);
+      if ((std::abs(barycenter(_x) - (L / 2) + 0.025) < 0.025) &&
+          (std::abs(barycenter(_y) - (H / 2) + 0.045) < 0.045)) {
+        if (material_damage_array(cpt, 0) < 0.9) {
+          std::terminate();
+        } else {
+          std::cout << "element " << nel << " is correctly broken"  << std::endl;
+        }
       }
+
       cpt += nb_gp;
     }
   }
-  if(!is_fully_damaged)
-    return EXIT_FAILURE;
 
   akantu::finalize();
-  return EXIT_SUCCESS;
+  return 0;
 }

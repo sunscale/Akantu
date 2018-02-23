@@ -49,7 +49,7 @@ template<class T> inline Array<T> & Memory::alloc(const ID & name,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Memory::dealloc(ID name) {
+inline void Memory::dealloc(const ID & name) {
   AKANTU_DEBUG(dblAccessory, "Deleting the vector " << name);
   static_memory.sfree(memory_id, name);
   handeld_vectors_id.remove(name);

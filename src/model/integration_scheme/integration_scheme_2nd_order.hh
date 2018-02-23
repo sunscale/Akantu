@@ -31,69 +31,77 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
+#include "integration_scheme.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__
 #define __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_array.hh"
+namespace akantu {
+class SparseMatrix;
+}
 
-/* -------------------------------------------------------------------------- */
+namespace akantu {
 
-__BEGIN_AKANTU__
-
-class IntegrationScheme2ndOrder {
+class IntegrationScheme2ndOrder : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  IntegrationScheme2ndOrder(DOFManager & dof_manager, const ID & dof_id)
+      : IntegrationScheme(dof_manager, dof_id, 2){};
 
-  enum IntegrationSchemeCorrectorType {
-    _acceleration_corrector,
-    _velocity_corrector,
-    _displacement_corrector
-  };
+  ~IntegrationScheme2ndOrder() override = default;
 
-  virtual ~IntegrationScheme2ndOrder() {};
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// get list of needed matrices
+  std::vector<std::string> getNeededMatrixList() override;
 
-  virtual void integrationSchemePred(Real delta_t,
-				     Array<Real> & u,
-				     Array<Real> & u_dot,
-				     Array<Real> & u_dot_dot,
-				     Array<bool> & blocked_dofs) const = 0;
+  /// generic interface of a predictor
+  void predictor(Real delta_t) override;
 
-  virtual void integrationSchemeCorrDispl(Real delta_t,
-					  Array<Real> & u,
-					  Array<Real> & u_dot,
-					  Array<Real> & u_dot_dot,
-					  Array<bool> & blocked_dofs,
-					  Array<Real> & delta) const = 0;
+  /// generic interface of a corrector
+  void corrector(const SolutionType & type, Real delta_t) override;
 
-  virtual void integrationSchemeCorrAccel(Real delta_t,
-					  Array<Real> & u,
-					  Array<Real> & u_dot,
-					  Array<Real> & u_dot_dot,
-					  Array<bool> & blocked_dofs,
-					  Array<Real> & delta) const = 0;
+  void assembleResidual(bool is_lumped) override;
+
+protected:
+  /// generic interface of a predictor of 2nd order
+  virtual void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                         Array<Real> & u_dot_dot,
+                         const Array<bool> & blocked_dofs) const = 0;
+
+  /// generic interface of a corrector of 2nd order
+  virtual void corrector(const SolutionType & type, Real delta_t,
+                         Array<Real> & u, Array<Real> & u_dot,
+                         Array<Real> & u_dot_dot,
+                         const Array<bool> & blocked_dofs,
+                         const Array<Real> & delta) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-public:
+protected:
+  virtual Real getAccelerationCoefficient(const SolutionType & type,
+                                          Real delta_t) const = 0;
+
+  virtual Real getVelocityCoefficient(const SolutionType & type,
+                                      Real delta_t) const = 0;
+
+  virtual Real getDisplacementCoefficient(const SolutionType & type,
+                                          Real delta_t) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "newmark-beta.hh"
 

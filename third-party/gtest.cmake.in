@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.1)
+
+project(gtest-download NONE)
+
+include(ExternalProject)
+
+ExternalProject_Add(gtest
+  GIT_REPOSITORY    ${GTEST_GIT}
+  GIT_TAG           ${GTEST_VERSION}
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}/third-party/google-test
+  BINARY_DIR ${PROJECT_BINARY_DIR}/third-party/google-test
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+  )

@@ -23,7 +23,7 @@
 // simtools
 #include "parameter_reader.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ParameterReader::ParameterReader() : 
@@ -444,4 +444,4 @@ void ParameterReader::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // namespace akantu

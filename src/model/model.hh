@@ -30,80 +30,120 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+#include "aka_memory.hh"
+#include "aka_named_argument.hh"
+#include "fe_engine.hh"
+#include "mesh.hh"
+#include "model_options.hh"
+#include "model_solver.hh"
+/* -------------------------------------------------------------------------- */
+#include <typeindex>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MODEL_HH__
 #define __AKANTU_MODEL_HH__
 
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "aka_memory.hh"
-#include "mesh.hh"
-#include "fe_engine.hh"
-#include "mesh_utils.hh"
-#include "synchronizer_registry.hh"
-#include "distributed_synchronizer.hh"
-#include "static_communicator.hh"
-#include "mesh_partition.hh"
-#include "dof_synchronizer.hh"
-#include "pbc_synchronizer.hh"
-#include "parser.hh"
-/* -------------------------------------------------------------------------- */
-
-__BEGIN_AKANTU__
-
-struct ModelOptions {
-
-  virtual ~ModelOptions() {}
-};
-
+namespace akantu {
+class SynchronizerRegistry;
+class Parser;
 class DumperIOHelper;
+} // namespace akantu
 
-class Model : public Memory {
+/* -------------------------------------------------------------------------- */
+namespace akantu {
+
+class Model : public Memory, public ModelSolver, public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef Mesh mesh_type;
+  Model(Mesh & mesh, const ModelType & type,
+        UInt spatial_dimension = _all_dimensions, const ID & id = "model",
+        const MemoryID & memory_id = 0);
 
-  Model(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-        const ID & id = "model", const MemoryID & memory_id = 0);
+  ~Model() override;
 
-  virtual ~Model();
-
-  typedef std::map<std::string, FEEngine *> FEEngineMap;
+  using FEEngineMap = std::map<std::string, std::unique_ptr<FEEngine>>;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
+protected:
+  virtual void initFullImpl(const ModelOptions & options);
+
 public:
-  virtual void initFull(const ModelOptions & options);
+
+#ifndef SWIG
+
+  template <typename... pack>
+  std::enable_if_t<are_named_argument<pack...>::value>
+  initFull(pack &&... _pack) {
+    switch (this->model_type) {
+#ifdef AKANTU_SOLID_MECHANICS
+    case ModelType::_solid_mechanics_model:
+      this->initFullImpl(SolidMechanicsModelOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
+      break;
+#endif
+#ifdef AKANTU_COHESIVE_ELEMENT
+    case ModelType::_solid_mechanics_model_cohesive:
+      this->initFullImpl(SolidMechanicsModelCohesiveOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
+      break;
+#endif
+#ifdef AKANTU_HEAT_TRANSFER
+    case ModelType::_heat_transfer_model:
+      this->initFullImpl(HeatTransferModelOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
+      break;
+#endif
+#ifdef AKANTU_EMBEDDED
+    case ModelType::_embedded_model:
+      this->initFullImpl(EmbeddedInterfaceModelOptions{
+          use_named_args, std::forward<decltype(_pack)>(_pack)...});
+      break;
+#endif
+    default:
+      this->initFullImpl(ModelOptions{use_named_args,
+                                      std::forward<decltype(_pack)>(_pack)...});
+    }
+  }
+
+  template <typename... pack>
+  std::enable_if_t<not are_named_argument<pack...>::value>
+  initFull(pack &&... _pack) {
+    this->initFullImpl(std::forward<decltype(_pack)>(_pack)...);
+  }
+#endif
+
+  /// initialize a new solver if needed
+  void initNewSolver(const AnalysisMethod & method);
+
+protected:
+  /// get some default values for derived classes
+  virtual std::tuple<ID, TimeStepSolverType>
+  getDefaultSolverID(const AnalysisMethod & method) = 0;
 
   virtual void initModel() = 0;
 
-  /// create the synchronizer registry object
-  void createSynchronizerRegistry(DataAccessor * data_accessor);
+  virtual void initFEEngineBoundary();
 
-  /// create a parallel synchronizer and distribute the mesh
-  DistributedSynchronizer & createParallelSynch(MeshPartition * partition,
-                                                DataAccessor * data_accessor);
-
-  /// change local equation number so that PBC is assembled properly
-  void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
-                                       UInt dimension);
+  // /// change local equation number so that PBC is assembled properly
+  // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
+  //                                      UInt dimension);
   /// function to print the containt of the class
-  virtual void printself(__attribute__((unused)) std::ostream & stream,
-                         __attribute__((unused)) int indent = 0) const {};
+  void printself(std::ostream &, int = 0) const override{};
 
-  /// initialize the model for PBC
-  void setPBC(UInt x, UInt y, UInt z);
-  void setPBC(SurfacePairList & surface_pairs);
-
+  // /// initialize the model for PBC
+  // void setPBC(UInt x, UInt y, UInt z);
+  // void setPBC(SurfacePairList & surface_pairs);
+public:
   virtual void initPBC();
 
   /// set the parser to use
-  void setParser(Parser & parser);
+  // void setParser(Parser & parser);
 
   /* ------------------------------------------------------------------------ */
   /* Access to the dumpable interface of the boundaries                       */
@@ -126,6 +166,18 @@ public:
   DumperIOHelper & getGroupDumper(const std::string & group_name);
 
   /* ------------------------------------------------------------------------ */
+  /* Function for non local capabilities                                      */
+  /* ------------------------------------------------------------------------ */
+  virtual void updateDataForNonLocalCriterion(__attribute__((unused))
+                                              ElementTypeMapReal & criterion) {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+protected:
+  template <typename T>
+  void allocNodalField(Array<T> *& array, UInt nb_component, const ID & name);
+
+  /* ------------------------------------------------------------------------ */
   /* Accessors */
   /* ------------------------------------------------------------------------ */
 public:
@@ -133,14 +185,7 @@ public:
   AKANTU_GET_MACRO(ID, id, const ID)
 
   /// get the number of surfaces
-  AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
-
-  /// return the object handling equation numbers
-  AKANTU_GET_MACRO(DOFSynchronizer, *dof_synchronizer, const DOFSynchronizer &)
-
-  /// return the object handling synchronizers
-  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry,
-                   SynchronizerRegistry &)
+  AKANTU_GET_MACRO(Mesh, mesh, Mesh &)
 
   /// synchronize the boundary in case of parallel run
   virtual void synchronizeBoundaries(){};
@@ -173,10 +218,16 @@ public:
   std::map<UInt, UInt> & getPBCPairs() { return pbc_pair; };
 
   /// returns if node is slave in pbc
-  inline bool isPBCSlaveNode(const UInt node) const;
+  inline bool isPBCSlaveNode(const UInt) const {
+    throw;
+    return false; /* TODO repair PBC*/
+  }
 
   /// returns the array of pbc slave nodes (boolean information)
   AKANTU_GET_MACRO(IsPBCSlaveNode, is_pbc_slave_node, const Array<bool> &)
+
+  /// Get the type of analysis method used
+  AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
   /* ------------------------------------------------------------------------ */
   /* Pack and unpack helper functions                                         */
@@ -188,7 +239,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface (kept for convenience) and dumper relative functions  */
   /* ------------------------------------------------------------------------ */
-
   void setTextModeToDumper();
 
   virtual void addDumpGroupFieldToDumper(const std::string & field_id,
@@ -248,21 +298,21 @@ public:
   createNodalFieldReal(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
-    return NULL;
+    return nullptr;
   }
 
   virtual dumper::Field *
   createNodalFieldUInt(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
-    return NULL;
+    return nullptr;
   }
 
   virtual dumper::Field *
   createNodalFieldBool(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
-    return NULL;
+    return nullptr;
   }
 
   virtual dumper::Field *
@@ -271,7 +321,7 @@ public:
                        __attribute__((unused)) bool padding_flag,
                        __attribute__((unused)) const UInt & spatial_dimension,
                        __attribute__((unused)) const ElementKind & kind) {
-    return NULL;
+    return nullptr;
   }
 
   void setDirectory(const std::string & directory);
@@ -284,6 +334,11 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  friend std::ostream & operator<<(std::ostream &, const Model &);
+
+  /// analysis method check the list in akantu::AnalysisMethod
+  AnalysisMethod method;
+
   /// Mesh
   Mesh & mesh;
 
@@ -299,12 +354,6 @@ protected:
   /// default fem object
   std::string default_fem;
 
-  /// synchronizer registry
-  SynchronizerRegistry * synch_registry;
-
-  /// handle the equation number things
-  DOFSynchronizer * dof_synchronizer;
-
   /// pbc pairs
   std::map<UInt, UInt> pbc_pair;
 
@@ -312,16 +361,8 @@ protected:
   Array<bool> is_pbc_slave_node;
 
   /// parser to the pointer to use
-  Parser * parser;
+  Parser & parser;
 };
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "model_inline_impl.cc"
-#endif
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
@@ -329,6 +370,8 @@ inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
+
+#include "model_inline_impl.cc"
 
 #endif /* __AKANTU_MODEL_HH__ */

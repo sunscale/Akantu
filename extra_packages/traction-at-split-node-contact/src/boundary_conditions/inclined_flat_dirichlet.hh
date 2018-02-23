@@ -20,7 +20,7 @@
 // akantu
 #include "aka_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class InclinedFlatDirichlet : public BC::Dirichlet::DirichletFunctor {
@@ -69,6 +69,6 @@ protected:
   Real tang;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_INCLINED_FLAT_DIRICHLET_HH__ */

@@ -1,4 +1,5 @@
 #include <solid_mechanics_model.hh>
+#include "non_linear_solver.hh"
 
 using namespace akantu;
 
@@ -9,14 +10,13 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
 
   mesh.read("test_multi_material_elastic.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
 
-  MeshDataMaterialSelector<std::string> mat_sel("physical_names", model);
+  auto && mat_sel = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
   model.setMaterialSelector(mat_sel);
 
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
 
   model.applyBC(BC::Dirichlet::FlagOnly(_y), "ground");
   model.applyBC(BC::Dirichlet::FlagOnly(_x), "corner");
@@ -25,19 +25,21 @@ int main(int argc, char *argv[]) {
   trac(_y) = 1.;
   model.applyBC(BC::Neumann::FromTraction(trac), "air");
 
-  model.addDumpField("force");
-  model.addDumpField("residual");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.addDumpField("blocked_dofs");
   model.addDumpField("displacement");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
 
   //model.dump();
-  model.assembleStiffnessMatrix();
-  model.solveStatic<_scm_newton_raphson_tangent_not_computed, _scc_residual>(1e-8, 1);
+  auto & solver = model.getNonLinearSolver("static");
+  solver.set("max_iterations", 1);
+  solver.set("threshold", 1e-8);
+  solver.set("convergence_type", _scc_residual);
+
+  model.solveStep();
   //model.dump();
-
-
 
   std::map<std::string, Matrix<Real>> ref_strain;
   ref_strain["strong"] = Matrix<Real>(spatial_dimension, spatial_dimension, 0.);
@@ -79,8 +81,8 @@ int main(int argc, char *argv[]) {
       auto git = grad_u.begin(spatial_dimension, spatial_dimension);
       auto gend = grad_u.end(spatial_dimension, spatial_dimension);
 
-      if(!check(sit, send, ref_stress)) AKANTU_DEBUG_ERROR("The stresses are not correct");
-      if(!check(git, gend, ref_strain[mat_id])) AKANTU_DEBUG_ERROR("The grad_u are not correct");
+      if(!check(sit, send, ref_stress)) AKANTU_ERROR("The stresses are not correct");
+      if(!check(git, gend, ref_strain[mat_id])) AKANTU_ERROR("The grad_u are not correct");
     }
   }
 

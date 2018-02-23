@@ -822,7 +822,7 @@ in the declaration of the class:
 #ifndef __AKANTU_MATERIAL_XXX_HH__
 #define __AKANTU_MATERIAL_XXX_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MaterialXXX : public Material {
 
@@ -930,7 +930,7 @@ The user can now define the implementation of the constructor in the
 #include "local_material_damage.hh"
 #include "solid_mechanics_model.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* ---------------------------------------------------------------------- */
 LocalMaterialDamage::LocalMaterialDamage(SolidMechanicsModel & model,
@@ -1096,7 +1096,7 @@ In order to add a new non-local material we first have to add the local constitu
 #ifndef __AKANTU_MATERIAL_XXX_HH__
 #define __AKANTU_MATERIAL_XXX_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MaterialXXXNonLocal : public MaterialXXX,
                             public MaterialNonLocal {

@@ -38,7 +38,7 @@
 #ifndef AKANTU_PARSER_GRAMMAR_TMPL_HH
 #define AKANTU_PARSER_GRAMMAR_TMPL_HH
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 namespace qi = boost::spirit::qi;
 
@@ -72,10 +72,10 @@ T Parser::parseType(const std::string & value, Grammar & grammar) {
 namespace parser {
   template<class Iterator>
   struct Skipper {
-    typedef qi::rule<Iterator, void()> type;
+    using type = qi::rule<Iterator, void()>;
   };
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif //AKANTU_PARSER_GRAMMAR_TMPL_HH

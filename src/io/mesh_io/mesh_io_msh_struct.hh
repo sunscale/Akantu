@@ -32,25 +32,23 @@
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_MESH_IO_MSH_STRUCT_HH__
 #define __AKANTU_MESH_IO_MSH_STRUCT_HH__
+/* -------------------------------------------------------------------------- */
+#include "mesh_io.hh"
+/* -------------------------------------------------------------------------- */
 
-
-__BEGIN_AKANTU__
-
+namespace akantu {
 
 class MeshIOMSHStruct : public MeshIOMSH {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MeshIOMSHStruct();
 
   /// read a mesh from the file
-  virtual void read(const std::string & filename, Mesh & mesh);
-
+  void read(const std::string & filename, Mesh & mesh) override;
 };
 
-
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_MSH_STRUCT_HH__ */

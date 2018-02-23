@@ -1,4 +1,0 @@
-material local_elastic [
-	 name = steel
-	 rho = 1      # density
-]

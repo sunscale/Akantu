@@ -41,8 +41,6 @@
   }
  }
 
-%include "stl.i"
-
 #define __attribute__(x)
 
 %ignore akantu::operator <<;
@@ -64,6 +62,8 @@
 %include "mesh.i"
 %include "mesh_utils.i"
 %include "model.i"
+%include "communicator.i"
+
 %include "solid_mechanics_model.i"
 #if defined(AKANTU_COHESIVE_ELEMENT)
 %include "solid_mechanics_model_cohesive.i"

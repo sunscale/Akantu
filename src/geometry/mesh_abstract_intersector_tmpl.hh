@@ -38,7 +38,7 @@
 #include "aka_common.hh"
 #include "mesh_abstract_intersector.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<class Query>
 MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh):
@@ -84,6 +84,6 @@ void MeshAbstractIntersector<Query>::computeMeshQueryListIntersectionPoint(
   AKANTU_DEBUG_OUT();
 }
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_MESH_ABSTRACT_INTERSECTOR_TMPL_HH__

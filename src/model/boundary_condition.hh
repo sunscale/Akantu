@@ -42,7 +42,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <class ModelType>
 class BoundaryCondition {
@@ -56,7 +56,7 @@ private:
   /* Constructors / Destructors / Initializers                                */
   /* ------------------------------------------------------------------------ */
 public:
-  BoundaryCondition() : model(NULL), primal(NULL), dual(NULL), primal_increment(NULL) {}
+  BoundaryCondition() : model(nullptr) {}
   ///Initialize the boundary conditions
   void initBC(ModelType & ptr, Array<Real> & primal, Array<Real> & dual);
   void initBC(ModelType & ptr, Array<Real> & primal,
@@ -93,12 +93,12 @@ public:
 private:
 
   ModelType * model;
-  Array<Real> * primal;
-  Array<Real> * dual;
-  Array<Real> * primal_increment;
+  Array<Real> * primal{nullptr};
+  Array<Real> * dual{nullptr};
+  Array<Real> * primal_increment{nullptr};
 };
 
-__END_AKANTU__
+} // akantu
 
 #include "boundary_condition_tmpl.hh"
 

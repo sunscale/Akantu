@@ -1,3 +1,4 @@
+
 /**
  * @file   sparse_matrix.hh
  *
@@ -31,211 +32,128 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SPARSE_MATRIX_HH__
 #define __AKANTU_SPARSE_MATRIX_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "mesh.hh"
+namespace akantu {
+class DOFManager;
+class TermsToAssemble;
+}
 
-/* -------------------------------------------------------------------------- */
+namespace akantu {
 
-__BEGIN_AKANTU__
-
-class DOFSynchronizer;
-
-class SparseMatrix : protected Memory {
+class SparseMatrix {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrix(UInt size, const SparseMatrixType & sparse_matrix_type,
-               const ID & id = "sparse_matrix", const MemoryID & memory_id = 0,
-	       UInt nb_proc_input = 0);
+  SparseMatrix(DOFManager & dof_manager, const MatrixType & matrix_type,
+               const ID & id = "sparse_matrix");
 
-  SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix",
-               const MemoryID & memory_id = 0);
+  SparseMatrix(const SparseMatrix & matrix, const ID & id = "sparse_matrix");
 
   virtual ~SparseMatrix();
-
-  typedef std::pair<UInt, UInt> KeyCOO;
-  typedef unordered_map<KeyCOO, UInt>::type coordinate_list_map;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// remove the existing profile
-  inline void clearProfile();
-
-  /// add a non-zero element
-  virtual UInt addToProfile(UInt i, UInt j);
+  virtual void clearProfile();
 
   /// set the matrix to 0
-  virtual void clear();
+  virtual void clear() = 0;
+
+  /// add a non-zero element to the profile
+  virtual UInt add(UInt i, UInt j) = 0;
 
   /// assemble a local matrix in the sparse one
-  inline void addToMatrix(UInt i, UInt j, Real value);
-
-  /// set the size of the matrix
-  void resize(UInt size) { this->size = size; }
-
-  virtual void buildProfile(const Mesh & mesh,
-                            const DOFSynchronizer & dof_synchronizer,
-                            UInt nb_degree_of_freedom);
-
-  /// modify the matrix to "remove" the blocked dof
-  virtual void applyBoundary(const Array<bool> & boundary, Real block_val = 1.);
-
-  //  /// modify the matrix to "remove" the blocked dof
-  //  void applyBoundaryNormal(Array<bool> & boundary_normal, Array<Real> &
-  //  EulerAngles, Array<Real> & rhs, const Array<Real> & matrix, Array<Real> &
-  //  rhs_rotated);
+  virtual void add(UInt i, UInt j, Real value) = 0;
 
   /// save the profil in a file using the MatrixMarket file format
-  virtual void saveProfile(const std::string & filename) const;
+  virtual void saveProfile(__attribute__((unused)) const std::string &) const {
+    AKANTU_TO_IMPLEMENT();
+  }
 
   /// save the matrix in a file using the MatrixMarket file format
-  virtual void saveMatrix(const std::string & filename) const;
+  virtual void saveMatrix(__attribute__((unused)) const std::string &) const {
+    AKANTU_TO_IMPLEMENT();
+  };
 
-  /// copy assuming the profile are the same
-  virtual void copyContent(const SparseMatrix & matrix);
+  /// multiply the matrix by a coefficient
+  virtual void mul(Real alpha) = 0;
 
-  /// copy profile
-  //  void copyProfile(const SparseMatrix & matrix);
+  /// add matrices
+  virtual void add(const SparseMatrix & matrix, Real alpha = 1.);
 
-  /// add matrix assuming the profile are the same
-  virtual void add(const SparseMatrix & matrix, Real alpha);
+  /// Equivalent of *gemv in blas
+  virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
+                         Real alpha = 1., Real beta = 0.) const = 0;
 
-  /// diagonal lumping
-  virtual void lump(Array<Real> & lumped);
+  /// modify the matrix to "remove" the blocked dof
+  virtual void applyBoundary(Real block_val = 1.) = 0;
 
-  /// function to print the contain of the class
-  // virtual void printself(std::ostream & stream, int indent = 0) const;
+  /// operator *=
+  SparseMatrix & operator*=(Real alpha) { this->mul(alpha); return *this; }
 
 protected:
-  inline KeyCOO key(UInt i, UInt j) const {
-    if (sparse_matrix_type == _symmetric && (i > j))
-      return std::make_pair(j, i);
-
-    return std::make_pair(i, j);
-  }
+  /// This is the revert of add B += \alpha * *this;
+  virtual void addMeTo(SparseMatrix & B, Real alpha) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   /// return the values at potition i, j
-  inline Real operator()(UInt i, UInt j) const;
-  inline Real & operator()(UInt i, UInt j);
-
-  AKANTU_GET_MACRO(IRN, irn, const Array<Int> &);
-
-  AKANTU_GET_MACRO(JCN, jcn, const Array<Int> &);
-
-  AKANTU_GET_MACRO(A, a, const Array<Real> &);
+  virtual inline Real operator()(__attribute__((unused)) UInt i,
+                                 __attribute__((unused)) UInt j) const {
+    AKANTU_TO_IMPLEMENT();
+  }
+  /// return the values at potition i, j
+  virtual inline Real & operator()(__attribute__((unused)) UInt i,
+                                   __attribute__((unused)) UInt j) {
+    AKANTU_TO_IMPLEMENT();
+  }
 
   AKANTU_GET_MACRO(NbNonZero, nb_non_zero, UInt);
+  UInt size() const { return size_;}
+  AKANTU_GET_MACRO(MatrixType, matrix_type, const MatrixType &);
 
-  AKANTU_GET_MACRO(Size, size, UInt);
+  virtual UInt getRelease() const = 0;
 
-  AKANTU_GET_MACRO(SparseMatrixType, sparse_matrix_type,
-                   const SparseMatrixType &);
-
-  AKANTU_GET_MACRO(Offset, offset, UInt);
-
-  const DOFSynchronizer & getDOFSynchronizer() const {
-    AKANTU_DEBUG_ASSERT(dof_synchronizer != NULL,
-                        "DOFSynchronizer not initialized in the SparseMatrix!");
-    return *dof_synchronizer;
-  }
-
-  DOFSynchronizer & getDOFSynchronizer() {
-    AKANTU_DEBUG_ASSERT(dof_synchronizer != NULL,
-                        "DOFSynchronizer not initialized in the SparseMatrix!");
-    return *dof_synchronizer;
-  }
-
-private:
-  AKANTU_GET_MACRO(DOFSynchronizerPointer, dof_synchronizer, DOFSynchronizer *);
-
-  friend Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  /// id  of the SparseMatrix
   ID id;
 
-  /// sparce matrix type
-  SparseMatrixType sparse_matrix_type;
+  /// Underlying dof manager
+  DOFManager & _dof_manager;
 
-  /// Mesh corresponding to the profile
-  //  const Mesh * mesh;
+  /// sparce matrix type
+  MatrixType matrix_type;
 
   /// Size of the matrix
-  UInt size;
+  UInt size_;
 
   /// number of processors
   UInt nb_proc;
 
   /// number of non zero element
   UInt nb_non_zero;
-
-  /// row indexes
-  Array<Int> irn;
-
-  /// column indexes
-  Array<Int> jcn;
-
-  /// values : A[k] = Matrix[irn[k]][jcn[k]]
-  Array<Real> a;
-
-  /// saved row indexes
-  Array<Int> * irn_save;
-
-  /// saved column indexes
-  Array<Int> * jcn_save;
-
-  /// saved size
-  UInt size_save;
-
-  /// information to know where to assemble an element in a global sparse matrix
-  //  ElementTypeMapArray<UInt> element_to_sparse_profile;
-
-  /* map for  (i,j) ->  k correspondence \warning std::map are slow
-   *  \todo improve  with hash_map (non standard in stl) or unordered_map (boost
-   * or C++0x)
-   */
-  coordinate_list_map irn_jcn_k;
-
-  DOFSynchronizer * dof_synchronizer;
-  //  std::map<std::pair<UInt, UInt>, UInt> * irn_jcn_to_k;
-
-  /// offset to inidcate whether row and column indices start at 0 (C/C++) or 1
-  /// (Fortran)
-  UInt offset;
 };
+
+Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
+
+} // akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
 #include "sparse_matrix_inline_impl.cc"
-#endif
-
-// /// standard output stream operator
-// inline std::ostream & operator <<(std::ostream & stream, const SparseMatrix &
-// _this)
-// {
-//   _this.printself(stream);
-//   return stream;
-// }
-
-Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
-
-__END_AKANTU__
 
 #endif /* __AKANTU_SPARSE_MATRIX_HH__ */

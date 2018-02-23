@@ -37,36 +37,19 @@
 #define AKANTU_VERSION_MAJOR @AKANTU_MAJOR_VERSION@
 #define AKANTU_VERSION_MINOR @AKANTU_MINOR_VERSION@
 #define AKANTU_VERSION_PATCH @AKANTU_PATCH_VERSION@
-#define AKANTU_VERSION (AKANTU_VERSION_MAJOR * 100000 \
-                        + AKANTU_VERSION_MINOR * 1000 \
+#define AKANTU_VERSION (AKANTU_VERSION_MAJOR * 10000 \
+                        + AKANTU_VERSION_MINOR * 100 \
                         + AKANTU_VERSION_PATCH)
 
 @AKANTU_TYPES_EXTRA_INCLUDES@
 namespace akantu {
-  typedef @AKANTU_FLOAT_TYPE@ Real;
-  typedef @AKANTU_SIGNED_INTEGER_TYPE@ Int;
-  typedef @AKANTU_UNSIGNED_INTEGER_TYPE@ UInt;
-
-  template<class Key, class Ty>
-  struct unordered_map {
-    typedef typename @AKANTU_UNORDERED_MAP_TYPE@<Key, Ty> type;
-  };
-
-  template<class T>
-  std::size_t hash(const T & t) {
-    typedef typename @AKANTU_HASH_TYPE@<T> hash_type;
-    return hash_type()(t);
-  }
-}
+using Real = @AKANTU_FLOAT_TYPE@;
+using Int = @AKANTU_SIGNED_INTEGER_TYPE@;
+using UInt = @AKANTU_UNSIGNED_INTEGER_TYPE@;
+} // akantu
 
 #define AKANTU_INTEGER_SIZE @AKANTU_INTEGER_SIZE@
 #define AKANTU_FLOAT_SIZE @AKANTU_FLOAT_SIZE@
-
-#cmakedefine AKANTU_UNORDERED_MAP_IS_CXX11
-#define __BEGIN_AKANTU_UNORDERED_MAP__ \
-  @AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN@
-#define __END_AKANTU_UNORDERED_MAP__ \
-  @AKANTU_UNORDERED_MAP_NAMESPACE_END@
 
 #cmakedefine AKANTU_HAS_STRDUP
 
@@ -80,6 +63,7 @@ namespace akantu {
 #cmakedefine AKANTU_USE_PTSCOTCH
 #cmakedefine AKANTU_SCOTCH_NO_EXTERN
 
+#cmakedefine AKANTU_IMPLICIT
 #cmakedefine AKANTU_USE_MUMPS
 #cmakedefine AKANTU_USE_PETSC
 
@@ -87,16 +71,15 @@ namespace akantu {
 #cmakedefine AKANTU_USE_QVIEW
 #cmakedefine AKANTU_USE_BLACKDYNAMITE
 
-#cmakedefine AKANTU_USE_NLOPT
-#cmakedefine AKANTU_USE_CPPARRAY
+#cmakedefine AKANTU_USE_PYBIND11
 
 #cmakedefine AKANTU_USE_OBSOLETE_GETTIMEOFDAY
-
 
 #cmakedefine AKANTU_EXTRA_MATERIALS
 #cmakedefine AKANTU_STUDENTS_EXTRA_PACKAGE
 #cmakedefine AKANTU_DAMAGE_NON_LOCAL
 
+#cmakedefine AKANTU_SOLID_MECHANICS
 #cmakedefine AKANTU_STRUCTURAL_MECHANICS
 #cmakedefine AKANTU_HEAT_TRANSFER
 #cmakedefine AKANTU_PYTHON_INTERFACE
@@ -108,13 +91,6 @@ namespace akantu {
 
 #cmakedefine AKANTU_USE_CGAL
 #cmakedefine AKANTU_EMBEDDED
-
-// BOOST Section
-#cmakedefine AKANTU_BOOST_CHRONO
-#cmakedefine AKANTU_BOOST_SYSTEM
-
-// Experimental part
-#cmakedefine AKANTU_CORE_CXX11
 
 // Debug tools
 //#cmakedefine AKANTU_NDEBUG

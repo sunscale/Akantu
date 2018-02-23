@@ -25,7 +25,7 @@
 #ifndef __AKANTU_MATERIAL_VREEPEERLINGS_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_VREEPEERLINGS_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material VreePeerlings Non local
@@ -86,6 +86,6 @@ private:
 
 #include "material_vreepeerlings_non_local_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_VREEPEERLINGS_NON_LOCAL_HH__ */

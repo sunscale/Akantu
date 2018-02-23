@@ -71,16 +71,21 @@ function(generate_material_list)
     )
 
   package_get_all_external_informations(
-    AKANTU_EXTERNAL_INCLUDE_DIR
-    AKANTU_EXTERNAL_LIBRARIES
+    PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+    INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+    LIBRARIES AKANTU_EXTERNAL_LIBRARIES
     )
 
-  set(_include_dirs ${AKANTU_INCLUDE_DIRS} ${AKANTU_EXTERNAL_INCLUDE_DIR})
+  set(_include_dirs
+    ${AKANTU_INCLUDE_DIRS}
+    ${AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR}
+    ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}
+    )
 
   try_run(_material_list_run _material_list_compile
     ${CMAKE_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/cmake/material_lister.cc
-    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
+    CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}" "-DCMAKE_CXX_STANDARD=14"
     COMPILE_DEFINITIONS "-DAKANTU_CMAKE_LIST_MATERIALS"
     COMPILE_OUTPUT_VARIABLE _compile_results
     RUN_OUTPUT_VARIABLE _result_material_list)
@@ -116,20 +121,6 @@ endfunction()
 #===============================================================================
 # Declare the options for the types and defines the approriate typedefs
 function(declare_akantu_types)
-  include(CheckCXXCompilerFlag)
-  check_cxx_compiler_flag (-std=c++11 HAVE_CPP_11)
-  unset(_cpp_11_flag)
-  if(HAVE_CPP_11)
-    set(_cpp_11_flag "-std=c++11")
-  else()
-    check_cxx_compiler_flag (-std=c++0x HAVE_CPP_0X)
-    if(HAVE_CPP_0X)
-      set(_cpp_11_flag "-std=c++0x")
-    endif()
-  endif()
-
-  set(AKANTU_CXX11_FLAGS "${_cpp_11_flag}" CACHE INTERNAL "")
-
   set(AKANTU_TYPE_FLOAT "double (64bit)" CACHE STRING "Precision force floating point types")
   mark_as_advanced(AKANTU_TYPE_FLOAT)
   set_property(CACHE AKANTU_TYPE_FLOAT PROPERTY STRINGS
@@ -151,8 +142,8 @@ function(declare_akantu_types)
   # Floating point types
   # ----------------------------------------------------------------------------
   if(AKANTU_TYPE_FLOAT STREQUAL "float (32bit)")
-    set(AKANTU_FLOAT_TYPE "float" CACHE INTERNAL "")
-    set(AKANTU_FLOAT_SIZE 4 CACHE INTERNAL "")
+        set(AKANTU_FLOAT_TYPE "float" CACHE INTERNAL "")
+        set(AKANTU_FLOAT_SIZE 4 CACHE INTERNAL "")
   elseif(AKANTU_TYPE_FLOAT STREQUAL "double (64bit)")
     set(AKANTU_FLOAT_TYPE "double" CACHE INTERNAL "")
     set(AKANTU_FLOAT_SIZE 8 CACHE INTERNAL "")
@@ -235,78 +226,6 @@ function(declare_akantu_types)
   endif()
 
   # ----------------------------------------------------------------------------
-  # unordered map type
-  # ----------------------------------------------------------------------------
-  check_include_file_cxx(unordered_map HAVE_UNORDERED_MAP)
-  set(AKANTU_UNORDERED_MAP_IS_CXX11 TRUE CACHE INTERNAL "")
-  if(HAVE_UNORDERED_MAP)
-    list(APPEND _extra_includes unordered_map)
-    set(AKANTU_UNORDERED_MAP_TYPE "std::unordered_map" CACHE INTERNAL "")
-    set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std {" CACHE INTERNAL "")
-    set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}" CACHE INTERNAL "")
-  else()
-    check_include_file_cxx(tr1/unordered_map HAVE_TR1_UNORDERED_MAP)
-    if(HAVE_TR1_UNORDERED_MAP)
-      list(APPEND _extra_includes tr1/unordered_map)
-      set(AKANTU_UNORDERED_MAP_TYPE "std::tr1::unordered_map" CACHE INTERNAL "")
-      set(AKANTU_UNORDERED_MAP_NAMESPACE_BEGIN "namespace std { namespace tr1 {" CACHE INTERNAL "")
-      set(AKANTU_UNORDERED_MAP_NAMESPACE_END "}}" CACHE INTERNAL "")
-    else()
-      list(APPEND _extra_includes map)
-      set(AKANTU_UNORDERED_MAP_TYPE "std::map" CACHE INTERNAL "")
-      set(AKANTU_UNORDERED_MAP_IS_CXX11 FALSE CACHE INTERNAL "")
-    endif()
-  endif()
-
-  # ----------------------------------------------------------------------------
-  # hash function
-  # ----------------------------------------------------------------------------
-  unset(AKANTU_HASH_TYPE CACHE)
-  check_include_file_cxx(functional HAVE_FUNCTIONAL)
-  set(AKANTU_HASH_IS_CXX11 TRUE CACHE INTERNAL "")
-  if(HAVE_FUNCTIONAL AND AKANTU_CXX11_FLAGS)
-    list(APPEND _extra_includes functional)
-    check_cxx_source_compiles("
-#include <functional>
-template<class T>
-std::size_t hash(const T & t) {
-  typedef typename std::hash<T> hash_type;
-  return hash_type()(t);
-};
-
-int main() { return 0; }
-" HAVE_HASH)
-    if(HAVE_HASH)
-      set(AKANTU_HASH_TYPE "std::hash" CACHE INTERNAL "")
-    endif()
-  endif()
-
-  if(NOT AKANTU_HASH_TYPE)
-    check_include_file_cxx(tr1/functional HAVE_TR1_HASH)
-    if(HAVE_TR1_HASH)
-      list(APPEND _extra_includes tr1/functional)
-      set(AKANTU_HASH_TYPE "std::tr1::hash" CACHE INTERNAL "")
-    else()
-      check_include_file_cxx(boost/functional/hash.hpp HAVE_BOOST_HASH)
-      list(APPEND _extra_includes boost/functional/hash.hpp)
-      set(AKANTU_HASH_TYPE "boost::hash" CACHE INTERNAL "")
-      set(AKANTU_HASH_IS_CXX11 FALSE CACHE INTERNAL "")
-    endif()
-  endif()
-
-  include(CheckFunctionExists)
-  check_function_exists(clock_gettime _clock_gettime)
-
-  include(CheckCXXSymbolExists)
-  check_cxx_symbol_exists(strdup cstring AKANTU_HAS_STRDUP)
-
-  if(NOT _clock_gettime)
-    set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY ON  CACHE INTERNAL "" FORCE)
-  else()
-    set(AKANTU_USE_OBSOLETE_GETTIMEOFDAY OFF CACHE INTERNAL "" FORCE)
-  endif()
-
-  # ----------------------------------------------------------------------------
   # includes
   # ----------------------------------------------------------------------------
   foreach(_inc ${_extra_includes})
@@ -316,64 +235,11 @@ int main() { return 0; }
 endfunction()
 
 
-#===============================================================================
-if(__CMAKE_PARSE_ARGUMENTS_INCLUDED)
-  return()
-endif()
-set(__CMAKE_PARSE_ARGUMENTS_INCLUDED TRUE)
-
-function(CMAKE_PARSE_ARGUMENTS prefix _optionNames _singleArgNames _multiArgNames)
-  # first set all result variables to empty/FALSE
-  foreach(arg_name ${_singleArgNames} ${_multiArgNames})
-    set(${prefix}_${arg_name})
-  endforeach(arg_name)
-
-  foreach(option ${_optionNames})
-    set(${prefix}_${option} FALSE)
-  endforeach(option)
-
-  set(${prefix}_UNPARSED_ARGUMENTS)
-
-  set(insideValues FALSE)
-  set(currentArgName)
-
-  # now iterate over all arguments and fill the result variables
-  foreach(currentArg ${ARGN})
-    list(FIND _optionNames "${currentArg}" optionIndex)  # ... then this marks the end of the arguments belonging to this keyword
-    list(FIND _singleArgNames "${currentArg}" singleArgIndex)  # ... then this marks the end of the arguments belonging to this keyword
-    list(FIND _multiArgNames "${currentArg}" multiArgIndex)  # ... then this marks the end of the arguments belonging to this keyword
-
-    if(${optionIndex} EQUAL -1  AND  ${singleArgIndex} EQUAL -1  AND  ${multiArgIndex} EQUAL -1)
-      if(insideValues)
-        if("${insideValues}" STREQUAL "SINGLE")
-          set(${prefix}_${currentArgName} ${currentArg})
-          set(insideValues FALSE)
-        elseif("${insideValues}" STREQUAL "MULTI")
-          list(APPEND ${prefix}_${currentArgName} ${currentArg})
-        endif()
-      else(insideValues)
-        list(APPEND ${prefix}_UNPARSED_ARGUMENTS ${currentArg})
-      endif(insideValues)
-    else()
-      if(NOT ${optionIndex} EQUAL -1)
-        set(${prefix}_${currentArg} TRUE)
-        set(insideValues FALSE)
-      elseif(NOT ${singleArgIndex} EQUAL -1)
-        set(currentArgName ${currentArg})
-        set(${prefix}_${currentArgName})
-        set(insideValues "SINGLE")
-      elseif(NOT ${multiArgIndex} EQUAL -1)
-        set(currentArgName ${currentArg})
-        set(${prefix}_${currentArgName})
-        set(insideValues "MULTI")
-      endif()
+function(mask_package_options prefix)
+  get_property(_list DIRECTORY PROPERTY VARIABLES)
+  foreach(_var ${_list})
+    if("${_var}" MATCHES "^${prefix}.*")
+      mark_as_advanced(${_var})
     endif()
-
-  endforeach(currentArg)
-
-  # propagate the result variables to the caller:
-  foreach(arg_name ${_singleArgNames} ${_multiArgNames} ${_optionNames})
-    set(${prefix}_${arg_name}  ${${prefix}_${arg_name}} PARENT_SCOPE)
-  endforeach(arg_name)
-  set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
-endfunction(CMAKE_PARSE_ARGUMENTS _options _singleArgs _multiArgs)
+  endforeach()
+endfunction()

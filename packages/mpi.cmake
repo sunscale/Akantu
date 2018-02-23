@@ -33,13 +33,11 @@
 package_declare(MPI EXTERNAL
   DESCRIPTION "Add MPI support in akantu"
   EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
-  DEPENDS scotch)
+  )
 
 package_declare_sources(MPI
-  synchronizer/mpi_type_wrapper.hh
-  synchronizer/static_communicator_mpi.cc
-  synchronizer/static_communicator_mpi_inline_impl.hh
-  synchronizer/static_communicator_mpi.hh
+  synchronizer/mpi_communicator_data.hh
+  synchronizer/communicator_mpi_inline_impl.cc
   )
 
 
@@ -117,8 +115,8 @@ function(add_extra_mpi_options)
   elseif(MPI_ID STREQUAL "OpenMPI")
     set(_flags "-DOMPI_SKIP_MPICXX")
 
-    package_is_activated(core_cxx11 _act)
-    if(_act AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set( _flags "${_flags} -Wno-literal-suffix")
     endif()
   endif()

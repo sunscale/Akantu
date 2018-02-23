@@ -33,70 +33,78 @@
 
 package_declare(cohesive_element
   DESCRIPTION "Use cohesive_element package of Akantu"
-  DEPENDS lapack)
+  DEPENDS lapack solid_mechanics)
 
 package_declare_sources(cohesive_element
-  fe_engine/cohesive_element.cc
   fe_engine/cohesive_element.hh
   fe_engine/fe_engine_template_cohesive.cc
   fe_engine/shape_cohesive.hh
   fe_engine/shape_cohesive_inline_impl.cc
+
   mesh_utils/cohesive_element_inserter.cc
   mesh_utils/cohesive_element_inserter.hh
-  model/solid_mechanics/materials/material_cohesive/cohesive_internal_field.hh
-  model/solid_mechanics/materials/material_cohesive/cohesive_internal_field_tmpl.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_bilinear.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_exponential.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_fatigue.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_friction.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_friction.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_uncoupled.cc
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_uncoupled.hh
-  model/solid_mechanics/materials/material_cohesive/constitutive_laws/material_cohesive_linear_inline_impl.cc
-  model/solid_mechanics/materials/material_cohesive/material_cohesive.cc
-  model/solid_mechanics/materials/material_cohesive/material_cohesive.hh
-  model/solid_mechanics/materials/material_cohesive/material_cohesive_inline_impl.cc
-  model/solid_mechanics/materials/material_cohesive_includes.hh
+  mesh_utils/cohesive_element_inserter_inline_impl.cc
+  mesh_utils/cohesive_element_inserter_parallel.cc
+
   model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/material_selector_cohesive.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/material_selector_cohesive.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/cohesive_internal_field.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/cohesive_internal_field_tmpl.hh
+
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_bilinear.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_bilinear.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_exponential.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_exponential.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_fatigue.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_fatigue.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_friction.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_friction.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_uncoupled.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_uncoupled.hh
+
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive_includes.hh
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive_inline_impl.cc
+
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.cc
   )
 
 
 package_declare_elements(cohesive_element
   ELEMENT_TYPES
+  _cohesive_1d_2
   _cohesive_2d_4
   _cohesive_2d_6
-  _cohesive_1d_2
-  _cohesive_3d_6
   _cohesive_3d_12
-  _cohesive_3d_8
   _cohesive_3d_16
+  _cohesive_3d_6
+  _cohesive_3d_8
   KIND cohesive
   GEOMETRICAL_TYPES
+  _gt_cohesive_1d_2
   _gt_cohesive_2d_4
   _gt_cohesive_2d_6
-  _gt_cohesive_1d_2
-  _gt_cohesive_3d_6
   _gt_cohesive_3d_12
-  _gt_cohesive_3d_8
   _gt_cohesive_3d_16
+  _gt_cohesive_3d_6
+  _gt_cohesive_3d_8
   FE_ENGINE_LISTS
-  gradient_on_integration_points
-  interpolate_on_integration_points
   compute_normals_on_integration_points
-  inverse_map
   contains
   get_shapes_derivatives
+  gradient_on_integration_points
+  interpolate_on_integration_points
+  inverse_map
+  lagrange_base
   )
 
 package_declare_material_infos(cohesive_element

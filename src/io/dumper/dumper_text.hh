@@ -38,7 +38,7 @@
 #include <io_helper.hh>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class DumperText : public DumperIOHelper {
   /* ------------------------------------------------------------------------ */
@@ -49,24 +49,25 @@ public:
   DumperText(const std::string & basename = "dumper_text",
 	     iohelper::TextDumpMode mode = iohelper::_tdm_space,
 	     bool parallel = true);
-  virtual ~DumperText() {};
+  ~DumperText() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void registerMesh(const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-			    const GhostType & ghost_type = _not_ghost,
-			    const ElementKind & element_kind = _ek_not_defined);
+  void
+  registerMesh(const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+               const GhostType & ghost_type = _not_ghost,
+               const ElementKind & element_kind = _ek_not_defined) override;
 
-  virtual void registerFilteredMesh(const Mesh & mesh,
-				    const ElementTypeMapArray<UInt> & elements_filter,
-				    const Array<UInt> & nodes_filter,
-				    UInt spatial_dimension = _all_dimensions,
-				    const GhostType & ghost_type = _not_ghost,
-				    const ElementKind & element_kind = _ek_not_defined);
+  void registerFilteredMesh(
+      const Mesh & mesh, const ElementTypeMapArray<UInt> & elements_filter,
+      const Array<UInt> & nodes_filter,
+      UInt spatial_dimension = _all_dimensions,
+      const GhostType & ghost_type = _not_ghost,
+      const ElementKind & element_kind = _ek_not_defined) override;
 
-  virtual void setBaseName(const std::string & basename);
+  void setBaseName(const std::string & basename) override;
 
 private:
   void registerNodeTypeField();
@@ -83,6 +84,6 @@ public:
 private:
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPER_TEXT_HH__ */

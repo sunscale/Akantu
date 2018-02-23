@@ -42,26 +42,29 @@
 
 /* -------------------------------------------------------------------------- */
 
-
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * The three differentiate equations (dynamic and cinematic) are :
  *  @f{eqnarray*}{
  *   M \ddot{u}_{n+1} + C \dot{u}_{n+1} + K u_{n+1} &=& q_{n+1} \\
- *   u_{n+1} &=& u_{n} + (1 - \alpha) \Delta t \dot{u}_{n} + \alpha \Delta t \dot{u}_{n+1} + (1/2 - \alpha) \Delta t^2 \ddot{u}_n \\
- *   \dot{u}_{n+1} &=& \dot{u}_{n} + (1 - \beta) \Delta t \ddot{u}_{n} + \beta \Delta t \ddot{u}_{n+1}
+ *   u_{n+1} &=& u_{n} + (1 - \alpha) \Delta t \dot{u}_{n} + \alpha \Delta t
+ *\dot{u}_{n+1} + (1/2 - \alpha) \Delta t^2 \ddot{u}_n \\
+ *   \dot{u}_{n+1} &=& \dot{u}_{n} + (1 - \beta) \Delta t \ddot{u}_{n} + \beta
+ *\Delta t \ddot{u}_{n+1}
  *  @f}
  *
  * Predictor:
  *  @f{eqnarray*}{
- *  u^{0}_{n+1}        &=& u_{n} +  \Delta t \dot{u}_n + \frac{\Delta t^2}{2} \ddot{u}_n \\
+ *  u^{0}_{n+1}        &=& u_{n} +  \Delta t \dot{u}_n + \frac{\Delta t^2}{2}
+ *\ddot{u}_n \\
  *  \dot{u}^{0}_{n+1}  &=& \dot{u}_{n} +  \Delta t \ddot{u}_{n} \\
  *  \ddot{u}^{0}_{n+1} &=& \ddot{u}_{n}
  *  @f}
  *
  * Solve :
- *  @f[ (c M + d C + e K^i_{n+1}) w = = q_{n+1} - f^i_{n+1} - C \dot{u}^i_{n+1} - M \ddot{u}^i_{n+1} @f]
+ *  @f[ (c M + d C + e K^i_{n+1}) w = = q_{n+1} - f^i_{n+1} - C \dot{u}^i_{n+1}
+ *- M \ddot{u}^i_{n+1} @f]
  *
  * Corrector :
  *  @f{eqnarray*}{
@@ -70,10 +73,14 @@ __BEGIN_AKANTU__
  *  u^{i+1}_{n+1} &=& u^{i}_{n+1} + e w
  *  @f}
  *
- * c, d and e are parameters depending on the method used to solve the equations @n
- * For acceleration : @f$ w = \delta \ddot{u}, e = \alpha \beta \Delta t^2, d = \beta \Delta t,    c = 1 @f$ @n
- * For velocity :     @f$ w = \delta \dot{u},  e = 1/\beta \Delta t,        d = 1,                 c = \alpha \Delta t @f$ @n
- * For displacement : @f$ w = \delta u,        e = 1,                       d = 1/\alpha \Delta t, c = 1/\alpha \beta \Delta t^2 @f$
+ * c, d and e are parameters depending on the method used to solve the equations
+ *@n
+ * For acceleration : @f$ w = \delta \ddot{u}, e = \alpha \beta \Delta t^2, d =
+ *\beta \Delta t,    c = 1 @f$ @n
+ * For velocity :     @f$ w = \delta \dot{u},  e = 1/\beta \Delta t,        d =
+ *1,                 c = \alpha \Delta t @f$ @n
+ * For displacement : @f$ w = \delta u,        e = 1,                       d =
+ *1/\alpha \Delta t, c = 1/\alpha \beta \Delta t^2 @f$
  */
 
 class NewmarkBeta : public IntegrationScheme2ndOrder {
@@ -81,59 +88,39 @@ class NewmarkBeta : public IntegrationScheme2ndOrder {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NewmarkBeta(Real alpha, Real beta) : beta(beta), alpha(alpha), k(0.), h(0.) {};
-
-  ~NewmarkBeta(){};
+  NewmarkBeta(DOFManager & dof_manager, const ID & dof_id, Real alpha = 0.,
+              Real beta = 0.);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  inline void integrationSchemePred(Real delta_t,
-				    Array<Real> & u,
-				    Array<Real> & u_dot,
-				    Array<Real> & u_dot_dot,
-				    Array<bool> & blocked_dofs) const;
+  void predictor(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                 Array<Real> & u_dot_dot,
+                 const Array<bool> & blocked_dofs) const override;
 
-  inline void integrationSchemeCorrAccel(Real delta_t,
-					 Array<Real> & u,
-					 Array<Real> & u_dot,
-					 Array<Real> & u_dot_dot,
-					 Array<bool> & blocked_dofs,
-					 Array<Real> & delta) const;
+  void corrector(const SolutionType & type, Real delta_t, Array<Real> & u,
+                 Array<Real> & u_dot, Array<Real> & u_dot_dot,
+                 const Array<bool> & blocked_dofs,
+                 const Array<Real> & delta) const override;
 
-  inline void integrationSchemeCorrVeloc(Real delta_t,
-					 Array<Real> & u,
-					 Array<Real> & u_dot,
-					 Array<Real> & u_dot_dot,
-					 Array<bool> & blocked_dofs,
-					 Array<Real> & delta) const;
-
-  inline void integrationSchemeCorrDispl(Real delta_t,
-					 Array<Real> & u,
-					 Array<Real> & u_dot,
-					 Array<Real> & u_dot_dot,
-					 Array<bool> & blocked_dofs,
-					 Array<Real> & delta) const;
+  void assembleJacobian(const SolutionType & type, Real delta_t) override;
 
 public:
-  template<IntegrationSchemeCorrectorType type>
-  Real getAccelerationCoefficient(Real delta_t) const;
+  Real getAccelerationCoefficient(const SolutionType & type,
+                                  Real delta_t) const override;
 
-  template<IntegrationSchemeCorrectorType type>
-  Real getVelocityCoefficient(Real delta_t) const;
+  Real getVelocityCoefficient(const SolutionType & type,
+                              Real delta_t) const override;
 
-  template<IntegrationSchemeCorrectorType type>
-  Real getDisplacementCoefficient(Real delta_t) const;
+  Real getDisplacementCoefficient(const SolutionType & type,
+                                  Real delta_t) const override;
 
 private:
-  template<IntegrationSchemeCorrectorType type>
-  void integrationSchemeCorr(Real delta_t,
-			     Array<Real> & u,
-			     Array<Real> & u_dot,
-			     Array<Real> & u_dot_dot,
-			     Array<bool> & blocked_dofs,
-			     Array<Real> & delta) const;
+  template <SolutionType type>
+  void allCorrector(Real delta_t, Array<Real> & u, Array<Real> & u_dot,
+                    Array<Real> & u_dot_dot, const Array<bool> & blocked_dofs,
+                    const Array<Real> & delta) const;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -147,43 +134,63 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// the @f$\beta@f$ parameter
-  const Real beta;
+  Real beta;
 
   /// the @f$\alpha@f$ parameter
-  const Real alpha;
+  Real alpha;
 
-  const Real k;
-  const Real h;
+  Real k;
+  Real h;
+
+  /// last release of M matrix
+  UInt m_release;
+
+  /// last release of K matrix
+  UInt k_release;
+
+  /// last release of C matrix
+  UInt c_release;
 };
-
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "newmark-beta_inline_impl.cc"
-#endif
-
 
 /**
  * central difference method (explicit)
  * undamped stability condition :
- * @f$ \Delta t = \alpha \Delta t_{crit} = \frac{2}{\omega_{max}} \leq \min_{e} \frac{l_e}{c_e}
+ * @f$ \Delta t = \alpha \Delta t_{crit} = \frac{2}{\omega_{max}} \leq \min_{e}
+ *\frac{l_e}{c_e}
  *
  */
 class CentralDifference : public NewmarkBeta {
 public:
-  CentralDifference() : NewmarkBeta(0., .5) {};
+  CentralDifference(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 0., 1. / 2.){};
+
+  std::vector<std::string> getNeededMatrixList() override { return {"M", "C"}; }
 };
 //#include "integration_scheme/central_difference.hh"
 
 /// undamped trapezoidal rule (implicit)
 class TrapezoidalRule2 : public NewmarkBeta {
 public:
-  TrapezoidalRule2() : NewmarkBeta(.5, .5) { };
+  TrapezoidalRule2(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 1. / 2., 1. / 2.){};
 };
 
+/// Fox-Goodwin rule (implicit)
+class FoxGoodwin : public NewmarkBeta {
+public:
+  FoxGoodwin(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 1. / 6., 1. / 2.){};
+};
 
-__END_AKANTU__
+/// Linear acceleration (implicit)
+class LinearAceleration : public NewmarkBeta {
+public:
+  LinearAceleration(DOFManager & dof_manager, const ID & dof_id)
+      : NewmarkBeta(dof_manager, dof_id, 1. / 3., 1. / 2.){};
+};
+
+/* -------------------------------------------------------------------------- */
+
+} // namespace akantu
 
 #endif /* __AKANTU_NEWMARK_BETA_HH__ */

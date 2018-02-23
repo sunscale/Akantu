@@ -34,38 +34,39 @@
 #include <fstream>
 
 // akantu header files
-#include "mesh_io_abaqus.hh"
 #include "mesh.hh"
+#include "mesh_io_abaqus.hh"
 #include "mesh_utils.hh"
 
 #include "element_group.hh"
 #include "node_group.hh"
 
-
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
-#elif defined (__clang__) // test clang to be sure that when we test for gnu it is only gnu
+#elif defined(__clang__) // test clang to be sure that when we test for gnu it
+                         // is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
-#  define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#  if GCC_VERSION > 40600
-#    pragma GCC diagnostic push
-#  endif
-#  pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#define GCC_VERSION                                                            \
+  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION > 40600
+#pragma GCC diagnostic push
+#endif
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
 
 /* -------------------------------------------------------------------------- */
 #include <boost/config/warning_disable.hpp>
-#include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/include/qi.hpp>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-MeshIOAbaqus::MeshIOAbaqus() {}
+MeshIOAbaqus::MeshIOAbaqus() = default;
 
 /* -------------------------------------------------------------------------- */
-MeshIOAbaqus::~MeshIOAbaqus() {}
+MeshIOAbaqus::~MeshIOAbaqus() = default;
 
 /* -------------------------------------------------------------------------- */
 namespace spirit = boost::spirit;
@@ -75,58 +76,57 @@ namespace lbs = boost::spirit::qi::labels;
 namespace phx = boost::phoenix;
 
 /* -------------------------------------------------------------------------- */
-void element_read(Mesh & mesh, const ElementType & type, UInt id, const std::vector<Int> & conn,
+void element_read(Mesh & mesh, const ElementType & type, UInt id,
+                  const std::vector<Int> & conn,
                   const std::map<UInt, UInt> & nodes_mapping,
                   std::map<UInt, Element> & elements_mapping) {
   Vector<UInt> tmp_conn(Mesh::getNbNodesPerElement(type));
 
   AKANTU_DEBUG_ASSERT(conn.size() == tmp_conn.size(),
-		      "The nodes in the Abaqus file have too many coordinates"
-		      << " for the mesh you try to fill.");
+                      "The nodes in the Abaqus file have too many coordinates"
+                          << " for the mesh you try to fill.");
 
   mesh.addConnectivityType(type);
   Array<UInt> & connectivity = mesh.getConnectivity(type);
 
   UInt i = 0;
-  for (std::vector<Int>::const_iterator it = conn.begin(); it != conn.end(); ++it) {
-    std::map<UInt, UInt>::const_iterator nit = nodes_mapping.find(*it);
+  for (auto it = conn.begin(); it != conn.end(); ++it) {
+    auto nit = nodes_mapping.find(*it);
     AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-			"There is an unknown node in the connectivity.");
+                        "There is an unknown node in the connectivity.");
     tmp_conn[i++] = nit->second;
   }
-  Element el(type, connectivity.getSize());
+  Element el{type, connectivity.size(), _not_ghost};
   elements_mapping[id] = el;
   connectivity.push_back(tmp_conn);
 }
 
-
 void node_read(Mesh & mesh, UInt id, const std::vector<Real> & pos,
-	       std::map<UInt, UInt> & nodes_mapping) {
+               std::map<UInt, UInt> & nodes_mapping) {
   Vector<Real> tmp_pos(mesh.getSpatialDimension());
   UInt i = 0;
-  for (std::vector<Real>::const_iterator it = pos.begin();
-       it != pos.end() || i < mesh.getSpatialDimension(); ++it)
+  for (auto it = pos.begin(); it != pos.end() || i < mesh.getSpatialDimension();
+       ++it)
     tmp_pos[i++] = *it;
 
   nodes_mapping[id] = mesh.getNbNodes();
   mesh.getNodes().push_back(tmp_pos);
 }
 
-
 /* ------------------------------------------------------------------------ */
 void add_element_to_group(ElementGroup * el_grp, UInt element,
-			  const std::map<UInt, Element> & elements_mapping) {
-  std::map<UInt, Element>::const_iterator eit = elements_mapping.find(element);
+                          const std::map<UInt, Element> & elements_mapping) {
+  auto eit = elements_mapping.find(element);
   AKANTU_DEBUG_ASSERT(eit != elements_mapping.end(),
-		      "There is an unknown element ("
-		      << element << ") in the in the ELSET "
-		      << el_grp->getName() << ".");
+                      "There is an unknown element ("
+                          << element << ") in the in the ELSET "
+                          << el_grp->getName() << ".");
 
   el_grp->add(eit->second, true, false);
 }
 
 ElementGroup * element_group_create(Mesh & mesh, const ID & name) {
-  Mesh::element_group_iterator eg_it = mesh.element_group_find(name);
+  auto eg_it = mesh.element_group_find(name);
   if (eg_it != mesh.element_group_end()) {
     return eg_it->second;
   } else {
@@ -135,7 +135,7 @@ ElementGroup * element_group_create(Mesh & mesh, const ID & name) {
 }
 
 NodeGroup * node_group_create(Mesh & mesh, const ID & name) {
-  Mesh::node_group_iterator ng_it = mesh.node_group_find(name);
+  auto ng_it = mesh.node_group_find(name);
   if (ng_it != mesh.node_group_end()) {
     return ng_it->second;
   } else {
@@ -144,13 +144,13 @@ NodeGroup * node_group_create(Mesh & mesh, const ID & name) {
 }
 
 void add_node_to_group(NodeGroup * node_grp, UInt node,
-		       const std::map<UInt, UInt> & nodes_mapping) {
-  std::map<UInt, UInt>::const_iterator nit = nodes_mapping.find(node);
+                       const std::map<UInt, UInt> & nodes_mapping) {
+  auto nit = nodes_mapping.find(node);
 
   AKANTU_DEBUG_ASSERT(nit != nodes_mapping.end(),
-		      "There is an unknown node in the in the NSET "
-		      << node_grp->getName() << ".");
-  
+                      "There is an unknown node in the in the NSET "
+                          << node_grp->getName() << ".");
+
   node_grp->add(nit->second, false);
 }
 
@@ -171,7 +171,7 @@ template <class Iterator> struct AbaqusSkipper : qi::grammar<Iterator> {
 };
 
 /* -------------------------------------------------------------------------- */
-template <class Iterator, typename Skipper = AbaqusSkipper<Iterator> >
+template <class Iterator, typename Skipper = AbaqusSkipper<Iterator>>
 struct AbaqusMeshGrammar : qi::grammar<Iterator, void(), Skipper> {
 public:
   AbaqusMeshGrammar(Mesh & mesh)
@@ -206,10 +206,10 @@ public:
            >> spirit::eol
            >> *( (qi::int_
                   > node_position) [ phx::bind(&node_read,
-						 phx::ref(mesh),
-						 lbs::_1,
-						 lbs::_2,
-						 phx::ref(abaqus_nodes_to_akantu)) ]
+                                                 phx::ref(mesh),
+                                                 lbs::_1,
+                                                 lbs::_2,
+                                                 phx::ref(abaqus_nodes_to_akantu)) ]
                   >> spirit::eol
                )
       ;
@@ -224,12 +224,12 @@ public:
           >> spirit::eol
           >> *(  (qi::int_
                   > connectivity) [ phx::bind(&element_read,
-						phx::ref(mesh),
-						lbs::_a,
-						lbs::_1,
-						lbs::_2,
-						phx::cref(abaqus_nodes_to_akantu),
-						phx::ref(abaqus_elements_to_akantu)) ]
+                                                phx::ref(mesh),
+                                                lbs::_a,
+                                                lbs::_1,
+                                                lbs::_2,
+                                                phx::cref(abaqus_nodes_to_akantu),
+                                                phx::ref(abaqus_elements_to_akantu)) ]
                  >> spirit::eol
                )
       ;
@@ -239,23 +239,23 @@ public:
              (
                 (  qi::char_(',') >> qi::no_case[ qi::lit("elset") ] >> '='
                    >> value [ lbs::_a = phx::bind<ElementGroup *>(&element_group_create,
-								    phx::ref(mesh),
-								    lbs::_1) ]
+                                                                    phx::ref(mesh),
+                                                                    lbs::_1) ]
                 )
              ^  *(qi::char_(',') >> option)
              )
              >> spirit::eol
              >> qi::skip
                   (qi::char_(',') | qi::space)
-	     [ +(qi::int_ [ phx::bind(&add_element_to_group,
-					lbs::_a,
-					lbs::_1,
-					phx::cref(abaqus_elements_to_akantu)
-					)
+             [ +(qi::int_ [ phx::bind(&add_element_to_group,
+                                        lbs::_a,
+                                        lbs::_1,
+                                        phx::cref(abaqus_elements_to_akantu)
+                                        )
                                ]
                      )
                  ]
-	   ) [ phx::bind(&optimize_element_group, lbs::_a) ]
+           ) [ phx::bind(&optimize_element_group, lbs::_a) ]
       ;
 
     nodes_set
@@ -270,11 +270,11 @@ public:
              >> spirit::eol
              >> qi::skip
                  (qi::char_(',') | qi::space)
-	         [ +(qi::int_ [ phx::bind(&add_node_to_group,
-					    lbs::_a,
-					    lbs::_1,
-					    phx::cref(abaqus_nodes_to_akantu)
-					   )
+                 [ +(qi::int_ [ phx::bind(&add_node_to_group,
+                                            lbs::_a,
+                                            lbs::_1,
+                                            phx::cref(abaqus_nodes_to_akantu)
+                                           )
                               ]
                     )
                  ]
@@ -395,7 +395,7 @@ private:
   qi::rule<Iterator, std::string(), Skipper> key, value, option, keyword,
       any_line;
 
-  qi::real_parser<Real, qi::real_policies<Real> > real;
+  qi::real_parser<Real, qi::real_policies<Real>> real;
 
   qi::symbols<char, ElementType> abaqus_element_type;
 
@@ -431,7 +431,7 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
   infile.open(filename.c_str());
 
   if (!infile.good()) {
-    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+    AKANTU_ERROR("Cannot open file " << filename);
   }
 
   std::string storage;             // We will read the contents here.
@@ -439,9 +439,9 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
   std::copy(std::istream_iterator<char>(infile), std::istream_iterator<char>(),
             std::back_inserter(storage));
 
-  typedef std::string::const_iterator iterator_t;
-  typedef AbaqusSkipper<iterator_t> skipper;
-  typedef AbaqusMeshGrammar<iterator_t, skipper> grammar;
+  using iterator_t = std::string::const_iterator;
+  using skipper = AbaqusSkipper<iterator_t>;
+  using grammar = AbaqusMeshGrammar<iterator_t, skipper>;
 
   grammar g(mesh);
   skipper ws;
@@ -451,31 +451,25 @@ void MeshIOAbaqus::read(const std::string & filename, Mesh & mesh) {
 
   qi::phrase_parse(iter, end, g, ws);
 
-  std::vector<std::string>::const_iterator mnit = g.getMaterialNames().begin();
-  std::vector<std::string>::const_iterator mnend = g.getMaterialNames().end();
+  MeshAccessor mesh_accessor(mesh);
 
-  for (; mnit != mnend; ++mnit) {
-    Mesh::element_group_iterator eg_it = mesh.element_group_find(*mnit);
-    ElementGroup & eg = *eg_it->second;
+  for (auto & mat_name : g.getMaterialNames()) {
+    auto eg_it = mesh.element_group_find(mat_name);
+    auto & eg = *eg_it->second;
     if (eg_it != mesh.element_group_end()) {
-      ElementGroup::type_iterator tit = eg.firstType();
-      ElementGroup::type_iterator tend = eg.lastType();
-
-      for (; tit != tend; ++tit) {
+      for (auto & type : eg.elementTypes()) {
         Array<std::string> & abaqus_material =
-            this->getData<std::string>(mesh, "abaqus_material", *tit);
+            mesh_accessor.getData<std::string>("abaqus_material", type);
 
-        ElementGroup::const_element_iterator eit = eg.element_begin(*tit);
-        ElementGroup::const_element_iterator eend = eg.element_end(*tit);
-        for (; eit != eend; ++eit) {
-          abaqus_material(*eit) = *mnit;
+        for (auto elem : eg.getElements(type)) {
+          abaqus_material(elem) = mat_name;
         }
       }
     }
   }
 
-  this->setNbGlobalNodes(mesh, mesh.getNodes().getSize());
+  mesh_accessor.setNbGlobalNodes(mesh.getNodes().size());
   MeshUtils::fillElementToSubElementsData(mesh);
 }
 
-__END_AKANTU__
+} // namespace akantu

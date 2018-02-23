@@ -38,7 +38,7 @@
  *
  */
 
-__END_AKANTU__
+} // akantu
 
 #include <cmath>
 #include <cstring>
@@ -46,14 +46,11 @@ __END_AKANTU__
 
 #include "aka_blas_lapack.hh"
 
-__BEGIN_AKANTU__
-
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrix_vector(UInt im, UInt in,
-                                Real * A,
-                                Real * x,
-                                Real * y, Real alpha) {
+inline void Math::matrix_vector(UInt im, UInt in, Real * A, Real * x, Real * y,
+                                Real alpha) {
 #ifdef AKANTU_USE_BLAS
   /// y = alpha*op(A)*x + beta*y
   char tran_A = 'N';
@@ -66,22 +63,19 @@ inline void Math::matrix_vector(UInt im, UInt in,
   aka_gemv(&tran_A, &m, &n, &alpha, A, &m, x, &incx, &beta, y, &incy);
 
 #else
-  memset(y, 0, im*sizeof(Real));
+  memset(y, 0, im * sizeof(Real));
   for (UInt i = 0; i < im; ++i) {
     for (UInt j = 0; j < in; ++j) {
-      y[i] += A[i + j*im] * x[j];
+      y[i] += A[i + j * im] * x[j];
     }
     y[i] *= alpha;
   }
 #endif
 }
 
-
 /* -------------------------------------------------------------------------- */
-inline void Math::matrixt_vector(UInt im, UInt in,
-                                 Real * A,
-                                 Real * x,
-                                 Real * y, Real alpha) {
+inline void Math::matrixt_vector(UInt im, UInt in, Real * A, Real * x, Real * y,
+                                 Real alpha) {
 #ifdef AKANTU_USE_BLAS
   /// y = alpha*op(A)*x + beta*y
   char tran_A = 'T';
@@ -93,7 +87,7 @@ inline void Math::matrixt_vector(UInt im, UInt in,
 
   aka_gemv(&tran_A, &m, &n, &alpha, A, &m, x, &incx, &beta, y, &incy);
 #else
-  memset(y, 0, in*sizeof(Real));
+  memset(y, 0, in * sizeof(Real));
   for (UInt i = 0; i < im; ++i) {
     for (UInt j = 0; j < in; ++j) {
       y[j] += A[j * im + i] * x[i];
@@ -104,9 +98,7 @@ inline void Math::matrixt_vector(UInt im, UInt in,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrix_matrix(UInt im, UInt in, UInt ik,
-                                Real * A,
-                                Real * B,
+inline void Math::matrix_matrix(UInt im, UInt in, UInt ik, Real * A, Real * B,
                                 Real * C, Real alpha) {
 #ifdef AKANTU_USE_BLAS
   ///  C := alpha*op(A)*op(B) + beta*C
@@ -115,14 +107,9 @@ inline void Math::matrix_matrix(UInt im, UInt in, UInt ik,
   double beta = 0.;
   int m = im, n = in, k = ik;
 
-  aka_gemm(&trans_a, &trans_b, &m, &n, &k,
-            &alpha,
-            A, &m,
-            B, &k,
-            &beta,
-            C, &m);
+  aka_gemm(&trans_a, &trans_b, &m, &n, &k, &alpha, A, &m, B, &k, &beta, C, &m);
 #else
-  memset(C, 0, im*in*sizeof(Real));
+  memset(C, 0, im * in * sizeof(Real));
   for (UInt j = 0; j < in; ++j) {
     UInt _jb = j * ik;
     UInt _jc = j * im;
@@ -138,9 +125,7 @@ inline void Math::matrix_matrix(UInt im, UInt in, UInt ik,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrixt_matrix(UInt im, UInt in, UInt ik,
-                                 Real * A,
-                                 Real * B,
+inline void Math::matrixt_matrix(UInt im, UInt in, UInt ik, Real * A, Real * B,
                                  Real * C, Real alpha) {
 #ifdef AKANTU_USE_BLAS
   ///  C := alpha*op(A)*op(B) + beta*C
@@ -149,19 +134,14 @@ inline void Math::matrixt_matrix(UInt im, UInt in, UInt ik,
   double beta = 0.;
   int m = im, n = in, k = ik;
 
-  aka_gemm(&trans_a, &trans_b, &m, &n, &k,
-            &alpha,
-            A, &k,
-            B, &k,
-            &beta,
-            C, &m);
+  aka_gemm(&trans_a, &trans_b, &m, &n, &k, &alpha, A, &k, B, &k, &beta, C, &m);
 #else
-  memset(C, 0, im*in*sizeof(Real));
+  memset(C, 0, im * in * sizeof(Real));
   for (UInt j = 0; j < in; ++j) {
-    UInt _jc = j*im;
-    UInt _jb = j*ik;
+    UInt _jc = j * im;
+    UInt _jb = j * ik;
     for (UInt i = 0; i < im; ++i) {
-      UInt _ia = i*ik;
+      UInt _ia = i * ik;
       for (UInt l = 0; l < ik; ++l) {
         C[i + _jc] += A[l + _ia] * B[l + _jb];
       }
@@ -172,9 +152,7 @@ inline void Math::matrixt_matrix(UInt im, UInt in, UInt ik,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrix_matrixt(UInt im, UInt in, UInt ik,
-                                 Real * A,
-                                 Real * B,
+inline void Math::matrix_matrixt(UInt im, UInt in, UInt ik, Real * A, Real * B,
                                  Real * C, Real alpha) {
 #ifdef AKANTU_USE_BLAS
   ///  C := alpha*op(A)*op(B) + beta*C
@@ -183,14 +161,9 @@ inline void Math::matrix_matrixt(UInt im, UInt in, UInt ik,
   double beta = 0.;
   int m = im, n = in, k = ik;
 
-  aka_gemm(&trans_a, &trans_b, &m, &n, &k,
-            &alpha,
-            A, &m,
-            B, &n,
-            &beta,
-            C, &m);
+  aka_gemm(&trans_a, &trans_b, &m, &n, &k, &alpha, A, &m, B, &n, &beta, C, &m);
 #else
-  memset(C, 0, im*in*sizeof(Real));
+  memset(C, 0, im * in * sizeof(Real));
   for (UInt j = 0; j < in; ++j) {
     UInt _jc = j * im;
     for (UInt i = 0; i < im; ++i) {
@@ -206,9 +179,7 @@ inline void Math::matrix_matrixt(UInt im, UInt in, UInt ik,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrixt_matrixt(UInt im, UInt in, UInt ik,
-                                  Real * A,
-                                  Real * B,
+inline void Math::matrixt_matrixt(UInt im, UInt in, UInt ik, Real * A, Real * B,
                                   Real * C, Real alpha) {
 #ifdef AKANTU_USE_BLAS
   ///  C := alpha*op(A)*op(B) + beta*C
@@ -217,18 +188,13 @@ inline void Math::matrixt_matrixt(UInt im, UInt in, UInt ik,
   double beta = 0.;
   int m = im, n = in, k = ik;
 
-  aka_gemm(&trans_a, &trans_b, &m, &n, &k,
-            &alpha,
-            A, &k,
-            B, &n,
-            &beta,
-            C, &m);
+  aka_gemm(&trans_a, &trans_b, &m, &n, &k, &alpha, A, &k, B, &n, &beta, C, &m);
 #else
   memset(C, 0, im * in * sizeof(Real));
   for (UInt j = 0; j < in; ++j) {
-    UInt _jc = j*im;
+    UInt _jc = j * im;
     for (UInt i = 0; i < im; ++i) {
-      UInt _ia = i*ik;
+      UInt _ia = i * ik;
       for (UInt l = 0; l < ik; ++l) {
         UInt _lb = l * in;
         C[i + _jc] += A[l + _ia] * B[j + _lb];
@@ -236,6 +202,18 @@ inline void Math::matrixt_matrixt(UInt im, UInt in, UInt ik,
       C[i + _jc] *= alpha;
     }
   }
+#endif
+}
+
+/* -------------------------------------------------------------------------- */
+inline void Math::aXplusY(UInt n, Real alpha, Real * x, Real * y) {
+#ifdef AKANTU_USE_BLAS
+  ///  y := alpha x + y
+  int incx = 1, incy = 1;
+  aka_axpy(&n, &alpha, x, &incx, y, &incy);
+#else
+  for (UInt i = 0; i < n; ++i)
+    *(y++) += alpha * *(x++);
 #endif
 }
 
@@ -254,27 +232,28 @@ inline Real Math::vectorDot(Real * v1, Real * v2, UInt in) {
   return d;
 }
 
-
 /* -------------------------------------------------------------------------- */
 template <bool tr_A, bool tr_B>
-inline void Math::matMul(UInt m, UInt n, UInt k,
-                         Real alpha, Real * A, Real * B,
-                         __attribute__ ((unused)) Real beta,  Real * C) {
-  if(tr_A) {
-    if(tr_B) matrixt_matrixt(m, n, k, A, B, C, alpha);
-    else matrixt_matrix(m, n, k, A, B, C, alpha);
+inline void Math::matMul(UInt m, UInt n, UInt k, Real alpha, Real * A, Real * B,
+                         __attribute__((unused)) Real beta, Real * C) {
+  if (tr_A) {
+    if (tr_B)
+      matrixt_matrixt(m, n, k, A, B, C, alpha);
+    else
+      matrixt_matrix(m, n, k, A, B, C, alpha);
   } else {
-    if(tr_B) matrix_matrixt(m, n, k, A, B, C, alpha);
-    else matrix_matrix(m, n, k, A, B, C, alpha);
+    if (tr_B)
+      matrix_matrixt(m, n, k, A, B, C, alpha);
+    else
+      matrix_matrix(m, n, k, A, B, C, alpha);
   }
 }
 
 /* -------------------------------------------------------------------------- */
 template <bool tr_A>
-inline void Math::matVectMul(UInt m, UInt n,
-                             Real alpha, Real * A, Real * x,
-                             __attribute__ ((unused)) Real beta, Real * y) {
-  if(tr_A) {
+inline void Math::matVectMul(UInt m, UInt n, Real alpha, Real * A, Real * x,
+                             __attribute__((unused)) Real beta, Real * y) {
+  if (tr_A) {
     matrixt_vector(m, n, A, x, y, alpha);
   } else {
     matrix_vector(m, n, A, x, y, alpha);
@@ -282,21 +261,20 @@ inline void Math::matVectMul(UInt m, UInt n,
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
+template <typename T> inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
 
   // Matrix  A is  row major,  so the  lapack function  in fortran  will process
   // A^t. Asking for the left eigenvectors of A^t will give the transposed right
   // eigenvectors of A so in the C++ code the right eigenvectors.
-  char jobvl;
-  if(V != NULL)
-    jobvl = 'V'; // compute left  eigenvectors
+  char jobvr, jobvl;
+  if (V != nullptr)
+    jobvr = 'V'; // compute left  eigenvectors
   else
-    jobvl = 'N'; // compute left  eigenvectors
+    jobvr = 'N'; // compute left  eigenvectors
 
-  char jobvr('N'); // compute right eigenvectors
+  jobvl = 'N'; // compute right eigenvectors
 
-  T * di = new T[n]; // imaginary part of the eigenvalues
+  auto * di = new T[n]; // imaginary part of the eigenvalues
 
   int info;
   int N = n;
@@ -304,104 +282,113 @@ inline void Math::matrixEig(UInt n, T * A, T * d, T * V) {
   T wkopt;
   int lwork = -1;
   // query and allocate the optimal workspace
-  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, NULL, &N, &wkopt, &lwork, &info);
+  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, nullptr, &N, V, &N, &wkopt,
+              &lwork, &info);
 
   lwork = int(wkopt);
-  T * work = new T[lwork];
+  auto * work = new T[lwork];
   // solve the eigenproblem
-  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, V, &N, NULL, &N, work, &lwork, &info);
+  aka_geev<T>(&jobvl, &jobvr, &N, A, &N, d, di, nullptr, &N, V, &N, work,
+              &lwork, &info);
 
-  AKANTU_DEBUG_ASSERT(info == 0, "Problem computing eigenvalues/vectors. DGEEV exited with the value " << info);
+  AKANTU_DEBUG_ASSERT(
+      info == 0,
+      "Problem computing eigenvalues/vectors. DGEEV exited with the value "
+          << info);
 
-
-  delete [] work;
-  delete [] di; // I hope for you that there was no complex eigenvalues !!!
+  delete[] work;
+  delete[] di; // I hope for you that there was no complex eigenvalues !!!
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrix22_eigenvalues(Real * A, Real *Adiag) {
-  ///d = determinant of Matrix A
+inline void Math::matrix22_eigenvalues(Real * A, Real * Adiag) {
+  /// d = determinant of Matrix A
   Real d = det2(A);
-  ///b = trace of Matrix A
-  Real b = A[0]+A[3];
+  /// b = trace of Matrix A
+  Real b = A[0] + A[3];
 
-  Real c = sqrt(b*b - 4 *d);
-  Adiag[0]= .5*(b + c);
-  Adiag[1]= .5*(b - c);
+  Real c = sqrt(b * b - 4 * d);
+  Adiag[0] = .5 * (b + c);
+  Adiag[1] = .5 * (b - c);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::matrix33_eigenvalues(Real * A, Real *Adiag) {
+inline void Math::matrix33_eigenvalues(Real * A, Real * Adiag) {
   matrixEig(3, A, Adiag);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline void Math::eigenvalues(Real * A, Real * d) {
-  if(dim == 1) { d[0] = A[0]; }
-  else if(dim == 2) { matrix22_eigenvalues(A, d); }
+template <UInt dim> inline void Math::eigenvalues(Real * A, Real * d) {
+  if (dim == 1) {
+    d[0] = A[0];
+  } else if (dim == 2) {
+    matrix22_eigenvalues(A, d);
+  }
   // else if(dim == 3) { matrix33_eigenvalues(A, d); }
-  else matrixEig(dim, A, d);
+  else
+    matrixEig(dim, A, d);
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::det2(const Real * mat) {
-  return mat[0]*mat[3] - mat[1]*mat[2];
+  return mat[0] * mat[3] - mat[1] * mat[2];
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::det3(const Real * mat) {
-  return
-      mat[0]*(mat[4]*mat[8]-mat[7]*mat[5])
-    - mat[3]*(mat[1]*mat[8]-mat[7]*mat[2])
-    + mat[6]*(mat[1]*mat[5]-mat[4]*mat[2]);
+  return mat[0] * (mat[4] * mat[8] - mat[7] * mat[5]) -
+         mat[3] * (mat[1] * mat[8] - mat[7] * mat[2]) +
+         mat[6] * (mat[1] * mat[5] - mat[4] * mat[2]);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt n>
-inline Real Math::det(const Real * mat) {
-  if(n == 1) return *mat;
-  else if(n == 2) return det2(mat);
-  else if(n == 3) return det3(mat);
-  else return det(n, mat);
+template <UInt n> inline Real Math::det(const Real * mat) {
+  if (n == 1)
+    return *mat;
+  else if (n == 2)
+    return det2(mat);
+  else if (n == 3)
+    return det3(mat);
+  else
+    return det(n, mat);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-inline T Math::det(UInt n, const T * A) {
+template <typename T> inline T Math::det(UInt n, const T * A) {
   int N = n;
   int info;
-  int * ipiv = new int[N+1];
+  auto * ipiv = new int[N + 1];
 
-  T * LU = new T[N*N];
-  std::copy(A, A + N*N, LU);
+  auto * LU = new T[N * N];
+  std::copy(A, A + N * N, LU);
 
   // LU factorization of A
   aka_getrf(&N, &N, LU, &N, ipiv, &info);
-  if(info > 0) {
-    AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: "
-                       << info <<" )");
+  if (info > 0) {
+    AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
+                                                                       << " )");
   }
 
   // det(A) = det(L) * det(U) = 1 * det(U) = product_i U_{ii}
   T det = 1.;
-  for (int i = 0; i < N; ++i) det *= (2*(ipiv[i] == i) - 1) * LU[i*n+i];
+  for (int i = 0; i < N; ++i)
+    det *= (2 * (ipiv[i] == i) - 1) * LU[i * n + i];
 
-  delete [] ipiv;
-  delete [] LU;
+  delete[] ipiv;
+  delete[] LU;
   return det;
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::normal2(const Real * vec,Real * normal) {
-    normal[0] = vec[1];
-    normal[1] = -vec[0];
-    Math::normalize2(normal);
+inline void Math::normal2(const Real * vec, Real * normal) {
+  normal[0] = vec[1];
+  normal[1] = -vec[0];
+  Math::normalize2(normal);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::normal3(const Real * vec1,const Real * vec2,Real * normal) {
-  Math::vectorProduct3(vec1,vec2,normal);
+inline void Math::normal3(const Real * vec1, const Real * vec2, Real * normal) {
+  Math::vectorProduct3(vec1, vec2, normal);
   Math::normalize3(normal);
 }
 
@@ -422,98 +409,99 @@ inline void Math::normalize3(Real * vec) {
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::norm2(const Real * vec) {
-  return sqrt(vec[0]*vec[0] + vec[1]*vec[1]);
+  return sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::norm3(const Real * vec) {
-  return sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+  return sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::norm(UInt n, const Real * vec) {
   Real norm = 0.;
   for (UInt i = 0; i < n; ++i) {
-    norm += vec[i]*vec[i];
+    norm += vec[i] * vec[i];
   }
   return sqrt(norm);
 }
 
-
 /* -------------------------------------------------------------------------- */
-inline void Math::inv2(const Real * mat,Real * inv) {
+inline void Math::inv2(const Real * mat, Real * inv) {
   Real det_mat = det2(mat);
 
-  inv[0] =  mat[3] / det_mat;
+  inv[0] = mat[3] / det_mat;
   inv[1] = -mat[1] / det_mat;
   inv[2] = -mat[2] / det_mat;
-  inv[3] =  mat[0] / det_mat;
+  inv[3] = mat[0] / det_mat;
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::inv3(const Real * mat,Real * inv) {
+inline void Math::inv3(const Real * mat, Real * inv) {
   Real det_mat = det3(mat);
 
-  inv[0] = (mat[4]*mat[8] - mat[7]*mat[5])/det_mat;
-  inv[1] = (mat[2]*mat[7] - mat[8]*mat[1])/det_mat;
-  inv[2] = (mat[1]*mat[5] - mat[4]*mat[2])/det_mat;
-  inv[3] = (mat[5]*mat[6] - mat[8]*mat[3])/det_mat;
-  inv[4] = (mat[0]*mat[8] - mat[6]*mat[2])/det_mat;
-  inv[5] = (mat[2]*mat[3] - mat[5]*mat[0])/det_mat;
-  inv[6] = (mat[3]*mat[7] - mat[6]*mat[4])/det_mat;
-  inv[7] = (mat[1]*mat[6] - mat[7]*mat[0])/det_mat;
-  inv[8] = (mat[0]*mat[4] - mat[3]*mat[1])/det_mat;
+  inv[0] = (mat[4] * mat[8] - mat[7] * mat[5]) / det_mat;
+  inv[1] = (mat[2] * mat[7] - mat[8] * mat[1]) / det_mat;
+  inv[2] = (mat[1] * mat[5] - mat[4] * mat[2]) / det_mat;
+  inv[3] = (mat[5] * mat[6] - mat[8] * mat[3]) / det_mat;
+  inv[4] = (mat[0] * mat[8] - mat[6] * mat[2]) / det_mat;
+  inv[5] = (mat[2] * mat[3] - mat[5] * mat[0]) / det_mat;
+  inv[6] = (mat[3] * mat[7] - mat[6] * mat[4]) / det_mat;
+  inv[7] = (mat[1] * mat[6] - mat[7] * mat[0]) / det_mat;
+  inv[8] = (mat[0] * mat[4] - mat[3] * mat[1]) / det_mat;
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt n>
-inline void Math::inv(const Real * A, Real * Ainv) {
-  if(n == 1) *Ainv = 1./ *A;
-  else if(n == 2) inv2(A, Ainv);
-  else if(n == 3) inv3(A, Ainv);
-  else inv(n, A, Ainv);
+template <UInt n> inline void Math::inv(const Real * A, Real * Ainv) {
+  if (n == 1)
+    *Ainv = 1. / *A;
+  else if (n == 2)
+    inv2(A, Ainv);
+  else if (n == 3)
+    inv3(A, Ainv);
+  else
+    inv(n, A, Ainv);
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-inline void Math::inv(UInt n, const T * A, T * invA) {
+template <typename T> inline void Math::inv(UInt n, const T * A, T * invA) {
   int N = n;
   int info;
-  int * ipiv = new int[N+1];
-  int lwork = N*N;
-  T * work = new T[lwork];
+  auto * ipiv = new int[N + 1];
+  int lwork = N * N;
+  auto * work = new T[lwork];
 
-  std::copy(A, A + n*n, invA);
+  std::copy(A, A + n * n, invA);
 
   aka_getrf(&N, &N, invA, &N, ipiv, &info);
-  if(info > 0) {
-    AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: "
-                       << info <<" )");
+  if (info > 0) {
+    AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
+                                                                       << " )");
   }
 
   aka_getri(&N, invA, &N, ipiv, work, &lwork, &info);
-  if(info != 0) {
-    AKANTU_DEBUG_ERROR("Cannot invert the matrix (info: "<< info <<" )");
+  if (info != 0) {
+    AKANTU_ERROR("Cannot invert the matrix (info: " << info << " )");
   }
 
-  delete [] ipiv;
-  delete [] work;
+  delete[] ipiv;
+  delete[] work;
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
+template <typename T>
 inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
   int N = n;
   int info;
-  int * ipiv = new int[N];
-  T * lu_A  = new T[N*N];
+  auto * ipiv = new int[N];
+  auto * lu_A = new T[N * N];
 
-  std::copy(A, A + N*N, lu_A);
+  std::copy(A, A + N * N, lu_A);
 
   aka_getrf(&N, &N, lu_A, &N, ipiv, &info);
-  if(info > 0) {
-    AKANTU_DEBUG_ERROR("Singular matrix - cannot factorize it (info: "<< info <<" )");
-    exit (EXIT_FAILURE);
+  if (info > 0) {
+    AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
+                                                                       << " )");
   }
 
   char trans = 'N';
@@ -522,30 +510,27 @@ inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
   std::copy(b, b + N, x);
 
   aka_getrs(&trans, &N, &nrhs, lu_A, &N, ipiv, x, &N, &info);
-  if(info != 0) {
-    AKANTU_DEBUG_ERROR("Cannot solve the system (info: "<< info <<" )");
-    exit (EXIT_FAILURE);
+  if (info != 0) {
+    AKANTU_ERROR("Cannot solve the system (info: " << info << " )");
   }
 
-  delete [] ipiv;
-  delete [] lu_A;
+  delete[] ipiv;
+  delete[] lu_A;
 }
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 inline Real Math::matrixDoubleDot22(Real * A, Real * B) {
   Real d;
-  d = A[0] * B[0] + A[1] * B[1]
-    + A[2] * B[2] + A[3] * B[3];
+  d = A[0] * B[0] + A[1] * B[1] + A[2] * B[2] + A[3] * B[3];
   return d;
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::matrixDoubleDot33(Real * A, Real * B) {
   Real d;
-  d = A[0] * B[0] + A[1] * B[1] + A[2] * B[2]
-    + A[3] * B[3] + A[4] * B[4] + A[5] * B[5]
-    + A[6] * B[6] + A[7] * B[7] + A[8] * B[8];
+  d = A[0] * B[0] + A[1] * B[1] + A[2] * B[2] + A[3] * B[3] + A[4] * B[4] +
+      A[5] * B[5] + A[6] * B[6] + A[7] * B[7] + A[8] * B[8];
   return d;
 }
 
@@ -554,7 +539,7 @@ inline Real Math::matrixDoubleDot(UInt n, Real * A, Real * B) {
   Real d = 0.;
   for (UInt i = 0; i < n; ++i) {
     for (UInt j = 0; j < n; ++j) {
-      d += A[i*n+j] * B[i*n+j];
+      d += A[i * n + j] * B[i * n + j];
     }
   }
   return d;
@@ -562,29 +547,28 @@ inline Real Math::matrixDoubleDot(UInt n, Real * A, Real * B) {
 
 /* -------------------------------------------------------------------------- */
 inline void Math::vectorProduct3(const Real * v1, const Real * v2, Real * res) {
-  res[0] = v1[1]*v2[2] - v1[2]*v2[1];
-  res[1] = v1[2]*v2[0] - v1[0]*v2[2];
-  res[2] = v1[0]*v2[1] - v1[1]*v2[0];
+  res[0] = v1[1] * v2[2] - v1[2] * v2[1];
+  res[1] = v1[2] * v2[0] - v1[0] * v2[2];
+  res[2] = v1[0] * v2[1] - v1[1] * v2[0];
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::vectorDot2(const Real * v1, const Real * v2) {
-  return (v1[0]*v2[0] + v1[1]*v2[1]);
+  return (v1[0] * v2[0] + v1[1] * v2[1]);
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::vectorDot3(const Real * v1, const Real * v2) {
-  return (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]);
+  return (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]);
 }
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::distance_2d(const Real * x, const Real * y) {
-  return sqrt((y[0] - x[0])*(y[0] - x[0]) + (y[1] - x[1])*(y[1] - x[1]));
+  return sqrt((y[0] - x[0]) * (y[0] - x[0]) + (y[1] - x[1]) * (y[1] - x[1]));
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real Math::triangle_inradius(const Real * coord1,
-                                    const Real * coord2,
+inline Real Math::triangle_inradius(const Real * coord1, const Real * coord2,
                                     const Real * coord3) {
   /**
    * @f{eqnarray*}{
@@ -607,37 +591,57 @@ inline Real Math::triangle_inradius(const Real * coord1,
 
 /* -------------------------------------------------------------------------- */
 inline Real Math::distance_3d(const Real * x, const Real * y) {
-  return sqrt((y[0] - x[0])*(y[0] - x[0])
-              + (y[1] - x[1])*(y[1] - x[1])
-              + (y[2] - x[2])*(y[2] - x[2])
-              );
+  return sqrt((y[0] - x[0]) * (y[0] - x[0]) + (y[1] - x[1]) * (y[1] - x[1]) +
+              (y[2] - x[2]) * (y[2] - x[2]));
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real Math::tetrahedron_volume(const Real * coord1,
-                                     const Real * coord2,
-                                     const Real * coord3,
-                                     const Real * coord4) {
+inline Real Math::tetrahedron_volume(const Real * coord1, const Real * coord2,
+                                     const Real * coord3, const Real * coord4) {
   Real xx[9], vol;
 
-  xx[0] = coord2[0]; xx[1] = coord2[1]; xx[2] = coord2[2];
-  xx[3] = coord3[0]; xx[4] = coord3[1]; xx[5] = coord3[2];
-  xx[6] = coord4[0]; xx[7] = coord4[1]; xx[8] = coord4[2];
+  xx[0] = coord2[0];
+  xx[1] = coord2[1];
+  xx[2] = coord2[2];
+  xx[3] = coord3[0];
+  xx[4] = coord3[1];
+  xx[5] = coord3[2];
+  xx[6] = coord4[0];
+  xx[7] = coord4[1];
+  xx[8] = coord4[2];
   vol = det3(xx);
 
-  xx[0] = coord1[0]; xx[1] = coord1[1]; xx[2] = coord1[2];
-  xx[3] = coord3[0]; xx[4] = coord3[1]; xx[5] = coord3[2];
-  xx[6] = coord4[0]; xx[7] = coord4[1]; xx[8] = coord4[2];
+  xx[0] = coord1[0];
+  xx[1] = coord1[1];
+  xx[2] = coord1[2];
+  xx[3] = coord3[0];
+  xx[4] = coord3[1];
+  xx[5] = coord3[2];
+  xx[6] = coord4[0];
+  xx[7] = coord4[1];
+  xx[8] = coord4[2];
   vol -= det3(xx);
 
-  xx[0] = coord1[0]; xx[1] = coord1[1]; xx[2] = coord1[2];
-  xx[3] = coord2[0]; xx[4] = coord2[1]; xx[5] = coord2[2];
-  xx[6] = coord4[0]; xx[7] = coord4[1]; xx[8] = coord4[2];
+  xx[0] = coord1[0];
+  xx[1] = coord1[1];
+  xx[2] = coord1[2];
+  xx[3] = coord2[0];
+  xx[4] = coord2[1];
+  xx[5] = coord2[2];
+  xx[6] = coord4[0];
+  xx[7] = coord4[1];
+  xx[8] = coord4[2];
   vol += det3(xx);
 
-  xx[0] = coord1[0]; xx[1] = coord1[1]; xx[2] = coord1[2];
-  xx[3] = coord2[0]; xx[4] = coord2[1]; xx[5] = coord2[2];
-  xx[6] = coord3[0]; xx[7] = coord3[1]; xx[8] = coord3[2];
+  xx[0] = coord1[0];
+  xx[1] = coord1[1];
+  xx[2] = coord1[2];
+  xx[3] = coord2[0];
+  xx[4] = coord2[1];
+  xx[5] = coord2[2];
+  xx[6] = coord3[0];
+  xx[7] = coord3[1];
+  xx[8] = coord3[2];
   vol -= det3(xx);
 
   vol /= 6;
@@ -646,8 +650,7 @@ inline Real Math::tetrahedron_volume(const Real * coord1,
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real Math::tetrahedron_inradius(const Real * coord1,
-                                       const Real * coord2,
+inline Real Math::tetrahedron_inradius(const Real * coord1, const Real * coord2,
                                        const Real * coord3,
                                        const Real * coord4) {
 
@@ -662,52 +665,51 @@ inline Real Math::tetrahedron_inradius(const Real * coord1,
   Real s1, s2, s3, s4;
 
   s1 = (l12 + l23 + l13) * 0.5;
-  s1 = sqrt(s1*(s1-l12)*(s1-l23)*(s1-l13));
+  s1 = sqrt(s1 * (s1 - l12) * (s1 - l23) * (s1 - l13));
 
   s2 = (l12 + l24 + l14) * 0.5;
-  s2 = sqrt(s2*(s2-l12)*(s2-l24)*(s2-l14));
+  s2 = sqrt(s2 * (s2 - l12) * (s2 - l24) * (s2 - l14));
 
   s3 = (l23 + l34 + l24) * 0.5;
-  s3 = sqrt(s3*(s3-l23)*(s3-l34)*(s3-l24));
+  s3 = sqrt(s3 * (s3 - l23) * (s3 - l34) * (s3 - l24));
 
   s4 = (l13 + l34 + l14) * 0.5;
-  s4 = sqrt(s4*(s4-l13)*(s4-l34)*(s4-l14));
+  s4 = sqrt(s4 * (s4 - l13) * (s4 - l34) * (s4 - l14));
 
-  Real volume = Math::tetrahedron_volume(coord1,coord2,coord3,coord4);
+  Real volume = Math::tetrahedron_volume(coord1, coord2, coord3, coord4);
 
-  return 3*volume/(s1+s2+s3+s4);
+  return 3 * volume / (s1 + s2 + s3 + s4);
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Math::barycenter(const Real * coord,
-                             UInt nb_points, UInt spatial_dimension,
-                             Real * barycenter) {
+inline void Math::barycenter(const Real * coord, UInt nb_points,
+                             UInt spatial_dimension, Real * barycenter) {
   memset(barycenter, 0, spatial_dimension * sizeof(Real));
   for (UInt n = 0; n < nb_points; ++n) {
     UInt offset = n * spatial_dimension;
     for (UInt i = 0; i < spatial_dimension; ++i) {
-      barycenter[i] += coord[offset + i] / (Real) nb_points;
+      barycenter[i] += coord[offset + i] / (Real)nb_points;
     }
   }
 }
 
 /* -------------------------------------------------------------------------- */
 inline void Math::vector_2d(const Real * x, const Real * y, Real * res) {
-  res[0] = y[0]-x[0];
-  res[1] = y[1]-x[1];
+  res[0] = y[0] - x[0];
+  res[1] = y[1] - x[1];
 }
 
 /* -------------------------------------------------------------------------- */
 inline void Math::vector_3d(const Real * x, const Real * y, Real * res) {
-  res[0] = y[0]-x[0];
-  res[1] = y[1]-x[1];
-  res[2] = y[2]-x[2];
+  res[0] = y[0] - x[0];
+  res[1] = y[1] - x[1];
+  res[2] = y[2] - x[2];
 }
 
 /* -------------------------------------------------------------------------- */
 /// Combined absolute and relative tolerance test proposed in
 /// Real-time collision detection by C. Ericson (2004)
-inline bool Math::are_float_equal(const Real x, const Real y){
+inline bool Math::are_float_equal(const Real x, const Real y) {
   Real abs_max = std::max(std::abs(x), std::abs(y));
   abs_max = std::max(abs_max, Real(1.));
   return std::abs(x - y) <= (tolerance * abs_max);
@@ -716,23 +718,23 @@ inline bool Math::are_float_equal(const Real x, const Real y){
 /* -------------------------------------------------------------------------- */
 inline bool Math::isnan(Real x) {
 #if defined(__INTEL_COMPILER)
-#pragma warning ( push )
-#pragma warning ( disable : 1572 )
-#endif //defined(__INTEL_COMPILER)
+#pragma warning(push)
+#pragma warning(disable : 1572)
+#endif // defined(__INTEL_COMPILER)
 
   // x = x return false means x = quiet_NaN
   return !(x == x);
 
 #if defined(__INTEL_COMPILER)
-#pragma warning ( pop )
-#endif //defined(__INTEL_COMPILER)
+#pragma warning(pop)
+#endif // defined(__INTEL_COMPILER)
 }
 
 /* -------------------------------------------------------------------------- */
-inline bool Math::are_vector_equal(UInt n, Real * x, Real * y){
+inline bool Math::are_vector_equal(UInt n, Real * x, Real * y) {
   bool test = true;
   for (UInt i = 0; i < n; ++i) {
-    test &= are_float_equal(x[i],y[i]);
+    test &= are_float_equal(x[i], y[i]);
   }
 
   return test;
@@ -740,7 +742,7 @@ inline bool Math::are_vector_equal(UInt n, Real * x, Real * y){
 
 /* -------------------------------------------------------------------------- */
 inline bool Math::intersects(Real x_min, Real x_max, Real y_min, Real y_max) {
-  return ! ((x_max <= y_min) || (x_min >= y_max));
+  return !((x_max <= y_min) || (x_min >= y_max));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -748,30 +750,35 @@ inline bool Math::is_in_range(Real a, Real x_min, Real x_max) {
   return ((a >= x_min) && (a <= x_max));
 }
 
+/* -------------------------------------------------------------------------- */
+template <UInt p, typename T> inline T Math::pow(T x) {
+  return (pow<p - 1, T>(x) * x);
+}
+template <> inline UInt Math::pow<0, UInt>(__attribute__((unused)) UInt x) {
+  return (1);
+}
+template <> inline Real Math::pow<0, Real>(__attribute__((unused)) Real x) {
+  return (1.);
+}
 
 /* -------------------------------------------------------------------------- */
-template<UInt p, typename T> inline T Math::pow(T x) { return (pow<p-1, T>(x)*x); }
-template<> inline UInt Math::pow<0, UInt>(__attribute__((unused)) UInt x) { return (1); }
-template<> inline Real Math::pow<0, Real>(__attribute__((unused)) Real x) { return (1.); }
 
-/* -------------------------------------------------------------------------- */
-
-template<class Functor>
+template <class Functor>
 Real Math::NewtonRaphson::solve(const Functor & funct, Real x_0) {
   Real x = x_0;
-  Real f_x= funct.f(x);
+  Real f_x = funct.f(x);
   UInt iter = 0;
-  while(std::abs(f_x) > this->tolerance && iter < this->max_iteration) {
-    x -= f_x/funct.f_prime(x);
+  while (std::abs(f_x) > this->tolerance && iter < this->max_iteration) {
+    x -= f_x / funct.f_prime(x);
     f_x = funct.f(x);
     iter++;
   }
 
-  AKANTU_DEBUG_ASSERT(iter < this->max_iteration, "Newton Raphson (" <<
-                      funct.name <<
-                      ") solve did not converge in " << this->max_iteration <<
-                      " iterations (tolerance: " << this->tolerance << ")");
-
+  AKANTU_DEBUG_ASSERT(iter < this->max_iteration,
+                      "Newton Raphson ("
+                          << funct.name << ") solve did not converge in "
+                          << this->max_iteration << " iterations (tolerance: "
+                          << this->tolerance << ")");
 
   return x;
 }

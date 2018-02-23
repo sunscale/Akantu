@@ -20,7 +20,7 @@
 /* -------------------------------------------------------------------------- */
 #include "ntn_friclaw_linear_slip_weakening.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation = NTNFricRegNoRegularisation>
@@ -74,7 +74,7 @@ inline std::ostream & operator <<(std::ostream & stream,
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "ntn_friclaw_linear_slip_weakening_no_healing_tmpl.hh"
 

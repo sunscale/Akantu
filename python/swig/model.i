@@ -32,14 +32,16 @@
 
 %{
   #include "boundary_condition_python_functor.hh"
-%}
+  #include "model_solver.hh"
+  #include "non_linear_solver.hh"
+  %}
 
 
 namespace akantu {
   %ignore Model::createSynchronizerRegistry;
+  %ignore Model::getSynchronizerRegistry;
   %ignore Model::createParallelSynch;
   %ignore Model::getDOFSynchronizer;
-  //%ignore Model::getSynchronizerRegistry;
   %ignore Model::registerFEEngineObject;
   %ignore Model::unregisterFEEngineObject;
   %ignore Model::getFEEngineBoundary;
@@ -47,7 +49,7 @@ namespace akantu {
   %ignore Model::getFEEngineClass;
   %ignore Model::getFEEngineClassBoundary;
   %ignore Model::setParser;
-
+  %ignore Model::updateDataForNonLocalCriterion;
   %ignore IntegrationPoint::operator=;
 
   %ignore FEEngine::getNbIntegrationPoints;
@@ -59,7 +61,12 @@ namespace akantu {
   %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,ElementTypeMapArray<Real> &) const;
   %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &,const Array< UInt > &) const;
   %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &) const;
-
+  %ignore FEEngine::onNodesAdded;
+  %ignore FEEngine::onNodesRemoved;
+  %ignore FEEngine::onElementsAdded;
+  %ignore FEEngine::onElementsChanged;
+  %ignore FEEngine::onElementsRemoved;
+  %ignore FEEngine::elementTypes;
 }
 
 %include "sparse_matrix.i"
@@ -74,7 +81,51 @@ namespace akantu {
 %include "boundary_condition_python_functor.hh"
 %include "communication_buffer.hh"
 %include "data_accessor.hh"
-%include "synchronizer.hh"
-%include "synchronizer_registry.hh"
+//%include "synchronizer.hh"
+//%include "synchronizer_registry.hh"
 %include "model.hh"
+%include "non_linear_solver.hh"
 
+%extend akantu::Model {
+  void initFullImpl(
+       const akantu::ModelOptions & options = akantu::ModelOptions()){
+     $self->initFull(options);
+  };
+
+  %insert("python") %{
+    def initFull(self, *args, **kwargs):
+        if len(args) == 0:
+            import importlib as __aka_importlib
+            _module =  __aka_importlib.import_module(self.__module__)
+            _cls = getattr(_module, "{0}Options".format(self.__class__.__name__))
+            options = _cls()
+            if len(kwargs) > 0:
+                for key, val in kwargs.items():
+                    if key[0] == '_':
+                        key = key[1:]
+                    setattr(options, key, val)
+        else:
+            options = args[0]
+
+        self.initFullImpl(options)
+  %}
+
+
+  void solveStep(){
+    $self->solveStep();
+  }
+
+  akantu::NonLinearSolver & getNonLinearSolver(){
+   return $self->getNonLinearSolver();
+  }
+ }
+
+%extend akantu::NonLinearSolver {
+  void set(const std::string & id, akantu::Real val){
+    if (id == "max_iterations")
+      $self->set(id, int(val));
+    else if (id == "convergence_type")
+      $self->set(id, akantu::SolveConvergenceCriteria(UInt(val)));
+    else $self->set(id, val);
+  }
+ }

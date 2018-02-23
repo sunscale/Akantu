@@ -34,44 +34,41 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_elemental_field.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 
 /* -------------------------------------------------------------------------- */
-template<typename types>
+template <typename types>
 class quadrature_point_iterator
-   : public element_iterator<types, quadrature_point_iterator> {
+    : public element_iterator<types, quadrature_point_iterator> {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  typedef element_iterator<types, dumper::quadrature_point_iterator> parent;
-  typedef typename types::data_type   data_type;
-  typedef typename types::return_type return_type;
-  typedef typename types::field_type  field_type;
-  typedef typename types::array_iterator array_iterator;
+  using parent = element_iterator<types, dumper::quadrature_point_iterator>;
+  using data_type = typename types::data_type;
+  using return_type = typename types::return_type;
+  using field_type = typename types::field_type;
+  using array_iterator = typename types::array_iterator;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   quadrature_point_iterator(const field_type & field,
-			    const typename field_type::type_iterator & t_it,
-			    const typename field_type::type_iterator & t_it_end,
-			    const array_iterator & array_it,
-			    const array_iterator & array_it_end,
-			    const GhostType ghost_type = _not_ghost) :
-    parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) { }
+                            const typename field_type::type_iterator & t_it,
+                            const typename field_type::type_iterator & t_it_end,
+                            const array_iterator & array_it,
+                            const array_iterator & array_it_end,
+                            const GhostType ghost_type = _not_ghost)
+      : parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) {}
 
-  return_type operator*() {
-    return *this->array_it;
-  }
+  return_type operator*() { return *this->array_it; }
 };
 
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__ */

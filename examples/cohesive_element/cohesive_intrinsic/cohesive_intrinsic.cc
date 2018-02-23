@@ -67,7 +67,6 @@ int main(int argc, char * argv[]) {
   Array<bool> & boundary = model.getBlockedDOFs();
 
   UInt nb_nodes = mesh.getNbNodes();
-  UInt nb_element = mesh.getNbElement(type);
 
   /// boundary conditions
   for (UInt dim = 0; dim < spatial_dimension; ++dim) {
@@ -76,27 +75,24 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  model.updateResidual();
-
   model.setBaseName("intrinsic");
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
-  model.addDumpField("force");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.dump();
 
   /// update displacement
   Array<UInt> elements;
-  Real * bary = new Real[spatial_dimension];
-  for (UInt el = 0; el < nb_element; ++el) {
-    mesh.getBarycenter(el, type, bary);
-    if (bary[0] > -0.25)
-      elements.push_back(el);
-  }
-  delete[] bary;
+  Vector<Real> barycenter(spatial_dimension);
+  for_each_element(mesh, [&](auto && el) {
+      mesh.getBarycenter(el, barycenter);
+      if(barycenter(_x) > -0.25)
+        elements.push_back(el.element);
+    });
 
   Real increment = 0.01;
 
@@ -135,7 +131,7 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
                                Array<UInt> & elements, ElementType type,
                                Real increment) {
   Mesh & mesh = model.getMesh();
-  UInt nb_element = elements.getSize();
+  UInt nb_element = elements.size();
   UInt nb_nodes = mesh.getNbNodes();
   UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 

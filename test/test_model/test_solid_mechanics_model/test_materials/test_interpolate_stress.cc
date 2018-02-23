@@ -31,23 +31,22 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
-
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
-
+#include "integrator_gauss.hh"
+#include "shape_lagrange.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-Real function(Real x, Real y, Real z) {
-  return 100. + 2. * x + 3. * y + 4 * z;
-}
+Real function(Real x, Real y, Real z) { return 100. + 2. * x + 3. * y + 4 * z; }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("../material.dat", argc, argv);
 
   debug::setDebugLevel(dblWarning);
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
   mesh.read("interpolation.msh");
   const ElementType type_facet = mesh.getFacetType(type);
 
-  Mesh mesh_facets(mesh.initMeshFacets("mesh_facets"));
+  Mesh & mesh_facets = mesh.initMeshFacets("mesh_facets");
   MeshUtils::buildAllFacets(mesh, mesh_facets);
 
   SolidMechanicsModel model(mesh);
@@ -72,33 +71,33 @@ int main(int argc, char *argv[]) {
   UInt nb_element = mesh.getNbElement(type);
 
   /// compute quadrature points positions on facets
-  typedef FEEngineTemplate<IntegratorGauss,ShapeLagrange> MyFEEngineType;
+  typedef FEEngineTemplate<IntegratorGauss, ShapeLagrange> MyFEEngineType;
 
-  model.registerFEEngineObject<MyFEEngineType>("FacetsFEEngine", mesh_facets, spatial_dimension-1);
+  model.registerFEEngineObject<MyFEEngineType>("FacetsFEEngine", mesh_facets,
+                                               spatial_dimension - 1);
   model.getFEEngine("FacetsFEEngine").initShapeFunctions();
 
-  UInt nb_quad_per_facet = model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
+  UInt nb_quad_per_facet =
+      model.getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
   UInt nb_tot_quad = nb_quad_per_facet * nb_facet;
 
   Array<Real> quad_facets(nb_tot_quad, spatial_dimension);
 
-  model.getFEEngine("FacetsFEEngine").interpolateOnIntegrationPoints(position,
-							  quad_facets,
-							  spatial_dimension,
-							  type_facet);
+  model.getFEEngine("FacetsFEEngine")
+      .interpolateOnIntegrationPoints(position, quad_facets, spatial_dimension,
+                                      type_facet);
 
   Array<Element> & facet_to_element = mesh_facets.getSubelementToElement(type);
   UInt nb_facet_per_elem = facet_to_element.getNbComponent();
 
   ElementTypeMapArray<Real> element_quad_facet;
   element_quad_facet.alloc(nb_element * nb_facet_per_elem * nb_quad_per_facet,
-			   spatial_dimension,
-			   type);
+                           spatial_dimension, type);
 
   ElementTypeMapArray<Real> interpolated_stress("interpolated_stress", "");
-  mesh.initElementTypeMapArray(interpolated_stress,
-			      spatial_dimension * spatial_dimension,
-			      spatial_dimension);
+  interpolated_stress.initialize(
+      mesh, _nb_component = spatial_dimension * spatial_dimension,
+      _spatial_dimension = spatial_dimension);
 
   Array<Real> & interp_stress = interpolated_stress(type);
   interp_stress.resize(nb_element * nb_facet_per_elem * nb_quad_per_facet);
@@ -110,15 +109,14 @@ int main(int argc, char *argv[]) {
       UInt global_facet = facet_to_element(el, f).element;
 
       for (UInt q = 0; q < nb_quad_per_facet; ++q) {
-	for (UInt s = 0; s < spatial_dimension; ++s) {
-	  el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet
-		     + f * nb_quad_per_facet + q, s)
-	    = quad_facets(global_facet * nb_quad_per_facet + q, s);
-	}
+        for (UInt s = 0; s < spatial_dimension; ++s) {
+          el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet +
+                         f * nb_quad_per_facet + q,
+                     s) = quad_facets(global_facet * nb_quad_per_facet + q, s);
+        }
       }
     }
   }
-
 
   /// compute quadrature points position of the elements
   UInt nb_quad_per_element = model.getFEEngine().getNbIntegrationPoints(type);
@@ -126,21 +124,17 @@ int main(int argc, char *argv[]) {
 
   Array<Real> quad_elements(nb_tot_quad_el, spatial_dimension);
 
-
-  model.getFEEngine().interpolateOnIntegrationPoints(position,
-					       quad_elements,
-					       spatial_dimension,
-					       type);
+  model.getFEEngine().interpolateOnIntegrationPoints(position, quad_elements,
+                                                     spatial_dimension, type);
 
   /// assign some values to stresses
-  Array<Real> & stress
-    = const_cast<Array<Real>&>(model.getMaterial(0).getStress(type));
+  Array<Real> & stress =
+      const_cast<Array<Real> &>(model.getMaterial(0).getStress(type));
 
   for (UInt q = 0; q < nb_tot_quad_el; ++q) {
     for (UInt s = 0; s < spatial_dimension * spatial_dimension; ++s) {
-      stress(q, s) = s * function(quad_elements(q, 0),
-				  quad_elements(q, 1),
-				  quad_elements(q, 2));
+      stress(q, s) = s * function(quad_elements(q, 0), quad_elements(q, 1),
+                                  quad_elements(q, 2));
     }
   }
 
@@ -155,26 +149,31 @@ int main(int argc, char *argv[]) {
     for (UInt f = 0; f < nb_facet_per_elem; ++f) {
 
       for (UInt q = 0; q < nb_quad_per_facet; ++q) {
-	for (UInt s = 0; s < spatial_dimension * spatial_dimension; ++s) {
+        for (UInt s = 0; s < spatial_dimension * spatial_dimension; ++s) {
 
-	  Real x = el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet
-			      + f * nb_quad_per_facet + q, 0);
-	  Real y = el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet
-			      + f * nb_quad_per_facet + q, 1);
-	  Real z = el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet
-			      + f * nb_quad_per_facet + q, 2);
+          Real x = el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet +
+                                  f * nb_quad_per_facet + q,
+                              0);
+          Real y = el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet +
+                                  f * nb_quad_per_facet + q,
+                              1);
+          Real z = el_q_facet(el * nb_facet_per_elem * nb_quad_per_facet +
+                                  f * nb_quad_per_facet + q,
+                              2);
 
-	  Real theoretical = s * function(x, y, z);
+          Real theoretical = s * function(x, y, z);
 
-	  Real numerical = interp_stress(el * nb_facet_per_elem * nb_quad_per_facet
-					 + f * nb_quad_per_facet + q, s);
+          Real numerical =
+              interp_stress(el * nb_facet_per_elem * nb_quad_per_facet +
+                                f * nb_quad_per_facet + q,
+                            s);
 
-	  if (std::abs(theoretical - numerical) > tolerance) {
-	    std::cout << "Theoretical and numerical values aren't coincident!" << std::endl;
-	    return EXIT_FAILURE;
-	  }
-
-	}
+          if (std::abs(theoretical - numerical) > tolerance) {
+            std::cout << "Theoretical and numerical values aren't coincident!"
+                      << std::endl;
+            return EXIT_FAILURE;
+          }
+        }
       }
     }
   }

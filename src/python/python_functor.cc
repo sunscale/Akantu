@@ -29,46 +29,46 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <vector>
 #include "python_functor.hh"
 #include "aka_common.hh"
+#include "internal_field.hh"
+#include <vector>
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
-/* -------------------------------------------------------------------------- */  
+namespace akantu {
+/* -------------------------------------------------------------------------- */
 
-PythonFunctor::PythonFunctor(PyObject * obj):python_obj(obj){
-}
+PythonFunctor::PythonFunctor(PyObject * obj) : python_obj(obj) {}
 
 /* -------------------------------------------------------------------------- */
-  
 
-PyObject * PythonFunctor::callFunctor(PyObject * functor,
-				      PyObject * args,
-				      PyObject * kwargs) const{
-  
-  
+PyObject * PythonFunctor::callFunctor(PyObject * functor, PyObject * args,
+                                      PyObject * kwargs) const {
   if (!PyCallable_Check(functor))
     AKANTU_EXCEPTION("Provided functor is not a function");
-  
-  PyObject * pValue = PyObject_Call(functor, args,kwargs);
-  
-  PyObject* exception_type = PyErr_Occurred();
-  if (exception_type){
+
+  PyObject * pValue = PyObject_Call(functor, args, kwargs);
+
+  PyObject * exception_type = PyErr_Occurred();
+  if (exception_type) {
     PyObject * exception;
     PyObject * traceback;
     PyErr_Fetch(&exception_type, &exception, &traceback);
-    
+
     PyObject_Print(exception_type, stdout, Py_PRINT_RAW);
     PyObject_Print(exception, stdout, Py_PRINT_RAW);
     std::stringstream sstr;
     sstr << "Exception occured while calling the functor: ";
-    
-    PyObject * exception_mesg = PyObject_GetAttrString(exception,"message");
+
+    PyObject * exception_mesg = PyObject_GetAttrString(exception, "message");
+#if PY_MAJOR_VERSION >= 3
+    if (exception_mesg && PyUnicode_Check(exception_mesg))
+#else
     if (exception_mesg && PyString_Check(exception_mesg))
-      sstr << PyString_AsString(exception_mesg);
+#endif
+      sstr << this->convertToAkantu<std::string>(exception_mesg);
     else
-      sstr << PyString_AsString(exception);
-    
+      sstr << this->convertToAkantu<std::string>(exception);
+
     AKANTU_EXCEPTION(sstr.str());
   }
 
@@ -77,4 +77,4 @@ PyObject * PythonFunctor::callFunctor(PyObject * functor,
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // akantu

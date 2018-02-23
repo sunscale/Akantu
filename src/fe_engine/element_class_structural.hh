@@ -29,44 +29,81 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "element_class.hh"
+/* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+#ifndef __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__
+#define __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__
+
+namespace akantu {
+
+/// Macro to generate the InterpolationProperty structures for different
+/// interpolation types
+#define AKANTU_DEFINE_STRUCTURAL_INTERPOLATION_TYPE_PROPERTY(                  \
+    itp_type, itp_geom_type, ndof, nb_stress, nb_dnds_cols)                    \
+  template <> struct InterpolationProperty<itp_type> {                         \
+    static const InterpolationKind kind{_itk_structural};                      \
+    static const UInt nb_nodes_per_element{                                    \
+        InterpolationProperty<itp_geom_type>::nb_nodes_per_element};           \
+    static const InterpolationType itp_geometry_type{itp_geom_type};           \
+    static const UInt natural_space_dimension{                                 \
+        InterpolationProperty<itp_geom_type>::natural_space_dimension};        \
+    static const UInt nb_degree_of_freedom{ndof};                              \
+    static const UInt nb_stress_components{nb_stress};                         \
+    static const UInt dnds_columns{nb_dnds_cols};                              \
+  }
 
 /* -------------------------------------------------------------------------- */
 template <InterpolationType interpolation_type>
 class InterpolationElement<interpolation_type, _itk_structural> {
 public:
-  typedef InterpolationPorperty<interpolation_type> interpolation_property;
+  using interpolation_property = InterpolationProperty<interpolation_type>;
 
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
-                                   Matrix<Real> & N,
-                                   const Matrix<Real> & real_nodal_coord,
-                                   UInt n = 0) {
-    UInt nb_points = natural_coord.cols();
-    for (UInt p = 0; p < nb_points; ++p) {
-      Vector<Real> Np = N(p);
-      computeShapes(natural_coord(p), Np, real_nodal_coord, n);
+				   const Matrix<Real> & real_coord,
+                                   Tensor3<Real> & N) {
+    for (UInt i = 0; i < natural_coord.cols(); ++i) {
+      Matrix<Real> n_t = N(i);
+      computeShapes(natural_coord(i), real_coord, n_t);
     }
   }
 
   /// compute the shape values for a given point in natural coordinates
   static inline void computeShapes(const Vector<Real> & natural_coord,
-                                   Vector<Real> & N,
-                                   const Matrix<Real> & real_nodal_coord,
-                                   UInt n = 0);
+				   const Matrix<Real> & real_coord,
+                                   Matrix<Real> & N);
+
+  /// compute shape derivatives (input is dxds) for a set of points
+  static inline void computeShapeDerivatives(const Tensor3<Real> & Js,
+                                             const Tensor3<Real> & DNDSs,
+					     const Matrix<Real> & R,
+                                             Tensor3<Real> & Bs) {
+    for (UInt i = 0; i < Js.size(2); ++i) {
+      Matrix<Real> J = Js(i);
+      Matrix<Real> DNDS = DNDSs(i);
+      Matrix<Real> DNDX(DNDS.rows(), DNDS.cols());
+      auto inv_J = J.inverse();
+      DNDX.mul<false, false>(inv_J, DNDS);
+      Matrix<Real> B_R = Bs(i);
+      Matrix<Real> B(B_R.rows(), B_R.cols());
+      arrangeInVoigt(DNDX, B);
+      B_R.mul<false, false>(B, R);
+    }
+  }
+
   /**
    * compute @f$ B_{ij} = \frac{\partial N_j}{\partial S_i} @f$ the variation of
    * shape functions along with variation of natural coordinates on a given set
    * of points in natural coordinates
    */
   static inline void computeDNDS(const Matrix<Real> & natural_coord,
-                                 Tensor3<Real> & dnds,
-                                 const Matrix<Real> & real_nodal_coord,
-                                 UInt n = 0) {
+				 const Matrix<Real> & real_coord,
+                                 Tensor3<Real> & dnds) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
       Matrix<Real> dnds_t = dnds(i);
-      computeDNDS(natural_coord(i), dnds_t, real_nodal_coord, n);
+      computeDNDS(natural_coord(i), real_coord, dnds_t);
     }
   }
 
@@ -77,28 +114,40 @@ public:
    * coordinates
    */
   static inline void computeDNDS(const Vector<Real> & natural_coord,
-                                 Matrix<Real> & dnds,
-                                 const Matrix<Real> & real_nodal_coord,
-                                 UInt n = 0);
+				 const Matrix<Real> & real_coord,
+                                 Matrix<Real> & dnds);
+
+  /**
+   * arrange B in Voigt notation from DNDS
+   */
+  static inline void arrangeInVoigt(const Matrix<Real> & dnds,
+				    Matrix<Real> & B) {
+    // Default implementation assumes dnds is already in Voigt notation
+    B.deepCopy(dnds);
+  }
 
 public:
-  static AKANTU_GET_MACRO_NOT_CONST(NbShapeFunctions, nb_shape_functions, UInt);
-  static AKANTU_GET_MACRO_NOT_CONST(NbShapeDerivatives, nb_shape_derivatives,
-                                    UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
-      ShapeSize, interpolation_property::nb_nodes_per_element, UInt);
+      NbNodesPerInterpolationElement,
+      interpolation_property::nb_nodes_per_element, UInt);
+
+  static AKANTU_GET_MACRO_NOT_CONST(
+      ShapeSize, (interpolation_property::nb_nodes_per_element *
+                  interpolation_property::nb_degree_of_freedom *
+                  interpolation_property::nb_degree_of_freedom),
+      UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       ShapeDerivativesSize, (interpolation_property::nb_nodes_per_element *
-                             interpolation_property::natural_space_dimension),
+                             interpolation_property::nb_degree_of_freedom *
+                             interpolation_property::nb_stress_components),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NaturalSpaceDimension, interpolation_property::natural_space_dimension,
       UInt);
-
-protected:
-  /// nb shape functions
-  static const UInt nb_shape_functions;
-  static const UInt nb_shape_derivatives;
+  static AKANTU_GET_MACRO_NOT_CONST(
+      NbDegreeOfFreedom, interpolation_property::nb_degree_of_freedom, UInt);
+  static AKANTU_GET_MACRO_NOT_CONST(
+      NbStressComponents, interpolation_property::nb_stress_components, UInt);
 };
 
 /// Macro to generate the element class structures for different structural
@@ -108,13 +157,13 @@ protected:
     elem_type, geom_type, interp_type, parent_el_type, elem_kind, sp,          \
     gauss_int_type, min_int_order)                                             \
   template <> struct ElementClassProperty<elem_type> {                         \
-    static const GeometricalType geometrical_type = geom_type;                 \
-    static const InterpolationType interpolation_type = interp_type;           \
-    static const ElementType parent_element_type = parent_el_type;             \
-    static const ElementKind element_kind = elem_kind;                         \
-    static const UInt spatial_dimension = sp;                                  \
-    static const GaussIntegrationType gauss_integration_type = gauss_int_type; \
-    static const UInt polynomial_degree = min_int_order;                       \
+    static const GeometricalType geometrical_type{geom_type};                  \
+    static const InterpolationType interpolation_type{interp_type};            \
+    static const ElementType parent_element_type{parent_el_type};              \
+    static const ElementKind element_kind{elem_kind};                          \
+    static const UInt spatial_dimension{sp};                                   \
+    static const GaussIntegrationType gauss_integration_type{gauss_int_type};  \
+    static const UInt polynomial_degree{min_int_order};                        \
   }
 
 /* -------------------------------------------------------------------------- */
@@ -127,134 +176,75 @@ class ElementClass<element_type, _ek_structural>
       public InterpolationElement<
           ElementClassProperty<element_type>::interpolation_type> {
 protected:
-  typedef GeometricalElement<
-      ElementClassProperty<element_type>::geometrical_type>
-      geometrical_element;
-  typedef InterpolationElement<
-      ElementClassProperty<element_type>::interpolation_type>
-      interpolation_element;
-  typedef ElementClass<ElementClassProperty<element_type>::parent_element_type>
-      parent_element;
+  using geometrical_element =
+      GeometricalElement<ElementClassProperty<element_type>::geometrical_type>;
+  using interpolation_element = InterpolationElement<
+      ElementClassProperty<element_type>::interpolation_type>;
+  using parent_element =
+      ElementClass<ElementClassProperty<element_type>::parent_element_type>;
 
 public:
-  /// compute shape derivatives (input is dxds) for a set of points
   static inline void
-  computeShapeDerivatives(const Matrix<Real> & natural_coord,
-                          Tensor3<Real> & shape_deriv,
-                          const Matrix<Real> & real_nodal_coord, UInt n = 0) {
-    UInt nb_points = natural_coord.cols();
-
-    if (element_type == _kirchhoff_shell) {
-      /// TO BE CONTINUED and moved in a _tmpl.hh
-
-      UInt spatial_dimension = real_nodal_coord.cols();
-      UInt nb_nodes = real_nodal_coord.rows();
-
-      const UInt projected_dim = natural_coord.rows();
-      Matrix<Real> rotation_matrix(real_nodal_coord);
-      Matrix<Real> rotated_nodal_coord(real_nodal_coord);
-      Matrix<Real> projected_nodal_coord(natural_coord);
-      /* --------------------------------------------------------------------------
-       */
-      /* --------------------------------------------------------------------------
-       */
-
-      Matrix<Real> Pe(real_nodal_coord);
-      Matrix<Real> Pg(real_nodal_coord);
-      Matrix<Real> inv_Pg(real_nodal_coord);
-
-      /// compute matrix Pe
-      Pe.eye();
-
-      /// compute matrix Pg
-      Vector<Real> Pg_col_1(spatial_dimension);
-      Pg_col_1(0) = real_nodal_coord(0, 1) - real_nodal_coord(0, 0);
-      Pg_col_1(1) = real_nodal_coord(1, 1) - real_nodal_coord(1, 0);
-      Pg_col_1(2) = real_nodal_coord(2, 1) - real_nodal_coord(2, 0);
-
-      Vector<Real> Pg_col_2(spatial_dimension);
-      Pg_col_2(0) = real_nodal_coord(0, 2) - real_nodal_coord(0, 0);
-      Pg_col_2(1) = real_nodal_coord(1, 2) - real_nodal_coord(1, 0);
-      Pg_col_2(2) = real_nodal_coord(2, 2) - real_nodal_coord(2, 0);
-
-      Vector<Real> Pg_col_3(spatial_dimension);
-      Pg_col_3.crossProduct(Pg_col_1, Pg_col_2);
-
-      for (UInt i = 0; i < nb_points; ++i) {
-        Pg(i, 0) = Pg_col_1(i);
-        Pg(i, 1) = Pg_col_2(i);
-        Pg(i, 2) = Pg_col_3(i);
-      }
-
-      /// compute inverse of Pg
-      inv_Pg.inverse(Pg);
-
-      /// compute rotation matrix
-      // rotation_matrix=Pe*inv_Pg;
-      rotation_matrix.eye();
-      /* --------------------------------------------------------------------------
-       */
-      /* --------------------------------------------------------------------------
-       */
-
-      rotated_nodal_coord.mul<false, false>(rotation_matrix, real_nodal_coord);
-
-      for (UInt i = 0; i < projected_dim; ++i) {
-        for (UInt j = 0; j < nb_points; ++j) {
-          projected_nodal_coord(i, j) = rotated_nodal_coord(i, j);
-        }
-      }
-
-      Tensor3<Real> dnds(projected_dim, nb_nodes, natural_coord.cols());
-      Tensor3<Real> J(projected_dim, projected_dim, natural_coord.cols());
-
-      parent_element::computeDNDS(natural_coord, dnds);
-
-      parent_element::computeJMat(dnds, projected_nodal_coord, J);
-
-      for (UInt p = 0; p < nb_points; ++p) {
-
-        Matrix<Real> shape_deriv_p = shape_deriv(p);
-
-        interpolation_element::computeDNDS(natural_coord(p), shape_deriv_p,
-                                           projected_nodal_coord, n);
-
-        Matrix<Real> dNdS = shape_deriv_p;
-        Matrix<Real> inv_J(projected_dim, projected_dim);
-        inv_J.inverse(J(p));
-        shape_deriv_p.mul<false, false>(inv_J, dNdS);
-      }
-    } else {
-
-      for (UInt p = 0; p < nb_points; ++p) {
-        Matrix<Real> shape_deriv_p = shape_deriv(p);
-        interpolation_element::computeDNDS(natural_coord(p), shape_deriv_p,
-                                           real_nodal_coord, n);
-      }
-    }
+  computeRotationMatrix(Matrix<Real> & /*R*/, const Matrix<Real> & /*X*/,
+                        const Vector<Real> & /*extra_normal*/) {
+    AKANTU_TO_IMPLEMENT();
   }
 
   /// compute jacobian (or integration variable change factor) for a given point
-  static inline void computeJacobian(const Matrix<Real> & natural_coords,
-                                     const Matrix<Real> & nodal_coords,
-                                     Vector<Real> & jacobians) {
-    parent_element::computeJacobian(natural_coords, nodal_coords, jacobians);
+  static inline void computeJMat(const Vector<Real> & natural_coords,
+                                 const Matrix<Real> & Xs, Matrix<Real> & J) {
+    Matrix<Real> dnds(Xs.rows(), Xs.cols());
+    parent_element::computeDNDS(natural_coords, dnds);
+    J.mul<false, true>(dnds, Xs);
   }
+
+  static inline void computeJMat(const Matrix<Real> & natural_coords,
+                                 const Matrix<Real> & Xs, Tensor3<Real> & Js) {
+    for (UInt i = 0 ; i < natural_coords.cols(); ++i) {
+      // because non-const l-value reference does not bind to r-value
+      Matrix<Real> J = Js(i);
+      computeJMat(Vector<Real>(natural_coords(i)), Xs, J);
+    }
+  }
+
+  static inline void computeJacobian(const Matrix<Real> & natural_coords,
+                                     const Matrix<Real> & node_coords,
+                                     Vector<Real> & jacobians) {
+    using itp = typename interpolation_element::interpolation_property;
+    Tensor3<Real> Js(itp::natural_space_dimension, itp::natural_space_dimension,
+                     natural_coords.cols());
+    computeJMat(natural_coords, node_coords, Js);
+    for (UInt i = 0; i < natural_coords.cols(); ++i) {
+      Matrix<Real> J = Js(i);
+      jacobians(i) = J.det();
+    }
+  }
+
+  static inline void computeRotation(const Matrix<Real> & node_coords,
+                                     Matrix<Real> & rotation);
 
 public:
   static AKANTU_GET_MACRO_NOT_CONST(Kind, _ek_structural, ElementKind);
   static AKANTU_GET_MACRO_NOT_CONST(P1ElementType, _not_defined, ElementType);
   static AKANTU_GET_MACRO_NOT_CONST(FacetType, _not_defined, ElementType);
-  static ElementType getFacetType(__attribute__((unused)) UInt t = 0) {
+  static constexpr auto getFacetType(__attribute__((unused)) UInt t = 0) {
     return _not_defined;
   }
-  static AKANTU_GET_MACRO_NOT_CONST(
+  static constexpr AKANTU_GET_MACRO_NOT_CONST(
       SpatialDimension, ElementClassProperty<element_type>::spatial_dimension,
       UInt);
-  static ElementType * getFacetTypeInternal() { return NULL; }
+  static constexpr auto getFacetTypes() {
+    return ElementClass<_not_defined>::getFacetTypes();
+  }
 };
 
+} // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+#include "element_classes/element_class_hermite_inline_impl.cc"
+/* keep order */
 #include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
 #include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+/* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+#endif /* __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__ */

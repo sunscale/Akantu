@@ -41,7 +41,7 @@
 
 using namespace akantu;
 
-typedef Cartesian K;
+typedef cgal::Cartesian K;
 typedef K::Point_3 Point;
 typedef K::Segment_3 Segment;
 

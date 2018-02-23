@@ -52,15 +52,12 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("barre_trou.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   /// model creation
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass, true));
-  model.registerNewCustomMaterials<LocalMaterialDamage>("local_damage");
-  model.initMaterials();
+  model.initFull(_analysis_method = _explicit_lumped_mass);
 
   std::cout << model.getMaterial(0) << std::endl;
 
@@ -88,11 +85,7 @@ int main(int argc, char * argv[]) {
   model.dump();
 
   for (UInt s = 0; s < max_steps; ++s) {
-    model.explicitPred();
-
-    model.updateResidual();
-    model.updateAcceleration();
-    model.explicitCorr();
+    model.solveStep();
 
     epot = model.getEnergy("potential");
     ekin = model.getEnergy("kinetic");

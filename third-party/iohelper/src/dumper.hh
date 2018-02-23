@@ -213,7 +213,7 @@ protected:
     const std::string & getFolder() const;
   };
 
-  typedef std::map<std::string, DumpOptions> DumpOptionsMap;
+  using DumpOptionsMap = std::map<std::string, DumpOptions>;
 
 protected:
   void registerDumpOptions(const std::string & key,
@@ -247,8 +247,8 @@ protected:
   //! flag to produce zipped files
   UInt mode;
 
-  typedef std::map<std::string, FieldInterface *>  field_map;
-  typedef std::map<std::string, VariableInterface *>  variable_map;
+  using field_map = std::map<std::string, FieldInterface *>;
+  using variable_map = std::map<std::string, VariableInterface *>;
 
   //! vector of additional per node data
   field_map per_node_data;
@@ -273,7 +273,7 @@ protected:
 
 
 inline Dumper::DumpFlag operator|(const Dumper::DumpFlag & a, const Dumper::DumpFlag & b) {
-  Dumper::DumpFlag tmp = Dumper::DumpFlag(UInt(a) | UInt(b));
+  auto tmp = Dumper::DumpFlag(UInt(a) | UInt(b));
   return tmp;
 }
 
@@ -282,21 +282,21 @@ template <typename T>
 void Dumper::addNodeDataField(const std::string & name, T * data,UInt dimension,
                               UInt size, UInt stride) {
 
-  ContainerArray<T> * cont = new ContainerArray<T>(data,dimension,size,stride);
+  auto * cont = new ContainerArray<T>(data, dimension, size, stride);
   addNodeDataField(name,*cont);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename Cont>
 void Dumper::addNodeDataField(const std::string & name, Cont & data){
-  Field<Cont> *test = new Field<Cont>(data,name);
+  auto * test = new Field<Cont>(data, name);
   per_node_data[name] = test;
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename VarType>
 void Dumper::addVariable(const std::string & name, VarType & data) {
-  Variable<VarType> * vari = new Variable<VarType>(data,name);
+  auto * vari = new Variable<VarType>(data, name);
   global_data[name] = vari;
 }
 
@@ -308,7 +308,7 @@ void Dumper::addElemDataField(const std::string & name,
                               UInt dimension,
                               UInt size, UInt stride){
 
-  ContainerArray<T> * cont = new ContainerArray<T>(data,dimension,size,stride);
+  auto * cont = new ContainerArray<T>(data, dimension, size, stride);
   cont->setElemType(elem_type);
   addElemDataField(name,*cont);
 }
@@ -316,7 +316,7 @@ void Dumper::addElemDataField(const std::string & name,
 /* -------------------------------------------------------------------------- */
 template <typename Cont>
 void Dumper::addElemDataField(const std::string & name, Cont & data){
-  Field<Cont> *test = new Field<Cont>(data,name);
+  auto * test = new Field<Cont>(data, name);
   per_element_data[name] = test;
 }
 

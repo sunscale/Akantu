@@ -38,7 +38,7 @@
 #include "mesh_io.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class MeshIOMSH : public MeshIO {
   /* ------------------------------------------------------------------------ */
@@ -48,7 +48,7 @@ public:
 
   MeshIOMSH();
 
-  virtual ~MeshIOMSH();
+  ~MeshIOMSH() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -56,10 +56,10 @@ public:
 public:
 
   /// read a mesh from the file
-  virtual void read(const std::string & filename, Mesh & mesh);
+  void read(const std::string & filename, Mesh & mesh) override;
 
   /// write a mesh to a file
-  virtual void write(const std::string & filename, const Mesh & mesh);
+  void write(const std::string & filename, const Mesh & mesh) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -110,6 +110,6 @@ protected:
 };
 
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_MESH_IO_MSH_HH__ */

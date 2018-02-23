@@ -31,7 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
+#include <fstream>
 /* -------------------------------------------------------------------------- */
 
 
@@ -48,14 +48,13 @@ int main(int argc, char * argv[]) {
   UInt max_steps = 1000;
 
   Mesh mesh(spatial_dimension);
-  mesh.computeBoundingBox();
 
   mesh.read("bar.msh");
 
   SolidMechanicsModel model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass));
+  model.initFull(_analysis_method = _explicit_lumped_mass);
 
   time_step = model.getStableTimeStep();
   std::cout << "Time Step = " << time_step * time_factor << "s (" << time_step

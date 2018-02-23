@@ -40,9 +40,8 @@ class Visitor {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  Visitor(){};
-  virtual ~Visitor(){};
+  Visitor() = default;
+  virtual ~Visitor() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

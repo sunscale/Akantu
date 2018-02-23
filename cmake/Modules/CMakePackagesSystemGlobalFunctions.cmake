@@ -91,10 +91,9 @@ function(_package_remove_from_variable variable pkg_name value)
 endfunction()
 
 # ==============================================================================
-function(_package_get_variable_for_activated variable values)
+function(_package_get_variable_for_packages variable values)
   set(_list_values)
-  package_get_all_activated_packages(_activated_list)
-  foreach(_pkg_name ${_activated_list})
+  foreach(_pkg_name ${ARGN})
     _package_get_variable(${variable} ${_pkg_name} _value)
     list(APPEND _list_values ${_value})
   endforeach()
@@ -106,4 +105,28 @@ function(_package_get_variable_for_activated variable values)
   set(${values} ${_list_values} PARENT_SCOPE)
 endfunction()
 
+# ==============================================================================
+function(_package_get_variable_for_activated variable values)
+  package_get_all_activated_packages(_activated_list)
+  _package_get_variable_for_packages(${variable} _list_values ${_activated_list})
+  set(${values} ${_list_values} PARENT_SCOPE)
+endfunction()
+
+# ==============================================================================
+function(_package_get_variable_for_external_dependencies variable type values)
+  set(_list_packages)
+  package_get_all_activated_packages(_activated_list)
+  foreach(_pkg_name ${_activated_list})
+    _package_get_nature(${_pkg_name} _nature)
+    if(_nature MATCHES "^external.*")
+      list(APPEND _list_packages ${_pkg_name})
+    endif()
+  endforeach()
+
+  if (_list_packages)
+    list(REMOVE_DUPLICATES _list_packages)
+    _package_get_variable_for_packages(${variable} _list_values_deps ${_list_packages})
+    set(${values} ${_list_values_deps} PARENT_SCOPE)
+  endif()
+endfunction()
 # ==============================================================================

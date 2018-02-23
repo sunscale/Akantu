@@ -25,7 +25,7 @@
 #ifndef __AKANTU_MATERIAL_STIFFNESS_PROPORTIONAL_HH__
 #define __AKANTU_MATERIAL_STIFFNESS_PROPORTIONAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material visco-elastic @f[\sigma = E\epsilon + \alpha E* \frac{d\epsilon}{dt}@f]
@@ -97,6 +97,6 @@ private:
 
 //#include "material_elastic_caughey_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_STIFFNESS_PROPORTIONAL_HH__ */

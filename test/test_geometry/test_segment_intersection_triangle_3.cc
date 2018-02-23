@@ -44,8 +44,8 @@
 
 using namespace akantu;
 
-typedef Cartesian K;
-typedef Spherical SK;
+typedef cgal::Cartesian K;
+typedef cgal::Spherical SK;
 
 /* -------------------------------------------------------------------------- */
 
@@ -105,8 +105,8 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
 
 #if 0
-  // Spherical kernel testing the addition of nodes
-  std::cout << "initial mesh size = " << mesh.getNodes().getSize() << " nodes" << std::endl;
+  // cgal::Spherical kernel testing the addition of nodes
+  std::cout << "initial mesh size = " << mesh.getNodes().size() << " nodes" << std::endl;
 
   SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2);
   SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999);
@@ -118,7 +118,7 @@ int main (int argc, char * argv[]) {
   sphere_list.push_back(sphere2);
 
   intersector_sphere.computeIntersectionQueryList(sphere_list);
-  std::cout << "final mesh size = " << mesh.getNodes().getSize() << std::endl;
+  std::cout << "final mesh size = " << mesh.getNodes().size() << std::endl;
 
   const Array<UInt> new_node_triangle_3 = intersector_sphere.getNewNodePerElem();
   const Array<Real> & nodes = mesh.getNodes();
@@ -128,7 +128,7 @@ int main (int argc, char * argv[]) {
   std::cout << "node 7, x=" << nodes(6,0) << ", y=" << nodes(6,1) << std::endl;
 
   if ( (new_node_triangle_3(0,0) != 1) || (new_node_triangle_3(1,0) != 2)){
-    for(UInt k=0; k != new_node_triangle_3.getSize(); ++k){
+    for(UInt k=0; k != new_node_triangle_3.size(); ++k){
       std::cout << new_node_triangle_3(k,0) << " new nodes in element " << k << ", node(s): "
 		<< new_node_triangle_3(k,1) << ", " << new_node_triangle_3(k,3)
 		<< ", on segment(s):" << new_node_triangle_3(k,2) << ", "

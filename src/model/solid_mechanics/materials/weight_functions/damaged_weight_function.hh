@@ -36,7 +36,7 @@
 #ifndef __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__
 #define __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*  Damage weight function                                                    */
@@ -46,38 +46,37 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-  DamagedWeightFunction(NonLocalManager & manager) : BaseWeightFunction(manager, "damaged"),
-						     damage(NULL) {
+  DamagedWeightFunction(NonLocalManager & manager)
+      : BaseWeightFunction(manager, "damaged"), damage(nullptr) {
     this->init();
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Base Weight Function inherited methods                                     */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Base Weight Function inherited methods */
+  /* --------------------------------------------------------------------------
+   */
 
   /// set the pointers of internals to the right flattend version
-  virtual void init();
+  void init() override;
 
   inline Real operator()(Real r,
-			 const __attribute__((unused)) IntegrationPoint & q1,
-			 const IntegrationPoint & q2);
+                         const __attribute__((unused)) IntegrationPoint & q1,
+                         const IntegrationPoint & q2);
 
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
   /// internal pointer to the current damage vector
   ElementTypeMapReal * damage;
-
 };
 
-
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "damaged_weight_function_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "damaged_weight_function_inline_impl.cc"
 #endif
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__ */

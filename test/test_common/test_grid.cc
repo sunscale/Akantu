@@ -46,9 +46,8 @@ int main(int argc, char *argv[]) {
   Mesh circle(spatial_dimension);
   circle.read("circle.msh");
 
-  circle.computeBoundingBox();
-  const Vector<Real> & l = circle.getLocalLowerBounds();
-  const Vector<Real> & u = circle.getLocalUpperBounds();
+  const auto & l = circle.getLocalLowerBounds();
+  const auto & u = circle.getLocalUpperBounds();
 
   Real spacing[spatial_dimension] = {0.2, 0.2};
 
@@ -64,15 +63,15 @@ int main(int argc, char *argv[]) {
   Element el;
   el.ghost_type = _not_ghost;
 
-  Mesh::type_iterator it        = circle.firstType(spatial_dimension);
-  Mesh::type_iterator last_type = circle.lastType (spatial_dimension);
+  auto it        = circle.firstType(spatial_dimension);
+  auto last_type = circle.lastType (spatial_dimension);
   for(; it != last_type; ++it) {
     UInt nb_element = circle.getNbElement(*it);
     el.type = *it;
 
     for (UInt e = 0; e < nb_element; ++e) {
-      circle.getBarycenter(e, el.type, bary.storage());
       el.element = e;
+      circle.getBarycenter(el, bary);
       grid.insert(el, bary);
     }
   }

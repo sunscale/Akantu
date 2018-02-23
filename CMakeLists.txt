@@ -42,7 +42,7 @@
 #===============================================================================
 # CMake Project
 #===============================================================================
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.1.3)
 
 # add this options before PROJECT keyword
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -61,7 +61,7 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries.")
 mark_as_advanced(BUILD_SHARED_LIBS)
 
 if(NOT AKANTU_TARGETS_EXPORT)
-  set(AKANTU_TARGETS_EXPORT AkantuLibraryDepends)
+  set(AKANTU_TARGETS_EXPORT AkantuTargets)
 endif()
 
 include(CMakeVersionGenerator)
@@ -70,6 +70,7 @@ include(CMakeFlagsHandling)
 
 include(AkantuPackagesSystem)
 include(AkantuMacros)
+include(AkantuCleaning)
 
 #cmake_activate_debug_message()
 
@@ -77,8 +78,8 @@ include(AkantuMacros)
 # Version Number
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
-set(AKANTU_MAJOR_VERSION 2)
-set(AKANTU_MINOR_VERSION 3)
+set(AKANTU_MAJOR_VERSION 3)
+set(AKANTU_MINOR_VERSION 0)
 set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 
@@ -89,27 +90,20 @@ define_project_version()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
   CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
-add_flags(cxx "-Wall")
+#add_flags(cxx "-Wall -Wextra -pedantic -Werror")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  add_flags(cxx "-Wall -Wextra -pedantic") # -Weffc++
+else()
+  add_flags(cxx "-Wall")
+endif()
 
-#Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
-  CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_C_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
-  CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_Fortran_FLAGS_PROFILING "-g -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
-  CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
-  CACHE STRING "Flags used by the linker during profiling builds")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
-  CACHE STRING "Flags used by the linker during profiling builds")
-mark_as_advanced(
-  CMAKE_CXX_FLAGS_PROFILING
-  CMAKE_C_FLAGS_PROFILING
-  CMAKE_Fortran_FLAGS_PROFILING
-  CMAKE_EXE_LINKER_FLAGS_PROFILING
-  CMAKE_SHARED_LINKER_FLAGS_PROFILING
-  )
+option(AKANTU_EXAMPLES "Activate examples" OFF)
+option(AKANTU_TESTS "Activate tests" OFF)
 
+set(AKANTU_PREFERRED_PYTHON_VERSION 3 CACHE STRING "Preferred version for python related things")
+mark_as_advanced(AKANTU_PREFERRED_PYTHON_VERSION)
+
+include(AkantuExtraCompilationProfiles)
 #===============================================================================
 # Dependencies
 #===============================================================================
@@ -150,15 +144,16 @@ endif()
 #===============================================================================
 # Examples and tests
 #===============================================================================
-option(AKANTU_EXAMPLES "Activate examples" OFF)
-option(AKANTU_TESTS "Activate tests" OFF)
-
 include(AkantuTestsMacros)
 include(AkantuExampleMacros)
 
 if(AKANTU_TESTS)
   option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
   find_package(GMSH REQUIRED)
+  # package_is_activated(pybind11 _pybind11_act)
+  # if(_pybind11_act)
+  #   find_package(pybind11 CONFIG REQUIRED QUIET) # to get the pybind11_add_module macro
+  # endif()
 endif()
 
 if(AKANTU_EXAMPLES)

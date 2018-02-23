@@ -33,71 +33,59 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material_mazars.hh"
-#include "material_non_local.hh"
+#include "material_damage_non_local.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material Mazars Non local
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialMazarsNonLocal : public MaterialMazars<spatial_dimension>,
-			       public MaterialNonLocal<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialMazarsNonLocal
+    : public MaterialDamageNonLocal<spatial_dimension,
+                                    MaterialMazars<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
+  using MaterialNonLocalParent =
+      MaterialDamageNonLocal<spatial_dimension, MaterialMazars<spatial_dimension>>;
 
   MaterialMazarsNonLocal(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialMazarsNonLocal() {};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-
-  void initMaterial();
-
-  /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
-
-  /// constitutive law
-  void computeNonLocalStresses(GhostType ghost_type = _not_ghost);
-  void computeNonLocalStress(Array<Real> & Ehatnl,
-			     ElementType el_type,
-			     GhostType ghost_type = _not_ghost);
-
 protected:
-  /// associate the non-local variables of the material to their neighborhoods
-  virtual void nonLocalVariableToNeighborhood();
+  /// constitutive law for all element of a type
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
+
+  void computeNonLocalStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost) override;
+
+  void registerNonLocalVariables() override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
   /// the ehat per quadrature points to perform the averaging
   InternalField<Real> Ehat;
+
+  InternalField<Real> non_local_variable;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-//#include "material_mazars_non_local_inline_impl.cc"
-
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__ */

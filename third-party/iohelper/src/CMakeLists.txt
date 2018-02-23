@@ -34,10 +34,6 @@
 set(IOHELPER_COMMON_SRC
   dumper_lammps.cc
   dumper.cc
-#  dumper_restart.cc
-#  src/reader_C_wrapper.cpp
-#  src/reader.cpp
-#  src/dumper_C_wrapper.cpp
   dumper_paraview.cc
   dumper_text.cc
   paraview_helper.cc
@@ -64,26 +60,26 @@ set(IOHELPER_COMMON_HEADERS
   paraview_helper.hh
   dumper_C_wrapper.h
   base64.hh
-#  src/reader_C_wrapper.h
-#  src/reader.hh
   dumper_lammps.hh
   base64_reader.hh
-#  src/reader_restart.hh
 )
 
 #===============================================================================
 # Library creation rule
 #===============================================================================
-include_directories(
-  ${IOHELPER_SOURCE_DIR}/src
-  )
-
 add_library(iohelper ${IOHELPER_COMMON_SRC})
 
 # link library with other libraries
-target_link_libraries (iohelper ${IOHELPER_EXTERNAL_LIBS})
-set_target_properties(iohelper PROPERTIES PUBLIC_HEADER "${IOHELPER_COMMON_HEADERS}")
+target_link_libraries(iohelper ${IOHELPER_EXTERNAL_LIBS})
+target_include_directories(iohelper
+  PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+            $<INSTALL_INTERFACE:include/iohelper>
+  )
 
+
+set_target_properties(iohelper PROPERTIES PUBLIC_HEADER "${IOHELPER_COMMON_HEADERS}")
+set_property(TARGET iohelper PROPERTY CXX_STANDARD 11)
 
 export(TARGETS iohelper
   FILE "${CMAKE_BINARY_DIR}/IOHelperLibraryDepends.cmake")

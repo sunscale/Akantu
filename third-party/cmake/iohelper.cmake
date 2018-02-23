@@ -35,13 +35,15 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/third-party/iohelper)
   set(IOHELPER_SOURCE_TYPE "internal"
     CACHE INTERNAL "internal variable for clean export")
 
-  set(IOHELPER_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/third-party/iohelper/src"
-    CACHE INTERNAL "IOHelper include directory")
+  #set(IOHELPER_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/third-party/iohelper/src" CACHE INTERNAL "IOHelper include directory")
 
   set(IOHELPER_LIBRARIES iohelper CACHE INTERNAL "IOHelper library")
   package_add_to_export_list(iohelper iohelper)
+  mask_package_options(IOHELPER)
   return()
 endif()
+
+
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/third-party/${IOHELPER_ARCHIVE})
   set(_iohelper_download_command
@@ -68,25 +70,19 @@ ExternalProject_Add(iohelper
   ${_extra_options}
   CMAKE_ARGS <SOURCE_DIR>/
   CMAKE_CACHE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER}
-  LOG_DOWNLOAD 1
-  LOG_CONFIGURE 1
-  LOG_BUILD 1
-  LOG_INSTALL 1
   )
 
-set_third_party_shared_libirary_name(IOHELPER_LIBRARIES iohelper)
+find_library(IOHELPER_LIBRARIES iohelper HINTS ${PROJECT_BINARY_DIR}/third-party)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(_tmp ${IOHELPER_LIBRARIES})
   set(IOHELPER_LIBRARIES "${_tmp}.a" CACHE FILEPATH "" FORCE)
 endif()
 
-set(IOHELPER_INCLUDE_DIR "${PROJECT_BINARY_DIR}/third-party/include/iohelper" CACHE PATH "IOHelper include directory")
+find_path(IOHELPER_INCLUDE_DIR iohelper/io_helper.hh HINTS ${PROJECT_BINARY_DIR}/third-party)
+
 set(IOHELPER_SOURCE_TYPE "external" CACHE INTERNAL "internal variable for clean export")
 
-mark_as_advanced(
-  IOHELPER_LIBRARIES
-  IOHELPER_INCLUDE_DIR
-  )
+mask_package_options(IOHELPER)
 
 package_add_extra_dependency(IOHelper iohelper)
 

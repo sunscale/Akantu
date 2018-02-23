@@ -31,14 +31,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "dumper_iohelper.hh"
+/* -------------------------------------------------------------------------- */
+#include <set>
+/* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_DUMPABLE_IOHELPER_HH__
 #define __AKANTU_DUMPABLE_IOHELPER_HH__
 /* -------------------------------------------------------------------------- */
 
-#include "dumper_iohelper.hh"
-#include <set>
-
-__BEGIN_AKANTU__
+namespace akantu {
 
 class Dumpable {
   /* ------------------------------------------------------------------------ */
@@ -183,13 +184,13 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef std::map<std::string, DumperIOHelper *> DumperMap;
-  typedef std::set<std::string> DumperSet;
+  using DumperMap = std::map<std::string, DumperIOHelper *>;
+  using DumperSet = std::set<std::string>;
 
   DumperMap dumpers;
   std::string default_dumper;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif /* __AKANTU_DUMPABLE_IOHELPER_HH__ */

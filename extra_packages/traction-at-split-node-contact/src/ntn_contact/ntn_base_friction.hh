@@ -25,7 +25,7 @@
 #include "ntn_base_contact.hh"
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 template<>
 inline void ParsableParamTyped< akantu::SynchronizedArray<Real> >::parseParam(const ParserParameter & in_param) {
@@ -80,7 +80,7 @@ public:
 
   /// set to steady state
   virtual void setToSteadyState() {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   };
 
   /// get the number of sticking nodes (in parallel)
@@ -120,7 +120,7 @@ public:
 
   // replaced by the setMixed of the Parsable
   // virtual void setParam(const std::string & param, Real value) {
-  //   AKANTU_DEBUG_ERROR("Friction does not know the following parameter: " << param);
+  //   AKANTU_ERROR("Friction does not know the following parameter: " << param);
   // };
 
   /* ------------------------------------------------------------------------ */
@@ -156,6 +156,6 @@ inline std::ostream & operator <<(std::ostream & stream, const NTNBaseFriction &
   return stream;
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AST_NTN_BASE_FRICTION_HH__ */

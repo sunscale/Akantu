@@ -32,12 +32,13 @@
 
 /* -------------------------------------------------------------------------- */
 #include "synchronizer_registry.hh"
+#include "synchronizer.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+
+namespace akantu {
+
 /* -------------------------------------------------------------------------- */
-SynchronizerRegistry::SynchronizerRegistry(DataAccessor & da) :
-  // nb_synchronization_tags(0),
-  data_accessor(da) {
+SynchronizerRegistry::SynchronizerRegistry() {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -47,25 +48,28 @@ SynchronizerRegistry::SynchronizerRegistry(DataAccessor & da) :
 SynchronizerRegistry::~SynchronizerRegistry() {
   AKANTU_DEBUG_IN();
 
-  // for (Tag2Sync::iterator it = synchronizers.begin();
-  //      it != synchronizers.end();
-  //      ++it) {
-  //   delete it->second;
-  // }
   synchronizers.clear();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
+void SynchronizerRegistry::registerDataAccessor(
+    DataAccessorBase & data_accessor) {
+  this->data_accessor = &data_accessor;
+}
+
+/* -------------------------------------------------------------------------- */
 void SynchronizerRegistry::synchronize(SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  std::pair<Tag2Sync::iterator,Tag2Sync::iterator> range =
-    synchronizers.equal_range(tag);
+  AKANTU_DEBUG_ASSERT(data_accessor != nullptr, "No data accessor set.");
 
-  for (Tag2Sync::iterator it = range.first; it != range.second;++it) {
-    (*it).second->synchronize(data_accessor,tag);
+  std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
+      synchronizers.equal_range(tag);
+
+  for (auto it = range.first; it != range.second; ++it) {
+    it->second->synchronize(*data_accessor, tag);
   }
 
   AKANTU_DEBUG_OUT();
@@ -75,11 +79,13 @@ void SynchronizerRegistry::synchronize(SynchronizationTag tag) {
 void SynchronizerRegistry::asynchronousSynchronize(SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  std::pair<Tag2Sync::iterator,Tag2Sync::iterator> range =
-    synchronizers.equal_range(tag);
+  AKANTU_DEBUG_ASSERT(data_accessor != nullptr, "No data accessor set.");
 
-  for (Tag2Sync::iterator it = range.first; it != range.second;++it) {
-    (*it).second->asynchronousSynchronize(data_accessor, tag);
+  std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
+      synchronizers.equal_range(tag);
+
+  for (auto it = range.first; it != range.second; ++it) {
+    (*it).second->asynchronousSynchronize(*data_accessor, tag);
   }
 
   AKANTU_DEBUG_OUT();
@@ -89,11 +95,13 @@ void SynchronizerRegistry::asynchronousSynchronize(SynchronizationTag tag) {
 void SynchronizerRegistry::waitEndSynchronize(SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  std::pair<Tag2Sync::iterator,Tag2Sync::iterator> range =
-    synchronizers.equal_range(tag);
+  AKANTU_DEBUG_ASSERT(data_accessor != nullptr, "No data accessor set.");
 
-  for (Tag2Sync::iterator it = range.first; it != range.second;++it) {
-    (*it).second->waitEndSynchronize(data_accessor,tag);
+  std::pair<Tag2Sync::iterator, Tag2Sync::iterator> range =
+      synchronizers.equal_range(tag);
+
+  for (auto it = range.first; it != range.second; ++it) {
+    (*it).second->waitEndSynchronize(*data_accessor, tag);
   }
 
   AKANTU_DEBUG_OUT();
@@ -101,30 +109,13 @@ void SynchronizerRegistry::waitEndSynchronize(SynchronizationTag tag) {
 
 /* -------------------------------------------------------------------------- */
 void SynchronizerRegistry::registerSynchronizer(Synchronizer & synchronizer,
-						SynchronizationTag tag) {
+                                                SynchronizationTag tag) {
   AKANTU_DEBUG_IN();
 
-  synchronizers.
-    insert(std::pair<SynchronizationTag, Synchronizer *>(tag, &synchronizer));
+  synchronizers.insert(
+      std::pair<SynchronizationTag, Synchronizer *>(tag, &synchronizer));
 
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-void SynchronizerRegistry::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
-
-  stream << space << "SynchronizerRegistry [" << std::endl;
-  Tag2Sync::const_iterator it;
-  for (it = synchronizers.begin(); it != synchronizers.end(); it++) {
-    stream << space << " + Synchronizers for tag " << (*it).first << " [" <<  std::endl;
-    (*it).second->printself(stream, indent + 1);
-    stream << space << " ]" <<  std::endl;
-  }
-
-  stream << space << "]" << std::endl;
-}
-
-
-__END_AKANTU__
+} // akantu

@@ -46,10 +46,10 @@ Array<T> & StaticMemory::smalloc(const MemoryID & memory_id,
   }
 
   if((memory_it->second).find(name) != (memory_it->second).end()) {
-    AKANTU_DEBUG_ERROR("The vector \"" << name << "\" is already registred in the memory " << memory_id);
+    AKANTU_ERROR("The vector \"" << name << "\" is already registred in the memory " << memory_id);
   }
 
-  Array<T> * tmp_vect = new Array<T>(size, nb_component, name);
+  auto * tmp_vect = new Array<T>(size, nb_component, name);
   (memory_it->second)[name] = tmp_vect;
 
   AKANTU_DEBUG_OUT();
@@ -74,10 +74,10 @@ Array<T> & StaticMemory::smalloc(const MemoryID & memory_id,
   }
 
   if((memory_it->second).find(name) != (memory_it->second).end()) {
-    AKANTU_DEBUG_ERROR("The vector \"" << name << "\" is already registred in the memory " << memory_id);
+    AKANTU_ERROR("The vector \"" << name << "\" is already registred in the memory " << memory_id);
   }
 
-  Array<T> * tmp_vect = new Array<T>(size, nb_component, init_value, name);
+  auto * tmp_vect = new Array<T>(size, nb_component, init_value, name);
   (memory_it->second)[name] = tmp_vect;
 
   AKANTU_DEBUG_OUT();

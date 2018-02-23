@@ -47,24 +47,24 @@ class DumperLammps: public Dumper, public Visitor {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  DumperLammps(Real * bounds = nullptr, const std::string & prefix = "./");
 
-  DumperLammps(Real * bounds = NULL, const std::string & prefix = "./");
-
-  virtual ~DumperLammps(){}
+  ~DumperLammps() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   //! dump to file
-  void dump(const std::string & basename = std::string(), UInt count = UInt(-1));
-  void dumpHead(Real * bounds = NULL);
+  void dump(const std::string & basename = std::string(),
+            UInt count = UInt(-1)) override;
+  void dumpHead(Real * bounds = nullptr);
   template<typename T>
   void visitField(T & cont);
 
   void dumpFinalize();
   //! set mode for file creation : TEXT, BASE64, COMPRESSED
-  void setMode(int mode){Dumper::setMode(mode);}
+  void setMode(int mode) override { Dumper::setMode(mode); }
   void dumpAdd(int grain_id = 1);
   void setEmbeddedValue(__attribute__((unused)) const std::string & name,
 			__attribute__((unused)) int value){}

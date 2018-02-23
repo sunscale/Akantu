@@ -39,7 +39,7 @@
 #ifndef __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__
 #define __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
@@ -48,32 +48,33 @@ __BEGIN_AKANTU__
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialMarigoNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > {
+template <UInt spatial_dimension>
+class MaterialMarigoNonLocal
+    : public MaterialDamageNonLocal<spatial_dimension,
+                                    MaterialMarigo<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialMarigo<spatial_dimension> > MaterialMarigoNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension,
+                                 MaterialMarigo<spatial_dimension>>
+      MaterialMarigoNonLocalParent;
   MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialMarigoNonLocal() {};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
-
-  void initMaterial();
-
 protected:
-  /// constitutive law
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void registerNonLocalVariables() override;
 
-  void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+  /// constitutive law
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
+
+  void computeNonLocalStress(ElementType type,
+                             GhostType ghost_type = _not_ghost) override;
 
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -88,12 +89,6 @@ private:
   InternalField<Real> Ynl;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "material_marigo_non_local_inline_impl.cc"
-
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__ */

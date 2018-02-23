@@ -6,8 +6,8 @@
  *
  * @date creation: Thu Dec 03 2015
  *
- * @brief  test for material type elasto plastic linear isotropic hardening using
- *         tension-compression test
+ * @brief  test for material type elasto plastic linear isotropic hardening
+ * using tension-compression test
  *
  * @section LICENSE
  *
@@ -30,18 +30,19 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
+#include "non_linear_solver.hh"
 #include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
 #include <iostream>
-
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[]) {
-  initialize("test_material_elasto_plastic_linear_isotropic_hardening.dat", argc, argv);
+int main(int argc, char * argv[]) {
+  initialize("test_material_elasto_plastic_linear_isotropic_hardening.dat",
+             argc, argv);
 
   const UInt spatial_dimension = 2;
   const Real u_increment = 0.1;
@@ -49,26 +50,35 @@ int main(int argc, char *argv[]) {
 
   Mesh mesh(spatial_dimension);
   mesh.read("test_material_elasto_plastic_linear_isotropic_hardening.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   SolidMechanicsModel model(mesh);
-  model.initFull(SolidMechanicsModelOptions(_static));
+  model.initFull(_analysis_method = _static);
+
+  auto & solver = model.getNonLinearSolver("static");
+  solver.set("max_iterations", 300);
+  solver.set("threshold", 1e-5);
 
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "left");
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "bottom");
 
   std::cout.precision(4);
-  for (UInt i = 0 ; i < steps ; ++i) {
+  for (UInt i = 0; i < steps; ++i) {
+
     model.applyBC(BC::Dirichlet::FixedValue(i * u_increment, _x), "right");
-    model.solveStatic<_scm_newton_raphson_tangent, _scc_increment>(1e-6, 300);
-    model.updateResidual();
+
+    try {
+      model.solveStep();
+    } catch (debug::NLSNotConvergedException & e) {
+      std::cout << e.niter << " " << e.error << std::endl;
+      throw;
+    }
     Real strainxx = i * u_increment / 10.;
 
     const Array<UInt> & edge_nodes = mesh.getElementGroup("right").getNodes();
-    Array<Real> & residual = model.getResidual();
+    Array<Real> & residual = model.getInternalForce();
     Real reaction = 0;
 
-    for (UInt n = 0 ; n < edge_nodes.getSize() ; n++) {
+    for (UInt n = 0; n < edge_nodes.size(); n++) {
       reaction -= residual(edge_nodes(n), 0);
     }
 
@@ -76,5 +86,5 @@ int main(int argc, char *argv[]) {
   }
 
   finalize();
-  return EXIT_SUCCESS;
+  return 0;
 }

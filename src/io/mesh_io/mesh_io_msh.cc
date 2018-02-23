@@ -166,7 +166,7 @@
 // #include <boost/spirit/include/phoenix_stl.hpp>
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /*   Methods Implentations                                                    */
@@ -233,7 +233,7 @@ MeshIOMSH::MeshIOMSH() {
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
   _akantu_to_msh_element_types[_bernoulli_beam_2] = _msh_segment_2;
   _akantu_to_msh_element_types[_bernoulli_beam_3] = _msh_segment_2;
-  _akantu_to_msh_element_types[_kirchhoff_shell] = _msh_triangle_3;
+  _akantu_to_msh_element_types[_discrete_kirchhoff_triangle_18] = _msh_triangle_3;
 #endif
 
   std::map<ElementType, MSHElementType>::iterator it;
@@ -293,7 +293,7 @@ MeshIOMSH::MeshIOMSH() {
 }
 
 /* -------------------------------------------------------------------------- */
-MeshIOMSH::~MeshIOMSH() {}
+MeshIOMSH::~MeshIOMSH() = default;
 
 /* -------------------------------------------------------------------------- */
 /* Spirit stuff                                                               */
@@ -411,7 +411,7 @@ MeshIOMSH::~MeshIOMSH() {}
 //         tmp_conn[i++] = nit->second;
 //       }
 
-//       ::akantu::Element el(element.type, connectivity.getSize());
+//       ::akantu::Element el(element.type, connectivity.size());
 //       elements_mapping[element.index] = el;
 
 //       connectivity.push_back(tmp_conn);
@@ -645,7 +645,7 @@ MeshIOMSH::~MeshIOMSH() {}
 //   infile.open(filename.c_str());
 
 //   if(!infile.good()) {
-//     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+//     AKANTU_ERROR("Cannot open file " << filename);
 //   }
 
 //   std::string storage; // We will read the contents here.
@@ -666,7 +666,7 @@ MeshIOMSH::~MeshIOMSH() {}
 
 //   qi::phrase_parse(iter, end, g, ws);
 
-//   this->setNbGlobalNodes(mesh, mesh.getNodes().getSize());
+//   this->setNbGlobalNodes(mesh, mesh.getNodes().size());
 //   MeshUtils::fillElementToSubElementsData(mesh);
 // }
 
@@ -678,15 +678,19 @@ static void my_getline(std::ifstream & infile, std::string & str) {
 
 /* -------------------------------------------------------------------------- */
 void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
+
+  MeshAccessor mesh_accessor(mesh);
+
   std::ifstream infile;
   infile.open(filename.c_str());
 
   std::string line;
   UInt first_node_number = std::numeric_limits<UInt>::max(),
        last_node_number = 0, file_format = 1, current_line = 0;
+  bool has_physical_names = false;
 
   if (!infile.good()) {
-    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+    AKANTU_EXCEPTION("Cannot open file " << filename);
   }
 
   while (infile.good()) {
@@ -702,7 +706,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       Int format;
       sstr >> format;
       if (format != 0)
-        AKANTU_DEBUG_ERROR("This reader can only read ASCII files.");
+        AKANTU_ERROR("This reader can only read ASCII files.");
       my_getline(infile, line); /// the end of block line
       current_line += 2;
       file_format = 2;
@@ -710,6 +714,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
     /// read the physical names
     if (line == "$PhysicalNames") {
+      has_physical_names = true;
       my_getline(infile, line); /// the format line
       std::stringstream sstr(line);
 
@@ -724,8 +729,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
         sstr_phys_name >> phys_dim >> phys_name_id;
 
-        std::size_t b = line.find("\"");
-        std::size_t e = line.rfind("\"");
+        std::size_t b = line.find('\"');
+        std::size_t e = line.rfind('\"');
         std::string phys_name = line.substr(b + 1, e - b - 1);
 
         phys_name_map[phys_name_id] = phys_name;
@@ -741,9 +746,9 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       sstr >> nb_nodes;
       current_line++;
 
-      Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
+      Array<Real> & nodes = mesh_accessor.getNodes();
       nodes.resize(nb_nodes);
-      mesh.nb_global_nodes = nb_nodes;
+      mesh_accessor.setNbGlobalNodes(nb_nodes);
 
       UInt index;
       Real coord[3];
@@ -781,7 +786,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       Int index;
       UInt msh_type;
       ElementType akantu_type, akantu_type_old = _not_defined;
-      Array<UInt> * connectivity = NULL;
+      Array<UInt> * connectivity = nullptr;
       UInt node_per_element = 0;
 
       for (UInt i = 0; i < nb_elements; ++i) {
@@ -793,7 +798,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         sstr_elem >> msh_type;
 
         /// get the connectivity vector depending on the element type
-        akantu_type = this->_msh_to_akantu_element_types[(MSHElementType)msh_type];
+        akantu_type =
+            this->_msh_to_akantu_element_types[(MSHElementType)msh_type];
 
         if (akantu_type == _not_defined) {
           AKANTU_DEBUG_WARNING("Unsuported element kind "
@@ -802,7 +808,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         }
 
         if (akantu_type != akantu_type_old) {
-          connectivity = mesh.getConnectivityPointer(akantu_type);
+          connectivity = &mesh_accessor.getConnectivity(akantu_type);
           //          connectivity->resize(0);
 
           node_per_element = connectivity->getNbComponent();
@@ -819,27 +825,27 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
             sstr_elem >> tag;
             std::stringstream sstr_tag_name;
             sstr_tag_name << "tag_" << j;
-            Array<UInt> * data = mesh.getDataPointer<UInt>(
+            Array<UInt> & data = mesh.getDataPointer<UInt>(
                 sstr_tag_name.str(), akantu_type, _not_ghost);
-            data->push_back(tag);
+            data.push_back(tag);
           }
         } else if (file_format == 1) {
           Int tag;
           sstr_elem >> tag; // reg-phys
           std::string tag_name = "tag_0";
           Array<UInt> * data =
-              mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
+              &mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
           data->push_back(tag);
 
           sstr_elem >> tag; // reg-elem
           tag_name = "tag_1";
-          data = mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
+          data = &mesh.getDataPointer<UInt>(tag_name, akantu_type, _not_ghost);
           data->push_back(tag);
 
           sstr_elem >> tag; // number-of-nodes
         }
 
-        UInt * local_connect = new UInt [node_per_element];
+        Vector<UInt> local_connect(node_per_element);
         for (UInt j = 0; j < node_per_element; ++j) {
           UInt node_index;
           sstr_elem >> node_index;
@@ -849,10 +855,9 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
                                   << current_line);
 
           node_index -= first_node_number;
-          local_connect[read_order[j]] = node_index;
+          local_connect(read_order[j]) = node_index;
         }
         connectivity->push_back(local_connect);
-        delete [] local_connect;
       }
       my_getline(infile, line); /// the end of block line
     }
@@ -863,11 +868,14 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     }
   }
 
-  mesh.updateTypesOffsets(_not_ghost);
+  // mesh.updateTypesOffsets(_not_ghost);
 
   infile.close();
 
   this->constructPhysicalNames("tag_0", mesh);
+
+  if (has_physical_names)
+    mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   MeshUtils::fillElementToSubElementsData(mesh);
 }
@@ -886,10 +894,10 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   outfile << std::setprecision(std::numeric_limits<Real>::digits10);
   outfile << "$Nodes" << std::endl;
 
-  outfile << nodes.getSize() << std::endl;
+  outfile << nodes.size() << std::endl;
 
   outfile << std::uppercase;
-  for (UInt i = 0; i < nodes.getSize(); ++i) {
+  for (UInt i = 0; i < nodes.size(); ++i) {
     Int offset = i * nodes.getNbComponent();
     outfile << i + 1;
     for (UInt j = 0; j < nodes.getNbComponent(); ++j) {
@@ -908,42 +916,31 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   outfile << "$Elements" << std::endl;
   ;
 
-  Mesh::type_iterator it =
-      mesh.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end =
-      mesh.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
   Int nb_elements = 0;
-  for (; it != end; ++it) {
-    const Array<UInt> & connectivity = mesh.getConnectivity(*it, _not_ghost);
-    nb_elements += connectivity.getSize();
+  for (auto && type :
+       mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
+    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
+    nb_elements += connectivity.size();
   }
   outfile << nb_elements << std::endl;
 
   UInt element_idx = 1;
-  for (it = mesh.firstType(_all_dimensions, _not_ghost, _ek_not_defined);
-       it != end; ++it) {
-    ElementType type = *it;
-    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
+  for (auto && type :
+       mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
+    const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
 
-    UInt * tag[2] = {NULL, NULL};
-    try {
-      const Array<UInt> & data_tag_0 =
-          mesh.getData<UInt>("tag_0", type, _not_ghost);
+    UInt * tag[2] = {nullptr, nullptr};
+    if (mesh.hasData<UInt>("tag_0", type, _not_ghost)) {
+      const auto & data_tag_0 = mesh.getData<UInt>("tag_0", type, _not_ghost);
       tag[0] = data_tag_0.storage();
-    } catch (...) {
-      tag[0] = NULL;
     }
 
-    try {
-      const Array<UInt> & data_tag_1 =
-          mesh.getData<UInt>("tag_1", type, _not_ghost);
+    if (mesh.hasData<UInt>("tag_1", type, _not_ghost)) {
+      const auto & data_tag_1 = mesh.getData<UInt>("tag_1", type, _not_ghost);
       tag[1] = data_tag_1.storage();
-    } catch (...) {
-      tag[1] = NULL;
     }
 
-    for (UInt i = 0; i < connectivity.getSize(); ++i) {
+    for (UInt i = 0; i < connectivity.size(); ++i) {
       UInt offset = i * connectivity.getNbComponent();
       outfile << element_idx << " " << _akantu_to_msh_element_types[type]
               << " 2";
@@ -971,4 +968,4 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

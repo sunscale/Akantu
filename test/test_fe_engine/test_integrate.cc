@@ -30,11 +30,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "fe_engine.hh"
-#include "shape_lagrange.hh"
-#include "integrator_gauss.hh"
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <iostream>
@@ -42,64 +39,39 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
-  akantu::initialize(argc, argv);
+namespace {
 
-  debug::setDebugLevel(dblTest);
+TYPED_TEST(TestFEMFixture, IntegrateConstant) {
+  this->fem->initShapeFunctions();
 
-  const ElementType type = TYPE;
-  UInt dim = ElementClass<type>::getSpatialDimension();
+  const auto type = this->type;
 
-  Real eps = 3e-13;
-  std::cout << "Epsilon : " << eps << std::endl;
+  const auto & position = this->fem->getMesh().getNodes();
 
-  Mesh my_mesh(dim);
+  Array<Real> const_val(position.size(), 2, "const_val");
+  Array<Real> val_on_quad(this->nb_quadrature_points_total, 2, "val_on_quad");
 
-  std::stringstream meshfilename; meshfilename << type << ".msh";
-  my_mesh.read(meshfilename.str());
-
-  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange>(my_mesh, dim, "my_fem");
-
-  fem->initShapeFunctions();
-
-  UInt nb_element = my_mesh.getNbElement(type);
-  UInt nb_quadrature_points = fem->getNbIntegrationPoints(type) * nb_element;
-
-  Array<Real> const_val(fem->getMesh().getNbNodes(), 2, "const_val");
-  Array<Real> val_on_quad(nb_quadrature_points, 2 , "val_on_quad");
-
-  for (UInt i = 0; i < const_val.getSize(); ++i) {
-    const_val.storage()[i * 2 + 0] = 1.;
-    const_val.storage()[i * 2 + 1] = 2.;
+  Vector<Real> value{1, 2};
+  for (auto && const_ : make_view(const_val, 2)) {
+    const_ = value;
   }
 
-  //interpolate function on quadrature points
-  fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
+  // interpolate function on quadrature points
+  this->fem->interpolateOnIntegrationPoints(const_val, val_on_quad, 2, type);
 
-  //integrate function on elements
-  akantu::Array<akantu::Real> int_val_on_elem(nb_element, 2, "int_val_on_elem");
-  fem->integrate(val_on_quad, int_val_on_elem, 2, type);
+  // integrate function on elements
+  Array<Real> int_val_on_elem(this->nb_element, 2, "int_val_on_elem");
+  this->fem->integrate(val_on_quad, int_val_on_elem, 2, type);
 
   // get global integration value
-  Real value[2] = {0,0};
-  std::cout << "Val on quads : " << val_on_quad << std::endl;
-  std::cout << "Integral on elements : " << int_val_on_elem << std::endl;
+  Vector<Real> sum{0., 0.};
 
-  for (UInt i = 0; i < fem->getMesh().getNbElement(type); ++i) {
-    value[0] += int_val_on_elem.storage()[2*i];
-    value[1] += int_val_on_elem.storage()[2*i+1];
+  for (auto && int_ : make_view(int_val_on_elem, 2)) {
+    sum += int_;
   }
 
-  std::cout << "integral on the mesh of 1 is " << value[0] << " and of 2 is " << value[1] << std::endl;
-
-  delete fem;
-  finalize();
-
-  if(!(std::abs(value[0] - 1.) < eps && std::abs(value[1] - 2.) < eps)) {
-    std::cout << "|1 - " << value[0] << "| = " << std::abs(value[0] - 1.) << std::endl
-	      << "|2 - " << value[1] << "| = " << std::abs(value[1] - 2.) << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
+  auto diff = (value - sum).template norm<L_inf>();
+  EXPECT_NEAR(0, diff, 1e-14);
 }
+
+} // namespace

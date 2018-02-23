@@ -29,16 +29,17 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "material_selector.hh"
 /* -------------------------------------------------------------------------- */
+#include <map>
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
-  class SolidMechanicsModelCohesive;
+class SolidMechanicsModelCohesive;
 }
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 #ifndef __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__
 #define __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__
@@ -48,10 +49,10 @@ __BEGIN_AKANTU__
  * class that assigns the first cohesive material by default to the
  * cohesive elements
  */
-class DefaultMaterialCohesiveSelector : public DefaultMaterialSelector {
+class DefaultMaterialCohesiveSelector : public MaterialSelector {
 public:
   DefaultMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model);
-  virtual UInt operator()(const Element & element);
+  UInt operator()(const Element & element) override;
 
 private:
   const ElementTypeMapArray<UInt> & facet_material;
@@ -60,17 +61,38 @@ private:
 
 /* -------------------------------------------------------------------------- */
 /// To be used with intrinsic elements inserted along mesh physical surfaces
-class MeshDataMaterialCohesiveSelector
-    : public MeshDataMaterialSelector<std::string> {
+class MeshDataMaterialCohesiveSelector : public MaterialSelector {
 public:
   MeshDataMaterialCohesiveSelector(const SolidMechanicsModelCohesive & model);
-  virtual UInt operator()(const Element & element);
+  UInt operator()(const Element & element) override;
+
 protected:
-  const Mesh &mesh_facets;
-  const ElementTypeMapArray<UInt> & material_index;
+  const SolidMechanicsModelCohesive & model;
+  const Mesh & mesh_facets;
+  const ElementTypeMapArray<std::string> & material_index;
   bool third_dimension;
+};
+
+/// bulk1, bulk2 -> cohesive
+using MaterialCohesiveRules = std::map<std::pair<ID, ID>, ID>;
+
+/* -------------------------------------------------------------------------- */
+class MaterialCohesiveRulesSelector : public MaterialSelector {
+public:
+  MaterialCohesiveRulesSelector(const SolidMechanicsModelCohesive & model,
+                                const MaterialCohesiveRules & rules,
+                                ID mesh_data_id = "physical_names");
+  UInt operator()(const Element & element);
+
+private:
+  const SolidMechanicsModelCohesive & model;
+  ID mesh_data_id;
+  const Mesh & mesh;
+  const Mesh & mesh_facets;
+  UInt spatial_dimension;
+  MaterialCohesiveRules rules;
 };
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__ */
 
-__END_AKANTU__
+} // akantu

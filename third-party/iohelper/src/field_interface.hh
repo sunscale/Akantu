@@ -42,9 +42,8 @@ class FieldInterface {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  FieldInterface(){};
-  virtual ~FieldInterface(){};
+  FieldInterface() = default;
+  virtual ~FieldInterface() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

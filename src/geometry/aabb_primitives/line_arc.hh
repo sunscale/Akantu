@@ -37,7 +37,7 @@
 
 #include "mesh_geom_common.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
   
 /* -------------------------------------------------------------------------- */
 
@@ -73,6 +73,6 @@ protected:
   UInt seg_id;
 };
 
-__END_AKANTU__
+} // akantu
 
 #endif // __AKANTU_LINE_ARC_HH__

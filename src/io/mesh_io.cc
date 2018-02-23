@@ -31,94 +31,98 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "mesh_io.hh"
-
+#include "aka_common.hh"
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 
-
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MeshIO::MeshIO() {
-  canReadSurface      = false;
+  canReadSurface = false;
   canReadExtendedData = false;
 }
 
 /* -------------------------------------------------------------------------- */
-MeshIO::~MeshIO() {
-
-}
+MeshIO::~MeshIO() = default;
 
 /* -------------------------------------------------------------------------- */
-MeshIO * MeshIO::getMeshIO(const std::string & filename, const MeshIOType & type) {
+std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
+                                          const MeshIOType & type) {
   MeshIOType t = type;
-  if(type == _miot_auto) {
+  if (type == _miot_auto) {
     std::string::size_type idx = filename.rfind('.');
     std::string ext;
-    if(idx != std::string::npos) {
-      ext = filename.substr(idx+1);
+    if (idx != std::string::npos) {
+      ext = filename.substr(idx + 1);
     }
 
-    if(ext == "msh") { t = _miot_gmsh;
-    } else if(ext == "diana") { t = _miot_diana;
-    } else if(ext == "inp")   { t = _miot_abaqus;
-    } else AKANTU_EXCEPTION("Cannot guess the type of file of "
-			    << filename << " (ext "<< ext <<"). "
-			    << "Please provide the MeshIOType to the read function");
+    if (ext == "msh") {
+      t = _miot_gmsh;
+    } else if (ext == "diana") {
+      t = _miot_diana;
+    } else if (ext == "inp") {
+      t = _miot_abaqus;
+    } else
+      AKANTU_EXCEPTION("Cannot guess the type of file of "
+                       << filename << " (ext " << ext << "). "
+                       << "Please provide the MeshIOType to the read function");
   }
 
-  switch(t) {
-  case _miot_gmsh         : return new MeshIOMSH();
+  switch (t) {
+  case _miot_gmsh:
+    return std::make_unique<MeshIOMSH>();
 #if defined(AKANTU_STRUCTURAL_MECHANICS)
-  case _miot_gmsh_struct  : return new MeshIOMSHStruct();
+  case _miot_gmsh_struct:
+    return std::make_unique<MeshIOMSHStruct>();
 #endif
-  case _miot_diana        : return new MeshIODiana();
-  case _miot_abaqus       : return new MeshIOAbaqus();
+  case _miot_diana:
+    return std::make_unique<MeshIODiana>();
+  case _miot_abaqus:
+    return std::make_unique<MeshIOAbaqus>();
   default:
-    return NULL;
+    return nullptr;
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshIO::read(const std::string & filename, Mesh & mesh, const MeshIOType & type) {
-  MeshIO * mesh_io = getMeshIO(filename, type);
+void MeshIO::read(const std::string & filename, Mesh & mesh,
+                  const MeshIOType & type) {
+  std::unique_ptr<MeshIO> mesh_io = getMeshIO(filename, type);
   mesh_io->read(filename, mesh);
-  delete mesh_io;
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshIO::write(const std::string & filename, Mesh & mesh, const MeshIOType & type) {
-  MeshIO * mesh_io = getMeshIO(filename, type);
+void MeshIO::write(const std::string & filename, Mesh & mesh,
+                   const MeshIOType & type) {
+  std::unique_ptr<MeshIO> mesh_io = getMeshIO(filename, type);
   mesh_io->write(filename, mesh);
-  delete mesh_io;
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshIO::constructPhysicalNames(const std::string & tag_name,
-				    Mesh & mesh) {
+void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
+  if (!phys_name_map.empty()) {
+    for (Mesh::type_iterator type_it = mesh.firstType();
+         type_it != mesh.lastType(); ++type_it) {
 
-  if(!phys_name_map.empty()) {
-    for(Mesh::type_iterator type_it = mesh.firstType();
-	type_it != mesh.lastType();
-	++type_it) {
-      
-      Array<std::string> * name_vec =
-	mesh.getDataPointer<std::string>("physical_names", *type_it);
+      auto & name_vec =
+          mesh.getDataPointer<std::string>("physical_names", *type_it);
 
-      const Array<UInt> & tags_vec =
-	mesh.getData<UInt>(tag_name, *type_it);
-      
-      for(UInt i(0); i < tags_vec.getSize(); i++) {
-        std::map<UInt, std::string>::const_iterator map_it
-	  = phys_name_map.find(tags_vec(i));
+      const auto & tags_vec = mesh.getData<UInt>(tag_name, *type_it);
 
-        if(map_it == phys_name_map.end()) {
+      for (auto pair : zip(tags_vec, name_vec)) {
+        auto tag = std::get<0>(pair);
+        auto & name = std::get<1>(pair);
+        auto map_it = phys_name_map.find(tag);
+
+        if (map_it == phys_name_map.end()) {
           std::stringstream sstm;
-          sstm << tags_vec(i);
-          name_vec->operator()(i) = sstm.str();
+          sstm << tag;
+
+          name = sstm.str();
         } else {
-          name_vec->operator()(i) = map_it->second;
+          name = map_it->second;
         }
       }
     }
@@ -126,29 +130,19 @@ void MeshIO::constructPhysicalNames(const std::string & tag_name,
 }
 
 /* -------------------------------------------------------------------------- */
-
-
-void MeshIO::printself(std::ostream & stream, int indent) const{
-
+void MeshIO::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
-  if (phys_name_map.size()){
-
+  if (phys_name_map.size()) {
     stream << space << "Physical map:" << std::endl;
-    
-    std::map<UInt, std::string>::const_iterator it = phys_name_map.begin();
-    std::map<UInt, std::string>::const_iterator end = phys_name_map.end();
-
-    
-    for (; it!=end; ++it) {
-      stream << space << it->first << ": " << it->second << std::endl;
+    for (auto & pair : phys_name_map) {
+      stream << space << pair.first << ": " << pair.second << std::endl;
     }
   }
-
 }
 
 /* -------------------------------------------------------------------------- */
 
-
-__END_AKANTU__
+} // namespace akantu

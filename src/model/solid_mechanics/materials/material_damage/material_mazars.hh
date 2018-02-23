@@ -33,14 +33,14 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_damage.hh"
 #include "material.hh"
+#include "material_damage.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_MAZARS_HH__
 #define __AKANTU_MATERIAL_MAZARS_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material Mazars
@@ -56,65 +56,61 @@ __BEGIN_AKANTU__
  *   - Bc   : Parameter damage compression 2
  *   - beta : Parameter for shear
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialMazars : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialMazars(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialMazars() {};
+  ~MaterialMazars() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// constitutive law for all element of a type
-  void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
-				  Matrix<Real> & sigma,
-				  Real & damage,
-				  Real & Ehat);
+                                  Matrix<Real> & sigma, Real & damage,
+                                  Real & Ehat);
 
   inline void computeDamageAndStressOnQuad(const Matrix<Real> & grad_u,
-					   Matrix<Real> & sigma,
-					   Real & damage,
-					   Real & Ehat);
+                                           Matrix<Real> & sigma, Real & damage,
+                                           Real & Ehat);
 
   inline void computeDamageOnQuad(const Real & epsilon_equ,
-				  const Matrix<Real> & sigma,
-				  const Vector<Real> & epsilon_princ,
-				  Real & dam);
+                                  const Matrix<Real> & sigma,
+                                  const Vector<Real> & epsilon_princ,
+                                  Real & dam);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
   /// damage threshold
-  RandomInternalField<Real>  K0;
-  ///parameter damage traction 1
-  Real At ;
-  ///parameter damage traction 2
-  Real Bt ;
-  ///parameter damage compression 1
-  Real Ac ;
-  ///parameter damage compression 2
-  Real Bc ;
-  ///parameter for shear
-  Real beta ;
+  RandomInternalField<Real> K0;
+  /// parameter damage traction 1
+  Real At;
+  /// parameter damage traction 2
+  Real Bt;
+  /// parameter damage compression 1
+  Real Ac;
+  /// parameter damage compression 2
+  Real Bc;
+  /// parameter for shear
+  Real beta;
 
-  /// specify the variable to average false = ehat, true = damage (only valid for non local version)
+  /// specify the variable to average false = ehat, true = damage (only valid
+  /// for non local version)
   bool damage_in_compute_stress;
 };
 
@@ -124,6 +120,6 @@ protected:
 
 #include "material_mazars_inline_impl.cc"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_MAZARS_HH__ */
