@@ -123,6 +123,7 @@ void MaterialCohesiveLinear<spatial_dimension>::updateInternalParameters() {
   else
     beta2_inv = 1. / beta / beta;
 }
+
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {

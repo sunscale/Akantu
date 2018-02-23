@@ -74,7 +74,7 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
-    Vector<Real> & traction, const Vector<Real> & opening,
+    Vector<Real> & traction, Vector<Real> & opening,
     const Vector<Real> & normal, Real & delta_max,
     const Real & delta_c, const Vector<Real> & insertion_stress,
     const Real & sigma_c, Vector<Real> & normal_opening,
@@ -99,21 +99,11 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
   Real delta =
       tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
-  penetration = normal_opening_norm < 0.0;
+  penetration = normal_opening_norm / delta_c < -Math::getTolerance();
+  //penetration = normal_opening_norm < 0.;
   if (this->contact_after_breaking == false &&
       Math::are_float_equal(damage, 1.))
     penetration = false;
-
-  /**
-   * if during the convergence loop a cohesive element continues to
-   * jumps from penetration to opening, and convergence is not
-   * reached, its penalty parameter will be reduced in the
-   * recomputation of the same incremental step. recompute is set
-   * equal to true when convergence is not reached in the
-   * solveStepCohesive function and the execution of the program
-   * goes back to the main file where the variable load_reduction
-   * is set equal to true.
-   */
 
   if (penetration) {
     /// use penalty coefficient in case of penetration
@@ -122,9 +112,8 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     contact_opening = normal_opening;
 
     /// don't consider penetration contribution for delta
-    // opening = tangential_opening;
+    opening = tangential_opening;
     normal_opening.clear();
-
   } else {
     delta += normal_opening_norm * normal_opening_norm;
     contact_traction.clear();

@@ -101,7 +101,7 @@ protected:
 
   /// compute the traction for a given quadrature point
   inline void computeTractionOnQuad(
-      Vector<Real> & traction, const Vector<Real> & opening,
+      Vector<Real> & traction, Vector<Real> & opening,
       const Vector<Real> & normal, Real & delta_max, const Real & delta_c,
       const Vector<Real> & insertion_stress, const Real & sigma_c,
       Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
