@@ -58,8 +58,6 @@ void MaterialFE2<spatial_dimension>::initMaterial() {
 
   /// create a Mesh and SolidMechanicsModel on each integration point of the
   /// material
-  const auto & comm = this->model.getMesh().getCommunicator();
-  UInt prank = comm.whoAmI();
   auto C_it = this->C(this->el_type).begin(voigt_h::size, voigt_h::size);
 
   for (auto && data :
