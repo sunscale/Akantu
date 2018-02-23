@@ -153,6 +153,8 @@ void Material::initMaterial() {
 
   is_init = true;
 
+  updateInternalParameters();
+
   AKANTU_DEBUG_OUT();
 }
 

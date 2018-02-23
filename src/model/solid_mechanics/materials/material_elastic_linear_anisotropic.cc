@@ -90,9 +90,6 @@ MaterialElasticLinearAnisotropic<dim>::MaterialElasticLinearAnisotropic(
 template <UInt dim> void MaterialElasticLinearAnisotropic<dim>::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
-
-  updateInternalParameters();
-
   AKANTU_DEBUG_OUT();
 }
 

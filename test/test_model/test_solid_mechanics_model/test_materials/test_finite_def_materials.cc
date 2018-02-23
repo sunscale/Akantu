@@ -40,21 +40,19 @@ class TestFiniteDefMaterialFixture : public ::TestMaterialFixture<T> {};
 
 TYPED_TEST_CASE(TestFiniteDefMaterialFixture, types);
 
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputeStress) {
+TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeStress) {
   this->material->testComputeStress();
 }
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefEnergyDensity) {
+TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_EnergyDensity) {
   this->material->testEnergyDensity();
 }
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputeTangentModuli) {
+TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
-
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputePushWaveSpeed) {
+TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputePushWaveSpeed) {
   this->material->testPushWaveSpeed();
 }
-
-TYPED_TEST(TestFiniteDefMaterialFixture, FiniteDefComputeShearWaveSpeed) {
+TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeShearWaveSpeed) {
   this->material->testShearWaveSpeed();
 }
 }

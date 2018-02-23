@@ -21,21 +21,19 @@ class TestPlasticMaterialFixture : public ::TestMaterialFixture<T> {};
 
 TYPED_TEST_CASE(TestPlasticMaterialFixture, types);
 
-TYPED_TEST(TestPlasticMaterialFixture, PlasticComputeStress) {
+TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputeStress) {
   this->material->testComputeStress();
 }
-TYPED_TEST(TestPlasticMaterialFixture, PlasticEnergyDensity) {
+TYPED_TEST(TestPlasticMaterialFixture, DISABLED_EnergyDensity) {
   this->material->testEnergyDensity();
 }
-TYPED_TEST(TestPlasticMaterialFixture, PlasticComputeTangentModuli) {
+TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
-
-TYPED_TEST(TestPlasticMaterialFixture, PlasticComputePushWaveSpeed) {
+TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputePushWaveSpeed) {
   this->material->testPushWaveSpeed();
 }
-
-TYPED_TEST(TestPlasticMaterialFixture, PlasticComputeShearWaveSpeed) {
+TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputeShearWaveSpeed) {
   this->material->testShearWaveSpeed();
 }
 }

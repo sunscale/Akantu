@@ -297,17 +297,6 @@ inline void Material::setParam(const ID & param, T value) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline void Material::setParamNoUpdate(const ID & param, T value) {
-  try {
-    set<T>(param, value);
-  } catch (...) {
-    AKANTU_EXCEPTION("No parameter " << param << " in the material "
-                     << getID());
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
 inline void Material::packElementDataHelper(
     const ElementTypeMapArray<T> & data_to_pack, CommunicationBuffer & buffer,
     const Array<Element> & elements, const ID & fem_id) const {

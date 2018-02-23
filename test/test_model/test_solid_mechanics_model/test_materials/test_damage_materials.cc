@@ -27,21 +27,21 @@ class TestDamageMaterialFixture : public ::TestMaterialFixture<T> {};
 
 TYPED_TEST_CASE(TestDamageMaterialFixture, types);
 
-TYPED_TEST(TestDamageMaterialFixture, DamageComputeStress) {
+TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeStress) {
   this->material->testComputeStress();
 }
-TYPED_TEST(TestDamageMaterialFixture, DamageEnergyDensity) {
+TYPED_TEST(TestDamageMaterialFixture, DISABLED_EnergyDensity) {
   this->material->testEnergyDensity();
 }
-TYPED_TEST(TestDamageMaterialFixture, DamageComputeTangentModuli) {
+TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
 
-TYPED_TEST(TestDamageMaterialFixture, DamageComputePushWaveSpeed) {
+TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputePushWaveSpeed) {
   this->material->testPushWaveSpeed();
 }
 
-TYPED_TEST(TestDamageMaterialFixture, DamageComputeShearWaveSpeed) {
+TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeShearWaveSpeed) {
   this->material->testShearWaveSpeed();
 }
 }
