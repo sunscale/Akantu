@@ -63,6 +63,7 @@ namespace detail {
     P(0) = a1;
     P(1) = e2;
     P(2) = e3;
+    P = P.transpose();
   }
 }
 
@@ -78,7 +79,7 @@ ElementClass<_discrete_kirchhoff_triangle_18>::computeRotationMatrix(
   R.clear();
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
-      R(i + dim, j + dim) = R(i, j) = P(j, i);
+      R(i + dim, j + dim) = R(i, j) = P(i, j);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -110,13 +111,13 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
   std::for_each(A.begin(), A.end(), [](auto & a) { a(2) = 0; });
   // Computing lengths
   std::transform(A.begin(), A.end(), L.begin(),
-                 [](Vector<Real> & a) { return a.norm<L_2>(); });
+                 [](auto & a) { return a.template norm<L_2>(); });
   // Computing cosines
   std::transform(A.begin(), A.end(), L.begin(), C.begin(),
-                 [](Vector<Real> & a, Real & l) { return a(0) / l; });
+                 [](auto & a, auto & l) { return a(0) / l; });
   // Computing sines
   std::transform(A.begin(), A.end(), L.begin(), S.begin(),
-                 [](Vector<Real> & a, Real & l) { return a(1) / l; });
+                 [](auto & a, auto & l) { return a(1) / l; });
 
   // Natural coordinates
   Real xi = natural_coords(0);
@@ -137,9 +138,9 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
       // clang-format off
       {-1 - 3. / 4 * (dP(0, 0) * C[0] * C[0] + dP(0, 2) * C[2] * C[2]),
 	1 - 3. / 4 * (dP(0, 1) * C[1] * C[1] + dP(0, 0) * C[0] * C[0]),
-	   -3. / 4 * (dP(0, 2) * C[2] * C[2] + dP(0, 1) * C[1] * C[1])},
+	  - 3. / 4 * (dP(0, 2) * C[2] * C[2] + dP(0, 1) * C[1] * C[1])},
       {-1 - 3. / 4 * (dP(1, 0) * C[0] * C[0] + dP(1, 2) * C[2] * C[2]),
-	   -3. / 4 * (dP(1, 1) * C[1] * C[1] + dP(1, 0) * C[0] * C[0]),
+	  - 3. / 4 * (dP(1, 1) * C[1] * C[1] + dP(1, 0) * C[0] * C[0]),
 	1 - 3. / 4 * (dP(1, 2) * C[2] * C[2] + dP(1, 1) * C[1] * C[1])}};
   // clang-format on
   Matrix<Real> dNx3 = {
@@ -161,9 +162,9 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
       // clang-format off
       {-1 - 3. / 4 * (dP(0, 0) * S[0] * S[0] + dP(0, 2) * S[2] * S[2]),
 	1 - 3. / 4 * (dP(0, 1) * S[1] * S[1] + dP(0, 0) * S[0] * S[0]),
-	   -3. / 4 * (dP(0, 2) * S[2] * S[2] + dP(0, 1) * S[1] * S[1])},
+	  - 3. / 4 * (dP(0, 2) * S[2] * S[2] + dP(0, 1) * S[1] * S[1])},
       {-1 - 3. / 4 * (dP(1, 0) * S[0] * S[0] + dP(1, 2) * S[2] * S[2]),
-	   -3. / 4 * (dP(1, 1) * S[1] * S[1] + dP(1, 0) * S[0] * S[0]),
+	  - 3. / 4 * (dP(1, 1) * S[1] * S[1] + dP(1, 0) * S[0] * S[0]),
 	1 - 3. / 4 * (dP(1, 2) * S[2] * S[2] + dP(1, 1) * S[1] * S[1])}};
   // clang-format on
 
@@ -192,18 +193,18 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18,
     i += mat->cols();
   }
 
-  // clang-format off
-  B = {
-    // Membrane shape functions; TODO use the triangle_3 shapes
-    {dNm(0, 0), 0,         0, 0, 0, 0, dNm(0, 1), 0,         0, 0, 0, 0, dNm(0, 2), 0,         0, 0, 0, 0, },
-    {0,         dNm(1, 0), 0, 0, 0, 0, 0,         dNm(1, 1), 0, 0, 0, 0, 0,         dNm(1, 2), 0, 0, 0, 0, },
-    {dNm(1, 0), dNm(0, 0), 0, 0, 0, 0, dNm(1, 1), dNm(0, 1), 0, 0, 0, 0, dNm(1, 2), dNm(0, 2), 0, 0, 0, 0, },
-
-    // Bending shape functions
-    {0, 0, dNx1(0, 0),              -dNx3(0, 0),              dNx2(0, 0),              0, 0, 0, dNx1(0, 1),              -dNx3(0, 1),              dNx2(0, 1),              0, 0, 0, dNx1(0, 2),              -dNx3(0, 2),              dNx2(0, 2),              0},
-    {0, 0, dNy1(1, 0),              -dNy3(1, 0),              dNy2(1, 0),              0, 0, 0, dNy1(1, 1),              -dNy3(1, 1),              dNy2(1, 1),              0, 0, 0, dNy1(1, 2),              -dNy3(1, 2),              dNy2(1, 2),              0},
-    {0, 0, dNx1(1, 0) + dNy1(0, 0), -dNx3(1, 0) - dNy3(0, 0), dNx2(1, 0) + dNy2(1, 0), 0, 0, 0, dNx1(1, 1) + dNy1(0, 1), -dNx3(1, 1) - dNy3(0, 0), dNx2(1, 1) + dNy2(1, 1), 0, 0, 0, dNx1(1, 2) + dNy1(0, 2), -dNx3(1, 2) - dNy3(0, 2), dNx2(1, 2) + dNy2(1, 2), 0}};
-  // clang-format on
+  for (UInt i = 0; i < 3; ++i) {
+    // clang-format off
+    Matrix<Real> Bm = {{dNm(0, i), 0,         0, 0, 0, 0},
+                       {0,         dNm(1, i), 0, 0, 0, 0},
+                       {dNm(1, i), dNm(0, i), 0, 0, 0, 0}};
+    Matrix<Real> Bf = {{0, 0, dNx1(0, i),              -dNx3(0, i),              dNx2(0, i),              0},
+                       {0, 0, dNy1(1, i),              -dNy3(1, i),              dNy2(1, i),              0},
+                       {0, 0, dNx1(1, i) + dNy1(0, i), -dNx3(1, i) - dNy3(0, i), dNx2(1, i) + dNy2(0, i), 0}};
+    // clang-format on
+    B.block(Bm, 0, i * 6);
+    B.block(Bf, 3, i * 6);
+  }
 }
 
 } // namespace akantu

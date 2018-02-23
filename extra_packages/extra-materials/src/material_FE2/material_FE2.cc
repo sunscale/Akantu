@@ -68,14 +68,14 @@ void MaterialFE2<spatial_dimension>::initMaterial() {
     auto & C = std::get<1>(data);
 
     meshes.emplace_back(std::make_unique<Mesh>(
-        spatial_dimension, "RVE_mesh_" + std::to_string(prank), q + 1));
+        spatial_dimension, "RVE_mesh_" + std::to_string(q), q + 1));
 
     auto & mesh = *meshes.back();
     mesh.read(mesh_file);
 
     RVEs.emplace_back(std::make_unique<SolidMechanicsModelRVE>(
         mesh, true, this->nb_gel_pockets, _all_dimensions,
-        "SMM_RVE_" + std::to_string(prank), q + 1));
+        "SMM_RVE_" + std::to_string(q), q + 1));
 
     auto & RVE = *RVEs.back();
     RVE.initFull(_analysis_method = _static);
@@ -171,12 +171,18 @@ void MaterialFE2<spatial_dimension>::advanceASR(
                            spatial_dimension),
            make_view(this->eigengradu(this->el_type), spatial_dimension,
                      spatial_dimension),
-           make_view(this->C(this->el_type), voigt_h::size, voigt_h::size))) {
+           make_view(this->C(this->el_type), voigt_h::size, voigt_h::size),
+           this->delta_T(this->el_type))) {
     auto & RVE = *(std::get<0>(data));
 
     /// apply boundary conditions based on the current macroscopic displ.
     /// gradient
     RVE.applyBoundaryConditions(std::get<1>(data));
+
+    /// apply homogeneous temperature field to each RVE to obtain thermoelastic
+    /// effect
+    RVE.applyHomogeneousTemperature(std::get<4>(data));
+
 
     /// advance the ASR in every RVE
     RVE.advanceASR(prestrain);

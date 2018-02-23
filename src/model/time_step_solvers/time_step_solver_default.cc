@@ -278,5 +278,32 @@ void TimeStepSolverDefault::assembleResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
+void TimeStepSolverDefault::assembleResidual(const ID & residual_part) {
+  AKANTU_DEBUG_IN();
+
+  if (this->needed_matrices.find("M") != needed_matrices.end()) {
+    if (this->is_mass_lumped) {
+      this->assembleLumpedMatrix("M");
+    } else {
+      this->assembleMatrix("M");
+    }
+  }
+
+  if (residual_part != "inertial") {
+    TimeStepSolver::assembleResidual(residual_part);
+  }
+
+  if(residual_part == "inertial") {
+    for (auto & pair : this->integration_schemes) {
+      auto & integration_scheme = pair.second;
+
+      integration_scheme->assembleResidual(this->is_mass_lumped);
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 
 } // namespace akantu

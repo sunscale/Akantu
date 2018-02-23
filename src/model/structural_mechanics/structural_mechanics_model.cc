@@ -39,6 +39,7 @@
 #include "mesh.hh"
 #include "shape_structural.hh"
 #include "sparse_matrix.hh"
+#include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumpable_inline_impl.hh"
@@ -114,6 +115,30 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
   // <<<< END >>>>
 
   Model::initFullImpl(options);
+
+  // Initializing stresses
+  ElementTypeMap<UInt> stress_components;
+
+  /// TODO this is ugly af, maybe add a function to FEEngine
+  for (auto & type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
+				       _element_kind = _ek_structural)) {
+    UInt nb_components = 0;
+
+    // Getting number of components for each element type
+#define GET_(type) nb_components = ElementClass<type>::getNbStressComponents()
+    AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(GET_);
+#undef GET_
+
+    stress_components(nb_components, type);
+  }
+
+  stress.initialize(getFEEngine(), _spatial_dimension = _all_dimensions,
+                    _element_kind = _ek_structural,
+		    _all_ghost_types = true,
+                    _nb_component = [&stress_components](
+                        const ElementType & type, const GhostType &) -> UInt {
+                      return stress_components(type);
+                    });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -141,9 +166,9 @@ void StructuralMechanicsModel::initSolver(
 
   this->allocNodalField(displacement_rotation, nb_degree_of_freedom,
                         "displacement");
-  this->allocNodalField(external_force_momentum, nb_degree_of_freedom,
+  this->allocNodalField(external_force, nb_degree_of_freedom,
                         "external_force");
-  this->allocNodalField(internal_force_momentum, nb_degree_of_freedom,
+  this->allocNodalField(internal_force, nb_degree_of_freedom,
                         "internal_force");
   this->allocNodalField(blocked_dofs, nb_degree_of_freedom, "blocked_dofs");
 
@@ -209,25 +234,6 @@ void StructuralMechanicsModel::computeStresses() {
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(COMPUTE_STRESS_ON_QUAD);
 #undef COMPUTE_STRESS_ON_QUAD
   }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::updateResidual() {
-  AKANTU_DEBUG_IN();
-
-  auto & K = getDOFManager().getMatrix("K");
-
-  internal_force_momentum->clear();
-  K.matVecMul(*displacement_rotation, *internal_force_momentum);
-  *internal_force_momentum *= -1.;
-
-  getDOFManager().assembleToResidual("displacement", *external_force_momentum,
-                                     1.);
-
-  getDOFManager().assembleToResidual("displacement", *internal_force_momentum,
-                                     1.);
 
   AKANTU_DEBUG_OUT();
 }
@@ -313,23 +319,23 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "force") {
-    return mesh.createStridedNodalField(external_force_momentum, group_name, n,
+    return mesh.createStridedNodalField(external_force, group_name, n,
                                         0, padding_flag);
   }
 
   if (field_name == "momentum") {
-    return mesh.createStridedNodalField(external_force_momentum, group_name,
+    return mesh.createStridedNodalField(external_force, group_name,
                                         nb_degree_of_freedom - n, n,
                                         padding_flag);
   }
 
   if (field_name == "internal_force") {
-    return mesh.createStridedNodalField(internal_force_momentum, group_name, n,
+    return mesh.createStridedNodalField(internal_force, group_name, n,
                                         0, padding_flag);
   }
 
   if (field_name == "internal_momentum") {
-    return mesh.createStridedNodalField(internal_force_momentum, group_name,
+    return mesh.createStridedNodalField(internal_force, group_name,
                                         nb_degree_of_freedom - n, n,
                                         padding_flag);
   }
@@ -370,8 +376,17 @@ void StructuralMechanicsModel::assembleLumpedMatrix(const ID & /*id*/) {}
 
 /// callback to assemble the residual StructuralMechanicsModel::(rhs)
 void StructuralMechanicsModel::assembleResidual() {
-  this->getDOFManager().assembleToResidual("displacement",
-                                           *this->external_force_momentum, 1);
+  AKANTU_DEBUG_IN();
+
+  auto & dof_manager = getDOFManager();
+
+  internal_force->clear();
+  computeStresses();
+  assembleInternalForce();
+  dof_manager.assembleToResidual("displacement", *internal_force, -1);
+  dof_manager.assembleToResidual("displacement", *external_force, 1);
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -436,6 +451,38 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
   }
 
   return options;
+}
+
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::assembleInternalForce() {
+  for (auto type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
+				     _element_kind = _ek_structural)) {
+    assembleInternalForce(type, _not_ghost);
+    // assembleInternalForce(type, _ghost);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::assembleInternalForce(const ElementType & type,
+                                                     GhostType gt) {
+  auto & fem = getFEEngine();
+  auto & sigma = stress(type, gt);
+  auto ndof = getNbDegreeOfFreedom(type);
+  auto nb_nodes = mesh.getNbNodesPerElement(type);
+  auto ndof_per_elem = ndof * nb_nodes;
+
+  Array<Real> BtSigma(fem.getNbIntegrationPoints(type) *
+                          mesh.getNbElement(type),
+                      ndof_per_elem, "BtSigma");
+  fem.computeBtD(sigma, BtSigma, type, gt);
+
+  Array<Real> intBtSigma(0, ndof_per_elem,
+                         "intBtSigma");
+  fem.integrate(BtSigma, intBtSigma, ndof_per_elem, type, gt);
+  BtSigma.resize(0);
+
+  getDOFManager().assembleElementalArrayLocalArray(intBtSigma, *internal_force,
+                                                   type, gt, 1);
 }
 /* -------------------------------------------------------------------------- */
 

@@ -17,7 +17,6 @@ using types = ::testing::Types<
     Traits<MaterialMazars, 1>, Traits<MaterialMazars, 2>,
     Traits<MaterialMazars, 3>>;
 
-
 /*****************************************************************/
 
 namespace {
@@ -36,13 +35,8 @@ TYPED_TEST(TestDamageMaterialFixture, DISABLED_EnergyDensity) {
 TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
-
-TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputePushWaveSpeed) {
-  this->material->testPushWaveSpeed();
-}
-
-TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeShearWaveSpeed) {
-  this->material->testShearWaveSpeed();
+TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeCelerity) {
+  this->material->testCelerity();
 }
 }
 /*****************************************************************/

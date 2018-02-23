@@ -66,6 +66,8 @@ public:
 protected:
   void checkIfTypeIsSupported();
 
+  void assembleResidual(SolverCallback & callback);
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

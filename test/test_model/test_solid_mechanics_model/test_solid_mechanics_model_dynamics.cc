@@ -305,7 +305,7 @@ TYPED_TEST(TestSMMFixtureBar, DynamicsExplicit) {
     disp_error = sqrt(disp_error) / nb_global_nodes;
     max_error = std::max(disp_error, max_error);
 
-    ASSERT_NEAR(disp_error, 0., 1e-3);
+    ASSERT_NEAR(disp_error, 0., 2e-3);
 
     this->model->solveStep();
   }

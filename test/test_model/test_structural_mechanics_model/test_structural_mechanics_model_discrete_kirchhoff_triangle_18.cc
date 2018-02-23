@@ -32,6 +32,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "test_structural_mechanics_model_fixture.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 
@@ -66,10 +67,25 @@ public:
 
     // Displacement field from Batoz Vol. 2 p. 392
     // with theta to beta correction from discrete Kirchhoff condition
+    // see also the master thesis of Michael Lozano
+
     // clang-format off
+
+    // This displacement field tests membrane and bending modes
     *disp = {40, 20, -800 , -20, 40, 0}; ++disp;
     *disp = {50, 40, -1400, -40, 50, 0}; ++disp;
     *disp = {10, 20, -200 , -20, 10, 0}; ++disp;
+
+    // This displacement tests the bending mode
+    // *disp = {0, 0, -800 , -20, 40, 0}; ++disp;
+    // *disp = {0, 0, -1400, -40, 50, 0}; ++disp;
+    // *disp = {0, 0, -200 , -20, 10, 0}; ++disp;
+
+    // This displacement tests the membrane mode
+    // *disp = {40, 20, 0, 0, 0, 0}; ++disp;
+    // *disp = {50, 40, 0, 0, 0, 0}; ++disp;
+    // *disp = {10, 20, 0, 0, 0, 0}; ++disp;
+
     // clang-format on
   }
 
@@ -91,9 +107,6 @@ TEST_F(TestStructDKT18, TestDisplacements) {
       model->getDisplacement().begin(solution.size())[nb_nodes - 1];
 
   auto error = solution - center_node_disp;
-  std::cout << center_node_disp << std::endl;
 
-  Real tol = Math::getTolerance();
-
-  EXPECT_NEAR(error.norm<L_2>(), 0., tol);
+  EXPECT_NEAR(error.norm<L_2>(), 0., 1e-12);
 }

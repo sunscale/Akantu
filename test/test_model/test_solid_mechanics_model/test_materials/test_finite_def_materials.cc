@@ -49,11 +49,8 @@ TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_EnergyDensity) {
 TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
-TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputePushWaveSpeed) {
-  this->material->testPushWaveSpeed();
-}
-TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeShearWaveSpeed) {
-  this->material->testShearWaveSpeed();
+TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_DefComputeCelerity) {
+  this->material->testCelerity();
 }
 }
 /*****************************************************************/

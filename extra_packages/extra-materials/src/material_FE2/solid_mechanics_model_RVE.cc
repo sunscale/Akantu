@@ -33,6 +33,7 @@
 #include "non_linear_solver.hh"
 #include "parser.hh"
 #include "sparse_matrix.hh"
+#include <string>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -91,13 +92,13 @@ void SolidMechanicsModelRVE::initFullImpl(const ModelOptions & options) {
 
   SolidMechanicsModel::initFullImpl(options_cp);
 
-  this->initMaterials();
-
+  //this->initMaterials();
   auto & fem = this->getFEEngine("SolidMechanicsFEEngine");
 
   /// compute the volume of the RVE
   GhostType gt = _not_ghost;
-  for (auto element_type : this->mesh.elementTypes(spatial_dimension, gt, _ek_not_defined)) {
+  for (auto element_type :
+       this->mesh.elementTypes(spatial_dimension, gt, _ek_not_defined)) {
     Array<Real> Volume(this->mesh.getNbElement(element_type) *
                            fem.getNbIntegrationPoints(element_type),
                        1, 1.);
@@ -121,6 +122,7 @@ void SolidMechanicsModelRVE::initFullImpl(const ModelOptions & options) {
   this->addDumpField("external_force");
   this->addDumpField("equivalent_stress");
   this->addDumpField("internal_force");
+  this->addDumpField("delta_T");
 
   this->dump();
   this->nb_dumps += 1;
@@ -181,6 +183,34 @@ void SolidMechanicsModelRVE::applyBoundaryConditions(
 }
 
 /* -------------------------------------------------------------------------- */
+void SolidMechanicsModelRVE::applyHomogeneousTemperature(
+    const Real & temperature) {
+
+  for (UInt m = 0; m < this->getNbMaterials(); ++m) {
+    Material & mat = this->getMaterial(m);
+
+    const ElementTypeMapArray<UInt> & filter_map = mat.getElementFilter();
+
+    Mesh::type_iterator type_it = filter_map.firstType(spatial_dimension);
+    Mesh::type_iterator type_end = filter_map.lastType(spatial_dimension);
+    // Loop over all element types
+    for (; type_it != type_end; ++type_it) {
+      const Array<UInt> & filter = filter_map(*type_it);
+      if (filter.size() == 0)
+        continue;
+
+      Array<Real> & delta_T = mat.getArray<Real>("delta_T", *type_it);
+      Array<Real>::scalar_iterator delta_T_it = delta_T.begin();
+      Array<Real>::scalar_iterator delta_T_end = delta_T.end();
+
+      for (; delta_T_it != delta_T_end; ++delta_T_it) {
+        *delta_T_it = temperature;
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModelRVE::findCornerNodes() {
   AKANTU_DEBUG_IN();
 
@@ -232,7 +262,8 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
   AKANTU_DEBUG_ASSERT(spatial_dimension == 2, "This is 2D only!");
 
   /// apply the new eigenstrain
-  for (auto element_type : mesh.elementTypes(_element_kind = _ek_not_defined)) {
+  for (auto element_type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
     Array<Real> & prestrain_vect =
         const_cast<Array<Real> &>(this->getMaterial("gel").getInternal<Real>(
             "eigen_grad_u")(element_type));
@@ -294,7 +325,9 @@ Real SolidMechanicsModelRVE::averageTensorField(UInt row_index, UInt col_index,
   auto & fem = this->getFEEngine("SolidMechanicsFEEngine");
   Real average = 0;
 
-  for (auto element_type : mesh.elementTypes(_element_kind = _ek_not_defined)) {
+  GhostType gt = _not_ghost;
+  for (auto element_type :
+       mesh.elementTypes(spatial_dimension, gt, _ek_not_defined)) {
     if (field_type == "stress") {
       for (UInt m = 0; m < this->materials.size(); ++m) {
         const auto & stress_vec = this->materials[m]->getStress(element_type);
@@ -309,11 +342,11 @@ Real SolidMechanicsModelRVE::averageTensorField(UInt row_index, UInt col_index,
                       _not_ghost, elem_filter);
 
         for (UInt k = 0; k < elem_filter.size(); ++k)
-          average += int_stress_vec(
-              k, row_index * spatial_dimension + col_index); // 3 is the value
-                                                             // for the yy (in
-                                                             // 3D, the value is
-                                                             // 4)
+          average += int_stress_vec(k, row_index * spatial_dimension +
+                                           col_index); // 3 is the value
+                                                       // for the yy (in
+                                                       // 3D, the value is
+                                                       // 4)
       }
     } else if (field_type == "strain") {
       for (UInt m = 0; m < this->materials.size(); ++m) {
@@ -484,7 +517,24 @@ void SolidMechanicsModelRVE::initMaterials() {
     material_selector = tmp;
   }
 
-  SolidMechanicsModel::initMaterials();
+  this->assignMaterialToElements();
+  // synchronize the element material arrays
+  this->synchronize(_gst_material_id);
+
+  for (auto & material : materials) {
+    /// init internals properties
+    const auto type = material->getID();
+    if (type.find("material_FE2") != std::string::npos)
+      continue;
+    material->initMaterial();
+  }
+
+  this->synchronize(_gst_smm_init_mat);
+
+  if (this->non_local_manager) {
+    this->non_local_manager->initialize();
+  }
+  //SolidMechanicsModel::initMaterials();
 
   AKANTU_DEBUG_OUT();
 }
@@ -537,7 +587,8 @@ void SolidMechanicsModelRVE::drainCracks(
       const auto & elem_filter = mat->getElementFilter(type);
       auto nb_integration_point = getFEEngine().getNbIntegrationPoints(type);
 
-      auto sav_dam_it = make_view(saved_damage(type), nb_integration_point).begin();
+      auto sav_dam_it =
+          make_view(saved_damage(type), nb_integration_point).begin();
       for (auto && data :
            zip(elem_filter, make_view(damage(type), nb_integration_point))) {
         auto el = std::get<0>(data);

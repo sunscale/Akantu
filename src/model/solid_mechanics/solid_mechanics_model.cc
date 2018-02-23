@@ -69,7 +69,8 @@ namespace akantu {
  * @param id an id to identify the model
  */
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
-                                         const MemoryID & memory_id, const ModelType model_type)
+                                         const MemoryID & memory_id,
+                                         const ModelType model_type)
     : Model(mesh, model_type, dim, id, memory_id),
       BoundaryCondition<SolidMechanicsModel>(), f_m2a(1.0),
       displacement(nullptr), previous_displacement(nullptr),
@@ -78,8 +79,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       blocked_dofs(nullptr), current_position(nullptr),
       material_index("material index", id, memory_id),
       material_local_numbering("material local numbering", id, memory_id),
-      increment_flag(false),
-      are_materials_instantiated(false) {
+      increment_flag(false), are_materials_instantiated(false) {
   AKANTU_DEBUG_IN();
 
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
@@ -301,6 +301,30 @@ void SolidMechanicsModel::assembleResidual() {
                                            *this->external_force, 1);
   this->getDOFManager().assembleToResidual("displacement",
                                            *this->internal_force, 1);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SolidMechanicsModel::assembleResidual(const ID & residual_part) {
+  AKANTU_DEBUG_IN();
+
+  if ("external" == residual_part) {
+    this->getDOFManager().assembleToResidual("displacement",
+                                             *this->external_force, 1);
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  if ("internal" == residual_part) {
+    this->getDOFManager().assembleToResidual("displacement",
+                                             *this->internal_force, 1);
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  AKANTU_CUSTOM_EXCEPTION(
+      debug::SolverCallbackResidualPartUnknown(residual_part));
 
   AKANTU_DEBUG_OUT();
 }

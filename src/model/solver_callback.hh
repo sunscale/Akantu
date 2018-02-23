@@ -68,24 +68,40 @@ public:
   /// callback to assemble the residual (rhs)
   virtual void assembleResidual() = 0;
 
+  /// callback to assemble the rhs parts, (e.g. internal_forces +
+  /// external_forces)
+  virtual void assembleResidual(const ID & /*residual_part*/) {}
+
   /* ------------------------------------------------------------------------ */
   /* Dynamic simulations part                                                 */
   /* ------------------------------------------------------------------------ */
   /// callback for the predictor (in case of dynamic simulation)
-  virtual void predictor() { }
+  virtual void predictor() {}
 
   /// callback for the corrector (in case of dynamic simulation)
-  virtual void corrector() { }
+  virtual void corrector() {}
+
+  /// tells if the residual can be computed in separated parts
+  virtual bool canSplitResidual() { return false; }
 
   /* ------------------------------------------------------------------------ */
   /* management callbacks                                                     */
   /* ------------------------------------------------------------------------ */
-  virtual void beforeSolveStep() { };
-  virtual void afterSolveStep() { };
+  virtual void beforeSolveStep(){};
+  virtual void afterSolveStep(){};
+
 protected:
   /// DOFManager prefixed to avoid collision in multiple inheritance cases
   DOFManager * sc_dof_manager{nullptr};
 };
+
+namespace debug {
+  class SolverCallbackResidualPartUnknown : public Exception {
+  public:
+    SolverCallbackResidualPartUnknown(const ID & residual_part)
+        : Exception(residual_part + " is not known here.") {}
+  };
+}
 
 } // namespace akantu
 

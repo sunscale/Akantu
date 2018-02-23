@@ -17,12 +17,11 @@ public:
   virtual void testComputeStress() { AKANTU_TO_IMPLEMENT(); };
   virtual void testComputeTangentModuli() { AKANTU_TO_IMPLEMENT(); };
   virtual void testEnergyDensity() { AKANTU_TO_IMPLEMENT(); };
-  virtual void testPushWaveSpeed() { AKANTU_TO_IMPLEMENT(); }
-  virtual void testShearWaveSpeed() { AKANTU_TO_IMPLEMENT(); }
+  virtual void testCelerity() { AKANTU_TO_IMPLEMENT(); }
 
   static inline Matrix<Real> getDeviatoricStrain(Real intensity);
-
   static inline Matrix<Real> getHydrostaticStrain(Real intensity);
+  static inline Matrix<Real> getComposedStrain(Real intensity);
 
   static inline const Matrix<Real>
   reverseRotation(Matrix<Real> mat, Matrix<Real> rotation_matrix) {
@@ -57,9 +56,23 @@ Matrix<Real> FriendMaterial<T>::getDeviatoricStrain(Real intensity) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getHydrostaticStrain(Real intensity) {
+<<<<<<< HEAD
   Matrix<Real> dev = {{1., 0., 0.}, {0., 2., 0.}, {0., 0., 3.}};
+=======
+  Matrix<Real> dev = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+>>>>>>> f7fbe61127f3a7c649f5b24e7682f50eb13c10f9
   dev *= intensity;
   return dev;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template <typename T>
+Matrix<Real> FriendMaterial<T>::getComposedStrain(Real intensity) {
+  Matrix<Real> s = FriendMaterial<T>::getHydrostaticStrain(intensity) +
+                   FriendMaterial<T>::getDeviatoricStrain(intensity);
+  s *= intensity;
+  return s;
 }
 
 /* -------------------------------------------------------------------------- */
