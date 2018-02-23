@@ -412,13 +412,13 @@ template <> void FriendMaterial<MaterialElasticOrthotropic<2>>::testCelerity() {
   Real G12 = 2.;
   Real rho = 2.5;
 
-  setParamNoUpdate("n1", n1);
-  setParamNoUpdate("n2", n2);
-  setParamNoUpdate("E1", E1);
-  setParamNoUpdate("E2", E2);
-  setParamNoUpdate("nu12", nu12);
-  setParamNoUpdate("G12", G12);
-  setParamNoUpdate("rho", rho);
+  *this->dir_vecs[0] = n1;
+  *this->dir_vecs[1] = n2;
+  this->E1 = E1;
+  this->E2 = E2;
+  this->nu12 = nu12;
+  this->G12 = G12;
+  this->rho = rho;
 
   // set internal Cijkl matrix expressed in the canonical frame of reference
   this->updateInternalParameters();
@@ -639,19 +639,19 @@ template <> void FriendMaterial<MaterialElasticOrthotropic<3>>::testCelerity() {
   Real G23 = 1.;
   Real rho = 2.3;
 
-  setParamNoUpdate("n1", n1);
-  setParamNoUpdate("n2", n2);
-  setParamNoUpdate("n3", n3);
-  setParamNoUpdate("E1", E1);
-  setParamNoUpdate("E2", E2);
-  setParamNoUpdate("E3", E3);
-  setParamNoUpdate("nu12", nu12);
-  setParamNoUpdate("nu13", nu13);
-  setParamNoUpdate("nu23", nu23);
-  setParamNoUpdate("G12", G12);
-  setParamNoUpdate("G13", G13);
-  setParamNoUpdate("G23", G23);
-  setParamNoUpdate("rho", rho);
+  *this->dir_vecs[0] = n1;
+  *this->dir_vecs[1] = n2;
+  *this->dir_vecs[2] = n3;
+  this->E1 = E1;
+  this->E2 = E2;
+  this->E3 = E3;
+  this->nu12 = nu12;
+  this->nu13 = nu13;
+  this->nu23 = nu23;
+  this->G12 = G12;
+  this->G13 = G13;
+  this->G23 = G23;
+  this->rho = rho;
 
   // set internal Cijkl matrix expressed in the canonical frame of reference
   this->updateInternalParameters();
@@ -696,12 +696,9 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<2>>::testComputeStress() {
       {1.0, 0.3, 0.4}, {0.3, 2.0, 0.1}, {0.4, 0.1, 1.5},
   };
 
-  setParamNoUpdate("C11", C(0, 0));
-  setParamNoUpdate("C12", C(0, 1));
-  setParamNoUpdate("C13", C(0, 2));
-  setParamNoUpdate("C22", C(1, 1));
-  setParamNoUpdate("C23", C(1, 2));
-  setParamNoUpdate("C33", C(2, 2));
+  for (auto i = 0u; i < C.rows(); ++i)
+    for (auto j = 0u; j < C.cols(); ++j)
+      this->Cprime(i, j) = C(i, j);
 
   // material frame of reference is rotate by rotation_matrix starting from
   // canonical basis
@@ -772,12 +769,9 @@ void FriendMaterial<
       {1.0, 0.3, 0.4}, {0.3, 2.0, 0.1}, {0.4, 0.1, 1.5},
   };
 
-  setParamNoUpdate("C11", C(0, 0));
-  setParamNoUpdate("C12", C(0, 1));
-  setParamNoUpdate("C13", C(0, 2));
-  setParamNoUpdate("C22", C(1, 1));
-  setParamNoUpdate("C23", C(1, 2));
-  setParamNoUpdate("C33", C(2, 2));
+  for (auto i = 0u; i < C.rows(); ++i)
+    for (auto j = 0u; j < C.cols(); ++j)
+      this->Cprime(i, j) = C(i, j);
 
   // set internal Cijkl matrix expressed in the canonical frame of reference
   this->updateInternalParameters();
@@ -800,13 +794,11 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<2>>::testCelerity() {
 
   Real rho = 2.7;
 
-  setParamNoUpdate("C11", C(0, 0));
-  setParamNoUpdate("C12", C(0, 1));
-  setParamNoUpdate("C13", C(0, 2));
-  setParamNoUpdate("C22", C(1, 1));
-  setParamNoUpdate("C23", C(1, 2));
-  setParamNoUpdate("C33", C(2, 2));
-  setParamNoUpdate("rho", rho);
+  for (auto i = 0u; i < C.rows(); ++i)
+    for (auto j = 0u; j < C.cols(); ++j)
+      this->Cprime(i, j) = C(i, j);
+
+  this->rho = rho;
 
   // set internal Cijkl matrix expressed in the canonical frame of reference
   this->updateInternalParameters();
@@ -831,27 +823,9 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<3>>::testComputeStress() {
       {0.2, 0.3, 0.4, 0.1, 0.9, 0.1}, {0.1, 0.2, 0.3, 0.4, 0.1, 1.2},
   };
 
-  setParamNoUpdate("C11", C(0, 0));
-  setParamNoUpdate("C12", C(0, 1));
-  setParamNoUpdate("C13", C(0, 2));
-  setParamNoUpdate("C14", C(0, 3));
-  setParamNoUpdate("C15", C(0, 4));
-  setParamNoUpdate("C16", C(0, 5));
-  setParamNoUpdate("C22", C(1, 1));
-  setParamNoUpdate("C23", C(1, 2));
-  setParamNoUpdate("C24", C(1, 3));
-  setParamNoUpdate("C25", C(1, 4));
-  setParamNoUpdate("C26", C(1, 5));
-  setParamNoUpdate("C33", C(2, 2));
-  setParamNoUpdate("C34", C(2, 3));
-  setParamNoUpdate("C35", C(2, 4));
-  setParamNoUpdate("C36", C(2, 5));
-  setParamNoUpdate("C44", C(3, 3));
-  setParamNoUpdate("C45", C(3, 4));
-  setParamNoUpdate("C46", C(3, 5));
-  setParamNoUpdate("C55", C(4, 4));
-  setParamNoUpdate("C56", C(4, 5));
-  setParamNoUpdate("C66", C(5, 5));
+  for (auto i = 0u; i < C.rows(); ++i)
+    for (auto j = 0u; j < C.cols(); ++j)
+      this->Cprime(i, j) = C(i, j);
 
   // material frame of reference is rotate by rotation_matrix starting from
   // canonical basis
@@ -931,27 +905,9 @@ void FriendMaterial<
       {0.2, 0.3, 0.4, 0.1, 0.9, 0.1}, {0.1, 0.2, 0.3, 0.4, 0.1, 1.2},
   };
 
-  setParamNoUpdate("C11", C(0, 0));
-  setParamNoUpdate("C12", C(0, 1));
-  setParamNoUpdate("C13", C(0, 2));
-  setParamNoUpdate("C14", C(0, 3));
-  setParamNoUpdate("C15", C(0, 4));
-  setParamNoUpdate("C16", C(0, 5));
-  setParamNoUpdate("C22", C(1, 1));
-  setParamNoUpdate("C23", C(1, 2));
-  setParamNoUpdate("C24", C(1, 3));
-  setParamNoUpdate("C25", C(1, 4));
-  setParamNoUpdate("C26", C(1, 5));
-  setParamNoUpdate("C33", C(2, 2));
-  setParamNoUpdate("C34", C(2, 3));
-  setParamNoUpdate("C35", C(2, 4));
-  setParamNoUpdate("C36", C(2, 5));
-  setParamNoUpdate("C44", C(3, 3));
-  setParamNoUpdate("C45", C(3, 4));
-  setParamNoUpdate("C46", C(3, 5));
-  setParamNoUpdate("C55", C(4, 4));
-  setParamNoUpdate("C56", C(4, 5));
-  setParamNoUpdate("C66", C(5, 5));
+  for (auto i = 0u; i < C.rows(); ++i)
+    for (auto j = 0u; j < C.cols(); ++j)
+      this->Cprime(i, j) = C(i, j);
 
   // set internal Cijkl matrix expressed in the canonical frame of reference
   this->updateInternalParameters();
@@ -975,28 +931,11 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<3>>::testCelerity() {
   };
   Real rho = 2.9;
 
-  setParamNoUpdate("C11", C(0, 0));
-  setParamNoUpdate("C12", C(0, 1));
-  setParamNoUpdate("C13", C(0, 2));
-  setParamNoUpdate("C14", C(0, 3));
-  setParamNoUpdate("C15", C(0, 4));
-  setParamNoUpdate("C16", C(0, 5));
-  setParamNoUpdate("C22", C(1, 1));
-  setParamNoUpdate("C23", C(1, 2));
-  setParamNoUpdate("C24", C(1, 3));
-  setParamNoUpdate("C25", C(1, 4));
-  setParamNoUpdate("C26", C(1, 5));
-  setParamNoUpdate("C33", C(2, 2));
-  setParamNoUpdate("C34", C(2, 3));
-  setParamNoUpdate("C35", C(2, 4));
-  setParamNoUpdate("C36", C(2, 5));
-  setParamNoUpdate("C44", C(3, 3));
-  setParamNoUpdate("C45", C(3, 4));
-  setParamNoUpdate("C46", C(3, 5));
-  setParamNoUpdate("C55", C(4, 4));
-  setParamNoUpdate("C56", C(4, 5));
-  setParamNoUpdate("C66", C(5, 5));
-  setParamNoUpdate("rho", rho);
+  for (auto i = 0u; i < C.rows(); ++i)
+    for (auto j = 0u; j < C.cols(); ++j)
+      this->Cprime(i, j) = C(i, j);
+
+  this->rho = rho;
 
   // set internal Cijkl matrix expressed in the canonical frame of reference
   this->updateInternalParameters();
@@ -1032,7 +971,7 @@ TYPED_TEST(TestElasticMaterialFixture, ComputeTangentModuli) {
   this->material->testComputeTangentModuli();
 }
 
-TYPED_TEST(TestElasticMaterialFixture, ElasticComputeCelerity) {
+TYPED_TEST(TestElasticMaterialFixture, ComputeCelerity) {
   this->material->testCelerity();
 }
 

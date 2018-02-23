@@ -56,11 +56,7 @@ Matrix<Real> FriendMaterial<T>::getDeviatoricStrain(Real intensity) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 Matrix<Real> FriendMaterial<T>::getHydrostaticStrain(Real intensity) {
-<<<<<<< HEAD
-  Matrix<Real> dev = {{1., 0., 0.}, {0., 2., 0.}, {0., 0., 3.}};
-=======
   Matrix<Real> dev = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
->>>>>>> f7fbe61127f3a7c649f5b24e7682f50eb13c10f9
   dev *= intensity;
   return dev;
 }
