@@ -30,11 +30,9 @@ class MIIASYMContact : public NTRFContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  MIIASYMContact(SolidMechanicsModel & model,
-		 const ContactID & id = "contact",
-		 const MemoryID & memory_id = 0);
-  virtual ~MIIASYMContact() {};
+  MIIASYMContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+                 const MemoryID & memory_id = 0);
+  virtual ~MIIASYMContact(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -43,30 +41,32 @@ public:
   /// update the impedance matrix
   virtual void updateImpedance();
 
-  /// compute contact pressure -> do nothing because can only compute it in equilibrium
-  virtual void computeContactPressure() {};
+  /// compute contact pressure -> do nothing because can only compute it in
+  /// equilibrium
+  virtual void computeContactPressure(){};
 
-  /// compute relative normal field (only value that has to be multiplied with the normal)
+  /// compute relative normal field (only value that has to be multiplied with
+  /// the normal)
   /// WARNING: this is only valid for the acceleration in equilibrium
   virtual void computeRelativeNormalField(const Array<Real> & field,
-					  Array<Real> & rel_normal_field) const;
+                                          Array<Real> & rel_normal_field) const;
 
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  virtual void computeRelativeTangentialField(const Array<Real> & field,
-					      Array<Real> & rel_tang_field) const;
+  virtual void
+  computeRelativeTangentialField(const Array<Real> & field,
+                                 Array<Real> & rel_tang_field) const;
 
   /// compute contact pressure that is used over the entire time
   virtual void computeContactPressureInEquilibrium();
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-
 };
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const MIIASYMContact & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const MIIASYMContact & _this) {
   _this.printself(stream);
   return stream;
 }

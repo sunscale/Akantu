@@ -522,7 +522,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
 
   for (auto & mat : materials) {
     auto * mat_cohesive = dynamic_cast<MaterialCohesive *>(mat.get());
-    if(mat_cohesive) {
+    if (mat_cohesive) {
       /// check which not ghost cohesive elements are to be created
       mat_cohesive->checkInsertion();
     }

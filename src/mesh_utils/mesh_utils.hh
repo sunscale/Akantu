@@ -36,8 +36,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "mesh.hh"
 #include "aka_csr.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
 #include <vector>
@@ -86,8 +86,8 @@ public:
                              UInt to_dimension = 0);
 
   /// build facets for a given spatial dimension
-  static void buildFacetsDimension(
-      const Mesh & mesh, Mesh & mesh_facets, bool boundary_only, UInt dimension);
+  static void buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
+                                   bool boundary_only, UInt dimension);
 
   /// take the local_connectivity array as the array of local and ghost
   /// connectivity, renumber the nodes and set the connectivity of the mesh

@@ -29,12 +29,10 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
 #include "data_accessor.hh"
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -47,19 +45,17 @@ class TestDOFAccessor : public DataAccessor {
 public:
   inline TestDOFAccessor(const Array<Int> & global_dof_equation_numbers);
 
-
   /* ------------------------------------------------------------------------ */
   /* Ghost Synchronizer inherited members                                     */
   /* ------------------------------------------------------------------------ */
 protected:
   inline UInt getNbDataForDOFs(const Array<UInt> & dofs,
-			       SynchronizationTag tag) const;
+                               SynchronizationTag tag) const;
   inline void packDOFData(CommunicationBuffer & buffer,
-			  const Array<UInt> & dofs,
-			  SynchronizationTag tag) const;
+                          const Array<UInt> & dofs,
+                          SynchronizationTag tag) const;
   inline void unpackDOFData(CommunicationBuffer & buffer,
-			    const Array<UInt> & dofs,
-			    SynchronizationTag tag);
+                            const Array<UInt> & dofs, SynchronizationTag tag);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -68,26 +64,29 @@ protected:
   const Array<Int> & global_dof_equation_numbers;
 };
 
-
 /* -------------------------------------------------------------------------- */
-/* TestDOFSynchronizer implementation                                            */
+/* TestDOFSynchronizer implementation */
 /* -------------------------------------------------------------------------- */
-inline TestDOFAccessor::TestDOFAccessor(const Array<Int> & global_dof_equation_numbers)
-  : global_dof_equation_numbers(global_dof_equation_numbers) { }
+inline TestDOFAccessor::TestDOFAccessor(
+    const Array<Int> & global_dof_equation_numbers)
+    : global_dof_equation_numbers(global_dof_equation_numbers) {}
 
 inline UInt TestDOFAccessor::getNbDataForDOFs(const Array<UInt> & dofs,
-					       __attribute__ ((unused)) SynchronizationTag tag) const {
-  if(dofs.size())
-    // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) * elements.size();
+                                              __attribute__((unused))
+                                              SynchronizationTag tag) const {
+  if (dofs.size())
+    // return Mesh::getSpatialDimension(elements(0).type) * sizeof(Real) *
+    // elements.size();
     return sizeof(Int) * dofs.size();
   else
     return 0;
 }
 
 inline void TestDOFAccessor::packDOFData(CommunicationBuffer & buffer,
-					  const Array<UInt> & dofs,
-					  __attribute__ ((unused)) SynchronizationTag tag) const {
-  Array<UInt>::const_scalar_iterator bit  = dofs.begin();
+                                         const Array<UInt> & dofs,
+                                         __attribute__((unused))
+                                         SynchronizationTag tag) const {
+  Array<UInt>::const_scalar_iterator bit = dofs.begin();
   Array<UInt>::const_scalar_iterator bend = dofs.end();
   for (; bit != bend; ++bit) {
     buffer << this->global_dof_equation_numbers[*bit];
@@ -95,9 +94,10 @@ inline void TestDOFAccessor::packDOFData(CommunicationBuffer & buffer,
 }
 
 inline void TestDOFAccessor::unpackDOFData(CommunicationBuffer & buffer,
-					    const Array<UInt> & dofs,
-					    __attribute__ ((unused)) SynchronizationTag tag) {
-  Array<UInt>::const_scalar_iterator bit  = dofs.begin();
+                                           const Array<UInt> & dofs,
+                                           __attribute__((unused))
+                                           SynchronizationTag tag) {
+  Array<UInt>::const_scalar_iterator bit = dofs.begin();
   Array<UInt>::const_scalar_iterator bend = dofs.end();
   for (; bit != bend; ++bit) {
     Int global_dof_eq_nb_local = global_dof_equation_numbers[*bit];
@@ -105,13 +105,12 @@ inline void TestDOFAccessor::unpackDOFData(CommunicationBuffer & buffer,
     buffer >> global_dof_eq_nb;
     std::cout << *bit << global_dof_eq_nb_local << std::endl;
     Real tolerance = Math::getTolerance();
-      if(!(std::abs(global_dof_eq_nb - global_dof_eq_nb_local) <= tolerance))
-        AKANTU_ERROR("Unpacking an unknown value for the dof: "
-                           << *bit
-                           << "(global_dof_equation_number = " << global_dof_eq_nb_local
-                           << " and buffer = " << global_dof_eq_nb << ") - tag: " << tag);
+    if (!(std::abs(global_dof_eq_nb - global_dof_eq_nb_local) <= tolerance))
+      AKANTU_ERROR(
+          "Unpacking an unknown value for the dof: "
+          << *bit << "(global_dof_equation_number = " << global_dof_eq_nb_local
+          << " and buffer = " << global_dof_eq_nb << ") - tag: " << tag);
   }
 }
-
 
 } // namespace akantu

@@ -33,10 +33,10 @@
 
 #include "aka_common.hh"
 
-#include "mesh_segment_intersector.hh"
-#include "mesh_sphere_intersector.hh"
 #include "geom_helper_functions.hh"
 #include "mesh_geom_common.hh"
+#include "mesh_segment_intersector.hh"
+#include "mesh_sphere_intersector.hh"
 
 #include <iostream>
 
@@ -49,7 +49,7 @@ typedef cgal::Spherical SK;
 
 /* -------------------------------------------------------------------------- */
 
-int main (int argc, char * argv[]) {
+int main(int argc, char * argv[]) {
   initialize("", argc, argv);
   debug::setDebugLevel(dblError);
 
@@ -62,13 +62,9 @@ int main (int argc, char * argv[]) {
   intersector.constructData();
 
   // Testing a segment going out of the mesh
-  K::Point_3 a(0, 0.25, 0),
-             b(1, 0.25, 0),
-             c(0.25, 0, 0),
-             d(0.25, 1, 0);
+  K::Point_3 a(0, 0.25, 0), b(1, 0.25, 0), c(0.25, 0, 0), d(0.25, 1, 0);
 
-  K::Segment_3 h_interface(a, b),
-               v_interface(c, d);
+  K::Segment_3 h_interface(a, b), v_interface(c, d);
 
   std::list<K::Segment_3> interface_list;
   interface_list.push_back(h_interface);
@@ -83,7 +79,7 @@ int main (int argc, char * argv[]) {
   Element test;
   test.element = 0;
   test.type = _segment_2;
-  
+
   interface_mesh.getBarycenter(test, bary);
   Real first_bary[] = {0.125, 0.25};
 
@@ -91,8 +87,7 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
 
   // Testing a segment completely inside an element
-  K::Point_3 e(0.1, 0.33, 0),
-             f(0.1, 0.67, 0);
+  K::Point_3 e(0.1, 0.33, 0), f(0.1, 0.67, 0);
   K::Segment_3 inside_segment(e, f);
   intersector.computeIntersectionQuery(inside_segment);
 
@@ -141,5 +136,3 @@ int main (int argc, char * argv[]) {
   finalize();
   return EXIT_SUCCESS;
 }
-
-

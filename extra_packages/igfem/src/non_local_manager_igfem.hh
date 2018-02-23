@@ -41,47 +41,51 @@ class NonLocalManagerIGFEM : public NonLocalManager {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model, 
-		       const ID & id = "non_local_manager_igfem",
-		       const MemoryID & memory_id = 0);
+  NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model,
+                       const ID & id = "non_local_manager_igfem",
+                       const MemoryID & memory_id = 0);
   virtual ~NonLocalManagerIGFEM();
 
-/* -------------------------------------------------------------------------- */
-/* Methods                                                                    */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Methods */
+  /* --------------------------------------------------------------------------
+   */
 public:
-  
-  /// initialize the non-local manager: compute pair lists and weights for all neighborhoods
+  /// initialize the non-local manager: compute pair lists and weights for all
+  /// neighborhoods
   virtual void init();
 
-  /// average the internals and compute the non-local stresses 
+  /// average the internals and compute the non-local stresses
   virtual void computeAllNonLocalStresses();
 
-/* -------------------------------------------------------------------------- */
-/* MeshEventHandler inherited members                                         */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* MeshEventHandler inherited members */
+  /* --------------------------------------------------------------------------
+   */
 
-  virtual void onElementsRemoved(const Array<Element> & element_list,
-				 const ElementTypeMapArray<UInt> & new_numbering,
-				 const RemovedElementsEvent & event);
-  
+  virtual void
+  onElementsRemoved(const Array<Element> & element_list,
+                    const ElementTypeMapArray<UInt> & new_numbering,
+                    const RemovedElementsEvent & event);
+
   virtual void onElementsAdded(const Array<Element> & element_list,
-			       const NewElementsEvent & event);
-private:
+                               const NewElementsEvent & event);
 
+private:
   /// cleanup unneccessary ghosts
-  virtual void cleanupExtraGhostElements(ElementTypeMap<UInt> & nb_ghost_protected);
+  virtual void
+  cleanupExtraGhostElements(ElementTypeMap<UInt> & nb_ghost_protected);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
 
 __END_AKANTU__
@@ -89,9 +93,6 @@ __END_AKANTU__
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-
-
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_IGFEM_HH__ */
 #endif /* AKANTU_DAMAGE_NON_LOCAL */

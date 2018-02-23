@@ -67,7 +67,7 @@ int main(int argc, char * argv[]) {
     genMesh(mesh, global_nb_nodes);
   }
 
-  //std::cout << prank << RandGenerator<Real>::seed() << std::endl;
+  // std::cout << prank << RandGenerator<Real>::seed() << std::endl;
 
   mesh.distribute();
 
@@ -76,10 +76,8 @@ int main(int argc, char * argv[]) {
   model.getNewSolver("static", _tsst_static, _nls_newton_raphson);
   model.setIntegrationScheme("static", "disp", _ist_pseudo_time);
 
-  NonLinearSolver & solver =
-      model.getDOFManager().getNonLinearSolver("static");
+  NonLinearSolver & solver = model.getDOFManager().getNonLinearSolver("static");
   solver.set("max_iterations", 2);
-
 
   model.solveStep();
 
@@ -113,7 +111,7 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 void printResults(MyModel & model, UInt nb_nodes) {
   UInt prank = model.mesh.getCommunicator().whoAmI();
   auto & sync = dynamic_cast<DOFManagerDefault &>(model.getDOFManager())
-    .getSynchronizer();
+                    .getSynchronizer();
 
   if (prank == 0) {
     Array<Real> global_displacement(nb_nodes);

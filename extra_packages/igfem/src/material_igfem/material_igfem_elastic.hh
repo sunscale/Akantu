@@ -33,22 +33,19 @@ __BEGIN_AKANTU__
  *   - nu  : Poisson's ratio (default: 1/2)
  *   - Plane_Stress : if 0: plane strain, else: plane stress (default: 0)
  */
-template<UInt spatial_dimension>
-class MaterialIGFEMElastic : public PlaneStressToolbox< spatial_dimension,
-							MaterialIGFEM > {
+template <UInt spatial_dimension>
+class MaterialIGFEMElastic
+    : public PlaneStressToolbox<spatial_dimension, MaterialIGFEM> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  typedef PlaneStressToolbox< spatial_dimension, MaterialIGFEM > Parent;
-public:
+  typedef PlaneStressToolbox<spatial_dimension, MaterialIGFEM> Parent;
 
+public:
   MaterialIGFEMElastic(SolidMechanicsModel & model, const ID & id = "");
-  MaterialIGFEMElastic(SolidMechanicsModel & model,
-		       UInt dim,
-		       const Mesh & mesh,
-		       FEEngine & fe_engine,
-		       const ID & id = "");
+  MaterialIGFEMElastic(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
+                       FEEngine & fe_engine, const ID & id = "");
 
   virtual ~MaterialIGFEMElastic() {}
 
@@ -59,42 +56,42 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
   virtual void computeTangentModuli(const ElementType & el_type,
-				    Array<Real> & tangent_matrix,
-				    GhostType ghost_type = _not_ghost);
+                                    Array<Real> & tangent_matrix,
+                                    GhostType ghost_type = _not_ghost);
 
   /// compute the elastic potential energy
   virtual void computePotentialEnergy(ElementType el_type,
-				      GhostType ghost_type = _not_ghost);
+                                      GhostType ghost_type = _not_ghost);
 
-  virtual void computePotentialEnergyByElement(ElementType type, UInt index,
-					       Vector<Real> & epot_on_quad_points);
+  virtual void
+  computePotentialEnergyByElement(ElementType type, UInt index,
+                                  Vector<Real> & epot_on_quad_points);
 
   void updateElasticInternals(const Array<Element> & element_list);
 
-
 protected:
-
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
-				  Matrix<Real> & sigma,
-				  __attribute__((unused)) const Real lambda,
-				  const Real mu) const;
+                                  Matrix<Real> & sigma,
+                                  __attribute__((unused)) const Real lambda,
+                                  const Real mu) const;
 
   /// compute the tangent stiffness matrix for an element
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
-					 __attribute__((unused)) const Real lambda,
-					 const Real mu) const;
+                                         __attribute__((unused))
+                                         const Real lambda,
+                                         const Real mu) const;
 
   static inline void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u,
-						  const Matrix<Real> & sigma,
-						  Real & epot);
+                                                  const Matrix<Real> & sigma,
+                                                  Real & epot);
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler inherited members                                       */
@@ -108,12 +105,10 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  
   /// First Lamé coefficient
   IGFEMInternalField<Real> lambda;
 
@@ -122,7 +117,6 @@ protected:
 
   /// Bulk modulus
   IGFEMInternalField<Real> kpa;
-
 };
 
 /* -------------------------------------------------------------------------- */

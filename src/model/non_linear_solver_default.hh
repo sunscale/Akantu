@@ -35,11 +35,10 @@
 #define __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
 
 #if defined(AKANTU_IMPLICIT)
-#  include "non_linear_solver_newton_raphson.hh"
-#  include "non_linear_solver_linear.hh"
+#include "non_linear_solver_linear.hh"
+#include "non_linear_solver_newton_raphson.hh"
 #endif
 
 #include "non_linear_solver_lumped.hh"
-
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__ */

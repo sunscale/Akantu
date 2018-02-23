@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "test_fe_engine_fixture.hh"
 #include "mesh_io_msh_struct.hh"
+#include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
@@ -45,6 +45,7 @@ template <typename type_>
 class TestFEMStructuralFixture
     : public TestFEMBaseFixture<type_, ShapeStructural, _ek_structural> {
   using parent = TestFEMBaseFixture<type_, ShapeStructural, _ek_structural>;
+
 public:
   static const UInt ndof = ElementClass<parent::type>::getNbDegreeOfFreedom();
 
@@ -54,8 +55,7 @@ public:
   }
 };
 
-template <typename type_>
-const UInt TestFEMStructuralFixture<type_>::ndof;
+template <typename type_> const UInt TestFEMStructuralFixture<type_>::ndof;
 
 // using types = gtest_list_t<TestElementTypes>;
 

@@ -92,7 +92,7 @@ void SolidMechanicsModelRVE::initFullImpl(const ModelOptions & options) {
 
   SolidMechanicsModel::initFullImpl(options_cp);
 
-  //this->initMaterials();
+  // this->initMaterials();
   auto & fem = this->getFEEngine("SolidMechanicsFEEngine");
 
   /// compute the volume of the RVE
@@ -342,11 +342,11 @@ Real SolidMechanicsModelRVE::averageTensorField(UInt row_index, UInt col_index,
                       _not_ghost, elem_filter);
 
         for (UInt k = 0; k < elem_filter.size(); ++k)
-          average += int_stress_vec(k, row_index * spatial_dimension +
-                                           col_index); // 3 is the value
-                                                       // for the yy (in
-                                                       // 3D, the value is
-                                                       // 4)
+          average += int_stress_vec(
+              k, row_index * spatial_dimension + col_index); // 3 is the value
+                                                             // for the yy (in
+                                                             // 3D, the value is
+                                                             // 4)
       }
     } else if (field_type == "strain") {
       for (UInt m = 0; m < this->materials.size(); ++m) {
@@ -534,7 +534,7 @@ void SolidMechanicsModelRVE::initMaterials() {
   if (this->non_local_manager) {
     this->non_local_manager->initialize();
   }
-  //SolidMechanicsModel::initMaterials();
+  // SolidMechanicsModel::initMaterials();
 
   AKANTU_DEBUG_OUT();
 }

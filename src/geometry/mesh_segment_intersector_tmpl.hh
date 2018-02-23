@@ -121,7 +121,7 @@ template <UInt dim, ElementType type>
 void MeshSegmentIntersector<dim, type>::computeMeshQueryIntersectionPoint(
     const K::Segment_3 & /*query*/, UInt /*nb_old_nodes*/) {
   AKANTU_ERROR("The method: computeMeshQueryIntersectionPoint has not "
-                     "been implemented in class MeshSegmentIntersector!");
+               "been implemented in class MeshSegmentIntersector!");
 }
 
 template <UInt dim, ElementType type>

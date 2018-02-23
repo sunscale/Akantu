@@ -55,7 +55,7 @@ MaterialLinearIsotropicHardening<spatial_dimension>::
     MaterialLinearIsotropicHardening(SolidMechanicsModel & model, UInt dim,
                                      const Mesh & mesh, FEEngine & fe_engine,
                                      const ID & id)
-    :  MaterialPlastic<spatial_dimension>(model, dim, mesh, fe_engine, id) {}
+    : MaterialPlastic<spatial_dimension>(model, dim, mesh, fe_engine, id) {}
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -189,12 +189,13 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END;
 
   this->was_stiffness_assembled = true;
-  
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 
-INSTANTIATE_MATERIAL(plastic_linear_isotropic_hardening, MaterialLinearIsotropicHardening);
+INSTANTIATE_MATERIAL(plastic_linear_isotropic_hardening,
+                     MaterialLinearIsotropicHardening);
 
 } // akantu

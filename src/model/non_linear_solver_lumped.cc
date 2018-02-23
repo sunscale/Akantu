@@ -29,9 +29,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver_lumped.hh"
+#include "communicator.hh"
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -92,7 +92,7 @@ void NonLinearSolverLumped::solveLumped(const Array<Real> & A, Array<Real> & x,
 
   for (; x_it != x_end; ++x_it, ++b_it, ++A_it, ++blocked_it) {
     if (!(*blocked_it)) {
-      *x_it = alpha *(*b_it / *A_it);
+      *x_it = alpha * (*b_it / *A_it);
     }
   }
 }

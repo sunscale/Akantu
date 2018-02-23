@@ -59,8 +59,7 @@ struct TestMaterialCohesiveLinear
     contact_opening = Vector<Real>(dim, 0.);
   }
 
-  void computeTractions(Array<Real> & openings,
-                        const Vector<Real> & normal,
+  void computeTractions(Array<Real> & openings, const Vector<Real> & normal,
                         Array<Real> & tractions) override {
     for (auto && data :
          zip(make_view(openings, dim), make_view(tractions, dim))) {
@@ -104,7 +103,7 @@ struct TestMaterialCohesiveLinear
       return this->insertion_stress_;
     }
 
-    if (opening.dot(normal)/delta_c < -Math::getTolerance()) {
+    if (opening.dot(normal) / delta_c < -Math::getTolerance()) {
       ADD_FAILURE() << "This is contact";
       return Vector<Real>(dim, 0.);
     }
@@ -171,7 +170,8 @@ TYPED_TEST(TestMaterialCohesiveLinearFixture, Cycles) {
   this->addOpening(this->normal, 0.9 * delta_c, 0., 100);
   this->addOpening(this->normal, 0., delta_c, 100);
 
-  this->material->computeTractions(*this->openings, this->normal, *this->tractions);
+  this->material->computeTractions(*this->openings, this->normal,
+                                   *this->tractions);
 
   Real penalty = this->material->get("penalty");
   std::cout << penalty << std::endl;

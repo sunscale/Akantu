@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
 
   /// save the weights in a file
   const auto & neighborhood =
-    model.getNonLocalManager().getNeighborhood("test_region");
+      model.getNonLocalManager().getNeighborhood("test_region");
 
   neighborhood.saveWeights("weights");
   /// print results to screen for validation

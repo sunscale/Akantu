@@ -36,13 +36,13 @@
 #include "mesh.hh"
 #include "mesh_io.hh"
 
-#include "sparse_matrix.hh"
 #include "dof_synchronizer.hh"
+#include "sparse_matrix.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   UInt spatial_dimension = 2;
@@ -51,7 +51,6 @@ int main(int argc, char *argv[]) {
 
   UInt nb_nodes = mesh.getNbNodes();
 
-
   DOFManagerDefault dof_manager(mesh, "test_dof_manager");
 
   Array<Real> test_synchronize(nb_nodes, spatial_dimension, "Test vector");
@@ -59,7 +58,8 @@ int main(int argc, char *argv[]) {
 
   auto & A = dof_manager.getNewMatrix("A", _symmetric);
 
-  // const akantu::Mesh::ConnectivityTypeList & type_list = mesh.getConnectivityTypeList();
+  // const akantu::Mesh::ConnectivityTypeList & type_list =
+  // mesh.getConnectivityTypeList();
   // akantu::Mesh::ConnectivityTypeList::const_iterator it;
 
   // for(it = type_list.begin(); it != type_list.end(); ++it) {
@@ -73,7 +73,8 @@ int main(int argc, char *argv[]) {
 
   //   for(akantu::UInt e = 0; e < nb_element; ++e) {
   //     element.element = e;
-  //     sparse_matrix.addToMatrix(local_mat.storage(), element, nb_nodes_per_element);
+  //     sparse_matrix.addToMatrix(local_mat.storage(), element,
+  //     nb_nodes_per_element);
   //   }
   // }
 

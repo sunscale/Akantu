@@ -32,8 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "fe_engine_template.hh"
-#include "shape_cohesive.hh"
 #include "integrator_gauss.hh"
+#include "shape_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {

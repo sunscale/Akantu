@@ -31,10 +31,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "global_ids_updater.hh"
-#include "mesh_utils.hh"
 #include "element_synchronizer.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
-
 
 namespace akantu {
 
@@ -46,7 +45,8 @@ UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
 }
 
 UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt old_nb_nodes) {
-  UInt total_nb_new_nodes = MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
+  UInt total_nb_new_nodes =
+      MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
   return total_nb_new_nodes;
 }
 

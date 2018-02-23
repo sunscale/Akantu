@@ -32,9 +32,9 @@
 #define __AKANTU_DUMPER_COMPUTE_HH__
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "dumper_field.hh"
 #include "dumper_iohelper.hh"
 #include "dumper_type_traits.hh"
-#include "dumper_field.hh"
 #include <io_helper.hh>
 
 /* -------------------------------------------------------------------------- */
@@ -82,7 +82,8 @@ public:
   using return_type = _return_type;
   using data_type = typename sub_types::data_type;
 
-  using types = TypeTraits<data_type, return_type, ElementTypeMapArray<data_type> >;
+  using types =
+      TypeTraits<data_type, return_type, ElementTypeMapArray<data_type>>;
 
   class iterator {
   public:
@@ -206,18 +207,18 @@ public:
   }
 
   template <typename T> Field * connectToField(T * ptr) {
-    if (dynamic_cast<ComputeFunctorOutput<Vector<Real> > *>(&func)) {
-      return this->connectToFunctor<Vector<Real> >(ptr);
-    } else if (dynamic_cast<ComputeFunctorOutput<Vector<UInt> > *>(&func)) {
-      return this->connectToFunctor<Vector<UInt> >(ptr);
+    if (dynamic_cast<ComputeFunctorOutput<Vector<Real>> *>(&func)) {
+      return this->connectToFunctor<Vector<Real>>(ptr);
+    } else if (dynamic_cast<ComputeFunctorOutput<Vector<UInt>> *>(&func)) {
+      return this->connectToFunctor<Vector<UInt>>(ptr);
     }
 
-    else if (dynamic_cast<ComputeFunctorOutput<Matrix<UInt> > *>(&func)) {
-      return this->connectToFunctor<Matrix<UInt> >(ptr);
+    else if (dynamic_cast<ComputeFunctorOutput<Matrix<UInt>> *>(&func)) {
+      return this->connectToFunctor<Matrix<UInt>>(ptr);
     }
 
-    else if (dynamic_cast<ComputeFunctorOutput<Matrix<Real> > *>(&func)) {
-      return this->connectToFunctor<Matrix<Real> >(ptr);
+    else if (dynamic_cast<ComputeFunctorOutput<Matrix<Real>> *>(&func)) {
+      return this->connectToFunctor<Matrix<Real>>(ptr);
     }
 
     else
@@ -231,19 +232,22 @@ public:
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2>
-  Field * connectToFunctor(__attribute__((unused)) FieldCompute<
-      FieldCompute<SubFieldCompute, return_type1>, return_type2> * ptr) {
+  Field *
+  connectToFunctor(__attribute__((unused))
+                   FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
+                                return_type2> * ptr) {
     throw; //    return new FieldCompute<T,output>(*ptr,func);
     return nullptr;
   }
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2, typename return_type3, typename return_type4>
-  Field * connectToFunctor(__attribute__((unused)) FieldCompute<
-      FieldCompute<FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
-                                return_type2>,
-                   return_type3>,
-      return_type4> * ptr) {
+  Field * connectToFunctor(
+      __attribute__((unused)) FieldCompute<
+          FieldCompute<FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
+                                    return_type2>,
+                       return_type3>,
+          return_type4> * ptr) {
     throw; //    return new FieldCompute<T,output>(*ptr,func);
     return nullptr;
   }

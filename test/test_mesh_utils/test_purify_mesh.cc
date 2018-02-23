@@ -32,31 +32,31 @@
 /* -------------------------------------------------------------------------- */
 
 #include "mesh.hh"
-#include "mesh_utils.hh"
 #include "mesh_io.hh"
+#include "mesh_utils.hh"
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
-  
+
   Mesh mesh(2);
 
   mesh.read("purify_mesh.msh");
-  
+
   MeshUtils::purifyMesh(mesh);
 
   mesh.write("purify_mesh_after.msh");
 
-  if(mesh.getNbNodes() != 21)
-    AKANTU_ERROR("The purified mesh does not contain the good number of nodes.");
+  if (mesh.getNbNodes() != 21)
+    AKANTU_ERROR(
+        "The purified mesh does not contain the good number of nodes.");
 
-  if(mesh.getNbElement(_quadrangle_8) != 4)
-    AKANTU_ERROR("The purified mesh does not contain the good number of element.");
+  if (mesh.getNbElement(_quadrangle_8) != 4)
+    AKANTU_ERROR(
+        "The purified mesh does not contain the good number of element.");
 
-  
   akantu::finalize();
-  
+
   return EXIT_SUCCESS;
 }
-

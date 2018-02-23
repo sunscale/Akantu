@@ -120,8 +120,7 @@ public:
                   const Array<UInt> & filter_elements) const;
 
   template <ElementType type>
-  void computeBtDB(const Array<Real> & Ds, Array<Real> & BtDBs,
-                   UInt order_d,
+  void computeBtDB(const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
                    GhostType ghost_type,
                    const Array<UInt> & filter_elements) const;
 

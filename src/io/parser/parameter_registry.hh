@@ -93,7 +93,8 @@ public:
   /* ------------------------------------------------------------------------ */
   virtual void printself(std::ostream & stream) const;
 
-  virtual const std::type_info& type() const = 0;
+  virtual const std::type_info & type() const = 0;
+
 protected:
   /// Returns const instance of templated sub-class ParameterTyped
   template <typename T> const ParameterTyped<T> & getParameterTyped() const;
@@ -104,6 +105,7 @@ protected:
 protected:
   /// Name of parameter
   std::string name;
+
 private:
   /// Description of parameter
   std::string description;
@@ -133,7 +135,8 @@ public:
 
   inline operator Real() const override;
 
-  inline const std::type_info& type() const override { return typeid(T); }
+  inline const std::type_info & type() const override { return typeid(T); }
+
 private:
   /// Value of parameter
   T & param;
@@ -178,13 +181,15 @@ public:
 
   std::vector<ID> listParameters() const {
     std::vector<ID> params;
-    for(auto & pair : this->params) params.push_back(pair.first);
+    for (auto & pair : this->params)
+      params.push_back(pair.first);
     return params;
   }
 
   std::vector<ID> listSubRegisteries() const {
     std::vector<ID> subs;
-    for(auto & pair : this->sub_registries) subs.push_back(pair.first);
+    for (auto & pair : this->sub_registries)
+      subs.push_back(pair.first);
     return subs;
   }
 

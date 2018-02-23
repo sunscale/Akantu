@@ -74,7 +74,6 @@ protected:
   virtual void initFullImpl(const ModelOptions & options);
 
 public:
-
 #ifndef SWIG
 
   template <typename... pack>

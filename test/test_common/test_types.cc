@@ -71,8 +71,8 @@ void compare_storages_with_ref(const type & a, Real * ref, UInt size, UInt line,
 
   if (a.size() != size)
     throw size_error("the size is not correct " + itoa(a.size()) +
-                     " instead of " + itoa(size) + " [Test at line: " +
-                     itoa(line) + "]");
+                     " instead of " + itoa(size) +
+                     " [Test at line: " + itoa(line) + "]");
 
   Real * a_ptr = a.storage();
   for (UInt i = 0; i < a.size(); ++i) {

@@ -222,7 +222,7 @@ ShapeFunctions::buildElementalFieldInterpolationMatrix<_quadrangle_8>(
     AKANTU_TO_IMPLEMENT();
   } else {
     for (UInt i = 0; i < coordinates.cols(); ++i) {
-      //UInt j = 0;
+      // UInt j = 0;
       Real x = coordinates(0, i);
       Real y = coordinates(1, i);
 
@@ -386,7 +386,7 @@ void ShapeFunctions::gradientElementalFieldOnIntegrationPoints(
     const auto & u = *u_it;
     for (UInt q = 0; q < nb_points; ++q, ++B_it, ++nabla_u_it) {
       const auto & B = *B_it;
-     auto & nabla_u = *nabla_u_it;
+      auto & nabla_u = *nabla_u_it;
       nabla_u.template mul<false, true>(u, B);
     }
   }

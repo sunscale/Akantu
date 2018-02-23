@@ -36,7 +36,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt spatial_dimension = 2;
@@ -48,9 +48,10 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
-  Real time_step = model.getStableTimeStep()*0.05;
+  Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
@@ -76,9 +77,9 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("extrinsic");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("residual");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.dump();
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
     model.checkCohesiveStress();
     model.solveStep();
 
-    if(s % 10 == 0) {
+    if (s % 10 == 0) {
       model.dump();
 
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
@@ -111,7 +112,7 @@ int main(int argc, char *argv[]) {
 
   Real Ed = model.getEnergy("dissipated");
 
-  Real Edt = 200*std::sqrt(2);
+  Real Edt = 200 * std::sqrt(2);
   std::cout << Ed << " " << Edt << std::endl;
   if (Ed < Edt * 0.999 || Ed > Edt * 1.001 || std::isnan(Ed)) {
     std::cout << "The dissipated energy is incorrect" << std::endl;

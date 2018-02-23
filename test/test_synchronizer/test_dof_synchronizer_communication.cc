@@ -31,26 +31,24 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "element_synchronizer.hh"
 #include "dof_synchronizer.hh"
-#include "synchronizer_registry.hh"
+#include "element_synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_partition_scotch.hh"
+#include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumper_paraview.hh"
-#endif //AKANTU_USE_IOHELPER
+#include "dumper_paraview.hh"
+#endif // AKANTU_USE_IOHELPER
 
 #include "test_dof_data_accessor.hh"
-
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   UInt spatial_dimension = 3;
@@ -60,36 +58,43 @@ int main(int argc, char *argv[])
   const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
-  bool wait=true;
-  if(argc >1) {
-    if(prank == 0)
-    while(wait);
+  bool wait = true;
+  if (argc > 1) {
+    if (prank == 0)
+      while (wait)
+        ;
   }
 
   ElementSynchronizer * communicator = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("cube.msh");
 
-    MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
+    MeshPartition * partition =
+        new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    communicator =
+        ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
-    communicator = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
+    communicator =
+        ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
   }
 
-/* -------------------------------------------------------------------------- */
-/* test the communications of the dof synchronizer                                */
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* test the communications of the dof synchronizer */
+  /* --------------------------------------------------------------------------
+   */
 
   std::cout << "Initializing the synchronizer" << std::endl;
   DOFSynchronizer dof_synchronizer(mesh, spatial_dimension);
   dof_synchronizer.initGlobalDOFEquationNumbers();
 
   AKANTU_DEBUG_INFO("Creating TestDOFAccessor");
-  TestDOFAccessor test_dof_accessor(dof_synchronizer.getGlobalDOFEquationNumbers());
+  TestDOFAccessor test_dof_accessor(
+      dof_synchronizer.getGlobalDOFEquationNumbers());
   SynchronizerRegistry synch_registry(test_dof_accessor);
-  synch_registry.registerSynchronizer(dof_synchronizer,_gst_test);
+  synch_registry.registerSynchronizer(dof_synchronizer, _gst_test);
 
   AKANTU_DEBUG_INFO("Synchronizing tag");
   synch_registry.synchronize(_gst_test);
@@ -99,4 +104,3 @@ int main(int argc, char *argv[])
 
   return EXIT_SUCCESS;
 }
-

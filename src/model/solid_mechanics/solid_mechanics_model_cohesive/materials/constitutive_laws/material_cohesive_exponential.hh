@@ -32,8 +32,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "material_cohesive.hh"
 #include "aka_common.hh"
+#include "material_cohesive.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -42,7 +42,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-
 namespace akantu {
 
 /**
@@ -50,16 +49,16 @@ namespace akantu {
  *
  * parameters in the material files :
  *   - sigma_c   : critical stress sigma_c  (default: 0)
- *   - beta      : weighting parameter for sliding and normal opening (default: 0)
+ *   - beta      : weighting parameter for sliding and normal opening (default:
+ * 0)
  *   - delta_c   : critical opening (default: 0)
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialCohesiveExponential : public MaterialCohesive {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialCohesiveExponential(SolidMechanicsModel & model, const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
@@ -80,31 +79,29 @@ protected:
                               GhostType ghost_type = _not_ghost) override;
 
 private:
-  
   void computeCoupledTraction(Vector<Real> & tract, const Vector<Real> & normal,
-			      Real delta, const Vector<Real> & opening, 
-			      Real & delta_max_new, Real delta_max);
-  
-  void computeCompressiveTraction(Vector<Real> & tract, const Vector<Real> & normal,
-				  Real delta_n, const Vector<Real> & opening);
+                              Real delta, const Vector<Real> & opening,
+                              Real & delta_max_new, Real delta_max);
+
+  void computeCompressiveTraction(Vector<Real> & tract,
+                                  const Vector<Real> & normal, Real delta_n,
+                                  const Vector<Real> & opening);
 
   void computeCoupledTangent(Matrix<Real> & tangent,
-			     const Vector<Real> & normal, Real delta, 
-			     const Vector<Real> & opening, Real delta_max_new);
+                             const Vector<Real> & normal, Real delta,
+                             const Vector<Real> & opening, Real delta_max_new);
 
-  void computeCompressivePenalty(Matrix<Real> & tangent, const Vector<Real> & normal,
-				 Real delta_n);
-  
+  void computeCompressivePenalty(Matrix<Real> & tangent,
+                                 const Vector<Real> & normal, Real delta_n);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// beta parameter
   Real beta;
 
@@ -115,13 +112,11 @@ protected:
   Real contact_tangent;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
 // #include "material_cohesive_exponential_inline_impl.cc"
-
 
 } // akantu
 

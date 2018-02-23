@@ -31,10 +31,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
-#include "dof_manager.hh"
 #include "sparse_solver.hh"
 #include "communicator.hh"
+#include "dof_manager.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -42,8 +42,9 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
                            const ID & id, const MemoryID & memory_id)
-  : Memory(id, memory_id), Parsable(ParserType::_solver, id),
-    _dof_manager(dof_manager), matrix_id(matrix_id), communicator(dof_manager.getCommunicator()) {
+    : Memory(id, memory_id), Parsable(ParserType::_solver, id),
+      _dof_manager(dof_manager), matrix_id(matrix_id),
+      communicator(dof_manager.getCommunicator()) {
   AKANTU_DEBUG_IN();
 
   // OK this is fishy...
@@ -56,7 +57,7 @@ SparseSolver::SparseSolver(DOFManager & dof_manager, const ID & matrix_id,
 SparseSolver::~SparseSolver() {
   AKANTU_DEBUG_IN();
 
-  //this->destroyInternalData();
+  // this->destroyInternalData();
   this->communicator.unregisterEventHandler(*this);
 
   AKANTU_DEBUG_OUT();
@@ -79,8 +80,6 @@ void SparseSolver::createSynchronizerRegistry() {
   // this->synch_registry = new SynchronizerRegistry(this);
 }
 
-void SparseSolver::onCommunicatorFinalize() {
-  this->destroyInternalData();
-}
+void SparseSolver::onCommunicatorFinalize() { this->destroyInternalData(); }
 
 } // akantu

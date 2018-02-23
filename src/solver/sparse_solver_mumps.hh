@@ -39,10 +39,9 @@
 #define __AKANTU_SOLVER_MUMPS_HH__
 
 namespace akantu {
-  class DOFManagerDefault;
-  class SparseMatrixAIJ;
+class DOFManagerDefault;
+class SparseMatrixAIJ;
 }
-
 
 namespace akantu {
 
@@ -51,8 +50,7 @@ class SparseSolverMumps : public SparseSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseSolverMumps(DOFManagerDefault & dof_manager,
-                    const ID & matrix_id,
+  SparseSolverMumps(DOFManagerDefault & dof_manager, const ID & matrix_id,
                     const ID & id = "sparse_solver_mumps",
                     const MemoryID & memory_id = 0);
 
@@ -96,8 +94,8 @@ protected:
 
   /// check if initialized and except if it is not the case
   void checkInitialized();
-private:
 
+private:
   void mumpsDataDestroy();
 
   /* ------------------------------------------------------------------------ */

@@ -35,11 +35,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
 #include <iostream>
-#include "aka_common.hh"
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_AKA_COMMON_INLINE_IMPL_CC__
@@ -98,8 +98,8 @@ inline std::istream & operator>>(std::istream & stream,
   else if (str == "dynamic_lumped")
     type = _tsst_dynamic_lumped;
   else {
-    AKANTU_ERROR("The type "
-                       << str << " is not a recognized TimeStepSolverType");
+    AKANTU_ERROR("The type " << str
+                             << " is not a recognized TimeStepSolverType");
 
     stream.setstate(std::ios::failbit);
   }
@@ -220,8 +220,8 @@ inline std::istream & operator>>(std::istream & stream,
   else if (str == "generalized_trapezoidal")
     type = _ist_generalized_trapezoidal;
   else {
-    AKANTU_ERROR("The type "
-                       << str << " is not a recognized IntegrationSchemeType");
+    AKANTU_ERROR("The type " << str
+                             << " is not a recognized IntegrationSchemeType");
     stream.setstate(std::ios::failbit);
   }
   return stream;

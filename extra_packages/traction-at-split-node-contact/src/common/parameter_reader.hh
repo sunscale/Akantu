@@ -19,8 +19,8 @@
 
 /* -------------------------------------------------------------------------- */
 // std
-#include <set>
 #include <map>
+#include <set>
 
 // akantu
 #include "aka_common.hh"
@@ -33,10 +33,9 @@ class ParameterReader {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
   ParameterReader();
-  virtual ~ParameterReader() {};
-  
+  virtual ~ParameterReader(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -46,7 +45,7 @@ public:
 
   /// write input file
   void writeInputFile(std::string file_name) const;
-  
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
@@ -54,13 +53,11 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// 
-  template<typename T>
-  T get(std::string key) const;
+  ///
+  template <typename T> T get(std::string key) const;
 
-  template<typename T>
-  bool has(std::string key) const;
-  
+  template <typename T> bool has(std::string key) const;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -69,17 +66,16 @@ private:
   std::set<std::string> data_types;
 
   /// data
-  std::map<std::string,akantu::ElementType> element_type_data;
-  std::map<std::string,std::string> string_data;
-  std::map<std::string,akantu::Int> int_data;
-  std::map<std::string,akantu::UInt> uint_data;
-  std::map<std::string,akantu::Real> real_data;
-  std::map<std::string,bool> bool_data;
+  std::map<std::string, akantu::ElementType> element_type_data;
+  std::map<std::string, std::string> string_data;
+  std::map<std::string, akantu::Int> int_data;
+  std::map<std::string, akantu::UInt> uint_data;
+  std::map<std::string, akantu::Real> real_data;
+  std::map<std::string, bool> bool_data;
 
   /// convert string to element type
   std::map<std::string, ElementType> _input_to_akantu_element_types;
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
@@ -88,8 +84,8 @@ private:
 //#include "parameter_reader_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const ParameterReader & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const ParameterReader & _this) {
   _this.printself(stream);
   return stream;
 }

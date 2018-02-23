@@ -28,13 +28,13 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
+#include "communicator.hh"
 #include "data_accessor.hh"
 #include "dof_manager_default.hh"
 #include "element_synchronizer.hh"
 #include "mesh.hh"
 #include "model_solver.hh"
 #include "sparse_matrix.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -50,11 +50,12 @@ namespace akantu {
 class MyModel : public ModelSolver, public DataAccessor<Element> {
 public:
   MyModel(Real F, Mesh & mesh, bool lumped)
-      : ModelSolver(mesh, ModelType::_model, "model_solver", 0), nb_dofs(mesh.getNbNodes()),
-        nb_elements(mesh.getNbElement()), E(1.), A(1.), rho(1.), lumped(lumped),
-        mesh(mesh), displacement(nb_dofs, 1, "disp"),
-        velocity(nb_dofs, 1, "velo"), acceleration(nb_dofs, 1, "accel"),
-        blocked(nb_dofs, 1, "blocked"), forces(nb_dofs, 1, "force_ext"),
+      : ModelSolver(mesh, ModelType::_model, "model_solver", 0),
+        nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement()), E(1.),
+        A(1.), rho(1.), lumped(lumped), mesh(mesh),
+        displacement(nb_dofs, 1, "disp"), velocity(nb_dofs, 1, "velo"),
+        acceleration(nb_dofs, 1, "accel"), blocked(nb_dofs, 1, "blocked"),
+        forces(nb_dofs, 1, "force_ext"),
         internal_forces(nb_dofs, 1, "force_int"),
         stresses(nb_elements, 1, "stress"), strains(nb_elements, 1, "strain"),
         initial_lengths(nb_elements, 1, "L0") {

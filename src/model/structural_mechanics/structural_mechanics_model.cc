@@ -121,10 +121,10 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
 
   /// TODO this is ugly af, maybe add a function to FEEngine
   for (auto & type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
-				       _element_kind = _ek_structural)) {
+                     _element_kind = _ek_structural)) {
     UInt nb_components = 0;
 
-    // Getting number of components for each element type
+// Getting number of components for each element type
 #define GET_(type) nb_components = ElementClass<type>::getNbStressComponents()
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(GET_);
 #undef GET_
@@ -133,8 +133,7 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
   }
 
   stress.initialize(getFEEngine(), _spatial_dimension = _all_dimensions,
-                    _element_kind = _ek_structural,
-		    _all_ghost_types = true,
+                    _element_kind = _ek_structural, _all_ghost_types = true,
                     _nb_component = [&stress_components](
                         const ElementType & type, const GhostType &) -> UInt {
                       return stress_components(type);
@@ -166,10 +165,8 @@ void StructuralMechanicsModel::initSolver(
 
   this->allocNodalField(displacement_rotation, nb_degree_of_freedom,
                         "displacement");
-  this->allocNodalField(external_force, nb_degree_of_freedom,
-                        "external_force");
-  this->allocNodalField(internal_force, nb_degree_of_freedom,
-                        "internal_force");
+  this->allocNodalField(external_force, nb_degree_of_freedom, "external_force");
+  this->allocNodalField(internal_force, nb_degree_of_freedom, "internal_force");
   this->allocNodalField(blocked_dofs, nb_degree_of_freedom, "blocked_dofs");
 
   auto & dof_manager = this->getDOFManager();
@@ -319,25 +316,23 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "force") {
-    return mesh.createStridedNodalField(external_force, group_name, n,
-                                        0, padding_flag);
+    return mesh.createStridedNodalField(external_force, group_name, n, 0,
+                                        padding_flag);
   }
 
   if (field_name == "momentum") {
-    return mesh.createStridedNodalField(external_force, group_name,
-                                        nb_degree_of_freedom - n, n,
-                                        padding_flag);
+    return mesh.createStridedNodalField(
+        external_force, group_name, nb_degree_of_freedom - n, n, padding_flag);
   }
 
   if (field_name == "internal_force") {
-    return mesh.createStridedNodalField(internal_force, group_name, n,
-                                        0, padding_flag);
+    return mesh.createStridedNodalField(internal_force, group_name, n, 0,
+                                        padding_flag);
   }
 
   if (field_name == "internal_momentum") {
-    return mesh.createStridedNodalField(internal_force, group_name,
-                                        nb_degree_of_freedom - n, n,
-                                        padding_flag);
+    return mesh.createStridedNodalField(
+        internal_force, group_name, nb_degree_of_freedom - n, n, padding_flag);
   }
 
   return nullptr;
@@ -456,7 +451,7 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleInternalForce() {
   for (auto type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
-				     _element_kind = _ek_structural)) {
+                   _element_kind = _ek_structural)) {
     assembleInternalForce(type, _not_ghost);
     // assembleInternalForce(type, _ghost);
   }
@@ -476,8 +471,7 @@ void StructuralMechanicsModel::assembleInternalForce(const ElementType & type,
                       ndof_per_elem, "BtSigma");
   fem.computeBtD(sigma, BtSigma, type, gt);
 
-  Array<Real> intBtSigma(0, ndof_per_elem,
-                         "intBtSigma");
+  Array<Real> intBtSigma(0, ndof_per_elem, "intBtSigma");
   fem.integrate(BtSigma, intBtSigma, ndof_per_elem, type, gt);
   BtSigma.resize(0);
 

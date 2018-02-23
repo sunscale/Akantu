@@ -28,10 +28,10 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include "structural_mechanics_model.hh"
-#include "material.hh"
 #include "integrator_gauss.hh"
+#include "material.hh"
 #include "shape_structural.hh"
+#include "structural_mechanics_model.hh"
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -42,8 +42,7 @@ public:
       : model(model){};
 
   void operator()(Matrix<Real> & rho, const Element & element) const {
-    Real mat_rho =
-        model.getMaterial(element).rho;
+    Real mat_rho = model.getMaterial(element).rho;
     rho.set(mat_rho);
   }
 
@@ -51,9 +50,8 @@ private:
   const StructuralMechanicsModel & model;
 };
 
-
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::assembleMass(){
+void StructuralMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
   assembleMass(_not_ghost);
@@ -67,7 +65,8 @@ void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
   MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctorStruct compute_rho(*this);
 
-  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_structural)) {
+  for (auto type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_structural)) {
     fem.assembleFieldMatrix(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }

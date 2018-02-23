@@ -49,9 +49,10 @@ PYBIND11_MODULE(aka_test, m) {
             py::format_descriptor<Real>::format(), /* Python struct-style
                                                        format descriptor */
             2,                                     /* Number of dimensions */
-            {a.size(0), a.size(1)},        /* Buffer dimensions */
-            {sizeof(Real), a.size(0)*sizeof(Real)}  /* Strides (in bytes) for each index */
-          );
+            {a.size(0), a.size(1)},                /* Buffer dimensions */
+            {sizeof(Real), a.size(0) * sizeof(Real)}
+            /* Strides (in bytes) for each index */
+            );
       })
       .def(py::init([](py::array & n) {
         /* Request a buffer descriptor from Python */
@@ -65,8 +66,8 @@ PYBIND11_MODULE(aka_test, m) {
         if (info.ndim != 2)
           throw std::runtime_error("Incompatible buffer dimension!");
 
-        return std::make_unique<MatrixProxy<Real>>(static_cast<Real *>(info.ptr),
-                                                   info.shape[0], info.shape[1]);
+        return std::make_unique<MatrixProxy<Real>>(
+            static_cast<Real *>(info.ptr), info.shape[0], info.shape[1]);
       }));
 } // Module aka test
 } // namespace akantu

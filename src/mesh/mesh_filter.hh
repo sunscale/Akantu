@@ -51,9 +51,7 @@ struct FilterFunctor {
 /// class (functor) for the node filter
 class NodeFilterFunctor : public FilterFunctor {
 public:
-  bool operator()(__attribute__((unused)) UInt node) {
-    AKANTU_TO_IMPLEMENT();
-  }
+  bool operator()(__attribute__((unused)) UInt node) { AKANTU_TO_IMPLEMENT(); }
 
 public:
   static const Type type = _node_filter_functor;

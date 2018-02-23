@@ -40,12 +40,13 @@
 namespace akantu {
 
 template <UInt dim, class MaterialDamageLocal>
-class MaterialDamageNonLocal : public MaterialNonLocal<dim, MaterialDamageLocal> {
+class MaterialDamageNonLocal
+    : public MaterialNonLocal<dim, MaterialDamageLocal> {
 public:
   using MaterialParent = MaterialNonLocal<dim, MaterialDamageLocal>;
 
   MaterialDamageNonLocal(SolidMechanicsModel & model, const ID & id)
-      : MaterialParent(model, id) {};
+      : MaterialParent(model, id){};
 
 protected:
   /* ------------------------------------------------------------------------ */
@@ -56,8 +57,7 @@ protected:
   void computeNonLocalStresses(GhostType ghost_type) override {
     AKANTU_DEBUG_IN();
 
-    for (auto type :
-         this->element_filter.elementTypes(dim, ghost_type)) {
+    for (auto type : this->element_filter.elementTypes(dim, ghost_type)) {
       auto & elem_filter = this->element_filter(type, ghost_type);
       if (elem_filter.size() == 0)
         continue;

@@ -34,13 +34,13 @@
 
 #include "aka_common.hh"
 
-#include <CGAL/MP_Float.h> 
-#include <CGAL/Quotient.h> 
- 
+#include <CGAL/MP_Float.h>
+#include <CGAL/Quotient.h>
+
+#include <CGAL/Algebraic_kernel_for_spheres_2_3.h>
 #include <CGAL/Cartesian.h>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Spherical_kernel_3.h>
-#include <CGAL/Algebraic_kernel_for_spheres_2_3.h>
 
 namespace akantu {
 

@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "patch_test_linear_fixture.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH__
@@ -9,8 +9,11 @@
 /* -------------------------------------------------------------------------- */
 template <typename tuple_>
 class TestPatchTestSMMLinear
-    : public TestPatchTestLinear<std::tuple_element_t<0, tuple_>, SolidMechanicsModel> {
-  using parent = TestPatchTestLinear<std::tuple_element_t<0, tuple_>, SolidMechanicsModel>;
+    : public TestPatchTestLinear<std::tuple_element_t<0, tuple_>,
+                                 SolidMechanicsModel> {
+  using parent =
+      TestPatchTestLinear<std::tuple_element_t<0, tuple_>, SolidMechanicsModel>;
+
 public:
   static constexpr bool plane_strain = std::tuple_element_t<1, tuple_>::value;
 

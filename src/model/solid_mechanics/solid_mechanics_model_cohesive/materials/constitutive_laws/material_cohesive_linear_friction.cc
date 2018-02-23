@@ -227,8 +227,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
       //      Vector<Real> normal_opening_prev = (*normal_it);
       //      normal_opening_prev *= normal_opening_prev_norm;
 
-      Real tau_max =
-          mu * this->penalty * (std::abs(normal_opening_prev_norm));
+      Real tau_max = mu * this->penalty * (std::abs(normal_opening_prev_norm));
       Real delta_sliding_norm =
           std::abs(tangential_opening_norm - *res_sliding_prev_it);
 

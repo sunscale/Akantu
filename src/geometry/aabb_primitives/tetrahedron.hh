@@ -38,27 +38,23 @@
 #include "mesh_geom_common.hh"
 
 namespace akantu {
-  
+
 /* -------------------------------------------------------------------------- */
 
 /// Class used for substitution of CGAL::Tetrahedron_3 primitive
-template<typename K>
-class Tetrahedron : public CGAL::Tetrahedron_3<K> {
+template <typename K> class Tetrahedron : public CGAL::Tetrahedron_3<K> {
 public:
   /// Default constructor
-  Tetrahedron() :
-    CGAL::Tetrahedron_3<K>(), meshId(0) {}
+  Tetrahedron() : CGAL::Tetrahedron_3<K>(), meshId(0) {}
 
   /// Copy constructor
-  Tetrahedron(const Tetrahedron & other) :
-    CGAL::Tetrahedron_3<K>(other), meshId(other.meshId) {}
+  Tetrahedron(const Tetrahedron & other)
+      : CGAL::Tetrahedron_3<K>(other), meshId(other.meshId) {}
 
   /// Construct from 4 points
-  Tetrahedron(const CGAL::Point_3<K> & a,
-              const CGAL::Point_3<K> & b,
-              const CGAL::Point_3<K> & c,
-              const CGAL::Point_3<K> & d) :
-    CGAL::Tetrahedron_3<K>(a, b, c, d), meshId(0) {}
+  Tetrahedron(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b,
+              const CGAL::Point_3<K> & c, const CGAL::Point_3<K> & d)
+      : CGAL::Tetrahedron_3<K>(a, b, c, d), meshId(0) {}
 
 public:
   UInt id() const { return meshId; }

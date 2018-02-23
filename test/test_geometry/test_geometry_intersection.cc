@@ -32,9 +32,9 @@
 /* -------------------------------------------------------------------------- */
 
 #include "aka_common.hh"
+#include "geom_helper_functions.hh"
 #include "mesh_geom_factory.hh"
 #include "tree_type_helper.hh"
-#include "geom_helper_functions.hh"
 
 #include "mesh_geom_common.hh"
 
@@ -42,29 +42,29 @@
 #include <iterator>
 
 #include <CGAL/Exact_spherical_kernel_3.h>
-#include <CGAL/intersections.h>
 #include <CGAL/Spherical_kernel_intersections.h>
+#include <CGAL/intersections.h>
 
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 typedef cgal::Cartesian K;
-typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
+typedef IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>,
+                               K::Segment_3>::intersection_type result_type;
 
 typedef cgal::Spherical SK;
-typedef boost::variant<std::pair<SK::Circular_arc_point_3, UInt> > sk_inter_res;
+typedef boost::variant<std::pair<SK::Circular_arc_point_3, UInt>> sk_inter_res;
 /*typedef CGAL::cpp11::result_of<SK::Intersect_3(SK::Line_arc_3,
-					       SK::Sphere_3,
-					       std::back_insert_iterator<
-					       std::list<sk_inter_res> >)>::type sk_res;*/
+                           SK::Sphere_3,
+                           std::back_insert_iterator<
+                           std::list<sk_inter_res> >)>::type sk_res;*/
 
 typedef std::pair<SK::Circular_arc_point_3, UInt> pair_type;
 
-
 /* -------------------------------------------------------------------------- */
 
-int main (int argc, char * argv[]) {
+int main(int argc, char * argv[]) {
   initialize("", argc, argv);
   debug::setDebugLevel(dblWarning);
 
@@ -92,17 +92,21 @@ int main (int argc, char * argv[]) {
     return EXIT_FAILURE;
 
   /// *-> first is the intersection ; *->second is the primitive id
-  if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_0->first))) {
+  if (const K::Segment_3 * segment =
+          boost::get<K::Segment_3>(&(intersection_0->first))) {
     if (!compareSegments(*segment, result_0)) {
       return EXIT_FAILURE;
     }
-  } else return EXIT_FAILURE;
+  } else
+    return EXIT_FAILURE;
 
-  if (const K::Segment_3 * segment = boost::get<K::Segment_3>(&(intersection_1->first))) {
+  if (const K::Segment_3 * segment =
+          boost::get<K::Segment_3>(&(intersection_1->first))) {
     if (!compareSegments(*segment, result_1)) {
       return EXIT_FAILURE;
     }
-  } else return EXIT_FAILURE;
+  } else
+    return EXIT_FAILURE;
 
   SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 3.);
   SK::Segment_3 seg(SK::Point_3(0, 0, 0), SK::Point_3(2., 2., 2.));
@@ -112,11 +116,12 @@ int main (int argc, char * argv[]) {
   CGAL::intersection(arc, sphere, std::back_inserter(s_results));
 
   if (pair_type * pair = boost::get<pair_type>(&s_results.front())) {
-    std::cout << "xi = " << to_double(pair->first.x()) 
-	      << ", yi = " << to_double(pair->first.y()) << std::endl;
+    std::cout << "xi = " << to_double(pair->first.x())
+              << ", yi = " << to_double(pair->first.y()) << std::endl;
     if (!comparePoints(pair->first, SK::Circular_arc_point_3(1.0, 1.0, 1.0)))
-	return EXIT_FAILURE;
-  } else return EXIT_FAILURE;
+      return EXIT_FAILURE;
+  } else
+    return EXIT_FAILURE;
 
   MeshGeomFactory<2, _triangle_3, Line_arc<SK>, SK> Sfactory(mesh);
   Sfactory.constructData();
@@ -124,4 +129,3 @@ int main (int argc, char * argv[]) {
   finalize();
   return EXIT_SUCCESS;
 }
-

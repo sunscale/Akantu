@@ -86,7 +86,6 @@ private:
   DataAccessorBase * data_accessor{nullptr};
 };
 
-
 } // akantu
 
 #endif /* __AKANTU_SYNCHRONIZER_REGISTRY_HH__ */

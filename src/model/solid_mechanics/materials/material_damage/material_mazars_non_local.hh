@@ -32,8 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_mazars.hh"
 #include "material_damage_non_local.hh"
+#include "material_mazars.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_MAZARS_NON_LOCAL_HH__
@@ -55,7 +55,8 @@ class MaterialMazarsNonLocal
   /* ------------------------------------------------------------------------ */
 public:
   using MaterialNonLocalParent =
-      MaterialDamageNonLocal<spatial_dimension, MaterialMazars<spatial_dimension>>;
+      MaterialDamageNonLocal<spatial_dimension,
+                             MaterialMazars<spatial_dimension>>;
 
   MaterialMazarsNonLocal(SolidMechanicsModel & model, const ID & id = "");
 

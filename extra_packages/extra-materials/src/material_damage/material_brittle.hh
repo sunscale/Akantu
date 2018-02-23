@@ -70,15 +70,15 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   inline UInt getNbData(const Array<Element> & elements,
-                                const SynchronizationTag & tag) const override;
+                        const SynchronizationTag & tag) const override;
 
   inline void packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const override;
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
   inline void unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag) override;
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

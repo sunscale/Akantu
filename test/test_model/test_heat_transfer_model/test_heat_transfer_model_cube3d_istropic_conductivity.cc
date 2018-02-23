@@ -34,12 +34,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "heat_transfer_model.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
-#include "heat_transfer_model.hh"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string.h>
 using namespace std;
 
@@ -47,8 +47,7 @@ using namespace std;
 akantu::UInt spatial_dimension = 3;
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::initialize("material.dat", argc, argv);
 
   akantu::Mesh mesh(spatial_dimension);
@@ -57,15 +56,15 @@ int main(int argc, char *argv[])
   mesh_io.read("cube1.msh", mesh);
 
   akantu::HeatTransferModel model(mesh);
-  //initialize everything
+  // initialize everything
   model.initFull();
 
-  //assemble the lumped capacity
+  // assemble the lumped capacity
   model.assembleCapacityLumped();
 
-  //get stable time step
-  akantu::Real time_step = model.getStableTimeStep()*0.8;
-  cout<<"time step is:"<<time_step<<endl;
+  // get stable time step
+  akantu::Real time_step = model.getStableTimeStep() * 0.8;
+  cout << "time step is:" << time_step << endl;
   model.setTimeStep(time_step);
 
   /// boundary conditions
@@ -77,44 +76,46 @@ int main(int argc, char *argv[])
   double length = 1.;
   akantu::UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
   for (akantu::UInt i = 0; i < nb_nodes; ++i) {
-    //temperature(i) = t1 - (t1 - t2) * sin(nodes(i, 0) * M_PI / length);
+    // temperature(i) = t1 - (t1 - t2) * sin(nodes(i, 0) * M_PI / length);
     temperature(i) = 100.;
 
-    if(nodes(i,0) < eps) {
+    if (nodes(i, 0) < eps) {
       boundary(i) = true;
       temperature(i) = 300.;
     }
-    //set the second boundary condition
-    if(std::abs(nodes(i,0) - length) < eps) {
+    // set the second boundary condition
+    if (std::abs(nodes(i, 0) - length) < eps) {
       boundary(i) = true;
       temperature(i) = 300.;
     }
     // //to insert a heat source
-    //  if(std::abs(nodes(i,0) - length/2.) < 0.025 && std::abs(nodes(i,1) - length/2.) < 0.025 && std::abs(nodes(i,2) - length/2.) < 0.025) {
+    //  if(std::abs(nodes(i,0) - length/2.) < 0.025 && std::abs(nodes(i,1) -
+    //  length/2.) < 0.025 && std::abs(nodes(i,2) - length/2.) < 0.025) {
     //   boundary(i) = true;
     //  temperature(i) = 300.;
     //  }
   }
 
-  //model.updateResidual();
+  // model.updateResidual();
   model.setBaseName("heat_transfer_cube3d_istropic_conductivity");
-  model.addDumpField("temperature"     );
+  model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("residual"        );
-  model.addDumpField("capacity_lumped" );
+  model.addDumpField("residual");
+  model.addDumpField("capacity_lumped");
   model.dump();
 
   // //for testing
   int max_steps = 1000;
 
-  for(int i=0; i<max_steps; i++) {
-      model.solveStep();
+  for (int i = 0; i < max_steps; i++) {
+    model.solveStep();
 
-      if(i % 100 == 0) model.dump();
-      if(i % 10000 == 0)
+    if (i % 100 == 0)
+      model.dump();
+    if (i % 10000 == 0)
       std::cout << "Step " << i << "/" << max_steps << std::endl;
   }
-  cout<< "\n\n Stable Time Step is : " << time_step << "\n \n" <<endl;
+  cout << "\n\n Stable Time Step is : " << time_step << "\n \n" << endl;
 
   return 0;
 }

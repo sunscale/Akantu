@@ -44,9 +44,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename Operation>
-void
-SolidMechanicsModel::splitByMaterial(const Array<Element> & elements,
-                                     Operation && op) const {
+void SolidMechanicsModel::splitByMaterial(const Array<Element> & elements,
+                                          Operation && op) const {
   std::vector<Array<Element>> elements_per_mat(materials.size());
   this->splitElementByMaterial(elements, elements_per_mat);
 

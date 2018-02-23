@@ -32,39 +32,39 @@
 /* -------------------------------------------------------------------------- */
 #include "heat_transfer_model.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string.h>
 using namespace std;
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::UInt spatial_dimension = 2;
   akantu::initialize("material.dat", argc, argv);
 
-  //create mesh
+  // create mesh
   akantu::Mesh mesh(spatial_dimension);
   mesh.read("square_tri3.msh");
 
   akantu::HeatTransferModel model(mesh);
-  //initialize everything
+  // initialize everything
   model.initFull();
 
-  //initialize PBC
-  model.setPBC(1,1,1);
+  // initialize PBC
+  model.setPBC(1, 1, 1);
   model.initPBC();
 
-  //assemble the lumped capacity
+  // assemble the lumped capacity
   model.assembleCapacityLumped();
 
-  //get stable time step
-  akantu::Real time_step = model.getStableTimeStep()*0.8;
-  cout<<"time step is:" << time_step << endl;
+  // get stable time step
+  akantu::Real time_step = model.getStableTimeStep() * 0.8;
+  cout << "time step is:" << time_step << endl;
   model.setTimeStep(time_step);
 
-  //boundary conditions
-  const akantu::Array<akantu::Real> & nodes = model.getFEEngine().getMesh().getNodes();
+  // boundary conditions
+  const akantu::Array<akantu::Real> & nodes =
+      model.getFEEngine().getMesh().getNodes();
   akantu::Array<bool> & boundary = model.getBlockedDOFs();
   akantu::Array<akantu::Real> & temperature = model.getTemperature();
   double length;
@@ -73,15 +73,17 @@ int main(int argc, char *argv[])
   for (akantu::UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    akantu::Real dx = nodes(i,0) - length/4.;
+    akantu::Real dx = nodes(i, 0) - length / 4.;
     akantu::Real dy = 0.0;
     akantu::Real dz = 0.0;
 
-    if (spatial_dimension > 1) dy = nodes(i,1) - length/4.;
-    if (spatial_dimension == 3) dz = nodes(i,2) - length/4.;
-    akantu::Real d = sqrt(dx*dx + dy*dy + dz*dz);
+    if (spatial_dimension > 1)
+      dy = nodes(i, 1) - length / 4.;
+    if (spatial_dimension == 3)
+      dz = nodes(i, 2) - length / 4.;
+    akantu::Real d = sqrt(dx * dx + dy * dy + dz * dz);
     //    if(dx < 0.0){
-    if(d < 0.1){
+    if (d < 0.1) {
       boundary(i) = true;
       temperature(i) = 300.;
     }
@@ -89,25 +91,25 @@ int main(int argc, char *argv[])
 
   model.updateResidual();
   model.setBaseName("heat_transfer_square_2d_pbc");
-  model.addDumpField("temperature"     );
+  model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("residual"        );
-  model.addDumpField("capacity_lumped" );
+  model.addDumpField("residual");
+  model.addDumpField("capacity_lumped");
   model.dump();
 
-  //main loop
+  // main loop
   int max_steps = 1000;
-  for(int i=0; i<max_steps; i++)
-    {
-      model.explicitPred();
-      model.updateResidual();
-      model.solveExplicitLumped();
-      model.explicitCorr();
-      if(i % 100 == 0) model.dump();
-      if(i % 10 == 0)
+  for (int i = 0; i < max_steps; i++) {
+    model.explicitPred();
+    model.updateResidual();
+    model.solveExplicitLumped();
+    model.explicitCorr();
+    if (i % 100 == 0)
+      model.dump();
+    if (i % 10 == 0)
       std::cout << "Step " << i << "/" << max_steps << std::endl;
-    }
-  cout<< "\n\n Stable Time Step is : " << time_step << "\n \n" <<endl;
+  }
+  cout << "\n\n Stable Time Step is : " << time_step << "\n \n" << endl;
 
   return 0;
 }

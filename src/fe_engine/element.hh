@@ -88,8 +88,8 @@ inline std::ostream & operator<<(std::ostream & stream, const Element & _this) {
 }
 
 namespace {
-const Element ElementNull{_not_defined, UInt(-1), _casper};
-//      Element{_not_defined, 0, _casper, _ek_not_defined};
+  const Element ElementNull{_not_defined, UInt(-1), _casper};
+  //      Element{_not_defined, 0, _casper, _ek_not_defined};
 }
 
 /* -------------------------------------------------------------------------- */

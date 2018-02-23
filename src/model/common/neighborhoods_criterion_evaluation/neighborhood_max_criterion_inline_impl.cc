@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "neighborhood_max_criterion.hh"
 #include "model.hh"
+#include "neighborhood_max_criterion.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_CC__
@@ -76,6 +76,6 @@ NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
 
 /* -------------------------------------------------------------------------- */
 
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_CC__ */

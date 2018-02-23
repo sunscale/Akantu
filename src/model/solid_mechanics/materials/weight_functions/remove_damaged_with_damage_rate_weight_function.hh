@@ -38,7 +38,7 @@
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
-/* Remove damaged with damage rate weight function                                             */
+/* Remove damaged with damage rate weight function */
 /* -------------------------------------------------------------------------- */
 
 class RemoveDamagedWithDamageRateWeightFunction : public BaseWeightFunction {
@@ -49,16 +49,20 @@ public:
   RemoveDamagedWithDamageRateWeightFunction(NonLocalManager & manager)
       : BaseWeightFunction(manager, "remove_damage_with_damage_rate"),
         damage_with_damage_rate(nullptr) {
-    this->registerParam<Real>("damage_limit", this->damage_limit_with_damage_rate, 1, _pat_parsable, "Damage Threshold");
+    this->registerParam<Real>("damage_limit",
+                              this->damage_limit_with_damage_rate, 1,
+                              _pat_parsable, "Damage Threshold");
     this->init();
   }
 
-  /* -------------------------------------------------------------------------- */
-  /* Base Weight Function inherited methods                                     */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Base Weight Function inherited methods */
+  /* --------------------------------------------------------------------------
+   */
   inline Real operator()(Real r,
-			 const __attribute__((unused)) IntegrationPoint & q1,
-			 const IntegrationPoint & q2);
+                         const __attribute__((unused)) IntegrationPoint & q1,
+                         const IntegrationPoint & q2);
 
   inline void init() override;
 
@@ -71,11 +75,10 @@ private:
 
   /// internal pointer to the current damage vector
   ElementTypeMapReal * damage_with_damage_rate;
-
 };
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "remove_damaged_with_damage_rate_weight_function_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "remove_damaged_with_damage_rate_weight_function_inline_impl.cc"
 #endif
 
 } // akantu

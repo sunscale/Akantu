@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
 
   // get and set stable time step
   Real time_step = model.getStableTimeStep() * 0.8;
-  std::cout << "Stable Time Step is : " << time_step/.8 << std::endl;
+  std::cout << "Stable Time Step is : " << time_step / .8 << std::endl;
   std::cout << "time step is:" << time_step << std::endl;
   model.setTimeStep(time_step);
 

@@ -96,14 +96,12 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
     UInt nb_element = this->model->getMesh().getNbElement(type);
     UInt nb_quad_per_element = this->fem_cohesive.getNbIntegrationPoints(type);
 
-    auto sigma_c_begin =
-        this->sigma_c_eff(type).begin_reinterpret(nb_quad_per_element,
-                                                  nb_element);
+    auto sigma_c_begin = this->sigma_c_eff(type).begin_reinterpret(
+        nb_quad_per_element, nb_element);
     Vector<Real> sigma_c_vec = sigma_c_begin[index];
 
-    auto delta_c_begin =
-        this->delta_c_eff(type).begin_reinterpret(nb_quad_per_element,
-                                                  nb_element);
+    auto delta_c_begin = this->delta_c_eff(type).begin_reinterpret(
+        nb_quad_per_element, nb_element);
     Vector<Real> delta_c_vec = delta_c_begin[index];
 
     if (scale_traction)
@@ -119,9 +117,9 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
       delta_c_vec(q) = 2 * this->G_c / sigma_c_vec(q);
 
       if (delta_c_vec(q) - delta_0 < Math::getTolerance())
-        AKANTU_ERROR("delta_0 = "
-                           << delta_0 << " must be lower than delta_c = "
-                           << delta_c_vec(q) << ", modify your material file");
+        AKANTU_ERROR("delta_0 = " << delta_0 << " must be lower than delta_c = "
+                                  << delta_c_vec(q)
+                                  << ", modify your material file");
 
       sigma_c_vec(q) *= delta_c_vec(q) / (delta_c_vec(q) - delta_0);
     }

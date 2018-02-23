@@ -33,11 +33,11 @@
 /* -------------------------------------------------------------------------- */
 #include "grid_synchronizer.hh"
 #include "aka_grid_dynamic.hh"
+#include "communicator.hh"
 #include "fe_engine.hh"
 #include "integration_point.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
-#include "communicator.hh"
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
@@ -476,10 +476,10 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
 
     for (UInt n = 0; n < nb_nodes_to_send; ++n) {
       UInt ln = global_nodes_ids.find(asked_nodes(n));
-      AKANTU_DEBUG_ASSERT(ln != UInt(-1), "The node ["
-                                              << asked_nodes(n)
-                                              << "] requested by proc " << p
-                                              << " was not found locally!");
+      AKANTU_DEBUG_ASSERT(ln != UInt(-1),
+                          "The node [" << asked_nodes(n)
+                                       << "] requested by proc " << p
+                                       << " was not found locally!");
       nodes_to_send.push_back(node_it + ln);
     }
 

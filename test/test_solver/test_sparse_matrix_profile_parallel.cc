@@ -33,48 +33,45 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "communicator.hh"
 #include "mesh.hh"
 #include "mesh_io_msh.hh"
 #include "mesh_partition_scotch.hh"
-#include "communicator.hh"
-#include "sparse_matrix.hh"
 #include "solver_mumps.hh"
+#include "sparse_matrix.hh"
 
 /* -------------------------------------------------------------------------- */
-
 
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
 
   int dim = 2;
   //#ifdef AKANTU_USE_IOHELPER
-  //akantu::ElementType type = akantu::_triangle_6;
+  // akantu::ElementType type = akantu::_triangle_6;
   //#endif //AKANTU_USE_IOHELPER
   akantu::Mesh mesh(dim);
 
   //  akantu::debug::setDebugLevel(akantu::dblDump);
 
-  akantu::StaticCommunicator * comm = akantu::Communicator::getStaticCommunicator();
+  akantu::StaticCommunicator * comm =
+      akantu::Communicator::getStaticCommunicator();
   akantu::Int psize = comm->getNbProc();
   akantu::Int prank = comm->whoAmI();
 
   akantu::UInt n = 0;
 
-
-
   /* ------------------------------------------------------------------------ */
   /* Parallel initialization                                                  */
   /* ------------------------------------------------------------------------ */
   akantu::Communicator * communicator;
-  if(prank == 0) {
+  if (prank == 0) {
     akantu::MeshIOMSH mesh_io;
     mesh_io.read("triangle.msh", mesh);
     akantu::MeshPartition * partition =
-      new akantu::MeshPartitionScotch(mesh, dim);
+        new akantu::MeshPartitionScotch(mesh, dim);
 
     //    partition->reorder();
     mesh_io.write("triangle_reorder.msh", mesh);
@@ -82,22 +79,24 @@ int main(int argc, char *argv[])
     n = mesh.getNbNodes();
 
     partition->partitionate(psize);
-    communicator = akantu::Communicator::createCommunicatorDistributeMesh(mesh, partition);
+    communicator =
+        akantu::Communicator::createCommunicatorDistributeMesh(mesh, partition);
     delete partition;
   } else {
-    communicator = akantu::Communicator::createCommunicatorDistributeMesh(mesh, NULL);
+    communicator =
+        akantu::Communicator::createCommunicatorDistributeMesh(mesh, NULL);
   }
 
-
-  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " << mesh.getNbGlobalNodes() << std::endl;
+  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "
+            << mesh.getNbGlobalNodes() << std::endl;
 
   akantu::SparseMatrix sparse_matrix(mesh, akantu::_symmetric, 2, "mesh");
   sparse_matrix.buildProfile();
 
   akantu::Solver * solver = new akantu::SolverMumps(sparse_matrix);
 
-  if(prank == 0) {
-    for(akantu::UInt i = 0; i < n; ++i) {
+  if (prank == 0) {
+    for (akantu::UInt i = 0; i < n; ++i) {
       solver->getRHS().storage()[i] = 1.;
     }
   }
@@ -105,7 +104,8 @@ int main(int argc, char *argv[])
   akantu::debug::setDebugLevel(akantu::dblDump);
   solver->initialize();
 
-  std::stringstream sstr; sstr << "profile_" << prank << ".mtx";
+  std::stringstream sstr;
+  sstr << "profile_" << prank << ".mtx";
   sparse_matrix.saveProfile(sstr.str());
 
   akantu::finalize();

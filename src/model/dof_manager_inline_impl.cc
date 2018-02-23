@@ -84,7 +84,6 @@ inline Array<Real> & DOFManager::getDOFs(const ID & dofs_id) {
   return *(this->getDOFData(dofs_id).dof);
 }
 
-
 /* -------------------------------------------------------------------------- */
 inline DOFSupportType DOFManager::getSupportType(const ID & dofs_id) const {
   return this->getDOFData(dofs_id).support_type;
@@ -125,7 +124,7 @@ inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManager::hasDOFsDerivatives(const ID & dofs_id,
-                                           UInt order) const{
+                                           UInt order) const {
   const std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
   return ((order < derivatives.size()) && (derivatives[order - 1] != nullptr));

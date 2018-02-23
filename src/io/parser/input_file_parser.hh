@@ -75,10 +75,9 @@ namespace parser {
   private:
   };
 
-  static ParserSection &
-  create_subsection(const ParserType & type, const boost::optional<std::string> & opt_name,
-                    const boost::optional<std::string> & opt_option,
-                    ParserSection & sect) {
+  static ParserSection & create_subsection(
+      const ParserType & type, const boost::optional<std::string> & opt_name,
+      const boost::optional<std::string> & opt_option, ParserSection & sect) {
     std::string option = "";
     if (opt_option)
       option = *opt_option;
@@ -87,7 +86,6 @@ namespace parser {
     std::string name = "anonymous_" + std::to_string(id++);
     if (opt_name)
       name = *opt_name;
-
 
     ParserSection sect_tmp(name, type, option, sect);
     return sect.addSubSection(sect_tmp);

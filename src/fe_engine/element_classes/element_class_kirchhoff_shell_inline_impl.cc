@@ -172,7 +172,7 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
   Matrix<Real> dNm(2, 3);
   InterpolationElement<_itp_lagrange_triangle_3, _itk_lagrangian>::computeDNDS(
       natural_coords, dNm);
-  
+
   UInt i = 0;
   for (const Matrix<Real> & mat : {dNm, dNx1, dNx2, dNx3, dNy1, dNy2, dNy3}) {
     B.block(mat, 0, i);

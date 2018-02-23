@@ -50,22 +50,22 @@ namespace akantu {
  *   - mu   : friction coefficient
  *   - penalty_for_friction : Penalty parameter for the friction behavior
  */
-template<UInt spatial_dimension>
-class MaterialCohesiveLinearFriction : public MaterialCohesiveLinear<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialCohesiveLinearFriction
+    : public MaterialCohesiveLinear<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
   using MaterialParent = MaterialCohesiveLinear<spatial_dimension>;
 
 public:
-
-  MaterialCohesiveLinearFriction(SolidMechanicsModel & model, const ID & id = "");
+  MaterialCohesiveLinearFriction(SolidMechanicsModel & model,
+                                 const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the material parameters
   void initMaterial() override;
 
@@ -84,7 +84,6 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

@@ -31,11 +31,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "communicator.hh"
 #include "dof_synchronizer.hh"
 #include "element_synchronizer.hh"
 #include "mesh_io.hh"
 #include "mesh_partition_scotch.hh"
-#include "communicator.hh"
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
@@ -50,8 +50,7 @@ int main(int argc, char * argv[]) {
 
   initialize(argc, argv);
 
-  const auto & comm =
-      akantu::Communicator::getStaticCommunicator();
+  const auto & comm = akantu::Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);

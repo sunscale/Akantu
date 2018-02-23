@@ -48,7 +48,7 @@ namespace akantu {
 // get the type of the data stored in elemental_data
 template <typename T> inline MeshDataTypeCode MeshData::getTypeCode() const {
   AKANTU_ERROR("Type " << debug::demangle(typeid(T).name())
-                             << "not implemented by MeshData.");
+                       << "not implemented by MeshData.");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -75,8 +75,8 @@ template <typename T> void MeshData::registerElementalData(const ID & name) {
 }
 
 /* -------------------------------------------------------------------------- */
-  //  Register new elemental data of a given MeshDataTypeCode with check if the
-  //  name is new
+//  Register new elemental data of a given MeshDataTypeCode with check if the
+//  name is new
 #define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)                             \
   case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
     registerElementalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name);              \
@@ -259,8 +259,7 @@ inline void MeshData::getTagNames(StringVector & tags,
       BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_DATA_CASE_MACRO, ,
                             AKANTU_MESH_DATA_TYPES)
     default:
-      AKANTU_ERROR(
-          "Could not determine the proper type to (dynamic-)cast.");
+      AKANTU_ERROR("Could not determine the proper type to (dynamic-)cast.");
       break;
     }
     if (exists) {

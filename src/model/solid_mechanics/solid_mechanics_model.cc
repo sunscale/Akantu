@@ -601,8 +601,7 @@ Real SolidMechanicsModel::getKineticEnergy(const ElementType & type,
                                                Model::spatial_dimension, type,
                                                _not_ghost, filter_element);
 
-  auto vit =
-      vel_on_quad.begin(Model::spatial_dimension);
+  auto vit = vel_on_quad.begin(Model::spatial_dimension);
   auto vend = vel_on_quad.end(Model::spatial_dimension);
 
   Vector<Real> rho_v2(nb_quadrature_points);
@@ -1135,9 +1134,7 @@ UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
     size += sizeof(Real) * Model::spatial_dimension * 5;
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 
   AKANTU_DEBUG_OUT();
@@ -1172,9 +1169,7 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     packDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 
   AKANTU_DEBUG_OUT();
@@ -1208,9 +1203,7 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     unpackDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 
   AKANTU_DEBUG_OUT();

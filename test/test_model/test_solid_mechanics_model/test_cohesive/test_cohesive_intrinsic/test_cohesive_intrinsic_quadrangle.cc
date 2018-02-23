@@ -32,9 +32,9 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
@@ -42,12 +42,10 @@
 
 using namespace akantu;
 
-static void updateDisplacement(SolidMechanicsModelCohesive &,
-			       Array<UInt> &,
-			       ElementType,
-			       Real);
+static void updateDisplacement(SolidMechanicsModelCohesive &, Array<UInt> &,
+                               ElementType, Real);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt spatial_dimension = 2;
@@ -58,7 +56,6 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.read("quadrangle.msh");
 
-
   // debug::setDebugLevel(dblDump);
   // std::cout << mesh << std::endl;
   // debug::setDebugLevel(dblWarning);
@@ -68,10 +65,9 @@ int main(int argc, char *argv[]) {
   /// model initialization
   model.initFull();
 
-  Real time_step = model.getStableTimeStep()*0.8;
+  Real time_step = model.getStableTimeStep() * 0.8;
   model.setTimeStep(time_step);
   model.assembleMassLumped();
-
 
   Array<bool> & boundary = model.getBlockedDOFs();
   //  const Array<Real> & residual = model.getResidual();
@@ -90,14 +86,15 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("intrinsic_quadrangle");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("internal_force"    );
+  model.addDumpField("internal_force");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.addDumpField("external_force");
 
-  model.setBaseNameToDumper("cohesive elements", "cohesive_elements_quadrangle");
+  model.setBaseNameToDumper("cohesive elements",
+                            "cohesive_elements_quadrangle");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
   model.addDumpFieldToDumper("cohesive elements", "damage");
 
@@ -109,7 +106,8 @@ int main(int argc, char *argv[]) {
   Vector<Real> bary(spatial_dimension);
   for (UInt el = 0; el < nb_element; ++el) {
     mesh.getBarycenter({type, el, _not_ghost}, bary);
-    if (bary(_x) > 0.) elements.push_back(el);
+    if (bary(_x) > 0.)
+      elements.push_back(el);
   }
 
   Real increment = 0.01;
@@ -136,7 +134,7 @@ int main(int argc, char *argv[]) {
 
     updateDisplacement(model, elements, type, increment);
 
-    if(s % 1 == 0) {
+    if (s % 1 == 0) {
       model.dump();
       model.dump("cohesive elements");
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
@@ -149,15 +147,16 @@ int main(int argc, char *argv[]) {
     //   }
     // }
 
-    //    Real Ed = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getDissipatedEnergy();
-    //    Real Er = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getReversibleEnergy();
+    //    Real Ed = dynamic_cast<MaterialCohesive&>
+    //    (model.getMaterial(1)).getDissipatedEnergy();
+    //    Real Er = dynamic_cast<MaterialCohesive&>
+    //    (model.getMaterial(1)).getReversibleEnergy();
 
     // edis << s << " "
     // 	 << Ed << std::endl;
 
     // erev << s << " "
     // 	 << Er << std::endl;
-
   }
 
   // edis.close();
@@ -176,15 +175,14 @@ int main(int argc, char *argv[]) {
 
   finalize();
 
-  std::cout << "OK: test_cohesive_intrinsic_quadrangle was passed!" << std::endl;
+  std::cout << "OK: test_cohesive_intrinsic_quadrangle was passed!"
+            << std::endl;
   return EXIT_SUCCESS;
 }
 
-
 static void updateDisplacement(SolidMechanicsModelCohesive & model,
-			       Array<UInt> & elements,
-			       ElementType type,
-			       Real increment) {
+                               Array<UInt> & elements, ElementType type,
+                               Real increment) {
 
   Mesh & mesh = model.getFEEngine().getMesh();
   UInt nb_element = elements.size();
@@ -200,9 +198,9 @@ static void updateDisplacement(SolidMechanicsModelCohesive & model,
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {
       UInt node = connectivity(elements(el), n);
       if (!update(node)) {
-	displacement(node, 0) += increment;
-	//	displacement(node, 1) += increment;
-	update(node) = true;
+        displacement(node, 0) += increment;
+        //	displacement(node, 1) += increment;
+        update(node) = true;
       }
     }
   }

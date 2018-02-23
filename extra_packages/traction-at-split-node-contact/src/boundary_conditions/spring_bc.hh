@@ -30,14 +30,10 @@ class SpringBC : public ForceBasedDirichlet {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SpringBC(SolidMechanicsModel & model, 
-	   BC::Axis ax, 
-	   Real stiffness,
-	   Real mass = 0.) :
-    ForceBasedDirichlet(model, ax, 0., mass), 
-    stiffness(stiffness), 
-    elongation(0.)
-  {}
+  SpringBC(SolidMechanicsModel & model, BC::Axis ax, Real stiffness,
+           Real mass = 0.)
+      : ForceBasedDirichlet(model, ax, 0., mass), stiffness(stiffness),
+        elongation(0.) {}
 
   virtual ~SpringBC() {}
 
@@ -48,7 +44,7 @@ public:
   virtual Real update() {
     AKANTU_DEBUG_IN();
 
-    this->target_force = - this->stiffness * this->elongation;
+    this->target_force = -this->stiffness * this->elongation;
     Real reaction = ForceBasedDirichlet::update();
     this->elongation += this->value;
 
@@ -64,12 +60,12 @@ public:
 
   inline void setToEquilibrium() {
     AKANTU_DEBUG_IN();
-  
+
     this->updateTotalResidual();
 
-    this->target_force = - this->total_residual;
-    this->elongation = - this->target_force / this->stiffness;
-  
+    this->target_force = -this->total_residual;
+    this->elongation = -this->target_force / this->stiffness;
+
     AKANTU_DEBUG_OUT();
   }
 
@@ -82,7 +78,8 @@ public:
 
     AKANTU_DEBUG_OUT();
   }
-  //friend std::ostream& operator<<(std::ostream& out, const SpringBC & spring);
+  // friend std::ostream& operator<<(std::ostream& out, const SpringBC &
+  // spring);
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -91,24 +88,18 @@ protected:
   Real elongation;
 };
 
-
-
-
-
-
-
-
-
-
 // class SpringBCRestricted : public SpringBC {
 // public:
-//   SpringBCRestricted(BC::Axis ax, Real target_force, BC::Axis surface_axis, Real min, Real max)
-//     :SpringBC(ax, target_force), surface_axis(surface_axis), min(min), max(max) {}
+//   SpringBCRestricted(BC::Axis ax, Real target_force, BC::Axis surface_axis,
+//   Real min, Real max)
+//     :SpringBC(ax, target_force), surface_axis(surface_axis), min(min),
+//     max(max) {}
 
 //   virtual ~SpringBCRestricted() {}
 
 // public:
-//   inline void operator()(UInt node, Vector<bool> & flags, Vector<Real> & primal, const Vector<Real> & coord) const {
+//   inline void operator()(UInt node, Vector<bool> & flags, Vector<Real> &
+//   primal, const Vector<Real> & coord) const {
 //     if(coord(surface_axis) > min && coord(surface_axis) < max) {
 //       SpringBC::operator()(node, flags, primal, coord);
 //     }
@@ -130,7 +121,6 @@ protected:
 //   out << "Real forcing_vel: " << spring.forcing_vel << std::endl;
 //   return out;
 // }
-
 
 } // namespace akantu
 

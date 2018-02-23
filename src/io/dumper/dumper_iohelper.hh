@@ -33,9 +33,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
 #include "aka_common.hh"
 #include "aka_types.hh"
-#include "aka_array.hh"
 #include "element_type_map.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -53,8 +53,8 @@ namespace akantu {
 UInt getIOHelperType(ElementType type);
 
 namespace dumper {
-class Field;
-class VariableBase;
+  class Field;
+  class VariableBase;
 }
 
 class Mesh;
@@ -124,7 +124,8 @@ public:
 public:
   /* ------------------------------------------------------------------------ */
   /* Variable wrapper */
-  template <typename T, bool is_scal = std::is_arithmetic<T>::value> class Variable;
+  template <typename T, bool is_scal = std::is_arithmetic<T>::value>
+  class Variable;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -134,7 +135,7 @@ protected:
   iohelper::Dumper * dumper;
 
   using Fields = std::map<std::string, dumper::Field *>;
-  using Variables = std::map<std::string, dumper::VariableBase *> ;
+  using Variables = std::map<std::string, dumper::VariableBase *>;
 
   /// list of registered fields to dump
   Fields fields;

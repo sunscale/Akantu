@@ -40,8 +40,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   int dim = 3;
 
   initialize("material.dat", argc, argv);
@@ -51,13 +50,16 @@ int main(int argc, char *argv[])
   mesh.read("cube.msh");
 
   SolidMechanicsModel model(mesh);
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   model.initFull();
-  /* -------------------------------------------------------------------------- */
-  //model.setPBC(1,1,1);
-  //model.initPBC();
+  /* --------------------------------------------------------------------------
+   */
+  // model.setPBC(1,1,1);
+  // model.initPBC();
   model.assembleMassLumped();
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
   model.setBaseName("test-pbc-tweak");
   model.addDumpField("mass");

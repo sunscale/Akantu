@@ -46,7 +46,7 @@ template <UInt dim> void TestMaterialDamage<dim>::registerNonLocalVariables() {
       this->gradu.getName(), grad_u_nl.getName(), dim * dim);
 
   this->model.getNonLocalManager()
-    .getNeighborhood(this->getNeighborhoodName())
+      .getNeighborhood(this->getNeighborhoodName())
       .registerNonLocalVariable(grad_u_nl.getName());
 }
 

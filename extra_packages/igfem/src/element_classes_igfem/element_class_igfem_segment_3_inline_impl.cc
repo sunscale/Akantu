@@ -29,14 +29,14 @@
  *
  * @verbatim
        \eta
-	 ^
-	 |
-	 x (0,0,1)
-	 |`
-	 |  `
-	 |` q `
-	 |  ` ° `
-	 x--------x----->  \xi
+     ^
+     |
+     x (0,0,1)
+     |`
+     |  `
+     |` q `
+     |  ` ° `
+     x--------x----->  \xi
     (1,0,0)      (0,1,0)
  @endverbatim
  *
@@ -71,29 +71,23 @@
  */
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_IGFEM_ELEMENT_CLASS_PROPERTY(_igfem_segment_3,		\
-					   _gt_igfem_segment_3,		\
-					   _itp_igfem_segment_3,	\
-					   _segment_2,			\
-					   _segment_2,			\
-					   _segment_2,			\
-					   _ek_igfem,			\
-					   1,				\
-					   1);
+AKANTU_DEFINE_IGFEM_ELEMENT_CLASS_PROPERTY(_igfem_segment_3,
+                                           _gt_igfem_segment_3,
+                                           _itp_igfem_segment_3, _segment_2,
+                                           _segment_2, _segment_2, _ek_igfem, 1,
+                                           1);
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline UInt ElementClass<_igfem_segment_3>::getOrientation(const Vector<bool> & is_inside) {
+template <>
+inline UInt
+ElementClass<_igfem_segment_3>::getOrientation(const Vector<bool> & is_inside) {
   UInt sub_el_is_inside = false;
   if (is_inside(0)) {
     sub_el_is_inside = true;
 
-    AKANTU_DEBUG_ASSERT(!is_inside(1),
-		      "orientation not determinable");
-  }
-  else
-    AKANTU_DEBUG_ASSERT(is_inside(2),
-		      "orientation not determinable");
+    AKANTU_DEBUG_ASSERT(!is_inside(1), "orientation not determinable");
+  } else
+    AKANTU_DEBUG_ASSERT(is_inside(2), "orientation not determinable");
 
   return sub_el_is_inside;
 }

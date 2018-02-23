@@ -94,7 +94,7 @@ UInt MeshDataMaterialCohesiveSelector::operator()(const Element & element) {
     try {
       std::string material_name = this->material_index(facet);
       return this->model.getMaterialIndex(material_name);
-    } catch(...) {
+    } catch (...) {
       return fallback_value;
     }
   } else
@@ -108,12 +108,9 @@ MaterialCohesiveRulesSelector::MaterialCohesiveRulesSelector(
     const MaterialCohesiveRules & rules,
     ID mesh_data_id) // what we have here is the name of model and also
                      // the name of different materials
-    : model(model),
-      mesh_data_id(std::move(mesh_data_id)),
-      mesh(model.getMesh()),
-      mesh_facets(model.getMeshFacets()),
-      spatial_dimension(model.getSpatialDimension()),
-      rules(rules) {
+    : model(model), mesh_data_id(std::move(mesh_data_id)),
+      mesh(model.getMesh()), mesh_facets(model.getMeshFacets()),
+      spatial_dimension(model.getSpatialDimension()), rules(rules) {
 
   // cohesive fallback
   this->fallback_selector =

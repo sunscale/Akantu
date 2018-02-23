@@ -4,7 +4,8 @@
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
  *
- * @brief  regularisation that regularizes the frictional strength with one parameter
+ * @brief  regularisation that regularizes the frictional strength with one
+ * parameter
  *
  * @section LICENSE
  *
@@ -29,12 +30,12 @@ class NTNFricRegSimplifiedPrakashClifton : public NTNFricRegNoRegularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
-  NTNFricRegSimplifiedPrakashClifton(NTNBaseContact * contact,
-			 const FrictionID & id = "simplified_prakash_clifton",
-			 const MemoryID & memory_id = 0);
-  virtual ~NTNFricRegSimplifiedPrakashClifton() {};
-  
+  NTNFricRegSimplifiedPrakashClifton(
+      NTNBaseContact * contact,
+      const FrictionID & id = "simplified_prakash_clifton",
+      const MemoryID & memory_id = 0);
+  virtual ~NTNFricRegSimplifiedPrakashClifton(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -57,13 +58,12 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
-  
+                                    const std::string & field_id);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
 protected:
   /// get the frictional strength array
   virtual SynchronizedArray<Real> & internalGetFrictionalStrength() {
@@ -80,7 +80,6 @@ private:
   SynchronizedArray<Real> spc_internal;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -88,9 +87,9 @@ private:
 //#include "ntn_fricreg_simplified_prakash_clifton_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricRegSimplifiedPrakashClifton & _this)
-{
+inline std::ostream &
+operator<<(std::ostream & stream,
+           const NTNFricRegSimplifiedPrakashClifton & _this) {
   _this.printself(stream);
   return stream;
 }

@@ -36,8 +36,8 @@
 #define __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__
 
 namespace akantu {
-  class DOFManagerDefault;
-  class SparseSolverMumps;
+class DOFManagerDefault;
+class SparseSolverMumps;
 }
 
 namespace akantu {
@@ -47,10 +47,10 @@ class NonLinearSolverNewtonRaphson : public NonLinearSolver {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NonLinearSolverNewtonRaphson(DOFManagerDefault & dof_manager,
-                         const NonLinearSolverType & non_linear_solver_type,
-                         const ID & id = "non_linear_solver_newton_raphson",
-                         UInt memory_id = 0);
+  NonLinearSolverNewtonRaphson(
+      DOFManagerDefault & dof_manager,
+      const NonLinearSolverType & non_linear_solver_type,
+      const ID & id = "non_linear_solver_newton_raphson", UInt memory_id = 0);
   ~NonLinearSolverNewtonRaphson() override;
 
   /* ------------------------------------------------------------------------ */

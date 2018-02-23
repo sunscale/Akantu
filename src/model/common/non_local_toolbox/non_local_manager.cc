@@ -83,7 +83,7 @@ void NonLocalManager::initialize() {
   mesh.registerEventHandler(*this, _ehp_non_local_manager);
 
   /// store the number of current ghost elements for each type in the mesh
-  //ElementTypeMap<UInt> nb_ghost_protected;
+  // ElementTypeMap<UInt> nb_ghost_protected;
   // for (auto type : mesh.elementTypes(spatial_dimension, _ghost))
   //   nb_ghost_protected(mesh.getNbElement(type, _ghost), type, _ghost);
 
@@ -98,7 +98,7 @@ void NonLocalManager::initialize() {
   this->updatePairLists();
 
   /// cleanup the unneccessary ghost elements
-  this->cleanupExtraGhostElements(); //nb_ghost_protected);
+  this->cleanupExtraGhostElements(); // nb_ghost_protected);
 
   this->callback->initializeNonLocal();
 
@@ -180,8 +180,7 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   }
 
   /// get the global maximum ID size on each proc
-  const Communicator & static_communicator =
-      model.getMesh().getCommunicator();
+  const Communicator & static_communicator = model.getMesh().getCommunicator();
   static_communicator.allReduce(max_id_size, SynchronizerOperation::_max);
 
   /// get the rank for this proc and the total nb proc
@@ -256,14 +255,16 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::synchronize(DataAccessor<Element> & data_accessor, const SynchronizationTag & tag) {
+void NonLocalManager::synchronize(DataAccessor<Element> & data_accessor,
+                                  const SynchronizationTag & tag) {
   for (auto & neighborhood_id : global_neighborhoods) {
     auto it = neighborhoods.find(neighborhood_id);
     if (it != neighborhoods.end()) {
       it->second->synchronize(data_accessor, tag);
     } else {
       auto synchronizer_it = dummy_synchronizers.find(neighborhood_id);
-      if (synchronizer_it == dummy_synchronizers.end()) continue;
+      if (synchronizer_it == dummy_synchronizers.end())
+        continue;
 
       synchronizer_it->second->synchronizeOnce(data_accessor, tag);
     }
@@ -430,7 +431,7 @@ void NonLocalManager::computeAllNonLocalStresses() {
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::cleanupExtraGhostElements() {
-    //ElementTypeMap<UInt> & nb_ghost_protected) {
+  // ElementTypeMap<UInt> & nb_ghost_protected) {
 
   using ElementSet = std::set<Element>;
   ElementSet relevant_ghost_elements;

@@ -38,11 +38,11 @@
 #include "aka_fortran_mangling.hh"
 extern "C" {
 
-  /* ------------------------------------------------------------------------ */
-  /* Double precision                                                         */
-  /* ------------------------------------------------------------------------ */
-  // LEVEL 1
-  double AKA_FC_GLOBAL(ddot, DDOT)(int *, double *, int *, double *, int *);
+/* ------------------------------------------------------------------------ */
+/* Double precision                                                         */
+/* ------------------------------------------------------------------------ */
+// LEVEL 1
+double AKA_FC_GLOBAL(ddot, DDOT)(int *, double *, int *, double *, int *);
 void AKA_FC_GLOBAL(daxpy, DAXPY)(int *, double *, double *, int *, double *,
                                  int *);
 
@@ -82,8 +82,8 @@ namespace akantu {
 template <typename T>
 inline T aka_dot(int * n, T * x, int * incx, T * y, int * incy) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "BLAS in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "BLAS in the compilation options!");
 }
 
 /// Wrapper around the S/DAXPY BLAS function that computes \f$y := \alpha x +
@@ -91,8 +91,8 @@ inline T aka_dot(int * n, T * x, int * incx, T * y, int * incy) {
 template <typename T>
 inline void aka_axpy(int * n, T * alpha, T * x, int * incx, T * y, int * incy) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "BLAS in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "BLAS in the compilation options!");
 }
 
 /// Wrapper around the S/DGEMV BLAS function that computes matrix-vector product
@@ -102,8 +102,8 @@ inline void aka_gemv(char * trans, int * m, int * n, T * alpha, T * a,
                      int * lda, T * x, int * incx, T * beta, T * y,
                      int * incy) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "BLAS in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "BLAS in the compilation options!");
 }
 
 /// Wrapper around the S/DGEMM BLAS function that computes the product of two
@@ -113,8 +113,8 @@ inline void aka_gemm(char * transa, char * transb, int * m, int * n, int * k,
                      T * alpha, T * a, int * lda, T * b, int * ldb, T * beta,
                      T * c, int * ldc) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "BLAS in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "BLAS in the compilation options!");
 }
 
 #if defined(AKANTU_USE_BLAS)
@@ -242,8 +242,8 @@ inline void aka_geev(char * jobvl, char * jobvr, int * n, T * a, int * lda,
                      T * wr, T * wi, T * vl, int * ldvl, T * vr, int * ldvr,
                      T * work, int * lwork, int * info) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                     "LAPACK in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "LAPACK in the compilation options!");
 }
 
 /// Wrapper around the S/DGETRF BLAS function that computes the LU decomposition
@@ -252,8 +252,8 @@ template <typename T>
 inline void aka_getrf(int * m, int * n, T * a, int * lda, int * ipiv,
                       int * info) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "LAPACK in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "LAPACK in the compilation options!");
 }
 
 /// Wrapper around the S/DGETRI BLAS function that computes the inverse of a
@@ -262,8 +262,8 @@ template <typename T>
 inline void aka_getri(int * n, T * a, int * lda, int * ipiv, T * work,
                       int * lwork, int * info) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "LAPACK in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "LAPACK in the compilation options!");
 }
 
 /// Wrapper around the S/DGETRS BLAS function that solves \f$A^{(T)}x = b\f$
@@ -272,8 +272,8 @@ template <typename T>
 inline void aka_getrs(char * trans, int * n, int * nrhs, T * A, int * lda,
                       int * ipiv, T * b, int * ldb, int * info) {
   AKANTU_ERROR(debug::demangle(typeid(T).name())
-                     << "is not a type recognized, or you didn't activated "
-                        "LAPACK in the compilation options!");
+               << "is not a type recognized, or you didn't activated "
+                  "LAPACK in the compilation options!");
 }
 
 #include "aka_warning_restore.hh"

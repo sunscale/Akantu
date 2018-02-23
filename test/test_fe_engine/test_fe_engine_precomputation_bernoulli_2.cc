@@ -35,8 +35,8 @@
 #include "shape_structural.hh"
 /* -------------------------------------------------------------------------- */
 #include <cmath>
-#include <iostream>
 #include <functional>
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
@@ -87,7 +87,7 @@ bool testBending(const Array<Real> & shape_functions, UInt shape_line_index,
 
 int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
-  //debug::setDebugLevel(dblTest);
+  // debug::setDebugLevel(dblTest);
 
   constexpr ElementType type = _bernoulli_beam_2;
   UInt dim = ElementClass<type>::getSpatialDimension();

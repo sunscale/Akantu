@@ -31,17 +31,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "test_structural_mechanics_model_fixture.hh"
 #include "sparse_matrix.hh"
+#include "test_structural_mechanics_model_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-class TestStructDKT18
-    : public TestStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>> {
-  using parent = TestStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>>;
+class TestStructDKT18 : public TestStructuralFixture<
+                            element_type_t<_discrete_kirchhoff_triangle_18>> {
+  using parent =
+      TestStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>>;
 
 public:
   void addMaterials() override {

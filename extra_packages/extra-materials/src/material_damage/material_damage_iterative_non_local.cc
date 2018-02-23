@@ -4,7 +4,7 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  *
- * @brief  Implementation of MaterialDamageIterativeNonLocal 
+ * @brief  Implementation of MaterialDamageIterativeNonLocal
  *
  * @section LICENSE
  *
@@ -19,13 +19,14 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStresses(GhostType ghost_type) {
+template <UInt spatial_dimension>
+void MaterialDamageIterativeNonLocal<
+    spatial_dimension>::computeNonLocalStresses(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   /// reset normalized maximum equivalent stress
-  if(ghost_type==_not_ghost)
+  if (ghost_type == _not_ghost)
     this->norm_max_equivalent_stress = 0;
- 
+
   MaterialDamageIterativeNonLocalParent::computeNonLocalStresses(ghost_type);
 
   /// find global Gauss point with highest stress
@@ -35,6 +36,7 @@ void MaterialDamageIterativeNonLocal<spatial_dimension>::computeNonLocalStresses
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
-INSTANTIATE_MATERIAL(damage_iterative_non_local, MaterialDamageIterativeNonLocal);
+INSTANTIATE_MATERIAL(damage_iterative_non_local,
+                     MaterialDamageIterativeNonLocal);
 
 } // namespace akantu

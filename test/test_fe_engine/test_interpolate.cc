@@ -66,7 +66,8 @@ TYPED_TEST(TestFEMFixture, InterpolateConstant) {
 //   Array<Real> coord_on_quad(this->nb_quadrature_points_total, dim,
 //                             "coord_on_quad");
 
-//   this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, dim, type);
+//   this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, dim,
+//   type);
 // }
 
 } // namespace

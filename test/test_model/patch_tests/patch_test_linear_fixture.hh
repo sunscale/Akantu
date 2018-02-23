@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- */
-#include "mesh_utils.hh"
 #include "element_group.hh"
+#include "mesh_utils.hh"
 #include "model.hh"
 #include "test_gtest_utils.hh"
 /* -------------------------------------------------------------------------- */

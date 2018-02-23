@@ -75,12 +75,12 @@ inline Real MaterialCohesiveLinear<dim>::computeEffectiveNorm(
 template <UInt dim>
 inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
     Vector<Real> & traction, Vector<Real> & opening,
-    const Vector<Real> & normal, Real & delta_max,
-    const Real & delta_c, const Vector<Real> & insertion_stress,
-    const Real & sigma_c, Vector<Real> & normal_opening,
-    Vector<Real> & tangential_opening, Real & normal_opening_norm,
-    Real & tangential_opening_norm, Real & damage, bool & penetration,
-    Vector<Real> & contact_traction, Vector<Real> & contact_opening) {
+    const Vector<Real> & normal, Real & delta_max, const Real & delta_c,
+    const Vector<Real> & insertion_stress, const Real & sigma_c,
+    Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
+    Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
+    bool & penetration, Vector<Real> & contact_traction,
+    Vector<Real> & contact_opening) {
 
   /// compute normal and tangential opening vectors
   normal_opening_norm = opening.dot(normal);
@@ -100,7 +100,7 @@ inline void MaterialCohesiveLinear<dim>::computeTractionOnQuad(
       tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
   penetration = normal_opening_norm / delta_c < -Math::getTolerance();
-  //penetration = normal_opening_norm < 0.;
+  // penetration = normal_opening_norm < 0.;
   if (this->contact_after_breaking == false &&
       Math::are_float_equal(damage, 1.))
     penetration = false;
@@ -159,8 +159,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
     const Real & sigma_c, Vector<Real> & opening, const Vector<Real> & normal,
     Vector<Real> & normal_opening, Vector<Real> & tangential_opening,
     Real & normal_opening_norm, Real & tangential_opening_norm, Real & damage,
-    bool & penetration,
-    Vector<Real> & contact_opening) {
+    bool & penetration, Vector<Real> & contact_opening) {
 
   /**
    * During the update of the residual the interpenetrations are

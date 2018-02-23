@@ -33,8 +33,8 @@
 #include "cppargparse.hh"
 
 #if defined(AKANTU_USE_MPI)
-#include "static_communicator.hh"
 #include "mpi_type_wrapper.hh"
+#include "static_communicator.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 #include <petscsys.h>
@@ -61,8 +61,8 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * dir,
                                         PetscErrorType type,
                                         const char * message, void *) {
   AKANTU_ERROR("An error occured in PETSc in file \""
-                     << file << ":" << line << "\" - PetscErrorCode " << number
-                     << " - \"" << message << "\"");
+               << file << ":" << line << "\" - PetscErrorCode " << number
+               << " - \"" << message << "\"");
 }
 #else
 static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * func,
@@ -71,14 +71,13 @@ static PetscErrorCode PETScErrorHandler(MPI_Comm, int line, const char * func,
                                         PetscErrorType type,
                                         const char * message, void *) {
   AKANTU_ERROR("An error occured in PETSc in file \""
-                     << file << ":" << line << "\" - PetscErrorCode " << number
-                     << " - \"" << message << "\"");
+               << file << ":" << line << "\" - PetscErrorCode " << number
+               << " - \"" << message << "\"");
 }
 #endif
 
 /* -------------------------------------------------------------------------- */
-DOFManagerPETSc::DOFManagerPETSc(const ID & id,
-                                 const MemoryID & memory_id)
+DOFManagerPETSc::DOFManagerPETSc(const ID & id, const MemoryID & memory_id)
     : DOFManager(id, memory_id) {
 
 // check if the akantu types and PETSc one are consistant
@@ -103,7 +102,8 @@ DOFManagerPETSc::DOFManagerPETSc(const ID & id,
         dynamic_cast<const StaticCommunicatorMPI &>(
             comm.getRealStaticCommunicator());
 
-    this->mpi_communicator = mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
+    this->mpi_communicator =
+        mpi_st_comm.getMPITypeWrapper().getMPICommunicator();
 #else
     this->mpi_communicator = PETSC_COMM_SELF;
 #endif
@@ -115,9 +115,8 @@ DOFManagerPETSc::DOFManagerPETSc(const ID & id,
     PetscErrorCode petsc_error = PetscInitialize(&argc, &argv, NULL, NULL);
 
     if (petsc_error != 0) {
-      AKANTU_ERROR(
-          "An error occured while initializing Petsc (PetscErrorCode "
-          << petsc_error << ")");
+      AKANTU_ERROR("An error occured while initializing Petsc (PetscErrorCode "
+                   << petsc_error << ")");
     }
 
     PetscPushErrorHandler(PETScErrorHandler, NULL);

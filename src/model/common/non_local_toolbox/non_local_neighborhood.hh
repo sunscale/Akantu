@@ -71,16 +71,17 @@ public:
 
   /// compute the non-local counter part for a given element type map
   // compute the non-local counter part for a given element type map
-  void weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
-                                   ElementTypeMapReal & accumulated,
-                                   UInt nb_degree_of_freedom,
-                                   const GhostType & ghost_type2) const override;
+  void
+  weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
+                              ElementTypeMapReal & accumulated,
+                              UInt nb_degree_of_freedom,
+                              const GhostType & ghost_type2) const override;
 
   /// update the weights based on the weight function
   void updateWeights() override;
 
   /// register a new non-local variable in the neighborhood
-  //void registerNonLocalVariable(const ID & id);
+  // void registerNonLocalVariable(const ID & id);
 protected:
   template <class Func>
   inline void foreach_weight(const GhostType & ghost_type, Func && func);

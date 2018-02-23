@@ -35,8 +35,8 @@
 
 #include "aka_common.hh"
 
-#include "material.hh"
 #include "embedded_interface_model.hh"
+#include "material.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -131,13 +131,13 @@ protected:
 
   /// Compute the background shape derivatives for a type pair
   void computeBackgroundShapeDerivatives(const ElementType & interface_type,
-					 const ElementType & bg_type,
-					 GhostType ghost_type,
-					 const Array<UInt> & filter);
+                                         const ElementType & bg_type,
+                                         GhostType ghost_type,
+                                         const Array<UInt> & filter);
 
   /// Filter elements crossed by interface of a type
   void filterInterfaceBackgroundElements(Array<UInt> & foreground,
-					 Array<UInt> & background,
+                                         Array<UInt> & background,
                                          const ElementType & type,
                                          const ElementType & interface_type,
                                          GhostType ghost_type);

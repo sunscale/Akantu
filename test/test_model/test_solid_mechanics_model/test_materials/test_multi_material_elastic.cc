@@ -1,9 +1,9 @@
-#include <solid_mechanics_model.hh>
 #include "non_linear_solver.hh"
+#include <solid_mechanics_model.hh>
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("test_multi_material_elastic.dat", argc, argv);
 
   UInt spatial_dimension = 2;
@@ -13,7 +13,8 @@ int main(int argc, char *argv[]) {
 
   SolidMechanicsModel model(mesh);
 
-  auto && mat_sel = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  auto && mat_sel = std::make_shared<MeshDataMaterialSelector<std::string>>(
+      "physical_names", model);
   model.setMaterialSelector(mat_sel);
 
   model.initFull(_analysis_method = _static);
@@ -32,14 +33,14 @@ int main(int argc, char *argv[]) {
   model.addDumpField("stress");
   model.addDumpField("grad_u");
 
-  //model.dump();
+  // model.dump();
   auto & solver = model.getNonLinearSolver("static");
   solver.set("max_iterations", 1);
   solver.set("threshold", 1e-8);
   solver.set("convergence_type", _scc_residual);
 
   model.solveStep();
-  //model.dump();
+  // model.dump();
 
   std::map<std::string, Matrix<Real>> ref_strain;
   ref_strain["strong"] = Matrix<Real>(spatial_dimension, spatial_dimension, 0.);
@@ -55,12 +56,14 @@ int main(int argc, char *argv[]) {
 
   typedef Array<Real>::const_matrix_iterator mat_it;
   auto check = [](mat_it it, mat_it end, const Matrix<Real> & ref) -> bool {
-    for(;it != end; ++it) {
+    for (; it != end; ++it) {
       Real dist = (*it - ref).norm<L_2>();
 
-      //std::cout << *it << " " << dist << " " << (dist < 1e-10 ? "OK" : "Not OK") << std::endl;
+      // std::cout << *it << " " << dist << " " << (dist < 1e-10 ? "OK" : "Not
+      // OK") << std::endl;
 
-      if (dist > 1e-10) return false;
+      if (dist > 1e-10)
+        return false;
     }
 
     return true;
@@ -71,7 +74,7 @@ int main(int argc, char *argv[]) {
   for (; tit != tend; ++tit) {
     auto & type = *tit;
 
-    for(auto mat_id : mats) {
+    for (auto mat_id : mats) {
       auto & stress = model.getMaterial(mat_id).getStress(type);
       auto & grad_u = model.getMaterial(mat_id).getGradU(type);
 
@@ -81,12 +84,14 @@ int main(int argc, char *argv[]) {
       auto git = grad_u.begin(spatial_dimension, spatial_dimension);
       auto gend = grad_u.end(spatial_dimension, spatial_dimension);
 
-      if(!check(sit, send, ref_stress)) AKANTU_ERROR("The stresses are not correct");
-      if(!check(git, gend, ref_strain[mat_id])) AKANTU_ERROR("The grad_u are not correct");
+      if (!check(sit, send, ref_stress))
+        AKANTU_ERROR("The stresses are not correct");
+      if (!check(git, gend, ref_strain[mat_id]))
+        AKANTU_ERROR("The grad_u are not correct");
     }
   }
 
   finalize();
 
-   return 0;
+  return 0;
 }

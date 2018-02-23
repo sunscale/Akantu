@@ -38,8 +38,7 @@
 namespace akantu {
 
 /// internal field class for cohesive materials
-template<typename T>
-class CohesiveInternalField : public InternalField<T> {
+template <typename T> class CohesiveInternalField : public InternalField<T> {
 public:
   CohesiveInternalField(const ID & id, Material & material);
   ~CohesiveInternalField() override;
@@ -48,16 +47,14 @@ public:
   void initialize(UInt nb_component) override;
 
 private:
-  CohesiveInternalField operator=(__attribute__((unused)) const CohesiveInternalField & other) {};
-
+  CohesiveInternalField operator=(__attribute__((unused))
+                                  const CohesiveInternalField & other){};
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* Facet Internal Field                                                       */
 /* -------------------------------------------------------------------------- */
-template<typename T>
-class FacetInternalField : public InternalField<T> {
+template <typename T> class FacetInternalField : public InternalField<T> {
 public:
   FacetInternalField(const ID & id, Material & material);
   ~FacetInternalField() override;

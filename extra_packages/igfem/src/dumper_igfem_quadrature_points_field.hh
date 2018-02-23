@@ -23,106 +23,115 @@ __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 
 /* -------------------------------------------------------------------------- */
-template<typename types>
+template <typename types>
 class igfem_quadrature_point_iterator
-  : public igfem_element_iterator<types, igfem_quadrature_point_iterator> {
+    : public igfem_element_iterator<types, igfem_quadrature_point_iterator> {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  typedef igfem_element_iterator<types, dumper::igfem_quadrature_point_iterator> parent;
-  typedef typename types::data_type   data_type;
+  typedef igfem_element_iterator<types, dumper::igfem_quadrature_point_iterator>
+      parent;
+  typedef typename types::data_type data_type;
   typedef typename types::return_type return_type;
-  typedef typename types::field_type  field_type;
+  typedef typename types::field_type field_type;
   typedef typename types::array_iterator array_iterator;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  igfem_quadrature_point_iterator(const field_type & field,
-				  const typename field_type::type_iterator & t_it,
-				  const typename field_type::type_iterator & t_it_end,
-				  const array_iterator & array_it,
-				  const array_iterator & array_it_end,
-				  const GhostType ghost_type = _not_ghost,
-				  UInt sub_element = 0) :
-    parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type, sub_element) { }
+  igfem_quadrature_point_iterator(
+      const field_type & field, const typename field_type::type_iterator & t_it,
+      const typename field_type::type_iterator & t_it_end,
+      const array_iterator & array_it, const array_iterator & array_it_end,
+      const GhostType ghost_type = _not_ghost, UInt sub_element = 0)
+      : parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type,
+               sub_element) {}
 
   return_type operator*() {
     const Vector<data_type> & mat_internal_field = *this->array_it;
     /// get nb data per sub element
-    UInt nb_sub_1_internal_points = IGFEMHelper::getNbQuadraturePoints(*this->tit, 0);
-    UInt nb_sub_2_internal_points = IGFEMHelper::getNbQuadraturePoints(*this->tit, 1);
- 
-    UInt nb_data = this->getNbDataPerElem(*(this->tit)) / (nb_sub_1_internal_points + nb_sub_2_internal_points);
+    UInt nb_sub_1_internal_points =
+        IGFEMHelper::getNbQuadraturePoints(*this->tit, 0);
+    UInt nb_sub_2_internal_points =
+        IGFEMHelper::getNbQuadraturePoints(*this->tit, 1);
+
+    UInt nb_data = this->getNbDataPerElem(*(this->tit)) /
+                   (nb_sub_1_internal_points + nb_sub_2_internal_points);
 
     UInt nb_sub_components = 0;
     if (!(this->sub_element))
       nb_sub_components = nb_data * nb_sub_1_internal_points;
     else
       nb_sub_components = nb_data * nb_sub_2_internal_points;
-    
+
     Vector<data_type> sub_mat_internal_field(nb_sub_components);
 
     if (!(this->sub_element)) {
-      for (UInt i = 0; i < nb_sub_components; ++i) 
-	sub_mat_internal_field(i) = mat_internal_field(i);
-    }
-    else {
-      for (UInt i = 0; i < nb_sub_components; ++i) 
-	sub_mat_internal_field(i) = mat_internal_field(nb_data *nb_sub_1_internal_points + i);
+      for (UInt i = 0; i < nb_sub_components; ++i)
+        sub_mat_internal_field(i) = mat_internal_field(i);
+    } else {
+      for (UInt i = 0; i < nb_sub_components; ++i)
+        sub_mat_internal_field(i) =
+            mat_internal_field(nb_data * nb_sub_1_internal_points + i);
     }
 
     return sub_mat_internal_field;
   }
 };
 
- // /* -------------------------------------------------------------------------- */
- // /* Fields type description                                                    */
- // /* -------------------------------------------------------------------------- */
- // template<class types, template <class> class iterator_type>
- // class GenericQuadraturePointsField :
- //   public GenericElementalField<types,iterator_type> {
+// /* --------------------------------------------------------------------------
+// */
+// /* Fields type description */
+// /* --------------------------------------------------------------------------
+// */
+// template<class types, template <class> class iterator_type>
+// class GenericQuadraturePointsField :
+//   public GenericElementalField<types,iterator_type> {
 
- // public:
+// public:
 
- //   /* ------------------------------------------------------------------------ */
- //   /* Typedefs                                                                 */
- //   /* ------------------------------------------------------------------------ */
+//   /* ------------------------------------------------------------------------
+//   */
+//   /* Typedefs */
+//   /* ------------------------------------------------------------------------
+//   */
 
+//   typedef iterator_type<types> iterator;
+//   typedef typename types::field_type field_type;
+//   typedef typename iterator::it_type T;
+//   typedef GenericElementalField<types,iterator_type> parent;
 
- //   typedef iterator_type<types> iterator;
- //   typedef typename types::field_type field_type;
- //   typedef typename iterator::it_type T;
- //   typedef GenericElementalField<types,iterator_type> parent;
+//   /* ------------------------------------------------------------------------
+//   */
+//   /* Constructors/Destructors */
+//   /* ------------------------------------------------------------------------
+//   */
 
- //   /* ------------------------------------------------------------------------ */
- //   /* Constructors/Destructors                                                 */
- //   /* ------------------------------------------------------------------------ */
+//   GenericQuadraturePointsField(const field_type & field,
+// 			       UInt spatial_dimension = _all_dimensions,
+// 			       GhostType ghost_type = _not_ghost,
+// 			       ElementKind element_kind = _ek_not_defined) :
+//     parent(field, spatial_dimension, ghost_type, element_kind) { }
 
- //   GenericQuadraturePointsField(const field_type & field,
- // 			       UInt spatial_dimension = _all_dimensions,
- // 			       GhostType ghost_type = _not_ghost,
- // 			       ElementKind element_kind = _ek_not_defined) :
- //     parent(field, spatial_dimension, ghost_type, element_kind) { }
+//   /* ------------------------------------------------------------------------
+//   */
+//   /* Methods */
+//   /* ------------------------------------------------------------------------
+//   */
 
- //   /* ------------------------------------------------------------------------ */
- //   /* Methods                                                                  */
- //   /* ------------------------------------------------------------------------ */
+//   virtual iterator begin() {
+//     iterator it = parent::begin();
+//     return it;
+//   }
 
- //   virtual iterator begin() {
- //     iterator it = parent::begin();
- //     return it;
- //   }
+//   virtual iterator end  () {
+//     iterator it = parent::end();
+//     return it;
+//   }
 
- //   virtual iterator end  () {
- //     iterator it = parent::end();
- //     return it;
- //   }
-
- // };
+// };
 
 /* -------------------------------------------------------------------------- */
 

@@ -50,10 +50,13 @@ class MeshSegmentIntersector
                                  cgal::Cartesian::Segment_3, cgal::Cartesian> {
   using K = cgal::Cartesian;
   /// Parent class type
-  typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K> parent_type;
+  typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K>
+      parent_type;
 
   /// Result of intersection function type
-  typedef typename IntersectionTypeHelper<TreeTypeHelper< Triangle<K>, K>, K::Segment_3>::intersection_type result_type;
+  typedef typename IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>,
+                                          K::Segment_3>::intersection_type
+      result_type;
 
   /// Pair of segments and element id
   typedef std::pair<K::Segment_3, UInt> pair_type;
@@ -74,13 +77,16 @@ public:
   virtual void computeIntersectionQuery(const K::Segment_3 & query);
 
   /// Compute intersection points between the mesh and a query
-  virtual void computeMeshQueryIntersectionPoint(const K::Segment_3 & query, UInt nb_old_nodes);
+  virtual void computeMeshQueryIntersectionPoint(const K::Segment_3 & query,
+                                                 UInt nb_old_nodes);
 
   /// Compute the embedded mesh
-  virtual void buildResultFromQueryList(const std::list<K::Segment_3> & query_list);
+  virtual void
+  buildResultFromQueryList(const std::list<K::Segment_3> & query_list);
 
-  void setPhysicalName(const std::string & other)
-  { current_physical_name = other; }
+  void setPhysicalName(const std::string & other) {
+    current_physical_name = other;
+  }
 
 protected:
   /// Compute segments from intersection list
@@ -95,7 +101,7 @@ protected:
   /// Physical name of the current batch of queries
   std::string current_physical_name;
 };
- 
+
 } // akantu
 
 #include "mesh_segment_intersector_tmpl.hh"

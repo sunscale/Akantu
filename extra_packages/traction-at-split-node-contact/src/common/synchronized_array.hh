@@ -4,7 +4,10 @@
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
  *
- * @brief  synchronized array: a array can be registered to another (hereafter called top) array. If an element is added to or removed from the top array, the registered array removes or adds at the same position an element. The two arrays stay therefore synchronized.
+ * @brief  synchronized array: a array can be registered to another (hereafter
+ * called top) array. If an element is added to or removed from the top array,
+ * the registered array removes or adds at the same position an element. The two
+ * arrays stay therefore synchronized.
  *
  * @section LICENSE
  *
@@ -27,13 +30,13 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-enum SyncChoice {_added, _deleted};
+enum SyncChoice { _added, _deleted };
 
 /* -------------------------------------------------------------------------- */
 class SynchronizedArrayBase {
 public:
-  SynchronizedArrayBase() {};
-  ~SynchronizedArrayBase() {};
+  SynchronizedArrayBase(){};
+  ~SynchronizedArrayBase(){};
 
   virtual ID getID() const { return "call should be virtual"; };
 
@@ -42,23 +45,22 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
-template<class T>
+template <class T>
 class SynchronizedArray : public SynchronizedArrayBase, protected Array<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef typename Array<T>::value_type      value_type;
-  typedef typename Array<T>::reference       reference;
-  typedef typename Array<T>::pointer_type    pointer_type;
+  typedef typename Array<T>::value_type value_type;
+  typedef typename Array<T>::reference reference;
+  typedef typename Array<T>::pointer_type pointer_type;
   typedef typename Array<T>::const_reference const_reference;
-  
-  SynchronizedArray(UInt size, UInt nb_component,
-		   const_reference value, const ID & id,
-		   const_reference default_value, 
-		   const std::string restart_name);
-  virtual ~SynchronizedArray() {};
-  
+
+  SynchronizedArray(UInt size, UInt nb_component, const_reference value,
+                    const ID & id, const_reference default_value,
+                    const std::string restart_name);
+  virtual ~SynchronizedArray(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -69,15 +71,15 @@ public:
 
   /// erase
   inline void erase(UInt i);
-  //template<typename R>
-  //inline void erase(const iterator<R> & it);
-  
+  // template<typename R>
+  // inline void erase(const iterator<R> & it);
+
   /// synchronize elements
   void syncElements(SyncChoice sync_choice);
 
   /// dump restart file
   void dumpRestartFile(std::string file_name) const;
-  
+
   /// read restart file
   void readRestartFile(std::string file_name);
 
@@ -99,18 +101,19 @@ public:
   inline void set(T t) { Array<T>::set(t); }
 
   /// set
-  template<template<typename> class C>
-  inline void set(const C<T> & vm) { Array<T>::set(vm); };
+  template <template <typename> class C> inline void set(const C<T> & vm) {
+    Array<T>::set(vm);
+  };
 
   /// set all entries of the array to value t and set default value
-  inline void setAndChangeDefault(T t) { 
-    this->set(t); 
+  inline void setAndChangeDefault(T t) {
+    this->set(t);
     this->default_value = t;
   }
 
   /// copy the content of an other array
   void copy(const SynchronizedArray<T> & vect) { Array<T>::copy(vect); };
-  
+
   /// give the address of the memory allocated for this array
   T * storage() const { return Array<T>::storage(); };
   //  T * storage() const { return this->values; };
@@ -127,19 +130,19 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   inline reference operator()(UInt i, UInt j = 0) {
-    return Array<T>::operator()(i,j);
+    return Array<T>::operator()(i, j);
   }
   inline const_reference operator()(UInt i, UInt j = 0) const {
-    return Array<T>::operator()(i,j);
+    return Array<T>::operator()(i, j);
   }
- 
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
   AKANTU_SET_MACRO(DefaultValue, default_value, T);
 
-  UInt getSize() const{ return this->size; };
+  UInt getSize() const { return this->size; };
 
   ID getID() const { return Array<T>::getID(); };
 
@@ -154,7 +157,7 @@ public:
 private:
   /// init value when new elements added
   T default_value;
-  
+
   /// restart file_name
   const std::string restart_name;
 
@@ -168,7 +171,6 @@ private:
   std::vector<SynchronizedArrayBase *> depending_arrays;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -177,9 +179,8 @@ private:
 
 /// standard output stream operator
 template <typename T>
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const SynchronizedArray<T> & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const SynchronizedArray<T> & _this) {
   _this.printself(stream);
   return stream;
 }

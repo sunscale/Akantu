@@ -36,62 +36,58 @@
 
 #include "aka_common.hh"
 #include "boundary_condition_functor.hh"
-#include "mesh.hh"
 #include "fe_engine.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
-template <class ModelType>
-class BoundaryCondition {
+template <class ModelType> class BoundaryCondition {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Constructors / Destructors / Initializers                                */
   /* ------------------------------------------------------------------------ */
 public:
   BoundaryCondition() : model(nullptr) {}
-  ///Initialize the boundary conditions
+  /// Initialize the boundary conditions
   void initBC(ModelType & ptr, Array<Real> & primal, Array<Real> & dual);
   void initBC(ModelType & ptr, Array<Real> & primal,
-	      Array<Real> & primal_increment, Array<Real> & dual);
+              Array<Real> & primal_increment, Array<Real> & dual);
   /* ------------------------------------------------------------------------ */
   /* Methods and accessors                                                    */
   /* ------------------------------------------------------------------------ */
 public:
-
-  //inline void initBoundaryCondition();
-  template<typename FunctorType>
-  ///Apply the boundary conditions
+  // inline void initBoundaryCondition();
+  template <typename FunctorType>
+  /// Apply the boundary conditions
   inline void applyBC(const FunctorType & func);
 
-  template<class FunctorType>
+  template <class FunctorType>
   inline void applyBC(const FunctorType & func, const std::string & group_name);
 
-  template<class FunctorType>
-  inline void applyBC(const FunctorType & func, const ElementGroup & element_group);
+  template <class FunctorType>
+  inline void applyBC(const FunctorType & func,
+                      const ElementGroup & element_group);
 
   AKANTU_GET_MACRO_NOT_CONST(Model, *model, ModelType &);
-  AKANTU_GET_MACRO_NOT_CONST(Primal,*primal, Array<Real> &);
-  AKANTU_GET_MACRO_NOT_CONST(Dual,  *dual,   Array<Real> &);
+  AKANTU_GET_MACRO_NOT_CONST(Primal, *primal, Array<Real> &);
+  AKANTU_GET_MACRO_NOT_CONST(Dual, *dual, Array<Real> &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  template<class FunctorType, BC::Functor::Type type = FunctorType::type>
+  template <class FunctorType, BC::Functor::Type type = FunctorType::type>
   struct TemplateFunctionWrapper;
 
 private:
-
   ModelType * model;
   Array<Real> * primal{nullptr};
   Array<Real> * dual{nullptr};
@@ -103,4 +99,3 @@ private:
 #include "boundary_condition_tmpl.hh"
 
 #endif /* __AKANTU_BOUNDARY_CONDITION_HH__ */
-

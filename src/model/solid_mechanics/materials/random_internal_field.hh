@@ -44,9 +44,8 @@ namespace akantu {
  * class for the internal fields of materials with a random
  * distribution
  */
-template<typename T,
-	 template<typename> class BaseField = InternalField,
-	 template<typename> class Generator = RandomGenerator>
+template <typename T, template <typename> class BaseField = InternalField,
+          template <typename> class Generator = RandomGenerator>
 class RandomInternalField : public BaseField<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -83,7 +82,6 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   inline operator Real() const;
 
   /* ------------------------------------------------------------------------ */
@@ -94,11 +92,10 @@ private:
   RandomParameter<T> random_parameter;
 };
 
-
 /// standard output stream operator
-template<typename T>
-inline std::ostream & operator <<(std::ostream & stream, const RandomInternalField<T> & _this)
-{
+template <typename T>
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const RandomInternalField<T> & _this) {
   _this.printself(stream);
   return stream;
 }

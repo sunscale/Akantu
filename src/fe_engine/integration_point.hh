@@ -93,7 +93,8 @@ public:
   }
 
   inline bool operator!=(const IntegrationPoint & quad) const {
-    return Element::operator!=(quad) ||  (num_point != quad.num_point) || (global_num != quad.global_num);
+    return Element::operator!=(quad) || (num_point != quad.num_point) ||
+           (global_num != quad.global_num);
   }
 
   bool operator<(const IntegrationPoint & rhs) const {

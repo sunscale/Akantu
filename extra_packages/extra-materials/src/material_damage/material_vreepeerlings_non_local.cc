@@ -5,7 +5,8 @@
  * @author Cyprien Wolff <cyprien.wolff@epfl.ch>
  *
  *
- * @brief  Specialization of the material class for the non-local Vree-Peerlings material
+ * @brief  Specialization of the material class for the non-local Vree-Peerlings
+ * material
  *
  * @section LICENSE
  *
@@ -18,11 +19,9 @@
 #include "material_vreepeerlings_non_local.hh"
 #include "solid_mechanics_model.hh"
 
-
 namespace akantu {
 
-
 /* -------------------------------------------------------------------------- */
-//INSTANTIATE_MATERIAL(MaterialVreePeerlingsNonLocal);
+// INSTANTIATE_MATERIAL(MaterialVreePeerlingsNonLocal);
 
 } // namespace akantu

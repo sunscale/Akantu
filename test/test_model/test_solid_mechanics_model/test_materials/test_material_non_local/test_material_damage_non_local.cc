@@ -69,13 +69,13 @@ int main(int argc, char * argv[]) {
 
   model.setBaseName("damage_non_local");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
   model.addDumpFieldVector("external_force");
   model.addDumpFieldVector("internal_force");
-  model.addDumpField("damage"      );
-  model.addDumpField("stress"      );
-  model.addDumpField("strain"      );
+  model.addDumpField("damage");
+  model.addDumpField("stress");
+  model.addDumpField("strain");
   model.dump();
 
   for (UInt s = 0; s < max_steps; ++s) {
@@ -99,8 +99,7 @@ int main(int argc, char * argv[]) {
   for (auto & type : filter.elementTypes(spatial_dimension)) {
     UInt nb_elem = mesh.getNbElement(type);
     const UInt nb_gp = model.getFEEngine().getNbIntegrationPoints(type);
-    auto & material_damage_array =
-        mat.getArray<Real>("damage", type);
+    auto & material_damage_array = mat.getArray<Real>("damage", type);
     UInt cpt = 0;
     for (UInt nel = 0; nel < nb_elem; ++nel) {
       mesh.getBarycenter({type, nel, _not_ghost}, barycenter);

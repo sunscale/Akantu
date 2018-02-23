@@ -44,10 +44,12 @@ namespace akantu {
 /// class that sorts a set of nodes of same coordinates in 'dir' direction
 class CoordinatesComparison {
 public:
-  CoordinatesComparison(const UInt dimension, const UInt dir_1, const UInt dir_2,
-                        Real normalization, Real tolerance, const Array<Real> & coords)
-    : dim(dimension), dir_1(dir_1), dir_2(dir_2), normalization(normalization),
-      tolerance(tolerance), coords_it(coords.begin(dim)) {}
+  CoordinatesComparison(const UInt dimension, const UInt dir_1,
+                        const UInt dir_2, Real normalization, Real tolerance,
+                        const Array<Real> & coords)
+      : dim(dimension), dir_1(dir_1), dir_2(dir_2),
+        normalization(normalization), tolerance(tolerance),
+        coords_it(coords.begin(dim)) {}
   // answers the question whether n2 is larger or equal to n1
   bool operator()(const UInt n1, const UInt n2) {
     Vector<Real> coords_n1 = coords_it[n1];
@@ -55,12 +57,15 @@ public:
     return this->operator()(coords_n1, coords_n2);
   }
 
-  bool operator()(const Vector<Real> & coords_n1, const Vector<Real> & coords_n2) {
-    Real diff = coords_n1(dir_1) - coords_n2(dir_1);;
+  bool operator()(const Vector<Real> & coords_n1,
+                  const Vector<Real> & coords_n2) {
+    Real diff = coords_n1(dir_1) - coords_n2(dir_1);
+    ;
     if (dim == 2 || std::abs(diff) / normalization > tolerance)
       return diff > 0. ? false : true;
     else if (dim > 2) {
-      diff = coords_n1(dir_2) - coords_n2(dir_2);;
+      diff = coords_n1(dir_2) - coords_n2(dir_2);
+      ;
       return diff > 0 ? false : true;
     }
     return true;
@@ -106,9 +111,9 @@ void MeshUtils::computePBCMap(const Mesh & mesh, const UInt dir,
     }
   }
 
-  AKANTU_DEBUG_INFO(
-      "found " << selected_left.size() << " and " << selected_right.size()
-               << " nodes at each boundary for direction " << dir);
+  AKANTU_DEBUG_INFO("found "
+                    << selected_left.size() << " and " << selected_right.size()
+                    << " nodes at each boundary for direction " << dir);
 
   // match pairs
   MeshUtils::matchPBCPairs(mesh, dir, selected_left, selected_right, pbc_pair);
@@ -152,8 +157,7 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
   }
 
   // find min and max of surface nodes
-  for (auto it = selected_first.begin();
-       it != selected_first.end(); ++it) {
+  for (auto it = selected_first.begin(); it != selected_first.end(); ++it) {
     for (UInt i = 0; i < dim; ++i) {
       if (first_min[i] > coords(*it, i))
         first_min[i] = coords(*it, i);
@@ -161,8 +165,7 @@ void MeshUtils::computePBCMap(const Mesh & mesh,
         first_max[i] = coords(*it, i);
     }
   }
-  for (auto it = selected_second.begin();
-       it != selected_second.end(); ++it) {
+  for (auto it = selected_second.begin(); it != selected_second.end(); ++it) {
     for (UInt i = 0; i < dim; ++i) {
       if (second_min[i] > coords(*it, i))
         second_min[i] = coords(*it, i);
@@ -279,10 +282,9 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
       }
       pbc_pair[i1] = i2;
 
-      AKANTU_DEBUG_TRACE("pairing "
-                         << i1 << "(" << coords1
-                         << ") with" << i2 << "(" << coords2
-                         << ") in direction " << dir);
+      AKANTU_DEBUG_TRACE("pairing " << i1 << "(" << coords1 << ") with" << i2
+                                    << "(" << coords2 << ") in direction "
+                                    << dir);
       ++it_left;
       ++it_right;
     } else if (compare_nodes(coords1, coords2)) {

@@ -182,7 +182,8 @@ class TestSMMFixtureBar
 
 public:
   void SetUp() override {
-    this->mesh_file = "../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
+    this->mesh_file =
+        "../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
     parent::SetUp();
 
     getStaticParser().parse("test_solid_mechanics_model_"
@@ -251,8 +252,8 @@ template <AnalysisMethod t>
 using analysis_method_t = std::integral_constant<AnalysisMethod, t>;
 
 #ifdef AKANTU_IMPLICIT
-using TestAnalysisTypes =
-    std::tuple<analysis_method_t<_implicit_dynamic>, analysis_method_t<_explicit_lumped_mass>>;
+using TestAnalysisTypes = std::tuple<analysis_method_t<_implicit_dynamic>,
+                                     analysis_method_t<_explicit_lumped_mass>>;
 #else
 using TestAnalysisTypes = std::tuple<analysis_method_t<_explicit_lumped_mass>>;
 #endif

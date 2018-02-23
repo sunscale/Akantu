@@ -38,7 +38,7 @@ namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
-template<class types, template <class> class final_iterator>
+template <class types, template <class> class final_iterator>
 class element_iterator {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
@@ -51,7 +51,6 @@ public:
   using iterator = final_iterator<types>;
 
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -62,38 +61,32 @@ public:
                    const array_iterator & array_it,
                    const array_iterator & array_it_end,
                    const GhostType ghost_type = _not_ghost)
-    : field(field),
-      tit(t_it),
-      tit_end(t_it_end),
-      array_it(array_it),
-      array_it_end(array_it_end),
-      ghost_type(ghost_type) {
-  }
+      : field(field), tit(t_it), tit_end(t_it_end), array_it(array_it),
+        array_it_end(array_it_end), ghost_type(ghost_type) {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
 public:
-
   bool operator!=(const iterator & it) const {
-    return (ghost_type != it.ghost_type)
-      || (tit != it.tit || (array_it != it.array_it));
+    return (ghost_type != it.ghost_type) ||
+           (tit != it.tit || (array_it != it.array_it));
   }
 
   iterator & operator++() {
     ++array_it;
-    while(array_it == array_it_end && tit != tit_end) {
+    while (array_it == array_it_end && tit != tit_end) {
       ++tit;
-      if(tit != tit_end) {
+      if (tit != tit_end) {
 
         const array_type & vect = field(*tit, ghost_type);
         UInt _nb_data_per_elem = getNbDataPerElem(*tit);
         UInt nb_component = vect.getNbComponent();
         UInt size = (vect.size() * nb_component) / _nb_data_per_elem;
 
-        array_it       = vect.begin_reinterpret(_nb_data_per_elem,size);
-        array_it_end   = vect.end_reinterpret  (_nb_data_per_elem,size);
+        array_it = vect.begin_reinterpret(_nb_data_per_elem, size);
+        array_it_end = vect.end_reinterpret(_nb_data_per_elem, size);
       }
     }
     return *(static_cast<iterator *>(this));
@@ -103,18 +96,18 @@ public:
 
   UInt element_type() { return getIOHelperType(*tit); }
 
-  Element getCurrentElement(){
+  Element getCurrentElement() {
     return Element{*tit, array_it.getCurrentIndex(), _not_ghost};
   }
 
   UInt getNbDataPerElem(const ElementType & type) const {
     if (!nb_data_per_elem.exists(type, ghost_type))
-      return field(type,ghost_type).getNbComponent();
-    
-    return nb_data_per_elem(type,ghost_type);
+      return field(type, ghost_type).getNbComponent();
+
+    return nb_data_per_elem(type, ghost_type);
   }
 
-  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data){
+  void setNbDataPerElem(const ElementTypeMap<UInt> & nb_data) {
     this->nb_data_per_elem = nb_data;
   }
 
@@ -123,7 +116,6 @@ public:
   /* ------------------------------------------------------------------------ */
 
 protected:
-
   /// the field to iterate on
   const field_type & field;
   /// field iterator
@@ -138,26 +130,25 @@ protected:
   const GhostType ghost_type;
   /// number of data per element
   ElementTypeMap<UInt> nb_data_per_elem;
-
 };
 
 /* -------------------------------------------------------------------------- */
-template<typename types>
+template <typename types>
 class elemental_field_iterator
-  : public element_iterator<types, elemental_field_iterator> {
+    : public element_iterator<types, elemental_field_iterator> {
 public:
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  using parent = element_iterator<types, ::akantu::dumper::elemental_field_iterator>;
+  using parent =
+      element_iterator<types, ::akantu::dumper::elemental_field_iterator>;
   using it_type = typename types::it_type;
   using return_type = typename types::return_type;
   using field_type = typename types::field_type;
   using array_iterator = typename types::array_iterator;
 
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -167,26 +158,21 @@ public:
                            const typename field_type::type_iterator & t_it_end,
                            const array_iterator & array_it,
                            const array_iterator & array_it_end,
-                           const GhostType ghost_type = _not_ghost) :
-    parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) { }
+                           const GhostType ghost_type = _not_ghost)
+      : parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  return_type operator*(){
-    return *this->array_it;
-  }
+  return_type operator*() { return *this->array_it; }
 
 private:
-
 };
 
 /* -------------------------------------------------------------------------- */
 __END_AKANTU_DUMPER__
 } // akantu
 /* -------------------------------------------------------------------------- */
-
-
 
 #endif /* __AKANTU_DUMPER_ELEMENT_ITERATOR_HH__ */

@@ -3,7 +3,7 @@
  *
  *
  *
- * @brief  
+ * @brief
  *
  * @section LICENSE
  *
@@ -18,17 +18,16 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Real integrateResidual(const std::string & sub_boundary_name,
-		       const SolidMechanicsModel & model,
-		       UInt dir) {
+                       const SolidMechanicsModel & model, UInt dir) {
   Real int_res = 0.;
-  
+
   const Mesh & mesh = model.getMesh();
   const Array<Real> & residual = model.getResidual();
 
-  // do not need try catch, as all subboundaries should be everywhere. 
+  // do not need try catch, as all subboundaries should be everywhere.
   //  try {
   const ElementGroup & boundary = mesh.getElementGroup(sub_boundary_name);
-  ElementGroup::const_node_iterator nit  = boundary.node_begin();
+  ElementGroup::const_node_iterator nit = boundary.node_begin();
   ElementGroup::const_node_iterator nend = boundary.node_end();
   for (; nit != nend; ++nit) {
     bool is_local_node = mesh.isLocalOrMasterNode(*nit);
@@ -37,7 +36,8 @@ Real integrateResidual(const std::string & sub_boundary_name,
     }
   }
   // } catch(debug::Exception e) {
-  //   // AKANTU_ERROR("Error computing integrateResidual. Cannot get SubBoundary: " 
+  //   // AKANTU_ERROR("Error computing integrateResidual. Cannot get
+  //   SubBoundary: "
   //   // 		       << sub_boundary_name << " [" << e.what() << "]");
   // }
 
@@ -46,18 +46,18 @@ Real integrateResidual(const std::string & sub_boundary_name,
 }
 
 /* -------------------------------------------------------------------------- */
-void boundaryFix(Mesh & mesh, 
-		 const std::vector<std::string> & sub_boundary_names) {
-  
-   std::vector<std::string>::const_iterator it  = sub_boundary_names.begin();
+void boundaryFix(Mesh & mesh,
+                 const std::vector<std::string> & sub_boundary_names) {
+
+  std::vector<std::string>::const_iterator it = sub_boundary_names.begin();
   std::vector<std::string>::const_iterator end = sub_boundary_names.end();
 
   for (; it != end; ++it) {
     if (mesh.element_group_find(*it) == mesh.element_group_end()) {
-      mesh.createElementGroup(*it,mesh.getSpatialDimension()-1); // empty element group
+      mesh.createElementGroup(
+          *it, mesh.getSpatialDimension() - 1); // empty element group
     }
   }
 }
-
 
 } // namespace akantu

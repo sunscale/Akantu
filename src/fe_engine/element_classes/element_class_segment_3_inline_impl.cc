@@ -31,8 +31,8 @@
  *
  * @verbatim
          -1         0         1
-  	 -----x---------x---------x-----> x
-	      1         3         2
+     -----x---------x---------x-----> x
+          1         3         2
  @endverbatim
  *
  * @subsection coords Nodes coordinates
@@ -61,15 +61,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_segment_3, _gt_segment_3, _itp_lagrange_segment_3, _ek_regular, 1,
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_segment_3, _gt_segment_3,
+                                     _itp_lagrange_segment_3, _ek_regular, 1,
                                      _git_segment, 2);
 
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type>
-inline void
-InterpolationElement<_itp_lagrange_segment_3>::computeShapes(const vector_type & natural_coords,
-                                                             vector_type & N) {
+inline void InterpolationElement<_itp_lagrange_segment_3>::computeShapes(
+    const vector_type & natural_coords, vector_type & N) {
 
   Real c = natural_coords(0);
   N(0) = (c - 1) * c / 2;
@@ -79,26 +79,26 @@ InterpolationElement<_itp_lagrange_segment_3>::computeShapes(const vector_type &
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type, class matrix_type>
-inline void
-InterpolationElement<_itp_lagrange_segment_3>::computeDNDS(const vector_type & natural_coords,
-                                                           matrix_type & dnds){
+inline void InterpolationElement<_itp_lagrange_segment_3>::computeDNDS(
+    const vector_type & natural_coords, matrix_type & dnds) {
 
   Real c = natural_coords(0);
-  dnds(0, 0)  = c - .5;
-  dnds(0, 1)  = c + .5;
-  dnds(0, 2)  = -2 * c;
+  dnds(0, 0) = c - .5;
+  dnds(0, 1) = c + .5;
+  dnds(0, 2) = -2 * c;
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-InterpolationElement<_itp_lagrange_segment_3>::computeSpecialJacobian(const Matrix<Real> & dxds,
-								      Real & jac) {
+InterpolationElement<_itp_lagrange_segment_3>::computeSpecialJacobian(
+    const Matrix<Real> & dxds, Real & jac) {
   jac = Math::norm2(dxds.storage());
 }
 
 /* -------------------------------------------------------------------------- */
-template<> inline Real
+template <>
+inline Real
 GeometricalElement<_gt_segment_3>::getInradius(const Matrix<Real> & coord) {
   Real dist1 = std::abs(coord(0, 0) - coord(0, 1));
   Real dist2 = std::abs(coord(0, 1) - coord(0, 2));

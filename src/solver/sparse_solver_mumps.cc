@@ -126,8 +126,7 @@ SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
                                      const ID & matrix_id, const ID & id,
                                      const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
-      dof_manager(dof_manager),
-      master_rhs_solution(0, 1) {
+      dof_manager(dof_manager), master_rhs_solution(0, 1) {
   AKANTU_DEBUG_IN();
 
   this->prank = communicator.whoAmI();
@@ -160,13 +159,12 @@ void SparseSolverMumps::mumpsDataDestroy() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseSolverMumps::destroyInternalData() {
-  mumpsDataDestroy();
-}
+void SparseSolverMumps::destroyInternalData() { mumpsDataDestroy(); }
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::checkInitialized() {
-  if (this->is_initialized) return;
+  if (this->is_initialized)
+    return;
 
   this->initialize();
 }
@@ -198,7 +196,7 @@ void SparseSolverMumps::setOutputLevel() {
     dbg_lvl >= dblWarning ? 1 :
                             0;
 
-  // clang-format on
+// clang-format on
 #endif
 }
 
@@ -267,8 +265,8 @@ void SparseSolverMumps::initialize() {
     break;
   case _master_slave_distributed:
     this->mumps_data.par = 0; // The host is not part of the computations
-    /* FALLTHRU */
-    /* [[fallthrough]]; un-comment when compiler will get it */
+  /* FALLTHRU */
+  /* [[fallthrough]]; un-comment when compiler will get it */
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
     const auto & mpi_data = dynamic_cast<const MPICommunicatorData &>(
@@ -429,14 +427,14 @@ void SparseSolverMumps::printError() {
         this->solve();
       } else {
         AKANTU_ERROR("The MUMPS workarray is too small INFO(2)="
-                           << info(2) << "No further increase possible");
+                     << info(2) << "No further increase possible");
       }
       break;
     }
     default:
       AKANTU_ERROR("Error in mumps during solve process, check mumps "
-                         "user guide INFO(1) = "
-                         << _info_v[1]);
+                   "user guide INFO(1) = "
+                   << _info_v[1]);
     }
   } else if (_info_v[1] > 0) {
     AKANTU_DEBUG_WARNING("Warning in mumps during solve process, check mumps "

@@ -35,12 +35,12 @@
 #include <cstring>
 #include <libgen.h>
 
-#include <iostream>
+#include <algorithm>
 #include <iomanip>
-#include <string>
+#include <iostream>
 #include <queue>
 #include <sstream>
-#include <algorithm>
+#include <string>
 
 #include <exception>
 #include <stdexcept>
@@ -216,9 +216,9 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
 static char * strdup(const char * str) {
   size_t len = strlen(str);
   auto * x = (char *)malloc(len + 1); /* 1 for the null terminator */
-  if(!x)
-    return nullptr;    /* malloc could not allocate memory */
-  memcpy(x,str,len+1); /* copy the string into the new buffer */
+  if (!x)
+    return nullptr;        /* malloc could not allocate memory */
+  memcpy(x, str, len + 1); /* copy the string into the new buffer */
   return x;
 }
 #endif
@@ -287,8 +287,8 @@ void ArgumentParser::parse(int & argc, char **& argv, int flags,
       break; // "?"
     case _at_least_one:
       min_nb_val = 1; // "+"
-      /* FALLTHRU */
-      /* [[fallthrough]]; un-comment when compiler will get it*/
+    /* FALLTHRU */
+    /* [[fallthrough]]; un-comment when compiler will get it*/
     case _any:
       max_nb_val = argc - current_position;
       break; // "*"
@@ -464,8 +464,8 @@ void ArgumentParser::print_usage_nargs(std::ostream & stream,
     break;
   case _at_least_one:
     stream << " " << u_name;
-    /* FALLTHRU */
-    /* [[fallthrough]]; un-comment when compiler will get it */
+  /* FALLTHRU */
+  /* [[fallthrough]]; un-comment when compiler will get it */
   case _any:
     stream << " [" << u_name << " ...]";
     break;

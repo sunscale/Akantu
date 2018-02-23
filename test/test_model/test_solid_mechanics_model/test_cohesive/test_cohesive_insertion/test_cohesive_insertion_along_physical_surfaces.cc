@@ -58,7 +58,8 @@ int main(int argc, char * argv[]) {
 
   SolidMechanicsModelCohesive model(mesh);
 
-  auto && material_selector = std::make_shared<MeshDataMaterialCohesiveSelector>(model);
+  auto && material_selector =
+      std::make_shared<MeshDataMaterialCohesiveSelector>(model);
   material_selector->setFallback(model.getMaterialSelector());
   model.setMaterialSelector(material_selector);
 
@@ -104,9 +105,9 @@ int main(int argc, char * argv[]) {
   model.dump("cohesive elements");
   */
 
-  //model.assembleStiffnessMatrix();
+  // model.assembleStiffnessMatrix();
 
-  //finalize();
+  // finalize();
 
   return EXIT_SUCCESS;
 }

@@ -29,8 +29,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
 #include "element.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
 /* -------------------------------------------------------------------------- */
@@ -64,8 +64,7 @@ public:
     this->fallback_selector = fallback_selector;
   }
 
-  inline void
-  setFallback(MaterialSelector & fallback_selector) {
+  inline void setFallback(MaterialSelector & fallback_selector) {
     this->fallback_selector = fallback_selector.shared_from_this();
   }
 
@@ -73,9 +72,7 @@ public:
     return this->fallback_selector;
   }
 
-  inline UInt getFallbackValue() {
-    return this->fallback_value;
-  }
+  inline UInt getFallbackValue() { return this->fallback_value; }
 
 protected:
   UInt fallback_value{0};

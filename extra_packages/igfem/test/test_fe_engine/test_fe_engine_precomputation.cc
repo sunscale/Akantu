@@ -29,20 +29,21 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "shape_igfem.hh"
-#include "integrator_gauss_igfem.hh"
 #include "fe_engine.hh"
+#include "integrator_gauss_igfem.hh"
+#include "shape_igfem.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
 #include <fstream>
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 void precompute(const ElementType type);
-void generateIGFEMMesh(const ElementType type, Mesh & mesh, const std::string & filename);
+void generateIGFEMMesh(const ElementType type, Mesh & mesh,
+                       const std::string & filename);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
   debug::setDebugLevel(dblTest);
 
@@ -61,15 +62,18 @@ int main(int argc, char *argv[]) {
 void precompute(const ElementType type) {
 
   UInt dim = 2;
-  std::stringstream mesh_info; mesh_info << "mesh_info" << type << ".txt";
+  std::stringstream mesh_info;
+  mesh_info << "mesh_info" << type << ".txt";
 
   Mesh my_mesh(dim);
   generateIGFEMMesh(type, my_mesh, mesh_info.str());
 
-  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_igfem>(my_mesh, dim, "my_fem");
+  FEEngine * fem =
+      new FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem>(
+          my_mesh, dim, "my_fem");
 
   fem->initShapeFunctions();
-  
+
   std::cout << *fem << std::endl;
 
   delete fem;

@@ -81,8 +81,7 @@ int main(int argc, char * argv[]) {
   if (prank == 0) {
     if (nb_facets_per_nodetype[-1] != 3 || nb_facets_per_nodetype[-2] != 9 ||
         nb_facets_per_nodetype[-3] != 12)
-      AKANTU_ERROR(
-          "The segments of processor 0 have the wrong node type");
+      AKANTU_ERROR("The segments of processor 0 have the wrong node type");
 
     if (nb_facets_per_nodetype.size() > 3)
       AKANTU_ERROR("Processor 0 cannot have any slave segment");

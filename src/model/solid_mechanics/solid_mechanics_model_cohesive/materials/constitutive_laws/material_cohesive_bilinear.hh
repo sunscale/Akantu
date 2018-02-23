@@ -46,25 +46,25 @@ namespace akantu {
  * parameters in the material files :
  *   - delta_0   : elastic limit displacement (default: 0)
  *   - sigma_c   : critical stress sigma_c  (default: 0)
- *   - beta      : weighting parameter for sliding and normal opening (default: 0)
+ *   - beta      : weighting parameter for sliding and normal opening (default:
+ * 0)
  *   - G_cI      : fracture energy for mode I (default: 0)
  *   - G_cII     : fracture energy for mode II (default: 0)
  *   - penalty   : stiffness in compression to prevent penetration
  */
-template<UInt spatial_dimension>
-class MaterialCohesiveBilinear : public MaterialCohesiveLinear<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialCohesiveBilinear
+    : public MaterialCohesiveLinear<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialCohesiveBilinear(SolidMechanicsModel & model, const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the material computed parameter
   void initMaterial() override;
 
@@ -73,7 +73,6 @@ public:
                        const NewElementsEvent & event) override;
 
 protected:
-
   /// constitutive law
   void computeTraction(const Array<Real> & normal, ElementType el_type,
                        GhostType ghost_type = _not_ghost) override;
@@ -88,24 +87,19 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// elastic limit displacement
   Real delta_0;
-
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
 //#include "material_cohesive_elastic_inline_impl.cc"
-
 
 } // akantu
 

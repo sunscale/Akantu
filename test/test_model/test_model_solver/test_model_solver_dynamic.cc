@@ -28,6 +28,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "data_accessor.hh"
 #include "dof_manager.hh"
 #include "dof_manager_default.hh"
@@ -37,7 +38,6 @@
 #include "model_solver.hh"
 #include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
-#include "communicator.hh"
 #include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 #include "test_model_solver_my_model.hh"
@@ -103,8 +103,8 @@ int main(int argc, char * argv[]) {
   model.getDOFManager().clearResidual();
   model.assembleResidual();
 
-  Real epot = 0;//model.getPotentialEnergy();
-  Real ekin = 0;//model.getKineticEnergy();
+  Real epot = 0; // model.getPotentialEnergy();
+  Real ekin = 0; // model.getKineticEnergy();
   Real einit = ekin + epot;
   Real etot = ekin + epot - wext - einit;
   if (prank == 0) {
@@ -124,11 +124,11 @@ int main(int argc, char * argv[]) {
     model.solveStep("dynamic");
 
 #if EXPLICIT == false
-    //int nb_iter = solver.get("nb_iterations");
-    //Real error = solver.get("error");
-    //bool converged = solver.get("converged");
-    //if (prank == 0)
-    // std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
+// int nb_iter = solver.get("nb_iterations");
+// Real error = solver.get("error");
+// bool converged = solver.get("converged");
+// if (prank == 0)
+// std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
 #endif
 
     epot = model.getPotentialEnergy();

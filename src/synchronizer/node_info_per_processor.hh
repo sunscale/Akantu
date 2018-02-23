@@ -46,9 +46,7 @@ namespace akantu {
 
 class NodeInfoPerProc : protected MeshAccessor {
 public:
-  NodeInfoPerProc(NodeSynchronizer & synchronizer,
-                  UInt message_cnt,
-                  UInt root);
+  NodeInfoPerProc(NodeSynchronizer & synchronizer, UInt message_cnt, UInt root);
 
   virtual void synchronizeNodes() = 0;
   virtual void synchronizeTypes() = 0;
@@ -60,6 +58,7 @@ protected:
   void fillNodesType();
 
   void fillCommunicationScheme(const Array<UInt> &);
+
 protected:
   NodeSynchronizer & synchronizer;
   const Communicator & comm;
@@ -77,8 +76,7 @@ protected:
 /* -------------------------------------------------------------------------- */
 class MasterNodeInfoPerProc : protected NodeInfoPerProc {
 public:
-  MasterNodeInfoPerProc(NodeSynchronizer & synchronizer,
-                        UInt message_cnt,
+  MasterNodeInfoPerProc(NodeSynchronizer & synchronizer, UInt message_cnt,
                         UInt root);
 
   void synchronizeNodes() override;
@@ -87,15 +85,14 @@ public:
 
 private:
   /// get the list of nodes to send and send them
-  std::vector<Array<UInt> > nodes_per_proc;
+  std::vector<Array<UInt>> nodes_per_proc;
   Array<UInt> nb_nodes_per_proc;
 };
 
 /* -------------------------------------------------------------------------- */
 class SlaveNodeInfoPerProc : protected NodeInfoPerProc {
 public:
-  SlaveNodeInfoPerProc(NodeSynchronizer & synchronizer,
-                       UInt message_cnt,
+  SlaveNodeInfoPerProc(NodeSynchronizer & synchronizer, UInt message_cnt,
                        UInt root);
 
   void synchronizeNodes() override;

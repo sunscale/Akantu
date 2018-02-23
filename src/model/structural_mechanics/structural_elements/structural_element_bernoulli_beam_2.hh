@@ -83,7 +83,7 @@ template <>
 void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_2>(
     Array<Real> & rotations) {
   auto type = _bernoulli_beam_2;
-  auto  nodes_it = mesh.getNodes().begin(this->spatial_dimension);
+  auto nodes_it = mesh.getNodes().begin(this->spatial_dimension);
 
   for (auto && tuple :
        zip(make_view(mesh.getConnectivity(type), 2),

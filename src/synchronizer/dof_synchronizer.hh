@@ -51,9 +51,8 @@ class DOFSynchronizer : public SynchronizerImpl<UInt> {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFSynchronizer(
-      DOFManagerDefault & dof_manager, const ID & id = "dof_synchronizer",
-      MemoryID memory_id = 0);
+  DOFSynchronizer(DOFManagerDefault & dof_manager,
+                  const ID & id = "dof_synchronizer", MemoryID memory_id = 0);
   ~DOFSynchronizer() override;
 
   virtual void registerDOFs(const ID & dof_id);
@@ -89,9 +88,7 @@ protected:
   /// init the scheme for scatter and gather operation, need extra memory
   void initScatterGatherCommunicationScheme();
 
-  Int getRank(const UInt & /*node*/) const final {
-    AKANTU_TO_IMPLEMENT();
-  }
+  Int getRank(const UInt & /*node*/) const final { AKANTU_TO_IMPLEMENT(); }
 
 private:
   /// Root processor for scatter/gather operations

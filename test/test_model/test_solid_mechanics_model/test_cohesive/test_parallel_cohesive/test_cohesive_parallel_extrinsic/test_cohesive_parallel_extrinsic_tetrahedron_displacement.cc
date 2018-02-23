@@ -16,24 +16,22 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_cohesive.hh"
 #include "dumper_paraview.hh"
 #include "material_cohesive_linear.hh"
+#include "solid_mechanics_model_cohesive.hh"
 
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumper_paraview.hh"
+#include "dumper_paraview.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-bool checkDisplacement(SolidMechanicsModelCohesive & model,
-		       ElementType type,
-		       std::ofstream & error_output,
-		       UInt step,
-		       bool barycenters);
+bool checkDisplacement(SolidMechanicsModelCohesive & model, ElementType type,
+                       std::ofstream & error_output, UInt step,
+                       bool barycenters);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   debug::setDebugLevel(dblWarning);
@@ -51,7 +49,7 @@ int main(int argc, char *argv[]) {
   Int prank = comm.whoAmI();
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     // Read the mesh
     mesh.read("tetrahedron.msh");
 
@@ -70,7 +68,8 @@ int main(int argc, char *argv[]) {
   // std::cout << mesh << std::endl;
   // debug::setDebugLevel(dblWarning);
 
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
 
   /* ------------------------------------------------------------------------ */
   /* Facet part                                                               */
@@ -94,12 +93,11 @@ int main(int argc, char *argv[]) {
   // std::cout << mesh_facets << std::endl;
   // debug::setDebugLevel(dblWarning);
 
-  Real time_step = model.getStableTimeStep()*0.1;
+  Real time_step = model.getStableTimeStep() * 0.1;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
   model.assembleMassLumped();
-
 
   Array<Real> & position = mesh.getNodes();
   Array<Real> & velocity = model.getVelocity();
@@ -113,28 +111,28 @@ int main(int argc, char *argv[]) {
   for (UInt n = 0; n < nb_nodes; ++n) {
     if (position(n, 0) > 0.99 || position(n, 0) < -0.99) {
       for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	boundary(n, dim) = true;
+        boundary(n, dim) = true;
       }
     }
 
     if (position(n, 0) > 0.99 || position(n, 0) < -0.99) {
       for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	boundary(n, dim) = true;
+        boundary(n, dim) = true;
       }
     }
   }
 
-// #if defined (AKANTU_DEBUG_TOOLS)
-//   Vector<Real> facet_center(spatial_dimension);
-//   facet_center(0) =  0;
-//   facet_center(1) = -0.16666667;
-//   facet_center(2) =  0.5;
+  // #if defined (AKANTU_DEBUG_TOOLS)
+  //   Vector<Real> facet_center(spatial_dimension);
+  //   facet_center(0) =  0;
+  //   facet_center(1) = -0.16666667;
+  //   facet_center(2) =  0.5;
 
-//   debug::element_manager.setMesh(mesh);
-//   debug::element_manager.addModule(debug::_dm_material_cohesive);
-//   debug::element_manager.addModule(debug::_dm_debug_tools);
-//   //debug::element_manager.addModule(debug::_dm_integrator);
-// #endif
+  //   debug::element_manager.setMesh(mesh);
+  //   debug::element_manager.addModule(debug::_dm_material_cohesive);
+  //   debug::element_manager.addModule(debug::_dm_debug_tools);
+  //   //debug::element_manager.addModule(debug::_dm_integrator);
+  // #endif
 
   /// initial conditions
   Real loading_rate = 1;
@@ -152,30 +150,30 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName(paraview_output.str());
   model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("velocity"    );
+  model.addDumpFieldVector("velocity");
   model.addDumpFieldVector("acceleration");
-  model.addDumpFieldVector("residual"    );
+  model.addDumpFieldVector("residual");
   model.addDumpFieldTensor("stress");
   model.addDumpFieldTensor("grad_u");
   model.addDumpField("partitions");
   //  model.getDumper().getDumper().setMode(iohelper::BASE64);
   model.dump();
 
-
   model.setBaseNameToDumper("cohesive elements",
-			    paraview_output.str()+"_cohesive_elements");
+                            paraview_output.str() + "_cohesive_elements");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
   model.addDumpFieldToDumper("cohesive elements", "damage");
   model.dump("cohesive elements");
 
-
   std::stringstream error_stream;
-  error_stream << "error" << ".csv";
+  error_stream << "error"
+               << ".csv";
   std::ofstream error_output;
   error_output.open(error_stream.str().c_str());
   error_output << "# Step, Average, Max, Min" << std::endl;
 
-  if (checkDisplacement(model, type, error_output, 0, true)) {}
+  if (checkDisplacement(model, type, error_output, 0, true)) {
+  }
 
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
@@ -183,8 +181,8 @@ int main(int argc, char *argv[]) {
     /// update displacement on extreme nodes
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
       if (position(n, 0) > 0.99 || position(n, 0) < -0.99) {
-	displacement(n, 0) += disp_update * position(n, 0);
-	displacement(n, 1) += disp_update * position(n, 0);
+        displacement(n, 0) += disp_update * position(n, 0);
+        displacement(n, 1) += disp_update * position(n, 0);
       }
     }
 
@@ -192,8 +190,9 @@ int main(int argc, char *argv[]) {
 
     model.solveStep();
 
-    if(s % 100 == 0) {
-      if(prank == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 100 == 0) {
+      if (prank == 0)
+        std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
   }
 
@@ -209,11 +208,9 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
 }
 
-bool checkDisplacement(SolidMechanicsModelCohesive & model,
-		       ElementType type,
-		       std::ofstream & error_output,
-		       UInt step,
-		       bool barycenters) {
+bool checkDisplacement(SolidMechanicsModelCohesive & model, ElementType type,
+                       std::ofstream & error_output, UInt step,
+                       bool barycenters) {
 
   Mesh & mesh = model.getMesh();
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -228,21 +225,20 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
 
   if (psize == 1) {
     std::stringstream displacement_file;
-    displacement_file << "displacement/displacement_"
-		      << std::setfill('0') << std::setw(6)
-		      << step;
+    displacement_file << "displacement/displacement_" << std::setfill('0')
+                      << std::setw(6) << step;
     std::ofstream displacement_output;
     displacement_output.open(displacement_file.str().c_str());
 
     for (UInt el = 0; el < nb_element; ++el) {
       for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
-	UInt node = connectivity(el, n);
+        UInt node = connectivity(el, n);
 
-	for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	  displacement_output << std::setprecision(15)
-			      << displacement(node, dim) << " ";
-	}
-	displacement_output << std::endl;
+        for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+          displacement_output << std::setprecision(15)
+                              << displacement(node, dim) << " ";
+        }
+        displacement_output << std::endl;
       }
     }
 
@@ -258,28 +254,26 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
       Vector<Real> bary(spatial_dimension);
 
       for (UInt el = 0; el < nb_element; ++el) {
-	element.element = el;
-	mesh.getBarycenter(element, bary);
+        element.element = el;
+        mesh.getBarycenter(element, bary);
 
-	for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	  barycenter_output << std::setprecision(15)
-			    << bary(dim) << " ";
-	}
-	barycenter_output << std::endl;
+        for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+          barycenter_output << std::setprecision(15) << bary(dim) << " ";
+        }
+        barycenter_output << std::endl;
       }
 
       barycenter_output.close();
     }
-  }
-  else {
+  } else {
 
-    if (barycenters) return true;
+    if (barycenters)
+      return true;
 
     /// read data
     std::stringstream displacement_file;
-    displacement_file << "displacement/displacement_"
-		      << std::setfill('0') << std::setw(6)
-		      << step;
+    displacement_file << "displacement/displacement_" << std::setfill('0')
+                      << std::setw(6) << step;
     std::ifstream displacement_input;
     displacement_input.open(displacement_file.str().c_str());
 
@@ -288,7 +282,7 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
 
     while (displacement_input.good()) {
       for (UInt i = 0; i < spatial_dimension; ++i)
-	displacement_input >> disp_tmp(i);
+        displacement_input >> disp_tmp(i);
 
       displacement_serial.push_back(disp_tmp);
     }
@@ -302,7 +296,7 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
 
     while (barycenter_input.good()) {
       for (UInt dim = 0; dim < spatial_dimension; ++dim)
-	barycenter_input >> disp_tmp(dim);
+        barycenter_input >> disp_tmp(dim);
 
       barycenter_serial.push_back(disp_tmp);
     }
@@ -310,14 +304,14 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
     Element element(type, 0);
     Vector<Real> bary(spatial_dimension);
 
-    Array<Real>::iterator<Vector<Real> > it;
-    Array<Real>::iterator<Vector<Real> > begin
-      = barycenter_serial.begin(spatial_dimension);
-    Array<Real>::iterator<Vector<Real> > end
-      = barycenter_serial.end(spatial_dimension);
+    Array<Real>::iterator<Vector<Real>> it;
+    Array<Real>::iterator<Vector<Real>> begin =
+        barycenter_serial.begin(spatial_dimension);
+    Array<Real>::iterator<Vector<Real>> end =
+        barycenter_serial.end(spatial_dimension);
 
-    Array<Real>::const_iterator<Vector<Real> > disp_it;
-    Array<Real>::iterator<Vector<Real> > disp_serial_it;
+    Array<Real>::const_iterator<Vector<Real>> disp_it;
+    Array<Real>::iterator<Vector<Real>> disp_serial_it;
 
     Vector<Real> difference(spatial_dimension);
     Array<Real> error;
@@ -329,35 +323,37 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
 
       /// find element
       for (it = begin; it != end; ++it) {
-	UInt matched_dim = 0;
+        UInt matched_dim = 0;
 
-	while (matched_dim < spatial_dimension &&
-	       Math::are_float_equal(bary(matched_dim), (*it)(matched_dim)))
-	  ++matched_dim;
+        while (matched_dim < spatial_dimension &&
+               Math::are_float_equal(bary(matched_dim), (*it)(matched_dim)))
+          ++matched_dim;
 
-	if (matched_dim == spatial_dimension) break;
+        if (matched_dim == spatial_dimension)
+          break;
       }
 
       if (it == end) {
-	std::cout << "Element barycenter not found!" << std::endl;
-	return false;
+        std::cout << "Element barycenter not found!" << std::endl;
+        return false;
       }
 
       UInt matched_el = it - begin;
 
-      disp_serial_it = displacement_serial.begin(spatial_dimension)
-	+ matched_el * nb_nodes_per_elem;
+      disp_serial_it = displacement_serial.begin(spatial_dimension) +
+                       matched_el * nb_nodes_per_elem;
 
       for (UInt n = 0; n < nb_nodes_per_elem; ++n, ++disp_serial_it) {
-	UInt node = connectivity(el, n);
-	if (!mesh.isLocalOrMasterNode(node)) continue;
+        UInt node = connectivity(el, n);
+        if (!mesh.isLocalOrMasterNode(node))
+          continue;
 
-	disp_it = displacement.begin(spatial_dimension) + node;
+        disp_it = displacement.begin(spatial_dimension) + node;
 
-	difference = *disp_it;
-	difference -= *disp_serial_it;
+        difference = *disp_it;
+        difference -= *disp_serial_it;
 
-	error.push_back(difference.norm());
+        error.push_back(difference.norm());
       }
     }
 
@@ -379,10 +375,8 @@ bool checkDisplacement(SolidMechanicsModelCohesive & model,
 
     /// output data
     if (prank == 0) {
-      error_output << step << ", "
-		   << average_error << ", "
-		   << max_error << ", "
-		   << min_error << std::endl;
+      error_output << step << ", " << average_error << ", " << max_error << ", "
+                   << min_error << std::endl;
     }
 
     if (max_error > 1.e-9) {

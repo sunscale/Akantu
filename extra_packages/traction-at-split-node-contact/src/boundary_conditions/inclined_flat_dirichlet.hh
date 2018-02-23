@@ -24,21 +24,15 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 class InclinedFlatDirichlet : public BC::Dirichlet::DirichletFunctor {
-  
+
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  InclinedFlatDirichlet(Real val,
-			BC::Axis ax,
-			BC::Axis incl_ax,
-			Real center_coord,
-			Real tang) : 
-    DirichletFunctor(ax),
-    value(val),
-    incl_ax(incl_ax),
-    center_coord(center_coord),
-    tang(tang) {};
+  InclinedFlatDirichlet(Real val, BC::Axis ax, BC::Axis incl_ax,
+                        Real center_coord, Real tang)
+      : DirichletFunctor(ax), value(val), incl_ax(incl_ax),
+        center_coord(center_coord), tang(tang){};
 
   virtual ~InclinedFlatDirichlet() {}
 
@@ -46,16 +40,14 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  inline void operator()(UInt node, 
-			 Vector<bool> & flags, 
-			 Vector<Real> & primal,
-			 const Vector<Real> & coord) const {
+  inline void operator()(UInt node, Vector<bool> & flags, Vector<Real> & primal,
+                         const Vector<Real> & coord) const {
     AKANTU_DEBUG_IN();
 
     Real dist = coord(incl_ax) - this->center_coord;
     flags(axis) = true;
     primal(axis) = this->value + this->tang * dist;
-    
+
     AKANTU_DEBUG_OUT();
   }
 

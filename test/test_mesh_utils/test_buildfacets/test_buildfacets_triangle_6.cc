@@ -29,9 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <fstream>
 #include <iostream>
 #include <limits>
-#include <fstream>
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -41,7 +41,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   const UInt spatial_dimension = 2;
@@ -58,15 +58,17 @@ int main(int argc, char *argv[]) {
   /* Element to Subelement testing                                            */
   /* ------------------------------------------------------------------------ */
 
-  const Array< std::vector<Element> > & el_to_subel2 = mesh_facets.getElementToSubelement(type_facet);
-  const Array< std::vector<Element> > & el_to_subel1 = mesh_facets.getElementToSubelement(type_subfacet);
-
+  const Array<std::vector<Element>> & el_to_subel2 =
+      mesh_facets.getElementToSubelement(type_facet);
+  const Array<std::vector<Element>> & el_to_subel1 =
+      mesh_facets.getElementToSubelement(type_subfacet);
 
   std::cout << "ElementToSubelement2" << std::endl;
   for (UInt i = 0; i < el_to_subel2.size(); ++i) {
     std::cout << type_facet << " " << i << " connected to ";
-    for (UInt j = 0; j < 2; ++j){
-      std::cout << el_to_subel2(i)[j].type << " " << el_to_subel2(i)[j].element << ", ";
+    for (UInt j = 0; j < 2; ++j) {
+      std::cout << el_to_subel2(i)[j].type << " " << el_to_subel2(i)[j].element
+                << ", ";
     }
     std::cout << " " << std::endl;
   }
@@ -74,26 +76,29 @@ int main(int argc, char *argv[]) {
   std::cout << "ElementToSubelement1" << std::endl;
   for (UInt i = 0; i < el_to_subel1.size(); ++i) {
     std::cout << type_subfacet << " " << i << " connected to ";
-    for (UInt j = 0; j < el_to_subel1(i).size(); ++j){
-      std::cout << el_to_subel1(i)[j].type << " " << el_to_subel1(i)[j].element << ", ";
+    for (UInt j = 0; j < el_to_subel1(i).size(); ++j) {
+      std::cout << el_to_subel1(i)[j].type << " " << el_to_subel1(i)[j].element
+                << ", ";
     }
     std::cout << " " << std::endl;
   }
-
 
   /* ------------------------------------------------------------------------ */
   /* Subelement to Element testing                                            */
   /* ------------------------------------------------------------------------ */
 
-  const Array<Element> & subel_to_el2 = mesh_facets.getSubelementToElement(type);
-  const Array<Element> & subel_to_el1 = mesh_facets.getSubelementToElement(type_facet);
+  const Array<Element> & subel_to_el2 =
+      mesh_facets.getSubelementToElement(type);
+  const Array<Element> & subel_to_el1 =
+      mesh_facets.getSubelementToElement(type_facet);
 
   std::cout << " " << std::endl;
   std::cout << "SubelementToElement2" << std::endl;
   for (UInt i = 0; i < subel_to_el2.size(); ++i) {
     std::cout << type << " " << i << " connected to ";
-    for (UInt j = 0; j < 3; ++j){
-      std::cout << subel_to_el2(i, j).type << " " << subel_to_el2(i, j).element << ", ";
+    for (UInt j = 0; j < 3; ++j) {
+      std::cout << subel_to_el2(i, j).type << " " << subel_to_el2(i, j).element
+                << ", ";
     }
     std::cout << " " << std::endl;
   }
@@ -101,12 +106,12 @@ int main(int argc, char *argv[]) {
   std::cout << "SubelementToElement1" << std::endl;
   for (UInt i = 0; i < subel_to_el1.size(); ++i) {
     std::cout << type_facet << " " << i << " connected to ";
-    for (UInt j = 0; j < 2; ++j){
-      std::cout << subel_to_el1(i, j).type << " " << subel_to_el1(i, j).element << ", ";
+    for (UInt j = 0; j < 2; ++j) {
+      std::cout << subel_to_el1(i, j).type << " " << subel_to_el1(i, j).element
+                << ", ";
     }
     std::cout << " " << std::endl;
   }
-
 
   finalize();
 

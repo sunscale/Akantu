@@ -43,7 +43,6 @@ namespace integrator {
   } // namespace details
 } // namespace fe_engine
 
-
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 class IntegratorGauss : public Integrator {
@@ -122,7 +121,8 @@ public:
   Vector<Real> getIntegrationWeights() const;
 
 protected:
-  friend struct integrator::details::GaussIntegratorComputeJacobiansHelper<kind>;
+  friend struct integrator::details::GaussIntegratorComputeJacobiansHelper<
+      kind>;
 
   template <ElementType type>
   void computeJacobiansOnIntegrationPoints(

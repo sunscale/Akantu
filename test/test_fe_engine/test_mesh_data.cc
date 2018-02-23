@@ -38,15 +38,15 @@
 #define QUOTES(x) #x
 #define ADD_QUOTES(x) QUOTES(x)
 
-#define CAT(x,y) x ## _ ## y
-#define CONCAT(x,y) CAT(x,y)
+#define CAT(x, y) x##_##y
+#define CONCAT(x, y) CAT(x, y)
 
 //#define TYPE std::string
 //#define VALUE1 "abc"
 //#define VALUE2 "qwe"
 
 #define ELEMENT _triangle_6
-#define NAME CONCAT(TYPE,data)
+#define NAME CONCAT(TYPE, data)
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
@@ -54,26 +54,29 @@ using namespace std;
 
 int main() {
 
-  std::cout << "Testing with type " << ADD_QUOTES(TYPE)
-    << " and values " << ADD_QUOTES(VALUE1) << "," << ADD_QUOTES(VALUE2) << "..." << std::endl;
+  std::cout << "Testing with type " << ADD_QUOTES(TYPE) << " and values "
+            << ADD_QUOTES(VALUE1) << "," << ADD_QUOTES(VALUE2) << "..."
+            << std::endl;
   MeshData mesh_data;
 
   ElementType elem_type = ELEMENT;
 
   const std::string name = ADD_QUOTES(NAME);
 
-  Array<TYPE> & vec = mesh_data.getElementalDataArrayAlloc<TYPE>(name, elem_type);
+  Array<TYPE> & vec =
+      mesh_data.getElementalDataArrayAlloc<TYPE>(name, elem_type);
   // XXX TO DELETE
   //  vec.copy(mesh_data.getElementalDataArrayAlloc<TYPE>(name, elem_type));
 
-  TYPE value[2] = {VALUE1, VALUE2 };
+  TYPE value[2] = {VALUE1, VALUE2};
 
   vec.push_back(value[0]);
   vec.push_back(value[1]);
 
-  for(UInt i(0); i < 2; i++) {
-    AKANTU_DEBUG_ASSERT( vec(i) == value[i],
-      "The Array accessed through the getElementDataArray method does not contain the right value." );
+  for (UInt i(0); i < 2; i++) {
+    AKANTU_DEBUG_ASSERT(vec(i) == value[i], "The Array accessed through the "
+                                            "getElementDataArray method does "
+                                            "not contain the right value.");
   }
 
   std::cout << vec << std::endl;
@@ -81,4 +84,3 @@ int main() {
 
   return EXIT_SUCCESS;
 }
-

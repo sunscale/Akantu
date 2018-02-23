@@ -68,7 +68,7 @@ public:
   virtual void
   setIntegrationScheme(const ID & dof_id, const IntegrationSchemeType & type,
                        IntegrationScheme::SolutionType solution_type =
-                       IntegrationScheme::_not_defined) = 0;
+                           IntegrationScheme::_not_defined) = 0;
 
   /// replies if a integration scheme has been set
   virtual bool hasIntegrationScheme(const ID & dof_id) const = 0;
@@ -105,6 +105,7 @@ public:
   AKANTU_GET_MACRO(NonLinearSolver, non_linear_solver, const NonLinearSolver &);
   AKANTU_GET_MACRO_NOT_CONST(NonLinearSolver, non_linear_solver,
                              NonLinearSolver &);
+
 protected:
   MatrixType getCommonMatrixType();
 

@@ -40,20 +40,34 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Regular Elements                                                           */
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_not_defined,             _itk_not_defined, 0, 0);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_point_1,        _itk_lagrangian,  1, 0);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_2,      _itk_lagrangian,  2, 1);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_3,      _itk_lagrangian,  3, 1);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_triangle_3,     _itk_lagrangian,  3, 2);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_triangle_6,     _itk_lagrangian,  6, 2);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_tetrahedron_4,  _itk_lagrangian,  4, 3);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_tetrahedron_10, _itk_lagrangian, 10, 3);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_quadrangle_4,   _itk_lagrangian,  4, 2);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_quadrangle_8,   _itk_lagrangian,  8, 2);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_hexahedron_8,   _itk_lagrangian,  8, 3);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_hexahedron_20,  _itk_lagrangian,  20, 3);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_6,  _itk_lagrangian,  6, 3);
-AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15, _itk_lagrangian,  15, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_not_defined, _itk_not_defined, 0,
+                                          0);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_point_1,
+                                          _itk_lagrangian, 1, 0);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_2,
+                                          _itk_lagrangian, 2, 1);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_segment_3,
+                                          _itk_lagrangian, 3, 1);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_triangle_3,
+                                          _itk_lagrangian, 3, 2);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_triangle_6,
+                                          _itk_lagrangian, 6, 2);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_tetrahedron_4,
+                                          _itk_lagrangian, 4, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_tetrahedron_10,
+                                          _itk_lagrangian, 10, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_quadrangle_4,
+                                          _itk_lagrangian, 4, 2);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_quadrangle_8,
+                                          _itk_lagrangian, 8, 2);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_hexahedron_8,
+                                          _itk_lagrangian, 8, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_serendip_hexahedron_20,
+                                          _itk_lagrangian, 20, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_6,
+                                          _itk_lagrangian, 6, 3);
+AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15,
+                                          _itk_lagrangian, 15, 3);
 
-}  // akantu
+} // akantu
 #endif /* __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__ */

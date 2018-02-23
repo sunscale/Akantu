@@ -44,7 +44,8 @@
 //   return size;
 // }
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // inline void Solver::packDOFData(CommunicationBuffer & buffer,
 // 				const Array<UInt> & dofs,
 // 				SynchronizationTag tag) const {
@@ -62,7 +63,8 @@
 //   AKANTU_DEBUG_OUT();
 // }
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // inline void Solver::unpackDOFData(CommunicationBuffer & buffer,
 // 				  const Array<UInt> & dofs,
 // 				  SynchronizationTag tag) {

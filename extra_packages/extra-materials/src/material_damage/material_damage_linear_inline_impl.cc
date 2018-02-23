@@ -15,12 +15,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void
-MaterialDamageLinear<spatial_dimension>::computeStressOnQuad(Matrix<Real> & grad_u,
-							     Matrix<Real> & sigma,
-							     Real & dam,
-							     Real & K) {
+template <UInt spatial_dimension>
+inline void MaterialDamageLinear<spatial_dimension>::computeStressOnQuad(
+    Matrix<Real> & grad_u, Matrix<Real> & sigma, Real & dam, Real & K) {
   Real Fdiag[3];
   Real Fdiagp[3];
 
@@ -30,18 +27,18 @@ MaterialDamageLinear<spatial_dimension>::computeStressOnQuad(Matrix<Real> & grad
   Fdiagp[1] = std::max(0., Fdiag[1]);
   Fdiagp[2] = std::max(0., Fdiag[2]);
 
-  Real Ehat=sqrt(Fdiagp[0]*Fdiagp[0] + Fdiagp[1]*Fdiagp[1] + Fdiagp[2]*Fdiagp[2]);
+  Real Ehat = sqrt(Fdiagp[0] * Fdiagp[0] + Fdiagp[1] * Fdiagp[1] +
+                   Fdiagp[2] * Fdiagp[2]);
 
   MaterialElastic<spatial_dimension>::computeStressOnQuad(grad_u, sigma);
 
-  Real Fd = Ehat-K;
+  Real Fd = Ehat - K;
 
   if (Fd > 0) {
-    dam = (Ehat - Epsmin) / (Epsmax-Epsmin)*(Ehat/Epsmax);
+    dam = (Ehat - Epsmin) / (Epsmax - Epsmin) * (Ehat / Epsmax);
     dam = std::min(dam, 1.);
-    K=Ehat;
+    K = Ehat;
   }
 
-  sigma *= 1-dam;
+  sigma *= 1 - dam;
 }
-

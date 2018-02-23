@@ -23,21 +23,21 @@
 
 __BEGIN_AKANTU__
 
-template<UInt spatial_dimension>
-class MaterialIGFEMSawToothDamage : public MaterialDamage<spatial_dimension, MaterialIGFEMElastic> {
+template <UInt spatial_dimension>
+class MaterialIGFEMSawToothDamage
+    : public MaterialDamage<spatial_dimension, MaterialIGFEMElastic> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 private:
   typedef MaterialDamage<spatial_dimension, MaterialIGFEMElastic> Parent;
+
 public:
   typedef std::pair<Element, Element> ElementPair;
   MaterialIGFEMSawToothDamage(SolidMechanicsModel & model, const ID & id = "");
-  MaterialIGFEMSawToothDamage(SolidMechanicsModel & model,
-			      UInt dim,
-			      const Mesh & mesh,
-			      FEEngine & fe_engine,
-			      const ID & id = "");
+  MaterialIGFEMSawToothDamage(SolidMechanicsModel & model, UInt dim,
+                              const Mesh & mesh, FEEngine & fe_engine,
+                              const ID & id = "");
 
   virtual ~MaterialIGFEMSawToothDamage() {}
 
@@ -48,9 +48,8 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
- 
+
   ///  virtual void updateInternalParameters();
 
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
@@ -58,38 +57,43 @@ public:
   /// update internal field damage
   virtual UInt updateDamage();
 
-  UInt updateDamage(UInt quad_index, const Real eq_stress, const ElementType & el_type, const GhostType & ghost_type);
+  UInt updateDamage(UInt quad_index, const Real eq_stress,
+                    const ElementType & el_type, const GhostType & ghost_type);
 
   /// update energies after damage has been updated
-  //  virtual void updateEnergiesAfterDamage(ElementType el_type, GhostType ghost_typ);
-  
-  virtual void onBeginningSolveStep(const AnalysisMethod & method) { };
+  //  virtual void updateEnergiesAfterDamage(ElementType el_type, GhostType
+  //  ghost_typ);
 
-  virtual void onEndSolveStep(const AnalysisMethod & method) { };
+  virtual void onBeginningSolveStep(const AnalysisMethod & method){};
+
+  virtual void onEndSolveStep(const AnalysisMethod & method){};
+
 protected:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
-  ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile strength
-  virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
-                                         ElementType el_type, GhostType ghost_type = _not_ghost);
+  /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
+  /// stress) and normalize it by the tensile strength
+  virtual void
+  computeNormalizedEquivalentStress(const Array<Real> & grad_u,
+                                    ElementType el_type,
+                                    GhostType ghost_type = _not_ghost);
 
   /// find max normalized equivalent stress
-  void findMaxNormalizedEquivalentStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  void findMaxNormalizedEquivalentStress(ElementType el_type,
+                                         GhostType ghost_type = _not_ghost);
 
-
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-                                           Real & dam);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Real & dam);
 
 protected:
-
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler inherited members                                       */
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
   virtual void onElementsAdded(const Array<Element> & element_list,
-			       const NewElementsEvent & event);
+                               const NewElementsEvent & event);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -102,7 +106,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// resistance to damage
   IGFEMInternalField<Real> Sc;
 
@@ -115,15 +118,14 @@ protected:
   /// maximum equivalent stress
   Real norm_max_equivalent_stress;
 
-  /// deviation from max stress at which Gauss point will still get damaged 
+  /// deviation from max stress at which Gauss point will still get damaged
   Real dam_tolerance;
 
-  /// define damage threshold at which damage will be set to 1 
-  Real dam_threshold; 
+  /// define damage threshold at which damage will be set to 1
+  Real dam_threshold;
 
   /// maximum damage value
   Real max_damage;
-
 };
 
 /* -------------------------------------------------------------------------- */

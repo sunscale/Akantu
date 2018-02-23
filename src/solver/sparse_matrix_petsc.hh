@@ -37,23 +37,23 @@
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
-#include <petscmat.h>
 #include <petscao.h>
+#include <petscmat.h>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-  class DOFManagerPETSc;
+class DOFManagerPETSc;
 }
 
 namespace akantu {
-
 
 class SparseMatrixPETSc : public SparseMatrix {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  SparseMatrixPETSc(DOFManagerPETSc & dof_manager, const MatrixType & matrix_type,
+  SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
+                    const MatrixType & matrix_type,
                     const ID & id = "sparse_matrix",
                     const MemoryID & memory_id = 0);
 

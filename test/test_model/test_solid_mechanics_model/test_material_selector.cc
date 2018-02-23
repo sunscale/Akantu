@@ -41,22 +41,21 @@ int main(int argc, char * argv[]) {
   mesh.read("material_selector.msh");
 
   SolidMechanicsModel model(mesh);
-  auto && selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  auto && selector = std::make_shared<MeshDataMaterialSelector<std::string>>(
+      "physical_names", model);
   model.setMaterialSelector(selector);
 
   model.initFull();
 
-  Material & chocolate    = model.getMaterial("chocolate");
-  Material & chewing_gum  = model.getMaterial("chewing-gum");
-  Material & candy        = model.getMaterial("candy");
+  Material & chocolate = model.getMaterial("chocolate");
+  Material & chewing_gum = model.getMaterial("chewing-gum");
+  Material & candy = model.getMaterial("candy");
 
   UInt chocolate_element = chocolate.getElementFilter(_segment_2)(0, 0);
   UInt chewing_gum_element = chewing_gum.getElementFilter(_segment_2)(0, 0);
   UInt candy_element = candy.getElementFilter(_segment_2)(0, 0);
 
-  if (chocolate_element != 0   ||
-      chewing_gum_element != 1 ||
-      candy_element != 2)
+  if (chocolate_element != 0 || chewing_gum_element != 1 || candy_element != 2)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;

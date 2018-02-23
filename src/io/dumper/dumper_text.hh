@@ -45,10 +45,9 @@ class DumperText : public DumperIOHelper {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   DumperText(const std::string & basename = "dumper_text",
-	     iohelper::TextDumpMode mode = iohelper::_tdm_space,
-	     bool parallel = true);
+             iohelper::TextDumpMode mode = iohelper::_tdm_space,
+             bool parallel = true);
   ~DumperText() override = default;
 
   /* ------------------------------------------------------------------------ */

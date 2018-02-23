@@ -29,9 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
-#include "group_manager.hh"
 #include "element_group.hh"
+#include "group_manager.hh"
+#include "mesh.hh"
 
 #include "dumper_elemental_field.hh"
 #include "dumper_nodal_field.hh"

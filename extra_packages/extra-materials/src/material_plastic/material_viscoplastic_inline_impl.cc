@@ -13,25 +13,23 @@
  *
  */
 
-#include <cmath>
 #include "material_viscoplastic.hh"
-
-
-/* -------------------------------------------------------------------------- */
+#include <cmath>
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline void MaterialViscoPlastic<dim>::computeStressOnQuad(const Matrix<Real> & grad_u,
-                                                           const Matrix<Real> & previous_grad_u,
-                                                           Matrix<Real> & sigma,
-                                                           const Matrix<Real> & previous_sigma,
-                                                           Matrix<Real> & inelastic_strain,
-                                                           const Matrix<Real> & previous_inelastic_strain,
-                                                           Real & iso_hardening) const {
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+inline void MaterialViscoPlastic<dim>::computeStressOnQuad(
+    const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
+    Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+    Matrix<Real> & inelastic_strain,
+    const Matrix<Real> & previous_inelastic_strain,
+    Real & iso_hardening) const {
   // Infinitesimal plastic
   // Compute stress magnitude
   Real s = sigma.doubleDot(sigma);
-  Real sigma_mag=sqrt(s);
+  Real sigma_mag = sqrt(s);
 
   // Compute plastic strain increment
   Real factor = (this->ts * this->edot0 * pow(sigma_mag, (this->rate - 1.)) /
@@ -58,23 +56,22 @@ inline void MaterialViscoPlastic<dim>::computeStressOnQuad(const Matrix<Real> & 
 
   inelastic_strain += delta_inelastic_strain;
 
-  //Update resistance stress
+  // Update resistance stress
   iso_hardening = iso_hardening + this->h * dep_mag;
 
-  MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(grad_delta_u, sigma, previous_sigma,
-                                                              inelastic_strain, previous_inelastic_strain,
-                                                              delta_inelastic_strain);
-
+  MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(
+      grad_delta_u, sigma, previous_sigma, inelastic_strain,
+      previous_inelastic_strain, delta_inelastic_strain);
 }
 
 /* -------------------------------------------------------------------------- */
-template<UInt dim>
-inline void MaterialViscoPlastic<dim>::computeTangentModuliOnQuad(Matrix<Real> & tangent,
-                                                                  const Matrix<Real> & /*grad_u*/,
-                                                                  const Matrix<Real> & /*previous_grad_u*/,
-                                                                  const Matrix<Real> & /*sigma_tensor*/,
-                                                                  const Matrix<Real> & /*previous_sigma_tensor*/,
-                                                                  const Real & /*iso_hardening*/) const {
+template <UInt dim>
+inline void MaterialViscoPlastic<dim>::computeTangentModuliOnQuad(
+    Matrix<Real> & tangent, const Matrix<Real> & /*grad_u*/,
+    const Matrix<Real> & /*previous_grad_u*/,
+    const Matrix<Real> & /*sigma_tensor*/,
+    const Matrix<Real> & /*previous_sigma_tensor*/,
+    const Real & /*iso_hardening*/) const {
   UInt cols = tangent.cols();
   UInt rows = tangent.rows();
 
@@ -85,8 +82,9 @@ inline void MaterialViscoPlastic<dim>::computeTangentModuliOnQuad(Matrix<Real> &
     for (UInt n = 0; n < cols; ++n) {
       UInt k = VoigtHelper<dim>::vec[n][0];
       UInt l = VoigtHelper<dim>::vec[n][1];
-      tangent(m,n) = (i==k) * (j==l) * 2. * this->mu + (i==j) * (k==l) * this->lambda;
-      tangent(m,n) -= (m==n) * (m>=dim) * this->mu;
+      tangent(m, n) = (i == k) * (j == l) * 2. * this->mu +
+                      (i == j) * (k == l) * this->lambda;
+      tangent(m, n) -= (m == n) * (m >= dim) * this->mu;
     }
   }
 }

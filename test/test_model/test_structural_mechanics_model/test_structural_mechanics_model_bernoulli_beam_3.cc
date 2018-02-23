@@ -79,7 +79,9 @@ public:
     forces(0, 2) = -P; // vertical force on first node
   }
 
-  void assignMaterials() override { model->getElementMaterial(parent::type).set(0); }
+  void assignMaterials() override {
+    model->getElementMaterial(parent::type).set(0);
+  }
 };
 
 /* -------------------------------------------------------------------------- */

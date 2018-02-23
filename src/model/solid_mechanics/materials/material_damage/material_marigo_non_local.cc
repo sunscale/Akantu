@@ -52,11 +52,11 @@ MaterialMarigoNonLocal<spatial_dimension>::MaterialMarigoNonLocal(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialMarigoNonLocal<spatial_dimension>::registerNonLocalVariables() {
+  this->model.getNonLocalManager().registerNonLocalVariable(this->Y.getName(),
+                                                            Ynl.getName(), 1);
   this->model.getNonLocalManager()
-      .registerNonLocalVariable(this->Y.getName(), Ynl.getName(), 1);
-  this->model.getNonLocalManager()
-    .getNeighborhood(this->name)
-    .registerNonLocalVariable(Ynl.getName());
+      .getNeighborhood(this->name)
+      .registerNonLocalVariable(Ynl.getName());
 }
 
 /* -------------------------------------------------------------------------- */

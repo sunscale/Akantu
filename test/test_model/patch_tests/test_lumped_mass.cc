@@ -71,8 +71,8 @@ protected:
   std::unique_ptr<SolidMechanicsModel> model;
 };
 
-template<typename T> constexpr ElementType TestLumpedMassesFixture<T>::type;
-template<typename T> constexpr size_t TestLumpedMassesFixture<T>::dim;
+template <typename T> constexpr ElementType TestLumpedMassesFixture<T>::type;
+template <typename T> constexpr size_t TestLumpedMassesFixture<T>::dim;
 
 using types = gtest_list_t<TestElementTypes>;
 
@@ -84,17 +84,18 @@ TYPED_TEST(TestLumpedMassesFixture, TestLumpedMass) {
   auto rho = this->model->getMaterial(0).getRho();
   auto & fem = this->model->getFEEngine();
   auto nb_element = this->mesh->getNbElement(this->type);
-  auto nb_quadrature_points = fem.getNbIntegrationPoints(this->type) * nb_element;
+  auto nb_quadrature_points =
+      fem.getNbIntegrationPoints(this->type) * nb_element;
 
   Array<Real> rho_on_quad(nb_quadrature_points, 1, rho, "rho_on_quad");
   auto mass = fem.integrate(rho_on_quad, this->type);
   const auto & masses = this->model->getMass();
 
   Vector<Real> sum(this->dim, 0.);
-  for(auto & mass : make_view(masses, this->dim)) {
+  for (auto & mass : make_view(masses, this->dim)) {
     sum += mass;
   }
 
-  for(UInt s = 0; s < sum.size(); ++s)
-    EXPECT_NEAR(0., (mass - sum[s])/mass, 2e-15);
+  for (UInt s = 0; s < sum.size(); ++s)
+    EXPECT_NEAR(0., (mass - sum[s]) / mass, 2e-15);
 }

@@ -31,13 +31,14 @@
 
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
-inline void SolidMechanicsModelIGFEM::getSubElementBarycenter(UInt element, UInt sub_element, 
-							      const ElementType & type,
-							      Vector<Real> & barycenter,
-							      GhostType ghost_type) const {
+inline void SolidMechanicsModelIGFEM::getSubElementBarycenter(
+    UInt element, UInt sub_element, const ElementType & type,
+    Vector<Real> & barycenter, GhostType ghost_type) const {
   UInt * conn_val = this->mesh.getConnectivity(type, ghost_type).storage();
-  UInt nb_sub_element_nodes = IGFEMHelper::getNbNodesPerSubElement(type, sub_element);
-  UInt * sub_el_conn = IGFEMHelper::getSubElementConnectivity(type, sub_element);
+  UInt nb_sub_element_nodes =
+      IGFEMHelper::getNbNodesPerSubElement(type, sub_element);
+  UInt * sub_el_conn =
+      IGFEMHelper::getSubElementConnectivity(type, sub_element);
   UInt nb_nodes_per_element = this->mesh.getNbNodesPerElement(type);
   const Array<Real> & node_coords = this->mesh.getNodes();
 
@@ -45,12 +46,13 @@ inline void SolidMechanicsModelIGFEM::getSubElementBarycenter(UInt element, UInt
 
   UInt offset = element * nb_nodes_per_element;
   for (UInt n = 0; n < nb_sub_element_nodes; ++n) {
-    UInt index = conn_val[offset + sub_el_conn[n]];	
+    UInt index = conn_val[offset + sub_el_conn[n]];
     memcpy(local_coord + n * spatial_dimension,
-	   node_coords.storage() + index * spatial_dimension,
-	   spatial_dimension*sizeof(Real));
+           node_coords.storage() + index * spatial_dimension,
+           spatial_dimension * sizeof(Real));
   }
-  Math::barycenter(local_coord, nb_sub_element_nodes, spatial_dimension, barycenter.storage());
+  Math::barycenter(local_coord, nb_sub_element_nodes, spatial_dimension,
+                   barycenter.storage());
 }
 
 __END_AKANTU__

@@ -82,7 +82,7 @@ void RandomInternalField<T, BaseField, Generator>::setRandomDistribution(
 template <typename T, template <typename> class BaseField,
           template <typename> class Generator>
 void RandomInternalField<T, BaseField, Generator>::printself(
-    std::ostream & stream, int indent [[gnu::unused]]) const {
+    std::ostream & stream, int indent[[gnu::unused]]) const {
   stream << "RandomInternalField [ ";
   random_parameter.printself(stream);
   stream << " ]";

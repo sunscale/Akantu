@@ -33,9 +33,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh.hh"
 #include "aka_iterators.hh"
 #include "element_class.hh"
+#include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MESH_INLINE_IMPL_CC__
@@ -221,8 +221,7 @@ Mesh::getSubelementToElementPointer(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline const auto &
-Mesh::getElementToSubelement() const {
+inline const auto & Mesh::getElementToSubelement() const {
   return getData<std::vector<Element>>("element_to_subelement");
 }
 
@@ -235,9 +234,8 @@ Mesh::getElementToSubelement(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto &
-Mesh::getElementToSubelement(const ElementType & type,
-                             const GhostType & ghost_type) {
+inline auto & Mesh::getElementToSubelement(const ElementType & type,
+                                           const GhostType & ghost_type) {
   return getData<std::vector<Element>>("element_to_subelement", type,
                                        ghost_type);
 }
@@ -250,9 +248,8 @@ Mesh::getSubelementToElement(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto &
-Mesh::getSubelementToElement(const ElementType & type,
-                             const GhostType & ghost_type) {
+inline auto & Mesh::getSubelementToElement(const ElementType & type,
+                                           const GhostType & ghost_type) {
   return getData<Element>("subelement_to_element", type, ghost_type);
 }
 
@@ -444,8 +441,7 @@ inline constexpr auto Mesh::getFacetType(const ElementType & type, UInt t) {
 
 /* -------------------------------------------------------------------------- */
 inline constexpr auto Mesh::getAllFacetTypes(const ElementType & type) {
-#define GET_FACET_TYPE(type)                                                   \
-  return ElementClass<type>::getFacetTypes();
+#define GET_FACET_TYPE(type) return ElementClass<type>::getFacetTypes();
 
   AKANTU_BOOST_ALL_ELEMENT_SWITCH_NO_DEFAULT(GET_FACET_TYPE);
 #undef GET_FACET_TYPE

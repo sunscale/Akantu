@@ -59,14 +59,14 @@ int main(int argc, char * argv[]) {
     return EXIT_FAILURE;
 
   // Testing sort + unique on list of segments
-  std::vector<std::pair<K::Segment_3, UInt> > pair_list;
+  std::vector<std::pair<K::Segment_3, UInt>> pair_list;
   pair_list.push_back(std::make_pair(seg1, 1));
   pair_list.push_back(std::make_pair(seg2, 2));
 
   segmentPairsLess sorter;
   std::sort(pair_list.begin(), pair_list.end(), sorter);
-  std::vector<std::pair<K::Segment_3, UInt> >::iterator
-    it = std::unique(pair_list.begin(), pair_list.end(), compareSegmentPairs);
+  std::vector<std::pair<K::Segment_3, UInt>>::iterator it =
+      std::unique(pair_list.begin(), pair_list.end(), compareSegmentPairs);
 
   if (it - pair_list.begin() != 1) {
     std::cout << pair_list.size() << std::endl;

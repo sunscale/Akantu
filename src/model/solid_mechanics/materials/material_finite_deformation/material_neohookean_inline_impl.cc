@@ -48,7 +48,7 @@ inline void MaterialNeohookean<dim>::computeStressOnQuad(Matrix<Real> & grad_u,
                                                          const Real & C33) {
   // Neo hookean book
   Matrix<Real> F(dim, dim);
-  Matrix<Real> C(dim, dim); // Right green
+  Matrix<Real> C(dim, dim);      // Right green
   Matrix<Real> Cminus(dim, dim); // Right green
 
   this->template gradUToF<dim>(grad_u, F);

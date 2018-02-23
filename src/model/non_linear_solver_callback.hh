@@ -57,5 +57,4 @@ public:
 
 } // akantu
 
-
 #endif /* __AKANTU_NON_LINEAR_SOLVER_CALLBACK_HH__ */

@@ -39,7 +39,6 @@
 #ifndef __AKANTU_MESH_EVENTS_HH__
 #define __AKANTU_MESH_EVENTS_HH__
 
-
 namespace akantu {
 
 /// akantu::MeshEvent is the base event for meshes

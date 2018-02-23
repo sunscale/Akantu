@@ -50,14 +50,17 @@ ParserParameter & ParserSection::addParameter(const ParserParameter & param) {
     AKANTU_EXCEPTION("The parameter \"" + param.getName() +
                      "\" is already defined in this section");
 
-  return (parameters.insert(std::pair<std::string, ParserParameter>(
-                                param.getName(), param)).first->second);
+  return (parameters
+              .insert(std::pair<std::string, ParserParameter>(param.getName(),
+                                                              param))
+              .first->second);
 }
 
 /* -------------------------------------------------------------------------- */
 ParserSection & ParserSection::addSubSection(const ParserSection & section) {
   return ((sub_sections_by_type.insert(std::pair<ParserType, ParserSection>(
-               section.getType(), section)))->second);
+               section.getType(), section)))
+              ->second);
 }
 
 /* -------------------------------------------------------------------------- */

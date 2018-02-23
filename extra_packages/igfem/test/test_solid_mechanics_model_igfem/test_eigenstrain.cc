@@ -14,22 +14,21 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_igfem.hh"
 #include "aka_common.hh"
 #include "dumper_paraview.hh"
-#include "mesh_geom_common.hh"
 #include "material_igfem.hh"
+#include "mesh_geom_common.hh"
+#include "solid_mechanics_model_igfem.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-class ASRMaterialSelector : public DefaultMaterialIGFEMSelector  {
+class ASRMaterialSelector : public DefaultMaterialIGFEMSelector {
 public:
-  ASRMaterialSelector(SolidMechanicsModelIGFEM & model) :
-    DefaultMaterialIGFEMSelector(model),
-    model(model) {} 
+  ASRMaterialSelector(SolidMechanicsModelIGFEM & model)
+      : DefaultMaterialIGFEMSelector(model), model(model) {}
 
   UInt operator()(const Element & elem) {
-    if(Mesh::getKind(elem.type) == _ek_igfem)
+    if (Mesh::getKind(elem.type) == _ek_igfem)
       /// choose IGFEM material
       return this->fallback_value_igfem;
 
@@ -37,7 +36,7 @@ public:
     UInt spatial_dimension = model.getSpatialDimension();
     Vector<Real> barycenter(spatial_dimension);
     mesh.getBarycenter(elem, barycenter);
-    if(model.isInside(barycenter))
+    if (model.isInside(barycenter))
       return 1;
     return 0;
   }
@@ -46,24 +45,24 @@ protected:
   SolidMechanicsModelIGFEM & model;
 };
 
-
 typedef Spherical SK;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   initialize("material_damage.dat", argc, argv);
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  StaticCommunicator & comm =
+      akantu::StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
   /// problem dimension
-  UInt spatial_dimension = 2;  
+  UInt spatial_dimension = 2;
 
   /// mesh creation and partioning
   Mesh mesh(spatial_dimension);
   akantu::MeshPartition * partition = NULL;
 
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("fine_mesh.msh");
     /// partition the mesh
     partition = new MeshPartitionScotch(mesh, spatial_dimension);
@@ -74,7 +73,7 @@ int main(int argc, char *argv[]) {
   SolidMechanicsModelIGFEM model(mesh);
   model.initParallel(partition);
   delete partition;
-  
+
   /// create the list to store the gel pockets
   std::list<SK::Sphere_3> gel_pocket_list;
   model.registerGeometryObject(gel_pocket_list, "mat_1");
@@ -96,7 +95,7 @@ int main(int argc, char *argv[]) {
   model.addDumpFieldToDumper("igfem elements", "lambda");
   model.addDumpFieldToDumper("igfem elements", "partitions");
   model.addDumpFieldToDumper("igfem elements", "eigen_grad_u");
- 
+
   /// dump
   model.dump("igfem elements");
   model.dump();
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
 
   /// create the interface
   model.update("mat_1");
-  if(mesh.getNbElement(_igfem_triangle_4, _not_ghost)) {
+  if (mesh.getNbElement(_igfem_triangle_4, _not_ghost)) {
     /// something went wrong in the interface creation
     finalize();
     return EXIT_FAILURE;
@@ -122,53 +121,59 @@ int main(int argc, char *argv[]) {
   ///  apply eigenstrain the eigenstrain in the inclusions
   Matrix<Real> prestrain(spatial_dimension, spatial_dimension, 0.);
   for (UInt i = 0; i < spatial_dimension; ++i)
-    prestrain(i,i) = 0.07;
-  
+    prestrain(i, i) = 0.07;
+
   model.applyEigenGradU(prestrain, "mat_1", _not_ghost);
 
   /// check that eigenstrain has been applied correctly
   /// check first the regular materials (the first two in the mat file)
   Real error = 0;
   Material & mat_1 = model.getMaterial(0);
-  const Array<Real> & eigen_grad_u_1 = mat_1.getArray<Real>("eigen_grad_u", _triangle_3, _not_ghost);
-  Array<Real>::const_matrix_iterator eigen_it = eigen_grad_u_1.begin(spatial_dimension, spatial_dimension);
-  Array<Real>::const_matrix_iterator eigen_end = eigen_grad_u_1.end(spatial_dimension, spatial_dimension);
-  for (; eigen_it!= eigen_end; ++eigen_it) {
+  const Array<Real> & eigen_grad_u_1 =
+      mat_1.getArray<Real>("eigen_grad_u", _triangle_3, _not_ghost);
+  Array<Real>::const_matrix_iterator eigen_it =
+      eigen_grad_u_1.begin(spatial_dimension, spatial_dimension);
+  Array<Real>::const_matrix_iterator eigen_end =
+      eigen_grad_u_1.end(spatial_dimension, spatial_dimension);
+  for (; eigen_it != eigen_end; ++eigen_it) {
     const Matrix<Real> & eigen_grad_u = *eigen_it;
     error += eigen_grad_u.norm<L_2>();
   }
 
   Material & mat_2 = model.getMaterial(1);
-  const Array<Real> & eigen_grad_u_2 = mat_2.getArray<Real>("eigen_grad_u", _triangle_3, _not_ghost);
+  const Array<Real> & eigen_grad_u_2 =
+      mat_2.getArray<Real>("eigen_grad_u", _triangle_3, _not_ghost);
   eigen_it = eigen_grad_u_2.begin(spatial_dimension, spatial_dimension);
   eigen_end = eigen_grad_u_2.end(spatial_dimension, spatial_dimension);
-  for (; eigen_it!= eigen_end; ++eigen_it) {
+  for (; eigen_it != eigen_end; ++eigen_it) {
     const Matrix<Real> & eigen_grad_u = *eigen_it;
     Matrix<Real> diff = (prestrain - eigen_grad_u);
     error += diff.norm<L_2>();
   }
 
-  MaterialIGFEM & mat_3 = dynamic_cast<MaterialIGFEM & >(model.getMaterial(2));
-  const Array<Real> & eigen_grad_u_3 = mat_3.getArray<Real>("eigen_grad_u", _igfem_triangle_5, _not_ghost);
-  UInt * sub_mat_ptr = mat_3.getArray<UInt>("sub_material",_igfem_triangle_5, _not_ghost).storage();
+  MaterialIGFEM & mat_3 = dynamic_cast<MaterialIGFEM &>(model.getMaterial(2));
+  const Array<Real> & eigen_grad_u_3 =
+      mat_3.getArray<Real>("eigen_grad_u", _igfem_triangle_5, _not_ghost);
+  UInt * sub_mat_ptr =
+      mat_3.getArray<UInt>("sub_material", _igfem_triangle_5, _not_ghost)
+          .storage();
   eigen_it = eigen_grad_u_3.begin(spatial_dimension, spatial_dimension);
   eigen_end = eigen_grad_u_3.end(spatial_dimension, spatial_dimension);
-  for (; eigen_it!= eigen_end; ++eigen_it, ++sub_mat_ptr) {
+  for (; eigen_it != eigen_end; ++eigen_it, ++sub_mat_ptr) {
     const Matrix<Real> & eigen_grad_u = *eigen_it;
-    if(!(*sub_mat_ptr)) {
-    Matrix<Real> diff = (prestrain - eigen_grad_u);
-    error += diff.norm<L_2>();
-    }
-    else
+    if (!(*sub_mat_ptr)) {
+      Matrix<Real> diff = (prestrain - eigen_grad_u);
+      error += diff.norm<L_2>();
+    } else
       error += eigen_grad_u.norm<L_2>();
   }
 
   std::cout << "The error in the prestrain is: " << error << std::endl;
-  if(std::abs(error) > Math::getTolerance()) {
+  if (std::abs(error) > Math::getTolerance()) {
     std::cout << "The test failed!!!" << std::endl;
     finalize();
     return EXIT_FAILURE;
-  }    
+  }
 
   /// dump
   model.dump("igfem elements");

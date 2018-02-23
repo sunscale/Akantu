@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
-#include <petscvec.h>
 #include <petscis.h>
+#include <petscvec.h>
 /* -------------------------------------------------------------------------- */
 
 #if not defined(PETSC_CLANGUAGE_CXX)
@@ -100,7 +100,8 @@ public:
 
 protected:
   /// Get the part of the solution corresponding to the dof_id
-  virtual void getSolutionPerDOFs(const ID & dof_id, Array<Real> & solution_array);
+  virtual void getSolutionPerDOFs(const ID & dof_id,
+                                  Array<Real> & solution_array);
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix

@@ -17,8 +17,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_plastic.hh"
 #include "aka_voigthelper.hh"
+#include "material_plastic.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_VISCOPLASTIC_HH__
@@ -38,14 +38,12 @@ namespace akantu {
  *   - ts: Time step
  */
 
-
 template <UInt spatial_dimension>
 class MaterialViscoPlastic : public MaterialPlastic<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialViscoPlastic(SolidMechanicsModel & model, const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
@@ -53,7 +51,8 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
@@ -61,25 +60,23 @@ public:
                             GhostType ghost_type = _not_ghost);
 
 protected:
-  inline void computeStressOnQuad(const Matrix<Real> & grad_u,
-				  const Matrix<Real> & previous_grad_u,
-				  Matrix<Real> & sigma,
-                                  const Matrix<Real> & previous_sigma,
-				  Matrix<Real> & inelastic_strain,
-				  const Matrix<Real> & previous_inelastic_strain,
-				  Real & iso_hardening) const;
+  inline void
+  computeStressOnQuad(const Matrix<Real> & grad_u,
+                      const Matrix<Real> & previous_grad_u,
+                      Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+                      Matrix<Real> & inelastic_strain,
+                      const Matrix<Real> & previous_inelastic_strain,
+                      Real & iso_hardening) const;
 
-  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
-                                         const Matrix<Real> & grad_u,
-                                         const Matrix<Real> & previous_grad_u,
-                                         const Matrix<Real> & sigma_tensor,
-                                         const Matrix<Real> & previous_sigma_tensor,
-                                         const Real & iso_hardening) const;
+  inline void computeTangentModuliOnQuad(
+      Matrix<Real> & tangent, const Matrix<Real> & grad_u,
+      const Matrix<Real> & previous_grad_u, const Matrix<Real> & sigma_tensor,
+      const Matrix<Real> & previous_sigma_tensor,
+      const Real & iso_hardening) const;
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -92,7 +89,6 @@ private:
 
   /// Time step (ts)
   Real ts;
-
 };
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

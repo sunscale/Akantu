@@ -20,14 +20,11 @@
 
 __BEGIN_AKANTU__
 
-template<typename T>
-class IGFEMInternalField : public InternalField<T> {
+template <typename T> class IGFEMInternalField : public InternalField<T> {
 public:
   IGFEMInternalField(const ID & id, Material & material);
   virtual ~IGFEMInternalField();
-
 };
-
 
 __END_AKANTU__
 

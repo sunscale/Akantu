@@ -293,7 +293,7 @@ void TimeStepSolverDefault::assembleResidual(const ID & residual_part) {
     TimeStepSolver::assembleResidual(residual_part);
   }
 
-  if(residual_part == "inertial") {
+  if (residual_part == "inertial") {
     for (auto & pair : this->integration_schemes) {
       auto & integration_scheme = pair.second;
 

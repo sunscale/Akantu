@@ -90,7 +90,7 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
   // Full (i.e. dim^2 by dim^2) stiffness tensor in material frame
   if (Dim == 1) {
     AKANTU_ERROR("Dimensions 1 not implemented: makes no sense to have "
-                       "orthotropy for 1D");
+                 "orthotropy for 1D");
   }
 
   Real Gamma;

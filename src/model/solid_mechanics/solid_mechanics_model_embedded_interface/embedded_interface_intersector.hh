@@ -34,8 +34,8 @@
 #define __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__
 
 #include "aka_common.hh"
-#include "mesh_geom_common.hh"
 #include "mesh_geom_abstract.hh"
+#include "mesh_geom_common.hh"
 #include "mesh_segment_intersector.hh"
 
 /* -------------------------------------------------------------------------- */
@@ -47,14 +47,19 @@ namespace {
 }
 
 /**
- * @brief Computes the intersections of the reinforcements defined in the primitive mesh
+ * @brief Computes the intersections of the reinforcements defined in the
+ * primitive mesh
  *
- * The purpose of this class is to look for reinforcements in the primitive mesh, which
- * should be defined by physical groups with the same names as the reinforcement materials
+ * The purpose of this class is to look for reinforcements in the primitive
+ * mesh, which
+ * should be defined by physical groups with the same names as the reinforcement
+ * materials
  * in the model.
  *
- * It then constructs the CGAL primitives from the elements of those reinforcements
- * and computes the intersections with the background mesh, to create an `interface_mesh`,
+ * It then constructs the CGAL primitives from the elements of those
+ * reinforcements
+ * and computes the intersections with the background mesh, to create an
+ * `interface_mesh`,
  * which is in turn used by the EmbeddedInterfaceModel.
  *
  * @see MeshSegmentIntersector, MeshGeomAbstract
@@ -64,7 +69,8 @@ class EmbeddedInterfaceIntersector : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh and a reinforcement mesh
-  explicit EmbeddedInterfaceIntersector(Mesh & mesh, const Mesh & primitive_mesh);
+  explicit EmbeddedInterfaceIntersector(Mesh & mesh,
+                                        const Mesh & primitive_mesh);
 
   /// Destructor
   virtual ~EmbeddedInterfaceIntersector();
@@ -85,7 +91,6 @@ protected:
 
   /// Mesh used for primitive construction
   const Mesh & primitive_mesh;
-
 };
 
 } // akantu

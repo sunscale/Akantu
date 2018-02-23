@@ -14,14 +14,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_igfem.hh"
 #include "dumpable_inline_impl.hh"
+#include "solid_mechanics_model_igfem.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-Real computeL2Error(SolidMechanicsModelIGFEM & model, ElementTypeMapReal & error_per_element);
+Real computeL2Error(SolidMechanicsModelIGFEM & model,
+                    ElementTypeMapReal & error_per_element);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   initialize("material_test_interface_position.dat", argc, argv);
   StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
@@ -33,12 +34,12 @@ int main(int argc, char *argv[]) {
   const UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("test_interface_position.msh");
     partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
   }
- 
+
   /// model creation
   SolidMechanicsModelIGFEM model(mesh);
   model.initParallel(partition);
@@ -56,7 +57,7 @@ int main(int argc, char *argv[]) {
   model.addDumpFieldToDumper("igfem elements", "lambda");
   model.addDumpFieldVectorToDumper("igfem elements", "displacement");
   model.addDumpFieldVectorToDumper("igfem elements", "real_displacement");
-  model.addDumpFieldToDumper("igfem elements","blocked_dofs");
+  model.addDumpFieldToDumper("igfem elements", "blocked_dofs");
   model.addDumpFieldToDumper("igfem elements", "material_index");
   model.addDumpFieldToDumper("igfem elements", "stress");
   model.addDumpFieldToDumper("igfem elements", "partitions");
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]) {
   mesh.computeBoundingBox();
   const Vector<Real> & lower_bounds = mesh.getLowerBounds();
   const Vector<Real> & upper_bounds = mesh.getUpperBounds();
-  Real bottom  = lower_bounds(1);
+  Real bottom = lower_bounds(1);
   Real left = lower_bounds(0);
   Real right = upper_bounds(0);
   Real eps = std::abs((right - left) * 1e-6);
@@ -89,18 +90,18 @@ int main(int argc, char *argv[]) {
   Array<Real> & disp = model.getDisplacement();
   Array<bool> & boun = model.getBlockedDOFs();
 
-  for (UInt i = 0; i < mesh.getNbNodes(); ++i) { 
-    if(std::abs(pos(i,1) - bottom) < eps){
-      boun(i,1) = true;
-      disp(i,1) = 0.0;
+  for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
+    if (std::abs(pos(i, 1) - bottom) < eps) {
+      boun(i, 1) = true;
+      disp(i, 1) = 0.0;
     }
-    if(std::abs(pos(i,0) - left) < eps){
-      boun(i,0) = true;
-      disp(i,0) = 0.0;
+    if (std::abs(pos(i, 0) - left) < eps) {
+      boun(i, 0) = true;
+      disp(i, 0) = 0.0;
     }
-    if(std::abs(pos(i,0) - right) < eps){
-      boun(i,0) = true;
-      disp(i,0) = 1.0;
+    if (std::abs(pos(i, 0) - right) < eps) {
+      boun(i, 0) = true;
+      disp(i, 0) = 1.0;
     }
   }
 
@@ -111,11 +112,15 @@ int main(int argc, char *argv[]) {
   for (; fe_it != fe_engines.end(); ++fe_it) {
     ElementKind kind = fe_it->first;
     FEEngine & fe_engine = *(fe_it->second);
-    Mesh::type_iterator it        = mesh.firstType(spatial_dimension, _not_ghost, kind);
-    Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _not_ghost, kind); 
-    for(; it != last_type ; ++it) {
+    Mesh::type_iterator it =
+        mesh.firstType(spatial_dimension, _not_ghost, kind);
+    Mesh::type_iterator last_type =
+        mesh.lastType(spatial_dimension, _not_ghost, kind);
+    for (; it != last_type; ++it) {
       ElementType type = *it;
-      Array<Real> Volume(mesh.getNbElement(type) * fe_engine.getNbIntegrationPoints(type), 1, 1.);
+      Array<Real> Volume(mesh.getNbElement(type) *
+                             fe_engine.getNbIntegrationPoints(type),
+                         1, 1.);
       int_volume += fe_engine.integrate(Volume, type);
     }
   }
@@ -127,26 +132,33 @@ int main(int argc, char *argv[]) {
       std::cout << "Error in area computation of the 2D mesh" << std::endl;
       return EXIT_FAILURE;
     }
- 
+
   /// solve the system
   model.assembleStiffnessMatrix();
   Real error = 0;
   bool converged = false;
   bool factorize = false;
 
-  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-12, error, 2, factorize);
+  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(
+      1e-12, error, 2, factorize);
   if (!converged) {
-    std::cout << "The solver did not converge!!! The error is: " << error << std::endl;
+    std::cout << "The solver did not converge!!! The error is: " << error
+              << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
 
- /// store the error on each element for visualization
+  /// store the error on each element for visualization
   ElementTypeMapReal error_per_element("error_per_element");
-  mesh.addDumpFieldExternal("error_per_element", error_per_element, spatial_dimension, _not_ghost, _ek_regular);
-  mesh.addDumpFieldExternalToDumper("igfem elements","error_per_element", error_per_element, spatial_dimension, _not_ghost, _ek_igfem);
-  mesh.initElementTypeMapArray(error_per_element, 1, spatial_dimension, false, _ek_regular, true);
-  mesh.initElementTypeMapArray(error_per_element, 1, spatial_dimension, false, _ek_igfem, true);
+  mesh.addDumpFieldExternal("error_per_element", error_per_element,
+                            spatial_dimension, _not_ghost, _ek_regular);
+  mesh.addDumpFieldExternalToDumper("igfem elements", "error_per_element",
+                                    error_per_element, spatial_dimension,
+                                    _not_ghost, _ek_igfem);
+  mesh.initElementTypeMapArray(error_per_element, 1, spatial_dimension, false,
+                               _ek_regular, true);
+  mesh.initElementTypeMapArray(error_per_element, 1, spatial_dimension, false,
+                               _ek_igfem, true);
 
   Real L2_error = computeL2Error(model, error_per_element);
   comm.allReduce(&L2_error, 1, _so_sum);
@@ -164,7 +176,8 @@ int main(int argc, char *argv[]) {
   model.dump();
   model.dump("igfem elements");
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   /// move the interface very close the standard nodes, but far enough
   /// to not cut trough the standard nodes
   model.moveInterface(0.5 * (1 - 1e-9));
@@ -174,24 +187,28 @@ int main(int argc, char *argv[]) {
   UInt nb_igfem_triangle_5 = mesh.getNbElement(_igfem_triangle_5, _not_ghost);
   comm.allReduce(&nb_igfem_triangle_4, 1, _so_sum);
   comm.allReduce(&nb_igfem_triangle_5, 1, _so_sum);
-  
+
   if (prank == 0) {
-    if ( (nb_igfem_triangle_4 != 0) || (nb_igfem_triangle_5 != 8)) {
-      std::cout << "something went wrong in the interface creation" << std::endl;
+    if ((nb_igfem_triangle_4 != 0) || (nb_igfem_triangle_5 != 8)) {
+      std::cout << "something went wrong in the interface creation"
+                << std::endl;
       finalize();
       return EXIT_FAILURE;
     }
   }
 
-  if ( (psize == 0) && (mesh.getNbNodes() - nb_standard_nodes != 8) ) {
-    std::cout << "something went wrong in the interface node creation" << std::endl;
+  if ((psize == 0) && (mesh.getNbNodes() - nb_standard_nodes != 8)) {
+    std::cout << "something went wrong in the interface node creation"
+              << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
 
-  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-12, error, 2, factorize);
+  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(
+      1e-12, error, 2, factorize);
   if (!converged) {
-    std::cout << "The solver did not converge!!! The error is: " << error << std::endl;
+    std::cout << "The solver did not converge!!! The error is: " << error
+              << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
@@ -211,7 +228,8 @@ int main(int argc, char *argv[]) {
   model.dump();
   model.dump("igfem elements");
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   /// move the interface so that it cuts through the standard nodes
   model.moveInterface((0.5 * (1 - 1e-10)));
   nb_igfem_triangle_4 = mesh.getNbElement(_igfem_triangle_4, _not_ghost);
@@ -219,22 +237,26 @@ int main(int argc, char *argv[]) {
   comm.allReduce(&nb_igfem_triangle_4, 1, _so_sum);
   comm.allReduce(&nb_igfem_triangle_5, 1, _so_sum);
   if (prank == 0) {
-    if ((nb_igfem_triangle_4 != 8) || (nb_igfem_triangle_5 != 0) ) {
-    std::cout << "something went wrong in the interface creation" << std::endl;
-    finalize();
-    return EXIT_FAILURE;
+    if ((nb_igfem_triangle_4 != 8) || (nb_igfem_triangle_5 != 0)) {
+      std::cout << "something went wrong in the interface creation"
+                << std::endl;
+      finalize();
+      return EXIT_FAILURE;
     }
   }
 
-  if ( (psize == 0) && (mesh.getNbNodes() - nb_standard_nodes != 4) ) {
-    std::cout << "something went wrong in the interface node creation" << std::endl;
+  if ((psize == 0) && (mesh.getNbNodes() - nb_standard_nodes != 4)) {
+    std::cout << "something went wrong in the interface node creation"
+              << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
 
-  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-12, error, 2, factorize);
+  converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(
+      1e-12, error, 2, factorize);
   if (!converged) {
-    std::cout << "The solver did not converge!!! The error is: " << error << std::endl;
+    std::cout << "The solver did not converge!!! The error is: " << error
+              << std::endl;
     finalize();
     return EXIT_FAILURE;
   }
@@ -258,7 +280,8 @@ int main(int argc, char *argv[]) {
 }
 
 /* -------------------------------------------------------------------------- */
-Real computeL2Error(SolidMechanicsModelIGFEM & model, ElementTypeMapReal & error_per_element) {
+Real computeL2Error(SolidMechanicsModelIGFEM & model,
+                    ElementTypeMapReal & error_per_element) {
   Real error = 0;
   Real normalization = 0;
 
@@ -266,46 +289,58 @@ Real computeL2Error(SolidMechanicsModelIGFEM & model, ElementTypeMapReal & error
   UInt spatial_dimension = mesh.getSpatialDimension();
   ElementTypeMapReal quad_coords("quad_coords");
   GhostType ghost_type = _not_ghost;
-  const std::map<ElementKind, FEEngine *> & fe_engines = model.getFEEnginesPerKind();
+  const std::map<ElementKind, FEEngine *> & fe_engines =
+      model.getFEEnginesPerKind();
   std::map<ElementKind, FEEngine *>::const_iterator fe_it = fe_engines.begin();
   for (; fe_it != fe_engines.end(); ++fe_it) {
     ElementKind kind = fe_it->first;
     FEEngine & fe_engine = *(fe_it->second);
-    mesh.initElementTypeMapArray(quad_coords, spatial_dimension, spatial_dimension, false, kind, true);
+    mesh.initElementTypeMapArray(quad_coords, spatial_dimension,
+                                 spatial_dimension, false, kind, true);
     fe_engine.computeIntegrationPointsCoordinates(quad_coords);
-    Mesh::type_iterator it        = mesh.firstType(spatial_dimension, ghost_type, kind);
-    Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type, kind); 
-    for(; it != last_type ; ++it) {
+    Mesh::type_iterator it =
+        mesh.firstType(spatial_dimension, ghost_type, kind);
+    Mesh::type_iterator last_type =
+        mesh.lastType(spatial_dimension, ghost_type, kind);
+    for (; it != last_type; ++it) {
       ElementType type = *it;
       UInt nb_elements = mesh.getNbElement(type, ghost_type);
       UInt nb_quads = fe_engine.getNbIntegrationPoints(type);
       /// interpolate the displacement at the quadrature points
-      Array<Real> displ_on_quads(nb_quads * nb_elements, spatial_dimension, "displ_on_quads");
-      Array<Real> quad_coords(nb_quads * nb_elements, spatial_dimension, "quad_coords");
-      fe_engine.interpolateOnIntegrationPoints(model.getDisplacement(), displ_on_quads, spatial_dimension, type);
-      fe_engine.computeIntegrationPointsCoordinates(quad_coords, type, ghost_type);
+      Array<Real> displ_on_quads(nb_quads * nb_elements, spatial_dimension,
+                                 "displ_on_quads");
+      Array<Real> quad_coords(nb_quads * nb_elements, spatial_dimension,
+                              "quad_coords");
+      fe_engine.interpolateOnIntegrationPoints(
+          model.getDisplacement(), displ_on_quads, spatial_dimension, type);
+      fe_engine.computeIntegrationPointsCoordinates(quad_coords, type,
+                                                    ghost_type);
       Array<Real> & el_error = error_per_element(type, ghost_type);
       el_error.resize(nb_elements);
-      Array<Real>::const_vector_iterator displ_it = displ_on_quads.begin(spatial_dimension);
-      Array<Real>::const_vector_iterator coord_it = quad_coords.begin(spatial_dimension);
+      Array<Real>::const_vector_iterator displ_it =
+          displ_on_quads.begin(spatial_dimension);
+      Array<Real>::const_vector_iterator coord_it =
+          quad_coords.begin(spatial_dimension);
       Vector<Real> error_vec(spatial_dimension);
       for (UInt e = 0; e < nb_elements; ++e) {
-	Vector<Real> error_per_quad(nb_quads);
-	Vector<Real> normalization_per_quad(nb_quads);
-	for (UInt q = 0; q < nb_quads; ++q, ++displ_it, ++coord_it) {
-	  Real exact = 0.5 * (*coord_it)(0) + 0.5;
-	  error_vec = *displ_it;
-	  error_vec(0) -= exact;
-	  error_per_quad(q) = error_vec.dot(error_vec);
-	  normalization_per_quad(q) = std::abs(exact) * std::abs(exact);
-	  ///  std::cout << error_vec  << std::endl;
-	}
-	/// integrate the error in the element and the corresponding 
-	/// normalization
-	Real int_error = fe_engine.integrate(error_per_quad, type, e, ghost_type);
-	error += int_error;
-	el_error(e) = std::sqrt(int_error);
-	normalization += fe_engine.integrate(normalization_per_quad, type, e, ghost_type);
+        Vector<Real> error_per_quad(nb_quads);
+        Vector<Real> normalization_per_quad(nb_quads);
+        for (UInt q = 0; q < nb_quads; ++q, ++displ_it, ++coord_it) {
+          Real exact = 0.5 * (*coord_it)(0) + 0.5;
+          error_vec = *displ_it;
+          error_vec(0) -= exact;
+          error_per_quad(q) = error_vec.dot(error_vec);
+          normalization_per_quad(q) = std::abs(exact) * std::abs(exact);
+          ///  std::cout << error_vec  << std::endl;
+        }
+        /// integrate the error in the element and the corresponding
+        /// normalization
+        Real int_error =
+            fe_engine.integrate(error_per_quad, type, e, ghost_type);
+        error += int_error;
+        el_error(e) = std::sqrt(int_error);
+        normalization +=
+            fe_engine.integrate(normalization_per_quad, type, e, ghost_type);
       }
     }
   }

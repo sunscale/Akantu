@@ -45,7 +45,6 @@ class MeshIOMSH : public MeshIO {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MeshIOMSH();
 
   ~MeshIOMSH() override;
@@ -54,7 +53,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// read a mesh from the file
   void read(const std::string & filename, Mesh & mesh) override;
 
@@ -65,39 +63,37 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// MSH element types
   enum MSHElementType {
-    _msh_not_defined    = 0,
-    _msh_segment_2      = 1,   // 2-node line.
-    _msh_triangle_3     = 2,   // 3-node triangle.
-    _msh_quadrangle_4   = 3,   // 4-node quadrangle.
-    _msh_tetrahedron_4  = 4,   // 4-node tetrahedron.
-    _msh_hexahedron_8   = 5,   // 8-node hexahedron.
-    _msh_prism_1        = 6,   // 6-node prism.
-    _msh_pyramid_1      = 7,   // 5-node pyramid.
-    _msh_segment_3      = 8,   // 3-node second order line
-    _msh_triangle_6     = 9,   // 6-node second order triangle
-    _msh_quadrangle_9   = 10,  // 9-node second order quadrangle
-    _msh_tetrahedron_10 = 11,  // 10-node second order tetrahedron
-    _msh_hexahedron_27  = 12,  // 27-node second order hexahedron
-    _msh_prism_18       = 13,  // 18-node second order prism
-    _msh_pyramid_14     = 14,  // 14-node second order pyramid
-    _msh_point          = 15,  // 1-node point.
-    _msh_quadrangle_8   = 16,  // 8-node second order quadrangle
-    _msh_hexahedron_20  = 17,  // 20-node second order hexahedron
-    _msh_prism_15       = 18   // 15-node second order prism
+    _msh_not_defined = 0,
+    _msh_segment_2 = 1,       // 2-node line.
+    _msh_triangle_3 = 2,      // 3-node triangle.
+    _msh_quadrangle_4 = 3,    // 4-node quadrangle.
+    _msh_tetrahedron_4 = 4,   // 4-node tetrahedron.
+    _msh_hexahedron_8 = 5,    // 8-node hexahedron.
+    _msh_prism_1 = 6,         // 6-node prism.
+    _msh_pyramid_1 = 7,       // 5-node pyramid.
+    _msh_segment_3 = 8,       // 3-node second order line
+    _msh_triangle_6 = 9,      // 6-node second order triangle
+    _msh_quadrangle_9 = 10,   // 9-node second order quadrangle
+    _msh_tetrahedron_10 = 11, // 10-node second order tetrahedron
+    _msh_hexahedron_27 = 12,  // 27-node second order hexahedron
+    _msh_prism_18 = 13,       // 18-node second order prism
+    _msh_pyramid_14 = 14,     // 14-node second order pyramid
+    _msh_point = 15,          // 1-node point.
+    _msh_quadrangle_8 = 16,   // 8-node second order quadrangle
+    _msh_hexahedron_20 = 17,  // 20-node second order hexahedron
+    _msh_prism_15 = 18        // 15-node second order prism
   };
 
 #define MAX_NUMBER_OF_NODE_PER_ELEMENT 10 // tetrahedron of second order
 
   /// order in witch element as to be read
-  std::map< ElementType, std::vector<UInt> > _read_order;
+  std::map<ElementType, std::vector<UInt>> _read_order;
 
   /// number of nodes per msh element
   std::map<MSHElementType, UInt> _msh_nodes_per_elem;
@@ -108,7 +104,6 @@ protected:
   /// correspondence between akantu element types and msh element types
   std::map<ElementType, MSHElementType> _akantu_to_msh_element_types;
 };
-
 
 } // akantu
 

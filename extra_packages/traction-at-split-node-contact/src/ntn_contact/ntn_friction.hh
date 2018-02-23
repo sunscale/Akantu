@@ -26,18 +26,17 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template <template<class> class FrictionLaw = NTNFricLawCoulomb, 
-	  class Regularisation = NTNFricRegNoRegularisation>
+template <template <class> class FrictionLaw = NTNFricLawCoulomb,
+          class Regularisation = NTNFricRegNoRegularisation>
 class NTNFriction : public FrictionLaw<Regularisation> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFriction(NTNBaseContact * contact,
-	      const FrictionID & id = "friction",
-	      const MemoryID & memory_id = 0);
-  virtual ~NTNFriction() {};
-  
+  NTNFriction(NTNBaseContact * contact, const FrictionID & id = "friction",
+              const MemoryID & memory_id = 0);
+  virtual ~NTNFriction(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -49,7 +48,6 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 protected:
-
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -61,25 +59,21 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
 /// standard output stream operator
-template <template<class> class FrictionLaw, class Regularisation>
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFriction<FrictionLaw,
-				                    Regularisation> & _this)
-{
+template <template <class> class FrictionLaw, class Regularisation>
+inline std::ostream &
+operator<<(std::ostream & stream,
+           const NTNFriction<FrictionLaw, Regularisation> & _this) {
   _this.printself(stream);
   return stream;
 }

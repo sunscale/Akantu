@@ -3,7 +3,8 @@
  * @author Fabian Barras <fabian.barras@epfl.ch>
  * @date   Fri Aug  7 09:07:44 2015
  *
- * @brief Test parallel intrinsic insertion of cohesive elements along physical surfaces 
+ * @brief Test parallel intrinsic insertion of cohesive elements along physical
+ * surfaces
  *
  * @section LICENSE
  *
@@ -26,28 +27,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
 #include <iostream>
+#include <limits>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "material.hh"
+#include "material_cohesive.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
 #include "mesh_utils.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "material.hh"
-#include "material_cohesive.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   initialize("input_file.dat", argc, argv);
 
   Math::setTolerance(1e-15);
-  
+
   const UInt spatial_dimension = 3;
 
   Mesh mesh(spatial_dimension);
@@ -57,56 +58,67 @@ int main(int argc, char *argv[]) {
   Int prank = comm.whoAmI();
   akantu::MeshPartition * partition = NULL;
 
-  if(prank==0){
+  if (prank == 0) {
 
     mesh.read("3d_spherical_inclusion.msh");
-  
+
     partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-
   }
   SolidMechanicsModelCohesive model(mesh);
   model.initParallel(partition);
   mesh.createGroupsFromMeshData<std::string>("physical_names");
   model.initFull(SolidMechanicsModelCohesiveOptions(_static));
-  
-  std::vector<std::string> surfaces_name = {"interface", "coh1", "coh2", "coh3", "coh4", "coh5"};
+
+  std::vector<std::string> surfaces_name = {"interface", "coh1", "coh2",
+                                            "coh3",      "coh4", "coh5"};
   UInt nb_surf = surfaces_name.size();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();  gt != ghost_type_t::end(); ++gt) {
+  for (ghost_type_t::iterator gt = ghost_type_t::begin();
+       gt != ghost_type_t::end(); ++gt) {
 
     std::string ghost_str;
-  
-    if(*gt == 1) ghost_str = "ghost";
-    else ghost_str = "not ghost";
 
-    Mesh::type_iterator it  = mesh.firstType(spatial_dimension, *gt, _ek_cohesive);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension, *gt, _ek_cohesive);
+    if (*gt == 1)
+      ghost_str = "ghost";
+    else
+      ghost_str = "not ghost";
 
-    for(; it != end; ++it) {
-      
-      Array<UInt> & material_id = mesh.getMeshFacets().getData<UInt>("physical_names")(mesh.getFacetType(*it), *gt);
-      
+    Mesh::type_iterator it =
+        mesh.firstType(spatial_dimension, *gt, _ek_cohesive);
+    Mesh::type_iterator end =
+        mesh.lastType(spatial_dimension, *gt, _ek_cohesive);
+
+    for (; it != end; ++it) {
+
+      Array<UInt> & material_id = mesh.getMeshFacets().getData<UInt>(
+          "physical_names")(mesh.getFacetType(*it), *gt);
+
       for (UInt i = 0; i < nb_surf; ++i) {
 
-	UInt expected_insertion = 0;
-      
-	for(UInt m = 0; m<material_id.getSize();++m) {
-	  if(material_id(m)==model.SolidMechanicsModel::getMaterialIndex(surfaces_name[i])) ++expected_insertion;
-	}
-	
-	UInt inserted_elements;
+        UInt expected_insertion = 0;
 
-	inserted_elements = model.getMaterial(surfaces_name[i]).getElementFilter()(*it,*gt).getSize();
-	if (expected_insertion != inserted_elements) { 
-	  std::cerr << std::endl << "!!! Mismatch in insertion of surface named " 
-		    << surfaces_name[i] << " in proc n° " << prank
-		    << " --> " << inserted_elements << " inserted elements of type " << ghost_str  
-		    << " out of " 
-		    << expected_insertion << std::endl;
-	  return EXIT_FAILURE;
-	}
-      }      
+        for (UInt m = 0; m < material_id.getSize(); ++m) {
+          if (material_id(m) ==
+              model.SolidMechanicsModel::getMaterialIndex(surfaces_name[i]))
+            ++expected_insertion;
+        }
+
+        UInt inserted_elements;
+
+        inserted_elements = model.getMaterial(surfaces_name[i])
+                                .getElementFilter()(*it, *gt)
+                                .getSize();
+        if (expected_insertion != inserted_elements) {
+          std::cerr << std::endl
+                    << "!!! Mismatch in insertion of surface named "
+                    << surfaces_name[i] << " in proc n° " << prank << " --> "
+                    << inserted_elements << " inserted elements of type "
+                    << ghost_str << " out of " << expected_insertion
+                    << std::endl;
+          return EXIT_FAILURE;
+        }
+      }
     }
   }
 

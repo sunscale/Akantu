@@ -55,9 +55,9 @@ SolidMechanicsModel::registerNewMaterial(const ParserSection & section) {
                      * weirdness of this code
                      */
   } catch (debug::Exception &) {
-    AKANTU_ERROR(
-        "A material of type \'"
-        << mat_type << "\' in the input file has been defined without a name!");
+    AKANTU_ERROR("A material of type \'"
+                 << mat_type
+                 << "\' in the input file has been defined without a name!");
   }
   Material & mat = this->registerNewMaterial(mat_name, mat_type, opt_param);
 
@@ -97,7 +97,7 @@ void SolidMechanicsModel::instantiateMaterials() {
   bool is_empty;
   std::tie(model_section, is_empty) = this->getParserSection();
 
-  if(not is_empty) {
+  if (not is_empty) {
     auto model_materials = model_section.getSubSections(ParserType::_material);
     for (const auto & section : model_materials) {
       this->registerNewMaterial(section);
@@ -108,8 +108,6 @@ void SolidMechanicsModel::instantiateMaterials() {
   for (const auto & section : sub_sections) {
     this->registerNewMaterial(section);
   }
-
-
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   for (auto & material : materials) {
@@ -122,8 +120,9 @@ void SolidMechanicsModel::instantiateMaterials() {
   }
 #endif
 
-  if(materials.empty())
-    AKANTU_EXCEPTION("No materials where instantiated for the model" << getID());
+  if (materials.empty())
+    AKANTU_EXCEPTION("No materials where instantiated for the model"
+                     << getID());
   are_materials_instantiated = true;
 }
 
@@ -145,14 +144,13 @@ void SolidMechanicsModel::assignMaterialToElements(
   if (non_local_manager)
     non_local_manager->synchronize(*this, _gst_material_id);
 
-  for_each_element(
-      mesh,
-      [&](auto && element) {
-        auto mat_index = material_index(element);
-        auto index = materials[mat_index]->addElement(element);
-        material_local_numbering(element) = index;
-      },
-      _element_filter = filter, _ghost_type = _not_ghost);
+  for_each_element(mesh,
+                   [&](auto && element) {
+                     auto mat_index = material_index(element);
+                     auto index = materials[mat_index]->addElement(element);
+                     material_local_numbering(element) = index;
+                   },
+                   _element_filter = filter, _ghost_type = _not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */

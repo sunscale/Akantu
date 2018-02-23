@@ -44,7 +44,7 @@
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined(__clang__) // test clang to be sure that when we test for gnu it
-                         // is only gnu
+// is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
 #define GCC_VERSION                                                            \
   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)

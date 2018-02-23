@@ -54,8 +54,8 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
     AKANTU_DEBUG_INFO("Creating FEEngine boundary " << name);
 
     FEEngineMap::const_iterator it = fems.find(name);
-    AKANTU_DEBUG_ASSERT(it != fems.end(), "The FEEngine "
-                                              << name << " is not registered");
+    AKANTU_DEBUG_ASSERT(it != fems.end(),
+                        "The FEEngine " << name << " is not registered");
 
     UInt spatial_dimension = it->second->getElementDimension();
     std::stringstream sstr;
@@ -78,8 +78,8 @@ inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
     name = default_fem;
 
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it != fems.end(), "The FEEngine "
-                                            << name << " is not registered");
+  AKANTU_DEBUG_ASSERT(it != fems.end(),
+                      "The FEEngine " << name << " is not registered");
 
   AKANTU_DEBUG_OUT();
   return dynamic_cast<FEEngineClass &>(*(it->second));
@@ -90,8 +90,8 @@ inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
 inline void Model::unRegisterFEEngineObject(const std::string & name) {
 
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it != fems.end(), "FEEngine object with name "
-                                            << name << " was not found");
+  AKANTU_DEBUG_ASSERT(it != fems.end(),
+                      "FEEngine object with name " << name << " was not found");
 
   fems.erase(it);
   if (!fems.empty())
@@ -108,13 +108,15 @@ inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
 
 #ifndef AKANTU_NDEBUG
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it == fems.end(), "FEEngine object with name "
-                                            << name << " was already created");
+  AKANTU_DEBUG_ASSERT(it == fems.end(),
+                      "FEEngine object with name " << name
+                                                   << " was already created");
 #endif
 
   std::stringstream sstr;
   sstr << id << ":fem:" << name << memory_id;
-  fems[name] = std::make_unique<FEEngineClass>(mesh, spatial_dimension, sstr.str(), memory_id);
+  fems[name] = std::make_unique<FEEngineClass>(mesh, spatial_dimension,
+                                               sstr.str(), memory_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -130,7 +132,7 @@ inline FEEngine & Model::getFEEngine(const ID & name) const {
                       "The FEEngine " << tmp_name << " is not registered");
 
   AKANTU_DEBUG_OUT();
-  return *(it->second);\
+  return *(it->second);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -142,12 +144,12 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
     tmp_name = default_fem;
 
   FEEngineMap::const_iterator it = fems_boundary.find(tmp_name);
-  AKANTU_DEBUG_ASSERT(it != fems_boundary.end(), "The FEEngine boundary  "
-                                                     << tmp_name
-                                                     << " is not registered");
-  AKANTU_DEBUG_ASSERT(it->second != nullptr, "The FEEngine boundary "
-                                                 << tmp_name
-                                                 << " was not created");
+  AKANTU_DEBUG_ASSERT(it != fems_boundary.end(),
+                      "The FEEngine boundary  " << tmp_name
+                                                << " is not registered");
+  AKANTU_DEBUG_ASSERT(it->second != nullptr,
+                      "The FEEngine boundary " << tmp_name
+                                               << " was not created");
 
   AKANTU_DEBUG_OUT();
   return *(it->second);
@@ -183,14 +185,14 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
 // }
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void Model::allocNodalField(Array<T> *& array, UInt nb_component, const ID & name) {
+void Model::allocNodalField(Array<T> *& array, UInt nb_component,
+                            const ID & name) {
   if (array == nullptr) {
     UInt nb_nodes = mesh.getNbNodes();
     std::stringstream sstr_disp;
     sstr_disp << id << ":" << name;
 
-    array =
-        &(alloc<T>(sstr_disp.str(), nb_nodes, nb_component, T()));
+    array = &(alloc<T>(sstr_disp.str(), nb_nodes, nb_component, T()));
   }
 }
 

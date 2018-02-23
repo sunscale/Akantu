@@ -23,16 +23,15 @@
 __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
-template<class _types, template <class> class iterator_type>
-class IGFEMGenericElementalField : public GenericElementalField<_types, iterator_type>
-{
+template <class _types, template <class> class iterator_type>
+class IGFEMGenericElementalField
+    : public GenericElementalField<_types, iterator_type> {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
 public:
-
   typedef _types types;
   typedef typename types::data_type data_type;
   typedef typename types::it_type it_type;
@@ -47,13 +46,14 @@ public:
   /* ------------------------------------------------------------------------ */
 
 public:
-
   IGFEMGenericElementalField(const field_type & field,
-			     UInt spatial_dimension = _all_dimensions,
-			     GhostType ghost_type = _not_ghost,
-			     ElementKind kind = _ek_igfem) :
+                             UInt spatial_dimension = _all_dimensions,
+                             GhostType ghost_type = _not_ghost,
+                             ElementKind kind = _ek_igfem)
+      :
 
-    GenericElementalField<types, iterator_type>(field, spatial_dimension, ghost_type, kind) {
+        GenericElementalField<types, iterator_type>(field, spatial_dimension,
+                                                    ghost_type, kind) {
     this->checkHomogeneity();
   }
 
@@ -61,26 +61,29 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-
 public:
   /// return the size of the contained data: i.e. the number of elements ?
   virtual UInt size() {
     this->checkHomogeneity();
     return ((this->nb_total_element) * 2);
   }
-  
+
   virtual iterator begin() {
     field_type_iterator tit;
     field_type_iterator end;
     UInt sub_element = 0;
 
     /// type iterators on the elemental field
-    tit = this->field.firstType(this->spatial_dimension, this->ghost_type, this->element_kind);
-    end = this->field.lastType(this->spatial_dimension, this->ghost_type, this->element_kind);
+    tit = this->field.firstType(this->spatial_dimension, this->ghost_type,
+                                this->element_kind);
+    end = this->field.lastType(this->spatial_dimension, this->ghost_type,
+                               this->element_kind);
 
     /// skip all types without data
     ElementType type = *tit;
-    for (;tit != end && this->field(*tit, this->ghost_type).getSize() == 0; ++tit) { }
+    for (; tit != end && this->field(*tit, this->ghost_type).getSize() == 0;
+         ++tit) {
+    }
     type = *tit;
 
     if (tit == end)
@@ -96,21 +99,25 @@ public:
     array_iterator it = vect.begin_reinterpret(nb_data_per_elem, size);
     array_iterator it_end = vect.end_reinterpret(nb_data_per_elem, size);
     /// define data iterator
-    iterator rit = iterator(this->field, tit, end, it, it_end, this->ghost_type, sub_element);
+    iterator rit = iterator(this->field, tit, end, it, it_end, this->ghost_type,
+                            sub_element);
     rit.setNbDataPerElem(this->nb_data_per_elem);
     return rit;
   }
 
-  virtual iterator end  () {
+  virtual iterator end() {
     field_type_iterator tit;
     field_type_iterator end;
     UInt sub_element = 0;
 
-    tit = this->field.firstType(this->spatial_dimension, this->ghost_type, this->element_kind);
-    end = this->field.lastType(this->spatial_dimension, this->ghost_type, this->element_kind);
+    tit = this->field.firstType(this->spatial_dimension, this->ghost_type,
+                                this->element_kind);
+    end = this->field.lastType(this->spatial_dimension, this->ghost_type,
+                               this->element_kind);
 
     ElementType type = *tit;
-    for (; tit != end; ++tit) type = *tit;
+    for (; tit != end; ++tit)
+      type = *tit;
 
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data = this->getNbDataPerElem(type);
@@ -118,25 +125,20 @@ public:
     UInt size = (vect.getSize() * nb_component) / nb_data;
     array_iterator it = vect.end_reinterpret(nb_data, size);
 
-    iterator rit =  iterator(this->field, end, end, it, it, this->ghost_type, sub_element);
+    iterator rit =
+        iterator(this->field, end, end, it, it, this->ghost_type, sub_element);
     rit.setNbDataPerElem(this->nb_data_per_elem);
     return rit;
   }
-
-  
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
 protected:
-
-
 };
-
 
 __END_AKANTU_DUMPER__
 __END_AKANTU__
-
 
 #endif /* __AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH__ */

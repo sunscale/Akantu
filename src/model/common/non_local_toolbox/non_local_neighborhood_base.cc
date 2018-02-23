@@ -105,7 +105,7 @@ void NonLocalNeighborhoodBase::cleanupExtraGhostElements(
   }
 
   /// remove the unneccessary ghosts from the synchronizer
-  //this->grid_synchronizer->removeElements(ghosts_to_erase);
+  // this->grid_synchronizer->removeElements(ghosts_to_erase);
   mesh.eraseElements(ghosts_to_erase);
 }
 

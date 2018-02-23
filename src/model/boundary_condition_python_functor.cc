@@ -35,32 +35,23 @@
 
 namespace akantu {
 
-
 namespace BC {
 
+  void PythonFunctorDirichlet::operator()(UInt node, Vector<bool> & flags,
+                                          Vector<Real> & primal,
+                                          const Vector<Real> & coord) const {
 
-
-  void PythonFunctorDirichlet::operator ()(UInt node,
-					   Vector<bool> & flags,
-					   Vector<Real> & primal,
-					   const Vector<Real> & coord) const{
-
-    this->callFunctor<void>("operator",node,flags,primal,coord);
+    this->callFunctor<void>("operator", node, flags, primal, coord);
   }
 
-
-  
   void PythonFunctorNeumann::operator()(const IntegrationPoint & quad_point,
-					Vector<Real> & dual,
-					const Vector<Real> & coord,
-					const Vector<Real> & normals) const{
+                                        Vector<Real> & dual,
+                                        const Vector<Real> & coord,
+                                        const Vector<Real> & normals) const {
 
-    this->callFunctor<void>("operator",quad_point,dual,coord,normals);
+    this->callFunctor<void>("operator", quad_point, dual, coord, normals);
   }
 
-  
-}//end namespace BC
-
+} // end namespace BC
 
 } // akantu
-

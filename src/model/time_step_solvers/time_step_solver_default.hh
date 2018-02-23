@@ -84,8 +84,10 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  using DOFsIntegrationSchemes = std::map<ID, std::unique_ptr<IntegrationScheme>>;
-  using DOFsIntegrationSchemesSolutionTypes = std::map<ID, IntegrationScheme::SolutionType>;
+  using DOFsIntegrationSchemes =
+      std::map<ID, std::unique_ptr<IntegrationScheme>>;
+  using DOFsIntegrationSchemesSolutionTypes =
+      std::map<ID, IntegrationScheme::SolutionType>;
   using DOFsIntegrationSchemesOwner = std::set<ID>;
 
   /// DOFManager with its real type

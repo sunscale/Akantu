@@ -113,8 +113,8 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
     auto magic_number = mesh.getNbNodesPerElement(mesh.getFacetType(type_p1));
 
     const auto & conn = mesh.getConnectivity(type, _not_ghost);
-    connectivities[type] = std::make_tuple(
-        &conn, nb_nodes_per_element_p1, magic_number);
+    connectivities[type] =
+        std::make_tuple(&conn, nb_nodes_per_element_p1, magic_number);
     nb_total_element += conn.size();
   }
 

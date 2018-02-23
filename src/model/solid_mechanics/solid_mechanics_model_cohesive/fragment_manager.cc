@@ -31,10 +31,10 @@
 /* -------------------------------------------------------------------------- */
 #include "fragment_manager.hh"
 #include "aka_iterators.hh"
+#include "communicator.hh"
 #include "material_cohesive.hh"
 #include "mesh_iterators.hh"
 #include "solid_mechanics_model_cohesive.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <functional>
@@ -325,8 +325,7 @@ void FragmentManager::computeInertiaMoments() {
   // }
 
   /// compute coordinates
-  auto mass_center_it =
-      mass_center.begin(spatial_dimension);
+  auto mass_center_it = mass_center.begin(spatial_dimension);
 
   /// loop over fragments
   for (const_element_group_iterator it(element_group_begin());
@@ -386,8 +385,7 @@ void FragmentManager::computeInertiaMoments() {
 
   Array<Real>::matrix_iterator integrated_moments_it =
       integrated_moments.begin(spatial_dimension, spatial_dimension);
-  auto inertia_moments_it =
-      inertia_moments.begin(spatial_dimension);
+  auto inertia_moments_it = inertia_moments.begin(spatial_dimension);
   Array<Real>::matrix_iterator principal_directions_it =
       principal_directions.begin(spatial_dimension, spatial_dimension);
 
@@ -495,10 +493,8 @@ void FragmentManager::integrateFieldOnFragments(
           field_array.begin_reinterpret(nb_quad_per_element, nb_component,
                                         field_array.size() /
                                             nb_quad_per_element);
-      auto density_array_begin =
-          density_array.begin_reinterpret(nb_quad_per_element,
-                                          density_array.size() /
-                                              nb_quad_per_element);
+      auto density_array_begin = density_array.begin_reinterpret(
+          nb_quad_per_element, density_array.size() / nb_quad_per_element);
 
       for (UInt el = 0; int_array_it != int_array_end; ++int_array_it, ++el) {
         UInt global_el = elements(el);

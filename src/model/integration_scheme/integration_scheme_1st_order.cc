@@ -84,8 +84,8 @@ void IntegrationScheme1stOrder::assembleResidual(bool is_lumped) {
                                                      first_derivative, -1);
   } else {
     if (this->dof_manager.hasLumpedMatrix("M"))
-      this->dof_manager.assembleLumpedMatMulVectToResidual(this->dof_id, "M",
-                                                           first_derivative, -1);
+      this->dof_manager.assembleLumpedMatMulVectToResidual(
+          this->dof_id, "M", first_derivative, -1);
   }
 
   AKANTU_DEBUG_OUT();

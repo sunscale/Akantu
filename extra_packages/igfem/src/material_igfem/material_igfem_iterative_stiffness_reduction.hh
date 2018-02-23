@@ -29,8 +29,8 @@
 #include "material_igfem_saw_tooth_damage.hh"
 
 /* -------------------------------------------------------------------------- */
- #ifndef __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
- #define __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
+#ifndef __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
+#define __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
 
 __BEGIN_AKANTU__
 
@@ -40,37 +40,41 @@ __BEGIN_AKANTU__
  * parameters in the material files :
  *   - Gfx
  *   - h
- *   - Sc  
+ *   - Sc
  */
-/// Proposed by Rots and Invernizzi, 2004: Regularized sequentially linear 
+/// Proposed by Rots and Invernizzi, 2004: Regularized sequentially linear
 // saw-tooth softening model (section 4.2)
-template<UInt spatial_dimension>
-class MaterialIGFEMIterativeStiffnessReduction : public MaterialIGFEMSawToothDamage<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialIGFEMIterativeStiffnessReduction
+    : public MaterialIGFEMSawToothDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  MaterialIGFEMIterativeStiffnessReduction(SolidMechanicsModel & model,
+                                           const ID & id = "");
 
-  MaterialIGFEMIterativeStiffnessReduction(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialIGFEMIterativeStiffnessReduction() {};
+  virtual ~MaterialIGFEMIterativeStiffnessReduction(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// set the material parameters
   virtual void initMaterial();
 
-  ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile stiffness
-  virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
-						 ElementType el_type, GhostType ghost_type = _not_ghost);
+  /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
+  /// stress) and normalize it by the tensile stiffness
+  virtual void
+  computeNormalizedEquivalentStress(const Array<Real> & grad_u,
+                                    ElementType el_type,
+                                    GhostType ghost_type = _not_ghost);
 
   /// update internal field damage
   virtual UInt updateDamage();
 
-  virtual void onElementsAdded(const Array<Element> & element_list, const NewElementsEvent & event);
+  virtual void onElementsAdded(const Array<Element> & element_list,
+                               const NewElementsEvent & event);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
@@ -79,12 +83,10 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// the ultimate strain
   IGFEMInternalField<Real> eps_u;
 
@@ -106,7 +108,6 @@ protected:
   /// the reduction constant (denoated by a in the paper of rots)
   Real reduction_constant;
 };
-
 
 __END_AKANTU__
 

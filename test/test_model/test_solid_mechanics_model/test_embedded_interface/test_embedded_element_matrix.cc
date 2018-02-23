@@ -31,8 +31,8 @@
 /* -------------------------------------------------------------------------- */
 
 #include "embedded_interface_model.hh"
-#include "sparse_solver.hh"
 #include "sparse_matrix_aij.hh"
+#include "sparse_solver.hh"
 
 using namespace akantu;
 
@@ -57,8 +57,10 @@ int main(int argc, char * argv[]) {
   connectivity.push_back(Vector<UInt>({0, 1}));
 
   Array<std::string> names_vec(1, 1, "reinforcement", "reinforcement_names");
-  reinforcement_mesh.registerData<std::string>("physical_names").alloc(1, 1, type);
-  reinforcement_mesh.getData<std::string>("physical_names")(type).copy(names_vec);
+  reinforcement_mesh.registerData<std::string>("physical_names")
+      .alloc(1, 1, type);
+  reinforcement_mesh.getData<std::string>("physical_names")(type).copy(
+      names_vec);
 
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
 
@@ -73,7 +75,8 @@ int main(int argc, char * argv[]) {
   try { // matrix should be singular
     model.solveStep();
   } catch (debug::SingularMatrixException & e) {
-    std::cerr << "Matrix is singular, relax, everything is fine :)" << std::endl;
+    std::cerr << "Matrix is singular, relax, everything is fine :)"
+              << std::endl;
   } catch (debug::Exception & e) {
     std::cerr << "Unexpceted error: " << e.what() << std::endl;
     throw e;

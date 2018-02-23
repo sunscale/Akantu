@@ -13,8 +13,7 @@
 
 namespace akantu {
 
-template <UInt dim>
-constexpr UInt VoigtHelper<dim>::size;
+template <UInt dim> constexpr UInt VoigtHelper<dim>::size;
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>

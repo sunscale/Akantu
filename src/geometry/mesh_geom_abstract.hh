@@ -46,10 +46,10 @@ class MeshGeomAbstract {
 
 public:
   /// Construct from mesh
-  explicit MeshGeomAbstract(Mesh & mesh) : mesh(mesh) {};
+  explicit MeshGeomAbstract(Mesh & mesh) : mesh(mesh){};
 
   /// Destructor
-  virtual ~MeshGeomAbstract() {};
+  virtual ~MeshGeomAbstract(){};
 
 public:
   /// Construct geometric data for computational geometry algorithms

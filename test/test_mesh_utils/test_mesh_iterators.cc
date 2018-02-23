@@ -52,13 +52,14 @@ int main(int argc, char * argv[]) {
   }
 
   for (auto && element_group : enumerate(ElementGroupsIterable(mesh))) {
-    std::cout << std::get<0>(element_group) << " " << std::get<1>(element_group).getName() << std::endl;
-
+    std::cout << std::get<0>(element_group) << " "
+              << std::get<1>(element_group).getName() << std::endl;
   }
 
   // for (auto && node_group :
   //        counting(NodeGroupsIterable(cmesh))) {
-  //   std::cout << std::get<0>(node_group) << " " << std::get<1>(node_group).getName() << std::endl;
+  //   std::cout << std::get<0>(node_group) << " " <<
+  //   std::get<1>(node_group).getName() << std::endl;
   // }
 
   finalize();

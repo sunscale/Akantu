@@ -89,10 +89,10 @@ int main(int argc, char * argv[]) {
   Array<UInt> elements;
   Vector<Real> barycenter(spatial_dimension);
   for_each_element(mesh, [&](auto && el) {
-      mesh.getBarycenter(el, barycenter);
-      if(barycenter(_x) > -0.25)
-        elements.push_back(el.element);
-    });
+    mesh.getBarycenter(el, barycenter);
+    if (barycenter(_x) > -0.25)
+      elements.push_back(el.element);
+  });
 
   Real increment = 0.01;
 

@@ -39,8 +39,7 @@ namespace akantu {
 template <class Mat, UInt dim>
 MaterialReinforcement<Mat, dim>::MaterialReinforcement(
     EmbeddedInterfaceModel & model, const ID & id)
-    : Mat(model, 1,
-          model.getInterfaceMesh(),
+    : Mat(model, 1, model.getInterfaceMesh(),
           model.getFEEngine("EmbeddedInterfaceFEEngine"), id),
       emodel(model),
       gradu_embedded("gradu_embedded", *this, 1,
@@ -273,7 +272,7 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
       (*foreground_filter(interface_type, ghost_type))(bg_type, ghost_type);
 
   auto shapesd_begin =
-    background_shapesd.begin(dim, nb_nodes_elem_bg, nb_quads_per_elem);
+      background_shapesd.begin(dim, nb_nodes_elem_bg, nb_quads_per_elem);
   auto quad_begin = quad_pos.begin(dim, nb_quads_per_elem);
 
   for (auto && tuple : zip(background_elements, foreground_elements)) {
@@ -282,8 +281,7 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
       Matrix<Real> shapesd = Tensor3<Real>(shapesd_begin[fg])(i);
       Vector<Real> quads = Matrix<Real>(quad_begin[fg])(i);
 
-      engine.computeShapeDerivatives(quads, bg, bg_type, shapesd,
-                                     ghost_type);
+      engine.computeShapeDerivatives(quads, bg, bg_type, shapesd, ghost_type);
     }
   }
 }
@@ -434,8 +432,7 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForcesInterface(
 
   Array<Real>::matrix_iterator B_it =
       shapesd.begin(dim, nodes_per_background_e);
-  auto C_it =
-      directing_cosines(interface_type, ghost_type).begin(voigt_size);
+  auto C_it = directing_cosines(interface_type, ghost_type).begin(voigt_size);
 
   auto sigma_it = this->stress(interface_type, ghost_type).begin();
 
@@ -492,7 +489,7 @@ void MaterialReinforcement<Mat, dim>::computeDirectingCosines(
       ghost_type, this->element_filter(type, ghost_type));
 
   Array<Real>::matrix_iterator directing_cosines_it =
-    directing_cosines(type, ghost_type).begin(1, voigt_size);
+      directing_cosines(type, ghost_type).begin(1, voigt_size);
 
   Array<Real>::matrix_iterator node_coordinates_it =
       node_coordinates.begin(dim, nb_nodes_per_element);

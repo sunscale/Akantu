@@ -781,7 +781,6 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
 }
 #endif
 
-
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::dump(const std::string & dumper_name) {
   mesh.dump(dumper_name);
@@ -821,9 +820,7 @@ inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,
     size += nb_nodes * sizeof(Real);
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 
   AKANTU_DEBUG_OUT();
@@ -845,9 +842,7 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
       buffer << (*temperature)(index);
       break;
     }
-    default: {
-      AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-    }
+    default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
     }
   }
   AKANTU_DEBUG_OUT();
@@ -869,9 +864,7 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
       buffer >> (*temperature)(index);
       break;
     }
-    default: {
-      AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-    }
+    default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
     }
   }
 
@@ -907,9 +900,7 @@ inline UInt HeatTransferModel::getNbData(const Array<Element> & elements,
     size += nb_nodes_per_element * sizeof(Real); // nodal temperatures
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 
   AKANTU_DEBUG_OUT();
@@ -935,9 +926,7 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
     packNodalDataHelper(*temperature, buffer, elements, mesh);
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 }
 
@@ -961,9 +950,7 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
 
     break;
   }
-  default: {
-    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
-  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 }
 

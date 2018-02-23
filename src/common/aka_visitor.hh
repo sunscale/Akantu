@@ -38,74 +38,69 @@
 namespace akantu {
 
 ///////////////////////////////////////////////////////////////////////////
-// visitor class template, adapted from the Andrei Alexandrescu's 
+// visitor class template, adapted from the Andrei Alexandrescu's
 // "Modern C++ Design"
 
 enum Visit_type { Mutable, Immutable };
 
-template <class T, typename R = void, Visit_type = Mutable>
-class StrictVisitor;
+template <class T, typename R = void, Visit_type = Mutable> class StrictVisitor;
 
-template <class T, typename R>
-class StrictVisitor<T, R, Mutable>
-{
+template <class T, typename R> class StrictVisitor<T, R, Mutable> {
 public:
-    typedef R ReturnType;
-    typedef T ParamType;
-    virtual ~StrictVisitor() {}
-    virtual ReturnType Visit(ParamType&) = 0;
+  typedef R ReturnType;
+  typedef T ParamType;
+  virtual ~StrictVisitor() {}
+  virtual ReturnType Visit(ParamType &) = 0;
 };
 
-template <class T, typename R>
-class StrictVisitor<T, R, Immutable>
-{
+template <class T, typename R> class StrictVisitor<T, R, Immutable> {
 public:
-    typedef R ReturnType;
-    typedef const T ParamType;
-    virtual ~StrictVisitor() {}
-    virtual ReturnType Visit(ParamType&) = 0;
+  typedef R ReturnType;
+  typedef const T ParamType;
+  virtual ~StrictVisitor() {}
+  virtual ReturnType Visit(ParamType &) = 0;
 };
 
 /// class template StrictVisitor (specialization)
 
 template <class Head, class Tail, typename R>
 class StrictVisitor<Typelist<Head, Tail>, R, Mutable>
-: public StrictVisitor<Head, R, Mutable>, public StrictVisitor<Tail, R, Mutable>
-{
+    : public StrictVisitor<Head, R, Mutable>,
+      public StrictVisitor<Tail, R, Mutable> {
 public:
-    typedef R ReturnType;
-    typedef Head ParamType;
-    //	using StrictVisitor<Head, R>::Visit;
-    //	using StrictVisitor<Tail, R>::Visit;
+  typedef R ReturnType;
+  typedef Head ParamType;
+  //	using StrictVisitor<Head, R>::Visit;
+  //	using StrictVisitor<Tail, R>::Visit;
 };
 
 template <class Head, typename R>
-class StrictVisitor<Typelist<Head, Null_type>, R, Mutable> : public StrictVisitor<Head, R, Mutable>
-{
+class StrictVisitor<Typelist<Head, Null_type>, R, Mutable>
+    : public StrictVisitor<Head, R, Mutable> {
 public:
-    typedef R ReturnType;
-    typedef Head ParamType;
-    using StrictVisitor<Head, R, Mutable>::Visit;
+  typedef R ReturnType;
+  typedef Head ParamType;
+  using StrictVisitor<Head, R, Mutable>::Visit;
 };
 
 template <class Head, class Tail, typename R>
 class StrictVisitor<Typelist<Head, Tail>, R, Immutable>
-: public StrictVisitor<Head, R, Immutable>, public StrictVisitor<Tail, R, Immutable>
-{
+    : public StrictVisitor<Head, R, Immutable>,
+      public StrictVisitor<Tail, R, Immutable> {
 public:
-    typedef R ReturnType;
-    typedef Head ParamType;
-    //	using StrictVisitor<Head, R>::Visit;
-    //	using StrictVisitor<Tail, R>::Visit;
+  typedef R ReturnType;
+  typedef Head ParamType;
+  //	using StrictVisitor<Head, R>::Visit;
+  //	using StrictVisitor<Tail, R>::Visit;
 };
 
 template <class Head, typename R>
-class StrictVisitor<Typelist<Head, Null_type>, R, Immutable> : public StrictVisitor<Head, R, Immutable>
-{
+class StrictVisitor<Typelist<Head, Null_type>, R, Immutable>
+    : public StrictVisitor<Head, R, Immutable> {
 public:
-    typedef R ReturnType;
-    typedef Head ParamType;
-    using StrictVisitor<Head, R, Immutable>::Visit;
+  typedef R ReturnType;
+  typedef Head ParamType;
+  using StrictVisitor<Head, R, Immutable>::Visit;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,60 +109,54 @@ public:
 //     functions)
 //
 
-template <class R>
-struct DefaultFunctor {
-    template <class T>
-    R operator()(T&) { return R(); }
+template <class R> struct DefaultFunctor {
+  template <class T> R operator()(T &) { return R(); }
 };
 
-template <class T, typename R = void, Visit_type V = Mutable, class F = DefaultFunctor<R> > class BaseVisitorImpl;
+template <class T, typename R = void, Visit_type V = Mutable,
+          class F = DefaultFunctor<R>>
+class BaseVisitorImpl;
 
 template <class Head, class Tail, typename R, Visit_type V, class F>
 class BaseVisitorImpl<Typelist<Head, Tail>, R, V, F>
-: public StrictVisitor<Head, R, V>, public BaseVisitorImpl<Tail, R, V, F> {
+    : public StrictVisitor<Head, R, V>, public BaseVisitorImpl<Tail, R, V, F> {
 public:
-    typedef typename StrictVisitor<Head, R, V>::ParamType ParamType;
-    virtual R Visit(ParamType& h)
-    { return F()(h); }
+  typedef typename StrictVisitor<Head, R, V>::ParamType ParamType;
+  virtual R Visit(ParamType & h) { return F()(h); }
 };
 
-template <class Head, typename R, Visit_type V, class F >
-class BaseVisitorImpl<Typelist<Head, Null_type>, R, V, F> : public StrictVisitor<Head, R, V>
-{
+template <class Head, typename R, Visit_type V, class F>
+class BaseVisitorImpl<Typelist<Head, Null_type>, R, V, F>
+    : public StrictVisitor<Head, R, V> {
 public:
-    typedef typename StrictVisitor<Head, R, V>::ParamType ParamType;
-    virtual R Visit(ParamType& h)
-    { return F()(h); }
+  typedef typename StrictVisitor<Head, R, V>::ParamType ParamType;
+  virtual R Visit(ParamType & h) { return F()(h); }
 };
-
 
 /// Visitor
-template <class R>
-struct Strict {};
+template <class R> struct Strict {};
 
-template <typename R, class TList, Visit_type V = Mutable, template <class> class FunctorPolicy = DefaultFunctor>
-class Visitor : public BaseVisitorImpl<TList, R, V, FunctorPolicy<R> > {
+template <typename R, class TList, Visit_type V = Mutable,
+          template <class> class FunctorPolicy = DefaultFunctor>
+class Visitor : public BaseVisitorImpl<TList, R, V, FunctorPolicy<R>> {
 public:
-    typedef R ReturnType;
-    
-    template <class Visited>
-    ReturnType GenericVisit(Visited& host) {
-        StrictVisitor<Visited, ReturnType, V>& subObj = *this;
-        return subObj.Visit(host);
-    }
-};
+  typedef R ReturnType;
 
+  template <class Visited> ReturnType GenericVisit(Visited & host) {
+    StrictVisitor<Visited, ReturnType, V> & subObj = *this;
+    return subObj.Visit(host);
+  }
+};
 
 template <typename R, class TList, Visit_type V>
 class Visitor<R, TList, V, Strict> : public StrictVisitor<TList, R, V> {
 public:
-    typedef R ReturnType;
-    
-    template <class Visited>
-    ReturnType GenericVisit(Visited& host) {
-        StrictVisitor<Visited, ReturnType, V>& subObj = *this;
-        return subObj.Visit(host);
-    }
+  typedef R ReturnType;
+
+  template <class Visited> ReturnType GenericVisit(Visited & host) {
+    StrictVisitor<Visited, ReturnType, V> & subObj = *this;
+    return subObj.Visit(host);
+  }
 };
 
 } // akantu

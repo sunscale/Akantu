@@ -65,7 +65,6 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-
 #ifdef SWIGPYTHON
 public:
   using ElementGroups = std::map<std::string, ElementGroup *>;

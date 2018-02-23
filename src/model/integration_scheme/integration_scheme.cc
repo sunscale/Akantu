@@ -37,8 +37,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
                                      const ID & dof_id, UInt order)
-    : Parsable(ParserType::_integration_scheme, dof_id), dof_manager(dof_manager),
-      dof_id(dof_id), order(order) {}
+    : Parsable(ParserType::_integration_scheme, dof_id),
+      dof_manager(dof_manager), dof_id(dof_id), order(order) {}
 
 /* -------------------------------------------------------------------------- */
 /// standard input stream operator for SolutionType

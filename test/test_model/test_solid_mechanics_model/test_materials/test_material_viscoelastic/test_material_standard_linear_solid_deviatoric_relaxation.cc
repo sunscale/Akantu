@@ -139,9 +139,10 @@ int main(int argc, char * argv[]) {
         solution = 2 * G0 * eps / T *
                    (gammainf * time + gamma * tau * (1 - exp(-time / tau)));
       } else {
-        solution = 2 * G0 * eps *
-                   (gammainf + gamma * tau / T *
-                                   (exp((T - time) / tau) - exp(-time / tau)));
+        solution =
+            2 * G0 * eps *
+            (gammainf +
+             gamma * tau / T * (exp((T - time) / tau) - exp(-time / tau)));
       }
       output_data << s * time_step << " " << solution;
 

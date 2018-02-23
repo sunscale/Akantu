@@ -29,10 +29,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_aij.hh"
+#include "aka_iterators.hh"
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
 #include "terms_to_assemble.hh"
-#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */

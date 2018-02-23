@@ -32,14 +32,14 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_grid_dynamic.hh"
-#include "mesh.hh"
 #include "grid_synchronizer.hh"
+#include "mesh.hh"
 #include "mesh_partition.hh"
 #include "synchronizer_registry.hh"
 #include "test_data_accessor.hh"
 #ifdef AKANTU_USE_IOHELPER
-#  include "io_helper.hh"
-#endif //AKANTU_USE_IOHELPER
+#include "io_helper.hh"
+#endif // AKANTU_USE_IOHELPER
 
 using namespace akantu;
 
@@ -49,11 +49,11 @@ typedef std::map<std::pair<Element, Element>, Real> pair_list;
 
 #include "test_grid_tools.hh"
 
-static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
-                             const SpatialGrid<Element> & grid,
-                             Real radius,
-                             pair_list & neighbors,
-                             neighbors_map_t<spatial_dimension>::type & neighbors_map) {
+static void
+updatePairList(const ElementTypeMapArray<Real> & barycenter,
+               const SpatialGrid<Element> & grid, Real radius,
+               pair_list & neighbors,
+               neighbors_map_t<spatial_dimension>::type & neighbors_map) {
   AKANTU_DEBUG_IN();
 
   GhostType ghost_type = _not_ghost;
@@ -62,9 +62,11 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
   e.ghost_type = ghost_type;
 
   // generate the pair of neighbor depending of the cell_list
-  ElementTypeMapArray<Real>::type_iterator it        = barycenter.firstType(_all_dimensions, ghost_type);
-  ElementTypeMapArray<Real>::type_iterator last_type = barycenter.lastType(0, ghost_type);
-  for(; it != last_type; ++it) {
+  ElementTypeMapArray<Real>::type_iterator it =
+      barycenter.firstType(_all_dimensions, ghost_type);
+  ElementTypeMapArray<Real>::type_iterator last_type =
+      barycenter.lastType(0, ghost_type);
+  for (; it != last_type; ++it) {
     // loop over quad points
 
     e.type = *it;
@@ -73,48 +75,49 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
     const Array<Real> & barycenter_vect = barycenter(*it, ghost_type);
     UInt sp = barycenter_vect.getNbComponent();
 
-    Array<Real>::const_iterator< Vector<Real> > bary =
-      barycenter_vect.begin(sp);
-    Array<Real>::const_iterator< Vector<Real> > bary_end =
-      barycenter_vect.end(sp);
+    Array<Real>::const_iterator<Vector<Real>> bary = barycenter_vect.begin(sp);
+    Array<Real>::const_iterator<Vector<Real>> bary_end =
+        barycenter_vect.end(sp);
 
-    for(;bary != bary_end; ++bary, e.element++) {
+    for (; bary != bary_end; ++bary, e.element++) {
 #if !defined(AKANTU_NDEBUG)
       Point<spatial_dimension> pt1(*bary);
 #endif
 
       SpatialGrid<Element>::CellID cell_id = grid.getCellID(*bary);
       SpatialGrid<Element>::neighbor_cells_iterator first_neigh_cell =
-        grid.beginNeighborCells(cell_id);
+          grid.beginNeighborCells(cell_id);
       SpatialGrid<Element>::neighbor_cells_iterator last_neigh_cell =
-        grid.endNeighborCells(cell_id);
+          grid.endNeighborCells(cell_id);
 
       // loop over neighbors cells of the one containing the current element
       for (; first_neigh_cell != last_neigh_cell; ++first_neigh_cell) {
         SpatialGrid<Element>::Cell::const_iterator first_neigh_el =
-          grid.beginCell(*first_neigh_cell);
+            grid.beginCell(*first_neigh_cell);
         SpatialGrid<Element>::Cell::const_iterator last_neigh_el =
-          grid.endCell(*first_neigh_cell);
+            grid.endCell(*first_neigh_cell);
 
         // loop over the quadrature point in the current cell of the cell list
-        for (;first_neigh_el != last_neigh_el; ++first_neigh_el){
+        for (; first_neigh_el != last_neigh_el; ++first_neigh_el) {
           const Element & elem = *first_neigh_el;
 
-	  Array<Real>::const_iterator< Vector<Real> > neigh_it =
-	    barycenter(elem.type, elem.ghost_type).begin(sp);
+          Array<Real>::const_iterator<Vector<Real>> neigh_it =
+              barycenter(elem.type, elem.ghost_type).begin(sp);
 
-	  const Vector<Real> & neigh_bary = neigh_it[elem.element];
+          const Vector<Real> & neigh_bary = neigh_it[elem.element];
 
           Real distance = bary->distance(neigh_bary);
-          if(distance <= radius) {
+          if (distance <= radius) {
 #if !defined(AKANTU_NDEBUG)
             Point<spatial_dimension> pt2(neigh_bary);
             neighbors_map[pt1].push_back(pt2);
 #endif
             std::pair<Element, Element> pair = std::make_pair(e, elem);
             pair_list::iterator p = neighbors.find(pair);
-            if(p != neighbors.end()) {
-              AKANTU_ERROR("Pair already registered [" << e << " " << elem << "] -> " << p->second << " " << distance);
+            if (p != neighbors.end()) {
+              AKANTU_ERROR("Pair already registered ["
+                           << e << " " << elem << "] -> " << p->second << " "
+                           << distance);
             } else {
               neighbors[pair] = distance;
             }
@@ -126,11 +129,10 @@ static void updatePairList(const ElementTypeMapArray<Real> & barycenter,
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
 
   Real radius = 0.001;
@@ -142,11 +144,13 @@ int main(int argc, char *argv[]) {
   Int prank = comm.whoAmI();
   ElementSynchronizer * dist = NULL;
 
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("bar.msh");
-    MeshPartition * partition = new MeshPartitionScotch(mesh, spatial_dimension);
+    MeshPartition * partition =
+        new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
-    dist = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
+    dist =
+        ElementSynchronizer::createDistributedSynchronizerMesh(mesh, partition);
     delete partition;
   } else {
     dist = ElementSynchronizer::createDistributedSynchronizerMesh(mesh, NULL);
@@ -172,18 +176,20 @@ int main(int argc, char *argv[]) {
   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
 
   ElementTypeMapArray<Real> barycenters("", "");
-  mesh.initElementTypeMapArray(barycenters, spatial_dimension, spatial_dimension);
+  mesh.initElementTypeMapArray(barycenters, spatial_dimension,
+                               spatial_dimension);
 
   Element e;
   e.ghost_type = ghost_type;
 
-  for(; it != last_type; ++it) {
+  for (; it != last_type; ++it) {
     UInt nb_element = mesh.getNbElement(*it, ghost_type);
     e.type = *it;
     Array<Real> & barycenter = barycenters(*it, ghost_type);
     barycenter.resize(nb_element);
 
-    Array<Real>::iterator< Vector<Real> > bary_it = barycenter.begin(spatial_dimension);
+    Array<Real>::iterator<Vector<Real>> bary_it =
+        barycenter.begin(spatial_dimension);
     for (UInt elem = 0; elem < nb_element; ++elem) {
       mesh.getBarycenter(elem, *it, bary_it->storage(), ghost_type);
       e.element = elem;
@@ -192,15 +198,15 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  std::stringstream sstr; sstr << "mesh_" << prank << ".msh";
+  std::stringstream sstr;
+  sstr << "mesh_" << prank << ".msh";
   mesh.write(sstr.str());
 
   Mesh grid_mesh(spatial_dimension, "grid_mesh", 0);
-  std::stringstream sstr_grid; sstr_grid << "grid_mesh_" << prank << ".msh";
+  std::stringstream sstr_grid;
+  sstr_grid << "grid_mesh_" << prank << ".msh";
   grid.saveAsMesh(grid_mesh);
   grid_mesh.write(sstr_grid.str());
-
-
 
   std::cout << "Pouet 1" << std::endl;
 
@@ -208,7 +214,8 @@ int main(int argc, char *argv[]) {
   TestAccessor test_accessor(mesh, barycenters);
   SynchronizerRegistry synch_registry(test_accessor);
 
-  GridSynchronizer * grid_communicator = GridSynchronizer::createGridSynchronizer(mesh, grid);
+  GridSynchronizer * grid_communicator =
+      GridSynchronizer::createGridSynchronizer(mesh, grid);
 
   std::cout << "Pouet 2" << std::endl;
 
@@ -217,13 +224,14 @@ int main(int argc, char *argv[]) {
   it = mesh.firstType(spatial_dimension, ghost_type);
   last_type = mesh.lastType(spatial_dimension, ghost_type);
   e.ghost_type = ghost_type;
-  for(; it != last_type; ++it) {
+  for (; it != last_type; ++it) {
     UInt nb_element = mesh.getNbElement(*it, ghost_type);
     e.type = *it;
     Array<Real> & barycenter = barycenters(*it, ghost_type);
     barycenter.resize(nb_element);
 
-    Array<Real>::iterator< Vector<Real> > bary_it = barycenter.begin(spatial_dimension);
+    Array<Real>::iterator<Vector<Real>> bary_it =
+        barycenter.begin(spatial_dimension);
     for (UInt elem = 0; elem < nb_element; ++elem) {
       mesh.getBarycenter(elem, *it, bary_it->storage(), ghost_type);
       e.element = elem;
@@ -233,53 +241,56 @@ int main(int argc, char *argv[]) {
   }
 
   Mesh grid_mesh_ghost(spatial_dimension, "grid_mesh_ghost", 0);
-  std::stringstream sstr_gridg; sstr_gridg << "grid_mesh_ghost_" << prank << ".msh";
+  std::stringstream sstr_gridg;
+  sstr_gridg << "grid_mesh_ghost_" << prank << ".msh";
   grid.saveAsMesh(grid_mesh_ghost);
   grid_mesh_ghost.write(sstr_gridg.str());
 
   std::cout << "Pouet 3" << std::endl;
 
-
   neighbors_map_t<spatial_dimension>::type neighbors_map;
   pair_list neighbors;
 
   updatePairList(barycenters, grid, radius, neighbors, neighbors_map);
-  pair_list::iterator nit  = neighbors.begin();
+  pair_list::iterator nit = neighbors.begin();
   pair_list::iterator nend = neighbors.end();
 
-  std::stringstream sstrp; sstrp << "pairs_" << prank;
+  std::stringstream sstrp;
+  sstrp << "pairs_" << prank;
   std::ofstream fout(sstrp.str().c_str());
-  for(;nit != nend; ++nit) {
+  for (; nit != nend; ++nit) {
     fout << "[" << nit->first.first << "," << nit->first.second << "] -> "
          << nit->second << std::endl;
   }
 
   std::string file = "neighbors_ref";
-  std::stringstream sstrf; sstrf << file << "_" << psize << "_" << prank;
+  std::stringstream sstrf;
+  sstrf << file << "_" << psize << "_" << prank;
 
   file = sstrf.str();
 
   std::ofstream nout;
   nout.open(file.c_str());
-  neighbors_map_t<spatial_dimension>::type::iterator it_n = neighbors_map.begin();
-  neighbors_map_t<spatial_dimension>::type::iterator end_n = neighbors_map.end();
-  for(;it_n != end_n; ++it_n) {
+  neighbors_map_t<spatial_dimension>::type::iterator it_n =
+      neighbors_map.begin();
+  neighbors_map_t<spatial_dimension>::type::iterator end_n =
+      neighbors_map.end();
+  for (; it_n != end_n; ++it_n) {
     std::sort(it_n->second.begin(), it_n->second.end());
 
-    std::vector< Point<spatial_dimension> >::iterator it_v = it_n->second.begin();
-    std::vector< Point<spatial_dimension> >::iterator end_v = it_n->second.end();
+    std::vector<Point<spatial_dimension>>::iterator it_v = it_n->second.begin();
+    std::vector<Point<spatial_dimension>>::iterator end_v = it_n->second.end();
 
     nout << "####" << std::endl;
     nout << it_n->second.size() << std::endl;
     nout << it_n->first << std::endl;
     nout << "#" << std::endl;
-    for(;it_v != end_v; ++it_v) {
+    for (; it_v != end_v; ++it_v) {
       nout << *it_v << std::endl;
     }
   }
 
   fout.close();
-
 
   synch_registry.registerSynchronizer(*dist, _gst_smm_mass);
 

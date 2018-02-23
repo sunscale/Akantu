@@ -35,17 +35,10 @@ protected:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ForceBasedDirichlet(SolidMechanicsModel & model, 
-		      BC::Axis ax, 
-		      Real target_f,
-		      Real mass = 0.) :
-    IncrementValue(0., ax), 
-    model(model),
-    mass(mass), 
-    velocity(0.), 
-    target_force(target_f),
-    total_residual(0.)
-  {}
+  ForceBasedDirichlet(SolidMechanicsModel & model, BC::Axis ax, Real target_f,
+                      Real mass = 0.)
+      : IncrementValue(0., ax), model(model), mass(mass), velocity(0.),
+        target_force(target_f), total_residual(0.) {}
 
   virtual ~ForceBasedDirichlet() {}
 
@@ -54,7 +47,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   void updateTotalResidual() {
-    SubBoundarySet::iterator it  = this->subboundaries.begin();
+    SubBoundarySet::iterator it = this->subboundaries.begin();
     SubBoundarySet::iterator end = this->subboundaries.end();
     this->total_residual = 0.;
     for (; it != end; ++it) {
@@ -64,16 +57,17 @@ public:
 
   virtual Real update() {
     AKANTU_DEBUG_IN();
-    
+
     this->updateTotalResidual();
     Real total_force = this->target_force + this->total_residual;
-    
+
     Real a = total_force / this->mass;
-    Real dt = model.getTimeStep();  
-    this->velocity += 0.5*dt*a;
-    this->value     = this->velocity*dt + 0.5*dt*dt*a;  // increment position dx
-    this->velocity += 0.5*dt*a;
-    
+    Real dt = model.getTimeStep();
+    this->velocity += 0.5 * dt * a;
+    this->value =
+        this->velocity * dt + 0.5 * dt * dt * a; // increment position dx
+    this->velocity += 0.5 * dt * a;
+
     AKANTU_DEBUG_OUT();
     return this->total_residual;
   }
@@ -82,12 +76,12 @@ public:
     AKANTU_DEBUG_IN();
     Real reaction = this->update();
 
-    SubBoundarySet::iterator it  = this->subboundaries.begin();
+    SubBoundarySet::iterator it = this->subboundaries.begin();
     SubBoundarySet::iterator end = this->subboundaries.end();
     for (; it != end; ++it) {
-      this->model.applyBC(*this,*it);
+      this->model.applyBC(*this, *it);
     }
-   
+
     AKANTU_DEBUG_OUT();
     return reaction;
   }
@@ -107,6 +101,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
   typedef std::set<std::string> SubBoundarySet;
+
 protected:
   SolidMechanicsModel & model;
   SubBoundarySet subboundaries;

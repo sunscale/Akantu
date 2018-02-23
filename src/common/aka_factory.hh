@@ -29,9 +29,9 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
+#include <functional>
 #include <map>
 #include <memory>
-#include <functional>
 #include <string>
 /* -------------------------------------------------------------------------- */
 
@@ -42,8 +42,10 @@ namespace akantu {
 
 template <class Base, class T = ID, class... Args> class Factory {
   using allocator_t = std::function<std::unique_ptr<Base>(Args...)>;
+
 private:
   Factory() = default;
+
 public:
   Factory(const Factory &) = delete;
   Factory & operator=(const Factory &) = delete;
@@ -56,18 +58,20 @@ public:
   bool registerAllocator(const T & id, const allocator_t & allocator) {
     if (allocators.find(id) != allocators.end())
       AKANTU_EXCEPTION("The id " << id << " is already registered in the "
-                       << debug::demangle(typeid(Base).name()) << " factory");
+                                 << debug::demangle(typeid(Base).name())
+                                 << " factory");
     allocators[id] = allocator;
     return true;
   }
 
-  template<typename... AArgs>
-  std::unique_ptr<Base> allocate(const T & id, AArgs&& ...  args) const {
+  template <typename... AArgs>
+  std::unique_ptr<Base> allocate(const T & id, AArgs &&... args) const {
     if (allocators.find(id) == allocators.end())
       AKANTU_EXCEPTION("The id  " << id << " is not registered in the "
                                   << debug::demangle(typeid(Base).name())
                                   << " factory.");
-    return std::forward<std::unique_ptr<Base>>(allocators.at(id)(std::forward<AArgs>(args)...));
+    return std::forward<std::unique_ptr<Base>>(
+        allocators.at(id)(std::forward<AArgs>(args)...));
   }
 
 private:

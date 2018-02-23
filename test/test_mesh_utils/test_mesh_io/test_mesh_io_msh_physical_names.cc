@@ -28,15 +28,15 @@
  *
  */
 
-#include <iostream>
-#include <sstream>
 #include "aka_common.hh"
 #include "mesh.hh"
+#include <iostream>
+#include <sstream>
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char* argv[]) {
+int main(int argc, char * argv[]) {
   UInt spatialDimension(3);
 
   akantu::initialize(argc, argv);
@@ -46,10 +46,13 @@ int main(int argc, char* argv[]) {
   mesh.read("./cube_physical_names.msh");
   std::stringstream sstr;
 
-  for(Mesh::type_iterator type_it = mesh.firstType(); type_it != mesh.lastType(); ++type_it) {
-    const Array<std::string> & name_vec = mesh.getData<std::string>("physical_names", *type_it);
-    for(UInt i(0); i < name_vec.size(); i++) {
-      std::cout << "Element " << i << " (of type " << *type_it << ") has physical name " << name_vec(i) << "." << std::endl;
+  for (Mesh::type_iterator type_it = mesh.firstType();
+       type_it != mesh.lastType(); ++type_it) {
+    const Array<std::string> & name_vec =
+        mesh.getData<std::string>("physical_names", *type_it);
+    for (UInt i(0); i < name_vec.size(); i++) {
+      std::cout << "Element " << i << " (of type " << *type_it
+                << ") has physical name " << name_vec(i) << "." << std::endl;
     }
   }
 

@@ -155,8 +155,8 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
   test_axis -= v3;
   if (test_axis.norm() > 8 * std::numeric_limits<Real>::epsilon()) {
     AKANTU_ERROR("The axis vectors do not form a right-handed coordinate "
-                       << "system. I. e., ||n1 x n2 - n3|| should be zero, but "
-                       << "it is " << test_axis.norm() << ".");
+                 << "system. I. e., ||n1 x n2 - n3|| should be zero, but "
+                 << "it is " << test_axis.norm() << ".");
   }
 
   // create the rotator and the reverse rotator
@@ -188,8 +188,8 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void MaterialElasticLinearAnisotropic<dim>::computeStress(ElementType el_type,
-                                                          GhostType ghost_type) {
+void MaterialElasticLinearAnisotropic<dim>::computeStress(
+    ElementType el_type, GhostType ghost_type) {
   // Wikipedia convention:
   // 2*eps_ij (i!=j) = voigt_eps_I
   // http://en.wikipedia.org/wiki/Voigt_notation
@@ -199,7 +199,7 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(ElementType el_type,
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
-  this->computeStressOnQuad(strain,sigma);
+  this->computeStressOnQuad(strain, sigma);
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 }
@@ -237,7 +237,7 @@ void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergy(
   if (ghost_type != _not_ghost)
     return;
   Array<Real>::scalar_iterator epot =
-    this->potential_energy(el_type, ghost_type).begin();
+      this->potential_energy(el_type, ghost_type).begin();
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 

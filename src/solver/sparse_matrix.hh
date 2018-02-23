@@ -98,7 +98,10 @@ public:
   virtual void applyBoundary(Real block_val = 1.) = 0;
 
   /// operator *=
-  SparseMatrix & operator*=(Real alpha) { this->mul(alpha); return *this; }
+  SparseMatrix & operator*=(Real alpha) {
+    this->mul(alpha);
+    return *this;
+  }
 
 protected:
   /// This is the revert of add B += \alpha * *this;
@@ -120,7 +123,7 @@ public:
   }
 
   AKANTU_GET_MACRO(NbNonZero, nb_non_zero, UInt);
-  UInt size() const { return size_;}
+  UInt size() const { return size_; }
   AKANTU_GET_MACRO(MatrixType, matrix_type, const MatrixType &);
 
   virtual UInt getRelease() const = 0;

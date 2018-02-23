@@ -31,10 +31,10 @@
 
 /* -------------------------------------------------------------------------- */
 #ifndef AKANTU_CMAKE_LIST_MATERIALS
-#  include "material_marigo_non_local.hh"
-#  include "material_mazars_non_local.hh"
+#include "material_marigo_non_local.hh"
+#include "material_mazars_non_local.hh"
 #endif
 
-#define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST                           \
-  ((2, (marigo_non_local       , MaterialMarigoNonLocal)))              \
-  ((2, (mazars_non_local       , MaterialMazarsNonLocal)))
+#define AKANTU_DAMAGE_NON_LOCAL_MATERIAL_LIST                                  \
+  ((2, (marigo_non_local, MaterialMarigoNonLocal)))(                           \
+      (2, (mazars_non_local, MaterialMazarsNonLocal)))

@@ -52,8 +52,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 struct FacetsCohesiveIntegrationOrderFunctor {
-  template <ElementType type, ElementType cohesive_type =
-                                  CohesiveFacetProperty<type>::cohesive_type>
+  template <ElementType type,
+            ElementType cohesive_type =
+                CohesiveFacetProperty<type>::cohesive_type>
   struct _helper {
     static constexpr int get() {
       return ElementClassProperty<cohesive_type>::polynomial_degree;

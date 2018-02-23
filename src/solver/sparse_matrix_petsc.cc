@@ -27,8 +27,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_petsc.hh"
-#include "mpi_type_wrapper.hh"
 #include "dof_manager_petsc.hh"
+#include "mpi_type_wrapper.hh"
 #include "static_communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstring>
@@ -46,12 +46,11 @@ int aka_PETScError(int ierr) {
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
-    const MatrixType & sparse_matrix_type, const ID & id,
-    const MemoryID & memory_id)
-  : SparseMatrix(dof_manager, matrix_type, id, memory_id),
-    dof_manager(dof_manager),
-    d_nnz(0, 1, "dnnz"),
-    o_nnz(0, 1, "onnz"), first_global_index(0) {
+                                     const MatrixType & sparse_matrix_type,
+                                     const ID & id, const MemoryID & memory_id)
+    : SparseMatrix(dof_manager, matrix_type, id, memory_id),
+      dof_manager(dof_manager), d_nnz(0, 1, "dnnz"), o_nnz(0, 1, "onnz"),
+      first_global_index(0) {
   AKANTU_DEBUG_IN();
 
   PetscErrorCode ierr;
@@ -111,35 +110,35 @@ void SparseMatrixPETSc::setSize() {
 
   throw;
   /// get the pointer to the global equation number array
- //  Int * eq_nb_val =
-//       this->dof_synchronizer->getGlobalDOFEquationNumbers().storage();
+  //  Int * eq_nb_val =
+  //       this->dof_synchronizer->getGlobalDOFEquationNumbers().storage();
 
-//   for (UInt i = 0; i < nb_dofs; ++i) {
-//     if (this->dof_synchronizer->isLocalOrMasterDOF(i)) {
-//       *it_eq_nb = eq_nb_val[i];
-//       ++it_eq_nb;
-//       ++nb_local_master_dofs;
-//     }
-//   }
+  //   for (UInt i = 0; i < nb_dofs; ++i) {
+  //     if (this->dof_synchronizer->isLocalOrMasterDOF(i)) {
+  //       *it_eq_nb = eq_nb_val[i];
+  //       ++it_eq_nb;
+  //       ++nb_local_master_dofs;
+  //     }
+  //   }
 
-//   local_master_eq_nbs.resize(nb_local_master_dofs);
+  //   local_master_eq_nbs.resize(nb_local_master_dofs);
 
-//   /// set the local size
-//   this->local_size = nb_local_master_dofs;
+  //   /// set the local size
+  //   this->local_size = nb_local_master_dofs;
 
-// /// resize PETSc matrix
-// #if defined(AKANTU_USE_MPI)
-//   ierr = MatSetSizes(this->petsc_matrix_wrapper->mat, this->local_size,
-//                      this->local_size, this->size, this->size);
-//   CHKERRXX(ierr);
-// #else
-//   ierr = MatSetSizes(this->petsc_matrix_wrapper->mat, this->local_size,
-//                      this->local_size);
-//   CHKERRXX(ierr);
-// #endif
+  // /// resize PETSc matrix
+  // #if defined(AKANTU_USE_MPI)
+  //   ierr = MatSetSizes(this->petsc_matrix_wrapper->mat, this->local_size,
+  //                      this->local_size, this->size, this->size);
+  //   CHKERRXX(ierr);
+  // #else
+  //   ierr = MatSetSizes(this->petsc_matrix_wrapper->mat, this->local_size,
+  //                      this->local_size);
+  //   CHKERRXX(ierr);
+  // #endif
 
-//   /// create mapping from akantu global numbering to petsc global numbering
-//   this->createGlobalAkantuToPETScMap(local_master_eq_nbs.storage());
+  //   /// create mapping from akantu global numbering to petsc global numbering
+  //   this->createGlobalAkantuToPETScMap(local_master_eq_nbs.storage());
 
   AKANTU_DEBUG_OUT();
 }
@@ -152,8 +151,8 @@ void SparseMatrixPETSc::setSize() {
  * numbers of all local or master dofs, i.e. the row indices of the
  * local matrix
  */
-void
-SparseMatrixPETSc::createGlobalAkantuToPETScMap(Int * local_master_eq_nbs_ptr) {
+void SparseMatrixPETSc::createGlobalAkantuToPETScMap(
+    Int * local_master_eq_nbs_ptr) {
   AKANTU_DEBUG_IN();
 
   PetscErrorCode ierr;
@@ -189,9 +188,9 @@ SparseMatrixPETSc::createGlobalAkantuToPETScMap(Int * local_master_eq_nbs_ptr) {
     *it_petsc_dofs = i;
   }
 
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,
-                       this->local_size, local_master_eq_nbs_ptr,
-                       petsc_dofs.storage(), &(this->ao));
+  ierr =
+      AOCreateBasic(PETSC_COMM_WORLD, this->local_size, local_master_eq_nbs_ptr,
+                    petsc_dofs.storage(), &(this->ao));
   CHKERRXX(ierr);
 
   AKANTU_DEBUG_OUT();
@@ -209,8 +208,7 @@ void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
 
   /// create Petsc viewer
   PetscViewer viewer;
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,
-                              filename.c_str(), &viewer);
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename.c_str(), &viewer);
   CHKERRXX(ierr);
 
   /// set the format
@@ -258,7 +256,8 @@ void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
 //     CHKERRXX(ierr);
 //     /// chek if sparse matrix to be added is symmetric. In this case
 //     /// the value also needs to be added at the transposed location in
-//     /// the matrix because PETSc is using the full profile, also for symmetric
+//     /// the matrix because PETSc is using the full profile, also for
+//     symmetric
 //     /// matrices
 //     if (matrix.getSparseMatrixType() == _symmetric && index(0) != index(1))
 //       ierr = MatSetValue(this->petsc_matrix_wrapper->mat, index(1), index(0),
@@ -278,8 +277,7 @@ void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
 void SparseMatrixPETSc::add(const SparseMatrixPETSc & matrix, Real alpha) {
   PetscErrorCode ierr;
 
-  ierr = MatAXPY(this->mat, alpha,
-                 matrix.mat, SAME_NONZERO_PATTERN);
+  ierr = MatAXPY(this->mat, alpha, matrix.mat, SAME_NONZERO_PATTERN);
   CHKERRXX(ierr);
 
   this->performAssembly();
@@ -357,9 +355,11 @@ void SparseMatrixPETSc::applyBoundary(const Array<bool> & boundary,
 
   // /// get the global equation numbers to find the rows that need to be zeroed
   // /// for the blocked dofs
-  // Int * eq_nb_val = dof_synchronizer->getGlobalDOFEquationNumbers().storage();
+  // Int * eq_nb_val =
+  // dof_synchronizer->getGlobalDOFEquationNumbers().storage();
 
-  // /// every processor calls the MatSetZero() only for his local or master dofs.
+  // /// every processor calls the MatSetZero() only for his local or master
+  // dofs.
   // /// This assures that not two processors or more try to zero the same row
   // UInt nb_component = boundary.getNbComponent();
   // UInt size = boundary.size();
@@ -397,8 +397,6 @@ void SparseMatrixPETSc::applyBoundary(const Array<bool> & boundary,
 
 /* -------------------------------------------------------------------------- */
 /// set all entries to zero while keeping the same nonzero pattern
-void SparseMatrixPETSc::clear() {
-  MatZeroEntries(this->mat);
-}
+void SparseMatrixPETSc::clear() { MatZeroEntries(this->mat); }
 
 } // akantu

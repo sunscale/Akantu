@@ -47,7 +47,8 @@ TEST_F(TestSynchronizerFixture, DataDistribution) {
       auto & barycenters =
           this->mesh->getData<Real>("barycenters", type, ghost_type);
 
-      for (auto && data : enumerate(make_view(barycenters, spatial_dimension))) {
+      for (auto && data :
+           enumerate(make_view(barycenters, spatial_dimension))) {
         Element element{type, UInt(std::get<0>(data)), ghost_type};
         Vector<Real> barycenter(spatial_dimension);
         this->mesh->getBarycenter(element, barycenter);

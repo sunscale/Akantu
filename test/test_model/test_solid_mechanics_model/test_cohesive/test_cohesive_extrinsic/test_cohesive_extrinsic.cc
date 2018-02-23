@@ -70,7 +70,6 @@ int main(int argc, char * argv[]) {
   model.addDumpField("grad_u");
   model.dump();
 
-
   Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;

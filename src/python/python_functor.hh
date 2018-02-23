@@ -30,8 +30,8 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "internal_field.hh"
 #include "element_group.hh"
+#include "internal_field.hh"
 /* -------------------------------------------------------------------------- */
 #include <Python.h>
 #include <map>
@@ -84,16 +84,18 @@ public:
 
   /// convert a stl vector to python
   template <typename T>
-  static inline PyObject * convertToPython(const std::vector<Array<T> *> & akantu_obj);
+  static inline PyObject *
+  convertToPython(const std::vector<Array<T> *> & akantu_obj);
 
   /// convert a stl vector to python
   template <typename T>
-  static inline PyObject * convertToPython(const std::unique_ptr<T> & akantu_obj);
-  
+  static inline PyObject *
+  convertToPython(const std::unique_ptr<T> & akantu_obj);
+
   /// convert a stl vector to python
   template <typename T1, typename T2>
   static inline PyObject * convertToPython(const std::map<T1, T2> & akantu_obj);
-  
+
   /// convert an akantu vector to python
   template <typename T>
   static inline PyObject * convertToPython(const Vector<T> & akantu_obj);
@@ -104,8 +106,9 @@ public:
 
   /// convert an akantu vector to python
   template <typename T>
-  static inline PyObject * convertToPython(const ElementTypeMapArray<T> & akantu_obj);
-  
+  static inline PyObject *
+  convertToPython(const ElementTypeMapArray<T> & akantu_obj);
+
   /// convert an akantu vector to python
   template <typename T>
   static inline PyObject * convertToPython(const Array<T> & akantu_obj);

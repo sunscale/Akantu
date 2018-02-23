@@ -30,9 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 //#include <boost/config/warning_disable.hpp>
+#include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/support_multi_pass.hpp>
-#include <boost/spirit/include/classic_position_iterator.hpp>
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_PARSER_GRAMMAR_TMPL_HH
@@ -41,7 +41,6 @@
 namespace akantu {
 
 namespace qi = boost::spirit::qi;
-
 
 /* -------------------------------------------------------------------------- */
 template <class T, class Grammar>
@@ -55,27 +54,28 @@ T Parser::parseType(const std::string & value, Grammar & grammar) {
   bool res = false;
   try {
     res = qi::phrase_parse(b, e, grammar, space, resultat);
-  } catch(debug::Exception & ex) {
-    AKANTU_EXCEPTION("Could not parse '" << value << "' as a "
-                     << debug::demangle(typeid(T).name()) << ", an unknown error append '"
-                     << ex.what());
+  } catch (debug::Exception & ex) {
+    AKANTU_EXCEPTION("Could not parse '"
+                     << value << "' as a " << debug::demangle(typeid(T).name())
+                     << ", an unknown error append '" << ex.what());
   }
 
-  if(!res || (b != e)) {
-    AKANTU_EXCEPTION("Could not parse '" << value << "' as a "
-                     << debug::demangle(typeid(T).name()) << ", an unknown error append '"
-                     << std::string(value.begin(), b) << "<HERE>" << std::string(b, e) << "'");
+  if (!res || (b != e)) {
+    AKANTU_EXCEPTION("Could not parse '"
+                     << value << "' as a " << debug::demangle(typeid(T).name())
+                     << ", an unknown error append '"
+                     << std::string(value.begin(), b) << "<HERE>"
+                     << std::string(b, e) << "'");
   }
   return resultat;
 }
 
 namespace parser {
-  template<class Iterator>
-  struct Skipper {
+  template <class Iterator> struct Skipper {
     using type = qi::rule<Iterator, void()>;
   };
 }
 
 } // akantu
 
-#endif //AKANTU_PARSER_GRAMMAR_TMPL_HH
+#endif // AKANTU_PARSER_GRAMMAR_TMPL_HH

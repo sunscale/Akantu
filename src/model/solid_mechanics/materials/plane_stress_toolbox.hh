@@ -38,8 +38,7 @@
 namespace akantu {
 class SolidMechanicsModel;
 class FEEngine;
-}  // akantu
-
+} // akantu
 
 namespace akantu {
 
@@ -75,8 +74,8 @@ public:
     AKANTU_DEBUG_IN();
 
     AKANTU_ERROR("The function \"computeCauchyStressPlaneStress\" can "
-                       "only be used in 2D Plane stress problems, which means "
-                       "that you made a mistake somewhere!! ");
+                 "only be used in 2D Plane stress problems, which means "
+                 "that you made a mistake somewhere!! ");
 
     AKANTU_DEBUG_OUT();
   }

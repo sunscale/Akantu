@@ -91,8 +91,8 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
     ElementType type = *it;
     const Array<UInt> & partition_array =
         (*partition_mapping)(type, ghost_type);
-    Array<UInt>::const_iterator<Vector<UInt> > p_it = partition_array.begin(1);
-    Array<UInt>::const_iterator<Vector<UInt> > p_end = partition_array.end(1);
+    Array<UInt>::const_iterator<Vector<UInt>> p_it = partition_array.begin(1);
+    Array<UInt>::const_iterator<Vector<UInt>> p_end = partition_array.end(1);
     AKANTU_DEBUG_ASSERT(UInt(p_end - p_it) ==
                             mesh.getNbElement(type, ghost_type),
                         "The partition mapping does not have the right number "

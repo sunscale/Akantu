@@ -40,47 +40,41 @@
 
 namespace akantu {
 
-template<class Query>
-MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh):
-  MeshGeomAbstract(mesh),
-  new_node_per_elem(NULL),
-  intersection_points(NULL),
-  nb_seg_by_el(0)
-{}
+template <class Query>
+MeshAbstractIntersector<Query>::MeshAbstractIntersector(Mesh & mesh)
+    : MeshGeomAbstract(mesh), new_node_per_elem(NULL),
+      intersection_points(NULL), nb_seg_by_el(0) {}
 
-template<class Query>
-MeshAbstractIntersector<Query>::~MeshAbstractIntersector()
-{}
+template <class Query>
+MeshAbstractIntersector<Query>::~MeshAbstractIntersector() {}
 
-template<class Query>
+template <class Query>
 void MeshAbstractIntersector<Query>::computeIntersectionQueryList(
-  const std::list<Query> & query_list) {
+    const std::list<Query> & query_list) {
   AKANTU_DEBUG_IN();
-  
-  typename std::list<Query>::const_iterator
-    query_it = query_list.begin(),
-    query_end = query_list.end();
 
-  for (; query_it != query_end ; ++query_it) {
+  typename std::list<Query>::const_iterator query_it = query_list.begin(),
+                                            query_end = query_list.end();
+
+  for (; query_it != query_end; ++query_it) {
     computeIntersectionQuery(*query_it);
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 
-template<class Query>
+template <class Query>
 void MeshAbstractIntersector<Query>::computeMeshQueryListIntersectionPoint(
-  const std::list<Query> & query_list, UInt nb_old_nodes) {
+    const std::list<Query> & query_list, UInt nb_old_nodes) {
   AKANTU_DEBUG_IN();
-  
-  typename std::list<Query>::const_iterator
-    query_it = query_list.begin(),
-    query_end = query_list.end();
 
-  for (; query_it != query_end ; ++query_it) {
+  typename std::list<Query>::const_iterator query_it = query_list.begin(),
+                                            query_end = query_list.end();
+
+  for (; query_it != query_end; ++query_it) {
     computeMeshQueryIntersectionPoint(*query_it, nb_old_nodes);
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 

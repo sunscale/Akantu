@@ -19,18 +19,18 @@ __END_AKANTU__
 
 __BEGIN_AKANTU__
 
-
 /* -------------------------------------------------------------------------- */
-inline bool IGFEMEnrichment::isInside(const Vector<Real> & point, ID domain) const {
-  if (domain == "") domain = default_geometry;
+inline bool IGFEMEnrichment::isInside(const Vector<Real> & point,
+                                      ID domain) const {
+  if (domain == "")
+    domain = default_geometry;
   Geometry & spheres = this->getGeometry(domain);
   SK::Point_3 p(point(0), point(1), 0.);
   std::list<Spherical::Sphere_3>::const_iterator begin = spheres.begin();
   std::list<Spherical::Sphere_3>::const_iterator end = spheres.end();
-  for ( ; begin != end; ++begin) {
+  for (; begin != end; ++begin) {
     if (!(begin->has_on_unbounded_side(p)))
       return true;
   }
   return false;
 }
-

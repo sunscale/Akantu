@@ -119,7 +119,7 @@ GroupManager::createFilteredNodeGroup(const std::string & group_name,
     node_group.applyNodeFilter(filter);
   } else {
     AKANTU_ERROR("ElementFilter cannot be applied to NodeGroup yet."
-                       << " Needs to be implemented.");
+                 << " Needs to be implemented.");
   }
 
   AKANTU_DEBUG_OUT();
@@ -341,8 +341,7 @@ public:
       while (!fragment_check_list.empty()) {
         UInt current_fragment = fragment_check_list.front();
 
-        UInt * total_pairs_end =
-            total_pairs.storage() + total_pairs.size() * 2;
+        UInt * total_pairs_end = total_pairs.storage() + total_pairs.size() * 2;
 
         UInt * fragment_found =
             std::find(total_pairs.storage(), total_pairs_end, current_fragment);
@@ -714,8 +713,7 @@ template <typename T>
 void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
   std::set<std::string> group_names;
   const ElementTypeMapArray<T> & datas = mesh.getData<T>(dataset_name);
-  using type_iterator =
-      typename ElementTypeMapArray<T>::type_iterator;
+  using type_iterator = typename ElementTypeMapArray<T>::type_iterator;
 
   std::map<std::string, UInt> group_dim;
 

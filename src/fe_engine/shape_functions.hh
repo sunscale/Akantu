@@ -182,7 +182,6 @@ public:
   getShapesDerivatives(const ElementType & el_type,
                        const GhostType & ghost_type = _not_ghost) const;
 
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

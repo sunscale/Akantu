@@ -36,10 +36,10 @@
 #include <limits>
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
 #include "mesh_utils.hh"
+#include "shape_lagrange.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;

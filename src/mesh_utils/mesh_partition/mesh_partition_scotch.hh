@@ -48,10 +48,9 @@ class MeshPartitionScotch : public MeshPartition {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MeshPartitionScotch(const Mesh & mesh, UInt spatial_dimension,
-		      const ID & id = "mesh_partition_scotch",
-		      const MemoryID & memory_id = 0);
+                      const ID & id = "mesh_partition_scotch",
+                      const MemoryID & memory_id = 0);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -68,12 +67,10 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
 };
 
 } // akantu

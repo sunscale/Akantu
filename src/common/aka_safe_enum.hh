@@ -37,23 +37,23 @@
 namespace akantu {
 
 /// Safe enumerated type
-template<typename def, typename inner = typename def::type>
+template <typename def, typename inner = typename def::type>
 class safe_enum : public def {
   using type = typename def::type;
 
 public:
   explicit safe_enum(type v = def::_end_) : val(v) {}
   safe_enum(safe_enum && other) = default;
-  safe_enum& operator=(safe_enum && other) = default;
+  safe_enum & operator=(safe_enum && other) = default;
 
   inner underlying() const { return val; }
 
-  bool operator == (const safe_enum & s) const { return this->val == s.val; }
-  bool operator != (const safe_enum & s) const { return this->val != s.val; }
-  bool operator <  (const safe_enum & s) const { return this->val <  s.val; }
-  bool operator <= (const safe_enum & s) const { return this->val <= s.val; }
-  bool operator >  (const safe_enum & s) const { return this->val >  s.val; }
-  bool operator >= (const safe_enum & s) const { return this->val >= s.val; }
+  bool operator==(const safe_enum & s) const { return this->val == s.val; }
+  bool operator!=(const safe_enum & s) const { return this->val != s.val; }
+  bool operator<(const safe_enum & s) const { return this->val < s.val; }
+  bool operator<=(const safe_enum & s) const { return this->val <= s.val; }
+  bool operator>(const safe_enum & s) const { return this->val > s.val; }
+  bool operator>=(const safe_enum & s) const { return this->val >= s.val; }
 
   operator inner() { return val; };
 
@@ -61,21 +61,21 @@ public:
   // Works only if enumerations are contiguous.
   class iterator {
   public:
-    explicit iterator(type v) : it(v) { }
-    iterator & operator++() { ++it; return *this; }
+    explicit iterator(type v) : it(v) {}
+    iterator & operator++() {
+      ++it;
+      return *this;
+    }
     safe_enum operator*() { return safe_enum(static_cast<type>(it)); }
     bool operator!=(iterator const & it) { return it.it != this->it; }
+
   private:
     int it;
   };
 
-  static iterator begin() {
-    return iterator(def::_begin_);
-  }
+  static iterator begin() { return iterator(def::_begin_); }
 
-  static iterator end() {
-    return iterator(def::_end_);
-  }
+  static iterator end() { return iterator(def::_end_); }
 
 protected:
   inner val;

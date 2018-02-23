@@ -72,9 +72,8 @@ MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
 
   static_if(aka::bool_constant_v<scotch_version >= 6>)
       .then([](auto && y) { SCOTCH_randomSeed(y); })
-      .else_([](auto && y) {
-        srandom(y);
-      })(std::forward<UInt>(RandomGenerator<UInt>::seed()));
+      .else_([](auto && y) { srandom(y); })(
+          std::forward<UInt>(RandomGenerator<UInt>::seed()));
 
   AKANTU_DEBUG_OUT();
 }
@@ -319,8 +318,7 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
         mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
     Mesh::type_iterator f_end =
         mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
-    auto nodes_it =
-        nodes.begin(spatial_dimension);
+    auto nodes_it = nodes.begin(spatial_dimension);
 
     UInt out_linerized_el = 0;
     for (; f_it != f_end; ++f_it) {

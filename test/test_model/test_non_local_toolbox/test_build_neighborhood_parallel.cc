@@ -65,7 +65,9 @@ int main(int argc, char * argv[]) {
   }
 
   /// creation of material selector
-  auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  auto && mat_selector =
+      std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names",
+                                                              model);
   model.setMaterialSelector(mat_selector);
 
   /// dump material index in paraview
@@ -122,8 +124,7 @@ int main(int argc, char * argv[]) {
     UInt nb_elements = mesh.getNbElement(type, _not_ghost);
     UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(type);
     Array<Real> & coords = quad_coords(type, _not_ghost);
-    auto coord_it =
-        coords.begin(spatial_dimension);
+    auto coord_it = coords.begin(spatial_dimension);
     for (UInt e = 0; e < nb_elements; ++e) {
       for (UInt q = 0; q < nb_quads; ++q, ++coord_it) {
         Real dist = center.distance(*coord_it);

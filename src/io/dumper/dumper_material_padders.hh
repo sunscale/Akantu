@@ -42,11 +42,11 @@ class MaterialFunctor {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MaterialFunctor(const SolidMechanicsModel & model) :
-    model(model),
-    material_index(model.getMaterialByElement()),
-    nb_data_per_element("nb_data_per_element", model.getID(), model.getMemoryID()),
-    spatial_dimension(model.getSpatialDimension()){}
+  MaterialFunctor(const SolidMechanicsModel & model)
+      : model(model), material_index(model.getMaterialByElement()),
+        nb_data_per_element("nb_data_per_element", model.getID(),
+                            model.getMemoryID()),
+        spatial_dimension(model.getSpatialDimension()) {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -93,11 +93,11 @@ public:
 /* -------------------------------------------------------------------------- */
 
 template <UInt spatial_dimension>
-class StressPadder : public MaterialPadder<Real, Matrix<Real> > {
+class StressPadder : public MaterialPadder<Real, Matrix<Real>> {
 
 public:
   StressPadder(const SolidMechanicsModel & model)
-      : MaterialPadder<Real, Matrix<Real> >(model) {
+      : MaterialPadder<Real, Matrix<Real>>(model) {
     this->setPadding(3, 3);
   }
 
@@ -112,7 +112,7 @@ public:
         this->getMaterialFromGlobalIndex(global_element_id);
     bool plane_strain = true;
     if (spatial_dimension == 2)
-      plane_strain = !((bool) material.getParam("Plane_Stress"));
+      plane_strain = !((bool)material.getParam("Plane_Stress"));
 
     if (plane_strain) {
       Real nu = material.getParam("nu");
@@ -126,15 +126,13 @@ public:
 
   UInt getDim() override { return 9; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) override {
-    return this->getDim();
-  };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { return this->getDim(); };
 };
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 class StrainPadder : public MaterialFunctor,
-                     public PadderGeneric<Matrix<Real>, Matrix<Real> > {
+                     public PadderGeneric<Matrix<Real>, Matrix<Real>> {
 public:
   StrainPadder(const SolidMechanicsModel & model) : MaterialFunctor(model) {
     this->setPadding(3, 3);
@@ -163,19 +161,18 @@ public:
 
   UInt getDim() override { return 9; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) override {
-    return this->getDim();
-  };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { return this->getDim(); };
 };
 
 /* -------------------------------------------------------------------------- */
 template <bool green_strain>
 class ComputeStrain : public MaterialFunctor,
-                      public ComputeFunctor<Vector<Real>, Matrix<Real> > {
+                      public ComputeFunctor<Vector<Real>, Matrix<Real>> {
 public:
   ComputeStrain(const SolidMechanicsModel & model) : MaterialFunctor(model) {}
 
-  inline Matrix<Real> func(const Vector<Real> & in, Element /*global_element_id*/) override {
+  inline Matrix<Real> func(const Vector<Real> & in,
+                           Element /*global_element_id*/) override {
     UInt nrows = spatial_dimension;
     UInt ncols = in.size() / nrows;
     UInt nb_data = in.size() / (nrows * nrows);
@@ -206,16 +203,14 @@ public:
 
   UInt getDim() override { return spatial_dimension * spatial_dimension; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) override {
-    return this->getDim();
-  };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { return this->getDim(); };
 };
 
 /* -------------------------------------------------------------------------- */
 template <bool green_strain>
 class ComputePrincipalStrain
     : public MaterialFunctor,
-      public ComputeFunctor<Vector<Real>, Matrix<Real> > {
+      public ComputeFunctor<Vector<Real>, Matrix<Real>> {
 public:
   ComputePrincipalStrain(const SolidMechanicsModel & model)
       : MaterialFunctor(model) {}
@@ -253,15 +248,13 @@ public:
 
   UInt getDim() override { return spatial_dimension; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) override {
-    return this->getDim();
-  };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { return this->getDim(); };
 };
 
 /* -------------------------------------------------------------------------- */
 class ComputeVonMisesStress
     : public MaterialFunctor,
-      public ComputeFunctor<Vector<Real>, Vector<Real> > {
+      public ComputeFunctor<Vector<Real>, Vector<Real>> {
 public:
   ComputeVonMisesStress(const SolidMechanicsModel & model)
       : MaterialFunctor(model) {}
@@ -285,9 +278,7 @@ public:
 
   UInt getDim() override { return 1; };
 
-  UInt getNbComponent(UInt /*old_nb_comp*/) override {
-    return this->getDim();
-  };
+  UInt getNbComponent(UInt /*old_nb_comp*/) override { return this->getDim(); };
 };
 
 /* -------------------------------------------------------------------------- */

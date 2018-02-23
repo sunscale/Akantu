@@ -43,10 +43,10 @@
 namespace akantu {
 
 /**
- * @brief Class used to perform intersections on a mesh and construct output data
+ * @brief Class used to perform intersections on a mesh and construct output
+ * data
  */
-template<class Query>
-class MeshAbstractIntersector : public MeshGeomAbstract {
+template <class Query> class MeshAbstractIntersector : public MeshGeomAbstract {
 
 public:
   /// Construct from mesh
@@ -63,41 +63,54 @@ public:
   /// get the new_node_per_elem array
   AKANTU_GET_MACRO(NewNodePerElem, *new_node_per_elem, const Array<UInt> &);
   /// get the intersection_points array
-  AKANTU_GET_MACRO(IntersectionPoints, intersection_points, const Array<Real> *);
+  AKANTU_GET_MACRO(IntersectionPoints, intersection_points,
+                   const Array<Real> *);
   /// get the nb_seg_by_el UInt
   AKANTU_GET_MACRO(NbSegByEl, nb_seg_by_el, UInt);
 
   /**
    * @brief Compute the intersection with a query object
    *
-   * This function needs to be implemented for every subclass. It computes the intersections
+   * This function needs to be implemented for every subclass. It computes the
+   * intersections
    * with the tree of primitives and creates the data for the user.
-   * 
+   *
    * @param query the CGAL primitive of the query object
    */
   virtual void computeIntersectionQuery(const Query & query) = 0;
 
-  /// Compute intersection points between the mesh primitives (segments) and a query (surface in 3D or a curve in 2D), double intersection points for the same primitives are not considered. A maximum intersection node per element is set : 2 in 2D and 4 in 3D
-  virtual void computeMeshQueryIntersectionPoint(const Query & query, UInt nb_old_nodes) = 0;
+  /// Compute intersection points between the mesh primitives (segments) and a
+  /// query (surface in 3D or a curve in 2D), double intersection points for the
+  /// same primitives are not considered. A maximum intersection node per
+  /// element is set : 2 in 2D and 4 in 3D
+  virtual void computeMeshQueryIntersectionPoint(const Query & query,
+                                                 UInt nb_old_nodes) = 0;
 
   /// Compute intersection between the mesh and a list of queries
-  virtual void computeIntersectionQueryList(const std::list<Query> & query_list);
+  virtual void
+  computeIntersectionQueryList(const std::list<Query> & query_list);
 
   /// Compute intersection points between the mesh and a list of queries
-  virtual void  computeMeshQueryListIntersectionPoint(const std::list<Query> & query_list,
-						      UInt nb_old_nodes);
+  virtual void
+  computeMeshQueryListIntersectionPoint(const std::list<Query> & query_list,
+                                        UInt nb_old_nodes);
 
-  /// Compute whatever result is needed from the user (should be move to the appropriate specific classe for genericity)
-  virtual void buildResultFromQueryList(const std::list<Query> & query_list) = 0;
+  /// Compute whatever result is needed from the user (should be move to the
+  /// appropriate specific classe for genericity)
+  virtual void
+  buildResultFromQueryList(const std::list<Query> & query_list) = 0;
 
 protected:
-  /// new node per element (column 0: number of new nodes, then odd is the intersection node number and even the ID of the intersected segment)
+  /// new node per element (column 0: number of new nodes, then odd is the
+  /// intersection node number and even the ID of the intersected segment)
   Array<UInt> * new_node_per_elem;
 
-  /// intersection output: new intersection points (computeMeshQueryListIntersectionPoint)
+  /// intersection output: new intersection points
+  /// (computeMeshQueryListIntersectionPoint)
   Array<Real> * intersection_points;
 
-  /// number of segment in a considered element of the templated type of element specialized intersector
+  /// number of segment in a considered element of the templated type of element
+  /// specialized intersector
   const UInt nb_seg_by_el;
 };
 

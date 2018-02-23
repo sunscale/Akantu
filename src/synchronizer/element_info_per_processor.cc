@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "element_info_per_processor.hh"
-#include "element_synchronizer.hh"
 #include "communicator.hh"
+#include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iostream>

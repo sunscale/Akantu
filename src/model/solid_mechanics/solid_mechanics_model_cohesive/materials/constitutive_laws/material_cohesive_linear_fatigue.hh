@@ -61,24 +61,23 @@ namespace akantu {
  */
 
 template <UInt spatial_dimension>
-class MaterialCohesiveLinearFatigue : public MaterialCohesiveLinear<spatial_dimension> {
+class MaterialCohesiveLinearFatigue
+    : public MaterialCohesiveLinear<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  MaterialCohesiveLinearFatigue(SolidMechanicsModel & model, const ID & id = "");
+  MaterialCohesiveLinearFatigue(SolidMechanicsModel & model,
+                                const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the material parameters
   void initMaterial() override;
 
 protected:
-
   /// constitutive law
   void computeTraction(const Array<Real> & normal, ElementType el_type,
                        GhostType ghost_type = _not_ghost) override;
@@ -94,7 +93,6 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// delta_f parameter
   Real delta_f;
 

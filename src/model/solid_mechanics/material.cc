@@ -1214,8 +1214,7 @@ void Material::onElementsRemoved(
 
       auto & elem_filter = element_filter(type, gt);
       auto & mat_indexes = this->model.getMaterialByElement(type, gt);
-      auto & mat_loc_num =
-          this->model.getMaterialLocalNumbering(type, gt);
+      auto & mat_loc_num = this->model.getMaterialLocalNumbering(type, gt);
       auto nb_element = this->model.getMesh().getNbElement(type, gt);
 
       // all materials will resize of the same size...

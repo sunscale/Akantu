@@ -46,7 +46,7 @@ SynchronizerImpl<Entity>::SynchronizerImpl(const Communicator & comm,
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 SynchronizerImpl<Entity>::SynchronizerImpl(const SynchronizerImpl & other,
-                                            const ID & id)
+                                           const ID & id)
     : Synchronizer(other), communications(other.communications) {
   this->id = id;
 }

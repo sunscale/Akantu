@@ -30,8 +30,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 #ifndef __CPPARGPARSE_TMPL_HH__
 #define __CPPARGPARSE_TMPL_HH__
@@ -143,7 +143,7 @@ template <class T> struct is_vector {
   enum { value = false };
 };
 
-template <class T> struct is_vector<std::vector<T> > {
+template <class T> struct is_vector<std::vector<T>> {
   enum { value = true };
 };
 

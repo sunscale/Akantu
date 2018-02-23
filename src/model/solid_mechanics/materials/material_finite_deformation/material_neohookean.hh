@@ -50,13 +50,12 @@ namespace akantu {
  *   - nu  : Poisson's ratio (default: 1/2)
  *   - Plane_Stress : if 0: plane strain, else: plane stress (default: 0)
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialNeohookean : public PlaneStressToolbox<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialNeohookean(SolidMechanicsModel & model, const ID & id = "");
 
   ~MaterialNeohookean() override = default;
@@ -65,7 +64,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// initialize the material computed parameter
   void initMaterial() override;
 
@@ -78,7 +76,8 @@ public:
   computeCauchyStressPlaneStress(ElementType el_type,
                                  GhostType ghost_type = _not_ghost) override;
 
-  /// Non linear computation of the third direction strain in 2D plane stress case
+  /// Non linear computation of the third direction strain in 2D plane stress
+  /// case
   void computeThirdAxisDeformation(ElementType el_type,
                                    GhostType ghost_type = _not_ghost) override;
 
@@ -98,30 +97,30 @@ public:
   Real getShearWaveSpeed(const Element & element) const override;
 
 protected:
-
   /// constitutive law for a given quadrature point
-  inline void computePiolaKirchhoffOnQuad(const Matrix<Real> &E,
-                                          Matrix<Real> &S);
+  inline void computePiolaKirchhoffOnQuad(const Matrix<Real> & E,
+                                          Matrix<Real> & S);
 
   /// constitutive law for a given quadrature point (first piola)
-  inline void computeFirstPiolaKirchhoffOnQuad(const Matrix<Real> &grad_u,
-                                               const Matrix<Real> &S,
-                                               Matrix<Real> &P);
+  inline void computeFirstPiolaKirchhoffOnQuad(const Matrix<Real> & grad_u,
+                                               const Matrix<Real> & S,
+                                               Matrix<Real> & P);
 
   /// constitutive law for a given quadrature point
-  inline void computeDeltaStressOnQuad(const Matrix<Real> & grad_u, const Matrix<Real> & grad_delta_u,
-        Matrix<Real> & delta_S);
+  inline void computeDeltaStressOnQuad(const Matrix<Real> & grad_u,
+                                       const Matrix<Real> & grad_delta_u,
+                                       Matrix<Real> & delta_S);
 
   /// constitutive law for a given quadrature point
-  inline void computeStressOnQuad(Matrix<Real> & grad_u,
-                                  Matrix<Real> & S,
-                                  const Real & C33 = 1.0 );
+  inline void computeStressOnQuad(Matrix<Real> & grad_u, Matrix<Real> & S,
+                                  const Real & C33 = 1.0);
 
   /// constitutive law for a given quadrature point
-  inline void computeThirdAxisDeformationOnQuad(Matrix<Real> & grad_u, Real & c33_value);
+  inline void computeThirdAxisDeformationOnQuad(Matrix<Real> & grad_u,
+                                                Real & c33_value);
 
   /// constitutive law for a given quadrature point
-  //inline void updateStressOnQuad(const Matrix<Real> & sigma,
+  // inline void updateStressOnQuad(const Matrix<Real> & sigma,
   //                              Matrix<Real> & cauchy_sigma);
 
   /// compute the potential energy for a quadrature point
@@ -129,9 +128,8 @@ protected:
                                            Real & epot);
 
   /// compute the tangent stiffness matrix for an element
-  void computeTangentModuliOnQuad(Matrix<Real> & tangent,
-                                  Matrix<Real> & grad_u,
-                                  const Real & C33 = 1.0 );
+  void computeTangentModuliOnQuad(Matrix<Real> & tangent, Matrix<Real> & grad_u,
+                                  const Real & C33 = 1.0);
 
   /// recompute the lame coefficient if E or nu changes
   void updateInternalParameters() override;
@@ -140,12 +138,10 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// the young modulus
   Real E;
 
@@ -160,7 +156,6 @@ protected:
 
   /// Bulk modulus
   Real kpa;
-
 };
 
 /* -------------------------------------------------------------------------- */

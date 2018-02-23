@@ -48,8 +48,10 @@ namespace {
     const auto dim = ElementClass<type>::getSpatialDimension();
     const auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-    auto nodes_per_element = std::make_unique<Array<Real>>(0, dim * nb_nodes_per_element);
-    FEEngine::extractNodalToElementField(mesh, nodes, *nodes_per_element, type, ghost_type);
+    auto nodes_per_element =
+        std::make_unique<Array<Real>>(0, dim * nb_nodes_per_element);
+    FEEngine::extractNodalToElementField(mesh, nodes, *nodes_per_element, type,
+                                         ghost_type);
     return nodes_per_element;
   }
 }
@@ -202,8 +204,8 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
   auto nodes_per_element = getNodesPerElement<type>(mesh, nodes, ghost_type);
 
   for (auto && tuple :
-	 zip(make_view(shapes_, nb_dof, nb_dof * nb_nodes_per_element, nb_points),
-	     make_view(*nodes_per_element, dim, nb_nodes_per_element))) {
+       zip(make_view(shapes_, nb_dof, nb_dof * nb_nodes_per_element, nb_points),
+           make_view(*nodes_per_element, dim, nb_nodes_per_element))) {
     auto & N = std::get<0>(tuple);
     auto & real_coord = std::get<1>(tuple);
     ElementClass<type>::computeShapes(natural_coords, real_coord, N);
@@ -243,7 +245,6 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
   auto & shapesd = this->shapes_derivatives(itp_type, ghost_type);
   shapesd.resize(nb_element * nb_points);
 
-
   for (auto && tuple :
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
            make_view(shapesd, nb_stress_components,
@@ -253,7 +254,6 @@ void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
     auto & X = std::get<0>(tuple);
     auto & B = std::get<1>(tuple);
     auto & RDOFs = std::get<2>(tuple);
-
 
     Tensor3<Real> dnds(natural_spatial_dimension,
                        ElementClass<type>::interpolation_property::dnds_columns,
@@ -389,8 +389,8 @@ void ShapeStructural<kind>::gradientOnIntegrationPoints(
 template <>
 template <ElementType type>
 void ShapeStructural<_ek_structural>::computeBtD(
-    const Array<Real> & Ds, Array<Real> & BtDs,
-    GhostType ghost_type, const Array<UInt> & filter_elements) const {
+    const Array<Real> & Ds, Array<Real> & BtDs, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
   auto itp_type = ElementClassProperty<type>::interpolation_type;
 
   auto nb_stress = ElementClass<type>::getNbStressComponents();
@@ -416,10 +416,8 @@ void ShapeStructural<_ek_structural>::computeBtD(
     B_end = view.end();
   }
 
-  for (auto && values :
-       zip(range(B_it, B_end),
-           make_view(Ds, nb_stress),
-           make_view(BtDs, BtDs.getNbComponent()))) {
+  for (auto && values : zip(range(B_it, B_end), make_view(Ds, nb_stress),
+                            make_view(BtDs, BtDs.getNbComponent()))) {
     const auto & B = std::get<0>(values);
     const auto & D = std::get<1>(values);
     auto & Bt_D = std::get<2>(values);

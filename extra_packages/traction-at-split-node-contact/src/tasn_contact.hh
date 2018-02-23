@@ -3,7 +3,7 @@
  *
  *
  *
- * @brief  
+ * @brief
  *
  * @section LICENSE
  *
@@ -13,9 +13,9 @@
  */
 
 // ast common
-#include "synchronized_array.hh"
-#include "parameter_reader.hh"
 #include "manual_restart.hh"
+#include "parameter_reader.hh"
+#include "synchronized_array.hh"
 
 // functions
 #include "boundary_functions.hh"
@@ -23,14 +23,14 @@
 
 // boundary conditions
 #include "force_based_dirichlet.hh"
-#include "spring_bc.hh"
 #include "inclined_flat_dirichlet.hh"
+#include "spring_bc.hh"
 
 // ntn/ntrf contact
+#include "mIIasym_contact.hh"
 #include "ntn_base_contact.hh"
 #include "ntn_contact.hh"
 #include "ntrf_contact.hh"
-#include "mIIasym_contact.hh"
 
 // ntn/ntrf friction
 #include "ntn_base_friction.hh"
@@ -44,9 +44,9 @@
 
 // friction laws
 #include "ntn_friclaw_coulomb.hh"
+#include "ntn_friclaw_linear_cohesive.hh"
 #include "ntn_friclaw_linear_slip_weakening.hh"
 #include "ntn_friclaw_linear_slip_weakening_no_healing.hh"
-#include "ntn_friclaw_linear_cohesive.hh"
 
 // initiation of friction
 #include "ntn_initiation_function.hh"

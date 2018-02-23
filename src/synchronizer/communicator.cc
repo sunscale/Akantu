@@ -82,7 +82,8 @@ Communicator & Communicator::getStaticCommunicator() {
   if (!static_communicator) {
     int nb_args = 0;
     char ** null = nullptr;
-    static_communicator = std::make_unique<Communicator>(nb_args, null, private_member{});
+    static_communicator =
+        std::make_unique<Communicator>(nb_args, null, private_member{});
   }
 
   AKANTU_DEBUG_OUT();
@@ -92,16 +93,17 @@ Communicator & Communicator::getStaticCommunicator() {
 /* -------------------------------------------------------------------------- */
 Communicator & Communicator::getStaticCommunicator(int & argc, char **& argv) {
   if (!static_communicator)
-    static_communicator = std::make_unique<Communicator>(argc, argv, private_member{});
+    static_communicator =
+        std::make_unique<Communicator>(argc, argv, private_member{});
   return getStaticCommunicator();
 }
 
 } // namespace akantu
 
 #ifdef AKANTU_USE_MPI
-#  include "communicator_mpi_inline_impl.cc"
+#include "communicator_mpi_inline_impl.cc"
 #else
-#  include "communicator_dummy_inline_impl.cc"
+#include "communicator_dummy_inline_impl.cc"
 #endif
 
 namespace akantu {
@@ -114,12 +116,12 @@ namespace akantu {
   template bool Communicator::asyncProbe<T>(                                   \
       Int sender, Int tag, CommunicationStatus & status) const;                \
   template void Communicator::sendImpl<T>(                                     \
-      const T * buffer, Int size, Int receiver, Int tag,                             \
+      const T * buffer, Int size, Int receiver, Int tag,                       \
       const CommunicationMode & mode) const;                                   \
   template void Communicator::receiveImpl<T>(T * buffer, Int size, Int sender, \
                                              Int tag) const;                   \
   template CommunicationRequest Communicator::asyncSendImpl<T>(                \
-      const T * buffer, Int size, Int receiver, Int tag,                             \
+      const T * buffer, Int size, Int receiver, Int tag,                       \
       const CommunicationMode & mode) const;                                   \
   template CommunicationRequest Communicator::asyncReceiveImpl<T>(             \
       T * buffer, Int size, Int sender, Int tag) const;                        \

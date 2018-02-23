@@ -30,8 +30,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "mesh_io.hh"
 #include "mesh_accessor.hh"
+#include "mesh_io.hh"
 
 #ifndef __AKANTU_MESH_IO_ABAQUS_HH__
 #define __AKANTU_MESH_IO_ABAQUS_HH__

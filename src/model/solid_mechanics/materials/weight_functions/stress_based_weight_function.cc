@@ -32,11 +32,11 @@
 #include "stress_based_weight_function.hh"
 namespace akantu {
 /* -------------------------------------------------------------------------- */
-StressBasedWeightFunction::StressBasedWeightFunction(NonLocalManager & manager) :
-  BaseWeightFunction(manager, "stress_based")
-  // stress_diag("stress_diag", material), selected_stress_diag(NULL),
-  // stress_base("stress_base", material), selected_stress_base(NULL),
-  // characteristic_size("lc", material),  selected_characteristic_size(NULL) 
+StressBasedWeightFunction::StressBasedWeightFunction(NonLocalManager & manager)
+    : BaseWeightFunction(manager, "stress_based")
+// stress_diag("stress_diag", material), selected_stress_diag(NULL),
+// stress_base("stress_base", material), selected_stress_base(NULL),
+// characteristic_size("lc", material),  selected_characteristic_size(NULL)
 {
 
   // this->registerParam("ft", this->ft, 0., _pat_parsable, "Tensile strength");
@@ -57,7 +57,8 @@ void StressBasedWeightFunction::init() {
   //   for(; it != last_type; ++it) {
   //     UInt nb_quadrature_points =
   // 	this->material.getModel().getFEEngine().getNbQuadraturePoints(*it, gt);
-  //     const Array<UInt> & element_filter = this->material.getElementFilter(*it, gt);
+  //     const Array<UInt> & element_filter =
+  //     this->material.getElementFilter(*it, gt);
   //     UInt nb_element = element_filter.size();
 
   //     Array<Real> ones(nb_element*nb_quadrature_points, 1, 1.);
@@ -76,42 +77,47 @@ void StressBasedWeightFunction::init() {
   // }
 }
 
-
 /* -------------------------------------------------------------------------- */
 /// computation of principals stresses and principal directions
-void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused)) GhostType ghost_type) {
-//   AKANTU_DEBUG_IN();
+void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused))
+                                                      GhostType ghost_type) {
+  //   AKANTU_DEBUG_IN();
 
-//   const Mesh & mesh = this->material.getModel().getFEEngine().getMesh();
+  //   const Mesh & mesh = this->material.getModel().getFEEngine().getMesh();
 
-//   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-//   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-//   for(; it != last_type; ++it) {
-//     Array<Real>::const_matrix_iterator sigma =
-//       this->material.getStress(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
-//     auto eigenvalues =
-//       stress_diag(*it, ghost_type).begin(spatial_dimension);
-//     auto eigenvalues_end =
-//       stress_diag(*it, ghost_type).end(spatial_dimension);
-//     Array<Real>::matrix_iterator eigenvector =
-//       stress_base(*it, ghost_type).begin(spatial_dimension, spatial_dimension);
+  //   Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
+  //   Mesh::type_iterator last_type = mesh.lastType(spatial_dimension,
+  //   ghost_type);
+  //   for(; it != last_type; ++it) {
+  //     Array<Real>::const_matrix_iterator sigma =
+  //       this->material.getStress(*it, ghost_type).begin(spatial_dimension,
+  //       spatial_dimension);
+  //     auto eigenvalues =
+  //       stress_diag(*it, ghost_type).begin(spatial_dimension);
+  //     auto eigenvalues_end =
+  //       stress_diag(*it, ghost_type).end(spatial_dimension);
+  //     Array<Real>::matrix_iterator eigenvector =
+  //       stress_base(*it, ghost_type).begin(spatial_dimension,
+  //       spatial_dimension);
 
-// #ifndef __trick__
-//     auto cl = characteristic_size(*it, ghost_type).begin();
-// #endif
-//     UInt q = 0;
-//     for(;eigenvalues != eigenvalues_end; ++sigma, ++eigenvalues, ++eigenvector, ++cl, ++q) {
-//       sigma->eig(*eigenvalues, *eigenvector);
-//       *eigenvalues /= ft;
-// #ifndef __trick__
-//       // specify a lower bound for principal stress based on the size of the element
-//       for (UInt i = 0; i < spatial_dimension; ++i) {
-//         (*eigenvalues)(i) = std::max(*cl / this->R, (*eigenvalues)(i));
-//       }
-// #endif
-//     }
-//   }
-//   AKANTU_DEBUG_OUT();
+  // #ifndef __trick__
+  //     auto cl = characteristic_size(*it, ghost_type).begin();
+  // #endif
+  //     UInt q = 0;
+  //     for(;eigenvalues != eigenvalues_end; ++sigma, ++eigenvalues,
+  //     ++eigenvector, ++cl, ++q) {
+  //       sigma->eig(*eigenvalues, *eigenvector);
+  //       *eigenvalues /= ft;
+  // #ifndef __trick__
+  //       // specify a lower bound for principal stress based on the size of
+  //       the element
+  //       for (UInt i = 0; i < spatial_dimension; ++i) {
+  //         (*eigenvalues)(i) = std::max(*cl / this->R, (*eigenvalues)(i));
+  //       }
+  // #endif
+  //     }
+  //   }
+  //   AKANTU_DEBUG_OUT();
 }
 
 } // akantu

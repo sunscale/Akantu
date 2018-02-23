@@ -8,7 +8,8 @@
  * @date creation: Fri Jul 15 2011
  * @date last modification: Sun Oct 19 2014
  *
- * @brief  Implementation of the boundary conditions for StructuralMechanicsModel
+ * @brief  Implementation of the boundary conditions for
+ * StructuralMechanicsModel
  *
  * @section LICENSE
  *
@@ -32,16 +33,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "model.hh"
-#include "structural_mechanics_model.hh"
 #include "integrator_gauss.hh"
+#include "model.hh"
 #include "shape_structural.hh"
+#include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-
 
 } // akantu

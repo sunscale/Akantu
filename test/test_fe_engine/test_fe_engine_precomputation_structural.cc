@@ -42,8 +42,8 @@ using namespace akantu;
 class TestBernoulliB3
     : public TestFEMStructuralFixture<element_type_t<_bernoulli_beam_3>> {
   using parent = TestFEMStructuralFixture<element_type_t<_bernoulli_beam_3>>;
-public:
 
+public:
   /// Load the mesh and provide extra normal direction
   void readMesh(std::string filename) override {
     parent::readMesh(filename);
@@ -58,8 +58,8 @@ public:
 /// Type alias
 using TestBernoulliB2 =
     TestFEMStructuralFixture<element_type_t<_bernoulli_beam_2>>;
- using TestDKT18 =
-   TestFEMStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>>;
+using TestDKT18 =
+    TestFEMStructuralFixture<element_type_t<_discrete_kirchhoff_triangle_18>>;
 /* -------------------------------------------------------------------------- */
 
 /// Solution for 2D rotation matrices

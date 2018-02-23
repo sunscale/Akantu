@@ -16,16 +16,15 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_nodal_field.hh"
 
-
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact * contact,
-						     const FrictionID & id,
-						     const MemoryID & memory_id) :
-  Regularisation(contact,id,memory_id),
-  mu(0,1,0.,id+":mu",0.,"mu") {
+                                                     const FrictionID & id,
+                                                     const MemoryID & memory_id)
+    : Regularisation(contact, id, memory_id),
+      mu(0, 1, 0., id + ":mu", 0., "mu") {
   AKANTU_DEBUG_IN();
 
   Regularisation::registerSynchronizedArray(this->mu);
@@ -41,14 +40,15 @@ void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
 
   // get contact arrays
-  const SynchronizedArray<bool> & is_in_contact = this->internalGetIsInContact();
+  const SynchronizedArray<bool> & is_in_contact =
+      this->internalGetIsInContact();
   const SynchronizedArray<Real> & pressure = this->internalGetContactPressure();
 
   // array to fill
   SynchronizedArray<Real> & strength = this->internalGetFrictionalStrength();
 
   UInt nb_contact_nodes = this->contact->getNbContactNodes();
-  for (UInt n=0; n<nb_contact_nodes; ++n) {
+  for (UInt n = 0; n < nb_contact_nodes; ++n) {
     // node pair is NOT in contact
     if (!is_in_contact(n))
       strength(n) = 0.;
@@ -67,7 +67,8 @@ void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(SynchronizedArrayBase & array) {
+void NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(
+    SynchronizedArrayBase & array) {
   AKANTU_DEBUG_IN();
 
   this->mu.registerDependingArray(array);
@@ -77,7 +78,8 @@ void NTNFricLawCoulomb<Regularisation>::registerSynchronizedArray(SynchronizedAr
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::dumpRestart(const std::string & file_name) const {
+void NTNFricLawCoulomb<Regularisation>::dumpRestart(
+    const std::string & file_name) const {
   AKANTU_DEBUG_IN();
 
   this->mu.dumpRestartFile(file_name);
@@ -89,7 +91,8 @@ void NTNFricLawCoulomb<Regularisation>::dumpRestart(const std::string & file_nam
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::readRestart(const std::string & file_name) {
+void NTNFricLawCoulomb<Regularisation>::readRestart(
+    const std::string & file_name) {
   AKANTU_DEBUG_IN();
 
   this->mu.readRestartFile(file_name);
@@ -101,38 +104,41 @@ void NTNFricLawCoulomb<Regularisation>::readRestart(const std::string & file_nam
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::printself(std::ostream & stream, int indent) const {
+void NTNFricLawCoulomb<Regularisation>::printself(std::ostream & stream,
+                                                  int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
   stream << space << "NTNFricLawCoulomb [" << std::endl;
   Regularisation::printself(stream, ++indent);
   stream << space << "]" << std::endl;
-
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(const std::string & dumper_name,
-							     const std::string & field_id) {
+void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(
+    const std::string & dumper_name, const std::string & field_id) {
   AKANTU_DEBUG_IN();
 
 #ifdef AKANTU_USE_IOHELPER
-  //  const SynchronizedArray<UInt> * nodal_filter = &(this->contact->getSlaves());
+  //  const SynchronizedArray<UInt> * nodal_filter =
+  //  &(this->contact->getSlaves());
 
-  if(field_id == "mu") {
-    this->internalAddDumpFieldToDumper(dumper_name,
-				       field_id,
-				       new dumper::NodalField<Real>(this->mu.getArray()));
+  if (field_id == "mu") {
+    this->internalAddDumpFieldToDumper(
+        dumper_name, field_id,
+        new dumper::NodalField<Real>(this->mu.getArray()));
   }
   /*
   else if (field_id == "frictional_contact_pressure") {
     this->internalAddDumpFieldToDumper(dumper_name,
-				       field_id,
-				       new DumperIOHelper::NodalField<Real>(this->frictional_contact_pressure.getArray()));
+                       field_id,
+                       new
+  DumperIOHelper::NodalField<Real>(this->frictional_contact_pressure.getArray()));
   }
   */
   else {

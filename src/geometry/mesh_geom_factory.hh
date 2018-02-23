@@ -35,10 +35,10 @@
 #define __AKANTU_MESH_GEOM_FACTORY_HH__
 
 #include "aka_common.hh"
+#include "geom_helper_functions.hh"
 #include "mesh.hh"
 #include "mesh_geom_abstract.hh"
 #include "tree_type_helper.hh"
-#include "geom_helper_functions.hh"
 
 #include <algorithm>
 
@@ -52,7 +52,7 @@ namespace akantu {
  * This class constructs a CGAL AABB tree of one type of element in a mesh
  * for fast intersection computations.
  */
-template<UInt dim, ElementType el_type, class Primitive, class Kernel>
+template <UInt dim, ElementType el_type, class Primitive, class Kernel>
 class MeshGeomFactory : public MeshGeomAbstract {
 
 public:
@@ -69,28 +69,28 @@ public:
   /**
    * @brief Construct a primitive and add it to a list of primitives
    *
-   * This function needs to be specialized for every type that is wished to be supported.
+   * This function needs to be specialized for every type that is wished to be
+   * supported.
    * @param node_coordinates coordinates of the nodes making up the element
    * @param id element number
    * @param list the primitive list (not used inside MeshGeomFactory)
    */
   inline void addPrimitive(
-      const Matrix<Real> & node_coordinates,
-      UInt id,
-      typename TreeTypeHelper<Primitive, Kernel>::container_type & list
-  );
+      const Matrix<Real> & node_coordinates, UInt id,
+      typename TreeTypeHelper<Primitive, Kernel>::container_type & list);
 
-  inline void addPrimitive(
-      const Matrix<Real> & node_coordinates,
-      UInt id
-  );
+  inline void addPrimitive(const Matrix<Real> & node_coordinates, UInt id);
 
   /// Getter for the AABB tree
-  const typename TreeTypeHelper<Primitive, Kernel>::tree & getTree() const { return *data_tree; }
+  const typename TreeTypeHelper<Primitive, Kernel>::tree & getTree() const {
+    return *data_tree;
+  }
 
   /// Getter for primitive list
-  const typename TreeTypeHelper<Primitive, Kernel>::container_type & getPrimitiveList() const
-    { return primitive_list; }
+  const typename TreeTypeHelper<Primitive, Kernel>::container_type &
+  getPrimitiveList() const {
+    return primitive_list;
+  }
 
 protected:
   /// AABB data tree
@@ -103,6 +103,5 @@ protected:
 } // akantu
 
 #include "mesh_geom_factory_tmpl.hh"
-
 
 #endif // __AKANTU_MESH_GEOM_FACTORY_HH__

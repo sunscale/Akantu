@@ -52,9 +52,8 @@ int main(int argc, char * argv[]) {
 
   /// model initialization
   MaterialFactory::getInstance().registerAllocator(
-      "local_damage",
-      [](UInt, const ID &, SolidMechanicsModel & model,
-         const ID & id) -> std::unique_ptr<Material> {
+      "local_damage", [](UInt, const ID &, SolidMechanicsModel & model,
+                         const ID & id) -> std::unique_ptr<Material> {
         return std::make_unique<LocalMaterialDamage>(model, id);
       });
 
@@ -82,7 +81,8 @@ int main(int argc, char * argv[]) {
   stress.eye(5e7);
   model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
-  for (UInt s = 0; s < max_steps; ++s) model.solveStep();
+  for (UInt s = 0; s < max_steps; ++s)
+    model.solveStep();
 
   model.dump();
   const auto & lower_bounds = mesh.getLowerBounds();
@@ -107,7 +107,7 @@ int main(int argc, char * argv[]) {
         if (material_damage_array(cpt, 0) < 0.9) {
           std::terminate();
         } else {
-          std::cout << "element " << nel << " is correctly broken"  << std::endl;
+          std::cout << "element " << nel << " is correctly broken" << std::endl;
         }
       }
 

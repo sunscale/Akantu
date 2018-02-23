@@ -24,24 +24,25 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation = NTNFricRegNoRegularisation>
-class NTNFricLawLinearSlipWeakeningNoHealing : public NTNFricLawLinearSlipWeakening<Regularisation> {
+class NTNFricLawLinearSlipWeakeningNoHealing
+    : public NTNFricLawLinearSlipWeakening<Regularisation> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
-  NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact * contact,
-					 const FrictionID & id = "linear_slip_weakening_no_healing",
-					 const MemoryID & memory_id = 0);
-  virtual ~NTNFricLawLinearSlipWeakeningNoHealing() {};
-  
+  NTNFricLawLinearSlipWeakeningNoHealing(
+      NTNBaseContact * contact,
+      const FrictionID & id = "linear_slip_weakening_no_healing",
+      const MemoryID & memory_id = 0);
+  virtual ~NTNFricLawLinearSlipWeakeningNoHealing(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
+
 protected:
   /// computes the friction coefficient as a function of slip
   virtual void computeFrictionCoefficient();
@@ -53,12 +54,11 @@ protected:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-  
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
 };
 
 /* -------------------------------------------------------------------------- */
@@ -67,9 +67,9 @@ protected:
 
 /// standard output stream operator
 template <class Regularisation>
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricLawLinearSlipWeakeningNoHealing<Regularisation> & _this)
-{
+inline std::ostream & operator<<(
+    std::ostream & stream,
+    const NTNFricLawLinearSlipWeakeningNoHealing<Regularisation> & _this) {
   _this.printself(stream);
   return stream;
 }

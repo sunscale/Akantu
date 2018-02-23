@@ -15,19 +15,19 @@
 
 /* -------------------------------------------------------------------------- */
 // simtools
-#include "parameter_reader.hh"
-#include "ntrf_contact.hh"
 #include "ntn_base_friction.hh"
+#include "ntrf_contact.hh"
+#include "parameter_reader.hh"
 
 namespace akantu {
 
-NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact, 
-					ParameterReader & data);
+NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
+                                        ParameterReader & data);
 
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact);
 
 NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
-					const std::string & friction_law,
-					const std::string & friction_reg);
+                                        const std::string & friction_law,
+                                        const std::string & friction_reg);
 
 } // namespace akantu

@@ -33,18 +33,17 @@
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "dof_synchronizer.hh"
+#include "element_synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_partition_scotch.hh"
-#include "element_synchronizer.hh"
 #include "sparse_matrix.hh"
-#include "dof_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[])
-{
+int main(int argc, char * argv[]) {
   initialize(argc, argv);
   const UInt spatial_dimension = 2;
   const UInt nb_dof = 2;
@@ -63,20 +62,23 @@ int main(int argc, char *argv[])
   Array<Real> test_synchronize(nb_nodes, nb_dof, "Test vector");
   dof_manager.registerDOFs("test_synchronize", test_synchronize, _dst_nodal);
 
-  if (prank == 0) std::cout << "Creating a SparseMatrix" << std::endl;
+  if (prank == 0)
+    std::cout << "Creating a SparseMatrix" << std::endl;
 
   auto & A = dof_manager.getNewMatrix("A", _symmetric);
 
   Array<Real> dof_vector(nb_nodes, nb_dof, "vector");
 
-  if (prank == 0) std::cout << "Filling the matrix" << std::endl;
+  if (prank == 0)
+    std::cout << "Filling the matrix" << std::endl;
 
-  for (UInt i = 0; i < nb_nodes*nb_dof; ++i) {
-    if(dof_manager.isLocalOrMasterDOF(i))
+  for (UInt i = 0; i < nb_nodes * nb_dof; ++i) {
+    if (dof_manager.isLocalOrMasterDOF(i))
       A.add(i, i, 2.);
   }
 
-  std::stringstream str; str << "Matrix_" << prank << ".mtx";
+  std::stringstream str;
+  str << "Matrix_" << prank << ".mtx";
   A.saveMatrix(str.str());
 
   for (UInt n = 0; n < nb_nodes; ++n) {
@@ -85,15 +87,17 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (prank == 0) std::cout << "Computing x = A * x" << std::endl;
+  if (prank == 0)
+    std::cout << "Computing x = A * x" << std::endl;
   dof_vector *= A;
 
-  auto & sync = dynamic_cast<DOFManagerDefault &>(dof_manager)
-    .getSynchronizer();
+  auto & sync =
+      dynamic_cast<DOFManagerDefault &>(dof_manager).getSynchronizer();
 
-  if (prank == 0) std::cout << "Gathering the results on proc 0" << std::endl;
-  if(psize > 1) {
-    if(prank == 0) {
+  if (prank == 0)
+    std::cout << "Gathering the results on proc 0" << std::endl;
+  if (psize > 1) {
+    if (prank == 0) {
       Array<Real> gathered;
       sync.gather(dof_vector, gathered);
 

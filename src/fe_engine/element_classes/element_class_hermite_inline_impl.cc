@@ -104,7 +104,8 @@ namespace {
       return x1.distance(x2);
     }
 
-    inline void computeShapes(const Vector<Real> & natural_coords, Real a, Matrix<Real> & N) {
+    inline void computeShapes(const Vector<Real> & natural_coords, Real a,
+                              Matrix<Real> & N) {
       /// natural coordinate
       Real xi = natural_coords(0);
 
@@ -119,29 +120,27 @@ namespace {
       // rotations
       auto M1_ = 3. / (4. * a) * (xi * xi - 1);
       auto M2_ = 3. / (4. * a) * (1 - xi * xi);
-      auto L1_ = 1 / 4. *
-                 (3 * xi * xi - 2 * xi - 1);
-      auto L2_ = 1 / 4. *
-                 (3 * xi * xi + 2 * xi - 1);
+      auto L1_ = 1 / 4. * (3 * xi * xi - 2 * xi - 1);
+      auto L2_ = 1 / 4. * (3 * xi * xi + 2 * xi - 1);
 
       // clang-format off
       //    v1   t1   v2   t2
       N = {{M1 , L1 , M2 , L2},   // displacement interpolation
 	   {M1_, L1_, M2_, L2_}}; // rotation interpolation
-      // clang-format on
+// clang-format on
 
 #else // Version where we only interpolate displacements
       // clang-format off
       //    v1  t1  v2  t2
       N = {{M1, L1, M2, L2}};
-      // clang-format on
+// clang-format on
 #endif
     }
 
     /* ---------------------------------------------------------------------- */
 
     inline void computeDNDS(const Vector<Real> & natural_coords, Real a,
-                     Matrix<Real> & B) {
+                            Matrix<Real> & B) {
       // natural coordinate
       Real xi = natural_coords(0);
       // Derivatives with respect to xi for rotations

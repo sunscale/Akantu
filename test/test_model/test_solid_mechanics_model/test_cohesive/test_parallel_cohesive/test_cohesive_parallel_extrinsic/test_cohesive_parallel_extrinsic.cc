@@ -14,12 +14,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_cohesive.hh"
 #include "dumper_paraview.hh"
+#include "solid_mechanics_model_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt max_steps = 500;
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   Int prank = comm.whoAmI();
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     // Read the mesh
     mesh.read("mesh.msh");
 
@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
   // std::cout << mesh << std::endl;
   // debug::setDebugLevel(dblWarning);
 
-
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
   model.limitInsertion(_y, -0.30, -0.20);
   model.updateAutomaticInsertion();
 
@@ -60,12 +60,11 @@ int main(int argc, char *argv[]) {
   // std::cout << mesh_facets << std::endl;
   // debug::setDebugLevel(dblWarning);
 
-  Real time_step = model.getStableTimeStep()*0.1;
+  Real time_step = model.getStableTimeStep() * 0.1;
   model.setTimeStep(time_step);
   std::cout << "Time step: " << time_step << std::endl;
 
   model.assembleMassLumped();
-
 
   Array<Real> & position = mesh.getNodes();
   Array<Real> & velocity = model.getVelocity();
@@ -96,9 +95,9 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("extrinsic_parallel");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("residual");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.addDumpField("partitions");
@@ -106,7 +105,7 @@ int main(int argc, char *argv[]) {
   model.dump();
 
   model.setBaseNameToDumper("cohesive elements",
-			    "extrinsic_parallel_cohesive_elements");
+                            "extrinsic_parallel_cohesive_elements");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
   model.addDumpFieldToDumper("cohesive elements", "damage");
   model.dump("cohesive elements");
@@ -117,15 +116,16 @@ int main(int argc, char *argv[]) {
     /// update displacement on extreme nodes
     for (UInt n = 0; n < nb_nodes; ++n) {
       if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
-	displacement(n, 1) += disp_update * position(n, 1);
+        displacement(n, 1) += disp_update * position(n, 1);
     }
 
     model.checkCohesiveStress();
     model.solveStep();
 
     // model.dump();
-    if(s % 10 == 0) {
-      if(prank == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 10 == 0) {
+      if (prank == 0)
+        std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
 
     // // update displacement
@@ -135,15 +135,16 @@ int main(int argc, char *argv[]) {
     //   }
     // }
 
-    //    Real Ed = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getDissipatedEnergy();
-    //    Real Er = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getReversibleEnergy();
+    //    Real Ed = dynamic_cast<MaterialCohesive&>
+    //    (model.getMaterial(1)).getDissipatedEnergy();
+    //    Real Er = dynamic_cast<MaterialCohesive&>
+    //    (model.getMaterial(1)).getReversibleEnergy();
 
     // edis << s << " "
     // 	 << Ed << std::endl;
 
     // erev << s << " "
     // 	 << Er << std::endl;
-
   }
 
   model.dump();
@@ -156,8 +157,7 @@ int main(int argc, char *argv[]) {
 
   Real Edt = 200 * sqrt(2);
 
-
-  if(prank == 0) {
+  if (prank == 0) {
     std::cout << Ed << " " << Edt << std::endl;
 
     if (Ed < Edt * 0.999 || Ed > Edt * 1.001 || std::isnan(Ed)) {

@@ -22,35 +22,31 @@ __BEGIN_AKANTU__
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
-template<typename T, bool filtered = false>
+template <typename T, bool filtered = false>
 class IGFEMInternalMaterialField
-  : public IGFEMGenericElementalField<SingleType<T,Vector,filtered>,
-				      igfem_quadrature_point_iterator> {
+    : public IGFEMGenericElementalField<SingleType<T, Vector, filtered>,
+                                        igfem_quadrature_point_iterator> {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  typedef SingleType<T,Vector,filtered> types;
-  typedef IGFEMGenericElementalField<types,igfem_quadrature_point_iterator> parent;
+  typedef SingleType<T, Vector, filtered> types;
+  typedef IGFEMGenericElementalField<types, igfem_quadrature_point_iterator>
+      parent;
   typedef typename types::field_type field_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 
-
   IGFEMInternalMaterialField(const field_type & field,
-			     UInt spatial_dimension = _all_dimensions,
-			     GhostType ghost_type = _not_ghost,
-			     ElementKind kind =_ek_igfem) :
-    parent(field, spatial_dimension, ghost_type, kind){}
-
-
+                             UInt spatial_dimension = _all_dimensions,
+                             GhostType ghost_type = _not_ghost,
+                             ElementKind kind = _ek_igfem)
+      : parent(field, spatial_dimension, ghost_type, kind) {}
 };
-
 
 __END_AKANTU_DUMPER__
 __END_AKANTU__

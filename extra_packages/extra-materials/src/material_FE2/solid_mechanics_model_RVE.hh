@@ -67,10 +67,9 @@ public:
   applyBoundaryConditions(const Matrix<Real> & displacement_gradient);
 
   /// apply homogeneous temperature field from the macroscale level to the RVEs
-  virtual void
-  applyHomogeneousTemperature(const Real & temperature);
+  virtual void applyHomogeneousTemperature(const Real & temperature);
 
-/// advance the reactions -> grow gel and apply homogenized properties
+  /// advance the reactions -> grow gel and apply homogenized properties
   void advanceASR(const Matrix<Real> & prestrain);
 
   /// compute average stress or strain in the model
@@ -140,24 +139,24 @@ inline void SolidMechanicsModelRVE::unpackData(CommunicationBuffer & buffer,
                                                const SynchronizationTag & tag) {
   SolidMechanicsModel::unpackData(buffer, index, tag);
 
-//  if (tag == _gst_smm_uv) {
-//    auto disp_it = displacement->begin(spatial_dimension);
-//
-//    for (auto node : index) {
-//      Vector<Real> current_disp(disp_it[node]);
-//
-//      // if node is at the bottom, u_bottom = u_top +u_2 -u_3
-//      if (bottom_nodes.count(node)) {
-//        current_disp += Vector<Real>(disp_it[corner_nodes(1)]);
-//        current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
-//      }
-//      // if node is at the left, u_left = u_right +u_4 -u_3
-//      else if (left_nodes.count(node)) {
-//        current_disp += Vector<Real>(disp_it[corner_nodes(3)]);
-//        current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
-//      }
-//    }
-//  }
+  //  if (tag == _gst_smm_uv) {
+  //    auto disp_it = displacement->begin(spatial_dimension);
+  //
+  //    for (auto node : index) {
+  //      Vector<Real> current_disp(disp_it[node]);
+  //
+  //      // if node is at the bottom, u_bottom = u_top +u_2 -u_3
+  //      if (bottom_nodes.count(node)) {
+  //        current_disp += Vector<Real>(disp_it[corner_nodes(1)]);
+  //        current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
+  //      }
+  //      // if node is at the left, u_left = u_right +u_4 -u_3
+  //      else if (left_nodes.count(node)) {
+  //        current_disp += Vector<Real>(disp_it[corner_nodes(3)]);
+  //        current_disp -= Vector<Real>(disp_it[corner_nodes(2)]);
+  //      }
+  //    }
+  //  }
 }
 
 /* -------------------------------------------------------------------------- */

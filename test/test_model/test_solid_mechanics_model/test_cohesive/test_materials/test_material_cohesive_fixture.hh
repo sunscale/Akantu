@@ -80,7 +80,8 @@ public:
   void addOpening(const Vector<Real> & direction, Real start, Real stop,
                   UInt nb_steps) {
     for (auto s : arange(nb_steps)) {
-      auto opening = direction * (start + (stop - start) / Real(nb_steps) * Real(s+1));
+      auto opening =
+          direction * (start + (stop - start) / Real(nb_steps) * Real(s + 1));
       openings->push_back(opening);
     }
     tractions->resize(openings->size());
@@ -123,7 +124,7 @@ public:
     if (dim == 2)
       tangent(0) = Vector<Real>{0., 1};
     if (dim == 3)
-      tangent = Matrix<Real>{{0., 0.}, {1., 0.}, { 0., 1. }};
+      tangent = Matrix<Real>{{0., 0.}, {1., 0.}, {0., 1.}};
 #endif
 
     return tangent;
@@ -145,9 +146,9 @@ public:
     };
     auto print_vect = [&](const auto & vect) {
       cout << vect.dot(normal);
-      if(dim > 1)
+      if (dim > 1)
         cout << ", " << vect.dot(tangents(0));
-      if(dim > 2)
+      if (dim > 2)
         cout << ", " << vect.dot(tangents(1));
     };
 
@@ -162,7 +163,7 @@ public:
       const auto & opening = std::get<0>(data);
       auto & traction = std::get<1>(data);
 
-      cout  << this->material->delta(opening, normal) << ", ";
+      cout << this->material->delta(opening, normal) << ", ";
       print_vect(opening);
       cout << ", ";
       print_vect(traction);
@@ -170,7 +171,7 @@ public:
     }
   }
 
-    /* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
   Real dissipated() {
     Vector<Real> prev_opening(dim, 0.);
     Vector<Real> prev_traction(dim, 0.);
@@ -228,9 +229,9 @@ public:
     auto alpha = dis(gen) + 0.1;
     auto beta = dis(gen) + 0.2;
 #ifndef debug_
-    direction =
-        alpha * Vector<Real>(tangents(0));
-    if (dim > 2) direction += beta * Vector<Real>(tangents(1));
+    direction = alpha * Vector<Real>(tangents(0));
+    if (dim > 2)
+      direction += beta * Vector<Real>(tangents(1));
 
     direction = direction.normalize();
 #endif
@@ -258,7 +259,7 @@ public:
       EXPECT_NEAR(T_expected, T, 1e-9);
     }
 
-    //EXPECT_NEAR(expected_dissipated, dissipated(), 1e-5);
+    // EXPECT_NEAR(expected_dissipated, dissipated(), 1e-5);
     this->output_csv();
   }
 
@@ -277,7 +278,8 @@ protected:
 
 template <template <UInt> class Mat, UInt dim>
 struct TestMaterialCohesive : public Mat<dim> {
-  TestMaterialCohesive(SolidMechanicsModel & model) : Mat<dim>(model, "test"), insertion_stress_(dim, 0.) {}
+  TestMaterialCohesive(SolidMechanicsModel & model)
+      : Mat<dim>(model, "test"), insertion_stress_(dim, 0.) {}
 
   virtual void SetUp() {}
   virtual void resetInternal() {}

@@ -31,33 +31,33 @@
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
-#include <iostream>
 #include <cmath>
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 class SineBoundary : public BC::Dirichlet::DirichletFunctor {
 public:
-  SineBoundary(Real amp, Real phase, BC::Axis ax = _x) : DirichletFunctor(ax),
-                                                         amplitude(amp),
-                                                         phase(phase) {}
+  SineBoundary(Real amp, Real phase, BC::Axis ax = _x)
+      : DirichletFunctor(ax), amplitude(amp), phase(phase) {}
+
 public:
   inline void operator()(__attribute__((unused)) UInt node,
-                         Vector<bool> & flags,
-                         Vector<Real> & primal,
+                         Vector<bool> & flags, Vector<Real> & primal,
                          const Vector<Real> & coord) const {
     DIRICHLET_SANITY_CHECK;
     flags(axis) = true;
     primal(axis) = -amplitude * std::sin(phase * coord(1));
   }
+
 protected:
   Real amplitude;
   Real phase;
 };
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   UInt spatial_dimension = 2;

@@ -38,7 +38,7 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 class ElementSynchronizer;
-}  // akantu
+} // akantu
 
 namespace akantu {
 
@@ -93,7 +93,7 @@ private:
   ElementSynchronizer & synchronizer;
 };
 
-}  // akantu
+} // akantu
 
 #include "global_ids_updater_inline_impl.cc"
 

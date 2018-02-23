@@ -29,14 +29,14 @@
  *
  * @verbatim
        \eta
-	 ^
-	 |
-	 x (0,0,1)
-	 |`
-	 |  `
-	 |` q `
-	 |  ` ° `
-	 x--------x----->  \xi
+     ^
+     |
+     x (0,0,1)
+     |`
+     |  `
+     |` q `
+     |  ` ° `
+     x--------x----->  \xi
     (1,0,0)      (0,1,0)
  @endverbatim
  *
@@ -71,33 +71,28 @@
  */
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_IGFEM_ELEMENT_CLASS_PROPERTY(_igfem_triangle_4,		\
-					   _gt_igfem_triangle_4,		\
-					   _itp_igfem_triangle_4,	\
-					   _triangle_3,			\
-					   _triangle_3,			\
-					   _triangle_3,			\
-					   _ek_igfem,			\
-					   2,				\
-					   1);
+AKANTU_DEFINE_IGFEM_ELEMENT_CLASS_PROPERTY(_igfem_triangle_4,
+                                           _gt_igfem_triangle_4,
+                                           _itp_igfem_triangle_4, _triangle_3,
+                                           _triangle_3, _triangle_3, _ek_igfem,
+                                           2, 1);
 
 /* -------------------------------------------------------------------------- */
-template<>
-inline UInt ElementClass<_igfem_triangle_4>::getOrientation(const Vector<bool> & is_inside) {
+template <>
+inline UInt ElementClass<_igfem_triangle_4>::getOrientation(
+    const Vector<bool> & is_inside) {
   UInt orientation = 0;
-  if (is_inside(1) && !is_inside(2)) 
+  if (is_inside(1) && !is_inside(2))
     orientation = 0;
-  
-  else if (!is_inside(1) && is_inside(2)) 
+
+  else if (!is_inside(1) && is_inside(2))
     orientation = 1;
 
- 
-  else if (is_inside(1) && is_inside(2)) 
+  else if (is_inside(1) && is_inside(2))
     orientation = 2;
 
- 
-  else if (!is_inside(1) && !is_inside(2)) 
+  else if (!is_inside(1) && !is_inside(2))
     orientation = 3;
-  
+
   return orientation;
 }

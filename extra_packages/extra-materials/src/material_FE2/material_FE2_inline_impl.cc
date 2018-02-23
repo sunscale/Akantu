@@ -12,4 +12,3 @@
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  */
-

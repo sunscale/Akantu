@@ -81,7 +81,9 @@ public:
   const Matrix<Real> & getIntegrationPoints(const GhostType & ghost_type) const;
 
   /// return the number of quadrature points for a given element type
-  template <ElementType type> inline UInt getNbIntegrationPoints(const GhostType & ghost_type = _not_ghost) const;
+  template <ElementType type>
+  inline UInt
+  getNbIntegrationPoints(const GhostType & ghost_type = _not_ghost) const;
 
   /// compute the vector of quadrature points natural coordinates
   template <ElementType type>
@@ -106,7 +108,7 @@ protected:
                         UInt nb_quadrature_points) const;
 
 private:
-  ElementTypeMap<Matrix<Real> > quadrature_points;
+  ElementTypeMap<Matrix<Real>> quadrature_points;
 };
 
 /* -------------------------------------------------------------------------- */

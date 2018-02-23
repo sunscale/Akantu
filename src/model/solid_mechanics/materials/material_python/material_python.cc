@@ -50,7 +50,7 @@ MaterialPython::MaterialPython(SolidMechanicsModel & model, PyObject * obj,
     std::stringstream sstr;
     sstr << "PythonParameter" << i;
     this->registerParam(param_names[i], local_params[param_names[i]], 0.,
-                        _pat_parsable |  _pat_readable, sstr.str());
+                        _pat_parsable | _pat_readable, sstr.str());
   }
 
   AKANTU_DEBUG_OUT();
@@ -160,7 +160,8 @@ Real MaterialPython::getPushWaveSpeed(const Element &) const {
 
 /* -------------------------------------------------------------------------- */
 
-Real MaterialPython::getEnergyForType(const std::string & type, ElementType el_type) {
+Real MaterialPython::getEnergyForType(const std::string & type,
+                                      ElementType el_type) {
   AKANTU_DEBUG_IN();
 
   std::map<std::string, Array<Real> *> internal_arrays;

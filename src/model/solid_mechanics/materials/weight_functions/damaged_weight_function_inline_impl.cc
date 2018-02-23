@@ -31,8 +31,9 @@
 
 /* -------------------------------------------------------------------------- */
 inline Real DamagedWeightFunction::operator()(Real r,
-					      const __attribute__((unused)) IntegrationPoint & q1,
-					      const IntegrationPoint & q2) {
+                                              const __attribute__((unused))
+                                              IntegrationPoint & q1,
+                                              const IntegrationPoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
   Array<Real> & dam_array = (*this->damage)(q2.type, q2.ghost_type);
@@ -50,21 +51,21 @@ inline Real DamagedWeightFunction::operator()(Real r,
   //      }
   //
 
-  Radius_t = Radius_init*(1-D);
-
+  Radius_t = Radius_init * (1 - D);
 
   Radius_init *= Radius_init;
   Radius_t *= Radius_t;
 
-  if(Radius_t < Math::getTolerance()) {
-    Radius_t = 0.001*Radius_init;
+  if (Radius_t < Math::getTolerance()) {
+    Radius_t = 0.001 * Radius_init;
   }
 
-  Real expb = (2*std::log(0.51))/(std::log(1.0-0.49*Radius_t/Radius_init));
-  Int  expb_floor=std::floor(expb);
-  Real b = expb_floor + expb_floor%2;
-  Real alpha = std::max(0., 1. - r*r / Radius_init);
-  Real w = std::pow(alpha,b);
+  Real expb =
+      (2 * std::log(0.51)) / (std::log(1.0 - 0.49 * Radius_t / Radius_init));
+  Int expb_floor = std::floor(expb);
+  Real b = expb_floor + expb_floor % 2;
+  Real alpha = std::max(0., 1. - r * r / Radius_init);
+  Real w = std::pow(alpha, b);
   return w;
 }
 

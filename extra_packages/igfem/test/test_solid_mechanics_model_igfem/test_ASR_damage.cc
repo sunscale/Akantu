@@ -14,8 +14,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_igfem.hh"
 #include "aka_common.hh"
+#include "solid_mechanics_model_igfem.hh"
 /* -------------------------------------------------------------------------- */
 #include "material_damage_iterative.hh"
 #include "material_igfem_saw_tooth_damage.hh"
@@ -25,24 +25,23 @@ using namespace akantu;
 /// function declaration
 void applyBoundaryConditions(SolidMechanicsModelIGFEM & model);
 
-class ASRMaterialSelector : public MaterialSelector  {
+class ASRMaterialSelector : public MaterialSelector {
 public:
-  ASRMaterialSelector(SolidMechanicsModelIGFEM & model) :
-    model(model) { } 
+  ASRMaterialSelector(SolidMechanicsModelIGFEM & model) : model(model) {}
 
   UInt operator()(const Element & elem) {
-    if(Mesh::getKind(elem.type) == _ek_igfem)
+    if (Mesh::getKind(elem.type) == _ek_igfem)
       /// choose IGFEM material
       return 2;
- 
+
     const Mesh & mesh = model.getMesh();
     UInt spatial_dimension = model.getSpatialDimension();
     Vector<Real> barycenter(spatial_dimension);
     mesh.getBarycenter(elem, barycenter);
-    if(model.isInside(barycenter))
+    if (model.isInside(barycenter))
       return 1;
     return 0;
-  }    
+  }
 
 protected:
   SolidMechanicsModelIGFEM & model;
@@ -50,30 +49,31 @@ protected:
 
 typedef Spherical SK;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   initialize("material_ASR.dat", argc, argv);
 
   /// problem dimension
-  const UInt spatial_dimension = 2;  
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  const UInt spatial_dimension = 2;
+  StaticCommunicator & comm =
+      akantu::StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
   /// mesh creation
   Mesh mesh(spatial_dimension);
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("one_inclusion.msh");
     /// partition the mesh
     partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
   }
-  
+
   /// model creation
   SolidMechanicsModelIGFEM model(mesh);
   model.initParallel(partition);
   delete partition;
- /// register the gel pocket list in the model
+  /// register the gel pocket list in the model
   std::list<SK::Sphere_3> gel_pocket_list;
   model.registerGeometryObject(gel_pocket_list, "gel");
 
@@ -104,11 +104,13 @@ int main(int argc, char *argv[]) {
   model.dump("igfem elements");
 
   /// weaken one element to enforce damage there
-  Array<Real> & Sc = model.getMaterial(0).getInternal<Real>("Sc")(_triangle_3, _not_ghost);
+  Array<Real> & Sc =
+      model.getMaterial(0).getInternal<Real>("Sc")(_triangle_3, _not_ghost);
   Sc(11) = 1;
   /// create the gel pocket
   Real initial_gel_radius = 0.1;
-  SK::Sphere_3 sphere_1(SK::Point_3(0., 0., 0.), initial_gel_radius * initial_gel_radius);
+  SK::Sphere_3 sphere_1(SK::Point_3(0., 0., 0.),
+                        initial_gel_radius * initial_gel_radius);
   gel_pocket_list.push_back(sphere_1);
 
   /// create the interface
@@ -117,33 +119,39 @@ int main(int argc, char *argv[]) {
   ///  apply eigenstrain the eigenstrain in the inclusions
   Matrix<Real> prestrain(spatial_dimension, spatial_dimension, 0.);
   for (UInt i = 0; i < spatial_dimension; ++i)
-    prestrain(i,i) = 0.05;
-  
+    prestrain(i, i) = 0.05;
+
   model.applyEigenGradU(prestrain, "gel", _not_ghost);
   applyBoundaryConditions(model);
   /// dump
   model.dump("igfem elements");
-  model.dump(); 
+  model.dump();
 
   /// Instantiate objects of class MyDamageso
-  MaterialDamageIterative<spatial_dimension> & mat_aggregate = dynamic_cast<MaterialDamageIterative<spatial_dimension> & >(model.getMaterial(0)); 
-  MaterialIGFEMSawToothDamage<spatial_dimension> & mat_igfem = dynamic_cast<MaterialIGFEMSawToothDamage<spatial_dimension> & >(model.getMaterial(2)); 
-
+  MaterialDamageIterative<spatial_dimension> & mat_aggregate =
+      dynamic_cast<MaterialDamageIterative<spatial_dimension> &>(
+          model.getMaterial(0));
+  MaterialIGFEMSawToothDamage<spatial_dimension> & mat_igfem =
+      dynamic_cast<MaterialIGFEMSawToothDamage<spatial_dimension> &>(
+          model.getMaterial(2));
 
   bool factorize = false;
   bool converged = false;
-  Real error; 
+  Real error;
 
   UInt nb_damaged_elements = 0;
   Real max_eq_stress_aggregate = 0;
   Real max_igfem = 0;
 
-  const Array<Real> & stress = model.getMaterial(2).getStress(_igfem_triangle_5, _not_ghost); 
-  Array<Real>::const_matrix_iterator stress_it = stress.begin(spatial_dimension, spatial_dimension);
+  const Array<Real> & stress =
+      model.getMaterial(2).getStress(_igfem_triangle_5, _not_ghost);
+  Array<Real>::const_matrix_iterator stress_it =
+      stress.begin(spatial_dimension, spatial_dimension);
   do {
-    converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(1e-6, error, 2, factorize);
+    converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(
+        1e-6, error, 2, factorize);
 
-    /// compute damage 
+    /// compute damage
     max_eq_stress_aggregate = mat_aggregate.getNormMaxEquivalentStress();
     max_igfem = mat_igfem.getNormMaxEquivalentStress();
     if (max_eq_stress_aggregate > max_igfem)
@@ -154,11 +162,10 @@ int main(int argc, char *argv[]) {
     for (UInt i = 0; i < 5; ++i) {
       std::cout << *stress_it << std::endl;
       ++stress_it;
-    } 
+    }
     model.dump();
     model.dump("igfem elements");
   } while (nb_damaged_elements);
-
 
   model.dump();
 
@@ -175,7 +182,7 @@ void applyBoundaryConditions(SolidMechanicsModelIGFEM & model) {
   mesh.computeBoundingBox();
   const Vector<Real> & lowerBounds = mesh.getLowerBounds();
   const Vector<Real> & upperBounds = mesh.getUpperBounds();
-  Real bottom  = lowerBounds(1);
+  Real bottom = lowerBounds(1);
   Real top = upperBounds(1);
   Real left = lowerBounds(0);
   //  Real right = upperBounds(0);
@@ -189,17 +196,15 @@ void applyBoundaryConditions(SolidMechanicsModelIGFEM & model) {
   boun.clear();
   /// free expansion
   for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
- 
-    if(std::abs(pos(i,1) - bottom) < eps){
-      boun(i,1) = true;
-      disp(i,1) = 0.0;
+
+    if (std::abs(pos(i, 1) - bottom) < eps) {
+      boun(i, 1) = true;
+      disp(i, 1) = 0.0;
     }
 
-    if(std::abs(pos(i,0) - left) < eps){
-      boun(i,0) = true;
-      disp(i,0) = 0.0;
+    if (std::abs(pos(i, 0) - left) < eps) {
+      boun(i, 0) = true;
+      disp(i, 0) = 0.0;
     }
-
   }
 }
-

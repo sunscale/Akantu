@@ -42,7 +42,8 @@ namespace {
 template <size_t t> using degree_t = std::integral_constant<size_t, t>;
 
 /* -------------------------------------------------------------------------- */
-using TestDegreeTypes = std::tuple<degree_t<0>, degree_t<1>, degree_t<2>, degree_t<3>, degree_t<4>, degree_t<5>>;
+using TestDegreeTypes = std::tuple<degree_t<0>, degree_t<1>, degree_t<2>,
+                                   degree_t<3>, degree_t<4>, degree_t<5>>;
 
 std::array<Polynomial<5>, 3> global_polys{
     {{0.40062394, 0.13703225, 0.51731446, 0.87830084, 0.5410543, 0.71842292},
@@ -107,7 +108,8 @@ public:
 
       auto res =
           this->fem->getIntegrator()
-          .template integrate<parent::type, (degree == 0 ? 1 : degree)>(polynomial);
+              .template integrate<parent::type, (degree == 0 ? 1 : degree)>(
+                  polynomial);
       auto expect = poly.integrate(this->lower(d), this->upper(d));
 
       for (size_t o = 0; o < dim; ++o) {
@@ -127,8 +129,7 @@ protected:
   std::array<Polynomial<5>, 3> polys;
 };
 
-template <typename T>
-constexpr size_t TestGaussIntegrationFixture<T>::degree;
+template <typename T> constexpr size_t TestGaussIntegrationFixture<T>::degree;
 
 /* -------------------------------------------------------------------------- */
 /* Tests                                                                      */
@@ -141,15 +142,14 @@ TYPED_TEST_P(TestGaussIntegrationFixture, ArbitraryOrder) {
 
 REGISTER_TYPED_TEST_CASE_P(TestGaussIntegrationFixture, ArbitraryOrder);
 
-
-using TestTypes =
-    gtest_list_t<tuple_split_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
+using TestTypes = gtest_list_t<
+    tuple_split_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Split1, TestGaussIntegrationFixture, TestTypes);
 
-using TestTypesTail =
-    gtest_list_t<tuple_split_tail_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
+using TestTypesTail = gtest_list_t<
+    tuple_split_tail_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Split2, TestGaussIntegrationFixture, TestTypesTail);
-
+INSTANTIATE_TYPED_TEST_CASE_P(Split2, TestGaussIntegrationFixture,
+                              TestTypesTail);
 }

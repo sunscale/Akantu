@@ -56,8 +56,8 @@ void MaterialNonLocal<dim, LocalParent>::insertIntegrationPointsInNeighborhoods(
   IntegrationPoint q;
   q.ghost_type = ghost_type;
 
-  auto & neighborhood =
-    this->model.getNonLocalManager().getNeighborhood(this->getNeighborhoodName());
+  auto & neighborhood = this->model.getNonLocalManager().getNeighborhood(
+      this->getNeighborhoodName());
 
   for (auto & type :
        this->element_filter.elementTypes(dim, ghost_type, _ek_regular)) {

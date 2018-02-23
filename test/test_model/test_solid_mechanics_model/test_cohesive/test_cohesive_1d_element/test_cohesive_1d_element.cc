@@ -85,7 +85,7 @@ int main(int argc, char * argv[]) {
 
     /// update external work and boundary conditions
     model.applyBC(BC::Dirichlet::IncrementValue(-disp_increment, _x), "left");
-    model.applyBC(BC::Dirichlet::IncrementValue( disp_increment, _x), "right");
+    model.applyBC(BC::Dirichlet::IncrementValue(disp_increment, _x), "right");
   }
 
   auto Ed = model.getEnergy("dissipated");

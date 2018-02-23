@@ -419,7 +419,7 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
       .computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(    \
           position, normal, ghost_type, element_filter(type, ghost_type));
 
-    AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(COMPUTE_NORMAL);
+  AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(COMPUTE_NORMAL);
 #undef COMPUTE_NORMAL
 
   AKANTU_DEBUG_OUT();
@@ -447,11 +447,11 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 }
 
 /* -------------------------------------------------------------------------- */
-void MaterialCohesive::updateEnergies(ElementType type,
-                                      GhostType ghost_type) {
+void MaterialCohesive::updateEnergies(ElementType type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  if(Mesh::getKind(type) != _ek_cohesive) return;
+  if (Mesh::getKind(type) != _ek_cohesive)
+    return;
 
   Vector<Real> b(spatial_dimension);
   Vector<Real> h(spatial_dimension);
@@ -461,7 +461,8 @@ void MaterialCohesive::updateEnergies(ElementType type,
   auto traction_old_it =
       tractions.previous(type, ghost_type).begin(spatial_dimension);
   auto opening_it = opening(type, ghost_type).begin(spatial_dimension);
-  auto opening_old_it = opening.previous(type, ghost_type).begin(spatial_dimension);
+  auto opening_old_it =
+      opening.previous(type, ghost_type).begin(spatial_dimension);
 
   auto traction_end = tractions(type, ghost_type).end(spatial_dimension);
 

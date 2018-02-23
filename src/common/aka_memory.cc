@@ -46,9 +46,10 @@ Memory::Memory(ID id, MemoryID memory_id)
 
 /* -------------------------------------------------------------------------- */
 Memory::~Memory() {
-  if(StaticMemory::isInstantiated()) {
+  if (StaticMemory::isInstantiated()) {
     std::list<ID>::iterator it;
-    for (it = handeld_vectors_id.begin(); it != handeld_vectors_id.end(); ++it) {
+    for (it = handeld_vectors_id.begin(); it != handeld_vectors_id.end();
+         ++it) {
       AKANTU_DEBUG(dblAccessory, "Deleting the vector " << *it);
       static_memory.sfree(memory_id, *it);
     }
@@ -61,5 +62,3 @@ Memory::~Memory() {
 /* -------------------------------------------------------------------------- */
 
 } // akantu
-
-

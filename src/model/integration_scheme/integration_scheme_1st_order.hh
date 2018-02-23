@@ -45,7 +45,7 @@ class IntegrationScheme1stOrder : public IntegrationScheme {
   /* ------------------------------------------------------------------------ */
 public:
   IntegrationScheme1stOrder(DOFManager & dof_manager, const ID & dof_id)
-    : IntegrationScheme(dof_manager, dof_id, 1){};
+      : IntegrationScheme(dof_manager, dof_id, 1){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

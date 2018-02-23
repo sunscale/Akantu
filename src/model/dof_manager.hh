@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "aka_factory.hh"
+#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
@@ -342,6 +342,7 @@ protected:
   /// helper function for the DOFManager::onNodesAdded method
   virtual std::pair<UInt, UInt> updateNodalDOFs(const ID & dof_id,
                                                 const Array<UInt> & nodes_list);
+
 public:
   /// function to implement to react on  akantu::NewNodesEvent
   void onNodesAdded(const Array<UInt> & nodes_list,
@@ -462,8 +463,10 @@ protected:
   Communicator & communicator;
 };
 
-using DefaultDOFManagerFactory = Factory<DOFManager, ID, const ID &, const MemoryID &>;
-using DOFManagerFactory = Factory<DOFManager, ID, Mesh &, const ID &, const MemoryID &>;
+using DefaultDOFManagerFactory =
+    Factory<DOFManager, ID, const ID &, const MemoryID &>;
+using DOFManagerFactory =
+    Factory<DOFManager, ID, Mesh &, const ID &, const MemoryID &>;
 
 } // namespace akantu
 

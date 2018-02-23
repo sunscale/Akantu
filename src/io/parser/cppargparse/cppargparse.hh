@@ -29,9 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
 #include <vector>
 
 #ifndef __CPPARGPARSE_HH__
@@ -104,7 +104,7 @@ public:
   int & getArgC() { return *(this->argc); }
 
   /// get the last argv parsed
-  char** & getArgV() { return *(this->argv); }
+  char **& getArgV() { return *(this->argv); }
 
   /// print the content in the stream
   void printself(std::ostream & stream) const;
@@ -132,11 +132,10 @@ public:
   void setParallelContext(int prank, int psize);
 
 public:
-
   /// Internal class describing the arguments
   struct _Argument;
   /// Stores that value of an argument
-  template<class T> class ArgumentStorage;
+  template <class T> class ArgumentStorage;
 
 private:
   /// Internal function to be used by the public addArgument

@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
-#include <unordered_map>
 #include <functional>
+#include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_HH__
@@ -326,10 +326,10 @@ protected:
   Array<Int> dofs_type;
 
   /// Map of the different matrices stored in the dof manager
-  //AIJMatrixMap aij_matrices;
+  // AIJMatrixMap aij_matrices;
 
   /// Map of the different time step solvers stored with there real type
-  //DefaultTimeStepSolversMap default_time_step_solver_map;
+  // DefaultTimeStepSolversMap default_time_step_solver_map;
 
   /// Memory cache, this is an array to keep the temporary memory needed for
   /// some operations, it is meant to be resized or cleared when needed

@@ -36,7 +36,7 @@
 #define __AKANTU_NON_LINEAR_SOLVER_LUMPED_HH__
 
 namespace akantu {
-  class DOFManagerDefault;
+class DOFManagerDefault;
 }
 
 namespace akantu {
@@ -47,9 +47,9 @@ class NonLinearSolverLumped : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
 public:
   NonLinearSolverLumped(DOFManagerDefault & dof_manager,
-                         const NonLinearSolverType & non_linear_solver_type,
-                         const ID & id = "non_linear_solver_lumped",
-                         UInt memory_id = 0);
+                        const NonLinearSolverType & non_linear_solver_type,
+                        const ID & id = "non_linear_solver_lumped",
+                        UInt memory_id = 0);
   ~NonLinearSolverLumped() override;
 
   /* ------------------------------------------------------------------------ */
@@ -60,11 +60,9 @@ public:
   /// the solver callback functions
   void solve(SolverCallback & solver_callback) override;
 
-  static void solveLumped(const Array<Real> & A,
-                          Array<Real> & x,
+  static void solveLumped(const Array<Real> & A, Array<Real> & x,
                           const Array<Real> & b,
-                          const Array<bool> & blocked_dofs,
-                          Real alpha);
+                          const Array<bool> & blocked_dofs, Real alpha);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

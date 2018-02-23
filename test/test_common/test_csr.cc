@@ -69,9 +69,7 @@ protected:
   size_t N = 1000;
 };
 
-TEST_F(TestCsrFixture, CheckInsertion) {
-  EXPECT_EQ(N, this->csr.getNbRows());
-}
+TEST_F(TestCsrFixture, CheckInsertion) { EXPECT_EQ(N, this->csr.getNbRows()); }
 
 TEST_F(TestCsrFixture, Iteration) {
   for (UInt i = 0; i < this->csr.getNbRows(); ++i) {

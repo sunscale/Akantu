@@ -534,10 +534,9 @@ void Array<T, is_scal>::resizeUnitialized(UInt new_size, bool fill,
         "Cannot allocate " << printMemorySize<T>(size_to_alloc * nb_component));
     if (tmp_ptr == nullptr) {
       AKANTU_ERROR("Cannot allocate more data ("
-                         << id << ")"
-                         << " [current allocated size : " << allocated_size
-                         << " | "
-                         << "requested size : " << new_size << "]");
+                   << id << ")"
+                   << " [current allocated size : " << allocated_size << " | "
+                   << "requested size : " << new_size << "]");
     }
 
     AKANTU_DEBUG(dblAccessory,
@@ -662,8 +661,7 @@ void Array<T, is_scal>::copy(const Array<T, is_scal> & vect,
 
   if (!no_sanity_check)
     if (vect.nb_component != nb_component)
-      AKANTU_ERROR(
-          "The two arrays do not have the same number of components");
+      AKANTU_ERROR("The two arrays do not have the same number of components");
 
   resize((vect.size_ * vect.nb_component) / nb_component);
 

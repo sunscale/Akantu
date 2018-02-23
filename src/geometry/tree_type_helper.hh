@@ -36,8 +36,8 @@
 #include "aka_common.hh"
 
 #include "line_arc.hh"
-#include "triangle.hh"
 #include "tetrahedron.hh"
+#include "triangle.hh"
 
 #include "aabb_primitive.hh"
 
@@ -46,18 +46,16 @@
 #include <CGAL/AABB_tree.h>
 
 namespace akantu {
-  
+
 /* -------------------------------------------------------------------------- */
 
 /// Replacement class for algorithm that can't use the AABB tree types
-template<typename iterator>
-struct VoidTree {
+template <typename iterator> struct VoidTree {
   VoidTree(const iterator & /*begin*/, const iterator & /*end*/) {}
 };
 
 /// Helper class used to ease the use of CGAL AABB tree algorithm
-template<class Primitive, class Kernel>
-struct TreeTypeHelper {
+template <class Primitive, class Kernel> struct TreeTypeHelper {
   static const bool is_valid = false;
 
   typedef Primitive primitive_type;
@@ -69,8 +67,7 @@ struct TreeTypeHelper {
 };
 
 /// Helper class used to ease the use of intersections
-template<class TTHelper, class Query>
-struct IntersectionTypeHelper;
+template <class TTHelper, class Query> struct IntersectionTypeHelper;
 
 /**
  * Macro used to specialize TreeTypeHelper
@@ -103,7 +100,7 @@ struct IntersectionTypeHelper;
   }
 
 TREE_TYPE_HELPER_MACRO(Triangle, cgal::Cartesian::Segment_3, cgal::Cartesian);
-//TREE_TYPE_HELPER_MACRO(Line_arc, cgal::Spherical::Sphere_3, cgal::Spherical);
+// TREE_TYPE_HELPER_MACRO(Line_arc, cgal::Spherical::Sphere_3, cgal::Spherical);
 
 #undef TREE_TYPE_HELPER_MACRO
 

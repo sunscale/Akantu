@@ -29,16 +29,16 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <limits>
 #include <fstream>
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "material.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh_struct.hh"
 #include "structural_mechanics_model.hh"
-#include "material.hh"
 
 #include <iostream>
 using namespace akantu;
@@ -187,7 +187,8 @@ int main(int argc, char * argv[]) {
 
     pos << s << "," << time << "," << displacement(node_to_print, 1) << ","
         << analytical_solution(s * time_step, total_length, mat1.rho, mat1.E,
-                               mat1.A, mat1.I, F) << std::endl;
+                               mat1.A, mat1.I, F)
+        << std::endl;
     //    pos << s << "," << time << "," << displacement(node_to_print, 1) <<
     //    "," << analytical_solution(s*time_step) << std::endl;
 

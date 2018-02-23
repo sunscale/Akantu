@@ -30,18 +30,17 @@ class NTNFricRegNoRegularisation : public NTNBaseFriction {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
   NTNFricRegNoRegularisation(NTNBaseContact * contact,
-			     const FrictionID & id = "no_regularisation",
-			     const MemoryID & memory_id = 0);
-  virtual ~NTNFricRegNoRegularisation() {};
-  
+                             const FrictionID & id = "no_regularisation",
+                             const MemoryID & memory_id = 0);
+  virtual ~NTNFricRegNoRegularisation(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// set to steady state for no regularisation -> do nothing
-  virtual void setToSteadyState() {};
+  virtual void setToSteadyState(){};
 
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
   virtual void dumpRestart(const std::string & file_name) const;
@@ -54,20 +53,19 @@ protected:
   virtual void computeFrictionalContactPressure();
 
   /// compute frictional strength according to friction law
-  virtual void computeFrictionalStrength() {};
+  virtual void computeFrictionalStrength(){};
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
-  
+                                    const std::string & field_id);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
 protected:
   /// get the is_in_contact array
   virtual const SynchronizedArray<bool> & internalGetIsInContact() {
@@ -86,11 +84,9 @@ protected:
   virtual SynchronizedArray<bool> & internalGetIsSticking() {
     return this->is_sticking;
   }
-  
+
   /// get the slip array
-  virtual SynchronizedArray<Real> & internalGetSlip() {
-    return this->slip;
-  }
+  virtual SynchronizedArray<Real> & internalGetSlip() { return this->slip; }
 
   /// get the slip array
   virtual SynchronizedArray<Real> & internalGetCumulativeSlip() {
@@ -105,7 +101,6 @@ protected:
   SynchronizedArray<Real> frictional_contact_pressure;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -113,9 +108,8 @@ protected:
 //#include "ntn_fricreg_no_regularisation_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricRegNoRegularisation & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const NTNFricRegNoRegularisation & _this) {
   _this.printself(stream);
   return stream;
 }

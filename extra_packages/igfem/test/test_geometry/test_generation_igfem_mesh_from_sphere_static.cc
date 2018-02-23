@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include "mesh_sphere_intersector.hh"
 #include "mesh_igfem_spherical_growing_gel.hh"
+#include "mesh_sphere_intersector.hh"
 
 #include "dumper_paraview.hh"
 
@@ -43,7 +43,7 @@ typedef Spherical SK;
 
 /* -------------------------------------------------------------------------- */
 
-int main (int argc, char * argv[]) {
+int main(int argc, char * argv[]) {
   initialize("", argc, argv);
   debug::setDebugLevel(dblError);
 
@@ -55,10 +55,13 @@ int main (int argc, char * argv[]) {
   // mesh.read("mesh.msh");
 
   // Spherical kernel testing the addition of nodes
-  // SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.401*0.401); //"inclusion_2D_fineness_level_1.msh"
+  // SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.401*0.401);
+  // //"inclusion_2D_fineness_level_1.msh"
   // SK::Sphere_3 sphere(SK::Point_3(0, 0, 0), 0.3*0.3); //"mesh.msh"
-  SK::Sphere_3 sphere(SK::Point_3(0, 1, 0), 0.2*0.2); //"test_geometry_triangle.msh"
-  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0), 0.4999999999); //"test_geometry_triangle.msh"
+  SK::Sphere_3 sphere(SK::Point_3(0, 1, 0),
+                      0.2 * 0.2); //"test_geometry_triangle.msh"
+  SK::Sphere_3 sphere2(SK::Point_3(1, 0, 0),
+                       0.4999999999); //"test_geometry_triangle.msh"
   MeshIgfemSphericalGrowingGel<2> sphere_intersector(mesh);
   sphere_intersector.init();
 
@@ -70,24 +73,23 @@ int main (int argc, char * argv[]) {
   dumper_igfem.registerMesh(mesh, 2, _not_ghost, _ek_igfem);
   DumperParaview dumper_regular("mesh_regular");
   dumper_regular.registerMesh(mesh, 2, _not_ghost, _ek_regular);
-  //dumper_igfem.dump();
+  // dumper_igfem.dump();
   dumper_regular.dump();
 
   sphere_intersector.buildIGFEMMeshFromSpheres(sphere_list);
   dumper_igfem.dump();
   dumper_regular.dump();
-  
+
   UInt nb_tri3 = mesh.getConnectivity(_triangle_3).getSize();
   UInt nb_tri4 = mesh.getConnectivity(_igfem_triangle_4).getSize();
   UInt nb_tri5 = mesh.getConnectivity(_igfem_triangle_5).getSize();
-  if ( (nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)){ 
-    std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and " << nb_tri4
-	      << " _igfem_triangle_4, and " << nb_tri5 << " _igfem_triangle_5"<< std::endl; 
+  if ((nb_tri3 != 0) || (nb_tri4 != 1) || (nb_tri5 != 1)) {
+    std::cout << "final mesh with " << nb_tri3 << " _triangle_3, and "
+              << nb_tri4 << " _igfem_triangle_4, and " << nb_tri5
+              << " _igfem_triangle_5" << std::endl;
     return EXIT_FAILURE;
   }
 
   finalize();
   return EXIT_SUCCESS;
 }
-
-

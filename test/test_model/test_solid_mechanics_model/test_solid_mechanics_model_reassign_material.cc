@@ -30,13 +30,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_grid_dynamic.hh"
-#include "material.hh"
-#include "solid_mechanics_model.hh"
 #include "communicator.hh"
+#include "material.hh"
 #include "mesh_utils.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
-
-
 
 using namespace akantu;
 
@@ -54,9 +52,9 @@ public:
 
     /// store barycenters of all elements
     barycenters.initialize(mesh, _spatial_dimension = spatial_dimension,
-                                 _nb_component = spatial_dimension);
+                           _nb_component = spatial_dimension);
 
-    for (auto  ghost_type : ghost_types) {
+    for (auto ghost_type : ghost_types) {
       Element e;
       e.ghost_type = ghost_type;
 
@@ -159,13 +157,13 @@ int main(int argc, char * argv[]) {
 
   UInt spatial_dimension = 3;
 
-  const auto & comm =
-    Communicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);
 
-  if (prank == 0)     mesh.read("cube_two_materials.msh");
+  if (prank == 0)
+    mesh.read("cube_two_materials.msh");
   mesh.distribute();
 
   /// model creation

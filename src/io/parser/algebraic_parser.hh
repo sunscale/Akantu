@@ -33,10 +33,9 @@
 /* -------------------------------------------------------------------------- */
 // Boost
 #include <boost/config/warning_disable.hpp>
-#include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/include/qi.hpp>
 /* -------------------------------------------------------------------------- */
-
 
 #ifndef __AKANTU_ALGEBRAIC_PARSER_HH__
 #define __AKANTU_ALGEBRAIC_PARSER_HH__
@@ -233,7 +232,7 @@ namespace parser {
 
     qi::rule<Iterator, std::string(), Skipper> key;
 
-    qi::real_parser<Real, qi::real_policies<Real> > real;
+    qi::real_parser<Real, qi::real_policies<Real>> real;
 
     qi::symbols<char, Real> constant;
     qi::symbols<char, Real (*)(Real)> unary_function;
@@ -354,7 +353,7 @@ namespace parser {
 
   /* ---------------------------------------------------------------------- */
   static inline bool vector_eval(const ID & a, const ParserSection & section,
-                          parsable_vector & result) {
+                                 parsable_vector & result) {
     std::string value = section.getParameter(a, _ppsc_current_and_parent_scope);
     std::string::const_iterator b = value.begin();
     std::string::const_iterator e = value.end();

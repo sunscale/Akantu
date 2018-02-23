@@ -29,8 +29,8 @@
 #include "material_damage_iterative.hh"
 
 /* -------------------------------------------------------------------------- */
- #ifndef __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__
- #define __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__
+#ifndef __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__
+#define __AKANTU_MATERIAL_ITERATIVE_STIFFNESS_REDUCTION_HH__
 
 namespace akantu {
 
@@ -40,36 +40,39 @@ namespace akantu {
  * parameters in the material files :
  *   - Gfx
  *   - h
- *   - Sc  
+ *   - Sc
  */
-/// Proposed by Rots and Invernizzi, 2004: Regularized sequentially linear 
+/// Proposed by Rots and Invernizzi, 2004: Regularized sequentially linear
 // saw-tooth softening model (section 4.2)
-template<UInt spatial_dimension>
-class MaterialIterativeStiffnessReduction : public MaterialDamageIterative<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialIterativeStiffnessReduction
+    : public MaterialDamageIterative<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  MaterialIterativeStiffnessReduction(SolidMechanicsModel & model,
+                                      const ID & id = "");
 
-  MaterialIterativeStiffnessReduction(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialIterativeStiffnessReduction() {};
+  virtual ~MaterialIterativeStiffnessReduction(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// init the material
   virtual void initMaterial();
 
-  ///compute the equivalent stress on each Gauss point (i.e. the max prinicpal stress) and normalize it by the tensile stiffness
-  virtual void computeNormalizedEquivalentStress(const Array<Real> & grad_u,
-						 ElementType el_type, GhostType ghost_type = _not_ghost);
+  /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
+  /// stress) and normalize it by the tensile stiffness
+  virtual void
+  computeNormalizedEquivalentStress(const Array<Real> & grad_u,
+                                    ElementType el_type,
+                                    GhostType ghost_type = _not_ghost);
 
   /// update internal field damage
   virtual UInt updateDamage();
- 
+
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
@@ -77,12 +80,10 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// the ultimate strain
   InternalField<Real> eps_u;
 
@@ -98,7 +99,6 @@ protected:
   /// the reduction constant (denoated by a in the paper of rots)
   Real reduction_constant;
 };
-
 
 } // namespace akantu
 

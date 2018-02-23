@@ -36,8 +36,8 @@
 
 #include "aka_common.hh"
 #include "line_arc.hh"
-#include "triangle.hh"
 #include "tetrahedron.hh"
+#include "triangle.hh"
 
 #include "mesh_geom_common.hh"
 
@@ -54,31 +54,30 @@ namespace akantu {
  *  @param name the name of the primitive type
  *  @param kernel the name of the kernel used
  */
-#define AKANTU_AABB_CLASS(name, kernel)	\
-  class name##_primitive {      \
-    typedef std::list< name<kernel> >::iterator Iterator; \
-                                                          \
-  public:                                                 \
-    typedef UInt Id;                                      \
-    typedef kernel::Point_3 Point;                        \
-    typedef kernel::name##_3 Datum;                       \
-                                                          \
-  public:                                                 \
-    name##_primitive() : meshId(0), primitive() {}        \
-    name##_primitive(Iterator it) : meshId(it->id()), primitive(*it) {} \
-                                                                        \
-  public:                                                               \
-    const Datum & datum() const { return primitive; }                   \
-    Point reference_point() const;				\
-    const Id & id() const { return meshId; }                              \
-                                                                          \
-  protected:                                                              \
-    Id meshId;                                                            \
-    name<kernel> primitive;                                               \
-                                                                          \
+#define AKANTU_AABB_CLASS(name, kernel)                                        \
+  class name##_primitive {                                                     \
+    typedef std::list<name<kernel>>::iterator Iterator;                        \
+                                                                               \
+  public:                                                                      \
+    typedef UInt Id;                                                           \
+    typedef kernel::Point_3 Point;                                             \
+    typedef kernel::name##_3 Datum;                                            \
+                                                                               \
+  public:                                                                      \
+    name##_primitive() : meshId(0), primitive() {}                             \
+    name##_primitive(Iterator it) : meshId(it->id()), primitive(*it) {}        \
+                                                                               \
+  public:                                                                      \
+    const Datum & datum() const { return primitive; }                          \
+    Point reference_point() const;                                             \
+    const Id & id() const { return meshId; }                                   \
+                                                                               \
+  protected:                                                                   \
+    Id meshId;                                                                 \
+    name<kernel> primitive;                                                    \
   }
 
-// If the primitive is supported by CGAL::intersection() then the 
+// If the primitive is supported by CGAL::intersection() then the
 // implementation process is really easy with this macro
 AKANTU_AABB_CLASS(Triangle, cgal::Cartesian);
 AKANTU_AABB_CLASS(Line_arc, cgal::Spherical);

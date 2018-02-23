@@ -37,7 +37,7 @@
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
-/* Stress Based Weight                                                         */
+/* Stress Based Weight */
 /* -------------------------------------------------------------------------- */
 /// based on based on Giry et al.: Stress-based nonlocal damage model,
 /// IJSS, 48, 2011
@@ -48,33 +48,31 @@ public:
   /* ------------------------------------------------------------------------ */
   StressBasedWeightFunction(NonLocalManager & manager);
 
-  /* -------------------------------------------------------------------------- */
-  /* Base Weight Function inherited methods                                     */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Base Weight Function inherited methods */
+  /* --------------------------------------------------------------------------
+   */
   void init() override;
 
   inline void updateInternals() override;
 
   void updatePrincipalStress(GhostType ghost_type);
 
-  inline void updateQuadraturePointsCoordinates(ElementTypeMapArray<Real> & quadrature_points_coordinates);
+  inline void updateQuadraturePointsCoordinates(
+      ElementTypeMapArray<Real> & quadrature_points_coordinates);
 
-
-  inline Real operator()(Real r,
-			 const IntegrationPoint & q1,
-			 const IntegrationPoint & q2);
+  inline Real operator()(Real r, const IntegrationPoint & q1,
+                         const IntegrationPoint & q2);
 
   /// computation of ellipsoid
-  inline Real computeRhoSquare(Real r,
-                               Vector<Real> & eigs,
-                               Matrix<Real> & eigenvects,
-                               Vector<Real> & x_s);
+  inline Real computeRhoSquare(Real r, Vector<Real> & eigs,
+                               Matrix<Real> & eigenvects, Vector<Real> & x_s);
 
 protected:
   inline void setInternal();
 
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -92,11 +90,10 @@ private:
 
   /// lenght intrinisic to the material
   ElementTypeMapReal * characteristic_size;
-
 };
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "stress_based_weight_function_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "stress_based_weight_function_inline_impl.cc"
 #endif
 
 } // akantu

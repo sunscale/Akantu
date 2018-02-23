@@ -84,7 +84,7 @@ void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
                                                   _segment_2));
   } catch (debug::Exception & e) {
     AKANTU_ERROR("You must define physical names to reinforcements in "
-                       "order to use the embedded model");
+                 "order to use the embedded model");
     throw e;
   }
 

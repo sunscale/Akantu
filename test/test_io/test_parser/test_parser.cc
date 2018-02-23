@@ -29,27 +29,26 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "parser.hh"
 #include "aka_random_generator.hh"
+#include "parser.hh"
 
 #include <iostream>
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("input_file.dat", argc, argv);
 
   const Parser & p = getStaticParser();
 
-
-  std::cout << RandomGenerator<UInt>::seed() <<"==123456" << std::endl;
+  std::cout << RandomGenerator<UInt>::seed() << "==123456" << std::endl;
 
   std::cout << p << std::endl;
 
   Real toto = p.getParameter("toto");
   std::cout << toto;
-  Real ref = 2*M_PI + std::max(2., 50.);
-  if(std::abs(toto - ref) > std::numeric_limits<Real>::epsilon()) {
+  Real ref = 2 * M_PI + std::max(2., 50.);
+  if (std::abs(toto - ref) > std::numeric_limits<Real>::epsilon()) {
     std::cout << "!=" << ref << std::endl;
     return 1;
   }

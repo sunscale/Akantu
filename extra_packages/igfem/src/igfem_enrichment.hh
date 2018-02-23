@@ -4,7 +4,8 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  *
- * @brief  IGFEM enrichment: handles geometries of interfaces and advancement with time
+ * @brief  IGFEM enrichment: handles geometries of interfaces and advancement
+ * with time
  *
  * @section LICENSE
  *
@@ -17,8 +18,8 @@
 #ifndef __AKANTU_IGFEM_ENRICHMENT_HH__
 #define __AKANTU_IGFEM_ENRICHMENT_HH__
 
-#include "mesh_sphere_intersector.hh"
 #include "mesh_igfem_spherical_growing_gel.hh"
+#include "mesh_sphere_intersector.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -29,9 +30,9 @@ class IGFEMEnrichment {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-public: 
+public:
   IGFEMEnrichment(Mesh & mesh);
-  virtual ~IGFEMEnrichment() {};
+  virtual ~IGFEMEnrichment(){};
 
 private:
   typedef std::list<Spherical::Sphere_3> Geometry;
@@ -41,7 +42,7 @@ private:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// create the mesh primitives 
+  /// create the mesh primitives
   void initialize();
 
   /// get a geometry from the geometry map
@@ -54,7 +55,8 @@ public:
   virtual void unRegisterGeometryObject(const ID & domain = "");
 
   /// insert new geometry
-  virtual void registerGeometryObject(Geometry & geometry, const ID & domain = "");
+  virtual void registerGeometryObject(Geometry & geometry,
+                                      const ID & domain = "");
 
   /// check if a point is in a given domain
   inline bool isInside(const Vector<Real> & point, ID domain = "") const;
@@ -62,9 +64,11 @@ public:
   /// move the interface, in this case grow the gel pockets
   virtual void moveInterface(Real new_position, ID domain = "");
 
-  /* -------------------------------------------------------------------------- */
-  /* Accessors                                                                  */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+  /* Accessors */
+  /* --------------------------------------------------------------------------
+   */
 public:
   UInt getNbStandardNodes() {
     return this->intersector_sphere.getNbStandardNodes();
@@ -78,14 +82,12 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   MeshIgfemSphericalGrowingGel<2> intersector_sphere;
 
   GeometryMap geometries;
 
   /// default geometry object
   std::string default_geometry;
-
 };
 
 /* -------------------------------------------------------------------------- */
@@ -94,12 +96,7 @@ protected:
 
 #include "igfem_enrichment_inline_impl.cc"
 
-
-
-
 __END_AKANTU__
 /* -------------------------------------------------------------------------- */
-
-
 
 #endif /* __AKANTU_IGFEM_ENRICHMENT_HH__ */

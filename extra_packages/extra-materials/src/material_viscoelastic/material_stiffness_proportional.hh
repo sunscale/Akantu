@@ -21,14 +21,14 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_MATERIAL_STIFFNESS_PROPORTIONAL_HH__
 #define __AKANTU_MATERIAL_STIFFNESS_PROPORTIONAL_HH__
 
 namespace akantu {
 
 /**
- * Material visco-elastic @f[\sigma = E\epsilon + \alpha E* \frac{d\epsilon}{dt}@f]
+ * Material visco-elastic @f[\sigma = E\epsilon + \alpha E*
+ * \frac{d\epsilon}{dt}@f]
  * it can be seen as a Kelvin-Voigt solid with @f[\eta = \alpha E @f]
  *
  * The material satisfies the Caughey condition, the visco-elastic solid has the
@@ -42,44 +42,43 @@ namespace akantu {
  *   - Plane_Stress : if 0: plane strain, else: plane stress (default: 0)
  *   - alpha : viscous ratio
  */
-template<UInt spatial_dimension>
-class MaterialStiffnessProportional : public MaterialElastic<spatial_dimension> {
+template <UInt spatial_dimension>
+class MaterialStiffnessProportional
+    : public MaterialElastic<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
+  MaterialStiffnessProportional(SolidMechanicsModel & model,
+                                const ID & id = "");
 
-  MaterialStiffnessProportional(SolidMechanicsModel & model, const ID & id = "");
-
-  virtual ~MaterialStiffnessProportional() {};
+  virtual ~MaterialStiffnessProportional(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// compute the potential energy for all elements
-  virtual void computePotentialEnergy(ElementType el_type, GhostType ghost_type = _not_ghost);
+  virtual void computePotentialEnergy(ElementType el_type,
+                                      GhostType ghost_type = _not_ghost);
 
 protected:
   /// constitutive law for a given quadrature point
-  //inline void computeStress(Real * F, Real * sigma);
+  // inline void computeStress(Real * F, Real * sigma);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// stress due to viscosity
   InternalField<Real> stress_viscosity;
 
@@ -88,7 +87,6 @@ private:
 
   /// viscous ratio
   Real alpha;
-
 };
 
 /* -------------------------------------------------------------------------- */

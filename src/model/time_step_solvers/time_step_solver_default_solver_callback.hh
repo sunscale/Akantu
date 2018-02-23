@@ -5,7 +5,8 @@
  *
  * @date   Mon Sep 28 18:58:07 2015
  *
- * @brief  Implementation of the NonLinearSolverCallback for the time step solver
+ * @brief  Implementation of the NonLinearSolverCallback for the time step
+ * solver
  *
  * @section LICENSE
  *
@@ -58,6 +59,5 @@ public:
 };
 
 } // akantu
-
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_SOLVER_CALLBACK_HH__ */

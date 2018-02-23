@@ -9,9 +9,9 @@
 
 using namespace akantu;
 
-using types = ::testing::Types<
-    Traits<MaterialThermal, 1>, Traits<MaterialThermal, 2>,
-    Traits<MaterialThermal, 3>>;
+using types =
+    ::testing::Types<Traits<MaterialThermal, 1>, Traits<MaterialThermal, 2>,
+                     Traits<MaterialThermal, 3>>;
 
 /* -------------------------------------------------------------------------- */
 template <> void FriendMaterial<MaterialThermal<3>>::testComputeStress() {
@@ -25,7 +25,7 @@ template <> void FriendMaterial<MaterialThermal<3>>::testComputeStress() {
   Real deltaT = 1;
   Real sigma = 0;
   this->computeStressOnQuad(sigma, deltaT);
-  Real solution = -E / (1 - 2*nu) * alpha * deltaT;
+  Real solution = -E / (1 - 2 * nu) * alpha * deltaT;
   auto error = std::abs(sigma - solution);
   ASSERT_NEAR(error, 0, 1e-14);
 }
@@ -41,7 +41,7 @@ template <> void FriendMaterial<MaterialThermal<2>>::testComputeStress() {
   Real deltaT = 1;
   Real sigma = 0;
   this->computeStressOnQuad(sigma, deltaT);
-  Real solution = -E / (1 - 2*nu) * alpha * deltaT;
+  Real solution = -E / (1 - 2 * nu) * alpha * deltaT;
   auto error = std::abs(sigma - solution);
   ASSERT_NEAR(error, 0, 1e-14);
 }
@@ -72,5 +72,4 @@ TYPED_TEST_CASE(TestMaterialThermalFixture, types);
 TYPED_TEST(TestMaterialThermalFixture, ThermalComputeStress) {
   this->material->testComputeStress();
 }
-
 }

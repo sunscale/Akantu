@@ -33,7 +33,7 @@
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined(__clang__) // test clang to be sure that when we test for gnu it
-                         // is only gnu
+// is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
 #if __cplusplus > 199711L
 #pragma GCC diagnostic push
@@ -46,7 +46,7 @@
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined(__clang__) // test clang to be sure that when we test for gnu it
-                         // is only gnu
+// is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
 #if __cplusplus > 199711L
 #pragma GCC diagnostic pop
@@ -72,7 +72,8 @@ public:
       MPI_Init(nullptr, nullptr); // valid according to the spec
     }
 
-    MPI_Comm_create_errhandler(MPICommunicatorData::errorHandler, &error_handler);
+    MPI_Comm_create_errhandler(MPICommunicatorData::errorHandler,
+                               &error_handler);
     MPI_Comm_set_errhandler(MPI_COMM_WORLD, error_handler);
     setMPICommunicator(MPI_COMM_WORLD);
   }

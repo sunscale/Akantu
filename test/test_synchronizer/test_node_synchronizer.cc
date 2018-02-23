@@ -35,10 +35,10 @@
 #include "mesh.hh"
 #include "node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
-#include <random>
 #include <chrono>
-#include <thread>
 #include <limits>
+#include <random>
+#include <thread>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;

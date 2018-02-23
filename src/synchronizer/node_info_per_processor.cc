@@ -29,9 +29,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "node_info_per_processor.hh"
+#include "communicator.hh"
 #include "node_group.hh"
 #include "node_synchronizer.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 /* -------------------------------------------------------------------------- */
@@ -301,7 +301,8 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
     for (UInt local_node = 0; local_node < nb_nodes_per_proc(p); ++local_node) {
       if (nodes_types(local_node) == _nt_master) {
         UInt global_node = nodes_per_proc[p](local_node);
-        nodes_to_proc.insert(std::make_pair(global_node, std::make_pair(p, local_node)));
+        nodes_to_proc.insert(
+            std::make_pair(global_node, std::make_pair(p, local_node)));
       }
     }
   }
@@ -325,7 +326,6 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
     }
   }
 
-
   std::vector<CommunicationRequest> requests_send_type;
   std::vector<CommunicationRequest> requests_send_master_info;
   for (UInt p = 0; p < nb_proc; ++p) {
@@ -345,9 +345,8 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
       AKANTU_DEBUG_INFO("Sending nodes master info to proc "
                         << p << " "
                         << Tag::genTag(this->rank, 1, Tag::_NODES_TYPE));
-      requests_send_master_info.push_back(
-          comm.asyncSend(nodes_to_send, p,
-                         Tag::genTag(this->rank, 1, Tag::_NODES_TYPE)));
+      requests_send_master_info.push_back(comm.asyncSend(
+          nodes_to_send, p, Tag::genTag(this->rank, 1, Tag::_NODES_TYPE)));
     } else {
       this->getNodesType().copy(nodes_type_per_proc[p]);
 
@@ -461,7 +460,6 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
                     << root << " " << Tag::genTag(root, 0, Tag::_NODES_TYPE));
   comm.receive(nodes_types, root, Tag::genTag(root, 0, Tag::_NODES_TYPE));
 
-
   AKANTU_DEBUG_INFO("Receiving nodes master info from proc "
                     << root << " " << Tag::genTag(root, 1, Tag::_NODES_TYPE));
   CommunicationStatus status;
@@ -469,8 +467,7 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
 
   Array<UInt> nodes_master_info(status.size());
 
-  comm.receive(nodes_master_info, root,
-               Tag::genTag(root, 1, Tag::_NODES_TYPE));
+  comm.receive(nodes_master_info, root, Tag::genTag(root, 1, Tag::_NODES_TYPE));
 
   nodes_master_info.resize(nodes_master_info.size() - 1);
 

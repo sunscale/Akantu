@@ -40,43 +40,32 @@ namespace akantu {
 struct Empty_type {};
 class Null_type {};
 
-template <class T, class U>
-struct Typelist {
-    typedef T Head;
-    typedef U Tail;
+template <class T, class U> struct Typelist {
+  typedef T Head;
+  typedef U Tail;
 };
 
-template <
-typename T1  = Null_type, typename T2  = Null_type, typename T3  = Null_type,
-typename T4  = Null_type, typename T5  = Null_type, typename T6  = Null_type,
-typename T7  = Null_type, typename T8  = Null_type, typename T9  = Null_type,
-typename T10 = Null_type, typename T11 = Null_type, typename T12 = Null_type,
-typename T13 = Null_type, typename T14 = Null_type, typename T15 = Null_type,
-typename T16 = Null_type, typename T17 = Null_type, typename T18 = Null_type,
-typename T19 = Null_type, typename T20 = Null_type
->
-struct MakeTypelist
-{
+template <typename T1 = Null_type, typename T2 = Null_type,
+          typename T3 = Null_type, typename T4 = Null_type,
+          typename T5 = Null_type, typename T6 = Null_type,
+          typename T7 = Null_type, typename T8 = Null_type,
+          typename T9 = Null_type, typename T10 = Null_type,
+          typename T11 = Null_type, typename T12 = Null_type,
+          typename T13 = Null_type, typename T14 = Null_type,
+          typename T15 = Null_type, typename T16 = Null_type,
+          typename T17 = Null_type, typename T18 = Null_type,
+          typename T19 = Null_type, typename T20 = Null_type>
+struct MakeTypelist {
 private:
-    typedef typename MakeTypelist
-    <
-    T2 , T3 , T4 , 
-    T5 , T6 , T7 , 
-    T8 , T9 , T10, 
-    T11, T12, T13,
-    T14, T15, T16, 
-    T17, T18, T19, T20
-    >
-    ::Result TailResult;
-    
+  typedef typename MakeTypelist<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12,
+                                T13, T14, T15, T16, T17, T18, T19, T20>::Result
+      TailResult;
+
 public:
-    typedef Typelist<T1, TailResult> Result;
+  typedef Typelist<T1, TailResult> Result;
 };
 
-template<>
-struct MakeTypelist<> {
-    typedef Null_type Result;
-};
+template <> struct MakeTypelist<> { typedef Null_type Result; };
 
 ////////////////////////////////////////////////////////////////////////////////
 // class template Length
@@ -88,21 +77,18 @@ struct MakeTypelist<> {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class TList> struct Length;
-template <> struct Length<Null_type>
-{
-    enum { value = 0 };
+template <> struct Length<Null_type> {
+  enum { value = 0 };
 };
 
-template <class T, class U>
-struct Length< Typelist<T, U> >
-{
-    enum { value = 1 + Length<U>::value };
+template <class T, class U> struct Length<Typelist<T, U>> {
+  enum { value = 1 + Length<U>::value };
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // class template TypeAt
 // Finds the type at a given index in a typelist
-// Invocation (TList is a typelist and index is a compile-time integral 
+// Invocation (TList is a typelist and index is a compile-time integral
 //     constant):
 // TypeAt<TList, index>::Result
 // returns the type in position 'index' in TList
@@ -111,19 +97,14 @@ struct Length< Typelist<T, U> >
 
 template <class TList, unsigned int index> struct TypeAt;
 
-template <class Head, class Tail>
-struct TypeAt<Typelist<Head, Tail>, 0>
-{
-    typedef Head Result;
+template <class Head, class Tail> struct TypeAt<Typelist<Head, Tail>, 0> {
+  typedef Head Result;
 };
 
 template <class Head, class Tail, unsigned int i>
-struct TypeAt<Typelist<Head, Tail>, i>
-{
-    typedef typename TypeAt<Tail, i - 1>::Result Result;
+struct TypeAt<Typelist<Head, Tail>, i> {
+  typedef typename TypeAt<Tail, i - 1>::Result Result;
 };
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // class template Erase
@@ -135,48 +116,38 @@ struct TypeAt<Typelist<Head, Tail>, i>
 
 template <class TList, class T> struct Erase;
 
-template <class T>                         // Specialization 1
-struct Erase<Null_type, T>
-{
-    typedef Null_type Result;
+template <class T> // Specialization 1
+struct Erase<Null_type, T> {
+  typedef Null_type Result;
 };
 
-template <class T, class Tail>             // Specialization 2
-struct Erase<Typelist<T, Tail>, T>
-{
-    typedef Tail Result;
+template <class T, class Tail> // Specialization 2
+struct Erase<Typelist<T, Tail>, T> {
+  typedef Tail Result;
 };
 
 template <class Head, class Tail, class T> // Specialization 3
-struct Erase<Typelist<Head, Tail>, T>
-{
-    typedef Typelist<Head, 
-    typename Erase<Tail, T>::Result>
-    Result;
+struct Erase<Typelist<Head, Tail>, T> {
+  typedef Typelist<Head, typename Erase<Tail, T>::Result> Result;
 };
-
 
 template <class TList, class T> struct IndexOf;
 
-template <class T>
-struct IndexOf<Null_type, T>
-{
-    enum { value = -1 };
+template <class T> struct IndexOf<Null_type, T> {
+  enum { value = -1 };
 };
 
-template <class T, class Tail>
-struct IndexOf<Typelist<T, Tail>, T>
-{
-    enum { value = 0 };
+template <class T, class Tail> struct IndexOf<Typelist<T, Tail>, T> {
+  enum { value = 0 };
 };
 
 template <class Head, class Tail, class T>
-struct IndexOf<Typelist<Head, Tail>, T>
-{
+struct IndexOf<Typelist<Head, Tail>, T> {
 private:
-    enum { temp = IndexOf<Tail, T>::value };
+  enum { temp = IndexOf<Tail, T>::value };
+
 public:
-    enum { value = (temp == -1 ? -1 : 1 + temp) };
+  enum { value = (temp == -1 ? -1 : 1 + temp) };
 };
 
 } // akantu

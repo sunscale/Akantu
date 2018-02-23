@@ -29,9 +29,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "shape_igfem.hh"
-#include "integrator_gauss_igfem.hh"
 #include "fe_engine.hh"
+#include "integrator_gauss_igfem.hh"
+#include "shape_igfem.hh"
 ///#include "dumper_paraview.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
@@ -42,9 +42,10 @@
 using namespace akantu;
 
 bool integrate(const ElementType type);
-void generateIGFEMMesh(const ElementType type, Mesh & mesh, const std::string & filename);
+void generateIGFEMMesh(const ElementType type, Mesh & mesh,
+                       const std::string & filename);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
   debug::setDebugLevel(dblTest);
 
@@ -53,19 +54,19 @@ int main(int argc, char *argv[]) {
   /// integrate test of _igfem_triangle_4
   AKANTU_DEBUG_INFO("integrating _igfem_triangle_4...");
   test_passed = integrate(_igfem_triangle_4);
-  if(!test_passed) {
+  if (!test_passed) {
     finalize();
-    return EXIT_FAILURE;   
+    return EXIT_FAILURE;
   }
 
   /// integrate test of _igfem_triangle_5
   AKANTU_DEBUG_INFO("integrating _igfem_triangle_5...");
   test_passed = integrate(_igfem_triangle_5);
-  if(!test_passed) {
+  if (!test_passed) {
     finalize();
-    return EXIT_FAILURE;   
+    return EXIT_FAILURE;
   }
-    
+
   finalize();
   return EXIT_SUCCESS;
 }
@@ -73,9 +74,10 @@ int main(int argc, char *argv[]) {
 /* -------------------------------------------------------------------------- */
 bool integrate(const ElementType type) {
 
-  bool correct_result = true; 
+  bool correct_result = true;
   UInt dim = 2;
-  std::stringstream mesh_info; mesh_info << "mesh_info" << type << ".txt";
+  std::stringstream mesh_info;
+  mesh_info << "mesh_info" << type << ".txt";
 
   Mesh my_mesh(dim);
   generateIGFEMMesh(type, my_mesh, mesh_info.str());
@@ -85,7 +87,9 @@ bool integrate(const ElementType type) {
   Real eps = 3e-13;
   std::cout << "Epsilon : " << eps << std::endl;
 
-  FEEngine *fem = new FEEngineTemplate<IntegratorGauss,ShapeLagrange,_ek_igfem>(my_mesh, dim, "my_fem");
+  FEEngine * fem =
+      new FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem>(
+          my_mesh, dim, "my_fem");
   fem->initShapeFunctions();
 
   UInt nb_element = my_mesh.getNbElement(type);
@@ -97,30 +101,34 @@ bool integrate(const ElementType type) {
   Vector<Real> values(dim);
   values(0) = 1.;
   values(1) = 2;
-  for (UInt i = 0; i < val_on_quad.getSize(); ++i, ++val_it) 
+  for (UInt i = 0; i < val_on_quad.getSize(); ++i, ++val_it)
     *val_it = values;
 
-  //integrate function on elements
-  akantu::Array<akantu::Real> int_val_on_elem(nb_element, dim, "int_val_on_elem");
+  // integrate function on elements
+  akantu::Array<akantu::Real> int_val_on_elem(nb_element, dim,
+                                              "int_val_on_elem");
   fem->integrate(val_on_quad, int_val_on_elem, dim, type);
 
   // get global integration value
-  Real value[2] = {0,0};
+  Real value[2] = {0, 0};
   std::cout << "Val on quads : " << val_on_quad << std::endl;
   std::cout << "Integral on elements : " << int_val_on_elem << std::endl;
 
   for (UInt i = 0; i < fem->getMesh().getNbElement(type); ++i) {
-    value[0] += int_val_on_elem.storage()[2*i];
-    value[1] += int_val_on_elem.storage()[2*i+1];
+    value[0] += int_val_on_elem.storage()[2 * i];
+    value[1] += int_val_on_elem.storage()[2 * i + 1];
   }
 
-  std::cout << "integral on the mesh of 1 is " << value[0] << " and of 2 is " << value[1] << std::endl;
+  std::cout << "integral on the mesh of 1 is " << value[0] << " and of 2 is "
+            << value[1] << std::endl;
 
   delete fem;
 
-  if(!(std::abs(value[0] - 1.) < eps && std::abs(value[1] - 2.) < eps)) {
-    std::cout << "|1 - " << value[0] << "| = " << std::abs(value[0] - 1.) << std::endl
-	      << "|2 - " << value[1] << "| = " << std::abs(value[1] - 2.) << std::endl;
+  if (!(std::abs(value[0] - 1.) < eps && std::abs(value[1] - 2.) < eps)) {
+    std::cout << "|1 - " << value[0] << "| = " << std::abs(value[0] - 1.)
+              << std::endl
+              << "|2 - " << value[1] << "| = " << std::abs(value[1] - 2.)
+              << std::endl;
     correct_result = false;
   }
 

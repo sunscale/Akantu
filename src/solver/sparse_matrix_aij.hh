@@ -97,8 +97,8 @@ public:
   // virtual void add(const SparseMatrix & matrix, Real alpha);
 
   /// Equivalent of *gemv in blas
-  void matVecMul(const Array<Real> & x, Array<Real> & y,
-                 Real alpha = 1., Real beta = 0.) const override;
+  void matVecMul(const Array<Real> & x, Array<Real> & y, Real alpha = 1.,
+                 Real beta = 0.) const override;
 
   /* ------------------------------------------------------------------------ */
   /// accessor to A_{ij} - if (i, j) not present it returns 0
@@ -133,6 +133,7 @@ public:
   AKANTU_GET_MACRO(ProfileRelease, profile_release, UInt);
   AKANTU_GET_MACRO(ValueRelease, value_release, UInt);
   UInt getRelease() const override { return value_release; }
+
 protected:
   using KeyCOO = std::pair<UInt, UInt>;
   using coordinate_list_map = std::unordered_map<KeyCOO, UInt>;

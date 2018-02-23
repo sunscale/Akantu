@@ -127,7 +127,8 @@ void ParameterRegistry::printself(std::ostream & stream, int indent) const {
   }
 
   SubRegisteries::const_iterator sub_it;
-  for (sub_it = sub_registries.begin(); sub_it != sub_registries.end(); ++sub_it) {
+  for (sub_it = sub_registries.begin(); sub_it != sub_registries.end();
+       ++sub_it) {
     stream << space << "Registry [" << std::endl;
     sub_it->second->printself(stream, indent + 1);
     stream << space << "]";

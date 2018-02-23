@@ -30,9 +30,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "generalized_trapezoidal.hh"
-#include "mesh.hh"
 #include "aka_array.hh"
 #include "dof_manager.hh"
+#include "mesh.hh"
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -43,7 +43,8 @@ GeneralizedTrapezoidal::GeneralizedTrapezoidal(DOFManager & dof_manager,
                                                const ID & dof_id, Real alpha)
     : IntegrationScheme1stOrder(dof_manager, dof_id), alpha(alpha) {
 
-  this->registerParam("alpha", this->alpha, alpha, _pat_parsmod, "The alpha parameter");
+  this->registerParam("alpha", this->alpha, alpha, _pat_parsmod,
+                      "The alpha parameter");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -145,8 +146,8 @@ void GeneralizedTrapezoidal::allCorrector(Real delta_t, Array<Real> & u,
 
   for (UInt dof = 0; dof < nb_degree_of_freedom; dof++) {
     if (!(*blocked_dofs_val)) {
-      *u_val += e ** delta_val;
-      *u_dot_val += d ** delta_val;
+      *u_val += e * *delta_val;
+      *u_dot_val += d * *delta_val;
     }
     u_val++;
     u_dot_val++;

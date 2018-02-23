@@ -50,5 +50,4 @@ template <> ShapeStructural<_ek_structural>::~ShapeStructural() = default;
 
 /* -------------------------------------------------------------------------- */
 
-
 } // namespace akantu

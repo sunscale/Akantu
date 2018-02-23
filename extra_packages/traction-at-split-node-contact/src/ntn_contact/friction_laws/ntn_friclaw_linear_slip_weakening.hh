@@ -30,12 +30,11 @@ class NTNFricLawLinearSlipWeakening : public NTNFricLawCoulomb<Regularisation> {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
   NTNFricLawLinearSlipWeakening(NTNBaseContact * contact,
-				const FrictionID & id = "linear_slip_weakening",
-				const MemoryID & memory_id = 0);
-  virtual ~NTNFricLawLinearSlipWeakening() {};
-  
+                                const FrictionID & id = "linear_slip_weakening",
+                                const MemoryID & memory_id = 0);
+  virtual ~NTNFricLawLinearSlipWeakening(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -51,7 +50,7 @@ public:
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
+
 protected:
   /// compute frictional strength according to friction law
   virtual void computeFrictionalStrength();
@@ -63,12 +62,12 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
+                                    const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-  
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -89,9 +88,9 @@ protected:
 
 /// standard output stream operator
 template <class Regularisation>
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricLawLinearSlipWeakening<Regularisation> & _this)
-{
+inline std::ostream &
+operator<<(std::ostream & stream,
+           const NTNFricLawLinearSlipWeakening<Regularisation> & _this) {
   _this.printself(stream);
   return stream;
 }

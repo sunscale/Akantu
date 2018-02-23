@@ -99,12 +99,10 @@ void StructuralMechanicsModel::computeRotationMatrix<_bernoulli_beam_3>(
   Mesh & mesh = getFEEngine().getMesh();
   UInt nb_element = mesh.getNbElement(type);
 
-  auto n_it =
-      mesh.getNormals(type).begin(spatial_dimension);
-  Array<UInt>::iterator<Vector<UInt> > connec_it =
+  auto n_it = mesh.getNormals(type).begin(spatial_dimension);
+  Array<UInt>::iterator<Vector<UInt>> connec_it =
       mesh.getConnectivity(type).begin(2);
-  auto nodes_it =
-      mesh.getNodes().begin(spatial_dimension);
+  auto nodes_it = mesh.getNodes().begin(spatial_dimension);
 
   Matrix<Real> Pe(spatial_dimension, spatial_dimension);
   Matrix<Real> Pg(spatial_dimension, spatial_dimension);
@@ -184,7 +182,6 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
   }
 }
 
-
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__ */

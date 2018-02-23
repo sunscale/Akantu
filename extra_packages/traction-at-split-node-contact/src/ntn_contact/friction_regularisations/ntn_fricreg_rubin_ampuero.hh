@@ -29,12 +29,11 @@ class NTNFricRegRubinAmpuero : public NTNFricRegNoRegularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
   NTNFricRegRubinAmpuero(NTNBaseContact * contact,
-			 const FrictionID & id = "rubin_ampuero",
-			 const MemoryID & memory_id = 0);
-  virtual ~NTNFricRegRubinAmpuero() {};
-  
+                         const FrictionID & id = "rubin_ampuero",
+                         const MemoryID & memory_id = 0);
+  virtual ~NTNFricRegRubinAmpuero(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -53,13 +52,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
-  
+                                    const std::string & field_id);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
 protected:
   /// get the contact pressure (the norm: scalar value)
   virtual const SynchronizedArray<Real> & internalGetContactPressure();
@@ -71,7 +69,6 @@ private:
   SynchronizedArray<Real> t_star;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -79,9 +76,8 @@ private:
 //#include "ntn_fricreg_rubin_ampuero_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricRegRubinAmpuero & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const NTNFricRegRubinAmpuero & _this) {
   _this.printself(stream);
   return stream;
 }

@@ -138,7 +138,7 @@ public:
   // void set(const ID & param, const T & value, const ID & solver_id = "");
 
   /// get the parameter 'param' of the solver 'solver_id'
-  //const Parameter & get(const ID & param, const ID & solver_id = "") const;
+  // const Parameter & get(const ID & param, const ID & solver_id = "") const;
 
   /// answer to the question "does the solver exists ?"
   bool hasSolver(const ID & solver_id) const;

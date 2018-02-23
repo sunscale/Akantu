@@ -53,8 +53,8 @@ public:
 
   void computeNonLocalStress(ElementType el_type, GhostType ghost_type);
   void computeStress(ElementType el_type, GhostType ghost_type) override;
-protected:
 
+protected:
   void registerNonLocalVariables() override;
 
   /* ------------------------------------------------------------------------ */

@@ -115,11 +115,11 @@ struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
    * @param analysis_method see SolidMechanicsModelOptions
    * @param init_intersections compute intersections
    */
-  EmbeddedInterfaceModelOptions(AnalysisMethod analysis_method = _explicit_lumped_mass,
-                                bool init_intersections = true):
-    SolidMechanicsModelOptions(analysis_method),
-    has_intersections(init_intersections)
-  {}
+  EmbeddedInterfaceModelOptions(
+      AnalysisMethod analysis_method = _explicit_lumped_mass,
+      bool init_intersections = true)
+      : SolidMechanicsModelOptions(analysis_method),
+        has_intersections(init_intersections) {}
 
   template <typename... pack>
   EmbeddedInterfaceModelOptions(use_named_args_t, pack &&... _pack)

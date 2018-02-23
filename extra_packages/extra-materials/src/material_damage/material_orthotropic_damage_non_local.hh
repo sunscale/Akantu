@@ -37,17 +37,17 @@
 
 namespace akantu {
 
-template<UInt spatial_dimension,
-         class MaterialOrthotropicDamageLocal>
-class MaterialOrthotropicDamageNonLocal : public MaterialOrthotropicDamageLocal,
-			       public MaterialNonLocal<spatial_dimension> {
+template <UInt spatial_dimension, class MaterialOrthotropicDamageLocal>
+class MaterialOrthotropicDamageNonLocal
+    : public MaterialOrthotropicDamageLocal,
+      public MaterialNonLocal<spatial_dimension> {
 public:
   typedef MaterialNonLocal<spatial_dimension> MaterialNonLocalParent;
   typedef MaterialOrthotropicDamageLocal MaterialOrthotropicDamageParent;
 
-  MaterialOrthotropicDamageNonLocal(SolidMechanicsModel & model, const ID & id)  :
-    Material(model, id),
-    MaterialOrthotropicDamageParent(model, id), MaterialNonLocalParent(model, id) { };
+  MaterialOrthotropicDamageNonLocal(SolidMechanicsModel & model, const ID & id)
+      : Material(model, id), MaterialOrthotropicDamageParent(model, id),
+        MaterialNonLocalParent(model, id){};
 
   /* ------------------------------------------------------------------------ */
   virtual void initMaterial() {
@@ -56,16 +56,21 @@ public:
   }
 
 protected:
-  /* -------------------------------------------------------------------------- */
-  virtual void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost) = 0;
+  /* --------------------------------------------------------------------------
+   */
+  virtual void computeNonLocalStress(ElementType type,
+                                     GhostType ghost_type = _not_ghost) = 0;
 
   /* ------------------------------------------------------------------------ */
   void computeNonLocalStresses(GhostType ghost_type) {
     AKANTU_DEBUG_IN();
 
-    Mesh::type_iterator it = this->model.getFEEngine().getMesh().firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type = this->model.getFEEngine().getMesh().lastType(spatial_dimension, ghost_type);
-    for(; it != last_type; ++it) {
+    Mesh::type_iterator it = this->model.getFEEngine().getMesh().firstType(
+        spatial_dimension, ghost_type);
+    Mesh::type_iterator last_type =
+        this->model.getFEEngine().getMesh().lastType(spatial_dimension,
+                                                     ghost_type);
+    for (; it != last_type; ++it) {
       computeNonLocalStress(*it, ghost_type);
     }
 
@@ -75,24 +80,23 @@ protected:
 public:
   /* ------------------------------------------------------------------------ */
   virtual inline UInt getNbDataForElements(const Array<Element> & elements,
-					   SynchronizationTag tag) const {
+                                           SynchronizationTag tag) const {
     return MaterialNonLocalParent::getNbDataForElements(elements, tag) +
-      MaterialOrthotropicDamageParent::getNbDataForElements(elements, tag);
+           MaterialOrthotropicDamageParent::getNbDataForElements(elements, tag);
   }
   virtual inline void packElementData(CommunicationBuffer & buffer,
-				      const Array<Element> & elements,
-				      SynchronizationTag tag) const {
+                                      const Array<Element> & elements,
+                                      SynchronizationTag tag) const {
     MaterialNonLocalParent::packElementData(buffer, elements, tag);
     MaterialOrthotropicDamageParent::packElementData(buffer, elements, tag);
   }
 
   virtual inline void unpackElementData(CommunicationBuffer & buffer,
-				 const Array<Element> & elements,
-				 SynchronizationTag tag) {
+                                        const Array<Element> & elements,
+                                        SynchronizationTag tag) {
     MaterialNonLocalParent::unpackElementData(buffer, elements, tag);
     MaterialOrthotropicDamageParent::unpackElementData(buffer, elements, tag);
   }
-
 };
 
 } // namespace akantu

@@ -65,8 +65,7 @@ template <typename T> decltype(auto) make_proxy(Array<T> & array) {
   return ArrayProxy<T>(array);
 }
 
-template <typename T>
-decltype(auto) make_proxy(const Matrix<T> & array) {
+template <typename T> decltype(auto) make_proxy(const Matrix<T> & array) {
   return MatrixProxy<T>(array);
 }
 

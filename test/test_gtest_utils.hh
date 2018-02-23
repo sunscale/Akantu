@@ -115,9 +115,9 @@ using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
 #endif
 } // namespace
 
-using TestAllDimensions =
-    std::tuple<std::integral_constant<unsigned int, 1>, std::integral_constant<unsigned int, 2>,
-               std::integral_constant<unsigned int, 3>>;
+using TestAllDimensions = std::tuple<std::integral_constant<unsigned int, 1>,
+                                     std::integral_constant<unsigned int, 2>,
+                                     std::integral_constant<unsigned int, 3>>;
 
 template <typename T>
 using is_point_1 = std::is_same<T, element_type_t<::akantu::_point_1>>;

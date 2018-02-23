@@ -30,23 +30,23 @@
  */
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-Array<T> & StaticMemory::smalloc(const MemoryID & memory_id,
-                                  const ID & name,
-                                  UInt size,
-                                  UInt nb_component) {
+template <typename T>
+Array<T> & StaticMemory::smalloc(const MemoryID & memory_id, const ID & name,
+                                 UInt size, UInt nb_component) {
   AKANTU_DEBUG_IN();
 
   MemoryMap::iterator memory_it;
   memory_it = memories.find(memory_id);
 
-  if(memory_it == memories.end()){
+  if (memory_it == memories.end()) {
     memories[memory_id] = ArrayMap();
     memory_it = memories.find(memory_id);
   }
 
-  if((memory_it->second).find(name) != (memory_it->second).end()) {
-    AKANTU_ERROR("The vector \"" << name << "\" is already registred in the memory " << memory_id);
+  if ((memory_it->second).find(name) != (memory_it->second).end()) {
+    AKANTU_ERROR("The vector \"" << name
+                                 << "\" is already registred in the memory "
+                                 << memory_id);
   }
 
   auto * tmp_vect = new Array<T>(size, nb_component, name);
@@ -57,24 +57,24 @@ Array<T> & StaticMemory::smalloc(const MemoryID & memory_id,
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-Array<T> & StaticMemory::smalloc(const MemoryID & memory_id,
-                                  const ID & name,
-                                  UInt size,
-                                  UInt nb_component,
-                                  const T & init_value) {
+template <typename T>
+Array<T> & StaticMemory::smalloc(const MemoryID & memory_id, const ID & name,
+                                 UInt size, UInt nb_component,
+                                 const T & init_value) {
   AKANTU_DEBUG_IN();
 
   MemoryMap::iterator memory_it;
   memory_it = memories.find(memory_id);
 
-  if(memory_it == memories.end()){
+  if (memory_it == memories.end()) {
     memories[memory_id] = ArrayMap();
     memory_it = memories.find(memory_id);
   }
 
-  if((memory_it->second).find(name) != (memory_it->second).end()) {
-    AKANTU_ERROR("The vector \"" << name << "\" is already registred in the memory " << memory_id);
+  if ((memory_it->second).find(name) != (memory_it->second).end()) {
+    AKANTU_ERROR("The vector \"" << name
+                                 << "\" is already registred in the memory "
+                                 << memory_id);
   }
 
   auto * tmp_vect = new Array<T>(size, nb_component, init_value, name);

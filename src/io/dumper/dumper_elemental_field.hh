@@ -37,23 +37,23 @@
 #include "dumper_field.hh"
 #include "dumper_generic_elemental_field.hh"
 #ifdef AKANTU_IGFEM
-#  include "dumper_igfem_elemental_field.hh"
+#include "dumper_igfem_elemental_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
-
-template<typename T, template <class> class ret = Vector,bool filtered = false>
+template <typename T, template <class> class ret = Vector,
+          bool filtered = false>
 class ElementalField
-  : public GenericElementalField<SingleType<T,ret,filtered>,
-                                 elemental_field_iterator> {
+    : public GenericElementalField<SingleType<T, ret, filtered>,
+                                   elemental_field_iterator> {
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  using types = SingleType<T,ret,filtered>;
+  using types = SingleType<T, ret, filtered>;
   using field_type = typename types::field_type;
   using iterator = elemental_field_iterator<types>;
 
@@ -64,15 +64,12 @@ public:
   ElementalField(const field_type & field,
                  UInt spatial_dimension = _all_dimensions,
                  GhostType ghost_type = _not_ghost,
-                 ElementKind element_kind = _ek_not_defined) :
-    GenericElementalField<types,elemental_field_iterator>(field,
-                                                          spatial_dimension,
-                                                          ghost_type,
-                                                          element_kind) { }
+                 ElementKind element_kind = _ek_not_defined)
+      : GenericElementalField<types, elemental_field_iterator>(
+            field, spatial_dimension, ghost_type, element_kind) {}
 };
 
 /* -------------------------------------------------------------------------- */
-
 
 __END_AKANTU_DUMPER__
 } // akantu

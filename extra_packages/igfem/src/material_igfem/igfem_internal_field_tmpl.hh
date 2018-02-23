@@ -18,16 +18,16 @@
 
 __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
-template<typename T>
-IGFEMInternalField<T>::IGFEMInternalField(const ID & id, Material & material) :
-  InternalField<T>(id, material, material.getModel().getFEEngine("IGFEMFEEngine"),
-		   dynamic_cast<MaterialIGFEM &>(material).getElementFilter()) {
+template <typename T>
+IGFEMInternalField<T>::IGFEMInternalField(const ID & id, Material & material)
+    : InternalField<T>(
+          id, material, material.getModel().getFEEngine("IGFEMFEEngine"),
+          dynamic_cast<MaterialIGFEM &>(material).getElementFilter()) {
   this->element_kind = _ek_igfem;
 }
 
 /* -------------------------------------------------------------------------- */
-template<typename T>
-IGFEMInternalField<T>::~IGFEMInternalField() { };
+template <typename T> IGFEMInternalField<T>::~IGFEMInternalField(){};
 
 __END_AKANTU__
 

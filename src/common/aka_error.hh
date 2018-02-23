@@ -259,7 +259,7 @@ namespace debug {
 #define AKANTU_DEBUG_WARNING(info)
 #define AKANTU_DEBUG_TRACE(info)
 #define AKANTU_DEBUG_ASSERT(test, info)
-#define AKANTU_ERROR(info)                                               \
+#define AKANTU_ERROR(info)                                                     \
   AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::CriticalError(), info)
 /* -------------------------------------------------------------------------- */
 #else
@@ -297,14 +297,14 @@ namespace debug {
                                    "assert [" << #test << "] " << info);       \
   } while (false)
 
-#define AKANTU_ERROR(info)                                               \
+#define AKANTU_ERROR(info)                                                     \
   do {                                                                         \
     AKANTU_DEBUG_("!!! ", ::akantu::dblError, info);                           \
     AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::CriticalError(), info);      \
   } while (false)
 #endif // AKANTU_NDEBUG
 
-#define AKANTU_TO_IMPLEMENT()                                           \
+#define AKANTU_TO_IMPLEMENT()                                                  \
   AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::NotImplementedException(),     \
                                __func__ << " : not implemented yet !")
 

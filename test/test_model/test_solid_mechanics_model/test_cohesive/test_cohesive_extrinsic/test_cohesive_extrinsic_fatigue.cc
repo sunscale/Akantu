@@ -177,8 +177,8 @@ int main(int argc, char * argv[]) {
     // test traction
     if (std::abs(numerical_traction - theoretical_traction) > 1e-13)
       AKANTU_ERROR("The numerical traction "
-                         << numerical_traction << " and theoretical traction "
-                         << theoretical_traction << " are not coincident");
+                   << numerical_traction << " and theoretical traction "
+                   << theoretical_traction << " are not coincident");
 
     // edis << model.getEnergy("dissipated") << std::endl;
   }

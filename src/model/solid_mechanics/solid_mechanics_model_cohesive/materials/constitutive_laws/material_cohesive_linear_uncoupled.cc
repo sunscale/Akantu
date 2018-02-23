@@ -115,10 +115,9 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
 
   /// loop on each quadrature point
   for (; traction_it != traction_end;
-       ++traction_it, ++opening_it, ++contact_traction_it,
-       ++contact_opening_it, ++normal_it, ++sigma_c_it, ++delta_n_max_it,
-       ++delta_t_max_it, ++delta_c_it, ++damage_n_it, ++damage_t_it,
-       ++insertion_stress_it) {
+       ++traction_it, ++opening_it, ++contact_traction_it, ++contact_opening_it,
+       ++normal_it, ++sigma_c_it, ++delta_n_max_it, ++delta_t_max_it,
+       ++delta_c_it, ++damage_n_it, ++damage_t_it, ++insertion_stress_it) {
 
     Real normal_opening_norm, tangential_opening_norm;
     bool penetration;

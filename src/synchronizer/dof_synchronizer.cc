@@ -59,9 +59,9 @@ namespace akantu {
  */
 DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
                                  MemoryID memory_id)
-    : SynchronizerImpl<UInt>(dof_manager.getCommunicator(), id, memory_id), root(0),
-      dof_manager(dof_manager), root_dofs(0, 1, "dofs-to-receive-from-master"),
-      dof_changed(true) {
+    : SynchronizerImpl<UInt>(dof_manager.getCommunicator(), id, memory_id),
+      root(0), dof_manager(dof_manager),
+      root_dofs(0, 1, "dofs-to-receive-from-master"), dof_changed(true) {
   std::vector<ID> dof_ids = dof_manager.getDOFIDs();
 
   // Transfers nodes to global equation numbers in new schemes
@@ -186,9 +186,9 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
     communicator.freeCommunicationRequest(requests);
   } else {
     communicator.gather(dofs_to_send.size(), this->root);
-    AKANTU_DEBUG(dblDebug, "I have " << nb_dofs << " dofs ("
-                                     << dofs_to_send.size()
-                                     << " to send to master proc");
+    AKANTU_DEBUG(dblDebug,
+                 "I have " << nb_dofs << " dofs (" << dofs_to_send.size()
+                           << " to send to master proc");
 
     if (dofs_to_send.size() != 0)
       communicator.send(dofs_to_send, this->root,
@@ -257,17 +257,17 @@ void DOFSynchronizer::onNodesAdded(const Array<UInt> & nodes_list) {
   }
 
   for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
-           ++sr_it) {
+       ++sr_it) {
     for (auto & pair : dofs_per_proc[*sr_it]) {
       std::sort(pair.second.begin(), pair.second.end(),
-                [this] (UInt la, UInt lb) -> bool {
+                [this](UInt la, UInt lb) -> bool {
                   UInt ga = dof_manager.localToGlobalEquationNumber(la);
                   UInt gb = dof_manager.localToGlobalEquationNumber(lb);
                   return ga < gb;
                 });
 
       auto & scheme = communications.getScheme(pair.first, *sr_it);
-      for(auto leq : pair.second) {
+      for (auto leq : pair.second) {
         scheme.push_back(leq);
       }
     }

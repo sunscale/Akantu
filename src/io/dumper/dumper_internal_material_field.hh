@@ -35,41 +35,37 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_quadrature_point_iterator.hh"
 #ifdef AKANTU_IGFEM
-#  include "dumper_igfem_material_internal_field.hh"
+#include "dumper_igfem_material_internal_field.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
-template<typename T, bool filtered = false>
+template <typename T, bool filtered = false>
 class InternalMaterialField
-  : public GenericElementalField<SingleType<T,Vector,filtered>,
-                                 quadrature_point_iterator> {
+    : public GenericElementalField<SingleType<T, Vector, filtered>,
+                                   quadrature_point_iterator> {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 
 public:
-  using types = SingleType<T,Vector,filtered>;
-  using parent = GenericElementalField<types,quadrature_point_iterator>;
+  using types = SingleType<T, Vector, filtered>;
+  using parent = GenericElementalField<types, quadrature_point_iterator>;
   using field_type = typename types::field_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 
-
   InternalMaterialField(const field_type & field,
                         UInt spatial_dimension = _all_dimensions,
                         GhostType ghost_type = _not_ghost,
-                        ElementKind element_kind = _ek_not_defined) :
-    parent(field, spatial_dimension, ghost_type, element_kind){}
-
-
+                        ElementKind element_kind = _ek_not_defined)
+      : parent(field, spatial_dimension, ghost_type, element_kind) {}
 };
-
 
 __END_AKANTU_DUMPER__
 } // akantu

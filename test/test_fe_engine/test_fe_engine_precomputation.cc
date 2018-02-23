@@ -95,8 +95,7 @@ TYPED_TEST(TestFEMPyFixture, Precompute) {
   auto kwargs = py::dict(
       "N"_a = make_proxy(ref_N), "B"_a = make_proxy(ref_B),
       "j"_a = make_proxy(ref_j), "X"_a = make_proxy(*this->coordinates),
-      "Q"_a = make_proxy(
-          this->fem->getIntegrationPoints(this->type)));
+      "Q"_a = make_proxy(this->fem->getIntegrationPoints(this->type)));
 
   auto ret = py_shape.attr("precompute")(**kwargs);
   auto check = [&](auto & ref_A, auto & A, const auto & id) {

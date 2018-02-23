@@ -162,8 +162,8 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
                            _with_nb_element = true);
 
     for (auto && ghost_type : ghost_types) {
-      for (auto && type : barycenters.elementTypes(
-               spatial_dimension - 1, ghost_type)) {
+      for (auto && type :
+           barycenters.elementTypes(spatial_dimension - 1, ghost_type)) {
         mesh_facets->getBarycenters(barycenters(type, ghost_type), type,
                                     ghost_type);
       }
@@ -345,9 +345,8 @@ void Mesh::getGlobalConnectivity(
 
   for (auto && ghost_type : ghost_types) {
     for (auto type :
-             global_connectivity.elementTypes(_spatial_dimension = _all_dimensions,
-                                              _element_kind = _ek_not_defined,
-                                              _ghost_type = ghost_type)) {
+         global_connectivity.elementTypes(_spatial_dimension = _all_dimensions,
+         _element_kind = _ek_not_defined, _ghost_type = ghost_type)) {
       if (not connectivities.exists(type, ghost_type))
         continue;
 

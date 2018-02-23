@@ -14,39 +14,35 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_cohesive.hh"
 #include "dumper_paraview.hh"
 #include "material_cohesive.hh"
+#include "solid_mechanics_model_cohesive.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
 void updateDisplacement(SolidMechanicsModelCohesive & model,
-			const ElementTypeMapArray<UInt> & elements,
-			Vector<Real> & increment);
+                        const ElementTypeMapArray<UInt> & elements,
+                        Vector<Real> & increment);
 
-bool checkTractions(SolidMechanicsModelCohesive & model,
-		    Vector<Real> & opening,
-		    Vector<Real> & theoretical_traction,
-		    Matrix<Real> & rotation);
+bool checkTractions(SolidMechanicsModelCohesive & model, Vector<Real> & opening,
+                    Vector<Real> & theoretical_traction,
+                    Matrix<Real> & rotation);
 
 void findNodesToCheck(const Mesh & mesh,
-		      const ElementTypeMapArray<UInt> & elements,
-		      Array<UInt> & nodes_to_check,
-		      Int psize);
+                      const ElementTypeMapArray<UInt> & elements,
+                      Array<UInt> & nodes_to_check, Int psize);
 
-bool checkEquilibrium(const Mesh & mesh,
-		      const Array<Real> & residual);
+bool checkEquilibrium(const Mesh & mesh, const Array<Real> & residual);
 
-bool checkResidual(const Array<Real> & residual,
-		   const Vector<Real> & traction,
-		   const Array<UInt> & nodes_to_check,
-		   const Matrix<Real> & rotation);
+bool checkResidual(const Array<Real> & residual, const Vector<Real> & traction,
+                   const Array<UInt> & nodes_to_check,
+                   const Matrix<Real> & rotation);
 
 void findElementsToDisplace(const Mesh & mesh,
-			    ElementTypeMapArray<UInt> & elements);
+                            ElementTypeMapArray<UInt> & elements);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material_tetrahedron.dat", argc, argv);
 
   const UInt spatial_dimension = 3;
@@ -66,7 +62,7 @@ int main(int argc, char *argv[]) {
   UInt nb_elements_check_serial = 0;
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     // Read the mesh
     mesh.read("tetrahedron.msh");
 
@@ -74,7 +70,7 @@ int main(int argc, char *argv[]) {
     const Array<Real> & position = mesh.getNodes();
     for (UInt n = 0; n < position.getSize(); ++n) {
       if (std::abs(position(n, 0) - 0.) < 1e-6)
-	++nb_nodes_to_check_serial;
+        ++nb_nodes_to_check_serial;
     }
 
     // /// insert cohesive elements
@@ -114,23 +110,24 @@ int main(int argc, char *argv[]) {
     nb_local_nodes.clear();
 
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
-      if (mesh.isLocalOrMasterNode(n)) ++nb_local_nodes(prank);
+      if (mesh.isLocalOrMasterNode(n))
+        ++nb_local_nodes(prank);
     }
 
     comm.allGather(nb_local_nodes.storage(), 1);
 
-    UInt total_nb_nodes_parallel = std::accumulate(nb_local_nodes.begin(),
-						   nb_local_nodes.end(), 0);
+    UInt total_nb_nodes_parallel =
+        std::accumulate(nb_local_nodes.begin(), nb_local_nodes.end(), 0);
 
     Array<UInt> global_nodes_list(total_nb_nodes_parallel);
 
     UInt first_global_node = std::accumulate(nb_local_nodes.begin(),
-					     nb_local_nodes.begin() + prank, 0);
+                                             nb_local_nodes.begin() + prank, 0);
 
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
       if (mesh.isLocalOrMasterNode(n)) {
-	global_nodes_list(first_global_node) = mesh.getNodeGlobalId(n);
-	++first_global_node;
+        global_nodes_list(first_global_node) = mesh.getNodeGlobalId(n);
+        ++first_global_node;
       }
     }
 
@@ -138,58 +135,58 @@ int main(int argc, char *argv[]) {
 
     if (prank == 0)
       std::cout << "Maximum node index: "
-		<< *(std::max_element(global_nodes_list.begin(),
-				      global_nodes_list.end())) << std::endl;
+                << *(std::max_element(global_nodes_list.begin(),
+                                      global_nodes_list.end()))
+                << std::endl;
 
     Array<UInt> repeated_nodes;
     repeated_nodes.resize(0);
 
     for (UInt n = 0; n < total_nb_nodes_parallel; ++n) {
-      UInt appearances = std::count(global_nodes_list.begin() + n,
-				    global_nodes_list.end(),
-				    global_nodes_list(n));
+      UInt appearances =
+          std::count(global_nodes_list.begin() + n, global_nodes_list.end(),
+                     global_nodes_list(n));
 
       if (appearances > 1) {
-	std::cout << "Node " << global_nodes_list(n)
-		  << " appears " << appearances << " times" << std::endl;
+        std::cout << "Node " << global_nodes_list(n) << " appears "
+                  << appearances << " times" << std::endl;
 
-	std::cout << "  in position: " << n;
+        std::cout << "  in position: " << n;
 
-	repeated_nodes.push_back(global_nodes_list(n));
+        repeated_nodes.push_back(global_nodes_list(n));
 
-	UInt * node_position = global_nodes_list.storage() + n;
+        UInt * node_position = global_nodes_list.storage() + n;
 
-	for (UInt i = 1; i < appearances; ++i) {
-	  node_position = std::find(node_position + 1,
-				    global_nodes_list.storage()
-				    + total_nb_nodes_parallel,
-				    global_nodes_list(n));
+        for (UInt i = 1; i < appearances; ++i) {
+          node_position =
+              std::find(node_position + 1,
+                        global_nodes_list.storage() + total_nb_nodes_parallel,
+                        global_nodes_list(n));
 
-	  UInt current_index = node_position - global_nodes_list.storage();
+          UInt current_index = node_position - global_nodes_list.storage();
 
-	  std::cout << ", " << current_index;
-	}
-	std::cout << std::endl << std::endl;
+          std::cout << ", " << current_index;
+        }
+        std::cout << std::endl << std::endl;
       }
     }
-
 
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
       UInt global_node = mesh.getNodeGlobalId(n);
 
-      if (std::find(repeated_nodes.begin(), repeated_nodes.end(), global_node)
-	  != repeated_nodes.end()) {
-	std::cout << "Repeated global node " << global_node
-		  << " corresponds to local node " << n << std::endl;
+      if (std::find(repeated_nodes.begin(), repeated_nodes.end(),
+                    global_node) != repeated_nodes.end()) {
+        std::cout << "Repeated global node " << global_node
+                  << " corresponds to local node " << n << std::endl;
       }
     }
 
-
     if (total_nb_nodes != total_nb_nodes_parallel) {
       if (prank == 0) {
-	std::cout << "Error: total number of nodes is wrong in parallel" << std::endl;
-	std::cout << "Serial: " << total_nb_nodes
-		  << " Parallel: " << total_nb_nodes_parallel << std::endl;
+        std::cout << "Error: total number of nodes is wrong in parallel"
+                  << std::endl;
+        std::cout << "Serial: " << total_nb_nodes
+                  << " Parallel: " << total_nb_nodes_parallel << std::endl;
       }
       finalize();
       return EXIT_FAILURE;
@@ -205,7 +202,7 @@ int main(int argc, char *argv[]) {
   model.dump();
 
   model.setBaseNameToDumper("cohesive elements",
-			    "cohesive_elements_parallel_tetrahedron");
+                            "cohesive_elements_parallel_tetrahedron");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
   model.dump("cohesive elements");
 
@@ -220,7 +217,7 @@ int main(int argc, char *argv[]) {
     if (prank == 0) {
       std::cout << "Error: number of elements to check is wrong" << std::endl;
       std::cout << "Serial: " << nb_elements_check_serial
-		<< " Parallel: " << nb_elements_check << std::endl;
+                << " Parallel: " << nb_elements_check << std::endl;
     }
     finalize();
     return EXIT_FAILURE;
@@ -234,15 +231,15 @@ int main(int argc, char *argv[]) {
   nodes_to_check_size(prank) = nodes_to_check.getSize();
   comm.allGather(nodes_to_check_size.storage(), 1);
 
-  UInt nodes_to_check_global_size = std::accumulate(nodes_to_check_size.storage(),
-  						    nodes_to_check_size.storage()
-  						    + psize, 0);
+  UInt nodes_to_check_global_size = std::accumulate(
+      nodes_to_check_size.storage(), nodes_to_check_size.storage() + psize, 0);
 
   if (nodes_to_check_global_size != nb_nodes_to_check_serial) {
     if (prank == 0) {
-      std::cout << "Error: number of nodes to check is wrong in parallel" << std::endl;
+      std::cout << "Error: number of nodes to check is wrong in parallel"
+                << std::endl;
       std::cout << "Serial: " << nb_nodes_to_check_serial
-  		<< " Parallel: " << nodes_to_check_global_size << std::endl;
+                << " Parallel: " << nodes_to_check_global_size << std::endl;
     }
     finalize();
     return EXIT_FAILURE;
@@ -259,7 +256,6 @@ int main(int argc, char *argv[]) {
   rotation(1, 1) = std::cos(angle);
   rotation(2, 2) = 1.;
 
-
   Vector<Real> increment_tmp(spatial_dimension);
   for (UInt dim = 0; dim < spatial_dimension; ++dim) {
     increment_tmp(dim) = (dim + 1) * increment_constant;
@@ -271,10 +267,12 @@ int main(int argc, char *argv[]) {
   Array<Real> & position = mesh.getNodes();
   Array<Real> position_tmp(position);
 
-  Array<Real>::iterator<Vector<Real> > position_it = position.begin(spatial_dimension);
-  Array<Real>::iterator<Vector<Real> > position_end = position.end(spatial_dimension);
-  Array<Real>::iterator<Vector<Real> > position_tmp_it
-    = position_tmp.begin(spatial_dimension);
+  Array<Real>::iterator<Vector<Real>> position_it =
+      position.begin(spatial_dimension);
+  Array<Real>::iterator<Vector<Real>> position_end =
+      position.end(spatial_dimension);
+  Array<Real>::iterator<Vector<Real>> position_tmp_it =
+      position_tmp.begin(spatial_dimension);
 
   for (; position_it != position_end; ++position_it, ++position_tmp_it)
     position_it->mul<false>(rotation, *position_tmp_it);
@@ -283,7 +281,6 @@ int main(int argc, char *argv[]) {
   model.dump("cohesive elements");
 
   updateDisplacement(model, elements, increment);
-
 
   Real theoretical_Ed = 0;
 
@@ -309,8 +306,8 @@ int main(int argc, char *argv[]) {
 
     opening += increment_tmp;
     if (checkTractions(model, opening, traction, rotation) ||
-	checkEquilibrium(mesh, residual) ||
-	checkResidual(residual, traction, nodes_to_check, rotation)) {
+        checkEquilibrium(mesh, residual) ||
+        checkResidual(residual, traction, nodes_to_check, rotation)) {
       finalize();
       return EXIT_FAILURE;
     }
@@ -327,12 +324,11 @@ int main(int argc, char *argv[]) {
     opening_old = opening;
     traction_old = traction;
 
-
     updateDisplacement(model, elements, increment);
 
-    if(s % 10 == 0) {
+    if (s % 10 == 0) {
       if (prank == 0)
-	std::cout << "passing step " << s << "/" << max_steps << std::endl;
+        std::cout << "passing step " << s << "/" << max_steps << std::endl;
       model.dump();
       model.dump("cohesive elements");
     }
@@ -347,7 +343,7 @@ int main(int argc, char *argv[]) {
 
   if (prank == 0)
     std::cout << "Dissipated energy: " << Ed
-	      << ", theoretical value: " << theoretical_Ed << std::endl;
+              << ", theoretical value: " << theoretical_Ed << std::endl;
 
   if (!Math::are_float_equal(Ed, theoretical_Ed) || std::isnan(Ed)) {
 
@@ -359,15 +355,16 @@ int main(int argc, char *argv[]) {
   }
 
   finalize();
-  if(prank == 0) std::cout << "OK: Test passed!" << std::endl;
+  if (prank == 0)
+    std::cout << "OK: Test passed!" << std::endl;
   return EXIT_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
 
 void updateDisplacement(SolidMechanicsModelCohesive & model,
-			const ElementTypeMapArray<UInt> & elements,
-			Vector<Real> & increment) {
+                        const ElementTypeMapArray<UInt> & elements,
+                        Vector<Real> & increment) {
 
   UInt spatial_dimension = model.getSpatialDimension();
   Mesh & mesh = model.getFEEngine().getMesh();
@@ -378,11 +375,10 @@ void updateDisplacement(SolidMechanicsModelCohesive & model,
   update.clear();
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end();
-       ++gt) {
+       gt != ghost_type_t::end(); ++gt) {
 
     GhostType ghost_type = *gt;
-    Mesh::type_iterator it   = mesh.firstType(spatial_dimension, ghost_type);
+    Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
     Mesh::type_iterator last = mesh.lastType(spatial_dimension, ghost_type);
 
     for (; it != last; ++it) {
@@ -393,15 +389,16 @@ void updateDisplacement(SolidMechanicsModelCohesive & model,
       UInt nb_nodes_per_element = connectivity.getNbComponent();
 
       for (UInt el = 0; el < elem.getSize(); ++el) {
-	for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-	  UInt node = connectivity(elem(el), n);
-	  if (!update(node)) {
-	    Vector<Real> node_disp(displacement.storage() + node * spatial_dimension,
-				   spatial_dimension);
-	    node_disp += increment;
-	    update(node) = true;
-	  }
-	}
+        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+          UInt node = connectivity(elem(el), n);
+          if (!update(node)) {
+            Vector<Real> node_disp(displacement.storage() +
+                                       node * spatial_dimension,
+                                   spatial_dimension);
+            node_disp += increment;
+            update(node) = true;
+          }
+        }
       }
     }
   }
@@ -409,17 +406,18 @@ void updateDisplacement(SolidMechanicsModelCohesive & model,
 
 /* -------------------------------------------------------------------------- */
 
-bool checkTractions(SolidMechanicsModelCohesive & model,
-		    Vector<Real> & opening,
-		    Vector<Real> & theoretical_traction,
-		    Matrix<Real> & rotation) {
+bool checkTractions(SolidMechanicsModelCohesive & model, Vector<Real> & opening,
+                    Vector<Real> & theoretical_traction,
+                    Matrix<Real> & rotation) {
   UInt spatial_dimension = model.getSpatialDimension();
   const Mesh & mesh = model.getMesh();
 
-  const MaterialCohesive & mat_cohesive
-    = dynamic_cast < const MaterialCohesive & > (model.getMaterial(1));
+  const MaterialCohesive & mat_cohesive =
+      dynamic_cast<const MaterialCohesive &>(model.getMaterial(1));
 
-  Real sigma_c = mat_cohesive.getParam< RandomInternalField<Real, FacetInternalField> >("sigma_c");
+  Real sigma_c =
+      mat_cohesive.getParam<RandomInternalField<Real, FacetInternalField>>(
+          "sigma_c");
   const Real beta = mat_cohesive.getParam<Real>("beta");
   const Real G_cI = mat_cohesive.getParam<Real>("G_c");
   //  Real G_cII = mat_cohesive.getParam<Real>("G_cII");
@@ -440,12 +438,12 @@ bool checkTractions(SolidMechanicsModelCohesive & model,
 
   Real tangential_opening_norm = tangential_opening.norm();
 
-  Real beta2_kappa2 = beta * beta/kappa/kappa;
-  Real beta2_kappa  = beta * beta/kappa;
+  Real beta2_kappa2 = beta * beta / kappa / kappa;
+  Real beta2_kappa = beta * beta / kappa;
 
-  Real delta = std::sqrt(tangential_opening_norm * tangential_opening_norm
-			 * beta2_kappa2 +
-			 normal_opening_norm * normal_opening_norm);
+  Real delta = std::sqrt(tangential_opening_norm * tangential_opening_norm *
+                             beta2_kappa2 +
+                         normal_opening_norm * normal_opening_norm);
 
   delta = std::max(delta, delta_0);
 
@@ -454,7 +452,7 @@ bool checkTractions(SolidMechanicsModelCohesive & model,
   if (Math::are_float_equal(theoretical_damage, 1.))
     theoretical_traction.clear();
   else {
-    theoretical_traction  = tangential_opening;
+    theoretical_traction = tangential_opening;
     theoretical_traction *= beta2_kappa;
     theoretical_traction += normal_opening;
     theoretical_traction *= sigma_c / delta * (1. - theoretical_damage);
@@ -468,40 +466,40 @@ bool checkTractions(SolidMechanicsModelCohesive & model,
   theoretical_damage = std::min(theoretical_damage, 1.);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end();
-       ++gt) {
+       gt != ghost_type_t::end(); ++gt) {
 
     GhostType ghost_type = *gt;
-    Mesh::type_iterator it
-      = mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
-    Mesh::type_iterator last
-    = mesh.lastType(spatial_dimension, ghost_type, _ek_cohesive);
-    
+    Mesh::type_iterator it =
+        mesh.firstType(spatial_dimension, ghost_type, _ek_cohesive);
+    Mesh::type_iterator last =
+        mesh.lastType(spatial_dimension, ghost_type, _ek_cohesive);
+
     for (; it != last; ++it) {
       ElementType type = *it;
 
       const Array<Real> & traction = mat_cohesive.getTraction(type, ghost_type);
       const Array<Real> & damage = mat_cohesive.getDamage(type, ghost_type);
 
-      UInt nb_quad_per_el
-	= model.getFEEngine("CohesiveFEEngine").getNbIntegrationPoints(type);
+      UInt nb_quad_per_el =
+          model.getFEEngine("CohesiveFEEngine").getNbIntegrationPoints(type);
       UInt nb_element = model.getMesh().getNbElement(type, ghost_type);
       UInt tot_nb_quad = nb_element * nb_quad_per_el;
 
       for (UInt q = 0; q < tot_nb_quad; ++q) {
-	for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	  if (!Math::are_float_equal(std::abs(theoretical_traction_rotated(dim)),
-				     std::abs(traction(q, dim)))) {
-	    std::cout << "Error: tractions are incorrect" << std::endl;
-	    return 1;
-	  }
-	}
+        for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+          if (!Math::are_float_equal(
+                  std::abs(theoretical_traction_rotated(dim)),
+                  std::abs(traction(q, dim)))) {
+            std::cout << "Error: tractions are incorrect" << std::endl;
+            return 1;
+          }
+        }
 
-	if (ghost_type == _not_ghost)
-	  if (!Math::are_float_equal(theoretical_damage, damage(q))) {
-	    std::cout << "Error: damage is incorrect" << std::endl;
-	    return 1;
-	}
+        if (ghost_type == _not_ghost)
+          if (!Math::are_float_equal(theoretical_damage, damage(q))) {
+            std::cout << "Error: damage is incorrect" << std::endl;
+            return 1;
+          }
       }
     }
   }
@@ -512,9 +510,8 @@ bool checkTractions(SolidMechanicsModelCohesive & model,
 /* -------------------------------------------------------------------------- */
 
 void findNodesToCheck(const Mesh & mesh,
-		      const ElementTypeMapArray<UInt> & elements,
-		      Array<UInt> & nodes_to_check,
-		      Int psize) {
+                      const ElementTypeMapArray<UInt> & elements,
+                      Array<UInt> & nodes_to_check, Int psize) {
 
   const auto & comm = Communicator::getStaticCommunicator();
   Int prank = comm.whoAmI();
@@ -545,16 +542,15 @@ void findNodesToCheck(const Mesh & mesh,
 
       UInt element = elem(el);
       Vector<UInt> conn_el(connectivity.storage() + nb_nodes_per_elem * element,
-			   nb_nodes_per_elem);
+                           nb_nodes_per_elem);
 
       for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
-	UInt node = conn_el(n);
-	if (std::abs(position(node, 0) - 0.) < 1.e-6
-	    && !checked_nodes(node)) {
-	  checked_nodes(node) = true;
-	  nodes_to_check.push_back(node);
-	  global_nodes_to_check.push_back(mesh.getNodeGlobalId(node));
-	}
+        UInt node = conn_el(n);
+        if (std::abs(position(node, 0) - 0.) < 1.e-6 && !checked_nodes(node)) {
+          checked_nodes(node) = true;
+          nodes_to_check.push_back(node);
+          global_nodes_to_check.push_back(mesh.getNodeGlobalId(node));
+        }
       }
     }
   }
@@ -563,8 +559,8 @@ void findNodesToCheck(const Mesh & mesh,
 
   for (Int p = prank + 1; p < psize; ++p) {
     requests.push_back(comm.asyncSend(global_nodes_to_check.storage(),
-				      global_nodes_to_check.getSize(),
-				      p, prank));
+                                      global_nodes_to_check.getSize(), p,
+                                      prank));
   }
 
   Array<UInt> recv_nodes;
@@ -576,17 +572,17 @@ void findNodesToCheck(const Mesh & mesh,
     UInt recv_nodes_size = recv_nodes.getSize();
     recv_nodes.resize(recv_nodes_size + status.getSize());
 
-    comm.receive(recv_nodes.storage() + recv_nodes_size, status.getSize(), p, p);
+    comm.receive(recv_nodes.storage() + recv_nodes_size, status.getSize(), p,
+                 p);
   }
 
   comm.waitAll(requests);
   comm.freeCommunicationRequest(requests);
 
   for (UInt i = 0; i < recv_nodes.getSize(); ++i) {
-    Array<UInt>::iterator<UInt> node_position
-      = std::find(global_nodes_to_check.begin(),
-		  global_nodes_to_check.end(),
-		  recv_nodes(i));
+    Array<UInt>::iterator<UInt> node_position =
+        std::find(global_nodes_to_check.begin(), global_nodes_to_check.end(),
+                  recv_nodes(i));
 
     if (node_position != global_nodes_to_check.end()) {
       UInt index = node_position - global_nodes_to_check.begin();
@@ -598,16 +594,15 @@ void findNodesToCheck(const Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 
-bool checkEquilibrium(const Mesh & mesh,
-		      const Array<Real> & residual) {
+bool checkEquilibrium(const Mesh & mesh, const Array<Real> & residual) {
 
   UInt spatial_dimension = residual.getNbComponent();
 
   Vector<Real> residual_sum(spatial_dimension);
   residual_sum.clear();
 
-  Array<Real>::const_iterator<Vector<Real> > res_it
-    = residual.begin(spatial_dimension);
+  Array<Real>::const_iterator<Vector<Real>> res_it =
+      residual.begin(spatial_dimension);
 
   for (UInt n = 0; n < residual.getSize(); ++n, ++res_it) {
     if (mesh.isLocalOrMasterNode(n))
@@ -621,7 +616,7 @@ bool checkEquilibrium(const Mesh & mesh,
     if (!Math::are_float_equal(residual_sum(s), 0.)) {
 
       if (comm.whoAmI() == 0)
-	std::cout << "Error: system is not in equilibrium!" << std::endl;
+        std::cout << "Error: system is not in equilibrium!" << std::endl;
 
       return 1;
     }
@@ -632,10 +627,9 @@ bool checkEquilibrium(const Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 
-bool checkResidual(const Array<Real> & residual,
-		   const Vector<Real> & traction,
-		   const Array<UInt> & nodes_to_check,
-		   const Matrix<Real> & rotation) {
+bool checkResidual(const Array<Real> & residual, const Vector<Real> & traction,
+                   const Array<UInt> & nodes_to_check,
+                   const Matrix<Real> & rotation) {
 
   UInt spatial_dimension = residual.getNbComponent();
 
@@ -646,7 +640,7 @@ bool checkResidual(const Array<Real> & residual,
     UInt node = nodes_to_check(n);
 
     Vector<Real> res(residual.storage() + node * spatial_dimension,
-		     spatial_dimension);
+                     spatial_dimension);
 
     total_force += res;
   }
@@ -662,7 +656,7 @@ bool checkResidual(const Array<Real> & residual,
     if (!Math::are_float_equal(total_force(s), theoretical_total_force(s))) {
 
       if (comm.whoAmI() == 0)
-	std::cout << "Error: total force isn't correct!" << std::endl;
+        std::cout << "Error: total force isn't correct!" << std::endl;
 
       return 1;
     }
@@ -674,7 +668,7 @@ bool checkResidual(const Array<Real> & residual,
 /* -------------------------------------------------------------------------- */
 
 void findElementsToDisplace(const Mesh & mesh,
-			    ElementTypeMapArray<UInt> & elements) {
+                            ElementTypeMapArray<UInt> & elements) {
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   mesh.initElementTypeMapArray(elements, 1, spatial_dimension);
@@ -682,11 +676,10 @@ void findElementsToDisplace(const Mesh & mesh,
   Vector<Real> bary(spatial_dimension);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end();
-       ++gt) {
+       gt != ghost_type_t::end(); ++gt) {
 
     GhostType ghost_type = *gt;
-    Mesh::type_iterator it   = mesh.firstType(spatial_dimension, ghost_type);
+    Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
     Mesh::type_iterator last = mesh.lastType(spatial_dimension, ghost_type);
 
     for (; it != last; ++it) {
@@ -696,8 +689,9 @@ void findElementsToDisplace(const Mesh & mesh,
       UInt nb_element = mesh.getNbElement(type, ghost_type);
 
       for (UInt el = 0; el < nb_element; ++el) {
-	mesh.getBarycenter(el, type, bary.storage(), ghost_type);
-	if (bary(0) > 0.0001) elem.push_back(el);
+        mesh.getBarycenter(el, type, bary.storage(), ghost_type);
+        if (bary(0) > 0.0001)
+          elem.push_back(el);
       }
     }
   }

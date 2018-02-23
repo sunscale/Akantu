@@ -508,7 +508,7 @@ TEST_F(TensorFixture, MatrixSubstractEqual) {
     EXPECT_DOUBLE_EQ(0., m[i]);
 }
 
-#if defined (AKANTU_USE_LAPACK)
+#if defined(AKANTU_USE_LAPACK)
 TEST_F(TensorFixture, MatrixEigs) {
   Matrix<double> m{{0, 1, 0, 0}, {1., 0, 0, 0}, {0, 1, 0, 1}, {0, 0, 4, 0}};
 

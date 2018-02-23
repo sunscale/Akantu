@@ -55,7 +55,7 @@ TYPED_TEST(TestFEMFixture, GradientPoly) {
 
   const auto & position = this->fem->getMesh().getNodes();
   Array<Real> const_val(this->fem->getMesh().getNbNodes(), 2, "const_val");
-  for(auto && pair : zip(make_view(position, dim), make_view(const_val, 2))) {
+  for (auto && pair : zip(make_view(position, dim), make_view(const_val, 2))) {
     auto & pos = std::get<0>(pair);
     auto & const_ = std::get<1>(pair);
 
@@ -68,11 +68,12 @@ TYPED_TEST(TestFEMFixture, GradientPoly) {
   }
 
   /// compute the gradient
-  Array<Real> grad_on_quad(this->nb_quadrature_points_total, 2 * dim, "grad_on_quad");
+  Array<Real> grad_on_quad(this->nb_quadrature_points_total, 2 * dim,
+                           "grad_on_quad");
   this->fem->gradientOnIntegrationPoints(const_val, grad_on_quad, 2, type);
 
   /// check the results
-  for(auto && grad : make_view(grad_on_quad, 2, dim)) {
+  for (auto && grad : make_view(grad_on_quad, 2, dim)) {
     for (UInt d = 0; d < dim; ++d) {
       EXPECT_NEAR(grad(0, d), alpha[0][d], 5e-13);
       EXPECT_NEAR(grad(1, d), alpha[1][d], 5e-13);
@@ -85,21 +86,21 @@ TYPED_TEST(TestFEMFixture, GradientPositions) {
   const auto dim = this->dim;
   const auto type = this->type;
 
-  UInt nb_quadrature_points = this->fem->getNbIntegrationPoints(type) * this->nb_element;
+  UInt nb_quadrature_points =
+      this->fem->getNbIntegrationPoints(type) * this->nb_element;
   Array<Real> grad_coord_on_quad(nb_quadrature_points, dim * dim,
                                  "grad_coord_on_quad");
 
   const auto & position = this->mesh->getNodes();
-  this->fem->gradientOnIntegrationPoints(position, grad_coord_on_quad,
-                                         dim, type);
+  this->fem->gradientOnIntegrationPoints(position, grad_coord_on_quad, dim,
+                                         type);
 
-   auto I = Matrix<Real>::eye(UInt(dim));
+  auto I = Matrix<Real>::eye(UInt(dim));
 
-   for(auto && grad : make_view(grad_coord_on_quad, dim, dim)) {
-     auto diff = (I - grad).template norm<L_inf>();
+  for (auto && grad : make_view(grad_coord_on_quad, dim, dim)) {
+    auto diff = (I - grad).template norm<L_inf>();
 
-     EXPECT_NEAR(0., diff, 2e-14);
-   }
+    EXPECT_NEAR(0., diff, 2e-14);
+  }
 }
-
 }

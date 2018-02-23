@@ -22,8 +22,9 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline UInt CohesiveElementInserter::getNbData(const Array<Element> & elements,
-                                               const SynchronizationTag & tag) const {
+inline UInt
+CohesiveElementInserter::getNbData(const Array<Element> & elements,
+                                   const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
   UInt size = 0;
@@ -37,9 +38,10 @@ inline UInt CohesiveElementInserter::getNbData(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void CohesiveElementInserter::packData(CommunicationBuffer & buffer,
-                                              const Array<Element> & elements,
-                                              const SynchronizationTag & tag) const {
+inline void
+CohesiveElementInserter::packData(CommunicationBuffer & buffer,
+                                  const Array<Element> & elements,
+                                  const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
   if (tag == _gst_ce_groups)
     packUnpackGroupedInsertionData<true>(buffer, elements);
@@ -48,9 +50,10 @@ inline void CohesiveElementInserter::packData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void CohesiveElementInserter::unpackData(CommunicationBuffer & buffer,
-                                                const Array<Element> & elements,
-                                                const SynchronizationTag & tag) {
+inline void
+CohesiveElementInserter::unpackData(CommunicationBuffer & buffer,
+                                    const Array<Element> & elements,
+                                    const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
   if (tag == _gst_ce_groups)
     packUnpackGroupedInsertionData<false>(buffer, elements);
@@ -67,8 +70,7 @@ inline void CohesiveElementInserter::packUnpackGroupedInsertionData(
 
   auto current_element_type = _not_defined;
   auto current_ghost_type = _casper;
-  auto & physical_names =
-      mesh_facets.registerData<UInt>("physical_names");
+  auto & physical_names = mesh_facets.registerData<UInt>("physical_names");
 
   Array<bool> * vect = nullptr;
   Array<UInt> * vect2 = nullptr;

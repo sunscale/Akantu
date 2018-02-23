@@ -108,9 +108,9 @@ public:
   class IterableCommunicationDesc {
   public:
     IterableCommunicationDesc(Communications & communications,
-                              SynchronizationTag tag,
-                              CommunicationSendRecv sr)
-        : communications(communications), tag(std::move(tag)), sr(std::move(sr)) {}
+                              SynchronizationTag tag, CommunicationSendRecv sr)
+        : communications(communications), tag(std::move(tag)),
+          sr(std::move(sr)) {}
     auto begin() { return communications.begin(tag, sr); }
     auto end() { return communications.end(tag, sr); }
 
@@ -179,8 +179,7 @@ public:
   /* ------------------------------------------------------------------------ */
   class IterableSchemes {
   public:
-    IterableSchemes(Communications & communications,
-                    CommunicationSendRecv sr)
+    IterableSchemes(Communications & communications, CommunicationSendRecv sr)
         : communications(communications), sr(std::move(sr)) {}
     decltype(auto) begin() { return communications.begin_scheme(sr); }
     decltype(auto) end() { return communications.end_scheme(sr); }

@@ -50,7 +50,7 @@ namespace akantu {
       ElementClassExtraGeometryProperties<type>::facet_type;
 
 BOOST_PP_SEQ_FOR_EACH(AKANTU_INSTANTIATE_TYPES, _,
-                      (_not_defined) AKANTU_ek_regular_ELEMENT_TYPE)
+                      (_not_defined)AKANTU_ek_regular_ELEMENT_TYPE)
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 BOOST_PP_SEQ_FOR_EACH(AKANTU_INSTANTIATE_TYPES, _,

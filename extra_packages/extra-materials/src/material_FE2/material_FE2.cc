@@ -181,7 +181,6 @@ void MaterialFE2<spatial_dimension>::advanceASR(
     /// effect
     RVE.applyHomogeneousTemperature(std::get<4>(data));
 
-
     /// advance the ASR in every RVE
     RVE.advanceASR(prestrain);
 

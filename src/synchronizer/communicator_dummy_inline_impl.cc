@@ -65,10 +65,14 @@ CommunicationRequest Communicator::asyncReceiveImpl(T *, Int, Int, Int) const {
 template <typename T>
 void Communicator::probe(Int, Int, CommunicationStatus &) const {}
 template <typename T>
-bool Communicator::asyncProbe(Int, Int, CommunicationStatus &) const { return true; }
+bool Communicator::asyncProbe(Int, Int, CommunicationStatus &) const {
+  return true;
+}
 
 bool Communicator::test(CommunicationRequest &) const { return true; }
-bool Communicator::testAll(std::vector<CommunicationRequest> &) const { return true; }
+bool Communicator::testAll(std::vector<CommunicationRequest> &) const {
+  return true;
+}
 void Communicator::wait(CommunicationRequest &) const {}
 void Communicator::waitAll(std::vector<CommunicationRequest> &) const {}
 UInt Communicator::waitAny(std::vector<CommunicationRequest> &) const {
@@ -76,7 +80,10 @@ UInt Communicator::waitAny(std::vector<CommunicationRequest> &) const {
 }
 
 void Communicator::barrier() const {}
-  CommunicationRequest Communicator::asyncBarrier() const { return std::shared_ptr<InternalCommunicationRequest>(new InternalCommunicationRequest(0, 0)); }
+CommunicationRequest Communicator::asyncBarrier() const {
+  return std::shared_ptr<InternalCommunicationRequest>(
+      new InternalCommunicationRequest(0, 0));
+}
 
 template <typename T>
 void Communicator::reduceImpl(T *, int, const SynchronizerOperation &,

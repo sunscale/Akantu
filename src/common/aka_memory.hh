@@ -35,9 +35,9 @@
 #define __AKANTU_MEMORY_HH__
 
 /* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
 #include "aka_common.hh"
 #include "aka_static_memory.hh"
-#include "aka_array.hh"
 
 /* -------------------------------------------------------------------------- */
 #include <list>

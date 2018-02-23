@@ -30,18 +30,16 @@ class NTRFContact : public NTNBaseContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  NTRFContact(SolidMechanicsModel & model,
-	      const ContactID & id = "contact",
-	      const MemoryID & memory_id = 0);
-  virtual ~NTRFContact() {};
+  NTRFContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+              const MemoryID & memory_id = 0);
+  virtual ~NTRFContact(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void setReferencePoint(Real x=0., Real y=0., Real z=0.);
-  void setNormal(Real x=1., Real y=0., Real z=0.);
+  void setReferencePoint(Real x = 0., Real y = 0., Real z = 0.);
+  void setNormal(Real x = 1., Real y = 0., Real z = 0.);
 
   /// add surface and nodes according to the surface normal
   void addSurface(const Surface & surf);
@@ -58,15 +56,17 @@ public:
   /// compute the normal gap
   virtual void computeNormalGap(Array<Real> & gap) const;
 
-  /// compute relative normal field (only value that has to be multiplied with the normal)
+  /// compute relative normal field (only value that has to be multiplied with
+  /// the normal)
   /// relative to master nodes
   virtual void computeRelativeNormalField(const Array<Real> & field,
-					  Array<Real> & rel_normal_field) const;
+                                          Array<Real> & rel_normal_field) const;
 
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  virtual void computeRelativeTangentialField(const Array<Real> & field,
-					      Array<Real> & rel_tang_field) const;
+  virtual void
+  computeRelativeTangentialField(const Array<Real> & field,
+                                 Array<Real> & rel_tang_field) const;
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -76,14 +76,13 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
+                                    const std::string & field_id);
   //  virtual void addDumpFieldVector(const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -94,7 +93,6 @@ private:
   Vector<Real> normal;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -102,8 +100,8 @@ private:
 //#include "ntrf_contact_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTRFContact & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const NTRFContact & _this) {
   _this.printself(stream);
   return stream;
 }

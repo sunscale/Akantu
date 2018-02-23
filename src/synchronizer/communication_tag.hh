@@ -40,7 +40,9 @@ public:
   Tag(int val) : tag(val) {}
   Tag(int val, int hash) : tag(val), hash(hash) {}
 
-  operator int() const { return int(max_tag == 0 ? tag : (uint32_t(tag) % max_tag)); }
+  operator int() const {
+    return int(max_tag == 0 ? tag : (uint32_t(tag) % max_tag));
+  }
 
   /// generates a tag
   template <typename CommTag>
@@ -65,8 +67,8 @@ public:
     stream << "TAG(";
     if (hash != 0)
       t = t ^ hash;
-    stream << (t >> 12) << ":" << (t >> 4 & 0xFF) << ":" << (t & 0xF)
-           << " -> " << std::hex << "0x"<< int(*this);
+    stream << (t >> 12) << ":" << (t >> 4 & 0xFF) << ":" << (t & 0xF) << " -> "
+           << std::hex << "0x" << int(*this);
     if (hash != 0)
       stream << " {hash: 0x" << hash << "}";
     stream << " [0x" << this->max_tag << "]";

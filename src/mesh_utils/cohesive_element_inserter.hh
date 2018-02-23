@@ -137,7 +137,6 @@ public:
 
   AKANTU_SET_MACRO(IsExtrinsic, is_extrinsic, bool);
 
-
 public:
   friend class SolidMechanicsModelCohesive;
 

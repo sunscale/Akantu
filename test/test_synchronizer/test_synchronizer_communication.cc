@@ -30,13 +30,13 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include "test_synchronizers_fixture.hh"
 #include "test_data_accessor.hh"
+#include "test_synchronizers_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
-#include <random>
 #include <chrono>
+#include <random>
 #include <thread>
 /* -------------------------------------------------------------------------- */
 
@@ -47,10 +47,12 @@ public:
     this->distribute();
 
     /// compute barycenter for each element
-    barycenters = std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
+    barycenters =
+        std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
     this->initBarycenters(*barycenters, *mesh);
 
-    test_accessor = std::make_unique<TestAccessor>(*this->mesh, *this->barycenters);
+    test_accessor =
+        std::make_unique<TestAccessor>(*this->mesh, *this->barycenters);
   }
 
   void TearDown() override {
@@ -62,7 +64,6 @@ protected:
   std::unique_ptr<ElementTypeMapArray<Real>> barycenters;
   std::unique_ptr<TestAccessor> test_accessor;
 };
-
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestElementSynchronizerFixture, SynchroneOnce) {
@@ -78,8 +79,8 @@ TEST_F(TestElementSynchronizerFixture, Synchrone) {
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestElementSynchronizerFixture, Asynchrone) {
-auto & synchronizer = this->mesh->getElementSynchronizer();
-synchronizer.asynchronousSynchronize(*this->test_accessor, _gst_test);
+  auto & synchronizer = this->mesh->getElementSynchronizer();
+  synchronizer.asynchronousSynchronize(*this->test_accessor, _gst_test);
 
   std::random_device r;
   std::default_random_engine engine(r());

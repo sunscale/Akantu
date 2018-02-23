@@ -37,7 +37,7 @@
 #define __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__
 
 namespace akantu {
-  class DOFManagerDefault;
+class DOFManagerDefault;
 }
 
 namespace akantu {
@@ -48,9 +48,9 @@ class NonLinearSolverLinear : public NonLinearSolver {
   /* ------------------------------------------------------------------------ */
 public:
   NonLinearSolverLinear(DOFManagerDefault & dof_manager,
-                         const NonLinearSolverType & non_linear_solver_type,
-                         const ID & id = "non_linear_solver_linear",
-                         UInt memory_id = 0);
+                        const NonLinearSolverType & non_linear_solver_type,
+                        const ID & id = "non_linear_solver_linear",
+                        UInt memory_id = 0);
   ~NonLinearSolverLinear() override;
 
   /* ------------------------------------------------------------------------ */

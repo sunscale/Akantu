@@ -31,21 +31,22 @@
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-void generateIGFEMMesh(const ElementType type, Mesh & mesh, const std::string & filename) {
+void generateIGFEMMesh(const ElementType type, Mesh & mesh,
+                       const std::string & filename) {
   std::ifstream infile;
   infile.open(filename.c_str());
-  if(!infile.good()) {
+  if (!infile.good()) {
     AKANTU_DEBUG_ERROR("Cannot open file " << filename);
   }
   UInt current_line = 0;
   std::string line;
   UInt first_node_number = std::numeric_limits<UInt>::max();
   UInt last_node_number = 0;
-  while(infile.good()) {
+  while (infile.good()) {
     std::getline(infile, line);
     current_line++;
     /// read all nodes
-    if(line == "$Nodes" || line == "$NOD") {
+    if (line == "$Nodes" || line == "$NOD") {
       UInt nb_nodes;
 
       std::getline(infile, line);
@@ -60,7 +61,7 @@ void generateIGFEMMesh(const ElementType type, Mesh & mesh, const std::string & 
       Real coord[3];
       UInt spatial_dimension = nodes.getNbComponent();
       /// for each node, read the coordinates
-      for(UInt i = 0; i < nb_nodes; ++i) {
+      for (UInt i = 0; i < nb_nodes; ++i) {
         UInt offset = i * spatial_dimension;
 
         std::getline(infile, line);
@@ -68,19 +69,20 @@ void generateIGFEMMesh(const ElementType type, Mesh & mesh, const std::string & 
         sstr_node >> index >> coord[0] >> coord[1] >> coord[2];
         current_line++;
 
-        first_node_number = std::min(first_node_number,index);
-        last_node_number  = std::max(last_node_number, index);
+        first_node_number = std::min(first_node_number, index);
+        last_node_number = std::max(last_node_number, index);
 
         /// read the coordinates
-        for(UInt j = 0; j < spatial_dimension; ++j)
+        for (UInt j = 0; j < spatial_dimension; ++j)
           nodes.storage()[offset + j] = coord[j];
       }
       std::getline(infile, line); /// the end of block line
     }
     /// read all elements
-    if(line == "$Elements" || line == "$ELM") {
+    if (line == "$Elements" || line == "$ELM") {
       mesh.addConnectivityType(type);
-      Array<UInt> & connectivity = const_cast<Array<UInt> &>(mesh.getConnectivity(type));
+      Array<UInt> & connectivity =
+          const_cast<Array<UInt> &>(mesh.getConnectivity(type));
       UInt node_per_element = connectivity.getNbComponent();
       UInt nb_elements = 0;
 
@@ -88,18 +90,19 @@ void generateIGFEMMesh(const ElementType type, Mesh & mesh, const std::string & 
       std::stringstream sstr(line);
       sstr >> nb_elements;
       current_line++;
-      
-      for(UInt i = 0; i < nb_elements; ++i) {
+
+      for (UInt i = 0; i < nb_elements; ++i) {
         std::getline(infile, line);
         std::stringstream sstr_elem(line);
         current_line++;
         Vector<UInt> local_connect(node_per_element);
-        for(UInt j = 0; j < node_per_element; ++j) {
+        for (UInt j = 0; j < node_per_element; ++j) {
           UInt node_index;
           sstr_elem >> node_index;
 
           AKANTU_DEBUG_ASSERT(node_index <= last_node_number,
-			      "Node number not in range : line " << current_line);
+                              "Node number not in range : line "
+                                  << current_line);
 
           node_index -= first_node_number;
           local_connect(j) = node_index;

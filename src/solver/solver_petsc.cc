@@ -33,8 +33,8 @@
 /* -------------------------------------------------------------------------- */
 #include "solver_petsc.hh"
 #include "dof_manager_petsc.hh"
-#include "sparse_matrix_petsc.hh"
 #include "mpi_type_wrapper.hh"
+#include "sparse_matrix_petsc.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscksp.h>
 //#include <petscsys.h>
@@ -46,8 +46,7 @@ namespace akantu {
 SolverPETSc::SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
                          const ID & id, const MemoryID & memory_id)
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
-      dof_manager(dof_manager),
-      matrix(dof_manager.getMatrix(matrix_id)),
+      dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
       is_petsc_data_initialized(false) {
   PetscErrorCode ierr;
 
@@ -102,7 +101,8 @@ void SolverPETSc::solve() {
   AKANTU_DEBUG_OUT();
 }
 
-// /* -------------------------------------------------------------------------- */
+// /* --------------------------------------------------------------------------
+// */
 // void SolverPETSc::solve(Array<Real> & solution) {
 //   AKANTU_DEBUG_IN();
 
@@ -125,10 +125,12 @@ void SolverPETSc::solve() {
 //       if (this->matrix->getDOFSynchronizer().isLocalOrMasterDOF(i_local)) {
 //         Int i_global =
 //             this->matrix->getDOFSynchronizer().getDOFGlobalID(i_local);
-//         ierr = AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao,
+//         ierr =
+//         AOApplicationToPetsc(petsc_matrix->getPETScMatrixWrapper()->ao,
 //                                     1, &(i_global));
 //         CHKERRXX(ierr);
-//         ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1, &i_global,
+//         ierr = VecGetValues(this->petsc_solver_wrapper->solution, 1,
+//         &i_global,
 //                             &solution(i, j));
 //         CHKERRXX(ierr);
 //       }
@@ -143,18 +145,15 @@ void SolverPETSc::solve() {
 void SolverPETSc::setOperators() {
   AKANTU_DEBUG_IN();
   PetscErrorCode ierr;
-  /// set the matrix that defines the linear system and the matrix for
-  /// preconditioning (here they are the same)
+/// set the matrix that defines the linear system and the matrix for
+/// preconditioning (here they are the same)
 #if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
-  ierr = KSPSetOperators(this->ksp,
-                         this->matrix.getPETScMat(),
+  ierr = KSPSetOperators(this->ksp, this->matrix.getPETScMat(),
                          this->matrix.getPETScMat());
   CHKERRXX(ierr);
 #else
-  ierr = KSPSetOperators(this->ksp,
-                         this->matrix.getPETScMat(),
-                         this->matrix.getPETScMat(),
-                         SAME_NONZERO_PATTERN);
+  ierr = KSPSetOperators(this->ksp, this->matrix.getPETScMat(),
+                         this->matrix.getPETScMat(), SAME_NONZERO_PATTERN);
   CHKERRXX(ierr);
 #endif
 

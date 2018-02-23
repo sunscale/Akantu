@@ -18,14 +18,14 @@ public:
     ::akantu::initialize(argc, argv);
 
 #if defined(AKANTU_USE_PYBIND11)
-    //py::initialize_interpreter();
+// py::initialize_interpreter();
 #endif
   }
   // Override this to define how to tear down the environment.
   void TearDown() override {
     ::akantu::finalize();
 #if defined(AKANTU_USE_PYBIND11)
-    //py::finalize_interpreter();
+// py::finalize_interpreter();
 #endif
   }
 
@@ -43,8 +43,8 @@ int main(int argc, char ** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   ::testing::AddGlobalTestEnvironment(new AkaEnvironment(argc, argv));
 
-  ::testing::TestEventListeners& listeners =
-        ::testing::UnitTest::GetInstance()->listeners();
+  ::testing::TestEventListeners & listeners =
+      ::testing::UnitTest::GetInstance()->listeners();
   if (::akantu::Communicator::getStaticCommunicator().whoAmI() != 0) {
     delete listeners.Release(listeners.default_result_printer());
   }

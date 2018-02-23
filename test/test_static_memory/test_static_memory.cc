@@ -33,11 +33,11 @@
 #include <iostream>
 
 /* -------------------------------------------------------------------------- */
-#include "aka_static_memory.hh"
 #include "aka_array.hh"
+#include "aka_static_memory.hh"
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize(argc, argv);
 
   akantu::StaticMemory & st_mem = akantu::StaticMemory::getStaticMemory();

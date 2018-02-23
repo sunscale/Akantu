@@ -183,14 +183,14 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
   if (field == NULL)
     return nullptr;
   if (group_name == "all") {
-    using DumpType= typename dumper::NodalField<type, false>;
+    using DumpType = typename dumper::NodalField<type, false>;
     auto * dumper = new DumpType(*field, size, stride, NULL);
     dumper->setPadding(padding_size);
     return dumper;
   } else {
     ElementGroup & group = this->getElementGroup(group_name);
     const Array<UInt> * nodal_filter = &(group.getNodes());
-    using DumpType = typename dumper::NodalField<type, true> ;
+    using DumpType = typename dumper::NodalField<type, true>;
     auto * dumper = new DumpType(*field, size, stride, nodal_filter);
     dumper->setPadding(padding_size);
     return dumper;

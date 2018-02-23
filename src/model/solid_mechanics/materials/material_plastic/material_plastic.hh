@@ -34,7 +34,6 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_MATERIAL_PLASTIC_HH__
 #define __AKANTU_MATERIAL_PLASTIC_HH__
 
@@ -46,19 +45,14 @@ namespace akantu {
  *   - h : Hardening parameter (default: 0)
  *   - sigmay : Yield stress
  */
-template<UInt dim>
-class MaterialPlastic : public MaterialElastic<dim> {
+template <UInt dim> class MaterialPlastic : public MaterialElastic<dim> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialPlastic(SolidMechanicsModel & model, const ID & id = "");
-  MaterialPlastic(SolidMechanicsModel & model,
-                  UInt a_dim,
-                  const Mesh & mesh,
-                  FEEngine & fe_engine,
-                  const ID & id = "");
+  MaterialPlastic(SolidMechanicsModel & model, UInt a_dim, const Mesh & mesh,
+                  FEEngine & fe_engine, const ID & id = "");
 
 protected:
   void initialize();
@@ -67,7 +61,6 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   /// get the energy specifying the type for the time step
   Real getEnergy(const std::string & type) override;
 
@@ -76,25 +69,22 @@ public:
                       GhostType ghost_type = _not_ghost) override;
 
   /// Compute the true potential energy
-  void computePotentialEnergy(ElementType el_type, GhostType ghost_type) override;
+  void computePotentialEnergy(ElementType el_type,
+                              GhostType ghost_type) override;
 
 protected:
-  
   /// compute the stress and inelastic strain for the quadrature point
-  inline void computeStressAndInelasticStrainOnQuad(const Matrix<Real> & grad_u,
-                                                    const Matrix<Real> & previous_grad_u,
-                                                    Matrix<Real> & sigma,
-                                                    const Matrix<Real> & previous_sigma,
-                                                    Matrix<Real> & inelas_strain,
-                                                    const Matrix<Real> & previous_inelas_strain,
-                                                    const Matrix<Real> & delta_inelastic_strain) const;
+  inline void computeStressAndInelasticStrainOnQuad(
+      const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
+      Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
+      const Matrix<Real> & delta_inelastic_strain) const;
 
-  inline void computeStressAndInelasticStrainOnQuad(const Matrix<Real> & delta_grad_u,
-                                                    Matrix<Real> & sigma,
-                                                    const Matrix<Real> & previous_sigma,
-                                                    Matrix<Real> & inelas_strain,
-                                                    const Matrix<Real> & previous_inelas_strain,
-                                                    const Matrix<Real> & delta_inelastic_strain) const;
+  inline void computeStressAndInelasticStrainOnQuad(
+      const Matrix<Real> & delta_grad_u, Matrix<Real> & sigma,
+      const Matrix<Real> & previous_sigma, Matrix<Real> & inelas_strain,
+      const Matrix<Real> & previous_inelas_strain,
+      const Matrix<Real> & delta_inelastic_strain) const;
 
   /// get the plastic energy for the time step
   Real getPlasticEnergy();
@@ -103,7 +93,6 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -123,19 +112,17 @@ protected:
   /// Plastic energy
   InternalField<Real> plastic_energy;
 
-  /// @todo : add a coefficient beta that will multiply the plastic energy increment
+  /// @todo : add a coefficient beta that will multiply the plastic energy
+  /// increment
   /// to compute the energy converted to heat
 
   /// Plastic energy increment
   InternalField<Real> d_plastic_energy;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-
 
 } // akantu
 

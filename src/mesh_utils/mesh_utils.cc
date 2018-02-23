@@ -94,8 +94,8 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
 
       e.type = type;
       UInt nb_element = mesh.getNbElement(type, ghost_type);
-      auto conn_it = mesh.getConnectivity(type, ghost_type).begin(
-          Mesh::getNbNodesPerElement(type));
+      auto conn_it = mesh.getConnectivity(type, ghost_type)
+                         .begin(Mesh::getNbNodesPerElement(type));
 
       for (UInt el = 0; el < nb_element; ++el, ++conn_it) {
         e.element = el;

@@ -82,8 +82,8 @@ public:
    */
   virtual void computeIntersectionQuery(const SK::Sphere_3 & /*query*/) {
     AKANTU_ERROR("This function is not implemented for spheres (It was "
-                       "to generic and has been replaced by "
-                       "computeMeshQueryIntersectionPoint");
+                 "to generic and has been replaced by "
+                 "computeMeshQueryIntersectionPoint");
   }
 
   /// Compute intersection points between the mesh primitives (segments) and a
@@ -97,8 +97,8 @@ public:
   virtual void
   buildResultFromQueryList(const std::list<SK::Sphere_3> & /*query*/) {
     AKANTU_ERROR("This function is no longer implemented to split "
-                       "geometrical operations and dedicated result "
-                       "construction");
+                 "geometrical operations and dedicated result "
+                 "construction");
   }
 
   /// Set the tolerance

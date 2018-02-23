@@ -28,10 +28,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "element_info_per_processor.hh"
 #include "element_synchronizer.hh"
 #include "mesh_utils.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <iostream>

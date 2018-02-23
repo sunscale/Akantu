@@ -72,7 +72,8 @@ private:
   std::string readElements(std::ifstream & infile, Mesh & mesh,
                            UInt first_node_number);
 
-  std::string readGroups(std::ifstream & infile, Mesh & mesh, UInt first_node_number);
+  std::string readGroups(std::ifstream & infile, Mesh & mesh,
+                         UInt first_node_number);
 
   std::string readConnectivity(std::ifstream & infile, Mesh & mesh,
                                UInt first_node_number);
@@ -95,7 +96,8 @@ private:
   std::map<std::string, ElementType> _diana_to_akantu_element_types;
   std::map<std::string, std::string> _diana_to_akantu_mat_prop;
 
-  /// order in witch element as to be read, akantu_node_order = _read_order[diana_node_order]
+  /// order in witch element as to be read, akantu_node_order =
+  /// _read_order[diana_node_order]
   std::map<ElementType, UInt *> _read_order;
 
   std::map<UInt, Element> diana_element_number_to_elements;

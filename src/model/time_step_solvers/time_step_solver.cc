@@ -126,7 +126,8 @@ void TimeStepSolver::assembleMatrix(const ID & matrix_id) {
 
   if (matrix_id != "J") {
     auto type = needed_matrices[matrix_id];
-    if (type == _mt_not_defined) return;
+    if (type == _mt_not_defined)
+      return;
 
     if (not _dof_manager.hasMatrix(matrix_id)) {
       _dof_manager.getNewMatrix(matrix_id, type);

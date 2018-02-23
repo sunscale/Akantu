@@ -23,8 +23,7 @@ namespace akantu {
 template <UInt spatial_dimension>
 MaterialDamageLinear<spatial_dimension>::MaterialDamageLinear(
     SolidMechanicsModel & model, const ID & id)
-    : MaterialDamage<spatial_dimension>(model, id),
-      K("K", *this) {
+    : MaterialDamage<spatial_dimension>(model, id), K("K", *this) {
   AKANTU_DEBUG_IN();
 
   this->registerParam("Sigc", Sigc, 1e5, _pat_parsable, "Sigma Critique");

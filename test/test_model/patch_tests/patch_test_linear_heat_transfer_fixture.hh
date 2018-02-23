@@ -26,8 +26,9 @@ public:
     this->checkDOFs(temperature);
     this->checkGradient(this->model->getTemperatureGradient(this->type),
                         temperature);
-    this->checkResults([&](const Matrix<Real> & grad_T) { return C * grad_T.transpose(); },
-                       this->model->getKgradT(this->type), temperature);
+    this->checkResults(
+        [&](const Matrix<Real> & grad_T) { return C * grad_T.transpose(); },
+        this->model->getKgradT(this->type), temperature);
   }
 };
 

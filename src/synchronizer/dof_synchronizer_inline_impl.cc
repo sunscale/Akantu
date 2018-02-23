@@ -81,8 +81,7 @@ void DOFSynchronizer::gather(const Array<T> & to_gather, Array<T> & gathered) {
 
     CommunicationBuffer & buffer = buffers[p];
 
-    buffer.resize(receive_dofs.size() * to_gather.getNbComponent() *
-                  sizeof(T));
+    buffer.resize(receive_dofs.size() * to_gather.getNbComponent() * sizeof(T));
 
     AKANTU_DEBUG_INFO(
         "Preparing to receive data for "
@@ -156,8 +155,8 @@ template <typename T> void DOFSynchronizer::gather(const Array<T> & to_gather) {
   }
 
   AKANTU_DEBUG_INFO("Gathering data for "
-                    << to_gather.size() << " dofs on processor "
-                    << this->root << " "
+                    << to_gather.size() << " dofs on processor " << this->root
+                    << " "
                     << Tag::genTag(this->rank, 0, Tag::_GATHER, this->hash_id));
 
   communicator.send(buffer, this->root,
@@ -214,8 +213,7 @@ void DOFSynchronizer::scatter(Array<T> & scattered,
 
     // prepare the send buffer
     CommunicationBuffer & buffer = buffers[p];
-    buffer.resize(receive_dofs.size() * scattered.getNbComponent() *
-                  sizeof(T));
+    buffer.resize(receive_dofs.size() * scattered.getNbComponent() * sizeof(T));
 
     // pack the data
     for (auto global_dof : receive_dofs) {

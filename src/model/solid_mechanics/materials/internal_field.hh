@@ -129,8 +129,8 @@ public:
 
   /// get the type iterator on all types contained in the internal field
   type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
-    return ElementTypeMapArray<T>::firstType(this->spatial_dimension, ghost_type,
-                                             this->element_kind);
+    return ElementTypeMapArray<T>::firstType(this->spatial_dimension,
+                                             ghost_type, this->element_kind);
   }
 
   /// get the type iterator on the last type contained in the internal field
@@ -139,16 +139,18 @@ public:
                                             this->element_kind);
   }
 
-    /// get the type iterator on all types contained in the internal field
-  filter_type_iterator filterFirstType(const GhostType & ghost_type = _not_ghost) const {
+  /// get the type iterator on all types contained in the internal field
+  filter_type_iterator
+  filterFirstType(const GhostType & ghost_type = _not_ghost) const {
     return this->element_filter.firstType(this->spatial_dimension, ghost_type,
-                           this->element_kind);
+                                          this->element_kind);
   }
 
   /// get the type iterator on the last type contained in the internal field
-  filter_type_iterator filterLastType(const GhostType & ghost_type = _not_ghost) const {
+  filter_type_iterator
+  filterLastType(const GhostType & ghost_type = _not_ghost) const {
     return this->element_filter.lastType(this->spatial_dimension, ghost_type,
-                          this->element_kind);
+                                         this->element_kind);
   }
 
   /// get the array for a given type of the element_filter

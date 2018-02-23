@@ -29,44 +29,45 @@ namespace akantu {
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialDamageIterativeNonLocal : public MaterialDamageNonLocal<spatial_dimension,
-								      MaterialDamageIterative<spatial_dimension> > {
+template <UInt spatial_dimension>
+class MaterialDamageIterativeNonLocal
+    : public MaterialDamageNonLocal<
+          spatial_dimension, MaterialDamageIterative<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   typedef MaterialDamageNonLocal<spatial_dimension,
-				 MaterialDamageIterative<spatial_dimension> > MaterialDamageIterativeNonLocalParent;
-  MaterialDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id = "");
+                                 MaterialDamageIterative<spatial_dimension>>
+      MaterialDamageIterativeNonLocalParent;
+  MaterialDamageIterativeNonLocal(SolidMechanicsModel & model,
+                                  const ID & id = "");
 
-  virtual ~MaterialDamageIterativeNonLocal() {};
+  virtual ~MaterialDamageIterativeNonLocal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
   virtual void computeNonLocalStresses(GhostType ghost_type);
 
 protected:
   void computeStress(ElementType type, GhostType ghost_type);
 
-  void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+  void computeNonLocalStress(ElementType type,
+                             GhostType ghost_type = _not_ghost);
 
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  InternalField<Real> grad_u_nl;  
+  InternalField<Real> grad_u_nl;
 };
 
 /* -------------------------------------------------------------------------- */

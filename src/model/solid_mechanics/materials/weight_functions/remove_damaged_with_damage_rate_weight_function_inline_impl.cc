@@ -32,29 +32,31 @@
 
 /* -------------------------------------------------------------------------- */
 inline void RemoveDamagedWithDamageRateWeightFunction::init() {
-  this->damage_with_damage_rate = &(this->manager.registerWeightFunctionInternal("damage-rate"));
+  this->damage_with_damage_rate =
+      &(this->manager.registerWeightFunctionInternal("damage-rate"));
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real RemoveDamagedWithDamageRateWeightFunction::operator()(Real r,
-								  const __attribute__((unused)) IntegrationPoint & q1,
+inline Real RemoveDamagedWithDamageRateWeightFunction::
+operator()(Real r, const __attribute__((unused)) IntegrationPoint & q1,
 
-								  const IntegrationPoint & q2) {
+           const IntegrationPoint & q2) {
   /// compute the weight
   UInt quad = q2.global_num;
 
-  if(q1.global_num == quad) return 1.;
+  if (q1.global_num == quad)
+    return 1.;
 
-  Array<Real> & dam_array = (*this->damage_with_damage_rate)(q2.type, q2.ghost_type);
+  Array<Real> & dam_array =
+      (*this->damage_with_damage_rate)(q2.type, q2.ghost_type);
   Real D = dam_array(quad);
   Real w = 0.;
   Real alphaexp = 1.;
   Real betaexp = 2.;
-  if(D < damage_limit_with_damage_rate) {
-    Real alpha = std::max(0., 1. - pow((r*r / this->R2),alphaexp));
+  if (D < damage_limit_with_damage_rate) {
+    Real alpha = std::max(0., 1. - pow((r * r / this->R2), alphaexp));
     w = pow(alpha, betaexp);
   }
 
   return w;
 }
-

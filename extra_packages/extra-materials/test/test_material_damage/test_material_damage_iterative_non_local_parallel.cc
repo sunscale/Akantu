@@ -31,24 +31,23 @@
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-bool checkDisplacement(SolidMechanicsModel & model,
-		       ElementType type,
-		       std::ofstream & error_output,
-		       UInt step,
-		       bool barycenters);
+bool checkDisplacement(SolidMechanicsModel & model, ElementType type,
+                       std::ofstream & error_output, UInt step,
+                       bool barycenters);
 
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   debug::setDebugLevel(dblWarning);
   ElementType element_type = _triangle_3;
 
-  initialize("two_materials.dat" ,argc, argv);
- 
+  initialize("two_materials.dat", argc, argv);
+
   const UInt spatial_dimension = 2;
-  StaticCommunicator & comm = akantu::StaticCommunicator::getStaticCommunicator();
+  StaticCommunicator & comm =
+      akantu::StaticCommunicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
@@ -56,7 +55,7 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
   akantu::MeshPartition * partition = NULL;
 
-  if(prank == 0) {
+  if (prank == 0) {
 
     mesh.read("one_circular_inclusion.msh");
 
@@ -71,12 +70,13 @@ int main(int argc, char *argv[]) {
   model.initParallel(partition);
   delete partition;
 
-
   /// assign the material
   MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
+  mat_selector =
+      new MeshDataMaterialSelector<std::string>("physical_names", model);
   model.setMaterialSelector(*mat_selector);
-  mesh.createGroupsFromMeshData<std::string>("physical_names"); // creates groups from mesh names
+  mesh.createGroupsFromMeshData<std::string>(
+      "physical_names"); // creates groups from mesh names
   /// initialization of the model
   model.initFull(SolidMechanicsModelOptions(_static));
 
@@ -88,7 +88,8 @@ int main(int argc, char *argv[]) {
 
   /// add fields that should be dumped
   model.setBaseName("material_damage_iterative_test");
-  model.addDumpFieldVector("displacement");;
+  model.addDumpFieldVector("displacement");
+  ;
   model.addDumpField("stress");
   model.addDumpField("blocked_dofs");
   model.addDumpField("residual");
@@ -103,16 +104,21 @@ int main(int argc, char *argv[]) {
   model.dump();
 
   std::stringstream error_stream;
-  error_stream << "error" << ".csv";
+  error_stream << "error"
+               << ".csv";
   std::ofstream error_output;
   error_output.open(error_stream.str().c_str());
   error_output << "# Step, Average, Max, Min" << std::endl;
 
   checkDisplacement(model, element_type, error_output, 0, true);
 
-  MaterialDamageIterative<spatial_dimension> & aggregate = dynamic_cast<MaterialDamageIterative<spatial_dimension> & >(model.getMaterial(0));
-  MaterialDamageIterative<spatial_dimension> & paste = dynamic_cast<MaterialDamageIterative<spatial_dimension> & >(model.getMaterial(1));
- 
+  MaterialDamageIterative<spatial_dimension> & aggregate =
+      dynamic_cast<MaterialDamageIterative<spatial_dimension> &>(
+          model.getMaterial(0));
+  MaterialDamageIterative<spatial_dimension> & paste =
+      dynamic_cast<MaterialDamageIterative<spatial_dimension> &>(
+          model.getMaterial(1));
+
   Real error;
   bool converged = false;
   UInt nb_damaged_elements = 0;
@@ -120,7 +126,9 @@ int main(int argc, char *argv[]) {
   Real max_eq_stress_paste = 0;
 
   /// solve the system
-  converged = model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-12, error, 2);
+  converged =
+      model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+          1e-12, error, 2);
 
   if (converged == false) {
     std::cout << "The error is: " << error << std::endl;
@@ -132,48 +140,47 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  model.dump();   
-  
+  model.dump();
+
   /// get the maximum equivalent stress in both materials
   max_eq_stress_agg = aggregate.getNormMaxEquivalentStress();
   max_eq_stress_paste = paste.getNormMaxEquivalentStress();
-    
+
   nb_damaged_elements = 0;
   if (max_eq_stress_agg > max_eq_stress_paste)
     nb_damaged_elements = aggregate.updateDamage();
   else
     nb_damaged_elements = paste.updateDamage();
 
-  if (prank == 0 && nb_damaged_elements) 
-    std::cout << nb_damaged_elements << " elements damaged" << std::endl; 
-  
+  if (prank == 0 && nb_damaged_elements)
+    std::cout << nb_damaged_elements << " elements damaged" << std::endl;
+
   /// resolve the system
-  converged = model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(1e-12, error, 2);
+  converged =
+      model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+          1e-12, error, 2);
 
   if (converged == false) {
     std::cout << "The error is: " << error << std::endl;
     AKANTU_DEBUG_ASSERT(converged, "Did not converge");
   }
- 
 
   if (!checkDisplacement(model, element_type, error_output, 2, false)) {
     finalize();
     return EXIT_FAILURE;
   }
-  
-  model.dump();   
-   
+
+  model.dump();
+
   finalize();
 
   return EXIT_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
-bool checkDisplacement(SolidMechanicsModel & model,
-		       ElementType type,
-		       std::ofstream & error_output,
-		       UInt step,
-		       bool barycenters) {
+bool checkDisplacement(SolidMechanicsModel & model, ElementType type,
+                       std::ofstream & error_output, UInt step,
+                       bool barycenters) {
 
   Mesh & mesh = model.getMesh();
   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -188,21 +195,20 @@ bool checkDisplacement(SolidMechanicsModel & model,
 
   if (psize == 1) {
     std::stringstream displacement_file;
-    displacement_file << "displacement/displacement_"
-		      << std::setfill('0') << std::setw(6)
-		      << step;
+    displacement_file << "displacement/displacement_" << std::setfill('0')
+                      << std::setw(6) << step;
     std::ofstream displacement_output;
     displacement_output.open(displacement_file.str().c_str());
 
     for (UInt el = 0; el < nb_element; ++el) {
       for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
-	UInt node = connectivity(el, n);
+        UInt node = connectivity(el, n);
 
-	for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	  displacement_output << std::setprecision(15)
-			      << displacement(node, dim) << " ";
-	}
-	displacement_output << std::endl;
+        for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+          displacement_output << std::setprecision(15)
+                              << displacement(node, dim) << " ";
+        }
+        displacement_output << std::endl;
       }
     }
 
@@ -218,28 +224,26 @@ bool checkDisplacement(SolidMechanicsModel & model,
       Vector<Real> bary(spatial_dimension);
 
       for (UInt el = 0; el < nb_element; ++el) {
-	element.element = el;
-	mesh.getBarycenter(element, bary);
+        element.element = el;
+        mesh.getBarycenter(element, bary);
 
-	for (UInt dim = 0; dim < spatial_dimension; ++dim) {
-	  barycenter_output << std::setprecision(15)
-			    << bary(dim) << " ";
-	}
-	barycenter_output << std::endl;
+        for (UInt dim = 0; dim < spatial_dimension; ++dim) {
+          barycenter_output << std::setprecision(15) << bary(dim) << " ";
+        }
+        barycenter_output << std::endl;
       }
 
       barycenter_output.close();
     }
-  }
-  else {
+  } else {
 
-    if (barycenters) return true;
+    if (barycenters)
+      return true;
 
     /// read data
     std::stringstream displacement_file;
-    displacement_file << "displacement/displacement_"
-		      << std::setfill('0') << std::setw(6)
-		      << step;
+    displacement_file << "displacement/displacement_" << std::setfill('0')
+                      << std::setw(6) << step;
     std::ifstream displacement_input;
     displacement_input.open(displacement_file.str().c_str());
 
@@ -248,7 +252,7 @@ bool checkDisplacement(SolidMechanicsModel & model,
 
     while (displacement_input.good()) {
       for (UInt i = 0; i < spatial_dimension; ++i)
-	displacement_input >> disp_tmp(i);
+        displacement_input >> disp_tmp(i);
 
       displacement_serial.push_back(disp_tmp);
     }
@@ -262,7 +266,7 @@ bool checkDisplacement(SolidMechanicsModel & model,
 
     while (barycenter_input.good()) {
       for (UInt dim = 0; dim < spatial_dimension; ++dim)
-	barycenter_input >> disp_tmp(dim);
+        barycenter_input >> disp_tmp(dim);
 
       barycenter_serial.push_back(disp_tmp);
     }
@@ -270,14 +274,14 @@ bool checkDisplacement(SolidMechanicsModel & model,
     Element element(type, 0);
     Vector<Real> bary(spatial_dimension);
 
-    Array<Real>::iterator<Vector<Real> > it;
-    Array<Real>::iterator<Vector<Real> > begin
-      = barycenter_serial.begin(spatial_dimension);
-    Array<Real>::iterator<Vector<Real> > end
-      = barycenter_serial.end(spatial_dimension);
+    Array<Real>::iterator<Vector<Real>> it;
+    Array<Real>::iterator<Vector<Real>> begin =
+        barycenter_serial.begin(spatial_dimension);
+    Array<Real>::iterator<Vector<Real>> end =
+        barycenter_serial.end(spatial_dimension);
 
-    Array<Real>::const_iterator<Vector<Real> > disp_it;
-    Array<Real>::iterator<Vector<Real> > disp_serial_it;
+    Array<Real>::const_iterator<Vector<Real>> disp_it;
+    Array<Real>::iterator<Vector<Real>> disp_serial_it;
 
     Vector<Real> difference(spatial_dimension);
     Array<Real> error;
@@ -289,35 +293,37 @@ bool checkDisplacement(SolidMechanicsModel & model,
 
       /// find element
       for (it = begin; it != end; ++it) {
-	UInt matched_dim = 0;
+        UInt matched_dim = 0;
 
-	while (matched_dim < spatial_dimension &&
-	       Math::are_float_equal(bary(matched_dim), (*it)(matched_dim)))
-	  ++matched_dim;
+        while (matched_dim < spatial_dimension &&
+               Math::are_float_equal(bary(matched_dim), (*it)(matched_dim)))
+          ++matched_dim;
 
-	if (matched_dim == spatial_dimension) break;
+        if (matched_dim == spatial_dimension)
+          break;
       }
 
       if (it == end) {
-	std::cout << "Element barycenter not found!" << std::endl;
-	return false;
+        std::cout << "Element barycenter not found!" << std::endl;
+        return false;
       }
 
       UInt matched_el = it - begin;
 
-      disp_serial_it = displacement_serial.begin(spatial_dimension)
-	+ matched_el * nb_nodes_per_elem;
+      disp_serial_it = displacement_serial.begin(spatial_dimension) +
+                       matched_el * nb_nodes_per_elem;
 
       for (UInt n = 0; n < nb_nodes_per_elem; ++n, ++disp_serial_it) {
-	UInt node = connectivity(el, n);
-	if (!mesh.isLocalOrMasterNode(node)) continue;
+        UInt node = connectivity(el, n);
+        if (!mesh.isLocalOrMasterNode(node))
+          continue;
 
-	disp_it = displacement.begin(spatial_dimension) + node;
+        disp_it = displacement.begin(spatial_dimension) + node;
 
-	difference = *disp_it;
-	difference -= *disp_serial_it;
+        difference = *disp_it;
+        difference -= *disp_serial_it;
 
-	error.push_back(difference.norm());
+        error.push_back(difference.norm());
       }
     }
 
@@ -339,19 +345,16 @@ bool checkDisplacement(SolidMechanicsModel & model,
 
     /// output data
     if (prank == 0) {
-      error_output << step << ", "
-		   << average_error << ", "
-		   << max_error << ", "
-		   << min_error << std::endl;
+      error_output << step << ", " << average_error << ", " << max_error << ", "
+                   << min_error << std::endl;
     }
 
     if (max_error > 1.e-9) {
-      std::cout << "Displacement error of " << max_error << " is too big!" << std::endl;
+      std::cout << "Displacement error of " << max_error << " is too big!"
+                << std::endl;
       return false;
     }
   }
 
   return true;
 }
-
-

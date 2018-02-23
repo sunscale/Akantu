@@ -34,10 +34,10 @@
 #include "communicator.hh"
 #include "mpi_communicator_data.hh"
 /* -------------------------------------------------------------------------- */
+#include <memory>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 /* -------------------------------------------------------------------------- */
 #include <mpi.h>
 /* -------------------------------------------------------------------------- */
@@ -49,16 +49,15 @@ template <> struct hash<akantu::SynchronizerOperation> {
   using argument_type = akantu::SynchronizerOperation;
   size_t operator()(const argument_type & e) const noexcept {
     auto ue = underlying_type_t<argument_type>(e);
-      return uh(ue);
-    }
+    return uh(ue);
+  }
 
-  private:
-    const hash<underlying_type_t<argument_type>> uh{};
-  };
+private:
+  const hash<underlying_type_t<argument_type>> uh{};
+};
 } // namespace std
 #endif
 #endif
-
 
 namespace akantu {
 

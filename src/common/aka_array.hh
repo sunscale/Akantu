@@ -167,7 +167,8 @@ public:
   /* ------------------------------------------------------------------------ */
   /// \todo protected: does not compile with intel  check why
 public:
-  template <class R, class it, class IR = R, bool is_tensor_ = is_tensor<R>::value>
+  template <class R, class it, class IR = R,
+            bool is_tensor_ = is_tensor<R>::value>
   class iterator_internal;
 
 public:
@@ -206,19 +207,19 @@ public:
   using const_tensor3_iterator = const_iterator<Tensor3<T>>;
 
   /* ------------------------------------------------------------------------ */
-  template <typename... Ns> inline decltype(auto) begin(Ns&&... n);
-  template <typename... Ns> inline decltype(auto) end(Ns&&... n);
+  template <typename... Ns> inline decltype(auto) begin(Ns &&... n);
+  template <typename... Ns> inline decltype(auto) end(Ns &&... n);
 
-  template <typename... Ns> inline decltype(auto) begin(Ns&&... n) const;
-  template <typename... Ns> inline decltype(auto) end(Ns&&... n) const;
+  template <typename... Ns> inline decltype(auto) begin(Ns &&... n) const;
+  template <typename... Ns> inline decltype(auto) end(Ns &&... n) const;
 
-  template <typename... Ns> inline decltype(auto) begin_reinterpret(Ns&&... n);
-  template <typename... Ns> inline decltype(auto) end_reinterpret(Ns&&... n);
+  template <typename... Ns> inline decltype(auto) begin_reinterpret(Ns &&... n);
+  template <typename... Ns> inline decltype(auto) end_reinterpret(Ns &&... n);
 
   template <typename... Ns>
-  inline decltype(auto) begin_reinterpret(Ns&&... n) const;
+  inline decltype(auto) begin_reinterpret(Ns &&... n) const;
   template <typename... Ns>
-  inline decltype(auto) end_reinterpret(Ns&&... n) const;
+  inline decltype(auto) end_reinterpret(Ns &&... n) const;
 #endif // SWIG
 
   /* ------------------------------------------------------------------------ */
@@ -227,8 +228,8 @@ public:
 public:
   /// append a tuple of size nb_component containing value
   inline void push_back(const_reference value);
-  /// append a vector
-  // inline void push_back(const value_type new_elem[]);
+/// append a vector
+// inline void push_back(const value_type new_elem[]);
 
 #ifndef SWIG
   /// append a Vector or a Matrix

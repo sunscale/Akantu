@@ -41,12 +41,12 @@ TestMaterial<dim>::TestMaterial(SolidMechanicsModel & model, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-template <UInt dim>
-void TestMaterial<dim>::registerNonLocalVariables() {
+template <UInt dim> void TestMaterial<dim>::registerNonLocalVariables() {
   this->model.getNonLocalManager().registerNonLocalVariable(
       this->gradu.getName(), grad_u_nl.getName(), dim * dim);
 
-  this->model.getNonLocalManager().getNeighborhood(this->getNeighborhoodName())
+  this->model.getNonLocalManager()
+      .getNeighborhood(this->getNeighborhoodName())
       .registerNonLocalVariable(grad_u_nl.getName());
 }
 

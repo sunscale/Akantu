@@ -40,8 +40,8 @@
 #define __AKANTU_SOLVER_PETSC_HH__
 
 namespace akantu {
-  class SparseMatrixPETSc;
-  class DOFManagerPETSc;
+class SparseMatrixPETSc;
+class DOFManagerPETSc;
 }
 
 namespace akantu {
@@ -163,7 +163,8 @@ private:
 //    information to screen.
 //    If the filename is specified the summary is written to the file. See
 //    PetscLogView().
-//    -log_summary_python [filename]	- Prints data on of flop and timing usage
+//    -log_summary_python [filename]	- Prints data on of flop and timing
+//    usage
 //    to a file or screen.
 //    -log_all [filename]	        - Logs extensive profiling information See
 //    PetscLogDump().

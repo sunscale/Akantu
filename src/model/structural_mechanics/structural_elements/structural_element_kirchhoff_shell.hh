@@ -50,7 +50,7 @@ void StructuralMechanicsModel::computeTangentModuli<
     _discrete_kirchhoff_triangle_18>(Array<Real> & tangent_moduli) {
 
   auto tangent_size =
-    ElementClass<_discrete_kirchhoff_triangle_18>::getNbStressComponents();
+      ElementClass<_discrete_kirchhoff_triangle_18>::getNbStressComponents();
   auto nb_quad =
       getFEEngine().getNbIntegrationPoints(_discrete_kirchhoff_triangle_18);
 
@@ -71,6 +71,7 @@ void StructuralMechanicsModel::computeTangentModuli<
   }
 }
 
-}  // akantu
+} // akantu
 
-#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_DISCRETE_KIRCHHOFF_TRIANGLE_18_HH__ */
+#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_DISCRETE_KIRCHHOFF_TRIANGLE_18_HH__ \
+          */

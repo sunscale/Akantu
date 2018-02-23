@@ -32,8 +32,6 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-inline void SparseMatrix::clearProfile() {
-  this->nb_non_zero = 0;
-}
+inline void SparseMatrix::clearProfile() { this->nb_non_zero = 0; }
 
 } // akantu

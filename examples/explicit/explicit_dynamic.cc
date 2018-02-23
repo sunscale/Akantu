@@ -34,7 +34,6 @@
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
-
 using namespace akantu;
 
 int main(int argc, char * argv[]) {

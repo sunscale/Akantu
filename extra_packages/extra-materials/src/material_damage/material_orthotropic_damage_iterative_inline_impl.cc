@@ -14,28 +14,30 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-inline void MaterialOrthotropicDamageIterative<spatial_dimension>
-::computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-			       Matrix<Real> & one_minus_D,
-			       Matrix<Real> & sqrt_one_minus_D,
-			       Matrix<Real> & damage,
-			       Matrix<Real> & first_term,
-			       Matrix<Real> & third_term) {
+template <UInt spatial_dimension>
+inline void MaterialOrthotropicDamageIterative<spatial_dimension>::
+    computeDamageAndStressOnQuad(Matrix<Real> & sigma,
+                                 Matrix<Real> & one_minus_D,
+                                 Matrix<Real> & sqrt_one_minus_D,
+                                 Matrix<Real> & damage,
+                                 Matrix<Real> & first_term,
+                                 Matrix<Real> & third_term) {
 
-  //Real dmax = *(std::max_element(damage.storage(), damage.storage() + spatial_dimension*spatial_dimension) );
-  Real eta_effective = 0; 
+  // Real dmax = *(std::max_element(damage.storage(), damage.storage() +
+  // spatial_dimension*spatial_dimension) );
+  Real eta_effective = 0;
 
-  // if ( (1 - dmax*dmax)  < (1 - this->eta / spatial_dimension * damage.trace()) ) {
+  // if ( (1 - dmax*dmax)  < (1 - this->eta / spatial_dimension *
+  // damage.trace()) ) {
 
   //   eta_effective = this->spatial_dimension * dmax * dmax / damage.trace();
-      
-  // }   
+
+  // }
   // else
   eta_effective = this->eta;
 
   /// hydrostatic sensitivity parameter
-  //Real eta = 3.;
+  // Real eta = 3.;
 
   /// Definition of Cauchy stress based on second order damage tensor:
   /// "Anisotropic damage modelling of biaxial behaviour and rupture
@@ -46,8 +48,8 @@ inline void MaterialOrthotropicDamageIterative<spatial_dimension>
   Real second_term = 0;
   for (UInt i = 0; i < this->spatial_dimension; ++i) {
     for (UInt j = 0; j < this->spatial_dimension; ++j)
-      second_term += sigma(i,j) * one_minus_D(i,j);
-  } 
+      second_term += sigma(i, j) * one_minus_D(i, j);
+  }
 
   second_term /= (this->spatial_dimension - damage.trace());
 
@@ -57,13 +59,12 @@ inline void MaterialOrthotropicDamageIterative<spatial_dimension>
   // }
   one_minus_D *= second_term;
 
-  third_term.eye( 1. / this->spatial_dimension * sigma.trace() *
-		  (1 - std::min(eta_effective/(this->spatial_dimension) 
-				* damage.trace(), this->max_damage) ) );
+  third_term.eye(
+      1. / this->spatial_dimension * sigma.trace() *
+      (1 - std::min(eta_effective / (this->spatial_dimension) * damage.trace(),
+                    this->max_damage)));
 
   sigma.copy(first_term);
   sigma -= one_minus_D;
   sigma += third_term;
-
- }
-
+}

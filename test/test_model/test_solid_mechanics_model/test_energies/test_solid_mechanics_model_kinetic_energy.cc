@@ -80,7 +80,6 @@ void test_body(SolidMechanicsModel & model, AnalysisMethod analysis_method) {
   }
 }
 
-
 TYPED_TEST(TestSMMFixture, KineticEnergyImplicit) {
   test_body(*(this->model), _implicit_dynamic);
 }

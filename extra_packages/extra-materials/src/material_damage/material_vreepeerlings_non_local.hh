@@ -18,8 +18,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_vreepeerlings.hh"
 #include "material_damage_non_local.hh"
+#include "material_vreepeerlings.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_VREEPEERLINGS_NON_LOCAL_HH__
@@ -32,52 +32,51 @@ namespace akantu {
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension,
-         template <UInt> class MatParent = MaterialElastic>
-class MaterialVreePeerlingsNonLocal : public MaterialDamageNonLocal<spatial_dimension,
-                                                                    MaterialVreePeerlings<spatial_dimension,
-                                                                                          MatParent> > {
+template <UInt spatial_dimension,
+          template <UInt> class MatParent = MaterialElastic>
+class MaterialVreePeerlingsNonLocal
+    : public MaterialDamageNonLocal<
+          spatial_dimension,
+          MaterialVreePeerlings<spatial_dimension, MatParent>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   typedef MaterialVreePeerlings<spatial_dimension, MatParent> Parent;
-  typedef MaterialDamageNonLocal<spatial_dimension, Parent> MaterialVreePeerlingsNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension, Parent>
+      MaterialVreePeerlingsNonLocalParent;
 
-  MaterialVreePeerlingsNonLocal(SolidMechanicsModel & model, const ID & id = "");
+  MaterialVreePeerlingsNonLocal(SolidMechanicsModel & model,
+                                const ID & id = "");
 
-  virtual ~MaterialVreePeerlingsNonLocal() {};
+  virtual ~MaterialVreePeerlingsNonLocal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   /// constitutive law for all element of a type
-  //void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
+  // void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
   /// constitutive law
   virtual void computeNonLocalStress(ElementType el_type,
-				     GhostType ghost_type = _not_ghost);
+                                     GhostType ghost_type = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-
   /// non local version of equivalent strain
   InternalField<Real> equi_strain_non_local;
 
   /// non local version of equivalent strain rate
   InternalField<Real> equi_strain_rate_non_local;
-
 };
 
 /* -------------------------------------------------------------------------- */

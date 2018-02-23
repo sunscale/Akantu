@@ -81,7 +81,6 @@ template <> inline int PythonFunctor::getPythonDataTypeCode<UInt>() {
   return NPY_UINT;
 }
 
-
 /* -------------------------------------------------------------------------- */
 template <>
 inline PyObject *

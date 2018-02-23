@@ -18,54 +18,55 @@
 
 /* -------------------------------------------------------------------------- */
 
-#include <limits>
 #include <fstream>
 #include <iostream>
-
+#include <limits>
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model_cohesive.hh"
 #include "material_cohesive_linear.hh"
+#include "solid_mechanics_model_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 class MultiGrainMaterialSelector : public DefaultMaterialCohesiveSelector {
 public:
-  MultiGrainMaterialSelector(const SolidMechanicsModelCohesive & model, const ID & transgranular_id, const ID & intergranular_id) :
-    DefaultMaterialCohesiveSelector(model),
-    transgranular_id(transgranular_id),
-    intergranular_id(intergranular_id),
-    model(model),
-    mesh(model.getMesh()),
-    mesh_facets(model.getMeshFacets()),
-    spatial_dimension(model.getSpatialDimension()),
-    nb_IG(0), nb_TG(0) {
-  }
+  MultiGrainMaterialSelector(const SolidMechanicsModelCohesive & model,
+                             const ID & transgranular_id,
+                             const ID & intergranular_id)
+      : DefaultMaterialCohesiveSelector(model),
+        transgranular_id(transgranular_id), intergranular_id(intergranular_id),
+        model(model), mesh(model.getMesh()), mesh_facets(model.getMeshFacets()),
+        spatial_dimension(model.getSpatialDimension()), nb_IG(0), nb_TG(0) {}
 
   UInt operator()(const Element & element) {
-    if(mesh_facets.getSpatialDimension(element.type) == (spatial_dimension - 1)) {
-      const std::vector<Element> & element_to_subelement = mesh_facets.getElementToSubelement(element.type, element.ghost_type)(element.element);
+    if (mesh_facets.getSpatialDimension(element.type) ==
+        (spatial_dimension - 1)) {
+      const std::vector<Element> & element_to_subelement =
+          mesh_facets.getElementToSubelement(element.type, element.ghost_type)(
+              element.element);
 
       const Element & el1 = element_to_subelement[0];
       const Element & el2 = element_to_subelement[1];
 
-      UInt grain_id1 = mesh.getData<UInt>("tag_0", el1.type, el1.ghost_type)(el1.element);
-      if(el2 != ElementNull) {
-	UInt grain_id2 = mesh.getData<UInt>("tag_0", el2.type, el2.ghost_type)(el2.element);
-	if (grain_id1 == grain_id2){
-	  //transgranular = 0 indicator
-	  nb_TG++;
-	  return model.getMaterialIndex(transgranular_id);
-	} else  {
-	  //intergranular = 1 indicator
-	  nb_IG++;
-	  return model.getMaterialIndex(intergranular_id);
-	}
+      UInt grain_id1 =
+          mesh.getData<UInt>("tag_0", el1.type, el1.ghost_type)(el1.element);
+      if (el2 != ElementNull) {
+        UInt grain_id2 =
+            mesh.getData<UInt>("tag_0", el2.type, el2.ghost_type)(el2.element);
+        if (grain_id1 == grain_id2) {
+          // transgranular = 0 indicator
+          nb_TG++;
+          return model.getMaterialIndex(transgranular_id);
+        } else {
+          // intergranular = 1 indicator
+          nb_IG++;
+          return model.getMaterialIndex(intergranular_id);
+        }
       } else {
-	//transgranular = 0 indicator
-	nb_TG++;
-	return model.getMaterialIndex(transgranular_id);
+        // transgranular = 0 indicator
+        nb_TG++;
+        return model.getMaterialIndex(transgranular_id);
       }
     } else {
       return DefaultMaterialCohesiveSelector::operator()(element);
@@ -96,26 +97,27 @@ void limitInsertion(SolidMechanicsModelCohesive & model) {
   Vector<Real> bary_facet(spatial_dimension);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end();
-       ++gt) {
+       gt != ghost_type_t::end(); ++gt) {
     GhostType ghost_type = *gt;
 
-    Mesh::type_iterator it  = mesh_facets.firstType(spatial_dimension - 1, ghost_type);
-    Mesh::type_iterator end = mesh_facets.lastType(spatial_dimension - 1, ghost_type);
-    for(; it != end; ++it) {
+    Mesh::type_iterator it =
+        mesh_facets.firstType(spatial_dimension - 1, ghost_type);
+    Mesh::type_iterator end =
+        mesh_facets.lastType(spatial_dimension - 1, ghost_type);
+    for (; it != end; ++it) {
       ElementType type = *it;
       Array<bool> & f_check = inserter.getCheckFacets(type, ghost_type);
       UInt nb_facet = mesh_facets.getNbElement(type, ghost_type);
 
       for (UInt f = 0; f < nb_facet; ++f) {
-	if (f_check(f)) {
+        if (f_check(f)) {
 
-	  mesh_facets.getBarycenter(f, type, bary_facet.storage(), ghost_type);
+          mesh_facets.getBarycenter(f, type, bary_facet.storage(), ghost_type);
 
-	  if ( !(bary_facet(0) > -tolerance && bary_facet(0) < tolerance) &&
-	       !(bary_facet(1) > -tolerance && bary_facet(1) < tolerance) )
-	    f_check(f) = false;
-	}
+          if (!(bary_facet(0) > -tolerance && bary_facet(0) < tolerance) &&
+              !(bary_facet(1) > -tolerance && bary_facet(1) < tolerance))
+            f_check(f) = false;
+        }
       }
     }
   }
@@ -123,8 +125,7 @@ void limitInsertion(SolidMechanicsModelCohesive & model) {
   model.updateAutomaticInsertion();
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   debug::setDebugLevel(dblWarning);
@@ -139,7 +140,7 @@ int main(int argc, char *argv[]) {
   Int prank = comm.whoAmI();
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     mesh.read("square.msh");
     partition = new MeshPartitionScotch(mesh, spatial_dimension);
     partition->partitionate(psize);
@@ -152,11 +153,13 @@ int main(int argc, char *argv[]) {
 
   delete partition;
 
-  MultiGrainMaterialSelector material_selector(model, "TG_cohesive", "IG_cohesive");
+  MultiGrainMaterialSelector material_selector(model, "TG_cohesive",
+                                               "IG_cohesive");
   model.setMaterialSelector(material_selector);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true, false));
+  model.initFull(
+      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true, false));
 
-  Real time_step = model.getStableTimeStep()*0.1;
+  Real time_step = model.getStableTimeStep() * 0.1;
   model.setTimeStep(time_step);
   //  std::cout << "Time step: " << time_step << std::endl;
 
@@ -174,7 +177,7 @@ int main(int argc, char *argv[]) {
 
   /// boundary conditions
   for (UInt n = 0; n < nb_nodes; ++n) {
-    if (position(n, 1) > 0.99|| position(n, 1) < -0.99)
+    if (position(n, 1) > 0.99 || position(n, 1) < -0.99)
       boundary(n, 1) = true;
 
     if (position(n, 0) > 0.99 || position(n, 0) < -0.99)
@@ -186,9 +189,9 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("extrinsic");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("residual");
   model.addDumpField("stress");
   model.addDumpField("strain");
   model.addDumpField("partitions");
@@ -203,7 +206,7 @@ int main(int argc, char *argv[]) {
   /// initial conditions
   Real loading_rate = 0.1;
   // bar_height  = 2
-  Real VI = loading_rate * 2* 0.5;
+  Real VI = loading_rate * 2 * 0.5;
   for (UInt n = 0; n < nb_nodes; ++n) {
     velocity(n, 1) = loading_rate * position(n, 1);
     velocity(n, 0) = loading_rate * position(n, 0);
@@ -223,27 +226,31 @@ int main(int argc, char *argv[]) {
     dispy += VI * time_step;
     /// update displacement on extreme nodes
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
-      if (position(n, 1) > 0.99){
-	displacement(n, 1) = dispy;
-	velocity(n,1) = VI;}
-      if (position(n, 1) < -0.99){
-	displacement(n, 1) = -dispy;
-	velocity(n,1) = -VI;}
-      if (position(n, 0) > 0.99){
-	displacement(n, 0) = dispy;
-	velocity(n,0) = VI;}
-      if (position(n, 0) < -0.99){
-	displacement(n, 0) = -dispy;
-	velocity(n,0) = -VI;}
+      if (position(n, 1) > 0.99) {
+        displacement(n, 1) = dispy;
+        velocity(n, 1) = VI;
+      }
+      if (position(n, 1) < -0.99) {
+        displacement(n, 1) = -dispy;
+        velocity(n, 1) = -VI;
+      }
+      if (position(n, 0) > 0.99) {
+        displacement(n, 0) = dispy;
+        velocity(n, 0) = VI;
+      }
+      if (position(n, 0) < -0.99) {
+        displacement(n, 0) = -dispy;
+        velocity(n, 0) = -VI;
+      }
     }
 
     model.checkCohesiveStress();
 
     model.solveStep();
 
-    if(s % 10 == 0) {
-      if(prank == 0)
-	std::cout << "passing step " << s << "/" << max_steps << std::endl;
+    if (s % 10 == 0) {
+      if (prank == 0)
+        std::cout << "passing step " << s << "/" << max_steps << std::endl;
 
       // model.dump();
       // model.dump("cohesive elements");
@@ -270,11 +277,11 @@ int main(int argc, char *argv[]) {
 
   Real Edt = 40;
 
-  if(prank == 0)
+  if (prank == 0)
     std::cout << Ed << " " << Edt << std::endl;
 
   if (Ed < Edt * 0.99 || Ed > Edt * 1.01 || std::isnan(Ed)) {
-    if(prank == 0)
+    if (prank == 0)
       std::cout << "The dissipated energy is incorrect" << std::endl;
     finalize();
     return EXIT_FAILURE;
@@ -286,10 +293,9 @@ int main(int argc, char *argv[]) {
   //   }
   // }
 
-
   finalize();
 
-  if(prank == 0)
+  if (prank == 0)
     std::cout << "OK: test_cohesive_extrinsic_IG_TG was passed!" << std::endl;
   return EXIT_SUCCESS;
 }

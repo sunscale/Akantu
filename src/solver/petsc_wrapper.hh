@@ -36,11 +36,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include <mpi.h>
-#include <petscmat.h>
-#include <petscvec.h>
 #include <petscao.h>
 #include <petscis.h>
 #include <petscksp.h>
+#include <petscmat.h>
+#include <petscvec.h>
 
 namespace akantu {
 
@@ -68,7 +68,9 @@ extern int aka_PETScError(int ierr);
 #define CHKERRXX(x)                                                            \
   do {                                                                         \
     int error = aka_PETScError(x);                                             \
-    if (error != 0) { AKANTU_EXCEPTION("Error in PETSC"); }                    \
+    if (error != 0) {                                                          \
+      AKANTU_EXCEPTION("Error in PETSC");                                      \
+    }                                                                          \
   } while (0)
 #endif
 

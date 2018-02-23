@@ -1062,7 +1062,7 @@ public:
       return Math::matrixDoubleDot33(this->values, other.storage());
     else
       AKANTU_ERROR("doubleDot is not defined for other spatial dimensions"
-                         << " than 1, 2 or 3.");
+                   << " than 1, 2 or 3.");
     return T();
   }
 

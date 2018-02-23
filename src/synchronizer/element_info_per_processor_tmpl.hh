@@ -101,8 +101,7 @@ void ElementInfoPerProc::fillMeshData(BufferType & buffer,
     BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,
                           AKANTU_MESH_DATA_TYPES)
   default:
-    AKANTU_ERROR("Could not determine the type of tag" << tag_name
-                                                             << "!");
+    AKANTU_ERROR("Could not determine the type of tag" << tag_name << "!");
     break;
   }
 #undef AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA
@@ -117,7 +116,7 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
   Element el;
   el.type = type;
 
-  for(auto ghost_type : ghost_types) {
+  for (auto ghost_type : ghost_types) {
     UInt nb_element = mesh.getNbElement(type, ghost_type);
     el.ghost_type = ghost_type;
 

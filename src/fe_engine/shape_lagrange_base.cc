@@ -34,8 +34,7 @@ namespace akantu {
 ShapeLagrangeBase::ShapeLagrangeBase(const Mesh & mesh,
                                      const ElementKind & kind, const ID & id,
                                      const MemoryID & memory_id)
-    : ShapeFunctions(mesh, id, memory_id),
-      _kind(kind) {}
+    : ShapeFunctions(mesh, id, memory_id), _kind(kind) {}
 
 /* -------------------------------------------------------------------------- */
 ShapeLagrangeBase::~ShapeLagrangeBase() = default;

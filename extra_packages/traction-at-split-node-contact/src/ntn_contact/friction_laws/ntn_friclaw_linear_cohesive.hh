@@ -30,12 +30,11 @@ class NTNFricLawLinearCohesive : public Regularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
   NTNFricLawLinearCohesive(NTNBaseContact * contact,
-			   const FrictionID & id = "linear_cohesive",
-			   const MemoryID & memory_id = 0);
-  virtual ~NTNFricLawLinearCohesive() {};
-  
+                           const FrictionID & id = "linear_cohesive",
+                           const MemoryID & memory_id = 0);
+  virtual ~NTNFricLawLinearCohesive(){};
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -51,7 +50,7 @@ public:
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
+
 protected:
   /// compute frictional strength according to friction law
   virtual void computeFrictionalStrength();
@@ -61,12 +60,12 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
+                                    const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
-  
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -87,9 +86,9 @@ protected:
 
 /// standard output stream operator
 template <class Regularisation>
-inline std::ostream & operator <<(std::ostream & stream, 
-				  const NTNFricLawLinearCohesive<Regularisation> & _this)
-{
+inline std::ostream &
+operator<<(std::ostream & stream,
+           const NTNFricLawLinearCohesive<Regularisation> & _this) {
   _this.printself(stream);
   return stream;
 }

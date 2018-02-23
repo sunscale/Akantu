@@ -36,8 +36,8 @@
 
 #include "aka_common.hh"
 
-#include "solid_mechanics_model.hh"
 #include "mesh.hh"
+#include "solid_mechanics_model.hh"
 
 #include "embedded_interface_intersector.hh"
 
@@ -54,7 +54,8 @@ namespace akantu {
  *
  * In addition to the SolidMechanicsModel properties, this model has
  * a mesh of the 1D elements embedded in the model, and an instance of the
- * EmbeddedInterfaceIntersector class for the computation of the intersections of the
+ * EmbeddedInterfaceIntersector class for the computation of the intersections
+ * of the
  * 1D elements with the background (bulk) mesh.
  *
  * @see MaterialReinforcement
@@ -62,7 +63,6 @@ namespace akantu {
 class EmbeddedInterfaceModel : public SolidMechanicsModel {
 
   using MyFEEngineType = SolidMechanicsModel::MyFEEngineType;
-
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -74,8 +74,7 @@ public:
    * @param mesh main mesh (concrete)
    * @param primitive_mesh mesh of the embedded reinforcement
    */
-  EmbeddedInterfaceModel(Mesh & mesh,
-                         Mesh & primitive_mesh,
+  EmbeddedInterfaceModel(Mesh & mesh, Mesh & primitive_mesh,
                          UInt spatial_dimension = _all_dimensions,
                          const ID & id = "embedded_interface_model",
                          const MemoryID & memory_id = 0);
@@ -105,8 +104,10 @@ public:
                                  const ElementKind & element_kind,
                                  bool padding_flag) override;
 
-  // virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string & field_name,
-  //                                                     const ElementKind & kind);
+  // virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string &
+  // field_name,
+  //                                                     const ElementKind &
+  //                                                     kind);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -115,9 +116,9 @@ public:
   AKANTU_GET_MACRO(InterfaceMesh, *interface_mesh, Mesh &);
 
   /// Get associated elements
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(InterfaceAssociatedElements,
-                                   interface_mesh->getData<Element>("associated_element"),
-                                   Element);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(
+      InterfaceAssociatedElements,
+      interface_mesh->getData<Element>("associated_element"), Element);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -137,12 +138,15 @@ protected:
 };
 
 /// Material selector based on mesh data for interface elements
-template<typename T>
-class InterfaceMeshDataMaterialSelector : public ElementDataMaterialSelector<T> {
+template <typename T>
+class InterfaceMeshDataMaterialSelector
+    : public ElementDataMaterialSelector<T> {
 public:
-  InterfaceMeshDataMaterialSelector(const std::string & name, const EmbeddedInterfaceModel & model, UInt first_index = 1) :
-    ElementDataMaterialSelector<T>(model.getInterfaceMesh().getData<T>(name), model, first_index)
-  {}
+  InterfaceMeshDataMaterialSelector(const std::string & name,
+                                    const EmbeddedInterfaceModel & model,
+                                    UInt first_index = 1)
+      : ElementDataMaterialSelector<T>(
+            model.getInterfaceMesh().getData<T>(name), model, first_index) {}
 };
 
 } // akantu

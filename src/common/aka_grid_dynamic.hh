@@ -380,10 +380,10 @@ private:
   /* --------------------------------------------------------------------------
    */
   inline UInt getCellID(Real position, UInt direction) const {
-    AKANTU_DEBUG_ASSERT(direction < center.size(), "The direction asked ("
-                                                       << direction
-                                                       << ") is out of range "
-                                                       << center.size());
+    AKANTU_DEBUG_ASSERT(direction < center.size(),
+                        "The direction asked (" << direction
+                                                << ") is out of range "
+                                                << center.size());
     Real dist_center = position - center(direction);
     Int id = std::floor(dist_center / spacing(direction));
     // if(dist_center < 0) id--;

@@ -64,8 +64,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::
   Vector<Real> eigenvalues(spatial_dimension);
 
   auto Sc_it = Sc(el_type).begin();
-  auto equivalent_stress_it =
-      equivalent_stress(el_type).begin();
+  auto equivalent_stress_it = equivalent_stress(el_type).begin();
 
   Array<Real>::const_matrix_iterator grad_u_it =
       grad_u.begin(spatial_dimension, spatial_dimension);

@@ -38,30 +38,28 @@
 #include <typeinfo>
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
-template<class T>
-class CircularArray : protected Array<T> {
+template <class T> class CircularArray : protected Array<T> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef typename Array<T>::value_type      value_type;
-  typedef typename Array<T>::reference       reference;
-  typedef typename Array<T>::pointer_type    pointer_type;
+  typedef typename Array<T>::value_type value_type;
+  typedef typename Array<T>::reference reference;
+  typedef typename Array<T>::pointer_type pointer_type;
   typedef typename Array<T>::const_reference const_reference;
 
   /// Allocation of a new array with a default value
   CircularArray(UInt size, UInt nb_component = 1,
-		 const_reference value = value_type(), const ID & id = "") :
-    Array<T>(size, nb_component, value, id),
-    start_position(0),
-    end_position(size-1) {
+                const_reference value = value_type(), const ID & id = "")
+      : Array<T>(size, nb_component, value, id), start_position(0),
+        end_position(size - 1) {
     AKANTU_DEBUG_IN();
 
     AKANTU_DEBUG_OUT();
@@ -78,7 +76,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /**
-     advance start and end position by one: 
+     advance start and end position by one:
      the first element is now at the end of the array
   **/
   inline void makeStep();
@@ -87,7 +85,6 @@ public:
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
 private:
-
   /* ------------------------------------------------------------------------ */
   /* Operators                                                                */
   /* ------------------------------------------------------------------------ */
@@ -99,7 +96,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  UInt size() const{ return this->size_; };
+  UInt size() const { return this->size_; };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -112,29 +109,22 @@ private:
   UInt end_position;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#if defined (AKANTU_INCLUDE_INLINE_IMPL)
-#  include "aka_circular_array_inline_impl.cc"
+#if defined(AKANTU_INCLUDE_INLINE_IMPL)
+#include "aka_circular_array_inline_impl.cc"
 #endif
 
 /// standard output stream operator
 template <typename T>
-inline std::ostream & operator <<(std::ostream & stream, const CircularArray<T> & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const CircularArray<T> & _this) {
   _this.printself(stream);
   return stream;
 }
 
-
-
 } // akantu
 
-
-
 #endif /* __AKANTU_AKA_CIRCULAR_ARRAY_HH__ */
-
-

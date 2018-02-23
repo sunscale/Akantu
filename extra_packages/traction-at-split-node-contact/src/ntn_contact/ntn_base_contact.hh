@@ -19,8 +19,8 @@
 
 /* -------------------------------------------------------------------------- */
 // akantu
-#include "solid_mechanics_model.hh"
 #include "filtered_synchronizer.hh"
+#include "solid_mechanics_model.hh"
 
 // simtools
 #include "synchronized_array.hh"
@@ -43,22 +43,16 @@ private:
   const ElementTypeMapArray<UInt> & connectivity;
 };
 
-
-
 /* -------------------------------------------------------------------------- */
-class NTNBaseContact : protected Memory,
-		       public DataAccessor,
-		       public Dumpable {
+class NTNBaseContact : protected Memory, public DataAccessor, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
-  NTNBaseContact(SolidMechanicsModel & model,
-		 const ContactID & id = "contact",
-		 const MemoryID & memory_id = 0);
+  NTNBaseContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+                 const MemoryID & memory_id = 0);
   virtual ~NTNBaseContact();
-  
+
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -99,28 +93,32 @@ public:
   /// compute the normal gap
   virtual void computeNormalGap(Array<Real> & gap) const = 0;
 
-  /// compute relative normal field (only value that has to be multiplied with the normal)
+  /// compute relative normal field (only value that has to be multiplied with
+  /// the normal)
   /// relative to master nodes
-  virtual void computeRelativeNormalField(const Array<Real> & field,
-					  Array<Real> & rel_normal_field) const = 0;
-  
+  virtual void
+  computeRelativeNormalField(const Array<Real> & field,
+                             Array<Real> & rel_normal_field) const = 0;
+
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  virtual void computeRelativeTangentialField(const Array<Real> & field,
-					      Array<Real> & rel_tang_field) const = 0;
-  
+  virtual void
+  computeRelativeTangentialField(const Array<Real> & field,
+                                 Array<Real> & rel_tang_field) const = 0;
+
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
-  
+
 protected:
   /// updateLumpedBoundary
-  virtual void internalUpdateLumpedBoundary(const Array<UInt> & nodes,
-					    const ElementTypeMapArray<UInt> & elements,
-					    SynchronizedArray<Real> & boundary);
+  virtual void
+  internalUpdateLumpedBoundary(const Array<UInt> & nodes,
+                               const ElementTypeMapArray<UInt> & elements,
+                               SynchronizedArray<Real> & boundary);
 
   // to find the slave_elements or master_elements
-  virtual void findBoundaryElements(const Array<UInt> & interface_nodes, 
-				    ElementTypeMapArray<UInt> & elements);
+  virtual void findBoundaryElements(const Array<UInt> & interface_nodes,
+                                    ElementTypeMapArray<UInt> & elements);
 
   /// synchronize arrays
   virtual void syncArrays(SyncChoice sync_choice);
@@ -129,24 +127,23 @@ protected:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  
   inline virtual UInt getNbDataForElements(const Array<Element> & elements,
                                            SynchronizationTag tag) const;
-  
+
   inline virtual void packElementData(CommunicationBuffer & buffer,
                                       const Array<Element> & elements,
                                       SynchronizationTag tag) const;
-  
+
   inline virtual void unpackElementData(CommunicationBuffer & buffer,
                                         const Array<Element> & elements,
                                         SynchronizationTag tag);
-  
+
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   virtual void addDumpFieldToDumper(const std::string & dumper_name,
-				    const std::string & field_id);
+                                    const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -154,14 +151,17 @@ public:
 public:
   AKANTU_GET_MACRO(Model, model, SolidMechanicsModel &)
 
-  AKANTU_GET_MACRO(Slaves,                               slaves, const SynchronizedArray<UInt> &)
-  AKANTU_GET_MACRO(Normals,                             normals, const SynchronizedArray<Real> &)
-  AKANTU_GET_MACRO(ContactPressure,            contact_pressure, const SynchronizedArray<Real> &)
-  AKANTU_GET_MACRO(LumpedBoundarySlaves, lumped_boundary_slaves, const SynchronizedArray<Real> &)
-  AKANTU_GET_MACRO(Impedance,                         impedance, const SynchronizedArray<Real> &)
-  AKANTU_GET_MACRO(IsInContact,                   is_in_contact, const SynchronizedArray<bool> &)
+  AKANTU_GET_MACRO(Slaves, slaves, const SynchronizedArray<UInt> &)
+  AKANTU_GET_MACRO(Normals, normals, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(ContactPressure, contact_pressure,
+                   const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(LumpedBoundarySlaves, lumped_boundary_slaves,
+                   const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(Impedance, impedance, const SynchronizedArray<Real> &)
+  AKANTU_GET_MACRO(IsInContact, is_in_contact, const SynchronizedArray<bool> &)
 
-  AKANTU_GET_MACRO(SlaveElements, slave_elements, const ElementTypeMapArray<UInt> &)
+  AKANTU_GET_MACRO(SlaveElements, slave_elements,
+                   const ElementTypeMapArray<UInt> &)
 
   AKANTU_GET_MACRO(SynchronizerRegistry, synch_registry, SynchronizerRegistry *)
 
@@ -210,7 +210,6 @@ protected:
   Synchronizer * synchronizer;
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -218,8 +217,8 @@ protected:
 #include "ntn_base_contact_inline_impl.cc"
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NTNBaseContact & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const NTNBaseContact & _this) {
   _this.printself(stream);
   return stream;
 }

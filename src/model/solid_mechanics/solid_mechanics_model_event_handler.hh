@@ -39,23 +39,23 @@ namespace akantu {
 
 /// akantu::SolidMechanicsModelEvent is the base event for model
 namespace SolidMechanicsModelEvent {
-struct BeforeSolveStepEvent {
-  BeforeSolveStepEvent(AnalysisMethod & method) : method(method) {}
-  AnalysisMethod method;
-};
-struct AfterSolveStepEvent {
-  AfterSolveStepEvent(AnalysisMethod & method) : method(method) {}
-  AnalysisMethod method;
-};
-struct BeforeDumpEvent {
-  BeforeDumpEvent() = default;
-};
-struct BeginningOfDamageIterationEvent {
-  BeginningOfDamageIterationEvent() = default;
-};
-struct AfterDamageEvent {
-  AfterDamageEvent() = default;
-};
+  struct BeforeSolveStepEvent {
+    BeforeSolveStepEvent(AnalysisMethod & method) : method(method) {}
+    AnalysisMethod method;
+  };
+  struct AfterSolveStepEvent {
+    AfterSolveStepEvent(AnalysisMethod & method) : method(method) {}
+    AnalysisMethod method;
+  };
+  struct BeforeDumpEvent {
+    BeforeDumpEvent() = default;
+  };
+  struct BeginningOfDamageIterationEvent {
+    BeginningOfDamageIterationEvent() = default;
+  };
+  struct AfterDamageEvent {
+    AfterDamageEvent() = default;
+  };
 }
 
 /// akantu::SolidMechanicsModelEvent

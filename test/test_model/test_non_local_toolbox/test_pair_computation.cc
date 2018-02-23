@@ -59,7 +59,9 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModel model(mesh);
 
   /// creation of material selector
-  auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  auto && mat_selector =
+      std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names",
+                                                              model);
   model.setMaterialSelector(mat_selector);
 
   /// model initialization changed to use our material
@@ -73,8 +75,10 @@ int main(int argc, char * argv[]) {
   PairList pair_list[2];
   computePairs(model, pair_list);
 
-  const PairList * pairs_mat_1 = model.getNonLocalManager().getNeighborhood("mat_1").getPairLists();
-  const PairList * pairs_mat_2 = model.getNonLocalManager().getNeighborhood("mat_2").getPairLists();
+  const PairList * pairs_mat_1 =
+      model.getNonLocalManager().getNeighborhood("mat_1").getPairLists();
+  const PairList * pairs_mat_2 =
+      model.getNonLocalManager().getNeighborhood("mat_2").getPairLists();
 
   /// compare the number of pairs
   UInt nb_not_ghost_pairs_grid = pairs_mat_1[0].size() + pairs_mat_2[0].size();
@@ -166,8 +170,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
     UInt nb_elements_1 = mesh.getNbElement(type_1, ghost_type_1);
     UInt nb_quads_1 = model.getFEEngine().getNbIntegrationPoints(type_1);
     Array<Real> & quad_coords_1 = quad_coords(q1.type, q1.ghost_type);
-    auto coord_it_1 =
-        quad_coords_1.begin(spatial_dimension);
+    auto coord_it_1 = quad_coords_1.begin(spatial_dimension);
     for (UInt e_1 = 0; e_1 < nb_elements_1; ++e_1) {
       q1.element = e_1;
       UInt mat_index_1 = model.getMaterialByElement(q1.type, q1.ghost_type)
@@ -192,8 +195,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
             UInt nb_quads_2 =
                 model.getFEEngine().getNbIntegrationPoints(type_2);
             Array<Real> & quad_coords_2 = quad_coords(q2.type, q2.ghost_type);
-            auto coord_it_2 =
-                quad_coords_2.begin(spatial_dimension);
+            auto coord_it_2 = quad_coords_2.begin(spatial_dimension);
             for (UInt e_2 = 0; e_2 < nb_elements_2; ++e_2) {
               q2.element = e_2;
               UInt mat_index_2 =

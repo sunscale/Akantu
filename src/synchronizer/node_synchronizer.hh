@@ -73,14 +73,12 @@ public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
 protected:
-  Int getRank(const UInt & /*node*/) const final {
-    AKANTU_TO_IMPLEMENT();
-  }
+  Int getRank(const UInt & /*node*/) const final { AKANTU_TO_IMPLEMENT(); }
 
 protected:
   Mesh & mesh;
 
-  //std::unordered_map<UInt, Int> node_to_prank;
+  // std::unordered_map<UInt, Int> node_to_prank;
 };
 
 } // namespace akantu

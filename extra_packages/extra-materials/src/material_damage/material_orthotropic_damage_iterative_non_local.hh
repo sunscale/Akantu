@@ -4,7 +4,8 @@
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  *
- * @brief  MaterialOrthotropicDamageIterativeNonLocal header for non-local damage
+ * @brief  MaterialOrthotropicDamageIterativeNonLocal header for non-local
+ * damage
  *
  * @section LICENSE
  *
@@ -15,8 +16,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "material_orthotropic_damage_iterative.hh"
 #include "material_damage_non_local.hh"
+#include "material_orthotropic_damage_iterative.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__
@@ -29,45 +30,48 @@ namespace akantu {
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialOrthotropicDamageIterativeNonLocal : public MaterialDamageNonLocal<spatial_dimension,
-								      MaterialOrthotropicDamageIterative<spatial_dimension> > {
+template <UInt spatial_dimension>
+class MaterialOrthotropicDamageIterativeNonLocal
+    : public MaterialDamageNonLocal<
+          spatial_dimension,
+          MaterialOrthotropicDamageIterative<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension,
-				 MaterialOrthotropicDamageIterative<spatial_dimension> > MaterialOrthotropicDamageIterativeNonLocalParent;
-  MaterialOrthotropicDamageIterativeNonLocal(SolidMechanicsModel & model, const ID & id = "");
+  typedef MaterialDamageNonLocal<
+      spatial_dimension, MaterialOrthotropicDamageIterative<spatial_dimension>>
+      MaterialOrthotropicDamageIterativeNonLocalParent;
+  MaterialOrthotropicDamageIterativeNonLocal(SolidMechanicsModel & model,
+                                             const ID & id = "");
 
-  virtual ~MaterialOrthotropicDamageIterativeNonLocal() {};
+  virtual ~MaterialOrthotropicDamageIterativeNonLocal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
 protected:
   void computeStress(ElementType type, GhostType ghost_type);
 
-  void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+  void computeNonLocalStress(ElementType type,
+                             GhostType ghost_type = _not_ghost);
 
   /// associate the non-local variables of the material to their neighborhoods
   virtual void nonLocalVariableToNeighborhood();
-private:
 
+private:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  InternalField<Real> grad_u_nl;  
+  InternalField<Real> grad_u_nl;
 };
 
 /* -------------------------------------------------------------------------- */

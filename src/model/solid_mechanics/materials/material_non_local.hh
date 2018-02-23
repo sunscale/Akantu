@@ -67,7 +67,7 @@ public:
 
 protected:
   /// get the name of the neighborhood for this material
-  virtual ID getNeighborhoodName() =0;
+  virtual ID getNeighborhoodName() = 0;
 
   /// register the neighborhoods for the material
   virtual void registerNeighborhood() = 0;
@@ -109,9 +109,7 @@ public:
 
 protected:
   /// get the name of the neighborhood for this material
-  ID getNeighborhoodName() override {
-    return this->name;
-  }
+  ID getNeighborhoodName() override { return this->name; }
 };
 
 } // namespace akantu

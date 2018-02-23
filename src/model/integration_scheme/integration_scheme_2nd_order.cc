@@ -36,8 +36,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-std::vector<std::string>
-IntegrationScheme2ndOrder::getNeededMatrixList() {
+std::vector<std::string> IntegrationScheme2ndOrder::getNeededMatrixList() {
   return {"K", "M", "C"};
 }
 

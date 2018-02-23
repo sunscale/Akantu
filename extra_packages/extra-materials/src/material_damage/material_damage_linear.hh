@@ -31,22 +31,20 @@ namespace akantu {
  *   - Sigc : (default: 1e5)
  *   - Gc  : (default: 2)
  */
-template<UInt spatial_dimension>
+template <UInt spatial_dimension>
 class MaterialDamageLinear : public MaterialDamage<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialDamageLinear(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialDamageLinear() {};
+  virtual ~MaterialDamageLinear(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   /// constitutive law for all element of a type
@@ -54,21 +52,17 @@ public:
 
 protected:
   /// constitutive law for a given quadrature point
-  inline void computeStressOnQuad(Matrix<Real> & F,
-				  Matrix<Real> & sigma,
-				  Real & damage,
-				  Real &K);
+  inline void computeStressOnQuad(Matrix<Real> & F, Matrix<Real> & sigma,
+                                  Real & damage, Real & K);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-
   /// kind of toughness
   Real Gc;
 

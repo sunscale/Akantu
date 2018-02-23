@@ -60,7 +60,8 @@ private:
 void SolidMechanicsModel::assembleMassLumped() {
   AKANTU_DEBUG_IN();
 
-  if(not need_to_reassemble_lumped_mass) return;
+  if (not need_to_reassemble_lumped_mass)
+    return;
 
   UInt nb_nodes = mesh.getNbNodes();
 
@@ -88,10 +89,8 @@ void SolidMechanicsModel::assembleMassLumped() {
 /// for not connected nodes put mass to one in order to avoid
 #if !defined(AKANTU_NDEBUG)
   bool has_unconnected_nodes = false;
-  auto mass_it =
-      mass->begin_reinterpret(mass->size() * mass->getNbComponent());
-  auto mass_end =
-      mass->end_reinterpret(mass->size() * mass->getNbComponent());
+  auto mass_it = mass->begin_reinterpret(mass->size() * mass->getNbComponent());
+  auto mass_end = mass->end_reinterpret(mass->size() * mass->getNbComponent());
   for (; mass_it != mass_end; ++mass_it) {
     if (std::abs(*mass_it) < std::numeric_limits<Real>::epsilon() ||
         Math::isnan(*mass_it)) {
@@ -116,7 +115,8 @@ void SolidMechanicsModel::assembleMassLumped() {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  if(not need_to_reassemble_mass) return;
+  if (not need_to_reassemble_mass)
+    return;
 
   this->getDOFManager().clearMatrix("M");
   assembleMass(_not_ghost);

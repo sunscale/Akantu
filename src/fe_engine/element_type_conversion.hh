@@ -35,11 +35,13 @@
 
 namespace akantu {
 
-template<class InType, class OutType>
-OutType convertType(const InType &) { return OutType(); }
+template <class InType, class OutType> OutType convertType(const InType &) {
+  return OutType();
+}
 
-template<>
-inline InterpolationType convertType<ElementType, InterpolationType>(const ElementType & type) {
+template <>
+inline InterpolationType
+convertType<ElementType, InterpolationType>(const ElementType & type) {
   InterpolationType itp_type = _itp_not_defined;
 #define GET_ITP(type) itp_type = ElementClassProperty<type>::interpolation_type;
 

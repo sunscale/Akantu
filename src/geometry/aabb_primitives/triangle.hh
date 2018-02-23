@@ -38,24 +38,23 @@
 #include "mesh_geom_common.hh"
 
 namespace akantu {
-  
+
 /* -------------------------------------------------------------------------- */
 
 /// Class used for substitution of CGAL::Triangle_3 primitive
-template<typename K>
-class Triangle : public CGAL::Triangle_3<K> {
+template <typename K> class Triangle : public CGAL::Triangle_3<K> {
 public:
   /// Default constructor
-  Triangle() :
-    CGAL::Triangle_3<K>(), meshId(0) {}
+  Triangle() : CGAL::Triangle_3<K>(), meshId(0) {}
 
   /// Copy constructor
-  Triangle(const Triangle & other) :
-    CGAL::Triangle_3<K>(other), meshId(other.meshId) {}
+  Triangle(const Triangle & other)
+      : CGAL::Triangle_3<K>(other), meshId(other.meshId) {}
 
   /// Construct from 3 points
-  Triangle(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b, const CGAL::Point_3<K> & c):
-    CGAL::Triangle_3<K>(a, b, c), meshId(0) {}
+  Triangle(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b,
+           const CGAL::Point_3<K> & c)
+      : CGAL::Triangle_3<K>(a, b, c), meshId(0) {}
 
 public:
   UInt id() const { return meshId; }

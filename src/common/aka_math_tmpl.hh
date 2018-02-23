@@ -366,7 +366,7 @@ template <typename T> inline T Math::det(UInt n, const T * A) {
   aka_getrf(&N, &N, LU, &N, ipiv, &info);
   if (info > 0) {
     AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
-                                                                       << " )");
+                                                                 << " )");
   }
 
   // det(A) = det(L) * det(U) = 1 * det(U) = product_i U_{ii}
@@ -476,7 +476,7 @@ template <typename T> inline void Math::inv(UInt n, const T * A, T * invA) {
   aka_getrf(&N, &N, invA, &N, ipiv, &info);
   if (info > 0) {
     AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
-                                                                       << " )");
+                                                                 << " )");
   }
 
   aka_getri(&N, invA, &N, ipiv, work, &lwork, &info);
@@ -501,7 +501,7 @@ inline void Math::solve(UInt n, const T * A, T * x, const T * b) {
   aka_getrf(&N, &N, lu_A, &N, ipiv, &info);
   if (info > 0) {
     AKANTU_ERROR("Singular matrix - cannot factorize it (info: " << info
-                                                                       << " )");
+                                                                 << " )");
   }
 
   char trans = 'N';

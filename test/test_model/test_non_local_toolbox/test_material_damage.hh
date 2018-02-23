@@ -42,7 +42,8 @@ template <UInt dim>
 class TestMaterialDamage
     : public MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>> {
 
-  using Parent = MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
+  using Parent =
+      MaterialDamageNonLocal<dim, MaterialDamage<dim, MaterialElastic>>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructor/Destructor */
@@ -55,12 +56,12 @@ public:
 public:
   void registerNonLocalVariables() override final;
 
-  void computeNonLocalStress(ElementType, GhostType) override final {};
+  void computeNonLocalStress(ElementType, GhostType) override final{};
 
   void insertQuadsInNeighborhoods(GhostType ghost_type);
 
 protected:
-  //ID getNeighborhoodName() override { return "test_region"; }
+  // ID getNeighborhoodName() override { return "test_region"; }
 
   /* ------------------------------------------------------------------------ */
   /* Members */

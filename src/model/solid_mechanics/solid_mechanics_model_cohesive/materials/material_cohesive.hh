@@ -81,7 +81,7 @@ public:
   /// interpolate   stress  on   given   positions  for   each  element   (empty
   /// implemantation to avoid the generic call to be done on cohesive elements)
   virtual void interpolateStress(const ElementType /*type*/,
-                                 Array<Real> & /*result*/){}
+                                 Array<Real> & /*result*/) {}
 
   /// compute the stresses
   void computeAllStresses(GhostType /*ghost_type*/ = _not_ghost) override{};

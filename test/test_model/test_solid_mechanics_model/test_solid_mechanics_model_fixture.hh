@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "solid_mechanics_model.hh"
 #include "test_gtest_utils.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <vector>
@@ -22,7 +22,7 @@ public:
   void SetUp() override {
     this->mesh = std::make_unique<Mesh>(this->spatial_dimension);
 
-    if(Communicator::getStaticCommunicator().whoAmI() == 0) {
+    if (Communicator::getStaticCommunicator().whoAmI() == 0) {
       this->mesh->read(this->mesh_file);
     }
 
@@ -46,7 +46,8 @@ protected:
 };
 
 template <typename type_> constexpr ElementType TestSMMFixture<type_>::type;
-template <typename type_> constexpr size_t TestSMMFixture<type_>::spatial_dimension;
+template <typename type_>
+constexpr size_t TestSMMFixture<type_>::spatial_dimension;
 
 using gtest_element_types = gtest_list_t<TestElementTypes>;
 

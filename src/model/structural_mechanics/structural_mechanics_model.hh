@@ -87,7 +87,6 @@ public:
   /// Init boundary FEEngine
   void initFEEngineBoundary() override;
 
-
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from SolverCallback */
   /* ------------------------------------------------------------------------ */

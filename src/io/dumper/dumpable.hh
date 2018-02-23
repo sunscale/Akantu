@@ -36,14 +36,13 @@
 #include "element_type_map.hh"
 /* -------------------------------------------------------------------------- */
 
-
 #ifndef __AKANTU_DUMPABLE_HH__
 #define __AKANTU_DUMPABLE_HH__
 
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumpable_iohelper.hh"
+#include "dumpable_iohelper.hh"
 #else
-#  include "dumpable_dummy.hh"
-#endif //AKANTU_USE_IOHELPER
+#include "dumpable_dummy.hh"
+#endif // AKANTU_USE_IOHELPER
 
 #endif /* __AKANTU_DUMPABLE_HH__ */

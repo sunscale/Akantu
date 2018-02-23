@@ -112,9 +112,10 @@ inline void MaterialMarigo<spatial_dimension>::packData(
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
-inline void MaterialMarigo<spatial_dimension>::unpackData(
-    CommunicationBuffer & buffer, const Array<Element> & elements,
-    const SynchronizationTag & tag) {
+inline void
+MaterialMarigo<spatial_dimension>::unpackData(CommunicationBuffer & buffer,
+                                              const Array<Element> & elements,
+                                              const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
   if (tag == _gst_smm_init_mat) {
@@ -126,6 +127,6 @@ inline void MaterialMarigo<spatial_dimension>::unpackData(
   AKANTU_DEBUG_OUT();
 }
 
-}  // akantu
+} // akantu
 
 #endif /* __AKANTU_MATERIAL_MARIGO_INLINE_IMPL_CC__ */

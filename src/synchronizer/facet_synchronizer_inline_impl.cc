@@ -15,11 +15,17 @@
 
 /* -------------------------------------------------------------------------- */
 // template<GhostType ghost_facets>
-// inline void FacetSynchronizer::getFacetGlobalConnectivity(const DistributedSynchronizer & distributed_synchronizer,
-//                                                        const ElementTypeMapArray<UInt> & rank_to_facet,
-//                                                        const Array<Element> * elements,
-//                                                        Array<ElementTypeMapArray<UInt> *> & connectivity,
-//                                                        Array<ElementTypeMapArray<UInt> *> & facets) {
+// inline void FacetSynchronizer::getFacetGlobalConnectivity(const
+// DistributedSynchronizer & distributed_synchronizer,
+//                                                        const
+//                                                        ElementTypeMapArray<UInt>
+//                                                        & rank_to_facet,
+//                                                        const Array<Element> *
+//                                                        elements,
+//                                                        Array<ElementTypeMapArray<UInt>
+//                                                        *> & connectivity,
+//                                                        Array<ElementTypeMapArray<UInt>
+//                                                        *> & facets) {
 //   AKANTU_DEBUG_IN();
 
 //   UInt spatial_dimension = mesh.getSpatialDimension();
@@ -29,8 +35,10 @@
 
 //   mesh.initElementTypeMapArray(facet_checked, 1, spatial_dimension - 1);
 
-//   Mesh::type_iterator first = mesh.firstType(spatial_dimension - 1, ghost_facets);
-//   Mesh::type_iterator last  = mesh.lastType(spatial_dimension - 1, ghost_facets);
+//   Mesh::type_iterator first = mesh.firstType(spatial_dimension - 1,
+//   ghost_facets);
+//   Mesh::type_iterator last  = mesh.lastType(spatial_dimension - 1,
+//   ghost_facets);
 
 //   for (; first != last; ++first) {
 //     ElementType type = *first;
@@ -47,8 +55,10 @@
 //     if (p == rank) continue;
 
 //     /// reset facet check
-//     Mesh::type_iterator first = mesh.firstType(spatial_dimension - 1, ghost_facets);
-//     Mesh::type_iterator last  = mesh.lastType(spatial_dimension - 1, ghost_facets);
+//     Mesh::type_iterator first = mesh.firstType(spatial_dimension - 1,
+//     ghost_facets);
+//     Mesh::type_iterator last  = mesh.lastType(spatial_dimension - 1,
+//     ghost_facets);
 
 //     for (; first != last; ++first) {
 //       ElementType type = *first;

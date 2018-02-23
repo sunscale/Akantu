@@ -44,10 +44,11 @@ inline NodeGroup::const_node_iterator NodeGroup::end() const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline NodeGroup::const_node_iterator NodeGroup::add(UInt node, bool check_for_duplicate) {
-  if(check_for_duplicate) {
+inline NodeGroup::const_node_iterator NodeGroup::add(UInt node,
+                                                     bool check_for_duplicate) {
+  if (check_for_duplicate) {
     const_node_iterator it = std::find(begin(), end(), node);
-    if(it == node_group.end()) {
+    if (it == node_group.end()) {
       node_group.push_back(node);
       return (node_group.end() - 1);
     }
@@ -64,7 +65,7 @@ inline void NodeGroup::remove(UInt node) {
   Array<UInt>::iterator<> end = this->node_group.end();
   AKANTU_DEBUG_ASSERT(it != end, "The node group is empty!!");
   for (; it != node_group.end(); ++it) {
-    if (*it == node) { 
+    if (*it == node) {
       it = node_group.erase(it);
     }
   }
@@ -72,31 +73,27 @@ inline void NodeGroup::remove(UInt node) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt NodeGroup::size() const {
-  return node_group.size();
-}
+inline UInt NodeGroup::size() const { return node_group.size(); }
 
 /* -------------------------------------------------------------------------- */
 struct FilterFunctor;
 
-template <typename T>
-void NodeGroup::applyNodeFilter(T & filter) {
+template <typename T> void NodeGroup::applyNodeFilter(T & filter) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(T::type == FilterFunctor::_node_filter_functor,
-		      "NodeFilter can only apply node filter functor");
+                      "NodeFilter can only apply node filter functor");
 
   Array<UInt>::iterator<> it = this->node_group.begin();
 
   for (; it != node_group.end(); ++it) {
     /// filter == true -> keep node
-    if (!filter(*it)) { 
+    if (!filter(*it)) {
       it = node_group.erase(it);
     }
   }
 
   AKANTU_DEBUG_OUT();
 }
-
 
 } // akantu

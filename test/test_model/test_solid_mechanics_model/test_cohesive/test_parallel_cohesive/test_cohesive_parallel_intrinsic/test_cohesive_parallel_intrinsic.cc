@@ -19,7 +19,7 @@
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   const UInt max_steps = 350;
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   Int prank = comm.whoAmI();
 
   akantu::MeshPartition * partition = NULL;
-  if(prank == 0) {
+  if (prank == 0) {
     // Read the mesh
     mesh.read("mesh.msh");
 
@@ -61,12 +61,11 @@ int main(int argc, char *argv[]) {
   std::cout << mesh << std::endl;
   debug::setDebugLevel(dblWarning);
 
-  Real time_step = model.getStableTimeStep()*0.8;
+  Real time_step = model.getStableTimeStep() * 0.8;
   model.setTimeStep(time_step);
   //  std::cout << "Time step: " << time_step << std::endl;
 
   model.assembleMassLumped();
-
 
   Array<Real> & position = mesh.getNodes();
   Array<Real> & velocity = model.getVelocity();
@@ -87,18 +86,17 @@ int main(int argc, char *argv[]) {
 
   model.setBaseName("intrinsic_parallel");
   model.addDumpFieldVector("displacement");
-  model.addDumpField("velocity"    );
+  model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual"    );
+  model.addDumpField("residual");
   model.addDumpField("stress");
   model.addDumpField("strain");
   model.addDumpField("partitions");
   model.addDumpField("force");
   model.dump();
 
-  
   model.setBaseNameToDumper("cohesive elements",
-			    "cohesive_elements_parallel_intrinsic");
+                            "cohesive_elements_parallel_intrinsic");
   model.addDumpFieldVectorToDumper("cohesive elements", "displacement");
   model.dump("cohesive elements");
 
@@ -113,10 +111,11 @@ int main(int argc, char *argv[]) {
 
     model.solveStep();
 
-    if(s % 20 == 0) {
+    if (s % 20 == 0) {
       model.dump();
       model.dump("cohesive elements");
-      if(prank == 0) std::cout << "passing step " << s << "/" << max_steps << std::endl;
+      if (prank == 0)
+        std::cout << "passing step " << s << "/" << max_steps << std::endl;
     }
 
     // // update displacement
@@ -126,15 +125,16 @@ int main(int argc, char *argv[]) {
     //   }
     // }
 
-    //    Real Ed = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getDissipatedEnergy();
-    //    Real Er = dynamic_cast<MaterialCohesive&> (model.getMaterial(1)).getReversibleEnergy();
+    //    Real Ed = dynamic_cast<MaterialCohesive&>
+    //    (model.getMaterial(1)).getDissipatedEnergy();
+    //    Real Er = dynamic_cast<MaterialCohesive&>
+    //    (model.getMaterial(1)).getReversibleEnergy();
 
     // edis << s << " "
     // 	 << Ed << std::endl;
 
     // erev << s << " "
     // 	 << Er << std::endl;
-
   }
 
   // edis.close();
@@ -144,8 +144,7 @@ int main(int argc, char *argv[]) {
 
   Real Edt = 2 * sqrt(2);
 
-
-  if(prank == 0) {
+  if (prank == 0) {
     std::cout << Ed << " " << Edt << std::endl;
 
     if (std::abs((Ed - Edt) / Edt) > 0.01 || std::isnan(Ed)) {
@@ -155,6 +154,7 @@ int main(int argc, char *argv[]) {
   }
 
   finalize();
-  if(prank == 0) std::cout << "OK: Test passed!" << std::endl;
+  if (prank == 0)
+    std::cout << "OK: Test passed!" << std::endl;
   return EXIT_SUCCESS;
 }

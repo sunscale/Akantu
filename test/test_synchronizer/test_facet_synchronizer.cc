@@ -13,13 +13,13 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include "test_synchronizers_fixture.hh"
 #include "test_data_accessor.hh"
+#include "test_synchronizers_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
-#include <random>
 #include <chrono>
+#include <random>
 #include <thread>
 /* -------------------------------------------------------------------------- */
 
@@ -32,10 +32,12 @@ public:
     this->mesh->initMeshFacets();
 
     /// compute barycenter for each element
-    barycenters = std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
+    barycenters =
+        std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
     this->initBarycenters(*barycenters, this->mesh->getMeshFacets());
 
-    test_accessor = std::make_unique<TestAccessor>(*this->mesh, *this->barycenters);
+    test_accessor =
+        std::make_unique<TestAccessor>(*this->mesh, *this->barycenters);
   }
 
   void TearDown() override {
@@ -47,7 +49,6 @@ protected:
   std::unique_ptr<ElementTypeMapArray<Real>> barycenters;
   std::unique_ptr<TestAccessor> test_accessor;
 };
-
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestFacetSynchronizerFixture, SynchroneOnce) {

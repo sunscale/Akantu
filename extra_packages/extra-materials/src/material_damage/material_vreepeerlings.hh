@@ -27,31 +27,35 @@ namespace akantu {
  * Material vreepeerlings
  *
  * parameters in the material files :
- *   - Kapaoi  : (default: 0.0001) Initial threshold (of the equivalent strain) >= Crate
+ *   - Kapaoi  : (default: 0.0001) Initial threshold (of the equivalent strain)
+ * >= Crate
  *   - Kapac  : (default: 0.0002) Final threshold (of the equivalent strain)
- *   - Arate  : (default: 1.) Fitting parameter (must be close to 1 to do tend to 0 the stress in the damaged element)
- *   - Brate   : (default: 1.) This parameter determines the rate at which the damage grows
- *   - Crate   : (default: 0.0001) This parameter determines the rate at which the damage grows
+ *   - Arate  : (default: 1.) Fitting parameter (must be close to 1 to do tend
+ * to 0 the stress in the damaged element)
+ *   - Brate   : (default: 1.) This parameter determines the rate at which the
+ * damage grows
+ *   - Crate   : (default: 0.0001) This parameter determines the rate at which
+ * the damage grows
  *   - Kct    : (default: 1.) Ratio between compressive and tensile strength
  */
-template<UInt spatial_dimension, template <UInt> class MatParent = MaterialElastic>
-class MaterialVreePeerlings : public MaterialDamage<spatial_dimension,
-                                                    MatParent> {
+template <UInt spatial_dimension,
+          template <UInt> class MatParent = MaterialElastic>
+class MaterialVreePeerlings
+    : public MaterialDamage<spatial_dimension, MatParent> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamage<spatial_dimension,
-                         MatParent> MaterialVreePeerlingsParent;
+  typedef MaterialDamage<spatial_dimension, MatParent>
+      MaterialVreePeerlingsParent;
   MaterialVreePeerlings(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialVreePeerlings() {};
+  virtual ~MaterialVreePeerlings(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
   /// constitutive law for all element of a type
@@ -59,33 +63,25 @@ public:
 
 protected:
   /// constitutive law for a given quadrature point
-  inline void computeStressOnQuad(Matrix<Real> & F,
-				  Matrix<Real> & sigma,
-				  Real & dam,
-				  Real & Equistrain_rate,
-				  Real & Equistrain,
-				  Real & Kapaq,
-				  Real dt,
-				  Matrix<Real> & strain_rate_vrpgls,
-				  Real & FullDam_ValStrain,
-				  Real & FullDam_ValStrain_rate,
-				  Real & Nb_damage);
+  inline void computeStressOnQuad(Matrix<Real> & F, Matrix<Real> & sigma,
+                                  Real & dam, Real & Equistrain_rate,
+                                  Real & Equistrain, Real & Kapaq, Real dt,
+                                  Matrix<Real> & strain_rate_vrpgls,
+                                  Real & FullDam_ValStrain,
+                                  Real & FullDam_ValStrain_rate,
+                                  Real & Nb_damage);
 
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
-					   Real & dam,
-					   Real & Equistrain_rate,
-					   Real & Equistrain,
-					   Real & Kapaq,
-					   Real dt,
-					   Real & FullDam_Valstrain,
-					   Real & FullDam_Valstrain_rate,
-					   Real & Nb_damage);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Real & dam,
+                                           Real & Equistrain_rate,
+                                           Real & Equistrain, Real & Kapaq,
+                                           Real dt, Real & FullDam_Valstrain,
+                                           Real & FullDam_Valstrain_rate,
+                                           Real & Nb_damage);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -99,10 +95,10 @@ protected:
   /// This parameter determines the rate at which the damage grows
   Real Arate;
 
-  /// This parameter determines the rate at which the damage grows 
+  /// This parameter determines the rate at which the damage grows
   Real Brate;
 
-  /// This parameter determines the rate at which the damage grows 
+  /// This parameter determines the rate at which the damage grows
   Real Crate;
 
   /// Ratio between compressive and tensile strength
@@ -123,7 +119,8 @@ protected:
   /// Value of the equivalent strain rate when damage = 1
   InternalField<Real> Full_dam_value_strain_rate;
 
-  /// Count the number of times that the material is damaged to damage = 0 until damage = 1
+  /// Count the number of times that the material is damaged to damage = 0 until
+  /// damage = 1
   InternalField<Real> Number_damage;
 
   /// Equivalent strain used to compute the damage evolution
@@ -143,4 +140,3 @@ protected:
 } // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_VREEPEERLINGS_HH__ */
-

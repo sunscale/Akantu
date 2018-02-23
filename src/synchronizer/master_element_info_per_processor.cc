@@ -135,7 +135,7 @@ void MasterElementInfoPerProc::synchronizeConnectivities() {
 
   /// copying the connectivity of ghost element
   for (auto && tuple :
-           enumerate(make_view(connectivities, this->nb_nodes_per_element))) {
+       enumerate(make_view(connectivities, this->nb_nodes_per_element))) {
     auto && el = std::get<0>(tuple);
     auto && conn = std::get<1>(tuple);
     for (auto part = ghost_partition.begin(el); part != ghost_partition.end(el);

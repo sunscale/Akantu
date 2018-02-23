@@ -30,9 +30,9 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
-#include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -129,8 +129,7 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
     /// corresponding weights
     auto first_pair = pair_list[ghost_type].begin();
     auto last_pair = pair_list[ghost_type].end();
-    auto weight_it =
-        pair_weight[ghost_type]->begin(nb_weights_per_pair);
+    auto weight_it = pair_weight[ghost_type]->begin(nb_weights_per_pair);
 
     // Compute the weights
     for (; first_pair != last_pair; ++first_pair, ++weight_it) {
@@ -139,13 +138,11 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
       const IntegrationPoint & q2 = first_pair->second;
 
       /// get the coordinates for the given pair of quads
-      auto coords_type_1_it =
-          this->quad_coordinates(q1.type, q1.ghost_type)
-              .begin(this->spatial_dimension);
+      auto coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type)
+                                  .begin(this->spatial_dimension);
       q1_coord = coords_type_1_it[q1.global_num];
-      auto coords_type_2_it =
-          this->quad_coordinates(q2.type, q2.ghost_type)
-              .begin(this->spatial_dimension);
+      auto coords_type_2_it = this->quad_coordinates(q2.type, q2.ghost_type)
+                                  .begin(this->spatial_dimension);
       q2_coord = coords_type_2_it[q2.global_num];
 
       Array<Real> & quad_volumes_1 =
@@ -180,8 +177,7 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
 
   ///  normalize the weights
   for (auto ghost_type : ghost_types) {
-    foreach_weight(ghost_type, [&](
-                                   const auto & q1, const auto & q2,
+    foreach_weight(ghost_type, [&](const auto & q1, const auto & q2,
                                    auto & weight) {
       auto & quad_volumes_1 = quadrature_points_volumes(q1.type, q1.ghost_type);
       auto & quad_volumes_2 = quadrature_points_volumes(q2.type, q2.ghost_type);

@@ -30,12 +30,12 @@
 
 /* -------------------------------------------------------------------------- */
 #ifndef AKANTU_CMAKE_LIST_MATERIALS
-#  include "material_reinforcement.hh"
+#include "material_reinforcement.hh"
 #endif
 
-#define AKANTU_MATERIAL_REINFORCEMENT_LAW_TMPL_LIST       \
-  ((elastic, (MaterialElastic<1>)))                       \
-  ((plastic, (MaterialLinearIsotropicHardening<1>)))
+#define AKANTU_MATERIAL_REINFORCEMENT_LAW_TMPL_LIST                            \
+  ((elastic, (MaterialElastic<1>)))(                                           \
+      (plastic, (MaterialLinearIsotropicHardening<1>)))
 
-#define AKANTU_EMBEDDED_MATERIAL_LIST                     \
+#define AKANTU_EMBEDDED_MATERIAL_LIST                                          \
   ((2, (reinforcement, MaterialReinforcement)))

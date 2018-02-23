@@ -51,11 +51,10 @@ inline void BaseWeightFunction::setRadius(Real radius) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real BaseWeightFunction::
-operator()(Real r, const IntegrationPoint &,
-           const IntegrationPoint &) {
+inline Real BaseWeightFunction::operator()(Real r, const IntegrationPoint &,
+                                           const IntegrationPoint &) {
 
-/// initialize the weight
+  /// initialize the weight
   Real w = 0;
   /// compute weight for given r
   if (r <= this->R) {

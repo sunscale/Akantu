@@ -30,21 +30,21 @@
  * @section DESCRIPTION
  *
  * @verbatim
-	    \eta
-	      ^
-	      |
-	      x 2
-	      | `
-	      |   `
-	      |  .  `
-	      |   q2  `
-	    5 x          x 4
- 	      |           `
- 	      |             `
- 	      |  .q0     q1.  `
- 	      |                 `
-  	      x---------x---------x-----> \xi
-	      0         3         1
+        \eta
+          ^
+          |
+          x 2
+          | `
+          |   `
+          |  .  `
+          |   q2  `
+        5 x          x 4
+          |           `
+          |             `
+          |  .q0     q1.  `
+          |                 `
+          x---------x---------x-----> \xi
+          0         3         1
  @endverbatim
  *
  * @subsection coords Nodes coordinates
@@ -93,20 +93,21 @@
  */
 
 /* -------------------------------------------------------------------------- */
-AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_triangle_6, _gt_triangle_6, _itp_lagrange_triangle_6, _ek_regular, 2,
-				     _git_triangle, 2);
+AKANTU_DEFINE_ELEMENT_CLASS_PROPERTY(_triangle_6, _gt_triangle_6,
+                                     _itp_lagrange_triangle_6, _ek_regular, 2,
+                                     _git_triangle, 2);
 
 /* -------------------------------------------------------------------------- */
 
 template <>
 template <class vector_type>
-inline void
-InterpolationElement<_itp_lagrange_triangle_6>::computeShapes(const vector_type & natural_coords,
-                                                              vector_type & N) {
+inline void InterpolationElement<_itp_lagrange_triangle_6>::computeShapes(
+    const vector_type & natural_coords, vector_type & N) {
   /// Natural coordinates
-  Real c0 = 1 - natural_coords(0) - natural_coords(1); /// @f$ c0 = 1 - \xi - \eta @f$
-  Real c1 = natural_coords(0);                         /// @f$ c1 = \xi @f$
-  Real c2 = natural_coords(1);                         /// @f$ c2 = \eta @f$
+  Real c0 =
+      1 - natural_coords(0) - natural_coords(1); /// @f$ c0 = 1 - \xi - \eta @f$
+  Real c1 = natural_coords(0);                   /// @f$ c1 = \xi @f$
+  Real c2 = natural_coords(1);                   /// @f$ c2 = \eta @f$
 
   N(0) = c0 * (2 * c0 - 1.);
   N(1) = c1 * (2 * c1 - 1.);
@@ -118,9 +119,8 @@ InterpolationElement<_itp_lagrange_triangle_6>::computeShapes(const vector_type 
 /* -------------------------------------------------------------------------- */
 template <>
 template <class vector_type, class matrix_type>
-inline void
-InterpolationElement<_itp_lagrange_triangle_6>::computeDNDS(const vector_type & natural_coords,
-                                                            matrix_type & dnds) {
+inline void InterpolationElement<_itp_lagrange_triangle_6>::computeDNDS(
+    const vector_type & natural_coords, matrix_type & dnds) {
 
   /**
    * @f[
@@ -145,31 +145,31 @@ InterpolationElement<_itp_lagrange_triangle_6>::computeDNDS(const vector_type & 
    */
 
   /// Natural coordinates
-  Real c0 = 1 - natural_coords(0) - natural_coords(1); /// @f$ c0 = 1 - \xi - \eta @f$
-  Real c1 = natural_coords(0);                         /// @f$ c1 = \xi @f$
-  Real c2 = natural_coords(1);                         /// @f$ c2 = \eta @f$
+  Real c0 =
+      1 - natural_coords(0) - natural_coords(1); /// @f$ c0 = 1 - \xi - \eta @f$
+  Real c1 = natural_coords(0);                   /// @f$ c1 = \xi @f$
+  Real c2 = natural_coords(1);                   /// @f$ c2 = \eta @f$
 
-  dnds(0, 0)  = 1 - 4 * c0;
-  dnds(0, 1)  = 4 * c1 - 1.;
-  dnds(0, 2)  = 0.;
-  dnds(0, 3)  = 4 * (c0 - c1);
-  dnds(0, 4)  = 4 * c2;
-  dnds(0, 5)  = - 4 * c2;
+  dnds(0, 0) = 1 - 4 * c0;
+  dnds(0, 1) = 4 * c1 - 1.;
+  dnds(0, 2) = 0.;
+  dnds(0, 3) = 4 * (c0 - c1);
+  dnds(0, 4) = 4 * c2;
+  dnds(0, 5) = -4 * c2;
 
   dnds(1, 0) = 1 - 4 * c0;
   dnds(1, 1) = 0.;
   dnds(1, 2) = 4 * c2 - 1.;
-  dnds(1, 3) = - 4 * c1;
+  dnds(1, 3) = -4 * c1;
   dnds(1, 4) = 4 * c1;
   dnds(1, 5) = 4 * (c0 - c2);
 }
 
-
 /* -------------------------------------------------------------------------- */
 template <>
 inline void
-InterpolationElement<_itp_lagrange_triangle_6>::computeSpecialJacobian( const Matrix<Real> & J,
-								       Real & jac){
+InterpolationElement<_itp_lagrange_triangle_6>::computeSpecialJacobian(
+    const Matrix<Real> & J, Real & jac) {
   Vector<Real> vprod(J.cols());
   Matrix<Real> Jt(J.transpose(), true);
   vprod.crossProduct(Jt(0), Jt(1));
@@ -177,21 +177,16 @@ InterpolationElement<_itp_lagrange_triangle_6>::computeSpecialJacobian( const Ma
 }
 
 /* -------------------------------------------------------------------------- */
-template<>
+template <>
 inline Real
 GeometricalElement<_gt_triangle_6>::getInradius(const Matrix<Real> & coord) {
-  UInt triangles[4][3] = {
-    {0, 3, 5},
-    {3, 1, 4},
-    {3, 4, 5},
-    {5, 4, 2}
-  };
+  UInt triangles[4][3] = {{0, 3, 5}, {3, 1, 4}, {3, 4, 5}, {5, 4, 2}};
 
   Real inradius = std::numeric_limits<Real>::max();
   for (UInt t = 0; t < 4; t++) {
     Real ir = Math::triangle_inradius(coord(triangles[t][0]).storage(),
-				      coord(triangles[t][1]).storage(),
-				      coord(triangles[t][2]).storage());
+                                      coord(triangles[t][1]).storage(),
+                                      coord(triangles[t][2]).storage());
     inradius = std::min(ir, inradius);
   }
 
@@ -199,6 +194,7 @@ GeometricalElement<_gt_triangle_6>::getInradius(const Matrix<Real> & coord) {
 }
 
 /* -------------------------------------------------------------------------- */
-// template<> inline bool ElementClass<_triangle_6>::contains(const Vector<Real> & natural_coords) {
+// template<> inline bool ElementClass<_triangle_6>::contains(const Vector<Real>
+// & natural_coords) {
 //   return ElementClass<_triangle_3>::contains(natural_coords);
 // }

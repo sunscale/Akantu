@@ -35,100 +35,85 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "fe_engine.hh"
+#include "fe_engine_template.hh"
 #include "integrator_gauss.hh"
-#include "shape_linked.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
-#include "fe_engine_template.hh"
+#include "shape_linked.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
-int main(){
-
+int main() {
 
   Mesh beams(2);
 
-
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
   // Defining the mesh
 
-    Array<Real> & nodes = const_cast<Array<Real> &>(beams.getNodes());
-    nodes.resize(4);
+  Array<Real> & nodes = const_cast<Array<Real> &>(beams.getNodes());
+  nodes.resize(4);
 
-    beams.addConnectivityType(_bernoulli_beam_2);
-    Array<UInt> & connectivity = const_cast<Array<UInt> &>(beams.getConnectivity(_bernoulli_beam_2));
-    connectivity.resize(3);
+  beams.addConnectivityType(_bernoulli_beam_2);
+  Array<UInt> & connectivity =
+      const_cast<Array<UInt> &>(beams.getConnectivity(_bernoulli_beam_2));
+  connectivity.resize(3);
 
-    for(UInt i=0; i<4; ++i) {
+  for (UInt i = 0; i < 4; ++i) {
 
-      nodes(i,0)=(i+1)*2;
-      nodes(i,1)=1;
-    }
-    for(UInt i=0; i<3; ++i) {
+    nodes(i, 0) = (i + 1) * 2;
+    nodes(i, 1) = 1;
+  }
+  for (UInt i = 0; i < 3; ++i) {
 
-      connectivity(i,0)=i;
-      connectivity(i,1)=i+1;
-    }
-    akantu::MeshIOMSH mesh_io;
-    mesh_io.write("b_beam_2.msh", beams);
+    connectivity(i, 0) = i;
+    connectivity(i, 1) = i + 1;
+  }
+  akantu::MeshIOMSH mesh_io;
+  mesh_io.write("b_beam_2.msh", beams);
 
-/* -------------------------------------------------------------------------- */
-    // Interpolation
+  /* --------------------------------------------------------------------------
+   */
+  // Interpolation
 
+  FEEngineTemplate<IntegratorGauss, ShapeLinked> * fem =
+      new FEEngineTemplate<IntegratorGauss, ShapeLinked>(beams, 2);
 
-    FEEngineTemplate<IntegratorGauss,ShapeLinked> *fem = new FEEngineTemplate<IntegratorGauss,ShapeLinked>(beams,2);
+  fem->initShapeFunctions();
 
-    fem->initShapeFunctions();
+  Array<Real> displ_on_nodes(4, 3);
+  Array<Real> displ_on_quad(0, 3);
 
-    Array<Real> displ_on_nodes(4,3);
-    Array<Real> displ_on_quad(0,3);
+  for (UInt i = 0; i < 4; ++i) {
 
-    for(UInt i=0; i<4; ++i) {
+    displ_on_nodes(i, 0) = (i + 1) * 2; // Definition of the displacement
+    displ_on_nodes(i, 1) = 0;
+    displ_on_nodes(i, 2) = 0;
+  }
 
-      displ_on_nodes(i,0)=(i+1)*2;   // Definition of the displacement
-      displ_on_nodes(i,1)=0;
-      displ_on_nodes(i,2)=0;
-    }
+  fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(
+      displ_on_nodes, displ_on_quad, 3, _not_ghost, NULL, false, 0, 0, 0);
 
-    fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(displ_on_nodes,
-									   displ_on_quad,
-									   3,_not_ghost,
-									   NULL, false,
-									   0, 0, 0);
+  fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(
+      displ_on_nodes, displ_on_quad, 3, _not_ghost, NULL, false, 1, 1, 1);
 
-    fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(displ_on_nodes,
-									   displ_on_quad,
-									   3, _not_ghost,
-									   NULL, false,
-									   1, 1, 1);
+  fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(
+      displ_on_nodes, displ_on_quad, 3, _not_ghost, NULL, true, 2, 2, 1);
 
-    fem->getShapeFunctions(). interpolateOnControlPoints<_bernoulli_beam_2>(displ_on_nodes,
-									    displ_on_quad,
-									    3, _not_ghost,
-									    NULL, true,
-									    2, 2, 1);
+  fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(
+      displ_on_nodes, displ_on_quad, 3, _not_ghost, NULL, false, 3, 2, 3);
 
-    fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(displ_on_nodes,
-									   displ_on_quad,
-									   3, _not_ghost,
-									   NULL, false,
-									   3, 2, 3);
+  fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(
+      displ_on_nodes, displ_on_quad, 3, _not_ghost, NULL, true, 4, 3, 3);
 
-    fem->getShapeFunctions().interpolateOnControlPoints<_bernoulli_beam_2>(displ_on_nodes,
-									   displ_on_quad,
-									   3, _not_ghost,
-									   NULL, true,
-									   4, 3, 3);
+  Real * don = displ_on_nodes.storage();
+  Real * doq = displ_on_quad.storage();
 
-    Real * don= displ_on_nodes.storage();
-    Real * doq= displ_on_quad.storage();
-
- std::ofstream my_file("out.txt");
+  std::ofstream my_file("out.txt");
   my_file << don << std::endl;
   my_file << doq << std::endl;
 
   return EXIT_SUCCESS;
-
 }

@@ -36,7 +36,6 @@
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
-
 using namespace akantu;
 /* -------------------------------------------------------------------------- */
 
@@ -110,7 +109,7 @@ inline void TestAccessor::unpackData(CommunicationBuffer & buffer,
                                      const SynchronizationTag &) {
   UInt spatial_dimension = mesh.getSpatialDimension();
 
-  for(const auto & element : elements) {
+  for (const auto & element : elements) {
     Vector<Real> barycenter_loc(
         this->barycenters(element.type, element.ghost_type).storage() +
             element.element * spatial_dimension,

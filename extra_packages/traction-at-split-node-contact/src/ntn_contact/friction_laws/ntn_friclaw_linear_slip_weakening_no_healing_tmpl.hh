@@ -20,10 +20,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::
-NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact * contact,
-				       const FrictionID & id,
-				       const MemoryID & memory_id) :
-  NTNFricLawLinearSlipWeakening<Regularisation>(contact,id,memory_id) {
+    NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact * contact,
+                                           const FrictionID & id,
+                                           const MemoryID & memory_id)
+    : NTNFricLawLinearSlipWeakening<Regularisation>(contact, id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -31,21 +31,22 @@ NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact * contact,
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::computeFrictionCoefficient() {
+void NTNFricLawLinearSlipWeakeningNoHealing<
+    Regularisation>::computeFrictionCoefficient() {
   AKANTU_DEBUG_IN();
 
   // get arrays
-  const SynchronizedArray<Real> & slip  = this->internalGetCumulativeSlip();
+  const SynchronizedArray<Real> & slip = this->internalGetCumulativeSlip();
 
   UInt nb_contact_nodes = this->contact->getNbContactNodes();
-  for (UInt n=0; n<nb_contact_nodes; ++n) {
+  for (UInt n = 0; n < nb_contact_nodes; ++n) {
     if (slip(n) >= this->d_c(n)) {
       this->mu(n) = this->mu_k(n);
-    }
-    else {
+    } else {
       // mu = mu_k + (1 - slip / Dc) * (mu_s - mu_k)
-      this->mu(n) = this->mu_k(n)
-	          + (1 - (slip(n) / this->d_c(n))) * (this->mu_s(n) - this->mu_k(n));
+      this->mu(n) =
+          this->mu_k(n) +
+          (1 - (slip(n) / this->d_c(n))) * (this->mu_s(n) - this->mu_k(n));
     }
   }
 
@@ -54,10 +55,12 @@ void NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::computeFrictionCoef
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-void NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::printself(std::ostream & stream, int indent) const {
+void NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::printself(
+    std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
   std::string space;
-  for(Int i = 0; i < indent; i++, space += AKANTU_INDENT);
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
 
   stream << space << "NTNFricLawLinearSlipWeakeningNoHealing [" << std::endl;
   NTNFricLawLinearSlipWeakening<Regularisation>::printself(stream, ++indent);

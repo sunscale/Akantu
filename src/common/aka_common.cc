@@ -32,12 +32,12 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_random_generator.hh"
 #include "aka_static_memory.hh"
 #include "communicator.hh"
-#include "aka_random_generator.hh"
 
-#include "parser.hh"
 #include "cppargparse.hh"
+#include "parser.hh"
 
 #include "communication_tag.hh"
 /* -------------------------------------------------------------------------- */
@@ -59,8 +59,7 @@ void initialize(int & argc, char **& argv) {
 void initialize(const std::string & input_file, int & argc, char **& argv) {
   AKANTU_DEBUG_IN();
   StaticMemory::getStaticMemory();
-  Communicator & comm =
-    Communicator::getStaticCommunicator(argc, argv);
+  Communicator & comm = Communicator::getStaticCommunicator(argc, argv);
 
   Tag::setMaxTag(comm.getMaxTag());
 

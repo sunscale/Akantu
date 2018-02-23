@@ -31,15 +31,15 @@
 /* -------------------------------------------------------------------------- */
 
 #include "embedded_interface_model.hh"
-#include "material_reinforcement.hh"
-#include "material_elastic.hh"
-#include "mesh_iterators.hh"
 #include "integrator_gauss.hh"
+#include "material_elastic.hh"
+#include "material_reinforcement.hh"
+#include "mesh_iterators.hh"
 #include "shape_lagrange.hh"
 
 #ifdef AKANTU_USE_IOHELPER
-#  include "dumper_iohelper_paraview.hh"
-#  include "dumpable_inline_impl.hh"
+#include "dumpable_inline_impl.hh"
+#include "dumper_iohelper_paraview.hh"
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -51,13 +51,10 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
                                                const ID & id,
-                                               const MemoryID & memory_id) :
-  SolidMechanicsModel(mesh, spatial_dimension, id, memory_id),
-  intersector(mesh, primitive_mesh),
-  interface_mesh(nullptr),
-  primitive_mesh(primitive_mesh),
-  interface_material_selector(nullptr)
-{
+                                               const MemoryID & memory_id)
+    : SolidMechanicsModel(mesh, spatial_dimension, id, memory_id),
+      intersector(mesh, primitive_mesh), interface_mesh(nullptr),
+      primitive_mesh(primitive_mesh), interface_material_selector(nullptr) {
   this->model_type = ModelType::_embedded_model;
 
   // This pointer should be deleted by ~SolidMechanicsModel()
@@ -113,8 +110,8 @@ void EmbeddedInterfaceModel::initFullImpl(const ModelOptions & options) {
 
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.registerDumper<DumperParaview>("reinforcement", id);
-  this->mesh.addDumpMeshToDumper("reinforcement", *interface_mesh,
-                                 1, _not_ghost, _ek_regular);
+  this->mesh.addDumpMeshToDumper("reinforcement", *interface_mesh, 1,
+                                 _not_ghost, _ek_regular);
 #endif
 }
 
@@ -139,38 +136,38 @@ void EmbeddedInterfaceModel::assignMaterialToElements(
                      auto mat_index = (*interface_material_selector)(element);
                      // material_index(element) = mat_index;
                      materials[mat_index]->addElement(element);
-		     // this->material_local_numbering(element) = index;
+                     // this->material_local_numbering(element) = index;
                    },
-                   _element_filter = filter,
-		   _spatial_dimension = 1);
+                   _element_filter = filter, _spatial_dimension = 1);
 
   SolidMechanicsModel::assignMaterialToElements(filter);
 }
 
 /* -------------------------------------------------------------------------- */
-void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(const std::string & dumper_name,
-                                                       const std::string & field_id,
-                                                       const std::string & group_name,
-                                                       const ElementKind & element_kind,
-                                                       bool padding_flag) {
+void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(
+    const std::string & dumper_name, const std::string & field_id,
+    const std::string & group_name, const ElementKind & element_kind,
+    bool padding_flag) {
 #ifdef AKANTU_USE_IOHELPER
   dumper::Field * field = NULL;
 
   // If dumper is reinforcement, create a 1D elemental field
   if (dumper_name == "reinforcement")
-    field = this->createElementalField(field_id, group_name, padding_flag, 1, element_kind);
+    field = this->createElementalField(field_id, group_name, padding_flag, 1,
+                                       element_kind);
   else {
     try {
-      SolidMechanicsModel::addDumpGroupFieldToDumper(dumper_name, field_id, group_name, element_kind, padding_flag);
-    } catch (...) {}
+      SolidMechanicsModel::addDumpGroupFieldToDumper(
+          dumper_name, field_id, group_name, element_kind, padding_flag);
+    } catch (...) {
+    }
   }
   if (field) {
-    DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name,group_name);
-    Model::addDumpGroupFieldToDumper(field_id,field,dumper);
+    DumperIOHelper & dumper = mesh.getGroupDumper(dumper_name, group_name);
+    Model::addDumpGroupFieldToDumper(field_id, field, dumper);
   }
 
 #endif
 }
 
 } // akantu
-

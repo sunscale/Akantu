@@ -36,7 +36,7 @@
 
 using namespace akantu;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   Mesh mesh(2);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
   model.setBaseName("plate");
   model.addDumpFieldVector("displacement");
   model.addDumpField("blocked_dofs");
-  model.addDumpField("force"       );
+  model.addDumpField("force");
   model.dump();
 
   finalize();

@@ -34,68 +34,72 @@
 #define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_HH__
 
 namespace akantu {
-template<UInt spatial_dimension, template<UInt> class Parent = MaterialElastic>
+template <UInt spatial_dimension,
+          template <UInt> class Parent = MaterialElastic>
 class MaterialOrthotropicDamage : public Parent<spatial_dimension> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
   MaterialOrthotropicDamage(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialOrthotropicDamage() {};
+  virtual ~MaterialOrthotropicDamage(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   virtual void initMaterial();
 
   /// compute the tangent stiffness matrix for an element type
   virtual void computeTangentModuli(const ElementType & el_type,
-			    Array<Real> & tangent_matrix,
-			    GhostType ghost_type = _not_ghost);
+                                    Array<Real> & tangent_matrix,
+                                    GhostType ghost_type = _not_ghost);
 
 protected:
-  /// update the dissipated energy, must be called after the stress have been computed
+  /// update the dissipated energy, must be called after the stress have been
+  /// computed
   virtual void updateEnergies(ElementType el_type, GhostType ghost_type);
 
   /// compute the tangent stiffness matrix for a given quadrature point
-  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent,
-					 const Matrix<Real> C,
-					 const Matrix<Real> & dam,
-					 const Matrix<Real> & dam_directions,
-					 Matrix<Real> & O_prime,
-					 Matrix<Real> & S_prime,
-					 Matrix<Real> & O,
-					 Matrix<Real> & S,
-					 Matrix<Real> & rotation_tmp);
+  inline void computeTangentModuliOnQuad(
+      Matrix<Real> & tangent, const Matrix<Real> C, const Matrix<Real> & dam,
+      const Matrix<Real> & dam_directions, Matrix<Real> & O_prime,
+      Matrix<Real> & S_prime, Matrix<Real> & O, Matrix<Real> & S,
+      Matrix<Real> & rotation_tmp);
 
-  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Matrix<Real> & one_minus_D, Matrix<Real> & root_one_minus_D, Matrix<Real> & damage, Matrix<Real> & first_term, Matrix<Real> & third_term);
+  inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma,
+                                           Matrix<Real> & one_minus_D,
+                                           Matrix<Real> & root_one_minus_D,
+                                           Matrix<Real> & damage,
+                                           Matrix<Real> & first_term,
+                                           Matrix<Real> & third_term);
 
-  /// rotate a Matrix of size dim*dim into the coordinate system of the FE computation
+  /// rotate a Matrix of size dim*dim into the coordinate system of the FE
+  /// computation
   inline void rotateIntoComputationFrame(const Matrix<Real> & to_rotate,
-					 Matrix<Real> & rotated,
-					 const Matrix<Real> & damage_directions,	 Matrix<Real> & rotation_tmp);
+                                         Matrix<Real> & rotated,
+                                         const Matrix<Real> & damage_directions,
+                                         Matrix<Real> & rotation_tmp);
 
   /// rotate a Matrix of size dim*dim into the coordinate system of the damage
   inline void rotateIntoNewFrame(const Matrix<Real> & to_rotate,
-				    Matrix<Real> & rotated,
-				    const Matrix<Real> & damage_directions,
-				    Matrix<Real> & rotation_tmp);
+                                 Matrix<Real> & rotated,
+                                 const Matrix<Real> & damage_directions,
+                                 Matrix<Real> & rotation_tmp);
 
   /// compute (1-D)
-  inline void computeOneMinusD(Matrix<Real> & one_minus_D, const Matrix<Real> & damage);
-  
+  inline void computeOneMinusD(Matrix<Real> & one_minus_D,
+                               const Matrix<Real> & damage);
+
   /// compute (1-D)^(1/2)
-  inline void computeSqrtOneMinusD(const Matrix<Real> & one_minus_D, Matrix<Real> & sqrt_one_minus_D);
+  inline void computeSqrtOneMinusD(const Matrix<Real> & one_minus_D,
+                                   Matrix<Real> & sqrt_one_minus_D);
 
   /* ------------------------------------------------------------------------ */
   /* DataAccessor inherited members                                           */
   /* ------------------------------------------------------------------------ */
 public:
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -104,7 +108,8 @@ public:
   Real getDissipatedEnergy() const;
 
   // virtual Real getEnergy(std::string type);
-  // virtual Real getEnergy(std::string energy_id, ElementType type, UInt index) {
+  // virtual Real getEnergy(std::string energy_id, ElementType type, UInt index)
+  // {
   //   return Parent<spatial_dimension>::getEnergy(energy_id, type, index);
   // };
 
@@ -122,18 +127,17 @@ protected:
   /// dissipated energy
   InternalField<Real> dissipated_energy;
 
-  /// contain the current value of @f$ \int_0^{\epsilon}\sigma(\omega)d\omega @f$ the dissipated energy
+  /// contain the current value of @f$ \int_0^{\epsilon}\sigma(\omega)d\omega
+  /// @f$ the dissipated energy
   InternalField<Real> int_sigma;
 
   /// direction vectors for the damage frame
-  InternalField<Real>  damage_dir_vecs;
+  InternalField<Real> damage_dir_vecs;
 
   Real eta;
 
   /// maximum damage value
   Real max_damage;
-
-
 };
 
 } // namespace akantu

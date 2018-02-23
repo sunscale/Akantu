@@ -149,7 +149,8 @@ void MaterialElastic<spatial_dimension>::computeStress(ElementType el_type,
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialElastic<spatial_dimension>::computeTangentModuli(
-    const ElementType & el_type, Array<Real> & tangent_matrix, GhostType ghost_type) {
+    const ElementType & el_type, Array<Real> & tangent_matrix,
+    GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
@@ -225,8 +226,7 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergyByElement(
     stress_it = this->piola_kirchhoff_2(type).begin(spatial_dimension,
                                                     spatial_dimension);
 
-  UInt nb_quadrature_points =
-      this->fem.getNbIntegrationPoints(type);
+  UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
 
   gradu_it += index * nb_quadrature_points;
   gradu_end += (index + 1) * nb_quadrature_points;

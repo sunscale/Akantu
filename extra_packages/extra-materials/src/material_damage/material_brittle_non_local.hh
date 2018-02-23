@@ -31,34 +31,38 @@ namespace akantu {
  *
  * parameters in the material files :
  */
-template<UInt spatial_dimension>
-class MaterialBrittleNonLocal : public MaterialDamageNonLocal<spatial_dimension, MaterialBrittle<spatial_dimension> > {
+template <UInt spatial_dimension>
+class MaterialBrittleNonLocal
+    : public MaterialDamageNonLocal<spatial_dimension,
+                                    MaterialBrittle<spatial_dimension>> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension, MaterialBrittle<spatial_dimension> > MaterialBrittleNonLocalParent;
+  typedef MaterialDamageNonLocal<spatial_dimension,
+                                 MaterialBrittle<spatial_dimension>>
+      MaterialBrittleNonLocalParent;
   MaterialBrittleNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialBrittleNonLocal() {};
+  virtual ~MaterialBrittleNonLocal(){};
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-
   void initMaterial();
 
 protected:
   /// constitutive law
   void computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
-  void computeNonLocalStress(ElementType type, GhostType ghost_type = _not_ghost);
+  void computeNonLocalStress(ElementType type,
+                             GhostType ghost_type = _not_ghost);
 
   /// associate the non-local variables of the material to their neighborhoods
   virtual void nonLocalVariableToNeighborhood();
-private:
 
+private:
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */

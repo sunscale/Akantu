@@ -63,8 +63,7 @@ inline void Communicator::receiveAnyNumber(
     while (are_receives_ready) {
       auto && tag = std::forward<TagGen>(tag_gen)();
       CommunicationStatus status;
-      are_receives_ready =
-          asyncProbe<UInt>(_any_source, tag, status);
+      are_receives_ready = asyncProbe<UInt>(_any_source, tag, status);
       if (are_receives_ready) {
         receive_buffer.resize(status.size());
         receive(receive_buffer, status.getSource(), tag);

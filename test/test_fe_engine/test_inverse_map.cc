@@ -39,21 +39,24 @@ namespace {
 TYPED_TEST(TestFEMFixture, InverseMap) {
   this->fem->initShapeFunctions();
 
-  Matrix<Real> quad = GaussIntegrationElement<TestFixture::type>::getQuadraturePoints();
+  Matrix<Real> quad =
+      GaussIntegrationElement<TestFixture::type>::getQuadraturePoints();
 
   const auto & position = this->fem->getMesh().getNodes();
 
-/// get the quadrature points coordinates
+  /// get the quadrature points coordinates
   Array<Real> coord_on_quad(quad.cols() * this->nb_element, this->dim,
                             "coord_on_quad");
 
-  this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, this->dim, this->type);
+  this->fem->interpolateOnIntegrationPoints(position, coord_on_quad, this->dim,
+                                            this->type);
 
   Vector<Real> natural_coords(this->dim);
 
   auto length = (this->upper - this->lower).template norm<L_inf>();
 
-  for(auto && enum_ : enumerate(make_view(coord_on_quad, this->dim, quad.cols()))) {
+  for (auto && enum_ :
+       enumerate(make_view(coord_on_quad, this->dim, quad.cols()))) {
     auto el = std::get<0>(enum_);
     const auto & quads_coords = std::get<1>(enum_);
 

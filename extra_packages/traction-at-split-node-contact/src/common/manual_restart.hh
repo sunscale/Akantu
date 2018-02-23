@@ -3,7 +3,7 @@
  *
  *
  *
- * @brief  
+ * @brief
  *
  * @section LICENSE
  *
@@ -22,16 +22,15 @@
 #include "aka_array.hh"
 #include "solid_mechanics_model.hh"
 
-void dumpArray(const akantu::Array<akantu::Real> & array, const std::string & fname);
+void dumpArray(const akantu::Array<akantu::Real> & array,
+               const std::string & fname);
 
 void loadArray(akantu::Array<akantu::Real> & array, const std::string & fname);
-void loadRestart(akantu::SolidMechanicsModel & model, 
-		 const std::string & fname, 
-		 akantu::UInt prank);
-void loadRestart(akantu::SolidMechanicsModel & model, 
-		 const std::string & fname);
-void dumpRestart(akantu::SolidMechanicsModel & model, 
-		 const std::string & fname, 
-		 akantu::UInt prank);
-void dumpRestart(akantu::SolidMechanicsModel & model, 
-		 const std::string & fname);
+void loadRestart(akantu::SolidMechanicsModel & model, const std::string & fname,
+                 akantu::UInt prank);
+void loadRestart(akantu::SolidMechanicsModel & model,
+                 const std::string & fname);
+void dumpRestart(akantu::SolidMechanicsModel & model, const std::string & fname,
+                 akantu::UInt prank);
+void dumpRestart(akantu::SolidMechanicsModel & model,
+                 const std::string & fname);

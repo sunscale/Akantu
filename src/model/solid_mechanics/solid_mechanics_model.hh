@@ -454,7 +454,6 @@ protected:
   friend class Material;
 
 protected:
-
   /// compute the stable time step
   Real getStableTimeStep(const GhostType & ghost_type);
 

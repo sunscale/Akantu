@@ -45,8 +45,7 @@ class PadderInterface {
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  PadderInterface(){
+  PadderInterface() {
     padding_m = 0;
     padding_n = 0;
   }
@@ -55,76 +54,63 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-
 public:
-
-
-  void setPadding(UInt m, UInt n = 0){
+  void setPadding(UInt m, UInt n = 0) {
     padding_m = m;
     padding_n = n;
   }
 
-  virtual UInt getPaddedDim(UInt nb_data) {
-    return nb_data;
-  }
-
+  virtual UInt getPaddedDim(UInt nb_data) { return nb_data; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
 public:
-
   /// padding informations
   UInt padding_n, padding_m;
 };
 
 /* -------------------------------------------------------------------------- */
 
-
-template<class input_type, class output_type>
-class PadderGeneric :
-  public ComputeFunctor<input_type, output_type > , public PadderInterface {
+template <class input_type, class output_type>
+class PadderGeneric : public ComputeFunctor<input_type, output_type>,
+                      public PadderInterface {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 
 public:
-
-  PadderGeneric() : PadderInterface(){}
+  PadderGeneric() : PadderInterface() {}
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-
 public:
-
-
-  inline output_type pad(const input_type & in,__attribute__((unused)) UInt nb_data) {
-    return in; // trick due to the fact that IOHelper padds the vectors (avoid a copy of data)
+  inline output_type pad(const input_type & in,
+                         __attribute__((unused)) UInt nb_data) {
+    return in; // trick due to the fact that IOHelper padds the vectors (avoid a
+               // copy of data)
   }
-
 };
 /* -------------------------------------------------------------------------- */
 
-
-template<class T>
-class PadderGeneric<Vector<T>, Matrix<T> > :
-  public ComputeFunctor<Vector<T>, Matrix<T> > , public PadderInterface {
+template <class T>
+class PadderGeneric<Vector<T>, Matrix<T>>
+    : public ComputeFunctor<Vector<T>, Matrix<T>>, public PadderInterface {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 
 public:
-  inline Matrix<T> pad(const Vector<T> & _in,
-                       UInt nrows, UInt ncols,
+  inline Matrix<T> pad(const Vector<T> & _in, UInt nrows, UInt ncols,
                        UInt nb_data) {
     Matrix<T> in(_in.storage(), nrows, ncols);
 
-    if(padding_m <= nrows && padding_n*nb_data <= ncols)
+    if (padding_m <= nrows && padding_n * nb_data <= ncols)
       return in;
     else {
       Matrix<T> ret(padding_m, padding_n * nb_data);
@@ -139,7 +125,6 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
-
 
 } // akantu
 __END_AKANTU_DUMPER__

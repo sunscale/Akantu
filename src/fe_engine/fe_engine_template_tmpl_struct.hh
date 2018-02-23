@@ -79,9 +79,8 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 inline void
 FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
-    const ElementType &, UInt, UInt, Array<Real> *,
-    UInt, UInt, UInt, const bool,
-    const GhostType &) const {
+    const ElementType &, UInt, UInt, Array<Real> *, UInt, UInt, UInt,
+    const bool, const GhostType &) const {
 
   AKANTU_TO_IMPLEMENT();
 }
@@ -92,9 +91,8 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
 template <ElementType type>
 inline void
 FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
-    const Array<Real> & , UInt , SparseMatrix &,
-    Array<Real> * , ElementTypeMapArray<Real> & ,
-    const GhostType & ) const {
+    const Array<Real> &, UInt, SparseMatrix &, Array<Real> *,
+    ElementTypeMapArray<Real> &, const GhostType &) const {
   AKANTU_TO_IMPLEMENT();
 }
 

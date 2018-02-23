@@ -30,14 +30,12 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "aka_array.hh"
+#include "aka_common.hh"
 #include "aka_memory.hh"
-#include "mesh_filter.hh"
 #include "dumpable.hh"
+#include "mesh_filter.hh"
 /* -------------------------------------------------------------------------- */
-
-
 
 #ifndef __AKANTU_NODE_GROUP_HH__
 #define __AKANTU_NODE_GROUP_HH__
@@ -49,9 +47,7 @@ class NodeGroup : public Memory, public Dumpable {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-
-  NodeGroup(const std::string & name,
-	    const Mesh & mesh,
+  NodeGroup(const std::string & name, const Mesh & mesh,
             const std::string & id = "node_group",
             const MemoryID & memory_id = 0);
   ~NodeGroup() override;
@@ -77,9 +73,7 @@ public:
   inline void remove(UInt node);
 
 #ifndef SWIG
-  inline decltype(auto) find(UInt node) const {
-    return node_group.find(node);
-  }
+  inline decltype(auto) find(UInt node) const { return node_group.find(node); }
 #endif
   /// remove duplicated nodes
   void optimize();
@@ -88,8 +82,7 @@ public:
   void append(const NodeGroup & other_group);
 
   /// apply a filter on current node group
-  template <typename T>
-  void applyNodeFilter(T & filter);
+  template <typename T> void applyNodeFilter(T & filter);
 
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -98,7 +91,6 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-
   AKANTU_GET_MACRO_NOT_CONST(Nodes, node_group, Array<UInt> &);
   AKANTU_GET_MACRO(Nodes, node_group, const Array<UInt> &);
   AKANTU_GET_MACRO(Name, name, const std::string &);
@@ -106,8 +98,8 @@ public:
   /// give the number of nodes in the current group
   inline UInt size() const;
 
-  UInt * storage(){return node_group.storage();};
-  
+  UInt * storage() { return node_group.storage(); };
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -119,12 +111,12 @@ private:
   Array<UInt> & node_group;
 
   /// reference to the mesh in question
-  //const Mesh & mesh;
+  // const Mesh & mesh;
 };
 
 /// standard output stream operator
-inline std::ostream & operator <<(std::ostream & stream, const NodeGroup & _this)
-{
+inline std::ostream & operator<<(std::ostream & stream,
+                                 const NodeGroup & _this) {
   _this.printself(stream);
   return stream;
 }
@@ -136,7 +128,5 @@ inline std::ostream & operator <<(std::ostream & stream, const NodeGroup & _this
 /* -------------------------------------------------------------------------- */
 
 #include "node_group_inline_impl.cc"
-
-
 
 #endif /* __AKANTU_NODE_GROUP_HH__ */
