@@ -685,6 +685,11 @@ function(_package_load_dependencies_package pkg_name loading_list)
       endif()
 
       # set the option to on
+      set(_type BOOL)
+      _package_get_nature(${_dep_name} _nature)
+      if(_nature MATCHES ".*not_optional$")
+	set(_type INTERNAL)
+      endif()
       set(${_dep_option_name} ON CACHE BOOL "${_dep_desc}" FORCE)
 
       # store the reverse dependency
