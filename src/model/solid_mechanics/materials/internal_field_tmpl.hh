@@ -234,7 +234,7 @@ template <typename T> void InternalField<T>::saveCurrentValues() {
 template <typename T>
 void InternalField<T>::removeIntegrationPoints(
     const ElementTypeMapArray<UInt> & new_numbering) {
-  for (auto && ghost_type : ghost_types) {
+  for (auto ghost_type : ghost_types) {
     for (auto type : new_numbering.elementTypes(_all_dimensions, ghost_type,
                                                 _ek_not_defined)) {
       if (not this->exists(type, ghost_type))
