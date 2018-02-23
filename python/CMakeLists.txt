@@ -59,11 +59,15 @@ package_get_all_include_directories(
   AKANTU_LIBRARY_INCLUDE_DIRS
   )
 
+package_get_all_external_informations(
+  INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+  )
+
 set(_swig_include_dirs
   ${CMAKE_CURRENT_SOURCE_DIR}/swig
   ${AKANTU_LIBRARY_INCLUDE_DIRS}
   ${PROJECT_BINARY_DIR}/src
-  ${AKANTU_EXTERNAL_INCLUDE_DIR}
+  ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR}
   )
 
 include(CMakeParseArguments)
