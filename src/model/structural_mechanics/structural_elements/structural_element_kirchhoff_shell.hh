@@ -1,34 +1,37 @@
 /**
- * @file   structural_element_bernoulli_kirchhoff_shell.hh
+ * @file   structural_element_kirchhoff_shell.hh
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Damien Spielmann <damien.spielmann@epfl.ch>
  *
- * @date creation  Tue Sep 19 2017
+ * @date creation: Wed Oct 11 2017
+ * @date last modification: Wed Feb 21 2018
  *
- * @brief Specific functions for bernoulli kirchhoff shell
+ * @brief  Specific functions for bernoulli kirchhoff shell
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__
 #define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_KIRCHHOFF_SHELL_HH__

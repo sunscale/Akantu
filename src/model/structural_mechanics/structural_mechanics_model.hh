@@ -2,36 +2,37 @@
  * @file   structural_mechanics_model.hh
  *
  * @author Fabian Barras <fabian.barras@epfl.ch>
+ * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Sébastien Hartmann <sebastien.hartmann@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  * @author Damien Spielmann <damien.spielmann@epfl.ch>
  *
  * @date creation: Fri Jul 15 2011
- * @date last modification: Thu Jan 21 2016
+ * @date last modification: Tue Feb 20 2018
  *
  * @brief  Particular implementation of the structural elements in the
  * StructuralMechanicsModel
  *
  * @section LICENSE
  *
- * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
- * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des
- * Solides)
+ * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 /* -------------------------------------------------------------------------- */
 #include "aka_named_argument.hh"
 #include "boundary_condition.hh"

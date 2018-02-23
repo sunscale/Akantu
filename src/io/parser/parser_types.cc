@@ -3,24 +3,24 @@
  *
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
- * @date creation: Thu Feb 21 2013
- * @date last modification: Wed Nov 11 2015
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Mon Jun 19 2017
  *
  * @brief  implementation of the parser
  *
  * @section LICENSE
  *
- * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
+ * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
@@ -31,7 +31,7 @@
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined(__clang__) // test clang to be sure that when we test for gnu it
-                         // is only gnu
+// is only gnu
 #elif (defined(__GNUC__) || defined(__GNUG__))
 #define GCC_VERSION                                                            \
   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)

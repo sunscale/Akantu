@@ -6,23 +6,23 @@
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Tue May 13 2014
- * @date last modification: Wed Oct 07 2015
+ * @date last modification: Mon Jun 19 2017
  *
  * @brief  Solver class interface for the petsc solver
  *
  * @section LICENSE
  *
- * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
+ * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
@@ -148,7 +148,8 @@ private:
 //    Options Database Keys
 
 //    -options_table	                - Calls PetscOptionsView()
-//    -options_left	                - Prints unused options that remain in the
+//    -options_left	                - Prints unused options that remain in
+//    the
 //    database
 //    -objects_left                  - Prints list of all objects that have not
 //    been freed
@@ -166,7 +167,8 @@ private:
 //    -log_summary_python [filename]	- Prints data on of flop and timing
 //    usage
 //    to a file or screen.
-//    -log_all [filename]	        - Logs extensive profiling information See
+//    -log_all [filename]	        - Logs extensive profiling information
+//    See
 //    PetscLogDump().
 //    -log [filename]	            - Logs basic profiline information See
 //    PetscLogDump().

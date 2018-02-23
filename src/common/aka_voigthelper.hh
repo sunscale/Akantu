@@ -1,30 +1,30 @@
-
 /**
  * @file   aka_voigthelper.hh
  *
+ * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  * @author Lucas Frerot <lucas.frerot@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>
  * @author Daniel Pino Muñoz <daniel.pinomunoz@epfl.ch>
  * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Fri Dec 20 2013
- * @date last modification: Fri Jan 22 2016
+ * @date last modification: Mon Jan 29 2018
  *
  * @brief  Helper file for Voigt notation
  *
  * @section LICENSE
  *
- * Copyright  (©)  2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de Lausanne)
+ * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
