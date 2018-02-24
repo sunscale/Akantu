@@ -1,0 +1,6 @@
+material elastic [
+	 name = steel
+	 rho = 7800   # density
+	 E   = 2.1e11 # young's modulus
+	 nu  = 0.0    # poisson's ratio
+]
