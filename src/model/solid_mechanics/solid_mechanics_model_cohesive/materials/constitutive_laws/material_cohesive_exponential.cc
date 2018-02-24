@@ -86,15 +86,10 @@ void MaterialCohesiveExponential<spatial_dimension>::computeTraction(
 
   /// define iterators
   auto traction_it = tractions(el_type, ghost_type).begin(spatial_dimension);
-
   auto opening_it = opening(el_type, ghost_type).begin(spatial_dimension);
-
   auto normal_it = normal.begin(spatial_dimension);
-
   auto traction_end = tractions(el_type, ghost_type).end(spatial_dimension);
-
   auto delta_max_it = delta_max(el_type, ghost_type).begin();
-
   auto delta_max_prev_it = delta_max.previous(el_type, ghost_type).begin();
 
   /// compute scalars
@@ -209,16 +204,10 @@ void MaterialCohesiveExponential<spatial_dimension>::computeTangentTraction(
     const Array<Real> & normal, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real>::matrix_iterator tangent_it =
-      tangent_matrix.begin(spatial_dimension, spatial_dimension);
-
-  Array<Real>::matrix_iterator tangent_end =
-      tangent_matrix.end(spatial_dimension, spatial_dimension);
-
+  auto tangent_it = tangent_matrix.begin(spatial_dimension, spatial_dimension);
+  auto tangent_end = tangent_matrix.end(spatial_dimension, spatial_dimension);
   auto normal_it = normal.begin(spatial_dimension);
-
   auto opening_it = opening(el_type, ghost_type).begin(spatial_dimension);
-
   auto delta_max_it = delta_max.previous(el_type, ghost_type).begin();
 
   Real beta2 = beta * beta;
