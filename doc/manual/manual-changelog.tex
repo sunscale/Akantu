@@ -1,0 +1,47 @@
+\chapter*{Changes, New Features, and Fixes}
+
+\section*{Version 3.0.0}
+
+\begin{itemize}
+\item[\textbf{\texttt{c++14}}] Switch from C++ standard \code{2003} to \code{2014}\\
+  Example of changes implied by this:
+  \begin{cpp}
+ for (UInt g = _not_ghost; g <= _ghost; ++g) {
+   GhostType gt = (GhostType)g;
+   Mesh::type_iterator it = this->mesh.firstType(spatial_dimension, gt);
+   Mesh::type_iterator end = this->mesh.lastType(spatial_dimension, gt);
+   for (; it != end; ++it) {
+     ElementType & type = *it;
+       ...
+   }
+ }
+\end{cpp}
+becomes
+  \begin{cpp}
+ for (auto ghost_type : ghost_types) {
+   for (auto type : mesh.elementTypes(spatial_dimension,
+                                      ghost_type) {
+     ...
+   }
+ }
+\end{cpp}
+\item[\textbf{\texttt{feature}}] Parallel cohesive elements
+\item[\textbf{\texttt{feature}}] Models using new interface for solvers
+  \begin{itemize}
+  \item Same configuration for all models
+  \item Solver can be configured in input file
+  \item PETSc interface temporary inactive
+  \item Periodic boundary condition temporary inactive
+  \end{itemize}
+\item[\textbf{\texttt{feature}}] Element groups created by default for \code{``physical\_names''}
+\item[\textbf{\texttt{feature}}] Named arguments for functions (e.g. \code{model.initFull(\_analysis\_method = \_static)})
+
+\item[\textbf{\texttt{api}}] Only one function to solve a step \code{model.solveStep()}
+\item[\textbf{\texttt{api}}] Simplification of the parallel simulation with the
+  \code{mesh.distribute()} function
+
+\end{itemize}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End:

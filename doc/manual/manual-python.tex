@@ -20,38 +20,38 @@ built or where you installed \akantu.  The easiest way is to source
 the file \code{akantu\_environement.sh} in your terminal environment:
 
 \begin{command}
-source AKANTU_BUILD_DIR/akantu_environement.sh
+  source AKANTU_BUILD_DIR/akantu_environement.sh
 \end{command}
 
 or for an installed akantu version:
 
 \begin{command}
-source AKANTU_INSTALL_DIR/share/akantuVERSION/akantu_environement.sh
+  source AKANTU_INSTALL_DIR/share/akantuVERSION/akantu_environement.sh
 \end{command}
 
 Then, you can create a Python script, like \code{script.py} which
 starts with:
 
 \begin{python}
-import akantu
+  import akantu
 \end{python}
 
 Then, you can write the initialization sequence just like for the C++
 case:
 
 \begin{python}
-akantu.initialize('materials.dat') spatial_dimension = 2
+  akantu.initialize('materials.dat') spatial_dimension = 2
    
-mesh = akantu.Mesh(spatial_dimension) mesh.read('mesh.msh')
-model = akantu.SolidMechanicsModel(mesh)
-model.initFull(akantu.SolidMechanicsModelOptions(akantu._static))
+  mesh = akantu.Mesh(spatial_dimension) mesh.read('mesh.msh')
+  model = akantu.SolidMechanicsModel(mesh)
+  model.initFull(_analysis_method = akantu._static)
 \end{python}
 Then for the dumpers declaration:
 \begin{python}
-model.setBaseName("example") model.addDumpFieldVector("displacement")
-model.addDumpFieldVector("force") model.addDumpField("boundary")
-model.addDumpField("strain") model.addDumpField("stress")
-model.addDumpField("blocked_dofs")
+  model.setBaseName("example") model.addDumpFieldVector("displacement")
+  model.addDumpFieldVector("force") model.addDumpField("boundary")
+  model.addDumpField("strain") model.addDumpField("stress")
+  model.addDumpField("blocked_dofs")
 \end{python}
 
 The \akantu arrays can be retrieved at all time. For convenience there
@@ -59,46 +59,46 @@ is an automatic trans-typing operator which allows to use \akantu
 Array, Vectors and Matrix as mere \textbf{Numpy}s.
 
 \begin{python}
-displacement = model.getDisplacement()
+  displacement = model.getDisplacement()
 \end{python}
 
 There is no copy made and the \textbf{Numpy} vectors are wrapped
 around \akantu's memory pool.
 
 \begin{python}
-displacement[:,:] = 1.
-displacement[0,1] = 10.
+  displacement[:,:] = 1.
+  displacement[0,1] = 10.
 \end{python}
 
 Also to assign an entire vector to another the '[]' operator must be
 used:
 
 \begin{python}
-result = numpy.linspace(0.,1.,100)
+  result = numpy.linspace(0.,1.,100)
 
-# This works
-displacement[:] = result[:]
-# This does not
-displacement = result
+  # This works
+  displacement[:] = result[:]
+  # This does not
+  displacement = result
 \end{python}
 
 Then you can solve the problem for instance with:
 \begin{python}
-model.solveStaticDisplacement(1e-10,2);
+  model.solveStaticDisplacement(1e-10,2);
 \end{python}
 And dump to Paraview:
 \begin{python}
-model.dump()
+  model.dump()
 \end{python}
 
 Do not forget to finalize at the end of the script:
 \begin{python}
-akantu.finalize()
+  akantu.finalize()
 \end{python}
 
 Finally the python script can be launched with:
 \begin{command}
-python ./script.py
+  python ./script.py
 \end{command}
 
 \vspace{1cm}

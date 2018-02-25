@@ -19,13 +19,13 @@ the same dimensionality as the one specified by the mesh.
 \note[\ 1]{Dynamic computations are not supported to date.}
 
 \note[\ 2]{Structural meshes are created and loaded as described in
-  Section~\ref{sect:common:mesh} with \code{MeshIOMSHStruct} instead  of \code{MeshIOMSH}:}
+  Section~\ref{sect:common:mesh} with \code{\_miot\_gmsh\_struct} instead  of \code{\_miot\_gmsh}:}
+
 \begin{cpp}
-	akantu::MeshIOMSHStruct mesh_io;
-	mesh_io.read("structural_mesh.msh", beams);
+  Mesh mesh;
+  mesh.read("structural_mesh.msh", _miot_gmsh_struct);
 \end{cpp}
 
-\vspace{1cm}
 This model contains at least the following \code{Arrays}:
 \begin{description}
 \item[blocked\_dofs] contains a Boolean value for each degree of
@@ -45,15 +45,13 @@ This model contains at least the following \code{Arrays}:
   imposed displacement in case of blocked ones ($\vec{u}$ in the
   following).
 
-\item[force\_moment] contains the generalized external forces (forces
+\item[external\_force] contains the generalized external forces (forces
   and moments) applied to the nodes ($\vec{f_{\st{ext}}}$ in the
   following).
 
-\item[residual] contains the difference between the generalized external and internal
-  forces and moments. On the blocked degrees of freedom,
-  \textbf{residual} contains the support reactions ($\vec{r}$ in the
-  following).  It should be mentioned that, at equilibrium,
-  \textbf{residual} should be zero on the free degrees of freedom.
+\item[internal\_force] contains the generalized internal forces (forces
+  and moments) applied to the nodes ($\vec{f_{\st{int}}}$ in the
+  following).
 \end{description}
 
 An example to help understand how  to use this model will be presented in the

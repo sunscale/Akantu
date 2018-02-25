@@ -54,7 +54,6 @@ More precisely, the heat transfer model contains 4 \code{Arrays}:
 \item[temperature\_rate] contains the variations of temperature $\dot{T}$
   (zero  by   default  after  the
   initialization).
-
 \item[blocked\_dofs] contains a Boolean value for each degree of
   freedom specifying whether the degree is blocked or not. A Dirichlet
   boundary condition ($T_d$) can be prescribed by setting the
@@ -63,19 +62,18 @@ More precisely, the heat transfer model contains 4 \code{Arrays}:
   computed for all degrees of freedom where the \textbf{blocked\_dofs}
   value is set to \code{false}.  For the remaining degrees of freedom,
   the imposed values (zero by default after initialization) are kept.
-
-\item[residual] contains the difference between external and internal heat generations.
-The \textbf{residual} contains the supported heat reactions ($\vec{R} = \vec{Q^{ext}} -\mat{K} \cdot \vec{T}$) on
-  the nodes that the temperature imposed.
+\item[external\_heat\_rate] contains the external heat generations.  $\vec{Q^{ext}}$
+  on the nodes.
+\item[internal\_heat\_rate] contains the internal heat generations.  $\vec{Q^{int}} =  -\mat{K} \cdot \vec{T}$  on the nodes.
 \end{description}
 
 Only a single material can be specified on the domain.
 A material text file (\eg material.dat) provides the material properties as follows:
 \begin{cpp}
-  heat %\emph{name\_material}% [
-  capacity = %\emph{XXX}%
-  density = %\emph{XXX}%
-  conductivity = [%\emph{XXX}% ... %\emph{XXX}%]
+  model heat_transfer_model [
+    capacity = %\emph{XXX}%
+    density = %\emph{XXX}%
+    conductivity = [%\emph{XXX}% ... %\emph{XXX}%]
   ]
 \end{cpp}
 where the \code{capacity} and \code{density} are scalars, and the \code{conductivity} is specified as a $3\times 3$ tensor.
@@ -93,9 +91,7 @@ distributing the capacity of each element onto its nodes. Therefore, the resulti
 \index{HeatTransferModel!assembleCapacityLumped}
 
 \note{Currently, only the explicit time integration with lumped capacity matrix
-is implemented within \akantu.}
-
-The explicit integration scheme is \index{Forward Euler} \emph{Forward Euler}
+is implemented within \akantu.} The explicit integration scheme is \index{Forward Euler} \emph{Forward Euler}
 \cite{curnier92a}.
 
 \begin{itemize}
@@ -134,15 +130,10 @@ The following loop  allows, for each time  step, to update the  \code{temperatur
 
 \begin{cpp}
   for (UInt s = 1; (s-1)*applied_time_step < total_time; ++s) {
-    model.explicitPred();
-    model.updateResidual();
-    model.explicitCorr();
+    model.solveStep();
   }
 \end{cpp}
-\index{HeatTransferModel!explicitPred}
-\index{HeatTransferModel!explicitCorr}
-\index{HeatTransferModel!updateResidual}
-\index{HeatTransferModel!solveExplicitLumped}
+\index{HeatTransferModel!solveStep()}
 
 An    example    of    explicit     dynamic    heat propagation is    presented    in \\
 \shellcode{\examplesdir/heat\_transfer/explicit\_heat\_transfer.cc}.  \\
@@ -165,3 +156,8 @@ elastic material with a density of
   \caption{Initial temperature field (left) and after 15000 time steps = 30 minutes (right). The lines represent iso-surfaces.}
   \label{fig:htm:explicit:dynamic}
 \end{figure}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

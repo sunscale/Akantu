@@ -149,7 +149,7 @@ where \code{type} usually is \code{Real}, \code{Int}, \code{UInt} or
 accessed by typing:
 
 \begin{cpp}
-  type & val = example_array(index)
+  auto & val = example_array(index)
 \end{cpp}
 
 \code{Arrays} can also contain tuples of values for each index. In
@@ -189,23 +189,33 @@ in order to make the writing of loops easier and enhance readability.
 For instance, a loop over the nodal coordinates can be performed like:
 \begin{cpp}
   //accessing the nodal coordinates Array (spatial_dimension components)
-  Array<Real> nodes = mesh.getNodes();
+  const auto & nodes = mesh.getNodes();
 
   //creating the iterators
   auto it  = nodes.begin(spatial_dimension);
   auto end = nodes.end(spatial_dimension);
 
   for (; it != end; ++it){
-    Vector<Real> & coords = (*it);
-
+    const auto & coords = (*it);
     //do what you need
     ....
 
   }
 \end{cpp}
-In that example, each \code{Vector<Real>} is a geometrical array of
-size \code{spatial\_dimension} and the iteration is conveniently
-performed by the \code{Array} iterator.
+In that example, each \code{coords} is a \code{Vector<Real>} containing
+geometrical array of size \code{spatial\_dimension} and the iteration is
+conveniently performed by the \code{Array} iterator.
+
+With the switch to \code{c++14} this can be also written as
+\begin{cpp}
+  //accessing the nodal coordinates Array (spatial_dimension components)
+  const auto & nodes = mesh.getNodes();
+
+  for (const auto & coords : make_view(nodes, spatial_dimension) {
+    //do what you need
+    ....
+  }
+\end{cpp}
 
 The \code{Array} object is intensively used to store second order
 tensor values.  In that case, it should be specified that the returned
@@ -216,15 +226,13 @@ tensors by:
 
 \begin{cpp}
   //creating the iterators
-  Array<Real>::matrix_iterator it  = stresses.begin(spatial_dimension,spatial_dimension);
-  Array<Real>::matrix_iterator end = stresses.end(spatial_dimension,spatial_dimension);
+  auto it = stresses.begin(spatial_dimension, spatial_dimension);
+  auto end = stresses.end(spatial_dimension, spatial_dimension);
 
   for (; it != end; ++it){
     Matrix<Real> & stress = (*it);
-
     //do what you need
     ....
-
   }
 \end{cpp}
 In that last example, the \code{Matrix} objects are
@@ -247,11 +255,11 @@ element type.  The following code can retrieve the
 \code{ElementTypeMapArray} which stores the connectivity arrays for a
 mesh:
 \begin{cpp}
-  ElementTypeMapArray<UInt> & connectivities = mesh.getConnectivities();
+  const ElementTypeMapArray<UInt> & connectivities = mesh.getConnectivities();
 \end{cpp}
 Then, the specific array associated to a given element type can be obtained by
 \begin{cpp}
-  Array<UInt> & connectivity_triangle = connectivities(_triangle_3);
+  const Array<UInt> & connectivity_triangle = connectivities(_triangle_3);
 \end{cpp}
 where the first order 3-node triangular element was used in the presented piece
 of code.
@@ -400,17 +408,13 @@ Nodes are selected by adding them when calling
 \code{NodeGroup::add}. For instance you can select nodes
 having a positive $X$ coordinate with the following code:
 \begin{cpp}
-  Array<Real> & nodes = mesh.getNodes();
-  NodeGroup & group = mesh.createNodeGroup("XpositiveNode");
+  const auto & nodes = mesh.getNodes();
+  auto & group = mesh.createNodeGroup("XpositiveNode");
 
-  auto it  = nodes.begin(spatial_dimension);
-  auto end = nodes.end(spatial_dimension);
-
-  UInt index = 0;
-
-  for (; it != end ; ++it , ++index){
-    const Vector<Real> & position = *it;
-    if (position(0) > 0) group.add(index);
+  for (auto && data : enumerate(make_view(nodes, spatial_dimension))){
+    auto node = std::get<0>(data);
+    const auto & position = std::get<1>(data);
+    if (position(0) > 0) group.add(node);
   }
 \end{cpp}
 
@@ -425,19 +429,17 @@ For instance, selecting the elements for which the barycenter of the nodes
 has a positive $X$ coordinate can be made with:
 
 \begin{cpp}
-  ElementGroup & group = mesh.createElementGroup("XpositiveElement");
-
-  Mesh::type_iterator it  = mesh.firstType();
-  Mesh::type_iterator end = mesh.lastType();
-
+  auto & group = mesh.createElementGroup("XpositiveElement");
   Vector<Real> barycenter(spatial_dimension);
 
-  for(; it != end; ++it){
-    UInt nb_element  = mesh.getNbElement(*it);
+  for(auto type : mesh.elementTypes()){
+    UInt nb_element  = mesh.getNbElement(type);
+
     for(UInt e = 0; e < nb_element; ++e) {
-      ElementType type = *it;
-      mesh.getBarycenter(e, type, barycenter.storage());
-      if (barycenter(0) > 0) group.add(type,e);
+      Element element{type, e, _not_ghost};
+
+      mesh.getBarycenter(element, barycenter);
+      if (barycenter(_x) > 0.) group.add(element);
     }
   }
 \end{cpp}

@@ -39,13 +39,10 @@ This model contains at least the following six \code{Arrays}:
   freedom. As \textbf{displacement}, it contains computed or imposed
   accelerations depending on the nature of the degrees of freedom
   ($\ddot{\vec{u}}$ in the following).
-\item[force] contains the external forces applied on the nodes
+\item[external\_force] contains the external forces applied on the nodes
   ($\vec{f}_{\st{ext}}$ in the following).
-\item[residual] contains the difference between external and internal
-  forces. On blocked degrees of freedom, \textbf{residual} contains
-  the support reactions.  ($\vec{r}$ in the following).  It should be
-  mentioned that at equilibrium \textbf{residual} should be zero on
-  free degrees of freedom.
+\item[internal\_force] contains the internal forces on the nodes
+  ($\vec{f}_{\st{int}}$ in the following).
 \end{description}
 
 Some examples to help to understand how to use this model will be
@@ -74,11 +71,12 @@ nodes. Here, the initial displacement in $x$-direction and the
 initial velocity in $y$-direction for all nodes is set to $0.1$ and $1$,
 respectively.
 \begin{cpp}
-Array<Real> & disp = model.getDisplacement();
-Array<Real> & velo = model.getVelocity();
-for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
-  disp(i, 0) = 0.1;
-  velo(i, 1) = 1.;
+auto & disp = model.getDisplacement();
+auto & velo = model.getVelocity();
+
+for (UInt node = 0; node < mesh.getNbNodes(); ++node) {
+  disp(node, 0) = 0.1;
+  velo(node, 1) = 1.;
 }
 \end{cpp}
 
@@ -129,20 +127,20 @@ in order to impose a load on the right side, the nodes are not marked.
 The detail codes are shown as follows:
 
 \begin{cpp}
-Array<bool> & blocked = model.getBlockedDOFs();
-const Array<Real> & pos = mesh.getNodes();
+auto & blocked = model.getBlockedDOFs();
+const auto & pos = mesh.getNodes();
 
 UInt nb_nodes = mesh.getNbNodes();
 
-for (UInt i = 0; i < nb_nodes; ++i) {
-  if(Math::are_float_equal(pos(i, 0), 0)) {
-    blocked(i, 0) = true; //block dof in x-direction
-    blocked(i, 1) = true; //block dof in y-direction
-    disp(i, 0) = 0.; //fixed displacement in x-direction
-    disp(i, 1)= 0.; //fixed displacement in y-direction
-  } else if (Math::are_float_equal(pos(i, 10), 0)) {
-    blocked(i, 0) = false; //unblock dof in x-direction
-    forces(i, 0) = 10.; //force in x-direction
+for (UInt node = 0; node < nb_nodes; ++node) {
+  if(Math::are_float_equal(pos(node, _x), 0)) {
+    blocked(node, _x) = true; // block dof in x-direction
+    blocked(node, _y) = true; // block dof in y-direction
+    disp(node, _x) = 0.; // fixed displacement in x-direction
+    disp(node, _y) = 0.; // fixed displacement in y-direction
+  } else if (Math::are_float_equal(pos(node, _y), 0)) {
+    blocked(node, _x) = false; // unblock dof in x-direction
+    forces(node, _x) = 10.;    // force in x-direction
   }
 }
 \end{cpp}
@@ -206,15 +204,8 @@ conditions is called. Otherwise, the functor \code{FromStress} should
 be called which gets the stress tensor as an input parameter.
 
 \begin{cpp}
-Array<Real> surface_traction(3);
-surface_traction(0)=0.0;
-surface_traction(1)=0.0;
-surface_traction(2)=-1.0;
-
-Matrix<Real> surface_stress(3, 3, 0.0);
-surface_stress(0,0)=0.0;
-surface_stress(1,1)=0.0;
-surface_stress(2,2)=-1.0;
+Vector<Real> surface_traction = {0., 0., 1.};
+auto surface_stress(3, 3) = Matrix<Real>::eye(3);
 
 model.applyBC(BC::Neumann::FromTraction(surface_traction), "Bottom");
 
@@ -252,7 +243,7 @@ generic example is given below with a Dirichlet boundary condition.
   // create a node group
   NodeGroup & node_group = mesh.createNodeGroup("nodes_fix");
 
-  /* 
+  /*
   fill the node group with the nodes you want
   */
 
@@ -280,9 +271,8 @@ and index, different materials can be assigned as demonstrated in the
 examples below.
 
 \begin{cpp}
-  MeshDataMaterialSelector<std::string> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<std::string>("physical_names", model);
-  model.setMaterialSelector(*mat_selector);
+  auto mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names", model);
+  model.setMaterialSelector(mat_selector);
 \end{cpp}
 
 In this example the physical names specified in a GMSH geometry file will by
@@ -292,8 +282,8 @@ Another example would be to use the first (\code{tag\_0}) or the second
 (\code{tag\_1}) tag associated to each elements in the mesh:
 
 \begin{cpp}
-  MeshDataMaterialSelector<UInt> * mat_selector;
-  mat_selector = new MeshDataMaterialSelector<UInt>("tag_1", model, first_index);
+  auto mat_selector = std::make_shared<MeshDataMaterialSelector<UInt>>(
+      "tag_1", model, first_index);
   model.setMaterialSelector(*mat_selector);
 \end{cpp}
 
@@ -343,7 +333,7 @@ specify the type of analysis to be performed and whether the materials
 should be initialized with \code{initMaterials} or not.
 \begin{cpp}
 SolidMechanicsModel model(mesh);
-model.initFull(SolidMechanicsModelOptions(_static, false));
+model.initFull(_analysis_method = _static);
 \end{cpp}
 Here, a static analysis is chosen by passing the argument
 \code{\_static} to the method. By default, the Boolean for no
@@ -557,8 +547,8 @@ are parameters depending on the method used to solve the equations
     & $\vec{w}$ & $e$ & $d$ & $c$\\
     \midrule
     in acceleration &$ \delta\ddot{\vec{u}}$ & $\alpha \beta\Delta t^2$ &$\beta \Delta t$ &$1$\\
-    in velocity & $ \delta\dot{\vec{u}}$& $\frac{1}{\beta} \Delta t$ & $1$ & $\alpha\Delta t$\\
-    in displacement &$\delta\vec{u}$ & $ 1$ & $\frac{1}{\alpha} \Delta t$ & $\frac{1}{\alpha \beta} \Delta t^2$\\
+    in velocity & $ \delta\dot{\vec{u}}$& $\alpha\Delta t$ & $1$ & $\frac{1}{\beta \Delta t}$\\
+    in displacement &$\delta\vec{u}$ & $ 1$ & $\frac{1}{\alpha \Delta t}$ & $\frac{1}{\alpha \beta \Delta t^2}$\\
     \bottomrule
   \end{tabular}
 \end{center}
@@ -577,8 +567,8 @@ dynamic scheme is selected at the initialization of the model.
 
 \begin{cpp}
 SolidMechanicsModel model(mesh);
-model.initFull(SolidMechanicsModelOptions(_implicit_dynamic));
-/*Boundary conditions see Section~%\ref{sect:smm:boundary}% */
+model.initFull(_analysis_method = _implicit_dynamic);
+/*Boundary conditions see Section ~ %\ref{sect:smm:boundary}% */
 \end{cpp}
 Because a dynamic simulation is conducted, an integration time step
 $\Delta t$ has to be specified. In the case of implicit simulations,
@@ -596,8 +586,14 @@ loop:
 \begin{cpp}
 /// time loop
 Real time = 0.;
+
+auto & solver = model.getNonLinearSolver();
+solver.set("max_iterations", 100);
+solver.set("threshold", 1e-12);
+solver.set("convergence_type", _scc_solution);
+
 for (UInt s = 1; time <max_time; ++s, time += time_step) {
-  model.solveStep<_scm_newton_raphson_tangent_modified,_scc_increment>(1e-12, 100);
+  model.solveStep();
 }
 \end{cpp}
 An example of solid mechanics with an implicit time integration scheme
@@ -665,10 +661,10 @@ scheme is selected using the \code{\_explicit\_lumped\_mass} constant.
 
 \begin{cpp}
 SolidMechanicsModel model(mesh);
-model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass));
+model.initFull(_analysis_method = _explicit_lumped_mass);
 \end{cpp}
 \index{SolidMechanicsModel!initFull}
-\note{Writing \code{model.initFull()} or \code{model.initFull(SolidMechanicsModelOptions());} is
+\note{Writing \code{model.initFull()} or \code{model.initFull();} is
 equivalent to use the \code{\_explicit\_lumped\_mass} keyword, as this
 is the default case.}
 
@@ -741,7 +737,7 @@ The method
   \begin{equation}
     \left(\mat{M} + \frac{1}{2} \Delta t \mat{C}\right)
     \delta \vec{\ddot{u}} = \vec{f_{\st{ext}}} - \vec{f}_{\st{int}\, n+1}
-    - \mat{C} \vec{\dot{u}}_{n} - \mat{M} \vec{\ddot{u}}_{n}
+    - \mat{C} \vec{\dot{u}^{\st{p}}}_{n+1} - \mat{M} \vec{\ddot{u}}_{n}
   \end{equation}
 
   \note{The internal force $\vec{f}_{\st{int}\, n+1}$ is computed from
@@ -1070,7 +1066,7 @@ initialized with the boolean for skipping the material initialization
 equal to true:
 \begin{cpp}
 /// model initialization
-model.initFull(SolidMechanicsModelOptions(_explicit_lumped_mass,true));
+model.initFull(_analysis_method = _explicit_lumped_mass);
 \end{cpp}
 Once the model has been initialized, the local material needs
 to be registered in the model:

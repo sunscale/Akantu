@@ -406,6 +406,7 @@ package_declare_documentation_files(core
   manual-macros.sty
   manual-titlepages.tex
   manual-authors.tex
+  manual-changelog.tex
   manual-introduction.tex
   manual-gettingstarted.tex
   manual-io.tex

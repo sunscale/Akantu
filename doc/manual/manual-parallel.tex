@@ -37,11 +37,10 @@ An example of the initializing sequence and basic usage of the
 \code{StaticCommunicator} is:
 
 \begin{cpp}
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   initialize("material.dat", argc, argv);
 
-  StaticCommunicator & comm = StaticCommunicator::getStaticCommunicator();
+  const auto & comm = Communicator::getStaticCommunicator();
   Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
@@ -51,27 +50,22 @@ int main(int argc, char *argv[])
 }
 \end{cpp}
 
-\section{Partitioning the Mesh}
+\section{Partitioning and distributing the Mesh}
 
-The mesh is partitioned after the correct initialization of the
-processes playing a role in the computation. We assume that a
-\code{Mesh} object is constructed as presented in
-Section~\ref{sect:common:mesh}.  Then a partition must be computed by
-using an appropriate mesh partitioner. At present time, the only
-partitioner available is \code{MeshPartitionScotch} which implements
-the function \code{partitionate} using the
-\textbf{Scotch}\cite{scotch} program.  This is achieved by the
-following code
+The mesh is partitioned after the correct initialization of the processes
+playing a role in the computation. We assume that a \code{Mesh} object is
+constructed as presented in Section~\ref{sect:common:mesh}.  Then it can be
+distributed among the different processes. At the moment, the only partitioner
+available is \code{MeshPartitionScotch} which is used by the function
+\code{distribute} using the \textbf{Scotch}\cite{scotch} program.  This is
+achieved by the following code:
 
 \begin{cpp}
   Mesh mesh(spatial_dimension);
-  MeshPartition * partition = NULL;
-
   if(prank == 0) {
     mesh.read("my_mesh.msh");
-    partition = new MeshPartitionScotch(mesh, spatial_dimension);
-    partition->partitionate(psize);
   }
+  mesh.distribute();
 \end{cpp}
 
 The algorithm that partition the mesh needs the generation of a random
@@ -80,12 +74,12 @@ simulation with the same partition of the mesh, the \emph{seed} has to
 be set manually.  This can be done either by adding the following line
 to the input file \emph{outside} the material parameters environments:
 \begin{cpp}
-  seed = 1.0
+  seed = 1
 \end{cpp}
 where the value 1.0 can be substituted with any number, or by setting
 it directly in the code with the command:
 \begin{cpp}
-  RandGenerator:: seed(1.0)
+  RandGenerator:: seed(1)
 \end{cpp}
 The latter command, with empty brackets, can be used to check the value
 of the \emph{seed} used in the simulation.
@@ -93,23 +87,6 @@ of the \emph{seed} used in the simulation.
 \note{Only the processor of rank $0$ should load the mesh file to
   partition it. Nevertheless, the \code{Mesh} object must by declared
   for all processors since the mesh distribution will store mesh pieces to that object.}
-
-\section{Distributing Mesh Partitions}
-
-The distribution of the mesh is done automatically by the
-\code{SolidMechanicsModel} through the \code{initParallel} method.  Thus,
-after creating a \code{SolidMechanicsModel} with our mesh as the initial
-parameter, the \code{initParallel} method must be called receiving the partition
-as a parameter.
-
-\begin{cpp}
-  SolidMechanicsModel model(mesh);
-  model.initParallel(partition);
-\end{cpp}
-
-After that point, everything remains as in the sequential case from
-the user point of view. This allows the user to care only
-about his simulation without concern for the parallelism.
 
 An example of an explicit dynamic 2D bar in compression in a parallel
 context can be found in \shellcode{\examplesdir/parallel\_2d}.
