@@ -1319,18 +1319,18 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
   AKANTU_DEBUG_ASSERT(mesh.getSpatialDimension() == 1,
                       "Mesh dimension must be 1 to compute normals on points!");
-  const ElementType type = _point_1;
-  UInt spatial_dimension = mesh.getSpatialDimension();
+  const auto type = _point_1;
+  auto spatial_dimension = mesh.getSpatialDimension();
   // UInt nb_nodes_per_element  = Mesh::getNbNodesPerElement(type);
-  UInt nb_points = getNbIntegrationPoints(type, ghost_type);
+  auto nb_points = getNbIntegrationPoints(type, ghost_type);
+  const auto & connectivity = mesh.getConnectivity(type, ghost_type);
+  auto nb_element = connectivity.size();
 
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
   normal.resize(nb_element * nb_points);
-  Array<Real>::matrix_iterator normals_on_quad =
+  auto normals_on_quad =
       normal.begin_reinterpret(spatial_dimension, nb_points, nb_element);
-  const Array<std::vector<Element>> & segments =
-      mesh.getElementToSubelement(type, ghost_type);
-  const Array<Real> & coords = mesh.getNodes();
+  const auto & segments = mesh.getElementToSubelement(type, ghost_type);
+  const auto & coords = mesh.getNodes();
 
   const Mesh * mesh_segment;
   if (mesh.isMeshFacets())
@@ -1340,24 +1340,25 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
 
   for (UInt elem = 0; elem < nb_element; ++elem) {
     UInt nb_segment = segments(elem).size();
-
     AKANTU_DEBUG_ASSERT(
         nb_segment > 0,
         "Impossible to compute a normal on a point connected to 0 segments");
 
     Real normal_value = 1;
     if (nb_segment == 1) {
-      const Element & segment = segments(elem)[0];
-      const Array<UInt> & segment_connectivity =
+      auto point = connectivity(elem);
+      const auto segment = segments(elem)[0];
+      const auto & segment_connectivity =
           mesh_segment->getConnectivity(segment.type, segment.ghost_type);
-      // const Vector<UInt> & segment_points =
-      // segment_connectivity.begin(Mesh::getNbNodesPerElement(segment.type))[segment.element];
+      Vector<UInt> segment_points = segment_connectivity.begin(
+          Mesh::getNbNodesPerElement(segment.type))[segment.element];
       Real difference;
-      if (segment_connectivity(0) == elem) {
-        difference = coords(elem) - coords(segment_connectivity(1));
+      if (segment_points(0) == point) {
+        difference = coords(elem) - coords(segment_points(1));
       } else {
-        difference = coords(elem) - coords(segment_connectivity(0));
+        difference = coords(elem) - coords(segment_points(0));
       }
+
       normal_value = difference / std::abs(difference);
     }
 

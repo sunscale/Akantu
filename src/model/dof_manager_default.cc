@@ -500,7 +500,10 @@ void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
 
   this->assembleToGlobalArray(dof_id, x, data_cache, 1.);
 
-  A.matVecMul(data_cache, this->residual, scale_factor, 1.);
+  Array<Real> tmp_residual(this->residual.size(), 1, 0.);
+
+  A.matVecMul(data_cache, tmp_residual, scale_factor, 1.);
+  this->residual += tmp_residual;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -810,12 +813,12 @@ void DOFManagerDefault::updateDOFsData(
   GlobalDOFInfoDataAccessor data_accessor;
 
   // resize all relevant arrays
-  this->residual.resize(this->local_system_size);
+  this->residual.resize(this->local_system_size, 0.);
   this->dofs_type.resize(this->local_system_size);
-  this->global_solution.resize(this->local_system_size);
-  this->global_blocked_dofs.resize(this->local_system_size);
-  this->previous_global_blocked_dofs.resize(this->local_system_size);
-  this->global_equation_number.resize(this->local_system_size);
+  this->global_solution.resize(this->local_system_size, 0.);
+  this->global_blocked_dofs.resize(this->local_system_size, true);
+  this->previous_global_blocked_dofs.resize(this->local_system_size, true);
+  this->global_equation_number.resize(this->local_system_size, -1);
 
   for (auto & lumped_matrix : lumped_matrices)
     lumped_matrix.second->resize(this->local_system_size);

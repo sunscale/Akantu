@@ -64,6 +64,11 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
+  /// synchronous communications form slaves to master
+  template <class DataAccessor>
+  void slaveReductionOnce(DataAccessor & data_accessor,
+                          const SynchronizationTag & tag) const;
+
   /// synchronize ghosts without state
   template <class DataAccessor>
   void synchronizeOnce(DataAccessor & data_accessor,

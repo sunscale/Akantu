@@ -94,6 +94,7 @@ public:
     _GATHER = 2,
     _SCATTER = 3,
     _SYNCHRONIZE = 15,
+    _REDUCE
   };
 
 private:

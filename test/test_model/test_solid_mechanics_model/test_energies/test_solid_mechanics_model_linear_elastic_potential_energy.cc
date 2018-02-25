@@ -87,4 +87,4 @@ TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
   }
 }
 
-} // namespace
+} // namespace akantu

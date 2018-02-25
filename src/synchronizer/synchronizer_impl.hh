@@ -55,6 +55,10 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// synchronous synchronization without state
+  virtual void slaveReductionOnceImpl(DataAccessor<Entity> & data_accessor,
+                                      const SynchronizationTag & tag) const;
+
+  /// synchronous synchronization without state
   virtual void synchronizeOnceImpl(DataAccessor<Entity> & data_accessor,
                                    const SynchronizationTag & tag) const;
 

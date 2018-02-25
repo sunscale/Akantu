@@ -54,6 +54,69 @@ SynchronizerImpl<Entity>::SynchronizerImpl(const SynchronizerImpl & other,
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
+void SynchronizerImpl<Entity>::slaveReductionOnceImpl(
+    DataAccessor<Entity> & data_accessor,
+    const SynchronizationTag & tag) const {
+  // no need to synchronize
+  if (this->nb_proc == 1)
+    return;
+
+  using CommunicationRequests = std::vector<CommunicationRequest>;
+  using CommunicationBuffers = std::map<UInt, CommunicationBuffer>;
+
+  CommunicationRequests send_requests, recv_requests;
+  CommunicationBuffers send_buffers, recv_buffers;
+
+  auto postComm = [&](const auto & sr, auto & buffers,
+                      auto & requests) -> void {
+    for (auto && pair : communications.iterateSchemes(sr)) {
+      auto & proc = pair.first;
+      const auto & scheme = pair.second;
+
+      auto & buffer = buffers[proc];
+      auto buffer_size = data_accessor.getNbData(scheme, tag);
+      buffer.resize(buffer_size);
+
+      if (sr == _send) {
+        requests.push_back(communicator.asyncReceive(
+            buffer, proc,
+            Tag::genTag(this->rank, 0, Tag::_REDUCE, this->hash_id)));
+      } else {
+        data_accessor.packData(buffer, scheme, tag);
+        send_requests.push_back(communicator.asyncSend(
+            buffer, proc,
+            Tag::genTag(proc, 0, Tag::_REDUCE, this->hash_id)));
+      }
+    }
+  };
+
+  // post the receive requests
+  postComm(_recv, send_buffers, send_requests);
+
+  // post the send data requests
+  postComm(_send, recv_buffers, recv_requests);
+
+  // treat the receive requests
+  UInt request_ready;
+  while ((request_ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
+    auto & req = recv_requests[request_ready];
+    auto proc = req.getSource();
+
+    auto & buffer = recv_buffers[proc];
+    const auto & scheme = this->communications.getScheme(proc, _send);
+
+    data_accessor.unpackData(buffer, scheme, tag);
+
+    req.free();
+    recv_requests.erase(recv_requests.begin() + request_ready);
+  }
+
+  communicator.waitAll(send_requests);
+  communicator.freeCommunicationRequest(send_requests);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
 void SynchronizerImpl<Entity>::synchronizeOnceImpl(
     DataAccessor<Entity> & data_accessor,
     const SynchronizationTag & tag) const {

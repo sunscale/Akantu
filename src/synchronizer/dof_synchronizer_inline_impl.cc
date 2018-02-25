@@ -287,7 +287,9 @@ void DOFSynchronizer::reduceSynchronize(Array<T> & dof_vector) const {
   AKANTU_DEBUG_IN();
 
   ReduceUIntDataAccessor<Op, T> data_accessor(dof_vector, _gst_whatever);
-  this->synchronizeOnce(data_accessor, _gst_whatever);
+  this->slaveReductionOnceImpl(data_accessor, _gst_whatever);
+
+  this->synchronize(dof_vector);
 
   AKANTU_DEBUG_OUT();
 }

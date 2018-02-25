@@ -41,6 +41,22 @@
 namespace akantu {
 
 template <class DataAccessorT>
+void Synchronizer::slaveReductionOnce(DataAccessorT & data_accessor,
+                                      const SynchronizationTag & tag) const {
+  if (const auto * synch_el =
+          dynamic_cast<const SynchronizerImpl<Element> *>(this)) {
+    synch_el->slaveReductionOnceImpl(
+        dynamic_cast<DataAccessor<Element> &>(data_accessor), tag);
+  } else if (const auto * synch_dof =
+                 dynamic_cast<const SynchronizerImpl<UInt> *>(this)) {
+    synch_dof->slaveReductionOnceImpl(
+        dynamic_cast<DataAccessor<UInt> &>(data_accessor), tag);
+  } else {
+    AKANTU_EXCEPTION("You synchronizer is not of a known type");
+  }
+}
+
+template <class DataAccessorT>
 void Synchronizer::synchronizeOnce(DataAccessorT & data_accessor,
                                    const SynchronizationTag & tag) const {
   if (const auto * synch_el =
