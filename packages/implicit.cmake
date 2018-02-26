@@ -28,10 +28,8 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 package_declare(implicit META
   DESCRIPTION "Add support for implicit time scheme")
-
 
 package_declare_sources(implicit
   model/non_linear_solver_linear.cc
@@ -44,8 +42,8 @@ set(AKANTU_IMPLICIT_SOLVER "Mumps"
   CACHE STRING "Solver activated in Akantu")
 set_property(CACHE AKANTU_IMPLICIT_SOLVER PROPERTY STRINGS
   Mumps
-  PETSc
-  Mumps+PETSc
+  #PETSc
+  #Mumps+PETSc
   )
 
 if(AKANTU_IMPLICIT_SOLVER MATCHES "Mumps")

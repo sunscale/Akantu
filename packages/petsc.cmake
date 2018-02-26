@@ -30,7 +30,6 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 package_declare(PETSc EXTERNAL
   DESCRIPTION "Add PETSc support in akantu"
   EXTRA_PACKAGE_OPTIONS ARGS COMPONENTS C
