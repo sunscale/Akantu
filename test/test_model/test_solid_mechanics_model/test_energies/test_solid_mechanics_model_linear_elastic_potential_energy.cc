@@ -36,7 +36,6 @@
  * 3 different strains.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "../test_solid_mechanics_model_fixture.hh"
 /* -------------------------------------------------------------------------- */
@@ -74,6 +73,13 @@ TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
       auto reduced_x = (posv(_x) - lower(_x)) / length;
       dispv(_x) = reduced_x * eps;
       bounv(_x) = true;
+
+      if ((spatial_dimension == 2) and (posv(_y) < lower(_y) + 1e-6)) {
+        bounv(_y) = true;
+        if ((spatial_dimension == 3) and (posv(_z) < lower(_z) + 1e-6)) {
+          bounv(_z) = true;
+        }
+      }
     }
 
     /// "solve" a step (solution is imposed)

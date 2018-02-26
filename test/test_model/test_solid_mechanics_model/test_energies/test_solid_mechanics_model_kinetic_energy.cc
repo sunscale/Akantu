@@ -28,15 +28,14 @@
  *
  * @section description
  *
- * This test uses a linear elastic material with density = 1, Young's
- * modulus = 1, and Poisson's ratio = 0 and imposes a uniform velocity
- * of 1. The volume of the mesh is 1 and thus we have a mass of 1 and
- * therefore a kinetic energy of 0.5*m*v² = 0.5. The kind of
- * constitutive law should not matter for this test, so we use linear
- * elastic. We perform 5 timesteps and check the solution every time.
+ * This test uses a linear elastic material with density = 1, Young's modulus =
+ * 1, and Poisson's ratio = 0 and imposes a uniform velocity of 1. The volume of
+ * the mesh is 1 and thus we have a mass of 1 and therefore a kinetic energy of
+ * 0.5*m*v² = 0.5. The kind of constitutive law should not matter for this test,
+ * so we use linear elastic. We perform 5 timesteps and check the solution every
+ * time.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "../test_solid_mechanics_model_fixture.hh"
 /* -------------------------------------------------------------------------- */
@@ -51,7 +50,7 @@ void test_body(SolidMechanicsModel & model, AnalysisMethod analysis_method) {
   getStaticParser().parse("test_solid_mechanics_model_"
                           "kinetic_energy_material.dat");
 
-  model.initFull(SolidMechanicsModelOptions(analysis_method));
+  model.initFull(_analysis_method = analysis_method);
   model.assembleMassLumped();
 
   /// impose initial velocity of 1, it should remain constant
