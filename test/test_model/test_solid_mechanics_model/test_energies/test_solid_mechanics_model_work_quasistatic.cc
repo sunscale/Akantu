@@ -63,15 +63,26 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
   auto & fixed_grp = this->mesh->createNodeGroup("fixed");
 
   const auto & pos = this->mesh->getNodes();
+  auto & flags = this->model->getBlockedDOFs();
   auto & lower = this->mesh->getLowerBounds();
   auto & upper = this->mesh->getUpperBounds();
 
   UInt i = 0;
-  for (auto && posv : make_view(pos, spatial_dimension)) {
+  for (auto && data : zip(make_view(pos, spatial_dimension),
+                          make_view(flags, spatial_dimension))) {
+    const auto & posv = std::get<0>(data);
+    auto & flag = std::get<1>(data);
     if (posv(_x) > upper(_x) - 1e-6) {
       apply_force_grp.add(i);
     } else if (posv(_x) < lower(_x) + 1e-6) {
       fixed_grp.add(i);
+
+      if ((spatial_dimension == 2) and (posv(_y) < lower(_y) + 1e-6)) {
+        flag(_y) = true;
+        if ((spatial_dimension == 3) and (posv(_z) < lower(_z) + 1e-6)) {
+          flag(_z) = true;
+        }
+      }
     }
     ++i;
   }

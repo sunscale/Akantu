@@ -549,13 +549,13 @@ Real SolidMechanicsModel::getKineticEnergy() {
     auto v_it = this->velocity->begin(Model::spatial_dimension);
 
     for (UInt n = 0; m_it != m_end; ++n, ++m_it, ++v_it) {
-      const Vector<Real> & v = *v_it;
-      const Vector<Real> & m = *m_it;
+      const auto & v = *v_it;
+      const auto & m = *m_it;
 
-      Real mv2 = 0;
-      bool is_local_node = mesh.isLocalOrMasterNode(n);
+      Real mv2 = 0.;
+      auto is_local_node = mesh.isLocalOrMasterNode(n);
       // bool is_not_pbc_slave_node = !isPBCSlaveNode(n);
-      bool count_node = is_local_node; // && is_not_pbc_slave_node;
+      auto count_node = is_local_node; // && is_not_pbc_slave_node;
       if (count_node) {
         for (UInt i = 0; i < Model::spatial_dimension; ++i) {
           if (m(i) > std::numeric_limits<Real>::epsilon())

@@ -67,6 +67,12 @@ template <class B1, class... Bn>
 struct conjunction<B1, Bn...>
     : std::conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
 
+// disjunction
+template <class...> struct disjunction : std::false_type {};
+template <class B1> struct disjunction<B1> : B1 {};
+template <class B1, class... Bn>
+struct disjunction<B1, Bn...>
+    : std::conditional_t<bool(B1::value), B1, disjunction<Bn...>> {};
 /* -------------------------------------------------------------------------- */
 
 // negations

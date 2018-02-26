@@ -50,12 +50,6 @@ register_gtest_sources(
 register_gtest_test(test_solid_mechanics_model_energies
   FILES_TO_COPY ${PATCH_TEST_MESHES}
   DEPENDS ${PATCH_TEST_BAR_MESHES}
-  #bar_segment_2 bar_segment_3
-  #bar_triangle_3 bar_triangle_6
-  #bar_quadrangle_4 bar_quadrangle_8
-  #bar_tetrahedron_4 bar_tetrahedron_10
-  #bar_hexahedron_8 bar_hexahedron_20
-  #bar_pentahedron_6 bar_pentahedron_15
   PARALLEL
-  PARALLEL_LEVEL 1 2 3
+  PARALLEL_LEVEL 1 2 # some meshes are too small for more
   )

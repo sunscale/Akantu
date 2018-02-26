@@ -149,12 +149,12 @@ using TestAllDimensions = std::tuple<std::integral_constant<unsigned int, 1>,
                                      std::integral_constant<unsigned int, 2>,
                                      std::integral_constant<unsigned int, 3>>;
 
-template <typename T>
-using is_point_1 = std::is_same<T, element_type_t<::akantu::_point_1>>;
+template <typename T, ::akantu::ElementType type>
+using is_element = std::is_same<T, element_type_t<type>>;
 
 template <typename T>
 using not_is_point_1 =
-    aka::negation<std::is_same<T, element_type_t<::akantu::_point_1>>>;
+    aka::negation<is_element<T, ::akantu::_point_1>>;
 
 using TestElementTypes = tuple_filter_t<not_is_point_1, TestElementTypesAll>;
 

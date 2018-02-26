@@ -174,10 +174,9 @@ private:
 
 /* -------------------------------------------------------------------------- */
 // This fixture uses somewhat finer meshes representing bars.
-template <typename type_>
-class TestSMMFixtureBar
-    : public TestSMMFixture<std::tuple_element_t<0, type_>> {
-  using parent = TestSMMFixture<std::tuple_element_t<0, type_>>;
+template <typename type_, typename analysis_method_>
+class TestSMMFixtureBar : public TestSMMFixture<type_> {
+  using parent = TestSMMFixture<type_>;
 
 public:
   void SetUp() override {
@@ -188,7 +187,7 @@ public:
     getStaticParser().parse("test_solid_mechanics_model_"
                             "dynamics_material.dat");
 
-    auto analysis_method = std::tuple_element_t<1, type_>::value;
+    auto analysis_method = analysis_method_::value;
     this->model->initFull(_analysis_method = analysis_method);
 
     if (this->dump_paraview) {
@@ -238,6 +237,57 @@ public:
     dump_freq = max_steps / ndump;
   }
 
+  void solveStep() {
+    constexpr auto dim = parent::spatial_dimension;
+    Real current_time = 0.;
+    const auto & position = this->mesh->getNodes();
+    const auto & displacement = this->model->getDisplacement();
+    UInt nb_nodes = this->mesh->getNbNodes();
+    UInt nb_global_nodes = this->mesh->getNbGlobalNodes();
+
+    max_error = -1.;
+
+    Array<Real> displacement_solution(nb_nodes, dim);
+    Verification<dim> verif;
+
+    for (UInt s = 0; s < this->max_steps;
+         ++s, current_time += this->time_step) {
+      if (s % this->dump_freq == 0 && this->dump_paraview)
+        this->model->dump();
+
+      /// boundary conditions
+      this->model->applyBC(
+          SolutionFunctor<parent::type>(current_time, *this->model), "BC");
+
+      // compute the disp solution
+      for (auto && tuple : zip(make_view(position, dim),
+                               make_view(displacement_solution, dim))) {
+        verif.displacement(std::get<1>(tuple), std::get<0>(tuple),
+                           current_time);
+      }
+
+      // compute the error solution
+      Real disp_error = 0.;
+      auto n = 0;
+      for (auto && tuple : zip(make_view(displacement, dim),
+                               make_view(displacement_solution, dim))) {
+        if (this->mesh->isLocalOrMasterNode(n)) {
+          auto diff = std::get<1>(tuple) - std::get<0>(tuple);
+          disp_error += diff.dot(diff);
+        }
+        ++n;
+      }
+
+      this->mesh->getCommunicator().allReduce(disp_error,
+                                              SynchronizerOperation::_sum);
+
+      disp_error = sqrt(disp_error) / nb_global_nodes;
+      max_error = std::max(disp_error, max_error);
+
+      this->model->solveStep();
+    }
+  }
+
 protected:
   Real time_step;
   Real wave_velocity;
@@ -245,70 +295,39 @@ protected:
   UInt max_steps;
   UInt dump_freq;
   bool dump_paraview{false};
+  Real max_error{-1};
 };
 
 template <AnalysisMethod t>
 using analysis_method_t = std::integral_constant<AnalysisMethod, t>;
 
-#ifdef AKANTU_IMPLICIT
-using TestAnalysisTypes = std::tuple<analysis_method_t<_implicit_dynamic>,
-                                     analysis_method_t<_explicit_lumped_mass>>;
-#else
-using TestAnalysisTypes = std::tuple<analysis_method_t<_explicit_lumped_mass>>;
-#endif
+using TestTypes = gtest_list_t<TestElementTypes>;
 
-using TestTypes =
-    gtest_list_t<cross_product_t<TestElementTypes, TestAnalysisTypes>>;
+template <typename type_>
+using TestSMMFixtureBarExplicit =
+    TestSMMFixtureBar<type_, analysis_method_t<_explicit_lumped_mass>>;
 
-TYPED_TEST_CASE(TestSMMFixtureBar, TestTypes);
+TYPED_TEST_CASE(TestSMMFixtureBarExplicit, TestTypes);
 
 /* -------------------------------------------------------------------------- */
-
-TYPED_TEST(TestSMMFixtureBar, DynamicsExplicit) {
-  constexpr auto dim = TestFixture::spatial_dimension;
-  Real current_time = 0.;
-  const auto & position = this->mesh->getNodes();
-  const auto & displacement = this->model->getDisplacement();
-  UInt nb_nodes = this->mesh->getNbNodes();
-  UInt nb_global_nodes = this->mesh->getNbGlobalNodes();
-  Real max_error{0.};
-
-  Array<Real> displacement_solution(nb_nodes, dim);
-
-  Verification<dim> verif;
-
-  for (UInt s = 0; s < this->max_steps; ++s, current_time += this->time_step) {
-    if (s % this->dump_freq == 0 && this->dump_paraview)
-      this->model->dump();
-
-    /// boundary conditions
-    this->model->applyBC(
-        SolutionFunctor<TestFixture::type>(current_time, *this->model), "BC");
-
-    // compute the disp solution
-    for (auto && tuple :
-         zip(make_view(position, dim), make_view(displacement_solution, dim))) {
-      verif.displacement(std::get<1>(tuple), std::get<0>(tuple), current_time);
-    }
-
-    // compute the error solution
-    Real disp_error = 0.;
-    for (auto && tuple : zip(make_view(displacement, dim),
-                             make_view(displacement_solution, dim))) {
-      auto diff = std::get<1>(tuple) - std::get<0>(tuple);
-      disp_error += diff.dot(diff);
-    }
-
-    this->mesh->getCommunicator().allReduce(disp_error,
-                                            SynchronizerOperation::_sum);
-
-    disp_error = sqrt(disp_error) / nb_global_nodes;
-    max_error = std::max(disp_error, max_error);
-
-    ASSERT_NEAR(disp_error, 0., 2e-3);
-
-    this->model->solveStep();
-  }
+TYPED_TEST(TestSMMFixtureBarExplicit, Dynamics) {
+  this->solveStep();
+  EXPECT_NEAR(this->max_error, 0., 2e-3);
   // std::cout << "max error: " << max_error << std::endl;
 }
+
+
+/* -------------------------------------------------------------------------- */
+template <typename type_>
+using TestSMMFixtureBarImplicit =
+    TestSMMFixtureBar<type_, analysis_method_t<_implicit_dynamic>>;
+
+TYPED_TEST_CASE(TestSMMFixtureBarImplicit, TestTypes);
+
+TYPED_TEST(TestSMMFixtureBarImplicit, Dynamics) {
+  this->solveStep();
+  EXPECT_NEAR(this->max_error, 0., 2e-3);
+}
+
+
 }
