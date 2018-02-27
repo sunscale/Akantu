@@ -675,10 +675,8 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
       continue;
 
-    // This thing should have a UInt or functor type
-    auto && nb_components = OPTIONAL_NAMED_ARG(nb_component, 1);
     auto functor = MeshElementTypeMapArrayInitializer(
-        mesh, std::forward<decltype(nb_components)>(nb_components),
+        mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
         OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension()),
         ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
         OPTIONAL_NAMED_ARG(with_nb_element, false),
@@ -715,9 +713,8 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
     if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
       continue;
 
-    auto && nb_components = OPTIONAL_NAMED_ARG(nb_component, 1);
     auto functor = FEEngineElementTypeMapArrayInitializer(
-        fe_engine, std::forward<decltype(nb_components)>(nb_components),
+        fe_engine, OPTIONAL_NAMED_ARG(nb_component, 1),
         OPTIONAL_NAMED_ARG(spatial_dimension, UInt(-2)), ghost_type,
         OPTIONAL_NAMED_ARG(element_kind, _ek_regular));
 
