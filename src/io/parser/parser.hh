@@ -40,6 +40,7 @@
 
 namespace akantu {
 
+#ifndef SWIG
 // clang-format off
 #define AKANTU_SECTION_TYPES                                            \
   (cohesive_inserter)                                                   \
@@ -76,7 +77,7 @@ enum ParserParameterSearchCxt {
   _ppsc_parent_scope = 0x2,
   _ppsc_current_and_parent_scope = 0x3
 };
-
+#endif
 /* ------------------------------------------------------------------------ */
 /* Parameters Class                                                         */
 /* ------------------------------------------------------------------------ */
@@ -300,6 +301,7 @@ private:
   /* Accessors                                                              */
   /* ---------------------------------------------------------------------- */
 public:
+#ifndef SWIG
   class SubSectionsRange
       : public std::pair<const_section_iterator, const_section_iterator> {
   public:
@@ -336,7 +338,7 @@ public:
     return std::pair<const_parameter_iterator, const_parameter_iterator>(
         parameters.begin(), parameters.end());
   }
-
+#endif
   /* ---------------------------------------------------------------------- */
   /// Get parameter within specified context
   const ParserParameter & getParameter(
@@ -461,11 +463,12 @@ public:
   /// Parse real matrix
   static Matrix<Real> parseMatrix(const std::string & value,
                                   const ParserSection & section);
+#ifndef SWIG
   /// Parse real random parameter
   static RandomParameter<Real>
   parseRandomParameter(const std::string & value,
                        const ParserSection & section);
-
+#endif
 protected:
   /// General parse function
   template <class T, class Grammar>

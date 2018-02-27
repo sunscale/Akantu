@@ -36,12 +36,13 @@
 #include "aka_csr.hh"
 #include "element.hh"
 #include "python_functor.hh"
+#include "parser.hh"
 %}
 
 %include "stl.i"
+%include "parser.i"
 
 namespace akantu {
-  %ignore getStaticParser;
   %ignore getUserParser;
   %ignore ghost_types;
   %ignore initialize(int & argc, char ** & argv);
