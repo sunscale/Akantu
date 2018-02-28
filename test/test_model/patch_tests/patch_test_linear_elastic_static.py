@@ -32,5 +32,5 @@ def foo(self):
 
     self.checkAll()
 
-
+akantu.initialize()
 TestPatchTestSMMLinear.TYPED_TEST(foo, "Static")

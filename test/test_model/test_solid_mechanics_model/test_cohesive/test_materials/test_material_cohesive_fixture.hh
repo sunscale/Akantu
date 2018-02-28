@@ -237,7 +237,8 @@ public:
     direction = direction.normalize();
 #endif
 
-    this->material->insertion_stress_ = Vector<Real>(dim, 0.);
+    beta = this->material->get("beta");
+    this->material->insertion_stress_ = beta * this->material->sigma_c_ * direction;
 
     addOpening(direction, 0., max_opening, 100);
 

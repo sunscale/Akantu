@@ -12,7 +12,6 @@ __maintainer__ = "Fabian Barras"
 __email__ = "fabian.barras@epfl.ch"
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
 import sys
 import os
 import akantu as aka

@@ -56,7 +56,7 @@ class TestPatchTestLinear(unittest.TestCase):
         del self.mesh
 
     def initModel(self, method, material_file):
-        akantu.initialize(material_file)
+        akantu.getStaticParser().parse(material_file)
         akantu.setDebugLevel(akantu.dblError)
         self.model.initFull(method)
         self.applyBC()

@@ -32,4 +32,5 @@ def foo(self):
     self.checkAll()
 
 
+akantu.initialize()
 TestPatchTestHTMLinear.TYPED_TEST(foo, "Explicit")

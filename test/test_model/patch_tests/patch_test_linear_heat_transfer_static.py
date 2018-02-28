@@ -29,4 +29,5 @@ def foo(self):
     self.checkAll()
 
 
-TestPatchTestHTMLinear.TYPED_TEST(foo, "Implicit")
+akantu.initialize()
+TestPatchTestHTMLinear.TYPED_TEST(foo, "Static")

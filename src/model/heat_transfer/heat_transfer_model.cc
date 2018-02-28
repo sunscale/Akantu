@@ -173,19 +173,15 @@ MatrixType HeatTransferModel::getMatrixType(const ID & matrix_id) {
 void HeatTransferModel::assembleMatrix(const ID & matrix_id) {
   if (matrix_id == "K") {
     this->assembleConductivityMatrix();
-  } else if (matrix_id == "M") {
+  } else if (matrix_id == "M" and need_to_reassemble_capacity) {
     this->assembleCapacity();
-  } else {
-    AKANTU_TO_IMPLEMENT();
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::assembleLumpedMatrix(const ID & matrix_id) {
-  if (matrix_id == "M") {
+  if (matrix_id == "M" and need_to_reassemble_capacity) {
     this->assembleCapacityLumped();
-  } else {
-    AKANTU_TO_IMPLEMENT();
   }
 }
 
@@ -218,6 +214,8 @@ void HeatTransferModel::assembleCapacityLumped() {
 
   assembleCapacityLumped(_not_ghost);
   assembleCapacityLumped(_ghost);
+
+  need_to_reassemble_capacity_lumped = false;
 
   AKANTU_DEBUG_OUT();
 }
@@ -539,6 +537,8 @@ void HeatTransferModel::assembleCapacity() {
   AKANTU_DEBUG_IN();
   auto ghost_type = _not_ghost;
 
+  this->getDOFManager().clearMatrix("M");
+
   auto & fem = getFEEngineClass<FEEngineType>();
 
   heat_transfer::details::ComputeRhoFunctor rho_functor(*this);
@@ -547,6 +547,8 @@ void HeatTransferModel::assembleCapacity() {
     fem.assembleFieldMatrix(rho_functor, "M", "temperature",
                             this->getDOFManager(), type, ghost_type);
   }
+
+  need_to_reassemble_capacity = false;
 
   AKANTU_DEBUG_OUT();
 }

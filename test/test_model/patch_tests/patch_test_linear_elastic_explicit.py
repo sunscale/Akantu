@@ -37,5 +37,5 @@ def foo(self):
     self.assertAlmostEqual(0, ekin, 1e-16)
     self.checkAll()
 
-
+akantu.initialize()
 TestPatchTestSMMLinear.TYPED_TEST(foo, "Explicit")

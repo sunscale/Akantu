@@ -67,6 +67,7 @@ register_test(test_heat_transfer_model_square2d_implicit
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE heat_transfer
+  UNSTABLE
   )
 
 

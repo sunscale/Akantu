@@ -134,6 +134,9 @@ public:
   Real damage{0};
   bool penetration{false};
 
+  Real etot{0.};
+  Real edis{0.};
+
   Vector<Real> normal_opening;
   Vector<Real> tangential_opening;
 
@@ -151,10 +154,20 @@ TYPED_TEST_CASE(TestMaterialCohesiveLinearFixture, types);
 
 TYPED_TEST(TestMaterialCohesiveLinearFixture, ModeI) {
   this->checkModeI(this->material->delta_c_, this->material->get("G_c"));
+
+  Real G_c = this->material->get("G_c");
+  EXPECT_NEAR(G_c, this->dissipated(), 1e-6);
 }
 
 TYPED_TEST(TestMaterialCohesiveLinearFixture, ModeII) {
   this->checkModeII(this->material->delta_c_);
+
+  if(this->dim != 1) {
+    Real G_c = this->material->get("G_c");
+    Real beta = this->material->get("beta");
+    Real dis = beta * G_c;
+    EXPECT_NEAR(dis, this->dissipated(), 1e-6);
+  }
 }
 
 TYPED_TEST(TestMaterialCohesiveLinearFixture, Cycles) {
@@ -174,9 +187,7 @@ TYPED_TEST(TestMaterialCohesiveLinearFixture, Cycles) {
   this->material->computeTractions(*this->openings, this->normal,
                                    *this->tractions);
 
-  Real penalty = this->material->get("penalty");
-  std::cout << penalty << std::endl;
   Real G_c = this->material->get("G_c");
-  EXPECT_NEAR(G_c, this->dissipated(), 1e-3);
+  EXPECT_NEAR(G_c, this->dissipated(), 2e-3); // due to contact dissipation at 0
   this->output_csv();
 }

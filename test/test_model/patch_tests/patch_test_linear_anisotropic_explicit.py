@@ -81,5 +81,6 @@ def foo(self):
     self.checkStresses(foo)
 
 
+akantu.initialize()
 suite = TestPatchTestSMMLinear.TYPED_TEST(foo, "AnisotropicExplicit")
 unittest.TextTestRunner(verbosity=1).run(suite)
