@@ -261,9 +261,9 @@ public:
   template <typename Tensor,
             typename = std::enable_if_t<is_tensor<Tensor>::value>>
   inline void allGather(Tensor & values) const {
-    AKANTU_DEBUG_ASSERT(UInt(psize) == values.size(),
+    AKANTU_DEBUG_ASSERT(values.size() / UInt(psize) > 0,
                         "The vector size is not correct");
-    this->allGatherImpl(values.storage(), 1);
+    this->allGatherImpl(values.storage(), values.size() / UInt(psize));
   }
 
   /* ------------------------------------------------------------------------ */
