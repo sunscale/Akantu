@@ -108,6 +108,9 @@ public:
   /// compute and get the stable time step
   Real getStableTimeStep();
 
+  /// set the stable timestep
+  void setTimeStep(Real time_step, const ID & solver_id="") override;
+  
   /// compute the internal heat flux
   void assembleInternalHeatRate();
 

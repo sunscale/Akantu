@@ -72,6 +72,9 @@ public:
 
     this->model->initFull(_analysis_method = method);
     this->applyBC();
+
+    if (method != _static)
+      this->model->setTimeStep(0.8 * this->model->getStableTimeStep());
   }
 
   virtual void applyBC() {
@@ -166,8 +169,8 @@ protected:
                      {0.05, 0.06, 0.07, 0.08},
                      {0.09, 0.10, 0.11, 0.12}};
 
-  Real gradient_tolerance{1e-14};
-  Real result_tolerance{1e-14};
+  Real gradient_tolerance{1e-13};
+  Real result_tolerance{1e-13};
   Real dofs_tolerance{1e-15};
 };
 
