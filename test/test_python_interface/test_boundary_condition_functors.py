@@ -12,10 +12,8 @@ __maintainer__ = "Lucas Frérot"
 __email__ = "lucas.frerot@epfl.ch"
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
 import sys
 import os
-
 import numpy as np
 import akantu as aka
 
@@ -50,7 +48,6 @@ def main():
 
     mesh = aka.Mesh(2)
     mesh.read('mesh_dcb_2d.msh')
-    mesh.createGroupsFromStringMeshData("physical_names")
 
     model = aka.SolidMechanicsModel(mesh, 2)
     model.initFull()

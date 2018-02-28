@@ -12,7 +12,6 @@ __maintainer__ = "Lucas Frérot"
 __email__ = "lucas.frerot@epfl.ch"
 # ------------------------------------------------------------------------------
 
-from __future__ import print_function
 import sys
 import os
 import akantu as aka
@@ -24,8 +23,10 @@ def main():
     mesh.read('mesh_dcb_2d.msh')
 
     # Tests the getNbElement() function
-    if mesh.getNbElement(aka._quadrangle_8) != mesh.getNbElementByDimension(2):
-        print("Number of elements wrong, should be {}".format(mesh.getNbElementByDimension(2)))
+    if mesh.getNbElement(aka._quadrangle_8) \
+       != mesh.getNbElementByDimension(2):
+        raise Exception("Number of elements wrong, should be"\
+                        " {}".format(mesh.getNbElementByDimension(2)))
         return -1
 
     # TODO test the other functions in Mesh
