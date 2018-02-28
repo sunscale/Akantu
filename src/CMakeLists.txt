@@ -152,8 +152,16 @@ set_target_properties(akantu
   PROPERTIES
     ${AKANTU_LIBRARY_PROPERTIES} # this contains the version
     COMPILE_FLAGS "${_cxx_flags}"
-
+    #PRIVATE_HEADER ${AKANTU_LIBRARY_PRIVATE_HDRS}
     )
+
+if(AKANTU_LIBRARY_PUBLIC_HDRS)
+  set_property(TARGET akantu PROPERTY PUBLIC_HEADER ${AKANTU_LIBRARY_PUBLIC_HDRS})
+endif()
+
+if(AKANTU_LIBRARY_PRIVATE_HDRS)
+  set_property(TARGET akantu PROPERTY PRIVATE_HEADER ${AKANTU_LIBRARY_PRIVATE_HDRS})
+endif()
 
 if(NOT CMAKE_VERSION VERSION_LESS 3.1)
   package_get_all_features_public(_PUBLIC_features)
