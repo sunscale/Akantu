@@ -52,16 +52,15 @@ inline void Communicator::freeCommunicationRequest(
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T, typename MsgProcessor, typename TagGen>
+template <typename T, typename MsgProcessor>
 inline void Communicator::receiveAnyNumber(
     std::vector<CommunicationRequest> & send_requests, Array<T> receive_buffer,
-    MsgProcessor && processor, TagGen && tag_gen) const {
+    MsgProcessor && processor, Int tag) const {
   CommunicationRequest barrier_request;
   bool got_all = false, are_send_finished = false;
   while (not got_all) {
     bool are_receives_ready = true;
     while (are_receives_ready) {
-      auto && tag = std::forward<TagGen>(tag_gen)();
       CommunicationStatus status;
       are_receives_ready = asyncProbe<UInt>(_any_source, tag, status);
       if (are_receives_ready) {

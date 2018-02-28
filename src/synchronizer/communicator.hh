@@ -350,11 +350,11 @@ public:
   inline void
   freeCommunicationRequest(std::vector<CommunicationRequest> & requests) const;
 
-  template <typename T, typename MsgProcessor, typename TagGen>
+  template <typename T, typename MsgProcessor>
   inline void
   receiveAnyNumber(std::vector<CommunicationRequest> & send_requests,
                    Array<T> receive_buffer, MsgProcessor && processor,
-                   TagGen && tag_gen) const;
+                   Int tag) const;
 
 protected:
   template <typename T>

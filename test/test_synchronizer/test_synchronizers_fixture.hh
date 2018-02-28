@@ -45,7 +45,7 @@ public:
     mesh = std::make_unique<Mesh>(spatial_dimension);
 
     const auto & comm = Communicator::getStaticCommunicator();
-    Int prank = comm.whoAmI();
+    prank = comm.whoAmI();
 
     if (prank == 0) {
       this->mesh->read("cube.msh");
@@ -75,4 +75,5 @@ public:
 
 protected:
   std::unique_ptr<Mesh> mesh;
+  Int prank;
 };
