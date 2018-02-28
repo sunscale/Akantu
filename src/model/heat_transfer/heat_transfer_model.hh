@@ -319,6 +319,8 @@ private:
   // the biggest parameter of conductivity matrix
   Real conductivitymax;
 
+  bool need_to_reassemble_capacity{true};
+  bool need_to_reassemble_capacity_lumped{true};
   UInt temperature_release{0};
   UInt conductivity_matrix_release{0};
   std::unordered_map<GhostType, bool> initial_conductivity{{_not_ghost, true},
