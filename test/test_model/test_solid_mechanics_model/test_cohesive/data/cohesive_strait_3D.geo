@@ -1,12 +1,16 @@
 h = 0.5;
 
-Point(1) = { 1, 1, -1, h};
-Point(2) = {-1, 1, -1, h};
-Point(3) = {-1,-1, -1, h};
-Point(4) = { 1,-1, -1, h};
+z = 2;
+y = 2;
+x = 2;
 
-Point(5) = {-1, 0, -1, h};
-Point(6) = { 1, 0, -1, h};
+Point(1) = { x/2, y/2, -z/2, h};
+Point(2) = {-x/2, y/2, -z/2, h};
+Point(3) = {-x/2,-y/2, -z/2, h};
+Point(4) = { x/2,-y/2, -z/2, h};
+
+Point(5) = {-x/2, 0,  -z/2, h};
+Point(6) = { x/2, 0,  -z/2, h};
 
 Line(1) = {1, 2};
 Line(2) = {2, 5};
@@ -21,7 +25,7 @@ Line Loop(1) = {1, 2, 3, 4};
 Line Loop(2) = {-3, 5, 6, 7};
 Plane Surface(1) = {1};
 Plane Surface(2) = {2};
-Extrude {0, 0, 2} {
+Extrude {0, 0, z} {
   Surface{1}; Surface{2};
 }
 
