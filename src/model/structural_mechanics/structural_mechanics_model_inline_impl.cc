@@ -173,7 +173,7 @@ void StructuralMechanicsModel::computeStressOnQuad() {
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeForcesByLocalTractionArray(
-    const Array<Real> & tractions) {
+    const Array<Real> & /*tractions*/) {
   AKANTU_DEBUG_IN();
 
 #if 0
@@ -253,7 +253,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
-    const Array<Real> & traction_global) {
+    const Array<Real> & /*traction_global*/) {
   AKANTU_DEBUG_IN();
 #if 0
   UInt nb_element = mesh.getNbElement(type);

@@ -282,23 +282,23 @@ public:
                            ElementType type,
                            const GhostType & ghost_type) const;
 
-#ifdef AKANTU_STRUCTURAL_MECHANICS
-  /// assemble a field as a matrix (ex. rho to mass matrix)
-  void assembleFieldMatrix(const Array<Real> & field_1,
-                           UInt nb_degree_of_freedom, SparseMatrix & M,
-                           Array<Real> * n,
-                           ElementTypeMapArray<Real> & rotation_mat,
-                           const ElementType & type,
-                           const GhostType & ghost_type = _not_ghost) const;
+// #ifdef AKANTU_STRUCTURAL_MECHANICS
+//   /// assemble a field as a matrix (ex. rho to mass matrix)
+//   void assembleFieldMatrix(const Array<Real> & field_1,
+//                            UInt nb_degree_of_freedom, SparseMatrix & M,
+//                            Array<Real> * n,
+//                            ElementTypeMapArray<Real> & rotation_mat,
+//                            const ElementType & type,
+//                            const GhostType & ghost_type = _not_ghost) const;
 
-  /// compute shapes function in a matrix for structural elements
-  void
-  computeShapesMatrix(const ElementType & type, UInt nb_degree_of_freedom,
-                      UInt nb_nodes_per_element, Array<Real> * n, UInt id,
-                      UInt degree_to_interpolate, UInt degree_interpolated,
-                      const bool sign,
-                      const GhostType & ghost_type = _not_ghost) const override;
-#endif
+//   /// compute shapes function in a matrix for structural elements
+//   void
+//   computeShapesMatrix(const ElementType & type, UInt nb_degree_of_freedom,
+//                       UInt nb_nodes_per_element, Array<Real> * n, UInt id,
+//                       UInt degree_to_interpolate, UInt degree_interpolated,
+//                       const bool sign,
+//                       const GhostType & ghost_type = _not_ghost) const override;
+// #endif
 
 private:
   friend struct fe_engine::details::AssembleLumpedTemplateHelper<kind>;

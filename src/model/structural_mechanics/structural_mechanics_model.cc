@@ -341,13 +341,14 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 dumper::Field * StructuralMechanicsModel::createElementalField(
     const std::string & field_name, const std::string & group_name, bool,
-    const ElementKind & kind, const std::string &) {
+    const UInt & spatial_dimension,
+    const ElementKind & kind) {
 
   dumper::Field * field = NULL;
 
   if (field_name == "element_index_by_material")
     field = mesh.createElementalField<UInt, Vector, dumper::ElementalField>(
-        field_name, group_name, this->spatial_dimension, kind);
+        field_name, group_name, spatial_dimension, kind);
 
   return field;
 }

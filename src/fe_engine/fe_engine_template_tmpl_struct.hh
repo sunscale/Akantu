@@ -59,31 +59,31 @@ struct AssembleFieldMatrixStructHelper<
   }
 };
 
-template <template <ElementKind, class> class I, template <ElementKind> class S,
-          ElementKind kind, class IntegrationOrderFunctor>
-inline void
-FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
-    const Array<Real> & field_1, UInt nb_degree_of_freedom, SparseMatrix & M,
-    Array<Real> * n, ElementTypeMapArray<Real> & rotation_mat,
-    const ElementType & type, const GhostType & ghost_type) const {
-  AKANTU_DEBUG_IN();
+// template <template <ElementKind, class> class I, template <ElementKind> class S,
+//           ElementKind kind, class IntegrationOrderFunctor>
+// inline void
+// FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
+//     const Array<Real> & field_1, UInt nb_degree_of_freedom, SparseMatrix & M,
+//     Array<Real> * n, ElementTypeMapArray<Real> & rotation_mat,
+//     const ElementType & type, const GhostType & ghost_type) const {
+//   AKANTU_DEBUG_IN();
 
-  AssembleFieldMatrixStructHelper<kind>::template call(
-      *this, field_1, nb_degree_of_freedom, M, n, rotation_mat, type,
-      ghost_type);
+//   AssembleFieldMatrixStructHelper<kind>::template call(
+//       *this, field_1, nb_degree_of_freedom, M, n, rotation_mat, type,
+//       ghost_type);
 
-  AKANTU_DEBUG_OUT();
-}
-/* -------------------------------------------------------------------------- */
-template <template <ElementKind, class> class I, template <ElementKind> class S,
-          ElementKind kind, class IntegrationOrderFunctor>
-inline void
-FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
-    const ElementType &, UInt, UInt, Array<Real> *, UInt, UInt, UInt,
-    const bool, const GhostType &) const {
+//   AKANTU_DEBUG_OUT();
+// }
+// /* -------------------------------------------------------------------------- */
+// template <template <ElementKind, class> class I, template <ElementKind> class S,
+//           ElementKind kind, class IntegrationOrderFunctor>
+// inline void
+// FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
+//     const ElementType &, UInt, UInt, Array<Real> *, UInt, UInt, UInt,
+//     const bool, const GhostType &) const {
 
-  AKANTU_TO_IMPLEMENT();
-}
+//   AKANTU_TO_IMPLEMENT();
+// }
 
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind, class> class I, template <ElementKind> class S,

@@ -196,19 +196,19 @@ private:
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag);
+  dumper::Field * createNodalFieldReal(const std::string & field_name,
+                                       const std::string & group_name,
+                                       bool padding_flag) override;
 
-  virtual dumper::Field * createNodalFieldBool(const std::string & field_name,
-                                               const std::string & group_name,
-                                               bool padding_flag);
+  dumper::Field * createNodalFieldBool(const std::string & field_name,
+                                       const std::string & group_name,
+                                       bool padding_flag) override;
 
-  virtual dumper::Field *
-  createElementalField(const std::string & field_name,
-                       const std::string & group_name, bool padding_flag,
-                       const ElementKind & kind,
-                       const std::string & fe_engine_id = "");
+  dumper::Field * createElementalField(const std::string & field_name,
+                                       const std::string & group_name,
+                                       bool padding_flag,
+                                       const UInt & spatial_dimension,
+                                       const ElementKind & kind) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

@@ -95,7 +95,7 @@ public:
   void beforeSolveStep() override;
   void afterSolveStep() override;
 
-  bool canSplitResidual() { return solver_callback->canSplitResidual(); }
+  bool canSplitResidual() override { return solver_callback->canSplitResidual(); }
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
