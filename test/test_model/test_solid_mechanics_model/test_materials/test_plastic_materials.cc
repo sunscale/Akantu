@@ -38,8 +38,8 @@
 
 using namespace akantu;
 
-using types = ::testing::Types<Traits<MaterialLinearIsotropicHardening, 1>,
-                               Traits<MaterialLinearIsotropicHardening, 2>,
+using types = ::testing::Types<// Traits<MaterialLinearIsotropicHardening, 1>,
+                               // Traits<MaterialLinearIsotropicHardening, 2>,
                                Traits<MaterialLinearIsotropicHardening, 3>>;
 
 /* -------------------------------------------------------------------------- */
@@ -174,7 +174,7 @@ class TestPlasticMaterialFixture : public ::TestMaterialFixture<T> {};
 
 TYPED_TEST_CASE(TestPlasticMaterialFixture, types);
 
-TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputeStress) {
+TYPED_TEST(TestPlasticMaterialFixture, ComputeStress) {
   this->material->testComputeStress();
 }
 TYPED_TEST(TestPlasticMaterialFixture, DISABLED_EnergyDensity) {

@@ -30,4 +30,4 @@ def foo(self):
 
 
 akantu.initialize()
-TestPatchTestHTMLinear.TYPED_TEST(foo, "Implicit")
+TestPatchTestHTMLinear.TYPED_TEST(foo, "Static")
