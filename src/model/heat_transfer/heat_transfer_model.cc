@@ -63,7 +63,7 @@ namespace heat_transfer {
       ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
 
       void operator()(Matrix<Real> & rho, const Element &) const {
-        rho.set(model.getCapacity());
+        rho.set(model.getCapacity()*model.getDensity());
       }
 
     private:
@@ -290,7 +290,7 @@ ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
           IntegrationScheme::_temperature_rate;
     } else {
       options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["temperature"] = _ist_trapezoidal_rule_1;
+      options.integration_scheme_type["temperature"] = _ist_backward_euler;
       options.solution_type["temperature"] = IntegrationScheme::_temperature;
     }
     break;
@@ -504,14 +504,25 @@ Real HeatTransferModel::getStableTimeStep() {
   }
 
   Real min_dt =
-      2 * min_el_size * min_el_size * density * capacity / conductivitymax;
+      2. * min_el_size * min_el_size / 4. * density * capacity / conductivitymax;
 
+  
   mesh.getCommunicator().allReduce(min_dt, SynchronizerOperation::_min);
 
   AKANTU_DEBUG_OUT();
 
   return min_dt;
 }
+/* -------------------------------------------------------------------------- */
+
+void HeatTransferModel::setTimeStep(Real time_step, const ID & solver_id) {
+  Model::setTimeStep(time_step, solver_id);
+
+#if defined(AKANTU_USE_IOHELPER)
+  this->mesh.getDumper("heat_transfer").setTimeStep(time_step);
+#endif
+}
+
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::readMaterials() {

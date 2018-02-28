@@ -24,7 +24,7 @@ class TestPatchTestLinear(unittest.TestCase):
                       [0.09, 0.10, 0.11, 0.12]])
 
     gradient_tolerance = 1e-13
-    result_tolerance = 1e-14
+    result_tolerance = 1e-13
     dofs_tolerance = 1e-15
 
     def __init__(self, test_name, elem_type_str, functor=None):
@@ -60,6 +60,9 @@ class TestPatchTestLinear(unittest.TestCase):
         akantu.setDebugLevel(akantu.dblError)
         self.model.initFull(method)
         self.applyBC()
+
+        if method != akantu._static:
+            self.model.setTimeStep(0.8 * self.model.getStableTimeStep())
 
     def applyBC(self):
         boundary = self.model.getBlockedDOFs()

@@ -58,7 +58,6 @@ register_gtest_sources(
   SOURCES patch_test_linear_heat_transfer_implicit.cc
   FILES_TO_COPY data/heat_transfer_input.dat
   PACKAGE heat_transfer implicit
-  UNSTABLE
   )
 
 register_gtest_test(patch_test_linear
@@ -108,7 +107,6 @@ register_test(patch_test_linear_heat_transfer_static_python
 register_test(patch_test_linear_heat_transfer_implicit_python
   SCRIPT patch_test_linear_heat_transfer_implicit.py
   PYTHON
-  UNSTABLE
   PACKAGE python_interface heat_transfer implicit
   FILES_TO_COPY patch_test_linear_fixture.py
   FILES_TO_COPY patch_test_linear_heat_transfer_fixture.py
