@@ -244,10 +244,7 @@ GeometricalElement<_gt_hexahedron_8>::getInradius(const Matrix<Real> & coord) {
   Real k = u6.distance(u7);
   Real l = u7.distance(u4);
 
-  Real x = std::min(a, std::min(b, std::min(c, d)));
-  Real y = std::min(e, std::min(f, std::min(g, h)));
-  Real z = std::min(i, std::min(j, std::min(k, l)));
-  Real p = std::min(x, std::min(y, z));
+  Real p = std::min({a, b, c, d, e, f, g, h, i, j, k, l});
 
   return p;
 }

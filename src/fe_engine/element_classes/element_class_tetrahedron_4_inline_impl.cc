@@ -128,6 +128,7 @@ inline void InterpolationElement<_itp_lagrange_tetrahedron_4>::computeDNDS(
 template <>
 inline Real
 GeometricalElement<_gt_tetrahedron_4>::getInradius(const Matrix<Real> & coord) {
-  return Math::tetrahedron_inradius(coord(0).storage(), coord(1).storage(),
-                                    coord(2).storage(), coord(3).storage());
+  return 2. * Math::tetrahedron_inradius(coord(0).storage(), coord(1).storage(),
+                                         coord(2).storage(),
+                                         coord(3).storage());
 }
