@@ -50,6 +50,14 @@ public:
     this->applyBConDOFs(temperature);
   }
 
+  void initModel(const AnalysisMethod & method,
+                 const std::string & material_file) override {
+    TestPatchTestLinear<type, HeatTransferModel>::initModel(method,
+                                                            material_file);
+    if (method != _static)
+      this->model->setTimeStep(0.5 * this->model->getStableTimeStep());
+  }
+
   void checkAll() {
     auto & temperature = this->model->getTemperature();
     Matrix<Real> C = this->model->get("conductivity");

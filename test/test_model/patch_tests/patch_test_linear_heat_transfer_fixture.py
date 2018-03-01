@@ -35,3 +35,9 @@ class TestPatchTestHTMLinear(patch_test_linear_fixture.TestPatchTestLinear):
         self.checkResults(lambda grad_T: C.dot(grad_T.T),
                           self.model.getKgradT(self.elem_type),
                           temperature)
+
+    def initModel(self, method, material_file):
+        super().initModel(method, material_file)
+
+        if method != akantu._static:
+            self.model.setTimeStep(0.5 * self.model.getStableTimeStep())

@@ -34,7 +34,7 @@ def foo(self):
             self.model.solveStep()
 
     ekin = self.model.getEnergy("kinetic")
-    self.assertAlmostEqual(0, ekin, 1e-16)
+    self.assertAlmostEqual(0, ekin, delta=1e-16)
     self.checkAll()
 
 akantu.initialize()
