@@ -36,6 +36,7 @@
 #include "material_cohesive.hh"
 #include "mesh_iterators.hh"
 #include "solid_mechanics_model_cohesive.hh"
+#include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <functional>
@@ -140,16 +141,12 @@ private:
 void FragmentManager::buildFragments(Real damage_limit) {
   AKANTU_DEBUG_IN();
 
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
   ElementSynchronizer * cohesive_synchronizer =
-      const_cast<ElementSynchronizer *>(model.getCohesiveSynchronizer());
+      const_cast<ElementSynchronizer *>(&model.getCohesiveSynchronizer());
 
   if (cohesive_synchronizer) {
-    cohesive_synchronizer->computeBufferSize(model, _gst_smmc_damage);
-    cohesive_synchronizer->asynchronousSynchronize(model, _gst_smmc_damage);
-    cohesive_synchronizer->waitEndSynchronize(model, _gst_smmc_damage);
+    cohesive_synchronizer->synchronize(model, _gst_smmc_damage);
   }
-#endif
 
   auto & mesh_facets = const_cast<Mesh &>(mesh.getMeshFacets());
 

@@ -357,6 +357,12 @@ void SynchronizerImpl<Entity>::updateSchemes(Updater && scheme_updater) {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
+void SynchronizerImpl<Entity>::swapSendRecv() {
+  communications.swapSendRecv();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
 UInt SynchronizerImpl<Entity>::sanityCheckDataSize(
     const Array<Entity> &, const SynchronizationTag &) const {
   return 0;

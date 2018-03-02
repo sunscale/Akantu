@@ -95,6 +95,9 @@ public:
   /// update schemes in a synchronizer
   template <typename Updater> void updateSchemes(Updater && scheme_updater);
 
+  /// flip send and receive schemes
+  void swapSendRecv();
+
   /* ------------------------------------------------------------------------ */
   virtual UInt sanityCheckDataSize(const Array<Entity> & elements,
                                    const SynchronizationTag & tag) const;

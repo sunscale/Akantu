@@ -155,6 +155,7 @@ public:
 
   void steps(const Matrix<Real> & strain) {
     StrainIncrement functor((1. / nb_steps) * strain, this->dim == 1 ? _x : _y);
+    this->model->solveStep();
     for (auto _[[gnu::unused]] : arange(nb_steps)) {
       this->model->applyBC(functor, "loading");
       this->model->applyBC(functor, "fixed");
@@ -186,11 +187,6 @@ public:
 
   void checkDissipated(Real expected_density) {
     Real edis = this->model->getEnergy("dissipated");
-
-    if(this->dim == 3) {
-      SUCCEED();
-      return;
-    }
 
     EXPECT_NEAR(this->surface * expected_density, edis, 4e-1);
   }

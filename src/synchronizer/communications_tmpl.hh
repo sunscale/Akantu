@@ -59,6 +59,12 @@ Communications<Entity>::Communications(const Communications & other)
 }
 
 /* -------------------------------------------------------------------------- */
+template <class Entity>
+void Communications<Entity>::swapSendRecv() {
+  std::swap(schemes[_send], schemes[_recv]);
+}
+
+/* -------------------------------------------------------------------------- */
 template <class Entity> class Communications<Entity>::iterator {
   using communication_iterator =
       typename std::map<UInt, Communication>::iterator;

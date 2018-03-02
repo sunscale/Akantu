@@ -290,7 +290,6 @@ UInt SolidMechanicsModelCohesive::getNbData(
 
   /// regular element case
   if (elements(0).kind() == _ek_regular) {
-
     switch (tag) {
     case _gst_smmc_facets: {
       size += elements.size() * sizeof(bool);

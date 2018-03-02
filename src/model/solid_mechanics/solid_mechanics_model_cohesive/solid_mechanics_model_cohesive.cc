@@ -139,7 +139,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
     if (is_extrinsic) {
       facet_stress_synchronizer = std::make_unique<ElementSynchronizer>(
           synchronizer, id + ":facet_stress_synchronizer");
-
+      facet_stress_synchronizer->swapSendRecv();
       this->registerSynchronizer(*facet_stress_synchronizer,
                                  _gst_smmc_facets_stress);
     }
@@ -502,17 +502,7 @@ void SolidMechanicsModelCohesive::interpolateStress() {
       material->interpolateStressOnFacets(facet_stress, by_elem_result);
   }
 
-#if defined(AKANTU_DEBUG_TOOLS)
-  debug::element_manager.printData(
-      debug::_dm_model_cohesive, "Interpolated stresses before", facet_stress);
-#endif
-
   this->synchronize(_gst_smmc_facets_stress);
-
-#if defined(AKANTU_DEBUG_TOOLS)
-  debug::element_manager.printData(debug::_dm_model_cohesive,
-                                   "Interpolated stresses", facet_stress);
-#endif
 }
 
 /* -------------------------------------------------------------------------- */

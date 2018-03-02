@@ -107,6 +107,9 @@ public:
   explicit Communications(const Communications & communications);
 
   /* ------------------------------------------------------------------------ */
+  void swapSendRecv();
+
+  /* ------------------------------------------------------------------------ */
   class IterableCommunicationDesc {
   public:
     IterableCommunicationDesc(Communications & communications,
