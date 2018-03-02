@@ -212,8 +212,6 @@ public:
   AKANTU_GET_MACRO(TimeStep, time_step, Real);
   /// get the assembled heat flux
   AKANTU_GET_MACRO(InternalHeatRate, *internal_heat_rate, Array<Real> &);
-  /// get the lumped capacity
-  AKANTU_GET_MACRO(CapacityLumped, *capacity_lumped, Array<Real> &);
   /// get the boundary vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
   /// get the external heat rate vector
@@ -296,9 +294,6 @@ private:
 
   /// residuals array
   Array<Real> * internal_heat_rate{nullptr};
-
-  // lumped vector
-  Array<Real> * capacity_lumped{nullptr};
 
   /// boundary vector
   Array<bool> * blocked_dofs{nullptr};

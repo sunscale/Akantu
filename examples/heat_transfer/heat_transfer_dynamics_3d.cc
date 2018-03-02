@@ -1,11 +1,11 @@
 /**
- * @file   test_heat_transfer_model_cube3d_istropic_conductivity.cc
+ * @file   test_heat_transfer_model_cube3d.cc
  *
- * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+ * @author Srinivasa Babu Ramisetti <srinivasa.ramisetti@epfl.ch>
  * @author Rui Wang <rui.wang@epfl.ch>
  *
  * @date creation: Sun May 01 2011
- * @date last modification: Tue Jan 16 2018
+ * @date last modification: Fri Jan 26 2018
  *
  * @brief  test of the class HeatTransferModel on the 3d cube
  *
@@ -30,78 +30,70 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
+#include <fstream>
+#include <iostream>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "heat_transfer_model.hh"
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh.hh"
-#include <fstream>
-#include <iostream>
-#include <string.h>
-using namespace std;
 
 /* -------------------------------------------------------------------------- */
-akantu::UInt spatial_dimension = 3;
+using namespace akantu;
+
+UInt spatial_dimension = 3;
+ElementType type = _tetrahedron_4;
+
 /* -------------------------------------------------------------------------- */
 
 int main(int argc, char * argv[]) {
-  akantu::initialize("material.dat", argc, argv);
+  initialize("material.dat", argc, argv);
 
-  akantu::Mesh mesh(spatial_dimension);
-  akantu::MeshIOMSH mesh_io;
+  Mesh mesh(spatial_dimension);
+  mesh.read("cube.msh");
 
-  mesh_io.read("cube1.msh", mesh);
-
-  akantu::HeatTransferModel model(mesh);
+  HeatTransferModel model(mesh);
   // initialize everything
   model.initFull();
 
-  // assemble the lumped capacity
-  model.assembleCapacityLumped();
-
-  // get stable time step
-  akantu::Real time_step = model.getStableTimeStep() * 0.8;
-  cout << "time step is:" << time_step << endl;
+  // get and set stable time step
+  Real time_step = model.getStableTimeStep() * 0.8;
+  std::cout << "Stable Time Step is : " << time_step / .8 << std::endl;
+  std::cout << "time step is:" << time_step << std::endl;
   model.setTimeStep(time_step);
 
   /// boundary conditions
-  const akantu::Array<akantu::Real> & nodes = mesh.getNodes();
-  akantu::Array<bool> & boundary = model.getBlockedDOFs();
-  akantu::Array<akantu::Real> & temperature = model.getTemperature();
-  akantu::Real eps = 1e-15;
+  const Array<Real> & nodes = mesh.getNodes();
+  Array<bool> & boundary = model.getBlockedDOFs();
+  Array<Real> & temperature = model.getTemperature();
+  UInt nb_nodes = mesh.getNbNodes();
 
-  double length = 1.;
-  akantu::UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
-  for (akantu::UInt i = 0; i < nb_nodes; ++i) {
-    // temperature(i) = t1 - (t1 - t2) * sin(nodes(i, 0) * M_PI / length);
+  // double t1, t2;
+  double length;
+  // t1 = 300.;
+  // t2 = 100.;
+  length = 1.;
+
+  for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    if (nodes(i, 0) < eps) {
+    // to insert a heat source
+    Real dx = nodes(i, 0) - length / 2.;
+    Real dy = nodes(i, 1) - length / 2.;
+    Real dz = nodes(i, 2) - length / 2.;
+    Real d = sqrt(dx * dx + dy * dy + dz * dz);
+    if (d < 0.1) {
       boundary(i) = true;
       temperature(i) = 300.;
     }
-    // set the second boundary condition
-    if (std::abs(nodes(i, 0) - length) < eps) {
-      boundary(i) = true;
-      temperature(i) = 300.;
-    }
-    // //to insert a heat source
-    //  if(std::abs(nodes(i,0) - length/2.) < 0.025 && std::abs(nodes(i,1) -
-    //  length/2.) < 0.025 && std::abs(nodes(i,2) - length/2.) < 0.025) {
-    //   boundary(i) = true;
-    //  temperature(i) = 300.;
-    //  }
   }
 
-  // model.updateResidual();
-  model.setBaseName("heat_transfer_cube3d_istropic_conductivity");
+  model.assembleInternalHeatRate();
+  model.setBaseName("heat_transfer_cube3d");
   model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
-  model.addDumpField("residual");
-  model.addDumpField("capacity_lumped");
-  model.dump();
+  model.addDumpField("internal_heat_rate");
 
   // //for testing
   int max_steps = 1000;
@@ -111,10 +103,11 @@ int main(int argc, char * argv[]) {
 
     if (i % 100 == 0)
       model.dump();
-    if (i % 10000 == 0)
+
+    if (i % 10 == 0) {
       std::cout << "Step " << i << "/" << max_steps << std::endl;
+    }
   }
-  cout << "\n\n Stable Time Step is : " << time_step << "\n \n" << endl;
 
   return 0;
 }

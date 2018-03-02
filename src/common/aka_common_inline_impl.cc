@@ -282,9 +282,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   case _gst_gm_clusters:
     stream << "_gst_gm_clusters";
     break;
-  case _gst_htm_capacity:
-    stream << "_gst_htm_capacity";
-    break;
   case _gst_htm_temperature:
     stream << "_gst_htm_temperature";
     break;

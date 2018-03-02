@@ -1,8 +1,7 @@
 /**
- * @file   test_heat_transfer_model_square2d.cc
+ * @file   test_heat_transfer_model_square2d_implicit.cc
  *
- * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
- * @author Srinivasa Babu Ramisetti <srinivasa.ramisetti@epfl.ch>
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
  *
  * @date creation: Sun May 01 2011
  * @date last modification: Mon Jan 29 2018
@@ -35,12 +34,12 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
 
 /* -------------------------------------------------------------------------- */
 UInt spatial_dimension = 2;
-
 std::string base_name;
 
 int main(int argc, char * argv[]) {
@@ -48,32 +47,24 @@ int main(int argc, char * argv[]) {
 
   // create mesh
   Mesh mesh(spatial_dimension);
-  mesh.read("square_tri3.msh");
+  mesh.read("square.msh");
 
   HeatTransferModel model(mesh);
   // initialize everything
-  model.initFull();
-
-  // get stable time step
-  Real time_step = model.getStableTimeStep() * 0.8;
-  std::cout << "Stable Time Step is: " << time_step << std::endl;
-  std::cout << "Time step is: " << time_step << std::endl;
-  model.setTimeStep(time_step);
+  model.initFull(_analysis_method = _static);
 
   // boundary conditions
-  const Array<Real> & nodes = model.getFEEngine().getMesh().getNodes();
-  Array<bool> & boundary = model.getBlockedDOFs();
+  const Array<Real> & nodes = mesh.getNodes();
+  Array<bool> & blocked_dofs = model.getBlockedDOFs();
   Array<Real> & temperature = model.getTemperature();
   double length;
+  Real dx, dy, dz;
   length = 1.;
-  UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
+  UInt nb_nodes = nodes.size();
   for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    Real dx = nodes(i, 0) - length / 4.;
-    Real dy = 0.0;
-    Real dz = 0.0;
-
+    dx = nodes(i, 0) - length / 4.;
     if (spatial_dimension > 1)
       dy = nodes(i, 1) - length / 4.;
     if (spatial_dimension == 3)
@@ -81,7 +72,7 @@ int main(int argc, char * argv[]) {
     Real d = sqrt(dx * dx + dy * dy + dz * dz);
     //    if(dx < 0.0){
     if (d < 0.1) {
-      boundary(i) = true;
+      blocked_dofs(i) = true;
       temperature(i) = 300.;
     }
   }
@@ -89,21 +80,12 @@ int main(int argc, char * argv[]) {
   model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_square2d");
   model.addDumpField("temperature");
-  model.addDumpField("temperature_rate");
   model.addDumpField("internal_heat_rate");
-  model.addDumpField("capacity_lumped");
+  model.addDumpField("conductivity");
   model.dump();
 
-  // main loop
-  int max_steps = 1500;
-  for (int i = 0; i < max_steps; i++) {
-    model.solveStep();
-
-    if (i % 100 == 0)
-      model.dump();
-    if (i % 10 == 0)
-      std::cout << "Step " << i << "/" << max_steps << std::endl;
-  }
+  model.solveStep();
+  model.dump();
 
   return 0;
 }

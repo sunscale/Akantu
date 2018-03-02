@@ -90,7 +90,6 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
 
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();
-    this->registerSynchronizer(synchronizer, _gst_htm_capacity);
     this->registerSynchronizer(synchronizer, _gst_htm_temperature);
     this->registerSynchronizer(synchronizer, _gst_htm_gradient_temperature);
   }
@@ -497,15 +496,14 @@ Real HeatTransferModel::getStableTimeStep() {
       el_size = getFEEngine().getElementInradius(*el_coord, type);
       min_el_size = std::min(min_el_size, el_size);
     }
-
+    
     AKANTU_DEBUG_INFO("The minimum element size : "
                       << min_el_size
                       << " and the max conductivity is : " << conductivitymax);
   }
 
   Real min_dt =
-      2. * min_el_size * min_el_size / 4. * density * capacity / conductivitymax;
-
+    2. * min_el_size * min_el_size / 4. * density * capacity / conductivitymax;
   
   mesh.getCommunicator().allReduce(min_dt, SynchronizerOperation::_min);
 
@@ -720,12 +718,16 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
+  if (field_name == "capacity_lumped"){
+    AKANTU_EXCEPTION("Capacity lumped is a nodal field now stored in the DOF manager."
+                     "Therefore it cannot be used by a dumper anymore");
+  }
+
   std::map<std::string, Array<Real> *> real_nodal_fields;
   real_nodal_fields["temperature"] = temperature;
   real_nodal_fields["temperature_rate"] = temperature_rate;
   real_nodal_fields["external_heat_rate"] = external_heat_rate;
   real_nodal_fields["internal_heat_rate"] = internal_heat_rate;
-  real_nodal_fields["capacity_lumped"] = capacity_lumped;
   real_nodal_fields["increment"] = increment;
 
   dumper::Field * field =
@@ -828,7 +830,6 @@ inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,
   UInt nb_nodes = indexes.size();
 
   switch (tag) {
-  case _gst_htm_capacity:
   case _gst_htm_temperature: {
     size += nb_nodes * sizeof(Real);
     break;
@@ -848,9 +849,6 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
 
   for (auto index : indexes) {
     switch (tag) {
-    case _gst_htm_capacity:
-      buffer << (*capacity_lumped)(index);
-      break;
     case _gst_htm_temperature: {
       buffer << (*temperature)(index);
       break;
@@ -869,10 +867,6 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
 
   for (auto index : indexes) {
     switch (tag) {
-    case _gst_htm_capacity: {
-      buffer >> (*capacity_lumped)(index);
-      break;
-    }
     case _gst_htm_temperature: {
       buffer >> (*temperature)(index);
       break;
@@ -899,10 +893,6 @@ inline UInt HeatTransferModel::getNbData(const Array<Element> & elements,
   }
 
   switch (tag) {
-  case _gst_htm_capacity: {
-    size += nb_nodes_per_element * sizeof(Real); // capacity vector
-    break;
-  }
   case _gst_htm_temperature: {
     size += nb_nodes_per_element * sizeof(Real); // temperature
     break;
@@ -925,10 +915,6 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
                                         const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   switch (tag) {
-  case _gst_htm_capacity: {
-    packNodalDataHelper(*capacity_lumped, buffer, elements, mesh);
-    break;
-  }
   case _gst_htm_temperature: {
     packNodalDataHelper(*temperature, buffer, elements, mesh);
     break;
@@ -948,10 +934,6 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
                                           const Array<Element> & elements,
                                           const SynchronizationTag & tag) {
   switch (tag) {
-  case _gst_htm_capacity: {
-    unpackNodalDataHelper(*capacity_lumped, buffer, elements, mesh);
-    break;
-  }
   case _gst_htm_temperature: {
     unpackNodalDataHelper(*temperature, buffer, elements, mesh);
     break;

@@ -30,10 +30,27 @@
 #
 #===============================================================================
 
-add_mesh(explicit_heat_transfer_mesh square.geo 2 2)
-register_example(explicit_heat_transfer
-  SOURCES explicit_heat_transfer.cc
-  DEPENDS explicit_heat_transfer_mesh
+add_mesh(heat_transfer_mesh_2d square.geo 2 2)
+add_mesh(heat_transfer_mesh_3d cube.geo 3 2)
+
+#add_mesh(heat_transfer_mesh_2d_struct square.geo 2 2)
+#add_mesh(heat_transfer_mesh_3d_struct cube.geo 3 3)
+#
+register_example(heat_transfer_dynamics_2d
+  SOURCES heat_transfer_dynamics_2d.cc
+  DEPENDS heat_transfer_mesh_2d
+  FILES_TO_COPY material.dat
+  )
+
+register_example(heat_transfer_static_2d
+  SOURCES heat_transfer_static_2d.cc
+  DEPENDS heat_transfer_mesh_2d
+  FILES_TO_COPY material.dat
+  )
+
+register_example(heat_transfer_dynamics_3d
+  SOURCES heat_transfer_dynamics_3d.cc
+  DEPENDS heat_transfer_mesh_3d
   FILES_TO_COPY material.dat
   )
 

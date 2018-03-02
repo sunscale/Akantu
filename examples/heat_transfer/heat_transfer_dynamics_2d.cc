@@ -1,26 +1,25 @@
 /**
- * @file   test_heat_transfer_model_square2d_implicit.cc
+ * @file   explicit_heat_transfer.cc
  *
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  *
- * @date creation: Sun May 01 2011
- * @date last modification: Mon Jan 29 2018
+ * @date creation: Mon Jan 18 2016
  *
  * @brief  test of the class HeatTransferModel on the 3d cube
  *
  * @section LICENSE
  *
- * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
- * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
+ * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
  * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * terms  of the  GNU Lesser  General Public  License as  published by  the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
  * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
  * details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
@@ -31,34 +30,36 @@
 /* -------------------------------------------------------------------------- */
 #include "heat_transfer_model.hh"
 /* -------------------------------------------------------------------------- */
-#include <fstream>
 #include <iostream>
-#include <string>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
-
+const UInt spatial_dimension = 2;
 /* -------------------------------------------------------------------------- */
-UInt spatial_dimension = 2;
-std::string base_name;
 
 int main(int argc, char * argv[]) {
   initialize("material.dat", argc, argv);
 
   // create mesh
   Mesh mesh(spatial_dimension);
-  mesh.read("square_tri3.msh");
+  mesh.read("square.msh");
 
   HeatTransferModel model(mesh);
+
   // initialize everything
-  model.initFull(_analysis_method = _static);
+  model.initFull();
+
+  // get stable time step
+  Real time_step = model.getStableTimeStep() * 0.8;
+  std::cout << "time step is:" << time_step << std::endl;
+  model.setTimeStep(time_step);
 
   // boundary conditions
   const Array<Real> & nodes = model.getFEEngine().getMesh().getNodes();
   Array<bool> & boundary = model.getBlockedDOFs();
   Array<Real> & temperature = model.getTemperature();
-  double length;
-  length = 1.;
+  double length = 1.;
+
   UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
   for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
@@ -79,16 +80,23 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_square2d");
   model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
   model.addDumpField("internal_heat_rate");
-  model.addDumpField("conductivity");
-  model.dump();
 
-  model.solveStep();
-  model.dump();
+  // main loop
+  int max_steps = 15000;
+  for (int i = 0; i < max_steps; i++) {
+    model.solveStep();
+
+    if (i % 100 == 0)
+      model.dump();
+    if (i % 10 == 0)
+      std::cout << "Step " << i << "/" << max_steps << std::endl;
+  }
+  std::cout << "\n\n Stable Time Step is : " << time_step << "\n \n"
+            << std::endl;
 
   return 0;
 }
