@@ -73,7 +73,6 @@ int main(int argc, char * argv[]) {
     if (spatial_dimension == 3)
       dz = nodes(i, 2) - length / 4.;
     Real d = sqrt(dx * dx + dy * dy + dz * dz);
-    //    if(dx < 0.0){
     if (d < 0.1) {
       boundary(i) = true;
       temperature(i) = 300.;

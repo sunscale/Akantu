@@ -70,14 +70,12 @@ int main(int argc, char * argv[]) {
     if (spatial_dimension == 3)
       dz = nodes(i, 2) - length / 4.;
     Real d = sqrt(dx * dx + dy * dy + dz * dz);
-    //    if(dx < 0.0){
     if (d < 0.1) {
       blocked_dofs(i) = true;
       temperature(i) = 300.;
     }
   }
 
-  // model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_static_2d");
   model.addDumpField("temperature");
   model.addDumpField("internal_heat_rate");
