@@ -77,11 +77,12 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  model.assembleInternalHeatRate();
-  model.setBaseName("heat_transfer_square2d");
+  // model.assembleInternalHeatRate();
+  model.setBaseName("heat_transfer_static_2d");
   model.addDumpField("temperature");
   model.addDumpField("internal_heat_rate");
   model.addDumpField("conductivity");
+  model.addDumpField("blocked_dofs");
   model.dump();
 
   model.solveStep();
