@@ -33,9 +33,6 @@
 add_mesh(heat_transfer_mesh_2d square.geo 2 2)
 add_mesh(heat_transfer_mesh_3d cube.geo 3 2)
 
-#add_mesh(heat_transfer_mesh_2d_struct square.geo 2 2)
-#add_mesh(heat_transfer_mesh_3d_struct cube.geo 3 3)
-#
 register_example(heat_transfer_dynamics_2d
   SOURCES heat_transfer_dynamics_2d.cc
   DEPENDS heat_transfer_mesh_2d

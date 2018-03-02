@@ -111,9 +111,12 @@ public:
   /// set the stable timestep
   void setTimeStep(Real time_step, const ID & solver_id="") override;
   
-  /// compute the internal heat flux
+// temporary protection to prevent bad usage: should check for bug
+protected:
+  /// compute the internal heat flux \todo Need code review: currently not public method 
   void assembleInternalHeatRate();
 
+public:
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
 

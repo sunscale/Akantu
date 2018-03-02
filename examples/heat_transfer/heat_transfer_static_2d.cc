@@ -34,6 +34,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cmath>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -57,23 +58,26 @@ int main(int argc, char * argv[]) {
   const Array<Real> & nodes = mesh.getNodes();
   Array<bool> & blocked_dofs = model.getBlockedDOFs();
   Array<Real> & temperature = model.getTemperature();
-  double length;
-  Real dx, dy, dz;
-  length = 1.;
+  double length = 1.;
   UInt nb_nodes = nodes.size();
   for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    dx = nodes(i, 0) - length / 4.;
-    if (spatial_dimension > 1)
-      dy = nodes(i, 1) - length / 4.;
-    if (spatial_dimension == 3)
-      dz = nodes(i, 2) - length / 4.;
-    Real d = sqrt(dx * dx + dy * dy + dz * dz);
+    Real dx = nodes(i, 0);
+    Real dy = nodes(i, 1);
+
+    Vector<Real> dX = {dx , dy};
+    dX -= length / 4.;
+    Real d = dX.norm();
     if (d < 0.1) {
       blocked_dofs(i) = true;
       temperature(i) = 300.;
     }
+
+    if (std::abs(dx) < 1e-4 || std::abs(dy) < 1e-4)
+      blocked_dofs(i) = true;
+    if (std::abs(dx-length) < 1e-4 || std::abs(dy-length) < 1e-4) 
+      blocked_dofs(i) = true;
   }
 
   model.setBaseName("heat_transfer_static_2d");

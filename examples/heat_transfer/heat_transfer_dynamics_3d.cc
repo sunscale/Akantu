@@ -69,10 +69,7 @@ int main(int argc, char * argv[]) {
   Array<Real> & temperature = model.getTemperature();
   UInt nb_nodes = mesh.getNbNodes();
 
-  // double t1, t2;
   double length;
-  // t1 = 300.;
-  // t2 = 100.;
   length = 1.;
 
   for (UInt i = 0; i < nb_nodes; ++i) {
@@ -89,7 +86,6 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  model.assembleInternalHeatRate();
   model.setBaseName("heat_transfer_cube3d");
   model.addDumpField("temperature");
   model.addDumpField("temperature_rate");
