@@ -34,6 +34,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cmath>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -47,44 +48,43 @@ int main(int argc, char * argv[]) {
 
   // create mesh
   Mesh mesh(spatial_dimension);
-  mesh.read("square_tri3.msh");
+  mesh.read("square.msh");
 
   HeatTransferModel model(mesh);
   // initialize everything
   model.initFull(_analysis_method = _static);
 
   // boundary conditions
-  const Array<Real> & nodes = model.getFEEngine().getMesh().getNodes();
-  Array<bool> & boundary = model.getBlockedDOFs();
+  const Array<Real> & nodes = mesh.getNodes();
+  Array<bool> & blocked_dofs = model.getBlockedDOFs();
   Array<Real> & temperature = model.getTemperature();
-  double length;
-  length = 1.;
-  UInt nb_nodes = model.getFEEngine().getMesh().getNbNodes();
+  double length = 1.;
+  UInt nb_nodes = nodes.size();
   for (UInt i = 0; i < nb_nodes; ++i) {
     temperature(i) = 100.;
 
-    Real dx = nodes(i, 0) - length / 4.;
-    Real dy = 0.0;
-    Real dz = 0.0;
+    Real dx = nodes(i, 0);
+    Real dy = nodes(i, 1);
 
-    if (spatial_dimension > 1)
-      dy = nodes(i, 1) - length / 4.;
-    if (spatial_dimension == 3)
-      dz = nodes(i, 2) - length / 4.;
-    Real d = sqrt(dx * dx + dy * dy + dz * dz);
-    //    if(dx < 0.0){
+    Vector<Real> dX = {dx , dy};
+    dX -= length / 4.;
+    Real d = dX.norm();
     if (d < 0.1) {
-      boundary(i) = true;
+      blocked_dofs(i) = true;
       temperature(i) = 300.;
     }
+
+    if (std::abs(dx) < 1e-4 || std::abs(dy) < 1e-4)
+      blocked_dofs(i) = true;
+    if (std::abs(dx-length) < 1e-4 || std::abs(dy-length) < 1e-4) 
+      blocked_dofs(i) = true;
   }
 
-  model.assembleInternalHeatRate();
-  model.setBaseName("heat_transfer_square2d");
+  model.setBaseName("heat_transfer_static_2d");
   model.addDumpField("temperature");
-  model.addDumpField("temperature_rate");
   model.addDumpField("internal_heat_rate");
   model.addDumpField("conductivity");
+  model.addDumpField("blocked_dofs");
   model.dump();
 
   model.solveStep();

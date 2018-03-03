@@ -116,7 +116,7 @@ class GeometricalElement {
   using geometrical_property = GeometricalElementProperty<geometrical_type>;
 
 public:
-  /// compute the in-radius
+  /// compute the in-radius: \todo should be renamed for characteristic length
   static inline Real getInradius(__attribute__((unused))
                                  const Matrix<Real> & coord) {
     AKANTU_TO_IMPLEMENT();
@@ -370,8 +370,8 @@ public:
 namespace akantu {
 #include "element_class_pentahedron_6_inline_impl.cc"
 /* keep order */
-#include "element_class_hexahedron_20_inline_impl.cc"
 #include "element_class_hexahedron_8_inline_impl.cc"
+#include "element_class_hexahedron_20_inline_impl.cc"
 #include "element_class_pentahedron_15_inline_impl.cc"
 #include "element_class_point_1_inline_impl.cc"
 #include "element_class_quadrangle_4_inline_impl.cc"

@@ -533,7 +533,7 @@ function(register_test test_name)
     set(_register_test_PARALLEL_LEVEL 1)
   endif()
 
-  if(_register_test_PARALLEL)
+  if(_register_test_PARALLEL AND _is_parallel)
     list(APPEND _arguments -p "${MPIEXEC} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG}")
     if(_register_test_PARALLEL_LEVEL)
       set(_procs "${_register_test_PARALLEL_LEVEL}")

@@ -1,4 +1,4 @@
-heat standard [
+model heat_transfer_model [
      density = 8940
      capacity = 385
      conductivity = [[401,   0,   0],\

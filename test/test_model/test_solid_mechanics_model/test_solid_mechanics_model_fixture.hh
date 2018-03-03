@@ -79,15 +79,16 @@ template <typename type_> constexpr ElementType TestSMMFixture<type_>::type;
 template <typename type_>
 constexpr size_t TestSMMFixture<type_>::spatial_dimension;
 
-template <typename T>
-using is_not_pentahedron =
-    aka::negation<aka::disjunction<is_element<T, _pentahedron_6>,
-                                   is_element<T, _pentahedron_15>>>;
+// template <typename T>
+// using is_not_pentahedron =
+//     aka::negation<aka::disjunction<is_element<T, _pentahedron_6>,
+//                                    is_element<T, _pentahedron_15>>>;
 
-using TestElementTypesFiltered =
-    tuple_filter_t<is_not_pentahedron, TestElementTypes>;
+// using TestElementTypesFiltered =
+//     tuple_filter_t<is_not_pentahedron, TestElementTypes>;
 
-using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
+//using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
+using gtest_element_types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestSMMFixture, gtest_element_types);
 

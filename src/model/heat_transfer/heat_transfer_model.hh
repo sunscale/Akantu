@@ -111,9 +111,12 @@ public:
   /// set the stable timestep
   void setTimeStep(Real time_step, const ID & solver_id="") override;
   
-  /// compute the internal heat flux
+// temporary protection to prevent bad usage: should check for bug
+protected:
+  /// compute the internal heat flux \todo Need code review: currently not public method 
   void assembleInternalHeatRate();
 
+public:
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
 
@@ -212,8 +215,6 @@ public:
   AKANTU_GET_MACRO(TimeStep, time_step, Real);
   /// get the assembled heat flux
   AKANTU_GET_MACRO(InternalHeatRate, *internal_heat_rate, Array<Real> &);
-  /// get the lumped capacity
-  AKANTU_GET_MACRO(CapacityLumped, *capacity_lumped, Array<Real> &);
   /// get the boundary vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
   /// get the external heat rate vector
@@ -296,9 +297,6 @@ private:
 
   /// residuals array
   Array<Real> * internal_heat_rate{nullptr};
-
-  // lumped vector
-  Array<Real> * capacity_lumped{nullptr};
 
   /// boundary vector
   Array<bool> * blocked_dofs{nullptr};

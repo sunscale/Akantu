@@ -322,7 +322,6 @@ enum SynchronizationTag {
   _gst_gm_clusters, ///< synchronization of clusters
 
   // --- HeatTransfer tags ---
-  _gst_htm_capacity,             ///< synchronization of the nodal heat capacity
   _gst_htm_temperature,          ///< synchronization of the nodal temperature
   _gst_htm_gradient_temperature, ///< synchronization of the element gradient
                                  /// temperature

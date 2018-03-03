@@ -216,44 +216,5 @@ inline void InterpolationElement<_itp_serendip_hexahedron_20>::computeDNDS(
 template <>
 inline Real
 GeometricalElement<_gt_hexahedron_20>::getInradius(const Matrix<Real> & coord) {
-  Vector<Real> u0 = coord(0);
-  Vector<Real> u1 = coord(1);
-  Vector<Real> u2 = coord(2);
-  Vector<Real> u3 = coord(3);
-  Vector<Real> u4 = coord(4);
-  Vector<Real> u5 = coord(5);
-  Vector<Real> u6 = coord(6);
-  Vector<Real> u7 = coord(7);
-  Vector<Real> u8 = coord(8);
-  Vector<Real> u9 = coord(9);
-  Vector<Real> u10 = coord(10);
-  Vector<Real> u11 = coord(11);
-  Vector<Real> u12 = coord(12);
-  Vector<Real> u13 = coord(13);
-  Vector<Real> u14 = coord(14);
-  Vector<Real> u15 = coord(15);
-  Vector<Real> u16 = coord(16);
-  Vector<Real> u17 = coord(17);
-  Vector<Real> u18 = coord(18);
-  Vector<Real> u19 = coord(19);
-
-  Real a = u0.distance(u1);
-  Real b = u1.distance(u2);
-  Real c = u2.distance(u3);
-  Real d = u3.distance(u0);
-  Real e = u0.distance(u4);
-  Real f = u1.distance(u5);
-  Real g = u2.distance(u6);
-  Real h = u3.distance(u7);
-  Real i = u4.distance(u5);
-  Real j = u5.distance(u6);
-  Real k = u6.distance(u7);
-  Real l = u7.distance(u4);
-
-  Real x = std::min(a, std::min(b, std::min(c, d)));
-  Real y = std::min(e, std::min(f, std::min(g, h)));
-  Real z = std::min(i, std::min(j, std::min(k, l)));
-  Real p = std::min(x, std::min(y, z));
-
-  return p;
+  return GeometricalElement<_gt_hexahedron_8>::getInradius(coord)*0.5;
 }

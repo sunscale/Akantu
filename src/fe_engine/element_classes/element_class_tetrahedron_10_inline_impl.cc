@@ -273,5 +273,5 @@ inline Real GeometricalElement<_gt_tetrahedron_10>::getInradius(
     inradius = std::min(ir, inradius);
   }
 
-  return inradius;
+  return 2. * inradius;
 }

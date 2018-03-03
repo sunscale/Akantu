@@ -148,7 +148,7 @@ GeometricalElement<_gt_quadrangle_4>::getInradius(const Matrix<Real> & coord) {
   // Real h = sqrt(area);  // to get a length
   // Real h = area / septimetre;  // formula of inradius for circumscritable
   // quadrelateral
-  Real h = std::min(a, std::min(b, std::min(c, d)));
+  Real h = std::min({a, b, c, d});
 
   return h;
 }
