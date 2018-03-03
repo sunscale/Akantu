@@ -42,9 +42,6 @@ namespace akantu {
 inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   UInt size = 0;
-  if (elements.size() == 0)
-    return size;
-
   if (tag == _gst_giu_global_conn)
     size += Mesh::getNbNodesPerElementList(elements) * sizeof(UInt);
 
@@ -75,18 +72,12 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
 
   ElementType current_element_type = _not_defined;
   GhostType current_ghost_type = _casper;
-
   Array<UInt>::const_vector_iterator conn_begin;
   UInt nb_nodes_per_elem = 0;
-  UInt index;
 
-  Array<UInt> & global_nodes_ids = mesh.getGlobalNodesIds();
+  auto & global_nodes_ids = mesh.getGlobalNodesIds();
 
-  Array<Element>::const_scalar_iterator it = elements.begin();
-  Array<Element>::const_scalar_iterator end = elements.end();
-  for (; it != end; ++it) {
-    const Element & el = *it;
-
+  for(auto & el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -106,19 +97,17 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
       UInt node = current_conn(n);
 
       if (pack_mode) {
-        /// if node is local or master pack its global id, otherwise
-        /// dummy data
-        if (mesh.isLocalOrMasterNode(node))
-          index = global_nodes_ids(node);
-        else
-          index = UInt(-1);
-
-        buffer << index;
+        if(mesh.isPureGhostNode(node)) {
+          buffer << UInt(-1);
+        } else {
+          UInt index = global_nodes_ids(node);
+          buffer << index;
+        }
       } else {
+        UInt index;
         buffer >> index;
 
-        /// update slave nodes' index
-        if (index != UInt(-1) && mesh.isSlaveNode(node))
+        if (global_nodes_ids(node) == UInt(-1))
           global_nodes_ids(node) = index;
       }
     }

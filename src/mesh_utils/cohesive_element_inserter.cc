@@ -33,8 +33,8 @@
 #include "communicator.hh"
 #include "element_group.hh"
 #include "global_ids_updater.hh"
-#include "mesh_iterators.hh"
 #include "mesh_accessor.hh"
+#include "mesh_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <limits>
@@ -206,11 +206,15 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     node_event.getOldNodesList().push_back(new_pairs(n, 0));
   }
 
-  MeshAccessor mesh_accessor(mesh);
-  mesh_accessor.updateGlobalData(node_event, element_event);
-
   if (nb_new_elements > 0) {
     updateInsertionFacets();
+  }
+
+  MeshAccessor mesh_accessor(mesh);
+  std::tie(nb_new_nodes, nb_new_elements) =
+      mesh_accessor.updateGlobalData(node_event, element_event);
+
+  if (nb_new_elements > 0) {
     mesh.sendEvent(element_event);
     MeshUtils::resetFacetToDouble(mesh_facets);
   }

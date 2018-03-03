@@ -197,10 +197,6 @@ void MeshUtils::buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
   /// generate facets
   buildFacetsDimension(mesh, mesh_facets, false, from_dimension);
 
-  /// copy nodes type
-  MeshAccessor mesh_accessor_facets(mesh_facets);
-  mesh_accessor_facets.getNodesType().copy(mesh.getNodesType());
-
   /// sort facets and generate sub-facets
   for (UInt i = from_dimension - 1; i > to_dimension; --i) {
     buildFacetsDimension(mesh_facets, mesh_facets, false, i);
@@ -1940,63 +1936,6 @@ bool MeshUtils::findElementsAroundSubfacet(
 
   AKANTU_DEBUG_OUT();
   return facet_matched;
-}
-
-/* -------------------------------------------------------------------------- */
-UInt MeshUtils::updateLocalMasterGlobalConnectivity(Mesh & mesh,
-                                                    UInt local_nb_new_nodes) {
-  const auto & comm = mesh.getCommunicator();
-  Int rank = comm.whoAmI();
-  Int nb_proc = comm.getNbProc();
-  if (nb_proc == 1)
-    return local_nb_new_nodes;
-
-  /// resize global ids array
-  Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
-  UInt old_nb_nodes = mesh.getNbNodes() - local_nb_new_nodes;
-
-  nodes_global_ids.resize(mesh.getNbNodes());
-
-  /// compute the number of global nodes based on the number of old nodes
-  Matrix<UInt> local_master_nodes(2, nb_proc, 0);
-  for (UInt n = 0; n < old_nb_nodes; ++n)
-    if (mesh.isLocalOrMasterNode(n))
-      ++local_master_nodes(0, rank);
-
-  /// compute amount of local or master doubled nodes
-  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n)
-    if (mesh.isLocalOrMasterNode(n))
-      ++local_master_nodes(1, rank);
-
-  comm.allGather(local_master_nodes);
-
-  local_master_nodes = local_master_nodes.transpose();
-  UInt old_global_nodes =
-      std::accumulate(local_master_nodes(0).storage(),
-                      local_master_nodes(0).storage() + nb_proc, 0);
-
-  /// update global number of nodes
-  UInt total_nb_new_nodes = std::accumulate(
-      local_master_nodes(1).storage(), local_master_nodes(1).storage() + nb_proc, 0);
-
-  if (total_nb_new_nodes == 0)
-    return 0;
-
-  /// set global ids of local and master nodes
-  UInt starting_index =
-      std::accumulate(local_master_nodes(1).storage(),
-                      local_master_nodes(1).storage() + rank, old_global_nodes);
-
-  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n) {
-    if (mesh.isLocalOrMasterNode(n)) {
-      nodes_global_ids(n) = starting_index;
-      ++starting_index;
-    }
-  }
-
-  MeshAccessor mesh_accessor(mesh);
-  mesh_accessor.setNbGlobalNodes(old_global_nodes + total_nb_new_nodes);
-  return total_nb_new_nodes;
 }
 
 /* -------------------------------------------------------------------------- */

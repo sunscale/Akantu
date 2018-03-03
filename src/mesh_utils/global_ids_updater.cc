@@ -31,25 +31,79 @@
 /* -------------------------------------------------------------------------- */
 #include "global_ids_updater.hh"
 #include "element_synchronizer.hh"
+#include "mesh_accessor.hh"
 #include "mesh_utils.hh"
+/* -------------------------------------------------------------------------- */
+#include <numeric>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
-UInt GlobalIdsUpdater::updateGlobalIDs(UInt old_nb_nodes) {
-  UInt total_nb_new_nodes = this->updateGlobalIDsLocally(old_nb_nodes);
+UInt GlobalIdsUpdater::updateGlobalIDs(UInt local_nb_new_nodes) {
+  UInt total_nb_new_nodes = this->updateGlobalIDsLocally(local_nb_new_nodes);
 
   this->synchronizeGlobalIDs();
   return total_nb_new_nodes;
 }
 
-UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt old_nb_nodes) {
+UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
+  const auto & comm = mesh.getCommunicator();
+  Int rank = comm.whoAmI();
+  Int nb_proc = comm.getNbProc();
+  if (nb_proc == 1)
+    return local_nb_new_nodes;
+
+  /// resize global ids array
+  Array<UInt> & nodes_global_ids = mesh.getGlobalNodesIds();
+  UInt old_nb_nodes = mesh.getNbNodes() - local_nb_new_nodes;
+
+  nodes_global_ids.resize(mesh.getNbNodes(), -1);
+
+  /// compute the number of global nodes based on the number of old nodes
+  Matrix<UInt> local_master_nodes(2, nb_proc, 0);
+  for (UInt n = 0; n < old_nb_nodes; ++n)
+    if (mesh.isLocalOrMasterNode(n))
+      ++local_master_nodes(0, rank);
+
+  /// compute amount of local or master doubled nodes
+  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n)
+    if (mesh.isLocalOrMasterNode(n))
+      ++local_master_nodes(1, rank);
+
+  comm.allGather(local_master_nodes);
+
+  local_master_nodes = local_master_nodes.transpose();
+  UInt old_global_nodes =
+      std::accumulate(local_master_nodes(0).storage(),
+                      local_master_nodes(0).storage() + nb_proc, 0);
+
+  /// update global number of nodes
   UInt total_nb_new_nodes =
-      MeshUtils::updateLocalMasterGlobalConnectivity(mesh, old_nb_nodes);
+      std::accumulate(local_master_nodes(1).storage(),
+                      local_master_nodes(1).storage() + nb_proc, 0);
+
+  if (total_nb_new_nodes == 0)
+    return 0;
+
+  /// set global ids of local and master nodes
+  UInt starting_index =
+      std::accumulate(local_master_nodes(1).storage(),
+                      local_master_nodes(1).storage() + rank, old_global_nodes);
+
+  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n) {
+    if (mesh.isLocalOrMasterNode(n)) {
+      nodes_global_ids(n) = starting_index;
+      ++starting_index;
+    }
+  }
+
+  MeshAccessor mesh_accessor(mesh);
+  mesh_accessor.setNbGlobalNodes(old_global_nodes + total_nb_new_nodes);
   return total_nb_new_nodes;
 }
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
+  this->synchronizer.slaveReductionOnce(*this, _gst_giu_global_conn);
   this->synchronizer.synchronizeOnce(*this, _gst_giu_global_conn);
 }
 

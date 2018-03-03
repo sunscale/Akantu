@@ -53,6 +53,13 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
+protected:
+  void communicateOnce(
+      const std::tuple<CommunicationSendRecv, CommunicationSendRecv> &
+          send_recv_schemes,
+      const Tag::CommTags & comm_tag, DataAccessor<Entity> & data_accessor,
+      const SynchronizationTag & tag) const;
+
 public:
   /// synchronous synchronization without state
   virtual void slaveReductionOnceImpl(DataAccessor<Entity> & data_accessor,

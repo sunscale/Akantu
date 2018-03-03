@@ -53,11 +53,11 @@ public:
   /// new inserted nodes. It must be called after updating the node
   /// types. (It calls in sequence the functions
   /// updateGlobalIDsLocally and synchronizeGlobalIDs)
-  UInt updateGlobalIDs(UInt old_nb_nodes);
+  UInt updateGlobalIDs(UInt local_nb_new_nodes);
 
   /// function to update the global connectivity (only locally) of new
   /// inserted nodes. It must be called after updating the node types.
-  UInt updateGlobalIDsLocally(UInt old_nb_nodes);
+  UInt updateGlobalIDsLocally(UInt local_nb_new_nodes);
 
   /// function to synchronize the global connectivity of new inserted
   /// nodes among the processors. It must be called after updating the

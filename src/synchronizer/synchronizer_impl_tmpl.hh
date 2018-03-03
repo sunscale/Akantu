@@ -54,12 +54,17 @@ SynchronizerImpl<Entity>::SynchronizerImpl(const SynchronizerImpl & other,
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-void SynchronizerImpl<Entity>::slaveReductionOnceImpl(
-    DataAccessor<Entity> & data_accessor,
+void SynchronizerImpl<Entity>::communicateOnce(
+    const std::tuple<CommunicationSendRecv, CommunicationSendRecv> &
+        send_recv_schemes,
+    const Tag::CommTags & comm_tag, DataAccessor<Entity> & data_accessor,
     const SynchronizationTag & tag) const {
   // no need to synchronize
   if (this->nb_proc == 1)
     return;
+
+  CommunicationSendRecv send_dir, recv_dir;
+  std::tie(send_dir, recv_dir) = send_recv_schemes;
 
   using CommunicationRequests = std::vector<CommunicationRequest>;
   using CommunicationBuffers = std::map<UInt, CommunicationBuffer>;
@@ -73,77 +78,20 @@ void SynchronizerImpl<Entity>::slaveReductionOnceImpl(
       auto & proc = pair.first;
       const auto & scheme = pair.second;
 
+      if (scheme.size() == 0)
+        continue;
+
       auto & buffer = buffers[proc];
       auto buffer_size = data_accessor.getNbData(scheme, tag);
+
+      if (buffer_size == 0)
+        continue;
+
       buffer.resize(buffer_size);
 
-      if (sr == _send) {
+      if (sr == recv_dir) {
         requests.push_back(communicator.asyncReceive(
-            buffer, proc,
-            Tag::genTag(this->rank, 0, Tag::_REDUCE, this->hash_id)));
-      } else {
-        data_accessor.packData(buffer, scheme, tag);
-        send_requests.push_back(communicator.asyncSend(
-            buffer, proc, Tag::genTag(proc, 0, Tag::_REDUCE, this->hash_id)));
-      }
-    }
-  };
-
-  // post the receive requests
-  postComm(_recv, send_buffers, send_requests);
-
-  // post the send data requests
-  postComm(_send, recv_buffers, recv_requests);
-
-  // treat the receive requests
-  UInt request_ready;
-  while ((request_ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
-    auto & req = recv_requests[request_ready];
-    auto proc = req.getSource();
-
-    auto & buffer = recv_buffers[proc];
-    const auto & scheme = this->communications.getScheme(proc, _send);
-
-    data_accessor.unpackData(buffer, scheme, tag);
-
-    req.free();
-    recv_requests.erase(recv_requests.begin() + request_ready);
-  }
-
-  communicator.waitAll(send_requests);
-  communicator.freeCommunicationRequest(send_requests);
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Entity>
-void SynchronizerImpl<Entity>::synchronizeOnceImpl(
-    DataAccessor<Entity> & data_accessor,
-    const SynchronizationTag & tag) const {
-  // no need to synchronize
-  if (this->nb_proc == 1)
-    return;
-
-  using CommunicationRequests = std::vector<CommunicationRequest>;
-  using CommunicationBuffers = std::map<UInt, CommunicationBuffer>;
-
-  CommunicationRequests send_requests, recv_requests;
-  CommunicationBuffers send_buffers, recv_buffers;
-
-  auto postComm = [&](const CommunicationSendRecv & sr,
-                      CommunicationBuffers & buffers,
-                      CommunicationRequests & requests) -> void {
-    for (auto && pair : communications.iterateSchemes(sr)) {
-      auto & proc = pair.first;
-      const auto & scheme = pair.second;
-
-      auto & buffer = buffers[proc];
-      UInt buffer_size = data_accessor.getNbData(scheme, tag);
-      buffer.resize(buffer_size);
-
-      if (sr == _recv) {
-        requests.push_back(communicator.asyncReceive(
-            buffer, proc,
-            Tag::genTag(this->rank, 0, Tag::_SYNCHRONIZE, this->hash_id)));
+            buffer, proc, Tag::genTag(this->rank, 0, comm_tag, this->hash_id)));
       } else {
         data_accessor.packData(buffer, scheme, tag);
 
@@ -153,26 +101,25 @@ void SynchronizerImpl<Entity>::synchronizeOnceImpl(
                                 << tag);
 
         send_requests.push_back(communicator.asyncSend(
-            buffer, proc,
-            Tag::genTag(proc, 0, Tag::_SYNCHRONIZE, this->hash_id)));
+            buffer, proc, Tag::genTag(proc, 0, comm_tag, this->hash_id)));
       }
     }
   };
 
   // post the receive requests
-  postComm(_recv, recv_buffers, recv_requests);
+  postComm(recv_dir, recv_buffers, recv_requests);
 
   // post the send data requests
-  postComm(_send, send_buffers, send_requests);
+  postComm(send_dir, send_buffers, send_requests);
 
   // treat the receive requests
   UInt request_ready;
   while ((request_ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
-    CommunicationRequest & req = recv_requests[request_ready];
-    UInt proc = req.getSource();
+    auto & req = recv_requests[request_ready];
+    auto proc = req.getSource();
 
-    CommunicationBuffer & buffer = recv_buffers[proc];
-    const auto & scheme = this->communications.getScheme(proc, _recv);
+    auto & buffer = recv_buffers[proc];
+    const auto & scheme = this->communications.getScheme(proc, recv_dir);
 
     data_accessor.unpackData(buffer, scheme, tag);
 
@@ -187,6 +134,24 @@ void SynchronizerImpl<Entity>::synchronizeOnceImpl(
 
   communicator.waitAll(send_requests);
   communicator.freeCommunicationRequest(send_requests);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+void SynchronizerImpl<Entity>::slaveReductionOnceImpl(
+    DataAccessor<Entity> & data_accessor,
+    const SynchronizationTag & tag) const {
+  communicateOnce(std::make_tuple(_recv, _send), Tag::_REDUCE, data_accessor,
+                  tag);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+void SynchronizerImpl<Entity>::synchronizeOnceImpl(
+    DataAccessor<Entity> & data_accessor,
+    const SynchronizationTag & tag) const {
+  communicateOnce(std::make_tuple(_send, _recv), Tag::_SYNCHRONIZE,
+                  data_accessor, tag);
 }
 
 /* -------------------------------------------------------------------------- */
