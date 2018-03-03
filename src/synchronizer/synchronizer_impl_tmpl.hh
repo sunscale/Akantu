@@ -84,8 +84,7 @@ void SynchronizerImpl<Entity>::slaveReductionOnceImpl(
       } else {
         data_accessor.packData(buffer, scheme, tag);
         send_requests.push_back(communicator.asyncSend(
-            buffer, proc,
-            Tag::genTag(proc, 0, Tag::_REDUCE, this->hash_id)));
+            buffer, proc, Tag::genTag(proc, 0, Tag::_REDUCE, this->hash_id)));
       }
     }
   };
@@ -147,6 +146,12 @@ void SynchronizerImpl<Entity>::synchronizeOnceImpl(
             Tag::genTag(this->rank, 0, Tag::_SYNCHRONIZE, this->hash_id)));
       } else {
         data_accessor.packData(buffer, scheme, tag);
+
+        AKANTU_DEBUG_ASSERT(buffer.getPackedSize() == buffer.size(),
+                            "The data accessor did not pack all the date it "
+                            "promised  in communication with tag "
+                                << tag);
+
         send_requests.push_back(communicator.asyncSend(
             buffer, proc,
             Tag::genTag(proc, 0, Tag::_SYNCHRONIZE, this->hash_id)));
@@ -170,6 +175,11 @@ void SynchronizerImpl<Entity>::synchronizeOnceImpl(
     const auto & scheme = this->communications.getScheme(proc, _recv);
 
     data_accessor.unpackData(buffer, scheme, tag);
+
+    AKANTU_DEBUG_ASSERT(
+        buffer.getLeftToUnpack() == 0,
+        "The data accessor ignored some data in communication with tag "
+            << tag);
 
     req.free();
     recv_requests.erase(recv_requests.begin() + request_ready);
@@ -356,8 +366,7 @@ void SynchronizerImpl<Entity>::updateSchemes(Updater && scheme_updater) {
 }
 
 /* -------------------------------------------------------------------------- */
-template <class Entity>
-void SynchronizerImpl<Entity>::swapSendRecv() {
+template <class Entity> void SynchronizerImpl<Entity>::swapSendRecv() {
   communications.swapSendRecv();
 }
 

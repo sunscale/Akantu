@@ -43,9 +43,8 @@ void MaterialCohesive::computeNormal(const Array<Real> & /*position*/,
                                      GhostType /*ghost_type*/) {}
 
 /* -------------------------------------------------------------------------- */
-inline UInt
-MaterialCohesive::getNbDataForElements(const Array<Element> & elements,
-                                       SynchronizationTag tag) const {
+inline UInt MaterialCohesive::getNbData(const Array<Element> & elements,
+                                        const SynchronizationTag & tag) const {
 
   switch (tag) {
   case _gst_smm_stress: {
@@ -65,9 +64,9 @@ MaterialCohesive::getNbDataForElements(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void MaterialCohesive::packElementData(CommunicationBuffer & buffer,
-                                              const Array<Element> & elements,
-                                              SynchronizationTag tag) const {
+inline void MaterialCohesive::packData(CommunicationBuffer & buffer,
+                                       const Array<Element> & elements,
+                                       const SynchronizationTag & tag) const {
   switch (tag) {
   case _gst_smm_stress: {
     packElementDataHelper(tractions, buffer, elements, "CohesiveFEEngine");
@@ -83,9 +82,9 @@ inline void MaterialCohesive::packElementData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void MaterialCohesive::unpackElementData(CommunicationBuffer & buffer,
-                                                const Array<Element> & elements,
-                                                SynchronizationTag tag) {
+inline void MaterialCohesive::unpackData(CommunicationBuffer & buffer,
+                                         const Array<Element> & elements,
+                                         const SynchronizationTag & tag) {
   switch (tag) {
   case _gst_smm_stress: {
     unpackElementDataHelper(tractions, buffer, elements, "CohesiveFEEngine");

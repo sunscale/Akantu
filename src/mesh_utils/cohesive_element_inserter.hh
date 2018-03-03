@@ -76,9 +76,6 @@ public:
   void limitCheckFacets();
 
 protected:
-  /// init parallel variables
-  void initParallel(ElementSynchronizer & element_synchronizer);
-
   void parseSection(const ParserSection & section) override;
 
 protected:
@@ -87,16 +84,6 @@ protected:
 
   /// update facet insertion arrays after facets doubling
   void updateInsertionFacets();
-
-  /// update nodes type and global ids for parallel simulations
-  /// (locally, within each processor)
-  UInt updateGlobalIDs(NewNodesEvent & node_event);
-
-  /// synchronize the global ids among the processors in parallel simulations
-  void synchronizeGlobalIDs(NewNodesEvent & node_event);
-
-  /// update nodes type
-  void updateNodesType(Mesh & mesh, NewNodesEvent & node_event);
 
   /// functions for parallel communications
   inline UInt getNbData(const Array<Element> & elements,

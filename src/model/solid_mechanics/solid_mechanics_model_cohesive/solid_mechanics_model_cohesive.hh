@@ -220,6 +220,8 @@ protected:
   void updateCohesiveSynchronizers();
   void updateFacetStressSynchronizer();
 
+  friend class CohesiveElementInserter;
+
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
@@ -289,6 +291,8 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  friend class CohesiveMeshGlobalDataUpdater;
+
   /// @todo store tangents when normals are computed:
   ElementTypeMapArray<Real> tangents;
 

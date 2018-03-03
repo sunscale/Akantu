@@ -178,6 +178,7 @@ package_declare_sources(core
   mesh/mesh_accessor.hh
   mesh/mesh_events.hh
   mesh/mesh_filter.hh
+  mesh/mesh_global_data_updater.hh
   mesh/mesh_data.cc
   mesh/mesh_data.hh
   mesh/mesh_data_tmpl.hh

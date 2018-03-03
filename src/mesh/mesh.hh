@@ -55,6 +55,7 @@ namespace akantu {
 class Communicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
+class MeshGlobalDataUpdater;
 } // namespace akantu
 
 namespace akantu {
@@ -199,6 +200,12 @@ private:
   /// fills the nodes_to_elements structure
   void fillNodesToElements();
 
+  /// update the global ids, nodes type, ...
+  std::tuple<UInt, UInt> updateGlobalData(NewNodesEvent & nodes_event,
+                                          NewElementsEvent & elements_event);
+
+  void registerGlobalDataUpdater(
+      std::unique_ptr<MeshGlobalDataUpdater> && global_data_updater);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -237,10 +244,10 @@ public:
   inline UInt getNbGlobalNodes() const;
 
   /// get the nodes type Array
-  AKANTU_GET_MACRO(NodesType, nodes_type, const Array<NodeType> &);
+  AKANTU_GET_MACRO(NodesType, *nodes_type, const Array<NodeType> &);
 
 protected:
-  AKANTU_GET_MACRO_NOT_CONST(NodesType, nodes_type, Array<NodeType> &);
+  AKANTU_GET_MACRO_NOT_CONST(NodesType, *nodes_type, Array<NodeType> &);
 
 public:
   inline NodeType getNodeType(UInt local_id) const;
@@ -520,11 +527,11 @@ private:
   std::shared_ptr<Array<Real>> nodes;
 
   /// global node ids
-  std::unique_ptr<Array<UInt>> nodes_global_ids;
+  std::shared_ptr<Array<UInt>> nodes_global_ids;
 
   /// node type,  -3 pure ghost, -2  master for the  node, -1 normal node,  i in
   /// [0-N] slave node and master is proc i
-  Array<NodeType> nodes_type;
+  std::shared_ptr<Array<NodeType>> nodes_type;
 
   /// global number of nodes;
   UInt nb_global_nodes{0};
@@ -538,19 +545,8 @@ private:
   /// map to normals for all class of elements present in this mesh
   ElementTypeMapArray<Real> normals;
 
-  /// list of all existing types in the mesh
-  // ConnectivityTypeList type_set;
-
   /// the spatial dimension of this mesh
   UInt spatial_dimension{0};
-
-  /// types offsets
-  // Array<UInt> types_offsets;
-
-  // /// list of all existing types in the mesh
-  // ConnectivityTypeList ghost_type_set;
-  // /// ghost types offsets
-  // Array<UInt> ghost_types_offsets;
 
   /// min of coordinates
   Vector<Real> lower_bounds;
@@ -589,6 +585,9 @@ private:
   std::unique_ptr<NodeSynchronizer> node_synchronizer;
 
   using NodesToElements = std::vector<std::unique_ptr<std::set<Element>>>;
+
+  /// class to update global data using external knowledge
+  std::unique_ptr<MeshGlobalDataUpdater> global_data_updater;
 
   /// This info is stored to simplify the dynamic changes
   NodesToElements nodes_to_elements;

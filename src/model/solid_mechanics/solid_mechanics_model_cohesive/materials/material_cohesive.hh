@@ -116,16 +116,16 @@ protected:
                                GhostType ghost_type = _not_ghost) = 0;
 
   /// parallelism functions
-  inline UInt getNbDataForElements(const Array<Element> & elements,
-                                   SynchronizationTag tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline void packElementData(CommunicationBuffer & buffer,
-                              const Array<Element> & elements,
-                              SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline void unpackElementData(CommunicationBuffer & buffer,
-                                const Array<Element> & elements,
-                                SynchronizationTag tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
 protected:
   void updateEnergies(ElementType el_type, GhostType ghost_type) override;

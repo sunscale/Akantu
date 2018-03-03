@@ -37,6 +37,7 @@
 #include "element_class.hh"
 #include "group_manager_inline_impl.cc"
 #include "mesh.hh"
+#include "mesh_global_data_updater.hh"
 #include "mesh_io.hh"
 #include "mesh_iterators.hh"
 #include "mesh_utils.hh"
@@ -63,7 +64,6 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
            Communicator & communicator)
     : Memory(id, memory_id),
       GroupManager(*this, id + ":group_manager", memory_id),
-      nodes_type(0, 1, id + ":nodes_type"),
       connectivities("connectivities", id, memory_id),
       ghosts_counters("ghosts_counters", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
@@ -130,6 +130,8 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
 
     mesh_facets->mesh_parent = this;
     mesh_facets->is_mesh_facets = true;
+    mesh_facets->nodes_type = this->nodes_type;
+    mesh_facets->nodes_global_ids = this->nodes_global_ids;
 
     MeshUtils::buildAllFacets(*this, *mesh_facets, 0);
 
@@ -526,6 +528,24 @@ void Mesh::fillNodesToElements() {
       }
     }
   }
+}
+
+/* -------------------------------------------------------------------------- */
+std::tuple<UInt, UInt>
+Mesh::updateGlobalData(NewNodesEvent & nodes_event,
+                       NewElementsEvent & elements_event) {
+  if (global_data_updater)
+    return this->global_data_updater->updateData(nodes_event, elements_event);
+  else {
+    return std::make_tuple(nodes_event.getList().size(),
+                           elements_event.getList().size());
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void Mesh::registerGlobalDataUpdater(
+    std::unique_ptr<MeshGlobalDataUpdater> && global_data_updater) {
+  this->global_data_updater = std::move(global_data_updater);
 }
 
 /* -------------------------------------------------------------------------- */

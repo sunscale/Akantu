@@ -34,6 +34,7 @@
 #include "element_group.hh"
 #include "global_ids_updater.hh"
 #include "mesh_iterators.hh"
+#include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <limits>
@@ -205,34 +206,17 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
     node_event.getOldNodesList().push_back(new_pairs(n, 0));
   }
 
-  if (mesh.isDistributed()) {
-
-    /// update nodes type
-    updateNodesType(mesh, node_event);
-    updateNodesType(mesh_facets, node_event);
-
-    /// update global ids
-    nb_new_nodes = this->updateGlobalIDs(node_event);
-
-    /// compute total number of new elements
-    const auto & comm = mesh.getCommunicator();
-    comm.allReduce(nb_new_elements, SynchronizerOperation::_sum);
-  }
-
-  if (nb_new_nodes > 0)
-    mesh.sendEvent(node_event);
+  MeshAccessor mesh_accessor(mesh);
+  mesh_accessor.updateGlobalData(node_event, element_event);
 
   if (nb_new_elements > 0) {
     updateInsertionFacets();
-    // mesh.updateTypesOffsets(_not_ghost);
     mesh.sendEvent(element_event);
     MeshUtils::resetFacetToDouble(mesh_facets);
   }
 
-  if (mesh.isDistributed()) {
-    /// update global ids
-    this->synchronizeGlobalIDs(node_event);
-  }
+  if (nb_new_nodes > 0)
+    mesh.sendEvent(node_event);
 
   return nb_new_elements;
 }

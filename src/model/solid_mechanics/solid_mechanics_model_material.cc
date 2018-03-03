@@ -140,6 +140,7 @@ void SolidMechanicsModel::assignMaterialToElements(
       },
       _element_filter = filter, _ghost_type = _not_ghost);
 
+
   if (non_local_manager)
     non_local_manager->synchronize(*this, _gst_material_id);
 
@@ -150,6 +151,9 @@ void SolidMechanicsModel::assignMaterialToElements(
                      material_local_numbering(element) = index;
                    },
                    _element_filter = filter, _ghost_type = _not_ghost);
+
+  // synchronize the element material arrays
+  this->synchronize(_gst_material_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -160,8 +164,6 @@ void SolidMechanicsModel::initMaterials() {
     instantiateMaterials();
 
   this->assignMaterialToElements();
-  // synchronize the element material arrays
-  this->synchronize(_gst_material_id);
 
   for (auto & material : materials) {
     /// init internals properties

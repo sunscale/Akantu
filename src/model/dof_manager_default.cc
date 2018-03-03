@@ -213,9 +213,9 @@ public:
       auto it = dofs_per_node.find(node);
       if (tag == _gst_size) {
         if (it != dofs_per_node.end()) {
-          buffer << it->second.size();
+          buffer << size_type(it->second.size());
         } else {
-          buffer << 0;
+          buffer << size_type(0);
         }
       } else if (tag == _gst_update) {
         if (it != dofs_per_node.end())
@@ -438,14 +438,6 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
 
   AKANTU_DEBUG_OUT();
 }
-
-/* -------------------------------------------------------------------------- */
-// void DOFManagerDefault::getEquationsNumbers(const ID & dof_id,
-//                                             Array<UInt> & equation_numbers) {
-//   AKANTU_DEBUG_IN();
-//   this->getArrayPerDOFs(dof_id, this->global_equation_number,
-//   equation_numbers); AKANTU_DEBUG_OUT();
-// }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,

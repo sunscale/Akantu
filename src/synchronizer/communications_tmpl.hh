@@ -451,7 +451,7 @@ bool Communications<Entity>::hasCommunicationSize(
 
 template <class Entity> void Communications<Entity>::invalidateSizes() {
   for (auto && pair : comm_size_computed) {
-    pair.second = true;
+    pair.second = false;
   }
 }
 

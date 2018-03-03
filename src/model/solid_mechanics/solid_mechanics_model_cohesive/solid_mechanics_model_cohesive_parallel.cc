@@ -98,7 +98,7 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
       const auto & cohesive_element = connected_elements[1];
 
       if (cohesive_element == ElementNull or
-          cohesive_element.kind() == _ek_cohesive)
+          cohesive_element.kind() != _ek_cohesive)
         continue;
 
       auto && cohesive_type = FEEngine::getCohesiveElementType(facet.type);
@@ -115,38 +115,40 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
     }
   });
 
+  if (not facet_stress_synchronizer)
+    return;
+
+  const auto & element_synchronizer = mesh.getElementSynchronizer();
   const auto & comm = mesh.getCommunicator();
   auto && my_rank = comm.whoAmI();
 
   // update the facet stress synchronizer
-  if (facet_stress_synchronizer)
-    facet_stress_synchronizer->updateSchemes([&](auto && scheme, auto && proc,
-                                                 auto && /*direction*/) {
-      auto it_element = scheme.begin();
-      for (auto && element : scheme) {
-        auto && facet_check = inserter->getCheckFacets(
+  facet_stress_synchronizer->updateSchemes([&](auto && scheme, auto && proc,
+                                               auto && /*direction*/) {
+    auto it_element = scheme.begin();
+    for (auto && element : scheme) {
+      auto && facet_check = inserter->getCheckFacets(
+          element.type, element.ghost_type)(element.element); // slow access
+                                                              // here
+
+      if (facet_check) {
+        auto && connected_elements = mesh_facets.getElementToSubelement(
             element.type, element.ghost_type)(element.element); // slow access
                                                                 // here
+        auto && rank_left = element_synchronizer.getRank(connected_elements[0]);
+        auto && rank_right = element_synchronizer.getRank(connected_elements[1]);
 
-        if (facet_check) {
-          auto && connected_elements = mesh_facets.getElementToSubelement(
-              element.type, element.ghost_type)(element.element); // slow access
-                                                                  // here
-          auto && rank_left = facet_synchronizer.getRank(connected_elements[0]);
-          auto && rank_right =
-              facet_synchronizer.getRank(connected_elements[1]);
-
-          // keep element if the element is still a boundary element between two
-          // processors
-          if ((rank_left == Int(proc) and rank_right == my_rank) or
-              (rank_left == my_rank and rank_right == Int(proc))) {
-            *it_element = element;
-            ++it_element;
-          }
+        // keep element if the element is still a boundary element between two
+        // processors
+        if ((rank_left == Int(proc) and rank_right == my_rank) or
+            (rank_left == my_rank and rank_right == Int(proc))) {
+          *it_element = element;
+          ++it_element;
         }
       }
-      scheme.resize(it_element - scheme.begin());
-    });
+    }
+    scheme.resize(it_element - scheme.begin());
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -476,8 +478,18 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
   if (elements(0).kind() == _ek_cohesive) {
     switch (tag) {
     case _gst_material_id: {
-      unpackElementalDataHelper(material_index, buffer, elements, false,
-                                getFEEngine("CohesiveFEEngine"));
+      for (auto && element : elements) {
+        UInt recv_mat_index;
+        buffer >> recv_mat_index;
+        UInt & mat_index = material_index(element);
+        if (mat_index != UInt(-1))
+          continue;
+
+        // add ghosts element to the correct material
+        mat_index = recv_mat_index;
+        UInt index = materials[mat_index]->addElement(element);
+        material_local_numbering(element) = index;
+      }
       break;
     }
     case _gst_smm_boundary: {

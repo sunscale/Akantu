@@ -39,6 +39,7 @@
 namespace akantu {
 class NodeSynchronizer;
 class ElementSynchronizer;
+class MeshGlobalDataUpdater;
 } // namespace akantu
 
 namespace akantu {
@@ -127,6 +128,18 @@ public:
 
   /// get the element synchonizer
   auto & getElementSynchronizer() { return *this->_mesh.element_synchronizer; }
+
+  decltype(auto) updateGlobalData(NewNodesEvent & nodes_event,
+                                  NewElementsEvent & elements_event) {
+    return this->_mesh.updateGlobalData(nodes_event, elements_event);
+  }
+
+  void registerGlobalDataUpdater(
+      std::unique_ptr<MeshGlobalDataUpdater> && global_data_updater) {
+    this->_mesh.registerGlobalDataUpdater(
+        std::forward<std::unique_ptr<MeshGlobalDataUpdater>>(
+            global_data_updater));
+  }
 
 private:
   Mesh & _mesh;

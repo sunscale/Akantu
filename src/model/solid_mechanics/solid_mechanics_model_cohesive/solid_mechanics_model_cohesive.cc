@@ -38,11 +38,14 @@
 #include "element_synchronizer.hh"
 #include "facet_synchronizer.hh"
 #include "fe_engine_template.hh"
+#include "global_ids_updater.hh"
 #include "integrator_gauss.hh"
 #include "material_cohesive.hh"
+#include "mesh_accessor.hh"
+#include "mesh_global_data_updater.hh"
 #include "parser.hh"
 #include "shape_cohesive.hh"
-
+/* -------------------------------------------------------------------------- */
 #include "dumpable_inline_impl.hh"
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_iohelper_paraview.hh"
@@ -52,6 +55,56 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
+
+class CohesiveMeshGlobalDataUpdater : public MeshGlobalDataUpdater {
+public:
+  CohesiveMeshGlobalDataUpdater(SolidMechanicsModelCohesive & model)
+      : model(model), mesh(model.getMesh()),
+        global_ids_updater(model.getMesh(), *model.cohesive_synchronizer) {}
+
+  /* ------------------------------------------------------------------------ */
+  std::tuple<UInt, UInt>
+  updateData(NewNodesEvent & nodes_event,
+             NewElementsEvent & elements_event) override {
+    auto cohesive_nodes_event =
+        dynamic_cast<CohesiveNewNodesEvent *>(&nodes_event);
+    if (not cohesive_nodes_event)
+      return std::make_tuple(nodes_event.getList().size(),
+                             elements_event.getList().size());
+
+    /// update nodes type
+    auto & new_nodes = cohesive_nodes_event->getList();
+    auto & old_nodes = cohesive_nodes_event->getOldNodesList();
+
+    UInt local_nb_new_nodes = new_nodes.size();
+
+    MeshAccessor mesh_accessor(mesh);
+    auto & nodes_type = mesh_accessor.getNodesType();
+    UInt nb_old_nodes = nodes_type.size();
+    nodes_type.resize(nb_old_nodes + local_nb_new_nodes);
+
+    for (auto && data : zip(old_nodes, new_nodes)) {
+      UInt old_node, new_node;
+      std::tie(old_node, new_node) = data;
+      nodes_type(new_node) = nodes_type(old_node);
+    }
+
+    model.updateCohesiveSynchronizers();
+
+    UInt nb_new_nodes = global_ids_updater.updateGlobalIDs(new_nodes.size());
+
+    Vector<UInt> nb_new_stuff = {nb_new_nodes, elements_event.getList().size()};
+    const auto & comm = mesh.getCommunicator();
+    comm.allReduce(nb_new_stuff, SynchronizerOperation::_sum);
+
+    return std::make_tuple(nb_new_nodes, nb_new_stuff(1));
+  }
+
+private:
+  SolidMechanicsModelCohesive & model;
+  Mesh & mesh;
+  GlobalIdsUpdater global_ids_updater;
+};
 
 /* -------------------------------------------------------------------------- */
 SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
@@ -144,7 +197,9 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
                                  _gst_smmc_facets_stress);
     }
 
-    inserter->initParallel(*cohesive_synchronizer);
+    MeshAccessor mesh_accessor(mesh);
+    mesh_accessor.registerGlobalDataUpdater(
+        std::make_unique<CohesiveMeshGlobalDataUpdater>(*this));
   }
 
   ParserSection section;
@@ -539,19 +594,10 @@ void SolidMechanicsModelCohesive::onElementsAdded(
     const Array<Element> & element_list, const NewElementsEvent & event) {
   AKANTU_DEBUG_IN();
 
-  updateCohesiveSynchronizers();
-
   SolidMechanicsModel::onElementsAdded(element_list, event);
-
-  if (cohesive_synchronizer != nullptr)
-    cohesive_synchronizer->computeAllBufferSizes(*this);
 
   if (is_extrinsic)
     resizeFacetStress();
-
-  ///  if (method != _explicit_lumped_mass) {
-  ///    this->initSolver();
-  ///  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -561,10 +607,6 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
                                                const NewNodesEvent & event) {
   AKANTU_DEBUG_IN();
 
-  // Array<UInt> nodes_list(nb_new_nodes);
-
-  // for (UInt n = 0; n < nb_new_nodes; ++n)
-  //   nodes_list(n) = doubled_nodes(n, 1);
   SolidMechanicsModel::onNodesAdded(new_nodes, event);
 
   UInt new_node, old_node;
@@ -598,15 +640,6 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
       if (previous_displacement)
         copy(*previous_displacement);
     }
-
-    // if (this->getDOFManager().hasMatrix("M")) {
-    //   this->assembleMass(old_nodes);
-    // }
-
-    // if (this->getDOFManager().hasLumpedMatrix("M")) {
-    //   this->assembleMassLumped(old_nodes);
-    // }
-
   } catch (std::bad_cast &) {
   }
 
