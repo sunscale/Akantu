@@ -112,7 +112,7 @@ public:
       nb_steps = 5000;
     } else if (dim == 3) {
       this->model->setTimeStep(stable_time_step * 0.05);
-      nb_steps = 2000;
+      nb_steps = 7000;
     }
 
     auto facet_type = mesh->getFacetType(this->cohesive_type);
@@ -238,7 +238,7 @@ public:
     strain *= sigma_c / E;
 
     this->setInitialCondition((1 - 1e-3) * strain);
-    this->steps(4e-3 * strain);
+    this->steps(1e-2 * strain);
   }
 
   void testModeII() {
@@ -276,7 +276,7 @@ public:
     }
     strain *= 2 * beta * beta * sigma_c / E;
 
-    nb_steps *= 2;
+    nb_steps *= 5;
 
     this->setInitialCondition(0.999 * strain);
     this->steps(0.005 * strain);
