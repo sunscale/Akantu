@@ -62,7 +62,7 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
   setParam("sigma_y", sigma_0);
   setParam("h", h);
 
-  Matrix<Real> rotation_matrix = getRandomRotation3d();
+  auto rotation_matrix = getRandomRotation();
 
   Real max_strain = 10.;
   Real strain_steps = 100;
@@ -70,13 +70,13 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
   std::vector<double> steps(strain_steps);
   std::iota(steps.begin(), steps.end(), 0.);
 
-  Matrix<Real> previous_grad_u_rot = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> previous_sigma = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> previous_sigma_rot = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> inelastic_strain_rot = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> inelastic_strain = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> previous_inelastic_strain = Matrix<Real>(3, 3, 0.);
-  Matrix<Real> previous_inelastic_strain_rot = Matrix<Real>(3, 3, 0.);
+  Matrix<Real> previous_grad_u_rot(3, 3, 0.);
+  Matrix<Real> previous_sigma(3, 3, 0.);
+  Matrix<Real> previous_sigma_rot(3, 3, 0.);
+  Matrix<Real> inelastic_strain_rot(3, 3, 0.);
+  Matrix<Real> inelastic_strain(3, 3, 0.);
+  Matrix<Real> previous_inelastic_strain(3, 3, 0.);
+  Matrix<Real> previous_inelastic_strain_rot(3, 3, 0.);
   Matrix<Real> sigma_rot(3, 3, 0.);
   Real iso_hardening = 0.;
   Real previous_iso_hardening = 0.;

@@ -44,35 +44,49 @@ template <typename T> class FriendMaterial : public T {
 public:
   ~FriendMaterial() = default;
 
+  FriendMaterial(SolidMechanicsModel & model, const ID & id = "material")
+      : T(model, id) {
+    gen.seed(::testing::GTEST_FLAG(random_seed));
+  }
+
   virtual void testComputeStress() { AKANTU_TO_IMPLEMENT(); };
   virtual void testComputeTangentModuli() { AKANTU_TO_IMPLEMENT(); };
   virtual void testEnergyDensity() { AKANTU_TO_IMPLEMENT(); };
   virtual void testCelerity() { AKANTU_TO_IMPLEMENT(); }
 
-  static inline Matrix<Real> getDeviatoricStrain(Real intensity);
-  static inline Matrix<Real> getHydrostaticStrain(Real intensity);
-  static inline Matrix<Real> getComposedStrain(Real intensity);
+  virtual void setParams() {}
+  virtual void SetUp() {
+    this->setParams();
+    this->initMaterial();
+  }
 
-  static inline const Matrix<Real>
-  reverseRotation(Matrix<Real> mat, Matrix<Real> rotation_matrix) {
+  virtual void TearDown() { }
+
+  inline Matrix<Real> getDeviatoricStrain(Real intensity);
+  inline Matrix<Real> getHydrostaticStrain(Real intensity);
+  inline Matrix<Real> getComposedStrain(Real intensity);
+
+  inline const Matrix<Real> reverseRotation(Matrix<Real> mat,
+                                            Matrix<Real> rotation_matrix) {
     Matrix<Real> R = rotation_matrix;
     Matrix<Real> m2 = mat * R;
     Matrix<Real> m1 = R.transpose();
     return m1 * m2;
   };
 
-  static inline const Matrix<Real>
-  applyRotation(Matrix<Real> mat, const Matrix<Real> rotation_matrix) {
+  inline const Matrix<Real> applyRotation(Matrix<Real> mat,
+                                          const Matrix<Real> rotation_matrix) {
     Matrix<Real> R = rotation_matrix;
     Matrix<Real> m2 = mat * R.transpose();
     Matrix<Real> m1 = R;
     return m1 * m2;
   };
 
-  static inline Matrix<Real> getRandomRotation3d();
-  static inline Matrix<Real> getRandomRotation2d();
+  inline Vector<Real> getRandomVector();
+  inline Matrix<Real> getRandomRotation();
 
-  using T::T;
+protected:
+  std::mt19937 gen;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -102,71 +116,57 @@ Matrix<Real> FriendMaterial<T>::getComposedStrain(Real intensity) {
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation3d() {
-  constexpr UInt Dim = 3;
-  // Seed with a real random value, if available
-  std::random_device rd;
-  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+template <typename T> Vector<Real> FriendMaterial<T>::getRandomVector() {
+  auto dim = this->spatial_dimension;
   std::uniform_real_distribution<Real> dis;
-
-  Vector<Real> v1(Dim);
-  Vector<Real> v2(Dim);
-  Vector<Real> v3(Dim);
-
-  for (UInt i = 0; i < Dim; ++i) {
-    v1(i) = dis(gen);
-    v2(i) = dis(gen);
+  Vector<Real> vector(dim, 0.);
+  while(vector.norm() < 1e-9) {
+    for (auto s : arange(dim))
+      vector(s) = dis(gen);
   }
-
-  v1.normalize();
-
-  auto d = v1.dot(v2);
-  v2 -= v1 * d;
-  v2.normalize();
-
-  v3.crossProduct(v1, v2);
-
-  Matrix<Real> mat(Dim, Dim);
-  for (UInt i = 0; i < Dim; ++i) {
-    mat(0, i) = v1[i];
-    mat(1, i) = v2[i];
-    mat(2, i) = v3[i];
-  }
-
-  return mat;
+  return vector;
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation2d() {
-  constexpr UInt Dim = 2;
-  // Seed with a real random value, if available
-  std::random_device rd;
-  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> dis;
+template <typename T> Matrix<Real> FriendMaterial<T>::getRandomRotation() {
+  auto dim = this->spatial_dimension;
 
-  // v1 and v2 are such that they form a right-hand basis with prescribed v3,
-  // it's need (at least) for 2d linear elastic anisotropic and (orthotropic)
-  // materials to rotate the tangent stiffness
+  Matrix<Real> rotation(dim, dim);
+  Vector<Real> v1 = rotation(0);
+  v1 = getRandomVector().normalize();
+  if (dim == 2) {
+    Vector<Real> v1_ = {v1(0), v1(1), 0};
+    Vector<Real> v2_(3);
+    Vector<Real> v3_ = {0, 0, 1};
+    v2_.crossProduct(v3_, v1_);
 
-  Vector<Real> v1(3);
-  Vector<Real> v2(3);
-  Vector<Real> v3 = {0, 0, 1};
-
-  for (UInt i = 0; i < Dim; ++i) {
-    v1(i) = dis(gen);
-    // v2(i) = dis(gen);
+    Vector<Real> v2 = rotation(1);
+    v2(0) = v2_(0);
+    v2(1) = v2_(1);
   }
 
-  v1.normalize();
-  v2.crossProduct(v3, v1);
+  if (dim == 3) {
+    auto v2 = getRandomVector();
+    v2  = (v2 - v2.dot(v1) * v1).normalize();
 
-  Matrix<Real> mat(Dim, Dim);
-  for (UInt i = 0; i < Dim; ++i) {
-    mat(0, i) = v1[i];
-    mat(1, i) = v2[i];
+    Vector<Real> v3(3);
+    v3.crossProduct(v1, v2);
+
+    rotation(1) = v2;
+    rotation(2) = v3;
   }
 
-  return mat;
+//#define debug_
+#if defined(debug_)
+  if (dim == 2)
+    rotation = Matrix<Real>{{1., 0.}, {0., 1.}};
+  if (dim == 3)
+    rotation = Matrix<Real>{{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
+#endif
+
+  rotation = rotation.transpose();
+
+  return rotation;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -180,9 +180,11 @@ public:
     mesh = std::make_unique<Mesh>(spatial_dimension);
     model = std::make_unique<Model>(*mesh);
     material = std::make_unique<friend_class>(*model);
+    material->SetUp();
   }
 
   void TearDown() override {
+    material->TearDown();
     material.reset(nullptr);
     model.reset(nullptr);
     mesh.reset(nullptr);
