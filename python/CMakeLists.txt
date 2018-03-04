@@ -243,8 +243,13 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
   set(_compile_flags "${_compile_flags} ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${_config}}")
   separate_arguments(_compile_flags)
   get_property(_cxx_standard TARGET akantu PROPERTY CXX_STANDARD)
-  set(_flags ${_compile_flags} -std=c++${_cxx_standard}
-    -Wno-maybe-uninitialized -Wno-unused-parameter)
+
+  set(_flags ${_compile_flags} -std=c++${_cxx_standard} -Wno-unused-parameter)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    list(APPEND -Wno-uninitialized -Wno-unused-command-line-argument)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    list(APPEND -Wno-maybe-uninitialized)
+  endif()
 
   set(_quiet)
   if(NOT CMAKE_VERBOSE_MAKEFILE)

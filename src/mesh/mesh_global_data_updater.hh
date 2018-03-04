@@ -37,6 +37,8 @@ class NewElementsEvent;
 
 class MeshGlobalDataUpdater {
 public:
+  virtual ~MeshGlobalDataUpdater() = default;
+
   virtual std::tuple<UInt, UInt>
   updateData(NewNodesEvent & /*nodes_event*/,
              NewElementsEvent & /*elements_event*/) { return std::make_tuple(0,0); }
