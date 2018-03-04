@@ -190,17 +190,10 @@ void MaterialCohesiveBilinear<spatial_dimension>::computeTraction(
                                                              ghost_type);
 
   // adjust damage
-  Array<Real>::scalar_iterator delta_c_it =
-      this->delta_c_eff(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator delta_max_it =
-      this->delta_max(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator damage_it =
-      this->damage(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator damage_end =
-      this->damage(el_type, ghost_type).end();
+  auto delta_c_it = this->delta_c_eff(el_type, ghost_type).begin();
+  auto delta_max_it = this->delta_max(el_type, ghost_type).begin();
+  auto damage_it = this->damage(el_type, ghost_type).begin();
+  auto damage_end = this->damage(el_type, ghost_type).end();
 
   for (; damage_it != damage_end; ++damage_it, ++delta_max_it, ++delta_c_it) {
     *damage_it =

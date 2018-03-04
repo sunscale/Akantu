@@ -39,13 +39,13 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeI) {
   this->analysis_method = _explicit_lumped_mass;
 
   this->testModeI();
-
   this->checkInsertion();
 
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  this->checkDissipated(G_c);
+  if(this->dim != 3)
+    this->checkDissipated(G_c);
 }
 
 TYPED_TEST(TestSMMCFixture, ExtrinsicModeII) {
@@ -54,13 +54,13 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeII) {
   this->analysis_method = _explicit_lumped_mass;
 
   this->testModeII();
-
   this->checkInsertion();
 
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  this->checkDissipated(G_c);
+  if(this->dim != 3)
+    this->checkDissipated(G_c);
 }
 
 TYPED_TEST(TestSMMCFixture, IntrinsicModeI) {
@@ -75,7 +75,8 @@ TYPED_TEST(TestSMMCFixture, IntrinsicModeI) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  this->checkDissipated(G_c);
+  if(this->dim != 3)
+    this->checkDissipated(G_c);
 }
 
 TYPED_TEST(TestSMMCFixture, IntrinsicModeII) {
@@ -90,5 +91,6 @@ TYPED_TEST(TestSMMCFixture, IntrinsicModeII) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  this->checkDissipated(G_c);
+  if(this->dim != 3)
+    this->checkDissipated(G_c);
 }

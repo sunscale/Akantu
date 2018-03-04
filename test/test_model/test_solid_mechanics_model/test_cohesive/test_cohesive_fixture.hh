@@ -27,7 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "communicator.hh"
 #include "solid_mechanics_model_cohesive.hh"
@@ -47,11 +46,12 @@ using analysis_method_t = std::integral_constant<::akantu::AnalysisMethod, t>;
 
 class StrainIncrement : public BC::Functor {
 public:
-  StrainIncrement(const Matrix<Real> & strain, BC::Axis dir) : strain_inc(strain), dir(dir) {}
+  StrainIncrement(const Matrix<Real> & strain, BC::Axis dir)
+      : strain_inc(strain), dir(dir) {}
 
   void operator()(UInt /*node*/, Vector<bool> & flags, Vector<Real> & primal,
                   const Vector<Real> & coord) const {
-    if(std::abs(coord(dir)) < 1e-8) {
+    if (std::abs(coord(dir)) < 1e-8) {
       return;
     }
 
@@ -101,16 +101,18 @@ public:
                     _is_extrinsic = this->is_extrinsic);
 
     auto stable_time_step = this->model->getStableTimeStep();
-    this->model->setTimeStep(std::min(4e-6, stable_time_step * 0.1));
-    if ((stable_time_step *.1) < 4e-6) {
-      nb_steps *= 3 * 4e-6 / (stable_time_step * .1) ;
-      std::cout << stable_time_step << " " << nb_steps << std::endl;
-    }
-
-
+    this->model->setTimeStep(stable_time_step * 0.01);
     if (dim == 1) {
+      nb_steps = 300;
       surface = 1;
+      group_size = 1;
       return;
+    } else if (dim == 2) {
+      this->model->setTimeStep(stable_time_step * 0.01);
+      nb_steps = 5000;
+    } else if (dim == 3) {
+      this->model->setTimeStep(stable_time_step * 0.05);
+      nb_steps = 2000;
     }
 
     auto facet_type = mesh->getFacetType(this->cohesive_type);
@@ -123,6 +125,10 @@ public:
 
     surface = fe_engine.integrate(ones, facet_type, _not_ghost, group);
     mesh->getCommunicator().allReduce(surface, SynchronizerOperation::_sum);
+
+    group_size = group.size();
+
+    mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
 
 #define debug_ 0
 
@@ -153,10 +159,24 @@ public:
     }
   }
 
+  bool checkDamaged() {
+    UInt nb_damaged = 0;
+    auto & damage =
+        model->getMaterial("insertion").getArray<Real>("damage", cohesive_type);
+    for (auto d : damage) {
+      if (d >= .99)
+        ++nb_damaged;
+    }
+
+    return (nb_damaged == group_size);
+  }
+
   void steps(const Matrix<Real> & strain) {
     StrainIncrement functor((1. / nb_steps) * strain, this->dim == 1 ? _x : _y);
     this->model->solveStep();
-    for (auto _[[gnu::unused]] : arange(nb_steps)) {
+    UInt s = 0;
+    // for (auto _[[gnu::unused]] : arange(nb_steps)) {
+    while (not checkDamaged() and s < nb_steps) {
       this->model->applyBC(functor, "loading");
       this->model->applyBC(functor, "fixed");
       if (this->is_extrinsic)
@@ -167,6 +187,13 @@ public:
       this->model->dump();
       this->model->dump("cohesive elements");
 #endif
+      ++s;
+    }
+
+    for (auto _[[gnu::unused]] : arange(300)) {
+      this->model->applyBC(functor, "loading");
+      this->model->applyBC(functor, "fixed");
+      this->model->solveStep();
     }
   }
 
@@ -175,25 +202,21 @@ public:
     mesh->getCommunicator().allReduce(nb_cohesive_element,
                                       SynchronizerOperation::_sum);
 
-    auto facet_type = this->mesh->getFacetType(this->cohesive_type);
-    const auto & group =
-        this->mesh->getElementGroup("insertion").getElements(facet_type);
-    auto group_size = group.size();
-
-    mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
-
     EXPECT_EQ(nb_cohesive_element, group_size);
   }
 
   void checkDissipated(Real expected_density) {
     Real edis = this->model->getEnergy("dissipated");
 
-    EXPECT_NEAR(this->surface * expected_density, edis, 4e-1);
+    EXPECT_NEAR(this->surface * expected_density, edis, 5e-1);
   }
 
   void testModeI() {
     //  EXPECT_NO_THROW(this->createModel());
     this->createModel();
+
+    SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
+                 ":" + aka::to_string(type_2));
 
     auto & mat_co = this->model->getMaterial("insertion");
     Real sigma_c = mat_co.get("sigma_c");
@@ -214,7 +237,7 @@ public:
 
     strain *= sigma_c / E;
 
-    this->setInitialCondition((1-1e-3)*strain);
+    this->setInitialCondition((1 - 1e-3) * strain);
     this->steps(4e-3 * strain);
   }
 
@@ -222,7 +245,8 @@ public:
     Vector<Real> direction(this->dim, 0.);
     direction(_x) = 1.;
 
-    nb_steps *= 2;
+    SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
+                 ":" + aka::to_string(type_2));
 
     EXPECT_NO_THROW(this->createModel());
 
@@ -252,6 +276,8 @@ public:
     }
     strain *= 2 * beta * beta * sigma_c / E;
 
+    nb_steps *= 2;
+
     this->setInitialCondition(0.999 * strain);
     this->steps(0.005 * strain);
   }
@@ -269,7 +295,8 @@ protected:
 
   Vector<Real> normal;
   Real surface{0};
-  UInt nb_steps{300};
+  UInt nb_steps{0};
+  UInt group_size{10000};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -305,7 +332,7 @@ using types = gtest_list_t<std::tuple<
     std::tuple<element_type_t<_cohesive_3d_6>, element_type_t<_tetrahedron_4>,
                element_type_t<_tetrahedron_4>>,
     std::tuple<element_type_t<_cohesive_3d_12>, element_type_t<_tetrahedron_10>,
-               element_type_t<_tetrahedron_10>>/*,
+               element_type_t<_tetrahedron_10>> /*,
     std::tuple<element_type_t<_cohesive_3d_8>, element_type_t<_hexahedron_8>,
                element_type_t<_hexahedron_8>>,
     std::tuple<element_type_t<_cohesive_3d_16>, element_type_t<_hexahedron_20>,
