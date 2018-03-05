@@ -77,7 +77,7 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
 
-  for(auto & el : elements) {
+  for (auto & el : elements) {
     if (el.type != current_element_type ||
         el.ghost_type != current_ghost_type) {
       current_element_type = el.type;
@@ -97,7 +97,7 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
       UInt node = current_conn(n);
 
       if (pack_mode) {
-        if(mesh.isPureGhostNode(node)) {
+        if (mesh.isPureGhostNode(node)) {
           buffer << UInt(-1);
         } else {
           UInt index = global_nodes_ids(node);
@@ -107,8 +107,14 @@ inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
         UInt index;
         buffer >> index;
 
-        if (global_nodes_ids(node) == UInt(-1))
+        if (global_nodes_ids(node) == UInt(-1) and mesh.isSlaveNode(node)) {
           global_nodes_ids(node) = index;
+        } else {
+          AKANTU_DEBUG_ASSERT(
+              index == UInt(-1) or mesh.isPureGhostNode(node) or index == global_nodes_ids(node),
+              "Two processors disagree on the global number of a node "
+              << index << " against " << global_nodes_ids(node));
+        }
       }
     }
   }

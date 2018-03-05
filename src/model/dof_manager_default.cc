@@ -173,78 +173,6 @@ DOFManager::DOFData & DOFManagerDefault::getNewDOFData(const ID & dof_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-class GlobalDOFInfoDataAccessor : public DataAccessor<UInt> {
-public:
-  using size_type =
-      typename std::unordered_map<UInt, std::vector<UInt>>::size_type;
-
-  GlobalDOFInfoDataAccessor() = default;
-
-  void addDOFToNode(UInt node, UInt dof) { dofs_per_node[node].push_back(dof); }
-  UInt getNthDOFForNode(UInt nth_dof, UInt node) const {
-    auto it = dofs_per_node.find(node);
-    AKANTU_DEBUG_ASSERT(it != dofs_per_node.end(),
-                        "Did not find the node " << node);
-    return it->second[nth_dof];
-  }
-
-  UInt getNbData(const Array<UInt> & nodes,
-                 const SynchronizationTag & tag) const override {
-    if (tag == _gst_size) {
-      return nodes.size() * sizeof(size_type);
-    }
-
-    if (tag == _gst_update) {
-      UInt total_size = 0;
-      for (auto node : nodes) {
-        auto it = dofs_per_node.find(node);
-        if (it != dofs_per_node.end())
-          total_size += CommunicationBuffer::sizeInBuffer(it->second);
-      }
-      return total_size;
-    }
-
-    return 0;
-  }
-
-  void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
-                const SynchronizationTag & tag) const override {
-    for (auto node : nodes) {
-      auto it = dofs_per_node.find(node);
-      if (tag == _gst_size) {
-        if (it != dofs_per_node.end()) {
-          buffer << size_type(it->second.size());
-        } else {
-          buffer << size_type(0);
-        }
-      } else if (tag == _gst_update) {
-        if (it != dofs_per_node.end())
-          buffer << it->second;
-      }
-    }
-  }
-
-  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
-                  const SynchronizationTag & tag) override {
-    for (auto node : nodes) {
-      auto it = dofs_per_node.find(node);
-      if (tag == _gst_size) {
-        size_type size;
-        buffer >> size;
-        if (size != 0)
-          dofs_per_node[node].resize(size);
-      } else if (tag == _gst_update) {
-        if (it != dofs_per_node.end())
-          buffer >> it->second;
-      }
-    }
-  }
-
-protected:
-  std::unordered_map<UInt, std::vector<UInt>> dofs_per_node;
-};
-
-/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
                                              UInt nb_pure_local_dofs) {
   // auto prank = this->communicator.whoAmI();
@@ -793,6 +721,85 @@ DOFManagerDefault::updateNodalDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+class GlobalDOFInfoDataAccessor : public DataAccessor<UInt> {
+public:
+  using size_type =
+      typename std::unordered_map<UInt, std::vector<UInt>>::size_type;
+
+  GlobalDOFInfoDataAccessor(DOFManagerDefault::DOFDataDefault & dof_data,
+                            const DOFManagerDefault & dof_manager,
+                            const Mesh & mesh)
+      : dof_data(dof_data) {
+    for (auto && pair :
+         zip(dof_data.local_equation_number, dof_data.associated_nodes)) {
+      UInt node, dof;
+      std::tie(dof, node) = pair;
+      if (mesh.isMasterNode(node)) {
+        dofs_per_node[node].push_back(
+            dof_manager.localToGlobalEquationNumber(dof));
+      }
+    }
+  }
+
+  UInt getNthDOFForNode(UInt nth_dof, UInt node) const {
+    auto it = dofs_per_node.find(node);
+    AKANTU_DEBUG_ASSERT(it != dofs_per_node.end(),
+                        "Did not find the node " << node);
+    return it->second[nth_dof];
+  }
+
+  UInt getNbData(const Array<UInt> & nodes,
+                 const SynchronizationTag & tag) const override {
+    if (tag == _gst_ask_nodes) {
+      return nodes.size() * dof_data.dof->getNbComponent() * sizeof(UInt);
+    }
+
+    if (tag == _gst_update) {
+      UInt total_size = 0;
+      for (auto node : nodes) {
+        auto it = dofs_per_node.find(node);
+        if (it != dofs_per_node.end())
+          total_size += CommunicationBuffer::sizeInBuffer(it->second);
+      }
+      return total_size;
+    }
+
+    return 0;
+  }
+
+  void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
+                const SynchronizationTag & tag) const override {
+    if (tag == _gst_ask_nodes) {
+      for (auto & node : nodes) {
+        for (auto & dof : dofs_per_node.at(node)) {
+          buffer << dof;
+        }
+      }
+    }
+  }
+
+  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
+                  const SynchronizationTag & tag) override {
+    if (tag == _gst_ask_nodes) {
+      auto nb_dofs_per_node = dof_data.dof->getNbComponent();
+      for (auto & node : nodes) {
+        auto & dofs = dofs_per_node[node];
+        for (auto _[[gnu::unused]] : arange(nb_dofs_per_node)) {
+          UInt dof;
+          buffer >> dof;
+          dofs.push_back(dof);
+        }
+      }
+    }
+  }
+
+protected:
+  std::unordered_map<UInt, std::vector<UInt>> dofs_per_node;
+  DOFManagerDefault::DOFDataDefault & dof_data;
+};
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::updateDOFsData(
     DOFDataDefault & dof_data, UInt nb_new_local_dofs, UInt nb_new_pure_local,
     const std::function<UInt(UInt)> & getNode) {
@@ -801,8 +808,6 @@ void DOFManagerDefault::updateDOFsData(
 
   // access the relevant data to update
   const auto & support_type = dof_data.support_type;
-
-  GlobalDOFInfoDataAccessor data_accessor;
 
   // resize all relevant arrays
   this->residual.resize(this->local_system_size, 0.);
@@ -846,13 +851,6 @@ void DOFManagerDefault::updateDOFsData(
 
       this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
       dof_data.associated_nodes.push_back(node);
-
-      is_local_dof = this->mesh->isLocalOrMasterNode(node);
-
-      if (is_local_dof) {
-        data_accessor.addDOFToNode(node, first_global_dof_id);
-      }
-
       break;
     }
     case _dst_generic: {
@@ -868,7 +866,7 @@ void DOFManagerDefault::updateDOFsData(
       this->global_to_local_mapping[this->first_global_dof_id] = local_eq_num;
       ++this->first_global_dof_id;
     } else {
-      this->global_equation_number(local_eq_num) = 0;
+      this->global_equation_number(local_eq_num) = UInt(-1);
     }
   }
 
@@ -876,9 +874,9 @@ void DOFManagerDefault::updateDOFsData(
   if (support_type == _dst_nodal && this->synchronizer) {
     auto nb_dofs_per_node = dof_data.dof->getNbComponent();
 
+    GlobalDOFInfoDataAccessor data_accessor(dof_data, *this, *this->mesh);
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
-    node_synchronizer.synchronizeOnce(data_accessor, _gst_size);
-    node_synchronizer.synchronizeOnce(data_accessor, _gst_update);
+    node_synchronizer.synchronizeOnce(data_accessor, _gst_ask_nodes);
 
     std::vector<UInt> counters(nb_new_local_dofs / nb_dofs_per_node);
 
@@ -897,6 +895,11 @@ void DOFManagerDefault::updateDOFsData(
       this->global_to_local_mapping[global_dof_id] = local_eq_num;
     }
   }
+
+
+  this->first_global_dof_id += std::accumulate(
+      nb_dofs_per_proc.begin() + prank + 1, nb_dofs_per_proc.end(), 0);
+
 }
 
 /* -------------------------------------------------------------------------- */

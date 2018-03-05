@@ -291,6 +291,7 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  friend class GlobalDOFInfoDataAccessor;
   // using AIJMatrixMap = std::map<ID, std::unique_ptr<SparseMatrixAIJ>>;
   // using DefaultNonLinearSolversMap =
   //     std::map<ID, std::unique_ptr<NonLinearSolverDefault>>;

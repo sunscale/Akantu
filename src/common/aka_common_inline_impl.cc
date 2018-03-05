@@ -234,6 +234,9 @@ inline std::ostream & operator<<(std::ostream & stream,
   case _gst_whatever:
     stream << "_gst_whatever";
     break;
+  case _gst_ask_nodes:
+    stream << "_gst_ask_nodes";
+    break;
   case _gst_update:
     stream << "_gst_update";
     break;

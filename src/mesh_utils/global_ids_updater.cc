@@ -94,6 +94,8 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
     if (mesh.isLocalOrMasterNode(n)) {
       nodes_global_ids(n) = starting_index;
       ++starting_index;
+    } else {
+      nodes_global_ids(n) = -1;
     }
   }
 

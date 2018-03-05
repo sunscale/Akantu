@@ -292,6 +292,7 @@ enum SynchronizationTag {
   //--- Generic tags ---
   _gst_whatever,
   _gst_update,
+  _gst_ask_nodes,
   _gst_size,
 
   //--- SolidMechanicsModel tags ---
