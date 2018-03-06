@@ -755,16 +755,6 @@ public:
       return nodes.size() * dof_data.dof->getNbComponent() * sizeof(UInt);
     }
 
-    if (tag == _gst_update) {
-      UInt total_size = 0;
-      for (auto node : nodes) {
-        auto it = dofs_per_node.find(node);
-        if (it != dofs_per_node.end())
-          total_size += CommunicationBuffer::sizeInBuffer(it->second);
-      }
-      return total_size;
-    }
-
     return 0;
   }
 
@@ -772,7 +762,10 @@ public:
                 const SynchronizationTag & tag) const override {
     if (tag == _gst_ask_nodes) {
       for (auto & node : nodes) {
-        for (auto & dof : dofs_per_node.at(node)) {
+        auto & dofs = dofs_per_node.at(node);
+        AKANTU_DEBUG_ASSERT(dofs.size() == dof_data.dof->getNbComponent(),
+                            "There should be more dofs for this node");
+        for (auto & dof : dofs) {
           buffer << dof;
         }
       }
@@ -896,10 +889,8 @@ void DOFManagerDefault::updateDOFsData(
     }
   }
 
-
   this->first_global_dof_id += std::accumulate(
       nb_dofs_per_proc.begin() + prank + 1, nb_dofs_per_proc.end(), 0);
-
 }
 
 /* -------------------------------------------------------------------------- */
