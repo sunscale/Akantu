@@ -279,13 +279,14 @@ void ElementSynchronizer::renumberElements(
 }
 
 /* -------------------------------------------------------------------------- */
-UInt ElementSynchronizer::sanityCheckDataSize(
-    const Array<Element> & elements, const SynchronizationTag &) const {
-  UInt size = 0;
-  size += sizeof(SynchronizationTag); // tag
-  size += sizeof(UInt);               // comm_desc.getNbData();
-  size += sizeof(UInt);               // comm_desc.getProc();
-  size += sizeof(UInt);               // mesh.getCommunicator().whoAmI();
+UInt ElementSynchronizer::sanityCheckDataSize(const Array<Element> & elements,
+                                              const SynchronizationTag & tag,
+                                              bool from_comm_desc) const {
+  UInt size = SynchronizerImpl<Element>::sanityCheckDataSize(elements, tag,
+                                                             from_comm_desc);
+
+  // global connectivities;
+  size += mesh.getNbNodesPerElementList(elements) * sizeof(UInt);
 
   // barycenters
   size += (elements.size() * mesh.getSpatialDimension() * sizeof(Real));
@@ -294,60 +295,32 @@ UInt ElementSynchronizer::sanityCheckDataSize(
 
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::packSanityCheckData(
-    CommunicationDescriptor<Element> & comm_desc) const {
-  auto & buffer = comm_desc.getBuffer();
-  buffer << comm_desc.getTag();
-  buffer << comm_desc.getNbData();
-  buffer << comm_desc.getProc();
-  buffer << mesh.getCommunicator().whoAmI();
-
-  auto & send_element = comm_desc.getScheme();
-
-  /// pack barycenters in debug mode
-  for (auto && element : send_element) {
+    CommunicationBuffer & buffer, const Array<Element> & elements,
+    const SynchronizationTag & /*tag*/) const {
+  for (auto && element : elements) {
     Vector<Real> barycenter(mesh.getSpatialDimension());
     mesh.getBarycenter(element, barycenter);
     buffer << barycenter;
+
+    const auto & conns = mesh.getConnectivity(element.type, element.ghost_type);
+    for (auto n : arange(conns.getNbComponent())) {
+      buffer << mesh.getNodeGlobalId(conns(element.element, n));
+    }
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void ElementSynchronizer::unpackSanityCheckData(
-    CommunicationDescriptor<Element> & comm_desc) const {
-  auto & buffer = comm_desc.getBuffer();
-  const auto & tag = comm_desc.getTag();
-
-  auto nb_data = comm_desc.getNbData();
-  auto proc = comm_desc.getProc();
-  auto rank = mesh.getCommunicator().whoAmI();
-
-  decltype(nb_data) recv_nb_data;
-  decltype(proc) recv_proc;
-  decltype(rank) recv_rank;
-
-  SynchronizationTag t;
-  buffer >> t;
-  buffer >> recv_nb_data;
-  buffer >> recv_proc;
-  buffer >> recv_rank;
-
-  AKANTU_DEBUG_ASSERT(
-      t == tag, "The tag received does not correspond to the tag expected");
-
-  AKANTU_DEBUG_ASSERT(
-      nb_data == recv_nb_data,
-      "The nb_data received does not correspond to the nb_data expected");
-
-  AKANTU_DEBUG_ASSERT(UInt(recv_rank) == proc,
-                      "The rank received does not correspond to the proc");
-
-  AKANTU_DEBUG_ASSERT(recv_proc == UInt(rank),
-                      "The proc received does not correspond to the rank");
-
-  auto & recv_element = comm_desc.getScheme();
+void ElementSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
+                                                const Array<Element> & elements,
+                                                const SynchronizationTag & tag,
+                                                UInt proc, UInt rank) const {
   auto spatial_dimension = mesh.getSpatialDimension();
 
-  for (auto && element : recv_element) {
+  std::set<SynchronizationTag> skip_conn_tags{_gst_smmc_facets_conn};
+
+  bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
+
+  for (auto && element : elements) {
     Vector<Real> barycenter_loc(spatial_dimension);
     mesh.getBarycenter(element, barycenter_loc);
 
@@ -355,12 +328,37 @@ void ElementSynchronizer::unpackSanityCheckData(
     buffer >> barycenter;
 
     auto dist = barycenter_loc.distance(barycenter);
-    if (not Math::are_float_equal(dist, 0.))
+    if (not Math::are_float_equal(dist, 0.)) {
       AKANTU_EXCEPTION("Unpacking an unknown value for the element "
                        << element << "(barycenter " << barycenter_loc
                        << " != buffer " << barycenter << ") [" << dist
                        << "] - tag: " << tag << " comm from " << proc << " to "
                        << rank);
+    }
+
+    const auto & conns = mesh.getConnectivity(element.type, element.ghost_type);
+    Vector<UInt> global_conn(conns.getNbComponent());
+    Vector<UInt> local_global_conn(conns.getNbComponent());
+
+    auto is_same = true;
+    for (auto n : arange(global_conn.size())) {
+      buffer >> global_conn(n);
+
+      auto node = conns(element.element, n);
+      local_global_conn(n) = mesh.getNodeGlobalId(node);
+
+      is_same &= is_skip_tag_conn or mesh.isPureGhostNode(node) or
+                 (local_global_conn(n) == global_conn(n));
+    }
+
+    if (not is_same) {
+      AKANTU_EXCEPTION("The connectivity of the element "
+                       << element << " " << local_global_conn
+                       << " does not match the connectivity of the equivalent "
+                          "element on proc "
+                       << proc << " " << global_conn
+                       << " in communication with tag " << tag);
+    }
   }
 }
 

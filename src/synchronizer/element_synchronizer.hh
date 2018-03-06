@@ -180,13 +180,15 @@ protected:
   /* Sanity checks                                                            */
   /* ------------------------------------------------------------------------ */
   UInt sanityCheckDataSize(const Array<Element> & elements,
-                           const SynchronizationTag & tag) const override;
-  /* ------------------------------------------------------------------------ */
-  void packSanityCheckData(
-      CommunicationDescriptor<Element> & comm_desc) const override;
-  /* ------------------------------------------------------------------------ */
-  void unpackSanityCheckData(
-      CommunicationDescriptor<Element> & comm_desc) const override;
+                           const SynchronizationTag & tag,
+                           bool from_comm_desc = true) const override;
+  void packSanityCheckData(CommunicationBuffer & /*buffer*/,
+                           const Array<Element> & /*elements*/,
+                           const SynchronizationTag & /*tag*/) const override;
+  void unpackSanityCheckData(CommunicationBuffer & /*buffer*/,
+                             const Array<Element> & /*elements*/,
+                             const SynchronizationTag & /*tag*/, UInt /*proc*/,
+                             UInt /*rank*/) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

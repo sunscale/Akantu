@@ -107,11 +107,20 @@ public:
 
   /* ------------------------------------------------------------------------ */
   virtual UInt sanityCheckDataSize(const Array<Entity> & elements,
-                                   const SynchronizationTag & tag) const;
+                                   const SynchronizationTag & tag,
+                                   bool from_comm_desc = true) const;
   virtual void
   packSanityCheckData(CommunicationDescriptor<Entity> & comm_desc) const;
   virtual void
   unpackSanityCheckData(CommunicationDescriptor<Entity> & comm_desc) const;
+
+  virtual void packSanityCheckData(CommunicationBuffer & /*buffer*/,
+                                   const Array<Entity> & /*elements*/,
+                                   const SynchronizationTag & /*tag*/) const {}
+  virtual void unpackSanityCheckData(CommunicationBuffer & /*buffer*/,
+                                     const Array<Entity> & /*elements*/,
+                                     const SynchronizationTag & /*tag*/,
+                                     UInt /*proc*/, UInt /*rank*/) const {}
 
 public:
   AKANTU_GET_MACRO(Communications, communications,

@@ -82,10 +82,14 @@ void SynchronizerImpl<Entity>::communicateOnce(
         continue;
 
       auto & buffer = buffers[proc];
-      auto buffer_size = data_accessor.getNbData(scheme, tag);
 
+      auto buffer_size = data_accessor.getNbData(scheme, tag);
       if (buffer_size == 0)
         continue;
+
+#ifndef AKANTU_NDEBUG
+      buffer_size += this->sanityCheckDataSize(scheme, tag, false);
+#endif
 
       buffer.resize(buffer_size);
 
@@ -93,12 +97,19 @@ void SynchronizerImpl<Entity>::communicateOnce(
         requests.push_back(communicator.asyncReceive(
             buffer, proc, Tag::genTag(this->rank, 0, comm_tag, this->hash_id)));
       } else {
+#ifndef AKANTU_NDEBUG
+        this->packSanityCheckData(buffer, scheme, tag);
+#endif
         data_accessor.packData(buffer, scheme, tag);
 
-        AKANTU_DEBUG_ASSERT(buffer.getPackedSize() == buffer.size(),
-                            "The data accessor did not pack all the date it "
-                            "promised  in communication with tag "
-                                << tag);
+        AKANTU_DEBUG_ASSERT(
+            buffer.getPackedSize() == buffer.size(),
+            "The data accessor did not pack all the data it "
+            "promised  in communication with tag "
+                << tag << " (Promised: " << buffer.size()
+                << "bytes, packed: " << buffer.getPackedSize() << "bytes [avg: "
+                << Real(buffer.size() - buffer.getPackedSize()) / scheme.size()
+                << "bytes per entity missing])");
 
         send_requests.push_back(communicator.asyncSend(
             buffer, proc, Tag::genTag(proc, 0, comm_tag, this->hash_id)));
@@ -120,6 +131,10 @@ void SynchronizerImpl<Entity>::communicateOnce(
 
     auto & buffer = recv_buffers[proc];
     const auto & scheme = this->communications.getScheme(proc, recv_dir);
+
+#ifndef AKANTU_NDEBUG
+    this->unpackSanityCheckData(buffer, scheme, tag, proc, this->rank);
+#endif
 
     data_accessor.unpackData(buffer, scheme, tag);
 
@@ -337,20 +352,75 @@ template <class Entity> void SynchronizerImpl<Entity>::swapSendRecv() {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-UInt SynchronizerImpl<Entity>::sanityCheckDataSize(
-    const Array<Entity> &, const SynchronizationTag &) const {
-  return 0;
+UInt SynchronizerImpl<Entity>::sanityCheckDataSize(const Array<Entity> &,
+                                                   const SynchronizationTag &,
+                                                   bool is_comm_desc) const {
+  if (not is_comm_desc) {
+    return 0;
+  }
+
+  UInt size = 0;
+  size += sizeof(SynchronizationTag); // tag
+  size += sizeof(UInt);               // comm_desc.getNbData();
+  size += sizeof(UInt);               // comm_desc.getProc();
+  size += sizeof(this->rank);               // mesh.getCommunicator().whoAmI();
+
+  return size;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void SynchronizerImpl<Entity>::packSanityCheckData(
-    CommunicationDescriptor<Entity> &) const {}
+    CommunicationDescriptor<Entity> & comm_desc) const {
+  auto & buffer = comm_desc.getBuffer();
+  buffer << comm_desc.getTag();
+  buffer << comm_desc.getNbData();
+  buffer << comm_desc.getProc();
+  buffer << this->rank;
+
+  const auto & tag = comm_desc.getTag();
+  const auto & send_element = comm_desc.getScheme();
+
+  this->packSanityCheckData(buffer, send_element, tag);
+}
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 void SynchronizerImpl<Entity>::unpackSanityCheckData(
-    CommunicationDescriptor<Entity> &) const {}
+    CommunicationDescriptor<Entity> & comm_desc) const {
+  auto & buffer = comm_desc.getBuffer();
+  const auto & tag = comm_desc.getTag();
+
+  auto nb_data = comm_desc.getNbData();
+  auto proc = comm_desc.getProc();
+  auto rank = this->rank;
+
+  decltype(nb_data) recv_nb_data;
+  decltype(proc) recv_proc;
+  decltype(rank) recv_rank;
+
+  SynchronizationTag t;
+  buffer >> t;
+  buffer >> recv_nb_data;
+  buffer >> recv_proc;
+  buffer >> recv_rank;
+
+  AKANTU_DEBUG_ASSERT(
+      t == tag, "The tag received does not correspond to the tag expected");
+
+  AKANTU_DEBUG_ASSERT(
+      nb_data == recv_nb_data,
+      "The nb_data received does not correspond to the nb_data expected");
+
+  AKANTU_DEBUG_ASSERT(UInt(recv_rank) == proc,
+                      "The rank received does not correspond to the proc");
+
+  AKANTU_DEBUG_ASSERT(recv_proc == UInt(rank),
+                      "The proc received does not correspond to the rank");
+
+  auto & recv_element = comm_desc.getScheme();
+  this->unpackSanityCheckData(buffer, recv_element, tag, proc, rank);
+}
 
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
