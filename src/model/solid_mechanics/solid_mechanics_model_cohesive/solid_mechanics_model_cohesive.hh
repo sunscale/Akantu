@@ -312,9 +312,6 @@ private:
 
   /// cohesive elements synchronizer
   std::unique_ptr<ElementSynchronizer> cohesive_synchronizer;
-
-  /// global connectivity
-  ElementTypeMapArray<UInt> * global_connectivity;
 };
 
 } // namespace akantu

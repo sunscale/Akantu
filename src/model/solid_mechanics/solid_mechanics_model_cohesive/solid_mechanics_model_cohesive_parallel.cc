@@ -41,6 +41,57 @@
 
 namespace akantu {
 
+class FacetConnectivitySynchronizer : public DataAccessor<Element> {
+public:
+  FacetConnectivitySynchronizer(Mesh & mesh)
+      : global_connectivity("global_connectivity",
+                            "facet_connectivity_synchronizer") {
+    global_connectivity.initialize(
+        mesh, _spatial_dimension = _all_dimensions, _with_nb_element = true,
+        _with_nb_nodes_per_element = true, _element_kind = _ek_regular);
+    mesh.getGlobalConnectivity(global_connectivity);
+  }
+
+  UInt getNbData(const Array<Element> & elements,
+                 const SynchronizationTag & tag) const {
+    UInt size = 0;
+    if (tag == _gst_smmc_facets_conn) {
+      UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
+      size += nb_nodes * sizeof(UInt);
+    }
+    return size;
+  }
+
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                const SynchronizationTag & tag) const {
+    if (tag == _gst_smmc_facets_conn) {
+      for (const auto & element : elements) {
+        auto & conns = global_connectivity(element.type, element.ghost_type);
+        for (auto n : arange(conns.getNbComponent())) {
+          buffer << conns(element.element, n);
+        }
+      }
+    }
+  }
+
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                  const SynchronizationTag & tag) {
+    if (tag == _gst_smmc_facets_conn) {
+      for (const auto & element : elements) {
+        auto & conns = global_connectivity(element.type, element.ghost_type);
+        for (auto n : arange(conns.getNbComponent())) {
+          buffer >> conns(element.element, n);
+        }
+      }
+    }
+  }
+
+  AKANTU_GET_MACRO(GlobalConnectivity, (global_connectivity), decltype(auto));
+
+protected:
+  ElementTypeMapArray<UInt> global_connectivity;
+};
+
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
   AKANTU_DEBUG_IN();
@@ -48,28 +99,23 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
   const Communicator & comm = mesh.getCommunicator();
   Int psize = comm.getNbProc();
 
-  if (psize > 1) {
-    /// get global connectivity for not ghost facets
-    global_connectivity =
-        new ElementTypeMapArray<UInt>("global_connectivity", id);
-
-    auto & mesh_facets = inserter->getMeshFacets();
-
-    global_connectivity->initialize(
-        mesh_facets, _spatial_dimension = spatial_dimension - 1,
-        _with_nb_element = true, _with_nb_nodes_per_element = true,
-        _element_kind = _ek_regular);
-
-    mesh_facets.getGlobalConnectivity(*global_connectivity);
-
-    /// communicate
-    synchronize(_gst_smmc_facets_conn);
-
-    /// flip facets
-    MeshUtils::flipFacets(mesh_facets, *global_connectivity, _ghost);
-
-    delete global_connectivity;
+  if (psize == 1) {
+    AKANTU_DEBUG_OUT();
+    return;
   }
+
+  /// get global connectivity for not ghost facets
+  auto & mesh_facets = inserter->getMeshFacets();
+
+  FacetConnectivitySynchronizer data_accessor(mesh_facets);
+
+  /// communicate
+  mesh_facets.getElementSynchronizer().synchronizeOnce(data_accessor,
+                                                       _gst_smmc_facets_conn);
+
+  /// flip facets
+  MeshUtils::flipFacets(mesh_facets, data_accessor.getGlobalConnectivity(),
+                        _ghost);
 
   AKANTU_DEBUG_OUT();
 }
@@ -136,7 +182,8 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
             element.type, element.ghost_type)(element.element); // slow access
                                                                 // here
         auto && rank_left = element_synchronizer.getRank(connected_elements[0]);
-        auto && rank_right = element_synchronizer.getRank(connected_elements[1]);
+        auto && rank_right =
+            element_synchronizer.getRank(connected_elements[1]);
 
         // keep element if the element is still a boundary element between two
         // processors
@@ -297,11 +344,6 @@ UInt SolidMechanicsModelCohesive::getNbData(
       size += elements.size() * sizeof(bool);
       break;
     }
-    case _gst_smmc_facets_conn: {
-      UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
-      size += nb_nodes * sizeof(UInt);
-      break;
-    }
     case _gst_smmc_facets_stress: {
       UInt nb_quads = getNbQuadsForFacetCheck(elements);
       size += nb_quads * spatial_dimension * spatial_dimension * sizeof(Real);
@@ -371,11 +413,6 @@ void SolidMechanicsModelCohesive::packData(
                               elements, false, getFEEngine());
       break;
     }
-    case _gst_smmc_facets_conn: {
-      packElementalDataHelper(*global_connectivity, buffer, elements, false,
-                              getFEEngine());
-      break;
-    }
     case _gst_smmc_facets_stress: {
       packFacetStressDataHelper(facet_stress, buffer, elements);
       break;
@@ -437,11 +474,6 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
     case _gst_smmc_facets: {
       unpackElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
                                 elements, false, getFEEngine());
-      break;
-    }
-    case _gst_smmc_facets_conn: {
-      unpackElementalDataHelper(*global_connectivity, buffer, elements, false,
-                                getFEEngine());
       break;
     }
     case _gst_smmc_facets_stress: {
