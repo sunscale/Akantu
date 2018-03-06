@@ -167,6 +167,10 @@ class RbtreeIterator(Iterator):
                     self.node = node
         return result
 
+def get_value_from_aligned_membuf(buf, valtype):
+    """Returns the value held in a __gnu_cxx::__aligned_membuf."""
+    return buf['_M_storage'].address.cast(valtype.pointer()).dereference()
+
 def get_value_from_Rb_tree_node(node):
     """Returns the value held in an _Rb_tree_node<_Val>"""
     try:
@@ -182,6 +186,23 @@ def get_value_from_Rb_tree_node(node):
         pass
     raise ValueError("Unsupported implementation for %s" % str(node.type))
 
+def find_type(orig, name):
+    typ = orig.strip_typedefs()
+    while True:
+        # Strip cv-qualifiers.  PR 67440.
+        search = '%s::%s' % (typ.unqualified(), name)
+        try:
+            return gdb.lookup_type(search)
+        except RuntimeError:
+            pass
+        # The type was not found, so try the superclass.  We only need
+        # to check the first superclass, so we don't bother with
+        # anything fancier here.
+        field = typ.fields()[0]
+        if not field.is_base_class:
+            raise ValueError("Cannot find type %s::%s" % (str(orig), name))
+        typ = field.type
+
 @register_pretty_printer
 class AkaElementTypeMapArrayPrinter(AkantuPrinter):
     """Pretty printer for akantu::ElementTypeMap<Array<T>>"""
@@ -189,12 +210,12 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
     name = 'akantu::ElementTypeMapArray'
 
     # Turn an RbtreeIterator into a pretty-print iterator.
-    class _iter(Iterator):
-        def __init__(self, rbiter, type):
+    class _rb_iter(Iterator):
+        def __init__(self, rbiter, type, ghost_type):
             self.rbiter = rbiter
             self.count = 0
             self.type = type
-
+            self.ghost_type = ghost_type
         def __iter__(self):
             return self
 
@@ -204,12 +225,31 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
                 n = n.cast(self.type).dereference()
                 n = get_value_from_Rb_tree_node(n)
                 self.pair = n
-                item = n['first']
+                item = "{0}:{1}".format(n['first'], self.ghost_type)
             else:
-                item = self.pair['second']
-            result = ('[{0}]'.format(self.count), item.dereference())
+                item = self.pair['second'].dereference()
+            result = ('[{0}]'.format(self.count), item)
             self.count = self.count + 1
             return result
+
+    class _iter(Iterator):
+        def __init__(self, not_ghost, ghost):
+            self.not_ghost = not_ghost
+            self.ghost = ghost
+            self.end_not_ghost = False
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if not self.end_not_ghost:
+                try:
+                    n = next(self.not_ghost)
+                except StopIteration:
+                    n = next(self.ghost)
+                    self.end_not_ghost = True
+            else:
+                n = next(self.ghost)
+            return n
 
     def __init__(self, value):
         self.typename = self.get_basic_type(value)
@@ -219,18 +259,22 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
 
     def to_string(self):
         m = self.regex.search(self.typename)
-        return 'ElementTypMapArray<{0}> with {1} _not_ghost and {2} _ghost'.format(
-            m.group(1), len(RbtreeIterator(self.data)), len(RbtreeIterator(self.ghost_data)))
+        return 'ElementTypMapArray<{0}> with '\
+            '{1} _not_ghost and {2} _ghost'.format(
+                m.group(1), len(RbtreeIterator(self.data)),
+                len(RbtreeIterator(self.ghost_data)))
 
     def children(self):
         m = self.regex.search(self.typename)
-        try:
-            _type = gdb.lookup_type("akantu::Array<{0}, {1}>".format(
-                m.group(1), m.group(2))).strip_typedefs().pointer()
-            yield ('[_not_ghost]', self._iter(RbtreeIterator(self.data), _type))
-            yield ('[_ghost]', self._iter(RbtreeIterator(self.ghost_data), _type))
-        except RuntimeError:
-            pass
+
+        rep_type = find_type(self.data.type, '_Rep_type')
+        node = find_type(rep_type, '_Link_type')
+        node = node.strip_typedefs()
+
+        return self._iter(self._rb_iter(RbtreeIterator(self.data),
+                                        node, '_not_ghost'),
+                          self._rb_iter(RbtreeIterator(self.ghost_data),
+                                        node, '_ghost'))
 
     def display_hint(self):
         return 'map'
