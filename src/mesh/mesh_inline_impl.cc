@@ -241,6 +241,22 @@ inline auto & Mesh::getElementToSubelement(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline const auto &
+Mesh::getElementToSubelement(const Element & element) const {
+  return getData<std::vector<Element>>("element_to_subelement")(element);
+}
+
+/* -------------------------------------------------------------------------- */
+inline auto & Mesh::getElementToSubelement(const Element & element) {
+  return getData<std::vector<Element>>("element_to_subelement")(element);
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto & Mesh::getSubelementToElement() const {
+  return getData<Element>("subelement_to_element");
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto &
 Mesh::getSubelementToElement(const ElementType & type,
                              const GhostType & ghost_type) const {
   return getData<Element>("subelement_to_element", type, ghost_type);
@@ -250,6 +266,25 @@ Mesh::getSubelementToElement(const ElementType & type,
 inline auto & Mesh::getSubelementToElement(const ElementType & type,
                                            const GhostType & ghost_type) {
   return getData<Element>("subelement_to_element", type, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto &
+Mesh::getSubelementToElement(const Element & element) const {
+  const auto & sub_to_element =
+      this->getSubelementToElement(element.type, element.ghost_type);
+  auto it = sub_to_element.begin(sub_to_element.getNbComponent());
+  it += element.element;
+  return *it;
+}
+
+/* -------------------------------------------------------------------------- */
+inline auto & Mesh::getSubelementToElement(const Element & element) {
+  auto & sub_to_element =
+      this->getSubelementToElement(element.type, element.ghost_type);
+  auto it = sub_to_element.begin(sub_to_element.getNbComponent());
+  it += element.element;
+  return *it;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -511,6 +546,22 @@ inline auto Mesh::getFacetConnectivity(const Element & element, UInt t) const {
 
   AKANTU_DEBUG_OUT();
   return facets;
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto & Mesh::getConnectivity(const Element & element) const {
+  const auto & conn = connectivities(element.type, element.ghost_type);
+  auto it = conn.begin(conn.getNbComponent());
+  it += element.element;
+  return *it;
+}
+
+/* -------------------------------------------------------------------------- */
+inline auto & Mesh::getConnectivity(const Element & element) {
+  auto & conn = connectivities(element.type, element.ghost_type);
+  auto it = conn.begin(conn.getNbComponent());
+  it += element.element;
+  return *it;
 }
 
 /* -------------------------------------------------------------------------- */

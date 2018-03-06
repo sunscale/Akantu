@@ -300,7 +300,7 @@ public:
                       const GhostType & ghost_type) const;
 
 #ifndef SWIG
-  /// get the element connected to a subelement
+  /// get the element connected to a subelement (element of lower dimension)
   const auto & getElementToSubelement() const;
 
   /// get the element connected to a subelement
@@ -312,6 +312,12 @@ public:
   auto & getElementToSubelement(const ElementType & el_type,
                                 const GhostType & ghost_type = _not_ghost);
 
+  /// get the elements connected to a subelement
+  const auto & getElementToSubelement(const Element & element) const;
+
+  /// get the subelement (element of lower dimension) connected to a element
+  const auto & getSubelementToElement() const;
+
   /// get the subelement connected to an element
   const auto &
   getSubelementToElement(const ElementType & el_type,
@@ -320,8 +326,19 @@ public:
   auto & getSubelementToElement(const ElementType & el_type,
                                 const GhostType & ghost_type = _not_ghost);
 
+  /// get the subelement (element of lower dimension) connected to a element
+  const auto & getSubelementToElement(const Element & element) const;
+
+  /// get connectivity of a given element
+  inline const auto & getConnectivity(const Element & element) const;
+
+protected:
+  inline auto & getElementToSubelement(const Element & element);
+  inline auto & getSubelementToElement(const Element & element);
+  inline auto & getConnectivity(const Element & element);
 #endif
 
+public:
   /// register a new ElementalTypeMap in the MeshData
   template <typename T>
   inline ElementTypeMapArray<T> & registerData(const std::string & data_name);
@@ -410,7 +427,6 @@ public:
   static inline UInt getNbFacetsPerElement(const ElementType & type, UInt t);
 
 #ifndef SWIG
-
   /// get local connectivity of a facet for a given facet type
   static inline auto getFacetLocalConnectivity(const ElementType & type,
                                                UInt t = 0);
@@ -480,6 +496,7 @@ public:
   /* ------------------------------------------------------------------------ */
 private:
   friend class MeshAccessor;
+  friend class MeshUtils;
 
   AKANTU_GET_MACRO(NodesPointer, *nodes, Array<Real> &);
 
