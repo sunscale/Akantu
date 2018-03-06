@@ -93,6 +93,9 @@ private:
 
   /// distributed synchronizer to communicate the connectivity
   ElementSynchronizer & synchronizer;
+
+  /// Tells if a reduction is taking place or not
+  bool reduce{false};
 };
 
 } // akantu

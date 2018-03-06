@@ -105,7 +105,11 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
 }
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
+
+  this->reduce = true;
   this->synchronizer.slaveReductionOnce(*this, _gst_giu_global_conn);
+
+  this->reduce = false;
   this->synchronizer.synchronizeOnce(*this, _gst_giu_global_conn);
 }
 
