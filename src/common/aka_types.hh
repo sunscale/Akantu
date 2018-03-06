@@ -529,6 +529,58 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+namespace types {
+  namespace details {
+    template <typename reference_> class vector_iterator {
+    public:
+      using difference_type = std::ptrdiff_t;
+      using value_type = std::decay_t<reference_>;
+      using pointer = value_type *;
+      using reference = reference_;
+      using iterator_category = std::input_iterator_tag;
+
+      vector_iterator(pointer ptr) : ptr(ptr) {}
+
+      // input iterator ++it
+      vector_iterator & operator++() {
+        ++ptr;
+        return *this;
+      }
+      // input iterator it++
+      vector_iterator operator++(int) {
+        auto cpy = *this;
+        ++ptr;
+        return cpy;
+      }
+      vector_iterator & operator+=(int n) {
+        ptr += n;
+        return *this;
+      }
+
+      vector_iterator operator+(int n) {
+        vector_iterator cpy(*this);
+        cpy += n;
+        return cpy;
+      }
+
+      // input iterator it != other_it
+      bool operator!=(const vector_iterator & other) const {
+        return ptr != other.ptr;
+      }
+      bool operator==(const vector_iterator & other) const {
+        return ptr == other.ptr;
+      }
+
+      // input iterator dereference *it
+      reference operator*() { return *ptr; }
+
+    private:
+      pointer ptr;
+    };
+  } // namespace details
+} // namespace types
+/* -------------------------------------------------------------------------- */
 /* Vector                                                                     */
 /* -------------------------------------------------------------------------- */
 template <typename T> class Vector : public TensorStorage<T, 1, Vector<T>> {
@@ -550,6 +602,18 @@ public:
     for (auto val : list) {
       operator()(i++) = val;
     }
+  }
+
+public:
+  using iterator = types::details::vector_iterator<T &>;
+  using const_iterator = types::details::vector_iterator<const T &>;
+
+  iterator begin() { return iterator(this->storage()); }
+  iterator end() { return iterator(this->storage() + this->size()); }
+
+  const_iterator begin() const { return const_iterator(this->storage()); }
+  const_iterator end() const {
+    return const_iterator(this->storage() + this->size());
   }
 
 public:
@@ -1297,5 +1361,22 @@ Matrix<T> operator-(const Matrix<T> & a, const Matrix<T> & b) {
 }
 
 } // namespace akantu
+
+#include <iterator>
+
+namespace std {
+template <typename R>
+struct iterator_traits<::akantu::types::details::vector_iterator<R>> {
+protected:
+  using iterator = ::akantu::types::details::vector_iterator<R>;
+
+public:
+  using iterator_category = typename iterator::iterator_category;
+  using value_type = typename iterator::value_type;
+  using difference_type = typename iterator::difference_type;
+  using pointer = typename iterator::pointer;
+  using reference = typename iterator::reference;
+};
+} // namespace std
 
 #endif /* __AKANTU_AKA_TYPES_HH__ */
