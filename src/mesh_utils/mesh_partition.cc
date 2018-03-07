@@ -254,19 +254,20 @@ void MeshPartition::fillPartitionInformation(
     UInt nb_element = mesh.getNbElement(type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-    partitions.alloc(nb_element, 1, type, _not_ghost);
+    auto & partition = partitions.alloc(nb_element, 1, type, _not_ghost);
     auto & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
     ghost_part_csr.resizeRows(nb_element);
 
-    ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
-    ghost_partitions.alloc(0, 1, type, _ghost);
+    auto & ghost_partition_offset =
+        ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
+    auto & ghost_partition = ghost_partitions.alloc(0, 1, type, _ghost);
 
     const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
 
     for (UInt el = 0; el < nb_element; ++el, ++linearized_el) {
       UInt part = linearized_partitions[linearized_el];
 
-      partitions(type, _not_ghost)(el) = part;
+      partition(el) = part;
       std::list<UInt> list_adj_part;
       for (UInt n = 0; n < nb_nodes_per_element; ++n) {
         UInt node = connectivity.storage()[el * nb_nodes_per_element + n];
@@ -289,8 +290,8 @@ void MeshPartition::fillPartitionInformation(
         ghost_part_csr.getRows().push_back(adj_part);
         ghost_part_csr.rowOffset(el)++;
 
-        ghost_partitions(type, _ghost).push_back(adj_part);
-        ghost_partitions_offset(type, _ghost)(el)++;
+        ghost_partition.push_back(adj_part);
+        ghost_partition_offset(el)++;
       }
     }
 
@@ -311,13 +312,13 @@ void MeshPartition::fillPartitionInformation(
     for (auto & type : mesh.elementTypes(sp, _not_ghost, _ek_not_defined)) {
       UInt nb_element = mesh.getNbElement(type);
 
-      partitions.alloc(nb_element, 1, type, _not_ghost);
+      auto & partition = partitions.alloc(nb_element, 1, type, _not_ghost);
       AKANTU_DEBUG_INFO("Allocating partitions for " << type);
       auto & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
       ghost_part_csr.resizeRows(nb_element);
 
-      ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
-      ghost_partitions.alloc(0, 1, type, _ghost);
+      auto & ghost_partition_offset = ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
+      auto & ghost_partition = ghost_partitions.alloc(0, 1, type, _ghost);
       AKANTU_DEBUG_INFO("Allocating ghost_partitions for " << type);
       const Array<std::vector<Element>> & elem_to_subelem =
           mesh.getElementToSubelement(type, _not_ghost);
@@ -342,28 +343,28 @@ void MeshPartition::fillPartitionInformation(
             }
             adjacent_parts.insert(adjacent_elem_part);
           }
-          partitions(type, _not_ghost)(i) = min_part;
+          partition(i) = min_part;
 
           auto git = ghost_partitions_csr(min_elem.type, _not_ghost)
                          .begin(min_elem.element);
           auto gend = ghost_partitions_csr(min_elem.type, _not_ghost)
                           .end(min_elem.element);
           for (; git != gend; ++git) {
-
-            adjacent_parts.insert(min_part);
+            adjacent_parts.insert(*git);
           }
+
           adjacent_parts.erase(min_part);
           for (auto & part : adjacent_parts) {
             ghost_part_csr.getRows().push_back(part);
             ghost_part_csr.rowOffset(i)++;
-            ghost_partitions(type, _ghost).push_back(part);
+            ghost_partition.push_back(part);
           }
 
-          ghost_partitions_offset(type, _ghost)(i + 1) =
-              ghost_partitions_offset(type, _ghost)(i + 1) +
+          ghost_partition_offset(i + 1) =
+              ghost_partition_offset(i + 1) +
               adjacent_elems.size();
         } else {
-          partitions(type, _not_ghost)(i) = 0;
+          partition(i) = 0;
         }
       }
       ghost_part_csr.countToCSR();
