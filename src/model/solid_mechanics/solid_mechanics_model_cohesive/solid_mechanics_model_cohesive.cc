@@ -97,6 +97,16 @@ public:
     const auto & comm = mesh.getCommunicator();
     comm.allReduce(nb_new_stuff, SynchronizerOperation::_sum);
 
+    if (nb_new_stuff(1) > 0) {
+      mesh.sendEvent(elements_event);
+      MeshUtils::resetFacetToDouble(mesh.getMeshFacets());
+    }
+
+    if (nb_new_nodes > 0) {
+      mesh.sendEvent(nodes_event);
+      //mesh.sendEvent(global_ids_updater.getChangedNodeEvent());
+    }
+
     return std::make_tuple(nb_new_nodes, nb_new_stuff(1));
   }
 

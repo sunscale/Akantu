@@ -214,14 +214,6 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
   std::tie(nb_new_nodes, nb_new_elements) =
       mesh_accessor.updateGlobalData(node_event, element_event);
 
-  if (nb_new_elements > 0) {
-    mesh.sendEvent(element_event);
-    MeshUtils::resetFacetToDouble(mesh_facets);
-  }
-
-  if (nb_new_nodes > 0)
-    mesh.sendEvent(node_event);
-
   return nb_new_elements;
 }
 
