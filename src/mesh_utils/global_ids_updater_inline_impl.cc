@@ -52,76 +52,64 @@ inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
 inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
                                        const Array<Element> & elements,
                                        const SynchronizationTag & tag) const {
-  if (tag == _gst_giu_global_conn)
-    packUnpackGlobalConnectivity<true>(buffer, elements);
+  if (tag != _gst_giu_global_conn)
+    return;
+
+  auto & global_nodes_ids = mesh.getGlobalNodesIds();
+
+  for (auto & element : elements) {
+    /// get element connectivity
+    const Vector<UInt> current_conn =
+        const_cast<const Mesh &>(mesh).getConnectivity(element);
+
+    /// loop on all connectivity nodes
+    for (auto node : current_conn) {
+      UInt index = -1;
+      if ((this->reduce and mesh.isLocalOrMasterNode(node)) or
+          (not this->reduce and not mesh.isPureGhostNode(node))) {
+        index = global_nodes_ids(node);
+      }
+      buffer << index;
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
                                          const Array<Element> & elements,
                                          const SynchronizationTag & tag) {
-  if (tag == _gst_giu_global_conn)
-    packUnpackGlobalConnectivity<false>(buffer, elements);
-}
-
-/* -------------------------------------------------------------------------- */
-template <bool pack_mode>
-inline void GlobalIdsUpdater::packUnpackGlobalConnectivity(
-    CommunicationBuffer & buffer, const Array<Element> & elements) const {
-  AKANTU_DEBUG_IN();
-
-  ElementType current_element_type = _not_defined;
-  GhostType current_ghost_type = _casper;
-  Array<UInt>::const_vector_iterator conn_begin;
-  UInt nb_nodes_per_elem = 0;
+  if (tag != _gst_giu_global_conn)
+    return;
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
 
-  for (auto & el : elements) {
-    if (el.type != current_element_type ||
-        el.ghost_type != current_ghost_type) {
-      current_element_type = el.type;
-      current_ghost_type = el.ghost_type;
-
-      const Array<UInt> & connectivity =
-          mesh.getConnectivity(current_element_type, current_ghost_type);
-      nb_nodes_per_elem = connectivity.getNbComponent();
-      conn_begin = connectivity.begin(nb_nodes_per_elem);
-    }
-
+  for (auto & element : elements) {
     /// get element connectivity
-    const Vector<UInt> current_conn = conn_begin[el.element];
+    Vector<UInt> current_conn =
+        const_cast<const Mesh &>(mesh).getConnectivity(element);
 
     /// loop on all connectivity nodes
-    for (UInt n = 0; n < nb_nodes_per_elem; ++n) {
-      UInt node = current_conn(n);
+    for (auto node : current_conn) {
+      UInt index;
+      buffer >> index;
 
-      if (pack_mode) {
-        if ((this->reduce and mesh.isLocalOrMasterNode(node)) or
-            (not this->reduce and not mesh.isPureGhostNode(node))) {
-          UInt index = global_nodes_ids(node);
-          buffer << index;
-        } else {
-          buffer << UInt(-1);
-        }
-      } else {
-        UInt index;
-        buffer >> index;
+      if (index == UInt(-1))
+        continue;
 
-        if (global_nodes_ids(node) == UInt(-1) and mesh.isSlaveNode(node)) {
-          global_nodes_ids(node) = index;
-        } else {
-          AKANTU_DEBUG_ASSERT(
-              index == UInt(-1) or mesh.isPureGhostNode(node) or
-                  index == global_nodes_ids(node),
-              "Two processors disagree on the global number of a node "
-                  << index << " against " << global_nodes_ids(node));
-        }
-      }
+      if(mesh.isSlaveNode(node))
+        global_nodes_ids(node) = index;
+
+      // if (global_nodes_ids(node) == UInt(-1) and mesh.isSlaveNode(node)) {
+      //   global_nodes_ids(node) = index;
+      // } else {
+      //   if (global_nodes_ids(node) != index) {
+      //     //change_event.getList().push_back(node);
+      //     //change_event.getFormerGlobalID().push_back(global_nodes_ids(node));
+      //     global_nodes_ids(node) = index;
+      //   }
+      // }
     }
   }
-
-  AKANTU_DEBUG_OUT();
 }
 
 } // akantu

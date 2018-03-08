@@ -728,25 +728,14 @@ public:
       typename std::unordered_map<UInt, std::vector<UInt>>::size_type;
 
   GlobalDOFInfoDataAccessor(DOFManagerDefault::DOFDataDefault & dof_data,
-                            const DOFManagerDefault & dof_manager,
-                            const Mesh & mesh)
-      : dof_data(dof_data) {
+                            DOFManagerDefault & dof_manager)
+      : dof_data(dof_data), dof_manager(dof_manager) {
     for (auto && pair :
          zip(dof_data.local_equation_number, dof_data.associated_nodes)) {
       UInt node, dof;
       std::tie(dof, node) = pair;
-      if (mesh.isMasterNode(node)) {
-        dofs_per_node[node].push_back(
-            dof_manager.localToGlobalEquationNumber(dof));
-      }
+      dofs_per_node[node].push_back(dof);
     }
-  }
-
-  UInt getNthDOFForNode(UInt nth_dof, UInt node) const {
-    auto it = dofs_per_node.find(node);
-    AKANTU_DEBUG_ASSERT(it != dofs_per_node.end(),
-                        "Did not find the node " << node);
-    return it->second[nth_dof];
   }
 
   UInt getNbData(const Array<UInt> & nodes,
@@ -763,10 +752,8 @@ public:
     if (tag == _gst_ask_nodes) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node.at(node);
-        AKANTU_DEBUG_ASSERT(dofs.size() == dof_data.dof->getNbComponent(),
-                            "There should be more dofs for this node");
         for (auto & dof : dofs) {
-          buffer << dof;
+          buffer << dof_manager.global_equation_number(dof);
         }
       }
     }
@@ -775,13 +762,13 @@ public:
   void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                   const SynchronizationTag & tag) override {
     if (tag == _gst_ask_nodes) {
-      auto nb_dofs_per_node = dof_data.dof->getNbComponent();
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node[node];
-        for (auto _[[gnu::unused]] : arange(nb_dofs_per_node)) {
-          UInt dof;
-          buffer >> dof;
-          dofs.push_back(dof);
+        for (auto dof : dofs) {
+          UInt global_dof;
+          buffer >> global_dof;
+          dof_manager.global_equation_number(dof) = global_dof;
+          dof_manager.global_to_local_mapping[global_dof] = dof;
         }
       }
     }
@@ -790,6 +777,7 @@ public:
 protected:
   std::unordered_map<UInt, std::vector<UInt>> dofs_per_node;
   DOFManagerDefault::DOFDataDefault & dof_data;
+  DOFManagerDefault & dof_manager;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -865,28 +853,28 @@ void DOFManagerDefault::updateDOFsData(
 
   // synchronize the global numbering for slaves
   if (support_type == _dst_nodal && this->synchronizer) {
-    auto nb_dofs_per_node = dof_data.dof->getNbComponent();
+    //auto nb_dofs_per_node = dof_data.dof->getNbComponent();
 
-    GlobalDOFInfoDataAccessor data_accessor(dof_data, *this, *this->mesh);
+    GlobalDOFInfoDataAccessor data_accessor(dof_data, *this);
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
     node_synchronizer.synchronizeOnce(data_accessor, _gst_ask_nodes);
 
-    std::vector<UInt> counters(nb_new_local_dofs / nb_dofs_per_node);
+    // std::vector<UInt> counters(nb_new_local_dofs / nb_dofs_per_node);
 
-    for (UInt d = 0; d < nb_new_local_dofs; ++d) {
-      UInt local_eq_num = first_dof_id + d;
-      if (not this->isSlaveDOF(local_eq_num))
-        continue;
+    // for (UInt d = 0; d < nb_new_local_dofs; ++d) {
+    //   UInt local_eq_num = first_dof_id + d;
+    //   if (not this->isSlaveDOF(local_eq_num))
+    //     continue;
 
-      UInt node = d / nb_dofs_per_node;
-      UInt dof_count = counters[node]++;
-      node = getNode(node);
+    //   UInt node = d / nb_dofs_per_node;
+    //   UInt dof_count = counters[node]++;
+    //   node = getNode(node);
 
-      UInt global_dof_id = data_accessor.getNthDOFForNode(dof_count, node);
+    //   UInt global_dof_id = data_accessor.getNthDOFForNode(dof_count, node);
 
-      this->global_equation_number(local_eq_num) = global_dof_id;
-      this->global_to_local_mapping[global_dof_id] = local_eq_num;
-    }
+    //   this->global_equation_number(local_eq_num) = global_dof_id;
+    //   this->global_to_local_mapping[global_dof_id] = local_eq_num;
+    // }
   }
 
   this->first_global_dof_id += std::accumulate(
