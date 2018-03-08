@@ -572,6 +572,10 @@ namespace types {
         return ptr == other.ptr;
       }
 
+      difference_type operator-(const vector_iterator & other) const {
+        return this->ptr - other.ptr;
+      }
+
       // input iterator dereference *it
       reference operator*() { return *ptr; }
 
