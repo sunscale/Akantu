@@ -138,10 +138,9 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
         cfacet_synchronizer.getCommunications().getScheme(proc, direction);
 
     for (auto && facet : facet_scheme) {
-      const auto & connected_elements = mesh_facets.getElementToSubelement(
-          facet.type,
-          facet.ghost_type)(facet.element); // slow access here
-      const auto & cohesive_element = connected_elements[1];
+      const auto & cohesive_element =
+          const_cast<const Mesh &>(mesh_facets)
+              .getElementToSubelement(facet)[1];
 
       if (cohesive_element == ElementNull or
           cohesive_element.kind() != _ek_cohesive)
