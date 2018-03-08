@@ -158,13 +158,9 @@ void MeshUtils::buildFacets(Mesh & mesh) {
 
   UInt spatial_dimension = mesh.getSpatialDimension();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType gt_facet = *gt;
-    Mesh::type_iterator it = mesh.firstType(spatial_dimension - 1, gt_facet);
-    Mesh::type_iterator end = mesh.lastType(spatial_dimension - 1, gt_facet);
-    for (; it != end; ++it) {
-      mesh.getConnectivity(*it, *gt).resize(0);
+  for (auto ghost_type : ghost_types) {
+    for (auto & type : mesh.elementTypes(spatial_dimension - 1, ghost_type)) {
+      mesh.getConnectivity(type, ghost_type).resize(0);
       // \todo inform the mesh event handler
     }
   }
@@ -364,11 +360,11 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
               /// the normal one, the facet is not ghost, otherwise
               /// it's ghost
               GhostType gt[2] = {_not_ghost, _not_ghost};
+
               for (UInt el = 0; el < connected_elements.size(); ++el)
                 gt[el] = connected_elements[el].ghost_type;
 
-              if (gt[0] != gt[1] and
-                  (gt[0] == _not_ghost or gt[1] == _not_ghost)) {
+              if ((gt[0] == _not_ghost) xor (gt[1] == _not_ghost)) {
                 UInt prank[2];
                 for (UInt el = 0; el < 2; ++el) {
                   prank[el] = synchronizer->getRank(connected_elements[el]);
@@ -578,7 +574,6 @@ UInt MeshUtils::insertCohesiveElements(
   UInt elements_to_insert = updateFacetToDouble(mesh_facets, facet_insertion);
 
   if (elements_to_insert > 0) {
-
     if (spatial_dimension == 1) {
       doublePointFacet(mesh, mesh_facets, doubled_nodes);
     } else {
@@ -644,69 +639,60 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
                             bool facet_mode) {
   AKANTU_DEBUG_IN();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType gt_facet = *gt;
-
-    Mesh::type_iterator it = mesh_facets.firstType(facet_dimension, gt_facet);
-    Mesh::type_iterator end = mesh_facets.lastType(facet_dimension, gt_facet);
-
-    for (; it != end; ++it) {
-
-      ElementType type_facet = *it;
-
-      Array<UInt> & f_to_double =
+  for (auto gt_facet : ghost_types) {
+    for (auto && type_facet :
+         mesh_facets.elementTypes(facet_dimension, gt_facet)) {
+      auto & facets_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
-      UInt nb_facet_to_double = f_to_double.size();
+      auto nb_facet_to_double = facets_to_double.size();
 
       if (nb_facet_to_double == 0)
         continue;
 
-      ElementType type_subfacet = Mesh::getFacetType(type_facet);
-      const UInt nb_subfacet_per_facet =
-          Mesh::getNbFacetsPerElement(type_facet);
-      GhostType gt_subfacet = _casper;
-      Array<std::vector<Element>> * f_to_subfacet = nullptr;
+      // this while fail if multiple facet types
+      // \TODO handle multiple sub-facet types
+      auto nb_subfacet_per_facet = Mesh::getNbFacetsPerElement(type_facet);
 
-      Array<Element> & subfacet_to_facet =
+      auto & conn_facet = mesh_facets.getConnectivity(type_facet, gt_facet);
+      auto nb_nodes_per_facet = conn_facet.getNbComponent();
+      auto old_nb_facet = conn_facet.size();
+      auto new_nb_facet = old_nb_facet + nb_facet_to_double;
+
+#ifndef AKANTU_NDEBUG
+      // memory initialization are slow but help debug
+      conn_facet.resize(new_nb_facet, UInt(-1));
+#else
+      conn_facet.resize(new_nb_facet);
+#endif
+      auto conn_facet_begin = conn_facet.begin(nb_nodes_per_facet);
+
+      auto & subfacet_to_facet =
           mesh_facets.getSubelementToElement(type_facet, gt_facet);
 
-      Array<UInt> & conn_facet =
-          mesh_facets.getConnectivity(type_facet, gt_facet);
-      UInt nb_nodes_per_facet = conn_facet.getNbComponent();
-
-      UInt old_nb_facet = conn_facet.size();
-      UInt new_nb_facet = old_nb_facet + nb_facet_to_double;
-
-      conn_facet.resize(new_nb_facet);
+#ifndef AKANTU_NDEBUG
+      subfacet_to_facet.resize(new_nb_facet, ElementNull);
+#else
       subfacet_to_facet.resize(new_nb_facet);
-
-      UInt new_facet = old_nb_facet - 1;
-      Element new_facet_el{type_facet, 0, gt_facet};
-
-      Array<Element>::iterator<Vector<Element>> subfacet_to_facet_begin =
+#endif
+      auto subfacet_to_facet_begin =
           subfacet_to_facet.begin(nb_subfacet_per_facet);
-      Array<UInt>::iterator<Vector<UInt>> conn_facet_begin =
-          conn_facet.begin(nb_nodes_per_facet);
 
-      for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
-        UInt old_facet = f_to_double(facet);
-        ++new_facet;
+      Element new_facet{type_facet, old_nb_facet, gt_facet};
+      auto conn_facet_new_it = conn_facet_begin + new_facet.element;
+      auto subfacet_to_facet_new_it =
+          subfacet_to_facet_begin + new_facet.element;
+
+      for (UInt facet = 0; facet < nb_facet_to_double; ++facet,
+                ++new_facet.element, ++conn_facet_new_it,
+                ++subfacet_to_facet_new_it) {
+        UInt old_facet = facets_to_double(facet);
 
         /// adding a new facet by copying original one
-
         /// copy connectivity in new facet
-        std::copy(conn_facet_begin + old_facet,
-                  conn_facet_begin + old_facet + 1,
-                  conn_facet_begin + new_facet);
+        *conn_facet_new_it = conn_facet_begin[old_facet];
 
         /// update subfacet_to_facet
-        std::copy(subfacet_to_facet_begin + old_facet,
-                  subfacet_to_facet_begin + old_facet + 1,
-                  subfacet_to_facet_begin + new_facet);
-
-        new_facet_el.element = new_facet;
+        *subfacet_to_facet_new_it = subfacet_to_facet_begin[old_facet];
 
         /// loop on every subfacet
         for (UInt sf = 0; sf < nb_subfacet_per_facet; ++sf) {
@@ -714,19 +700,13 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
           if (subfacet == ElementNull)
             continue;
 
-          if (gt_subfacet != subfacet.ghost_type) {
-            gt_subfacet = subfacet.ghost_type;
-            f_to_subfacet = &mesh_facets.getElementToSubelement(
-                type_subfacet, subfacet.ghost_type);
-          }
-
           /// update facet_to_subfacet array
-          (*f_to_subfacet)(subfacet.element).push_back(new_facet_el);
+          mesh_facets.getElementToSubelement(subfacet).push_back(new_facet);
         }
       }
 
       /// update facet_to_subfacet and _segment_3 facets if any
-      if (!facet_mode) {
+      if (not facet_mode) {
         updateSubfacetToFacet(mesh_facets, type_facet, gt_facet, true);
         updateFacetToSubfacet(mesh_facets, type_facet, gt_facet, true);
         updateQuadraticSegments<true>(mesh, mesh_facets, type_facet, gt_facet,
@@ -748,25 +728,14 @@ UInt MeshUtils::updateFacetToDouble(
   UInt spatial_dimension = mesh_facets.getSpatialDimension();
   UInt nb_facets_to_double = 0.;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType gt_facet = *gt;
-
-    Mesh::type_iterator it =
-        mesh_facets.firstType(spatial_dimension - 1, gt_facet);
-    Mesh::type_iterator end =
-        mesh_facets.lastType(spatial_dimension - 1, gt_facet);
-
-    for (; it != end; ++it) {
-
-      ElementType type_facet = *it;
-
-      const Array<bool> & f_insertion = facet_insertion(type_facet, gt_facet);
-      Array<UInt> & f_to_double =
+  for (auto gt_facet : ghost_types) {
+    for (auto type_facet :
+         mesh_facets.elementTypes(spatial_dimension - 1, gt_facet)) {
+      const auto & f_insertion = facet_insertion(type_facet, gt_facet);
+      auto & f_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
 
-      Array<std::vector<Element>> & element_to_facet =
+      auto & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
       ElementType el_type = _not_defined;
@@ -811,17 +780,12 @@ UInt MeshUtils::updateFacetToDouble(
           nb_facet_per_element = facet_to_element->getNbComponent();
         }
 
-        Element * f_update =
-            std::find(facet_to_element->storage() + el * nb_facet_per_element,
-                      facet_to_element->storage() + el * nb_facet_per_element +
-                          nb_facet_per_element,
-                      old_facet_el);
+        auto begin = facet_to_element->storage() + el * nb_facet_per_element;
+        auto f_update =
+            std::find(begin, begin + nb_facet_per_element, old_facet_el);
 
-        AKANTU_DEBUG_ASSERT(
-            facet_to_element->storage() + el * nb_facet_per_element !=
-                facet_to_element->storage() + el * nb_facet_per_element +
-                    nb_facet_per_element,
-            "Facet not found");
+        AKANTU_DEBUG_ASSERT(f_update != begin + nb_facet_per_element,
+                            "Facet not found");
 
         f_update->element = new_facet;
 
@@ -1131,8 +1095,8 @@ void MeshUtils::updateCohesiveData(Mesh & mesh, Mesh & mesh_facets,
       for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
 
         /// (in 3D cohesive elements connectivity is inverted)
-        facets[third_dimension] = f_to_double(facet);
-        facets[!third_dimension] = old_nb_facet + facet;
+        facets[third_dimension ? 1 : 0] = f_to_double(facet);
+        facets[third_dimension ? 0 : 1] = old_nb_facet + facet;
 
         UInt cohesive_element = old_nb_cohesive_elements + facet;
 
@@ -1427,19 +1391,9 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
   if (spatial_dimension == 1)
     return;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType gt_subfacet = *gt;
-
-    Mesh::type_iterator it = mesh_facets.firstType(0, gt_subfacet);
-    Mesh::type_iterator end = mesh_facets.lastType(0, gt_subfacet);
-
-    for (; it != end; ++it) {
-
-      ElementType type_subfacet = *it;
-
-      Array<UInt> & sf_to_double = mesh_facets.getData<UInt>(
+  for (auto gt_subfacet : ghost_types) {
+    for (auto type_subfacet : mesh_facets.elementTypes(0, gt_subfacet)) {
+      auto & sf_to_double = mesh_facets.getData<UInt>(
           "facet_to_double", type_subfacet, gt_subfacet);
       UInt nb_subfacet_to_double = sf_to_double.size();
 
@@ -1450,7 +1404,7 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
           type_subfacet == _point_1,
           "Only _point_1 subfacet doubling is supported at the moment");
 
-      Array<UInt> & conn_subfacet =
+      auto & conn_subfacet =
           mesh_facets.getConnectivity(type_subfacet, gt_subfacet);
 
       UInt old_nb_subfacet = conn_subfacet.size();
@@ -1523,97 +1477,83 @@ void MeshUtils::doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
 
 /* -------------------------------------------------------------------------- */
 void MeshUtils::flipFacets(
-    Mesh & mesh_facets, const ElementTypeMapArray<UInt> & global_connectivity,
+    Mesh & mesh_facets,
+    const ElementTypeMapArray<UInt> & remote_global_connectivities,
     GhostType gt_facet) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh_facets.getSpatialDimension();
 
   /// get global connectivity for local mesh
-  ElementTypeMapArray<UInt> global_connectivity_tmp("global_connectivity_tmp",
-                                                    mesh_facets.getID(),
-                                                    mesh_facets.getMemoryID());
+  ElementTypeMapArray<UInt> local_global_connectivities(
+      "local_global_connectivity", mesh_facets.getID(),
+      mesh_facets.getMemoryID());
 
-  global_connectivity_tmp.initialize(
+  local_global_connectivities.initialize(
       mesh_facets, _spatial_dimension = spatial_dimension - 1,
       _ghost_type = gt_facet, _with_nb_nodes_per_element = true,
       _with_nb_element = true);
 
-  mesh_facets.getGlobalConnectivity(global_connectivity_tmp);
+  mesh_facets.getGlobalConnectivity(local_global_connectivities);
 
   /// loop on every facet
   for (auto type_facet :
        mesh_facets.elementTypes(spatial_dimension - 1, gt_facet)) {
 
     auto & connectivity = mesh_facets.getConnectivity(type_facet, gt_facet);
-    const auto & g_connectivity = global_connectivity(type_facet, gt_facet);
+    auto & local_global_connectivity =
+        local_global_connectivities(type_facet, gt_facet);
+    const auto & remote_global_connectivity =
+        remote_global_connectivities(type_facet, gt_facet);
 
-    auto & el_to_f = mesh_facets.getElementToSubelement(type_facet, gt_facet);
+    auto & element_per_facet =
+        mesh_facets.getElementToSubelement(type_facet, gt_facet);
     auto & subfacet_to_facet =
         mesh_facets.getSubelementToElement(type_facet, gt_facet);
 
-    UInt nb_subfacet_per_facet = subfacet_to_facet.getNbComponent();
-    UInt nb_nodes_per_facet = connectivity.getNbComponent();
-    UInt nb_facet = connectivity.size();
-
-    UInt nb_nodes_per_P1_facet =
+    auto nb_nodes_per_facet = connectivity.getNbComponent();
+    auto nb_nodes_per_P1_facet =
         Mesh::getNbNodesPerElement(Mesh::getP1ElementType(type_facet));
 
-    auto & global_conn_tmp = global_connectivity_tmp(type_facet, gt_facet);
+    for (auto && data :
+         zip(make_view(connectivity, nb_nodes_per_facet),
+             make_view(local_global_connectivity, nb_nodes_per_facet),
+             make_view(remote_global_connectivity, nb_nodes_per_facet),
+             make_view(subfacet_to_facet, subfacet_to_facet.getNbComponent()),
+             make_view(element_per_facet))) {
 
-    auto conn_it = connectivity.begin(nb_nodes_per_facet);
-    auto gconn_tmp_it = global_conn_tmp.begin(nb_nodes_per_facet);
-    auto conn_glob_it = g_connectivity.begin(nb_nodes_per_facet);
-    auto subf_to_f = subfacet_to_facet.begin(nb_subfacet_per_facet);
-
-    auto * conn_tmp_pointer = new UInt[nb_nodes_per_facet];
-    Vector<UInt> conn_tmp(conn_tmp_pointer, nb_nodes_per_facet);
-
-    Element el_tmp;
-    auto * subf_tmp_pointer = new Element[nb_subfacet_per_facet];
-    Vector<Element> subf_tmp(subf_tmp_pointer, nb_subfacet_per_facet);
-
-    for (UInt f = 0; f < nb_facet;
-         ++f, ++conn_it, ++gconn_tmp_it, ++subf_to_f, ++conn_glob_it) {
-
-      Vector<UInt> & gconn_tmp = *gconn_tmp_it;
-      const Vector<UInt> & conn_glob = *conn_glob_it;
-      Vector<UInt> & conn_local = *conn_it;
+      auto & conn = std::get<0>(data);
+      auto & local_gconn = std::get<1>(data);
+      const auto & remote_gconn = std::get<2>(data);
 
       /// skip facet if connectivities are the same
-      if (gconn_tmp == conn_glob)
+      if (local_gconn == remote_gconn)
         continue;
 
       /// re-arrange connectivity
-      conn_tmp = conn_local;
+      auto conn_tmp = conn;
+      auto begin = local_gconn.begin();
+      auto end = local_gconn.end();
 
-      UInt * begin = conn_glob.storage();
-      UInt * end = conn_glob.storage() + nb_nodes_per_facet;
-
-      for (UInt n = 0; n < nb_nodes_per_facet; ++n) {
-
-        UInt * new_node = std::find(begin, end, gconn_tmp(n));
-        AKANTU_DEBUG_ASSERT(new_node != end, "Node not found");
-
-        UInt new_position = new_node - begin;
-
-        conn_local(new_position) = conn_tmp(n);
-      }
+      std::transform(remote_gconn.begin(), remote_gconn.end(), conn.begin(),
+                     [&](auto && gnode) {
+                       auto it = std::find(begin, end, gnode);
+                       AKANTU_DEBUG_ASSERT(it != end, "Node not found");
+                       return conn_tmp(it - begin);
+                     });
 
       /// if 3D, check if facets are just rotated
       if (spatial_dimension == 3) {
+        auto begin = remote_gconn.storage();
         /// find first node
-        UInt * new_node = std::find(begin, end, gconn_tmp(0));
-        AKANTU_DEBUG_ASSERT(new_node != end, "Node not found");
+        auto it = std::find(begin, begin + remote_gconn.size(), local_gconn(0));
 
-        UInt new_position = new_node - begin;
-        UInt n = 1;
-
+        UInt n, start = it - begin;
         /// count how many nodes in the received connectivity follow
         /// the same order of those in the local connectivity
-        for (; n < nb_nodes_per_P1_facet &&
-               gconn_tmp(n) ==
-                   conn_glob((new_position + n) % nb_nodes_per_P1_facet);
+        for (n = 1; n < nb_nodes_per_P1_facet &&
+                    local_gconn(n) ==
+                        remote_gconn((start + n) % nb_nodes_per_P1_facet);
              ++n)
           ;
 
@@ -1623,17 +1563,12 @@ void MeshUtils::flipFacets(
       }
 
       /// update data to invert facet
-      el_tmp = el_to_f(f)[0];
-      el_to_f(f)[0] = el_to_f(f)[1];
-      el_to_f(f)[1] = el_tmp;
+      auto & element_per_facet = std::get<4>(data);
+      std::swap(element_per_facet[0], element_per_facet[1]);
 
-      subf_tmp = (*subf_to_f);
-      (*subf_to_f)(0) = subf_tmp(1);
-      (*subf_to_f)(1) = subf_tmp(0);
+      auto & subfacets_of_facet = std::get<3>(data);
+      std::swap(subfacets_of_facet(0), subfacets_of_facet(1));
     }
-
-    delete[] subf_tmp_pointer;
-    delete[] conn_tmp_pointer;
   }
 
   AKANTU_DEBUG_OUT();
@@ -1737,17 +1672,13 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
           }
 
           std::vector<Element> connected_elements;
-          auto cit = element_seen_counter.begin();
-          auto cend = element_seen_counter.end();
-          for (; cit != cend; ++cit) {
-            if (cit->second == nb_nodes_per_facet)
-              connected_elements.push_back(cit->first);
+          for (auto && cit : element_seen_counter) {
+            if (cit.second == nb_nodes_per_facet)
+              connected_elements.push_back(cit.first);
           }
 
-          auto ceit = connected_elements.begin();
-          auto ceend = connected_elements.end();
-          for (; ceit != ceend; ++ceit)
-            element_to_subelement(fid).push_back(*ceit);
+          for (auto & connected_element : connected_elements)
+            element_to_subelement(fid).push_back(connected_element);
 
           for (UInt ce = 0; ce < connected_elements.size(); ++ce) {
             Element & elem = connected_elements[ce];
@@ -1783,151 +1714,97 @@ bool MeshUtils::findElementsAroundSubfacet(
     const Mesh & mesh, const Mesh & mesh_facets,
     const Element & starting_element, const Element & end_facet,
     const Vector<UInt> & subfacet_connectivity,
-    std::vector<Element> & elem_list, std::vector<Element> & facet_list,
+    std::vector<Element> & element_list, std::vector<Element> & facet_list,
     std::vector<Element> * subfacet_list) {
   AKANTU_DEBUG_IN();
 
-  /// preallocated stuff before starting
   bool facet_matched = false;
 
-  elem_list.clear();
+  element_list.clear();
   facet_list.clear();
-
-  if (third_dim_points)
+  if (third_dim_points) {
     subfacet_list->clear();
+  }
 
-  elem_list.push_back(starting_element);
-
-  const Array<UInt> * facet_connectivity = nullptr;
-  const Array<UInt> * sf_connectivity = nullptr;
-  const Array<Element> * facet_to_element = nullptr;
-  const Array<Element> * subfacet_to_facet = nullptr;
-
-  ElementType current_type = _not_defined;
-  GhostType current_ghost_type = _casper;
-
-  ElementType current_facet_type = _not_defined;
-  GhostType current_facet_ghost_type = _casper;
-
-  ElementType current_subfacet_type = _not_defined;
-  GhostType current_subfacet_ghost_type = _casper;
-
-  const Array<std::vector<Element>> * element_to_facet = nullptr;
-
-  const Element * opposing_el = nullptr;
+  element_list.push_back(starting_element);
 
   std::queue<Element> elements_to_check;
   elements_to_check.push(starting_element);
 
-  /// keep going until there are elements to check
-  while (!elements_to_check.empty()) {
-
+  /// keep going as long as there are elements to check
+  while (not elements_to_check.empty()) {
     /// check current element
-    Element & current_el = elements_to_check.front();
+    Element & current_element = elements_to_check.front();
 
-    if (current_el.type != current_type ||
-        current_el.ghost_type != current_ghost_type) {
+    const Vector<Element> facets_to_element =
+        mesh_facets.getSubelementToElement(current_element);
 
-      current_type = current_el.type;
-      current_ghost_type = current_el.ghost_type;
-
-      facet_to_element =
-          &mesh_facets.getSubelementToElement(current_type, current_ghost_type);
-    }
-
-    /// loop over each facet of the element
-    for (UInt f = 0; f < facet_to_element->getNbComponent(); ++f) {
-
-      const Element & current_facet =
-          (*facet_to_element)(current_el.element, f);
-
+    // for every facet of the element
+    for (auto & current_facet : facets_to_element) {
       if (current_facet == ElementNull)
         continue;
 
-      if (current_facet_type != current_facet.type ||
-          current_facet_ghost_type != current_facet.ghost_type) {
-
-        current_facet_type = current_facet.type;
-        current_facet_ghost_type = current_facet.ghost_type;
-
-        element_to_facet = &mesh_facets.getElementToSubelement(
-            current_facet_type, current_facet_ghost_type);
-        facet_connectivity = &mesh_facets.getConnectivity(
-            current_facet_type, current_facet_ghost_type);
-
-        if (third_dim_points)
-          subfacet_to_facet = &mesh_facets.getSubelementToElement(
-              current_facet_type, current_facet_ghost_type);
-      }
-
-      /// check if end facet is reached
       if (current_facet == end_facet)
         facet_matched = true;
 
-      /// add this facet if not already passed
-      if (std::find(facet_list.begin(), facet_list.end(), current_facet) ==
-              facet_list.end() &&
-          hasElement(*facet_connectivity, current_facet,
-                     subfacet_connectivity)) {
-        facet_list.push_back(current_facet);
-
-        if (third_dim_points) {
-          /// check subfacets
-          for (UInt sf = 0; sf < subfacet_to_facet->getNbComponent(); ++sf) {
-            const Element & current_subfacet =
-                (*subfacet_to_facet)(current_facet.element, sf);
-
-            if (current_subfacet == ElementNull)
-              continue;
-
-            if (current_subfacet_type != current_subfacet.type ||
-                current_subfacet_ghost_type != current_subfacet.ghost_type) {
-              current_subfacet_type = current_subfacet.type;
-              current_subfacet_ghost_type = current_subfacet.ghost_type;
-
-              sf_connectivity = &mesh_facets.getConnectivity(
-                  current_subfacet_type, current_subfacet_ghost_type);
-            }
-
-            if (std::find(subfacet_list->begin(), subfacet_list->end(),
-                          current_subfacet) == subfacet_list->end() &&
-                hasElement(*sf_connectivity, current_subfacet,
-                           subfacet_connectivity))
-              subfacet_list->push_back(current_subfacet);
-          }
-        }
-      } else
+      // facet already listed
+      if (std::find(facet_list.begin(), facet_list.end(), current_facet) !=
+          facet_list.end())
         continue;
 
+      // subfacet_connectivity is not in the connectivity of current_facet;
+      if ((std::find(facet_list.begin(), facet_list.end(), current_facet) !=
+           facet_list.end()) or
+          not hasElement(mesh_facets.getConnectivity(current_facet),
+                         subfacet_connectivity))
+        continue;
+
+      facet_list.push_back(current_facet);
+
+      if (third_dim_points) {
+        const Vector<Element> subfacets_of_facet =
+            mesh_facets.getSubelementToElement(current_facet);
+
+        /// check subfacets
+        for (const auto & current_subfacet : subfacets_of_facet) {
+          if (current_subfacet == ElementNull)
+            continue;
+
+          if ((std::find(subfacet_list->begin(), subfacet_list->end(),
+                         current_subfacet) == subfacet_list->end()) and
+              hasElement(mesh_facets.getConnectivity(current_subfacet),
+                         subfacet_connectivity))
+            subfacet_list->push_back(current_subfacet);
+        }
+      }
+
       /// consider opposing element
-      if ((*element_to_facet)(current_facet.element)[0] == current_el)
-        opposing_el = &(*element_to_facet)(current_facet.element)[1];
-      else
-        opposing_el = &(*element_to_facet)(current_facet.element)[0];
+      const auto & elements_to_facet =
+          mesh_facets.getElementToSubelement(current_facet);
+      UInt opposing = 0;
+      if (elements_to_facet[0] == current_element)
+        opposing = 1;
+
+      auto & opposing_element = elements_to_facet[opposing];
 
       /// skip null elements since they are on a boundary
-      if (*opposing_el == ElementNull)
+      if (opposing_element == ElementNull)
         continue;
 
       /// skip this element if already added
-      if (std::find(elem_list.begin(), elem_list.end(), *opposing_el) !=
-          elem_list.end())
+      if (std::find(element_list.begin(), element_list.end(),
+                    opposing_element) != element_list.end())
         continue;
 
       /// only regular elements have to be checked
-      if (opposing_el->kind() == _ek_regular)
-        elements_to_check.push(*opposing_el);
+      if (opposing_element.kind() == _ek_regular)
+        elements_to_check.push(opposing_element);
 
-      elem_list.push_back(*opposing_el);
+      element_list.push_back(opposing_element);
 
-#ifndef AKANTU_NDEBUG
-      const Array<UInt> & conn_elem =
-          mesh.getConnectivity(opposing_el->type, opposing_el->ghost_type);
-
-      AKANTU_DEBUG_ASSERT(
-          hasElement(conn_elem, *opposing_el, subfacet_connectivity),
-          "Subfacet doesn't belong to this element");
-#endif
+      AKANTU_DEBUG_ASSERT(hasElement(mesh.getConnectivity(opposing_element),
+                                     subfacet_connectivity),
+                          "Subfacet doesn't belong to this element");
     }
 
     /// erased checked element from the list
@@ -1941,89 +1818,59 @@ bool MeshUtils::findElementsAroundSubfacet(
 /* -------------------------------------------------------------------------- */
 void MeshUtils::updateElementalConnectivity(
     Mesh & mesh, UInt old_node, UInt new_node,
-    const std::vector<Element> & element_list,
-    __attribute__((unused)) const std::vector<Element> * facet_list) {
+    const std::vector<Element> & element_list, const std::vector<Element> *
+#if defined(AKANTU_COHESIVE_ELEMENT)
+                                                   facet_list
+#endif
+    ) {
   AKANTU_DEBUG_IN();
 
-  ElementType el_type = _not_defined;
-  GhostType gt_type = _casper;
-  Array<UInt> * conn_elem = nullptr;
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  const Array<Element> * cohesive_facets = nullptr;
-#endif
-  UInt nb_nodes_per_element = 0;
-  UInt * n_update = nullptr;
-
-  for (UInt el = 0; el < element_list.size(); ++el) {
-    const Element & elem = element_list[el];
-    if (elem.type == _not_defined)
+  for (auto & element : element_list) {
+    if (element.type == _not_defined)
       continue;
 
-    if (elem.type != el_type || elem.ghost_type != gt_type) {
-      el_type = elem.type;
-      gt_type = elem.ghost_type;
-      conn_elem = &mesh.getConnectivity(el_type, gt_type);
-      nb_nodes_per_element = conn_elem->getNbComponent();
-#if defined(AKANTU_COHESIVE_ELEMENT)
-      if (elem.kind() == _ek_cohesive)
-        cohesive_facets =
-            &mesh.getMeshFacets().getSubelementToElement(el_type, gt_type);
-#endif
-    }
+    Vector<UInt> connectivity = mesh.getConnectivity(element);
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
-    if (elem.kind() == _ek_cohesive) {
-
+    if (element.kind() == _ek_cohesive) {
       AKANTU_DEBUG_ASSERT(
           facet_list != nullptr,
           "Provide a facet list in order to update cohesive elements");
 
-      /// loop over cohesive element's facets
-      for (UInt f = 0, n = 0; f < 2; ++f, n += nb_nodes_per_element / 2) {
-        const Element & facet = (*cohesive_facets)(elem.element, f);
+      const Vector<Element> facets =
+          mesh.getMeshFacets().getSubelementToElement(element);
 
+      auto facet_nb_nodes = connectivity.size() / 2;
+      auto begin = connectivity.begin();
+      auto end = connectivity.begin() + facet_nb_nodes;
+
+      /// loop over cohesive element's facets
+      for (const auto & facet : facets) {
         /// skip facets if not present in the list
         if (std::find(facet_list->begin(), facet_list->end(), facet) ==
             facet_list->end())
           continue;
 
-        n_update = std::find(
-            conn_elem->storage() + elem.element * nb_nodes_per_element + n,
-            conn_elem->storage() + elem.element * nb_nodes_per_element + n +
-                nb_nodes_per_element / 2,
-            old_node);
+        auto it = std::find(begin, end, old_node);
+        AKANTU_DEBUG_ASSERT(it != end, "Node not found in current element");
 
-        AKANTU_DEBUG_ASSERT(n_update !=
-                                conn_elem->storage() +
-                                    elem.element * nb_nodes_per_element + n +
-                                    nb_nodes_per_element / 2,
-                            "Node not found in current element");
+        begin += facet_nb_nodes;
+        end += facet_nb_nodes;
 
         /// update connectivity
-        *n_update = new_node;
+        *it = new_node;
       }
-    } else {
+    } else
 #endif
-      n_update =
-          std::find(conn_elem->storage() + elem.element * nb_nodes_per_element,
-                    conn_elem->storage() + elem.element * nb_nodes_per_element +
-                        nb_nodes_per_element,
-                    old_node);
-
-      AKANTU_DEBUG_ASSERT(n_update !=
-                              conn_elem->storage() +
-                                  elem.element * nb_nodes_per_element +
-                                  nb_nodes_per_element,
+    {
+      auto it = std::find(connectivity.begin(), connectivity.end(), old_node);
+      AKANTU_DEBUG_ASSERT(it != connectivity.end(),
                           "Node not found in current element");
 
       /// update connectivity
-      *n_update = new_node;
-#if defined(AKANTU_COHESIVE_ELEMENT)
+      *it = new_node;
     }
-#endif
   }
-
-  AKANTU_DEBUG_OUT();
 }
 
 } // namespace akantu

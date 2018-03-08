@@ -135,8 +135,8 @@ public:
       std::vector<Element> * subfacet_list = nullptr);
 
   /// function to check if a node belongs to a given element
-  static inline bool hasElement(const Array<UInt> & connectivity,
-                                const Element & el, const Vector<UInt> & nodes);
+  static inline bool hasElement(const Vector<UInt> & nodes_element,
+                                const Vector<UInt> & nodes);
 
   /// reset facet_to_double arrays in the Mesh
   static void resetFacetToDouble(Mesh & mesh_facets);
@@ -227,10 +227,11 @@ public:
 private:
 };
 
+} // akantu
+
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "mesh_utils_inline_impl.cc"
 
-} // akantu
 #endif /* __AKANTU_MESH_UTILS_HH__ */

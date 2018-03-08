@@ -28,26 +28,28 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "mesh_utils.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_MESH_UTILS_INLINE_IMPL_CC__
+#define __AKANTU_MESH_UTILS_INLINE_IMPL_CC__
+
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline bool MeshUtils::hasElement(const Array<UInt> & connectivity,
-                                  const Element & el,
+inline bool MeshUtils::hasElement(const Vector<UInt> & nodes_element,
                                   const Vector<UInt> & nodes) {
+  // one of the nodes of nodes is not in nodes_element stops
+  auto it = std::mismatch(nodes.begin(), nodes.end(), nodes_element.begin(),
+                          [&](auto && node, auto && /*node2*/) -> bool {
+                            auto it =
+                                std::find(nodes_element.begin(), nodes_element.end(), node);
+                            return (it != nodes_element.end());
+                          });
 
-  UInt nb_nodes_per_element = connectivity.getNbComponent();
-
-  const Vector<UInt> el_nodes(connectivity.storage() +
-                                  el.element * nb_nodes_per_element,
-                              nb_nodes_per_element);
-  UInt * el_nodes_end = el_nodes.storage() + nb_nodes_per_element;
-
-  UInt n = 0;
-
-  while (n < nodes.size() &&
-         std::find(el_nodes.storage(), el_nodes_end, nodes[n]) != el_nodes_end)
-    ++n;
-
-  return (n == nodes.size());
+  // true if all nodes where found in nodes_element
+  return (it.first == nodes.end());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -79,3 +81,7 @@ MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
 
   return deletions == 0;
 }
+
+}
+
+#endif /* __AKANTU_MESH_UTILS_INLINE_IMPL_CC__ */
