@@ -300,21 +300,6 @@ private:
   void init();
 
   /* ------------------------------------------------------------------------ */
-  /* Mesh Event Handler interface                                             */
-  /* ------------------------------------------------------------------------ */
-public:
-  void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) final {}
-  void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
-                      const RemovedNodesEvent &) final {}
-  void onElementsAdded(const Array<Element> &,
-                       const NewElementsEvent &) override{};
-  void onElementsRemoved(const Array<Element> &,
-                         const ElementTypeMapArray<UInt> &,
-                         const RemovedElementsEvent &) override {}
-  void onElementsChanged(const Array<Element> &, const Array<Element> &,
-                         const ElementTypeMapArray<UInt> &,
-                         const ChangedElementsEvent &) override {}
-  /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:

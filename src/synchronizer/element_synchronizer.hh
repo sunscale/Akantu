@@ -85,18 +85,6 @@ public:
   void onElementsRemoved(const Array<Element> & element_list,
                          const ElementTypeMapArray<UInt> & new_numbering,
                          const RemovedElementsEvent & event) override;
-  /// mesh event handler onNodesAdded
-  void onNodesAdded(const Array<UInt> & /* nodes_list*/,
-                    const NewNodesEvent & /*event*/) override{};
-
-  /// mesh event handler onRemovedNodes
-  void onNodesRemoved(const Array<UInt> & /*nodes_list*/,
-                      const Array<UInt> & /*new_numbering*/,
-                      const RemovedNodesEvent & /*event*/) override{};
-
-  /// mesh event handler onElementsAdded
-  void onElementsAdded(const Array<Element> & /*elements_list*/,
-                       const NewElementsEvent & /*event*/) override{};
 
 protected:
   /// reset send and recv element lists

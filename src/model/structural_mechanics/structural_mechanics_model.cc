@@ -386,34 +386,7 @@ void StructuralMechanicsModel::assembleResidual() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Virtual methods from MeshEventHandler */
-/* -------------------------------------------------------------------------- */
-
-/// function to implement to react on  akantu::NewNodesEvent
-void StructuralMechanicsModel::onNodesAdded(const Array<UInt> & /*nodes_list*/,
-                                            const NewNodesEvent & /*event*/) {}
-/// function to implement to react on  akantu::RemovedNodesEvent
-void StructuralMechanicsModel::onNodesRemoved(
-    const Array<UInt> & /*nodes_list*/, const Array<UInt> & /*new_numbering*/,
-    const RemovedNodesEvent & /*event*/) {}
-/// function to implement to react on  akantu::NewElementsEvent
-void StructuralMechanicsModel::onElementsAdded(
-    const Array<Element> & /*elements_list*/,
-    const NewElementsEvent & /*event*/) {}
-/// function to implement to react on  akantu::RemovedElementsEvent
-void StructuralMechanicsModel::onElementsRemoved(
-    const Array<Element> & /*elements_list*/,
-    const ElementTypeMapArray<UInt> & /*new_numbering*/,
-    const RemovedElementsEvent & /*event*/) {}
-/// function to implement to react on  akantu::ChangedElementsEvent
-void StructuralMechanicsModel::onElementsChanged(
-    const Array<Element> & /*old_elements_list*/,
-    const Array<Element> & /*new_elements_list*/,
-    const ElementTypeMapArray<UInt> & /*new_numbering*/,
-    const ChangedElementsEvent & /*event*/) {}
-
-/* -------------------------------------------------------------------------- */
-/* Virtual methods from Model */
+/* Virtual methods from Model                                                 */
 /* -------------------------------------------------------------------------- */
 /// get some default values for derived classes
 std::tuple<ID, TimeStepSolverType>

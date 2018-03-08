@@ -387,14 +387,11 @@ public:
   void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) override{};
   void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
                       const RemovedNodesEvent &) override{};
-
   void onElementsAdded(const Array<Element> & element_list,
                        const NewElementsEvent & event) override;
-
   void onElementsRemoved(const Array<Element> & element_list,
                          const ElementTypeMapArray<UInt> & new_numbering,
                          const RemovedElementsEvent & event) override;
-
   void onElementsChanged(const Array<Element> &, const Array<Element> &,
                          const ElementTypeMapArray<UInt> &,
                          const ChangedElementsEvent &) override{};

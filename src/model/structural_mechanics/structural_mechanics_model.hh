@@ -89,7 +89,7 @@ public:
   void initFEEngineBoundary() override;
 
   /* ------------------------------------------------------------------------ */
-  /* Virtual methods from SolverCallback */
+  /* Virtual methods from SolverCallback                                      */
   /* ------------------------------------------------------------------------ */
   /// get the type of matrix needed
   MatrixType getMatrixType(const ID &) override;
@@ -104,31 +104,7 @@ public:
   void assembleResidual() override;
 
   /* ------------------------------------------------------------------------ */
-  /* Virtual methods from MeshEventHandler */
-  /* ------------------------------------------------------------------------ */
-
-  /// function to implement to react on  akantu::NewNodesEvent
-  void onNodesAdded(const Array<UInt> & nodes_list,
-                    const NewNodesEvent & event) override;
-  /// function to implement to react on  akantu::RemovedNodesEvent
-  void onNodesRemoved(const Array<UInt> & nodes_list,
-                      const Array<UInt> & new_numbering,
-                      const RemovedNodesEvent & event) override;
-  /// function to implement to react on  akantu::NewElementsEvent
-  void onElementsAdded(const Array<Element> & elements_list,
-                       const NewElementsEvent & event) override;
-  /// function to implement to react on  akantu::RemovedElementsEvent
-  void onElementsRemoved(const Array<Element> & elements_list,
-                         const ElementTypeMapArray<UInt> & new_numbering,
-                         const RemovedElementsEvent & event) override;
-  /// function to implement to react on  akantu::ChangedElementsEvent
-  void onElementsChanged(const Array<Element> & old_elements_list,
-                         const Array<Element> & new_elements_list,
-                         const ElementTypeMapArray<UInt> & new_numbering,
-                         const ChangedElementsEvent & event) override;
-
-  /* ------------------------------------------------------------------------ */
-  /* Virtual methods from Model */
+  /* Virtual methods from Model                                               */
   /* ------------------------------------------------------------------------ */
 protected:
   /// get some default values for derived classes

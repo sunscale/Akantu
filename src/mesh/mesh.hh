@@ -122,9 +122,6 @@ public:
 
   ~Mesh() override;
 
-  /// @typedef ConnectivityTypeList list of the types present in a Mesh
-  using ConnectivityTypeList = std::set<ElementType>;
-
   /// read the mesh from a file
   void read(const std::string & filename,
             const MeshIOType & mesh_io_type = _miot_auto);
