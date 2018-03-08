@@ -316,7 +316,8 @@ void ElementSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                                 UInt proc, UInt rank) const {
   auto spatial_dimension = mesh.getSpatialDimension();
 
-  std::set<SynchronizationTag> skip_conn_tags{_gst_smmc_facets_conn};
+  std::set<SynchronizationTag> skip_conn_tags{_gst_smmc_facets_conn,
+                                              _gst_giu_global_conn};
 
   bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
 
