@@ -8,6 +8,7 @@
 import gdb
 import re
 import sys
+import itertools
 
 __use_gdb_pp__ = True
 try:
@@ -232,24 +233,17 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
             self.count = self.count + 1
             return result
 
-    class _iter(Iterator):
-        def __init__(self, not_ghost, ghost):
-            self.not_ghost = not_ghost
-            self.ghost = ghost
-            self.end_not_ghost = False
-        def __iter__(self):
-            return self
+    def _iter(self, not_ghost, ghost, type):
+        iter_size = (len(not_ghost), len(ghost))
+        it = self._rb_iter(not_ghost, type, '_not_ghost')
+        for _ in range(iter_size[0] * 2):
+            yield next(it)
 
-        def __next__(self):
-            if not self.end_not_ghost:
-                try:
-                    n = next(self.not_ghost)
-                except StopIteration:
-                    n = next(self.ghost)
-                    self.end_not_ghost = True
-            else:
-                n = next(self.ghost)
-            return n
+        it = self._rb_iter(ghost, type, '_ghost')
+        for _ in range(iter_size[1] * 2):
+            yield next(it)
+
+        raise StopIteration
 
     def __init__(self, value):
         self.typename = self.get_basic_type(value)
@@ -271,10 +265,9 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
         node = find_type(rep_type, '_Link_type')
         node = node.strip_typedefs()
 
-        return self._iter(self._rb_iter(RbtreeIterator(self.data),
-                                        node, '_not_ghost'),
-                          self._rb_iter(RbtreeIterator(self.ghost_data),
-                                        node, '_ghost'))
+        return itertools.chain(
+            self._rb_iter(RbtreeIterator(self.data), node, "_not_ghost"),
+            self._rb_iter(RbtreeIterator(self.ghost_data), node, "_ghost"))
 
     def display_hint(self):
         return 'map'
@@ -366,8 +359,16 @@ class AkaElementPrinter(AkantuPrinter):
         self.element = self.value['element']
         self.eltype = self.value['type']
         self.ghost_type = self.value['ghost_type']
+        self._ek_not_defined = gdb.parse_and_eval('akantu::_not_defined')
+        self._casper = gdb.parse_and_eval('akantu::_casper')
+        self._max_uint = gdb.parse_and_eval('(akantu::UInt) -1')
 
     def to_string(self):
+        if (self.element == self._max_uint) and \
+           (self.eltype == self._ek_not_defined) and \
+           (self.ghost_type == self._casper):
+            return 'ElementNull'
+
         return 'Element({0}, {1}, {2})'.format(self.element, self.eltype,
                                                self.ghost_type)
 
