@@ -324,15 +324,15 @@ public:
                                 const GhostType & ghost_type = _not_ghost);
 
   /// get the subelement (element of lower dimension) connected to a element
-  const auto & getSubelementToElement(const Element & element) const;
+  VectorProxy<Element> getSubelementToElement(const Element & element) const;
 
   /// get connectivity of a given element
-  inline const auto & getConnectivity(const Element & element) const;
+  inline VectorProxy<UInt> getConnectivity(const Element & element) const;
 
 protected:
   inline auto & getElementToSubelement(const Element & element);
-  inline auto & getSubelementToElement(const Element & element);
-  inline auto & getConnectivity(const Element & element);
+  inline VectorProxy<Element> getSubelementToElement(const Element & element);
+  inline VectorProxy<UInt> getConnectivity(const Element & element);
 #endif
 
 public:

@@ -269,22 +269,20 @@ inline auto & Mesh::getSubelementToElement(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline const auto &
+inline VectorProxy<Element>
 Mesh::getSubelementToElement(const Element & element) const {
   const auto & sub_to_element =
       this->getSubelementToElement(element.type, element.ghost_type);
   auto it = sub_to_element.begin(sub_to_element.getNbComponent());
-  it += element.element;
-  return *it;
+  return it[element.element];
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto & Mesh::getSubelementToElement(const Element & element) {
+inline VectorProxy<Element> Mesh::getSubelementToElement(const Element & element) {
   auto & sub_to_element =
       this->getSubelementToElement(element.type, element.ghost_type);
   auto it = sub_to_element.begin(sub_to_element.getNbComponent());
-  it += element.element;
-  return *it;
+  return it[element.element];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -549,19 +547,17 @@ inline auto Mesh::getFacetConnectivity(const Element & element, UInt t) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline const auto & Mesh::getConnectivity(const Element & element) const {
+inline VectorProxy<UInt> Mesh::getConnectivity(const Element & element) const {
   const auto & conn = connectivities(element.type, element.ghost_type);
   auto it = conn.begin(conn.getNbComponent());
-  it += element.element;
-  return *it;
+  return it[element.element];
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto & Mesh::getConnectivity(const Element & element) {
+inline VectorProxy<UInt> Mesh::getConnectivity(const Element & element) {
   auto & conn = connectivities(element.type, element.ghost_type);
   auto it = conn.begin(conn.getNbComponent());
-  it += element.element;
-  return *it;
+  return it[element.element];
 }
 
 /* -------------------------------------------------------------------------- */
