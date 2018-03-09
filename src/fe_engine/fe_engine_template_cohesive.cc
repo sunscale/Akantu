@@ -87,7 +87,7 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 
 #ifndef AKANTU_NDEBUG
   UInt nb_element = mesh.getNbElement(type, ghost_type);
-  if (filter_elements == filter_elements)
+  if (filter_elements != empty_filter)
     nb_element = filter_elements.size();
 
   UInt nb_quadrature_points = getNbIntegrationPoints(type);

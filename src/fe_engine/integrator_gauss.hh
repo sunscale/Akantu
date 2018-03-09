@@ -144,7 +144,9 @@ protected:
   // multiply the jacobians by the integration weights and stores the results in
   // jacobians
   template <ElementType type, UInt polynomial_degree>
-  void multiplyJacobiansByWeights(Array<Real> & jacobians) const;
+  void multiplyJacobiansByWeights(
+      Array<Real> & jacobians,
+      const Array<UInt> & filter_elements = empty_filter) const;
 
   /// compute the vector of quadrature points natural coordinates
   template <ElementType type>
@@ -177,6 +179,10 @@ public:
 
 public:
   void onElementsAdded(const Array<Element> & elements) override;
+
+  template <ElementType type>
+  void onElementsAddedByType(const Array<UInt> & new_elements,
+                             const GhostType & ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

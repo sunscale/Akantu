@@ -357,11 +357,12 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
 
   auto compute = [&](const auto & el) {
     Vector<Real> J(jacobians_begin[el]);
+    Matrix<Real> X(x_it[el]);
 
-    for (UInt s = 0; s < spatial_dimension; ++s)
-      for (UInt n = 0; n < nb_nodes_per_subelement; ++n)
-        x(s, n) =
-            ((*x_it)(s, n) + (*x_it)(s, n + nb_nodes_per_subelement)) * .5;
+    for (UInt n = 0; n < nb_nodes_per_subelement; ++n)
+      Vector<Real>(x(n)) =
+          (Vector<Real>(X(n)) + Vector<Real>(X(n + nb_nodes_per_subelement))) /
+          2.;
 
     if (type == _cohesive_1d_2)
       J(0) = 1;
@@ -393,24 +394,27 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 template <ElementKind kind, class IntegrationOrderFunctor>
 template <ElementType type, UInt polynomial_degree>
 void IntegratorGauss<kind, IntegrationOrderFunctor>::multiplyJacobiansByWeights(
-    Array<Real> & jacobians) const {
+    Array<Real> & jacobians, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_quadrature_points =
       GaussIntegrationElement<type, polynomial_degree>::getNbQuadraturePoints();
-  UInt nb_element = jacobians.size() / nb_quadrature_points;
 
   Vector<Real> weights =
       GaussIntegrationElement<type, polynomial_degree>::getWeights();
 
-  auto jacobians_it =
-      jacobians.begin_reinterpret(nb_quadrature_points, nb_element);
-  auto jacobians_end =
-      jacobians.end_reinterpret(nb_quadrature_points, nb_element);
+  auto && view = make_view(jacobians, nb_quadrature_points);
 
-  for (; jacobians_it != jacobians_end; ++jacobians_it) {
-    Vector<Real> & J = *jacobians_it;
-    J *= weights;
+  if (filter_elements != empty_filter) {
+    auto J_it = view.begin();
+    for (auto el : filter_elements) {
+      Vector<Real> J(J_it[el]);
+      J *= weights;
+    }
+  } else {
+    for (auto & J : make_view(jacobians, nb_quadrature_points)) {
+      J *= weights;
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -599,11 +603,54 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
-void IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAdded(
-    const Array<Element> & new_elements) {
-
+template <ElementType type>
+inline void
+IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAddedByType(
+    const Array<UInt> & elements, const GhostType & ghost_type) {
   const auto & nodes = mesh.getNodes();
 
+  if (not jacobians.exists(type, ghost_type))
+    jacobians.alloc(0, 1, type, ghost_type);
+
+  this->computeJacobiansOnIntegrationPoints(
+      nodes, quadrature_points(type, ghost_type), jacobians(type, ghost_type),
+      type, ghost_type, elements);
+
+  constexpr UInt polynomial_degree =
+      IntegrationOrderFunctor::template getOrder<type>();
+
+  multiplyJacobiansByWeights<type, polynomial_degree>(
+      this->jacobians(type, ghost_type), elements);
+}
+
+/* -------------------------------------------------------------------------- */
+namespace integrator {
+  namespace details {
+    template <ElementKind kind> struct IntegratorOnElementsAddedHelper {};
+
+#define ON_ELEMENT_ADDED(type)                                                 \
+  integrator.template onElementsAddedByType<type>(elements, ghost_type);
+
+#define AKANTU_SPECIALIZE_ON_ELEMENT_ADDED_HELPER(kind)                        \
+  template <> struct IntegratorOnElementsAddedHelper<kind> {                   \
+    template <class I>                                                         \
+    static void call(I & integrator, const Array<UInt> & elements,             \
+                     const ElementType & type, const GhostType & ghost_type) { \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(ON_ELEMENT_ADDED, kind);                \
+    }                                                                          \
+  };
+
+    AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_ON_ELEMENT_ADDED_HELPER)
+
+#undef AKANTU_SPECIALIZE_ON_ELEMENT_ADDED_HELPER
+#undef ON_ELEMENT_ADDED
+  } // namespace details
+} // namespace integrator
+
+/* -------------------------------------------------------------------------- */
+template <ElementKind kind, class IntegrationOrderFunctor>
+void IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAdded(
+    const Array<Element> & new_elements) {
   for (auto elements_range : MeshElementsByTypes(new_elements)) {
     auto type = elements_range.getType();
     auto ghost_type = elements_range.getGhostType();
@@ -611,14 +658,8 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAdded(
     if (mesh.getKind(type) != kind)
       continue;
 
-    auto & elements = elements_range.getElements();
-
-    if (not jacobians.exists(type, ghost_type))
-      jacobians.alloc(0, 1, type, ghost_type);
-
-    this->computeJacobiansOnIntegrationPoints(
-        nodes, quadrature_points(type, ghost_type), jacobians(type, ghost_type),
-        type, ghost_type, elements);
+    integrator::details::IntegratorOnElementsAddedHelper<kind>::call(
+        *this, elements_range.getElements(), type, ghost_type);
   }
 }
 
