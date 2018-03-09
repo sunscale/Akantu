@@ -64,7 +64,7 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
 
   x.resize(b.size());
 
-  this->dof_manager.updateGlobalBlockedDofs();
+  //this->dof_manager.updateGlobalBlockedDofs();
   const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
 
   solver_callback.assembleResidual();

@@ -246,22 +246,6 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
       shapes_filtered_val += size_of_shapes * nb_quadrature_points;
     }
 
-    /**
-     * compute A matrix @f$ \mathbf{A} = \left[\begin{array}{c c c c c c c c c c
-     *c c}
-     * 1 & 0 & 0 & 0 & 0 & 0 & -1 &  0 &  0 &  0 &  0 &  0 \\
-     * 0 & 1 & 0 & 0 & 0 & 0 &  0 & -1 &  0 &  0 &  0 &  0 \\
-     * 0 & 0 & 1 & 0 & 0 & 0 &  0 &  0 & -1 &  0 &  0 &  0 \\
-     * 0 & 0 & 0 & 1 & 0 & 0 &  0 &  0 &  0 & -1 &  0 &  0 \\
-     * 0 & 0 & 0 & 0 & 1 & 0 &  0 &  0 &  0 &  0 & -1 &  0 \\
-     * 0 & 0 & 0 & 0 & 0 & 1 &  0 &  0 &  0 &  0 &  0 & -1
-     * \end{array} \right]@f$
-     **/
-
-    // UInt size_of_A =
-    // spatial_dimension*size_of_shapes*spatial_dimension*nb_nodes_per_element;
-    // Real * A = new Real[size_of_A];
-    // memset(A, 0, size_of_A*sizeof(Real));
     Matrix<Real> A(spatial_dimension * size_of_shapes,
                    spatial_dimension * nb_nodes_per_element);
 
@@ -269,13 +253,6 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
       A(i, i) = 1;
       A(i, i + spatial_dimension * size_of_shapes) = -1;
     }
-
-    // compute traction. This call is not necessary for the linear
-    // cohesive law that, currently, is the only one used for the
-    // extrinsic approach.
-    //    if (!model->getIsExtrinsic()){
-    //  computeTraction(ghost_type);
-    //}
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}}
     /// @f$

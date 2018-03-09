@@ -104,7 +104,7 @@ public:
 
     if (nb_new_nodes > 0) {
       mesh.sendEvent(nodes_event);
-      //mesh.sendEvent(global_ids_updater.getChangedNodeEvent());
+      // mesh.sendEvent(global_ids_updater.getChangedNodeEvent());
     }
 
     return std::make_tuple(nb_new_nodes, nb_new_stuff(1));
@@ -194,7 +194,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
     auto & synchronizer =
         dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
     this->registerSynchronizer(synchronizer, _gst_smmc_facets);
-    //this->registerSynchronizer(synchronizer, _gst_smmc_facets_conn);
+    // this->registerSynchronizer(synchronizer, _gst_smmc_facets_conn);
 
     synchronizeGhostFacetsConnectivity();
 
@@ -619,39 +619,53 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
 
   SolidMechanicsModel::onNodesAdded(new_nodes, event);
 
-  UInt new_node, old_node;
+  const CohesiveNewNodesEvent * cohesive_event;
+  if ((cohesive_event = dynamic_cast<const CohesiveNewNodesEvent *>(&event)) == nullptr)
+    return;
 
-  try {
-    const auto & cohesive_event =
-        dynamic_cast<const CohesiveNewNodesEvent &>(event);
-    const auto & old_nodes = cohesive_event.getOldNodesList();
+  const auto & old_nodes = cohesive_event->getOldNodesList();
 
-    auto copy = [this, &new_node, &old_node](auto & arr) {
-      for (UInt s = 0; s < spatial_dimension; ++s) {
-        arr(new_node, s) = arr(old_node, s);
-      }
-    };
+  auto copy = [this, &new_nodes, &old_nodes](auto & arr) {
+    UInt new_node, old_node;
+
+    auto view = make_view(arr, spatial_dimension);
+    auto begin = view.begin();
 
     for (auto && pair : zip(new_nodes, old_nodes)) {
       std::tie(new_node, old_node) = pair;
 
-      copy(*displacement);
-      copy(*blocked_dofs);
+      auto old_ = begin + old_node;
+      auto new_ = begin + new_node;
 
-      if (velocity)
-        copy(*velocity);
-
-      if (acceleration)
-        copy(*acceleration);
-
-      if (current_position)
-        copy(*current_position);
-
-      if (previous_displacement)
-        copy(*previous_displacement);
+      *new_ = *old_;
     }
-  } catch (std::bad_cast &) {
-  }
+  };
+
+  copy(*displacement);
+  copy(*blocked_dofs);
+
+  if (velocity)
+    copy(*velocity);
+
+  if (acceleration)
+    copy(*acceleration);
+
+  if (current_position)
+    copy(*current_position);
+
+  if (previous_displacement)
+    copy(*previous_displacement);
+
+  // if (external_force)
+  //   copy(*external_force);
+  // if (internal_force)
+  //   copy(*internal_force);
+
+  if (displacement_increment)
+    copy(*displacement_increment);
+
+  copy(getDOFManager().getSolution("displacement"));
+  // this->assembleMassLumped();
 
   AKANTU_DEBUG_OUT();
 }
@@ -681,9 +695,7 @@ void SolidMechanicsModelCohesive::printself(std::ostream & stream,
     ;
 
   stream << space << "SolidMechanicsModelCohesive [" << std::endl;
-
   SolidMechanicsModel::printself(stream, indent + 1);
-
   stream << space << "]" << std::endl;
 }
 

@@ -935,24 +935,10 @@ FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
 void SolidMechanicsModel::splitElementByMaterial(
     const Array<Element> & elements,
     std::vector<Array<Element>> & elements_per_mat) const {
-  ElementType current_element_type = _not_defined;
-  GhostType current_ghost_type = _casper;
-  const Array<UInt> * mat_indexes = nullptr;
-  const Array<UInt> * mat_loc_num = nullptr;
-
   for (const auto & el : elements) {
-    if (el.type != current_element_type ||
-        el.ghost_type != current_ghost_type) {
-      current_element_type = el.type;
-      current_ghost_type = el.ghost_type;
-      mat_indexes = &(this->material_index(el.type, el.ghost_type));
-      mat_loc_num = &(this->material_local_numbering(el.type, el.ghost_type));
-    }
-
     Element mat_el = el;
-
-    mat_el.element = (*mat_loc_num)(el.element);
-    elements_per_mat[(*mat_indexes)(el.element)].push_back(mat_el);
+    mat_el.element = this->material_local_numbering(el);
+    elements_per_mat[this->material_index(el)].push_back(mat_el);
   }
 }
 
