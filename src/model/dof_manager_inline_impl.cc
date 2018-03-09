@@ -137,6 +137,11 @@ inline const Array<Real> & DOFManager::getSolution(const ID & dofs_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline Array<Real> & DOFManager::getSolution(const ID & dofs_id) {
+  return this->getDOFData(dofs_id).solution;
+}
+
+/* -------------------------------------------------------------------------- */
 inline const Array<bool> &
 DOFManager::getBlockedDOFs(const ID & dofs_id) const {
   return *(this->getDOFData(dofs_id).blocked_dofs);

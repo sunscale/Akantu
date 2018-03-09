@@ -266,6 +266,9 @@ public:
   /// Get a reference to the solution array registered for the given id
   inline const Array<Real> & getSolution(const ID & dofs_id) const;
 
+  /// Get a reference to the solution array registered for the given id
+  inline Array<Real> & getSolution(const ID & dofs_id);
+
   /* ------------------------------------------------------------------------ */
   /* Matrices accessors                                                       */
   /* ------------------------------------------------------------------------ */
