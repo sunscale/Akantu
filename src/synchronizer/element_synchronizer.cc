@@ -353,12 +353,13 @@ void ElementSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
     }
 
     if (not is_same) {
-      AKANTU_EXCEPTION("The connectivity of the element "
-                       << element << " " << local_global_conn
-                       << " does not match the connectivity of the equivalent "
-                          "element on proc "
-                       << proc << " " << global_conn
-                       << " in communication with tag " << tag);
+      AKANTU_DEBUG_WARNING(
+          "The connectivity of the element "
+          << element << " " << local_global_conn
+          << " does not match the connectivity of the equivalent "
+             "element on proc "
+          << proc << " " << global_conn << " in communication with tag "
+          << tag);
     }
   }
 }

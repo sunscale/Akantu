@@ -428,6 +428,8 @@ public:
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(MaterialLocalNumbering,
+                   material_local_numbering,  const ElementTypeMapArray<UInt> &);
 
   /// vectors containing local material element index for each global element
   /// index

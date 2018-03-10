@@ -81,13 +81,6 @@ public:
   inline bool operator<(const Element & rhs) const;
 };
 
-/// standard output stream operator
-inline std::ostream & operator<<(std::ostream & stream, const Element & _this) {
-  stream << "Element [" << _this.type << ", " << _this.element << ", "
-         << _this.ghost_type << "]";
-  return stream;
-}
-
 namespace {
   const Element ElementNull{_not_defined, UInt(-1), _casper};
   //      Element{_not_defined, 0, _casper, _ek_not_defined};
@@ -106,6 +99,18 @@ inline bool Element::operator<(const Element & rhs) const {
   return ((rhs == ElementNull) ||
           std::tie(ghost_type, type, element) <
               std::tie(rhs.ghost_type, rhs.type, rhs.element));
+}
+
+/// standard output stream operator
+inline std::ostream & operator<<(std::ostream & stream, const Element & _this) {
+  if(_this == ElementNull) {
+    stream << "ElementNull";
+    return stream;
+  }
+
+  stream << "Element [" << _this.type << ", " << _this.element << ", "
+         << _this.ghost_type << "]";
+  return stream;
 }
 
 } // namespace akantu
