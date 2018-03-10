@@ -38,8 +38,7 @@
 
 using namespace akantu;
 
-using types = ::testing::Types<
-
+using mat_types = ::testing::Types<
     Traits<MaterialNeohookean, 1>, Traits<MaterialNeohookean, 2>,
     Traits<MaterialNeohookean, 3>>;
 
@@ -68,7 +67,7 @@ namespace {
 template <typename T>
 class TestFiniteDefMaterialFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_CASE(TestFiniteDefMaterialFixture, types);
+TYPED_TEST_CASE(TestFiniteDefMaterialFixture, mat_types);
 
 TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeStress) {
   this->material->testComputeStress();

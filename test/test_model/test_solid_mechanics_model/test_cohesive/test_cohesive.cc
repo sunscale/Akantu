@@ -44,7 +44,7 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeI) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if(this->dim != 3)
+  if (this->dim != 3)
     this->checkDissipated(G_c);
 }
 
@@ -59,7 +59,7 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeII) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if(this->dim != 3)
+  if (this->dim != 3)
     this->checkDissipated(G_c);
 }
 
@@ -75,7 +75,7 @@ TYPED_TEST(TestSMMCFixture, IntrinsicModeI) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if(this->dim != 3)
+  if (this->dim != 3)
     this->checkDissipated(G_c);
 }
 
@@ -91,6 +91,6 @@ TYPED_TEST(TestSMMCFixture, IntrinsicModeII) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if(this->dim != 3)
+  if (this->dim != 3)
     this->checkDissipated(G_c);
 }

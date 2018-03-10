@@ -42,7 +42,7 @@
 
 using namespace akantu;
 
-using types =
+using mat_types =
     ::testing::Types<Traits<MaterialElastic, 1>, Traits<MaterialElastic, 2>,
                      Traits<MaterialElastic, 3>,
 
@@ -859,7 +859,7 @@ namespace {
 template <typename T>
 class TestElasticMaterialFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_CASE(TestElasticMaterialFixture, types);
+TYPED_TEST_CASE(TestElasticMaterialFixture, mat_types);
 
 TYPED_TEST(TestElasticMaterialFixture, ComputeStress) {
   this->material->testComputeStress();

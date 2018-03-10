@@ -102,12 +102,12 @@ constexpr const size_t TestFEMBaseFixture<type_, shape_t, kind>::dim;
 /* -------------------------------------------------------------------------- */
 /// Base class for test with Lagrange FEEngine and regular elements
 template <typename type_>
-using TestFEMFixture = TestFEMBaseFixture<type_, ShapeLagrange>;
+using TestFEMFixture = TestFEMBaseFixture<type_, ShapeLagrange, _ek_regular>;
 
 /* -------------------------------------------------------------------------- */
 
-using types = gtest_list_t<TestElementTypes>;
+using fe_engine_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_CASE(TestFEMFixture, types);
+TYPED_TEST_CASE(TestFEMFixture, fe_engine_types);
 
 #endif /* __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__ */

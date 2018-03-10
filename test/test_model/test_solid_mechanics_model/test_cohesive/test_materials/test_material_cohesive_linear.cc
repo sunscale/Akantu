@@ -148,9 +148,9 @@ template <typename dim_>
 using TestMaterialCohesiveLinearFixture =
     TestMaterialCohesiveFixture<TestMaterialCohesiveLinear, dim_>;
 
-using types = gtest_list_t<TestAllDimensions>;
+using coh_types = gtest_list_t<TestAllDimensions>;
 
-TYPED_TEST_CASE(TestMaterialCohesiveLinearFixture, types);
+TYPED_TEST_CASE(TestMaterialCohesiveLinearFixture, coh_types);
 
 TYPED_TEST(TestMaterialCohesiveLinearFixture, ModeI) {
   this->checkModeI(this->material->delta_c_, this->material->get("G_c"));

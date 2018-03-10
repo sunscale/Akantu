@@ -314,7 +314,7 @@ using IsExtrinsicTypes = std::tuple<std::true_type, std::false_type>;
 using AnalysisMethodTypes =
     std::tuple<analysis_method_t<_explicit_lumped_mass>>;
 
-using types = gtest_list_t<std::tuple<
+using coh_types = gtest_list_t<std::tuple<
     std::tuple<element_type_t<_cohesive_1d_2>, element_type_t<_segment_2>,
                element_type_t<_segment_2>>,
     std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_triangle_3>,
@@ -338,6 +338,6 @@ using types = gtest_list_t<std::tuple<
     std::tuple<element_type_t<_cohesive_3d_16>, element_type_t<_hexahedron_20>,
                element_type_t<_hexahedron_20>>*/>>;
 
-TYPED_TEST_CASE(TestSMMCFixture, types);
+TYPED_TEST_CASE(TestSMMCFixture, coh_types);
 
 #endif /* __AKANTU_TEST_COHESIVE_FIXTURE_HH__ */

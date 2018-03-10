@@ -75,9 +75,9 @@ protected:
 template <typename T> constexpr ElementType TestLumpedMassesFixture<T>::type;
 template <typename T> constexpr size_t TestLumpedMassesFixture<T>::dim;
 
-using types = gtest_list_t<TestElementTypes>;
+using mass_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_CASE(TestLumpedMassesFixture, types);
+TYPED_TEST_CASE(TestLumpedMassesFixture, mass_types);
 
 TYPED_TEST(TestLumpedMassesFixture, TestLumpedMass) {
   this->model->assembleMassLumped();

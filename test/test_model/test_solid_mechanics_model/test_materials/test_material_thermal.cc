@@ -39,7 +39,7 @@
 
 using namespace akantu;
 
-using types =
+using mat_types =
     ::testing::Types<Traits<MaterialThermal, 1>, Traits<MaterialThermal, 2>,
                      Traits<MaterialThermal, 3>>;
 
@@ -97,7 +97,7 @@ namespace {
 template <typename T>
 class TestMaterialThermalFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_CASE(TestMaterialThermalFixture, types);
+TYPED_TEST_CASE(TestMaterialThermalFixture, mat_types);
 
 TYPED_TEST(TestMaterialThermalFixture, ThermalComputeStress) {
   this->material->testComputeStress();

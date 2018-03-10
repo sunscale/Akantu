@@ -39,8 +39,7 @@
 
 using namespace akantu;
 
-using types = ::testing::Types<
-
+using mat_types = ::testing::Types<
     Traits<MaterialMarigo, 1>, Traits<MaterialMarigo, 2>,
     Traits<MaterialMarigo, 3>,
 
@@ -54,7 +53,7 @@ namespace {
 template <typename T>
 class TestDamageMaterialFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_CASE(TestDamageMaterialFixture, types);
+TYPED_TEST_CASE(TestDamageMaterialFixture, mat_types);
 
 TYPED_TEST(TestDamageMaterialFixture, DISABLED_ComputeStress) {
   this->material->testComputeStress();
