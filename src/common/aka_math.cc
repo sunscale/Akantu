@@ -187,7 +187,7 @@ void Math::compute_tangents(const Array<Real> & normals,
           << " does not have the good amount of components.");
 
   UInt nb_normals = normals.size();
-  tangents.resize(nb_normals);
+  tangents.resize(nb_normals, 0.);
 
   Real * normal_it = normals.storage();
   Real * tangent_it = tangents.storage();
