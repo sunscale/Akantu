@@ -338,11 +338,8 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
 
   jacobians.resize(nb_element * nb_quadrature_points);
 
-  auto jacobians_it =
+  auto jacobians_begin =
       jacobians.begin_reinterpret(nb_quadrature_points, nb_element);
-  auto jacobians_begin = jacobians_it;
-
-  Vector<Real> weights = GaussIntegrationElement<type>::getWeights();
 
   Array<Real> x_el(0, spatial_dimension * nb_nodes_per_element);
   FEEngine::extractNodalToElementField(mesh, nodes, x_el, type, ghost_type,
@@ -354,10 +351,11 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
   Matrix<Real> x(spatial_dimension, nb_nodes_per_subelement);
 
   nb_element = x_el.size();
-
+  UInt l_el = 0;
   auto compute = [&](const auto & el) {
     Vector<Real> J(jacobians_begin[el]);
-    Matrix<Real> X(x_it[el]);
+    Matrix<Real> X(x_it[l_el]);
+    ++l_el;
 
     for (UInt n = 0; n < nb_nodes_per_subelement; ++n)
       Vector<Real>(x(n)) =
@@ -371,6 +369,7 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
   };
 
   for_each_element(nb_element, filter_elements, compute);
+
   AKANTU_DEBUG_OUT();
 }
 #endif
