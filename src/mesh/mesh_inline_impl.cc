@@ -214,8 +214,7 @@ Mesh::getSubelementToElementPointer(const ElementType & type,
                                     const GhostType & ghost_type) {
   auto & array = getDataPointer<Element>(
       "subelement_to_element", type, ghost_type, getNbFacetsPerElement(type),
-      true, is_mesh_facets);
-  array.set(ElementNull);
+      true, is_mesh_facets, ElementNull);
   return array;
 }
 
@@ -299,6 +298,27 @@ Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
       tmp.resize(mesh_parent->getNbElement(el_type, ghost_type));
     else
       tmp.resize(this->getNbElement(el_type, ghost_type));
+  } else {
+    tmp.resize(0);
+  }
+
+  return tmp;
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+inline Array<T> &
+Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
+                     const GhostType & ghost_type, UInt nb_component,
+                     bool size_to_nb_element, bool resize_with_parent, const T & defaul_) {
+  Array<T> & tmp = mesh_data.getElementalDataArrayAlloc<T>(
+      data_name, el_type, ghost_type, nb_component);
+
+  if (size_to_nb_element) {
+    if (resize_with_parent)
+      tmp.resize(mesh_parent->getNbElement(el_type, ghost_type), defaul_);
+    else
+      tmp.resize(this->getNbElement(el_type, ghost_type), defaul_);
   } else {
     tmp.resize(0);
   }

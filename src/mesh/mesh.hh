@@ -383,6 +383,13 @@ public:
                  UInt nb_component = 1, bool size_to_nb_element = true,
                  bool resize_with_parent = false);
 
+  template <typename T>
+  inline Array<T> & getDataPointer(const ID & data_name,
+                                   const ElementType & el_type,
+                                   const GhostType & ghost_type,
+                                   UInt nb_component, bool size_to_nb_element,
+                                   bool resize_with_parent, const T & defaul_);
+
   /// Facets mesh accessor
   inline const Mesh & getMeshFacets() const;
   inline Mesh & getMeshFacets();
