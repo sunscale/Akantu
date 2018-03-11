@@ -38,27 +38,19 @@
 #include "aka_csr.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
-
 #include <vector>
-
 /* -------------------------------------------------------------------------- */
+
 #ifndef __AKANTU_MESH_UTILS_HH__
 #define __AKANTU_MESH_UTILS_HH__
 
-/* -------------------------------------------------------------------------- */
 namespace akantu {
 
 class MeshUtils {
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// build a CSR<UInt> that contains for each node the linearized number of
-  /// the connected elements of a given spatial dimension
-  // static void buildNode2Elements(const Mesh & mesh, CSR<UInt> & node_to_elem,
-  //                                UInt spatial_dimension = _all_dimensions);
-
   /// build a CSR<Element> that contains for each node the list of connected
   /// elements of a given spatial dimension
   static void buildNode2Elements(const Mesh & mesh, CSR<Element> & node_to_elem,
@@ -128,7 +120,7 @@ public:
   /// facet is reached
   template <bool third_dim_points>
   static bool findElementsAroundSubfacet(
-      const Mesh & mesh, const Mesh & mesh_facets,
+      const Mesh & mesh_facets,
       const Element & starting_element, const Element & end_facet,
       const Vector<UInt> & subfacet_connectivity,
       std::vector<Element> & elem_list, std::vector<Element> & facet_list,
@@ -187,7 +179,7 @@ private:
 
   /// find subfacets to be doubled
   template <bool subsubfacet_mode>
-  static void findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets);
+  static void findSubfacetToDouble(Mesh & mesh_facets);
 
   /// double facets (points) in 1D
   static void doublePointFacet(Mesh & mesh, Mesh & mesh_facets,

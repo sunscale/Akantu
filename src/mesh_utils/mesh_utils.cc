@@ -1,3 +1,4 @@
+
 /**
  * @file   mesh_utils.cc
  *
@@ -579,13 +580,13 @@ UInt MeshUtils::insertCohesiveElements(
     } else {
       doubleFacet(mesh, mesh_facets, spatial_dimension - 1, doubled_nodes,
                   true);
-      findSubfacetToDouble<false>(mesh, mesh_facets);
+      findSubfacetToDouble<false>(mesh_facets);
 
       if (spatial_dimension == 2) {
         doubleSubfacet<2>(mesh, mesh_facets, doubled_nodes);
       } else if (spatial_dimension == 3) {
         doubleFacet(mesh, mesh_facets, 1, doubled_nodes, false);
-        findSubfacetToDouble<true>(mesh, mesh_facets);
+        findSubfacetToDouble<true>(mesh_facets);
         doubleSubfacet<3>(mesh, mesh_facets, doubled_nodes);
       }
     }
@@ -831,7 +832,7 @@ void MeshUtils::resetFacetToDouble(Mesh & mesh_facets) {
 
 /* -------------------------------------------------------------------------- */
 template <bool subsubfacet_mode>
-void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
+void MeshUtils::findSubfacetToDouble(Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
 
   UInt spatial_dimension = mesh_facets.getSpatialDimension();
@@ -983,7 +984,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
 
                 /// check if subsubfacet is to be doubled
                 if (findElementsAroundSubfacet<true>(
-                        mesh, mesh_facets, starting_element, current_facet,
+                        mesh_facets, starting_element, current_facet,
                         subsubfacet_connectivity, element_list, facet_list,
                         subfacet_list) == false &&
                     removeElementsInVector(*subfacet_list,
@@ -1005,7 +1006,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
 
               /// check if subfacet is to be doubled
               if (findElementsAroundSubfacet<false>(
-                      mesh, mesh_facets, starting_element, current_facet,
+                      mesh_facets, starting_element, current_facet,
                       subfacet_connectivity, element_list,
                       facet_list) == false &&
                   removeElementsInVector(
@@ -1676,7 +1677,7 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
 /* -------------------------------------------------------------------------- */
 template <bool third_dim_points>
 bool MeshUtils::findElementsAroundSubfacet(
-    const Mesh & mesh, const Mesh & mesh_facets,
+    const Mesh & mesh_facets,
     const Element & starting_element, const Element & end_facet,
     const Vector<UInt> & subfacet_connectivity,
     std::vector<Element> & element_list, std::vector<Element> & facet_list,
@@ -1767,9 +1768,10 @@ bool MeshUtils::findElementsAroundSubfacet(
 
       element_list.push_back(opposing_element);
 
-      AKANTU_DEBUG_ASSERT(hasElement(mesh.getConnectivity(opposing_element),
-                                     subfacet_connectivity),
-                          "Subfacet doesn't belong to this element");
+      AKANTU_DEBUG_ASSERT(
+          hasElement(mesh_facets.getMeshParent().getConnectivity(opposing_element),
+                     subfacet_connectivity),
+          "Subfacet doesn't belong to this element");
     }
 
     /// erased checked element from the list

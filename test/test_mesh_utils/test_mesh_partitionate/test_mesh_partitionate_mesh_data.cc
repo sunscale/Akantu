@@ -27,9 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#include <cmath>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "mesh.hh"
@@ -39,8 +36,10 @@
 #include "dumper_elemental_field.hh"
 #include "dumper_paraview.hh"
 #endif // AKANTU_USE_IOHELPER
+/* -------------------------------------------------------------------------- */
 
 using namespace akantu;
+
 /* -------------------------------------------------------------------------- */
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
@@ -94,12 +93,12 @@ int main(int argc, char * argv[]) {
     const Array<UInt> & type_partition_reference = partition(*tit, gt);
     const Array<UInt> & type_partition = partitioner->getPartitions()(*tit, gt);
     for (UInt i(0); i < nb_element; ++i) {
-      AKANTU_DEBUG_ASSERT(type_partition(i) == type_partition_reference(i),
-                          "Incorrect partitioning");
+      if (not (type_partition(i) == type_partition_reference(i))) {
+        std::cout << "Incorrect partitioning" << std::endl;
+        return 1;
+      }
     }
   }
-
-//#define DEBUG_TEST
 
 #ifdef DEBUG_TEST
   DumperParaview dumper("test-mesh-data-partition");

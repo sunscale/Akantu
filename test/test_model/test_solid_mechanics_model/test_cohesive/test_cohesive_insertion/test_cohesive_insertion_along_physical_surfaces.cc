@@ -27,11 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-#include <fstream>
-#include <iostream>
-#include <limits>
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "material.hh"
@@ -41,8 +36,12 @@
 #include "mesh_io_msh.hh"
 #include "mesh_utils.hh"
 #include "solid_mechanics_model_cohesive.hh"
-
 /* -------------------------------------------------------------------------- */
+#include <fstream>
+#include <iostream>
+#include <limits>
+/* -------------------------------------------------------------------------- */
+
 using namespace akantu;
 
 int main(int argc, char * argv[]) {
@@ -83,32 +82,16 @@ int main(int argc, char * argv[]) {
                                     .size();
       UInt inserted_elements =
           model.getMaterial(surfaces_name[i]).getElementFilter()(*it).size();
-      AKANTU_DEBUG_ASSERT((expected_insertion == inserted_elements),
-                          std::endl
-                              << "!!! Mismatch in insertion of surface named "
-                              << surfaces_name[i] << " --> "
-                              << inserted_elements
-                              << " inserted elements out of "
-                              << expected_insertion << std::endl);
+      if(not (expected_insertion == inserted_elements)) {
+        std::cout <<  "!!! Mismatch in insertion of surface named "
+                  << surfaces_name[i] << " --> "
+                  << inserted_elements
+                  << " inserted elements out of "
+                  << expected_insertion << std::endl;
+        return 1;
+      }
     }
   }
 
-  /*std::string paraview_folder =
-  "paraview/test_intrinsic_insertion_along_physical_surfaces/";
-  model.setDirectory(paraview_folder);
-  model.setBaseName("bulk");
-  model.addDumpField("partitions");
-  model.dump();
-  model.setDirectoryToDumper("cohesive elements", paraview_folder);
-  model.setBaseNameToDumper("cohesive elements", "one_cohesive_element");
-  model.addDumpFieldToDumper("cohesive elements", "partitions");
-  model.addDumpFieldToDumper("cohesive elements", "material_index");
-  model.dump("cohesive elements");
-  */
-
-  // model.assembleStiffnessMatrix();
-
-  // finalize();
-
-  return EXIT_SUCCESS;
+  return 0;
 }

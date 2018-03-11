@@ -32,14 +32,14 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <algorithm>
-#include <numeric>
-
-/* -------------------------------------------------------------------------- */
 #include "dof_synchronizer.hh"
 #include "material_cohesive_linear.hh"
 #include "solid_mechanics_model_cohesive.hh"
 #include "sparse_matrix.hh"
+/* -------------------------------------------------------------------------- */
+#include <algorithm>
+#include <numeric>
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
@@ -206,12 +206,15 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
 
     UInt nb_quad_facet =
         model->getFEEngine("FacetsFEEngine").getNbIntegrationPoints(type_facet);
+
+#ifndef AKANTU_NDEBUG
     UInt nb_quad_cohesive = model->getFEEngine("CohesiveFEEngine")
                                 .getNbIntegrationPoints(type_cohesive);
 
     AKANTU_DEBUG_ASSERT(nb_quad_cohesive == nb_quad_facet,
                         "The cohesive element and the corresponding facet do "
                         "not have the same numbers of integration points");
+#endif
 
     UInt nb_facet = f_filter.size();
     //  if (nb_facet == 0) continue;
