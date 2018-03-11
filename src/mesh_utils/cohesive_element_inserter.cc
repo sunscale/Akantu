@@ -134,28 +134,35 @@ void CohesiveElementInserter::limitCheckFacets(
       },
       _spatial_dimension = spatial_dimension - 1);
 
+  auto tolerance = Math::getTolerance();
   Vector<Real> bary_facet(spatial_dimension);
   // set the limits to the bounding box
-  for_each_element(mesh_facets,
-                   [&](auto && facet) {
-                     auto & need_check = check_facets(facet);
-                     if (not need_check)
-                       return;
+  for_each_element(
+      mesh_facets,
+      [&](auto && facet) {
+        auto & need_check = check_facets(facet);
+        if (not need_check)
+          return;
 
-                     mesh_facets.getBarycenter(facet, bary_facet);
-                     UInt coord_in_limit = 0;
+        mesh_facets.getBarycenter(facet, bary_facet);
+        UInt coord_in_limit = 0;
 
-                     while (coord_in_limit < spatial_dimension &&
-                            bary_facet(coord_in_limit) >
-                                insertion_limits(coord_in_limit, 0) &&
-                            bary_facet(coord_in_limit) <
-                                insertion_limits(coord_in_limit, 1))
-                       ++coord_in_limit;
+        while (coord_in_limit < spatial_dimension and
+               bary_facet(coord_in_limit) >
+                   (insertion_limits(coord_in_limit, 0) - tolerance) and
+               bary_facet(coord_in_limit) <
+                   (insertion_limits(coord_in_limit, 1) + tolerance))
+          ++coord_in_limit;
 
-                     if (coord_in_limit != spatial_dimension)
-                       need_check = false;
-                   },
-                   _spatial_dimension = spatial_dimension - 1);
+        if (coord_in_limit != spatial_dimension)
+          need_check = false;
+      },
+      _spatial_dimension = spatial_dimension - 1);
+
+  if (physical_groups.size() == 0) {
+    AKANTU_DEBUG_OUT();
+    return;
+  }
 
   if (not mesh_facets.hasData("physical_names")) {
     AKANTU_DEBUG_ASSERT(
