@@ -38,6 +38,7 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "../test_solid_mechanics_model_fixture.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -47,10 +48,9 @@ namespace {
 TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
   const auto spatial_dimension = this->spatial_dimension;
 
-  getStaticParser().parse("test_solid_mechanics_model_linear_elastic_"
-                          "potential_energy_material.dat");
-
-  this->model->initFull(_analysis_method = _static);
+  this->initModel("test_solid_mechanics_model_linear_elastic_"
+                  "potential_energy_material.dat",
+                  _static);
 
   const auto & lower = this->mesh->getLowerBounds();
   const auto & upper = this->mesh->getUpperBounds();
@@ -67,23 +67,42 @@ TYPED_TEST(TestSMMFixture, LinearElasticPotentialEnergy) {
     for (auto && pair : zip(make_view(pos, spatial_dimension),
                             make_view(disp, spatial_dimension),
                             make_view(boun, spatial_dimension))) {
-      auto & posv = std::get<0>(pair);
+      const auto & posv = std::get<0>(pair);
       auto & dispv = std::get<1>(pair);
       auto & bounv = std::get<2>(pair);
       auto reduced_x = (posv(_x) - lower(_x)) / length;
       dispv(_x) = reduced_x * eps;
       bounv(_x) = true;
 
-      if ((spatial_dimension == 2) and (posv(_y) < lower(_y) + 1e-6)) {
-        bounv(_y) = true;
-        if ((spatial_dimension == 3) and (posv(_z) < lower(_z) + 1e-6)) {
-          bounv(_z) = true;
+      if (posv(_x) < (lower(_x) + 1e-6)) {
+        if ((spatial_dimension > 1) and (posv(_y) < (lower(_y) + 1e-6))) {
+          bounv(_y) = true;
+
+          if ((spatial_dimension > 2) and (posv(_z) < (lower(_z) + 1e-6))) {
+            bounv(_z) = true;
+          }
         }
       }
     }
 
+    if (this->dump_paraview) {
+      this->model->dump();
+    }
     /// "solve" a step (solution is imposed)
-    this->model->solveStep();
+    try {
+      this->model->solveStep();
+    } catch (...) {
+      const auto & A = this->model->getDOFManager().getMatrix("J");
+      auto prank = this->mesh->getCommunicator().whoAmI();
+      A.saveMatrix("solver_mumps" + std::to_string(prank) + ".mtx");
+      throw;
+    }
+
+    if (this->dump_paraview) {
+      const auto & A = this->model->getDOFManager().getMatrix("J");
+      auto prank = this->mesh->getCommunicator().whoAmI();
+      A.saveMatrix("solver_mumps" + std::to_string(prank) + ".mtx");
+    }
 
     /// compare energy to analytical solution
     auto E_ref = 0.5 * eps * eps;

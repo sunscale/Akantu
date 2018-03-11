@@ -184,30 +184,9 @@ public:
         "../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
     parent::SetUp();
 
-    getStaticParser().parse("test_solid_mechanics_model_"
-                            "dynamics_material.dat");
-
     auto analysis_method = analysis_method_::value;
-    this->model->initFull(_analysis_method = analysis_method);
-
-    if (this->dump_paraview) {
-      std::stringstream base_name;
-      base_name << "bar" << analysis_method << this->type;
-      this->model->setBaseName(base_name.str());
-      this->model->addDumpFieldVector("displacement");
-      this->model->addDumpFieldVector("blocked_dofs");
-      this->model->addDumpField("mass");
-      this->model->addDumpField("velocity");
-      this->model->addDumpField("acceleration");
-      this->model->addDumpFieldVector("external_force");
-      this->model->addDumpFieldVector("internal_force");
-      this->model->addDumpField("stress");
-      this->model->addDumpField("strain");
-    }
-
-    time_step = this->model->getStableTimeStep() / 10.;
-    this->model->setTimeStep(time_step);
-    // std::cout << "timestep: " << time_step << std::endl;
+    this->initModel("test_solid_mechanics_model_"
+                    "dynamics_material.dat", analysis_method);
 
     const auto & position = this->mesh->getNodes();
     auto & displacement = this->model->getDisplacement();
@@ -224,7 +203,7 @@ public:
       verif.velocity(std::get<2>(tuple), std::get<0>(tuple), 0.);
     }
 
-    if (dump_paraview)
+    if (this->dump_paraview)
       this->model->dump();
 
     /// boundary conditions
@@ -232,10 +211,9 @@ public:
 
     wave_velocity = 1.; // sqrt(E/rho) = sqrt(1/1) = 1
     simulation_time = 5 / wave_velocity;
+    time_step = this->model->getTimeStep();
 
     max_steps = simulation_time / time_step; // 100
-    auto ndump = 50;
-    dump_freq = max_steps / ndump;
   }
 
   void solveStep() {
@@ -251,9 +229,12 @@ public:
     Array<Real> displacement_solution(nb_nodes, dim);
     Verification<dim> verif;
 
+    auto ndump = 50;
+    auto dump_freq = max_steps / ndump;
+
     for (UInt s = 0; s < this->max_steps;
          ++s, current_time += this->time_step) {
-      if (s % this->dump_freq == 0 && this->dump_paraview)
+      if (s % dump_freq == 0 && this->dump_paraview)
         this->model->dump();
 
       /// boundary conditions
@@ -294,8 +275,6 @@ protected:
   Real wave_velocity;
   Real simulation_time;
   UInt max_steps;
-  UInt dump_freq;
-  bool dump_paraview{false};
   Real max_error{-1};
 };
 

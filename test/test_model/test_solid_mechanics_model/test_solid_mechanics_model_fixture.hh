@@ -64,6 +64,36 @@ public:
                                                   aka::to_string(this->type));
   }
 
+  void initModel(const ID & input, const AnalysisMethod & analysis_method) {
+    getStaticParser().parse(input);
+    this->model->initFull(_analysis_method = analysis_method);
+
+    if (analysis_method != _static) {
+      auto time_step = this->model->getStableTimeStep() / 10.;
+      this->model->setTimeStep(time_step);
+    }
+    // std::cout << "timestep: " << time_step << std::endl;
+
+    if (this->dump_paraview) {
+      std::stringstream base_name;
+      base_name << "bar" << analysis_method << this->type;
+      this->model->setBaseName(base_name.str());
+      this->model->addDumpFieldVector("displacement");
+      this->model->addDumpFieldVector("blocked_dofs");
+      if (analysis_method != _static) {
+        this->model->addDumpField("velocity");
+        this->model->addDumpField("acceleration");
+      }
+      if (this->mesh->isDistributed()) {
+        this->model->addDumpField("partitions");
+      }
+      this->model->addDumpFieldVector("external_force");
+      this->model->addDumpFieldVector("internal_force");
+      this->model->addDumpField("stress");
+      this->model->addDumpField("strain");
+    }
+  }
+
   void TearDown() override {
     model.reset(nullptr);
     mesh.reset(nullptr);
@@ -73,22 +103,23 @@ protected:
   std::string mesh_file{aka::to_string(this->type) + ".msh"};
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModel> model;
+  bool dump_paraview{true};
 };
 
 template <typename type_> constexpr ElementType TestSMMFixture<type_>::type;
 template <typename type_>
 constexpr size_t TestSMMFixture<type_>::spatial_dimension;
 
-// template <typename T>
-// using is_not_pentahedron =
-//     aka::negation<aka::disjunction<is_element<T, _pentahedron_6>,
-//                                    is_element<T, _pentahedron_15>>>;
+template <typename T>
+using is_not_pentahedron =
+    aka::negation<aka::disjunction<is_element<T, _pentahedron_6>,
+                                   is_element<T, _pentahedron_15>>>;
 
-// using TestElementTypesFiltered =
-//     tuple_filter_t<is_not_pentahedron, TestElementTypes>;
+using TestElementTypesFiltered =
+    tuple_filter_t<is_not_pentahedron, TestElementTypes>;
 
-//using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
-using gtest_element_types = gtest_list_t<TestElementTypes>;
+using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
+// using gtest_element_types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestSMMFixture, gtest_element_types);
 

@@ -28,7 +28,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "mesh_partition.hh"
 #include "aka_iterators.hh"
@@ -112,7 +111,8 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
     const auto & conn = mesh.getConnectivity(type, _not_ghost);
 
     for (auto n : arange(mesh.getNbFacetTypes(type_p1))) {
-      auto magic_number = mesh.getNbNodesPerElement(mesh.getFacetType(type_p1, n));
+      auto magic_number =
+          mesh.getNbNodesPerElement(mesh.getFacetType(type_p1, n));
       connectivities[type] =
           std::make_tuple(&conn, nb_nodes_per_element_p1, magic_number);
     }
@@ -274,10 +274,7 @@ void MeshPartition::fillPartitionInformation(
       std::list<UInt> list_adj_part;
       for (UInt n = 0; n < nb_nodes_per_element; ++n) {
         UInt node = connectivity.storage()[el * nb_nodes_per_element + n];
-        CSR<Element>::iterator ne;
-        for (ne = node_to_elem.begin(node); ne != node_to_elem.end(node);
-             ++ne) {
-          const Element & adj_element = *ne;
+        for (const auto & adj_element : node_to_elem.getRow(node)) {
           UInt adj_el = linearized(adj_element);
           UInt adj_part = linearized_partitions[adj_el];
           if (part != adj_part) {
@@ -320,24 +317,25 @@ void MeshPartition::fillPartitionInformation(
       auto & ghost_part_csr = ghost_partitions_csr(type, _not_ghost);
       ghost_part_csr.resizeRows(nb_element);
 
-      auto & ghost_partition_offset = ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
+      auto & ghost_partition_offset =
+          ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
       auto & ghost_partition = ghost_partitions.alloc(0, 1, type, _ghost);
       AKANTU_DEBUG_INFO("Allocating ghost_partitions for " << type);
       const Array<std::vector<Element>> & elem_to_subelem =
           mesh.getElementToSubelement(type, _not_ghost);
-      for (UInt i(0); i < mesh.getNbElement(type, _not_ghost);
-           ++i) { // Facet loop
 
-        const std::vector<Element> & adjacent_elems = elem_to_subelem(i);
-        if (!adjacent_elems.empty()) {
+      // Facet loop
+      for (UInt i(0); i < mesh.getNbElement(type, _not_ghost); ++i) {
+        const auto & adjacent_elems = elem_to_subelem(i);
+        if (not adjacent_elems.empty()) {
           Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
                            *ghost_type_t::end()};
           UInt min_part(std::numeric_limits<UInt>::max());
           std::set<UInt> adjacent_parts;
 
           for (UInt j(0); j < adjacent_elems.size(); ++j) {
-            UInt adjacent_elem_id = adjacent_elems[j].element;
-            UInt adjacent_elem_part =
+            auto adjacent_elem_id = adjacent_elems[j].element;
+            auto adjacent_elem_part =
                 partitions(adjacent_elems[j].type,
                            adjacent_elems[j].ghost_type)(adjacent_elem_id);
             if (adjacent_elem_part < min_part) {
@@ -364,8 +362,7 @@ void MeshPartition::fillPartitionInformation(
           }
 
           ghost_partition_offset(i + 1) =
-              ghost_partition_offset(i + 1) +
-              adjacent_elems.size();
+              ghost_partition_offset(i + 1) + adjacent_elems.size();
         } else {
           partition(i) = 0;
         }

@@ -77,9 +77,9 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
     } else if (posv(_x) < lower(_x) + 1e-6) {
       fixed_grp.add(i);
 
-      if ((spatial_dimension == 2) and (posv(_y) < lower(_y) + 1e-6)) {
+      if ((spatial_dimension > 1) and (posv(_y) < lower(_y) + 1e-6)) {
         flag(_y) = true;
-        if ((spatial_dimension == 3) and (posv(_z) < lower(_z) + 1e-6)) {
+        if ((spatial_dimension > 2) and (posv(_z) < lower(_z) + 1e-6)) {
           flag(_z) = true;
         }
       }
@@ -105,7 +105,8 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
 
       surface_traction(_x) = (1.0 * i) / N;
 
-      if (spatial_dimension == 1) { // TODO: this is a hack to work
+      if (spatial_dimension == 1) {
+        // \TODO: this is a hack to work
         //      around non-implemented
         //      BC::Neumann::FromTraction for 1D
         auto & force = this->model->getForce();

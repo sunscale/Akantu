@@ -376,9 +376,7 @@ void SparseSolverMumps::solveInternal() {
   }
 
   if (AKANTU_DEBUG_TEST(dblDump)) {
-    std::stringstream sstr;
-    sstr << prank << ".mtx";
-    A.saveMatrix("solver_mumps" + sstr.str());
+    A.saveMatrix("solver_mumps" + std::to_string(prank) + ".mtx");
   }
 
   if (this->last_value_release != A.getValueRelease()) {
@@ -408,10 +406,11 @@ void SparseSolverMumps::printError() {
 
   if (_info_v[0] < 0) { // < 0 is an error
     switch (_info_v[0]) {
-    case -10:
+    case -10: {
       AKANTU_CUSTOM_EXCEPTION(
           debug::SingularMatrixException(dof_manager.getMatrix(matrix_id)));
       break;
+    }
     case -9: {
       icntl(14) += 10;
       if (icntl(14) != 90) {
