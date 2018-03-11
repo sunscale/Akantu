@@ -193,7 +193,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
     auto & mesh_facets = inserter->getMeshFacets();
     auto & synchronizer =
         dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
-    this->registerSynchronizer(synchronizer, _gst_smmc_facets);
+    // this->registerSynchronizer(synchronizer, _gst_smmc_facets);
     // this->registerSynchronizer(synchronizer, _gst_smmc_facets_conn);
 
     synchronizeGhostFacetsConnectivity();
@@ -254,17 +254,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
 
   // set the facet information in the material in case of dynamic insertion
   // to know what material to call for stress checks
-  if (is_extrinsic) {
-    this->initExtrinsicMaterials();
-  } else {
-    this->initIntrinsicMaterials();
-  }
 
-  AKANTU_DEBUG_OUT();
-} // namespace akantu
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::initExtrinsicMaterials() {
   const Mesh & mesh_facets = inserter->getMeshFacets();
   facet_material.initialize(
       mesh_facets, _spatial_dimension = spatial_dimension - 1,
@@ -277,72 +267,22 @@ void SolidMechanicsModelCohesive::initExtrinsicMaterials() {
         auto mat_index = (*material_selector)(element);
         auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
         facet_material(element) = mat_index;
-        mat.addFacet(element);
+        if (is_extrinsic) {
+          mat.addFacet(element);
+        }
       },
       _spatial_dimension = spatial_dimension - 1, _ghost_type = _not_ghost);
 
   SolidMechanicsModel::initMaterials();
 
-  this->initAutomaticInsertion();
-}
-
-/* -------------------------------------------------------------------------- */
-#if 0
-void SolidMechanicsModelCohesive::initIntrinsicCohesiveMaterials(
-    const std::string & cohesive_surfaces) {
-
-  AKANTU_DEBUG_IN();
-
-#if defined(AKANTU_PARALLEL_COHESIVE_ELEMENT)
-  if (facet_synchronizer != nullptr)
-    inserter->initParallel(facet_synchronizer, cohesive_element_synchronizer);
-//    inserter->initParallel(facet_synchronizer, synch_parallel);
-#endif
-  std::istringstream split(cohesive_surfaces);
-  std::string physname;
-  while (std::getline(split, physname, ',')) {
-    AKANTU_DEBUG_INFO(
-        "Pre-inserting cohesive elements along facets from physical surface: "
-        << physname);
-    insertElementsFromMeshData(physname);
+  if (is_extrinsic) {
+    this->initAutomaticInsertion();
+  } else {
+    this->insertIntrinsicElements();
   }
 
-  synchronizeInsertionData();
-
-  SolidMechanicsModel::initMaterials();
-
-  auto && tmp = std::make_shared<MeshDataMaterialCohesiveSelector>(*this);
-  tmp->setFallback(material_selector->getFallbackValue());
-  tmp->setFallback(material_selector->getFallbackSelector());
-  material_selector = tmp;
-
-  // UInt nb_new_elements =
-  inserter->insertElements();
-  // if (nb_new_elements > 0) {
-  //   this->reinitializeSolver();
-  // }
-
   AKANTU_DEBUG_OUT();
-}
-#endif
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::synchronizeInsertionData() {
-  if (inserter->getMeshFacets().isDistributed()) {
-    inserter->getMeshFacets().getElementSynchronizer().synchronizeOnce(
-        *inserter, _gst_ce_groups);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::initIntrinsicMaterials() {
-  AKANTU_DEBUG_IN();
-
-  SolidMechanicsModel::initMaterials();
-
-  this->insertIntrinsicElements();
-
-  AKANTU_DEBUG_OUT();
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -574,6 +514,11 @@ void SolidMechanicsModelCohesive::interpolateStress() {
 UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   AKANTU_DEBUG_IN();
 
+  if (not is_extrinsic) {
+    AKANTU_EXCEPTION(
+        "This function can only be used for extrinsic cohesive elements");
+  }
+
   interpolateStress();
 
   for (auto & mat : materials) {
@@ -585,7 +530,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   }
 
   /// communicate data among processors
-  this->synchronize(_gst_smmc_facets);
+  // this->synchronize(_gst_smmc_facets);
 
   /// insert cohesive elements
   UInt nb_new_elements = inserter->insertElements();
@@ -620,7 +565,8 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
   SolidMechanicsModel::onNodesAdded(new_nodes, event);
 
   const CohesiveNewNodesEvent * cohesive_event;
-  if ((cohesive_event = dynamic_cast<const CohesiveNewNodesEvent *>(&event)) == nullptr)
+  if ((cohesive_event = dynamic_cast<const CohesiveNewNodesEvent *>(&event)) ==
+      nullptr)
     return;
 
   const auto & old_nodes = cohesive_event->getOldNodesList();

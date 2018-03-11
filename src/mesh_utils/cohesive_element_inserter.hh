@@ -96,16 +96,6 @@ protected:
   inline void unpackData(CommunicationBuffer & buffer,
                          const Array<Element> & elements,
                          const SynchronizationTag & tag) override;
-
-  template <bool pack_mode>
-  inline void
-  packUnpackGlobalConnectivity(CommunicationBuffer & buffer,
-                               const Array<Element> & elements) const;
-
-  template <bool pack_mode>
-  inline void
-  packUnpackGroupedInsertionData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements) const;
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */

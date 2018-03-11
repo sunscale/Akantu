@@ -339,10 +339,10 @@ UInt SolidMechanicsModelCohesive::getNbData(
   /// regular element case
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
-    case _gst_smmc_facets: {
-      size += elements.size() * sizeof(bool);
-      break;
-    }
+    // case _gst_smmc_facets: {
+    //   size += elements.size() * sizeof(bool);
+    //   break;
+    // }
     case _gst_smmc_facets_stress: {
       UInt nb_quads = getNbQuadsForFacetCheck(elements);
       size += nb_quads * spatial_dimension * spatial_dimension * sizeof(Real);
@@ -407,11 +407,11 @@ void SolidMechanicsModelCohesive::packData(
 
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
-    case _gst_smmc_facets: {
-      packElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
-                              elements, false, getFEEngine());
-      break;
-    }
+    // case _gst_smmc_facets: {
+    //   packElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
+    //                           elements, false, getFEEngine());
+    //   break;
+    // }
     case _gst_smmc_facets_stress: {
       packFacetStressDataHelper(facet_stress, buffer, elements);
       break;
@@ -470,11 +470,11 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
 
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
-    case _gst_smmc_facets: {
-      unpackElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
-                                elements, false, getFEEngine());
-      break;
-    }
+    // case _gst_smmc_facets: {
+    //   unpackElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
+    //                             elements, false, getFEEngine());
+    //   break;
+    // }
     case _gst_smmc_facets_stress: {
       unpackFacetStressDataHelper(facet_stress, buffer, elements);
       break;
@@ -493,7 +493,9 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
         // add ghosts element to the correct material
         mat_index = recv_mat_index;
         auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
-        mat.addFacet(element);
+        if (is_extrinsic) {
+          mat.addFacet(element);
+        }
         facet_material(element) = recv_mat_index;
       }
       SolidMechanicsModel::unpackData(buffer, elements, tag);

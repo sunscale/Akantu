@@ -151,19 +151,10 @@ protected:
   /// init facet filters for cohesive materials
   void initFacetFilter();
 
-  // synchronize facets physical data before insertion along physical surfaces
-  void synchronizeInsertionData();
-
   /// function to print the contain of the class
   void printself(std::ostream & stream, int indent = 0) const override;
 
 private:
-  /// initialize cohesive material with extrinsic insertion
-  void initExtrinsicMaterials();
-
-  /// initialize cohesive material with intrinsic insertion
-  void initIntrinsicMaterials();
-
   /// insert cohesive elements along a given physical surface of the mesh
   void insertElementsFromMeshData(const std::string & physical_name);
 

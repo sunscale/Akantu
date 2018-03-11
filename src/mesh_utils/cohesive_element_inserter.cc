@@ -35,6 +35,7 @@
 #include "global_ids_updater.hh"
 #include "mesh_accessor.hh"
 #include "mesh_iterators.hh"
+#include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <limits>
@@ -195,11 +196,13 @@ void CohesiveElementInserter::limitCheckFacets(
 
 /* -------------------------------------------------------------------------- */
 UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
-
   CohesiveNewNodesEvent node_event;
   NewElementsEvent element_event;
 
   Array<UInt> new_pairs(0, 2);
+
+  mesh_facets.getElementSynchronizer().synchronizeOnce(
+      *this, _gst_ce_groups);
 
   UInt nb_new_elements = MeshUtils::insertCohesiveElements(
       mesh, mesh_facets, insertion_facets, new_pairs, element_event.getList(),
