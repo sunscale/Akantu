@@ -98,7 +98,10 @@ public:
     this->model->setTimeStep(time_step);
 
     auto & mat_el = this->model->getMaterial("body");
-    auto speed = mat_el.getShearWaveSpeed(Element()); // the slowest speed
+    auto speed = mat_el.getPushWaveSpeed(Element());
+    try {
+      speed = mat_el.getShearWaveSpeed(Element()); // the slowest speed if exists
+    } catch(...) {}
 
     auto directon = _y;
     if(dim == 1) directon = _x;
@@ -108,8 +111,8 @@ public:
 
     if (dim == 1) {
       surface = 1;
-       group_size = 1;
-       return;
+      group_size = 1;
+      return;
      }
 
     auto facet_type = mesh->getFacetType(this->cohesive_type);
