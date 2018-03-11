@@ -600,7 +600,7 @@ inline void Mesh::addConnectivityType(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPureGhostNode(UInt n) const {
-  return nodes_type ? ((*nodes_type)(n) == _nt_pure_gost) : false;
+  return nodes_type ? ((*nodes_type)(n) == _nt_pure_ghost) : false;
 }
 
 /* -------------------------------------------------------------------------- */

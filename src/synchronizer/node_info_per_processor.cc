@@ -141,7 +141,7 @@ void NodeInfoPerProc::fillNodesType() {
     if (nodes_set(i) == NORMAL_SET)
       nodes_type(i) = _nt_normal;
     else if (nodes_set(i) == GHOST_SET)
-      nodes_type(i) = _nt_pure_gost;
+      nodes_type(i) = _nt_pure_ghost;
     else if (nodes_set(i) == (GHOST_SET + NORMAL_SET))
       nodes_type(i) = _nt_master;
   }

@@ -242,7 +242,7 @@ enum NonLinearSolverType {
 };
 
 /// Define the node/dof type
-enum NodeType : Int { _nt_pure_gost = -3, _nt_master = -2, _nt_normal = -1 };
+enum NodeType : Int { _nt_pure_ghost = -3, _nt_master = -2, _nt_normal = -1 };
 
 /// Type of time stepping solver
 enum TimeStepSolverType {

@@ -378,7 +378,7 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
 
           if (ln == UInt(-1)) {
             global_nodes_ids.push_back(gn);
-            nodes_type.push_back(_nt_pure_gost); // pure ghost node
+            nodes_type.push_back(_nt_pure_ghost); // pure ghost node
             ln = nb_current_nodes;
 
             new_nodes.getList().push_back(ln);
