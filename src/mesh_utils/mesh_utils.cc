@@ -1840,23 +1840,23 @@ void MeshUtils::updateElementalConnectivity(
           mesh.getMeshFacets().getSubelementToElement(element);
 
       auto facet_nb_nodes = connectivity.size() / 2;
-      auto begin = connectivity.begin();
-      auto end = connectivity.begin() + facet_nb_nodes;
 
       /// loop over cohesive element's facets
-      for (const auto & facet : facets) {
+      for (const auto & facet : enumerate(facets)) {
         /// skip facets if not present in the list
-        if (std::find(facet_list->begin(), facet_list->end(), facet) ==
-            facet_list->end())
+        if (std::find(facet_list->begin(), facet_list->end(),
+                      std::get<1>(facet)) == facet_list->end()) {
           continue;
+        }
+
+        auto n = std::get<0>(facet);
+
+        auto begin = connectivity.begin() + n * facet_nb_nodes;
+        auto end = begin + facet_nb_nodes;
 
         auto it = std::find(begin, end, old_node);
         AKANTU_DEBUG_ASSERT(it != end, "Node not found in current element");
 
-        begin += facet_nb_nodes;
-        end += facet_nb_nodes;
-
-        /// update connectivity
         *it = new_node;
       }
     } else
@@ -1870,6 +1870,8 @@ void MeshUtils::updateElementalConnectivity(
       *it = new_node;
     }
   }
+
+  AKANTU_DEBUG_OUT();
 }
 
 } // namespace akantu
