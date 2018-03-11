@@ -174,6 +174,19 @@ public:
     pointer pos;
   };
 
+#ifndef SWIG
+  template <typename R> class CSRRow {
+  public:
+    CSRRow(R * begin, R * end) : begin_(begin), end_(end) {}
+
+    inline auto begin() const { return begin_; }
+    inline auto end() const { return end_; }
+
+  private:
+    iterator_internal<R> begin_, end_;
+  };
+#endif
+
   using iterator = iterator_internal<T>;
   using const_iterator = iterator_internal<const T>;
 
@@ -190,6 +203,24 @@ public:
   inline const_iterator end(UInt row) const {
     return const_iterator(rows.storage() + rows_offsets(row + 1));
   };
+
+#ifndef SWIG
+private:
+  template <typename R> decltype(auto) make_row(R * begin, R * end) {
+    return CSRRow<R>(begin, end);
+  }
+
+public:
+  inline decltype(auto) getRow(UInt row) {
+    return make_row(rows.storage() + rows_offsets(row),
+                    rows.storage() + rows_offsets(row + 1));
+  }
+
+  inline decltype(auto) getRow(UInt row) const {
+    return make_row(rows.storage() + rows_offsets(row),
+                    rows.storage() + rows_offsets(row + 1));
+  }
+#endif
 
   inline iterator rbegin(UInt row) {
     return iterator(rows.storage() + rows_offsets(row + 1) - 1);
