@@ -206,11 +206,11 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
       this->registerSynchronizer(*facet_stress_synchronizer,
                                  _gst_smmc_facets_stress);
     }
+  }
 
-    MeshAccessor mesh_accessor(mesh);
+  MeshAccessor mesh_accessor(mesh);
     mesh_accessor.registerGlobalDataUpdater(
         std::make_unique<CohesiveMeshGlobalDataUpdater>(*this));
-  }
 
   ParserSection section;
   bool is_empty;
@@ -497,7 +497,6 @@ void SolidMechanicsModelCohesive::computeNormals() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::interpolateStress() {
-
   ElementTypeMapArray<Real> by_elem_result("temporary_stress_by_facets", id);
 
   for (auto & material : materials) {

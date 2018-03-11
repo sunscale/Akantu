@@ -27,18 +27,14 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-
-#include <fstream>
-#include <iostream>
-#include <limits>
-
 /* -------------------------------------------------------------------------- */
 #include "fragment_manager.hh"
 #include "material_cohesive.hh"
 #include "solid_mechanics_model_cohesive.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <fstream>
+#include <iostream>
+#include <limits>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -65,19 +61,17 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(
-      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(_analysis_method = _explicit_lumped_mass,
+                 _is_extrinsic = true);
 
   Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
   //  std::cout << "Time step: " << time_step << std::endl;
 
   Real disp_increment = strain_rate * L / 2. * time_step;
-
   model.assembleMassLumped();
 
   Array<Real> & velocity = model.getVelocity();
-
   const Array<Real> & position = mesh.getNodes();
   UInt nb_nodes = mesh.getNbNodes();
 
@@ -102,9 +96,7 @@ int main(int argc, char * argv[]) {
 
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
-
     model.checkCohesiveStress();
-
     model.solveStep();
 
     /// apply boundary conditions

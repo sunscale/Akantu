@@ -335,7 +335,6 @@ void IntegratorGauss<_ek_cohesive, DefaultIntegrationOrderFunctor>::
   UInt nb_quadrature_points = quad_points.cols();
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
-
   jacobians.resize(nb_element * nb_quadrature_points);
 
   auto jacobians_begin =
@@ -607,6 +606,10 @@ inline void
 IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAddedByType(
     const Array<UInt> & elements, const GhostType & ghost_type) {
   const auto & nodes = mesh.getNodes();
+
+  if(not quadrature_points.exists(type, ghost_type)) {
+    computeQuadraturePoints<type>(ghost_type);
+  }
 
   if (not jacobians.exists(type, ghost_type))
     jacobians.alloc(0, 1, type, ghost_type);

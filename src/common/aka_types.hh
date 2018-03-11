@@ -656,6 +656,7 @@ public:
   inline Vector<T> & operator/=(Real x) { return parent::operator/=(x); }
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(const Vector<T> & vect) {
+    AKANTU_DEBUG_ASSERT(this->_size == vect._size, "The vectors have non matching sizes");
     T * a = this->storage();
     T * b = vect.storage();
     for (UInt i = 0; i < this->_size; ++i)

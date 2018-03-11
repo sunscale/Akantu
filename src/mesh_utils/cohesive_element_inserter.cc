@@ -201,8 +201,10 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
 
   Array<UInt> new_pairs(0, 2);
 
-  mesh_facets.getElementSynchronizer().synchronizeOnce(
-      *this, _gst_ce_groups);
+  if (mesh_facets.isDistributed()) {
+    mesh_facets.getElementSynchronizer().synchronizeOnce(
+        *this, _gst_ce_groups);
+  }
 
   UInt nb_new_elements = MeshUtils::insertCohesiveElements(
       mesh, mesh_facets, insertion_facets, new_pairs, element_event.getList(),
