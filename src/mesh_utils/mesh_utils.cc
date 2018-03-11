@@ -810,13 +810,9 @@ UInt MeshUtils::updateFacetToDouble(
 void MeshUtils::resetFacetToDouble(Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
 
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    auto gt = (GhostType)g;
-
-    Mesh::type_iterator it = mesh_facets.firstType(_all_dimensions, gt);
-    Mesh::type_iterator end = mesh_facets.lastType(_all_dimensions, gt);
-    for (; it != end; ++it) {
-      ElementType type = *it;
+  for (auto gt : ghost_types) {
+    for (auto type :
+         mesh_facets.elementTypes(_all_dimensions, gt)) {
       mesh_facets.getDataPointer<UInt>("facet_to_double", type, gt, 1, false);
 
       mesh_facets.getDataPointer<std::vector<Element>>(
@@ -842,23 +838,12 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
   if (spatial_dimension == 1)
     return;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType gt_facet = *gt;
-
-    Mesh::type_iterator it =
-        mesh_facets.firstType(spatial_dimension - 1, gt_facet);
-    Mesh::type_iterator end =
-        mesh_facets.lastType(spatial_dimension - 1, gt_facet);
-
-    for (; it != end; ++it) {
-
-      ElementType type_facet = *it;
-
-      Array<UInt> & f_to_double =
+  for (auto gt_facet : ghost_types) {
+    for (auto type_facet :
+         mesh_facets.elementTypes(spatial_dimension - 1, gt_facet)) {
+      auto & facets_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
-      UInt nb_facet_to_double = f_to_double.size();
+      auto nb_facet_to_double = facets_to_double.size();
       if (nb_facet_to_double == 0)
         continue;
 
@@ -912,7 +897,7 @@ void MeshUtils::findSubfacetToDouble(Mesh & mesh, Mesh & mesh_facets) {
       /// loop on every facet
       for (UInt f_index = 0; f_index < 2; ++f_index) {
         for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
-          facets[bool(f_index)] = f_to_double(facet);
+          facets[bool(f_index)] = facets_to_double(facet);
           facets[!bool(f_index)] = old_nb_facet + facet;
 
           UInt old_facet = facets[0];
@@ -1137,68 +1122,49 @@ void MeshUtils::doublePointFacet(Mesh & mesh, Mesh & mesh_facets,
   if (spatial_dimension != 1)
     return;
 
-  Array<Real> & position = mesh.getNodes();
+  auto & position = mesh.getNodes();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType gt_facet = *gt;
-
-    Mesh::type_iterator it =
-        mesh_facets.firstType(spatial_dimension - 1, gt_facet);
-    Mesh::type_iterator end =
-        mesh_facets.lastType(spatial_dimension - 1, gt_facet);
-
-    for (; it != end; ++it) {
-
-      ElementType type_facet = *it;
-
-      Array<UInt> & conn_facet =
+  for (auto gt_facet : ghost_types) {
+    for (auto type_facet : mesh_facets.elementTypes(spatial_dimension - 1, gt_facet)) {
+      auto & conn_facet =
           mesh_facets.getConnectivity(type_facet, gt_facet);
-      Array<std::vector<Element>> & element_to_facet =
+      auto & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
-      const Array<UInt> & f_to_double =
+      const auto & facets_to_double =
           mesh_facets.getData<UInt>("facet_to_double", type_facet, gt_facet);
+      auto nb_facet_to_double = facets_to_double.size();
+      auto new_nb_facet = element_to_facet.size();
+      auto old_nb_facet = element_to_facet.size() - nb_facet_to_double;
 
-      UInt nb_facet_to_double = f_to_double.size();
+      auto old_nb_nodes = position.size();
 
-      UInt old_nb_facet = element_to_facet.size() - nb_facet_to_double;
-      UInt new_nb_facet = element_to_facet.size();
-
-      UInt old_nb_nodes = position.size();
-      UInt new_nb_nodes = old_nb_nodes + nb_facet_to_double;
-
+      auto new_nb_nodes = old_nb_nodes + nb_facet_to_double;
       position.resize(new_nb_nodes);
       conn_facet.resize(new_nb_facet);
 
-      UInt old_nb_doubled_nodes = doubled_nodes.size();
+      auto old_nb_doubled_nodes = doubled_nodes.size();
       doubled_nodes.resize(old_nb_doubled_nodes + nb_facet_to_double);
 
-      for (UInt facet = 0; facet < nb_facet_to_double; ++facet) {
-        UInt old_facet = f_to_double(facet);
-        UInt new_facet = old_nb_facet + facet;
+      for(auto && data_facet : enumerate(facets_to_double)) {
+        const auto & old_facet = std::get<1>(data_facet);
+        auto facet = std::get<0>(data_facet);
 
-        ElementType type = element_to_facet(new_facet)[0].type;
-        UInt el = element_to_facet(new_facet)[0].element;
-        GhostType gt = element_to_facet(new_facet)[0].ghost_type;
+        auto new_facet = old_nb_facet + facet;
+        auto el = element_to_facet(new_facet)[0];
 
-        UInt old_node = conn_facet(old_facet);
-        UInt new_node = old_nb_nodes + facet;
+        auto old_node = conn_facet(old_facet);
+        auto new_node = old_nb_nodes + facet;
 
         /// update position
         position(new_node) = position(old_node);
 
         conn_facet(new_facet) = new_node;
-        Array<UInt> & conn_segment = mesh.getConnectivity(type, gt);
-        UInt nb_nodes_per_segment = conn_segment.getNbComponent();
+        Vector<UInt> conn_segment = mesh.getConnectivity(el);
 
         /// update facet connectivity
-        UInt i;
-        for (i = 0;
-             conn_segment(el, i) != old_node && i <= nb_nodes_per_segment; ++i)
-          ;
-        conn_segment(el, i) = new_node;
+        auto it = std::find(conn_segment.begin(), conn_segment.end(), old_node);
+        *it = new_node;
 
         doubled_nodes(old_nb_doubled_nodes + facet, 0) = old_node;
         doubled_nodes(old_nb_doubled_nodes + facet, 1) = new_node;
