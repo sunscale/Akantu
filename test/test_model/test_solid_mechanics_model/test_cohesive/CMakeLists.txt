@@ -99,5 +99,8 @@ register_gtest_sources(
   FILES_TO_COPY material_0.dat material_1.dat
   )
 
-register_gtest_test(test_solid_mechanics_model_cohesive)
-#===============================================================================
+register_gtest_test(test_solid_mechanics_model_cohesive
+  PARALLEL
+  PARALLEL_LEVEL 1 2
+  )
+# ==============================================================================

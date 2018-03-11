@@ -77,12 +77,6 @@ public:
       ElementClass<cohesive_type>::getSpatialDimension();
 
   void SetUp() override {
-    normal = Vector<Real>(this->dim, 0.);
-    if (dim == 1)
-      normal(_x) = 1.;
-    else
-      normal(_y) = 1.;
-
     mesh = std::make_unique<Mesh>(this->dim);
     if (Communicator::getStaticCommunicator().whoAmI() == 0) {
       EXPECT_NO_THROW({ mesh->read(this->mesh_name); });
@@ -100,20 +94,23 @@ public:
     model->initFull(_analysis_method = this->analysis_method,
                     _is_extrinsic = this->is_extrinsic);
 
-    auto stable_time_step = this->model->getStableTimeStep();
-    this->model->setTimeStep(stable_time_step * 0.01);
+    auto time_step = this->model->getStableTimeStep() * 0.01;
+    this->model->setTimeStep(time_step);
+
+    auto & mat_el = this->model->getMaterial("body");
+    auto speed = mat_el.getShearWaveSpeed(Element()); // the slowest speed
+
+    auto directon = _y;
+    if(dim == 1) directon = _x;
+
+    auto length = mesh->getUpperBounds()(directon) - mesh->getLowerBounds()(directon);
+    nb_steps = length / 2. / speed / time_step;
+
     if (dim == 1) {
-      nb_steps = 300;
       surface = 1;
-      group_size = 1;
-      return;
-    } else if (dim == 2) {
-      this->model->setTimeStep(stable_time_step * 0.01);
-      nb_steps = 5000;
-    } else if (dim == 3) {
-      this->model->setTimeStep(stable_time_step * 0.05);
-      nb_steps = 7000;
-    }
+       group_size = 1;
+       return;
+     }
 
     auto facet_type = mesh->getFacetType(this->cohesive_type);
 
@@ -172,11 +169,9 @@ public:
   }
 
   void steps(const Matrix<Real> & strain) {
-    StrainIncrement functor((1. / nb_steps) * strain, this->dim == 1 ? _x : _y);
-    this->model->solveStep();
-    UInt s = 0;
-    // for (auto _[[gnu::unused]] : arange(nb_steps)) {
-    while (not checkDamaged() and s < nb_steps) {
+    StrainIncrement functor((1. / 300) * strain, this->dim == 1 ? _x : _y);
+
+    for (auto _[[gnu::unused]] : arange(nb_steps)) {
       this->model->applyBC(functor, "loading");
       this->model->applyBC(functor, "fixed");
       if (this->is_extrinsic)
@@ -187,13 +182,6 @@ public:
       this->model->dump();
       this->model->dump("cohesive elements");
 #endif
-      ++s;
-    }
-
-    for (auto _[[gnu::unused]] : arange(300)) {
-      this->model->applyBC(functor, "loading");
-      this->model->applyBC(functor, "fixed");
-      this->model->solveStep();
     }
   }
 
@@ -237,7 +225,7 @@ public:
 
     strain *= sigma_c / E;
 
-    this->setInitialCondition((1 - 1e-3) * strain);
+    this->setInitialCondition((1 - 1e-5) * strain);
     this->steps(1e-2 * strain);
   }
 
@@ -276,9 +264,9 @@ public:
     }
     strain *= 2 * beta * beta * sigma_c / E;
 
-    nb_steps *= 5;
+    //nb_steps *= 5;
 
-    this->setInitialCondition(0.999 * strain);
+    this->setInitialCondition((1. - 1e-5) * strain);
     this->steps(0.005 * strain);
   }
 
@@ -293,9 +281,8 @@ protected:
   bool is_extrinsic;
   AnalysisMethod analysis_method;
 
-  Vector<Real> normal;
   Real surface{0};
-  UInt nb_steps{0};
+  UInt nb_steps{1000};
   UInt group_size{10000};
 };
 

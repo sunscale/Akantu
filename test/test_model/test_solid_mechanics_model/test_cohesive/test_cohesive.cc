@@ -30,10 +30,15 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
+#include "communicator.hh"
 #include "test_cohesive_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 TYPED_TEST(TestSMMCFixture, ExtrinsicModeI) {
+  if (this->mesh->getCommunicator().getNbProc() > 1 and this->dim == 1) {
+    SUCCEED();
+    return;
+  }
   getStaticParser().parse("material_0.dat");
   this->is_extrinsic = true;
   this->analysis_method = _explicit_lumped_mass;
@@ -44,11 +49,15 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeI) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if (this->dim != 3)
-    this->checkDissipated(G_c);
+  //  if (this->dim != 3)
+  this->checkDissipated(G_c);
 }
 
 TYPED_TEST(TestSMMCFixture, ExtrinsicModeII) {
+  if (this->mesh->getCommunicator().getNbProc() > 1 and this->dim == 1) {
+    SUCCEED();
+    return;
+  }
   getStaticParser().parse("material_0.dat");
   this->is_extrinsic = true;
   this->analysis_method = _explicit_lumped_mass;
@@ -59,11 +68,15 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeII) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if (this->dim != 3)
-    this->checkDissipated(G_c);
+  // if (this->dim != 3)
+  this->checkDissipated(G_c);
 }
 
 TYPED_TEST(TestSMMCFixture, IntrinsicModeI) {
+  if (this->mesh->getCommunicator().getNbProc() > 1 and this->dim == 1) {
+    SUCCEED();
+    return;
+  }
   getStaticParser().parse("material_1.dat");
   this->is_extrinsic = false;
   this->analysis_method = _explicit_lumped_mass;
@@ -75,11 +88,16 @@ TYPED_TEST(TestSMMCFixture, IntrinsicModeI) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if (this->dim != 3)
-    this->checkDissipated(G_c);
+  // if (this->dim != 3)
+  this->checkDissipated(G_c);
 }
 
 TYPED_TEST(TestSMMCFixture, IntrinsicModeII) {
+  if (this->mesh->getCommunicator().getNbProc() > 1 and this->dim == 1) {
+    SUCCEED();
+    return;
+  }
+
   getStaticParser().parse("material_1.dat");
   this->is_extrinsic = false;
   this->analysis_method = _explicit_lumped_mass;
@@ -91,6 +109,6 @@ TYPED_TEST(TestSMMCFixture, IntrinsicModeII) {
   auto & mat_co = this->model->getMaterial("insertion");
   Real G_c = mat_co.get("G_c");
 
-  if (this->dim != 3)
-    this->checkDissipated(G_c);
+  // if (this->dim != 3)
+  this->checkDissipated(G_c);
 }
