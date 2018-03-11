@@ -73,7 +73,8 @@ set(_swig_include_dirs
 include(CMakeParseArguments)
 
 function(swig_generate_dependencies _module _depedencies _depedencies_out)
-  set(_dependencies_script "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_generate_dependencies.cmake")
+  set(_dependencies_script
+    "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_generate_dependencies.cmake")
   file(WRITE ${_dependencies_script} "
 set(_include_directories ${_include_directories})
 list(APPEND _include_directories \"./\")
@@ -110,7 +111,8 @@ while(_files_to_process)
 endwhile()
 
 get_filename_component(_module_we \"\${_module}\" NAME_WE)
-set(_dependencies_file \${CMAKE_CURRENT_BINARY_DIR}\${CMAKE_FILES_DIRECTORY}/_swig_\${_module_we}_depends.cmake)
+set(_dependencies_file
+  \${CMAKE_CURRENT_BINARY_DIR}\${CMAKE_FILES_DIRECTORY}/_swig_\${_module_we}_depends.cmake)
 file(WRITE \"\${_dependencies_file}\"
   \"set(_swig_\${_module_we}_depends\")
 foreach(_d \${_dep})
@@ -124,7 +126,8 @@ file(APPEND \"\${_dependencies_file}\" \"
   get_filename_component(_module_absolute "${_module}" ABSOLUTE)
   get_filename_component(_module_we "${_module}" NAME_WE)
 
-  set(_dependencies_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_${_module_we}_depends.cmake)
+  set(_dependencies_file
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_${_module_we}_depends.cmake)
 
   if(EXISTS ${_dependencies_file})
     include(${_dependencies_file})
@@ -152,7 +155,11 @@ file(APPEND \"\${_dependencies_file}\" \"
 endfunction()
 
 function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
-  cmake_parse_arguments(_swig_opt "" "OUTPUT_DIR;DEPENDENCIES" "EXTRA_FLAGS;INCLUDE_DIRECTORIES" ${ARGN})
+  cmake_parse_arguments(_swig_opt
+    ""
+    "OUTPUT_DIR;DEPENDENCIES"
+    "EXTRA_FLAGS;INCLUDE_DIRECTORIES"
+    ${ARGN})
 
   if(_swig_opt_OUTPUT_DIR)
     set(_output_dir ${_swig_opt_OUTPUT_DIR})
@@ -185,7 +192,8 @@ function(swig_generate_wrappers project _wrappers_cpp _wrappers_py)
       set_source_files_properties("${_wrapper}" PROPERTIES GENERATED 1)
       set_source_files_properties("${_extra_wrapper}" PROPERTIES GENERATED 1)
 
-      set(_dependencies_file ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_${_module_we}_depends.cmake)
+      set(_dependencies_file
+	${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/_swig_${_module_we}_depends.cmake)
 
       set(_ouput "${_wrapper}" "${_extra_wrapper}")
       add_custom_command(
@@ -244,9 +252,11 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
   separate_arguments(_compile_flags)
   get_property(_cxx_standard TARGET akantu PROPERTY CXX_STANDARD)
 
-  set(_flags ${_compile_flags} -std=c++${_cxx_standard} -Wno-unused-parameter)
+  set(_flags ${_compile_flags} -std=c++${_cxx_standard}
+    -Wno-unused-parameter -Wno-uninitialized)
+
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    list(APPEND -Wno-uninitialized -Wno-unused-command-line-argument)
+    list(APPEND -Wno-unused-command-line-argument)
   elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     list(APPEND -Wno-maybe-uninitialized)
   endif()
@@ -276,5 +286,7 @@ if(AKANTU_SWIG_WRAPPERS_CPP)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})"
     )
 
-  package_declare_extra_files_to_package(python_interface ${_deps} ${PROJECT_SOURCE_DIR}/python/${AKANTU_SWIG_MODULES})
+  package_declare_extra_files_to_package(python_interface
+    ${_deps}
+    ${PROJECT_SOURCE_DIR}/python/${AKANTU_SWIG_MODULES})
 endif()
