@@ -832,6 +832,7 @@ void DOFManagerDefault::updateDOFsData(
 
       this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
       dof_data.associated_nodes.push_back(node);
+      is_local_dof = this->mesh->isLocalOrMasterNode(node);
       break;
     }
     case _dst_generic: {
@@ -853,28 +854,9 @@ void DOFManagerDefault::updateDOFsData(
 
   // synchronize the global numbering for slaves
   if (support_type == _dst_nodal && this->synchronizer) {
-    //auto nb_dofs_per_node = dof_data.dof->getNbComponent();
-
     GlobalDOFInfoDataAccessor data_accessor(dof_data, *this);
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
     node_synchronizer.synchronizeOnce(data_accessor, _gst_ask_nodes);
-
-    // std::vector<UInt> counters(nb_new_local_dofs / nb_dofs_per_node);
-
-    // for (UInt d = 0; d < nb_new_local_dofs; ++d) {
-    //   UInt local_eq_num = first_dof_id + d;
-    //   if (not this->isSlaveDOF(local_eq_num))
-    //     continue;
-
-    //   UInt node = d / nb_dofs_per_node;
-    //   UInt dof_count = counters[node]++;
-    //   node = getNode(node);
-
-    //   UInt global_dof_id = data_accessor.getNthDOFForNode(dof_count, node);
-
-    //   this->global_equation_number(local_eq_num) = global_dof_id;
-    //   this->global_to_local_mapping[global_dof_id] = local_eq_num;
-    // }
   }
 
   this->first_global_dof_id += std::accumulate(

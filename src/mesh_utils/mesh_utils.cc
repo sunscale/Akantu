@@ -812,8 +812,7 @@ void MeshUtils::resetFacetToDouble(Mesh & mesh_facets) {
   AKANTU_DEBUG_IN();
 
   for (auto gt : ghost_types) {
-    for (auto type :
-         mesh_facets.elementTypes(_all_dimensions, gt)) {
+    for (auto type : mesh_facets.elementTypes(_all_dimensions, gt)) {
       mesh_facets.getDataPointer<UInt>("facet_to_double", type, gt, 1, false);
 
       mesh_facets.getDataPointer<std::vector<Element>>(
@@ -1126,9 +1125,9 @@ void MeshUtils::doublePointFacet(Mesh & mesh, Mesh & mesh_facets,
   auto & position = mesh.getNodes();
 
   for (auto gt_facet : ghost_types) {
-    for (auto type_facet : mesh_facets.elementTypes(spatial_dimension - 1, gt_facet)) {
-      auto & conn_facet =
-          mesh_facets.getConnectivity(type_facet, gt_facet);
+    for (auto type_facet :
+         mesh_facets.elementTypes(spatial_dimension - 1, gt_facet)) {
+      auto & conn_facet = mesh_facets.getConnectivity(type_facet, gt_facet);
       auto & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
@@ -1147,7 +1146,7 @@ void MeshUtils::doublePointFacet(Mesh & mesh, Mesh & mesh_facets,
       auto old_nb_doubled_nodes = doubled_nodes.size();
       doubled_nodes.resize(old_nb_doubled_nodes + nb_facet_to_double);
 
-      for(auto && data_facet : enumerate(facets_to_double)) {
+      for (auto && data_facet : enumerate(facets_to_double)) {
         const auto & old_facet = std::get<1>(data_facet);
         auto facet = std::get<0>(data_facet);
 
@@ -1586,7 +1585,8 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
     for (auto ghost_type : ghost_types) {
       for (auto & type : mesh.elementTypes(sp, ghost_type)) {
         mesh_accessor.getSubelementToElement(type, ghost_type)
-            .resize(mesh.getNbElement(type, ghost_type), ElementNull);
+            .resize(mesh.getNbElement(type, ghost_type));
+        mesh_accessor.getSubelementToElement(type, ghost_type).set(ElementNull);
       }
 
       for (auto & type : mesh.elementTypes(sp - 1, ghost_type)) {
@@ -1611,23 +1611,19 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
 
         const auto & connectivity = mesh.getConnectivity(type, ghost_type);
 
-        auto fit = connectivity.begin(mesh.getNbNodesPerElement(type));
-        auto fend = connectivity.end(mesh.getNbNodesPerElement(type));
+        for (auto && data : enumerate(
+                 make_view(connectivity, mesh.getNbNodesPerElement(type)))) {
+          const auto & facet = std::get<1>(data);
+          facet_element.element = std::get<0>(data);
 
-        UInt fid = 0;
-        for (; fit != fend; ++fit, ++fid) {
-          const Vector<UInt> & facet = *fit;
-          facet_element.element = fid;
           std::map<Element, UInt> element_seen_counter;
-          UInt nb_nodes_per_facet =
+          auto nb_nodes_per_facet =
               mesh.getNbNodesPerElement(Mesh::getP1ElementType(type));
 
-          for (UInt n(0); n < nb_nodes_per_facet; ++n) {
-
-            auto eit = nodes_to_elements.begin(facet(n));
-            auto eend = nodes_to_elements.end(facet(n));
-            for (; eit != eend; ++eit) {
-              auto & elem = *eit;
+          // count the number of node in common between the facet and the other
+          // element connected to the nodes of the facet
+          for (auto node : arange(nb_nodes_per_facet)) {
+            for (auto & elem : nodes_to_elements.getRow(facet(node))) {
               auto cit = element_seen_counter.find(elem);
               if (cit != element_seen_counter.end()) {
                 cit->second++;
@@ -1637,34 +1633,37 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
             }
           }
 
+          // check which are the connected elements
           std::vector<Element> connected_elements;
           for (auto && cit : element_seen_counter) {
             if (cit.second == nb_nodes_per_facet)
               connected_elements.push_back(cit.first);
           }
 
-          for (auto & connected_element : connected_elements)
-            element_to_subelement(fid).push_back(connected_element);
+          // add the connected elements as sub-elements
+          for (auto & connected_element : connected_elements) {
+            element_to_subelement(facet_element.element)
+                .push_back(connected_element);
+          }
 
-          for (UInt ce = 0; ce < connected_elements.size(); ++ce) {
-            Element & elem = connected_elements[ce];
-            Array<Element> & subelement_to_element =
-                mesh_accessor.getSubelementToElement(elem.type,
-                                                     elem.ghost_type);
+          // add the element as sub-element to the connected elements
+          for (auto & connected_element : connected_elements) {
+            Vector<Element> subelements_to_element =
+                mesh.getSubelementToElement(connected_element);
 
-            UInt f(0);
-            for (; f < mesh.getNbFacetsPerElement(elem.type) &&
-                   subelement_to_element(elem.element, f) != ElementNull;
-                 ++f)
-              ;
+            // find the position where to insert the element
+            auto it = std::find(subelements_to_element.begin(),
+                                subelements_to_element.end(), ElementNull);
 
             AKANTU_DEBUG_ASSERT(
-                f < mesh.getNbFacetsPerElement(elem.type),
-                "The element " << elem << " seems to have too many facets!! ("
-                               << f << " < "
-                               << mesh.getNbFacetsPerElement(elem.type) << ")");
+                it != subelements_to_element.end(),
+                "The element "
+                    << connected_element << " seems to have too many facets!! ("
+                    << (it - subelements_to_element.begin()) << " < "
+                    << mesh.getNbFacetsPerElement(connected_element.type)
+                    << ")");
 
-            subelement_to_element(elem.element, f) = facet_element;
+            *it = facet_element;
           }
         }
       }

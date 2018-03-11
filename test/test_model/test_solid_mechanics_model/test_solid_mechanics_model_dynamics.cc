@@ -195,6 +195,7 @@ public:
       base_name << "bar" << analysis_method << this->type;
       this->model->setBaseName(base_name.str());
       this->model->addDumpFieldVector("displacement");
+      this->model->addDumpFieldVector("blocked_dofs");
       this->model->addDumpField("mass");
       this->model->addDumpField("velocity");
       this->model->addDumpField("acceleration");
