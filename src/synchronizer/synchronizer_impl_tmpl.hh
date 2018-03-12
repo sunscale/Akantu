@@ -346,6 +346,72 @@ void SynchronizerImpl<Entity>::updateSchemes(Updater && scheme_updater) {
 }
 
 /* -------------------------------------------------------------------------- */
+template <typename Entity>
+template <typename Pred>
+void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
+  std::vector<CommunicationRequest> requests;
+  std::unordered_map<UInt, Array<UInt>> keep_entities;
+
+  auto filter_list = [](const auto & keep, auto & list) {
+    Array<Element> new_list;
+    for (const auto & keep_entity : keep) {
+      const Entity & entity = list(keep(keep_entity));
+      new_list.push_back(entity);
+    }
+    list.copy(new_list);
+  };
+
+  // loop over send_schemes
+  for (auto & scheme_pair : communications.iterateSchemes(_recv)) {
+    auto proc = scheme_pair.first;
+    auto & scheme = scheme_pair.second;
+
+    auto & keep_entity = keep_entities[proc];
+    for (auto && entity : enumerate(scheme)) {
+      if (pred(std::get<1>(entity))) {
+        keep_entity.push_back(std::get<0>(entity));
+      }
+    }
+
+    auto tag = Tag::genTag(this->rank, 0, Tag::_MODIFY_SCHEME);
+    AKANTU_DEBUG_INFO("I have " << keep_entity.size()
+                                << " elements to still receive from processor "
+                                << proc << " (communication tag : " << tag
+                                << ")");
+
+    filter_list(keep_entity, scheme);
+    requests.push_back(communicator.asyncSend(keep_entity, proc, tag));
+  }
+
+  // clean the receive scheme
+  for (auto & scheme_pair : communications.iterateSchemes(_send)) {
+    auto proc = scheme_pair.first;
+    auto & scheme = scheme_pair.second;
+
+    auto tag = Tag::genTag(proc, 0, Tag::_MODIFY_SCHEME);
+    AKANTU_DEBUG_INFO("Waiting list of elements to keep from processor "
+                      << proc << " (communication tag : " << tag << ")");
+
+    CommunicationStatus status;
+    communicator.probe<UInt>(proc, tag, status);
+
+    Array<UInt> keep_entity(status.size(), 1, "keep_element");
+    AKANTU_DEBUG_INFO("I have "
+                      << keep_entity.size()
+                      << " elements to keep in my send list to processor "
+                      << proc << " (communication tag : " << tag << ")");
+
+    communicator.receive(keep_entity, proc, tag);
+
+    filter_list(keep_entity, scheme);
+  }
+
+  communicator.waitAll(requests);
+  communicator.freeCommunicationRequest(requests);
+  communications.invalidateSizes();
+}
+
+/* -------------------------------------------------------------------------- */
 template <class Entity> void SynchronizerImpl<Entity>::swapSendRecv() {
   communications.swapSendRecv();
 }
@@ -363,7 +429,7 @@ UInt SynchronizerImpl<Entity>::sanityCheckDataSize(const Array<Entity> &,
   size += sizeof(SynchronizationTag); // tag
   size += sizeof(UInt);               // comm_desc.getNbData();
   size += sizeof(UInt);               // comm_desc.getProc();
-  size += sizeof(this->rank);               // mesh.getCommunicator().whoAmI();
+  size += sizeof(this->rank);         // mesh.getCommunicator().whoAmI();
 
   return size;
 }

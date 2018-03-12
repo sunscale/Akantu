@@ -128,7 +128,11 @@ void ElementSynchronizer::onElementsRemoved(
     const RemovedElementsEvent &) {
   AKANTU_DEBUG_IN();
 
-  this->removeElements(element_to_remove);
+  this->filterScheme([&](auto && element) {
+    return std::find(element_to_remove.begin(), element_to_remove.end(),
+                     element) != element_to_remove.end();
+  });
+
   this->renumberElements(new_numbering);
 
   communications.invalidateSizes();
@@ -173,93 +177,6 @@ void ElementSynchronizer::reset() {
   AKANTU_DEBUG_IN();
 
   communications.resetSchemes();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void ElementSynchronizer::removeElements(
-    const Array<Element> & element_to_remove) {
-  AKANTU_DEBUG_IN();
-
-  std::vector<CommunicationRequest> send_requests;
-  std::map<UInt, Array<UInt>> list_of_elements_per_proc;
-
-  auto filter_list = [](const Array<UInt> & keep, Array<Element> & list) {
-    Array<Element> new_list;
-    for (UInt e = 0; e < keep.size() - 1; ++e) {
-      Element & el = list(keep(e));
-      new_list.push_back(el);
-    }
-    list.copy(new_list);
-  };
-
-  // Handling ghost elements
-  for (auto && scheme_pair : communications.iterateSchemes(_recv)) {
-    auto proc = scheme_pair.first;
-    auto & recv = scheme_pair.second;
-    Array<UInt> & keep_list = list_of_elements_per_proc[proc];
-
-    auto rem_it = element_to_remove.begin();
-    auto rem_end = element_to_remove.end();
-
-    for (auto && pair : enumerate(recv)) {
-      const auto & el = std::get<1>(pair);
-      auto pos = std::find(rem_it, rem_end, el);
-
-      if (pos == rem_end) {
-        keep_list.push_back(std::get<0>(pair));
-      }
-    }
-
-    keep_list.push_back(UInt(-1)); // To no send empty arrays
-
-    auto && tag = Tag::genTag(proc, 0, Tag::_MODIFY_SCHEME, this->hash_id);
-    AKANTU_DEBUG_INFO("Sending a message of size "
-                      << keep_list.size() << " to proc " << proc << " TAG("
-                      << tag << ")");
-    send_requests.push_back(this->communicator.asyncSend(keep_list, proc, tag));
-
-#ifndef AKANTU_NDEBUG
-    auto old_size = recv.size();
-#endif
-    filter_list(keep_list, recv);
-
-    AKANTU_DEBUG_INFO("I had " << old_size << " elements to recv from proc "
-                               << proc << " and " << keep_list.size()
-                               << " elements to keep. I have " << recv.size()
-                               << " elements left.");
-  }
-
-  for (auto && scheme_pair : communications.iterateSchemes(_send)) {
-    auto proc = scheme_pair.first;
-    auto & send = scheme_pair.second;
-
-    CommunicationStatus status;
-    auto && tag = Tag::genTag(rank, 0, Tag::_MODIFY_SCHEME, this->hash_id);
-    AKANTU_DEBUG_INFO("Getting number of elements of proc "
-                      << proc << " to keep - TAG(" << tag << ")");
-    this->communicator.probe<UInt>(proc, tag, status);
-    Array<UInt> keep_list(status.size());
-
-    AKANTU_DEBUG_INFO("Receiving list of elements ("
-                      << keep_list.size() << " elements) to keep for proc "
-                      << proc << " TAG(" << tag << ")");
-    this->communicator.receive(keep_list, proc, tag);
-
-#ifndef AKANTU_NDEBUG
-    auto old_size = send.size();
-#endif
-    filter_list(keep_list, send);
-
-    AKANTU_DEBUG_INFO("I had " << old_size << " elements to send to proc "
-                               << proc << " and " << keep_list.size()
-                               << " elements to keep. I have " << send.size()
-                               << " elements left.");
-  }
-
-  this->communicator.waitAll(send_requests);
-  this->communicator.freeCommunicationRequest(send_requests);
 
   AKANTU_DEBUG_OUT();
 }

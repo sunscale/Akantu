@@ -102,6 +102,9 @@ public:
   /// update schemes in a synchronizer
   template <typename Updater> void updateSchemes(Updater && scheme_updater);
 
+  /// filter the send scheme and let the other processor now about iterate
+  template <typename Pred> void filterScheme(Pred && pred);
+
   /// flip send and receive schemes
   void swapSendRecv();
 
