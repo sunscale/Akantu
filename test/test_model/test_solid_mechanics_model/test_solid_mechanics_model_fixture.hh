@@ -118,8 +118,8 @@ using is_not_pentahedron =
 using TestElementTypesFiltered =
     tuple_filter_t<is_not_pentahedron, TestElementTypes>;
 
-using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
-// using gtest_element_types = gtest_list_t<TestElementTypes>;
+// using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
+using gtest_element_types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_CASE(TestSMMFixture, gtest_element_types);
 

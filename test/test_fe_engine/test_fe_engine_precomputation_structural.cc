@@ -113,7 +113,7 @@ TEST_F(TestBernoulliB3, PrecomputeRotations) {
 }
 
 /* -------------------------------------------------------------------------- */
-TEST_F(TestDKT18, PrecomputeRotations) {
+TEST_F(TestDKT18, DISABLED_PrecomputeRotations) {
   this->fem->initShapeFunctions();
   using ShapeStruct = ShapeStructural<_ek_structural>;
   auto & shape = dynamic_cast<const ShapeStruct &>(fem->getShapeFunctions());
