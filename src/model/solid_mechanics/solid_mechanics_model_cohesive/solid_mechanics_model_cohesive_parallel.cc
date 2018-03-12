@@ -41,9 +41,9 @@
 
 namespace akantu {
 
-class FacetConnectivitySynchronizer : public DataAccessor<Element> {
+class FacetGlobalConnectivityAccessor : public DataAccessor<Element> {
 public:
-  FacetConnectivitySynchronizer(Mesh & mesh)
+  FacetGlobalConnectivityAccessor(Mesh & mesh)
       : global_connectivity("global_connectivity",
                             "facet_connectivity_synchronizer") {
     global_connectivity.initialize(
@@ -107,7 +107,7 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
   /// get global connectivity for not ghost facets
   auto & mesh_facets = inserter->getMeshFacets();
 
-  FacetConnectivitySynchronizer data_accessor(mesh_facets);
+  FacetGlobalConnectivityAccessor data_accessor(mesh_facets);
 
   /// communicate
   mesh_facets.getElementSynchronizer().synchronizeOnce(data_accessor,
@@ -138,9 +138,8 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
         cfacet_synchronizer.getCommunications().getScheme(proc, direction);
 
     for (auto && facet : facet_scheme) {
-      const auto & cohesive_element =
-          const_cast<const Mesh &>(mesh_facets)
-              .getElementToSubelement(facet)[1];
+      const auto & cohesive_element = const_cast<const Mesh &>(mesh_facets)
+                                          .getElementToSubelement(facet)[1];
 
       if (cohesive_element == ElementNull or
           cohesive_element.kind() != _ek_cohesive)
@@ -408,7 +407,8 @@ void SolidMechanicsModelCohesive::packData(
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
     // case _gst_smmc_facets: {
-    //   packElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
+    //   packElementalDataHelper(inserter->getInsertionFacetsByElement(),
+    //   buffer,
     //                           elements, false, getFEEngine());
     //   break;
     // }
@@ -471,7 +471,8 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
     // case _gst_smmc_facets: {
-    //   unpackElementalDataHelper(inserter->getInsertionFacetsByElement(), buffer,
+    //   unpackElementalDataHelper(inserter->getInsertionFacetsByElement(),
+    //   buffer,
     //                             elements, false, getFEEngine());
     //   break;
     // }
