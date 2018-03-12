@@ -1,18 +1,37 @@
 /**
  * @file   boundary_functions.cc
  *
+ * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
+/* -------------------------------------------------------------------------- */
 #include "boundary_functions.hh"
+#include "communicator.hh"
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
@@ -22,26 +41,17 @@ Real integrateResidual(const std::string & sub_boundary_name,
   Real int_res = 0.;
 
   const Mesh & mesh = model.getMesh();
-  const Array<Real> & residual = model.getResidual();
+  const Array<Real> & residual = model.getInternalForce();
 
-  // do not need try catch, as all subboundaries should be everywhere.
-  //  try {
   const ElementGroup & boundary = mesh.getElementGroup(sub_boundary_name);
-  ElementGroup::const_node_iterator nit = boundary.node_begin();
-  ElementGroup::const_node_iterator nend = boundary.node_end();
-  for (; nit != nend; ++nit) {
-    bool is_local_node = mesh.isLocalOrMasterNode(*nit);
+  for (auto & node : boundary.getNodes()) {
+    bool is_local_node = mesh.isLocalOrMasterNode(node);
     if (is_local_node) {
-      int_res += residual(*nit, dir);
+      int_res += residual(node, dir);
     }
   }
-  // } catch(debug::Exception e) {
-  //   // AKANTU_ERROR("Error computing integrateResidual. Cannot get
-  //   SubBoundary: "
-  //   // 		       << sub_boundary_name << " [" << e.what() << "]");
-  // }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&int_res, 1, _so_sum);
+  mesh.getCommunicator().allReduce(int_res, SynchronizerOperation::_sum);
   return int_res;
 }
 

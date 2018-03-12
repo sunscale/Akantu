@@ -3,13 +3,28 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief  implementation of ntn base friction
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -157,11 +172,11 @@ void NTNBaseFriction::computeStickTraction() {
   this->contact->computeRelativeTangentialField(model.getAcceleration(),
                                                 r_old_acce);
 
-  AKANTU_DEBUG_ASSERT(r_velo.getSize() == nb_contact_nodes,
+  AKANTU_DEBUG_ASSERT(r_velo.size() == nb_contact_nodes,
                       "computeRelativeNormalField does not give back arrays "
                           << "size == nb_contact_nodes. nb_contact_nodes = "
                           << nb_contact_nodes
-                          << " | array size = " << r_velo.getSize());
+                          << " | array size = " << r_velo.size());
 
   // compute tangential gap_dot array for all nodes
   Array<Real> gap_dot(nb_contact_nodes, dim);

@@ -3,13 +3,28 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief  implementation of ntn_contact
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -101,8 +116,8 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
 
   // find minimum distance between slave nodes to define tolerance
   Real min_dist = std::numeric_limits<Real>::max();
-  for (UInt i = 0; i < proj_slave_coord.getSize(); ++i) {
-    for (UInt j = i + 1; j < proj_slave_coord.getSize(); ++j) {
+  for (UInt i = 0; i < proj_slave_coord.size(); ++i) {
+    for (UInt j = i + 1; j < proj_slave_coord.size(); ++j) {
       Real dist = 0.;
       for (UInt d = 0; d < dim - 1; ++d) {
         dist += (proj_slave_coord(i, d) - proj_slave_coord(j, d)) *
@@ -117,8 +132,8 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
   Real local_tol = 0.1 * min_dist;
 
   // find master slave node pairs
-  for (UInt i = 0; i < proj_slave_coord.getSize(); ++i) {
-    for (UInt j = 0; j < proj_master_coord.getSize(); ++j) {
+  for (UInt i = 0; i < proj_slave_coord.size(); ++i) {
+    for (UInt j = 0; j < proj_master_coord.size(); ++j) {
       Real dist = 0.;
       for (UInt d = 0; d < dim - 1; ++d) {
         dist += (proj_slave_coord(i, d) - proj_master_coord(j, d)) *
@@ -181,7 +196,7 @@ void NTNContact::addNodePairs(const Array<UInt> & pairs) {
                       "Array of node pairs should have nb_component = 2,"
                           << " but has nb_component = "
                           << pairs.getNbComponent());
-  UInt nb_pairs = pairs.getSize();
+  UInt nb_pairs = pairs.size();
   for (UInt n = 0; n < nb_pairs; ++n) {
     this->addSplitNode(pairs(n, 0), pairs(n, 1));
   }
@@ -437,7 +452,7 @@ void NTNContact::computeRelativeTangentialField(
   Vector<Real> rfv(dim);
   Vector<Real> np_rfv(dim);
 
-  UInt nb_contact_nodes = this->slaves.getSize();
+  UInt nb_contact_nodes = this->slaves.size();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     // nodes
     UInt slave = this->slaves(n);

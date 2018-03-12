@@ -3,13 +3,28 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -102,7 +117,7 @@ void NTRFContact::addSurface(const Surface & surf) {
 void NTRFContact::addNodes(Array<UInt> & nodes) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_nodes = nodes.getSize();
+  UInt nb_nodes = nodes.size();
   UInt nb_compo = nodes.getNbComponent();
   for (UInt n = 0; n < nb_nodes; ++n) {
     for (UInt c = 0; c < nb_compo; ++c) {
@@ -167,7 +182,7 @@ void NTRFContact::computeRelativeTangentialField(
   Vector<Real> rfv(dim);
   Vector<Real> np_rfv(dim);
 
-  UInt nb_contact_nodes = this->slaves.getSize();
+  UInt nb_contact_nodes = this->slaves.size();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     // nodes
     UInt node = this->slaves(n);

@@ -3,6 +3,8 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief  synchronized array: a array can be registered to another (hereafter
  * called top) array. If an element is added to or removed from the top array,
@@ -11,8 +13,21 @@
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -66,8 +81,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// push_back
-  inline void push_back(const_reference value);
-  inline void push_back(const value_type new_element[]);
+  template <typename P> inline void push_back(P && value);
 
   /// erase
   inline void erase(UInt i);
@@ -103,7 +117,7 @@ public:
   /// set
   template <template <typename> class C> inline void set(const C<T> & vm) {
     Array<T>::set(vm);
-  };
+  }
 
   /// set all entries of the array to value t and set default value
   inline void setAndChangeDefault(T t) {
@@ -142,7 +156,7 @@ public:
 public:
   AKANTU_SET_MACRO(DefaultValue, default_value, T);
 
-  UInt getSize() const { return this->size; };
+  UInt size() const { return this->size_; };
 
   ID getID() const { return Array<T>::getID(); };
 

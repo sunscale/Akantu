@@ -3,63 +3,80 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief  implementation of ntn base contact
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 /* -------------------------------------------------------------------------- */
-// simtools
 #include "ntn_base_contact.hh"
 #include "dumpable_inline_impl.hh"
 #include "dumper_nodal_field.hh"
 #include "dumper_text.hh"
+#include "element_synchronizer.hh"
+#include "mesh_utils.hh"
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTNContactSynchElementFilter::NTNContactSynchElementFilter(
-    NTNBaseContact * contact)
-    : contact(contact),
-      connectivity(contact->getModel().getMesh().getConnectivities()) {
-  AKANTU_DEBUG_IN();
+// NTNContactSynchElementFilter::NTNContactSynchElementFilter(
+//     NTNBaseContact * contact)
+//     : contact(contact),
+//       connectivity(contact->getModel().getMesh().getConnectivities()) {
+//   AKANTU_DEBUG_IN();
 
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-bool NTNContactSynchElementFilter::operator()(const Element & e) {
-  AKANTU_DEBUG_IN();
-
-  ElementType type = e.type;
-  UInt element = e.element;
-  GhostType ghost_type = e.ghost_type;
-
-  // loop over all nodes of this element
-  bool need_element = false;
-  UInt nb_nodes = Mesh::getNbNodesPerElement(type);
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    UInt nn = this->connectivity(type, ghost_type)(element, n);
-
-    // if one nodes is in this contact, we need this element
-    if (this->contact->getNodeIndex(nn) >= 0) {
-      need_element = true;
-      break;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-  return need_element;
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
-NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
-                               const ContactID & id, const MemoryID & memory_id)
+// bool NTNContactSynchElementFilter::operator()(const Element & e) {
+//   AKANTU_DEBUG_IN();
+
+//   ElementType type = e.type;
+//   UInt element = e.element;
+//   GhostType ghost_type = e.ghost_type;
+
+//   // loop over all nodes of this element
+//   bool need_element = false;
+//   UInt nb_nodes = Mesh::getNbNodesPerElement(type);
+//   for (UInt n = 0; n < nb_nodes; ++n) {
+//     UInt nn = this->connectivity(type, ghost_type)(element, n);
+
+//     // if one nodes is in this contact, we need this element
+//     if (this->contact->getNodeIndex(nn) >= 0) {
+//       need_element = true;
+//       break;
+//     }
+//   }
+
+//   AKANTU_DEBUG_OUT();
+//   return need_element;
+// }
+
+/* -------------------------------------------------------------------------- */
+NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model, const ID & id,
+                               const MemoryID & memory_id)
     : Memory(id, memory_id), Dumpable(), model(model),
       slaves(0, 1, 0, id + ":slaves", std::numeric_limits<UInt>::quiet_NaN(),
              "slaves"),
@@ -75,7 +92,7 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
       impedance(0, 1, 0, id + ":impedance",
                 std::numeric_limits<Real>::quiet_NaN(), "impedance"),
       contact_surfaces(), slave_elements("slave_elements", id, memory_id),
-      node_to_elements(), synch_registry(NULL) {
+      node_to_elements() {
   AKANTU_DEBUG_IN();
 
   FEEngine & boundary_fem = this->model.getFEEngineBoundary();
@@ -87,7 +104,8 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
   Mesh & mesh = this->model.getMesh();
   UInt spatial_dimension = this->model.getSpatialDimension();
 
-  mesh.initElementTypeMapArray(this->slave_elements, 1, spatial_dimension - 1);
+  this->slave_elements.initialize(mesh,
+                                  _spatial_dimension = spatial_dimension - 1);
 
   MeshUtils::buildNode2Elements(mesh, this->node_to_elements,
                                 spatial_dimension - 1);
@@ -97,31 +115,34 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model,
                             spatial_dimension - 1, _not_ghost, _ek_regular);
 
   // parallelisation
-  this->synch_registry = new SynchronizerRegistry(*this);
+  this->synch_registry = std::make_unique<SynchronizerRegistry>();
+  this->synch_registry->registerDataAccessor(*this);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-NTNBaseContact::~NTNBaseContact() {
-  AKANTU_DEBUG_IN();
-
-  if (this->synch_registry)
-    delete this->synch_registry;
-
-  if (this->synchronizer)
-    delete this->synchronizer;
-
-  AKANTU_DEBUG_OUT();
-}
+NTNBaseContact::~NTNBaseContact() = default;
 
 /* -------------------------------------------------------------------------- */
 void NTNBaseContact::initParallel() {
   AKANTU_DEBUG_IN();
 
-  NTNContactSynchElementFilter elem_filter(this);
-  this->synchronizer = FilteredSynchronizer::createFilteredSynchronizer(
-      this->model.getSynchronizer(), elem_filter);
+  this->synchronizer = std::make_unique<ElementSynchronizer>(
+      this->model.getMesh().getElementSynchronizer());
+
+  this->synchronizer->filterScheme([&](auto && element) {
+    // loop over all nodes of this element
+    Vector<UInt> conn = const_cast<const Mesh &>(this->model.getMesh())
+                            .getConnectivity(element);
+    for (auto & node : conn) {
+      // if one nodes is in this contact, we need this element
+      if (this->getNodeIndex(node) >= 0) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   this->synch_registry->registerSynchronizer(*(this->synchronizer),
                                              _gst_cf_nodal);
@@ -136,36 +157,28 @@ void NTNBaseContact::findBoundaryElements(
     const Array<UInt> & interface_nodes, ElementTypeMapArray<UInt> & elements) {
   AKANTU_DEBUG_IN();
 
-  UInt nb_interface_nodes = interface_nodes.getSize();
-  const ElementTypeMapArray<UInt> & connectivity =
-      this->model.getMesh().getConnectivities();
-
   // add connected boundary elements that have all nodes on this contact
-  for (UInt i = 0; i < nb_interface_nodes; ++i) {
-    UInt node = interface_nodes(i);
+  for (const auto & node : interface_nodes) {
+    for (const auto & element : this->node_to_elements.getRow(node)) {
+      Vector<UInt> conn = const_cast<const Mesh &>(this->model.getMesh())
+                              .getConnectivity(element);
+      auto nb_nodes = conn.size();
+      decltype(nb_nodes) nb_found_nodes = 0;
 
-    CSR<Element>::iterator it = this->node_to_elements.begin(node);
-    CSR<Element>::iterator it_e = this->node_to_elements.end(node);
-    for (; it != it_e; ++it) { // loop over all elements connected to node
-      ElementType type = it->type;
-      UInt element = it->element;
-      GhostType ghost_type = it->ghost_type;
-
-      UInt nb_nodes = Mesh::getNbNodesPerElement(type);
-      UInt nb_found_nodes = 0;
-      for (UInt n = 0; n < nb_nodes; ++n) {
-        UInt nn = connectivity(type, ghost_type)(element, n);
-        if (interface_nodes.find(nn) >= 0)
+      for (auto & nn : conn) {
+        if (interface_nodes.find(nn) != UInt(-1)) {
           nb_found_nodes++;
-        else
+        } else {
           break;
+        }
       }
 
       // this is an element between all contact nodes
       // and is not already in the elements
       if ((nb_found_nodes == nb_nodes) &&
-          (elements(type, ghost_type).find(element) < 0)) {
-        elements(type, ghost_type).push_back(element);
+          (elements(element.type, element.ghost_type).find(element.element) ==
+           UInt(-1))) {
+        elements(element.type, element.ghost_type).push_back(element.element);
       }
     }
   }
@@ -192,9 +205,7 @@ void NTNBaseContact::addSplitNode(UInt node) {
   this->lumped_boundary_slaves.push_back(
       std::numeric_limits<Real>::quiet_NaN());
 
-  Real nan_normal[dim];
-  for (UInt d = 0; d < dim; ++d)
-    nan_normal[d] = std::numeric_limits<Real>::quiet_NaN();
+  Vector<Real> nan_normal(dim, std::numeric_limits<Real>::quiet_NaN());
   this->normals.push_back(nan_normal);
 
   AKANTU_DEBUG_OUT();
@@ -254,8 +265,7 @@ UInt NTNBaseContact::getNbNodesInContact() const {
     }
   }
 
-  StaticCommunicator::getStaticCommunicator().allReduce(&nb_contact, 1,
-                                                        _so_sum);
+  mesh.getCommunicator().allReduce(nb_contact, SynchronizerOperation::_sum);
 
   AKANTU_DEBUG_OUT();
   return nb_contact;
@@ -358,7 +368,7 @@ void NTNBaseContact::computeContactPressure() {
   // (not increment acceleration, because residual is still Kf)
   Array<Real> acceleration(this->model.getMesh().getNbNodes(), dim, 0.);
   this->model.solveLumped(acceleration, this->model.getMass(),
-                          this->model.getResidual(),
+                          this->model.getInternalForce(),
                           this->model.getBlockedDOFs(), this->model.getF_M2A());
 
   // compute relative normal fields of displacement, velocity and acceleration
@@ -372,11 +382,11 @@ void NTNBaseContact::computeContactPressure() {
   computeRelativeNormalField(acceleration, r_acce);
   computeRelativeNormalField(this->model.getAcceleration(), r_old_acce);
 
-  AKANTU_DEBUG_ASSERT(r_disp.getSize() == nb_contact_nodes,
+  AKANTU_DEBUG_ASSERT(r_disp.size() == nb_contact_nodes,
                       "computeRelativeNormalField does not give back arrays "
                           << "size == nb_contact_nodes. nb_contact_nodes = "
                           << nb_contact_nodes
-                          << " | array size = " << r_disp.getSize());
+                          << " | array size = " << r_disp.size());
 
   // compute gap array for all nodes
   Array<Real> gap(nb_contact_nodes, 1);
@@ -421,7 +431,7 @@ void NTNBaseContact::applyContactPressure() {
   UInt nb_contact_nodes = getNbContactNodes();
   UInt dim = this->model.getSpatialDimension();
 
-  Array<Real> & residual = this->model.getResidual();
+  Array<Real> & residual = this->model.getInternalForce();
 
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     UInt slave = this->slaves(n);
@@ -439,9 +449,6 @@ void NTNBaseContact::applyContactPressure() {
 
 /* -------------------------------------------------------------------------- */
 Int NTNBaseContact::getNodeIndex(UInt node) const {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
   return this->slaves.find(node);
 }
 
@@ -502,10 +509,10 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
     ADD_FIELD(field_id, this->model.getVelocity(), Real);
   } else if (field_id == "acceleration") {
     ADD_FIELD(field_id, this->model.getAcceleration(), Real);
-  } else if (field_id == "force") {
+  } else if (field_id == "external_force") {
     ADD_FIELD(field_id, this->model.getForce(), Real);
-  } else if (field_id == "residual") {
-    ADD_FIELD(field_id, this->model.getResidual(), Real);
+  } else if (field_id == "internal_force") {
+    ADD_FIELD(field_id, this->model.getInternalForce(), Real);
   } else if (field_id == "blocked_dofs") {
     ADD_FIELD(field_id, this->model.getBlockedDOFs(), bool);
   } else if (field_id == "increment") {

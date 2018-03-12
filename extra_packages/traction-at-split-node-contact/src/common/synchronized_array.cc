@@ -3,13 +3,28 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief  implementation of synchronized array function
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -46,7 +61,7 @@ void SynchronizedArray<T>::syncElements(SyncChoice sync_choice) {
     std::vector<SynchronizedArrayBase *>::iterator it;
     for (it = depending_arrays.begin(); it != depending_arrays.end(); ++it) {
       UInt vec_size = (*it)->syncDeletedElements(this->deleted_elements);
-      AKANTU_DEBUG_ASSERT(vec_size == this->size,
+      AKANTU_DEBUG_ASSERT(vec_size == this->size_,
                           "Synchronized arrays do not have the same length"
                               << "(may be a double synchronization)");
     }
@@ -57,7 +72,7 @@ void SynchronizedArray<T>::syncElements(SyncChoice sync_choice) {
     std::vector<SynchronizedArrayBase *>::iterator it;
     for (it = depending_arrays.begin(); it != depending_arrays.end(); ++it) {
       UInt vec_size = (*it)->syncAddedElements(this->nb_added_elements);
-      AKANTU_DEBUG_ASSERT(vec_size == this->size,
+      AKANTU_DEBUG_ASSERT(vec_size == this->size_,
                           "Synchronized arrays do not have the same length"
                               << "(may be a double synchronization)");
     }
@@ -84,7 +99,7 @@ UInt SynchronizedArray<T>::syncDeletedElements(
   syncElements(_deleted);
 
   AKANTU_DEBUG_OUT();
-  return this->size;
+  return this->size_;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -102,7 +117,7 @@ UInt SynchronizedArray<T>::syncAddedElements(UInt nb_add_elements) {
   syncElements(_added);
 
   AKANTU_DEBUG_OUT();
-  return this->size;
+  return this->size_;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -112,7 +127,7 @@ void SynchronizedArray<T>::registerDependingArray(
   AKANTU_DEBUG_IN();
 
   this->depending_arrays.push_back(&array);
-  array.syncAddedElements(this->size);
+  array.syncAddedElements(this->size_);
 
   AKANTU_DEBUG_OUT();
 }
@@ -168,8 +183,8 @@ void SynchronizedArray<T>::dumpRestartFile(std::string file_name) const {
   std::ofstream out_restart;
   out_restart.open(name.str().c_str());
 
-  out_restart << this->size << " " << this->nb_component << std::endl;
-  Real size_comp = this->size * this->nb_component;
+  out_restart << this->size_ << " " << this->nb_component << std::endl;
+  Real size_comp = this->size_ * this->nb_component;
   for (UInt i = 0; i < size_comp; ++i)
     out_restart << std::setprecision(12) << this->values[i] << " ";
   //    out_restart << std::hex << std::setprecision(12) << this->values[i] << "
@@ -202,13 +217,13 @@ void SynchronizedArray<T>::readRestartFile(std::string file_name) {
                           << "SynchronizedArray " << this->id);
   getline(infile, line);
   std::stringstream size_comp(line);
-  size_comp >> this->size;
+  size_comp >> this->size_;
   size_comp >> this->nb_component;
 
   // get elements in array
   getline(infile, line);
   std::stringstream data(line);
-  for (UInt i = 0; i < this->size * this->nb_component; ++i) {
+  for (UInt i = 0; i < this->size_ * this->nb_component; ++i) {
     AKANTU_DEBUG_ASSERT(
         !data.eof(),
         "Read SynchronizedArray "

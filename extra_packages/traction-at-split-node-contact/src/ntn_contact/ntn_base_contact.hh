@@ -3,13 +3,28 @@
  *
  * @author David Simon Kammer <david.kammer@epfl.ch>
  *
+ * @date creation: Tue Dec 02 2014
+ * @date last modification: Fri Feb 23 2018
  *
  * @brief  base contact for ntn and ntrf contact
  *
  * @section LICENSE
  *
- * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -19,7 +34,7 @@
 
 /* -------------------------------------------------------------------------- */
 // akantu
-#include "filtered_synchronizer.hh"
+#include "aka_csr.hh"
 #include "solid_mechanics_model.hh"
 
 // simtools
@@ -30,26 +45,28 @@ namespace akantu {
 class NTNBaseContact;
 
 /* -------------------------------------------------------------------------- */
-class NTNContactSynchElementFilter : public SynchElementFilter {
-public:
-  // constructor
-  NTNContactSynchElementFilter(NTNBaseContact * contact);
+// class NTNContactSynchElementFilter : public SynchElementFilter {
+// public:
+//   // constructor
+//   NTNContactSynchElementFilter(NTNBaseContact * contact);
 
-  // answer to: do we need this element ?
-  virtual bool operator()(const Element & e);
+//   // answer to: do we need this element ?
+//   virtual bool operator()(const Element & e);
 
-private:
-  const NTNBaseContact * contact;
-  const ElementTypeMapArray<UInt> & connectivity;
-};
+// private:
+//   const NTNBaseContact * contact;
+//   const ElementTypeMapArray<UInt> & connectivity;
+// };
 
 /* -------------------------------------------------------------------------- */
-class NTNBaseContact : protected Memory, public DataAccessor, public Dumpable {
+class NTNBaseContact : protected Memory,
+                       public DataAccessor<Element>,
+                       public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNBaseContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+  NTNBaseContact(SolidMechanicsModel & model, const ID & id = "contact",
                  const MemoryID & memory_id = 0);
   virtual ~NTNBaseContact();
 
@@ -127,16 +144,16 @@ protected:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  inline virtual UInt getNbDataForElements(const Array<Element> & elements,
-                                           SynchronizationTag tag) const;
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
 
-  inline virtual void packElementData(CommunicationBuffer & buffer,
-                                      const Array<Element> & elements,
-                                      SynchronizationTag tag) const;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
 
-  inline virtual void unpackElementData(CommunicationBuffer & buffer,
-                                        const Array<Element> & elements,
-                                        SynchronizationTag tag);
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
@@ -163,7 +180,8 @@ public:
   AKANTU_GET_MACRO(SlaveElements, slave_elements,
                    const ElementTypeMapArray<UInt> &)
 
-  AKANTU_GET_MACRO(SynchronizerRegistry, synch_registry, SynchronizerRegistry *)
+  AKANTU_GET_MACRO(SynchronizerRegistry, *synch_registry,
+                   SynchronizerRegistry &)
 
   /// get number of nodes that are in contact (globally, on all procs together)
   /// is_in_contact = true
@@ -175,7 +193,7 @@ public:
 
   /// get number of contact nodes: nodes in the system locally (on this proc)
   /// is_in_contact = true and false, because just in the system
-  virtual UInt getNbContactNodes() const { return this->slaves.getSize(); };
+  virtual UInt getNbContactNodes() const { return this->slaves.size(); };
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -206,8 +224,8 @@ protected:
   CSR<Element> node_to_elements;
 
   /// parallelisation
-  SynchronizerRegistry * synch_registry;
-  Synchronizer * synchronizer;
+  std::unique_ptr<SynchronizerRegistry> synch_registry;
+  std::unique_ptr<ElementSynchronizer> synchronizer;
 };
 
 /* -------------------------------------------------------------------------- */
