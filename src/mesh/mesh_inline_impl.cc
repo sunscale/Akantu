@@ -277,7 +277,8 @@ Mesh::getSubelementToElement(const Element & element) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline VectorProxy<Element> Mesh::getSubelementToElement(const Element & element) {
+inline VectorProxy<Element>
+Mesh::getSubelementToElement(const Element & element) {
   auto & sub_to_element =
       this->getSubelementToElement(element.type, element.ghost_type);
   auto it = sub_to_element.begin(sub_to_element.getNbComponent());
@@ -310,7 +311,8 @@ template <typename T>
 inline Array<T> &
 Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
                      const GhostType & ghost_type, UInt nb_component,
-                     bool size_to_nb_element, bool resize_with_parent, const T & defaul_) {
+                     bool size_to_nb_element, bool resize_with_parent,
+                     const T & defaul_) {
   Array<T> & tmp = mesh_data.getElementalDataArrayAlloc<T>(
       data_name, el_type, ghost_type, nb_component);
 
@@ -402,31 +404,18 @@ inline UInt Mesh::getNbElement(const UInt spatial_dimension,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Mesh::getBarycenter(UInt element, const ElementType & type,
-                                Real * barycenter, GhostType ghost_type) const {
-  UInt * conn_val = getConnectivity(type, ghost_type).storage();
-  UInt nb_nodes_per_element = getNbNodesPerElement(type);
-
-  auto * local_coord = new Real[spatial_dimension * nb_nodes_per_element];
-
-  UInt offset = element * nb_nodes_per_element;
-  for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-    memcpy(local_coord + n * spatial_dimension,
-           nodes->storage() + conn_val[offset + n] * spatial_dimension,
-           spatial_dimension * sizeof(Real));
-  }
-
-  Math::barycenter(local_coord, nb_nodes_per_element, spatial_dimension,
-                   barycenter);
-
-  delete[] local_coord;
-}
-
-/* -------------------------------------------------------------------------- */
 inline void Mesh::getBarycenter(const Element & element,
                                 Vector<Real> & barycenter) const {
-  getBarycenter(element.element, element.type, barycenter.storage(),
-                element.ghost_type);
+  Vector<UInt> conn = getConnectivity(element);
+  Matrix<Real> local_coord(spatial_dimension, conn.size());
+  auto node_begin = make_view(*nodes, spatial_dimension).begin();
+
+  for(auto && node : enumerate(conn)) {
+    local_coord(std::get<0>(node)) = Vector<Real>(node_begin[std::get<1>(node)]);
+  }
+
+  Math::barycenter(local_coord.storage(), conn.size(), spatial_dimension,
+                   barycenter.storage());
 }
 
 /* -------------------------------------------------------------------------- */

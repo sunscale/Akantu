@@ -279,17 +279,7 @@ public:
                            const GhostType & ghost_type = _not_ghost,
                            const ElementKind & kind = _ek_not_defined) const;
 
-  // /// get the connectivity list either for the elements or the ghost elements
-  // inline const ConnectivityTypeList &
-  // getConnectivityTypeList(const GhostType & ghost_type = _not_ghost) const;
-
   /// compute the barycenter of a given element
-private:
-  inline void getBarycenter(UInt element, const ElementType & type,
-                            Real * barycenter,
-                            GhostType ghost_type = _not_ghost) const;
-
-public:
   inline void getBarycenter(const Element & element,
                             Vector<Real> & barycenter) const;
 
