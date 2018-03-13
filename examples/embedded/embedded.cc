@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "embedded_interface_model.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -87,21 +88,12 @@ int main(int argc, char * argv[]) {
   model.addDumpFieldTensorToDumper(
       "reinforcement", "stress_embedded"); // dumping stress in reinforcement
 
-  // Assemble global stiffness matrix
-  model.assembleStiffnessMatrix();
+  auto & solver = model.getNonLinearSolver();
+  solver.set("max_iterations", 1);
+  solver.set("threshold", 1e-6);
+  solver.set("convergence_type", _scc_residual);
 
-  // Update residual
-  model.updateResidual();
-
-  // Solve
-  Real error;
-  bool converged =
-      model.solveStep<_scm_newton_raphson_tangent_not_computed, _scc_residual>(
-          1e-6, error, 1);
-
-  if (!converged) {
-    std::cerr << "Model did not converge, error = " << error << std::endl;
-  }
+  model.solveStep();
 
   // Dumping model
   model.dump();

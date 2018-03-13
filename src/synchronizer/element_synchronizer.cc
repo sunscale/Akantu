@@ -130,7 +130,7 @@ void ElementSynchronizer::onElementsRemoved(
 
   this->filterScheme([&](auto && element) {
     return std::find(element_to_remove.begin(), element_to_remove.end(),
-                     element) != element_to_remove.end();
+                     element) == element_to_remove.end();
   });
 
   this->renumberElements(new_numbering);

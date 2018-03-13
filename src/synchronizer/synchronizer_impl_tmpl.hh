@@ -355,7 +355,7 @@ void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
   auto filter_list = [](const auto & keep, auto & list) {
     Array<Element> new_list;
     for (const auto & keep_entity : keep) {
-      const Entity & entity = list(keep(keep_entity));
+      const Entity & entity = list(keep_entity);
       new_list.push_back(entity);
     }
     list.copy(new_list);
