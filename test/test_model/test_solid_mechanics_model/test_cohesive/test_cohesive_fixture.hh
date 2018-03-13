@@ -97,18 +97,6 @@ public:
     auto time_step = this->model->getStableTimeStep() * 0.01;
     this->model->setTimeStep(time_step);
 
-    auto & mat_el = this->model->getMaterial("body");
-    auto speed = mat_el.getPushWaveSpeed(Element());
-    try {
-      speed = mat_el.getShearWaveSpeed(Element()); // the slowest speed if exists
-    } catch(...) {}
-
-    auto directon = _y;
-    if(dim == 1) directon = _x;
-
-    auto length = mesh->getUpperBounds()(directon) - mesh->getLowerBounds()(directon);
-    nb_steps = length / 2. / speed / time_step;
-
     if (dim == 1) {
       surface = 1;
       group_size = 1;
@@ -203,8 +191,15 @@ public:
   }
 
   void testModeI() {
-    //  EXPECT_NO_THROW(this->createModel());
-    this->createModel();
+    EXPECT_NO_THROW(this->createModel());
+
+    auto & mat_el = this->model->getMaterial("body");
+
+    auto speed = mat_el.getPushWaveSpeed(Element());
+    auto direction = _y;
+    if(dim == 1) direction = _x;
+    auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
+    nb_steps = length / 2. / speed / model->getTimeStep();
 
     SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
                  ":" + aka::to_string(type_2));
@@ -212,7 +207,6 @@ public:
     auto & mat_co = this->model->getMaterial("insertion");
     Real sigma_c = mat_co.get("sigma_c");
 
-    auto & mat_el = this->model->getMaterial("body");
     Real E = mat_el.get("E");
     Real nu = mat_el.get("nu");
 
@@ -233,13 +227,22 @@ public:
   }
 
   void testModeII() {
-    Vector<Real> direction(this->dim, 0.);
-    direction(_x) = 1.;
+    EXPECT_NO_THROW(this->createModel());
+    auto & mat_el = this->model->getMaterial("body");
+    Real speed;
+    try {
+      speed = mat_el.getShearWaveSpeed(Element()); // the slowest speed if exists
+    } catch(...) {
+      speed = mat_el.getPushWaveSpeed(Element());
+    }
+
+    auto direction = _y;
+    if(dim == 1) direction = _x;
+    auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
+    nb_steps = length / 2. / speed / model->getTimeStep();
 
     SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
                  ":" + aka::to_string(type_2));
-
-    EXPECT_NO_THROW(this->createModel());
 
     if (this->dim > 1)
       this->model->applyBC(BC::Dirichlet::FlagOnly(_y), "sides");
@@ -251,7 +254,6 @@ public:
     Real beta = mat_co.get("beta");
     // Real G_c = mat_co.get("G_c");
 
-    auto & mat_el = this->model->getMaterial("body");
     Real E = mat_el.get("E");
     Real nu = mat_el.get("nu");
 

@@ -76,9 +76,7 @@ int main(int argc, char * argv[]) {
     return EXIT_FAILURE;
 
   Vector<Real> bary(2);
-  Element test;
-  test.element = 0;
-  test.type = _segment_2;
+  Element test{_segment_2, 0, _not_ghost};
 
   interface_mesh.getBarycenter(test, bary);
   Real first_bary[] = {0.125, 0.25};

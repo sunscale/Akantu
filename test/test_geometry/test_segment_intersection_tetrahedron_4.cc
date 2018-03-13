@@ -70,11 +70,9 @@ int main(int argc, char * argv[]) {
 
   Vector<Real> bary(2), bary1(2), bary2(2);
 
-  Element test;
-  test.type = _segment_2;
-
-  test.element = 0;
+  Element test{ _segment_2, 0, _not_ghost};
   interface_mesh.getBarycenter(test, bary1);
+
   test.element = 1;
   interface_mesh.getBarycenter(test, bary2);
 
