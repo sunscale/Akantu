@@ -100,9 +100,6 @@ set(AKANTU_${_real_pkg_name}_COMPILE_CXX_FLAGS ${_compile_flags})
 endforeach()
 
 file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
-")
-
-file(APPEND "${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake" "
 set(AKANTU_EXTRA_CXX_FLAGS \"${AKANTU_EXTRA_CXX_FLAGS}\")
 ")
 
@@ -119,10 +116,14 @@ configure_file(cmake/akantu_environement.csh.in
   ${PROJECT_BINARY_DIR}/akantu_environement.csh @ONLY)
 
 
-configure_file(cmake/akantu_install_environement.sh.in
-  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh  @ONLY)
-configure_file(cmake/akantu_install_environement.csh.in
-  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh @ONLY)
+package_is_activated(python_interface _is_acticated)
+if(_is_acticated)
+  find_package(PythonInterp ${AKANTU_PREFERRED_PYTHON_VERSION})
+  configure_file(cmake/akantu_install_environement.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh  @ONLY)
+  configure_file(cmake/akantu_install_environement.csh.in
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh @ONLY)
+endif()
 
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh
