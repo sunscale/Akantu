@@ -245,10 +245,10 @@ public:
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
-#include "element_classes/element_class_hermite_inline_impl.cc"
+#include "element_class_hermite_inline_impl.cc"
 /* keep order */
-#include "element_classes/element_class_bernoulli_beam_inline_impl.cc"
-#include "element_classes/element_class_kirchhoff_shell_inline_impl.cc"
+#include "element_class_bernoulli_beam_inline_impl.cc"
+#include "element_class_kirchhoff_shell_inline_impl.cc"
 /* -------------------------------------------------------------------------- */
 
 #endif /* __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__ */

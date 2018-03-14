@@ -427,7 +427,7 @@ namespace akantu {
 template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
   auto & nodes = const_cast<Array<Real> &>(mesh.getNodes());
 
-  ElementType type;
+  ElementType type = _not_defined;
   switch (dimension) {
   case 1:
     type = _segment_2;
@@ -438,6 +438,7 @@ template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
   case 3:
     type = _hexahedron_8;
     break;
+
   }
 
   mesh.addConnectivityType(type);
