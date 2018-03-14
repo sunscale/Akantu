@@ -29,6 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "global_ids_updater.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
@@ -43,7 +44,9 @@ inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   UInt size = 0;
   if (tag == _gst_giu_global_conn)
-    size += Mesh::getNbNodesPerElementList(elements) * sizeof(UInt);
+    size += Mesh::getNbNodesPerElementList(elements) *
+                (sizeof(UInt) + sizeof(NodeType)) +
+            sizeof(int);
 
   return size;
 }
@@ -56,6 +59,7 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
     return;
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
+  buffer << int(mesh.getCommunicator().whoAmI());
 
   for (auto & element : elements) {
     /// get element connectivity
@@ -70,6 +74,7 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
         index = global_nodes_ids(node);
       }
       buffer << index;
+      buffer << mesh.getNodeType(node);
     }
   }
 }
@@ -83,6 +88,9 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
 
+  int proc;
+  buffer >> proc;
+
   for (auto & element : elements) {
     /// get element connectivity
     Vector<UInt> current_conn =
@@ -92,22 +100,17 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
     for (auto node : current_conn) {
       UInt index;
       buffer >> index;
+      NodeType node_type;
+      buffer >> node_type;
+
+      if (reduce)
+        nodes_types[node].push_back(std::make_pair(proc, node_type));
 
       if (index == UInt(-1))
         continue;
 
-      if(mesh.isSlaveNode(node))
+      if (mesh.isSlaveNode(node))
         global_nodes_ids(node) = index;
-
-      // if (global_nodes_ids(node) == UInt(-1) and mesh.isSlaveNode(node)) {
-      //   global_nodes_ids(node) = index;
-      // } else {
-      //   if (global_nodes_ids(node) != index) {
-      //     //change_event.getList().push_back(node);
-      //     //change_event.getFormerGlobalID().push_back(global_nodes_ids(node));
-      //     global_nodes_ids(node) = index;
-      //   }
-      // }
     }
   }
 }

@@ -42,7 +42,7 @@ namespace akantu {
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt local_nb_new_nodes) {
   UInt total_nb_new_nodes = this->updateGlobalIDsLocally(local_nb_new_nodes);
 
-  if(mesh.isDistributed()) {
+  if (mesh.isDistributed()) {
     this->synchronizeGlobalIDs();
   }
   return total_nb_new_nodes;
@@ -107,9 +107,22 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
 }
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
-
   this->reduce = true;
   this->synchronizer.slaveReductionOnce(*this, _gst_giu_global_conn);
+
+  for (auto node : nodes_types) {
+    auto node_type = mesh.getNodeType(node.first);
+    if (node_type != _nt_pure_ghost)
+      continue;
+    auto n = 0u;
+    for (auto & pair : node.second) {
+      if (std::get<1>(pair) == _nt_pure_ghost)
+        ++n;
+    }
+    if (n == node.second.size())
+      AKANTU_DEBUG_WARNING(
+          "The node " << n << "is ghost on all the neighboring processors");
+  }
 
   this->reduce = false;
   this->synchronizer.synchronizeOnce(*this, _gst_giu_global_conn);
