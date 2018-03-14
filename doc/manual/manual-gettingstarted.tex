@@ -444,7 +444,17 @@ has a positive $X$ coordinate can be made with:
   }
 \end{cpp}
 
+\section{Compiling your simulation}
+The easiest way it to create a \code{cmake} project. The minimum \code{CMakeLists.txt} file would look like
 
+\begin{cmake}
+  project(my_simu)
+  cmake_minimum_required(VERSION 3.0.0)
+
+  find_package(Akantu REQUIRED)
+  
+  add_akantu_simulation(my_simu my_simu.cc)
+\end{cmake}
 
 %%% Local Variables:
 %%% mode: latex

@@ -104,8 +104,7 @@ function(_add_akantu_simulation simulation_name)
         ${_simulation_UNPARSED_ARGUMENTS} ${_simulation_SOURCES})
 
       target_link_libraries(${simulation_name}
-	akantu
-	${_simulation_LIBRARIES})
+	PRIVATE akantu ${_simulation_LIBRARIES})
 
       target_include_directories(${simulation_name}
 	PRIVATE
@@ -118,7 +117,7 @@ function(_add_akantu_simulation simulation_name)
           get_target_property(_type ${_deps} TYPE)
           if(_type STREQUAL "SHARED_LIBRARY"
               OR _type STREQUAL "STATIC_LIBRARY")
-            target_link_libraries(${simulation_name} ${_deps})
+            target_link_libraries(${simulation_name} PRIVATE ${_deps})
           else()
             add_dependencies(${simulation_name} ${_deps})
           endif()
