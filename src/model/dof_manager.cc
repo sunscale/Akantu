@@ -101,9 +101,6 @@ void DOFManager::assembleElementalArrayLocalArray(
 
   const Array<UInt> & connectivity =
       this->mesh->getConnectivity(type, ghost_type);
-  // Array<UInt>::const_vector_iterator conn_begin =
-  //     connectivity.begin(nb_nodes_per_element);
-  // Array<UInt>::const_vector_iterator conn_it = conn_begin;
 
   Array<Real>::const_matrix_iterator elem_it =
       elementary_vect.begin(nb_degree_of_freedom, nb_nodes_per_element);

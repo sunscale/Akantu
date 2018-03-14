@@ -195,8 +195,6 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
     auto & mesh_facets = inserter->getMeshFacets();
     auto & synchronizer =
         dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
-    // this->registerSynchronizer(synchronizer, _gst_smmc_facets);
-    // this->registerSynchronizer(synchronizer, _gst_smmc_facets_conn);
 
     synchronizeGhostFacetsConnectivity();
 

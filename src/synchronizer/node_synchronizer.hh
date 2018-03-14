@@ -52,6 +52,17 @@ public:
 
   friend class NodeInfoPerProc;
 
+  UInt sanityCheckDataSize(const Array<UInt> & nodes,
+                           const SynchronizationTag & tag,
+                           bool from_comm_desc) const override;
+  void packSanityCheckData(CommunicationBuffer & buffer,
+                           const Array<UInt> & nodes,
+                           const SynchronizationTag & /*tag*/) const override;
+  void unpackSanityCheckData(CommunicationBuffer & buffer,
+                             const Array<UInt> & nodes,
+                             const SynchronizationTag & tag, UInt proc,
+                             UInt rank) const override;
+
   /// function to implement to react on  akantu::NewNodesEvent
   void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) override;
 

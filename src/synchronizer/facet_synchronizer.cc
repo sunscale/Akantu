@@ -41,7 +41,6 @@ FacetSynchronizer::FacetSynchronizer(
     const ID & id, MemoryID memory_id)
     : ElementSynchronizer(mesh, id, memory_id) {
 
-  const auto & comm = mesh.getCommunicator();
   auto spatial_dimension = mesh.getSpatialDimension();
 
   element_to_prank.initialize(mesh, _spatial_dimension = spatial_dimension - 1,
@@ -83,9 +82,9 @@ FacetSynchronizer::FacetSynchronizer(
   mesh.getGlobalConnectivity(facet_global_connectivities);
 
   // \TODO perhaps a global element numbering might be useful here...
-  for (auto type : facet_global_connectivities.elementTypes(
-           _spatial_dimension = _all_dimensions,
-          _element_kind = _ek_not_defined, _ghost_type = _not_ghost)) {
+  for (auto type : facet_global_connectivities.elementTypes(_spatial_dimension =
+                                                                _all_dimensions,
+                   _element_kind = _ek_not_defined, _ghost_type = _not_ghost)) {
     auto & conn = facet_global_connectivities(type, _not_ghost);
     auto conn_view = make_view(conn, conn.getNbComponent());
     std::for_each(conn_view.begin(), conn_view.end(), [&](auto & conn) {
@@ -171,15 +170,15 @@ FacetSynchronizer::FacetSynchronizer(
       const auto & connectivities_for_proc = std::get<1>(pair);
       auto && tag = Tag::genTag(proc, type, 1337);
       send_requests.push_back(
-          comm.asyncSend(connectivities_for_proc(type, _ghost), proc, tag,
-                         CommunicationMode::_synchronous));
+          communicator.asyncSend(connectivities_for_proc(type, _ghost), proc,
+                                 tag, CommunicationMode::_synchronous));
     }
 
     auto nb_nodes_per_facet = Mesh::getNbNodesPerElement(type);
 
     Array<UInt> buffer;
 
-    comm.receiveAnyNumber(
+    communicator.receiveAnyNumber(
         send_requests, buffer,
         [&](auto && proc, auto && message) {
           auto & local_connectivities =

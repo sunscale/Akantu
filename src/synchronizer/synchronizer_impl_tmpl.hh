@@ -95,7 +95,8 @@ void SynchronizerImpl<Entity>::communicateOnce(
 
       if (sr == recv_dir) {
         requests.push_back(communicator.asyncReceive(
-            buffer, proc, Tag::genTag(this->rank, 0, comm_tag, this->hash_id)));
+            buffer, proc,
+            Tag::genTag(this->rank, tag, comm_tag, this->hash_id)));
       } else {
 #ifndef AKANTU_NDEBUG
         this->packSanityCheckData(buffer, scheme, tag);
@@ -112,7 +113,7 @@ void SynchronizerImpl<Entity>::communicateOnce(
                 << "bytes per entity missing])");
 
         send_requests.push_back(communicator.asyncSend(
-            buffer, proc, Tag::genTag(proc, 0, comm_tag, this->hash_id)));
+            buffer, proc, Tag::genTag(proc, tag, comm_tag, this->hash_id)));
       }
     }
   };

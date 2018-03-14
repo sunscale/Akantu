@@ -207,70 +207,75 @@ bool DOFSynchronizer::hasChanged() {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFSynchronizer::onNodesAdded(const Array<UInt> & nodes_list) {
+void DOFSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/) {
   auto dof_ids = dof_manager.getDOFIDs();
 
-  const auto & node_synchronizer = dof_manager.getMesh().getNodeSynchronizer();
-  const auto & node_communications = node_synchronizer.getCommunications();
-
-  std::set<UInt> relevant_nodes;
-  std::map<UInt, std::vector<UInt>> nodes_per_proc[2];
-  for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
-       ++sr_it) {
-    auto sit = node_communications.begin_scheme(*sr_it);
-    auto send = node_communications.end_scheme(*sr_it);
-
-    for (; sit != send; ++sit) {
-      auto proc = sit->first;
-      const auto & scheme = sit->second;
-      for (auto node : nodes_list) {
-        if (scheme.find(node) == UInt(-1))
-          continue;
-        relevant_nodes.insert(node);
-        nodes_per_proc[*sr_it][proc].push_back(node);
-      }
+  for (auto sr : iterate_send_recv) {
+    for (auto && data : communications.iterateSchemes(sr)) {
+      auto & scheme = data.second;
+      scheme.resize(0);
     }
   }
 
-  std::map<UInt, std::vector<UInt>> dofs_per_proc[2];
-  for (auto & dof_id : dof_ids) {
-    const auto & associated_nodes = dof_manager.getDOFsAssociatedNodes(dof_id);
-    const auto & local_equation_numbers =
-        dof_manager.getEquationsNumbers(dof_id);
-
-    for (auto tuple : zip(associated_nodes, local_equation_numbers)) {
-      UInt assoc_node;
-      UInt local_eq_num;
-      std::tie(assoc_node, local_eq_num) = tuple;
-
-      for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
-           ++sr_it) {
-        for (auto & pair : nodes_per_proc[*sr_it]) {
-          if (std::find(pair.second.end(), pair.second.end(), assoc_node) !=
-              pair.second.end()) {
-            dofs_per_proc[*sr_it][pair.first].push_back(local_eq_num);
-          }
-        }
-      }
-    }
+  for(auto & dof_id : dof_ids) {
+    registerDOFs(dof_id);
   }
 
-  for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
-       ++sr_it) {
-    for (auto & pair : dofs_per_proc[*sr_it]) {
-      std::sort(pair.second.begin(), pair.second.end(),
-                [this](UInt la, UInt lb) -> bool {
-                  UInt ga = dof_manager.localToGlobalEquationNumber(la);
-                  UInt gb = dof_manager.localToGlobalEquationNumber(lb);
-                  return ga < gb;
-                });
+  // const auto & node_synchronizer = dof_manager.getMesh().getNodeSynchronizer();
+  // const auto & node_communications = node_synchronizer.getCommunications();
 
-      auto & scheme = communications.getScheme(pair.first, *sr_it);
-      for (auto leq : pair.second) {
-        scheme.push_back(leq);
-      }
-    }
-  }
+  // std::map<UInt, std::vector<UInt>> nodes_per_proc[2];
+
+  // for (auto sr : iterate_send_recv) {
+  //   for (auto && data : node_communications.iterateSchemes(sr)) {
+  //     auto proc = data.first;
+  //     const auto & scheme = data.second;
+  //     for (auto node : scheme) {
+  //       nodes_per_proc[sr][proc].push_back(node);
+  //     }
+  //   }
+  // }
+
+  // std::map<UInt, std::vector<UInt>> dofs_per_proc[2];
+  // for (auto & dof_id : dof_ids) {
+  //   const auto & associated_nodes = dof_manager.getDOFsAssociatedNodes(dof_id);
+  //   const auto & local_equation_numbers =
+  //       dof_manager.getEquationsNumbers(dof_id);
+
+  //   for (auto tuple : zip(associated_nodes, local_equation_numbers)) {
+  //     UInt assoc_node;
+  //     UInt local_eq_num;
+  //     std::tie(assoc_node, local_eq_num) = tuple;
+
+  //     for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
+  //          ++sr_it) {
+  //       for (auto & pair : nodes_per_proc[*sr_it]) {
+  //         if (std::find(pair.second.end(), pair.second.end(), assoc_node) !=
+  //             pair.second.end()) {
+  //           dofs_per_proc[*sr_it][pair.first].push_back(local_eq_num);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
+  //      ++sr_it) {
+  //   for (auto & pair : dofs_per_proc[*sr_it]) {
+  //     std::sort(pair.second.begin(), pair.second.end(),
+  //               [this](UInt la, UInt lb) -> bool {
+  //                 UInt ga = dof_manager.localToGlobalEquationNumber(la);
+  //                 UInt gb = dof_manager.localToGlobalEquationNumber(lb);
+  //                 return ga < gb;
+  //               });
+
+  //     auto & scheme = communications.getScheme(pair.first, *sr_it);
+  //     scheme.resize(0);
+  //     for (auto leq : pair.second) {
+  //       scheme.push_back(leq);
+  //     }
+  //   }
+  // }
   dof_changed = true;
 }
 

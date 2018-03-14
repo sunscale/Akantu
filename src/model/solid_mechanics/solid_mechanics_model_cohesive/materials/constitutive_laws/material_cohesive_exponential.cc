@@ -174,7 +174,7 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCoupledTraction(
     tract += op_n_n;
 
     delta_max_new = std::max(delta_max, delta);
-    tract *= exp(1) * sigma_c * exp(-delta_max_new / delta_c) / delta_c;
+    tract *= std::exp(1.) * sigma_c * std::exp(-delta_max_new / delta_c) / delta_c;
   }
   AKANTU_DEBUG_OUT();
 }
@@ -188,9 +188,9 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressiveTraction(
 
   if (exp_penalty) {
     temp_tract *=
-        delta_n * exp(1) * sigma_c * exp(-delta_n / delta_c) / delta_c;
+        delta_n * std::exp(1) * sigma_c * std::exp(-delta_n / delta_c) / delta_c;
   } else {
-    Real initial_tg = contact_tangent * exp(1) * sigma_c * delta_n / delta_c;
+    Real initial_tg = contact_tangent * std::exp(1.) * sigma_c * delta_n / delta_c;
     temp_tract *= initial_tg;
   }
 
@@ -290,14 +290,14 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCoupledTangent(
 
   Vector<Real> delta_e(normal);
   delta_e *= opening_normal;
-  delta_e *= (1 - beta2);
+  delta_e *= (1. - beta2);
   delta_e += (beta2 * opening);
 
-  Real exponent = exp(1 - delta / delta_c) * sigma_c / delta_c;
+  Real exponent = std::exp(1. - delta / delta_c) * sigma_c / delta_c;
 
   Matrix<Real> first_term(spatial_dimension, spatial_dimension);
   first_term.outerProduct(normal, normal);
-  first_term *= (1 - beta2);
+  first_term *= (1. - beta2);
   first_term += J;
 
   Matrix<Real> second_term(spatial_dimension, spatial_dimension);
@@ -320,13 +320,13 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(
     Matrix<Real> & tangent, const Vector<Real> & normal, Real delta_n) {
 
   if (!exp_penalty)
-    delta_n = 0;
+    delta_n = 0.;
 
   Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
   n_outer_n.outerProduct(normal, normal);
 
-  Real normal_tg = contact_tangent * exp(1) * sigma_c *
-                   exp(-delta_n / delta_c) * (1 - delta_n / delta_c) / delta_c;
+  Real normal_tg = contact_tangent * std::exp(1.) * sigma_c *
+      std::exp(-delta_n / delta_c) * (1. - delta_n / delta_c) / delta_c;
 
   n_outer_n *= normal_tg;
 
