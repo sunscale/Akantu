@@ -142,16 +142,6 @@ write_basic_package_version_file(${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
 
 # Install the export set for use with the install-tree
 install(FILES
-  ${PROJECT_BINARY_DIR}/AkantuConfig.cmake
-  ${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake
-  ${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
-  ${PROJECT_SOURCE_DIR}/cmake/AkantuUse.cmake
-  ${PROJECT_SOURCE_DIR}/cmake/AkantuSimulationMacros.cmake
-  ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake
-  DESTINATION share/cmake/${PROJECT_NAME}
-  COMPONENT dev)
-
-install(FILES
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindScaLAPACK.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindMETIS.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindParMETIS.cmake
@@ -159,5 +149,11 @@ install(FILES
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindMumps.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindScotch.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake
-  DESTINATION  lib/akantu/cmake
+  ${PROJECT_BINARY_DIR}/AkantuConfig.cmake
+  ${PROJECT_BINARY_DIR}/AkantuConfigInclude.cmake
+  ${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/AkantuUse.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/AkantuSimulationMacros.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake
+  DESTINATION share/cmake/${PROJECT_NAME}
   COMPONENT dev)

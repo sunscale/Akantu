@@ -66,6 +66,9 @@ if(_blas_activated OR _lapack_activated)
     "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh"
     MACRO_NAMESPACE "AKA_FC_")
   mark_as_advanced(CDEFS)
+  list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
+    "${CMAKE_CURRENT_BINARY_DIR}/aka_fortran_mangling.hh"
+    )
 endif()
 
 list(APPEND AKANTU_LIBRARY_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}")
@@ -87,6 +90,11 @@ configure_file(common/aka_element_classes_info.hh.in
 
 configure_file(common/aka_config.hh.in
   "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh" @ONLY)
+
+list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
+  "${CMAKE_CURRENT_BINARY_DIR}/material_list.hh"
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_element_classes_info.hh"
+  "${CMAKE_CURRENT_BINARY_DIR}/aka_config.hh")
 
 #===============================================================================
 # Debug infos
