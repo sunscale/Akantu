@@ -58,10 +58,10 @@ NodeSynchronizer::~NodeSynchronizer() = default;
 void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
                                     const NewNodesEvent &) {
   std::map<UInt, std::vector<UInt>> nodes_per_proc;
-  static int count = 1;
+
   // recreates fully the schemes due to changes of global ids
   // \TODO add an event to handle global id changes
-  for(auto && data : communications.iterateRecvSchemes()) {
+  for (auto && data : communications.iterateSchemes(_recv)) {
     auto & scheme = data.second;
     scheme.resize(0);
   }
@@ -80,36 +80,48 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
   }
 
   std::vector<CommunicationRequest> send_requests;
-  for (auto & pair : nodes_per_proc) {
+  for (auto && pair : communications.iterateSchemes(_recv)) {
     auto proc = pair.first;
-    auto & nodes = pair.second;
 
-    send_requests.push_back(
-        communicator.asyncSend(nodes, proc, Tag::genTag(proc, count, 0xcafe)));
+    // if proc not in nodes_per_proc this should insert an empty array to send
+    send_requests.push_back(communicator.asyncSend(
+        nodes_per_proc[proc], proc, Tag::genTag(rank, proc, 0xcafe)));
   }
 
-  Array<UInt> buffer;
+  for (auto && data : communications.iterateSchemes(_send)) {
+    auto proc = data.first;
+    auto & scheme = data.second;
+    CommunicationStatus status;
 
-  communicator.receiveAnyNumber(
-      send_requests, buffer,
-      [&](auto && proc, auto && nodes) {
-        auto & scheme = communications.createScheme(proc, _send);
-        scheme.resize(nodes.size());
-        for (auto && data : enumerate(nodes)) {
-          auto global_id = std::get<1>(data);
-          auto local_id = mesh.getNodeLocalId(global_id);
-          AKANTU_DEBUG_ASSERT(local_id != UInt(-1),
-                              "The global node " << global_id
-                                                 << "is not known on rank "
-                                                 << rank);
-          scheme[std::get<0>(data)] = local_id;
-        }
-      },
-      Tag::genTag(rank, count, 0xcafe));
+    auto tag = Tag::genTag(proc, rank, 0xcafe);
+    communicator.probe<UInt>(proc, tag, status);
+
+    scheme.resize(status.size());
+    communicator.receive(scheme, proc, tag);
+    std::transform(scheme.begin(), scheme.end(), scheme.begin(),
+                   [&](auto & gnode) { return mesh.getNodeLocalId(gnode); });
+  }
+
+  // communicator.receiveAnyNumber<UInt>(
+  //     send_requests,
+  //     [&](auto && proc, auto && nodes) {
+  //       auto & scheme = communications.createScheme(proc, _send);
+  //       scheme.resize(nodes.size());
+  //       for (auto && data : enumerate(nodes)) {
+  //         auto global_id = std::get<1>(data);
+  //         auto local_id = mesh.getNodeLocalId(global_id);
+  //         AKANTU_DEBUG_ASSERT(local_id != UInt(-1),
+  //                             "The global node " << global_id
+  //                                                << "is not known on rank "
+  //                                                << rank);
+  //         scheme[std::get<0>(data)] = local_id;
+  //       }
+  //     },
+  //     Tag::genTag(rank, count, 0xcafe));
+  // ++count;
 
   communicator.waitAll(send_requests);
   communicator.freeCommunicationRequest(send_requests);
-  ++count;
 }
 
 /* -------------------------------------------------------------------------- */

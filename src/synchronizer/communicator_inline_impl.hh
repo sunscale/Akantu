@@ -54,7 +54,7 @@ inline void Communicator::freeCommunicationRequest(
 /* -------------------------------------------------------------------------- */
 template <typename T, typename MsgProcessor>
 inline void Communicator::receiveAnyNumber(
-    std::vector<CommunicationRequest> & send_requests, Array<T> receive_buffer,
+    std::vector<CommunicationRequest> & send_requests,
     MsgProcessor && processor, Int tag) const {
   CommunicationRequest barrier_request;
   bool got_all = false, are_send_finished = false;
@@ -62,9 +62,9 @@ inline void Communicator::receiveAnyNumber(
     bool are_receives_ready = true;
     while (are_receives_ready) {
       CommunicationStatus status;
-      are_receives_ready = asyncProbe<UInt>(_any_source, tag, status);
+      are_receives_ready = asyncProbe<T>(_any_source, tag, status);
       if (are_receives_ready) {
-        receive_buffer.resize(status.size());
+        Array<T> receive_buffer(status.size(), 1);
         receive(receive_buffer, status.getSource(), tag);
         std::forward<MsgProcessor>(processor)(status.getSource(),
                                               receive_buffer);

@@ -176,10 +176,8 @@ FacetSynchronizer::FacetSynchronizer(
 
     auto nb_nodes_per_facet = Mesh::getNbNodesPerElement(type);
 
-    Array<UInt> buffer;
-
-    communicator.receiveAnyNumber(
-        send_requests, buffer,
+    communicator.receiveAnyNumber<UInt>(
+        send_requests,
         [&](auto && proc, auto && message) {
           auto & local_connectivities =
               facet_global_connectivities(type, _not_ghost);

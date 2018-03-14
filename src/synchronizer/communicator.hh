@@ -353,8 +353,7 @@ public:
   template <typename T, typename MsgProcessor>
   inline void
   receiveAnyNumber(std::vector<CommunicationRequest> & send_requests,
-                   Array<T> receive_buffer, MsgProcessor && processor,
-                   Int tag) const;
+                   MsgProcessor && processor, Int tag) const;
 
 protected:
   template <typename T>
