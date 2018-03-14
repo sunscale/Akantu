@@ -43,11 +43,13 @@ namespace akantu {
 inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   UInt size = 0;
-  if (tag == _gst_giu_global_conn)
+  if (tag == _gst_giu_global_conn){
     size += Mesh::getNbNodesPerElementList(elements) *
-                (sizeof(UInt) + sizeof(NodeType)) +
-            sizeof(int);
-
+                sizeof(UInt);
+#ifndef AKANTU_NDEBUG
+    size += sizeof(NodeType) * Mesh::getNbNodesPerElementList(elements) +  sizeof(int);
+#endif
+  }
   return size;
 }
 
@@ -59,8 +61,9 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
     return;
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
+#ifndef AKANTU_NDEBUG
   buffer << int(mesh.getCommunicator().whoAmI());
-
+#endif
   for (auto & element : elements) {
     /// get element connectivity
     const Vector<UInt> current_conn =
@@ -74,7 +77,9 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
         index = global_nodes_ids(node);
       }
       buffer << index;
+#ifndef AKANTU_NDEBUG
       buffer << mesh.getNodeType(node);
+#endif
     }
   }
 }
@@ -88,8 +93,10 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
 
+#ifndef AKANTU_NDEBUG
   int proc;
   buffer >> proc;
+#endif
 
   for (auto & element : elements) {
     /// get element connectivity
@@ -100,11 +107,12 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
     for (auto node : current_conn) {
       UInt index;
       buffer >> index;
+#ifndef AKANTU_NDEBUG
       NodeType node_type;
       buffer >> node_type;
-
       if (reduce)
         nodes_types[node].push_back(std::make_pair(proc, node_type));
+#endif
 
       if (index == UInt(-1))
         continue;
