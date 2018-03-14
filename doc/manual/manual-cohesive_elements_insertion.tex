@@ -24,16 +24,12 @@ A new model have to be call in a very similar way that the solid
 mechanics model:
 \begin{cpp}
   SolidMechanicsModelCohesive model(mesh);
-  model.initFull(SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+  model.initFull(_analysis_method = _explicit_lumped_mass,
+                 _is_extrinsic = true);
 \end{cpp} 
 
 
 \subsubsection{Extrinsic approach \label{extrinsic_insertion}}
-The dynamic insertion of extrinsic cohesive elements should be initialized 
-in the following way:
-\begin{cpp}
-  model.updateAutomaticInsertion();
-\end{cpp}
 During the simulation, stress has to be checked along each facet in
 order to insert cohesive elements where the stress criterion is
 reached.  This check is performed by calling the
@@ -44,65 +40,48 @@ resolution:
   model.solveStep();
 \end{cpp}
 
-In case the extrinsic cohesive method is used in the implicit solution
-scheme, the cohesive elements are inserted one by one, starting from
-the highest locally stressed element (more precisely, the most
-stressed element per material type is inserted).  When a cohesive
-element is inserted, the new equilibrated solution of the last
-incremental step is sought. Then, the
-method \code{checkCohesiveStress} is called again to check if new
-cohesive elements have to be inserted.  When the insertion is
-terminated, the solution of the incremental loading step is stored,
-and the simulation can advance to the next incremental loading step.
-This procedure is managed by the function \code{solveStepCohesive}
-(for more details see \ref{sect:smm:static})
+% In case the extrinsic cohesive method is used in the implicit solution
+% scheme, the cohesive elements are inserted one by one, starting from
+% the highest locally stressed element (more precisely, the most
+% stressed element per material type is inserted).  When a cohesive
+% element is inserted, the new equilibrated solution of the last
+% incremental step is sought. Then, the
+% method \code{checkCohesiveStress} is called again to check if new
+% cohesive elements have to be inserted.  When the insertion is
+% terminated, the solution of the incremental loading step is stored,
+% and the simulation can advance to the next incremental loading step.
+% This procedure is managed by the function \code{solveStepCohesive}
+% (for more details see \ref{sect:smm:static})
 
 The area where stresses are checked and cohesive elements inserted can
-be limited using the method \code{limitInsertion} during
+be limited using the method \code{setLimit} on the \code{CohesiveInserter} during
 initialization. As example, to limit insertion in the range $[-1.5,
 1.5]$ in the $x$ direction:
 \begin{cpp}
-  model.limitInsertion(_x, -1.5, 1.5);
-  model.updateAutomaticInsertion();
+  auto & inserter = model.getElementInserter();
+  inserter.setLimit(_x, -1.5, 1.5);
 \end{cpp} 
 Additional restrictions with respect to $y$ and $z$ directions can be added as well.
 
 \subsubsection{Intrinsic approach \label{intrinsic_insertion}}
 Intrinsic cohesive elements are inserted in the mesh with the method
-\code{insertIntrinsicElements}. Similarly, the range of insertion can me limited 
-with \code{limitInsertion}. As example with a static simulation,
+\code{initFull}. Similarly, the range of insertion can be limited 
+with \code{setLimit} before the \code{initFull} call.
+
+In both cases extrinsic and intrinsic the insertion can be restricted to group of elements. To do so the list of groups should be specified in the input file.
+
 \begin{cpp}
-  model.limitInsertion(_x, -1.5, 1.5);
-  model.insertIntrinsicElements();
-\end{cpp} 
-Mesh data information becomes vital to the insertion of cohesive
-elements along surface with more sophisticated geometry or when
-multiple cohesive materials are wanted. To do so, cohesive elements
-can be inserted along a specific group of surface elements identified
-in a GMSH geometry file. This can be achieved with the material
-selector (see section~\ref{sect:smm:materialselector}), in the input
-file specify the name of these physical groups in the corresponding
-cohesive materials, and call these material in the \textit{mesh
-parameters} section. As example, with two physical surfaces named
-\textit{weak\_interface} and \textit{strong\_interface} defined in the GMSH 
-geometry file:
-\begin{cpp}
-...
-  material %\emph{cohesive\_constitutive\_law}% [
-     name = weak_interface
-     sigma_c = $value$
-     ...
-  ]
-  material %\emph{cohesive\_constitutive\_law}% [
-     name = strong_interface
-     sigma_c = $value$
-     ...
-  ]
-  mesh parameters [
-     	cohesive_surfaces = weak_interface,strong_interface
+  ...
+  model solid_mechanics_model_cohesive [
+    cohesive_inserter [
+      cohesive_surfaces = [surface1, surface2, ...]
+    ]
+
+    material cohesive_linear [
+      name = insertion
+      beta = 1
+      G_c = 10
+      sigma_c = 1e6
+    ]
   ]
 \end{cpp}
-
-In this case, there is no need to call \code{insertIntrinsicElements} anymore 
-since the insertion of cohesive elements along physical surfaces is performed 
-automatically during \code{initFull} call.    
