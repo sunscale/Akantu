@@ -58,7 +58,7 @@ NodeSynchronizer::~NodeSynchronizer() = default;
 void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
                                     const NewNodesEvent &) {
   std::map<UInt, std::vector<UInt>> nodes_per_proc;
-
+  static int count = 1;
   // recreates fully the schemes due to changes of global ids
   // \TODO add an event to handle global id changes
   for(auto && data : communications.iterateRecvSchemes()) {
@@ -85,7 +85,7 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
     auto & nodes = pair.second;
 
     send_requests.push_back(
-        communicator.asyncSend(nodes, proc, Tag::genTag(proc, 0, 0xcafe)));
+        communicator.asyncSend(nodes, proc, Tag::genTag(proc, count, 0xcafe)));
   }
 
   Array<UInt> buffer;
@@ -105,7 +105,11 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
           scheme[std::get<0>(data)] = local_id;
         }
       },
-      Tag::genTag(rank, 0, 0xcafe));
+      Tag::genTag(rank, count, 0xcafe));
+
+  communicator.waitAll(send_requests);
+  communicator.freeCommunicationRequest(send_requests);
+  ++count;
 }
 
 /* -------------------------------------------------------------------------- */
