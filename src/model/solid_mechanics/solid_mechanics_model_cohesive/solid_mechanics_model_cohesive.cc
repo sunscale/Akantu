@@ -76,22 +76,24 @@ public:
     auto & new_nodes = cohesive_nodes_event->getList();
     auto & old_nodes = cohesive_nodes_event->getOldNodesList();
 
-    UInt local_nb_new_nodes = new_nodes.size();
+    auto local_nb_new_nodes = new_nodes.size();
+    auto nb_new_nodes = local_nb_new_nodes;
 
-    MeshAccessor mesh_accessor(mesh);
-    auto & nodes_type = mesh_accessor.getNodesType();
-    UInt nb_old_nodes = nodes_type.size();
-    nodes_type.resize(nb_old_nodes + local_nb_new_nodes);
+    if (mesh.isDistributed()) {
+      MeshAccessor mesh_accessor(mesh);
+      auto & nodes_type = mesh_accessor.getNodesType();
+      UInt nb_old_nodes = nodes_type.size();
+      nodes_type.resize(nb_old_nodes + local_nb_new_nodes);
 
-    for (auto && data : zip(old_nodes, new_nodes)) {
-      UInt old_node, new_node;
-      std::tie(old_node, new_node) = data;
-      nodes_type(new_node) = nodes_type(old_node);
+      for (auto && data : zip(old_nodes, new_nodes)) {
+        UInt old_node, new_node;
+        std::tie(old_node, new_node) = data;
+        nodes_type(new_node) = nodes_type(old_node);
+      }
+
+      model.updateCohesiveSynchronizers();
+      nb_new_nodes = global_ids_updater.updateGlobalIDs(new_nodes.size());
     }
-
-    model.updateCohesiveSynchronizers();
-
-    UInt nb_new_nodes = global_ids_updater.updateGlobalIDs(new_nodes.size());
 
     Vector<UInt> nb_new_stuff = {nb_new_nodes, elements_event.getList().size()};
     const auto & comm = mesh.getCommunicator();
@@ -209,8 +211,8 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   }
 
   MeshAccessor mesh_accessor(mesh);
-    mesh_accessor.registerGlobalDataUpdater(
-        std::make_unique<CohesiveMeshGlobalDataUpdater>(*this));
+  mesh_accessor.registerGlobalDataUpdater(
+      std::make_unique<CohesiveMeshGlobalDataUpdater>(*this));
 
   ParserSection section;
   bool is_empty;

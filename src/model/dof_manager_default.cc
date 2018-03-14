@@ -509,9 +509,8 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
     this->extractElementEquationNumber(equation_number, *conn_it,
                                        nb_degree_of_freedom, element_eq_nb);
-    std::transform(element_eq_nb.storage(),
-                   element_eq_nb.storage() + element_eq_nb.size(),
-                   element_eq_nb.storage(), [&](UInt & local) -> UInt {
+    std::transform(element_eq_nb.begin(), element_eq_nb.end(),
+                   element_eq_nb.begin(), [&](UInt & local) -> UInt {
                      return this->localToGlobalEquationNumber(local);
                    });
 
@@ -861,6 +860,8 @@ void DOFManagerDefault::updateDOFsData(
 
   this->first_global_dof_id += std::accumulate(
       nb_dofs_per_proc.begin() + prank + 1, nb_dofs_per_proc.end(), 0);
+
+  matrix_profiled_dofs.clear();
 }
 
 /* -------------------------------------------------------------------------- */

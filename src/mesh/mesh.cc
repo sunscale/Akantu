@@ -468,7 +468,13 @@ void Mesh::distribute(Communicator & communicator) {
   this->node_synchronizer = std::make_unique<NodeSynchronizer>(
       *this, this->getID() + ":node_synchronizer", this->getMemoryID(), true);
 
+
   Int psize = this->communicator->getNbProc();
+
+  if (psize == 1) {
+    return;
+  }
+
 #ifdef AKANTU_USE_SCOTCH
   Int prank = this->communicator->whoAmI();
   if (prank == 0) {
