@@ -862,6 +862,10 @@ void DOFManagerDefault::updateDOFsData(
       nb_dofs_per_proc.begin() + prank + 1, nb_dofs_per_proc.end(), 0);
 
   matrix_profiled_dofs.clear();
+  for(auto & matrix : matrices) {
+    matrix.second->clearProfile();
+  }
+
 }
 
 /* -------------------------------------------------------------------------- */

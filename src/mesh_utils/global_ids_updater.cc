@@ -40,6 +40,9 @@
 namespace akantu {
 
 UInt GlobalIdsUpdater::updateGlobalIDs(UInt local_nb_new_nodes) {
+  if (mesh.getCommunicator().getNbProc() == 1)
+    return local_nb_new_nodes;
+
   UInt total_nb_new_nodes = this->updateGlobalIDsLocally(local_nb_new_nodes);
 
   if (mesh.isDistributed()) {

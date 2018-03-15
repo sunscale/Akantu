@@ -356,22 +356,12 @@ void Mesh::getGlobalConnectivity(
 
       UInt nb_nodes = local_conn.size() * local_conn.getNbComponent();
 
-      if (not nodes_global_ids && is_mesh_facets) {
-        std::transform(
-            local_conn.begin_reinterpret(nb_nodes),
-            local_conn.end_reinterpret(nb_nodes),
-            g_connectivity.begin_reinterpret(nb_nodes),
-            [& node_ids = *mesh_parent->nodes_global_ids](UInt l)->UInt {
-              return node_ids(l);
-            });
-      } else {
-        std::transform(local_conn.begin_reinterpret(nb_nodes),
-                       local_conn.end_reinterpret(nb_nodes),
-                       g_connectivity.begin_reinterpret(nb_nodes),
-                       [& node_ids = *nodes_global_ids](UInt l)->UInt {
-                         return node_ids(l);
-                       });
-      }
+      std::transform(local_conn.begin_reinterpret(nb_nodes),
+                     local_conn.end_reinterpret(nb_nodes),
+                     g_connectivity.begin_reinterpret(nb_nodes),
+                     [&](UInt l) -> UInt {
+                       return this->getNodeGlobalId(l);
+                     });
     }
   }
 
@@ -468,31 +458,31 @@ void Mesh::distribute(Communicator & communicator) {
   this->node_synchronizer = std::make_unique<NodeSynchronizer>(
       *this, this->getID() + ":node_synchronizer", this->getMemoryID(), true);
 
-
   Int psize = this->communicator->getNbProc();
 
-  if (psize == 1) {
-    return;
-  }
+  if (psize > 1) {
+//   return;
+// }
 
 #ifdef AKANTU_USE_SCOTCH
-  Int prank = this->communicator->whoAmI();
-  if (prank == 0) {
-    MeshPartitionScotch partition(*this, spatial_dimension);
-    partition.partitionate(psize);
+    Int prank = this->communicator->whoAmI();
+    if (prank == 0) {
+      MeshPartitionScotch partition(*this, spatial_dimension);
+      partition.partitionate(psize);
 
-    MeshUtilsDistribution::distributeMeshCentralized(*this, 0, partition);
-  } else {
-    MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
-  }
+      MeshUtilsDistribution::distributeMeshCentralized(*this, 0, partition);
+    } else {
+      MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
+    }
 #else
-  if (!(psize == 1)) {
-    AKANTU_ERROR("Cannot distribute a mesh without a partitioning tool");
-  }
+    if (!(psize == 1)) {
+      AKANTU_ERROR("Cannot distribute a mesh without a partitioning tool");
+    }
 #endif
+    this->computeBoundingBox();
+  }
 
   this->is_distributed = true;
-  this->computeBoundingBox();
 }
 
 /* -------------------------------------------------------------------------- */
