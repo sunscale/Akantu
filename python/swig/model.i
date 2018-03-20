@@ -111,12 +111,12 @@ namespace akantu {
   %}
 
 
-  void solveStep(){
-    $self->solveStep();
+  void solveStep(const akantu::ID & id=""){
+    $self->solveStep(id);
   }
 
-  akantu::NonLinearSolver & getNonLinearSolver(){
-   return $self->getNonLinearSolver();
+  akantu::NonLinearSolver & getNonLinearSolver(const akantu::ID & id=""){
+   return $self->getNonLinearSolver(id);
   }
  }
 
