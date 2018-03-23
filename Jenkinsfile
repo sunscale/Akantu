@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'docker-slave'
+      image 'richart/akantu-public-debian'
     }
     
   }
@@ -9,7 +9,7 @@ pipeline {
     stage('Configure') {
       agent {
         docker {
-          image 'docker-slave'
+          image 'richart/akantu-public-debian'
         }
         
       }
