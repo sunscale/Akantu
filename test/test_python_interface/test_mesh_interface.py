@@ -17,8 +17,6 @@ import os
 import akantu as aka
 
 def main():
-    aka.initialize()
-
     mesh = aka.Mesh(2)
     mesh.read('mesh_dcb_2d.msh')
 
@@ -30,7 +28,6 @@ def main():
         return -1
 
     # TODO test the other functions in Mesh
-    aka.finalize()
     return 0
 
 if __name__ == "__main__":

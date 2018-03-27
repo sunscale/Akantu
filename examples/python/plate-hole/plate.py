@@ -40,7 +40,7 @@ class FromTraction:
 
 
 def solve(material_file, mesh_file, traction):
-    akantu.initialize(material_file)
+    akantu.parseInput(material_file)
     spatial_dimension = 2
 
     ################################################################
@@ -82,7 +82,6 @@ def solve(material_file, mesh_file, traction):
     model.solveStep()
 
     model.dump()
-    akantu.finalize()
 
 ################################################################
 # main
