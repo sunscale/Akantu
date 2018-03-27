@@ -6,7 +6,8 @@ RUN apt-get -qq update && apt-get -qq -y install \
     g++ gfortran  cmake \
     libmumps-seq-dev libscotch-dev \
     libboost-dev libopenblas-dev \
-    python3 python3-numpy python3-scipy \
+    python3 python3-dev \
+    python3-numpy python3-scipy \
     swig3.0 gmsh \
     && rm -rf /var/lib/apt/lists/*
 
