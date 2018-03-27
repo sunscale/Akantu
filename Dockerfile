@@ -5,4 +5,4 @@ MAINTAINER Nicolas Richart <nicolas.richart@epfl.ch>
 RUN apt-get -qq update
 RUN apt-get -qq -y upgrade
 
-RUN apt-get -qq -y install g++ gfortran libmumps-seq-dev libscotch-dev libboost-dev gmsh cmake
+RUN apt-get -qq -y install g++ gfortran libmumps-seq-dev libscotch-dev libboost-dev libopenblas-dev gmsh cmake

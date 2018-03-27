@@ -1,29 +1,31 @@
 pipeline {
-  agent {
-    dockerfile true
-  }
-  stages {
-    stage('Configure') {
-      steps {
-        sh 'mkdir -p build && cd build'
-        sh 'cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE -DAKANTU_IMPLICIT:BOOL=TRUE -DAKANTU_PARALLEL:BOOL=TRUE -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE ..'
-      }
+    agent {
+	dockerfile true
     }
 
-    stage('Compile') {
-      steps {
-        sh 'cd build'
-        sh 'make'
-      }
+    environment {
+	BLA_VENDOR = 'OpenBLAS'
     }
 
-    stage('Compile tests') {
-      steps {
-        sh 'cd build'
-        sh 'cmake -DAKANTU_TESTS:BOOL=TRUE ..'
-	sh 'make'
-      }
-    }
+    stages {
+	stage('Configure') {
+	    steps {
+		sh 'mkdir -p build'
+		sh 'cd build; cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE -DAKANTU_IMPLICIT:BOOL=TRUE -DAKANTU_PARALLEL:BOOL=TRUE -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE ..'
+	    }
+	}
 
-  }
+	stage('Compile') {
+	    steps {
+		sh 'cd build; make'
+	    }
+	}
+
+	stage('Compile tests') {
+	    steps {
+		sh 'cd build; cmake -DAKANTU_TESTS:BOOL=TRUE ..'
+		sh 'cd build; make'
+	    }
+	}
+    }
 }
