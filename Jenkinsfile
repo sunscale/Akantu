@@ -5,7 +5,7 @@ pipeline {
   stages {
     stage('Configure') {
       steps {
-        sh 'mkdir build && cd build'
+        sh 'mkdir -p build && cd build'
         sh 'cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE -DAKANTU_IMPLICIT:BOOL=TRUE -DAKANTU_PARALLEL:BOOL=TRUE -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE ..'
       }
     }
