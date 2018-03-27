@@ -85,6 +85,7 @@ namespace akantu {
 //%include "synchronizer_registry.hh"
 %include "model.hh"
 %include "non_linear_solver.hh"
+%include "model_options.hh"
 
 %extend akantu::Model {
   void initFullImpl(
@@ -99,14 +100,17 @@ namespace akantu {
             _module =  __aka_importlib.import_module(self.__module__)
             _cls = getattr(_module, "{0}Options".format(self.__class__.__name__))
             options = _cls()
+            dir(options)
             if len(kwargs) > 0:
                 for key, val in kwargs.items():
                     if key[0] == '_':
                         key = key[1:]
+                    print(key, val)
                     setattr(options, key, val)
         else:
             options = args[0]
 
+        print(options)
         self.initFullImpl(options)
   %}
 

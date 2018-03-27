@@ -187,7 +187,9 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   const auto & smmc_options =
       dynamic_cast<const SolidMechanicsModelCohesiveOptions &>(options);
 
-  this->is_extrinsic = smmc_options.extrinsic;
+  this->is_extrinsic = smmc_options.is_extrinsic;
+
+  std::cout << "Extrinsic " << is_extrinsic << std::endl;
 
   inserter->setIsExtrinsic(is_extrinsic);
 

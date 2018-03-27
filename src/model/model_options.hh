@@ -79,7 +79,7 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
   SolidMechanicsModelCohesiveOptions(
       AnalysisMethod analysis_method = _explicit_lumped_mass,
       bool extrinsic = false)
-      : SolidMechanicsModelOptions(analysis_method), extrinsic(extrinsic) {}
+      : SolidMechanicsModelOptions(analysis_method), is_extrinsic(extrinsic) {}
 
   template <typename... pack>
   SolidMechanicsModelCohesiveOptions(use_named_args_t, pack &&... _pack)
@@ -87,7 +87,7 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
             OPTIONAL_NAMED_ARG(is_extrinsic, false)) {}
 
-  bool extrinsic{false};
+  bool is_extrinsic{false};
 };
 #endif
 
