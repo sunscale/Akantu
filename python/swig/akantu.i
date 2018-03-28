@@ -78,3 +78,7 @@
 %include "load_functions.i"
 %include "structural_mechanics_model.i"
 #endif
+
+%pythoncode %{
+  __initialize()
+%}

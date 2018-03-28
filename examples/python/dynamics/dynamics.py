@@ -28,7 +28,7 @@ def main():
 
     spatial_dimension = 2
 
-    akantu.initialize('material.dat')
+    akantu.parseInput('material.dat')
 
     mesh_file = 'bar.msh'
     max_steps = 250
@@ -121,7 +121,6 @@ def main():
                                            epot, ekin,
                                            (epot + ekin)))
 
-    akantu.finalize()
     return
 
 

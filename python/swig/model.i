@@ -85,6 +85,7 @@ namespace akantu {
 //%include "synchronizer_registry.hh"
 %include "model.hh"
 %include "non_linear_solver.hh"
+%include "model_options.hh"
 
 %extend akantu::Model {
   void initFullImpl(

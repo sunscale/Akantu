@@ -1,6 +1,6 @@
 from __future__ import print_function
 # ------------------------------------------------------------- #
-import akantu
+import akantu as aka
 import subprocess
 import numpy as np
 import time
@@ -131,12 +131,7 @@ def applyBC(model):
             blocked_dofs[node, 1] = True
             displacement[node, 1] = 1.
 
-
-################################################################
-# main
-################################################################
-
-# main paraeters
+# main parameters
 spatial_dimension = 2
 mesh_file = 'square.msh'
 
@@ -149,25 +144,25 @@ if ret != 0:
 time.sleep(1)
 
 # read mesh
-mesh = akantu.Mesh(spatial_dimension)
+mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
 
 # create the custom material
 mat = LocalElastic()
-akantu.registerNewPythonMaterial(mat, "local_elastic")
+aka.registerNewPythonMaterial(mat, "local_elastic")
 
-# init akantu
-akantu.initialize('material.dat')
+# parse input file
+aka.parseInput('material.dat')
 
 # init the SolidMechanicsModel
-model = akantu.SolidMechanicsModel(mesh)
-model.initFull(_analysis_method=akantu._static)
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(_analysis_method=aka._static)
 
 # configure the solver
 solver = model.getNonLinearSolver()
 solver.set("max_iterations", 2)
 solver.set("threshold", 1e-3)
-solver.set("convergence_type", akantu._scc_solution)
+solver.set("convergence_type", aka._scc_solution)
 
 # prepare the dumper
 model.setBaseName("bimaterial")
@@ -187,6 +182,3 @@ model.solveStep()
 
 # dump paraview files
 model.dump()
-
-# shutdown akantu
-akantu.finalize()

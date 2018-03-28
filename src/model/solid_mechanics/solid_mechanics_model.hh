@@ -383,8 +383,15 @@ public:
   /// SolidMechanicsModel::updateAcceleration
   AKANTU_GET_MACRO(Acceleration, *acceleration, Array<Real> &);
 
+  /// get the SolidMechanicsModel::external_force vector (external forces)
+  AKANTU_GET_MACRO(ExternalForce, *external_force, Array<Real> &);
+
   /// get the SolidMechanicsModel::force vector (external forces)
-  AKANTU_GET_MACRO(Force, *external_force, Array<Real> &);
+  Array<Real> & getForce() {
+    AKANTU_DEBUG_WARNING("getForce was maintained for backward compatibility, "
+                         "use getExternalForce instead");
+    return *external_force;
+  }
 
   /// get the SolidMechanicsModel::internal_force vector (internal forces)
   AKANTU_GET_MACRO(InternalForce, *internal_force, Array<Real> &);
@@ -428,8 +435,8 @@ public:
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO(MaterialLocalNumbering,
-                   material_local_numbering,  const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(MaterialLocalNumbering, material_local_numbering,
+                   const ElementTypeMapArray<UInt> &);
 
   /// vectors containing local material element index for each global element
   /// index

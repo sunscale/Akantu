@@ -110,7 +110,7 @@ class LocalElastic:
 ################################################################
 
 spatial_dimension = 2
-akantu.initialize('material.dat')
+akantu.parseInput('material.dat')
 
 mesh_file = 'bar.msh'
 max_steps = 250
@@ -205,6 +205,3 @@ for step in range(0, max_steps + 1):
     print("{0},{1},{2},{3},{4}".format(step, step * time_step,
                                        epot, ekin,
                                        (epot + ekin)))
-
-akantu.finalize()
-

@@ -39,16 +39,18 @@
 #include "parser.hh"
 %}
 
-%include "stl.i"
-%include "parser.i"
-
 namespace akantu {
   %ignore getUserParser;
   %ignore ghost_types;
   %ignore initialize(int & argc, char ** & argv);
   %ignore initialize(const std::string & input_file, int & argc, char ** & argv);
+  %ignore finalize;
   extern const Array<UInt> empty_filter;
 }
+
+%include "stl.i"
+%include "parser.i"
+
 
 %typemap(in) (int argc, char *argv[]) {
   int i = 0;
@@ -107,25 +109,28 @@ namespace akantu {
       initialize(input_file, nb_args, null);
     }
 
+  void __finalize() {
+    finalize();
+  }
+  
 #define AKANTU_PP_STR_TO_TYPE2(s, data, elem)                    \
     ({ BOOST_PP_STRINGIZE(elem) , elem})
 
     PyObject * getElementTypes(){
-      
-    std::map<std::string, akantu::ElementType> element_types{          
-      BOOST_PP_SEQ_FOR_EACH_I(                                               
+
+    std::map<std::string, akantu::ElementType> element_types{
+      BOOST_PP_SEQ_FOR_EACH_I(
           AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(AKANTU_ek_regular_ELEMENT_TYPE),
-          BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE2, akantu, AKANTU_ek_regular_ELEMENT_TYPE))};  
-    
+          BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE2, akantu, AKANTU_ek_regular_ELEMENT_TYPE))};
+
     return akantu::PythonFunctor::convertToPython(element_types);
     }
   }
-  
 %}
 
 %pythoncode %{
   import sys as _aka_sys
-  def initialize(input_file="", argv=_aka_sys.argv):
+  def __initialize(input_file="", argv=_aka_sys.argv):
       if _aka_sys.modules[__name__].MPI == 1:
          try:
            from mpi4py import MPI
@@ -134,6 +139,15 @@ namespace akantu {
 
       _initializeWithoutArgv(input_file)
 
+  def initialize(*args, **kwargs):
+      raise RuntimeError("No need to call initialize,"
+                      " use parseInput to read an input file")
+
+  def finalize(*args, **kwargs):
+      raise RuntimeError("No need to call finalize")
+
+  def parseInput(input_file):
+      getStaticParser().parse(input_file)
 %}
 
 %include "aka_config.hh"

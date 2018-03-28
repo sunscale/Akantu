@@ -44,7 +44,7 @@ class FromStress:
 ######################################################################
 
 def main():
-    aka.initialize("input_test.dat")
+    aka.parseInput("input_test.dat")
 
     mesh = aka.Mesh(2)
     mesh.read('mesh_dcb_2d.msh')
@@ -76,7 +76,6 @@ def main():
         if not force[n, 0] > 0:
             return -1
 
-    aka.finalize()
     return 0
 
 if __name__ == "__main__":

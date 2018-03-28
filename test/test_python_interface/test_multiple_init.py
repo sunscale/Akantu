@@ -16,7 +16,7 @@ import sys
 import os
 import akantu as aka
 
-aka.initialize('input_test.dat')
+aka.parseInput('input_test.dat')
 
 print('First initialisation')
 mesh = aka.Mesh(2)

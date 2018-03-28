@@ -150,6 +150,13 @@ SparseSolverMumps::~SparseSolverMumps() {
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::mumpsDataDestroy() {
+#ifdef AKANTU_USE_MPI
+  int finalized = 0;
+  MPI_Finalized(&finalized);
+  if (finalized) // Da fuck !?
+    return;
+#endif
+
   if (this->is_initialized) {
     this->mumps_data.job = _smj_destroy; // destroy
     dmumps_c(&this->mumps_data);
