@@ -22,10 +22,9 @@ pipeline {
     }
 
     stage ('Warnings gcc') {
-      warnings(canComputeNew: false,
-		 canResolveRelativePaths: false,
-		 consoleParserss: [[parserName: 'GNU Make + GNU C Compiler (gcc)']]
-		)
+      steps {
+        warnings(consoleParserss: [[parserName: 'GNU Make + GNU C Compiler (gcc)']])
+      }
     }
 
     stage('Compile python') {
