@@ -9,8 +9,7 @@ material cohesive_bilinear [
 	 name = cohesive
 	 sigma_c = 1
 	 beta = 1.5
-	 G_cI = 1
-	 G_cII = 1
+	 G_c = 1
 	 delta_0 = 0.1
 	 penalty = 1e10
 ]

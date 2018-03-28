@@ -52,11 +52,8 @@ int main(int argc, char * argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.read("triangle.msh");
 
-  CohesiveElementInserter inserter(mesh);
-  inserter.setLimit(_x, -0.26, -0.24);
-  inserter.insertIntrinsicElements();
-
   SolidMechanicsModelCohesive model(mesh);
+  model.getElementInserter().setLimit(_x, -0.26, -0.24);
 
   /// model initialization
   model.initFull();
