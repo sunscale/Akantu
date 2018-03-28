@@ -23,7 +23,7 @@ pipeline {
 
     stage ('Warnings gcc') {
       steps {
-        warnings(consoleParserss: [[parserName: 'GNU Make + GNU C Compiler (gcc)']])
+        warnings(consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']])
       }
     }
 
