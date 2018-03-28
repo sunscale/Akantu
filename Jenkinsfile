@@ -15,17 +15,36 @@ pipeline {
     }
     stage('Compile') {
       steps {
-        sh 'cd build/src; make || true'
+	wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'xterm']) {
+          sh 'make -C build/src || true'
+	}
       }
     }
+
+    stage ('Warnings gcc') {
+      warnings(canComputeNew: false,
+		 canResolveRelativePaths: false,
+		 consoleParserss: [[parserName: 'GNU Make + GNU C Compiler (gcc)']]
+		)
+    }
+
+    stage('Compile python') {
+      steps {
+        sh 'make -C build/python || true'
+      }
+    }
+
     stage('Compile tests') {
       steps {
-        sh 'cd build/test; make || true'
+        sh 'make -C build/test || true'
       }
     }
-    stage('') {
+
+    stage('Tests') {
       steps {
-        emailext(subject: 'Build failed for job ${currentBuild.fullDisplayName}', to: 'akantu-admins@akantu.ch', attachLog: true, compressLog: true, body: 'Something is wrong with ${env.BUILD_URL}, failed at step')
+          sh 'curl https://raw.githubusercontent.com/rpavlik/jenkins-ctest-plugin/master/ctest-to-junit.xsl -o ctest-to-junit.xsl'
+	  sh 'cd build/ && ctest -T test --no-compress-output || true'
+	  sh 'xsltproc ctest-to-junit.xsl  build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml > CTestResults.xml'
       }
     }
   }
@@ -36,9 +55,17 @@ pipeline {
   }
   post {
     always {
-      deleteDir()
-      
+      juint 'CTestResults.xml'
     }
-    
+
+    failure {
+      emailext(
+	  subject: 'Failure in job ${currentBuild.fullDisplayName}',
+	  recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+	  to: 'akantu-admins@akantu.ch',
+	  attachLog: true,
+          compressLog: true,
+	  body: 'Something is wrong with ${env.BUILD_URL}')
+    }
   }
 }
