@@ -44,11 +44,6 @@ pipeline {
 	sh 'cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml'
 	// sh 'curl https://raw.githubusercontent.com/rpavlik/jenkins-ctest-plugin/master/ctest-to-junit.xsl -o ctest-to-junit.xsl'
 	// sh 'xsltproc ctest-to-junit.xsl  build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml > CTestResults.xml'
-	step([$class: 'XUnitBuilder',
-      	    thresholds: [
-               [$class: 'SkippedThreshold', failureThreshold: '0'],
-               [$class: 'FailedThreshold', failureThreshold: '0']],
-            tools: [[$class: 'BoostTestJunitHudsonTestType', pattern: 'CTestResults.xml']]])
       }
     }
   }
@@ -59,7 +54,11 @@ pipeline {
   }
   post {
     always {
-      juint 'CTestResults.xml'
+      step([$class: 'XUnitBuilder',
+         thresholds: [
+             [$class: 'SkippedThreshold', failureThreshold: '0'],
+             [$class: 'FailedThreshold', failureThreshold: '0']],
+          tools: [[$class: 'CTestType', pattern: 'CTestResults.xml']]])
     }
 
     failure {
