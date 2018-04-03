@@ -50,43 +50,62 @@ working_dir=
 envi=
 parallel_processes="2"
 
-while getopts ":n:e:E:p:N:s:r:w:h" opt; do
-    case "$opt" in
-        n)  name="$OPTARG"
-            ;;
-        e)  executable="$OPTARG"
-            ;;
-        p)  parallel="$OPTARG"
-            ;;
-        N)  parallel_processes="$OPTARG"
-            ;;
-        s)  postprocess_script="$OPTARG"
-            ;;
-        r)  reference="$OPTARG"
-            ;;
-        w)  working_dir="$OPTARG"
-            ;;
-        E)  envi="$OPTARG"
-            ;;
-        h)
-            show_help
-            exit 0
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            show_help
-            exit 1
-            ;;
-        :)
-            echo "Option -$OPTARG requires an argument." >&2
-            show_help
-            exit 1
-            ;;
-    esac
+
+while :
+do
+  case "$1" in
+    -e)
+      executable=$2
+      shift 2
+      ;;
+    -E)
+      envi="$2"
+      shift 2
+      ;;
+    -h | --help)
+      show_help
+      exit 0
+      ;;
+    -n)
+      name="$2"
+      shift 2
+      ;;
+    -N)
+      parallel_processes="$2"
+      shift 2
+      ;;
+    -p)
+      parallel="$2"
+      shift 2
+      ;;
+    -r)
+      reference="$2"
+      shift 2
+      ;;
+    -s)
+      postprocess_script="$2"
+      shift 2
+      ;;
+    -w)
+      working_dir="$2"
+      shift 2
+      ;;
+    --) # End of all options
+      shift
+      break
+      ;;
+    -*)
+      echo "Error: Unknown option: $1" >&2
+      show_help
+      exit 1
+      ;;
+    *) #No more options
+      break
+      ;;
+  esac
 done
 
-shift $(( $OPTIND - 1 ))
-_args=$*
+_args=$@
 
 if [ -n "${envi}" ]; then
     source ${envi}

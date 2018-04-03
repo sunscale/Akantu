@@ -527,7 +527,7 @@ function(register_test test_name)
   endif()
 
   if(_register_test_GTEST)
-    list(APPEND _extra_args "--gtest_output=xml:${PROJECT_BINARY_DIR}/gtest_reports/${test_name}.xml")
+    list(APPEND _extra_args "--" "--gtest_output=xml:${PROJECT_BINARY_DIR}/gtest_reports/${test_name}.xml")
   endif()
   
   list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
