@@ -61,7 +61,7 @@ pipeline {
           tools: [[$class: 'CTestType', pattern: 'CTestResults.xml']]])
       step([$class: 'XUnitBuilder',
          thresholds: [
-             [$class: 'SkippedThreshold', failureThreshold: '0'],
+             [$class: 'SkippedThreshold', failureThreshold: '100'],
              [$class: 'FailedThreshold', failureThreshold: '0']],
           tools: [[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**']]])
     }
