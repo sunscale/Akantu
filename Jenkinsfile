@@ -40,7 +40,6 @@ pipeline {
 
     stage('Tests') {
       steps {
-      	# the LD_PRELOAD is for the mpi4py to load properly
         sh 'cd build/ && ctest -T test --no-compress-output || true'
 	sh 'cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml'
 	# sh 'curl https://raw.githubusercontent.com/rpavlik/jenkins-ctest-plugin/master/ctest-to-junit.xsl -o ctest-to-junit.xsl'
