@@ -64,8 +64,12 @@ pipeline {
 
     failure {
       emailext(
+          body: '''${SCRIPT, template="groovy-html.template"}''',
+	  mimeType: 'text/html',
+          subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
 	  recipientProviders: [[$class: 'CulpritsRecipientProvider']],
 	  to: 'akantu-admins@akantu.ch',
+	  replyTo: 'akantu-admins@akantu.ch',
 	  attachLog: true,
           compressLog: false)
     }
