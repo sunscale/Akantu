@@ -149,6 +149,7 @@ set(_test_flags
   UNSTABLE
   PARALLEL
   PYTHON
+  GTEST
   HEADER_ONLY
   )
 
@@ -386,7 +387,7 @@ function(register_gtest_test test_name)
     endif()
   endforeach()
 
-  register_test(${_argn})
+  register_test(${_argn} GTEST)
   target_include_directories(${test_name}_gtest PRIVATE ${PROJECT_SOURCE_DIR}/test)
 endfunction()
 
@@ -525,6 +526,10 @@ function(register_test test_name)
     list(APPEND _arguments -e "./${test_name}")
   endif()
 
+  if(_register_test_GTEST)
+    list(APPEND _extra_args "--gtest_output=xml:${PROJECT_BINARY_DIR}/gtest_reports/${test_name}.xml")
+  endif()
+  
   list(APPEND _arguments -E "${PROJECT_BINARY_DIR}/akantu_environement.sh")
 
   package_is_activated(parallel _is_parallel)
