@@ -39,6 +39,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
+#include "aka_bbox.hh"
 #include "aka_event_handler_manager.hh"
 #include "aka_memory.hh"
 #include "dumpable.hh"
@@ -48,7 +49,6 @@
 #include "group_manager.hh"
 #include "mesh_data.hh"
 #include "mesh_events.hh"
-#include "aka_bbox.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
 #include <unordered_map>
@@ -269,8 +269,12 @@ public:
   const Vector<Real> & getUpperBounds() const { return bbox.getUpperBounds(); }
   AKANTU_GET_MACRO(BBox, bbox, const BBox &);
 
-  const Vector<Real> & getLocalLowerBounds() const { return bbox_local.getLowerBounds(); }
-  const Vector<Real> & getLocalUpperBounds() const { return bbox_local.getUpperBounds(); }
+  const Vector<Real> & getLocalLowerBounds() const {
+    return bbox_local.getLowerBounds();
+  }
+  const Vector<Real> & getLocalUpperBounds() const {
+    return bbox_local.getUpperBounds();
+  }
   AKANTU_GET_MACRO(LocalBBox, bbox_local, const BBox &);
 
   /// get the connectivity Array for a given type
@@ -500,6 +504,10 @@ public:
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
 #endif
+
+  const std::unordered_multimap<UInt, UInt> & getPeriodicMasterSlaves() const {
+    return periodic_master_slave;
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */

@@ -17,6 +17,7 @@ inline std::string ParaviewHelper::dataTypeToStr(DataType data_type) {
   case _double : str = "Float64"; break;
   case _uint64 : str = "UInt64" ; break;
   case _int64  : str = "Int64"  ; break;
+  case _uint8  : str = "UInt8"  ; break;
   }
   return str;
 }

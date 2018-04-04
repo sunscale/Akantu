@@ -51,10 +51,37 @@ int main(int argc, char ** argv) {
   auto * dumper = new DumperParaview("periodic", "./paraview");
   mesh.registerExternalDumper(*dumper, "periodic", true);
   mesh.addDumpMesh(mesh);
-  mesh.addDumpFieldExternalToDumper("periodic", "node_type", const_cast<const Mesh &>(mesh).getNodesType());
+  if (mesh.isDistributed())
+    mesh.addDumpFieldExternalToDumper(
+        "periodic", "node_type", const_cast<const Mesh &>(mesh).getNodesFlags());
+
   mesh.dump();
 
   mesh.makePeriodic(_x);
+  mesh.makePeriodic(_y);
+  mesh.makePeriodic(_z);
+
+  Array<Real> periodic(mesh.getNbNodes(), 1, 0.);
+  UInt prev_node = -1;
+  UInt value = 0;
+  const auto & periodic_ms = mesh.getPeriodicMasterSlaves();
+  for (auto & pair : periodic_ms) {
+    if (prev_node != pair.first) {
+      ++value;
+    }
+
+    prev_node = pair.first;
+    periodic(pair.first) = value;
+    periodic(pair.second) = value;
+
+    auto it = periodic_ms.find(pair.second);
+    if (it != periodic_ms.end()) {
+      std::cout << pair.first << " " << pair.second << std::endl;
+      std::cout << it->first << " " << it->second << std::endl;
+      AKANTU_EXCEPTION("Shit meeeen!");
+    }
+  }
+  mesh.addDumpFieldExternalToDumper("periodic", "periodic", periodic);
 
   mesh.dump();
 }

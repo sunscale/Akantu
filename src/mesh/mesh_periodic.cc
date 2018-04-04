@@ -38,20 +38,27 @@ namespace akantu {
 void Mesh::makePeriodic(const SpatialDirection & direction) {
   Array<UInt> list_1;
   Array<UInt> list_2;
+  Real tolerance = 1e-10;
+
+  auto lower_bound = this->getLowerBounds();
+  auto upper_bound = this->getUpperBounds();
+  auto length = upper_bound(direction) - lower_bound(direction);
 
   const auto & positions = *nodes;
+
+  std::cout << bbox << std::endl;
 
   for (auto && data : enumerate(make_view(positions, spatial_dimension))) {
     UInt node = std::get<0>(data);
     const auto & pos = std::get<1>(data);
 
-    if (Math::are_float_equal(pos(direction),
-                              bbox.getLowerBounds()(direction))) {
+    if (std::abs((pos(direction) - lower_bound(direction)) / length) <
+        tolerance) {
       list_1.push_back(node);
     }
 
-    if (Math::are_float_equal(pos(direction),
-                              bbox.getUpperBounds()(direction))) {
+    if (std::abs((pos(direction) - upper_bound(direction)) / length) <
+        tolerance) {
       list_2.push_back(node);
     }
   }
@@ -64,29 +71,26 @@ namespace {
     NodeInfo() {}
     NodeInfo(UInt spatial_dimension) : position(spatial_dimension) {}
     NodeInfo(UInt node, const Vector<Real> & position,
-             const Vector<Real> & lower_node,
              const SpatialDirection & direction)
         : node(node), position(position) {
       this->direction_position = position(direction);
       this->position(direction) = 0.;
-      this->distance = this->position.distance(lower_node);
     }
 
     NodeInfo(const NodeInfo & other)
-        : node(other.node), distance(other.distance), position(other.position),
+        : node(other.node), position(other.position),
           direction_position(other.direction_position) {}
 
     UInt node{0};
-    Real distance{-1.};
     Vector<Real> position;
     Real direction_position{0.};
   };
 
-  std::ostream & operator<<(std::ostream & stream, const NodeInfo & info) {
-    stream << info.node << " " << info.position << " "
-           << info.direction_position << " (" << info.distance << ")";
-    return stream;
-  }
+  // std::ostream & operator<<(std::ostream & stream, const NodeInfo & info) {
+  //   stream << info.node << " " << info.position << " "
+  //          << info.direction_position;
+  //   return stream;
+  // }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -117,7 +121,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     for (UInt s : arange(spatial_dimension)) {
       pos(s) = positions(node, s);
     }
-    auto && info = NodeInfo(node, pos, lower_bound, direction);
+    auto && info = NodeInfo(node, pos, direction);
     bbox += info.position;
     return info;
   };
@@ -173,7 +177,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
         info.direction_position = pos(direction);
         info.position(direction) = 0;
-        info.distance = lower_bound.distance(info.position);
+        // info.distance = lower_bound.distance(info.position);
 
         info.node = getNodeLocalId(global_node);
         if (info.node != UInt(-1))
@@ -260,7 +264,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     auto mits = periodic_master_slave.equal_range(node2);
     if (mits.first != periodic_master_slave.end()) {
       for (auto mit = mits.first; mit != mits.second; ++mit) {
-        periodic_master_slave.insert(node1, mit->second);
+        periodic_master_slave.insert(std::make_pair(node1, mit->second));
         // \TODO tell processor prank[mit->second] that master is now node1
         // instead of node2
         periodic_slave_master[mit->second] = node1;
@@ -269,6 +273,13 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       }
       periodic_master_slave.erase(node2);
     }
+
+    auto node1_slaves = periodic_master_slave.equal_range(node1);
+    auto slave_it =
+        std::find_if(node1_slaves.first, node1_slaves.second,
+                     [&](auto & pair) { return pair.second == node2; });
+    if (slave_it == node1_slaves.second)
+      periodic_master_slave.insert(std::make_pair(node1, node2));
 
     periodic_slave_master[node2] = node1;
   };
@@ -282,7 +293,6 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       auto & pos1 = info1.position;
       auto it_cur = it;
 
-      bool found = false;
       for (; it_cur != nodes_2.end(); ++it_cur) {
         auto & info2 = *it_cur;
         auto & pos2 = info2.position;
@@ -302,17 +312,22 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   std::cout << periodic_slave_master.size() << std::endl;
 
-  std::cout << prank << " - Left" << std::endl;
-  for (auto && data : nodes_left) {
-    std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
+  for (auto & pair : periodic_master_slave) {
+    std::cout << prank << " - " << pair.first << " " << pair.second
               << std::endl;
   }
 
-  std::cout << prank << " - Right" << std::endl;
-  for (auto && data : nodes_right) {
-    std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
-              << std::endl;
-  }
+  // std::cout << prank << " - Left" << std::endl;
+  // for (auto && data : nodes_left) {
+  //   std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
+  //             << std::endl;
+  // }
+
+  // std::cout << prank << " - Right" << std::endl;
+  // for (auto && data : nodes_right) {
+  //   std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
+  //             << std::endl;
+  //}
 
   this->is_periodic |= 1 < direction;
 }

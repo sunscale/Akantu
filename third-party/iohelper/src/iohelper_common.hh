@@ -63,7 +63,8 @@ enum DataType {
   _float,
   _double,
   _int64,
-  _uint64
+  _uint64,
+  _uint8
 };
 
 enum IndexingMode{
@@ -264,6 +265,7 @@ DEFINE_GET_DATA_TYPE(float, _float)
 DEFINE_GET_DATA_TYPE(double, _double)
 DEFINE_GET_DATA_TYPE(long int, _int64)
 DEFINE_GET_DATA_TYPE(unsigned long int, _uint64)
+DEFINE_GET_DATA_TYPE(std::uint8_t, _uint8)
 
 #undef DEFINE_GET_DATA_TYPE
 
@@ -278,6 +280,7 @@ inline std::ostream & operator <<(std::ostream & stream,  DataType type)
     case _double : stream << "float64" ; break;
     case _uint64 : stream << "uint64"  ; break;
     case _int64	 : stream << "int64"   ; break;
+    case _uint8	 : stream << "uint8"   ; break;
     }
   return stream;
 }
