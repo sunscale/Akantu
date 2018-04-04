@@ -137,6 +137,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   std::vector<UInt> new_nodes;
   if (is_distributed) {
+    /* ---------------------------------------------------------------------- */
     auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
                                       auto & send_buffers, auto proc,
                                       auto cnt) {
@@ -149,6 +150,18 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
           pos(direction) = info.direction_position;
           buffer << getNodeGlobalId(info.node);
           buffer << pos;
+
+          buffer << ((*nodes_flags)(info.node) & NodeFlag::_periodic_mask);
+          if (isPeriodicSlave(info.node)) {
+            buffer << getNodeGlobalId(periodic_slave_master[info.node]);
+          }
+          if (isPeriodicMaster(info.node)) {
+            buffer << periodic_master_slave.count(info.node);
+            auto slaves = periodic_master_slave.equal_range(info.node);
+            for (auto it = slaves.first; it != slaves.second; ++it) {
+              buffer << getNodeGlobalId(it->second);
+            }
+          }
         }
       }
 
@@ -156,6 +169,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       return communicator->asyncSend(buffer, proc, tag);
     };
 
+    /* ---------------------------------------------------------------------- */
     auto recv_and_extract_nodes = [&](auto & bbox, auto & node_list,
                                       auto & buffer, const auto proc,
                                       auto cnt) {
@@ -167,33 +181,53 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       communicator->receive(buffer, proc, tag);
 
       while (not buffer.empty()) {
-        NodeInfo info(spatial_dimension);
         Vector<Real> pos(spatial_dimension);
         UInt global_node;
+        NodeFlag flag;
         buffer >> global_node;
-
         buffer >> pos;
-        info.position = pos;
+        buffer >> flag;
 
-        info.direction_position = pos(direction);
-        info.position(direction) = 0;
-        // info.distance = lower_bound.distance(info.position);
+        auto local_node = getNodeLocalId(global_node);
 
-        info.node = getNodeLocalId(global_node);
-        if (info.node != UInt(-1))
+        if (flag == NodeFlag::_periodic_slave) {
+          UInt master_node;
+          buffer >> master_node;
+          auto local_master_node = getNodeLocalId(master_node);
+          AKANTU_DEBUG_ASSERT(local_master_node != UInt(-1),
+                              "Should I know the master node " << master_node);
+        }
+
+        if (flag == NodeFlag::_periodic_master) {
+          UInt nb_slaves;
+          buffer >> nb_slaves;
+          for (auto ns[[gnu::unused]] : arange(nb_slaves)) {
+            UInt gslave_node;
+            buffer >> gslave_node;
+            auto lslave_node = getNodeLocalId(gslave_node);
+            AKANTU_DEBUG_ASSERT(lslave_node != UInt(-1),
+                                "Should I know the slave node " << gslave_node);
+          }
+        }
+
+        if (local_node != UInt(-1))
           continue;
 
-        info.node = nodes->size();
+        local_node = nodes->size();
+
+        NodeInfo info(local_node, pos, direction);
 
         nodes->push_back(pos);
         nodes_global_ids->push_back(global_node);
-        nodes_type.push_back(NodeType(-100));
+        nodes_flags->push_back(flag | NodeFlag::_pure_ghost);
         new_nodes.push_back(info.node);
         node_list.push_back(info);
 
         nodes_prank[info.node] = proc;
       }
     };
+
+    /* ---------------------------------------------------------------------- */
 
     auto && intersection_right =
         bbox_left.intersection(bbox_right, *communicator);
@@ -254,34 +288,101 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
   std::sort(nodes_left.begin(), nodes_left.end(), to_sort);
   std::sort(nodes_right.begin(), nodes_right.end(), to_sort);
 
+  auto register_pair = [&](auto & master, auto & slave) {
+    if (master == slave)
+      return;
+
+    // if pair already registered
+    auto master_slaves = periodic_master_slave.equal_range(master);
+    auto slave_it =
+        std::find_if(master_slaves.first, master_slaves.second,
+                     [&](auto & pair) { return pair.second == slave; });
+    if (slave_it == master_slaves.second) {
+      // no duplicates
+      periodic_master_slave.insert(std::make_pair(master, slave));
+      std::cout << "adding: " << getNodeGlobalId(master) << " - "
+                << getNodeGlobalId(slave) << std::endl;
+    }
+
+    periodic_slave_master[slave] = master;
+
+    (*nodes_flags)[slave] |= NodeFlag::_periodic_slave;
+    (*nodes_flags)[master] |= NodeFlag::_periodic_master;
+  };
+
+  auto updating_master = [&](auto & old_master, auto & new_master) {
+    if (old_master == new_master)
+      return;
+
+    auto slaves = periodic_master_slave.equal_range(old_master);
+    AKANTU_DEBUG_ASSERT(slaves.first != periodic_master_slave.end(),
+                        "Cannot update master " << old_master
+                                                << ", its not a master node!");
+    std::cout << "updating: " << getNodeGlobalId(old_master) << " -> "
+              << getNodeGlobalId(new_master) << std::endl;
+    auto it = slaves.first;
+    for (; it != slaves.second; ++it) {
+      auto slave = it->second;
+      periodic_master_slave.insert(std::make_pair(new_master, slave));
+      std::cout << "    - " << getNodeGlobalId(new_master) << " - "
+                << getNodeGlobalId(slave) << std::endl;
+      /* might need the register_pair here */
+      // \TODO tell processor prank[slave] that master is now node1
+      // instead of node2
+      periodic_slave_master[slave] = new_master;
+      // \TODO tell processor prank[new_master] that it also has a slave on
+      // prank[slave]
+    }
+    periodic_master_slave.erase(old_master);
+    (*nodes_flags)[old_master] |= NodeFlag::_periodic_slave;
+  };
+
   auto match_found = [&](auto & info1, auto & info2) {
     auto node1 = info1.node;
     auto node2 = info2.node;
-    if (info1.direction_position < info2.direction_position) {
-      std::swap(node1, node2);
+
+    auto node2_master = node2;
+    if (isPeriodicSlave(node2)) {
+      node2_master = periodic_slave_master[node2];
     }
 
-    auto mits = periodic_master_slave.equal_range(node2);
-    if (mits.first != periodic_master_slave.end()) {
-      for (auto mit = mits.first; mit != mits.second; ++mit) {
-        periodic_master_slave.insert(std::make_pair(node1, mit->second));
-        // \TODO tell processor prank[mit->second] that master is now node1
-        // instead of node2
-        periodic_slave_master[mit->second] = node1;
-        // \TODO tell processor prank[node1] that it also has a slave on
-        // prank[mit->second]
+    auto master = node1;
+    bool node1_side_master = false;
+    if (isPeriodicMaster(node1)) {
+      node1_side_master = true;
+    }
+
+    if (isPeriodicSlave(node1)) {
+      node1_side_master = true;
+      master = periodic_slave_master[node1];
+      // register_pair(master, node1);
+    }
+
+    if (node1_side_master) {
+      register_pair(master, node2);
+
+      if (isPeriodicSlave(node2)) {
+        updating_master(node2_master, master);
+        return;
       }
-      periodic_master_slave.erase(node2);
+
+      if (isPeriodicMaster(node2)) {
+        updating_master(node2, master);
+        return;
+      }
+    } else {
+      if (isPeriodicSlave(node2)) {
+        register_pair(node2_master, node1);
+        return;
+      }
+
+      if (isPeriodicMaster(node2)) {
+        register_pair(node2, node1);
+        return;
+      }
+
+      register_pair(node1, node2);
     }
-
-    auto node1_slaves = periodic_master_slave.equal_range(node1);
-    auto slave_it =
-        std::find_if(node1_slaves.first, node1_slaves.second,
-                     [&](auto & pair) { return pair.second == node2; });
-    if (slave_it == node1_slaves.second)
-      periodic_master_slave.insert(std::make_pair(node1, node2));
-
-    periodic_slave_master[node2] = node1;
   };
 
   auto match_pairs = [&](auto & nodes_1, auto & nodes_2) {
@@ -312,10 +413,10 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   std::cout << periodic_slave_master.size() << std::endl;
 
-  for (auto & pair : periodic_master_slave) {
-    std::cout << prank << " - " << pair.first << " " << pair.second
-              << std::endl;
-  }
+  // for (auto & pair : periodic_master_slave) {
+  //   std::cout << prank << " - " << pair.first << " " << pair.second
+  //             << std::endl;
+  // }
 
   // std::cout << prank << " - Left" << std::endl;
   // for (auto && data : nodes_left) {

@@ -108,9 +108,8 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
       previous_global_blocked_dofs(
           0, 1, std::string(id + ":previous_global_blocked_dofs")),
-      dofs_type(0, 1, std::string(id + ":dofs_type")),
+      dofs_flag(0, 1, std::string(id + ":dofs_type")),
       data_cache(0, 1, std::string(id + ":data_cache_array")),
-
       global_equation_number(0, 1, "global_equation_number"),
       synchronizer(nullptr) {}
 
@@ -123,9 +122,8 @@ DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
       previous_global_blocked_dofs(
           0, 1, std::string(id + ":previous_global_blocked_dofs")),
-      dofs_type(0, 1, std::string(id + ":dofs_type")),
+      dofs_flag(0, 1, std::string(id + ":dofs_type")),
       data_cache(0, 1, std::string(id + ":data_cache_array")),
-      jacobian_release(0),
       global_equation_number(0, 1, "global_equation_number"),
       first_global_dof_id(0), synchronizer(nullptr) {
   if (this->mesh->isDistributed())
@@ -791,7 +789,7 @@ void DOFManagerDefault::updateDOFsData(
 
   // resize all relevant arrays
   this->residual.resize(this->local_system_size, 0.);
-  this->dofs_type.resize(this->local_system_size);
+  this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
   this->global_solution.resize(this->local_system_size, 0.);
   this->global_blocked_dofs.resize(this->local_system_size, true);
   this->previous_global_blocked_dofs.resize(this->local_system_size, true);
@@ -829,13 +827,13 @@ void DOFManagerDefault::updateDOFsData(
     case _dst_nodal: {
       UInt node = getNode(d / dof_data.dof->getNbComponent());
 
-      this->dofs_type(local_eq_num) = this->mesh->getNodeType(node);
+      this->dofs_flag(local_eq_num) = this->mesh->getNodeFlag(node);
       dof_data.associated_nodes.push_back(node);
       is_local_dof = this->mesh->isLocalOrMasterNode(node);
       break;
     }
     case _dst_generic: {
-      this->dofs_type(local_eq_num) = _nt_normal;
+      this->dofs_flag(local_eq_num) = NodeFlag::_normal;
       break;
     }
     default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }

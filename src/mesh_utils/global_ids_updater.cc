@@ -114,14 +114,14 @@ void GlobalIdsUpdater::synchronizeGlobalIDs() {
   this->synchronizer.slaveReductionOnce(*this, _gst_giu_global_conn);
 
 #ifndef AKANTU_NDEBUG
-  for (auto node : nodes_types) {
-    auto node_type = mesh.getNodeType(node.first);
-    if (node_type != _nt_pure_ghost)
+  for (auto node : nodes_flags) {
+    auto node_flag = mesh.getNodeFlag(node.first);
+    if (node_flag != NodeFlag::_pure_ghost)
       continue;
     auto n = 0u;
 
     for (auto & pair : node.second) {
-      if (std::get<1>(pair) == _nt_pure_ghost)
+      if (std::get<1>(pair) == NodeFlag::_pure_ghost)
         ++n;
     }
 

@@ -39,14 +39,14 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManagerDefault::isLocalOrMasterDOF(UInt dof_num) {
-  Int dof_type = this->dofs_type(dof_num);
-  return (dof_type == Int(_nt_normal)) || (dof_type == Int(_nt_master));
+  auto dof_flag = this->dofs_flag(dof_num);
+  return (dof_flag & NodeFlag::_shared_mask) == NodeFlag::_normal;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool DOFManagerDefault::isSlaveDOF(UInt dof_num) {
-  Int dof_type = this->dofs_type(dof_num);
-  return (dof_type >= 0);
+  auto dof_flag = this->dofs_flag(dof_num);
+  return (dof_flag & NodeFlag::_shared_mask) == NodeFlag::_slave;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -95,8 +95,8 @@ inline UInt DOFManagerDefault::globalToLocalEquationNumber(UInt global) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Int DOFManagerDefault::getDOFType(UInt local_id) const {
-  return this->dofs_type(local_id);
+inline NodeFlag DOFManagerDefault::getDOFFlag(UInt local_id) const {
+  return this->dofs_flag(local_id);
 }
 /* -------------------------------------------------------------------------- */
 

@@ -74,7 +74,10 @@ public:
   }
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline auto & getNodesType() { return this->_mesh.getNodesTypePointer(); }
+  inline auto & getNodesFlags() { return this->_mesh.getNodesFlags(); }
+
+  /// get a pointer to the nodes_type Array<Int> and create it if necessary
+  inline void setNodePrank(UInt node, Int prank) { this->_mesh.nodes_prank[node] = prank; }
 
   /// get a pointer to the coordinates Array
   inline auto & getNodes() { return this->_mesh.getNodesPointer(); }

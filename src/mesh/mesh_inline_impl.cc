@@ -85,7 +85,7 @@ inline void Mesh::sendEvent<NewElementsEvent>(NewElementsEvent & event) {
 /* -------------------------------------------------------------------------- */
 template <> inline void Mesh::sendEvent<NewNodesEvent>(NewNodesEvent & event) {
   this->computeBoundingBox();
-
+  this->nodes_flags->resize(this->nodes->size(), NodeFlag::_normal);
   EventHandlerManager<MeshEventHandler>::sendEvent(event);
 }
 
@@ -105,10 +105,10 @@ template <>
 inline void Mesh::sendEvent<RemovedNodesEvent>(RemovedNodesEvent & event) {
   const auto & new_numbering = event.getNewNumbering();
   this->removeNodesFromArray(*nodes, new_numbering);
-  if (nodes_global_ids and not mesh_parent)
+  if (nodes_global_ids and not is_mesh_facets)
     this->removeNodesFromArray(*nodes_global_ids, new_numbering);
-  if (nodes_type and not mesh_parent)
-    this->removeNodesFromArray(*nodes_type, new_numbering);
+  if (not is_mesh_facets)
+    this->removeNodesFromArray(*nodes_flags, new_numbering);
 
   if (not nodes_to_elements.empty()) {
     std::vector<std::unique_ptr<std::set<Element>>> tmp(
@@ -168,18 +168,6 @@ inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
 
   AKANTU_DEBUG_OUT();
   return *nodes_global_ids;
-}
-
-/* -------------------------------------------------------------------------- */
-inline Array<NodeType> & Mesh::getNodesTypePointer() {
-  AKANTU_DEBUG_IN();
-  if (not nodes_type) {
-    nodes_type =
-        std::make_shared<Array<NodeType>>(nodes->size(), 1, _nt_normal);
-  }
-
-  AKANTU_DEBUG_OUT();
-  return *nodes_type;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -589,35 +577,50 @@ inline void Mesh::addConnectivityType(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPureGhostNode(UInt n) const {
-  return nodes_type ? ((*nodes_type)(n) == _nt_pure_ghost) : false;
+  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_pure_ghost;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalOrMasterNode(UInt n) const {
-  return nodes_type
-             ? ((*nodes_type)(n) == _nt_master) ||
-                   ((*nodes_type)(n) == _nt_normal)
-             : true;
+  return ((*nodes_flags)(n) & NodeFlag::_local_master_mask) == NodeFlag::_normal;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalNode(UInt n) const {
-  return nodes_type ? (*nodes_type)(n) == _nt_normal : true;
+  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_normal;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isMasterNode(UInt n) const {
-  return nodes_type ? (*nodes_type)(n) == _nt_master : false;
+  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_master;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isSlaveNode(UInt n) const {
-  return nodes_type ? (*nodes_type)(n) >= 0 : false;
+  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_slave;
 }
 
 /* -------------------------------------------------------------------------- */
-inline NodeType Mesh::getNodeType(UInt local_id) const {
-  return nodes_type ? (*nodes_type)(local_id) : _nt_normal;
+inline bool Mesh::isPeriodicSlave(UInt n) const {
+  return ((*nodes_flags)(n) & NodeFlag::_periodic_mask) ==
+         NodeFlag::_periodic_slave;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool Mesh::isPeriodicMaster(UInt n) const {
+  return ((*nodes_flags)(n) & NodeFlag::_periodic_mask) ==
+         NodeFlag::_periodic_master;
+}
+
+/* -------------------------------------------------------------------------- */
+inline NodeFlag Mesh::getNodeFlag(UInt local_id) const {
+  return (*nodes_flags)(local_id);
+}
+
+/* -------------------------------------------------------------------------- */
+inline Int Mesh::getNodePrank(UInt local_id) const {
+  auto it = nodes_prank.find(local_id);
+  return it == nodes_prank.end() ? -1 : it->second;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -643,7 +646,7 @@ inline UInt Mesh::getNbNodesPerElementList(const Array<Element> & elements) {
   UInt nb_nodes = 0;
   ElementType current_element_type = _not_defined;
 
-  for(const auto & el : elements) {
+  for (const auto & el : elements) {
     if (el.type != current_element_type) {
       current_element_type = el.type;
       nb_nodes_per_element = Mesh::getNbNodesPerElement(current_element_type);

@@ -67,12 +67,11 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
   }
 
   for (auto && local_id : arange(mesh.getNbNodes())) {
-    auto type = mesh.getNodeType(local_id);
-    if (type < 0)
+  if (not mesh.isSlaveNode(local_id))
       continue; // local, master or pure ghost
 
     auto global_id = mesh.getNodeGlobalId(local_id);
-    auto proc = UInt(type);
+    auto proc = mesh.getNodePrank(local_id);
     nodes_per_proc[proc].push_back(global_id);
 
     auto & scheme = communications.createScheme(proc, _recv);

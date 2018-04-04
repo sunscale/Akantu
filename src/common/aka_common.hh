@@ -241,16 +241,6 @@ enum NonLinearSolverType {
             ///  model::getNewSolver
 };
 
-/// Define the node/dof type
-enum NodeType : Int {
-  _np_periodic_ghost_slave = -5,
-  _np_periodic_slave = -4,
-  _nt_pure_gost = -3,
-  _nt_master = -2,
-  _nt_normal = -1,
-  _nt_slave = 0,
-};
-
 /// Type of time stepping solver
 enum TimeStepSolverType {
   _tsst_static,         ///< Static solution
@@ -371,7 +361,44 @@ enum GhostType {
   _ghost = 1,
   _casper // not used but a real cute ghost
 };
+
+
+/// Define the flag that can be set to a node
+enum class NodeFlag : std::uint8_t {
+  _normal                = 0x00,
+  _master                = 0x01,
+  _slave                 = 0x03,
+  _pure_ghost            = 0x07,
+  _shared_mask           = 0x0F,
+  _local_master_mask     = 0x0E,
+  _periodic              = 0x10,
+  _periodic_slave        = 0x10,
+  _periodic_master       = 0x30,
+  _periodic_mask         = 0xF0,
+};
+
+inline NodeFlag operator& (const NodeFlag & a, const NodeFlag & b) {
+  using under = std::underlying_type_t<NodeFlag>;
+  return NodeFlag(under(a) & under(b));
 }
+
+inline NodeFlag operator| (const NodeFlag & a, const NodeFlag & b) {
+  using under = std::underlying_type_t<NodeFlag>;
+  return NodeFlag(under(a) | under(b));
+}
+
+inline NodeFlag & operator|= (NodeFlag & a, const NodeFlag & b) {
+  a = a | b;
+  return a;
+}
+
+inline std::ostream & operator<< (std::ostream & stream, const NodeFlag & flag) {
+  using under = std::underlying_type_t<NodeFlag>;
+  stream << under(flag);
+  return stream;
+}
+
+} // namespace akantu
 
 #ifndef SWIG
 AKANTU_ENUM_HASH(GhostType)

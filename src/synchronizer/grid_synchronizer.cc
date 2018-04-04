@@ -236,7 +236,7 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
    */
   MeshAccessor mesh_accessor(mesh);
   auto & global_nodes_ids = mesh_accessor.getNodesGlobalIds();
-  auto & nodes_type = mesh_accessor.getNodesType();
+  auto & nodes_type = mesh_accessor.getNodesFlags();
 
   std::vector<CommunicationRequest> isend_nodes_requests;
   Vector<UInt> nb_nodes_to_recv(nb_proc);
@@ -311,7 +311,7 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
 
           if (ln == UInt(-1)) {
             global_nodes_ids.push_back(gn);
-            nodes_type.push_back(_nt_pure_ghost); // pure ghost node
+            nodes_type.push_back(NodeFlag::_pure_ghost); // pure ghost node
             ln = nb_current_nodes;
 
             new_nodes.getList().push_back(ln);

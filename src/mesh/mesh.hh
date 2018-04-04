@@ -247,13 +247,14 @@ public:
   inline UInt getNbGlobalNodes() const;
 
   /// get the nodes type Array
-  AKANTU_GET_MACRO(NodesType, *nodes_type, const Array<NodeType> &);
+  AKANTU_GET_MACRO(NodesFlags, *nodes_flags, const Array<NodeFlag> &);
 
 protected:
-  AKANTU_GET_MACRO_NOT_CONST(NodesType, *nodes_type, Array<NodeType> &);
+  AKANTU_GET_MACRO_NOT_CONST(NodesFlags, *nodes_flags, Array<NodeFlag> &);
 
 public:
-  inline NodeType getNodeType(UInt local_id) const;
+  inline NodeFlag getNodeFlag(UInt local_id) const;
+  inline Int getNodePrank(UInt local_id) const;
 
   /// say if a node is a pure ghost node
   inline bool isPureGhostNode(UInt n) const;
@@ -264,6 +265,9 @@ public:
   inline bool isLocalNode(UInt n) const;
   inline bool isMasterNode(UInt n) const;
   inline bool isSlaveNode(UInt n) const;
+
+  inline bool isPeriodicSlave(UInt n) const;
+  inline bool isPeriodicMaster(UInt n) const;
 
   const Vector<Real> & getLowerBounds() const { return bbox.getLowerBounds(); }
   const Vector<Real> & getUpperBounds() const { return bbox.getUpperBounds(); }
@@ -523,7 +527,7 @@ private:
   inline Array<UInt> & getNodesGlobalIdsPointer();
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline Array<NodeType> & getNodesTypePointer();
+  inline Array<NodeFlag> & getNodesFlagsPointer();
 
   /// get a pointer to the connectivity Array for the given type and create it
   /// if necessary
@@ -564,9 +568,8 @@ private:
   /// global node ids
   std::shared_ptr<Array<UInt>> nodes_global_ids;
 
-  /// node type,  -3 pure ghost, -2  master for the  node, -1 normal node,  i in
-  /// [0-N] slave node and master is proc i
-  std::shared_ptr<Array<NodeType>> nodes_type;
+  /// node flags (shared/periodic/...)
+  std::shared_ptr<Array<NodeFlag>> nodes_flags;
 
   /// processor handling the node when not local or master
   std::unordered_map<UInt, Int> nodes_prank;

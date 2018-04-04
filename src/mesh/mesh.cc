@@ -67,9 +67,9 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
       connectivities("connectivities", id, memory_id),
       ghosts_counters("ghosts_counters", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
-      size(spatial_dimension, 0.),
-      bbox(spatial_dimension), bbox_local(spatial_dimension),
-      mesh_data("mesh_data", id, memory_id), communicator(&communicator) {
+      size(spatial_dimension, 0.), bbox(spatial_dimension),
+      bbox_local(spatial_dimension), mesh_data("mesh_data", id, memory_id),
+      communicator(&communicator) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -83,6 +83,8 @@ Mesh::Mesh(UInt spatial_dimension, Communicator & communicator, const ID & id,
 
   this->nodes =
       std::make_shared<Array<Real>>(0, spatial_dimension, id + ":coordinates");
+  this->nodes_flags = std::make_shared<Array<NodeFlag>>(0, 1, NodeFlag::_normal,
+                                                        id + ":nodes_flags");
 
   AKANTU_DEBUG_OUT();
 }
@@ -129,7 +131,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
 
     mesh_facets->mesh_parent = this;
     mesh_facets->is_mesh_facets = true;
-    mesh_facets->nodes_type = this->nodes_type;
+    mesh_facets->nodes_flags = this->nodes_flags;
     mesh_facets->nodes_global_ids = this->nodes_global_ids;
 
     MeshUtils::buildAllFacets(*this, *mesh_facets, 0);
@@ -242,13 +244,15 @@ Mesh::~Mesh() = default;
 
 /* -------------------------------------------------------------------------- */
 void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
+
+  AKANTU_DEBUG_ASSERT(not is_distributed,
+                      "You cannot read a mesh that is already distributed");
+
   MeshIO mesh_io;
   mesh_io.read(filename, *this, mesh_io_type);
 
-  type_iterator it =
-      this->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  type_iterator last =
-      this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+  auto it = this->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
+  auto last = this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
   if (it == last)
     AKANTU_EXCEPTION(
         "The mesh contained in the file "
@@ -259,6 +263,7 @@ void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
 
   this->computeBoundingBox();
 
+  this->nodes_flags->resize(nodes->size(), NodeFlag::_normal);
   this->nodes_to_elements.resize(nodes->size());
   for (auto & node_set : nodes_to_elements) {
     node_set = std::make_unique<std::set<Element>>();
@@ -298,7 +303,7 @@ void Mesh::computeBoundingBox() {
 
   bbox_local.reset();
 
-  for(auto & pos :  make_view(*nodes, spatial_dimension)) {
+  for (auto & pos : make_view(*nodes, spatial_dimension)) {
     //    if(!isPureGhostNode(i))
     bbox_local += pos;
   }
@@ -341,9 +346,7 @@ void Mesh::getGlobalConnectivity(
       std::transform(local_conn.begin_reinterpret(nb_nodes),
                      local_conn.end_reinterpret(nb_nodes),
                      g_connectivity.begin_reinterpret(nb_nodes),
-                     [&](UInt l) -> UInt {
-                       return this->getNodeGlobalId(l);
-                     });
+                     [&](UInt l) -> UInt { return this->getNodeGlobalId(l); });
     }
   }
 
@@ -457,14 +460,18 @@ void Mesh::distribute(Communicator & communicator) {
       MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
     }
 #else
-    if (!(psize == 1)) {
-      AKANTU_ERROR("Cannot distribute a mesh without a partitioning tool");
+    if (psize > 1) {
+      AKANTU_DEBUG_ERROR(
+          "Cannot distribute a mesh without a partitioning tool");
     }
 #endif
     this->computeBoundingBox();
   }
 
-  this->is_distributed = true;
+  if (psize > 1)
+    this->is_distributed = true;
+
+  this->computeBoundingBox();
 }
 
 /* -------------------------------------------------------------------------- */
