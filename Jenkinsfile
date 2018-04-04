@@ -14,9 +14,7 @@ pipeline {
     }
     stage('Compile') {
       steps {
-	wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'xterm']) {
-          sh 'make -C build/src || true'
-	}
+	sh 'make -C build/src || true'
       }
     }
 
@@ -40,10 +38,9 @@ pipeline {
 
     stage('Tests') {
       steps {
+        sh 'rm -rf build/gtest_reports'
         sh 'cd build/ && ctest -T test --no-compress-output || true'
 	sh 'cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml'
-	// sh 'curl https://raw.githubusercontent.com/rpavlik/jenkins-ctest-plugin/master/ctest-to-junit.xsl -o ctest-to-junit.xsl'
-	// sh 'xsltproc ctest-to-junit.xsl  build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml > CTestResults.xml'
       }
     }
   }
