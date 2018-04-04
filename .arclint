@@ -5,6 +5,13 @@
             "include": [ "(\\.cc$)", "(\\.hh$)" ],
             "exclude": "(^third-party/)"
         },
+	"python": {
+            "type": "pyflakes",
+	    "bin": "pyflakes3",
+            "include": [ "(\\.py$)" ],
+            "exclude": "(^third-party/)"
+        },
+
         "merges": {
             "type": "merge-conflict"
         }
