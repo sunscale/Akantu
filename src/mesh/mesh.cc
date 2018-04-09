@@ -461,7 +461,7 @@ void Mesh::distribute(Communicator & communicator) {
     }
 #else
     if (psize > 1) {
-      AKANTU_DEBUG_ERROR(
+      AKANTU_ERROR(
           "Cannot distribute a mesh without a partitioning tool");
     }
 #endif
