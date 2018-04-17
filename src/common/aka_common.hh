@@ -392,6 +392,17 @@ inline NodeFlag & operator|= (NodeFlag & a, const NodeFlag & b) {
   return a;
 }
 
+inline NodeFlag & operator&= (NodeFlag & a, const NodeFlag & b) {
+  a = a & b;
+  return a;
+}
+
+inline NodeFlag operator~ (const NodeFlag & a) {
+  using under = std::underlying_type_t<NodeFlag>;
+  return NodeFlag(~under(a));
+}
+
+
 inline std::ostream & operator<< (std::ostream & stream, const NodeFlag & flag) {
   using under = std::underlying_type_t<NodeFlag>;
   stream << under(flag);

@@ -300,7 +300,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     if (slave_it == master_slaves.second) {
       // no duplicates
       periodic_master_slave.insert(std::make_pair(master, slave));
-      std::cout << "adding: " << getNodeGlobalId(master) << " - "
+      std::cout << "adding: M " << getNodeGlobalId(master) << " <- S "
                 << getNodeGlobalId(slave) << std::endl;
     }
 
@@ -320,10 +320,10 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
                                                 << ", its not a master node!");
     std::cout << "updating: " << getNodeGlobalId(old_master) << " -> "
               << getNodeGlobalId(new_master) << std::endl;
-    auto it = slaves.first;
-    for (; it != slaves.second; ++it) {
+    decltype(periodic_master_slave) tmp_master_slave;
+    for (auto it = slaves.first; it != slaves.second; ++it) {
       auto slave = it->second;
-      periodic_master_slave.insert(std::make_pair(new_master, slave));
+      tmp_master_slave.insert(std::make_pair(new_master, slave));
       std::cout << "    - " << getNodeGlobalId(new_master) << " - "
                 << getNodeGlobalId(slave) << std::endl;
       /* might need the register_pair here */
@@ -333,34 +333,53 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       // \TODO tell processor prank[new_master] that it also has a slave on
       // prank[slave]
     }
+    for(auto && data : tmp_master_slave) {
+      periodic_master_slave.insert(data);
+    }
     periodic_master_slave.erase(old_master);
     (*nodes_flags)[old_master] |= NodeFlag::_periodic_slave;
+    (*nodes_flags)[old_master] &= ~NodeFlag::_periodic_master;
+
+    slaves = periodic_master_slave.equal_range(new_master);
+    for (auto it = slaves.first; it != slaves.second; ++it) {
+      std::cout << "     m " << it->first << " - s " << it->second << std::endl;
+    }
   };
 
   auto match_found = [&](auto & info1, auto & info2) {
     auto node1 = info1.node;
     auto node2 = info2.node;
 
-    auto node2_master = node2;
-    if (isPeriodicSlave(node2)) {
-      node2_master = periodic_slave_master[node2];
-    }
+    std::cout << "Found pair: " << node1 << " " << node2 << std::endl;
 
     auto master = node1;
     bool node1_side_master = false;
+    std::cout << "node1: " << node1;
     if (isPeriodicMaster(node1)) {
       node1_side_master = true;
-    }
-
-    if (isPeriodicSlave(node1)) {
+      std::cout << " master" << std::endl;
+    } else  if (isPeriodicSlave(node1)) {
       node1_side_master = true;
       master = periodic_slave_master[node1];
       // register_pair(master, node1);
+      std::cout << " slave of " << master << std::endl;
+    } else {
+      std::cout << " new" << std::endl;
+    }
+
+    auto node2_master = node2;
+    std::cout << "node2: " << node2;
+    if (isPeriodicSlave(node2)) {
+      node2_master = periodic_slave_master[node2];
+      std::cout << " slave of " << node2_master << std::endl;
+    } else if (isPeriodicMaster(node2)) {
+      std::cout << " master" << std::endl;
+    } else {
+      std::cout << " new" << std::endl;
     }
 
     if (node1_side_master) {
-      register_pair(master, node2);
-
+      std::cout << "Master on node 1 side: " << master << std::endl;
       if (isPeriodicSlave(node2)) {
         updating_master(node2_master, master);
         return;
@@ -370,17 +389,22 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         updating_master(node2, master);
         return;
       }
+
+      register_pair(master, node2);
     } else {
       if (isPeriodicSlave(node2)) {
+        std::cout << "Master is node 2's master: " << node2_master << std::endl;
         register_pair(node2_master, node1);
         return;
       }
 
       if (isPeriodicMaster(node2)) {
+        std::cout << "Master is node 2: " << node2 << std::endl;
         register_pair(node2, node1);
         return;
       }
 
+      std::cout << "Master is node 1: " << node1 << std::endl;
       register_pair(node1, node2);
     }
   };
@@ -388,8 +412,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
   auto match_pairs = [&](auto & nodes_1, auto & nodes_2) {
     auto it = nodes_2.begin();
     for (auto && info1 : nodes_1) {
-      if (not isLocalOrMasterNode(info1.node))
-        continue;
+      // if (not isLocalOrMasterNode(info1.node))
+      //  continue;
 
       auto & pos1 = info1.position;
       auto it_cur = it;
@@ -400,6 +424,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         auto dist = pos1.distance(pos2) / length;
 
         if (dist < tolerance) {
+          std::cout << " ---------------------------------- " << std::endl;
           match_found(info1, *it_cur);
           it = it_cur;
           break;
@@ -408,7 +433,9 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     }
   };
 
+  std::cout << " --------- left --- right ------------" << std::endl;
   match_pairs(nodes_left, nodes_right);
+  std::cout << " --------- right --- left ------------" << std::endl;
   match_pairs(nodes_right, nodes_left);
 
   std::cout << periodic_slave_master.size() << std::endl;

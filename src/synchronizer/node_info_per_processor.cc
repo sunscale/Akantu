@@ -128,6 +128,7 @@ void NodeInfoPerProc::fillNodesType() {
     }
   }
 
+  nodes_flags.resize(nb_nodes);
   for (UInt i = 0; i < nb_nodes; ++i) {
     if (nodes_set(i) == NORMAL_SET)
       nodes_flags(i) = NodeFlag::_normal;
