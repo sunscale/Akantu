@@ -71,7 +71,7 @@ def solve(material_file, mesh_file, traction):
 
     print("Solve for traction ", traction)
 
-    model.getForce()[:] = 0
+    model.getExternalForce()[:] = 0
     model.applyNeumannBC(FromTraction(trac), "Traction")
 
     solver = model.getNonLinearSolver()
