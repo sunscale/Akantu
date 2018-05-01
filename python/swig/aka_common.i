@@ -98,11 +98,6 @@ namespace akantu {
 
 %inline %{
   namespace akantu {
-#if defined(AKANTU_USE_MPI)
-    const int MPI=1;
-#else
-    const int MPI=0;
-#endif
     void _initializeWithoutArgv(const std::string & input_file) {
       int nb_args = 0;
       char ** null = nullptr;
@@ -131,12 +126,6 @@ namespace akantu {
 %pythoncode %{
   import sys as _aka_sys
   def __initialize(input_file="", argv=_aka_sys.argv):
-      if _aka_sys.modules[__name__].MPI == 1:
-         try:
-           from mpi4py import MPI
-         except ImportError:
-           pass
-
       _initializeWithoutArgv(input_file)
 
   def initialize(*args, **kwargs):
