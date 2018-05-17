@@ -111,10 +111,10 @@ print_self(SolidMechanicsModel)
 %extend akantu::SolidMechanicsModel {
   /* ------------------------------------------------------------------------ */
   void setPhysicalNamesMaterialSelector(){
-    AKANTU_EXCEPTION("API change: This method needs to be fixed.");
-    /* akantu::MeshDataMaterialSelector<std::string> * selector = new */
-    /*   akantu::MeshDataMaterialSelector<std::string>("physical_names", *self); */
-    /* self->setMaterialSelector(*selector); */
+    auto selector =
+        std::make_shared<akantu::MeshDataMaterialSelector<std::string>>(
+            "physical_names", *self);
+    self->setMaterialSelector(selector);
   }
   
   /* ------------------------------------------------------------------------ */
