@@ -162,6 +162,7 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
       /// fill the weight map
       for (UInt n : arange(nb_nodes_per_element)) {
         auto && node = conn(n);
+
         for (auto k = node_to_elem.rbegin(node); k != node_to_elem.rend(node);
              --k) {
           auto & current_element = *k;
@@ -265,7 +266,8 @@ void MeshPartition::fillPartitionInformation(
         ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
     auto & ghost_partition = ghost_partitions.alloc(0, 1, type, _ghost);
 
-    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
+    const auto  & connectivity = mesh.getConnectivity(type, _not_ghost);
+    auto conn_it = connectivity.begin(connectivity.getNbComponent());
 
     for (UInt el = 0; el < nb_element; ++el, ++linearized_el) {
       UInt part = linearized_partitions[linearized_el];
@@ -273,7 +275,8 @@ void MeshPartition::fillPartitionInformation(
       partition(el) = part;
       std::list<UInt> list_adj_part;
       for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-        UInt node = connectivity.storage()[el * nb_nodes_per_element + n];
+        auto conn = Vector<UInt>(*(conn_it + el));
+        UInt node = conn(n);
         for (const auto & adj_element : node_to_elem.getRow(node)) {
           UInt adj_el = linearized(adj_element);
           UInt adj_part = linearized_partitions[adj_el];
@@ -298,7 +301,7 @@ void MeshPartition::fillPartitionInformation(
     ghost_part_csr.countToCSR();
 
     /// convert the ghost_partitions_offset array in an offset array
-    Array<UInt> & ghost_partitions_offset_ptr =
+    auto & ghost_partitions_offset_ptr =
         ghost_partitions_offset(type, _ghost);
     for (UInt i = 1; i < nb_element; ++i)
       ghost_partitions_offset_ptr(i) += ghost_partitions_offset_ptr(i - 1);
@@ -374,34 +377,23 @@ void MeshPartition::fillPartitionInformation(
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshPartition::tweakConnectivity(const Array<UInt> & pairs) {
+void MeshPartition::tweakConnectivity() {
   AKANTU_DEBUG_IN();
 
-  if (pairs.size() == 0)
-    return;
+  MeshAccessor mesh_accessor(const_cast<Mesh &>(mesh));
 
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  Mesh::type_iterator end =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+  for(auto && type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
+    auto & connectivity =
+        mesh_accessor.getConnectivity(type, _not_ghost);
 
-  for (; it != end; ++it) {
-    ElementType type = *it;
+    auto & saved_conn = saved_connectivity.alloc(
+        connectivity.size(), connectivity.getNbComponent(), type, _not_ghost);
+    saved_conn.copy(connectivity);
 
-    Array<UInt> & conn =
-        const_cast<Array<UInt> &>(mesh.getConnectivity(type, _not_ghost));
-    UInt nb_nodes_per_element = conn.getNbComponent();
-    UInt nb_element = conn.size();
-
-    Array<UInt> & saved_conn = saved_connectivity.alloc(
-        nb_element, nb_nodes_per_element, type, _not_ghost);
-    saved_conn.copy(conn);
-
-    for (UInt i = 0; i < pairs.size(); ++i) {
-      for (UInt el = 0; el < nb_element; ++el) {
-        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-          if (pairs(i, 1) == conn(el, n))
-            conn(el, n) = pairs(i, 0);
+    for(auto && conn : make_view(connectivity, connectivity.getNbComponent())) {
+      for(auto && node : conn) {
+        if(mesh.isPeriodicSlave(node)) {
+          node = mesh.getPeriodicMaster(node);
         }
       }
     }

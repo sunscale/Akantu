@@ -362,48 +362,47 @@ enum GhostType {
   _casper // not used but a real cute ghost
 };
 
-
 /// Define the flag that can be set to a node
 enum class NodeFlag : std::uint8_t {
-  _normal                = 0x00,
-  _master                = 0x01,
-  _slave                 = 0x03,
-  _pure_ghost            = 0x07,
-  _shared_mask           = 0x0F,
-  _local_master_mask     = 0x0E,
-  _periodic              = 0x10,
-  _periodic_slave        = 0x10,
-  _periodic_master       = 0x30,
-  _periodic_mask         = 0xF0,
+  _normal = 0x00,
+  _distributed = 0x01,
+  _master = 0x03,
+  _slave = 0x05,
+  _pure_ghost = 0x09,
+  _shared_mask = 0x0F,
+  _periodic = 0x10,
+  _periodic_master = 0x30,
+  _periodic_slave = 0x50,
+  _periodic_mask = 0xF0,
+  _local_master_mask = 0x22, //~(_master & _periodic_mask)
 };
 
-inline NodeFlag operator& (const NodeFlag & a, const NodeFlag & b) {
+inline NodeFlag operator&(const NodeFlag & a, const NodeFlag & b) {
   using under = std::underlying_type_t<NodeFlag>;
   return NodeFlag(under(a) & under(b));
 }
 
-inline NodeFlag operator| (const NodeFlag & a, const NodeFlag & b) {
+inline NodeFlag operator|(const NodeFlag & a, const NodeFlag & b) {
   using under = std::underlying_type_t<NodeFlag>;
   return NodeFlag(under(a) | under(b));
 }
 
-inline NodeFlag & operator|= (NodeFlag & a, const NodeFlag & b) {
+inline NodeFlag & operator|=(NodeFlag & a, const NodeFlag & b) {
   a = a | b;
   return a;
 }
 
-inline NodeFlag & operator&= (NodeFlag & a, const NodeFlag & b) {
+inline NodeFlag & operator&=(NodeFlag & a, const NodeFlag & b) {
   a = a & b;
   return a;
 }
 
-inline NodeFlag operator~ (const NodeFlag & a) {
+inline NodeFlag operator~(const NodeFlag & a) {
   using under = std::underlying_type_t<NodeFlag>;
   return NodeFlag(~under(a));
 }
 
-
-inline std::ostream & operator<< (std::ostream & stream, const NodeFlag & flag) {
+inline std::ostream & operator<<(std::ostream & stream, const NodeFlag & flag) {
   using under = std::underlying_type_t<NodeFlag>;
   stream << under(flag);
   return stream;

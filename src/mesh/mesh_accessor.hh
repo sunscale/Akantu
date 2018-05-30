@@ -144,6 +144,22 @@ public:
             global_data_updater));
   }
 
+
+  /* ------------------------------------------------------------------------ */
+  void addPeriodicSlave(UInt slave, UInt master) {
+    this->_mesh.addPeriodicSlave(slave, master);
+  }
+
+  void markMeshPeriodic() {
+    for (UInt s : arange(this->_mesh.spatial_dimension)) {
+      this->_mesh.is_periodic |= 1 << s;
+    }
+  }
+
+  void wipePeriodicInfo() {
+    this->_mesh.wipePeriodicInfo();
+  }
+
 private:
   Mesh & _mesh;
 };

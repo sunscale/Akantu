@@ -295,6 +295,13 @@ void SynchronizerImpl<Entity>::computeBufferSizeImpl(
 }
 
 /* -------------------------------------------------------------------------- */
+template <typename Entity> void SynchronizerImpl<Entity>::reset() {
+  AKANTU_DEBUG_IN();
+  communications.resetSchemes();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
 template <typename Entity>
 template <typename Pred>
 void SynchronizerImpl<Entity>::split(SynchronizerImpl<Entity> & in_synchronizer,
@@ -354,7 +361,7 @@ void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
   std::unordered_map<UInt, Array<UInt>> keep_entities;
 
   auto filter_list = [](const auto & keep, auto & list) {
-    Array<Element> new_list;
+    Array<Entity> new_list;
     for (const auto & keep_entity : keep) {
       const Entity & entity = list(keep_entity);
       new_list.push_back(entity);
@@ -415,6 +422,31 @@ void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
 /* -------------------------------------------------------------------------- */
 template <class Entity> void SynchronizerImpl<Entity>::swapSendRecv() {
   communications.swapSendRecv();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+void SynchronizerImpl<Entity>::
+copySchemes(const SynchronizerImpl & other) {
+  reset();
+
+  for (auto sr : iterate_send_recv) {
+    for (auto & scheme_pair :
+             other.communications.iterateSchemes(sr)) {
+      auto proc = scheme_pair.first;
+      auto & other_scheme = scheme_pair.second;
+      auto & scheme = communications.createScheme(proc, sr);
+      scheme.copy(other_scheme);
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Entity>
+SynchronizerImpl<Entity> & SynchronizerImpl<Entity>::
+operator=(const SynchronizerImpl & other) {
+  copySchemes(other);
+  return *this;
 }
 
 /* -------------------------------------------------------------------------- */

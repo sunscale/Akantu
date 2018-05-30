@@ -73,6 +73,7 @@ inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
   if (not is_static) {
     char * values = buffer.storage();
     auto nb_packed = ptr_pack - values;
+
     if(buffer.size() > nb_packed + size) return;
 
     buffer.resize(nb_packed + size);
@@ -295,7 +296,12 @@ inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
 /* -------------------------------------------------------------------------- */
 template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::reserve(UInt size) {
-  packResize(size);
+  char * values = buffer.storage();
+  auto nb_packed = ptr_pack - values;
+
+  buffer.resize(size);
+  ptr_pack = buffer.storage() + nb_packed;
+  ptr_unpack = buffer.storage() + (ptr_unpack - values);
 }
 
 /* -------------------------------------------------------------------------- */

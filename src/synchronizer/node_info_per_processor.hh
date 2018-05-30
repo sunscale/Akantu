@@ -49,9 +49,13 @@ class NodeInfoPerProc : protected MeshAccessor {
 public:
   NodeInfoPerProc(NodeSynchronizer & synchronizer, UInt message_cnt, UInt root);
 
+  void synchronize();
+
+protected:
   virtual void synchronizeNodes() = 0;
   virtual void synchronizeTypes() = 0;
   virtual void synchronizeGroups() = 0;
+  virtual void synchronizePeriodicity() = 0;
 
 protected:
   template <class CommunicationBuffer>
@@ -59,6 +63,9 @@ protected:
   void fillNodesType();
 
   void fillCommunicationScheme(const Array<UInt> &);
+
+  void fillPeriodicPairs(const Array<UInt> &, std::vector<UInt> &);
+  void receiveMissingPeriodic(DynamicCommunicationBuffer &);
 
 protected:
   NodeSynchronizer & synchronizer;
@@ -70,12 +77,11 @@ protected:
   Mesh & mesh;
 
   UInt spatial_dimension;
-
   UInt message_count;
 };
 
 /* -------------------------------------------------------------------------- */
-class MasterNodeInfoPerProc : protected NodeInfoPerProc {
+class MasterNodeInfoPerProc : public NodeInfoPerProc {
 public:
   MasterNodeInfoPerProc(NodeSynchronizer & synchronizer, UInt message_cnt,
                         UInt root);
@@ -83,15 +89,19 @@ public:
   void synchronizeNodes() override;
   void synchronizeTypes() override;
   void synchronizeGroups() override;
+  void synchronizePeriodicity() override;
 
 private:
   /// get the list of nodes to send and send them
   std::vector<Array<UInt>> nodes_per_proc;
   Array<UInt> nb_nodes_per_proc;
+  Array<Real> all_nodes;
+  Array<NodeFlag> all_periodic_flags;
+  Array<Int> nodes_pranks;
 };
 
 /* -------------------------------------------------------------------------- */
-class SlaveNodeInfoPerProc : protected NodeInfoPerProc {
+class SlaveNodeInfoPerProc : public NodeInfoPerProc {
 public:
   SlaveNodeInfoPerProc(NodeSynchronizer & synchronizer, UInt message_cnt,
                        UInt root);
@@ -99,6 +109,7 @@ public:
   void synchronizeNodes() override;
   void synchronizeTypes() override;
   void synchronizeGroups() override;
+  void synchronizePeriodicity() override;
 
 private:
 };

@@ -81,11 +81,17 @@ public:
                          const ElementTypeMapArray<UInt> &,
                          const ChangedElementsEvent &) override {}
 
+  /* ------------------------------------------------------------------------ */
+  NodeSynchronizer & operator=(const NodeSynchronizer & other) {
+    copySchemes(other);
+    return *this;
+  }
+
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
 protected:
-  Int getRank(const UInt & /*node*/) const final { AKANTU_TO_IMPLEMENT(); }
+  Int getRank(const UInt & node) const final;
 
 protected:
   Mesh & mesh;

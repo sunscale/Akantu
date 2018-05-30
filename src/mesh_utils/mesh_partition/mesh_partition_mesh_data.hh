@@ -63,8 +63,7 @@ public:
 public:
   void
   partitionate(UInt nb_part,
-               const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor(),
-               const Array<UInt> & pairs = Array<UInt>()) override;
+               const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor()) override;
 
   void reorder() override;
 

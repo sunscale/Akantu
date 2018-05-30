@@ -869,9 +869,18 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       std::stringstream sstr(line);
       sstr >> nb_periodic_entities;
 
-      for(UInt p = 0; p < nb_periodic_entities; ++p) {
+      mesh_accessor.getNodesFlags().resize(mesh.getNbNodes(),
+                                           NodeFlag::_normal);
+
+      for (UInt p = 0; p < nb_periodic_entities; ++p) {
         // dimension slave-tag master-tag
         my_getline(infile, line);
+
+        UInt dimension;
+        {
+          std::stringstream sstr(line);
+          sstr >> dimension;
+        }
 
         // transformation
         my_getline(infile, line);
@@ -879,14 +888,29 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         // nb nodes
         my_getline(infile, line);
         UInt nb_nodes;
+        {
+          std::stringstream sstr(line);
+          sstr >> nb_nodes;
+        }
 
-        std::stringstream sstr(line);
-        sstr >> nb_nodes;
-        for(UInt n = 0; n < nb_nodes; ++n) {
+        for (UInt n = 0; n < nb_nodes; ++n) {
           // slave master
           my_getline(infile, line);
+
+          // The info in the mesh seem inconsistent so they are ignored for know.
+          continue;
+
+          if (dimension == mesh.getSpatialDimension() - 1) {
+            UInt slave, master;
+            std::stringstream sstr(line);
+            sstr >> slave;
+            sstr >> master;
+            mesh_accessor.addPeriodicSlave(slave, master);
+          }
         }
       }
+
+      // mesh_accessor.markMeshPeriodic();
 
       my_getline(infile, line);
     }

@@ -313,6 +313,8 @@ package_declare_sources(core
   synchronizer/node_info_per_processor.hh
   synchronizer/node_synchronizer.cc
   synchronizer/node_synchronizer.hh
+  synchronizer/periodic_node_synchronizer.cc
+  synchronizer/periodic_node_synchronizer.hh
   synchronizer/slave_element_info_per_processor.cc
   synchronizer/synchronizer.cc
   synchronizer/synchronizer.hh

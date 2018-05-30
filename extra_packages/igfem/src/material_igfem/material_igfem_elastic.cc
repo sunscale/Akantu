@@ -87,7 +87,7 @@ void MaterialIGFEMElastic<spatial_dimension>::updateElasticInternals(
         this->template setSubMaterial<_igfem_triangle_5>(element_list,
                                                          ghost_type);
       else
-        AKANTU_DEBUG_ERROR(
+        AKANTU_ERROR(
             "There is currently no other IGFEM type implemented");
 
       UInt nb_element = this->element_filter(el_type, ghost_type).getSize();

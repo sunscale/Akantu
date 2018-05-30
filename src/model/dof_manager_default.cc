@@ -454,15 +454,15 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
 
-  DOFData & dof_data = this->getDOFData(dof_id);
+  auto & dof_data = this->getDOFData(dof_id);
 
   AKANTU_DEBUG_ASSERT(dof_data.support_type == _dst_nodal,
                       "This function applies only on Nodal dofs");
 
   this->addToProfile(matrix_id, dof_id, type, ghost_type);
 
-  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
-  SparseMatrixAIJ & A = this->getMatrix(matrix_id);
+  const auto & equation_number = this->getLocalEquationNumbers(dof_id);
+  auto & A = this->getMatrix(matrix_id);
 
   UInt nb_element;
   UInt * filter_it = nullptr;
@@ -471,7 +471,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     filter_it = filter_elements.storage();
   } else {
     if (dof_data.group_support != "__mesh__") {
-      const Array<UInt> & group_elements =
+      const auto & group_elements =
           this->mesh->getElementGroup(dof_data.group_support)
               .getElements(type, ghost_type);
       nb_element = group_elements.size();
@@ -571,13 +571,13 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
   UInt nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
 
-  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
+  const auto & equation_number = this->getLocalEquationNumbers(dof_id);
 
-  SparseMatrixAIJ & A = this->getMatrix(matrix_id);
+  auto & A = this->getMatrix(matrix_id);
 
-  UInt size = A.size();
+  auto size = A.size();
 
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
   const auto & connectivity = this->mesh->getConnectivity(type, ghost_type);
   auto cbegin = connectivity.begin(nb_nodes_per_element);
@@ -586,7 +586,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   UInt nb_elements = connectivity.size();
   UInt * ge_it = nullptr;
   if (dof_data.group_support != "__mesh__") {
-    const Array<UInt> & group_elements =
+    const auto & group_elements =
         this->mesh->getElementGroup(dof_data.group_support)
             .getElements(type, ghost_type);
     ge_it = group_elements.storage();
@@ -798,6 +798,7 @@ void DOFManagerDefault::updateDOFsData(
   for (auto & lumped_matrix : lumped_matrices)
     lumped_matrix.second->resize(this->local_system_size);
 
+  auto first_dof_pos = dof_data.local_equation_number.size();
   dof_data.local_equation_number.reserve(dof_data.local_equation_number.size() +
                                          nb_new_local_dofs);
 
@@ -816,36 +817,64 @@ void DOFManagerDefault::updateDOFsData(
   }
 
   // update per dof info
-  for (UInt d = 0; d < nb_new_local_dofs; ++d) {
-    UInt local_eq_num = first_dof_id + d;
-    dof_data.local_equation_number.push_back(local_eq_num);
+  auto local_eq_num = first_dof_id;
+  for (auto d : arange(nb_new_local_dofs)) {
 
-    bool is_local_dof = true;
+    auto is_periodic_slave = false;
+    auto is_local_dof = true;
+    auto dof_flag = NodeFlag::_normal;
 
     // determine the dof type
     switch (support_type) {
     case _dst_nodal: {
-      UInt node = getNode(d / dof_data.dof->getNbComponent());
+      auto node = getNode(d / dof_data.dof->getNbComponent());
+      dof_flag = this->mesh->getNodeFlag(node);
 
-      this->dofs_flag(local_eq_num) = this->mesh->getNodeFlag(node);
       dof_data.associated_nodes.push_back(node);
       is_local_dof = this->mesh->isLocalOrMasterNode(node);
+      is_periodic_slave = this->mesh->isPeriodicSlave(node);
       break;
     }
     case _dst_generic: {
-      this->dofs_flag(local_eq_num) = NodeFlag::_normal;
       break;
     }
     default: { AKANTU_EXCEPTION("This type of dofs is not handled yet."); }
     }
 
-    // update global id for local dofs
+    if (is_periodic_slave) {
+      dof_data.local_equation_number.push_back(UInt(-1));
+      continue;
+    }
+
+    // update equation numbers
+    this->dofs_flag(local_eq_num) = dof_flag;
+    dof_data.local_equation_number.push_back(local_eq_num);
+
     if (is_local_dof) {
       this->global_equation_number(local_eq_num) = this->first_global_dof_id;
       this->global_to_local_mapping[this->first_global_dof_id] = local_eq_num;
       ++this->first_global_dof_id;
     } else {
       this->global_equation_number(local_eq_num) = UInt(-1);
+    }
+    ++local_eq_num;
+  }
+
+  // correct periodic slave equation numbers
+  if (support_type == _dst_nodal and this->mesh->isPeriodic()) {
+    auto assoc_begin = dof_data.associated_nodes.begin();
+    for (auto d : arange(nb_new_local_dofs)) {
+      auto node = dof_data.associated_nodes(first_dof_pos + d);
+      if (not this->mesh->isPeriodicSlave(node))
+        continue;
+
+      auto master_node = this->mesh->getPeriodicMaster(node);
+      auto it = std::find(dof_data.associated_nodes.begin(),
+                          dof_data.associated_nodes.end(), master_node);
+      if (it != dof_data.associated_nodes.end()) {
+        dof_data.local_equation_number(node) =
+            dof_data.local_equation_number(it - assoc_begin);
+      }
     }
   }
 
@@ -860,10 +889,9 @@ void DOFManagerDefault::updateDOFsData(
       nb_dofs_per_proc.begin() + prank + 1, nb_dofs_per_proc.end(), 0);
 
   matrix_profiled_dofs.clear();
-  for(auto & matrix : matrices) {
+  for (auto & matrix : matrices) {
     matrix.second->clearProfile();
   }
-
 }
 
 /* -------------------------------------------------------------------------- */

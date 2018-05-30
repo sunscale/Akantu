@@ -98,6 +98,7 @@ public:
     _SCATTER = 3,
     _SYNCHRONIZE = 15,
     _REDUCE,
+    _PERIODIC_SLAVES,
     _PERIODIC_NODES,
   };
 

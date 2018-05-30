@@ -58,6 +58,7 @@ namespace akantu {
 class Communicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
+class PeriodicNodeSynchronizer;
 class MeshGlobalDataUpdater;
 } // namespace akantu
 
@@ -135,20 +136,54 @@ private:
   void computeBoundingBox();
 
   /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
+  /* Distributed memory methods and accessors                                 */
   /* ------------------------------------------------------------------------ */
 public:
   /// patitionate the mesh among the processors involved in their computation
   virtual void distribute(Communicator & communicator);
   virtual void distribute();
 
+  /// defines is the mesh is distributed or not
+  inline bool isDistributed() const { return this->is_distributed; }
+
+  /* ------------------------------------------------------------------------ */
+  /* Periodicity methods and accessors                                        */
+  /* ------------------------------------------------------------------------ */
+public:
   /// set the periodicity in a given direction
   void makePeriodic(const SpatialDirection & direction);
+  void makePeriodic(const SpatialDirection & direction, const ID & list_1,
+                    const ID & list_2);
 
 protected:
   void makePeriodic(const SpatialDirection & direction,
                     const Array<UInt> & list_1, const Array<UInt> & list_2);
 
+  /// Removes the face that the mesh is periodic
+  void wipePeriodicInfo();
+
+  inline void addPeriodicSlave(UInt slave, UInt master);
+
+  template <typename T>
+  void synchronizePeriodicSlaveDataWithMaster(Array<T> & data);
+
+  // update the periodic synchronizer (creates it if it does not exists)
+  void updatePeriodicSynchronizer();
+
+public:
+  /// defines if the mesh is periodic or not
+  inline bool isPeriodic() const { return (this->is_periodic != 0); }
+
+  inline bool isPeriodic(const SpatialDirection & direction) const {
+    return ((this->is_periodic & (1 << direction)) != 0);
+  }
+
+  /// get the master node for a given slave nodes, except if node not a slave
+  inline UInt getPeriodicMaster(UInt slave) const;
+
+  /* ------------------------------------------------------------------------ */
+  /* General Methods                                                          */
+  /* ------------------------------------------------------------------------ */
 public:
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
@@ -335,6 +370,8 @@ public:
 
   /// get connectivity of a given element
   inline VectorProxy<UInt> getConnectivity(const Element & element) const;
+  inline Vector<UInt>
+  getConnectivityWithPeriodicity(const Element & element) const;
 
 protected:
   inline auto & getElementToSubelement(const Element & element);
@@ -406,15 +443,6 @@ public:
 
   inline bool isMeshFacets() const { return this->is_mesh_facets; }
 
-  /// defines is the mesh is distributed or not
-  inline bool isDistributed() const { return this->is_distributed; }
-
-  /// defines if the mesh is periodic or not
-  inline bool isPeriodic() const { return (this->is_periodic != 0); }
-
-  inline bool isPeriodic(const SpatialDirection & direction) const {
-    return ((this->is_periodic & (1 << direction)) != 0);
-  }
 #ifndef SWIG
   /// return the dumper from a group and and a dumper name
   DumperIOHelper & getGroupDumper(const std::string & dumper_name,
@@ -507,11 +535,8 @@ public:
 #ifndef SWIG
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
+  AKANTU_GET_MACRO(PeriodicMasterSlaves, periodic_master_slave, const auto &);
 #endif
-
-  const std::unordered_multimap<UInt, UInt> & getPeriodicMasterSlaves() const {
-    return periodic_master_slave;
-  }
 
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
@@ -612,8 +637,8 @@ private:
   /// defines if the mesh is centralized or distributed
   bool is_distributed{false};
 
-  /// defines if the mesh is periodic (3bits, 1 per direction)
-  char is_periodic;
+  /// defines if the mesh is periodic
+  bool is_periodic;
 
   /// Communicator on which mesh is distributed
   Communicator * communicator;
@@ -623,6 +648,9 @@ private:
 
   /// Node synchronizer
   std::unique_ptr<NodeSynchronizer> node_synchronizer;
+
+  /// Node synchronizer for periodic nodes
+  std::unique_ptr<PeriodicNodeSynchronizer> periodic_node_synchronizer;
 
   using NodesToElements = std::vector<std::unique_ptr<std::set<Element>>>;
 

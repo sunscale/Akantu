@@ -398,8 +398,9 @@ inline void Mesh::getBarycenter(const Element & element,
   Matrix<Real> local_coord(spatial_dimension, conn.size());
   auto node_begin = make_view(*nodes, spatial_dimension).begin();
 
-  for(auto && node : enumerate(conn)) {
-    local_coord(std::get<0>(node)) = Vector<Real>(node_begin[std::get<1>(node)]);
+  for (auto && node : enumerate(conn)) {
+    local_coord(std::get<0>(node)) =
+        Vector<Real>(node_begin[std::get<1>(node)]);
   }
 
   Math::barycenter(local_coord.storage(), conn.size(), spatial_dimension,
@@ -577,38 +578,38 @@ inline void Mesh::addConnectivityType(const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPureGhostNode(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_pure_ghost;
+  return ((*nodes_flags)(n)&NodeFlag::_shared_mask) == NodeFlag::_pure_ghost;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalOrMasterNode(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_local_master_mask) == NodeFlag::_normal;
+  return ((*nodes_flags)(n)&NodeFlag::_local_master_mask) == NodeFlag::_normal;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isLocalNode(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_normal;
+  return ((*nodes_flags)(n)&NodeFlag::_shared_mask) == NodeFlag::_normal;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isMasterNode(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_master;
+  return ((*nodes_flags)(n)&NodeFlag::_shared_mask) == NodeFlag::_master;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isSlaveNode(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_shared_mask) == NodeFlag::_slave;
+  return ((*nodes_flags)(n)&NodeFlag::_shared_mask) == NodeFlag::_slave;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPeriodicSlave(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_periodic_mask) ==
+  return ((*nodes_flags)(n)&NodeFlag::_periodic_mask) ==
          NodeFlag::_periodic_slave;
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Mesh::isPeriodicMaster(UInt n) const {
-  return ((*nodes_flags)(n) & NodeFlag::_periodic_mask) ==
+  return ((*nodes_flags)(n)&NodeFlag::_periodic_mask) ==
          NodeFlag::_periodic_master;
 }
 
@@ -685,6 +686,60 @@ inline const Mesh & Mesh::getMeshParent() const {
 }
 
 /* -------------------------------------------------------------------------- */
+void Mesh::addPeriodicSlave(UInt slave, UInt master) {
+  if (master == slave)
+    return;
+
+  // if pair already registered
+  auto master_slaves = periodic_master_slave.equal_range(master);
+  auto slave_it =
+      std::find_if(master_slaves.first, master_slaves.second,
+                   [&](auto & pair) { return pair.second == slave; });
+  if (slave_it == master_slaves.second) {
+    // no duplicates
+    periodic_master_slave.insert(std::make_pair(master, slave));
+    AKANTU_DEBUG_INFO("adding periodic slave, slave gid:"
+                      << getNodeGlobalId(slave) << " [lid: " << slave << "]"
+                      << ", master gid:" << getNodeGlobalId(master)
+                      << " [lid: " << master << "]");
+    std::cout << "adding periodic slave, slave gid:" << getNodeGlobalId(slave)
+              << " [lid: " << slave << "]"
+              << ", master gid:" << getNodeGlobalId(master)
+              << " [lid: " << master << "]" << std::endl;
+  }
+
+  periodic_slave_master[slave] = master;
+
+  auto set_flag = [&](auto node, auto flag) {
+    (*nodes_flags)[node] &= ~NodeFlag::_periodic_mask; // clean periodic flags
+    (*nodes_flags)[node] |= flag;
+  };
+
+  set_flag(slave, NodeFlag::_periodic_slave);
+  set_flag(master, NodeFlag::_periodic_master);
+}
+
+/* -------------------------------------------------------------------------- */
+UInt Mesh::getPeriodicMaster(UInt slave) const {
+  return periodic_slave_master.at(slave);
+}
+
+/* -------------------------------------------------------------------------- */
+inline Vector<UInt>
+Mesh::getConnectivityWithPeriodicity(const Element & element) const {
+  Vector<UInt> conn = getConnectivity(element);
+  if (not isPeriodic()) {
+    return conn;
+  }
+
+  for (auto && node : conn) {
+    if (isPeriodicSlave(node)) {
+      node = getPeriodicMaster(node);
+    }
+  }
+
+  return conn;
+}
 
 } // namespace akantu
 

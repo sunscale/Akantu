@@ -47,6 +47,7 @@
 #include "facet_synchronizer.hh"
 #include "mesh_utils_distribution.hh"
 #include "node_synchronizer.hh"
+#include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_field.hh"
@@ -446,9 +447,6 @@ void Mesh::distribute(Communicator & communicator) {
   Int psize = this->communicator->getNbProc();
 
   if (psize > 1) {
-//   return;
-// }
-
 #ifdef AKANTU_USE_SCOTCH
     Int prank = this->communicator->whoAmI();
     if (prank == 0) {
@@ -465,7 +463,6 @@ void Mesh::distribute(Communicator & communicator) {
           "Cannot distribute a mesh without a partitioning tool");
     }
 #endif
-    this->computeBoundingBox();
   }
 
   if (psize > 1)

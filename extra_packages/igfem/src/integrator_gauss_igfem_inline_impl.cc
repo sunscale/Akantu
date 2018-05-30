@@ -209,7 +209,7 @@ inline void IntegratorGauss<_ek_igfem, IOF>::checkJacobians(
   for (UInt i = 0; i < nb_element * nb_quadrature_points;
        ++i, ++jacobians_val) {
     if (*jacobians_val < 0)
-      AKANTU_DEBUG_ERROR(
+      AKANTU_ERROR(
           "Negative jacobian computed,"
           << " possible problem in the element node ordering (Quadrature Point "
           << i % nb_quadrature_points << ":" << i / nb_quadrature_points << ":"

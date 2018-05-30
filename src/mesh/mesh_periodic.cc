@@ -30,6 +30,7 @@
 #include "communication_tag.hh"
 #include "communicator.hh"
 #include "mesh.hh"
+#include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -45,8 +46,6 @@ void Mesh::makePeriodic(const SpatialDirection & direction) {
   auto length = upper_bound(direction) - lower_bound(direction);
 
   const auto & positions = *nodes;
-
-  std::cout << bbox << std::endl;
 
   for (auto && data : enumerate(make_view(positions, spatial_dimension))) {
     UInt node = std::get<0>(data);
@@ -65,6 +64,9 @@ void Mesh::makePeriodic(const SpatialDirection & direction) {
 
   this->makePeriodic(direction, list_1, list_2);
 }
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
 namespace {
   struct NodeInfo {
@@ -85,12 +87,6 @@ namespace {
     Vector<Real> position;
     Real direction_position{0.};
   };
-
-  // std::ostream & operator<<(std::ostream & stream, const NodeInfo & info) {
-  //   stream << info.node << " " << info.position << " "
-  //          << info.direction_position;
-  //   return stream;
-  // }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -109,8 +105,6 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
   upper_bound(direction) = 0;
 
   auto prank = communicator->whoAmI();
-  std::cout << prank << " - left:" << list_left.size()
-            << " - right:" << list_right.size() << std::endl;
 
   std::vector<NodeInfo> nodes_left(list_left.size());
   std::vector<NodeInfo> nodes_right(list_right.size());
@@ -137,6 +131,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   std::vector<UInt> new_nodes;
   if (is_distributed) {
+    NewNodesEvent event;
+
     /* ---------------------------------------------------------------------- */
     auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
                                       auto & send_buffers, auto proc,
@@ -148,18 +144,25 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         if (bbox.contains(info.position) and isLocalOrMasterNode(info.node)) {
           Vector<Real> pos = info.position;
           pos(direction) = info.direction_position;
+
           buffer << getNodeGlobalId(info.node);
           buffer << pos;
-
           buffer << ((*nodes_flags)(info.node) & NodeFlag::_periodic_mask);
+
+          // if is slave sends master info
           if (isPeriodicSlave(info.node)) {
             buffer << getNodeGlobalId(periodic_slave_master[info.node]);
           }
+
+          // if is master sends list of slaves
           if (isPeriodicMaster(info.node)) {
-            buffer << periodic_master_slave.count(info.node);
+            UInt nb_slaves = periodic_master_slave.count(info.node);
+            buffer << nb_slaves;
+
             auto slaves = periodic_master_slave.equal_range(info.node);
             for (auto it = slaves.first; it != slaves.second; ++it) {
-              buffer << getNodeGlobalId(it->second);
+              UInt gslave = getNodeGlobalId(it->second);
+              buffer << gslave;
             }
           }
         }
@@ -171,12 +174,11 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
     /* ---------------------------------------------------------------------- */
     auto recv_and_extract_nodes = [&](auto & bbox, auto & node_list,
-                                      auto & buffer, const auto proc,
-                                      auto cnt) {
+                                      const auto proc, auto cnt) {
       if (not bbox)
         return;
 
-      buffer.reset();
+      DynamicCommunicationBuffer buffer;
       auto tag = Tag::genTag(proc, cnt, Tag::_PERIODIC_NODES);
       communicator->receive(buffer, proc, tag);
 
@@ -190,7 +192,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
         auto local_node = getNodeLocalId(global_node);
 
-        if (flag == NodeFlag::_periodic_slave) {
+        // get the master info of is slave
+        if ((flag & NodeFlag::_periodic_mask) == NodeFlag::_periodic_slave) {
           UInt master_node;
           buffer >> master_node;
           auto local_master_node = getNodeLocalId(master_node);
@@ -198,7 +201,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
                               "Should I know the master node " << master_node);
         }
 
-        if (flag == NodeFlag::_periodic_master) {
+        // get the list of slaves if is master
+        if ((flag & NodeFlag::_periodic_mask) == NodeFlag::_periodic_master) {
           UInt nb_slaves;
           buffer >> nb_slaves;
           for (auto ns[[gnu::unused]] : arange(nb_slaves)) {
@@ -224,14 +228,14 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         node_list.push_back(info);
 
         nodes_prank[info.node] = proc;
+        event.getList().push_back(local_node);
       }
     };
 
     /* ---------------------------------------------------------------------- */
-
-    auto && intersection_right =
+    auto && intersections_with_right =
         bbox_left.intersection(bbox_right, *communicator);
-    auto && intersection_left =
+    auto && intersections_with_left =
         bbox_right.intersection(bbox_left, *communicator);
 
     auto prank = communicator->whoAmI();
@@ -241,74 +245,55 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     std::vector<CommunicationRequest> send_requests;
     buffers_t send_buffers;
 
-    for (auto && data :
-         zip(arange(nb_proc), intersection_left, intersection_right)) {
+    for (auto && data : zip(arange(nb_proc), intersections_with_left,
+                            intersections_with_right)) {
       auto proc = std::get<0>(data);
       if (proc == prank)
         continue;
 
-      buffers_t::iterator it;
-
-      const auto & bbox_p_send_left = std::get<1>(data);
-
-      if (bbox_p_send_left) {
+      // Send nodes from local right side if intersects with remote left side
+      const auto & intersection_with_p_left = std::get<1>(data);
+      if (intersection_with_p_left) {
         send_requests.push_back(extract_and_send_nodes(
-            bbox_p_send_left, nodes_left, send_buffers, proc, 0));
+            intersection_with_p_left, nodes_right, send_buffers, proc, 0));
       }
 
-      const auto & bbox_p_send_right = std::get<2>(data);
-      if (bbox_p_send_right) {
+      // Send nodes from local left side if intersects with remote right side
+      const auto & intersection_with_p_right = std::get<2>(data);
+      if (intersection_with_p_right) {
         send_requests.push_back(extract_and_send_nodes(
-            bbox_p_send_right, nodes_right, send_buffers, proc, 1));
+            intersection_with_p_right, nodes_left, send_buffers, proc, 1));
       }
     }
 
-    DynamicCommunicationBuffer buffer;
-    for (auto && data :
-         zip(arange(nb_proc), intersection_left, intersection_right)) {
+    for (auto && data : zip(arange(nb_proc), intersections_with_left,
+                            intersections_with_right)) {
       auto proc = std::get<0>(data);
       if (proc == prank)
         continue;
 
-      const auto & bbox_p_send_left = std::get<1>(data);
-      recv_and_extract_nodes(bbox_p_send_left, nodes_left, buffer, proc, 0);
+      // Receive remote left nodes to merge with local left nodes
+      const auto & intersections_with_left = std::get<1>(data);
+      recv_and_extract_nodes(intersections_with_left, nodes_left, proc, 1);
 
-      const auto & bbox_p_send_right = std::get<2>(data);
-      recv_and_extract_nodes(bbox_p_send_right, nodes_right, buffer, proc, 1);
+      // Receive remote right nodes to merge with local right nodes
+      const auto & intersections_with_right = std::get<2>(data);
+      recv_and_extract_nodes(intersections_with_right, nodes_right, proc, 0);
     }
 
     communicator->waitAll(send_requests);
     communicator->freeCommunicationRequest(send_requests);
-  }
+
+    this->sendEvent(event);
+  } // end distributed work
 
   auto to_sort = [&](auto && info1, auto && info2) -> bool {
     return info1.position < info2.position;
   };
 
+  // sort nodes based on their distance to lower corner
   std::sort(nodes_left.begin(), nodes_left.end(), to_sort);
   std::sort(nodes_right.begin(), nodes_right.end(), to_sort);
-
-  auto register_pair = [&](auto & master, auto & slave) {
-    if (master == slave)
-      return;
-
-    // if pair already registered
-    auto master_slaves = periodic_master_slave.equal_range(master);
-    auto slave_it =
-        std::find_if(master_slaves.first, master_slaves.second,
-                     [&](auto & pair) { return pair.second == slave; });
-    if (slave_it == master_slaves.second) {
-      // no duplicates
-      periodic_master_slave.insert(std::make_pair(master, slave));
-      std::cout << "adding: M " << getNodeGlobalId(master) << " <- S "
-                << getNodeGlobalId(slave) << std::endl;
-    }
-
-    periodic_slave_master[slave] = master;
-
-    (*nodes_flags)[slave] |= NodeFlag::_periodic_slave;
-    (*nodes_flags)[master] |= NodeFlag::_periodic_master;
-  };
 
   auto updating_master = [&](auto & old_master, auto & new_master) {
     if (old_master == new_master)
@@ -318,68 +303,41 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     AKANTU_DEBUG_ASSERT(slaves.first != periodic_master_slave.end(),
                         "Cannot update master " << old_master
                                                 << ", its not a master node!");
-    std::cout << "updating: " << getNodeGlobalId(old_master) << " -> "
-              << getNodeGlobalId(new_master) << std::endl;
     decltype(periodic_master_slave) tmp_master_slave;
     for (auto it = slaves.first; it != slaves.second; ++it) {
       auto slave = it->second;
       tmp_master_slave.insert(std::make_pair(new_master, slave));
-      std::cout << "    - " << getNodeGlobalId(new_master) << " - "
-                << getNodeGlobalId(slave) << std::endl;
-      /* might need the register_pair here */
-      // \TODO tell processor prank[slave] that master is now node1
-      // instead of node2
       periodic_slave_master[slave] = new_master;
-      // \TODO tell processor prank[new_master] that it also has a slave on
-      // prank[slave]
     }
-    for(auto && data : tmp_master_slave) {
-      periodic_master_slave.insert(data);
-    }
-    periodic_master_slave.erase(old_master);
-    (*nodes_flags)[old_master] |= NodeFlag::_periodic_slave;
-    (*nodes_flags)[old_master] &= ~NodeFlag::_periodic_master;
 
-    slaves = periodic_master_slave.equal_range(new_master);
-    for (auto it = slaves.first; it != slaves.second; ++it) {
-      std::cout << "     m " << it->first << " - s " << it->second << std::endl;
+    periodic_master_slave.erase(old_master);
+    (*nodes_flags)[old_master] &= ~NodeFlag::_periodic_master;
+    addPeriodicSlave(old_master, new_master);
+
+    for (auto && data : tmp_master_slave) {
+      addPeriodicSlave(data.second, data.first);
     }
   };
 
   auto match_found = [&](auto & info1, auto & info2) {
-    auto node1 = info1.node;
-    auto node2 = info2.node;
-
-    std::cout << "Found pair: " << node1 << " " << node2 << std::endl;
+    const auto & node1 = info1.node;
+    const auto & node2 = info2.node;
 
     auto master = node1;
     bool node1_side_master = false;
-    std::cout << "node1: " << node1;
     if (isPeriodicMaster(node1)) {
       node1_side_master = true;
-      std::cout << " master" << std::endl;
-    } else  if (isPeriodicSlave(node1)) {
+    } else if (isPeriodicSlave(node1)) {
       node1_side_master = true;
       master = periodic_slave_master[node1];
-      // register_pair(master, node1);
-      std::cout << " slave of " << master << std::endl;
-    } else {
-      std::cout << " new" << std::endl;
     }
 
     auto node2_master = node2;
-    std::cout << "node2: " << node2;
     if (isPeriodicSlave(node2)) {
       node2_master = periodic_slave_master[node2];
-      std::cout << " slave of " << node2_master << std::endl;
-    } else if (isPeriodicMaster(node2)) {
-      std::cout << " master" << std::endl;
-    } else {
-      std::cout << " new" << std::endl;
     }
 
     if (node1_side_master) {
-      std::cout << "Master on node 1 side: " << master << std::endl;
       if (isPeriodicSlave(node2)) {
         updating_master(node2_master, master);
         return;
@@ -390,42 +348,39 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         return;
       }
 
-      register_pair(master, node2);
+      addPeriodicSlave(node2, master);
     } else {
       if (isPeriodicSlave(node2)) {
-        std::cout << "Master is node 2's master: " << node2_master << std::endl;
-        register_pair(node2_master, node1);
+        addPeriodicSlave(node1, node2_master);
         return;
       }
 
       if (isPeriodicMaster(node2)) {
-        std::cout << "Master is node 2: " << node2 << std::endl;
-        register_pair(node2, node1);
+        addPeriodicSlave(node1, node2);
         return;
       }
 
-      std::cout << "Master is node 1: " << node1 << std::endl;
-      register_pair(node1, node2);
+      addPeriodicSlave(node2, node1);
     }
   };
 
   auto match_pairs = [&](auto & nodes_1, auto & nodes_2) {
     auto it = nodes_2.begin();
-    for (auto && info1 : nodes_1) {
-      // if (not isLocalOrMasterNode(info1.node))
-      //  continue;
 
+    // for every nodes in 1st list
+    for (auto && info1 : nodes_1) {
       auto & pos1 = info1.position;
       auto it_cur = it;
 
+      // try to find a match in 2nd list
       for (; it_cur != nodes_2.end(); ++it_cur) {
         auto & info2 = *it_cur;
         auto & pos2 = info2.position;
-        auto dist = pos1.distance(pos2) / length;
 
+        auto dist = pos1.distance(pos2) / length;
         if (dist < tolerance) {
-          std::cout << " ---------------------------------- " << std::endl;
-          match_found(info1, *it_cur);
+          // handles the found matches
+          match_found(info1, info2);
           it = it_cur;
           break;
         }
@@ -433,31 +388,37 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     }
   };
 
-  std::cout << " --------- left --- right ------------" << std::endl;
   match_pairs(nodes_left, nodes_right);
-  std::cout << " --------- right --- left ------------" << std::endl;
-  match_pairs(nodes_right, nodes_left);
+  // match_pairs(nodes_right, nodes_left);
 
-  std::cout << periodic_slave_master.size() << std::endl;
+  this->updatePeriodicSynchronizer();
 
-  // for (auto & pair : periodic_master_slave) {
-  //   std::cout << prank << " - " << pair.first << " " << pair.second
-  //             << std::endl;
-  // }
+  this->is_periodic = true;
+}
 
-  // std::cout << prank << " - Left" << std::endl;
-  // for (auto && data : nodes_left) {
-  //   std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
-  //             << std::endl;
-  // }
+/* -------------------------------------------------------------------------- */
+void Mesh::wipePeriodicInfo() {
+  this->is_periodic = false;
 
-  // std::cout << prank << " - Right" << std::endl;
-  // for (auto && data : nodes_right) {
-  //   std::cout << prank << " - " << data << " -- " << getNodeType(data.node)
-  //             << std::endl;
-  //}
+  this->periodic_slave_master.clear();
+  this->periodic_master_slave.clear();
 
-  this->is_periodic |= 1 < direction;
+  for (auto && flags : *nodes_flags) {
+    flags &= ~NodeFlag::_periodic_mask;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void Mesh::updatePeriodicSynchronizer() {
+if (this->is_distributed) {
+    if (not this->periodic_node_synchronizer) {
+      this->periodic_node_synchronizer = std::make_unique<PeriodicNodeSynchronizer>(
+          *this, this->getID() + ":periodic_synchronizer", this->getMemoryID(),
+          false);
+    }
+
+    this->periodic_node_synchronizer->update();
+  }
 }
 
 } // akantu

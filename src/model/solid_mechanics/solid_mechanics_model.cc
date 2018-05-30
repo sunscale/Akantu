@@ -101,7 +101,6 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
     this->registerSynchronizer(synchronizer, _gst_material_id);
     this->registerSynchronizer(synchronizer, _gst_smm_mass);
     this->registerSynchronizer(synchronizer, _gst_smm_stress);
-    this->registerSynchronizer(synchronizer, _gst_smm_boundary);
     this->registerSynchronizer(synchronizer, _gst_for_dump);
   }
 

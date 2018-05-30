@@ -65,3 +65,8 @@ if (_is_parallel)
   option(AKANTU_TESTS_ALWAYS_USE_MPI "Defines if sequential tests should also use MPIEXEC" FALSE)
   mark_as_advanced(AKANTU_TESTS_ALWAYS_USE_MPI)
 endif()
+
+package_is_activated(gbenchmark _has_gbenchmark)
+if (_has_gbenchmark)
+  add_subdirectory(benchmark)
+endif()
