@@ -162,11 +162,20 @@ void Material::initMaterial() {
 void Material::savePreviousState() {
   AKANTU_DEBUG_IN();
 
-  for (auto it = internal_vectors_real.begin();
-       it != internal_vectors_real.end(); ++it) {
-    if (it->second->hasHistory())
-      it->second->saveCurrentValues();
-  }
+  for (auto pair : internal_vectors_real)
+    if (pair.second->hasHistory())
+      pair.second->saveCurrentValues();
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void Material::restorePreviousState() {
+  AKANTU_DEBUG_IN();
+
+  for (auto pair : internal_vectors_real)
+    if (pair.second->hasHistory())
+      pair.second->restorePreviousValues();
 
   AKANTU_DEBUG_OUT();
 }

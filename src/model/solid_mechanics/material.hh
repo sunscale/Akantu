@@ -204,6 +204,9 @@ public:
   /// save the stress in the previous_stress if needed
   virtual void savePreviousState();
 
+  /// restore the stress from previous_stress if needed
+  virtual void restorePreviousState();
+
   /// compute the stresses for this material
   virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
   // virtual void
