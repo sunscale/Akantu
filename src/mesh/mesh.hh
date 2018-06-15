@@ -128,6 +128,9 @@ public:
   void write(const std::string & filename,
              const MeshIOType & mesh_io_type = _miot_auto);
 
+protected:
+  void makeReady();
+
 private:
   /// initialize the connectivity to NULL and other stuff
   void init();
@@ -529,6 +532,10 @@ public:
                    const NodeSynchronizer &);
   AKANTU_GET_MACRO_NOT_CONST(NodeSynchronizer, *node_synchronizer,
                              NodeSynchronizer &);
+  AKANTU_GET_MACRO(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
+                   const PeriodicNodeSynchronizer &);
+  AKANTU_GET_MACRO_NOT_CONST(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
+                             PeriodicNodeSynchronizer &);
 
 // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
 // &);

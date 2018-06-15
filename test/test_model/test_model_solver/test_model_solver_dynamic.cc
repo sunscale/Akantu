@@ -41,6 +41,10 @@
 #include "sparse_matrix.hh"
 #include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
+#include "dumpable_inline_impl.hh"
+#include "dumper_element_partition.hh"
+#include "dumper_iohelper_paraview.hh"
+/* -------------------------------------------------------------------------- */
 #include "test_model_solver_my_model.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
@@ -60,18 +64,33 @@ int main(int argc, char * argv[]) {
 
   UInt prank = Communicator::getStaticCommunicator().whoAmI();
   UInt global_nb_nodes = 201;
-  UInt max_steps = 200;
+  UInt max_steps = 400;
   Real time_step = 0.001;
   Mesh mesh(1);
   Real F = -9.81;
   bool _explicit = EXPLICIT;
+  const Real pulse_width = 0.2;
+  const Real A = 0.01;
 
   if (prank == 0)
     genMesh(mesh, global_nb_nodes);
 
   mesh.distribute();
 
+  mesh.makePeriodic(_x);
+
   MyModel model(F, mesh, _explicit);
+
+  model.forces.clear();
+  model.blocked.clear();
+
+  for (auto && n : arange(mesh.getNbNodes())) {
+    Real x = mesh.getNodes()(n) - 0.2;
+    // Sinus * Gaussian
+    Real L = pulse_width;
+    Real k = 0.1 * 2 * M_PI * 3 / L;
+    model.displacement(n) = A * sin(k * x) * exp(-(k * x) * (k * x) / (L * L));
+  }
 
   if (!_explicit) {
     model.getNewSolver("dynamic", _tsst_dynamic, _nls_newton_raphson);
@@ -97,7 +116,9 @@ int main(int argc, char * argv[]) {
               << "," << std::setw(14) << "wext"
               << "," << std::setw(14) << "epot"
               << "," << std::setw(14) << "ekin"
-              << "," << std::setw(14) << "total" << std::endl;
+              << "," << std::setw(14) << "total"
+              << "," << std::setw(14) << "max_disp"
+              << "," << std::setw(14) << "min_disp" << std::endl;
   }
   Real wext = 0.;
 
@@ -108,10 +129,18 @@ int main(int argc, char * argv[]) {
   Real ekin = 0; // model.getKineticEnergy();
   Real einit = ekin + epot;
   Real etot = ekin + epot - wext - einit;
+
+  Real max_disp = 0., min_disp = 0.;
+  for (auto && disp : model.displacement) {
+    max_disp = std::max(max_disp, disp);
+    min_disp = std::min(min_disp, disp);
+  }
+
   if (prank == 0) {
     std::cout << std::setw(14) << 0. << "," << std::setw(14) << wext << ","
               << std::setw(14) << epot << "," << std::setw(14) << ekin << ","
-              << std::setw(14) << etot << std::endl;
+              << std::setw(14) << etot << "," << std::setw(14) << max_disp
+              << "," << std::setw(14) << min_disp << std::endl;
   }
 
 #if EXPLICIT == false
@@ -121,9 +150,22 @@ int main(int argc, char * argv[]) {
   solver.set("max_iterations", 20);
 #endif
 
+  auto * dumper = new DumperParaview("dynamic", "./paraview");
+  mesh.registerExternalDumper(*dumper, "dynamic", true);
+  mesh.addDumpMesh(mesh);
+
+  mesh.addDumpFieldExternalToDumper("dynamic", "displacement",
+                                    model.displacement);
+  mesh.addDumpFieldExternalToDumper("dynamic", "velocity", model.velocity);
+  mesh.addDumpFieldExternalToDumper("dynamic", "forces", model.forces);
+  mesh.addDumpFieldExternalToDumper("dynamic", "acceleration",
+                                    model.acceleration);
+
+  mesh.dump();
+
   for (UInt i = 1; i < max_steps + 1; ++i) {
     model.solveStep("dynamic");
-
+    mesh.dump();
 #if EXPLICIT == false
 // int nb_iter = solver.get("nb_iterations");
 // Real error = solver.get("error");
@@ -136,15 +178,23 @@ int main(int argc, char * argv[]) {
     ekin = model.getKineticEnergy();
     wext += model.getExternalWorkIncrement();
     etot = ekin + epot - wext - einit;
+
+    Real max_disp = 0., min_disp = 0.;
+    for (auto && disp : model.displacement) {
+      max_disp = std::max(max_disp, disp);
+      min_disp = std::min(min_disp, disp);
+    }
+
     if (prank == 0) {
       std::cout << std::setw(14) << time_step * i << "," << std::setw(14)
                 << wext << "," << std::setw(14) << epot << "," << std::setw(14)
-                << ekin << "," << std::setw(14) << etot << std::endl;
+                << ekin << "," << std::setw(14) << etot << "," << std::setw(14)
+                << max_disp << "," << std::setw(14) << min_disp << std::endl;
     }
 
-    if (std::abs(etot) > 1e-1) {
-      AKANTU_ERROR("The total energy of the system is not conserved!");
-    }
+    // if (std::abs(etot) > 1e-1) {
+    //   AKANTU_ERROR("The total energy of the system is not conserved!");
+    //}
   }
 
   // output.close();
@@ -169,4 +219,6 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
     conn(n, 0) = n;
     conn(n, 1) = n + 1;
   }
+
+  mesh_accessor.makeReady();
 }

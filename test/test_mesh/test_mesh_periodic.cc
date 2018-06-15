@@ -27,9 +27,11 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "data_accessor.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
 #include "mesh_partition_scotch.hh"
+#include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include "dumpable_inline_impl.hh"
 #include "dumper_element_partition.hh"
@@ -55,17 +57,24 @@ int main(int argc, char ** argv) {
   // mesh_accessor.wipePeriodicInfo();
   // mesh.makePeriodic(_z);
 
-
-  if(prank == 0) {
+  if (prank == 0) {
     MeshPartitionScotch partition(mesh, dim);
     partition.partitionate(psize);
   }
 
+  UInt offset = 0;
+  for (auto && type : mesh.elementTypes()) {
+    auto & g_ids = mesh.getDataPointer<UInt>("global_ids", type);
+    for (auto && data : enumerate(g_ids)) {
+      std::get<1>(data) = offset + std::get<0>(data);
+    }
+    offset += g_ids.size();
+  }
+
   mesh.distribute();
 
-  mesh.makePeriodic(_x);
-  mesh.makePeriodic(_y);
-
+//  mesh.makePeriodic(_x);
+//  mesh.makePeriodic(_y);
 
   auto * dumper = new DumperParaview("periodic", "./paraview");
   mesh.registerExternalDumper(*dumper, "periodic", true);
@@ -104,6 +113,26 @@ int main(int argc, char ** argv) {
   mesh.addDumpFieldExternalToDumper("periodic", "periodic", periodic);
   mesh.addDumpFieldExternalToDumper("periodic", "masters", masters);
   mesh.addDumpFieldExternalToDumper("periodic", "global_ids", global_ids);
+  mesh.addDumpFieldExternalToDumper("periodic", "element_global_ids",
+                                    mesh.getData<UInt>("global_ids"));
 
+  mesh.dump();
+
+  Array<Int> data(mesh.getNbNodes(), 1, 0.);
+  mesh.addDumpFieldExternalToDumper("periodic", "data", data);
+  for (auto node : arange(mesh.getNbNodes())) {
+    if (mesh.isPeriodicMaster(node)) {
+      data(node) = 1 * (prank + 1);
+      if (mesh.isMasterNode(node) or mesh.isLocalNode(node)) {
+        data(node) = 10 * (prank + 1);
+      }
+    }
+  }
+
+  mesh.dump();
+
+  // SimpleUIntDataAccessor<Int> data_accessor(data, _gst_user_1);
+  // mesh.getPeriodicNodeSynchronizer().synchronizeOnce(data_accessor,
+  //                                                    _gst_user_1);
   mesh.dump();
 }

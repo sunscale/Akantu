@@ -35,6 +35,7 @@
 #include "element_group.hh"
 #include "node_synchronizer.hh"
 #include "non_linear_solver_default.hh"
+#include "periodic_node_synchronizer.hh"
 #include "sparse_matrix_aij.hh"
 #include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
@@ -136,27 +137,49 @@ DOFManagerDefault::~DOFManagerDefault() = default;
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
+void DOFManagerDefault::makeConsistentForPeriodicity(const ID & dof_id,
+                                                     Array<T> & array) {
+  auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  if (dof_data.support_type != _dst_nodal) return;
+
+  if (not mesh->isPeriodic()) return;
+
+  this->mesh->getPeriodicNodeSynchronizer()
+      .reduceSynchronizeWithPBCSlaves<AddOperation>(array);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
 void DOFManagerDefault::assembleToGlobalArray(
     const ID & dof_id, const Array<T> & array_to_assemble,
     Array<T> & global_array, T scale_factor) {
   AKANTU_DEBUG_IN();
-  const Array<UInt> & equation_number = this->getLocalEquationNumbers(dof_id);
 
-  UInt nb_degree_of_freedoms =
-      array_to_assemble.size() * array_to_assemble.getNbComponent();
-
-  AKANTU_DEBUG_ASSERT(equation_number.size() == nb_degree_of_freedoms,
+  auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
+  AKANTU_DEBUG_ASSERT(dof_data.local_equation_number.size() ==
+                          array_to_assemble.size() *
+                              array_to_assemble.getNbComponent(),
                       "The array to assemble does not have a correct size."
                           << " (" << array_to_assemble.getID() << ")");
 
-  typename Array<T>::const_scalar_iterator arr_it =
-      array_to_assemble.begin_reinterpret(nb_degree_of_freedoms);
-  Array<UInt>::const_scalar_iterator equ_it = equation_number.begin();
-
-  for (UInt d = 0; d < nb_degree_of_freedoms; ++d, ++arr_it, ++equ_it) {
-    global_array(*equ_it) += scale_factor * (*arr_it);
+  if (dof_data.support_type == _dst_nodal and mesh->isPeriodic()) {
+    for (auto && data :
+         zip(dof_data.local_equation_number, dof_data.associated_nodes,
+             make_view(array_to_assemble))) {
+      auto && equ_num = std::get<0>(data);
+      auto && node = std::get<1>(data);
+      auto && arr = std::get<2>(data);
+      if (not this->mesh->isPeriodicSlave(node)) {
+        global_array(equ_num) += scale_factor * (arr);
+      }
+    }
+  } else {
+    for (auto && data : zip(dof_data.local_equation_number, make_view(array_to_assemble))) {
+      auto && equ_num = std::get<0>(data);
+      auto && arr = std::get<1>(data);
+      global_array(equ_num) += scale_factor * (arr);
+    }
   }
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -383,9 +406,11 @@ void DOFManagerDefault::getLumpedMatrixPerDOFs(const ID & dof_id,
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleToResidual(
-    const ID & dof_id, const Array<Real> & array_to_assemble,
+    const ID & dof_id, Array<Real> & array_to_assemble,
     Real scale_factor) {
   AKANTU_DEBUG_IN();
+
+  this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
 
   this->assembleToGlobalArray(dof_id, array_to_assemble, this->residual,
                               scale_factor);
@@ -395,9 +420,11 @@ void DOFManagerDefault::assembleToResidual(
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleToLumpedMatrix(
-    const ID & dof_id, const Array<Real> & array_to_assemble,
+    const ID & dof_id, Array<Real> & array_to_assemble,
     const ID & lumped_mtx, Real scale_factor) {
   AKANTU_DEBUG_IN();
+
+  this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
 
   Array<Real> & lumped = this->getLumpedMatrix(lumped_mtx);
   this->assembleToGlobalArray(dof_id, array_to_assemble, lumped, scale_factor);

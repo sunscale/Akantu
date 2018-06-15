@@ -48,35 +48,44 @@ public:
 public:
   void update();
 
-  /// synchronous communications form slaves to master
-  void
-  slaveReductionOnceImpl(DataAccessor<UInt> & /*data_accessor*/,
-                         const SynchronizationTag & /*tag*/) const override {
-    AKANTU_TO_IMPLEMENT();
-  }
+  /// Uses the synchronizer to perform a reduction on the vector
+  template <template <class> class Op, typename T>
+  void reduceSynchronizeWithPBCSlaves(Array<T> & array) const;
 
   /// synchronize ghosts without state
   void synchronizeOnceImpl(DataAccessor<UInt> & data_accessor,
                            const SynchronizationTag & tag) const override;
 
-  /// asynchronous synchronization of ghosts
-  void asynchronousSynchronizeImpl(const DataAccessor<UInt> & data_accessor,
-                                   const SynchronizationTag & tag) override;
+  // /// asynchronous synchronization of ghosts
+  // void asynchronousSynchronizeImpl(const DataAccessor<UInt> & data_accessor,
+  //                                  const SynchronizationTag & tag) override;
 
   /// wait end of asynchronous synchronization of ghosts
   void waitEndSynchronizeImpl(DataAccessor<UInt> & data_accessor,
                               const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
-  /* Accessors                                                                */
-  /* ------------------------------------------------------------------------ */
-public:
-  /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  NodeSynchronizer master_to_slaves_synchronizer;
+  // NodeSynchronizer master_to_slaves_synchronizer;
+  Array<UInt> masters_list;
+  Array<UInt> slaves_list;
 };
+
+/* -------------------------------------------------------------------------- */
+template <template <class> class Op, typename T>
+void PeriodicNodeSynchronizer::reduceSynchronizeWithPBCSlaves(
+    Array<T> & array) const {
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
+  auto size = data_accessor.getNbData(slaves_list, _gst_whatever);
+  CommunicationBuffer buffer(size);
+
+  data_accessor.packData(buffer, slaves_list, _gst_whatever);
+  data_accessor.unpackData(buffer, masters_list, _gst_whatever);
+
+  this->reduceSynchronize<Op>(array);
+}
 
 } // akantu
 

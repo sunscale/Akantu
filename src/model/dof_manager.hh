@@ -94,12 +94,12 @@ public:
 
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
-                                  const Array<Real> & array_to_assemble,
+                                  Array<Real> & array_to_assemble,
                                   Real scale_factor = 1.) = 0;
 
   /// Assemble an array to the global lumped matrix array
   virtual void assembleToLumpedMatrix(const ID & dof_id,
-                                      const Array<Real> & array_to_assemble,
+                                      Array<Real> & array_to_assemble,
                                       const ID & lumped_mtx,
                                       Real scale_factor = 1.) = 0;
 

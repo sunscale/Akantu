@@ -50,6 +50,15 @@ public:
 
   ~NodeSynchronizer() override;
 
+  /* ------------------------------------------------------------------------ */
+  /// Uses the synchronizer to perform a reduction on the vector
+  template <template <class> class Op, typename T>
+  void reduceSynchronize(Array<T> & array) const;
+
+  /* ------------------------------------------------------------------------ */
+  template <typename T>
+  void synchronize(Array<T> & array) const;
+
   friend class NodeInfoPerProc;
 
   UInt sanityCheckDataSize(const Array<UInt> & nodes,
@@ -98,6 +107,20 @@ protected:
 
   // std::unordered_map<UInt, Int> node_to_prank;
 };
+
+/* -------------------------------------------------------------------------- */
+template <template <class> class Op, typename T>
+void NodeSynchronizer::reduceSynchronize(Array<T> & array) const {
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
+  this->slaveReductionOnceImpl(data_accessor, _gst_whatever);
+  this->synchronize(array);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T> void NodeSynchronizer::synchronize(Array<T> & array) const {
+  SimpleUIntDataAccessor<T> data_accessor(array, _gst_whatever);
+  this->synchronizeOnce(data_accessor, _gst_whatever);
+}
 
 } // namespace akantu
 

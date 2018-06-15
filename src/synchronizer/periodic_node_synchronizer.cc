@@ -42,23 +42,79 @@ PeriodicNodeSynchronizer::PeriodicNodeSynchronizer(
 
 /* -------------------------------------------------------------------------- */
 void PeriodicNodeSynchronizer::update() {
-  this->copySchemes(this->mesh.getNodeSynchronizer());
+  const auto & masters_to_slaves = this->mesh.getPeriodicMasterSlaves();
+  masters_list.resize(0);
+  masters_list.reserve(masters_to_slaves.size());
 
-  this->filterScheme([&](auto && node) { return mesh.isPeriodicMaster(node); });
+  slaves_list.resize(0);
+  slaves_list.reserve(masters_to_slaves.size());
+
+  reset();
+
+  std::set<UInt> masters_to_receive;
+  for(auto && data : masters_to_slaves) {
+    auto master = std::get<0>(data);
+    auto slave = std::get<1>(data);
+
+    masters_list.push_back(master);
+    slaves_list.push_back(slave);
+
+    if(not (mesh.isMasterNode(master) or mesh.isLocalNode(master))) {
+      masters_to_receive.insert(master);
+    }
+  }
+
+  if(not mesh.isDistributed()) return;
+
+  std::map<Int, Array<UInt>> buffers;
+  for(auto node : masters_to_receive) {
+    auto && proc = mesh.getNodePrank(node);
+    auto && scheme = this->communications.createRecvScheme(proc);
+    scheme.push_back(node);
+
+    buffers[proc].push_back(mesh.getNodeGlobalId(node));
+  }
+
+  auto tag = Tag::genTag(0, 0, Tag::_MODIFY_SCHEME);
+  std::vector<CommunicationRequest> requests;
+  for (auto && data : buffers) {
+    auto proc = std::get<0>(data);
+    auto & buffer = std::get<1>(data);
+
+    requests.push_back(communicator.asyncSend(buffer, proc, tag));
+  }
+
+  communicator.receiveAnyNumber<UInt>(requests, [&](auto && proc, auto && msg) {
+      auto && scheme = this->communications.createSendScheme(proc);
+      for (auto node : msg) {
+        scheme.push_back(mesh.getNodeLocalId(node));
+      }
+    }, tag);
 }
 
 /* -------------------------------------------------------------------------- */
 void PeriodicNodeSynchronizer::synchronizeOnceImpl(
-    DataAccessor<UInt> & data_accessor, const SynchronizationTag & tag) const {}
+    DataAccessor<UInt> & data_accessor, const SynchronizationTag & tag) const {
+  NodeSynchronizer::synchronizeOnceImpl(data_accessor, tag);
 
-/* -------------------------------------------------------------------------- */
-void PeriodicNodeSynchronizer::asynchronousSynchronizeImpl(
-    const DataAccessor<UInt> & data_accessor,
-    const SynchronizationTag & tag) {}
+  auto size = data_accessor.getNbData(masters_list, tag);
+  CommunicationBuffer buffer(size);
+
+  data_accessor.packData(buffer, masters_list, tag);
+  data_accessor.unpackData(buffer, slaves_list, tag);
+}
 
 /* -------------------------------------------------------------------------- */
 void PeriodicNodeSynchronizer::waitEndSynchronizeImpl(
     DataAccessor<UInt> & data_accessor,
-    const SynchronizationTag & tag) {}
+    const SynchronizationTag & tag) {
+  NodeSynchronizer::waitEndSynchronizeImpl(data_accessor, tag);
+
+  auto size = data_accessor.getNbData(masters_list, tag);
+  CommunicationBuffer buffer(size);
+
+  data_accessor.packData(buffer, masters_list, tag);
+  data_accessor.unpackData(buffer, slaves_list, tag);
+}
 
 } // namespace akantu

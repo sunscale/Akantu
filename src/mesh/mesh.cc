@@ -260,15 +260,7 @@ void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
         << filename << " does not seem to be of the good dimension."
         << " No element of dimension " << spatial_dimension << " where read.");
 
-  this->nb_global_nodes = this->nodes->size();
-
-  this->computeBoundingBox();
-
-  this->nodes_flags->resize(nodes->size(), NodeFlag::_normal);
-  this->nodes_to_elements.resize(nodes->size());
-  for (auto & node_set : nodes_to_elements) {
-    node_set = std::make_unique<std::set<Element>>();
-  }
+  this->makeReady();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -276,6 +268,17 @@ void Mesh::write(const std::string & filename,
                  const MeshIOType & mesh_io_type) {
   MeshIO mesh_io;
   mesh_io.write(filename, *this, mesh_io_type);
+}
+
+/* -------------------------------------------------------------------------- */
+void Mesh::makeReady() {
+  this->nb_global_nodes = this->nodes->size();
+  this->computeBoundingBox();
+  this->nodes_flags->resize(nodes->size(), NodeFlag::_normal);
+  this->nodes_to_elements.resize(nodes->size());
+  for (auto & node_set : nodes_to_elements) {
+    node_set = std::make_unique<std::set<Element>>();
+  }
 }
 
 /* -------------------------------------------------------------------------- */

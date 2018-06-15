@@ -144,6 +144,10 @@ public:
             global_data_updater));
   }
 
+  /* ------------------------------------------------------------------------ */
+  void makeReady() {
+    this->_mesh.makeReady();
+  }
 
   /* ------------------------------------------------------------------------ */
   void addPeriodicSlave(UInt slave, UInt master) {
