@@ -645,7 +645,7 @@ private:
   bool is_distributed{false};
 
   /// defines if the mesh is periodic
-  bool is_periodic;
+  bool is_periodic{false};
 
   /// Communicator on which mesh is distributed
   Communicator * communicator;
