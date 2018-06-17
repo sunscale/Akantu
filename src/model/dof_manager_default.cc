@@ -140,9 +140,11 @@ template <typename T>
 void DOFManagerDefault::makeConsistentForPeriodicity(const ID & dof_id,
                                                      Array<T> & array) {
   auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
-  if (dof_data.support_type != _dst_nodal) return;
+  if (dof_data.support_type != _dst_nodal)
+    return;
 
-  if (not mesh->isPeriodic()) return;
+  if (not mesh->isPeriodic())
+    return;
 
   this->mesh->getPeriodicNodeSynchronizer()
       .reduceSynchronizeWithPBCSlaves<AddOperation>(array);
@@ -174,7 +176,8 @@ void DOFManagerDefault::assembleToGlobalArray(
       }
     }
   } else {
-    for (auto && data : zip(dof_data.local_equation_number, make_view(array_to_assemble))) {
+    for (auto && data :
+         zip(dof_data.local_equation_number, make_view(array_to_assemble))) {
       auto && equ_num = std::get<0>(data);
       auto && arr = std::get<1>(data);
       global_array(equ_num) += scale_factor * (arr);
@@ -405,9 +408,9 @@ void DOFManagerDefault::getLumpedMatrixPerDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assembleToResidual(
-    const ID & dof_id, Array<Real> & array_to_assemble,
-    Real scale_factor) {
+void DOFManagerDefault::assembleToResidual(const ID & dof_id,
+                                           Array<Real> & array_to_assemble,
+                                           Real scale_factor) {
   AKANTU_DEBUG_IN();
 
   this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
@@ -419,9 +422,10 @@ void DOFManagerDefault::assembleToResidual(
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assembleToLumpedMatrix(
-    const ID & dof_id, Array<Real> & array_to_assemble,
-    const ID & lumped_mtx, Real scale_factor) {
+void DOFManagerDefault::assembleToLumpedMatrix(const ID & dof_id,
+                                               Array<Real> & array_to_assemble,
+                                               const ID & lumped_mtx,
+                                               Real scale_factor) {
   AKANTU_DEBUG_IN();
 
   this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
@@ -843,11 +847,13 @@ void DOFManagerDefault::updateDOFsData(
                                       nb_new_local_dofs);
   }
 
+  std::unordered_map<std::pair<UInt, UInt>, UInt> masters_dofs;
+
   // update per dof info
   auto local_eq_num = first_dof_id;
   for (auto d : arange(nb_new_local_dofs)) {
-
     auto is_periodic_slave = false;
+    auto is_periodic_master = false;
     auto is_local_dof = true;
     auto dof_flag = NodeFlag::_normal;
 
@@ -860,6 +866,7 @@ void DOFManagerDefault::updateDOFsData(
       dof_data.associated_nodes.push_back(node);
       is_local_dof = this->mesh->isLocalOrMasterNode(node);
       is_periodic_slave = this->mesh->isPeriodicSlave(node);
+      is_periodic_master = this->mesh->isPeriodicMaster(node);
       break;
     }
     case _dst_generic: {
@@ -884,6 +891,14 @@ void DOFManagerDefault::updateDOFsData(
     } else {
       this->global_equation_number(local_eq_num) = UInt(-1);
     }
+
+    if (is_periodic_master) {
+      auto node = getNode(d / dof_data.dof->getNbComponent());
+      auto dof = d % dof_data.dof->getNbComponent();
+      masters_dofs.insert(
+          std::make_pair(std::make_pair(node, dof), local_eq_num));
+    }
+
     ++local_eq_num;
   }
 
@@ -896,12 +911,9 @@ void DOFManagerDefault::updateDOFsData(
         continue;
 
       auto master_node = this->mesh->getPeriodicMaster(node);
-      auto it = std::find(dof_data.associated_nodes.begin(),
-                          dof_data.associated_nodes.end(), master_node);
-      if (it != dof_data.associated_nodes.end()) {
-        dof_data.local_equation_number(node) =
-            dof_data.local_equation_number(it - assoc_begin);
-      }
+      auto dof = d % dof_data.dof->getNbComponent();
+      dof_data.local_equation_number(first_dof_pos + d) =
+          masters_dofs[std::make_pair(master_node, dof)];
     }
   }
 
@@ -925,15 +937,17 @@ void DOFManagerDefault::updateDOFsData(
 // register in factory
 static bool default_dof_manager_is_registered[[gnu::unused]] =
     DefaultDOFManagerFactory::getInstance().registerAllocator(
-        "default", [](const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "default",
+        [](const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(id, mem_id);
         });
 
 static bool dof_manager_is_registered[[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
-        "default", [](Mesh & mesh, const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "default",
+        [](Mesh & mesh, const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
         });
 } // namespace akantu
