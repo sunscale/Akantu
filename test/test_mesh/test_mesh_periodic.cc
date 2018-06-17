@@ -30,11 +30,11 @@
 #include "data_accessor.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
-#include "mesh_partition_scotch.hh"
+//#include "mesh_partition_scotch.hh"
 #include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include "dumpable_inline_impl.hh"
-#include "dumper_element_partition.hh"
+//#include "dumper_element_partition.hh"
 #include "dumper_iohelper_paraview.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -46,7 +46,7 @@ int main(int argc, char ** argv) {
   constexpr UInt dim = 2;
 
   auto prank = Communicator::getStaticCommunicator().whoAmI();
-  auto psize = Communicator::getStaticCommunicator().getNbProc();
+  // auto psize = Communicator::getStaticCommunicator().getNbProc();
 
   Mesh mesh(dim);
   if (prank == 0) {
@@ -57,10 +57,10 @@ int main(int argc, char ** argv) {
   // mesh_accessor.wipePeriodicInfo();
   // mesh.makePeriodic(_z);
 
-  if (prank == 0) {
-    MeshPartitionScotch partition(mesh, dim);
-    partition.partitionate(psize);
-  }
+  // if (prank == 0) {
+  //   MeshPartitionScotch partition(mesh, dim);
+  //   partition.partitionate(psize);
+  // }
 
   UInt offset = 0;
   for (auto && type : mesh.elementTypes()) {
