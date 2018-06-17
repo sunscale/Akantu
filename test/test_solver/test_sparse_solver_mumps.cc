@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
   UInt node = 0;
   for (auto pos : mesh.getNodes()) {
     std::cout << prank << " " << node << " pos: " << pos << " ["
-              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeType(node)
+              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeFlag(node)
               << std::endl;
     ++node;
   }
