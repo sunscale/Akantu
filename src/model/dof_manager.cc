@@ -249,6 +249,7 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
         node = node_group->getNodes()(n);
 
       nb_pure_local += this->mesh->isLocalOrMasterNode(node) ? 1 : 0;
+      nb_local_dofs -= this->mesh->isPeriodicSlave(node) ? 1 : 0;
     }
 
     nb_pure_local *= dofs_array.getNbComponent();

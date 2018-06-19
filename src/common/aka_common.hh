@@ -374,7 +374,7 @@ enum class NodeFlag : std::uint8_t {
   _periodic_master = 0x30,
   _periodic_slave = 0x50,
   _periodic_mask = 0xF0,
-  _local_master_mask = 0x22, //~(_master & _periodic_mask)
+  _local_master_mask = 0xCC, // ~(_master & _periodic_mask)
 };
 
 inline NodeFlag operator&(const NodeFlag & a, const NodeFlag & b) {

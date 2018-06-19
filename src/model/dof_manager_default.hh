@@ -84,8 +84,7 @@ public:
                     const ID & group_support) override;
 
   /// Assemble an array to the global residual array
-  void assembleToResidual(const ID & dof_id,
-                          Array<Real> & array_to_assemble,
+  void assembleToResidual(const ID & dof_id, Array<Real> & array_to_assemble,
                           Real scale_factor = 1.) override;
 
   /// Assemble an array to the global lumped matrix array
@@ -128,8 +127,7 @@ protected:
                              Array<T> & global_array, T scale_factor);
 
   template <typename T>
-  void makeConsistentForPeriodicity(const ID & dof_id,
-                                    Array<T> & array);
+  void makeConsistentForPeriodicity(const ID & dof_id, Array<T> & array);
 
 public:
   /// clear the residual
@@ -201,8 +199,14 @@ protected:
 
 private:
   void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
-                      UInt nb_new_pure_local,
+                      UInt nb_new_pure_local, UInt nb_nodes,
                       const std::function<UInt(UInt)> & getNode);
+
+  void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
+                      UInt nb_new_pure_local);
+
+  void resizeGlobalArrays();
+  auto computeFirstDOFIDs(UInt nb_new_local_dofs, UInt nb_new_pure_local);
 
 public:
   /// function to implement to react on  akantu::NewNodesEvent
