@@ -29,6 +29,7 @@
 /* -------------------------------------------------------------------------- */
 #include "communication_tag.hh"
 #include "communicator.hh"
+#include "element_group.hh"
 #include "mesh.hh"
 #include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
@@ -63,6 +64,17 @@ void Mesh::makePeriodic(const SpatialDirection & direction) {
   }
 
   this->makePeriodic(direction, list_1, list_2);
+}
+
+/* -------------------------------------------------------------------------- */
+void Mesh::makePeriodic(const SpatialDirection & direction, const ID & list_1,
+                        const ID & list_2) {
+  const auto & list_nodes_1 =
+      mesh.getElementGroup(list_1).getNodeGroup().getNodes();
+  const auto & list_nodes_2 =
+      mesh.getElementGroup(list_2).getNodeGroup().getNodes();
+
+  this->makePeriodic(direction, list_nodes_1, list_nodes_2);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -411,9 +423,10 @@ void Mesh::wipePeriodicInfo() {
 /* -------------------------------------------------------------------------- */
 void Mesh::updatePeriodicSynchronizer() {
   if (not this->periodic_node_synchronizer) {
-    this->periodic_node_synchronizer = std::make_unique<PeriodicNodeSynchronizer>(
-        *this, this->getID() + ":periodic_synchronizer", this->getMemoryID(),
-        false);
+    this->periodic_node_synchronizer =
+        std::make_unique<PeriodicNodeSynchronizer>(
+            *this, this->getID() + ":periodic_synchronizer",
+            this->getMemoryID(), false);
   }
 
   this->periodic_node_synchronizer->update();
