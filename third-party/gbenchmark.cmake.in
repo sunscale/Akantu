@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.1)
+
+project(gbenchmark-download NONE)
+
+include(ExternalProject)
+
+ExternalProject_Add(gbenchmark
+  GIT_REPOSITORY    ${GBENCHMARK_GIT}
+  GIT_TAG           ${GBENCHMARK_VERSION}
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}/third-party/google-benchmark
+  BINARY_DIR ${PROJECT_BINARY_DIR}/third-party/google-benchmark
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+  )
