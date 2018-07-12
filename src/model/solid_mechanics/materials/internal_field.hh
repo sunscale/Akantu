@@ -95,6 +95,9 @@ public:
   /// save the current values in the history
   virtual void saveCurrentValues();
 
+  /// restore the previous values from the history
+  virtual void restorePreviousValues();
+
   /// remove the quadrature points corresponding to suppressed elements
   virtual void
   removeIntegrationPoints(const ElementTypeMapArray<UInt> & new_numbering);
