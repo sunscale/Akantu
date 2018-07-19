@@ -42,6 +42,7 @@ PeriodicNodeSynchronizer::PeriodicNodeSynchronizer(
 
 /* -------------------------------------------------------------------------- */
 void PeriodicNodeSynchronizer::update() {
+  static int count = 0;
   const auto & masters_to_slaves = this->mesh.getPeriodicMasterSlaves();
   masters_list.resize(0);
   masters_list.reserve(masters_to_slaves.size());
@@ -52,22 +53,23 @@ void PeriodicNodeSynchronizer::update() {
   reset();
 
   std::set<UInt> masters_to_receive;
-  for(auto && data : masters_to_slaves) {
+  for (auto && data : masters_to_slaves) {
     auto master = std::get<0>(data);
     auto slave = std::get<1>(data);
 
     masters_list.push_back(master);
     slaves_list.push_back(slave);
 
-    if(not (mesh.isMasterNode(master) or mesh.isLocalNode(master))) {
+    if (not(mesh.isMasterNode(master) or mesh.isLocalNode(master))) {
       masters_to_receive.insert(master);
     }
   }
 
-  if(not mesh.isDistributed()) return;
+  if (not mesh.isDistributed())
+    return;
 
   std::map<Int, Array<UInt>> buffers;
-  for(auto node : masters_to_receive) {
+  for (auto node : masters_to_receive) {
     auto && proc = mesh.getNodePrank(node);
     auto && scheme = this->communications.createRecvScheme(proc);
     scheme.push_back(node);
@@ -75,21 +77,31 @@ void PeriodicNodeSynchronizer::update() {
     buffers[proc].push_back(mesh.getNodeGlobalId(node));
   }
 
-  auto tag = Tag::genTag(0, 0, Tag::_MODIFY_SCHEME);
+  auto tag = Tag::genTag(0, count, Tag::_MODIFY_SCHEME);
   std::vector<CommunicationRequest> requests;
   for (auto && data : buffers) {
     auto proc = std::get<0>(data);
     auto & buffer = std::get<1>(data);
 
-    requests.push_back(communicator.asyncSend(buffer, proc, tag));
+    requests.push_back(communicator.asyncSend(buffer, proc, tag,
+                                              CommunicationMode::_synchronous));
+    std::cout << "Recv from proc : " << proc << " -> "
+              << this->communications.getScheme(proc, _recv).size()
+              << std::endl;
   }
 
-  communicator.receiveAnyNumber<UInt>(requests, [&](auto && proc, auto && msg) {
-      auto && scheme = this->communications.createSendScheme(proc);
-      for (auto node : msg) {
-        scheme.push_back(mesh.getNodeLocalId(node));
-      }
-    }, tag);
+  communicator.receiveAnyNumber<UInt>(
+      requests,
+      [&](auto && proc, auto && msg) {
+        auto && scheme = this->communications.createSendScheme(proc);
+        for (auto node : msg) {
+          scheme.push_back(mesh.getNodeLocalId(node));
+        }
+        std::cout << "Send to proc : " << proc << " -> " << scheme.size()
+                  << " [" << tag << "]" << std::endl;
+      },
+      tag);
+  ++count;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -106,8 +118,7 @@ void PeriodicNodeSynchronizer::synchronizeOnceImpl(
 
 /* -------------------------------------------------------------------------- */
 void PeriodicNodeSynchronizer::waitEndSynchronizeImpl(
-    DataAccessor<UInt> & data_accessor,
-    const SynchronizationTag & tag) {
+    DataAccessor<UInt> & data_accessor, const SynchronizationTag & tag) {
   NodeSynchronizer::waitEndSynchronizeImpl(data_accessor, tag);
 
   auto size = data_accessor.getNbData(masters_list, tag);

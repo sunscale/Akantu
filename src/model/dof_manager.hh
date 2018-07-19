@@ -53,6 +53,9 @@ class DOFManager : protected Memory, protected MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
+protected:
+  struct DOFData;
+
 public:
   DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
   DOFManager(Mesh & mesh, const ID & id = "dof_manager",
@@ -347,6 +350,10 @@ protected:
   virtual std::pair<UInt, UInt> updateNodalDOFs(const ID & dof_id,
                                                 const Array<UInt> & nodes_list);
 
+  template <typename Func>
+  auto countDOFsForNodes(const DOFData & dof_data, UInt nb_nodes,
+                        Func && getNode);
+
 public:
   /// function to implement to react on  akantu::NewNodesEvent
   void onNodesAdded(const Array<UInt> & nodes_list,
@@ -369,7 +376,6 @@ public:
                          const ChangedElementsEvent & event) override;
 
 protected:
-  struct DOFData;
   inline DOFData & getDOFData(const ID & dof_id);
   inline const DOFData & getDOFData(const ID & dof_id) const;
   template <class _DOFData>

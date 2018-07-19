@@ -118,7 +118,7 @@ public:
   }
 
   void assembleLumpedMass(const GhostType & ghost_type) {
-    Array<Real> & M = this->getDOFManager().getLumpedMatrix("M");
+    Array<Real> M(nb_dofs, 1, 0.);
 
     Array<Real> m_all_el(this->mesh.getNbElement(_segment_2, ghost_type), 2);
 
@@ -144,11 +144,7 @@ public:
     this->getDOFManager().assembleElementalArrayLocalArray(
         m_all_el, M, _segment_2, ghost_type);
 
-
-    if (mesh.isPeriodic()) {
-      mesh.getPeriodicNodeSynchronizer()
-          .reduceSynchronizeWithPBCSlaves<AddOperation>(M);
-    }
+    this->getDOFManager().assembleToLumpedMatrix("disp", M, "M");
   }
 
   void assembleMass() {

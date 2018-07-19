@@ -283,9 +283,9 @@ CommunicationBufferTemplated<is_static>::extractStream(UInt block_size) {
 template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
   if (!is_static) {
-    buffer.resize(0);
+    buffer.resize(0, 0);
   } else {
-    buffer.resize(size);
+    buffer.resize(size, 0);
   }
   reset();
 #ifndef AKANTU_NDEBUG

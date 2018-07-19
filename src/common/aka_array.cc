@@ -41,12 +41,6 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Functions ArrayBase                                                       */
 /* -------------------------------------------------------------------------- */
-ArrayBase::ArrayBase(ID id)
-    : id(std::move(id)), allocated_size(0), size_(0), nb_component(1),
-      size_of_type(0) {}
-
-/* -------------------------------------------------------------------------- */
-ArrayBase::~ArrayBase() = default;
 
 /* -------------------------------------------------------------------------- */
 void ArrayBase::printself(std::ostream & stream, int indent) const {

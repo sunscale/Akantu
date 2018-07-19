@@ -222,13 +222,18 @@ public:
     return bboxes;
   }
 
-  std::vector<BBox> intersection(const BBox & other,
-                                 const Communicator & communicator) {
+  std::map<UInt, BBox> intersection(const BBox & other,
+                                    const Communicator & communicator) {
+    // todo: change for a custom reduction algorithm
     auto other_bboxes = other.allGather(communicator);
-    for (auto & bbox : other_bboxes) {
-      bbox = this->intersection(bbox);
+    std::map<UInt, BBox> intersections;
+    for (auto & bbox : enumerate(other_bboxes)) {
+      auto && tmp = this->intersection(std::get<1>(bbox));
+      if (tmp) {
+        intersections[std::get<0>(bbox)] = tmp;
+      }
     }
-    return other_bboxes;
+    return intersections;
   }
 
   void printself(std::ostream & stream) const {

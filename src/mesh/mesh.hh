@@ -181,8 +181,13 @@ public:
     return ((this->is_periodic & (1 << direction)) != 0);
   }
 
+  class PeriodicSlaves;
+
   /// get the master node for a given slave nodes, except if node not a slave
   inline UInt getPeriodicMaster(UInt slave) const;
+
+  /// get an iterable list of slaves for a given master node
+  inline decltype(auto) getPeriodicSlaves(UInt master) const;
 
   /* ------------------------------------------------------------------------ */
   /* General Methods                                                          */

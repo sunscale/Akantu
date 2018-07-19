@@ -88,8 +88,10 @@ int main(int argc, char * argv[]) {
     Real x = mesh.getNodes()(n) - 0.2;
     // Sinus * Gaussian
     Real L = pulse_width;
-    Real k = 0.1 * 2 * M_PI * 3 / L;
-    model.displacement(n) = A * sin(k * x) * exp(-(k * x) * (k * x) / (L * L));
+    Real k = 2 * M_PI / L;
+    //model.displacement(n) = A * sin(k * x) * exp(-(k * x) * (k * x) / (L * L));
+    model.displacement(n) = A * cos(k * x);
+    model.velocity(n) = k * A * sin(k * x);
   }
 
   if (!_explicit) {

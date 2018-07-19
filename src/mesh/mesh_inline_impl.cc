@@ -725,6 +725,45 @@ UInt Mesh::getPeriodicMaster(UInt slave) const {
 }
 
 /* -------------------------------------------------------------------------- */
+class Mesh::PeriodicSlaves {
+  using internal_iterator = std::unordered_multimap<UInt, UInt>::const_iterator;
+  std::pair<internal_iterator, internal_iterator> pair;
+
+public:
+  PeriodicSlaves(const Mesh & mesh, UInt master)
+      : pair(mesh.getPeriodicMasterSlaves().equal_range(master)) {}
+
+  PeriodicSlaves(const PeriodicSlaves & other) = default;
+  PeriodicSlaves(PeriodicSlaves && other) = default;
+  PeriodicSlaves & operator=(const PeriodicSlaves & other) = default;
+
+  class const_iterator {
+    internal_iterator it;
+
+  public:
+    const_iterator(internal_iterator it) : it(std::move(it)) {}
+
+    const_iterator operator++() {
+      ++it;
+      return *this;
+    }
+    bool
+    operator!=(const const_iterator & other) {
+      return other.it != it;
+    }
+    auto operator*() { return it->second; }
+  };
+
+  auto begin() { return const_iterator(pair.first); }
+  auto end() { return const_iterator(pair.second); }
+};
+
+/* -------------------------------------------------------------------------- */
+inline decltype(auto) Mesh::getPeriodicSlaves(UInt master) const {
+  return PeriodicSlaves(*this, master);
+}
+
+/* -------------------------------------------------------------------------- */
 inline Vector<UInt>
 Mesh::getConnectivityWithPeriodicity(const Element & element) const {
   Vector<UInt> conn = getConnectivity(element);

@@ -43,14 +43,14 @@ using namespace akantu;
 int main(int argc, char ** argv) {
   initialize(argc, argv);
 
-  constexpr UInt dim = 2;
+  constexpr UInt dim = 3;
 
   auto prank = Communicator::getStaticCommunicator().whoAmI();
   // auto psize = Communicator::getStaticCommunicator().getNbProc();
 
   Mesh mesh(dim);
   if (prank == 0) {
-    mesh.read("square_periodic.msh");
+    mesh.read("cube_periodic.msh");
   }
 
   MeshAccessor mesh_accessor(mesh);
@@ -73,8 +73,9 @@ int main(int argc, char ** argv) {
 
   mesh.distribute();
 
-//  mesh.makePeriodic(_x);
-//  mesh.makePeriodic(_y);
+  mesh.makePeriodic(_x);
+  mesh.makePeriodic(_y);
+  mesh.makePeriodic(_z);
 
   auto * dumper = new DumperParaview("periodic", "./paraview");
   mesh.registerExternalDumper(*dumper, "periodic", true);

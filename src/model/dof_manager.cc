@@ -215,6 +215,26 @@ DOFManager::DOFData & DOFManager::getNewDOFData(const ID & dof_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+template <typename Func>
+auto DOFManager::countDOFsForNodes(const DOFData & dof_data, UInt nb_nodes,
+                                   Func && getNode) {
+  auto nb_local_dofs = nb_nodes;
+  decltype(nb_local_dofs) nb_pure_local = 0;
+  for (auto n : arange(nb_nodes)) {
+    UInt node = getNode(n);
+
+    // http://www.open-std.org/jtc1/sc22/open/n2356/conv.html
+    nb_pure_local += this->mesh->isLocalOrMasterNode(node);
+    nb_local_dofs -= this->mesh->isPeriodicSlave(node);
+  }
+
+  const auto & dofs_array = *dof_data.dof;
+  nb_pure_local *= dofs_array.getNbComponent();
+  nb_local_dofs *= dofs_array.getNbComponent();
+  return std::make_pair(nb_local_dofs, nb_pure_local);
+}
+
+/* -------------------------------------------------------------------------- */
 void DOFManager::registerDOFsInternal(const ID & dof_id,
                                       Array<Real> & dofs_array) {
   DOFData & dofs_storage = this->getDOFData(dof_id);
@@ -227,33 +247,31 @@ void DOFManager::registerDOFsInternal(const ID & dof_id,
 
   switch (support_type) {
   case _dst_nodal: {
-    UInt nb_nodes = 0;
     const ID & group = dofs_storage.group_support;
 
-    NodeGroup * node_group = nullptr;
+    std::function<UInt(UInt)> getNode;
     if (group == "__mesh__") {
-      nb_nodes = this->mesh->getNbNodes();
-    } else {
-      node_group = &this->mesh->getElementGroup(group).getNodeGroup();
-      nb_nodes = node_group->size();
-    }
+      AKANTU_DEBUG_ASSERT(
+          dofs_array.size() == this->mesh->getNbNodes(),
+          "The array of dof is too shot to be associated to nodes.");
 
-    nb_local_dofs = nb_nodes;
-    AKANTU_DEBUG_ASSERT(
-        dofs_array.size() == nb_local_dofs,
+      std::tie(nb_local_dofs, nb_pure_local) = countDOFsForNodes(
+          dofs_storage, this->mesh->getNbNodes(), [](auto && n) { return n; });
+    } else {
+      const auto & node_group =
+          this->mesh->getElementGroup(group).getNodeGroup().getNodes();
+
+      AKANTU_DEBUG_ASSERT(
+          dofs_array.size() == node_group.size(),
         "The array of dof is too shot to be associated to nodes.");
 
-    for (UInt n = 0; n < nb_nodes; ++n) {
-      UInt node = n;
-      if (node_group)
-        node = node_group->getNodes()(n);
-
-      nb_pure_local += this->mesh->isLocalOrMasterNode(node) ? 1 : 0;
-      nb_local_dofs -= this->mesh->isPeriodicSlave(node) ? 1 : 0;
+      std::tie(nb_local_dofs, nb_pure_local) =
+          countDOFsForNodes(dofs_storage, node_group.size(),
+                            [&node_group](auto && n) { return node_group(n); });
     }
 
-    nb_pure_local *= dofs_array.getNbComponent();
-    nb_local_dofs *= dofs_array.getNbComponent();
+
+
     break;
   }
   case _dst_generic: {
@@ -529,17 +547,11 @@ void DOFManager::savePreviousDOFs(const ID & dofs_id) {
 std::pair<UInt, UInt>
 DOFManager::updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) {
   auto & dof_data = this->getDOFData(dof_id);
-  UInt nb_new_local_dofs = 0;
-  UInt nb_new_pure_local = 0;
+  UInt nb_new_local_dofs, nb_new_pure_local;
 
-  nb_new_local_dofs = nodes_list.size();
-  for (const auto & node : nodes_list) {
-    nb_new_pure_local += this->mesh->isLocalOrMasterNode(node) ? 1 : 0;
-  }
-
-  const auto & dof_array = *dof_data.dof;
-  nb_new_pure_local *= dof_array.getNbComponent();
-  nb_new_local_dofs *= dof_array.getNbComponent();
+  std::tie(nb_new_local_dofs, nb_new_pure_local) =
+      countDOFsForNodes(dof_data, nodes_list.size(),
+                        [&nodes_list](auto && n) { return nodes_list(n); });
 
   this->pure_local_system_size += nb_new_pure_local;
   this->local_system_size += nb_new_local_dofs;

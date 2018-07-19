@@ -49,8 +49,8 @@ SparseMatrixAIJ::SparseMatrixAIJ(DOFManagerDefault & dof_manager,
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::SparseMatrixAIJ(const SparseMatrixAIJ & matrix, const ID & id)
     : SparseMatrix(matrix, id), dof_manager(matrix.dof_manager),
-      irn(matrix.irn, true, id + ":irn"), jcn(matrix.jcn, true, id + ":jcn"),
-      a(matrix.a, true, id + ":a") {}
+      irn(matrix.irn, id + ":irn"), jcn(matrix.jcn, id + ":jcn"),
+      a(matrix.a, id + ":a") {}
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ::~SparseMatrixAIJ() = default;

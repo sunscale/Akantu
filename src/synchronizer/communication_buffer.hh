@@ -44,28 +44,20 @@ template <bool is_static = true> class CommunicationBufferTemplated {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  explicit CommunicationBufferTemplated(UInt size) : buffer(size, 1) {
+  explicit CommunicationBufferTemplated(UInt size)
+      : buffer(size, 1, char()) {
     ptr_pack = buffer.storage();
     ptr_unpack = buffer.storage();
   };
 
   CommunicationBufferTemplated() : CommunicationBufferTemplated(0) {}
 
-  CommunicationBufferTemplated(const CommunicationBufferTemplated & other) {
-    buffer = other.buffer;
-    ptr_pack = buffer.storage();
-    ptr_unpack = buffer.storage();
-  }
-
+  CommunicationBufferTemplated(const CommunicationBufferTemplated & other) = delete;
   CommunicationBufferTemplated &
-  operator=(const CommunicationBufferTemplated & other) {
-    if (this != &other) {
-      buffer = other.buffer;
-      ptr_pack = buffer.storage();
-      ptr_unpack = buffer.storage();
-    }
-    return *this;
-  }
+  operator=(const CommunicationBufferTemplated & other) = delete;
+
+
+  CommunicationBufferTemplated(CommunicationBufferTemplated && other) = default;
 
   virtual ~CommunicationBufferTemplated() = default;
 

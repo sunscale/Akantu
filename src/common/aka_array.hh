@@ -51,9 +51,17 @@ class ArrayBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  explicit ArrayBase(ID id = "");
+  explicit ArrayBase(ID id = "") : id(std::move(id)) {}
 
-  virtual ~ArrayBase();
+  ArrayBase(const ArrayBase & other) = default;
+  ArrayBase(ArrayBase && other) = default;
+
+  ArrayBase & operator=(const ArrayBase & other) = default;
+  //ArrayBase & operator=(ArrayBase && other) = default;
+
+  virtual ~ArrayBase() = default;
+
+
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -130,6 +138,8 @@ public:
   using pointer_type = value_type *;
   using const_reference = const value_type &;
 
+  inline ~Array() override;
+
   /// Allocation of a new vector
   explicit inline Array(UInt size = 0, UInt nb_component = 1,
                         const ID & id = "");
@@ -143,7 +153,7 @@ public:
         const ID & id = "");
 
   /// Copy constructor (deep copy if deep=true)
-  Array(const Array<value_type, is_scal> & vect, bool deep = true,
+  Array(const Array<value_type, is_scal> & vect, //bool deep = true,
         const ID & id = "");
 
 #ifndef SWIG
@@ -151,14 +161,14 @@ public:
   explicit Array(const std::vector<value_type> & vect);
 #endif
 
-  inline ~Array() override;
+  // copy operator
+  Array & operator=(const Array & other);
 
-  Array & operator=(const Array & a) {
-    /// this is to let STL allocate and copy arrays in the case of
-    /// std::vector::resize
-    AKANTU_DEBUG_ASSERT(this->size_ == 0, "Cannot copy akantu::Array");
-    return const_cast<Array &>(a);
-  }
+  // move constructor
+  Array(Array && other);
+
+  // move assign
+  Array & operator=(Array && other);
 
 #ifndef SWIG
   /* ------------------------------------------------------------------------ */

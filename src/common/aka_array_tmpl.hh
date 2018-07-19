@@ -359,26 +359,58 @@ Array<T, is_scal>::Array(UInt size, UInt nb_component, const T & value,
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
-Array<T, is_scal>::Array(const Array<T, is_scal> & vect, bool deep,
-                         const ID & id)
+Array<T, is_scal>::Array(const Array<T, is_scal> & vect, const ID & id)
     : ArrayBase(vect) {
   AKANTU_DEBUG_IN();
   this->id = (id == "") ? vect.id : id;
 
-  if (deep) {
-    allocate(vect.size_, vect.nb_component);
-    T * tmp = values;
-    std::uninitialized_copy(vect.storage(),
-                            vect.storage() + size_ * nb_component, tmp);
-  } else {
-    this->values = vect.storage();
-    this->size_ = vect.size_;
-    this->nb_component = vect.nb_component;
-    this->allocated_size = vect.allocated_size;
-    this->size_of_type = vect.size_of_type;
-  }
+  // if (deep) {
+  allocate(vect.size_, vect.nb_component);
+  std::uninitialized_copy(vect.storage(), vect.storage() + size_ * nb_component,
+                          values);
+  // } else {
+  //   this->values = vect.storage();
+  //   this->size_ = vect.size_;
+  //   this->nb_component = vect.nb_component;
+  //   this->allocated_size = vect.allocated_size;
+  //   this->size_of_type = vect.size_of_type;
+  // }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+Array<T, is_scal> & Array<T, is_scal>::
+operator=(const Array<T, is_scal> & other) {
+  AKANTU_DEBUG_WARNING("You are copying the array "
+                       << id << " are you sure it is on purpose");
+
+  if (&other == this)
+    return *this;
+
+  allocate(other.size_, other.nb_component);
+  std::uninitialized_copy(other.storage(),
+                          other.storage() + size_ * nb_component, values);
+
+  return *this;
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+Array<T, is_scal>::Array(Array<T, is_scal> && other)
+    : ArrayBase(other), values(std::exchange(other.values, nullptr)) {}
+
+/* -------------------------------------------------------------------------- */
+template <class T, bool is_scal>
+Array<T, is_scal> & Array<T, is_scal>::operator=(Array && other) {
+  if (&other == this)
+    return *this;
+
+  ArrayBase::operator=(other);
+  values = std::exchange(other.values, nullptr);
+
+  return *this;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -404,48 +436,15 @@ template <class T, bool is_scal> Array<T, is_scal>::~Array() {
                           << " (" << id << ")");
 
   if (values) {
-    if (!is_scal)
+    if (not is_scal) {
       for (UInt i = 0; i < size_ * nb_component; ++i) {
         T * obj = values + i;
         obj->~T();
       }
+    }
     free(values);
   }
   size_ = allocated_size = 0;
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-/**
- * perform the allocation for the constructors
- * @param size is the size of the array
- * @param nb_component is the number of component of the array
- */
-template <class T, bool is_scal>
-void Array<T, is_scal>::allocate(UInt size, UInt nb_component) {
-  AKANTU_DEBUG_IN();
-  if (size == 0) {
-    values = nullptr;
-  } else {
-    values = static_cast<T *>(malloc(nb_component * size * sizeof(T)));
-    AKANTU_DEBUG_ASSERT(values != nullptr,
-                        "Cannot allocate "
-                            << printMemorySize<T>(size * nb_component) << " ("
-                            << id << ")");
-  }
-
-  if (values == nullptr) {
-    this->size_ = this->allocated_size = 0;
-  } else {
-    AKANTU_DEBUG(dblAccessory,
-                 "Allocated " << printMemorySize<T>(size * nb_component) << " ("
-                              << id << ")");
-    this->size_ = this->allocated_size = size;
-  }
-
-  this->size_of_type = sizeof(T);
-  this->nb_component = nb_component;
-
   AKANTU_DEBUG_OUT();
 }
 
@@ -474,6 +473,36 @@ template <class T, bool is_scal> void Array<T, is_scal>::resize(UInt new_size) {
 template <class T, bool is_scal>
 void Array<T, is_scal>::resize(UInt new_size, const T & val) {
   this->resizeUnitialized(new_size, true, val);
+}
+
+/* -------------------------------------------------------------------------- */
+/**
+ * perform the allocation for the constructors
+ * @param size is the size of the array
+ * @param nb_component is the number of component of the array
+ */
+template <class T, bool is_scal>
+void Array<T, is_scal>::allocate(UInt size, UInt nb_component) {
+  AKANTU_DEBUG_IN();
+
+  values = static_cast<T *>(malloc(nb_component * size * sizeof(T)));
+
+  if (values == nullptr and size != 0) {
+    this->size_ = this->allocated_size = 0;
+    AKANTU_EXCEPTION("Cannot allocate "
+                     << printMemorySize<T>(size * nb_component) << " (" << id
+                     << ")");
+  } else {
+    AKANTU_DEBUG(dblAccessory,
+                 "Allocated " << printMemorySize<T>(size * nb_component) << " ("
+                              << id << ")");
+  }
+
+  this->size_ = this->allocated_size = size;
+  this->size_of_type = sizeof(T);
+  this->nb_component = nb_component;
+
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

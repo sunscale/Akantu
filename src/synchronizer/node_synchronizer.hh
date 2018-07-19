@@ -56,8 +56,7 @@ public:
   void reduceSynchronize(Array<T> & array) const;
 
   /* ------------------------------------------------------------------------ */
-  template <typename T>
-  void synchronize(Array<T> & array) const;
+  template <typename T> void synchronizeData(Array<T> & array) const;
 
   friend class NodeInfoPerProc;
 
@@ -109,17 +108,18 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
+template <typename T>
+void NodeSynchronizer::synchronizeData(Array<T> & array) const {
+  SimpleUIntDataAccessor<T> data_accessor(array, _gst_whatever);
+  this->synchronizeOnce(data_accessor, _gst_whatever);
+}
+
+/* -------------------------------------------------------------------------- */
 template <template <class> class Op, typename T>
 void NodeSynchronizer::reduceSynchronize(Array<T> & array) const {
   ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
   this->slaveReductionOnceImpl(data_accessor, _gst_whatever);
-  this->synchronize(array);
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T> void NodeSynchronizer::synchronize(Array<T> & array) const {
-  SimpleUIntDataAccessor<T> data_accessor(array, _gst_whatever);
-  this->synchronizeOnce(data_accessor, _gst_whatever);
+  this->synchronizeData(array);
 }
 
 } // namespace akantu

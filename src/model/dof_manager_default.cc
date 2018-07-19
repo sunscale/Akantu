@@ -171,9 +171,8 @@ void DOFManagerDefault::assembleToGlobalArray(
       auto && equ_num = std::get<0>(data);
       auto && node = std::get<1>(data);
       auto && arr = std::get<2>(data);
-      if (not this->mesh->isPeriodicSlave(node)) {
-        global_array(equ_num) += scale_factor * (arr);
-      }
+      global_array(equ_num) +=
+          scale_factor * (arr) * (not this->mesh->isPeriodicSlave(node));
     }
   } else {
     for (auto && data :
@@ -208,8 +207,8 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
 
   const auto & group = dof_data.group_support;
 
-  switch(support_type) {
-  case  _dst_nodal:
+  switch (support_type) {
+  case _dst_nodal:
     if (group != "__mesh__") {
       auto & support_nodes =
           this->mesh->getElementGroup(group).getNodeGroup().getNodes();
@@ -217,7 +216,8 @@ void DOFManagerDefault::registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
           dof_data, nb_dofs, nb_pure_local_dofs, support_nodes.size(),
           [&support_nodes](UInt node) -> UInt { return support_nodes[node]; });
     } else {
-      this->updateDOFsData(dof_data, nb_dofs, nb_pure_local_dofs, mesh->getNbNodes(),
+      this->updateDOFsData(dof_data, nb_dofs, nb_pure_local_dofs,
+                           mesh->getNbNodes(),
                            [](UInt node) -> UInt { return node; });
     }
     break;
@@ -748,7 +748,8 @@ DOFManagerDefault::updateNodalDOFs(const ID & dof_id,
       DOFManager::updateNodalDOFs(dof_id, nodes_list);
 
   auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
-  updateDOFsData(dof_data, nb_new_local_dofs, nb_new_pure_local, nodes_list.size(),
+  updateDOFsData(dof_data, nb_new_local_dofs, nb_new_pure_local,
+                 nodes_list.size(),
                  [&nodes_list](UInt pos) -> UInt { return nodes_list[pos]; });
 
   return std::make_pair(nb_new_local_dofs, nb_new_pure_local);
@@ -768,13 +769,14 @@ public:
          zip(dof_data.local_equation_number, dof_data.associated_nodes)) {
       UInt node, dof;
       std::tie(dof, node) = pair;
+
       dofs_per_node[node].push_back(dof);
     }
   }
 
   UInt getNbData(const Array<UInt> & nodes,
                  const SynchronizationTag & tag) const override {
-    if (tag == _gst_ask_nodes) {
+    if (tag == _gst_ask_nodes or tag == _gst_giu_global_conn) {
       return nodes.size() * dof_data.dof->getNbComponent() * sizeof(UInt);
     }
 
@@ -783,7 +785,7 @@ public:
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                 const SynchronizationTag & tag) const override {
-    if (tag == _gst_ask_nodes) {
+    if (tag == _gst_ask_nodes or tag == _gst_giu_global_conn) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node.at(node);
         for (auto & dof : dofs) {
@@ -795,12 +797,19 @@ public:
 
   void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                   const SynchronizationTag & tag) override {
-    if (tag == _gst_ask_nodes) {
+    if (tag == _gst_ask_nodes or tag == _gst_giu_global_conn) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node[node];
         for (auto dof : dofs) {
           UInt global_dof;
           buffer >> global_dof;
+          AKANTU_DEBUG_ASSERT(
+              (dof_manager.global_equation_number(dof) == UInt(-1) or
+              dof_manager.global_equation_number(dof) == global_dof),
+              "This dof already had a global_dof_id which is different from "
+              "the received one. "
+                  << dof_manager.global_equation_number(dof)
+                  << " != " << global_dof);
           dof_manager.global_equation_number(dof) = global_dof;
           dof_manager.global_to_local_mapping[global_dof] = dof;
         }
@@ -850,8 +859,8 @@ auto DOFManagerDefault::computeFirstDOFIDs(UInt nb_new_local_dofs,
   auto first_global_dof_id = this->first_global_dof_id;
   auto first_local_dof_id = this->local_system_size - nb_new_local_dofs;
 
-  this->first_global_dof_id += std::accumulate(
-      nb_dofs_per_proc.begin() + prank, nb_dofs_per_proc.end(), 0);
+  this->first_global_dof_id += std::accumulate(nb_dofs_per_proc.begin() + prank,
+                                               nb_dofs_per_proc.end(), 0);
 
   return std::make_pair(first_local_dof_id, first_global_dof_id);
 }
@@ -929,6 +938,12 @@ void DOFManagerDefault::updateDOFsData(
   // synchronize the global numbering for slaves
   if (this->synchronizer) {
     GlobalDOFInfoDataAccessor data_accessor(dof_data, *this);
+
+    if (this->mesh->isPeriodic()) {
+      mesh->getPeriodicNodeSynchronizer().synchronizeOnce(data_accessor,
+                                                          _gst_giu_global_conn);
+    }
+
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
     node_synchronizer.synchronizeOnce(data_accessor, _gst_ask_nodes);
   }
@@ -948,7 +963,7 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
       computeFirstDOFIDs(nb_new_local_dofs, nb_new_pure_local);
 
   // update per dof info
-  for (auto _ [[gnu::unused]] : arange(nb_new_local_dofs)) {
+  for (auto _[[gnu::unused]] : arange(nb_new_local_dofs)) {
     // update equation numbers
     this->dofs_flag(first_local_dof_id) = NodeFlag::_normal;
     ;

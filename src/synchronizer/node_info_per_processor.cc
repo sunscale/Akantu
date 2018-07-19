@@ -247,7 +247,7 @@ void NodeInfoPerProc::receiveMissingPeriodic(
   std::size_t nb_nodes;
   buffer >> nb_nodes;
 
-  for (auto _ [[gnu::unused]] : arange(nb_nodes)) {
+  for (auto _[[gnu::unused]] : arange(nb_nodes)) {
     Vector<Real> pos(spatial_dimension);
     Int prank;
     buffer >> pos;
@@ -301,7 +301,7 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
   Array<Real> & nodes = this->getNodes();
 
   all_nodes.copy(nodes);
-  nodes_pranks.resize(nodes.size(), root);
+  nodes_pranks.resize(nodes.size(), UInt(-1));
 
   for (UInt p = 0; p < nb_proc; ++p) {
     UInt nb_nodes = 0;
@@ -369,8 +369,17 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
 
   this->fillNodesType();
 
-  for (UInt p = 0; p < nb_proc; ++p) {
+  auto is_master = [](auto && flag) {
+    return (flag & NodeFlag::_shared_mask) == NodeFlag::_master;
+  };
+
+  auto is_local = [](auto && flag) {
+    return (flag & NodeFlag::_shared_mask) == NodeFlag::_normal;
+  };
+
+  for (auto p : arange(nb_proc)) {
     auto & nodes_flags = nodes_flags_per_proc[p];
+
     if (p != root) {
       AKANTU_DEBUG_INFO(
           "Receiving first nodes types from proc "
@@ -382,21 +391,20 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
     }
 
     // stack all processors claiming to be master for a node
-    for (UInt local_node = 0; local_node < nb_nodes_per_proc(p); ++local_node) {
-      if ((nodes_flags(local_node) & NodeFlag::_shared_mask) ==
-          NodeFlag::_master) {
-        UInt global_node = nodes_per_proc[p](local_node);
+    for (auto local_node : arange(nb_nodes_per_proc(p))) {
+      auto global_node = nodes_per_proc[p](local_node);
+
+      if (is_master(nodes_flags(local_node))) {
         nodes_to_proc.insert(
             std::make_pair(global_node, std::make_pair(p, local_node)));
-      } else if ((nodes_flags(local_node) & NodeFlag::_shared_mask) ==
-                 NodeFlag::_normal) {
-        nodes_prank_per_proc[p](local_node) = p;
-        nodes_pranks[mesh.getNodeGlobalId(local_node)] = p;
+
+      } else if (is_local(nodes_flags(local_node))) {
+        nodes_pranks[global_node] = p;
       }
     }
   }
 
-  for (UInt i = 0; i < mesh.getNbGlobalNodes(); ++i) {
+  for (auto i : arange(mesh.getNbGlobalNodes())) {
     auto it_range = nodes_to_proc.equal_range(i);
     if (it_range.first == nodes_to_proc.end() || it_range.first->first != i)
       continue;
@@ -405,15 +413,28 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
     UInt master_proc = (it_range.first)->second.first;
     nodes_pranks[i] = master_proc;
 
-    for (auto it_node = it_range.first; it_node != it_range.second; ++it_node) {
-      UInt proc = it_node->second.first;
-      UInt node = it_node->second.second;
-      nodes_prank_per_proc[proc](node) = master_proc;
+    for (auto && data : range(it_range.first, it_range.second)) {
+      auto proc = data.second.first;
+      auto node = data.second.second;
+
       if (proc != master_proc) {
         // store the info on all the slaves for a given master
         nodes_flags_per_proc[proc](node) = NodeFlag::_slave;
         nodes_to_send_per_proc[master_proc].push_back(proc);
         nodes_to_send_per_proc[master_proc].push_back(i);
+      }
+    }
+  }
+
+  /// Fills the nodes prank per proc
+  for (auto && data : zip(arange(nb_proc), nodes_per_proc, nodes_prank_per_proc,
+                          nodes_flags_per_proc)) {
+    for (auto && node_data :
+         zip(std::get<1>(data), std::get<2>(data), std::get<3>(data))) {
+      if (std::get<2>(node_data) == NodeFlag::_normal) {
+        std::get<1>(node_data) = std::get<0>(data);
+      } else {
+        std::get<1>(node_data) = nodes_pranks(std::get<0>(node_data));
       }
     }
   }
@@ -444,7 +465,7 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
       this->getNodesFlags().copy(nodes_flags_per_proc[p]);
       for (auto && data : enumerate(nodes_prank_per_proc[p])) {
         auto node = std::get<0>(data);
-        if (not (mesh.isMasterNode(node) or mesh.isLocalNode(node))) {
+        if (not(mesh.isMasterNode(node) or mesh.isLocalNode(node))) {
           this->setNodePrank(node, std::get<1>(data));
         }
       }
@@ -643,7 +664,7 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
   comm.receive(nodes_prank, root, Tag::genTag(root, 2, Tag::_NODES_TYPE));
   for (auto && data : enumerate(nodes_prank)) {
     auto node = std::get<0>(data);
-    if (not (mesh.isMasterNode(node) or mesh.isLocalNode(node))) {
+    if (not(mesh.isMasterNode(node) or mesh.isLocalNode(node))) {
       this->setNodePrank(node, std::get<1>(data));
     }
   }

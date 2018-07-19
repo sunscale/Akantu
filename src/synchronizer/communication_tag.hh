@@ -77,7 +77,7 @@ public:
     if (hash != 0)
       stream << " {hash: 0x" << hash << "}";
     stream << " [0x" << this->max_tag << "]";
-    stream << ")";
+    stream << ")" << std::dec;
   }
 
   enum CommTags : int {
