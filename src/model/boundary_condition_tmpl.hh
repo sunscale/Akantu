@@ -229,7 +229,7 @@ BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
     const ElementGroup & element_group =
         model->getMesh().getElementGroup(group_name);
     applyBC(func, element_group);
-  } catch (akantu::debug::Exception e) {
+  } catch (akantu::debug::Exception & e) {
     AKANTU_EXCEPTION("Error applying a boundary condition onto \""
                      << group_name << "\"! [" << e.what() << "]");
   }
