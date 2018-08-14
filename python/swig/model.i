@@ -44,29 +44,13 @@ namespace akantu {
   %ignore Model::getDOFSynchronizer;
   %ignore Model::registerFEEngineObject;
   %ignore Model::unregisterFEEngineObject;
-  %ignore Model::getFEEngineBoundary;
+  //  %ignore Model::getFEEngineBoundary;
   //  %ignore Model::getFEEngine;
   %ignore Model::getFEEngineClass;
   %ignore Model::getFEEngineClassBoundary;
   %ignore Model::setParser;
   %ignore Model::updateDataForNonLocalCriterion;
   %ignore IntegrationPoint::operator=;
-
-  %ignore FEEngine::getNbIntegrationPoints;
-  %ignore FEEngine::getShapes;
-  %ignore FEEngine::getShapesDerivatives;
-  %ignore FEEngine::getIntegrationPoints;
-  %ignore FEEngine::getIGFEMElementTypes;
-  %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,ElementTypeMapArray<Real> &,const ElementTypeMapArray<UInt> *) const;
-  %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,ElementTypeMapArray<Real> &) const;
-  %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &,const Array< UInt > &) const;
-  %ignore FEEngine::interpolateOnIntegrationPoints(const Array<Real> &,Array<Real> &,UInt,const ElementType&,const GhostType &) const;
-  %ignore FEEngine::onNodesAdded;
-  %ignore FEEngine::onNodesRemoved;
-  %ignore FEEngine::onElementsAdded;
-  %ignore FEEngine::onElementsChanged;
-  %ignore FEEngine::onElementsRemoved;
-  %ignore FEEngine::elementTypes;
 }
 
 %include "sparse_matrix.i"

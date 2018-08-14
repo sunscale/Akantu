@@ -61,6 +61,7 @@
 
 %include "mesh.i"
 %include "mesh_utils.i"
+%include "fe_engine.i"
 %include "model.i"
 %include "communicator.i"
 

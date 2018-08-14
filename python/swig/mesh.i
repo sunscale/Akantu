@@ -105,7 +105,7 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 }
 
 %extend akantu::NodeGroup {
-  akantu::Array<akantu::Real> & getGroupedNodes(akantu::Array<akantu::Real, true> & surface_array, Mesh & mesh) {
+    akantu::Array<akantu::Real> & getGroupedNodes(akantu::Array<akantu::Real, true> & surface_array, Mesh & mesh) {
     akantu::Array<akantu::UInt> group_node = $self->getNodes();
     akantu::Array<akantu::Real> & full_array = mesh.getNodes();
     surface_array.resize(group_node.size());
