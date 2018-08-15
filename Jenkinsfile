@@ -52,7 +52,9 @@ pipeline {
       steps {
         sh """
         rm -rf build/gtest_reports
-        cd build/ && ctest -T test --no-compress-output || true
+        cd build/
+        source ./akantu_environement.sh
+        ctest -T test --no-compress-output || true
 	cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml
         """
       }
