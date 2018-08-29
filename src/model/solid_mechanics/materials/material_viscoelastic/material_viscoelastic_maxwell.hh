@@ -108,7 +108,7 @@ public:
   /// update the internal variable sigma_v on quadrature point
   void updateIntVarOnQuad(const Matrix<Real> & grad_u,
                           const Matrix<Real> & previous_grad_u,
-                          Matrix<Real> & sigma_v);
+                          Tensor3<Real> & sigma_v);
 
   /// set material to steady state
   void setToSteadyState(ElementType el_type,
@@ -136,7 +136,7 @@ protected:
                            const Matrix<Real> & previous_grad_u,
                            Matrix<Real> & sigma,
                            const Matrix<Real> & previous_sigma,
-                           Matrix<Real> & sigma_v, const Real & sigma_th,
+                           Tensor3<Real> & sigma_v, const Real & sigma_th,
                            const Real & previous_sigma_th);
 
   /// compute tangent moduli on a quadrature point
@@ -170,11 +170,10 @@ public:
 private:
   using voigt_h = VoigtHelper<spatial_dimension>;
 
-  /// viscosity, viscous elastic modulus, one spring element elastic modulus
-  Real Eta1, Ev1, Einf;
-
-  /// fictitious time step for static computations
-  Real static_dt;
+  /// Vectors of viscosity, viscous elastic modulus, one spring element elastic modulus
+  Vector<Real> Eta;
+  Vector<Real> Ev;
+  Real Einf;
 
   /// time step from previous solveStep
   Real previous_dt;

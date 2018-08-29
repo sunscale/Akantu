@@ -45,28 +45,22 @@ MaterialViscoelasticMaxwell<spatial_dimension>::MaterialViscoelasticMaxwell(
     SolidMechanicsModel & model, const ID & id)
     : MaterialElastic<spatial_dimension>(model, id),
       C(voigt_h::size, voigt_h::size), sigma_v("sigma_v", *this),
-      dissipated_energy("dissipated_energy", *this) {
+    dissipated_energy("dissipated_energy", *this) {
 
   AKANTU_DEBUG_IN();
 
-  this->registerParam("Eta1", Eta1, Real(1.), _pat_parsable | _pat_modifiable,
-                      "Viscosity");
-  this->registerParam("Ev1", Ev1, Real(1.), _pat_parsable | _pat_modifiable,
-                      "Stiffness of the viscous element");
   this->registerParam("Einf", Einf, Real(1.), _pat_parsable | _pat_modifiable,
                       "Stiffness of the elastic element");
-  this->registerParam("static_dt", static_dt, Real(0.),
-                      _pat_parsable | _pat_modifiable,
-                      "fictitious time step for static computation"),
-      this->registerParam("previous_dt", previous_dt, Real(0.), _pat_readable,
-                          "Time step of previous solveStep");
-  UInt stress_size = spatial_dimension * spatial_dimension;
-
+  this->registerParam("previous_dt", previous_dt, Real(0.), _pat_readable,
+                      "Time step of previous solveStep");
+  this->registerParam("Eta", Eta, _pat_parsable | _pat_modifiable,
+                      "Viscosity of a Maxwell element");
+  this->registerParam("Ev", Ev, _pat_parsable | _pat_modifiable,
+                      "Stiffness of a Maxwell element");
   this->use_previous_stress = true;
   this->use_previous_gradu = true;
   this->use_previous_stress_thermal = true;
 
-  this->sigma_v.initialize(stress_size);
   this->dissipated_energy.initialize(1);
 
   AKANTU_DEBUG_OUT();
@@ -78,8 +72,12 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
 
   // this->E = Einf + Ev1;
-  this->E = std::min(this->Einf, this->Ev1);
+  this->E = std::min(this->Einf, this->Ev(0));
   MaterialElastic<spatial_dimension>::initMaterial();
+  AKANTU_DEBUG_ASSERT(this->Eta.size() == this->Ev.size(), "Eta and Ev have different dimensions! Please correct.");
+
+  UInt stress_size = spatial_dimension * spatial_dimension;
+  this->sigma_v.initialize(stress_size * this->Ev.size());
 
   AKANTU_DEBUG_OUT();
 }
@@ -194,7 +192,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computeStress(
                                 .begin(spatial_dimension, spatial_dimension);
 
   auto sigma_v_it = this->sigma_v(el_type, ghost_type)
-                        .begin(spatial_dimension, spatial_dimension);
+      .begin(spatial_dimension, spatial_dimension, this->Eta.size());
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
@@ -219,18 +217,13 @@ template <UInt spatial_dimension>
 void MaterialViscoelasticMaxwell<spatial_dimension>::computeStressOnQuad(
     const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
     Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
-    Matrix<Real> & sigma_v, const Real & sigma_th,
+    Tensor3<Real> & sigma_v, const Real & sigma_th,
     const Real & previous_sigma_th) {
 
   Matrix<Real> delta_sigma(spatial_dimension, spatial_dimension);
   Matrix<Real> grad_delta_u(grad_u);
   grad_delta_u -= previous_grad_u;
   Real delta_sigma_th = sigma_th - previous_sigma_th;
-
-  Real dt = this->model.getTimeStep();
-  Real lambda1 = this->Eta1 / this->Ev1;
-  Real exp_dt_lambda = exp(-dt / lambda1);
-  Real E_ef = this->Einf + (1 - exp_dt_lambda) * this->Ev1 * lambda1 / dt;
 
   // Wikipedia convention:
   // 2*eps_ij (i!=j) = voigt_eps_I
@@ -246,12 +239,27 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computeStressOnQuad(
 
     voigt_delta_strain(I) =
         voigt_factor * (grad_delta_u(i, j) + grad_delta_u(j, i)) / 2.;
-
-    voigt_sigma_v(I) = sigma_v(i, j);
   }
 
   voigt_delta_stress =
-      E_ef * this->C * voigt_delta_strain - (1 - exp_dt_lambda) * voigt_sigma_v;
+      this->Einf * this->C * voigt_delta_strain;
+
+  Real dt = this->model.getTimeStep();
+
+  for (UInt k = 0; k < Eta.size(); ++k) {
+    Real lambda = this->Eta(k) / this->Ev(k);
+    Real exp_dt_lambda = exp(-dt / lambda);
+    Real E_additional = (1 - exp_dt_lambda) * this->Ev(k) * lambda / dt;
+
+    for (UInt I = 0; I < voigt_h::size; ++I) {
+      UInt i = voigt_h::vec[I][0];
+      UInt j = voigt_h::vec[I][1];
+
+      voigt_sigma_v(I) = sigma_v(i, j, k);
+    }
+
+    voigt_delta_stress =+ E_additional * this->C * voigt_delta_strain - (1 - exp_dt_lambda) * voigt_sigma_v;
+  }
 
   for (UInt I = 0; I < voigt_h::size; ++I) {
     UInt i = voigt_h::vec[I][0];
@@ -260,18 +268,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computeStressOnQuad(
     delta_sigma(i, j) = delta_sigma(j, i) =
         voigt_delta_stress(I) + (i == j) * delta_sigma_th;
   }
-  /*
-Real trace = grad_delta_u.trace(); // trace = (\nabla u)_{kk}
 
-for (UInt i = 0; i < spatial_dimension; ++i) {
-  for (UInt j = 0; j < spatial_dimension; ++j) {
-    delta_sigma(i, j) =
-        (i == j) * E_ef * this->lambda * trace +
-        E_ef * this->mu * (grad_delta_u(i, j) + grad_delta_u(j, i)) +
-        (i == j) * sigma_th;
-  }
-}
-  */
   sigma = previous_sigma + delta_sigma;
 }
 
@@ -287,7 +284,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::afterSolveStep() {
                                  .begin(spatial_dimension, spatial_dimension);
 
     auto sigma_v_it = this->sigma_v(el_type, _not_ghost)
-                          .begin(spatial_dimension, spatial_dimension);
+        .begin(spatial_dimension, spatial_dimension, this->Eta.size());
 
     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
@@ -306,44 +303,46 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::afterSolveStep() {
 template <UInt spatial_dimension>
 void MaterialViscoelasticMaxwell<spatial_dimension>::updateIntVarOnQuad(
     const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
-    Matrix<Real> & sigma_v) {
+    Tensor3<Real> & sigma_v) {
 
   Matrix<Real> grad_delta_u(grad_u);
   grad_delta_u -= previous_grad_u;
 
   Real dt = this->model.getTimeStep();
-  Real lambda1 = Eta1 / Ev1;
-  Real exp_dt_lambda = exp(-dt / lambda1);
-  Real E_ef_v = (1 - exp_dt_lambda) * this->Ev1 * lambda1 / dt;
 
-  // Wikipedia convention:
-  // 2*eps_ij (i!=j) = voigt_eps_I
-  // http://en.wikipedia.org/wiki/Voigt_notation
-  Vector<Real> voigt_delta_strain(voigt_h::size);
-  Vector<Real> voigt_sigma_v(voigt_h::size);
+  for (UInt k = 0; k < Eta.size(); ++k) {
+    Real lambda = this->Eta(k) / this->Ev(k);
+    Real exp_dt_lambda = exp(-dt / lambda);
+    Real E_ef_v = (1 - exp_dt_lambda) * this->Ev(k) * lambda / dt;
 
-  for (UInt I = 0; I < voigt_h::size; ++I) {
-    Real voigt_factor = voigt_h::factors[I];
-    UInt i = voigt_h::vec[I][0];
-    UInt j = voigt_h::vec[I][1];
+    // Wikipedia convention:
+    // 2*eps_ij (i!=j) = voigt_eps_I
+    // http://en.wikipedia.org/wiki/Voigt_notation
+    Vector<Real> voigt_delta_strain(voigt_h::size);
+    Vector<Real> voigt_sigma_v(voigt_h::size);
 
-    voigt_delta_strain(I) =
-        voigt_factor * (grad_delta_u(i, j) + grad_delta_u(j, i)) / 2.;
+    for (UInt I = 0; I < voigt_h::size; ++I) {
+      Real voigt_factor = voigt_h::factors[I];
+      UInt i = voigt_h::vec[I][0];
+      UInt j = voigt_h::vec[I][1];
 
-    voigt_sigma_v(I) = sigma_v(i, j);
-  }
+      voigt_delta_strain(I) =
+          voigt_factor * (grad_delta_u(i, j) + grad_delta_u(j, i)) / 2.;
 
-  voigt_sigma_v =
-      exp_dt_lambda * voigt_sigma_v + E_ef_v * this->C * voigt_delta_strain;
+      voigt_sigma_v(I) = sigma_v(i, j, k);
+    }
 
-  for (UInt I = 0; I < voigt_h::size; ++I) {
-    UInt i = voigt_h::vec[I][0];
-    UInt j = voigt_h::vec[I][1];
+    voigt_sigma_v =
+        exp_dt_lambda * voigt_sigma_v + E_ef_v * this->C * voigt_delta_strain;
 
-    sigma_v(i, j) = sigma_v(j, i) = voigt_sigma_v(I);
+    for (UInt I = 0; I < voigt_h::size; ++I) {
+      UInt i = voigt_h::vec[I][0];
+      UInt j = voigt_h::vec[I][1];
+
+      sigma_v(i, j, k) = sigma_v(j, i, k) = voigt_sigma_v(I);
+    }
   }
 }
-
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialViscoelasticMaxwell<spatial_dimension>::computeTangentModuli(
@@ -352,9 +351,13 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computeTangentModuli(
   AKANTU_DEBUG_IN();
 
   Real dt = this->model.getTimeStep();
-  Real lambda1 = this->Eta1 / this->Ev1;
-  Real exp_dt_lambda = exp(-dt / lambda1);
-  Real E_ef = this->Einf + (1 - exp_dt_lambda) * this->Ev1 * lambda1 / dt;
+  Real E_ef = this->Einf;
+
+  for (UInt k = 0; k < Eta.size(); ++k) {
+    Real lambda = this->Eta(k) / this->Ev(k);
+    Real exp_dt_lambda = exp(-dt / lambda);
+    E_ef =+ (1 - exp_dt_lambda) * this->Ev(k) * lambda / dt;
+  }
 
   this->previous_dt = dt;
 
@@ -396,7 +399,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::savePreviousState() {
                                  .begin(spatial_dimension, spatial_dimension);
 
     auto sigma_v_it = this->sigma_v(el_type, _not_ghost)
-                          .begin(spatial_dimension, spatial_dimension);
+        .begin(spatial_dimension, spatial_dimension, this->Eta.size());
 
     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
     auto & previous_grad_u = *previous_gradu_it;
@@ -425,12 +428,12 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::updateIntVariables() {
                                  .begin(spatial_dimension, spatial_dimension);
 
     auto sigma_v_it = this->sigma_v(el_type, _not_ghost)
-                          .begin(spatial_dimension, spatial_dimension);
+        .begin(spatial_dimension, spatial_dimension, this->Eta.size());
 
     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
     auto & previous_grad_u = *previous_gradu_it;
 
-    this->updateIntVarOnQuad(grad_u, previous_grad_u, *sigma_v_it);
+    updateIntVarOnQuad(grad_u, previous_grad_u, *sigma_v_it);
 
     ++previous_gradu_it, ++sigma_v_it;
     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
