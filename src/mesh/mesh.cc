@@ -251,7 +251,7 @@ void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
   type_iterator last =
       this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
   if (it == last)
-    AKANTU_EXCEPTION(
+    AKANTU_DEBUG_WARNING(
         "The mesh contained in the file "
         << filename << " does not seem to be of the good dimension."
         << " No element of dimension " << spatial_dimension << " where read.");

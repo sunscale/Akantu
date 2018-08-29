@@ -63,6 +63,7 @@ namespace akantu {
   %ignore Mesh::getFacetLocalConnectivity;
   %ignore Mesh::getAllFacetTypes;
   %ignore Mesh::getCommunicator;
+  %ignore Mesh::getConnectivities;
   %ignore GroupManager::getElementGroups;
   %ignore Dumpable::addDumpFieldExternalReal;
 }
@@ -79,6 +80,10 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 
   PyObject * getElementGroups(){
     return akantu::PythonFunctor::convertToPython($self->getElementGroups());
+  }
+
+  PyObject * getAllConnectivities(){
+    return akantu::PythonFunctor::convertToPython($self->getConnectivities());
   }
 
   void resizeMesh(UInt nb_nodes, UInt nb_element, const ElementType & type) {

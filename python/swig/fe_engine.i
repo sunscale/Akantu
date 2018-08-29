@@ -46,7 +46,12 @@ namespace akantu {
   %ignore FEEngine::onElementsChanged;
   %ignore FEEngine::onElementsRemoved;
   %ignore FEEngine::elementTypes;
-  %ignore
+}
+
+%extend akantu::FEEngine {
+  void interpolateField(const Array<Real> & in, Array<Real> & out, ElementType type) {
+    $self->interpolateOnIntegrationPoints(in, out, in.getNbComponent(), type);
+  }
 }
 
 %include "sparse_matrix.i"
