@@ -49,7 +49,7 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-  // functor can be created 
+  // material functor can be created 
   
 }
   
