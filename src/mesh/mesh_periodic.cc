@@ -148,7 +148,10 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     /* ---------------------------------------------------------------------- */
     // function to send nodes in bboxes intersections
     auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
-                                      auto & buffer, auto proc, auto cnt) {
+                                      auto & buffers, auto proc, auto cnt) {
+
+      buffers.resize(buffers.size() + 1);
+      auto & buffer = buffers.back();
 
       // std::cout << "Sending to " << proc << std::endl;
       for (auto & info : node_list) {
@@ -157,7 +160,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
           pos(direction) = info.direction_position;
 
           NodeFlag flag = (*nodes_flags)(info.node) & NodeFlag::_periodic_mask;
-          buffer << UInt(getNodeGlobalId(info.node));
+          UInt gnode = getNodeGlobalId(info.node);
+          buffer << gnode;
           buffer << pos;
           buffer << flag;
 
@@ -264,9 +268,6 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     auto && intersections_with_left =
         bbox_right.intersection(bbox_left, *communicator);
 
-    auto prank = communicator->whoAmI();
-    auto nb_proc = communicator->getNbProc();
-
     std::vector<CommunicationRequest> send_requests;
     std::vector<DynamicCommunicationBuffer> send_buffers;
 
@@ -275,7 +276,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       for (auto && data : intersections) {
         auto proc = std::get<0>(data);
 
-        // Send nodes from local right side if intersects with remote left side
+        // Send local nodes if intersects with remote
         const auto & intersection_with_proc = std::get<1>(data);
         if (intersection_with_proc) {
           send_requests.push_back(
@@ -287,32 +288,26 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       }
     };
 
+    auto recv_intersections = [&](auto & intersections, auto recv_count) {
+      for (auto && data : intersections) {
+        auto proc = std::get<0>(data);
+
+        // receive remote nodes if intersects with local
+        const auto & intersection_with_proc = std::get<1>(data);
+        if (intersection_with_proc) {
+          recv_and_extract_nodes(nodes_right, proc, recv_count);
+        }
+
+        recv_count += 2;
+      }
+    };
+
+
     send_intersections(intersections_with_left, 0);
-    send_intersections(intersections_with_left, 1);
+    send_intersections(intersections_with_right, 1);
 
-    // XXXXXXXXX
-
-    // receiving the nodes from the common zones
-    int recv_count = 0;
-    for (auto && data : zip(arange(nb_proc), intersections_with_left,
-                            intersections_with_right)) {
-      auto proc = std::get<0>(data);
-      if (proc == prank)
-        continue;
-
-      // Receive remote right nodes to merge with local right nodes
-      const auto & intersection_with_p_right = std::get<2>(data);
-      if (intersection_with_p_right) {
-        recv_and_extract_nodes(nodes_right, proc, recv_count);
-      }
-      // Receive remote left nodes to merge with local left nodes
-      const auto & intersection_with_p_left = std::get<1>(data);
-      if (intersection_with_p_left) {
-        recv_and_extract_nodes(nodes_left, proc, recv_count + 1);
-      }
-
-      recv_count += 2;
-    }
+    recv_intersections(intersections_with_right, 0);
+    recv_intersections(intersections_with_right, 1);
 
     communicator->waitAll(send_requests);
     communicator->freeCommunicationRequest(send_requests);
