@@ -31,6 +31,8 @@
 #include "aka_types.hh"
 #include "communicator.hh"
 /* -------------------------------------------------------------------------- */
+#include <map>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_BBOX_HH__
 #define __AKANTU_AKA_BBOX_HH__
@@ -39,6 +41,8 @@ namespace akantu {
 
 class BBox {
 public:
+  BBox() = default;
+
   BBox(UInt spatial_dimension)
       : dim(spatial_dimension),
         lower_bounds(spatial_dimension, std::numeric_limits<Real>::max()),
@@ -227,7 +231,7 @@ public:
     // todo: change for a custom reduction algorithm
     auto other_bboxes = other.allGather(communicator);
     std::map<UInt, BBox> intersections;
-    for (auto & bbox : enumerate(other_bboxes)) {
+    for (const auto & bbox : enumerate(other_bboxes)) {
       auto && tmp = this->intersection(std::get<1>(bbox));
       if (tmp) {
         intersections[std::get<0>(bbox)] = tmp;
@@ -245,7 +249,7 @@ public:
   }
 
 protected:
-  UInt dim;
+  UInt dim{0};
   bool empty{true};
   Vector<Real> lower_bounds;
   Vector<Real> upper_bounds;

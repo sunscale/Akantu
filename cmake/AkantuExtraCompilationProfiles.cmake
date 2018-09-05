@@ -14,15 +14,15 @@ set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
 # Sanitize the code
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.2") OR
     CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS_SANITIZE "-g -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined"
+  set(CMAKE_CXX_FLAGS_SANITIZE "-g -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the compiler during sanitining builds")
-  set(CMAKE_C_FLAGS_SANITIZE "-g -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined"
+  set(CMAKE_C_FLAGS_SANITIZE "-g -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the compiler during sanitining builds")
-  set(CMAKE_Fortran_FLAGS_SANITIZE "-g -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined"
+  set(CMAKE_Fortran_FLAGS_SANITIZE "-g -O2 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the compiler during sanitining builds")
-  set(CMAKE_EXE_LINKER_FLAGS_SANITIZE "-fsanitize=address -fsanitize=leak -fsanitize=undefined"
+  set(CMAKE_EXE_LINKER_FLAGS_SANITIZE "-fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the linker during sanitining builds")
-  set(CMAKE_SHARED_LINKER_FLAGS_SANITIZE "-fsanitize=address -fsanitize=leak -fsanitize=undefined"
+  set(CMAKE_SHARED_LINKER_FLAGS_SANITIZE "-fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the linker during sanitining builds")
 
   mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING CMAKE_C_FLAGS_PROFILING

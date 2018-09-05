@@ -52,38 +52,35 @@ class ArrayBase {
   /* ------------------------------------------------------------------------ */
 public:
   explicit ArrayBase(ID id = "") : id(std::move(id)) {}
+  ArrayBase(const ArrayBase & other, const ID & id = "") {
+    this->id = (id == "") ? other.id : id;
+  }
 
   ArrayBase(const ArrayBase & other) = default;
   ArrayBase(ArrayBase && other) = default;
-
   ArrayBase & operator=(const ArrayBase & other) = default;
-  //ArrayBase & operator=(ArrayBase && other) = default;
+  // ArrayBase & operator=(ArrayBase && other) = default;
 
   virtual ~ArrayBase() = default;
-
-
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// get the amount of space allocated in bytes
-  inline UInt getMemorySize() const;
+  virtual UInt getMemorySize() const = 0;
 
   /// set the size to zero without freeing the allocated space
   inline void empty();
 
   /// function to print the containt of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  virtual void printself(std::ostream & stream, int indent = 0) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Get the real size allocated in memory
-  AKANTU_GET_MACRO(AllocatedSize, allocated_size, UInt);
   /// Get the Size of the Array
-  UInt getSize() const __attribute__((deprecated)) { return size_; }
   UInt size() const { return size_; }
   /// Get the number of components
   AKANTU_GET_MACRO(NbComponent, nb_component, UInt);
@@ -97,19 +94,13 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// id of the vector
-  ID id;
-
-  /// the size allocated
-  UInt allocated_size{0};
+  ID id{""};
 
   /// the size used
   UInt size_{0};
 
   /// number of components
   UInt nb_component{1};
-
-  /// size of the stored type
-  UInt size_of_type{0};
 };
 
 /* -------------------------------------------------------------------------- */
@@ -128,47 +119,146 @@ namespace {
 } // namespace
 
 /* -------------------------------------------------------------------------- */
-template <typename T, bool is_scal> class Array : public ArrayBase {
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+/* Memory handling layer                                                      */
+/* -------------------------------------------------------------------------- */
+enum class ArrayAllocationType {
+  _default,
+  _pod,
+};
+
+template <typename T>
+struct ArrayAllocationTrait
+    : public std::conditional_t<
+          std::is_scalar<T>::value,
+          std::integral_constant<ArrayAllocationType,
+                                 ArrayAllocationType::_pod>,
+          std::integral_constant<ArrayAllocationType,
+                                 ArrayAllocationType::_default>> {};
+
+/* -------------------------------------------------------------------------- */
+template <typename T,
+          ArrayAllocationType allocation_trait = ArrayAllocationTrait<T>::value>
+class ArrayDataLayer : public ArrayBase {
 public:
   using value_type = T;
   using reference = value_type &;
   using pointer_type = value_type *;
   using const_reference = const value_type &;
 
-  inline ~Array() override;
+public:
+  virtual ~ArrayDataLayer() = default;
 
   /// Allocation of a new vector
-  explicit inline Array(UInt size = 0, UInt nb_component = 1,
-                        const ID & id = "");
+  explicit ArrayDataLayer(UInt size = 0, UInt nb_component = 1,
+                          const ID & id = "");
 
   /// Allocation of a new vector with a default value
-  Array(UInt size, UInt nb_component, const value_type def_values[],
-        const ID & id = "");
+  ArrayDataLayer(UInt size, UInt nb_component, const_reference value,
+                 const ID & id = "");
+
+  /// Copy constructor (deep copy)
+  ArrayDataLayer(const ArrayDataLayer & vect, const ID & id = "");
+
+#ifndef SWIG
+  /// Copy constructor (deep copy)
+  explicit ArrayDataLayer(const std::vector<value_type> & vect);
+#endif
+
+  // copy operator
+  ArrayDataLayer & operator=(const ArrayDataLayer & other);
+
+  // move constructor
+  ArrayDataLayer(ArrayDataLayer && other);
+
+  // move assign
+  ArrayDataLayer & operator=(ArrayDataLayer && other);
+
+protected:
+  // allocate the memory
+  void allocate(UInt size, UInt nb_component);
+
+  // allocate and initialize the memory
+  void allocate(UInt size, UInt nb_component, const T & value);
+
+public:
+  /// append a tuple of size nb_component containing value
+  inline void push_back(const_reference value);
+  /// append a vector
+  // inline void push_back(const value_type new_elem[]);
+
+#ifndef SWIG
+  /// append a Vector or a Matrix
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+  inline void push_back(const C<T> & new_elem);
+#endif
+
+  /// changes the allocated size but not the size
+  void reserve(UInt size);
+
+  /// change the size of the Array
+  void resize(UInt size);
+
+  /// change the size of the Array and initialize the values
+  void resize(UInt size, const T & val);
+
+  /// get the amount of space allocated in bytes
+  inline UInt getMemorySize() const override final;
+
+  /// Get the real size allocated in memory
+  inline UInt getAllocatedSize() const;
+
+  /// give the address of the memory allocated for this vector
+  T * storage() const { return values; };
+
+protected:
+  /// allocation type agnostic  data access
+  T * values{nullptr};
+
+  /// data storage
+  std::vector<T> data_storage;
+};
+
+/* -------------------------------------------------------------------------- */
+/* Actual Array                                                               */
+/* -------------------------------------------------------------------------- */
+template <typename T, bool is_scal> class Array : public ArrayDataLayer<T> {
+private:
+  using parent = ArrayDataLayer<T>;
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  using value_type = typename parent::value_type;
+  using reference = typename parent::reference;
+  using pointer_type = typename parent::pointer_type;
+  using const_reference = typename parent::const_reference;
+
+  ~Array() override;
+
+  /// Allocation of a new vector
+  Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
 
   /// Allocation of a new vector with a default value
   Array(UInt size, UInt nb_component, const_reference value,
         const ID & id = "");
 
   /// Copy constructor (deep copy if deep=true)
-  Array(const Array<value_type, is_scal> & vect, //bool deep = true,
-        const ID & id = "");
+  Array(const Array & vect, const ID & id = "");
 
 #ifndef SWIG
   /// Copy constructor (deep copy)
-  explicit Array(const std::vector<value_type> & vect);
+  explicit Array(const std::vector<T> & vect);
 #endif
 
   // copy operator
   Array & operator=(const Array & other);
 
   // move constructor
-  Array(Array && other);
+  Array(Array && other) = default;
 
   // move assign
-  Array & operator=(Array && other);
+  Array & operator=(Array && other) = default;
 
 #ifndef SWIG
   /* ------------------------------------------------------------------------ */
@@ -235,41 +325,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// append a tuple of size nb_component containing value
-  inline void push_back(const_reference value);
-/// append a vector
-// inline void push_back(const value_type new_elem[]);
-
-#ifndef SWIG
-  /// append a Vector or a Matrix
-  template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>::value>>
-  inline void push_back(const C<T> & new_elem);
-  /// append the value of the iterator
-  template <typename Ret> inline void push_back(const iterator<Ret> & it);
-
-  /// erase the value at position i
-  inline void erase(UInt i);
-  /// ask Nico, clarify
-  template <typename R> inline iterator<R> erase(const iterator<R> & it);
-#endif
-
-  /// changes the allocated size but not the size
-  virtual void reserve(UInt size);
-
-  /// change the size of the Array
-  virtual void resize(UInt size);
-
-  /// change the size of the Array and initialize the values
-  virtual void resize(UInt size, const T & val);
-
-  /// change the number of components by interlacing data
-  /// @param multiplicator number of interlaced components add
-  /// @param block_size blocks of data in the array
-  /// Examaple for block_size = 2, multiplicator = 2
-  /// array = oo oo oo -> new array = oo nn nn oo nn nn oo nn nn
-  void extendComponentsInterlaced(UInt multiplicator, UInt stride);
-
   /// search elem in the vector, return  the position of the first occurrence or
   /// -1 if not found
   UInt find(const_reference elem) const;
@@ -277,19 +332,39 @@ public:
   /// @see Array::find(const_reference elem) const
   UInt find(T elem[]) const;
 
+  inline void push_back(const_reference value) { parent::push_back(value); }
+
 #ifndef SWIG
+  /// append a Vector or a Matrix
+  template <template <typename> class C,
+            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+  inline void push_back(const C<T> & new_elem) {
+    parent::push_back(new_elem);
+  }
+
+  template <typename Ret> inline void push_back(const iterator<Ret> & it) {
+    push_back(*it);
+  }
+
+  /// erase the value at position i
+  inline void erase(UInt i);
+  /// ask Nico, clarify
+  template <typename R> inline iterator<R> erase(const iterator<R> & it);
+
   /// @see Array::find(const_reference elem) const
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline UInt find(const C<T> & elem);
 #endif
 
-  /// set all entries of the array to 0
-  inline void clear() { std::fill_n(values, size_ * nb_component, T()); }
-
   /// set all entries of the array to the value t
   /// @param t value to fill the array with
-  inline void set(T t) { std::fill_n(values, size_ * nb_component, t); }
+  inline void set(T t) {
+    std::fill_n(this->values, this->size_ * this->nb_component, t);
+  }
+
+  /// set all entries of the array to 0
+  inline void clear() { set(T()); }
 
 #ifndef SWIG
   /// set all tuples of the array to a given vector or matrix
@@ -307,18 +382,8 @@ public:
   /// Arrays in terms of n
   void copy(const Array<T, is_scal> & other, bool no_sanity_check = false);
 
-  /// give the address of the memory allocated for this vector
-  T * storage() const { return values; };
-
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
-
-protected:
-  /// perform the allocation for the constructors
-  void allocate(UInt size, UInt nb_component = 1);
-
-  /// resize initializing with uninitialized_fill if fill is set
-  void resizeUnitialized(UInt new_size, bool fill, const T & val = T());
 
   /* ------------------------------------------------------------------------ */
   /* Operators                                                                */
@@ -345,13 +410,6 @@ public:
   inline reference operator[](UInt i);
   /// return a const reference to the ith component of the 1D array
   inline const_reference operator[](UInt i) const;
-
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-protected:
-  /// array of values
-  T * values; // /!\ very dangerous
 };
 
 /* -------------------------------------------------------------------------- */
