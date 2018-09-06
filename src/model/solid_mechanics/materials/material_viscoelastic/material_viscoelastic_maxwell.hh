@@ -56,15 +56,15 @@ namespace akantu {
    ---|                  |---
       |                  |
       ----|\/\/\|--[|-----
-      |   E_v1  \lambda_1|
+      |   E_v1  \Eta_1|
    ---|                  |---
       |                  |
       ----|\/\/\|--[|-----
-      |   E_v2 \lambda_2 |
+      |   E_v2 \Eta_2 |
    ---|                  |---
       |                  |
       ----|\/\/\|--[|----
-          E_vN \lambda_N
+          E_vN \Eta_N
 
  @endverbatim
  *
@@ -74,10 +74,10 @@ namespace akantu {
  *   - N   : number of Maxwell elements
  *   - Einf  : one spring element stiffness
  *   - Ev1 : stiffness of the 1st viscous element
- *   - lambda1: relaxation time of the 1st Maxwell element
+ *   - Eta1: viscosity of the 1st Maxwell element
  *   ...
  *   - Ev<N> : stiffness of the Nst viscous element
- *   - lambda<N>: relaxation time of the Nst Maxwell element
+ *   - Eta<N>: viscosity of the Nst Maxwell element
  */
 
 template <UInt spatial_dimension>
