@@ -63,23 +63,14 @@ void NodeInfoPerProc::fillNodeGroupsFromBuffer(CommunicationBuffer & buffer) {
 
   const auto & global_nodes = mesh.getGlobalNodesIds();
 
-  auto nbegin = global_nodes.begin();
-  auto nit = global_nodes.begin();
-  auto nend = global_nodes.end();
-  for (; nit != nend; ++nit) {
-    auto it = node_to_group[*nit].begin();
-    auto end = node_to_group[*nit].end();
-
-    for (; it != end; ++it) {
-      mesh.getNodeGroup(*it).add(nit - nbegin, false);
+  for (auto && data : enumerate(global_nodes)) {
+    for (const auto & node : node_to_group[std::get<1>(data)]) {
+      mesh.getNodeGroup(node).add(std::get<0>(data), false);
     }
   }
 
-  GroupManager::const_node_group_iterator ngi = mesh.node_group_begin();
-  GroupManager::const_node_group_iterator nge = mesh.node_group_end();
-  for (; ngi != nge; ++ngi) {
-    NodeGroup & ng = *(ngi->second);
-    ng.optimize();
+  for (auto && ng_data : mesh.iterateNodeGroups()) {
+     ng_data.optimize();
   }
 
   AKANTU_DEBUG_OUT();
@@ -205,6 +196,35 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NodeInfoPerProc::fillNodalData(DynamicCommunicationBuffer & buffer,
+                                    std::string tag_name) {
+
+#define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, _, elem)                    \
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+    auto & nodal_data =                                                        \
+        mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name); \
+    nodal_data.resize(mesh.getNbNodes());                                      \
+    for (auto && data : make_view(nodal_data)) {                               \
+      for (auto i[[gnu::unused]] : arange(nodal_data.getNbComponent())) {      \
+        buffer >> data;                                                        \
+      }                                                                        \
+    }                                                                          \
+    break;                                                                     \
+  }
+
+  MeshDataTypeCode data_type_code =
+      mesh.getTypeCode(tag_name, MeshDataType::_nodal);
+  switch (data_type_code) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,
+                          AKANTU_MESH_DATA_TYPES)
+  default:
+    AKANTU_ERROR("Could not obtain the type of tag" << tag_name << "!");
+    break;
+  }
+#undef AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA
 }
 
 /* -------------------------------------------------------------------------- */
@@ -417,6 +437,83 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
 }
 
 /* -------------------------------------------------------------------------- */
+void MasterNodeInfoPerProc::fillTagBuffers(
+    std::vector<DynamicCommunicationBuffer> & buffers,
+    const std::string & tag_name) {
+#define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, _, elem)                    \
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+    auto & nodal_data =                                                        \
+        mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name);     \
+    for (auto && data : enumerate(nodes_per_proc)) {                           \
+      auto proc = std::get<0>(data);                                           \
+      auto & nodes = std::get<1>(data);                                        \
+      auto & buffer = buffers[proc];                                           \
+      for (auto & node : nodes) {                                              \
+        for (auto i : arange(nodal_data.getNbComponent())) {                   \
+          buffer << nodal_data(node, i);                                       \
+        }                                                                      \
+      }                                                                        \
+    }                                                                          \
+    break;                                                                     \
+  }
+
+  MeshDataTypeCode data_type_code =
+      mesh.getTypeCode(tag_name, MeshDataType::_nodal);
+  switch (data_type_code) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA, ,
+                          AKANTU_MESH_DATA_TYPES)
+  default:
+    AKANTU_ERROR("Could not obtain the type of tag" << tag_name << "!");
+    break;
+  }
+#undef AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA
+} // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+void MasterNodeInfoPerProc::synchronizeTags() {
+  /// tag info
+  auto tag_names = mesh.getTagNames();
+
+  DynamicCommunicationBuffer tags_buffer;
+  for (auto && tag_name : tag_names) {
+    tags_buffer << tag_name;
+    tags_buffer << mesh.getTypeCode(tag_name, MeshDataType::_nodal);
+    tags_buffer << mesh.getNbComponent(tag_name);
+  }
+
+  UInt tags_buffer_length = tags_buffer.size();
+  AKANTU_DEBUG_INFO(
+      "Broadcasting the size of the information about the mesh data tags: ("
+      << tags_buffer_length << ").");
+  comm.broadcast(tags_buffer_length, root);
+
+  if (tags_buffer_length != 0)
+    comm.broadcast(tags_buffer, root);
+
+  for (auto && tag_data : enumerate(tag_names)) {
+    auto tag_count = std::get<0>(tag_data);
+    auto & tag_name = std::get<1>(tag_data);
+    std::vector<DynamicCommunicationBuffer> buffers;
+    std::vector<CommunicationRequest> requests;
+    buffers.resize(nb_proc);
+    fillTagBuffers(buffers, tag_name);
+    for (auto && data : enumerate(buffers)) {
+      auto && proc = std::get<0>(data);
+      auto & buffer = std::get<1>(data);
+      if (proc == root) {
+        fillNodalData(buffer, tag_name);
+      } else {
+        auto && tag = Tag::genTag(this->rank, tag_count, Tag::_MESH_DATA);
+        requests.push_back(comm.asyncSend(buffer, proc, tag));
+      }
+    }
+
+    comm.waitAll(requests);
+    comm.freeCommunicationRequest(requests);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -496,4 +593,40 @@ void SlaveNodeInfoPerProc::synchronizeGroups() {
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+/* -------------------------------------------------------------------------- */
+void SlaveNodeInfoPerProc::synchronizeTags() {
+  UInt tags_buffer_length{0};
+  comm.broadcast(tags_buffer_length, root);
+  if (tags_buffer_length == 0) {
+    return;
+  }
+
+  CommunicationBuffer tags_buffer;
+  tags_buffer.resize(tags_buffer_length);
+  comm.broadcast(tags_buffer, root);
+
+  std::vector<std::string> tag_names;
+  while (tags_buffer.getLeftToUnpack() > 0) {
+    std::string name;
+    MeshDataTypeCode code;
+    UInt nb_components;
+    tags_buffer >> name;
+    tags_buffer >> code;
+    tags_buffer >> nb_components;
+
+    mesh.registerNodalData(name, nb_components, code);
+    tag_names.push_back(name);
+  }
+
+  for (auto && tag_data : enumerate(tag_names)) {
+    auto tag_count = std::get<0>(tag_data);
+    auto & tag_name = std::get<1>(tag_data);
+    DynamicCommunicationBuffer buffer;
+    auto && tag = Tag::genTag(this->root, tag_count, Tag::_MESH_DATA);
+    comm.receive(buffer, this->root, tag);
+
+    fillNodalData(buffer, tag_name);
+  }
+}
+
+} // namespace akantu

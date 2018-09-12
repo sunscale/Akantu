@@ -64,13 +64,14 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
            Communicator & communicator)
     : Memory(id, memory_id),
       GroupManager(*this, id + ":group_manager", memory_id),
+      MeshData("mesh_data", id, memory_id),
       connectivities("connectivities", id, memory_id),
       ghosts_counters("ghosts_counters", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
       lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
       size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
       local_upper_bounds(spatial_dimension, 0.),
-      mesh_data("mesh_data", id, memory_id), communicator(&communicator) {
+       communicator(&communicator) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -148,7 +149,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
     }
 
     if (not mesh_facets->hasData("physical_names")) {
-      mesh_facets->registerData<std::string>("physical_names");
+      mesh_facets->registerElementalData<std::string>("physical_names");
     }
 
     auto & mesh_phys_data = this->getData<std::string>("physical_names");

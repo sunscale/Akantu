@@ -30,6 +30,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communication_buffer.hh"
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -39,7 +40,7 @@
 namespace akantu {
 class NodeSynchronizer;
 class Communicator;
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 
@@ -52,6 +53,7 @@ public:
   virtual void synchronizeNodes() = 0;
   virtual void synchronizeTypes() = 0;
   virtual void synchronizeGroups() = 0;
+  virtual void synchronizeTags() = 0;
 
 protected:
   template <class CommunicationBuffer>
@@ -59,6 +61,7 @@ protected:
   void fillNodesType();
 
   void fillCommunicationScheme(const Array<UInt> &);
+  void fillNodalData(DynamicCommunicationBuffer & buffer, std::string tag_name);
 
 protected:
   NodeSynchronizer & synchronizer;
@@ -83,8 +86,12 @@ public:
   void synchronizeNodes() override;
   void synchronizeTypes() override;
   void synchronizeGroups() override;
+  void synchronizeTags() override;
 
 private:
+  void fillTagBuffers(std::vector<DynamicCommunicationBuffer> & buffers,
+                      const std::string & tag_name);
+
   /// get the list of nodes to send and send them
   std::vector<Array<UInt>> nodes_per_proc;
   Array<UInt> nb_nodes_per_proc;
@@ -99,10 +106,11 @@ public:
   void synchronizeNodes() override;
   void synchronizeTypes() override;
   void synchronizeGroups() override;
+  void synchronizeTags() override;
 
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NODE_INFO_PER_PROCESSOR_HH__ */

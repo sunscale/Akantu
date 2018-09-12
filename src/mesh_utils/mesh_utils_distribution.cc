@@ -108,6 +108,7 @@ namespace MeshUtilsDistribution {
     node_proc_infos.synchronizeNodes();
     node_proc_infos.synchronizeTypes();
     node_proc_infos.synchronizeGroups();
+    node_proc_infos.synchronizeTags();
 
     MeshUtils::fillElementToSubElementsData(mesh);
 
@@ -163,6 +164,7 @@ namespace MeshUtilsDistribution {
     node_proc_infos.synchronizeNodes();
     node_proc_infos.synchronizeTypes();
     node_proc_infos.synchronizeGroups();
+    node_proc_infos.synchronizeTags();
 
     MeshUtils::fillElementToSubElementsData(mesh);
 

@@ -29,8 +29,7 @@ register_test(test_grid test_grid.cc
 #register_test(test_types test_types.cc PACKAGE core)
 
 register_gtest_sources(SOURCES test_csr.cc PACKAGE core)
-register_gtest_sources(SOURCES test_arange_iterator.cc PACKAGE core HEADER_ONLY)
-register_gtest_sources(SOURCES test_zip_iterator.cc PACKAGE core HEADER_ONLY)
+register_gtest_sources(SOURCES test_iterators.cc PACKAGE core HEADER_ONLY)
 register_gtest_sources(SOURCES test_array.cc PACKAGE core)
 register_gtest_sources(SOURCES test_tensors.cc PACKAGE core)
 

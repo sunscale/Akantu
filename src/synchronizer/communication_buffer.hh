@@ -79,6 +79,9 @@ public:
   /// resize the internal buffer
   inline void resize(UInt size);
 
+  /// resize the internal buffer allocate always
+  inline void reserve(UInt size);
+
   /// clear buffer context
   inline void clear();
 

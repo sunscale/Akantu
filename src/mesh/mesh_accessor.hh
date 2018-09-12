@@ -121,8 +121,6 @@ public:
                                          resize_with_parent);
   }
 
-  auto & getMeshData() { return this->_mesh.getMeshData(); }
-
   /// get the node synchonizer
   auto & getNodeSynchronizer() { return *this->_mesh.node_synchronizer; }
 

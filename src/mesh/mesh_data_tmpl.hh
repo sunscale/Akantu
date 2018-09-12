@@ -56,9 +56,10 @@ template <typename T> inline MeshDataTypeCode MeshData::getTypeCode() const {
 BOOST_PP_SEQ_FOR_EACH(MESH_DATA_GET_TYPE, void, AKANTU_MESH_DATA_TYPES)
 #undef MESH_DATA_GET_TYPE
 
-inline MeshDataTypeCode MeshData::getTypeCode(const ID & name) const {
-  auto it = typecode_map.find(name);
-  if (it == typecode_map.end())
+inline MeshDataTypeCode MeshData::getTypeCode(const ID & name,
+                                              MeshDataType type) const {
+  auto it = typecode_map.at(type).find(name);
+  if (it == typecode_map.at(type).end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
   return it->second;
 }
@@ -66,12 +67,14 @@ inline MeshDataTypeCode MeshData::getTypeCode(const ID & name) const {
 /* -------------------------------------------------------------------------- */
 //  Register new elemental data templated (and alloc data) with check if the
 //  name is new
-template <typename T> void MeshData::registerElementalData(const ID & name) {
+template <typename T>
+ElementTypeMapArray<T> & MeshData::registerElementalData(const ID & name) {
   auto it = elemental_data.find(name);
   if (it == elemental_data.end()) {
-    allocElementalData<T>(name);
+    return allocElementalData<T>(name);
   } else {
     AKANTU_DEBUG_INFO("Data named " << name << " already registered.");
+    return getElementalData<T>(name);
   }
 }
 
@@ -98,11 +101,79 @@ inline void MeshData::registerElementalData(const ID & name,
 /* -------------------------------------------------------------------------- */
 /// Register new elemental data (and alloc data)
 template <typename T>
-ElementTypeMapArray<T> * MeshData::allocElementalData(const ID & name) {
-  auto * dataset = new ElementTypeMapArray<T>(name, id, memory_id);
-  elemental_data[name] = dataset;
-  typecode_map[name] = getTypeCode<T>();
-  return dataset;
+ElementTypeMapArray<T> & MeshData::allocElementalData(const ID & name) {
+  auto dataset =
+      std::make_unique<ElementTypeMapArray<T>>(name, _id, _memory_id);
+  auto * dataset_typed = dataset.get();
+  elemental_data[name] = std::move(dataset);
+  typecode_map[MeshDataType::_elemental][name] = getTypeCode<T>();
+  return *dataset_typed;
+}
+
+/* -------------------------------------------------------------------------- */
+//  Register new nodal data templated (and alloc data) with check if the
+//  name is new
+template <typename T>
+Array<T> & MeshData::registerNodalData(const ID & name, UInt nb_components) {
+  auto it = nodal_data.find(name);
+  if (it == nodal_data.end()) {
+    return allocNodalData<T>(name, nb_components);
+  } else {
+    AKANTU_DEBUG_INFO("Data named " << name << " already registered.");
+    return getNodalData<T>(name);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+//  Register new elemental data of a given MeshDataTypeCode with check if the
+//  name is new
+#define AKANTU_MESH_NODAL_DATA_CASE_MACRO(r, name, elem)                       \
+  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+    registerNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(name, nb_components);   \
+    break;                                                                     \
+  }
+
+inline void MeshData::registerNodalData(const ID & name, UInt nb_components,
+                                        MeshDataTypeCode type) {
+  switch (type) {
+    BOOST_PP_SEQ_FOR_EACH(AKANTU_MESH_NODAL_DATA_CASE_MACRO, name,
+                          AKANTU_MESH_DATA_TYPES)
+  default:
+    AKANTU_ERROR("Type " << type << "not implemented by MeshData.");
+  }
+}
+#undef AKANTU_MESH_NODAL_DATA_CASE_MACRO
+
+/* -------------------------------------------------------------------------- */
+/// Register new elemental data (and alloc data)
+template <typename T>
+Array<T> & MeshData::allocNodalData(const ID & name, UInt nb_components) {
+  auto dataset =
+      std::make_unique<Array<T>>(0, nb_components, T(), _id + ":" + name);
+  auto * dataset_typed = dataset.get();
+  nodal_data[name] = std::move(dataset);
+  typecode_map[MeshDataType::_nodal][name] = getTypeCode<T>();
+  return *dataset_typed;
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+const Array<T> & MeshData::getNodalData(const ID & name) const {
+  auto it = nodal_data.find(name);
+  if (it == nodal_data.end())
+    AKANTU_EXCEPTION("No nodal dataset named " << name << " found.");
+  return dynamic_cast<const Array<T> &>(*(it->second.get()));
+}
+
+/* -------------------------------------------------------------------------- */
+// Get an existing elemental data
+template <typename T>
+Array<T> & MeshData::getNodalData(const ID & name, UInt nb_components) {
+  auto it = nodal_data.find(name);
+  if (it == nodal_data.end())
+    return allocNodalData<T>(name, nb_components);
+
+  return dynamic_cast<Array<T> &>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -112,7 +183,7 @@ MeshData::getElementalData(const ID & name) const {
   auto it = elemental_data.find(name);
   if (it == elemental_data.end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
-  return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second));
+  return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -122,13 +193,13 @@ ElementTypeMapArray<T> & MeshData::getElementalData(const ID & name) {
   auto it = elemental_data.find(name);
   if (it == elemental_data.end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
-  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second));
+  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-bool MeshData::hasDataArray(const ID & name, const ElementType & elem_type,
-                            const GhostType & ghost_type) const {
+bool MeshData::hasData(const ID & name, const ElementType & elem_type,
+                       const GhostType & ghost_type) const {
   auto it = elemental_data.find(name);
   if (it == elemental_data.end())
     return false;
@@ -138,9 +209,18 @@ bool MeshData::hasDataArray(const ID & name, const ElementType & elem_type,
 }
 
 /* -------------------------------------------------------------------------- */
-inline bool MeshData::hasData(const ID & name) const {
-  auto it = elemental_data.find(name);
-  return (it != elemental_data.end());
+inline bool MeshData::hasData(const ID & name, MeshDataType type) const {
+  if (type == MeshDataType::_elemental) {
+    auto it = elemental_data.find(name);
+    return (it != elemental_data.end());
+  }
+
+  if (type == MeshDataType::_nodal) {
+    auto it = nodal_data.find(name);
+    return (it != nodal_data.end());
+  }
+
+  return false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -168,8 +248,8 @@ Array<T> & MeshData::getElementalDataArray(const ID & name,
                                    << " not registered for type: " << elem_type
                                    << " - ghost_type:" << ghost_type << "!");
   }
-  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second))(elem_type,
-                                                               ghost_type);
+  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second.get()))(
+      elem_type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -182,12 +262,13 @@ Array<T> & MeshData::getElementalDataArrayAlloc(const ID & name,
   auto it = elemental_data.find(name);
   ElementTypeMapArray<T> * dataset;
   if (it == elemental_data.end()) {
-    dataset = allocElementalData<T>(name);
+    dataset = &allocElementalData<T>(name);
   } else {
-    dataset = dynamic_cast<ElementTypeMapArray<T> *>(it->second);
+    dataset = dynamic_cast<ElementTypeMapArray<T> *>(it->second.get());
   }
   AKANTU_DEBUG_ASSERT(
-      getTypeCode<T>() == typecode_map.find(name)->second,
+      getTypeCode<T>() ==
+          typecode_map.at(MeshDataType::_elemental).find(name)->second,
       "Function getElementalDataArrayAlloc called with the wrong type!");
   if (!(dataset->exists(elem_type, ghost_type))) {
     dataset->alloc(0, nb_component, elem_type, ghost_type);
@@ -206,9 +287,9 @@ Array<T> & MeshData::getElementalDataArrayAlloc(const ID & name,
 inline UInt MeshData::getNbComponent(const ID & name,
                                      const ElementType & el_type,
                                      const GhostType & ghost_type) const {
-  auto it = typecode_map.find(name);
+  auto it = typecode_map.at(MeshDataType::_elemental).find(name);
   UInt nb_comp(0);
-  if (it == typecode_map.end()) {
+  if (it == typecode_map.at(MeshDataType::_elemental).end()) {
     AKANTU_EXCEPTION("Could not determine the type held in dataset "
                      << name << " for type: " << el_type
                      << " - ghost_type:" << ghost_type << ".");
@@ -235,21 +316,31 @@ MeshData::getNbComponentTemplated(const ID & name, const ElementType & el_type,
 }
 
 /* -------------------------------------------------------------------------- */
+inline UInt MeshData::getNbComponent(const ID & name) const {
+  auto it = nodal_data.find(name);
+  if (it == nodal_data.end()) {
+    AKANTU_EXCEPTION("No nodal dataset registered with the name" << name
+                                                                 << ".");
+  }
+
+  return it->second->getNbComponent();
+}
+
+/* -------------------------------------------------------------------------- */
 // get the names of the data stored in elemental_data
 #define AKANTU_MESH_DATA_CASE_MACRO(r, name, elem)                             \
   case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
     ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> * dataset;            \
     dataset =                                                                  \
         dynamic_cast<ElementTypeMapArray<BOOST_PP_TUPLE_ELEM(2, 1, elem)> *>(  \
-            it->second);                                                       \
+            it->second.get());                                                 \
     exists = dataset->exists(el_type, ghost_type);                             \
     break;                                                                     \
   }
 
-inline void MeshData::getTagNames(StringVector & tags,
-                                  const ElementType & el_type,
+inline auto MeshData::getTagNames(const ElementType & el_type,
                                   const GhostType & ghost_type) const {
-  tags.clear();
+  std::vector<std::string> tags;
   bool exists(false);
 
   auto it = elemental_data.begin();
@@ -267,8 +358,19 @@ inline void MeshData::getTagNames(StringVector & tags,
       tags.push_back(it->first);
     }
   }
+
+  return tags;
 }
 #undef AKANTU_MESH_DATA_CASE_MACRO
+
+/* -------------------------------------------------------------------------- */
+inline auto MeshData::getTagNames() const {
+  std::vector<std::string> tags;
+  for (auto && data : nodal_data) {
+    tags.push_back(std::get<0>(data));
+  }
+  return tags;
+}
 
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
