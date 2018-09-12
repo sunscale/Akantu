@@ -128,6 +128,28 @@ private:
   /// compute the fracture energy
   Real computeFractureEnergyByNode();
 
+  /* ------------------------------------------------------------------------ */
+  /* Data Accessor inherited members                                          */
+  /* ------------------------------------------------------------------------ */
+public:
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
+
+  inline UInt getNbData(const Array<UInt> & indexes,
+                        const SynchronizationTag & tag) const override;
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<UInt> & indexes,
+                       const SynchronizationTag & tag) const override;
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<UInt> & indexes,
+                         const SynchronizationTag & tag) override;
+
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
