@@ -155,6 +155,13 @@ public:
                                          this->element_kind);
   }
 
+  /// get filter types for range loop
+  auto filterTypes(const GhostType & ghost_type) const -> decltype(auto) {
+    return this->element_filter.elementTypes(
+        _spatial_dimension = this->spatial_dimension,
+        _element_kind = this->element_kind, _ghost_type = ghost_type);
+  }
+
   /// get the array for a given type of the element_filter
   const Array<UInt> getFilter(const ElementType & type,
                               const GhostType & ghost_type = _not_ghost) const {
@@ -246,7 +253,7 @@ protected:
   bool is_init;
 
   /// previous values
-  InternalField<T> * previous_values;
+  std::unique_ptr<InternalField<T>> previous_values;
 };
 
 /// standard output stream operator
@@ -257,6 +264,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_INTERNAL_FIELD_HH__ */
