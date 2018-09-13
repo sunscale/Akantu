@@ -42,10 +42,8 @@ template <typename T>
 InternalField<T>::InternalField(const ID & id, Material & material)
     : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
       material(material), fem(&(material.getModel().getFEEngine())),
-      element_filter(material.getElementFilter()), default_value(T()),
-      spatial_dimension(material.getModel().getSpatialDimension()),
-      element_kind(_ek_regular), nb_component(0), is_init(false),
-      previous_values(nullptr) {}
+      element_filter(material.getElementFilter()),
+      spatial_dimension(material.getModel().getSpatialDimension()) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -54,9 +52,7 @@ InternalField<T>::InternalField(
     const ElementTypeMapArray<UInt> & element_filter)
     : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
       material(material), fem(&fem), element_filter(element_filter),
-      default_value(T()), spatial_dimension(material.getSpatialDimension()),
-      element_kind(_ek_regular), nb_component(0), is_init(false),
-      previous_values(nullptr) {}
+      spatial_dimension(material.getSpatialDimension()) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -65,8 +61,7 @@ InternalField<T>::InternalField(
     const ElementTypeMapArray<UInt> & element_filter)
     : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
       material(material), fem(&fem), element_filter(element_filter),
-      default_value(T()), spatial_dimension(dim), element_kind(_ek_regular),
-      nb_component(0), is_init(false), previous_values(nullptr) {}
+      spatial_dimension(dim) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -76,8 +71,7 @@ InternalField<T>::InternalField(const ID & id, const InternalField<T> & other)
       material(other.material), fem(other.fem),
       element_filter(other.element_filter), default_value(other.default_value),
       spatial_dimension(other.spatial_dimension),
-      element_kind(other.element_kind), nb_component(other.nb_component),
-      is_init(false), previous_values(nullptr) {
+      element_kind(other.element_kind), nb_component(other.nb_component) {
 
   AKANTU_DEBUG_ASSERT(other.is_init,
                       "Cannot create a copy of a non initialized field");
