@@ -49,6 +49,7 @@ namespace akantu {
   (friction)                                                            \
   (global)                                                              \
   (heat)                                                                \
+  (phase)								\
   (integration_scheme)                                                  \
   (material)                                                            \
   (mesh)                                                                \
