@@ -51,7 +51,7 @@ namespace akantu {
 
   // material functor can be created 
   
-}
+
   
 
 /* -------------------------------------------------------------------------- */
@@ -63,31 +63,30 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
     strain_history_on_qpoints("strain_history_on_qpoints", id),
     displacement_on_qpoints("displacement_on_qpoints", id){
 
- AKANTU_DEBUG_IN();
+  AKANTU_DEBUG_IN();
 
- this->initDOFManager();
+  this->initDOFManager();
+ 
+  this->registerDataAccessor(*this);
 
- this->registerDataAccessor(*this);
+  if (this->mesh.isDistributed()) {
+    auto & synchronizer = this->mesh.getElementSynchronizer();
+    this->registerSynchronizer(synchronizer, _gst_pfm_damage);
+    this->registerSynchronizer(synchronizer, _gst_pfm_gradient_damage);
+  }
 
- if (this->mesh.isDistributed()) {
-   auto & synchronizer = this->mesh.getElementSynchronizer();
-   this->registerSynchronizer(synchronizer, _gst_pfm_damage);
-   this->registerSynchronizer(synchronizer, _gst_pfm_gradient_damage);
- }
-
- registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
+  registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
 
 #ifdef AKANTU_USE_IOHELPER
- this->mesh.registerDumper<DumperParaview>("phase_field", id, true);
- this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
+  this->mesh.registerDumper<DumperParaview>("phase_field", id, true);
+  this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif // AKANTU_USE_IOHELPER
 
- this->registerParam("l0", l_0, 0., _pat_parsmod, "length scale");
- this->registerParam("gc", g_c, _pat_parsmod, "critical local fracture energy density");
- this->registerParam("lambda", lame_lambda, _pat_parsmod, "lame parameter lambda");
- this->registerParam("mu", lame_mu, _pat_parsmod, "lame paramter mu");
+  this->registerParam("l0", l_0, 0., _pat_parsmod, "length scale");
+  this->registerParam("gc", g_c, _pat_parsmod, "critical local fracture energy density");
+  this->registerParam("lambda", lame_lambda, _pat_parsmod, "lame parameter lambda");
+  this->registerParam("mu", lame_mu, _pat_parsmod, "lame paramter mu");
 
- 
  AKANTU_DEBUG_OUT();
 }
 
@@ -105,7 +104,9 @@ void PhaseFieldModel::initModel() {
   
 }
 
-
+/* -------------------------------------------------------------------------- */
+PhaseFieldModel::~PhaseFieldModel() = default;
+  
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
   if (matrix_id == "K") {
@@ -244,7 +245,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
     } else {
       options.non_linear_solver_type = _nls_newton_raphson;
       options.integration_scheme_type["damage"] = _ist_backward_euler;
-      options.solution_type["damage"] = IntegrationScheme::_temperature;
+      options.solution_type["damage"] = IntegrationScheme::_damage;
     }
     break;
   }
@@ -432,5 +433,260 @@ void PhaseFieldModel::initFullImpl(const ModelOptions & options) {
   readMaterials();
 }
 
+/* -------------------------------------------------------------------------- */
+UInt PhaseFieldModel::getNbData(const Array<Element> & elements,
+				const Synchronizationtag & tag) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt size = 0;
+  UInt nb_nodes_per_element = 0;
+
+  for (const Element & el : elements) {
+    nb_nodes_per_element += Mesh::getNbNodesPerElement(el.type);
+  }
+
+  switch (tag) {
+  case _gst_material_id: {
+    size += elements.size() * sizeof(UInt);
+    break;
+  }
+  case _gst_pfm_damage: {
+    size += nb_nodes_per_element * sizeof(Real); // damage
+    break;
+  }
+  case _gst_pfm_gradient_damage: {
+    size += getNbIntegrationPoints(elements) * spatial_dimension * sizeof(Real);
+    size += nb_nodes_per_element * sizeof(Real);
+    break;
+  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
+
+  AKANTU_DEBUG_OUT();
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::packData(CommunicationBuffer & buffer,
+			       const Array<Element> & elements,
+			       const SynchronizationTag & tag) const {
+
+  switch (tag) {
+  case _gst_pfm_damage: {
+    packNodalDataHelper(*damage, buffer, elements, mesh);
+    break;
+  }
+  case _gst_htm_gradient_damage: {
+    packElementalDataHelper(damage_gradient, buffer, elements, true,
+			    getFEEngine());
+    packNodalDataHelper(*damage, buffer, elements, mesh);
+    break;
+  }  
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
+				 const Array<Element> & elements,
+				 const SynchronizationTag & tag) {
+
+  switch (tag) {
+  case _gst_pfm_damage: {
+    unpackNodalDataHelper(*damage, buffer, elements, mesh);
+    break;
+  }
+  case _gst_pfm_gradient_damage: {
+    unpackElementalDataHelper(damage_gradient, buffer, elements, true,
+			      getFEEngine());
+    unpackNodalDataHelper(*damage, buffer, elements, mesh);
+    break;
+  }  
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
   
 }
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::getNbData(const Array<UInt> & indexes,
+				const SynchronizationTag & tag) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt size = 0;
+  UInt nb_nodes = indexes.size();
+
+  switch (tag) {
+  case _gst_pfm_damage: {
+    size += nb_nodes * sizeof(Real);
+    break;
+  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
+
+  AKANTU_DEBUG_OUT();
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::packData(CommunicationBuffer & buffer,
+			       const Array<UInt> & indexes,
+			       const SynchronizationTag & tag) const {
+
+  AKANTU_DEBUG_IN();
+
+  for (auto index : indexes) {
+    switch (tag) {
+    case _gst_pfm_damage: {
+      buffer << (*damage)(index);
+      break;
+    }
+    default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+    }
+  }
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
+				 const Array<UInt> & indexes,
+				 const Synchronization & tag) {
+
+  AKANTU_DEBUG_IN();
+
+  for (auto index : indexes) {
+    switch (tag) {
+    case _gst_pfm_damage: {
+      buffer >> (*damage)(index);
+      break;
+    }
+    default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+    }
+  }
+  
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+#ifdef AKANTU_USE_IOHELPER
+
+dumper::Field * PhaseFieldModel::createNodalFieldBool(
+    const std::string & field_name, const std::string & group_name,
+    __attribute__((unused)) bool padding_flag ) {
+
+  std::map<std::string, Array<bool> *> uint_nodal_fields;
+  uint_nodal_fields["blocked_dofs"] = blocked_dofs;
+
+  dumper::Field * field = nullptr;
+  field = mesh.createNodalFieldBool(uint_nodal_fields[field_name], group_name);
+  return field;
+  }
+
+/* -------------------------------------------------------------------------- */
+dumper::Field * PhaseFieldModel::createNodalFieldReal(
+    const std::string & field_name, const std::string & group_name,
+    __attribute__((unused)) bool padding_flag) {
+
+  if (field_name == "capacity_lumped") {
+    AKANTU_EXCEPTION("Capacity lumped is a nodal field now stored in the DOF manager."
+		       "Therefore it cannot be used by a dumper anymore");
+  }
+
+  std::map<std::string, Array<Real> *> real_nodal_fields;
+  real_nodal_fields["damage"] = damage;
+  
+  dumper::Field * field =
+    mesh.createNodalField(real_nodal_fields[field_name], group_name);
+
+  return field;
+}
+
+/* -------------------------------------------------------------------------- */
+dumper::Field * PhaseFieldModel::createElementalField(
+    const std::string & field_name, const std::string & group_name,
+    __attribute__((unused)) bool padding_flag,
+    __attribute__((unused)) const UInt & spatial_dimension,
+    const ElementKind & element_kind) {
+
+  dumper::Field * field = nullptr;
+
+  if (field_name == "partitions") 
+    field = mesh.createElementalField<UInt, dumper::ElementpartitionField>(
+       mesh.getConnectivities(), group_name, this->spatial_dimension,
+       element_kind);
+  else if (field_name == "damage_gradient") {
+    ElementTypeMap<UInt> nb_data_per_elem =
+      this->mesh.getNbDataPerElem(damage_gradient, element_kind);
+
+    field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
+        damage_gradient, group_name, this->spatial_dimension, element_kind,
+        nb_data_per_elem);
+  } else if (field_name == "conductivity") {
+    ElementTypeMap<UInt> nb_data_per_elem =
+        this->mesh.getNbDataPerElem(conductivity_on_qpoints, element_kind);
+
+    field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
+	conductivity_on_qpoints, group_name, this->spatial_dimension,
+	element_kind, nb_data_per_elem);
+  }
+
+  return field;
+}
+
+/* -------------------------------------------------------------------------- */
+#else
+/* -------------------------------------------------------------------------- */
+dumper::Field * HeatTransferModel::createElementalField(
+    __attribute__((unused)) const std::string & field_name,
+    __attribute__((unused)) const std::string & group_name,
+    __attribute__((unused)) bool padding_flag,
+    __attribute__((unused)) const ElementKind & element_kind) {
+  return nullptr;
+}
+
+/* -------------------------------------------------------------------------- */
+dumper::Field * HeatTransferModel::createNodalFieldBool(
+    __attribute__((unused)) const std::string & field_name,
+    __attribute__((unused)) const std::string & group_name,
+    __attribute__((unused)) bool padding_flag) {
+  return nullptr;
+}
+
+/* -------------------------------------------------------------------------- */
+dumper::Field * HeatTransferModel::createNodalFieldReal(
+    __attribute__((unused)) const std::string & field_name,
+    __attribute__((unused)) const std::string & group_name,
+    __attribute__((unused)) bool padding_flag) {
+  return nullptr;
+}
+#endif
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::dump(conts std::string & dumper_name) {
+  mesh.dump(dumper_name);
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::dump(const std::string & dumper_name, UInt step) {
+  mesh.dump(dumper_name, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::dump(const std::string & dumper_name, Real time,
+			   UInt step) {
+  mesh.dump(dumper_name, time, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::dump() { mesh.dump(); }
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::dump(UInt step) { mesh.dump(step); }
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::dump(Real time, UInt step) { mesh.dump(time, step); }  
+
+/* -------------------------------------------------------------------------- */  
+} // akantu

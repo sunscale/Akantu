@@ -200,7 +200,8 @@ enum EventHandlerPriority {
   (solid_mechanics_model_cohesive)                                      \
   (heat_transfer_model)                                                 \
   (structural_mechanics_model)						\
-  (embedded_model)
+  (embedded_model)							\
+  (phase_field_model)
 // clang-format on
 
 /// enum ModelType defines which type of physics is solved
@@ -213,6 +214,7 @@ enum class ModelType {
   _solid_mechanics_model,
   _solid_mechanics_model_cohesive,
   _heat_transfer_model,
+  _phase_field_model,
   _structural_mechanics_model,
   _embedded_model
 };
@@ -326,6 +328,10 @@ enum SynchronizationTag {
   _gst_htm_temperature,          ///< synchronization of the nodal temperature
   _gst_htm_gradient_temperature, ///< synchronization of the element gradient
                                  /// temperature
+  // --- PhaseFieldModel tags ---
+  _gst_pfm_damage,               ///< synchronization of the nodal damage
+  _gst_pfm_gradient_damage,      ///< synchronization of the element
+				 ///  gradient damage
   // --- LevelSet tags ---
   _gst_htm_phi,          ///< synchronization of the nodal level set value phi
   _gst_htm_gradient_phi, ///< synchronization of the element gradient phi

@@ -132,24 +132,51 @@ private:
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
-  inline UInt getNbData(const Array<Element> & elements,
-                        const SynchronizationTag & tag) const override;
-  inline void packData(CommunicationBuffer & buffer,
-                       const Array<Element> & elements,
-                       const SynchronizationTag & tag) const override;
-  inline void unpackData(CommunicationBuffer & buffer,
-                         const Array<Element> & elements,
-                         const SynchronizationTag & tag) override;
+  UInt getNbData(const Array<Element> & elements,
+		 const SynchronizationTag & tag) const override;
 
-  inline UInt getNbData(const Array<UInt> & indexes,
-                        const SynchronizationTag & tag) const override;
-  inline void packData(CommunicationBuffer & buffer,
-                       const Array<UInt> & indexes,
-                       const SynchronizationTag & tag) const override;
-  inline void unpackData(CommunicationBuffer & buffer,
-                         const Array<UInt> & indexes,
-                         const SynchronizationTag & tag) override;
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+		const SynchronizationTag & tag) const override;
 
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+		  const SynchronizationTag & tag) override;
+
+  UInt getNbData(const Array<UInt> & dofs,
+		 const SynchronizationTag & tag) const override;
+
+  void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+		const SynchronizationTag & tag) const override;
+
+  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+		  const SynchronizationTag & tag) override;
+
+  /* ------------------------------------------------------------------------ */
+  /* Dumpable Interface                                                       */
+  /* ------------------------------------------------------------------------ */
+public:
+  dumper::Field * createNodalFieldReal(const std::string & field_name,
+				       const std::string & group_name,
+				       bool padding_flag) override;
+
+  dumper::Field * createNodalFieldBool(const std::string & field_name,
+				       const std::string & group_name,
+				       bool padding_flag) override;
+  
+  dumper::Field * createElementalField(const std::string & field_name,
+				       const std::string & group_name,
+				       bool padding_flag) override;
+
+  virtual void dump(const std::string & dumper_name);
+
+  virtual void dump(const std::string & dumper_name, UInt step);
+
+  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+
+  void dump() override;
+
+  virtual void dump(UInt step);
+
+  virtual void dump(Real time, UInt step);
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -170,7 +197,7 @@ private:
   /// vector \phi plus on quadrature points
   ElementTypeMapArray<Real> strain_history_on_qpoints;
 
-  /// displacement field on quadrature points
+  /// displacement on quadrature points
   ElementTypeMapArray<Real> displacement_on_qpoints;
 
   /// boundary vector
