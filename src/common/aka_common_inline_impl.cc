@@ -330,6 +330,12 @@ inline std::ostream & operator<<(std::ostream & stream,
   case _gst_solver_solution:
     stream << "_gst_solver_solution";
     break;
+  case _gst_pfm_damage: 
+    stream << "_gst_pfm_damage";
+    break;
+  case _gst_pfm_gradient_damage:
+    stream << "_gst_pfm_gradient_damage";
+    break;
   }
   return stream;
 }

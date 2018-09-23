@@ -32,6 +32,7 @@
 #include "phase_field_model.hh"
 #include "dumpable_inline_impl.hh"
 #include "element_synchronizer.hh"
+#include "generalized_trapezoidal.hh"
 #include "fe_engine_template.hh"
 #include "group_manager_inline_impl.cc"
 #include "integrator_gauss.hh"
@@ -61,7 +62,7 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
     damage_gradient("damage_gradient", id),
     damage_on_qpoints("damage_on_qpoints", id),
     strain_history_on_qpoints("strain_history_on_qpoints", id),
-    displacement_on_qpoints("displacement_on_qpoints", id){
+    strain_on_qpoints("strain_on_qpoints", id){
 
   AKANTU_DEBUG_IN();
 
@@ -99,7 +100,7 @@ void PhaseFieldModel::initModel() {
 
   damage_on_qpoints.initialize(fem, _nb_component = 1);
   damage_gradient.initialize(fem, _nb_component = spatial_dimension);
-  displacement_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
+  strain_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
   strain_history_on_qpoints.initialize(fem, _nb_component = 1);
   
 }
@@ -111,7 +112,7 @@ PhaseFieldModel::~PhaseFieldModel() = default;
 void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
   if (matrix_id == "K") {
     this->assembleDamageMatrix();
-  } else if (matrix_id == "M" and need_to_reassemble_capacity) {
+  } else if (matrix_id == "M") { // (and need_to_reassemble_capacity) {
     this->assembleDamageGradMatrix();
   }
 }
@@ -132,15 +133,15 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
     dof_manager.registerBlockedDOFs("damage", *this->blocked_dofs);
   }
 
-  /*if (time_step_solver_type == _tsst_dynamic ||
+  if (time_step_solver_type == _tsst_dynamic ||
       time_step_solver_type == _tsst_dynamic_lumped) {
-    this->allocNodalField(this->damage_rate, "damage_rate");
+    this->allocNodalField(this->damage_gradient, "damage_gradient");
 
     if (!dof_manager.hasDOFsDerivatives("damage", 1)) {
       dof_manager.registerDOFsDerivative("damage", 1,
-                                         *this->damage_rate);
+                                         *this->damage_gradient);
     }
-    }*/
+  }
 }
 
 
@@ -227,7 +228,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   case _tsst_dynamic_lumped: {
     options.non_linear_solver_type = _nls_lumped;
     options.integration_scheme_type["damage"] = _ist_forward_euler;
-    options.solution_type["damage"] = IntegrationScheme::_temperature_rate;
+    options.solution_type["damage"] = IntegrationScheme::_gradient_damage;
     break;
   }
   case _tsst_static: {
@@ -240,8 +241,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
     if (this->method == _explicit_consistent_mass) {
       options.non_linear_solver_type = _nls_newton_raphson;
       options.integration_scheme_type["damage"] = _ist_forward_euler;
-      options.solution_type["damage"] =
-          IntegrationScheme::_temperature_rate;
+      options.solution_type["damage"] =  IntegrationScheme::_not_defined;
     } else {
       options.non_linear_solver_type = _nls_newton_raphson;
       options.integration_scheme_type["damage"] = _ist_backward_euler;
@@ -337,25 +337,66 @@ void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
 void PhaseFieldModel::computeStrainHistoryOnQuadPoints(
      const GhostType & ghost_type) {
 
-  for (auto & type : mesh.elementType(spatial_dimension, ghost_type)) {
-    auto & displacement_interpolated = displacement_on_qpoints(type, ghost_type);
+  Matrix<Real> epsilon_plus(spatial_dimension, spatial_dimension);
+  Matrix<Real> epsilon_minus(spatial_dimension, spatial_dimension);
+  Matrix<Real> epsilon_dir(spatial_dimension, spatial_dimension);
+  Matrix<Real> epsilon_diag_plus(spatial_dimension, spatial_dimension);
+  Matrix<Real> epsilon_diag_minus(spatial_dimension, spatial_dimension);
 
-    // compute the strain on quadrature points
-    this->getFEEngine().interpolateOnIntegrationPoints(
-	    *displacement, displacement_interpolated, , type, ghost_type);
+  Vector<Real> eigen_values(spatial_dimension);
 
-    auto & strain_history = strain_history_on_qpoints(type, ghost_type);
-    for (auto  && tuple :
-	   zip(make_view(strain_history, spatial_dimension, spatial_dimension),
-	       displacement_interpolated)) {
+  Real trace_plus, trace_minus, phi_plus;
+  
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+   
+    for (auto  && values :
+	   zip(make_view(strain_on_qpoints(type, ghost_type),
+			 spatial_dimension, spatial_dimension),
+	       make_view(strain_history_on_qpoints(type, ghost_type)))) {
 
-      // compute strain on quad from displacement_interpolated
-      // commpute matrix sigma_plus and sigma_minus using
-      // lame_lambda and lame_mu
-
-      // compute phi_plus
-      // updated strain_history 
+      auto & epsilon     = std::get<0>(values);
+      auto & phi_history = std::get<1>(values);
       
+      epsilon_plus.clear();
+      epsilon_minus.clear();
+      epsilon_dir.clear();
+      eigen_values.clear();          
+      epsilon_diag_plus.clear();
+      epsilon_diag_minus.clear();
+
+      epsilon.eig(eigen_values, epsilon_dir);
+
+      for (UInt i=0; i < spatial_dimension; i++) {
+	epsilon_diag_plus(i, i)  = std::max(Real(0.), eigen_values(i));
+	epsilon_diag_minus(i, i) = std::min(Real(0.), eigen_values(i));
+      }
+
+      Matrix<Real> mat_tmp(spatial_dimension, spatial_dimension);
+      Matrix<Real> sigma_plus(spatial_dimension, spatial_dimension);
+      Matrix<Real> sigma_minus(spatial_dimension, spatial_dimension);
+
+      mat_tmp.mul<false,true>(epsilon_diag_plus, epsilon_dir);
+      epsilon_plus.mul<false, false>(epsilon_dir, mat_tmp);
+      mat_tmp.mul<false, true>(epsilon_diag_minus, epsilon_dir);
+      epsilon_minus.mul<false, true>(epsilon_dir, mat_tmp);
+
+      trace_plus  = std::max(Real(0.), epsilon.trace());
+      trace_minus = std::min(Real(0.), epsilon.trace());
+      
+      for (UInt i=0; i < spatial_dimension; i++) {
+	for (UInt j=0; j < spatial_dimension; j++) {
+	  sigma_plus(i, j)  = (i==j) * lame_lambda * trace_plus
+	                    + 2 * lame_mu * epsilon_plus(i, j);
+	  sigma_minus(i, j) = (i==j) * lame_lambda * trace_minus
+	                    + 2 * lame_mu * epsilon_minus(i, j);
+	}
+      }     
+      
+      phi_plus = 1./2 * sigma_plus.doubleDot(epsilon);
+
+      if (phi_plus > phi_history) {
+	phi_history = phi_plus;
+      }
      
     }
   }
@@ -387,7 +428,7 @@ void PhaseFieldModel::assembleInternalForces() {
   this->internal_force->clear();
 
   this->synchronize(_gst_pfm_damage);
-  auto & fem = this->getFFEngine();
+  auto & fem = this->getFEEngine();
 
   for (auto ghost_type: ghost_types) {
 
@@ -435,7 +476,7 @@ void PhaseFieldModel::initFullImpl(const ModelOptions & options) {
 
 /* -------------------------------------------------------------------------- */
 UInt PhaseFieldModel::getNbData(const Array<Element> & elements,
-				const Synchronizationtag & tag) const {
+				const SynchronizationTag & tag) const {
 
   AKANTU_DEBUG_IN();
 
@@ -477,7 +518,7 @@ void PhaseFieldModel::packData(CommunicationBuffer & buffer,
     packNodalDataHelper(*damage, buffer, elements, mesh);
     break;
   }
-  case _gst_htm_gradient_damage: {
+  case _gst_pfm_gradient_damage: {
     packElementalDataHelper(damage_gradient, buffer, elements, true,
 			    getFEEngine());
     packNodalDataHelper(*damage, buffer, elements, mesh);
@@ -551,7 +592,7 @@ void PhaseFieldModel::packData(CommunicationBuffer & buffer,
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
 				 const Array<UInt> & indexes,
-				 const Synchronization & tag) {
+				 const SynchronizationTag & tag) {
 
   AKANTU_DEBUG_IN();
 
@@ -664,7 +705,7 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
 #endif
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::dump(conts std::string & dumper_name) {
+void PhaseFieldModel::dump(const std::string & dumper_name) {
   mesh.dump(dumper_name);
 }
 

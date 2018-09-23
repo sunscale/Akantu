@@ -111,8 +111,12 @@ public:
   void assembleDamageGradMatrix();
   
   /// compute the damage on quadrature points
-  void computeDamage(Array<Real> & damage, ElementType type, GhostType ghost_type);
+  void computeDamage(ElementType type, GhostType ghost_type);
 
+  /// coupling parameters damage and strains from solid mechanics model
+  void setCouplingParameters(ElementTypeMapArray<Real> & strain_on_qpoints,
+			     Array<Real> & damage);
+  
 private:
   /// assemble the damage matrix (w/ ghost type)
   template<UInt dim>
@@ -188,6 +192,9 @@ private:
   /// damage array
   Array<Real> * damage{nullptr};
 
+  /// the speed of change in damage
+  ElementTypeMapArray<Real> damage_gradient;
+
   /// damage field on quadrature points
   ElementTypeMapArray<Real> damage_on_qpoints;
 
@@ -197,8 +204,8 @@ private:
   /// vector \phi plus on quadrature points
   ElementTypeMapArray<Real> strain_history_on_qpoints;
 
-  /// displacement on quadrature points
-  ElementTypeMapArray<Real> displacement_on_qpoints;
+  /// strain on quadrature points
+  ElementTypeMapArray<Real> strain_on_qpoints;
 
   /// boundary vector
   Array<bool> * blocked_dofs{nullptr};
