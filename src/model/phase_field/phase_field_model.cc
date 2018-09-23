@@ -123,25 +123,25 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
                                  NonLinearSolverType) {
   DOFManager & dof_manager = this->getDOFManager();
 
-  this->allocNodalField(this->damage, "damage");
-  this->allocNodalField(this->external_force, "external_force");
-  this->allocNodalField(this->internal_force, "internal_force");
-  this->allocNodalField(this->blocked_dofs, "blocked_dofs");
+  this->allocNodalField(this->damage, 1, "damage");
+  this->allocNodalField(this->external_force, 1, "external_force");
+  this->allocNodalField(this->internal_force, 1, "internal_force");
+  this->allocNodalField(this->blocked_dofs, 1, "blocked_dofs");
 
   if (!dof_manager.hasDOFs("damage")) {
     dof_manager.registerDOFs("damage", *this->damage, _dst_nodal);
     dof_manager.registerBlockedDOFs("damage", *this->blocked_dofs);
   }
 
-  if (time_step_solver_type == _tsst_dynamic ||
+  /*if (time_step_solver_type == _tsst_dynamic ||
       time_step_solver_type == _tsst_dynamic_lumped) {
-    this->allocNodalField(this->damage_gradient, "damage_gradient");
+    this->allocNodalField(this->damage_gradient, spatial_dimension, "damage_gradient");
 
     if (!dof_manager.hasDOFsDerivatives("damage", 1)) {
       dof_manager.registerDOFsDerivative("damage", 1,
                                          *this->damage_gradient);
     }
-  }
+    }*/
 }
 
 
@@ -228,7 +228,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   case _tsst_dynamic_lumped: {
     options.non_linear_solver_type = _nls_lumped;
     options.integration_scheme_type["damage"] = _ist_forward_euler;
-    options.solution_type["damage"] = IntegrationScheme::_gradient_damage;
+    options.solution_type["damage"] = IntegrationScheme::_damage;
     break;
   }
   case _tsst_static: {
@@ -263,11 +263,13 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
 
   AKANTU_DEBUG_IN();
 
- 
-  auto & fem = this->getFEEngine();
-
+  auto & fem = getFEEngineClass<FEEngineType>();
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-    auto nb_element = mesh.getNbElement(type, ghost_type);
+
+    fem.assembleFieldMatrix(compute_rho, "M", "damage",
+			    this->getDOFManager(), type, ghost_type);
+    
+    /*auto nb_element = mesh.getNbElement(type, ghost_type);
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
@@ -275,8 +277,8 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
 	nb_element * nb_quadrature_points,
 	nb_nodes_per_element * nb_nodes_per_element, "N^t*D*N");
 
-    // conductivity_on_qpoints = gc*l0 = scalar
-    fem.computeNtDN(conductivity_on_qpoints(type, ghost_type), *nt_d_n, type,
+    // damage_energy_density_on_qpoints = gc/l0  + 2.0 *(*strain_history)
+    fem.computeNtDN(damage_energy_density_on_qpoints(type, ghost_type), *nt_d_n, type,
 		    ghost_type);
 
     /// compute @f$ K_d = \int_e \mathbf{N}^t * \mathbf{D} *
@@ -288,7 +290,7 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
 		  type, ghost_type);
 
     this->getDOFManager().assembleElementalMatricesToMatrix(
-       "K", "phasefield", *K_d, type, ghost_type, _symmetric);
+    "K", "phasefield", *K_d, type, ghost_type, _symmetric);*/
   }
 
   AKANTU_DEBUG_OUT();
@@ -313,8 +315,8 @@ void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
        nb_element * nb_quadrature_points,
        nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
 
-    // conductivity_on_qpoints = gc*l0 = scalar
-    fem.computeBtDB(conductivity_on_qpoints(type, ghost_type), *bt_d_b, type,
+    // damage_energy_on_qpoints = gc*l0 = scalar
+    fem.computeBtDB(damage_energy_on_qpoints(type, ghost_type), *bt_d_b, 2, type,
 		    ghost_type);
 
     /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
@@ -442,13 +444,13 @@ void PhaseFieldModel::assembleInternalForces() {
       fem.computeNtb(strain_history_on_qpoints_vect, nt_strain_history, type, ghost_type);
 
       UInt nb_elements = mesh.getNbElement(type, ghost_type);
-      Array<Real> int_nt_srain_history(nb_elements, nb_nodes_per_element);
+      Array<Real> int_nt_strain_history(nb_elements, nb_nodes_per_element);
 
-      fem.integrate(nt_strain_history, int_nt_srain_history, nb_nodes_per_element, type,
+      fem.integrate(nt_strain_history, int_nt_strain_history, nb_nodes_per_element, type,
 		    ghost_type);
 
       this->getDOFManager().assembleElementalArrayLocalArray(
-	  int_nt_srain_history, *this->internal_force, type, ghost_type, -1);
+	  int_nt_strain_history, *this->internal_force, type, ghost_type, -1);
     }
   }
 
@@ -550,7 +552,7 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::getNbData(const Array<UInt> & indexes,
+UInt PhaseFieldModel::getNbData(const Array<UInt> & indexes,
 				const SynchronizationTag & tag) const {
 
   AKANTU_DEBUG_IN();
@@ -621,7 +623,7 @@ dumper::Field * PhaseFieldModel::createNodalFieldBool(
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
 
   dumper::Field * field = nullptr;
-  field = mesh.createNodalFieldBool(uint_nodal_fields[field_name], group_name);
+  field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
   }
 
@@ -654,7 +656,7 @@ dumper::Field * PhaseFieldModel::createElementalField(
   dumper::Field * field = nullptr;
 
   if (field_name == "partitions") 
-    field = mesh.createElementalField<UInt, dumper::ElementpartitionField>(
+    field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(
        mesh.getConnectivities(), group_name, this->spatial_dimension,
        element_kind);
   else if (field_name == "damage_gradient") {
@@ -666,10 +668,10 @@ dumper::Field * PhaseFieldModel::createElementalField(
         nb_data_per_elem);
   } else if (field_name == "conductivity") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(conductivity_on_qpoints, element_kind);
+        this->mesh.getNbDataPerElem(damage_energy_on_qpoints, element_kind);
 
     field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
-	conductivity_on_qpoints, group_name, this->spatial_dimension,
+	damage_energy_on_qpoints, group_name, this->spatial_dimension,
 	element_kind, nb_data_per_elem);
   }
 
@@ -679,7 +681,7 @@ dumper::Field * PhaseFieldModel::createElementalField(
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createElementalField(
+dumper::Field * PhaseFieldModel::createElementalField(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag,
@@ -688,7 +690,7 @@ dumper::Field * HeatTransferModel::createElementalField(
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createNodalFieldBool(
+dumper::Field * PhaseFieldModel::createNodalFieldBool(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
@@ -696,7 +698,7 @@ dumper::Field * HeatTransferModel::createNodalFieldBool(
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createNodalFieldReal(
+dumper::Field * PhaseFieldModel::createNodalFieldReal(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {

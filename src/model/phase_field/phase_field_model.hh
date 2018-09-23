@@ -145,7 +145,7 @@ public:
   void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
 		  const SynchronizationTag & tag) override;
 
-  UInt getNbData(const Array<UInt> & dofs,
+  UInt getNbData(const Array<UInt> & indexes,
 		 const SynchronizationTag & tag) const override;
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
@@ -168,7 +168,9 @@ public:
   
   dumper::Field * createElementalField(const std::string & field_name,
 				       const std::string & group_name,
-				       bool padding_flag) override;
+				       bool padding_flag,
+				       const UInt & spatial_dimension,
+				       const ElementKind & kind) override;
 
   virtual void dump(const std::string & dumper_name);
 
@@ -200,6 +202,12 @@ private:
 
   /// critical local fracture energy density on quadrature points
   ElementTypeMapArray<Real> gc_on_qpoints;
+
+  /// critical local damage energy density on quadrature points
+  ElementTypeMapArray<Real> damage_energy_density_on_qpoints;
+
+  /// critical local damage energy on quadrature points
+  ElementTypeMapArray<Real> damage_energy_on_qpoints;
 
   /// vector \phi plus on quadrature points
   ElementTypeMapArray<Real> strain_history_on_qpoints;
