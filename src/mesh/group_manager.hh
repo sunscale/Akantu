@@ -125,16 +125,18 @@ public:
                                                 const std::string & name, name);
 #endif
 public:
+#ifndef SWIG
   decltype(auto) iterateNodeGroups() {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
   }
   decltype(auto) iterateNodeGroups() const {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
   }
-
+#endif
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
-  /* ------------------------------------------------------------------------ */
+  /* -------------------------------------------------------------------9+
+----- */
 public:
   class ClusteringFilter {
   public:

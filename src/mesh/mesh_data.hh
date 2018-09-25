@@ -105,6 +105,8 @@ public:
   bool hasData(const ID & data_name,
                MeshDataType type = MeshDataType::_elemental) const;
 
+  bool hasData(MeshDataType type = MeshDataType::_elemental) const;
+
   /// Get an existing elemental data array
   template <typename T>
   const Array<T> &

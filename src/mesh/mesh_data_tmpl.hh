@@ -224,6 +224,18 @@ inline bool MeshData::hasData(const ID & name, MeshDataType type) const {
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool MeshData::hasData(MeshDataType type) const {
+  switch(type) {
+  case MeshDataType::_elemental:
+    return (not elemental_data.empty());
+  case MeshDataType::_nodal:
+    return (not nodal_data.empty());
+  }
+
+  return false;
+}
+
+/* -------------------------------------------------------------------------- */
 template <typename T>
 const Array<T> &
 MeshData::getElementalDataArray(const ID & name, const ElementType & elem_type,

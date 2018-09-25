@@ -97,6 +97,11 @@ else()
   add_flags(cxx "-Wall")
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "8.0")
+  add_flags(cxx "-Wno-class-memaccess")
+endif()
+
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 

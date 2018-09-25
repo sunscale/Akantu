@@ -35,7 +35,7 @@
 %exception {
   try {
     $action
-  } catch (akantu::debug::Exception e) {
+  } catch (akantu::debug::Exception & e) {
     PyErr_SetString(PyExc_IndexError,e.what());
     return NULL;
   }
