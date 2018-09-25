@@ -155,9 +155,17 @@ public:
                                          this->element_kind);
   }
 
+  /// get filter types for range loop
+  decltype(auto) filterTypes(const GhostType & ghost_type) const {
+    return this->element_filter.elementTypes(
+        _spatial_dimension = this->spatial_dimension,
+        _element_kind = this->element_kind, _ghost_type = ghost_type);
+  }
+
   /// get the array for a given type of the element_filter
-  const Array<UInt> getFilter(const ElementType & type,
-                              const GhostType & ghost_type = _not_ghost) const {
+  const Array<UInt> &
+  getFilter(const ElementType & type,
+            const GhostType & ghost_type = _not_ghost) const {
     return this->element_filter(type, ghost_type);
   }
 
@@ -225,28 +233,28 @@ protected:
   Material & material;
 
   /// the fem containing the mesh and the element informations
-  FEEngine * fem;
+  FEEngine * fem{nullptr};
 
   /// Element filter if needed
   const ElementTypeMapArray<UInt> & element_filter;
 
   /// default value
-  T default_value;
+  T default_value{};
 
   /// spatial dimension of the element to consider
-  UInt spatial_dimension;
+  UInt spatial_dimension{0};
 
   /// ElementKind of the element to consider
-  ElementKind element_kind;
+  ElementKind element_kind{_ek_regular};
 
   /// Number of component of the internal field
-  UInt nb_component;
+  UInt nb_component{0};
 
   /// Is the field initialized
-  bool is_init;
+  bool is_init{false};
 
   /// previous values
-  InternalField<T> * previous_values;
+  std::unique_ptr<InternalField<T>> previous_values;
 };
 
 /// standard output stream operator
@@ -257,6 +265,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_INTERNAL_FIELD_HH__ */
