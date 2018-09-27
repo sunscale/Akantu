@@ -42,7 +42,7 @@
 namespace akantu {
 template <ElementKind kind, class IntegrationOrderFuntor>
 class IntegratorGauss;
-template <ElementKind kind> class Shapelagrange;  
+template <ElementKind kind> class ShapeLagrange;  
 } // namespace akantu
 
 namespace akantu {
@@ -55,7 +55,7 @@ class PhaseFieldModel : public Model,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  using FEEngineType = FEEngineTemplate<IntegratorGauss, Shapelagrange>;
+  using FEEngineType = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
 
   PhaseFieldModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
 		  const ID & id = "phase_field_model",
@@ -129,6 +129,9 @@ private:
   /// compute vector strain history field for each quadrature point
   void computeStrainHistoryOnQuadPoints(const GhostType & ghost_type);
 
+  /// compute driving force for each quadrature point
+  void computeDrivingForce(const GhostType & ghost_type);
+
   /// compute the fracture energy
   Real computeFractureEnergyByNode();
 
@@ -200,14 +203,16 @@ private:
   /// damage field on quadrature points
   ElementTypeMapArray<Real> damage_on_qpoints;
 
-  /// critical local fracture energy density on quadrature points
-  ElementTypeMapArray<Real> gc_on_qpoints;
-
-  /// critical local damage energy density on quadrature points
+  /// critical local damage energy density on quadrature points for
+  ///  \mathbf{N}^t * \mathbf{w} * \mathbf{N}@f$
   ElementTypeMapArray<Real> damage_energy_density_on_qpoints;
 
-  /// critical local damage energy on quadrature points
+  /// critical local damage energy on quadrature points for \mathbf{B}^t * \mathbf{W} *
+  /// \mathbf{B}@f$ 
   ElementTypeMapArray<Real> damage_energy_on_qpoints;
+
+  /// driving force on quadrature points for internal forces
+  ElementTypeMapArray<Real> driving_force_on_qpoints;
 
   /// vector \phi plus on quadrature points
   ElementTypeMapArray<Real> strain_history_on_qpoints;

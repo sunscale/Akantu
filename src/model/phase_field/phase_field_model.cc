@@ -34,6 +34,7 @@
 #include "element_synchronizer.hh"
 #include "generalized_trapezoidal.hh"
 #include "fe_engine_template.hh"
+#include "generalized_trapezoidal.hh"
 #include "group_manager_inline_impl.cc"
 #include "integrator_gauss.hh"
 #include "mesh.hh"
@@ -50,6 +51,8 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
+class Compute
+  
   // material functor can be created 
   
 
@@ -91,6 +94,9 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
  AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+PhaseFieldModel::~PhaseFieldModel() = default;
+ 
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::initModel() {
@@ -106,10 +112,31 @@ void PhaseFieldModel::initModel() {
 }
 
 /* -------------------------------------------------------------------------- */
-PhaseFieldModel::~PhaseFieldModel() = default;
+void PhaseFieldModel::initFullImpl(const ModelOptions & options) {
+  Model::initFullImpl(options);
+
+  readMaterials();
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::readMaterials() {
+  auto sect = this->getParserSection();
+
+  if (not std::get<1>(sect)) {
+    const auto & section = std::get<0>(sect);
+    this->parseSection(section);
+  }
+
+  damage_energy_on_qpoints.set(g_c * l_0);
+}
+
+
   
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
+
+  this->computeStrainHistoryOnQuadPoints(_not_ghost);
+  
   if (matrix_id == "K") {
     this->assembleDamageMatrix();
   } else if (matrix_id == "M") { // (and need_to_reassemble_capacity) {
@@ -152,8 +179,6 @@ void PhaseFieldModel::assembleDamageMatrix() {
 
   AKANTU_DEBUG_INFO("Assemble the new damage matrix");
 
-  this->computeStrainHistoryOnQuadPoints(_not_ghost);
-  
   if (!this->getDOFManager().hasMatrix("K")) {
     this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
   }
@@ -264,33 +289,12 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   auto & fem = getFEEngineClass<FEEngineType>();
+  ComputeDamageFunctor compute_damage(*this);
+  
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
-    fem.assembleFieldMatrix(compute_rho, "M", "damage",
+    fem.assembleFieldMatrix(compute_damage, "M", "damage",
 			    this->getDOFManager(), type, ghost_type);
-    
-    /*auto nb_element = mesh.getNbElement(type, ghost_type);
-    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
-
-    auto nt_d_n = std::make_unique<Array<Real>>(
-	nb_element * nb_quadrature_points,
-	nb_nodes_per_element * nb_nodes_per_element, "N^t*D*N");
-
-    // damage_energy_density_on_qpoints = gc/l0  + 2.0 *(*strain_history)
-    fem.computeNtDN(damage_energy_density_on_qpoints(type, ghost_type), *nt_d_n, type,
-		    ghost_type);
-
-    /// compute @f$ K_d = \int_e \mathbf{N}^t * \mathbf{D} *
-    /// \mathbf{N}@f$
-    auto K_d = std::make_unique<Array<Real>>(
-	nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_d");
-
-    fem.integrate(*nt_d_n, *K_d, nb_nodes_per_element * nb_nodes_per_element,
-		  type, ghost_type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-    "K", "phasefield", *K_d, type, ghost_type, _symmetric);*/
   }
 
   AKANTU_DEBUG_OUT();
@@ -434,46 +438,47 @@ void PhaseFieldModel::assembleInternalForces() {
 
   for (auto ghost_type: ghost_types) {
 
+    computeDrivingForce(ghost_type);
+    
     for (auto type: mesh.elementTypes(spatial_dimension, ghost_type)) {
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
-      auto & strain_history_on_qpoints_vect = strain_history_on_qpoints(type, ghost_type);
+      auto & driving_force_on_qpoints_vect = driving_force_on_qpoints(type, ghost_type);
 
-      UInt nb_quad_points = strain_history_on_qpoints_vect.size();
-      Array<Real> nt_strain_history(nb_quad_points, nb_nodes_per_element);
-      fem.computeNtb(strain_history_on_qpoints_vect, nt_strain_history, type, ghost_type);
+      UInt nb_quad_points = driving_force_on_qpoints_vect.size();
+      Array<Real> nt_driving_force(nb_quad_points, nb_nodes_per_element);
+      fem.computeNtb(driving_force_on_qpoints_vect, nt_driving_force, type, ghost_type);
 
       UInt nb_elements = mesh.getNbElement(type, ghost_type);
-      Array<Real> int_nt_strain_history(nb_elements, nb_nodes_per_element);
+      Array<Real> int_nt_driving_force(nb_elements, nb_nodes_per_element);
 
-      fem.integrate(nt_strain_history, int_nt_strain_history, nb_nodes_per_element, type,
+      fem.integrate(nt_driving_force, int_nt_driving_force, nb_nodes_per_element, type,
 		    ghost_type);
 
       this->getDOFManager().assembleElementalArrayLocalArray(
-	  int_nt_strain_history, *this->internal_force, type, ghost_type, -1);
+	  int_nt_driving_force, *this->internal_force, type, ghost_type, -1);
     }
   }
 
   AKANTU_DEBUG_OUT();
 }
-  
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::readMaterials() {
-  auto sect = this->getParserSection();
 
-  if (not std::get<1>(sect)) {
-    const auto & section = std::get<0>(sect);
-    this->parseSection(section);
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
+
+  for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
+
+    for (auto && values:
+	   zip(make_view(strain_history_on_qpoints(type, ghost_type)),
+	       make_view(driving_force_on_qpoints(type, ghost_type)) )) {
+      auto & strain_history = std::get<0>(values);
+      auto & driving_force  = std::get<1>(values);
+
+      driving_force = 2.0 * strain_history;
+    }
   }
 
-  gc_on_qpoints.set(g_c);
-}
-  
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::initFullImpl(const ModelOptions & options) {
-  Model::initFullImpl(options);
-
-  readMaterials();
+  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
