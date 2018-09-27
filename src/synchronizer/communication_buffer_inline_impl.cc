@@ -291,6 +291,17 @@ inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
 
 /* -------------------------------------------------------------------------- */
 template <bool is_static>
+inline void CommunicationBufferTemplated<is_static>::reserve(UInt size) {
+  char * values = buffer.storage();
+  auto nb_packed = ptr_pack - values;
+
+  buffer.resize(size);
+  ptr_pack = buffer.storage() + nb_packed;
+  ptr_unpack = buffer.storage() + (ptr_unpack - values);
+}
+
+/* -------------------------------------------------------------------------- */
+template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::clear() {
   buffer.clear();
 }

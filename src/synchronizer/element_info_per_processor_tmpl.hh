@@ -53,9 +53,9 @@ void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
                           << "_not_ghost."
                           << " Got " << nb_local_element << " values, expected "
                           << mesh.getNbElement(this->type));
-  MeshData & mesh_data = this->getMeshData();
-  mesh_data.registerElementalData<T>(tag_name);
-  Array<T> & data = mesh_data.getElementalDataArrayAlloc<T>(
+
+  mesh.registerElementalData<T>(tag_name);
+  Array<T> & data = mesh.getElementalDataArrayAlloc<T>(
       tag_name, this->type, _not_ghost, nb_component);
 
   data.resize(nb_local_element);
@@ -74,7 +74,7 @@ void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
                           << " Got " << nb_ghost_element << " values, expected "
                           << mesh.getNbElement(this->type, _ghost));
 
-  Array<T> & data_ghost = mesh_data.getElementalDataArrayAlloc<T>(
+  Array<T> & data_ghost = mesh.getElementalDataArrayAlloc<T>(
       tag_name, this->type, _ghost, nb_component);
   data_ghost.resize(nb_ghost_element);
 

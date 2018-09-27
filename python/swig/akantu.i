@@ -35,7 +35,7 @@
 %exception {
   try {
     $action
-  } catch (akantu::debug::Exception e) {
+  } catch (akantu::debug::Exception & e) {
     PyErr_SetString(PyExc_IndexError,e.what());
     return NULL;
   }
@@ -61,6 +61,7 @@
 
 %include "mesh.i"
 %include "mesh_utils.i"
+%include "fe_engine.i"
 %include "model.i"
 %include "communicator.i"
 

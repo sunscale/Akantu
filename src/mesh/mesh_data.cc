@@ -35,13 +35,6 @@ namespace akantu {
 
 MeshData::MeshData(const ID & _id, const ID & parent_id,
                    const MemoryID & mem_id)
-    : Memory(parent_id + ":" + _id, mem_id) {}
+    : _id(parent_id + ":" + _id), _memory_id(mem_id) {}
 
-MeshData::~MeshData() {
-  ElementalDataMap::iterator it, end;
-  for (it = elemental_data.begin(); it != elemental_data.end(); ++it) {
-    delete it->second;
-  }
-}
-
-} // akantu
+} // namespace akantu

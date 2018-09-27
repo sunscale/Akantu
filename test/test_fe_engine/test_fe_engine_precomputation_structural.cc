@@ -47,7 +47,7 @@ public:
   /// Load the mesh and provide extra normal direction
   void readMesh(std::string filename) override {
     parent::readMesh(filename);
-    auto & normals = this->mesh->registerData<Real>("extra_normal")
+    auto & normals = this->mesh->registerElementalData<Real>("extra_normal")
                          .alloc(0, dim, type, _not_ghost);
     Vector<Real> normal = {-36. / 65, -48. / 65, 5. / 13};
     normals.push_back(normal);

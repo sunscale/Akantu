@@ -111,9 +111,17 @@ public:
           std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
     return this->receiveImpl(values.storage(), values.size(), sender, tag);
   }
-  template <bool is_static>
-  inline void receive(CommunicationBufferTemplated<is_static> & values,
+
+  inline void receive(CommunicationBufferTemplated<true> & values,
                       Int sender, Int tag) const {
+    return this->receiveImpl(values.storage(), values.size(), sender, tag);
+  }
+
+  inline void receive(CommunicationBufferTemplated<false> & values,
+                      Int sender, Int tag) const {
+    CommunicationStatus status;
+    this->probe<char>(sender, tag, status);
+    values.reserve(status.size());
     return this->receiveImpl(values.storage(), values.size(), sender, tag);
   }
   template <typename T>
@@ -138,6 +146,7 @@ public:
        std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
     return this->sendImpl(values.storage(), values.size(), receiver, tag, mode);
   }
+
   template <bool is_static>
   inline void
   send(const CommunicationBufferTemplated<is_static> & values, Int receiver,

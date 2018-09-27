@@ -29,6 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_compatibilty_with_cpp_standard.hh"
+/* -------------------------------------------------------------------------- */
 #include <tuple>
 #include <utility>
 /* -------------------------------------------------------------------------- */
@@ -113,7 +115,7 @@ namespace iterators {
                            typename std::iterator_traits<It>::iterator_category,
                            category>,
                        category> {};
-  }
+  } // namespace
 
   template <class... Iterators> class ZipIterator {
   public:
@@ -280,6 +282,7 @@ namespace containers {
   template <class T> class ArangeContainer {
   public:
     using iterator = iterators::ArangeIterator<T>;
+    using const_iterator = iterators::ArangeIterator<T>;
 
     constexpr ArangeContainer(T start, T stop, T step = 1)
         : start(start), stop((stop - start) % step == 0
@@ -335,6 +338,108 @@ inline constexpr decltype(auto) enumerate(Container && container,
   return zip(arange(start, stop), std::forward<Container>(container));
 }
 
+namespace iterators {
+  template <class iterator_t, class operator_t>
+  class transform_adaptor_iterator {
+  public:
+    using value_type = decltype(std::declval<operator_t>()(
+        std::declval<typename iterator_t::value_type>()));
+    using difference_type = typename iterator_t::difference_type;
+    using pointer = std::decay_t<value_type> *;
+    using reference = value_type &;
+    using iterator_category = typename iterator_t::iterator_category;
+
+    transform_adaptor_iterator(iterator_t it, operator_t && op)
+        : it(std::move(it)), op(op) {}
+    transform_adaptor_iterator(const transform_adaptor_iterator &) = default;
+
+    transform_adaptor_iterator & operator++() {
+      ++it;
+      return *this;
+    }
+
+    decltype(auto) operator*() const { return op(*it); }
+
+    bool operator==(const transform_adaptor_iterator & other) const {
+      return (it == other.it);
+    }
+
+    bool operator!=(const transform_adaptor_iterator & other) const {
+      return not operator==(other);
+    }
+
+  private:
+    iterator_t it;
+    operator_t op;
+  };
+
+  template <class iterator_t, class operator_t>
+  decltype(auto) make_transform_adaptor_iterator(iterator_t it,
+                                                 operator_t && op) {
+    return transform_adaptor_iterator<iterator_t, operator_t>(
+        it, std::forward<operator_t>(op));
+  }
+
+} // namespace iterators
+
+namespace containers {
+  template <class container_t, class operator_t>
+  class TransformIteratorAdaptor {
+  public:
+    using const_iterator = typename std::decay_t<container_t>::const_iterator;
+    using iterator = typename std::decay_t<container_t>::iterator;
+
+    TransformIteratorAdaptor(container_t && cont, operator_t && op)
+        : cont(std::forward<container_t>(cont)),
+          op(std::forward<operator_t>(op)) {}
+
+    decltype(auto) begin() const {
+      return iterators::make_transform_adaptor_iterator(cont.begin(), op);
+    }
+    decltype(auto) begin() {
+      return iterators::make_transform_adaptor_iterator(cont.begin(), op);
+    }
+
+    decltype(auto) end() const {
+      return iterators::make_transform_adaptor_iterator(cont.end(), op);
+    }
+    decltype(auto) end() {
+      return iterators::make_transform_adaptor_iterator(cont.end(), op);
+    }
+
+  private:
+    container_t cont;
+    operator_t op;
+  };
+} // namespace containers
+
+template <class container_t, class operator_t>
+decltype(auto) make_transform_adaptor(container_t && cont, operator_t && op) {
+  return containers::TransformIteratorAdaptor<container_t, operator_t>(
+      std::forward<container_t>(cont), std::forward<operator_t>(op));
+}
+
+template <class container_t>
+decltype(auto) make_keys_adaptor(container_t && cont) {
+  return make_transform_adaptor(
+      std::forward<container_t>(cont),
+      [](auto && pair) -> decltype(pair.first) { return pair.first; });
+}
+
+template <class container_t>
+decltype(auto) make_values_adaptor(container_t && cont) {
+  return make_transform_adaptor(
+      std::forward<container_t>(cont),
+      [](auto && pair) -> decltype(pair.second) { return pair.second; });
+}
+
+template <class container_t>
+decltype(auto) make_dereference_adaptor(container_t && cont) {
+  return make_transform_adaptor(
+      std::forward<container_t>(cont),
+      [](auto && value) -> decltype(*value) { return *value; });
+}
+
 } // namespace akantu
 
 namespace std {
@@ -349,6 +454,6 @@ struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
   using reference =
       typename ::akantu::iterators::ZipIterator<Its...>::reference;
 };
-}
+} // namespace std
 
 #endif /* __AKANTU_AKA_ITERATORS_HH__ */

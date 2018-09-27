@@ -445,16 +445,20 @@ has a positive $X$ coordinate can be made with:
 \end{cpp}
 
 \section{Compiling your simulation}
-The easiest way it to create a \code{cmake} project. The minimum \code{CMakeLists.txt} file would look like
+The easiest way to compile your simulation is to create a \code{cmake} project by putting all your code in some directory of your choosing. Then, make sure that you have \code{cmake} installed and create a \code{CMakeLists.txt} file. An example of a minimal \code{CMakeLists.txt} file would look like this:
 
 \begin{cmake}
   project(my_simu)
   cmake_minimum_required(VERSION 3.0.0)
 
   find_package(Akantu REQUIRED)
-  
+
   add_akantu_simulation(my_simu my_simu.cc)
 \end{cmake}
+%
+Then create a directory called \code{build} and inside it execute \code{ccmake ..} which opens a configuration screen. If you installed \akantu in a standard directory such as \code{/usr/local} (using \code{make install}), you should be able to compile by hitting the \code{c} key, setting \code{CMAKE\textunderscore{}BUILD\textunderscore{}TYPE} to \code{Release}, hitting the \code{c} key again a few times and then finishing the configuration with the \code{g} key. After that, you can type \code{make} to build your simulation. If you change your simulation code later on, you only need to type \code{make} again.
+
+If you get an error that \code{FindAkantu.cmake} was not found, you have to set the \code{Akantu\textunderscore{}DIR} variable, which will appear after dismissing the error message. If you built \akantu without running \code{make install}, the variable should be set to the \code{build} subdirectory of the \akantu source code. If you installed it in \code{\$PREFIX}, set the variable to \code{\$PREFIX/share/cmake/Akantu} instead.
 
 %%% Local Variables:
 %%% mode: latex

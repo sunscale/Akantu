@@ -370,7 +370,7 @@ enum GhostType {
   _ghost = 1,
   _casper // not used but a real cute ghost
 };
-}
+} // namespace akantu
 
 #ifndef SWIG
 AKANTU_ENUM_HASH(GhostType)

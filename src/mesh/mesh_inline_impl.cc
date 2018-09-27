@@ -291,7 +291,7 @@ inline Array<T> &
 Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
                      const GhostType & ghost_type, UInt nb_component,
                      bool size_to_nb_element, bool resize_with_parent) {
-  Array<T> & tmp = mesh_data.getElementalDataArrayAlloc<T>(
+  Array<T> & tmp = this->getElementalDataArrayAlloc<T>(
       data_name, el_type, ghost_type, nb_component);
 
   if (size_to_nb_element) {
@@ -313,7 +313,7 @@ Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
                      const GhostType & ghost_type, UInt nb_component,
                      bool size_to_nb_element, bool resize_with_parent,
                      const T & defaul_) {
-  Array<T> & tmp = mesh_data.getElementalDataArrayAlloc<T>(
+  Array<T> & tmp = this->getElementalDataArrayAlloc<T>(
       data_name, el_type, ghost_type, nb_component);
 
   if (size_to_nb_element) {
@@ -330,17 +330,10 @@ Mesh::getDataPointer(const ID & data_name, const ElementType & el_type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline bool Mesh::hasData(const ID & data_name, const ElementType & el_type,
-                          const GhostType & ghost_type) const {
-  return mesh_data.hasDataArray<T>(data_name, el_type, ghost_type);
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
 inline const Array<T> & Mesh::getData(const ID & data_name,
                                       const ElementType & el_type,
                                       const GhostType & ghost_type) const {
-  return mesh_data.getElementalDataArray<T>(data_name, el_type, ghost_type);
+  return this->getElementalDataArray<T>(data_name, el_type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -348,33 +341,22 @@ template <typename T>
 inline Array<T> & Mesh::getData(const ID & data_name,
                                 const ElementType & el_type,
                                 const GhostType & ghost_type) {
-  return mesh_data.getElementalDataArray<T>(data_name, el_type, ghost_type);
-}
-
-/* -------------------------------------------------------------------------- */
-inline bool Mesh::hasData(const ID & data_name) const {
-  return mesh_data.hasData(data_name);
+  return this->getElementalDataArray<T>(data_name, el_type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline const ElementTypeMapArray<T> &
 Mesh::getData(const ID & data_name) const {
-  return mesh_data.getElementalData<T>(data_name);
+  return this->getElementalData<T>(data_name);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline ElementTypeMapArray<T> & Mesh::getData(const ID & data_name) {
-  return mesh_data.getElementalData<T>(data_name);
+  return this->getElementalData<T>(data_name);
 }
 
-/* -------------------------------------------------------------------------- */
-template <typename T>
-inline ElementTypeMapArray<T> & Mesh::registerData(const ID & data_name) {
-  this->mesh_data.registerElementalData<T>(data_name);
-  return this->getData<T>(data_name);
-}
 
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbElement(const ElementType & type,

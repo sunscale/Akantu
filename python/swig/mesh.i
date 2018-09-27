@@ -63,6 +63,7 @@ namespace akantu {
   %ignore Mesh::getFacetLocalConnectivity;
   %ignore Mesh::getAllFacetTypes;
   %ignore Mesh::getCommunicator;
+  %ignore Mesh::getConnectivities;
   %ignore GroupManager::getElementGroups;
   %ignore Dumpable::addDumpFieldExternalReal;
 }
@@ -81,6 +82,10 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
     return akantu::PythonFunctor::convertToPython($self->getElementGroups());
   }
 
+  PyObject * getAllConnectivities(){
+    return akantu::PythonFunctor::convertToPython($self->getConnectivities());
+  }
+
   void resizeMesh(UInt nb_nodes, UInt nb_element, const ElementType & type) {
     Array<Real> & nodes = const_cast<Array<Real> &>($self->getNodes());
     nodes.resize(nb_nodes);
@@ -88,6 +93,27 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
     $self->addConnectivityType(type);
     Array<UInt> & connectivity = const_cast<Array<UInt> &>($self->getConnectivity(type));
     connectivity.resize(nb_element);
+  }
+
+  Array<Real> & getNodalDataReal(const ID & name, UInt nb_components = 1) {
+    auto && data = $self->getNodalData<Real>(name, nb_components);
+    data.resize($self->getNbNodes());
+    return data;
+  }
+
+  bool hasDataReal(const ID & name,
+                   const ElementType & type) {
+    return $self->hasData<Real>(name, type);
+  }
+
+  Array<Real> & getElementalDataReal(const ID & name,
+                                     const ElementType & type,
+                                     UInt nb_components = 1) {
+    auto && data = $self->getElementalDataArrayAlloc<Real>(name, type,
+                                                           akantu::_not_ghost,
+                                                           nb_components);
+    data.resize($self->getNbElement(type, akantu::_not_ghost));
+    return data;
   }
 }
 
@@ -105,15 +131,14 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 }
 
 %extend akantu::NodeGroup {
-  akantu::Array<akantu::Real> & getGroupedNodes(akantu::Array<akantu::Real, true> & surface_array, Mesh & mesh) {
-    akantu::Array<akantu::UInt> group_node = $self->getNodes();
-    akantu::Array<akantu::Real> & full_array = mesh.getNodes();
+    akantu::Array<akantu::Real> & getGroupedNodes(akantu::Array<akantu::Real, true> & surface_array, Mesh & mesh) {
+    auto && group_node = $self->getNodes();
+    auto && full_array = mesh.getNodes();
     surface_array.resize(group_node.size());
 
     for (UInt i = 0; i < group_node.size(); ++i) {
       for (UInt cmp = 0; cmp < full_array.getNbComponent(); ++cmp) {
-
-        surface_array(i,cmp) = full_array(group_node(i),cmp);
+        surface_array(i, cmp) = full_array(group_node(i), cmp);
       }
     }
 
@@ -121,7 +146,8 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
     return res;
   }
 
-  akantu::Array<akantu::Real> & getGroupedArray(akantu::Array<akantu::Real, true> & surface_array, akantu::SolidMechanicsModel & model, int type) {
+  akantu::Array<akantu::Real> & getGroupedArray(akantu::Array<akantu::Real, true> & surface_array,
+                                                akantu::SolidMechanicsModel & model, int type) {
     akantu::Array<akantu::Real> * full_array;
 
     switch (type) {

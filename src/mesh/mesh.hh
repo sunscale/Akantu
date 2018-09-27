@@ -89,6 +89,7 @@ namespace akantu {
 class Mesh : protected Memory,
              public EventHandlerManager<MeshEventHandler>,
              public GroupManager,
+             public MeshData,
              public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -326,14 +327,6 @@ protected:
 #endif
 
 public:
-  /// register a new ElementalTypeMap in the MeshData
-  template <typename T>
-  inline ElementTypeMapArray<T> & registerData(const std::string & data_name);
-
-  template <typename T>
-  inline bool hasData(const ID & data_name, const ElementType & el_type,
-                      const GhostType & ghost_type = _not_ghost) const;
-
   /// get a name field associated to the mesh
   template <typename T>
   inline const Array<T> &
@@ -344,9 +337,6 @@ public:
   template <typename T>
   inline Array<T> & getData(const ID & data_name, const ElementType & el_type,
                             const GhostType & ghost_type = _not_ghost);
-
-  /// tells if the data data_name is contained in the mesh or not
-  inline bool hasData(const ID & data_name) const;
 
   /// get a name field associated to the mesh
   template <typename T>
@@ -528,8 +518,6 @@ private:
   getSubelementToElementPointer(const ElementType & type,
                                 const GhostType & ghost_type = _not_ghost);
 
-  AKANTU_GET_MACRO_NOT_CONST(MeshData, mesh_data, MeshData &);
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -572,7 +560,7 @@ private:
   Vector<Real> local_upper_bounds;
 
   /// Extra data loaded from the mesh file
-  MeshData mesh_data;
+  //MeshData mesh_data;
 
   /// facets' mesh
   std::unique_ptr<Mesh> mesh_facets;
