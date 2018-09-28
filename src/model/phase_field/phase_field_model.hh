@@ -99,6 +99,8 @@ protected:
   /// compute the internal forces 
   void assembleInternalForces();
 
+  ///
+  void updateInternalParameters();
   
   /* ------------------------------------------------------------------------ */
   /* Methods for static                                                       */
@@ -215,7 +217,7 @@ private:
   ElementTypeMapArray<Real> driving_force_on_qpoints;
 
   /// vector \phi plus on quadrature points
-  ElementTypeMapArray<Real> strain_history_on_qpoints;
+  ElementTypeMapArray<Real> phi_history_on_qpoints;
 
   /// strain on quadrature points
   ElementTypeMapArray<Real> strain_on_qpoints;
@@ -235,11 +237,17 @@ private:
   /// critical energy release rate
   Real g_c;
 
-  /// Lame's parameter
-  Real lame_lambda;
+  /// Young's modulus
+  Real E;
 
-  /// Lame's paramter
-  Real lame_mu;
+  /// Poisson ratio
+  Real nu;
+
+  /// Lame's first parameter
+  Real lambda;
+
+  /// Lame's second paramter
+  Real mu;
 
 };
 

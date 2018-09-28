@@ -51,12 +51,22 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class Compute
   
-  // material functor can be created 
-  
-
-  
+namespace phasefield {
+  namespace details {
+    class ComputeDamageFunctor {
+    public:
+      ComputeDamageFunctor(const PhaseFieldModel & model) : model(model) {};
+      // material functor can be created
+      void operator()() const {
+	
+      }
+      
+    private:
+      const PhaseFieldModel & model;
+    };
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
@@ -64,7 +74,7 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
   : Model(mesh, ModelType::_phase_field_model, dim, id, memory_id),
     damage_gradient("damage_gradient", id),
     damage_on_qpoints("damage_on_qpoints", id),
-    strain_history_on_qpoints("strain_history_on_qpoints", id),
+    phi_history_on_qpoints("phi_history_on_qpoints", id),
     strain_on_qpoints("strain_on_qpoints", id){
 
   AKANTU_DEBUG_IN();
@@ -88,8 +98,8 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
 
   this->registerParam("l0", l_0, 0., _pat_parsmod, "length scale");
   this->registerParam("gc", g_c, _pat_parsmod, "critical local fracture energy density");
-  this->registerParam("lambda", lame_lambda, _pat_parsmod, "lame parameter lambda");
-  this->registerParam("mu", lame_mu, _pat_parsmod, "lame paramter mu");
+  this->registerParam("E", E, _pat_parsmod, "Young's modulus");
+  this->registerParam("nu", nu, _pat_parsmod, "Poisson ratio");
 
  AKANTU_DEBUG_OUT();
 }
@@ -107,7 +117,7 @@ void PhaseFieldModel::initModel() {
   damage_on_qpoints.initialize(fem, _nb_component = 1);
   damage_gradient.initialize(fem, _nb_component = spatial_dimension);
   strain_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
-  strain_history_on_qpoints.initialize(fem, _nb_component = 1);
+  phi_history_on_qpoints.initialize(fem, _nb_component = 1);
   
 }
 
@@ -128,8 +138,14 @@ void PhaseFieldModel::readMaterials() {
   }
 
   damage_energy_on_qpoints.set(g_c * l_0);
+  this->updateInternalParameters();
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::updateInternalParameters() {
+  this->lambda = this->nu * this->E / ((1 + this->nu) * (1 - 2 * this->nu));
+  this->mu = this->E / (2 * (1 + this->nu));
+}
 
   
 /* -------------------------------------------------------------------------- */
@@ -250,12 +266,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   ModelSolverOptions options;
 
   switch (type) {
-  case _tsst_dynamic_lumped: {
-    options.non_linear_solver_type = _nls_lumped;
-    options.integration_scheme_type["damage"] = _ist_forward_euler;
-    options.solution_type["damage"] = IntegrationScheme::_damage;
-    break;
-  }
+
   case _tsst_static: {
     options.non_linear_solver_type = _nls_newton_raphson;
     options.integration_scheme_type["damage"] = _ist_pseudo_time;
@@ -263,17 +274,11 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
     break;
   }
   case _tsst_dynamic: {
-    if (this->method == _explicit_consistent_mass) {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["damage"] = _ist_forward_euler;
-      options.solution_type["damage"] =  IntegrationScheme::_not_defined;
-    } else {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["damage"] = _ist_backward_euler;
-      options.solution_type["damage"] = IntegrationScheme::_damage;
-    }
+    options.non_linear_solver_type = _nls_newton_raphson;
+    options.integration_scheme_type["damage"] = _ist_backward_euler;
+    options.solution_type["damage"] = IntegrationScheme::_damage;
     break;
-  }
+  }   
   default:
     AKANTU_EXCEPTION(type << " is not a valid time step solver type");
   }
@@ -289,7 +294,7 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   auto & fem = getFEEngineClass<FEEngineType>();
-  ComputeDamageFunctor compute_damage(*this);
+  phasefield::details::ComputeDamageFunctor compute_damage(*this);
   
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
@@ -358,7 +363,7 @@ void PhaseFieldModel::computeStrainHistoryOnQuadPoints(
     for (auto  && values :
 	   zip(make_view(strain_on_qpoints(type, ghost_type),
 			 spatial_dimension, spatial_dimension),
-	       make_view(strain_history_on_qpoints(type, ghost_type)))) {
+	       make_view(phi_history_on_qpoints(type, ghost_type)))) {
 
       auto & epsilon     = std::get<0>(values);
       auto & phi_history = std::get<1>(values);
@@ -391,10 +396,10 @@ void PhaseFieldModel::computeStrainHistoryOnQuadPoints(
       
       for (UInt i=0; i < spatial_dimension; i++) {
 	for (UInt j=0; j < spatial_dimension; j++) {
-	  sigma_plus(i, j)  = (i==j) * lame_lambda * trace_plus
-	                    + 2 * lame_mu * epsilon_plus(i, j);
-	  sigma_minus(i, j) = (i==j) * lame_lambda * trace_minus
-	                    + 2 * lame_mu * epsilon_minus(i, j);
+	  sigma_plus(i, j)  = (i==j) * lambda * trace_plus
+	                    + 2 * mu * epsilon_plus(i, j);
+	  sigma_minus(i, j) = (i==j) * lambda * trace_minus
+	                    + 2 * mu * epsilon_minus(i, j);
 	}
       }     
       
@@ -420,7 +425,6 @@ void PhaseFieldModel::assembleResidual() {
 					   *this->external_force, 1);
   this->getDOFManager().assembleToResidual("damage",
 					   *this->internal_force, 1);
-
 
   AKANTU_DEBUG_OUT();
 }
@@ -469,12 +473,12 @@ void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
   for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
 
     for (auto && values:
-	   zip(make_view(strain_history_on_qpoints(type, ghost_type)),
+	   zip(make_view(phi_history_on_qpoints(type, ghost_type)),
 	       make_view(driving_force_on_qpoints(type, ghost_type)) )) {
-      auto & strain_history = std::get<0>(values);
+      auto & phi_history    = std::get<0>(values);
       auto & driving_force  = std::get<1>(values);
 
-      driving_force = 2.0 * strain_history;
+      driving_force = 2.0 * phi_history;
     }
   }
 
@@ -671,7 +675,7 @@ dumper::Field * PhaseFieldModel::createElementalField(
     field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
         damage_gradient, group_name, this->spatial_dimension, element_kind,
         nb_data_per_elem);
-  } else if (field_name == "conductivity") {
+  } else if (field_name == "damage_energy") {
     ElementTypeMap<UInt> nb_data_per_elem =
         this->mesh.getNbDataPerElem(damage_energy_on_qpoints, element_kind);
 
