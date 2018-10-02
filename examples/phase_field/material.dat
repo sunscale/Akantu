@@ -1,0 +1,13 @@
+material damage [
+	 name = dummy
+	 rho = 1.
+	 E = 210.0
+	 nu = 0.3
+]
+
+phase standard [
+      l0 = 0.1
+      gc = 5.0e-3
+      E = 210.0
+      nu = 0.3
+]

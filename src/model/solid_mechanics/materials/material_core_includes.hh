@@ -48,6 +48,7 @@
 #include "material_standard_linear_solid_deviatoric.hh"
 
 // damage laws
+#include "material_damage.hh"
 #include "material_marigo.hh"
 #include "material_mazars.hh"
 
@@ -63,6 +64,7 @@
       (2, (sls_deviatoric, MaterialStandardLinearSolidDeviatoric)))(           \
       (2, (marigo, MaterialMarigo)))((2, (mazars, MaterialMazars)))(           \
       (2, (plastic_linear_isotropic_hardening,                                 \
-           MaterialLinearIsotropicHardening)))
+           MaterialLinearIsotropicHardening)))(                                \
+      (2, (damage, MaterialDamage)))					       
 
 #endif /* __AKANTU_MATERIAL_CORE_INCLUDES_HH__ */

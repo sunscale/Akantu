@@ -58,8 +58,8 @@ namespace phasefield {
     public:
       ComputeDamageFunctor(const PhaseFieldModel & model) : model(model) {};
       // material functor can be created
-      void operator()() const {
-	
+      void operator()(Matrix<Real> & rho, const Element &) const {
+	rho.set(1.);
       }
       
     private:
@@ -72,10 +72,13 @@ namespace phasefield {
 PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
 				 const MemoryID & memory_id)
   : Model(mesh, ModelType::_phase_field_model, dim, id, memory_id),
-    damage_gradient("damage_gradient", id),
-    damage_on_qpoints("damage_on_qpoints", id),
-    phi_history_on_qpoints("phi_history_on_qpoints", id),
-    strain_on_qpoints("strain_on_qpoints", id){
+    damage_on_qpoints(                "damage_on_qpoints",                id),
+    damage_energy_on_qpoints(         "damage_energy_on_qpoints",         id),
+    damage_energy_density_on_qpoints( "damage_energy_density_on_qpoints", id),
+    damage_gradient(                  "damage_gradient",                  id),
+    strain_on_qpoints(                "strain_on_qpoints",                id),
+    driving_force_on_qpoints(         "driving_force_on_qpoints",         id),
+    phi_history_on_qpoints(           "phi_history_on_qpoints",           id){
 
   AKANTU_DEBUG_IN();
 
@@ -96,10 +99,10 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif // AKANTU_USE_IOHELPER
 
-  this->registerParam("l0", l_0, 0., _pat_parsmod, "length scale");
-  this->registerParam("gc", g_c, _pat_parsmod, "critical local fracture energy density");
-  this->registerParam("E", E, _pat_parsmod, "Young's modulus");
-  this->registerParam("nu", nu, _pat_parsmod, "Poisson ratio");
+  this->registerParam("l0", l_0 , 0., _pat_parsmod, "length scale");
+  this->registerParam("gc", g_c ,     _pat_parsmod, "critical local fracture energy density");
+  this->registerParam("E" , E   ,     _pat_parsmod, "Young's modulus");
+  this->registerParam("nu", nu  ,     _pat_parsmod, "Poisson ratio");
 
  AKANTU_DEBUG_OUT();
 }
@@ -115,8 +118,11 @@ void PhaseFieldModel::initModel() {
   fem.initShapeFunctions(_ghost);
 
   damage_on_qpoints.initialize(fem, _nb_component = 1);
+  damage_energy_on_qpoints.initialize(fem, _nb_component = 1);
+  damage_energy_density_on_qpoints.initialize(fem, _nb_component = 1);
   damage_gradient.initialize(fem, _nb_component = spatial_dimension);
   strain_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
+  driving_force_on_qpoints.initialize(fem, _nb_component = 1);
   phi_history_on_qpoints.initialize(fem, _nb_component = 1);
   
 }
@@ -151,12 +157,14 @@ void PhaseFieldModel::updateInternalParameters() {
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
 
-  this->computeStrainHistoryOnQuadPoints(_not_ghost);
+  this->computePhiHistoryOnQuadPoints(_not_ghost);
   
   if (matrix_id == "K") {
     this->assembleDamageMatrix();
-  } else if (matrix_id == "M") { // (and need_to_reassemble_capacity) {
     this->assembleDamageGradMatrix();
+  }
+  else  {
+    AKANTU_ERROR("Unknown Matrix ID for PhaseFieldModel : " << matrix_id);
   }
 }
 
@@ -176,71 +184,11 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
     dof_manager.registerBlockedDOFs("damage", *this->blocked_dofs);
   }
 
-  /*if (time_step_solver_type == _tsst_dynamic ||
-      time_step_solver_type == _tsst_dynamic_lumped) {
-    this->allocNodalField(this->damage_gradient, spatial_dimension, "damage_gradient");
+  if (time_step_solver_type == _tsst_dynamic) {
+    AKANTU_TO_IMPLEMENT();
+  }
 
-    if (!dof_manager.hasDOFsDerivatives("damage", 1)) {
-      dof_manager.registerDOFsDerivative("damage", 1,
-                                         *this->damage_gradient);
-    }
-    }*/
 }
-
-
-
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::assembleDamageMatrix() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Assemble the new damage matrix");
-
-  if (!this->getDOFManager().hasMatrix("K")) {
-    this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
-  }
-  this->getDOFManager().clearMatrix("K");
-
-  switch (mesh.getSpatialDimension()) {
-  case 1:
-    this->assembleDamageMatrix<1>(_not_ghost);
-    break;
-  case 2:
-    this->assembleDamageMatrix<2>(_not_ghost);
-    break;
-  case 3:
-    this->assembleDamageMatrix<3>(_not_ghost);
-    break;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::assembleDamageGradMatrix() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Assemble the new damage gradient matrix");
-
-  if (!this->getDOFManager().hasMatrix("K")) {
-    this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
-  }
-  this->getDOFManager().clearMatrix("K");
-
-  switch (mesh.getSpatialDimension()) {
-  case 1:
-    this->assembleDamageGradMatrix<1>(_not_ghost);
-    break;
-  case 2:
-    this->assembleDamageGradMatrix<2>(_not_ghost);
-    break;
-  case 3:
-    this->assembleDamageGradMatrix<3>(_not_ghost);
-    break;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
 
 /* -------------------------------------------------------------------------- */
 std::tuple<ID, TimeStepSolverType>
@@ -286,7 +234,57 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   return options;
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::assembleDamageMatrix() {
+  AKANTU_DEBUG_IN();
+
+  AKANTU_DEBUG_INFO("Assemble the new damage matrix");
+
+  if (!this->getDOFManager().hasMatrix("K")) {
+    this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
+  }
+  this->getDOFManager().clearMatrix("K");
+
+  switch (mesh.getSpatialDimension()) {
+  case 1:
+    this->assembleDamageMatrix<1>(_not_ghost);
+    break;
+  case 2:
+    this->assembleDamageMatrix<2>(_not_ghost);
+    break;
+  case 3:
+    this->assembleDamageMatrix<3>(_not_ghost);
+    break;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::assembleDamageGradMatrix() {
+  AKANTU_DEBUG_IN();
+
+  AKANTU_DEBUG_INFO("Assemble the new damage gradient matrix");
+
+  if (!this->getDOFManager().hasMatrix("K")) {
+    this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
+  }
   
+  switch (mesh.getSpatialDimension()) {
+  case 1:
+    this->assembleDamageGradMatrix<1>(_not_ghost);
+    break;
+  case 2:
+    this->assembleDamageGradMatrix<2>(_not_ghost);
+    break;
+  case 3:
+    this->assembleDamageGradMatrix<3>(_not_ghost);
+    break;
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
 /* -------------------------------------------------------------------------- */
 template<UInt dim>
 void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
@@ -298,7 +296,7 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
   
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
-    fem.assembleFieldMatrix(compute_damage, "M", "damage",
+    fem.assembleFieldMatrix(compute_damage, "K", "damage",
 			    this->getDOFManager(), type, ghost_type);
   }
 
@@ -345,16 +343,16 @@ void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
 
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::computeStrainHistoryOnQuadPoints(
+void PhaseFieldModel::computePhiHistoryOnQuadPoints(
      const GhostType & ghost_type) {
 
-  Matrix<Real> epsilon_plus(spatial_dimension, spatial_dimension);
-  Matrix<Real> epsilon_minus(spatial_dimension, spatial_dimension);
-  Matrix<Real> epsilon_dir(spatial_dimension, spatial_dimension);
-  Matrix<Real> epsilon_diag_plus(spatial_dimension, spatial_dimension);
-  Matrix<Real> epsilon_diag_minus(spatial_dimension, spatial_dimension);
+  Matrix<Real> strain_plus(      spatial_dimension, spatial_dimension);
+  Matrix<Real> strain_minus(     spatial_dimension, spatial_dimension);
+  Matrix<Real> strain_dir(       spatial_dimension, spatial_dimension);
+  Matrix<Real> strain_diag_plus( spatial_dimension, spatial_dimension);
+  Matrix<Real> strain_diag_minus(spatial_dimension, spatial_dimension);
 
-  Vector<Real> eigen_values(spatial_dimension);
+  Vector<Real> strain_values(spatial_dimension);
 
   Real trace_plus, trace_minus, phi_plus;
   
@@ -365,45 +363,45 @@ void PhaseFieldModel::computeStrainHistoryOnQuadPoints(
 			 spatial_dimension, spatial_dimension),
 	       make_view(phi_history_on_qpoints(type, ghost_type)))) {
 
-      auto & epsilon     = std::get<0>(values);
+      auto & strain      = std::get<0>(values);
       auto & phi_history = std::get<1>(values);
       
-      epsilon_plus.clear();
-      epsilon_minus.clear();
-      epsilon_dir.clear();
-      eigen_values.clear();          
-      epsilon_diag_plus.clear();
-      epsilon_diag_minus.clear();
+      strain_plus.clear();
+      strain_minus.clear();
+      strain_dir.clear();
+      strain_values.clear();          
+      strain_diag_plus.clear();
+      strain_diag_minus.clear();
 
-      epsilon.eig(eigen_values, epsilon_dir);
+      strain.eig(strain_values, strain_dir);
 
       for (UInt i=0; i < spatial_dimension; i++) {
-	epsilon_diag_plus(i, i)  = std::max(Real(0.), eigen_values(i));
-	epsilon_diag_minus(i, i) = std::min(Real(0.), eigen_values(i));
+	strain_diag_plus(i, i)  = std::max(Real(0.), strain_values(i));
+	strain_diag_minus(i, i) = std::min(Real(0.), strain_values(i));
       }
 
-      Matrix<Real> mat_tmp(spatial_dimension, spatial_dimension);
-      Matrix<Real> sigma_plus(spatial_dimension, spatial_dimension);
+      Matrix<Real> mat_tmp(    spatial_dimension, spatial_dimension);
+      Matrix<Real> sigma_plus( spatial_dimension, spatial_dimension);
       Matrix<Real> sigma_minus(spatial_dimension, spatial_dimension);
 
-      mat_tmp.mul<false,true>(epsilon_diag_plus, epsilon_dir);
-      epsilon_plus.mul<false, false>(epsilon_dir, mat_tmp);
-      mat_tmp.mul<false, true>(epsilon_diag_minus, epsilon_dir);
-      epsilon_minus.mul<false, true>(epsilon_dir, mat_tmp);
+      mat_tmp.mul<false,true>(strain_diag_plus, strain_dir);
+      strain_plus.mul<false, false>(strain_dir, mat_tmp);
+      mat_tmp.mul<false, true>(strain_diag_minus, strain_dir);
+      strain_minus.mul<false, true>(strain_dir, mat_tmp);
 
-      trace_plus  = std::max(Real(0.), epsilon.trace());
-      trace_minus = std::min(Real(0.), epsilon.trace());
+      trace_plus  = std::max(Real(0.), strain.trace());
+      trace_minus = std::min(Real(0.), strain.trace());
       
       for (UInt i=0; i < spatial_dimension; i++) {
 	for (UInt j=0; j < spatial_dimension; j++) {
 	  sigma_plus(i, j)  = (i==j) * lambda * trace_plus
-	                    + 2 * mu * epsilon_plus(i, j);
+	                    + 2 * mu * strain_plus(i, j);
 	  sigma_minus(i, j) = (i==j) * lambda * trace_minus
-	                    + 2 * mu * epsilon_minus(i, j);
+	                    + 2 * mu * strain_minus(i, j);
 	}
       }     
       
-      phi_plus = 1./2 * sigma_plus.doubleDot(epsilon);
+      phi_plus = 1./2 * sigma_plus.doubleDot(strain);
 
       if (phi_plus > phi_history) {
 	phi_history = phi_plus;
@@ -484,6 +482,24 @@ void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
 
   AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::computeDamageOnQuadPoints(const GhostType & ghost_type) {
+
+  AKANTU_DEBUG_IN();
+  
+  auto & fem = this->getFEEngine();
+
+  for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
+    auto & damage_on_qpoints_vect = damage_on_qpoints(type, ghost_type);
+    fem.interpolateOnIntegrationPoints(*damage, damage_on_qpoints_vect,
+				       1, type, ghost_type);
+    
+  }
+  
+  AKANTU_DEBUG_OUT();
+}
+ 
 
 /* -------------------------------------------------------------------------- */
 UInt PhaseFieldModel::getNbData(const Array<Element> & elements,

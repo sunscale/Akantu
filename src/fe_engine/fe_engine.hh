@@ -181,7 +181,7 @@ public:
   virtual void computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
                           const ElementType & type,
                           const GhostType & ghost_type,
-                          const Array<UInt> & filter_elements) const = 0;
+                          const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// Compute the interpolation point position in the global coordinates for
   /// many element types
