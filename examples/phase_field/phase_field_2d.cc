@@ -28,10 +28,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "non_linear_solver.hh"
 #include "phase_field_model.hh"
 #include "solid_mechanics_model.hh"
 #include "solid_phase_coupler.hh"
-#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -42,21 +42,22 @@ const UInt spatial_dimension = 2;
 
 int main(int argc, char *argv[])
 {
-  initialize("materia.dat", argc, argv);
+  initialize("material.dat", argc, argv);
 
   // create mesh
   Mesh mesh(spatial_dimension);
   mesh.read("square.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
-
+ 
   // Phase field model initialization
   PhaseFieldModel pfm(mesh);
   pfm.initFull(_analysis_method = _static);
 
-  auto & solver = pfm.getNonLinearSolver();
-  solver.set("max_iterations", 1000);
-  solver.set("threshold", 1e-8);
-  solver.set("convergence_type", _scc_solution);
+  std::cout << pfm << std::endl;
+
+  auto & pfm_solver = pfm.getNonLinearSolver();
+  pfm_solver.set("max_iterations", 1000);
+  pfm_solver.set("threshold", 1e-3);
+  pfm_solver.set("convergence_type", _scc_solution);
   
   // solid mechanics model initialization
   SolidMechanicsModel smm(mesh);
@@ -67,22 +68,22 @@ int main(int argc, char *argv[])
   smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
   smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "right");
 
-  smm.setBasename(        "square");
+  smm.setBaseName(        "square");
   smm.addDumpFieldVector( "displacement");
-  smm.addDumpFieldVector( "residual");
+  smm.addDumpFieldVector( "internal_force");
   smm.addDumpField(       "stress");
   smm.addDumpField(       "grad_u");
   smm.addDumpField(       "damage");
   smm.addDumpField(       "blocked_dofs");
   smm.dump();
 
-  solver = smm.getNonLinearSolver();
-  solver.set("max_iterations", 1000);
-  solver.set("threshold", 1e-8);
-  solver.set("convergence_type", _scc_solution);
+  auto & smm_solver = smm.getNonLinearSolver();
+  smm_solver.set("max_iterations", 1000);
+  smm_solver.set("threshold", 1e-8);
+  smm_solver.set("convergence_type", _scc_solution);
   
   // coupling of models
-  SolidPhaseCoupler coupler<smm, pfm>();
+  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
   // assign the type of solver for coupler whether it is staggered or
   // monolithic
   // auto & scheme = coupler.getCouplingScheme();
@@ -90,16 +91,18 @@ int main(int argc, char *argv[])
   // scheme.set("threshold", 1e-8);
   // scheme.set("convergence_dof", _damage);
 
-  UInt nbSteps   = 1000;
+  UInt nbSteps   = 100;
   Real increment = 1.e-4;
   
   for (UInt s = 1; s < nbSteps; ++s) {
     smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
-    coupler.solveStep();
+    coupler.solve();
     smm.dump();
+
+    std::cout << "Step " << s << "/" << nbSteps << std::endl;
   }
 
-  finialize;
+  finalize();
   return EXIT_SUCCESS;
 }
 

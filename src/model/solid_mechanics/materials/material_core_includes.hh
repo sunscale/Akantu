@@ -48,9 +48,11 @@
 #include "material_standard_linear_solid_deviatoric.hh"
 
 // damage laws
-#include "material_damage.hh"
 #include "material_marigo.hh"
 #include "material_mazars.hh"
+
+//phasefield laws
+#include "material_phasefield.hh"
 
 // small-deformation plasticity
 #include "material_linear_isotropic_hardening.hh"
@@ -65,6 +67,6 @@
       (2, (marigo, MaterialMarigo)))((2, (mazars, MaterialMazars)))(           \
       (2, (plastic_linear_isotropic_hardening,                                 \
            MaterialLinearIsotropicHardening)))(                                \
-      (2, (damage, MaterialDamage)))					       
+      (2, (phasefield, MaterialPhaseField)))					       
 
 #endif /* __AKANTU_MATERIAL_CORE_INCLUDES_HH__ */

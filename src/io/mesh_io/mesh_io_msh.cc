@@ -856,6 +856,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
       phys_name_map[phys_name_id] = phys_name;
     }
+    my_getline(infile, line); /// the end of block line
   };
 
   readers["$NodeData"] = [&](const std::string &) {

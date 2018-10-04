@@ -90,6 +90,9 @@ protected:
   /// callback to assemble a Matrix
   void assembleMatrix(const ID &) override;
 
+  /// callback to assemble a lumped Matrix
+  void assembleLumpedMatrix(const ID &) override;
+
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & method) override;
 
@@ -101,6 +104,9 @@ protected:
 
   ///
   void updateInternalParameters();
+
+  /// function to print the containt of the class
+  void printself(std::ostream & stream, int indent = 0) const override;
   
   /* ------------------------------------------------------------------------ */
   /* Methods for static                                                       */
@@ -137,6 +143,14 @@ private:
   
   /// compute the fracture energy
   Real computeFractureEnergyByNode();
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods for static                                                       */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// set the stable timestep
+  void setTimeStep(Real time_step, const ID & solver_id="") override;
+
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
@@ -196,6 +210,10 @@ public:
   virtual void dump(UInt step);
 
   virtual void dump(Real time, UInt step);
+
+protected:
+  /* ------------------------------------------------------------------------ */
+  FEEngine & getFEEngineBoundary(const ID & name = "") override;
   
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

@@ -32,6 +32,8 @@
 #include "aka_common.hh"
 #include "solid_mechanics_model.hh"
 #include "phase_field_model.hh"
+#include "material.hh"
+#include "material_phasefield.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLID_PHASE_COUPLER_HH__
@@ -39,7 +41,7 @@
 
 namespace akantu {
 
-template <SolidMechanicsModel & smm, PhaseFieldModel & pfm> 
+template <typename SolidType, typename PhaseType> 
 class SolidPhaseCoupler {
 
   /* ------------------------------------------------------------------------ */
@@ -49,7 +51,7 @@ private:
     
 public:
   
-  SolidPhaseCoupler();
+  SolidPhaseCoupler(SolidType &, PhaseType &);
 
   ~SolidPhaseCoupler();
   
@@ -78,6 +80,11 @@ private:
   /* Members                                                                  */
   /* ------------------------------------------------------------------------ */
 private:
+  ///
+  SolidType & solid;
+  ///
+  PhaseType & phase;
+  
   /// Spatial dimension of models
   UInt spatial_dimension;
   

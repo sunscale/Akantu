@@ -92,7 +92,8 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
     this->registerSynchronizer(synchronizer, _gst_pfm_gradient_damage);
   }
 
-  registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
+  this->registerFEEngineObject<FEEngineType>(id + ":fem", mesh,
+				       Model::spatial_dimension);
 
 #ifdef AKANTU_USE_IOHELPER
   this->mesh.registerDumper<DumperParaview>("phase_field", id, true);
@@ -112,13 +113,22 @@ PhaseFieldModel::~PhaseFieldModel() = default;
  
 
 /* -------------------------------------------------------------------------- */
+MatrixType PhaseFieldModel::getMatrixType(const ID & matrix_id) {
+  if (matrix_id == "K" or matrix_id == "M") {
+    return _symmetric;
+  }
+
+  return _mt_not_defined;
+}
+  
+/* -------------------------------------------------------------------------- */
 void PhaseFieldModel::initModel() {
   auto & fem = this->getFEEngine();
   fem.initShapeFunctions(_not_ghost);
   fem.initShapeFunctions(_ghost);
 
   damage_on_qpoints.initialize(fem, _nb_component = 1);
-  damage_energy_on_qpoints.initialize(fem, _nb_component = 1);
+  damage_energy_on_qpoints.initialize(fem, _nb_component = spatial_dimension * spatial_dimension);
   damage_energy_density_on_qpoints.initialize(fem, _nb_component = 1);
   damage_gradient.initialize(fem, _nb_component = spatial_dimension);
   strain_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
@@ -143,7 +153,10 @@ void PhaseFieldModel::readMaterials() {
     this->parseSection(section);
   }
 
-  damage_energy_on_qpoints.set(g_c * l_0);
+  Matrix<double> d(spatial_dimension, spatial_dimension);
+  d.eye(g_c * l_0);
+  
+  damage_energy_on_qpoints.set(d);
   this->updateInternalParameters();
 }
 
@@ -168,6 +181,10 @@ void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::predictor() {
+  //AKANTU_TO_IMPLEMENT();
+}  
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
@@ -190,6 +207,11 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
 
 }
 
+/* -------------------------------------------------------------------------- */
+FEEngine & PhaseFieldModel::getFEEngineBoundary(const ID & name) {
+  return dynamic_cast<FEEngine &>(getFEEngineClassBoundary<FEEngineType>(name));
+}
+  
 /* -------------------------------------------------------------------------- */
 std::tuple<ID, TimeStepSolverType>
 PhaseFieldModel::getDefaultSolverID(const AnalysisMethod & method) {
@@ -322,8 +344,10 @@ void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
        nb_element * nb_quadrature_points,
        nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
 
+    auto & damage_energy_on_qpoints_vect = damage_energy_on_qpoints(type, ghost_type);
+    
     // damage_energy_on_qpoints = gc*l0 = scalar
-    fem.computeBtDB(damage_energy_on_qpoints(type, ghost_type), *bt_d_b, 2, type,
+    fem.computeBtDB(damage_energy_on_qpoints_vect, *bt_d_b, 2, type,
 		    ghost_type);
 
     /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
@@ -335,7 +359,7 @@ void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
 		  type, ghost_type);
 
     this->getDOFManager().assembleElementalMatricesToMatrix(
-       "K", "phasefield", *K_b, type, ghost_type, _symmetric);
+       "K", "damage", *K_b, type, ghost_type, _symmetric);
   }
 
   AKANTU_DEBUG_OUT();
@@ -427,8 +451,6 @@ void PhaseFieldModel::assembleResidual() {
   AKANTU_DEBUG_OUT();
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleInternalForces() {
   AKANTU_DEBUG_IN();
@@ -465,6 +487,19 @@ void PhaseFieldModel::assembleInternalForces() {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::assembleLumpedMatrix(const ID & matrix_id) {
+}
+
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::setTimeStep(Real time_step, const ID & solver_id) {
+  Model::setTimeStep(time_step, solver_id);
+
+#if defined(AKANTU_USE_IOHELPER)
+  this->mesh.getDumper("phase_field").setTimeStep(time_step);
+#endif
+}
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
 
@@ -757,4 +792,39 @@ void PhaseFieldModel::dump(UInt step) { mesh.dump(step); }
 void PhaseFieldModel::dump(Real time, UInt step) { mesh.dump(time, step); }  
 
 /* -------------------------------------------------------------------------- */  
+void PhaseFieldModel::printself(std::ostream & stream, int indent) const {
+  std::string space;
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    ;
+
+  stream << space << "Phase Field Model [" << std::endl;
+  stream << space << " + id                : " << id << std::endl;
+  stream << space << " + spatial dimension : " << Model::spatial_dimension
+         << std::endl;
+  stream << space << " + fem [" << std::endl;
+  getFEEngine().printself(stream, indent + 2);
+  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " + nodals information [" << std::endl;
+  damage->printself(stream, indent + 2);
+  external_force->printself(stream, indent + 2);
+  internal_force->printself(stream, indent + 2);
+  blocked_dofs->printself(stream, indent + 2);
+  stream << space << AKANTU_INDENT << "]" << std::endl;
+
+  stream << space << " + material information [" << std::endl;
+  stream << space << AKANTU_INDENT << "]" << std::endl;
+
+  stream << space << " + materials [" << std::endl;
+  stream << space << " length scale parameter       : " << l_0 << std::endl;
+  stream << space << " critical energy release rate : " << g_c << std::endl;
+  stream << space << " Young's modulus              : " << E   << std::endl;
+  stream << space << " Poisson's ratio              : " << nu  << std::endl;
+  stream << space << " Lame's first parameter       : " << lambda   << std::endl;
+  stream << space << " Lame's second parameter      : " << mu  << std::endl;
+  stream << space << AKANTU_INDENT << "]" << std::endl;
+
+  stream << space << "]" << std::endl;
+}
+
+
 } // akantu

@@ -34,43 +34,61 @@
 
 namespace akantu {
 
-template<SolidMechanicsModel & smm, PhaseFieldModel & pfm>
-SolidPhaseCoupler<smm, pfm>::SolidPhaseCoupler() {
-  this->spatial_dimension = smm.getMesh().getSpatialDimension();
+template<typename SolidType, typename PhaseType>
+SolidPhaseCoupler<SolidType, PhaseType>::SolidPhaseCoupler(SolidType & solid, PhaseType & phase)
+  : solid(solid), phase(phase) {
+  this->spatial_dimension = solid.getMesh().getSpatialDimension();
 }
 
 /* -------------------------------------------------------------------------- */
-template<SolidMechanicsModel & smm, PhaseFieldModel & pfm>
-SolidPhaseCoupler<smm, pfm>::~SolidPhaseCoupler() {
+template<typename SolidType, typename PhaseType>
+SolidPhaseCoupler<SolidType, PhaseType>::~SolidPhaseCoupler() {
 }
 
 /* -------------------------------------------------------------------------- */
-template<SolidMechanicsModel & smm, PhaseFieldModel & pfm>
-void SolidPhaseCoupler<smm, pfm>::computeDamageOnQuadPoints(const GhostType & ghost_type) {
+template<typename SolidType, typename PhaseType>
+void SolidPhaseCoupler<SolidType, PhaseType>::computeDamageOnQuadPoints(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
   
-  auto & fem  = pfm.getFEEngine();
-  auto & mesh = pfm.getMesh();
+  auto & fem  = phase.getFEEngine();
+  auto & mesh = phase.getMesh();
 
-  for (auto & type: mesh.elementTypes(this->spatial_dimension, ghost_type)) {
-    auto & damage_on_qpoints_vect = smm.getMaterial(0).getArray<Real>("damage", type);
-    fem.interpolateOnIntegrationPoints(pfm.getDamage(), damage_on_qpoints_vect,
+  switch (spatial_dimension) {
+  case 1: {
+    auto & mat = static_cast<MaterialPhaseField<1> &>(solid.getMaterial(0));
+    break;
+  }
+  case 2: {
+    auto & mat = static_cast<MaterialPhaseField<2> &>(solid.getMaterial(0));
+    auto & damage = mat.getDamage();
+  
+    for (auto & type: mesh.elementTypes(this->spatial_dimension, ghost_type)) {
+    
+      auto & damage_on_qpoints_vect = damage(type, ghost_type);
+      fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 				       1, type, ghost_type); 
+    }
+    break;
+  }  
+  default:
+    auto & mat = static_cast<MaterialPhaseField<3> &>(solid.getMaterial(0));
+    break;
   }
   
+  
+    
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-template<SolidMechanicsModel & smm,PhaseFieldModel & pfm>
-void SolidPhaseCoupler<smm, pfm>::computeStrainOnQuadPoints(const GhostType & ghost_type) {
+template<typename SolidType,typename PhaseType>
+void SolidPhaseCoupler<SolidType, PhaseType>::computeStrainOnQuadPoints(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
-  auto & fem  = smm.getFEEngine();
-  auto & mesh = smm.getMesh();
+  auto & mesh = solid.getMesh();
 
-  auto & strain_on_qpoints = pfm.getStrain();
-  auto & gradu_on_qpoints  = smm.getMaterial(0).getGradU();
+  auto & strain_on_qpoints = phase.getStrain();
+  auto & gradu_on_qpoints  = solid.getMaterial(0).getGradU();
     
   for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
     auto & strain_on_qpoints_vect = strain_on_qpoints(type, ghost_type);
@@ -88,28 +106,29 @@ void SolidPhaseCoupler<smm, pfm>::computeStrainOnQuadPoints(const GhostType & gh
 }
 
 /* -------------------------------------------------------------------------- */
-template<SolidMechanicsModel & smm, PhaseFieldModel & pfm>
-void SolidPhaseCoupler<smm, pfm>::solve() {
-  smm.solveStep();
-  this->computeStrainOnQuadPoints();
+template<typename SolidType, typename PhaseType>
+void SolidPhaseCoupler<SolidType, PhaseType>::solve() {
+  solid.solveStep();
+  this->computeStrainOnQuadPoints(_not_ghost);
 
-  pfm.solveStep();
-  this->computeDamageOnQuadPoints();
+  phase.solveStep();
+  this->computeDamageOnQuadPoints(_not_ghost);
   
-  smm.updateResidual();
+  //solid.updateResidual();
   // check for convergence();
 
 }
 
 /* -------------------------------------------------------------------------- */
-template<SolidMechanicsModel & smm, PhaseFieldModel & pfm>
-void SolidPhaseCoupler<smm, pfm>::gradUToEpsilon(const Matrix<Real> & grad_u,
-						 Matrix<Real> & epsilon) {
+template<typename SolidType, typename PhaseType>
+void SolidPhaseCoupler<SolidType, PhaseType>::gradUToEpsilon(const Matrix<Real> & grad_u,
+						     Matrix<Real> & epsilon) {
   for (UInt i=0; i < this->spatial_dimension; ++i) {
     for (UInt j = 0; j < this->spatial_dimension; ++j)
 	epsilon(i, j) = 0.5 * (grad_u(i, j) + grad_u(j, i));
   }
 }
 
-
+  template class SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel>;
+  
 } // akantu

@@ -30,10 +30,10 @@
 #
 #===============================================================================
 
-add_mesh(phase_field_2d square.geo 2 2)
+add_mesh(square square.geo 2 1)
 
 register_example(phase_field_2d
   SOURCES phase_field_2d.cc
-  DEPENDS phase_field_mesh_2d
+  DEPENDS square
   FILES_TO_COPY material.dat
   )
