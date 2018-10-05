@@ -131,7 +131,7 @@ void PhaseFieldModel::initModel() {
   damage_energy_on_qpoints.initialize(fem, _nb_component = spatial_dimension * spatial_dimension);
   damage_energy_density_on_qpoints.initialize(fem, _nb_component = 1);
   damage_gradient.initialize(fem, _nb_component = spatial_dimension);
-  strain_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
+  strain_on_qpoints.initialize(fem, _nb_component = spatial_dimension * spatial_dimension);
   driving_force_on_qpoints.initialize(fem, _nb_component = 1);
   phi_history_on_qpoints.initialize(fem, _nb_component = 1);
   
@@ -170,8 +170,9 @@ void PhaseFieldModel::updateInternalParameters() {
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
 
-  this->computePhiHistoryOnQuadPoints(_not_ghost);
-  
+  this->computePhiHistoryOnQuadPoints(_not_ghost);  
+  this->computeDamageEnergyDensityOnQuadPoints(_not_ghost);
+
   if (matrix_id == "K") {
     this->assembleDamageMatrix();
     this->assembleDamageGradMatrix();
@@ -314,12 +315,37 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   auto & fem = getFEEngineClass<FEEngineType>();
-  phasefield::details::ComputeDamageFunctor compute_damage(*this);
+  // phasefield::details::ComputeDamageFunctor compute_damage(*this);
   
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    auto nb_element = mesh.getNbElement(type, ghost_type);
+    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
 
-    fem.assembleFieldMatrix(compute_damage, "K", "damage",
-			    this->getDOFManager(), type, ghost_type);
+    auto nt_b_n = std::make_unique<Array<Real>>(
+       nb_element * nb_quadrature_points,
+       nb_nodes_per_element * nb_nodes_per_element, "N^t*b*N");
+
+    auto & damage_energy_density_on_qpoints_vect =
+      damage_energy_density_on_qpoints(type, ghost_type);
+    
+    // damage_energy_on_qpoints = gc/l0 + phi = scalar
+    fem.computeNtbN(damage_energy_density_on_qpoints_vect, *nt_b_n, 2, type,
+		    ghost_type);
+
+    /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
+    /// \mathbf{N}@f$
+    auto K_n = std::make_unique<Array<Real>>(
+	nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
+
+    fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
+		  type, ghost_type);
+
+    this->getDOFManager().assembleElementalMatricesToMatrix(
+       "K", "damage", *K_n, type, ghost_type, _symmetric);
+    
+    //fem.assembleFieldMatrix(compute_damage, "K", "damage",
+    //			    this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -365,6 +391,29 @@ void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
+     const GhostType & ghost_type) {
+
+  AKANTU_DEBUG_IN();
+  
+  auto & fem = this->getFEEngine();
+
+  for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
+    for (auto  && values :
+	   zip(make_view(damage_energy_density_on_qpoints(type, ghost_type)),
+	       make_view(phi_history_on_qpoints(type, ghost_type)))) {
+
+	   auto & dam_energy_density = std::get<0>(values);
+	   auto & phi_history        = std::get<1>(values);
+	   dam_energy_density = g_c/l_0 + 2.0 * phi_history;
+    }
+    
+  }
+  
+  AKANTU_DEBUG_OUT();
+}
+  
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::computePhiHistoryOnQuadPoints(
@@ -480,7 +529,7 @@ void PhaseFieldModel::assembleInternalForces() {
 		    ghost_type);
 
       this->getDOFManager().assembleElementalArrayLocalArray(
-	  int_nt_driving_force, *this->internal_force, type, ghost_type, -1);
+	  int_nt_driving_force, *this->internal_force, type, ghost_type, 1);
     }
   }
 

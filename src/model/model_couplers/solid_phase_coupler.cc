@@ -53,6 +53,9 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeDamageOnQuadPoints(const Gh
   auto & fem  = phase.getFEEngine();
   auto & mesh = phase.getMesh();
 
+  for (auto & dam: phase.getDamage())
+    dam = std::min(1., 2 *dam - dam * dam);
+  
   switch (spatial_dimension) {
   case 1: {
     auto & mat = static_cast<MaterialPhaseField<1> &>(solid.getMaterial(0));
@@ -63,7 +66,6 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeDamageOnQuadPoints(const Gh
     auto & damage = mat.getDamage();
   
     for (auto & type: mesh.elementTypes(this->spatial_dimension, ghost_type)) {
-    
       auto & damage_on_qpoints_vect = damage(type, ghost_type);
       fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 				       1, type, ghost_type); 
@@ -75,8 +77,6 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeDamageOnQuadPoints(const Gh
     break;
   }
   
-  
-    
   AKANTU_DEBUG_OUT();
 }
 
@@ -114,9 +114,8 @@ void SolidPhaseCoupler<SolidType, PhaseType>::solve() {
   phase.solveStep();
   this->computeDamageOnQuadPoints(_not_ghost);
   
-  //solid.updateResidual();
-  // check for convergence();
-
+  /// TODO: check for convergence
+  /// TODO: run for max number of iterations
 }
 
 /* -------------------------------------------------------------------------- */

@@ -135,6 +135,9 @@ private:
   /// compute vector strain history field for each quadrature point
   void computePhiHistoryOnQuadPoints(const GhostType & ghost_type);
 
+  /// compute vector strain history field for each quadrature point
+  void computeDamageEnergyDensityOnQuadPoints(const GhostType & ghost_type);
+  
   /// compute driving force for each quadrature point
   void computeDrivingForce(const GhostType & ghost_type);
     

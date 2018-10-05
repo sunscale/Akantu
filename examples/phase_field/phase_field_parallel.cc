@@ -28,6 +28,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "communicator.hh"
 #include "non_linear_solver.hh"
 #include "phase_field_model.hh"
 #include "solid_mechanics_model.hh"
@@ -45,17 +46,28 @@ int main(int argc, char *argv[])
   initialize("material.dat", argc, argv);
 
   Mesh mesh(spatial_dimension);
-  mesh.read("square.msh");
- 
+  
+  const auto & comm = Communicator::getStaticCommunicator();
+  Int prank = comm.whoAmI();
+
+  if (prank == 0) {
+    mesh.read("square.msh");
+  }
+
+  mesh.distribute();
+  
   PhaseFieldModel pfm(mesh);
   pfm.initFull(_analysis_method = _static);
 
+  if (prank == 0) {
+    std::cout << pfm << std::endl;
+  }
+  
   auto & pfm_solver = pfm.getNonLinearSolver();
   pfm_solver.set("max_iterations", 1000);
   pfm_solver.set("threshold", 1e-3);
   pfm_solver.set("convergence_type", _scc_solution);
   
-  // solid mechanics model initialization
   SolidMechanicsModel smm(mesh);
   smm.initFull(_analysis_method  = _static);
 
@@ -78,7 +90,6 @@ int main(int argc, char *argv[])
   smm_solver.set("threshold", 1e-8);
   smm_solver.set("convergence_type", _scc_solution);
   
-  // coupling of models
   SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
 
   UInt nbSteps   = 100;
@@ -87,9 +98,11 @@ int main(int argc, char *argv[])
   for (UInt s = 1; s < nbSteps; ++s) {
     smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
     coupler.solve();
-    smm.dump();
-
-    std::cout << "Step " << s << "/" << nbSteps << std::endl;
+    smm.dump();  
+    if (prank == 0) {
+      std::cout << "Step " << s << "/" << nbSteps << std::endl;
+    }
+    
   }
 
   finalize();

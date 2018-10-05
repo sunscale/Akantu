@@ -42,29 +42,29 @@ const UInt spatial_dimension = 2;
 
 int main(int argc, char *argv[])
 {
-  initialize("material.dat", argc, argv);
+  initialize("material_notch.dat", argc, argv);
 
+  // create mesh
   Mesh mesh(spatial_dimension);
-  mesh.read("square.msh");
- 
+  mesh.read("square_notch.msh");
+    
+  // Phase field model initialization
   PhaseFieldModel pfm(mesh);
   pfm.initFull(_analysis_method = _static);
-
+  
   auto & pfm_solver = pfm.getNonLinearSolver();
-  pfm_solver.set("max_iterations", 1000);
+  pfm_solver.set("max_iterations", 1);
   pfm_solver.set("threshold", 1e-3);
-  pfm_solver.set("convergence_type", _scc_solution);
+  pfm_solver.set("convergence_type", _scc_residual);
   
   // solid mechanics model initialization
   SolidMechanicsModel smm(mesh);
   smm.initFull(_analysis_method  = _static);
 
   smm.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "bottom");
   smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "right");
 
-  smm.setBaseName(        "square");
+  smm.setBaseName(        "square_notch");
   smm.addDumpFieldVector( "displacement");
   smm.addDumpFieldVector( "internal_force");
   smm.addDumpField(       "stress");
@@ -76,23 +76,22 @@ int main(int argc, char *argv[])
   auto & smm_solver = smm.getNonLinearSolver();
   smm_solver.set("max_iterations", 1000);
   smm_solver.set("threshold", 1e-8);
-  smm_solver.set("convergence_type", _scc_solution);
+  smm_solver.set("convergence_type", _scc_residual);
   
   // coupling of models
   SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
 
-  UInt nbSteps   = 100;
-  Real increment = 1.e-4;
+  UInt nbSteps   = 1500;
+  Real increment = 1.e-5;
   
   for (UInt s = 1; s < nbSteps; ++s) {
     smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
     coupler.solve();
     smm.dump();
-
     std::cout << "Step " << s << "/" << nbSteps << std::endl;
+    
   }
 
   finalize();
   return EXIT_SUCCESS;
 }
-

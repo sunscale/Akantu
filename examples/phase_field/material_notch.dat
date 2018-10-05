@@ -1,0 +1,14 @@
+material phasefield [
+	 name = plate
+	 rho = 1.
+	 E = 210.0
+	 nu = 0.3
+	 Plane_Stress = false
+]
+
+model phase_field_model [
+      l0 = 0.0075
+      gc = 2.7e-3
+      E  = 210.0
+      nu = 0.3
+]

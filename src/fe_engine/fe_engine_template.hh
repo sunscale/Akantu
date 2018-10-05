@@ -180,6 +180,12 @@ public:
                   const ElementType & type, const GhostType & ghost_type,
                   const Array<UInt> & filter_elements = empty_filter) const override;
 
+  /// left and right  multiplies a tensor by the shapes
+  void computeNtbN(
+      const Array<Real> & bs, Array<Real> & NtbNs, UInt order_d,
+      const ElementType & type, const GhostType & ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const override;
+
   /// compute the position of integration points given by an element_type_map
   /// from nodes position
   inline void computeIntegrationPointsCoordinates(

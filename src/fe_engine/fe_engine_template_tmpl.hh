@@ -599,6 +599,44 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeBtDB(
 /* -------------------------------------------------------------------------- */
 namespace fe_engine {
   namespace details {
+    template <ElementKind kind> struct ComputeNtbNHelper {};
+
+#define COMPUTE_NTbN(type)                                                     \
+  shape_functions.template computeNtbN<type>(bs, NtbNs, order_d, ghost_type,   \
+                                             filter_elements);
+
+#define AKANTU_SPECIALIZE_COMPUTE_NtbN_HELPER(kind)                            \
+  template <> struct ComputeNtbNHelper<kind> {                                 \
+    template <class S>                                                         \
+    static void call(const S & shape_functions, const Array<Real> & bs,        \
+                     Array<Real> & NtbNs, UInt order_d,                        \
+                     const ElementType & type, const GhostType & ghost_type,   \
+                     const Array<UInt> & filter_elements) {                    \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_NTbN, kind);                    \
+    }                                                                          \
+  };
+
+    AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_NtbN_HELPER)
+
+#undef AKANTU_SPECIALIZE_COMPUTE_NtbN_HELPER
+#undef COMPUTE_NTbN
+  } // namespace details
+} // namespace fe_engine
+
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeNtbN(
+    const Array<Real> & bs, Array<Real> & NtbNs, UInt order_d,
+    const ElementType & type, const GhostType & ghost_type,
+    const Array<UInt> & filter_elements) const {
+  fe_engine::details::ComputeNtbNHelper<kind>::call(
+      shape_functions, bs, NtbNs, order_d, type, ghost_type, filter_elements);
+}
+
+  
+/* -------------------------------------------------------------------------- */
+namespace fe_engine {
+  namespace details {
     template <ElementKind kind> struct ComputeNtbHelper {};
 
 #define COMPUTE_Ntb(type)                                                      \
