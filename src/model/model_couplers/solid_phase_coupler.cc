@@ -99,7 +99,10 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeStrainOnQuadPoints(const Gh
       auto & strain = std::get<0>(values);
       auto & grad_u = std::get<1>(values);
       this->gradUToEpsilon(grad_u, strain);
-    }      
+      //std::cout << strain << std::endl;
+    }
+
+
   }
 
   AKANTU_DEBUG_OUT();

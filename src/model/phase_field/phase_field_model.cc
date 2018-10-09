@@ -192,10 +192,10 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
                                  NonLinearSolverType) {
   DOFManager & dof_manager = this->getDOFManager();
 
-  this->allocNodalField(this->damage, 1, "damage");
-  this->allocNodalField(this->external_force, 1, "external_force");
-  this->allocNodalField(this->internal_force, 1, "internal_force");
-  this->allocNodalField(this->blocked_dofs, 1, "blocked_dofs");
+  this->allocNodalField(this->damage, "damage");
+  this->allocNodalField(this->external_force, "external_force");
+  this->allocNodalField(this->internal_force, "internal_force");
+  this->allocNodalField(this->blocked_dofs, "blocked_dofs");
 
   if (!dof_manager.hasDOFs("damage")) {
     dof_manager.registerDOFs("damage", *this->damage, _dst_nodal);
@@ -407,6 +407,8 @@ void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
 	   auto & dam_energy_density = std::get<0>(values);
 	   auto & phi_history        = std::get<1>(values);
 	   dam_energy_density = g_c/l_0 + 2.0 * phi_history;
+
+	   std::cout << dam_energy_density << std::endl;
     }
     
   }
@@ -438,6 +440,8 @@ void PhaseFieldModel::computePhiHistoryOnQuadPoints(
 
       auto & strain      = std::get<0>(values);
       auto & phi_history = std::get<1>(values);
+
+      std::cout << strain << std::endl;
       
       strain_plus.clear();
       strain_minus.clear();
@@ -730,7 +734,8 @@ dumper::Field * PhaseFieldModel::createNodalFieldBool(
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
-
+  
+  
   dumper::Field * field = nullptr;
   field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
@@ -748,7 +753,9 @@ dumper::Field * PhaseFieldModel::createNodalFieldReal(
 
   std::map<std::string, Array<Real> *> real_nodal_fields;
   real_nodal_fields["damage"] = damage;
-  
+  real_nodal_fields["external_force"] = external_force;
+  real_nodal_fields["internal_force"] = internal_force;
+    
   dumper::Field * field =
     mesh.createNodalField(real_nodal_fields[field_name], group_name);
 
