@@ -375,22 +375,30 @@ inline std::string to_lower(const std::string & str) {
   return lstr;
 }
 
+namespace {
+  template <typename pred>
+  inline std::string trim_p(const std::string & to_trim, pred && p) {
+    std::string trimed = to_trim;
+    // left trim
+    trimed.erase(trimed.begin(), std::find_if(trimed.begin(), trimed.end(), std::not1(p)));
+    // right trim
+    trimed.erase(std::find_if(trimed.rbegin(), trimed.rend(), std::not1(p)).base(),
+                 trimed.end());
+    return trimed;
+  }
+
+} // namespace
+
 /* -------------------------------------------------------------------------- */
 inline std::string trim(const std::string & to_trim) {
-  std::string trimed = to_trim;
-  // left trim
-  trimed.erase(trimed.begin(),
-               std::find_if(trimed.begin(), trimed.end(),
-                            std::not1(std::ptr_fun<int, int>(isspace))));
-  // right trim
-  trimed.erase(std::find_if(trimed.rbegin(), trimed.rend(),
-                            std::not1(std::ptr_fun<int, int>(isspace)))
-                   .base(),
-               trimed.end());
-  return trimed;
+  return trim_p(to_trim, [&](auto && a) { return std::isspace(a); });
 }
 
-} // akantu
+inline std::string trim(const std::string & to_trim, char c) {
+  return trim_p(to_trim, [&c](auto && a) { return (a == c); });
+}
+
+} // namespace akantu
 
 #include <cmath>
 
@@ -453,6 +461,6 @@ template <typename T> std::string printMemorySize(UInt size) {
   return sstr.str();
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_COMMON_INLINE_IMPL_CC__ */

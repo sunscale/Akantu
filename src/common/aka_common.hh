@@ -459,6 +459,7 @@ void readInputFile(const std::string & input_file);
 inline std::string to_lower(const std::string & str);
 /* -------------------------------------------------------------------------- */
 inline std::string trim(const std::string & to_trim);
+inline std::string trim(const std::string & to_trim, char c);
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */

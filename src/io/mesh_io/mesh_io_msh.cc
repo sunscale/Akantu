@@ -856,6 +856,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
       phys_name_map[phys_name_id] = phys_name;
     }
+    my_getline(infile, line);
   };
 
   readers["$NodeData"] = [&](const std::string &) {
@@ -901,7 +902,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       double value;
       sstr >> node;
       sstr >> value;
-      data[node - first_node_number] = value;
+
+      data[node - first_node_number] = trim(value, \");
     }
   };
 
@@ -1037,7 +1039,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
               << "\n";
       outfile << "1"
               << "\n";
-      outfile << tag << "\n";
+      outfile << "\"" << tag << "\"\n";
       outfile << "1\n0.0"
               << "\n";
       outfile << "3\n0"
