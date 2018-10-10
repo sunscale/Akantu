@@ -168,7 +168,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 /// small help to use names for directions
-enum SpacialDirection { _x = 0, _y = 1, _z = 2 };
+enum SpatialDirection { _x = 0, _y = 1, _z = 2 };
 
 /// enum MeshIOType type of mesh reader/writer
 enum MeshIOType {
@@ -240,9 +240,6 @@ enum NonLinearSolverType {
   _nls_auto ///< This will take a default value that make sense in case of
             ///  model::getNewSolver
 };
-
-/// Define the node/dof type
-enum NodeType : Int { _nt_pure_ghost = -3, _nt_master = -2, _nt_normal = -1 };
 
 /// Type of time stepping solver
 enum TimeStepSolverType {
@@ -364,6 +361,53 @@ enum GhostType {
   _ghost = 1,
   _casper // not used but a real cute ghost
 };
+
+/// Define the flag that can be set to a node
+enum class NodeFlag : std::uint8_t {
+  _normal = 0x00,
+  _distributed = 0x01,
+  _master = 0x03,
+  _slave = 0x05,
+  _pure_ghost = 0x09,
+  _shared_mask = 0x0F,
+  _periodic = 0x10,
+  _periodic_master = 0x30,
+  _periodic_slave = 0x50,
+  _periodic_mask = 0xF0,
+  _local_master_mask = 0xCC, // ~(_master & _periodic_mask)
+};
+
+inline NodeFlag operator&(const NodeFlag & a, const NodeFlag & b) {
+  using under = std::underlying_type_t<NodeFlag>;
+  return NodeFlag(under(a) & under(b));
+}
+
+inline NodeFlag operator|(const NodeFlag & a, const NodeFlag & b) {
+  using under = std::underlying_type_t<NodeFlag>;
+  return NodeFlag(under(a) | under(b));
+}
+
+inline NodeFlag & operator|=(NodeFlag & a, const NodeFlag & b) {
+  a = a | b;
+  return a;
+}
+
+inline NodeFlag & operator&=(NodeFlag & a, const NodeFlag & b) {
+  a = a & b;
+  return a;
+}
+
+inline NodeFlag operator~(const NodeFlag & a) {
+  using under = std::underlying_type_t<NodeFlag>;
+  return NodeFlag(~under(a));
+}
+
+inline std::ostream & operator<<(std::ostream & stream, const NodeFlag & flag) {
+  using under = std::underlying_type_t<NodeFlag>;
+  stream << under(flag);
+  return stream;
+}
+
 } // namespace akantu
 
 #ifndef SWIG

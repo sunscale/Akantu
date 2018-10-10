@@ -379,11 +379,15 @@ namespace {
   template <typename pred>
   inline std::string trim_p(const std::string & to_trim, pred && p) {
     std::string trimed = to_trim;
+    auto && not_ = [&](auto && a) { return not p(a); };
+
     // left trim
-    trimed.erase(trimed.begin(), std::find_if(trimed.begin(), trimed.end(), std::not1(p)));
+    trimed.erase(trimed.begin(),
+                 std::find_if(trimed.begin(), trimed.end(), not_));
     // right trim
-    trimed.erase(std::find_if(trimed.rbegin(), trimed.rend(), std::not1(p)).base(),
-                 trimed.end());
+    trimed.erase(
+        std::find_if(trimed.rbegin(), trimed.rend(), not_).base(),
+        trimed.end());
     return trimed;
   }
 

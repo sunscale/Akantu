@@ -94,6 +94,9 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
+  /// reset send and recv element lists
+  void reset();
+
   /// extract the elements that have a true predicate from in_synchronizer and
   /// store them in the current synchronizer
   template <typename Pred>
@@ -108,6 +111,14 @@ public:
   /// flip send and receive schemes
   void swapSendRecv();
 
+  /// copy the schemes of an other communicator.
+  SynchronizerImpl & operator=(const SynchronizerImpl & other);
+
+protected:
+  /// copy schemes
+  void copySchemes(const SynchronizerImpl & other);
+
+public:
   /* ------------------------------------------------------------------------ */
   virtual UInt sanityCheckDataSize(const Array<Entity> & elements,
                                    const SynchronizationTag & tag,

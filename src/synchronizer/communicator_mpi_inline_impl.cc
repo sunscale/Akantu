@@ -100,11 +100,11 @@ namespace {
 
 #define COMMA ,
   SPECIALIZE_MPI_DATATYPE(char, MPI_CHAR)
+  SPECIALIZE_MPI_DATATYPE(std::uint8_t, MPI_UINT8_T)
   SPECIALIZE_MPI_DATATYPE(float, MPI_FLOAT)
   SPECIALIZE_MPI_DATATYPE(double, MPI_DOUBLE)
   SPECIALIZE_MPI_DATATYPE(long double, MPI_LONG_DOUBLE)
   SPECIALIZE_MPI_DATATYPE(signed int, MPI_INT)
-  SPECIALIZE_MPI_DATATYPE(NodeType, getMPIDatatype<Int>())
   SPECIALIZE_MPI_DATATYPE(unsigned int, MPI_UNSIGNED)
   SPECIALIZE_MPI_DATATYPE(signed long int, MPI_LONG)
   SPECIALIZE_MPI_DATATYPE(unsigned long int, MPI_UNSIGNED_LONG)
@@ -113,6 +113,8 @@ namespace {
   SPECIALIZE_MPI_DATATYPE(SCMinMaxLoc<double COMMA int>, MPI_DOUBLE_INT)
   SPECIALIZE_MPI_DATATYPE(SCMinMaxLoc<float COMMA int>, MPI_FLOAT_INT)
   SPECIALIZE_MPI_DATATYPE(bool, MPI_CXX_BOOL)
+
+  template <> MPI_Datatype inline getMPIDatatype<NodeFlag>() { return getMPIDatatype<std::underlying_type_t<NodeFlag>>(); }
 
   inline int getMPISource(int src) {
     if (src == _any_source)

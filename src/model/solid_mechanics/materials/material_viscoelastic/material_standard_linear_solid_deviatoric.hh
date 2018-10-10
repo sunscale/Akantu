@@ -120,6 +120,8 @@ private:
   /// viscosity, viscous elastic modulus
   Real eta, Ev, E_inf;
 
+  Vector<Real> etas;
+
   /// history of deviatoric stress
   InternalField<Real> stress_dev;
 

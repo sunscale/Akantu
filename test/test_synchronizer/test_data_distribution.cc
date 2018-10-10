@@ -67,7 +67,7 @@ TEST_F(TestSynchronizerFixture, DataDistribution) {
     }
   }
 
-  if (this->mesh->isDistributed()) {
+  if (psize > 1) {
     for(auto && data : zip(gids, this->mesh->getGlobalNodesIds())) {
       EXPECT_EQ(std::get<0>(data), std::get<1>(data));
     }
