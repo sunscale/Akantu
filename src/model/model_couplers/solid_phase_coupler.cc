@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_phase_coupler.hh"
+#include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -53,12 +54,16 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeDamageOnQuadPoints(const Gh
   auto & fem  = phase.getFEEngine();
   auto & mesh = phase.getMesh();
 
-  for (auto & dam: phase.getDamage())
-    dam = std::min(1., 2 *dam - dam * dam);
-  
   switch (spatial_dimension) {
   case 1: {
     auto & mat = static_cast<MaterialPhaseField<1> &>(solid.getMaterial(0));
+    auto & damage = mat.getDamage();
+    for (auto & type: mesh.elementTypes(this->spatial_dimension, ghost_type)) {
+      auto & damage_on_qpoints_vect = damage(type, ghost_type);
+      fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
+				       1, type, ghost_type); 
+    }
+    
     break;
   }
   case 2: {
@@ -99,7 +104,6 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeStrainOnQuadPoints(const Gh
       auto & strain = std::get<0>(values);
       auto & grad_u = std::get<1>(values);
       this->gradUToEpsilon(grad_u, strain);
-      //std::cout << strain << std::endl;
     }
 
 
@@ -111,14 +115,39 @@ void SolidPhaseCoupler<SolidType, PhaseType>::computeStrainOnQuadPoints(const Gh
 /* -------------------------------------------------------------------------- */
 template<typename SolidType, typename PhaseType>
 void SolidPhaseCoupler<SolidType, PhaseType>::solve() {
-  solid.solveStep();
-  this->computeStrainOnQuadPoints(_not_ghost);
 
-  phase.solveStep();
-  this->computeDamageOnQuadPoints(_not_ghost);
+  this->convergence = true;
+  UInt iter = 0;
+  UInt max_iter = 10;
   
-  /// TODO: check for convergence
-  /// TODO: run for max number of iterations
+  while(iter < max_iter) {
+
+    auto u_old = solid.getDisplacement();
+    auto d_old = phase.getDamage();
+
+    std::cerr << "---- solving solid model ------  \n";
+    
+    solid.solveStep();
+    this->computeStrainOnQuadPoints(_not_ghost);
+
+    std::cerr << "---- solving phasefield model ------  \n";
+    
+    phase.solveStep();
+    this->computeDamageOnQuadPoints(_not_ghost);
+
+    auto u_new = solid.getDisplacement();
+    auto d_new = phase.getDamage();
+
+   
+    //this->testConvergence(u_new, u_old, d_new, d_old);
+    
+    if (this->convergence) {
+      break;
+    }
+
+    iter++;
+  }
+  
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,6 +160,50 @@ void SolidPhaseCoupler<SolidType, PhaseType>::gradUToEpsilon(const Matrix<Real> 
   }
 }
 
-  template class SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel>;
+/* -------------------------------------------------------------------------- */
+template<typename SolidType, typename PhaseType>
+bool SolidPhaseCoupler<SolidType, PhaseType>::testConvergence(Array<Real> & u_new, Array<Real> & u_old, Array<Real> & d_new, Array<Real> & d_old) {
+
+  const Array<bool> & blocked_dofs = solid.getBlockedDOFs(); 
+  UInt nb_degree_of_freedom = u_new.size();
+
+  auto u_n_it = u_new.begin();
+  auto u_o_it = u_old.begin();
+  auto bld_it = blocked_dofs.begin();
+
+  
+  Real norm = 0;
+  for (UInt n = 0; n < nb_degree_of_freedom; ++n, ++u_n_it, ++u_o_it, ++bld_it) {
+    if ((!*bld_it)) {
+      norm += (*u_n_it - *u_o_it) * (*u_n_it - *u_o_it);
+    }
+  }
+
+  norm = std::sqrt(norm);
+
+  auto d_n_it = d_new.begin();
+  auto d_o_it = d_old.begin();
+  nb_degree_of_freedom = d_new.size();
+
+  Real norm2 = 0;
+  for (UInt i = 0; i < nb_degree_of_freedom; ++i) {
+    norm2 += (*d_n_it - *d_o_it);
+  }
+
+  norm2 =std::sqrt(norm2);
+
+  Real error  = std::max(norm, norm2);
+  
+  Real tolerance = 1e-8;
+  if (error < tolerance) {
+    
+    this->convergence = true;
+  }
+
+}
+
+ 
+template class SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel>;
   
 } // akantu
+

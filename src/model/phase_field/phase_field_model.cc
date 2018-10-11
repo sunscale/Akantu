@@ -170,9 +170,6 @@ void PhaseFieldModel::updateInternalParameters() {
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleMatrix(const ID & matrix_id) {
 
-  this->computePhiHistoryOnQuadPoints(_not_ghost);  
-  this->computeDamageEnergyDensityOnQuadPoints(_not_ghost);
-
   if (matrix_id == "K") {
     this->assembleDamageMatrix();
     this->assembleDamageGradMatrix();
@@ -192,10 +189,10 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
                                  NonLinearSolverType) {
   DOFManager & dof_manager = this->getDOFManager();
 
-  this->allocNodalField(this->damage, "damage");
-  this->allocNodalField(this->external_force, "external_force");
-  this->allocNodalField(this->internal_force, "internal_force");
-  this->allocNodalField(this->blocked_dofs, "blocked_dofs");
+  this->allocNodalField(this->damage, 1, "damage");
+  this->allocNodalField(this->external_force, 1, "external_force");
+  this->allocNodalField(this->internal_force, 1, "internal_force");
+  this->allocNodalField(this->blocked_dofs, 1, "blocked_dofs");
 
   if (!dof_manager.hasDOFs("damage")) {
     dof_manager.registerDOFs("damage", *this->damage, _dst_nodal);
@@ -239,7 +236,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   switch (type) {
 
   case _tsst_static: {
-    options.non_linear_solver_type = _nls_newton_raphson;
+    options.non_linear_solver_type = _nls_linear;
     options.integration_scheme_type["damage"] = _ist_pseudo_time;
     options.solution_type["damage"] = IntegrationScheme::_not_defined;
     break;
@@ -257,6 +254,22 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   return options;
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::beforeSolveStep() {
+
+  this->computePhiHistoryOnQuadPoints(_not_ghost);  
+  this->computeDamageEnergyDensityOnQuadPoints(_not_ghost);
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::afterSolveStep() {
+
+  //for (auto & dam : *damage) {
+  //  dam = std::min(1., 2*dam -dam * dam);
+  //}
+  
+}
+  
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleDamageMatrix() {
   AKANTU_DEBUG_IN();
@@ -279,6 +292,7 @@ void PhaseFieldModel::assembleDamageMatrix() {
     this->assembleDamageMatrix<3>(_not_ghost);
     break;
   }
+
 
   AKANTU_DEBUG_OUT();
 }
@@ -315,8 +329,7 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
   auto & fem = getFEEngineClass<FEEngineType>();
-  // phasefield::details::ComputeDamageFunctor compute_damage(*this);
-  
+    
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     auto nb_element = mesh.getNbElement(type, ghost_type);
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
@@ -344,8 +357,6 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
     this->getDOFManager().assembleElementalMatricesToMatrix(
        "K", "damage", *K_n, type, ghost_type, _symmetric);
     
-    //fem.assembleFieldMatrix(compute_damage, "K", "damage",
-    //			    this->getDOFManager(), type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -408,7 +419,6 @@ void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
 	   auto & phi_history        = std::get<1>(values);
 	   dam_energy_density = g_c/l_0 + 2.0 * phi_history;
 
-	   std::cout << dam_energy_density << std::endl;
     }
     
   }
@@ -440,9 +450,7 @@ void PhaseFieldModel::computePhiHistoryOnQuadPoints(
 
       auto & strain      = std::get<0>(values);
       auto & phi_history = std::get<1>(values);
-
-      std::cout << strain << std::endl;
-      
+    
       strain_plus.clear();
       strain_minus.clear();
       strain_dir.clear();
@@ -483,7 +491,8 @@ void PhaseFieldModel::computePhiHistoryOnQuadPoints(
       if (phi_plus > phi_history) {
 	phi_history = phi_plus;
       }
-     
+
+      std::cout << "phi = " << phi_history << std::endl;
     }
   }
 
@@ -537,13 +546,17 @@ void PhaseFieldModel::assembleInternalForces() {
     }
   }
 
+  for (auto & f: *internal_force) {
+    std::cout << f << std::endl;
+  }
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleLumpedMatrix(const ID & matrix_id) {
 }
-
+  
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::setTimeStep(Real time_step, const ID & solver_id) {

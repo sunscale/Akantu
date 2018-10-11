@@ -45,7 +45,7 @@ inline void MaterialPhaseField<spatial_dimension>::computeStressOnQuad(
 
   Vector<Real> strain_values(spatial_dimension);
   
-  Real trace_plus, trace_minus, phi_plus;
+  Real trace_plus, trace_minus;
   
   this->template gradUToEpsilon<spatial_dimension>(grad_u, strain);
   
@@ -81,5 +81,4 @@ inline void MaterialPhaseField<spatial_dimension>::computeStressOnQuad(
   }     
   
   sigma = (1 - dam) * sigma_plus + sigma_minus;
-  //sigma *= 1- dam;
 }

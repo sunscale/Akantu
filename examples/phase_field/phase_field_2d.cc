@@ -51,8 +51,8 @@ int main(int argc, char *argv[])
   pfm.initFull(_analysis_method = _static);
 
   auto & pfm_solver = pfm.getNonLinearSolver();
-  pfm_solver.set("max_iterations", 1000);
-  pfm_solver.set("threshold", 1e-3);
+  pfm_solver.set("max_iterations", 1);
+  pfm_solver.set("threshold", 100.0);
   pfm_solver.set("convergence_type", _scc_solution);
   
   // solid mechanics model initialization
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
   // coupling of models
   SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
 
-  UInt nbSteps   = 100;
+  UInt nbSteps   = 1000;
   Real increment = 1.e-4;
   
   for (UInt s = 1; s < nbSteps; ++s) {

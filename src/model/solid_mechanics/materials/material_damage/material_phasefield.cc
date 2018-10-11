@@ -82,6 +82,36 @@ void MaterialPhaseField<spatial_dimension>::computeStress(ElementType el_type,
   AKANTU_DEBUG_OUT();
 }
 
+/* -------------------------------------------------------------------------- */
+template <UInt spatial_dimension>
+void MaterialPhaseField<spatial_dimension>::computeTangentModuli(
+    const ElementType & el_type, Array<Real> & tangent_matrix,
+    GhostType ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  //Parent<spatial_dimension>::computeTangentModuli(el_type, tangent_matrix,
+  //                                               ghost_type);
+
+  Real * dam = this->damage(el_type, ghost_type).storage();
+
+  MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
+  computeTangentModuliOnQuad(tangent, *dam);
+
+  ++dam;
+
+  MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END;
+
+  AKANTU_DEBUG_OUT();
+}
+  
+/* -------------------------------------------------------------------------- */
+template <UInt spatial_dimension>
+void MaterialPhaseField<spatial_dimension>::computeTangentModuliOnQuad(
+    Matrix<Real> & tangent, Real & dam) {
+  tangent *= (1 - dam)*(1 - dam);
+}
+
+  
 INSTANTIATE_MATERIAL(phasefield, MaterialPhaseField);
   
 

@@ -60,10 +60,19 @@ public:
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override;
 
+  
+  /// compute the tangent stiffness matrix for an element type
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
+
 protected:
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(Matrix<Real> & grad_u, Matrix<Real> & sigma,
                                   Real & dam);
+
+  /// compute the tangent stiffness matrix for a given quadrature point
+  inline void computeTangentModuliOnQuad(Matrix<Real> & tangent, Real & dam);
 
 
   /* ------------------------------------------------------------------------ */

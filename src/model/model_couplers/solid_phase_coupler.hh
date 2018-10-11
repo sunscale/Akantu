@@ -76,6 +76,11 @@ private:
   void gradUToEpsilon(const Matrix<Real> & grad_u,
 		      Matrix<Real> & epsilon);
 
+  /// test the convergence criteria
+  bool testConvergence(Array<Real> &, Array<Real> &, Array<Real> &, Array<Real> &);
+  
+  
+
   /* ------------------------------------------------------------------------ */
   /* Members                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -87,6 +92,9 @@ private:
   
   /// Spatial dimension of models
   UInt spatial_dimension;
+
+  ///
+  bool convergence;
   
 };
   

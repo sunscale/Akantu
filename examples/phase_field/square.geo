@@ -20,3 +20,5 @@ Physical Line("top") = {3};
 Physical Line("left") = {4};
 
 Physical Surface("plate") = {1};
+
+Recombine Surface {"plate"};

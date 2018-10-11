@@ -32,34 +32,39 @@
 #include "phase_field_model.hh"
 #include "solid_mechanics_model.hh"
 #include "solid_phase_coupler.hh"
+#include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
-const UInt spatial_dimension = 2;
+const UInt spatial_dimension = 1;
 /* -------------------------------------------------------------------------- */
 
 int main(int argc, char *argv[])
 {
-  initialize("material_notch.dat", argc, argv);
+  initialize("material_1d.dat", argc, argv);
 
-  // create mesh
+  const Real max_displacement = 0.05;
+
+  const UInt nbSteps = 50 ;
+  const UInt unload_start = 200; // add to be evenmultiple of 10
+  Real time_step = max_displacement/nbSteps;
+  
   Mesh mesh(spatial_dimension);
-  mesh.read("square_notch.msh");
-    
-  // Phase field model initialization
+  mesh.read("1d_1elem_bar.msh");
+ 
   PhaseFieldModel pfm(mesh);
   pfm.initFull(_analysis_method = _static);
-   
+
   // solid mechanics model initialization
   SolidMechanicsModel smm(mesh);
   smm.initFull(_analysis_method  = _static);
 
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
+  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "Left");
+  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "Right"); 
 
-  smm.setBaseName(        "square_notch");
+  smm.setBaseName(        "square");
   smm.addDumpFieldVector( "displacement");
   smm.addDumpFieldVector( "internal_force");
   smm.addDumpField(       "stress");
@@ -76,17 +81,68 @@ int main(int argc, char *argv[])
   // coupling of models
   SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
 
-  UInt nbSteps   = 1500;
-  Real increment = 1.e-5;
+  
+  Real stress_homogeneous;
+  Real young_unload;
+  Real gc = 0.00014e-2;
+  Real l0 = 1./8;
+  Real Young = 1.0;
   
   for (UInt s = 1; s < nbSteps; ++s) {
-    smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
+    //Increasing loading
+    if( s<unload_start || s>(2.1*unload_start)){
+      smm.applyBC(BC::Dirichlet::IncrementValue(-time_step,_x),"Left");
+      smm.applyBC(BC::Dirichlet::IncrementValue(time_step,_x),"Right");
+    }
+    else{
+      smm.applyBC(BC::Dirichlet::IncrementValue(time_step,_x),"Left");
+      smm.applyBC(BC::Dirichlet::IncrementValue(-time_step,_x),"Right");
+    }
+
     coupler.solve();
-    smm.dump();
-    std::cout << "Step " << s << "/" << nbSteps << std::endl;
+
+    auto & K = pfm.getDOFManager().getMatrix("K");
+    K.saveMatrix("matrix.mtx");
     
+    Array<Real> & stress = smm.getMaterial("solid").getArray<Real>("stress", _segment_2);
+    Array<Real> & damage = smm.getMaterial("solid").getArray<Real>("damage", _segment_2);
+    Array<Real> & grad_u = smm.getMaterial("solid").getArray<Real>("grad_u", _segment_2);
+
+    
+	
+    smm.dump();
+
+    if(s==(unload_start-1))
+      young_unload = stress(0,0)/grad_u(0,0);
+    if( s<unload_start || s>(3.2*unload_start)) {
+      // verification that the stress match the 1D analytical homogeneous stress
+      // from Borden et al. CMAME vol. 217-220, page 77-95 (2012)
+      stress_homogeneous = pow(l0/gc*Young*pow(grad_u(0,0),2)+1,-2)*Young*grad_u(0,0);
+      std::cout << stress_homogeneous << std::endl;
+      std::cout << stress(0,0) << " ---- "  << damage(0,0) << std::endl;
+       
+      
+      //if( (std::abs(stress_homogeneous-stress(0,0))/stress_homogeneous) > 1e-9)
+      //	return EXIT_FAILURE;
+    }
+    else {
+      Real sig_outof_eps = std::abs(stress(0,0)/grad_u(0,0));
+      if( (std::abs(grad_u(0,0)) > 1e-9)
+	  && ( (grad_u(0,0)>0 && (std::abs(sig_outof_eps-young_unload)/young_unload) > 1e-9)
+	       || ( grad_u(0,0)<0 && std::abs(sig_outof_eps-Young)/Young > 1e-9 ) ) ){
+	std::cout << s << "," <<grad_u(0,0) << "," << stress(0,0) / grad_u(0,0) << "," << Young << "," << std::abs(sig_outof_eps-young_unload)/young_unload << "," << std::abs(sig_outof_eps-Young)/Young << std::endl;
+	return EXIT_FAILURE;
+       }
+    }
+   
+
+									      
+									      
+
+    std::cout << "Step " << s << "/" << nbSteps << std::endl;
   }
 
   finalize();
   return EXIT_SUCCESS;
 }
+
