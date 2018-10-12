@@ -49,12 +49,7 @@ int main(int argc, char *argv[])
  
   PhaseFieldModel pfm(mesh);
   pfm.initFull(_analysis_method = _static);
-
-  auto & pfm_solver = pfm.getNonLinearSolver();
-  pfm_solver.set("max_iterations", 1);
-  pfm_solver.set("threshold", 100.0);
-  pfm_solver.set("convergence_type", _scc_solution);
-  
+ 
   // solid mechanics model initialization
   SolidMechanicsModel smm(mesh);
   smm.initFull(_analysis_method  = _static);

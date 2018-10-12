@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
   
   for (UInt s = 1; s < nbSteps; ++s) {
     smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
-    coupler.solve();
+    smm.solveStep();
+    //coupler.solve();
     smm.dump();
     std::cout << "Step " << s << "/" << nbSteps << std::endl;
     
