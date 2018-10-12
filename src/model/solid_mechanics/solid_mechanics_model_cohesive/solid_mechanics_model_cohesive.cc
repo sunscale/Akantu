@@ -618,8 +618,7 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::onEndSolveStep(const AnalysisMethod &) {
-
+void SolidMechanicsModelCohesive::afterSolveStep() {
   AKANTU_DEBUG_IN();
 
   /*
@@ -630,6 +629,8 @@ void SolidMechanicsModelCohesive::onEndSolveStep(const AnalysisMethod &) {
     if (mat->isFiniteDeformation())
       mat->computeAllCauchyStresses(_not_ghost);
   }
+
+  SolidMechanicsModel::afterSolveStep();
 
   AKANTU_DEBUG_OUT();
 }
