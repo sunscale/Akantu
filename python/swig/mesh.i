@@ -1,3 +1,4 @@
+
 /**
  * @file   mesh.i
  *
@@ -37,7 +38,8 @@
 #include "solid_mechanics_model.hh"
 #include "python_functor.hh"
 #include "mesh_utils.hh"
-  
+#include "aka_bbox.hh"
+
 using akantu::IntegrationPoint;
 using akantu::Vector;
 using akantu::ElementTypeMapArray;
@@ -46,6 +48,7 @@ using akantu::Matrix;
 using akantu::UInt;
 using akantu::Real;
 using akantu::Array;
+using akantu::BBox;
 using akantu::SolidMechanicsModel;
 %}
 
@@ -64,6 +67,7 @@ namespace akantu {
   %ignore Mesh::getAllFacetTypes;
   %ignore Mesh::getCommunicator;
   %ignore Mesh::getConnectivities;
+  %ignode Mesh::getBBox;
   %ignore GroupManager::getElementGroups;
   %ignore Dumpable::addDumpFieldExternalReal;
 }
@@ -181,6 +185,7 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
 %include "element_group.hh"
 %include "mesh.hh"
 %include "mesh_utils.hh"
+%include "aka_bbox.hh"
 
 namespace akantu{
 %extend Dumpable {

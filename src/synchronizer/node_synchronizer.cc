@@ -55,6 +55,11 @@ NodeSynchronizer::NodeSynchronizer(Mesh & mesh, const ID & id,
 NodeSynchronizer::~NodeSynchronizer() = default;
 
 /* -------------------------------------------------------------------------- */
+Int NodeSynchronizer::getRank(const UInt & node) const {
+  return this->mesh.getNodePrank(node);
+}
+
+/* -------------------------------------------------------------------------- */
 void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
                                     const NewNodesEvent &) {
   std::map<UInt, std::vector<UInt>> nodes_per_proc;
@@ -67,12 +72,11 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
   }
 
   for (auto && local_id : arange(mesh.getNbNodes())) {
-    auto type = mesh.getNodeType(local_id);
-    if (type < 0)
+    if (not mesh.isSlaveNode(local_id))
       continue; // local, master or pure ghost
 
     auto global_id = mesh.getNodeGlobalId(local_id);
-    auto proc = UInt(type);
+    auto proc = mesh.getNodePrank(local_id);
     nodes_per_proc[proc].push_back(global_id);
 
     auto & scheme = communications.createScheme(proc, _recv);
@@ -131,6 +135,14 @@ UInt NodeSynchronizer::sanityCheckDataSize(const Array<UInt> & nodes,
   UInt size =
       SynchronizerImpl<UInt>::sanityCheckDataSize(nodes, tag, from_comm_desc);
 
+  // global id
+  if (tag != _gst_giu_global_conn) {
+    size += sizeof(UInt) * nodes.size();
+  }
+
+  // flag
+  size += sizeof(NodeFlag) * nodes.size();
+
   // positions
   size += mesh.getSpatialDimension() * sizeof(Real) * nodes.size();
 
@@ -140,9 +152,13 @@ UInt NodeSynchronizer::sanityCheckDataSize(const Array<UInt> & nodes,
 /* -------------------------------------------------------------------------- */
 void NodeSynchronizer::packSanityCheckData(
     CommunicationBuffer & buffer, const Array<UInt> & nodes,
-    const SynchronizationTag & /*tag*/) const {
+    const SynchronizationTag & tag) const {
   auto dim = mesh.getSpatialDimension();
   for (auto && node : nodes) {
+    if (tag != _gst_giu_global_conn) {
+      buffer << mesh.getNodeGlobalId(node);
+    }
+    buffer << mesh.getNodeFlag(node);
     buffer << Vector<Real>(mesh.getNodes().begin(dim)[node]);
   }
 }
@@ -158,7 +174,35 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
 
   // bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
 
+  auto periodic = [&](auto && flag) { return flag & NodeFlag::_periodic_mask; };
+  auto distrib = [&](auto && flag) { return flag & NodeFlag::_shared_mask; };
+
   for (auto && node : nodes) {
+    if (tag != _gst_giu_global_conn) {
+      UInt global_id;
+      buffer >> global_id;
+      AKANTU_DEBUG_ASSERT(global_id == mesh.getNodeGlobalId(node),
+                          "The nodes global ids do not match: "
+                              << global_id
+                              << " != " << mesh.getNodeGlobalId(node));
+    }
+
+    NodeFlag flag;
+    buffer >> flag;
+    AKANTU_DEBUG_ASSERT(
+        (periodic(flag) == periodic(mesh.getNodeFlag(node))) and
+            (((distrib(flag) == NodeFlag::_master) and
+              (distrib(mesh.getNodeFlag(node)) ==
+               NodeFlag::_slave)) or // master to slave
+             ((distrib(flag) == NodeFlag::_slave) and
+              (distrib(mesh.getNodeFlag(node)) ==
+               NodeFlag::_master)) or // reverse comm slave to master
+             (distrib(mesh.getNodeFlag(node)) ==
+                  NodeFlag::_pure_ghost or // pure ghost nodes
+              distrib(flag) == NodeFlag::_pure_ghost)),
+        "The node flags do not make sense: "
+            << std::hex << "0x" << flag << " and 0x" << mesh.getNodeFlag(node));
+
     Vector<Real> pos_remote(dim);
     buffer >> pos_remote;
     Vector<Real> pos(mesh.getNodes().begin(dim)[node]);

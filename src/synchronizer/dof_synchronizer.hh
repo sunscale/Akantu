@@ -73,10 +73,11 @@ public:
   /// Scatter a DOF Array form root to all processors
   template <typename T> void scatter(Array<T> & scattered);
 
-  template <typename T> void synchronize(Array<T> & vector) const;
-
+  /// Uses the synchronizer to perform a reduction on the vector
   template <template <class> class Op, typename T>
-  void reduceSynchronize(Array<T> & vector) const;
+  void reduceSynchronize(Array<T> & array) const;
+
+  template <typename T> void synchronize(Array<T> & vector) const;
 
   void onNodesAdded(const Array<UInt> & nodes);
 

@@ -41,6 +41,7 @@ package_declare_sources(core
   common/aka_array.cc
   common/aka_array.hh
   common/aka_array_tmpl.hh
+  common/aka_bbox.hh
   common/aka_blas_lapack.hh
   common/aka_circular_array.hh
   common/aka_circular_array_inline_impl.cc
@@ -175,6 +176,7 @@ package_declare_sources(core
   mesh/group_manager_inline_impl.cc
   mesh/mesh.cc
   mesh/mesh.hh
+  mesh/mesh_periodic.cc
   mesh/mesh_accessor.hh
   mesh/mesh_events.hh
   mesh/mesh_filter.hh
@@ -311,6 +313,8 @@ package_declare_sources(core
   synchronizer/node_info_per_processor.hh
   synchronizer/node_synchronizer.cc
   synchronizer/node_synchronizer.hh
+  synchronizer/periodic_node_synchronizer.cc
+  synchronizer/periodic_node_synchronizer.hh
   synchronizer/slave_element_info_per_processor.cc
   synchronizer/synchronizer.cc
   synchronizer/synchronizer.hh

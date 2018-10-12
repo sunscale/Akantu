@@ -97,7 +97,7 @@ private:
   /// Tells if a reduction is taking place or not
   bool reduce{false};
 
-  std::unordered_map<UInt, std::vector<std::pair<UInt, NodeType>>> nodes_types;
+  std::unordered_map<UInt, std::vector<std::pair<UInt, NodeFlag>>> nodes_flags;
 };
 
 } // akantu

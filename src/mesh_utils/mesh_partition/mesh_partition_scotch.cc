@@ -251,13 +251,14 @@ static void destroyMesh(SCOTCH_Mesh * meshptr) {
 
 /* -------------------------------------------------------------------------- */
 void MeshPartitionScotch::partitionate(UInt nb_part,
-                                       const EdgeLoadFunctor & edge_load_func,
-                                       const Array<UInt> & pairs) {
+                                       const EdgeLoadFunctor & edge_load_func) {
   AKANTU_DEBUG_IN();
 
   nb_partitions = nb_part;
 
-  tweakConnectivity(pairs);
+  if(mesh.isPeriodic()) {
+    tweakConnectivity();
+  }
 
   AKANTU_DEBUG_INFO("Partitioning the mesh " << mesh.getID() << " in "
                                              << nb_part << " parts.");
@@ -348,6 +349,7 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
     fgeominit.close();
   }
 #endif
+
   /// Check the graph
   AKANTU_DEBUG_ASSERT(SCOTCH_graphCheck(&scotch_graph) == 0,
                       "Graph to partition is not consistent");
@@ -385,7 +387,9 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
 
   delete[] parttab;
 
-  restoreConnectivity();
+  if (mesh.isPeriodic()) {
+    restoreConnectivity();
+  }
 
   AKANTU_DEBUG_OUT();
 }

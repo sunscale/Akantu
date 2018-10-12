@@ -44,28 +44,20 @@ template <bool is_static = true> class CommunicationBufferTemplated {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  explicit CommunicationBufferTemplated(UInt size) : buffer(size, 1) {
+  explicit CommunicationBufferTemplated(UInt size)
+      : buffer(size, 1, char()) {
     ptr_pack = buffer.storage();
     ptr_unpack = buffer.storage();
   };
 
   CommunicationBufferTemplated() : CommunicationBufferTemplated(0) {}
 
-  CommunicationBufferTemplated(const CommunicationBufferTemplated & other) {
-    buffer = other.buffer;
-    ptr_pack = buffer.storage();
-    ptr_unpack = buffer.storage();
-  }
-
+  CommunicationBufferTemplated(const CommunicationBufferTemplated & other) = delete;
   CommunicationBufferTemplated &
-  operator=(const CommunicationBufferTemplated & other) {
-    if (this != &other) {
-      buffer = other.buffer;
-      ptr_pack = buffer.storage();
-      ptr_unpack = buffer.storage();
-    }
-    return *this;
-  }
+  operator=(const CommunicationBufferTemplated & other) = delete;
+
+
+  CommunicationBufferTemplated(CommunicationBufferTemplated && other) = default;
 
   virtual ~CommunicationBufferTemplated() = default;
 
@@ -76,7 +68,7 @@ public:
   /// reset to "empty"
   inline void reset();
 
-  /// resize the internal buffer
+  /// resize the internal buffer do not allocate on dynamic buffers
   inline void resize(UInt size);
 
   /// resize the internal buffer allocate always
@@ -154,6 +146,11 @@ public:
   };
   /// return the global size allocated
   inline UInt size() const { return buffer.size(); };
+
+  /// is the buffer empty
+  inline bool empty() const {
+    return (getPackedSize() == 0) and (getLeftToUnpack() == 0);
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

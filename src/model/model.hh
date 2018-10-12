@@ -75,7 +75,6 @@ protected:
 
 public:
 #ifndef SWIG
-
   template <typename... pack>
   std::enable_if_t<are_named_argument<pack...>::value>
   initFull(pack &&... _pack) {
@@ -135,21 +134,10 @@ protected:
 
   virtual void initFEEngineBoundary();
 
-  // /// change local equation number so that PBC is assembled properly
-  // void changeLocalEquationNumberForPBC(std::map<UInt, UInt> & pbc_pair,
-  //                                      UInt dimension);
   /// function to print the containt of the class
   void printself(std::ostream &, int = 0) const override{};
 
-  // /// initialize the model for PBC
-  // void setPBC(UInt x, UInt y, UInt z);
-  // void setPBC(SurfacePairList & surface_pairs);
 public:
-  virtual void initPBC();
-
-  /// set the parser to use
-  // void setParser(Parser & parser);
-
   /* ------------------------------------------------------------------------ */
   /* Access to the dumpable interface of the boundaries                       */
   /* ------------------------------------------------------------------------ */
@@ -218,18 +206,6 @@ public:
   /// return the fem boundary object associated with a provided name
   template <typename FEEngineClass>
   inline FEEngineClass & getFEEngineClassBoundary(std::string name = "");
-
-  /// get the pbc pairs
-  std::map<UInt, UInt> & getPBCPairs() { return pbc_pair; };
-
-  /// returns if node is slave in pbc
-  inline bool isPBCSlaveNode(const UInt) const {
-    throw;
-    return false; /* TODO repair PBC*/
-  }
-
-  /// returns the array of pbc slave nodes (boolean information)
-  AKANTU_GET_MACRO(IsPBCSlaveNode, is_pbc_slave_node, const Array<bool> &)
 
   /// Get the type of analysis method used
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
@@ -358,12 +334,6 @@ protected:
 
   /// default fem object
   std::string default_fem;
-
-  /// pbc pairs
-  std::map<UInt, UInt> pbc_pair;
-
-  /// flag per node to know is pbc slave
-  Array<bool> is_pbc_slave_node;
 
   /// parser to the pointer to use
   Parser & parser;

@@ -50,6 +50,15 @@ NodeInfoPerProc::NodeInfoPerProc(NodeSynchronizer & synchronizer,
       message_count(message_cnt) {}
 
 /* -------------------------------------------------------------------------- */
+void NodeInfoPerProc::synchronize() {
+  synchronizeNodes();
+  synchronizeTypes();
+  synchronizeGroups();
+  synchronizePeriodicity();
+  synchronizeTags();
+}
+
+/* -------------------------------------------------------------------------- */
 template <class CommunicationBuffer>
 void NodeInfoPerProc::fillNodeGroupsFromBuffer(CommunicationBuffer & buffer) {
   AKANTU_DEBUG_IN();
@@ -81,7 +90,7 @@ void NodeInfoPerProc::fillNodesType() {
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes = mesh.getNbNodes();
-  Array<NodeType> & nodes_type = this->getNodesType();
+  auto & nodes_flags = this->getNodesFlags();
 
   Array<UInt> nodes_set(nb_nodes);
   nodes_set.set(0);
@@ -93,28 +102,19 @@ void NodeInfoPerProc::fillNodesType() {
 
   Array<bool> already_seen(nb_nodes, 1, false);
 
-  for (UInt g = _not_ghost; g <= _ghost; ++g) {
-    auto gt = (GhostType)g;
+  for (auto gt : ghost_types) {
     UInt set = NORMAL_SET;
     if (gt == _ghost)
       set = GHOST_SET;
 
     already_seen.set(false);
-    Mesh::type_iterator it =
-        mesh.firstType(_all_dimensions, gt, _ek_not_defined);
-    Mesh::type_iterator end =
-        mesh.lastType(_all_dimensions, gt, _ek_not_defined);
-    for (; it != end; ++it) {
-      ElementType type = *it;
+    for (auto && type :
+         mesh.elementTypes(_all_dimensions, gt, _ek_not_defined)) {
+      const auto & connectivity = mesh.getConnectivity(type, gt);
 
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-      UInt nb_element = mesh.getNbElement(type, gt);
-      Array<UInt>::const_vector_iterator conn_it =
-          mesh.getConnectivity(type, gt).begin(nb_nodes_per_element);
-
-      for (UInt e = 0; e < nb_element; ++e, ++conn_it) {
-        const Vector<UInt> & conn = *conn_it;
-        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
+      for (auto & conn :
+           make_view(connectivity, connectivity.getNbComponent())) {
+        for (UInt n = 0; n < conn.size(); ++n) {
           AKANTU_DEBUG_ASSERT(conn(n) < nb_nodes,
                               "Node " << conn(n)
                                       << " bigger than number of nodes "
@@ -128,13 +128,17 @@ void NodeInfoPerProc::fillNodesType() {
     }
   }
 
+  nodes_flags.resize(nb_nodes);
   for (UInt i = 0; i < nb_nodes; ++i) {
     if (nodes_set(i) == NORMAL_SET)
-      nodes_type(i) = _nt_normal;
+      nodes_flags(i) = NodeFlag::_normal;
     else if (nodes_set(i) == GHOST_SET)
-      nodes_type(i) = _nt_pure_ghost;
+      nodes_flags(i) = NodeFlag::_pure_ghost;
     else if (nodes_set(i) == (GHOST_SET + NORMAL_SET))
-      nodes_type(i) = _nt_master;
+      nodes_flags(i) = NodeFlag::_master;
+    else {
+      AKANTU_EXCEPTION("Gni ?");
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -171,16 +175,13 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
   }
 
   { // receive schemes
-    const Array<NodeType> & nodes_type = this->getNodesType();
-
     std::map<UInt, Array<UInt>> recv_array_per_proc;
 
-    UInt node = 0;
-    for (auto & node_type : nodes_type) {
-      if (Int(node_type) >= 0) {
-        recv_array_per_proc[node_type].push_back(mesh.getNodeGlobalId(node));
+    for (auto node : arange(mesh.getNbNodes())) {
+      if (mesh.isSlaveNode(node)) {
+        recv_array_per_proc[mesh.getNodePrank(node)].push_back(
+            mesh.getNodeGlobalId(node));
       }
-      ++node;
     }
 
     for (auto & recv_schemes : recv_array_per_proc) {
@@ -196,6 +197,79 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void NodeInfoPerProc::fillPeriodicPairs(const Array<UInt> & global_pairs,
+                                        std::vector<UInt> & missing_nodes) {
+  this->wipePeriodicInfo();
+  auto & nodes_flags = this->getNodesFlags();
+
+  auto checkIsLocal = [&](auto && global_node) {
+    auto && node = mesh.getNodeLocalId(global_node);
+    if (node == UInt(-1)) {
+      auto & global_nodes = this->getNodesGlobalIds();
+      node = global_nodes.size();
+
+      global_nodes.push_back(global_node);
+      nodes_flags.push_back(NodeFlag::_pure_ghost);
+      missing_nodes.push_back(global_node);
+      std::cout << "Missing node " << node << std::endl;
+    }
+    return node;
+  };
+
+  for (auto && pairs : make_view(global_pairs, 2)) {
+    UInt slave = checkIsLocal(pairs(0));
+    UInt master = checkIsLocal(pairs(1));
+
+    this->addPeriodicSlave(slave, master);
+  }
+
+  this->markMeshPeriodic();
+}
+
+/* -------------------------------------------------------------------------- */
+void NodeInfoPerProc::receiveMissingPeriodic(
+    DynamicCommunicationBuffer & buffer) {
+  auto & nodes = this->getNodes();
+  Communications<UInt> & communications =
+      this->synchronizer.getCommunications();
+
+  std::size_t nb_nodes;
+  buffer >> nb_nodes;
+
+  for (auto _[[gnu::unused]] : arange(nb_nodes)) {
+    Vector<Real> pos(spatial_dimension);
+    Int prank;
+    buffer >> pos;
+    buffer >> prank;
+
+    UInt node = nodes.size();
+
+    this->setNodePrank(node, prank);
+    nodes.push_back(pos);
+
+    auto & scheme = communications.createRecvScheme(prank);
+    scheme.push_back(node);
+  }
+
+  while (buffer.getLeftToUnpack() != 0) {
+    Int prank;
+    UInt gnode;
+
+    buffer >> gnode;
+    buffer >> prank;
+    auto node = mesh.getNodeLocalId(gnode);
+
+    AKANTU_DEBUG_ASSERT(node != UInt(-1),
+                        "I cannot send the node "
+                            << gnode << " to proc " << prank
+                            << " because it is note a local node");
+
+    auto & scheme = communications.createSendScheme(prank);
+    scheme.push_back(node);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -233,7 +307,8 @@ void NodeInfoPerProc::fillNodalData(DynamicCommunicationBuffer & buffer,
 /* -------------------------------------------------------------------------- */
 MasterNodeInfoPerProc::MasterNodeInfoPerProc(NodeSynchronizer & synchronizer,
                                              UInt message_cnt, UInt root)
-    : NodeInfoPerProc(synchronizer, message_cnt, root) {
+    : NodeInfoPerProc(synchronizer, message_cnt, root),
+      all_nodes(0, synchronizer.getMesh().getSpatialDimension()) {
   UInt nb_global_nodes = this->mesh.getNbGlobalNodes();
   this->comm.broadcast(nb_global_nodes, this->root);
 }
@@ -245,6 +320,9 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
 
   Array<Real> local_nodes(0, spatial_dimension);
   Array<Real> & nodes = this->getNodes();
+
+  all_nodes.copy(nodes);
+  nodes_pranks.resize(nodes.size(), UInt(-1));
 
   for (UInt p = 0; p < nb_proc; ++p) {
     UInt nb_nodes = 0;
@@ -297,53 +375,87 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
 void MasterNodeInfoPerProc::synchronizeTypes() {
   //           <global_id,     <proc, local_id> >
   std::multimap<UInt, std::pair<UInt, UInt>> nodes_to_proc;
-  std::vector<Array<NodeType>> nodes_type_per_proc(nb_proc);
+  std::vector<Array<NodeFlag>> nodes_flags_per_proc(nb_proc);
+  std::vector<Array<Int>> nodes_prank_per_proc(nb_proc);
+
+  if (mesh.isPeriodic())
+    all_periodic_flags.copy(this->getNodesFlags());
 
   // arrays containing pairs of (proc, node)
   std::vector<Array<UInt>> nodes_to_send_per_proc(nb_proc);
   for (UInt p = 0; p < nb_proc; ++p) {
-    nodes_type_per_proc[p].resize(nb_nodes_per_proc(p));
+    nodes_flags_per_proc[p].resize(nb_nodes_per_proc(p), NodeFlag(0xFF));
+    nodes_prank_per_proc[p].resize(nb_nodes_per_proc(p), -1);
   }
 
   this->fillNodesType();
 
-  for (UInt p = 0; p < nb_proc; ++p) {
-    auto & nodes_types = nodes_type_per_proc[p];
+  auto is_master = [](auto && flag) {
+    return (flag & NodeFlag::_shared_mask) == NodeFlag::_master;
+  };
+
+  auto is_local = [](auto && flag) {
+    return (flag & NodeFlag::_shared_mask) == NodeFlag::_normal;
+  };
+
+  for (auto p : arange(nb_proc)) {
+    auto & nodes_flags = nodes_flags_per_proc[p];
+
     if (p != root) {
       AKANTU_DEBUG_INFO(
           "Receiving first nodes types from proc "
           << p << " "
           << Tag::genTag(this->rank, this->message_count, Tag::_NODES_TYPE));
-      comm.receive(nodes_types, p, Tag::genTag(p, 0, Tag::_NODES_TYPE));
+      comm.receive(nodes_flags, p, Tag::genTag(p, 0, Tag::_NODES_TYPE));
     } else {
-      nodes_types.copy(this->getNodesType());
+      nodes_flags.copy(this->getNodesFlags());
     }
 
     // stack all processors claiming to be master for a node
-    for (UInt local_node = 0; local_node < nb_nodes_per_proc(p); ++local_node) {
-      if (nodes_types(local_node) == _nt_master) {
-        UInt global_node = nodes_per_proc[p](local_node);
+    for (auto local_node : arange(nb_nodes_per_proc(p))) {
+      auto global_node = nodes_per_proc[p](local_node);
+
+      if (is_master(nodes_flags(local_node))) {
         nodes_to_proc.insert(
             std::make_pair(global_node, std::make_pair(p, local_node)));
+
+      } else if (is_local(nodes_flags(local_node))) {
+        nodes_pranks[global_node] = p;
       }
     }
   }
 
-  for (UInt i = 0; i < mesh.getNbGlobalNodes(); ++i) {
+  for (auto i : arange(mesh.getNbGlobalNodes())) {
     auto it_range = nodes_to_proc.equal_range(i);
     if (it_range.first == nodes_to_proc.end() || it_range.first->first != i)
       continue;
 
     // pick the first processor out of the multi-map as the actual master
     UInt master_proc = (it_range.first)->second.first;
-    for (auto it_node = it_range.first; it_node != it_range.second; ++it_node) {
-      UInt proc = it_node->second.first;
-      UInt node = it_node->second.second;
+    nodes_pranks[i] = master_proc;
+
+    for (auto && data : range(it_range.first, it_range.second)) {
+      auto proc = data.second.first;
+      auto node = data.second.second;
+
       if (proc != master_proc) {
         // store the info on all the slaves for a given master
-        nodes_type_per_proc[proc](node) = NodeType(master_proc);
+        nodes_flags_per_proc[proc](node) = NodeFlag::_slave;
         nodes_to_send_per_proc[master_proc].push_back(proc);
         nodes_to_send_per_proc[master_proc].push_back(i);
+      }
+    }
+  }
+
+  /// Fills the nodes prank per proc
+  for (auto && data : zip(arange(nb_proc), nodes_per_proc, nodes_prank_per_proc,
+                          nodes_flags_per_proc)) {
+    for (auto && node_data :
+         zip(std::get<1>(data), std::get<2>(data), std::get<3>(data))) {
+      if (std::get<2>(node_data) == NodeFlag::_normal) {
+        std::get<1>(node_data) = std::get<0>(data);
+      } else {
+        std::get<1>(node_data) = nodes_pranks(std::get<0>(node_data));
       }
     }
   }
@@ -356,13 +468,14 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
                         << p << " "
                         << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
       requests_send_type.push_back(
-          comm.asyncSend(nodes_type_per_proc[p], p,
+          comm.asyncSend(nodes_flags_per_proc[p], p,
                          Tag::genTag(this->rank, 0, Tag::_NODES_TYPE)));
 
-      auto & nodes_to_send = nodes_to_send_per_proc[p];
+      requests_send_type.push_back(
+          comm.asyncSend(nodes_prank_per_proc[p], p,
+                         Tag::genTag(this->rank, 2, Tag::_NODES_TYPE)));
 
-      /// push back an element to avoid a send of size 0
-      nodes_to_send.push_back(-1);
+      auto & nodes_to_send = nodes_to_send_per_proc[p];
 
       AKANTU_DEBUG_INFO("Sending nodes master info to proc "
                         << p << " "
@@ -370,7 +483,13 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
       requests_send_master_info.push_back(comm.asyncSend(
           nodes_to_send, p, Tag::genTag(this->rank, 1, Tag::_NODES_TYPE)));
     } else {
-      this->getNodesType().copy(nodes_type_per_proc[p]);
+      this->getNodesFlags().copy(nodes_flags_per_proc[p]);
+      for (auto && data : enumerate(nodes_prank_per_proc[p])) {
+        auto node = std::get<0>(data);
+        if (not(mesh.isMasterNode(node) or mesh.isLocalNode(node))) {
+          this->setNodePrank(node, std::get<1>(data));
+        }
+      }
 
       this->fillCommunicationScheme(nodes_to_send_per_proc[root]);
     }
@@ -434,6 +553,86 @@ void MasterNodeInfoPerProc::synchronizeGroups() {
   requests.clear();
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void MasterNodeInfoPerProc::synchronizePeriodicity() {
+  bool is_periodic = mesh.isPeriodic();
+  comm.broadcast(is_periodic, root);
+
+  if (not is_periodic)
+    return;
+
+  std::vector<CommunicationRequest> requests;
+  std::vector<Array<UInt>> periodic_info_to_send_per_proc;
+  for (auto p : arange(nb_proc)) {
+    periodic_info_to_send_per_proc.emplace_back(0, 2);
+    auto && periodic_info = periodic_info_to_send_per_proc.back();
+
+    for (UInt proc_local_node : arange(nb_nodes_per_proc(p))) {
+      UInt global_node = nodes_per_proc[p](proc_local_node);
+      if ((all_periodic_flags[global_node] & NodeFlag::_periodic_mask) ==
+          NodeFlag::_periodic_slave) {
+        periodic_info.push_back(
+            Vector<UInt>{global_node, mesh.getPeriodicMaster(global_node)});
+      }
+    }
+
+    if (p == root)
+      continue;
+
+    auto && tag = Tag::genTag(this->rank, p, Tag::_PERIODIC_SLAVES);
+    AKANTU_DEBUG_INFO("Sending periodic info to proc " << p << " " << tag);
+    requests.push_back(comm.asyncSend(periodic_info, p, tag));
+  }
+
+  CommunicationStatus status;
+  std::vector<DynamicCommunicationBuffer> buffers(nb_proc);
+  std::vector<std::vector<UInt>> proc_missings(nb_proc);
+  auto nodes_it = all_nodes.begin(spatial_dimension);
+
+  for (UInt p = 0; p < nb_proc; ++p) {
+    auto & proc_missing = proc_missings[p];
+    if (p != root) {
+      auto && tag = Tag::genTag(p, 0, Tag::_PERIODIC_NODES);
+      comm.probe<UInt>(p, tag, status);
+
+      proc_missing.resize(status.size());
+      comm.receive(proc_missing, p, tag);
+    } else {
+      fillPeriodicPairs(periodic_info_to_send_per_proc[root], proc_missing);
+    }
+
+    auto & buffer = buffers[p];
+    buffer.reserve((spatial_dimension * sizeof(Real) + sizeof(Int)) *
+                   proc_missing.size());
+    buffer << proc_missing.size();
+    for (auto && node : proc_missing) {
+      buffer << *(nodes_it + node);
+      buffer << nodes_pranks(node);
+    }
+  }
+
+  for (UInt p = 0; p < nb_proc; ++p) {
+    for (auto && node : proc_missings[p]) {
+      auto & buffer = buffers[nodes_pranks(node)];
+      buffer << node;
+      buffer << p;
+    }
+  }
+
+  for (UInt p = 0; p < nb_proc; ++p) {
+    if (p != root) {
+      auto && tag_send = Tag::genTag(p, 1, Tag::_PERIODIC_NODES);
+      requests.push_back(comm.asyncSend(buffers[p], p, tag_send));
+    } else {
+      receiveMissingPeriodic(buffers[p]);
+    }
+  }
+
+  comm.waitAll(requests);
+  comm.freeCommunicationRequest(requests);
+  requests.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -548,7 +747,7 @@ void SlaveNodeInfoPerProc::synchronizeNodes() {
 void SlaveNodeInfoPerProc::synchronizeTypes() {
   this->fillNodesType();
 
-  Array<NodeType> & nodes_types = this->getNodesType();
+  auto & nodes_types = this->getNodesFlags();
 
   AKANTU_DEBUG_INFO("Sending first nodes types to proc "
                     << root << ""
@@ -559,16 +758,24 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
                     << root << " " << Tag::genTag(root, 0, Tag::_NODES_TYPE));
   comm.receive(nodes_types, root, Tag::genTag(root, 0, Tag::_NODES_TYPE));
 
+  Array<Int> nodes_prank(nodes_types.size());
+  comm.receive(nodes_prank, root, Tag::genTag(root, 2, Tag::_NODES_TYPE));
+  for (auto && data : enumerate(nodes_prank)) {
+    auto node = std::get<0>(data);
+    if (not(mesh.isMasterNode(node) or mesh.isLocalNode(node))) {
+      this->setNodePrank(node, std::get<1>(data));
+    }
+  }
+
   AKANTU_DEBUG_INFO("Receiving nodes master info from proc "
                     << root << " " << Tag::genTag(root, 1, Tag::_NODES_TYPE));
   CommunicationStatus status;
   comm.probe<UInt>(root, Tag::genTag(root, 1, Tag::_NODES_TYPE), status);
 
   Array<UInt> nodes_master_info(status.size());
-
-  comm.receive(nodes_master_info, root, Tag::genTag(root, 1, Tag::_NODES_TYPE));
-
-  nodes_master_info.resize(nodes_master_info.size() - 1);
+  if (nodes_master_info.size() > 0)
+    comm.receive(nodes_master_info, root,
+                 Tag::genTag(root, 1, Tag::_NODES_TYPE));
 
   this->fillCommunicationScheme(nodes_master_info);
 }
@@ -591,6 +798,35 @@ void SlaveNodeInfoPerProc::synchronizeGroups() {
   this->fillNodeGroupsFromBuffer(buffer);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SlaveNodeInfoPerProc::synchronizePeriodicity() {
+  bool is_periodic;
+  comm.broadcast(is_periodic, root);
+
+  if (not is_periodic)
+    return;
+
+  CommunicationStatus status;
+  auto && tag = Tag::genTag(root, this->rank, Tag::_PERIODIC_SLAVES);
+  comm.probe<UInt>(root, tag, status);
+
+  Array<UInt> periodic_info(status.size() / 2, 2);
+  comm.receive(periodic_info, root, tag);
+
+  std::vector<UInt> proc_missing;
+  fillPeriodicPairs(periodic_info, proc_missing);
+
+  auto && tag_missing_request =
+      Tag::genTag(this->rank, 0, Tag::_PERIODIC_NODES);
+  comm.send(proc_missing, root, tag_missing_request);
+
+  DynamicCommunicationBuffer buffer;
+  auto && tag_missing = Tag::genTag(this->rank, 1, Tag::_PERIODIC_NODES);
+  comm.receive(buffer, root, tag_missing);
+
+  receiveMissingPeriodic(buffer);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -629,4 +865,4 @@ void SlaveNodeInfoPerProc::synchronizeTags() {
   }
 }
 
-} // namespace akantu
+} // akantu

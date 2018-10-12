@@ -54,7 +54,7 @@ int main(int argc, char * argv[]) {
   const UInt spatial_dimension = 1;
   const UInt nb_global_dof = 11;
   const auto & comm = Communicator::getStaticCommunicator();
-  // Int psize = comm.getNbProc();
+  Int psize = comm.getNbProc();
   Int prank = comm.whoAmI();
 
   Mesh mesh(spatial_dimension);
@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
   UInt node = 0;
   for (auto pos : mesh.getNodes()) {
     std::cout << prank << " " << node << " pos: " << pos << " ["
-              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeType(node)
+              << mesh.getNodeGlobalId(node) << "] " << mesh.getNodeFlag(node)
               << std::endl;
     ++node;
   }
@@ -110,27 +110,34 @@ int main(int argc, char * argv[]) {
 
   solver.solve(x, b);
 
-  auto & sync =
-      dynamic_cast<DOFManagerDefault &>(dof_manager).getSynchronizer();
-
-  if (prank == 0) {
-    Array<Real> x_gathered(dof_manager.getSystemSize());
-    sync.gather(x, x_gathered);
-
+  auto && check = [&](auto && xs) {
     debug::setDebugLevel(dblTest);
-    std::cout << x_gathered << std::endl;
+    std::cout << xs << std::endl;
     debug::setDebugLevel(dblWarning);
 
     UInt d = 1.;
-    for (auto x : x_gathered) {
+    for (auto x : xs) {
       if (std::abs(x - d) / d > 1e-15)
         AKANTU_EXCEPTION("Error in the solution: " << x << " != " << d << " ["
                                                    << (std::abs(x - d) / d)
                                                    << "].");
       ++d;
     }
+  };
+
+  if (psize > 1) {
+    auto & sync =
+        dynamic_cast<DOFManagerDefault &>(dof_manager).getSynchronizer();
+
+    if (prank == 0) {
+      Array<Real> x_gathered(dof_manager.getSystemSize());
+      sync.gather(x, x_gathered);
+      check(x_gathered);
+    } else {
+      sync.gather(x);
+    }
   } else {
-    sync.gather(x);
+    check(x);
   }
 
   finalize();
@@ -155,4 +162,6 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
     conn(n, 0) = n;
     conn(n, 1) = n + 1;
   }
+
+  mesh_accessor.makeReady();
 }

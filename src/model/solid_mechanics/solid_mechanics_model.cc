@@ -101,7 +101,6 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
     this->registerSynchronizer(synchronizer, _gst_material_id);
     this->registerSynchronizer(synchronizer, _gst_smm_mass);
     this->registerSynchronizer(synchronizer, _gst_smm_stress);
-    this->registerSynchronizer(synchronizer, _gst_smm_boundary);
     this->registerSynchronizer(synchronizer, _gst_for_dump);
   }
 
@@ -148,10 +147,6 @@ void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
                                       _with_nb_element = true);
 
   Model::initFullImpl(options);
-
-  // initialize pbc
-  if (this->pbc_pair.size() != 0)
-    this->initPBC();
 
   // initialize the materials
   if (this->parser.getLastParsedFile() != "") {

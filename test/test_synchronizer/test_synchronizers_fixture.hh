@@ -46,6 +46,7 @@ public:
 
     const auto & comm = Communicator::getStaticCommunicator();
     prank = comm.whoAmI();
+    psize = comm.getNbProc();
 
     if (prank == 0) {
       this->mesh->read("cube.msh");
@@ -76,4 +77,5 @@ public:
 protected:
   std::unique_ptr<Mesh> mesh;
   Int prank;
+  Int psize;
 };

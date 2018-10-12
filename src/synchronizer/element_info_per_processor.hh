@@ -52,11 +52,14 @@ class ElementInfoPerProc : protected MeshAccessor {
 public:
   ElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                      UInt root, ElementType type);
+  bool synchronize();
 
+protected:
   virtual void synchronizeConnectivities() = 0;
   virtual void synchronizePartitions() = 0;
   virtual void synchronizeTags() = 0;
   virtual void synchronizeGroups() = 0;
+  virtual bool needSynchronize() = 0;
 
 protected:
   void fillCommunicationScheme(const Array<UInt> & partition);
@@ -95,17 +98,17 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-class MasterElementInfoPerProc : protected ElementInfoPerProc {
+class MasterElementInfoPerProc : public ElementInfoPerProc {
 public:
   MasterElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                            UInt root, ElementType type,
                            const MeshPartition & partition);
-
+protected:
   void synchronizeConnectivities() override;
   void synchronizePartitions() override;
   void synchronizeTags() override;
   void synchronizeGroups() override;
-
+  bool needSynchronize() override { return type != _not_defined; }
 protected:
   template <typename T>
   void fillTagBufferTemplated(std::vector<DynamicCommunicationBuffer> & buffers,
@@ -122,17 +125,18 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
-class SlaveElementInfoPerProc : protected ElementInfoPerProc {
+class SlaveElementInfoPerProc : public ElementInfoPerProc {
 public:
   SlaveElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                           UInt root);
 
+protected:
   void synchronizeConnectivities() override;
   void synchronizePartitions() override;
   void synchronizeTags() override;
   void synchronizeGroups() override;
 
-  bool needSynchronize();
+  bool needSynchronize() override;
 
 private:
   UInt nb_element_to_receive{0};

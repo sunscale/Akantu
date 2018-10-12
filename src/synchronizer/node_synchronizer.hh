@@ -50,6 +50,14 @@ public:
 
   ~NodeSynchronizer() override;
 
+  /* ------------------------------------------------------------------------ */
+  /// Uses the synchronizer to perform a reduction on the vector
+  template <template <class> class Op, typename T>
+  void reduceSynchronize(Array<T> & array) const;
+
+  /* ------------------------------------------------------------------------ */
+  template <typename T> void synchronizeData(Array<T> & array) const;
+
   friend class NodeInfoPerProc;
 
   UInt sanityCheckDataSize(const Array<UInt> & nodes,
@@ -81,17 +89,38 @@ public:
                          const ElementTypeMapArray<UInt> &,
                          const ChangedElementsEvent &) override {}
 
+  /* ------------------------------------------------------------------------ */
+  NodeSynchronizer & operator=(const NodeSynchronizer & other) {
+    copySchemes(other);
+    return *this;
+  }
+
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
 protected:
-  Int getRank(const UInt & /*node*/) const final { AKANTU_TO_IMPLEMENT(); }
+  Int getRank(const UInt & node) const final;
 
 protected:
   Mesh & mesh;
 
   // std::unordered_map<UInt, Int> node_to_prank;
 };
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+void NodeSynchronizer::synchronizeData(Array<T> & array) const {
+  SimpleUIntDataAccessor<T> data_accessor(array, _gst_whatever);
+  this->synchronizeOnce(data_accessor, _gst_whatever);
+}
+
+/* -------------------------------------------------------------------------- */
+template <template <class> class Op, typename T>
+void NodeSynchronizer::reduceSynchronize(Array<T> & array) const {
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
+  this->slaveReductionOnceImpl(data_accessor, _gst_whatever);
+  this->synchronizeData(array);
+}
 
 } // namespace akantu
 

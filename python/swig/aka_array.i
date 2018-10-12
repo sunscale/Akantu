@@ -83,12 +83,12 @@ namespace akantu {
 
 %include "aka_types.hh"
 
-namespace akantu {
-  %template(RArray) Array<akantu::Real, true>;
-  %template(UArray) Array<akantu::UInt, true>;
-  %template(BArray) Array<bool, true>;
-  %template(RVector) Vector<akantu::Real>;
-};
+// namespace akantu {
+//   %template(RArray) Array<akantu::Real, true>;
+//   %template(UArray) Array<akantu::UInt, true>;
+//   %template(BArray) Array<bool, true>;
+//   %template(RVector) Vector<akantu::Real>;
+// };
 
 %include "numpy.i"
 %init %{
