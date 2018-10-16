@@ -804,6 +804,13 @@ public:
     }
     stream << "]";
   }
+
+  /* ---------------------------------------------------------------------- */
+  static inline Vector<T> zeros(UInt n) {
+    Vector<T> tmp(n);
+    tmp.set(T());
+    return tmp;
+  }
 };
 
 using RVector = Vector<Real>;

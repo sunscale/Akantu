@@ -957,6 +957,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
       data[node - first_node_number] = value;
     }
+
+    my_getline(infile, line);
   };
 
   readers["Unsupported"] = [&](const std::string & block) {

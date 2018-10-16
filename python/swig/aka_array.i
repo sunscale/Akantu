@@ -98,27 +98,53 @@ namespace akantu {
 
 %inline %{
 namespace akantu {
+
 template <typename T> class ArrayForPython : public Array<T> {
+protected:
+  // deallocate the memory
+  void deallocate() override final {}
+
+  // allocate the memory
+  void allocate(UInt size, UInt nb_component) override final {}
+
+  // allocate and initialize the memory
+  void allocate(UInt size, UInt nb_component, const T & value) override final {}
 
 public:
-  ArrayForPython(T * wrapped_memory, UInt size_ = 0, UInt nb_component = 1,
-                 const ID & id = "")
-      : Array<T>(0, nb_component, id) {
-    this->values = wrapped_memory;
-    this->size_ = size_;
-  };
+  ArrayForPython(T * data, UInt size, UInt nb_component, const ID & id) {
+    this->id = id;
+    this->values = data;
+    this->size_ = size;
+    this->nb_component = nb_component;
+  }
 
-  ~ArrayForPython() { this->values = NULL; };
+  ArrayForPython(const Array<T> & src) {
+    this->values = src.storage();
+    this->size_ = src.size();
+    this->nb_component = src.getNbComponent();
+  }
 
-  void resize(UInt new_size) {
-    AKANTU_DEBUG_ASSERT(this->size_ == new_size,
-                        "cannot resize a temporary vector");
+  void resize(UInt size, const T & val) override final {
+    if (size == this->size_) return;
+    AKANTU_EXCEPTION("cannot resize a temporary array");
+  }
+
+  void resize(UInt new_size) override final {
+    if (new_size == this->size_) return;
+    AKANTU_EXCEPTION("cannot resize a temporary array");
+  }
+
+  void reserve(UInt new_size) override final {
+    if (new_size == this->size_) return;
+    AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 };
 }
+
 template <typename T> int getPythonDataTypeCode() {
   AKANTU_EXCEPTION("undefined type");
 }
+
 template <> int getPythonDataTypeCode<bool>() {
   int data_typecode = NPY_NOTYPE;
   size_t s = sizeof(bool);

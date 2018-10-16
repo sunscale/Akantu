@@ -31,7 +31,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 %{
 #include "mesh.hh"
 #include "node_group.hh"
@@ -39,6 +38,7 @@
 #include "python_functor.hh"
 #include "mesh_utils.hh"
 #include "aka_bbox.hh"
+#include "mesh_accessor.hh"
 
 using akantu::IntegrationPoint;
 using akantu::Vector;
@@ -118,6 +118,39 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
                                                            nb_components);
     data.resize($self->getNbElement(type, akantu::_not_ghost));
     return data;
+  }
+
+  Array<UInt> & getElementalDataUInt(const ID & name,
+                                     const ElementType & type,
+                                     UInt nb_components = 1) {
+    auto && data = $self->getElementalDataArrayAlloc<akantu::UInt>(name, type,
+                                                           akantu::_not_ghost,
+                                                           nb_components);
+    data.resize($self->getNbElement(type, akantu::_not_ghost));
+    return data;
+  }
+
+  Array<Real> & computeBarycenters(const ElementType & type) {
+    auto dim = $self->getSpatialDimension();
+    auto && data = $self->getElementalDataArrayAlloc<akantu::Real>("barycenters", type,
+                                                           akantu::_not_ghost, dim);
+    auto nb_el = data.size();
+    auto total_nb_el = $self->getNbElement(type, akantu::_not_ghost);
+
+    data.resize(total_nb_el);
+
+    auto bary_it = make_view(data, dim).begin() + nb_el;
+    for (auto el = nb_el; el < total_nb_el; ++el) {
+      $self->getBarycenter(akantu::Element{type, el, akantu::_not_ghost},
+                           *bary_it);
+      ++bary_it;
+    }
+    return data;
+  }
+
+  void ready() {
+    akantu::MeshAccessor ma(* $self);
+    ma.makeReady();
   }
 }
 
