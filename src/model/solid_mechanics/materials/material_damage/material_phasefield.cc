@@ -38,30 +38,14 @@ namespace akantu {
 template<UInt spatial_dimension>
 MaterialPhaseField<spatial_dimension>::MaterialPhaseField(SolidMechanicsModel & model,
 							  const ID & id)
-  : MaterialDamage<spatial_dimension>(model, id) {
+  : Parent(model, id) {
 
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialPhaseField<spatial_dimension>::initMaterial() {
-  AKANTU_DEBUG_IN();
-  MaterialDamage<spatial_dimension>::initMaterial();
 
-  updateInternalParameters();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template<UInt spatial_dimension>
-void MaterialPhaseField<spatial_dimension>::updateInternalParameters()  {
-  MaterialDamage<spatial_dimension>::updateInternalParameters();
-
-}
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
@@ -89,8 +73,8 @@ void MaterialPhaseField<spatial_dimension>::computeTangentModuli(
     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  //Parent<spatial_dimension>::computeTangentModuli(el_type, tangent_matrix,
-  //                                               ghost_type);
+  Parent::computeTangentModuli(el_type, tangent_matrix,
+			       ghost_type);
 
   Real * dam = this->damage(el_type, ghost_type).storage();
 

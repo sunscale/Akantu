@@ -79,6 +79,8 @@ inline void MaterialPhaseField<spatial_dimension>::computeStressOnQuad(
 	+ 2 * mu * strain_minus(i, j);
     }
   }     
+
   
-  sigma = (1 - dam) * sigma_plus + sigma_minus;
+  //sigma = (1 - dam) * sigma_plus + sigma_minus;
+  sigma *= (1- dam);
 }

@@ -29,9 +29,9 @@
 
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver.hh"
-//#include "phase_field_model.hh"
+#include "phase_field_model.hh"
 #include "solid_mechanics_model.hh"
-//#include "solid_phase_coupler.hh"
+#include "solid_phase_coupler.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
   Mesh mesh(spatial_dimension);
   mesh.read("square_notch.msh");
     
-  // Phase field model initialization
-  //PhaseFieldModel pfm(mesh);
-  //pfm.initFull(_analysis_method = _static);
+  //Phase field model initialization
+  PhaseFieldModel pfm(mesh);
+  pfm.initFull(_analysis_method = _static);
    
   // solid mechanics model initialization
   SolidMechanicsModel smm(mesh);
@@ -74,15 +74,15 @@ int main(int argc, char *argv[])
   smm_solver.set("convergence_type", _scc_residual);
   
   // coupling of models
-  //SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
+  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
 
   UInt nbSteps   = 1500;
   Real increment = 1.e-5;
   
   for (UInt s = 1; s < nbSteps; ++s) {
     smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
-    smm.solveStep();
-    //coupler.solve();
+    //smm.solveStep();
+    coupler.solve();
     smm.dump();
     std::cout << "Step " << s << "/" << nbSteps << std::endl;
     

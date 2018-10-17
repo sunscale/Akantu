@@ -408,8 +408,6 @@ void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
 
   AKANTU_DEBUG_IN();
   
-  auto & fem = this->getFEEngine();
-
   for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
     for (auto  && values :
 	   zip(make_view(damage_energy_density_on_qpoints(type, ghost_type)),
@@ -492,7 +490,6 @@ void PhaseFieldModel::computePhiHistoryOnQuadPoints(
 	phi_history = phi_plus;
       }
 
-      std::cout << "phi = " << phi_history << std::endl;
     }
   }
 
@@ -546,15 +543,12 @@ void PhaseFieldModel::assembleInternalForces() {
     }
   }
 
-  for (auto & f: *internal_force) {
-    std::cout << f << std::endl;
-  }
-
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleLumpedMatrix(const ID & matrix_id) {
+  
 }
   
 

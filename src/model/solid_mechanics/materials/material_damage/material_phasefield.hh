@@ -41,7 +41,8 @@ namespace akantu {
 
 template <UInt spatial_dimension>
 class MaterialPhaseField : public MaterialDamage<spatial_dimension> {
-    /* ------------------------------------------------------------------------ */
+  using Parent = MaterialDamage<spatial_dimension>;
+  /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
@@ -52,10 +53,6 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void initMaterial() override;
-
-  void updateInternalParameters() override;
-
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override;
