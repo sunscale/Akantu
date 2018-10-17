@@ -269,29 +269,19 @@ template <typename T> void DOFSynchronizer::scatter(Array<T> & scattered) {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-template <typename T>
-void DOFSynchronizer::synchronize(Array<T> & dof_values_to_synchronize) const {
-  AKANTU_DEBUG_IN();
-
-  SimpleUIntDataAccessor<T> data_accessor(dof_values_to_synchronize,
-                                          _gst_whatever);
-  this->synchronizeOnce(data_accessor, _gst_whatever);
-
-  AKANTU_DEBUG_OUT();
-}
 
 /* -------------------------------------------------------------------------- */
 template <template <class> class Op, typename T>
-void DOFSynchronizer::reduceSynchronize(Array<T> & dof_vector) const {
-  AKANTU_DEBUG_IN();
-
-  ReduceUIntDataAccessor<Op, T> data_accessor(dof_vector, _gst_whatever);
+void DOFSynchronizer::reduceSynchronize(Array<T> & array) const {
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
   this->slaveReductionOnceImpl(data_accessor, _gst_whatever);
+  this->synchronize(array);
+}
 
-  this->synchronize(dof_vector);
-
-  AKANTU_DEBUG_OUT();
+/* -------------------------------------------------------------------------- */
+template <typename T> void DOFSynchronizer::synchronize(Array<T> & array) const {
+  SimpleUIntDataAccessor<T> data_accessor(array, _gst_whatever);
+  this->synchronizeOnce(data_accessor, _gst_whatever);
 }
 
 } // akantu

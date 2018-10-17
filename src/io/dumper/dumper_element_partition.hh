@@ -31,7 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumper {
 #ifdef AKANTU_IGFEM
 #include "dumper_igfem_element_partition.hh"
 #endif
@@ -114,5 +114,5 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
+} // dumper
 } // akantu

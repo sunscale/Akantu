@@ -65,46 +65,43 @@ MeshPartitionMeshData::MeshPartitionMeshData(
 
 /* -------------------------------------------------------------------------- */
 void MeshPartitionMeshData::partitionate(UInt nb_part,
-                                         __attribute__((unused))
-                                         const EdgeLoadFunctor & edge_load_func,
-                                         const Array<UInt> & pairs) {
+                                         const EdgeLoadFunctor &) {
   AKANTU_DEBUG_IN();
 
-  tweakConnectivity(pairs);
+  if (mesh.isPeriodic()) {
+    tweakConnectivity();
+  }
 
   nb_partitions = nb_part;
-  GhostType ghost_type = _not_ghost;
-  UInt spatial_dimension = mesh.getSpatialDimension();
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, ghost_type, _ek_not_defined);
-  Mesh::type_iterator end =
-      mesh.lastType(spatial_dimension, ghost_type, _ek_not_defined);
+
+  auto ghost_type = _not_ghost;
+  auto spatial_dimension = mesh.getSpatialDimension();
 
   UInt linearized_el = 0;
-  UInt nb_elements = mesh.getNbElement(mesh.getSpatialDimension(), ghost_type);
-  auto * partition_list = new Int[nb_elements];
+  auto nb_elements = mesh.getNbElement(mesh.getSpatialDimension(), ghost_type);
+  auto partition_list = new Int[nb_elements];
 
 #if !defined(AKANTU_NDEBUG)
   std::set<UInt> partitions;
 #endif
-  for (; it != end; ++it) {
-    ElementType type = *it;
-    const Array<UInt> & partition_array =
+  for (auto type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
+    const auto & partition_array =
         (*partition_mapping)(type, ghost_type);
-    Array<UInt>::const_iterator<Vector<UInt>> p_it = partition_array.begin(1);
-    Array<UInt>::const_iterator<Vector<UInt>> p_end = partition_array.end(1);
-    AKANTU_DEBUG_ASSERT(UInt(p_end - p_it) ==
+    AKANTU_DEBUG_ASSERT(partition_array.size() ==
                             mesh.getNbElement(type, ghost_type),
                         "The partition mapping does not have the right number "
                             << "of entries for type " << type
                             << " and ghost type " << ghost_type << "."
-                            << " Tags=" << p_end - p_it
+                            << " Tags=" << partition_array.size()
                             << " Mesh=" << mesh.getNbElement(type, ghost_type));
-    for (; p_it != p_end; ++p_it, ++linearized_el) {
-      partition_list[linearized_el] = (*p_it)(0);
+
+    for (auto && part : partition_array) {
+      partition_list[linearized_el] = part;
 #if !defined(AKANTU_NDEBUG)
-      partitions.insert((*p_it)(0));
+      partitions.insert(part);
 #endif
+      ++linearized_el;
     }
   }
 
@@ -118,7 +115,9 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 
   delete[] partition_list;
 
-  restoreConnectivity();
+  if(mesh.isPeriodic()) {
+    restoreConnectivity();
+  }
 
   AKANTU_DEBUG_OUT();
 }

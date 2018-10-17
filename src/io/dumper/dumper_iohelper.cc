@@ -313,5 +313,7 @@ UInt getIOHelperType(ElementType type) {
 } // akantu
 
 namespace iohelper {
-template <> DataType getDataType<akantu::NodeType>() { return _int; }
+template <> DataType getDataType<akantu::NodeFlag>() {
+  return getDataType<std::underlying_type_t<akantu::NodeFlag>>();
+}
 }

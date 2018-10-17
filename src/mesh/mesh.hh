@@ -1,3 +1,4 @@
+
 /**
  * @file   mesh.hh
  *
@@ -38,6 +39,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
+#include "aka_bbox.hh"
 #include "aka_event_handler_manager.hh"
 #include "aka_memory.hh"
 #include "dumpable.hh"
@@ -49,12 +51,14 @@
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
 #include <set>
+#include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 class Communicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
+class PeriodicNodeSynchronizer;
 class MeshGlobalDataUpdater;
 } // namespace akantu
 
@@ -109,11 +113,6 @@ public:
   Mesh(UInt spatial_dimension, Communicator & communicator,
        const ID & id = "mesh", const MemoryID & memory_id = 0);
 
-  /// constructor that use an existing nodes coordinates array, by knowing its
-  /// ID
-  // Mesh(UInt spatial_dimension, const ID & nodes_id, const ID & id,
-  //      const MemoryID & memory_id = 0);
-
   /**
    * constructor that use an existing nodes coordinates
    * array, by getting the vector of coordinates
@@ -130,6 +129,9 @@ public:
   void write(const std::string & filename,
              const MeshIOType & mesh_io_type = _miot_auto);
 
+protected:
+  void makeReady();
+
 private:
   /// initialize the connectivity to NULL and other stuff
   void init();
@@ -138,13 +140,62 @@ private:
   void computeBoundingBox();
 
   /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
+  /* Distributed memory methods and accessors                                 */
   /* ------------------------------------------------------------------------ */
 public:
   /// patitionate the mesh among the processors involved in their computation
   virtual void distribute(Communicator & communicator);
   virtual void distribute();
 
+  /// defines is the mesh is distributed or not
+  inline bool isDistributed() const { return this->is_distributed; }
+
+  /* ------------------------------------------------------------------------ */
+  /* Periodicity methods and accessors                                        */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// set the periodicity in a given direction
+  void makePeriodic(const SpatialDirection & direction);
+  void makePeriodic(const SpatialDirection & direction, const ID & list_1,
+                    const ID & list_2);
+
+protected:
+  void makePeriodic(const SpatialDirection & direction,
+                    const Array<UInt> & list_1, const Array<UInt> & list_2);
+
+  /// Removes the face that the mesh is periodic
+  void wipePeriodicInfo();
+
+  inline void addPeriodicSlave(UInt slave, UInt master);
+
+  template <typename T>
+  void synchronizePeriodicSlaveDataWithMaster(Array<T> & data);
+
+  // update the periodic synchronizer (creates it if it does not exists)
+  void updatePeriodicSynchronizer();
+
+public:
+  /// defines if the mesh is periodic or not
+  inline bool isPeriodic() const { return (this->is_periodic != 0); }
+
+  inline bool isPeriodic(const SpatialDirection & direction) const {
+    return ((this->is_periodic & (1 << direction)) != 0);
+  }
+
+  class PeriodicSlaves;
+
+  /// get the master node for a given slave nodes, except if node not a slave
+  inline UInt getPeriodicMaster(UInt slave) const;
+
+#ifndef SWIG
+  /// get an iterable list of slaves for a given master node
+  inline decltype(auto) getPeriodicSlaves(UInt master) const;
+#endif
+
+  /* ------------------------------------------------------------------------ */
+  /* General Methods                                                          */
+  /* ------------------------------------------------------------------------ */
+public:
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
 
@@ -242,13 +293,14 @@ public:
   inline UInt getNbGlobalNodes() const;
 
   /// get the nodes type Array
-  AKANTU_GET_MACRO(NodesType, *nodes_type, const Array<NodeType> &);
+  AKANTU_GET_MACRO(NodesFlags, *nodes_flags, const Array<NodeFlag> &);
 
 protected:
-  AKANTU_GET_MACRO_NOT_CONST(NodesType, *nodes_type, Array<NodeType> &);
+  AKANTU_GET_MACRO_NOT_CONST(NodesFlags, *nodes_flags, Array<NodeFlag> &);
 
 public:
-  inline NodeType getNodeType(UInt local_id) const;
+  inline NodeFlag getNodeFlag(UInt local_id) const;
+  inline Int getNodePrank(UInt local_id) const;
 
   /// say if a node is a pure ghost node
   inline bool isPureGhostNode(UInt n) const;
@@ -260,10 +312,20 @@ public:
   inline bool isMasterNode(UInt n) const;
   inline bool isSlaveNode(UInt n) const;
 
-  AKANTU_GET_MACRO(LowerBounds, lower_bounds, const Vector<Real> &);
-  AKANTU_GET_MACRO(UpperBounds, upper_bounds, const Vector<Real> &);
-  AKANTU_GET_MACRO(LocalLowerBounds, local_lower_bounds, const Vector<Real> &);
-  AKANTU_GET_MACRO(LocalUpperBounds, local_upper_bounds, const Vector<Real> &);
+  inline bool isPeriodicSlave(UInt n) const;
+  inline bool isPeriodicMaster(UInt n) const;
+
+  const Vector<Real> & getLowerBounds() const { return bbox.getLowerBounds(); }
+  const Vector<Real> & getUpperBounds() const { return bbox.getUpperBounds(); }
+  AKANTU_GET_MACRO(BBox, bbox, const BBox &);
+
+  const Vector<Real> & getLocalLowerBounds() const {
+    return bbox_local.getLowerBounds();
+  }
+  const Vector<Real> & getLocalUpperBounds() const {
+    return bbox_local.getUpperBounds();
+  }
+  AKANTU_GET_MACRO(LocalBBox, bbox_local, const BBox &);
 
   /// get the connectivity Array for a given type
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Connectivity, connectivities, UInt);
@@ -319,6 +381,8 @@ public:
 
   /// get connectivity of a given element
   inline VectorProxy<UInt> getConnectivity(const Element & element) const;
+  inline Vector<UInt>
+  getConnectivityWithPeriodicity(const Element & element) const;
 
 protected:
   inline auto & getElementToSubelement(const Element & element);
@@ -378,9 +442,6 @@ public:
   inline const Mesh & getMeshParent() const;
 
   inline bool isMeshFacets() const { return this->is_mesh_facets; }
-
-  /// defines is the mesh is distributed or not
-  inline bool isDistributed() const { return this->is_distributed; }
 
 #ifndef SWIG
   /// return the dumper from a group and and a dumper name
@@ -468,13 +529,19 @@ public:
                    const NodeSynchronizer &);
   AKANTU_GET_MACRO_NOT_CONST(NodeSynchronizer, *node_synchronizer,
                              NodeSynchronizer &);
+  AKANTU_GET_MACRO(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
+                   const PeriodicNodeSynchronizer &);
+  AKANTU_GET_MACRO_NOT_CONST(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
+                             PeriodicNodeSynchronizer &);
 
 // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
 // &);
 #ifndef SWIG
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
+  AKANTU_GET_MACRO(PeriodicMasterSlaves, periodic_master_slave, const auto &);
 #endif
+
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
   /* ------------------------------------------------------------------------ */
@@ -489,7 +556,7 @@ private:
   inline Array<UInt> & getNodesGlobalIdsPointer();
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline Array<NodeType> & getNodesTypePointer();
+  inline Array<NodeFlag> & getNodesFlagsPointer();
 
   /// get a pointer to the connectivity Array for the given type and create it
   /// if necessary
@@ -528,9 +595,11 @@ private:
   /// global node ids
   std::shared_ptr<Array<UInt>> nodes_global_ids;
 
-  /// node type,  -3 pure ghost, -2  master for the  node, -1 normal node,  i in
-  /// [0-N] slave node and master is proc i
-  std::shared_ptr<Array<NodeType>> nodes_type;
+  /// node flags (shared/periodic/...)
+  std::shared_ptr<Array<NodeFlag>> nodes_flags;
+
+  /// processor handling the node when not local or master
+  std::unordered_map<UInt, Int> nodes_prank;
 
   /// global number of nodes;
   UInt nb_global_nodes{0};
@@ -547,17 +616,13 @@ private:
   /// the spatial dimension of this mesh
   UInt spatial_dimension{0};
 
-  /// min of coordinates
-  Vector<Real> lower_bounds;
-  /// max of coordinates
-  Vector<Real> upper_bounds;
   /// size covered by the mesh on each direction
   Vector<Real> size;
+  /// global bounding box
+  BBox bbox;
 
-  /// local min of coordinates
-  Vector<Real> local_lower_bounds;
-  /// local max of coordinates
-  Vector<Real> local_upper_bounds;
+  /// local bounding box
+  BBox bbox_local;
 
   /// Extra data loaded from the mesh file
   //MeshData mesh_data;
@@ -574,6 +639,9 @@ private:
   /// defines if the mesh is centralized or distributed
   bool is_distributed{false};
 
+  /// defines if the mesh is periodic
+  bool is_periodic{false};
+
   /// Communicator on which mesh is distributed
   Communicator * communicator;
 
@@ -583,6 +651,9 @@ private:
   /// Node synchronizer
   std::unique_ptr<NodeSynchronizer> node_synchronizer;
 
+  /// Node synchronizer for periodic nodes
+  std::unique_ptr<PeriodicNodeSynchronizer> periodic_node_synchronizer;
+
   using NodesToElements = std::vector<std::unique_ptr<std::set<Element>>>;
 
   /// class to update global data using external knowledge
@@ -590,6 +661,10 @@ private:
 
   /// This info is stored to simplify the dynamic changes
   NodesToElements nodes_to_elements;
+
+  /// periodicity local info
+  std::unordered_map<UInt, UInt> periodic_slave_master;
+  std::unordered_multimap<UInt, UInt> periodic_master_slave;
 };
 
 /// standard output stream operator
@@ -603,7 +678,6 @@ inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {
 /* -------------------------------------------------------------------------- */
 /* Inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
 #include "element_type_map_tmpl.hh"
 #include "mesh_inline_impl.cc"
 

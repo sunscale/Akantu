@@ -73,10 +73,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// define a partition of the mesh
-  virtual void
-  partitionate(UInt nb_part,
-               const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor(),
-               const Array<UInt> & pairs = Array<UInt>()) = 0;
+  virtual void partitionate(
+      UInt nb_part,
+      const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor()) = 0;
 
   /// reorder the nodes to reduce the filling during the factorization of a
   /// matrix that has a profil based on the connectivity of the mesh
@@ -93,7 +92,7 @@ protected:
                       const EdgeLoadFunctor & edge_load_func);
 
   /// tweak the mesh to handle the PBC pairs
-  void tweakConnectivity(const Array<UInt> & pairs);
+  void tweakConnectivity();
   /// restore the mesh that has been tweaked
   void restoreConnectivity();
 

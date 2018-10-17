@@ -856,6 +856,59 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
       phys_name_map[phys_name_id] = phys_name;
     }
+    my_getline(infile, line); /// the end of block line
+  };
+
+  readers["$Periodic"] = [&](const std::string &) {
+    UInt nb_periodic_entities;
+    my_getline(infile, line);
+
+    std::stringstream sstr(line);
+    sstr >> nb_periodic_entities;
+
+    mesh_accessor.getNodesFlags().resize(mesh.getNbNodes(),
+                                         NodeFlag::_normal);
+
+    for (UInt p = 0; p < nb_periodic_entities; ++p) {
+      // dimension slave-tag master-tag
+      my_getline(infile, line);
+
+      UInt dimension;
+      {
+        std::stringstream sstr(line);
+        sstr >> dimension;
+      }
+
+      // transformation
+      my_getline(infile, line);
+
+      // nb nodes
+      my_getline(infile, line);
+      UInt nb_nodes;
+      {
+        std::stringstream sstr(line);
+        sstr >> nb_nodes;
+      }
+
+      for (UInt n = 0; n < nb_nodes; ++n) {
+        // slave master
+        my_getline(infile, line);
+
+        // The info in the mesh seem inconsistent so they are ignored for know.
+        continue;
+
+        if (dimension == mesh.getSpatialDimension() - 1) {
+          UInt slave, master;
+          std::stringstream sstr(line);
+          sstr >> slave;
+          sstr >> master;
+          mesh_accessor.addPeriodicSlave(slave, master);
+        }
+      }
+    }
+
+    // mesh_accessor.markMeshPeriodic();
+    my_getline(infile, line);
   };
 
   readers["$NodeData"] = [&](const std::string &) {
@@ -892,7 +945,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     auto && real_tags[[gnu::unused]] = read_data_tags(std::vector<double>());
     auto && int_tags = read_data_tags(std::vector<int>());
 
-    auto && data = mesh.registerNodalData<double>(string_tags[0], int_tags[1]);
+    auto && data = mesh.registerNodalData<double>(trim(string_tags[0], '"'), int_tags[1]);
     data.resize(mesh.getNbNodes(), 0.);
     for (auto _[[gnu::unused]] : arange(int_tags[2])) {
       my_getline(infile, line);
@@ -901,8 +954,11 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       double value;
       sstr >> node;
       sstr >> value;
+
       data[node - first_node_number] = value;
     }
+
+    my_getline(infile, line);
   };
 
   readers["Unsupported"] = [&](const std::string & block) {
@@ -1037,7 +1093,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
               << "\n";
       outfile << "1"
               << "\n";
-      outfile << tag << "\n";
+      outfile << "\"" << tag << "\"\n";
       outfile << "1\n0.0"
               << "\n";
       outfile << "3\n0"

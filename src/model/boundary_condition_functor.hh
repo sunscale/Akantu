@@ -45,7 +45,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
-  using Axis = ::akantu::SpacialDirection;
+  using Axis = ::akantu::SpatialDirection;
 
   struct Functor {
     enum Type { _dirichlet, _neumann };

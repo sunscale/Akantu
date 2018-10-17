@@ -133,100 +133,96 @@ public:
   /// returns the offset (start of columns) for a given row
   inline UInt & rowOffset(UInt row) { return rows_offsets(row); };
 
-  /// iterator on a row
-  template <class R>
-  class iterator_internal
-      : public std::iterator<std::bidirectional_iterator_tag, R> {
-  public:
-    using _parent = std::iterator<std::bidirectional_iterator_tag, R>;
-    using pointer = typename _parent::pointer;
-    using reference = typename _parent::reference;
+  // /// iterator on a row
+  // template <class array_iterator>
+  // class iterator_internal
+  //   : public std::iterator<std::bidirectional_iterator_tag, typename
+  //   array_iterator::value_type> {
+  // public:
+  //   using _parent = std::iterator<std::bidirectional_iterator_tag, R>;
+  //   using pointer = typename _parent::pointer;
+  //   using reference = typename _parent::reference;
 
-    explicit iterator_internal(pointer x = nullptr) : pos(x){};
-    iterator_internal(const iterator_internal & it) : pos(it.pos){};
+  //   explicit iterator_internal(array_iterator ait) : pos(std::move(ait)){};
+  //   iterator_internal(const iterator_internal & it) : pos(it.pos){};
 
-    iterator_internal & operator++() {
-      ++pos;
-      return *this;
-    };
-    iterator_internal operator++(int) {
-      iterator tmp(*this);
-      operator++();
-      return tmp;
-    };
+  //   iterator_internal & operator++() {
+  //     ++pos;
+  //     return *this;
+  //   };
+  //   iterator_internal operator++(int) {
+  //     iterator tmp(*this);
+  //     operator++();
+  //     return tmp;
+  //   };
 
-    iterator_internal & operator--() {
-      --pos;
-      return *this;
-    };
-    iterator_internal operator--(int) {
-      iterator_internal tmp(*this);
-      operator--();
-      return tmp;
-    };
+  //   iterator_internal & operator--() {
+  //     --pos;
+  //     return *this;
+  //   };
+  //   iterator_internal operator--(int) {
+  //     iterator_internal tmp(*this);
+  //     operator--();
+  //     return tmp;
+  //   };
 
-    bool operator==(const iterator_internal & rhs) { return pos == rhs.pos; };
-    bool operator!=(const iterator_internal & rhs) { return pos != rhs.pos; };
-    reference operator*() { return *pos; };
-    pointer operator->() const { return pos; };
+  //   bool operator==(const iterator_internal & rhs) { return pos == rhs.pos;
+  //   }; bool operator!=(const iterator_internal & rhs) { return pos !=
+  //   rhs.pos; }; reference operator*() { return *pos; }; pointer operator->()
+  //   const { return pos; };
 
-  private:
-    pointer pos;
-  };
+  // private:
+  //   array_iterator pos;
+  // };
+
+  using iterator = typename Array<T>::scalar_iterator;
+  using const_iterator = typename Array<T>::const_scalar_iterator;
 
 #ifndef SWIG
-  template <typename R> class CSRRow {
+  template <typename iterator_internal> class CSRRow {
   public:
-    CSRRow(R * begin, R * end) : begin_(begin), end_(end) {}
+    CSRRow(iterator_internal begin, iterator_internal end)
+        : begin_(std::move(begin)), end_(std::move(end)) {}
 
     inline auto begin() const { return begin_; }
     inline auto end() const { return end_; }
 
   private:
-    iterator_internal<R> begin_, end_;
+    iterator_internal begin_, end_;
   };
 #endif
 
-  using iterator = iterator_internal<T>;
-  using const_iterator = iterator_internal<const T>;
-
-  inline iterator begin(UInt row) {
-    return iterator(rows.storage() + rows_offsets(row));
-  };
+  inline iterator begin(UInt row) { return rows.begin() + rows_offsets(row); };
   inline iterator end(UInt row) {
-    return iterator(rows.storage() + rows_offsets(row + 1));
+    return rows.begin() + rows_offsets(row + 1);
   };
 
   inline const_iterator begin(UInt row) const {
-    return const_iterator(rows.storage() + rows_offsets(row));
+    return rows.begin() + rows_offsets(row);
   };
   inline const_iterator end(UInt row) const {
-    return const_iterator(rows.storage() + rows_offsets(row + 1));
+    return rows.begin() + rows_offsets(row + 1);
   };
 
 #ifndef SWIG
 private:
-  template <typename R> decltype(auto) make_row(R * begin, R * end) {
-    return CSRRow<R>(begin, end);
+  template <typename iterator_internal>
+  decltype(auto) make_row(iterator_internal begin, iterator_internal end) {
+    return CSRRow<iterator_internal>(std::move(begin), std::move(end));
   }
 
 public:
-  inline decltype(auto) getRow(UInt row) {
-    return make_row(rows.storage() + rows_offsets(row),
-                    rows.storage() + rows_offsets(row + 1));
-  }
-
+  inline decltype(auto) getRow(UInt row) { return make_row(begin(row), end(row)); }
   inline decltype(auto) getRow(UInt row) const {
-    return make_row(rows.storage() + rows_offsets(row),
-                    rows.storage() + rows_offsets(row + 1));
+    return make_row(begin(row), end(row));
   }
 #endif
 
   inline iterator rbegin(UInt row) {
-    return iterator(rows.storage() + rows_offsets(row + 1) - 1);
+    return rows.begin() + rows_offsets(row + 1) - 1;
   };
   inline iterator rend(UInt row) {
-    return iterator(rows.storage() + rows_offsets(row) - 1);
+    return rows.begin() + rows_offsets(row) - 1;
   };
 
   inline const Array<UInt> & getRowsOffset() const { return rows_offsets; };
@@ -284,6 +280,6 @@ private:
 //   return stream;
 // }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_CSR_HH__ */

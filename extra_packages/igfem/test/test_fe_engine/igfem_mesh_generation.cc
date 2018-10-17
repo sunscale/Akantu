@@ -36,7 +36,7 @@ void generateIGFEMMesh(const ElementType type, Mesh & mesh,
   std::ifstream infile;
   infile.open(filename.c_str());
   if (!infile.good()) {
-    AKANTU_DEBUG_ERROR("Cannot open file " << filename);
+    AKANTU_ERROR("Cannot open file " << filename);
   }
   UInt current_line = 0;
   std::string line;
