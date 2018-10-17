@@ -62,11 +62,9 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   void updateTotalResidual() {
-    SubBoundarySet::iterator it = this->subboundaries.begin();
-    SubBoundarySet::iterator end = this->subboundaries.end();
     this->total_residual = 0.;
-    for (; it != end; ++it) {
-      this->total_residual += integrateResidual(*it, this->model, this->axis);
+    for (auto && subboundary : this->subboundaries) {
+      this->total_residual += integrateResidual(subboundary, this->model, this->axis);
     }
   }
 
@@ -91,10 +89,8 @@ public:
     AKANTU_DEBUG_IN();
     Real reaction = this->update();
 
-    SubBoundarySet::iterator it = this->subboundaries.begin();
-    SubBoundarySet::iterator end = this->subboundaries.end();
-    for (; it != end; ++it) {
-      this->model.applyBC(*this, *it);
+    for (auto && subboundary : this->subboundaries) {
+      this->model.applyBC(*this, subboundary);
     }
 
     AKANTU_DEBUG_OUT();

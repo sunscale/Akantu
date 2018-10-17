@@ -364,6 +364,28 @@ const Parameter & ParameterRegistry::get(const std::string & name) const {
 }
 
 /* -------------------------------------------------------------------------- */
+Parameter & ParameterRegistry::get(const std::string & name) {
+  auto it = params.find(name);
+  if (it == params.end()) {
+    if (consisder_sub) {
+      for (auto it = sub_registries.begin(); it != sub_registries.end(); ++it) {
+        try {
+          return it->second->get(name);
+        } catch (...) {
+        }
+      }
+    }
+
+    // nothing was found not even in sub registries
+    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
+  }
+
+  Parameter & param = *(it->second);
+  return param;
+}
+
+
+/* -------------------------------------------------------------------------- */
 namespace {
   namespace details {
     template <class T, class R, class Enable = void> struct CastHelper {

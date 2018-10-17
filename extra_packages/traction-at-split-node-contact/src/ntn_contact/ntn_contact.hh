@@ -45,7 +45,7 @@ class NTNContact : public NTNBaseContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+  NTNContact(SolidMechanicsModel & model, const ID & id = "contact",
              const MemoryID & memory_id = 0);
   virtual ~NTNContact(){};
 
@@ -54,7 +54,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// add surface pair and pair nodes according to the surface normal
-  void addSurfacePair(const Surface & slave, const Surface & master,
+  void addSurfacePair(const ID & slave, const ID & master,
                       UInt surface_normal_dir);
 
   /// fills the pairs vector with interface node pairs (*,0)=slaves,

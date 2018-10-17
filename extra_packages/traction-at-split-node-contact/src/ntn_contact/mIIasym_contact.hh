@@ -45,9 +45,9 @@ class MIIASYMContact : public NTRFContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MIIASYMContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+  MIIASYMContact(SolidMechanicsModel & model, const ID & id = "contact",
                  const MemoryID & memory_id = 0);
-  virtual ~MIIASYMContact(){};
+  virtual ~MIIASYMContact() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

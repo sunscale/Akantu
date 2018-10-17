@@ -45,8 +45,8 @@ class NTNFricLawLinearCohesive : public Regularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFricLawLinearCohesive(NTNBaseContact * contact,
-                           const FrictionID & id = "linear_cohesive",
+  NTNFricLawLinearCohesive(NTNBaseContact & contact,
+                           const ID & id = "linear_cohesive",
                            const MemoryID & memory_id = 0);
   virtual ~NTNFricLawLinearCohesive(){};
 

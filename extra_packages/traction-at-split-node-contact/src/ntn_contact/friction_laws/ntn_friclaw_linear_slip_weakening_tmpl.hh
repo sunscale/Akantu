@@ -36,7 +36,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawLinearSlipWeakening<Regularisation>::NTNFricLawLinearSlipWeakening(
-    NTNBaseContact * contact, const FrictionID & id, const MemoryID & memory_id)
+    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
     : NTNFricLawCoulomb<Regularisation>(contact, id, memory_id),
       mu_s(0, 1, 0., id + ":mu_s", 0., "mu_s"),
       mu_k(0, 1, 0., id + ":mu_k", 0., "mu_k"),
@@ -53,7 +53,7 @@ NTNFricLawLinearSlipWeakening<Regularisation>::NTNFricLawLinearSlipWeakening(
                       "kinetic friction coefficient");
   this->registerParam("d_c", this->d_c, _pat_parsmod, "slip weakening length");
 
-  this->setParamAccessType("mu", _pat_readable);
+  this->setParameterAccessType("mu", _pat_readable);
 
   AKANTU_DEBUG_OUT();
 }
@@ -80,7 +80,7 @@ void NTNFricLawLinearSlipWeakening<
   const SynchronizedArray<bool> & stick = this->internalGetIsSticking();
   const SynchronizedArray<Real> & slip = this->internalGetSlip();
 
-  UInt nb_contact_nodes = this->contact->getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     if (stick(n)) {
       this->mu(n) = this->mu_s(n);
@@ -164,7 +164,7 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(
 
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter =
-  //  &(this->contact->getSlaves());
+  //  &(this->contact.getSlaves());
 
   if (field_id == "mu_s") {
     this->internalAddDumpFieldToDumper(

@@ -42,18 +42,20 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
+
+/* -------------------------------------------------------------------------- */
 template <>
-inline void ParsableParamTyped<akantu::SynchronizedArray<Real>>::parseParam(
-    const ParserParameter & in_param) {
-  ParsableParam::parseParam(in_param);
-  Real tmp = in_param;
-  param.setAndChangeDefault(tmp);
+inline void
+ParameterTyped<akantu::SynchronizedArray<Real>>::setAuto(const ParserParameter & in_param) {
+  Parameter::setAuto(in_param);
+  Real r = in_param;
+  param.setAndChangeDefault(r);
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
 template <>
-inline void ParsableParamTyped<akantu::SynchronizedArray<Real>>::setTyped<Real>(
+inline void ParameterTyped<akantu::SynchronizedArray<Real>>::setTyped<Real>(
     const Real & value) {
   param.setAndChangeDefault(value);
 }
@@ -64,9 +66,9 @@ class NTNBaseFriction : protected Memory, public Parsable, public Dumpable {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNBaseFriction(NTNBaseContact * contact, const FrictionID & id = "friction",
+  NTNBaseFriction(NTNBaseContact & contact, const ID & id = "friction",
                   const MemoryID & memory_id = 0);
-  virtual ~NTNBaseFriction(){};
+  virtual ~NTNBaseFriction() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -118,7 +120,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(Contact, contact, const NTNBaseContact *)
+  AKANTU_GET_MACRO(Contact, contact, const NTNBaseContact &)
 
   AKANTU_GET_MACRO(IsSticking, is_sticking, const SynchronizedArray<bool> &)
   AKANTU_GET_MACRO(FrictionalStrength, frictional_strength,
@@ -144,7 +146,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  NTNBaseContact * contact;
+  NTNBaseContact & contact;
 
   // if node is sticking
   SynchronizedArray<bool> is_sticking;

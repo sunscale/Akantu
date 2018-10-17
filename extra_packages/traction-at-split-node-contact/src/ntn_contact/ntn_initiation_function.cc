@@ -44,211 +44,22 @@
 #include "ntn_friclaw_linear_slip_weakening.hh"
 #include "ntn_friclaw_linear_slip_weakening_no_healing.hh"
 
+#include "aka_factory.hh"
+
 namespace akantu {
 
-NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
-                                        ParameterReader & data) {
-  AKANTU_DEBUG_IN();
-
-  const std::string & friction_law = data.get<std::string>("friction_law");
-  const std::string & friction_reg =
-      data.get<std::string>("friction_regularisation");
-
-  NTNBaseFriction * friction;
-
-  bool is_ntn_contact = true;
-  if (dynamic_cast<NTRFContact *>(contact) != NULL ||
-      dynamic_cast<MIIASYMContact *>(contact) != NULL) {
-    is_ntn_contact = false;
-  }
-
-  if (friction_law == "coulomb") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction =
-            new NTNFriction<NTNFricLawCoulomb, NTNFricRegNoRegularisation>(
-                contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawCoulomb, NTNFricRegNoRegularisation>(
-                contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction =
-            new NTNFriction<NTNFricLawCoulomb, NTNFricRegRubinAmpuero>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawCoulomb, NTNFricRegRubinAmpuero>(
-            contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawCoulomb,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawCoulomb,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-
-    friction->setMixed<SynchronizedArray<Real>>("mu_s", data.get<Real>("mu_s"));
-  }
-
-  // Friction Law: Linear Slip Weakening
-  else if (friction_law == "linear_slip_weakening") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakening,
-                                   NTNFricRegNoRegularisation>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakening,
-                                    NTNFricRegNoRegularisation>(contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakening,
-                                   NTNFricRegRubinAmpuero>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakening,
-                                    NTNFricRegRubinAmpuero>(contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakening,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearSlipWeakening,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-
-    friction->setMixed<SynchronizedArray<Real>>("mu_s", data.get<Real>("mu_s"));
-    friction->setMixed<SynchronizedArray<Real>>("mu_k", data.get<Real>("mu_k"));
-    friction->setMixed<SynchronizedArray<Real>>("d_c", data.get<Real>("d_c"));
-  }
-
-  // Friction Law: Linear Slip Weakening No Healing
-  else if (friction_law == "linear_slip_weakening_no_healing") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                   NTNFricRegNoRegularisation>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                    NTNFricRegNoRegularisation>(contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                   NTNFricRegRubinAmpuero>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                    NTNFricRegRubinAmpuero>(contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-
-    friction->setMixed<SynchronizedArray<Real>>("mu_s", data.get<Real>("mu_s"));
-    friction->setMixed<SynchronizedArray<Real>>("mu_k", data.get<Real>("mu_k"));
-    friction->setMixed<SynchronizedArray<Real>>("d_c", data.get<Real>("d_c"));
-  }
-
-  // Friction Law: Linear Cohesive
-  else if (friction_law == "linear_cohesive") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearCohesive,
-                                   NTNFricRegNoRegularisation>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearCohesive,
-                                    NTNFricRegNoRegularisation>(contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction =
-            new NTNFriction<NTNFricLawLinearCohesive, NTNFricRegRubinAmpuero>(
-                contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearCohesive, NTNFricRegRubinAmpuero>(
-                contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearCohesive,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearCohesive,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-
-      friction->setMixed<SynchronizedArray<Real>>("t_star",
-                                                  data.get<Real>("t_star"));
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-
-    friction->setMixed<SynchronizedArray<Real>>("G_c", data.get<Real>("G_c"));
-    friction->setMixed<SynchronizedArray<Real>>("tau_c",
-                                                data.get<Real>("tau_c"));
-    friction->setMixed<SynchronizedArray<Real>>("tau_r",
-                                                data.get<Real>("tau_r"));
-  }
-
-  else {
-    AKANTU_ERROR("Do not know the following friction law: " << friction_law);
-  }
-
-  AKANTU_DEBUG_OUT();
-  return friction;
-}
-
 /* -------------------------------------------------------------------------- */
-NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact) {
+std::unique_ptr<NTNBaseFriction>
+initializeNTNFriction(NTNBaseContact & contact) {
   AKANTU_DEBUG_IN();
-  std::pair<Parser::const_section_iterator, Parser::const_section_iterator>
-      sub_sect = getStaticParser().getSubSections(_st_friction);
-
-  Parser::const_section_iterator it = sub_sect.first;
+  auto sub_sect = getStaticParser().getSubSections(ParserType::_friction);
+  auto it = sub_sect.first;
   const ParserSection & section = *it;
 
   std::string friction_law = section.getName();
-  std::string friction_reg = section.getOption();
-  if (friction_reg == "") {
-    std::string friction_reg = "no_regularisation";
-  }
+  std::string friction_reg = section.getOption("no_regularisation");
 
-  NTNBaseFriction * friction =
+  std::unique_ptr<NTNBaseFriction> friction =
       initializeNTNFriction(contact, friction_law, friction_reg);
 
   friction->parseSection(section);
@@ -262,149 +73,73 @@ NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact) {
   return friction;
 }
 
+namespace {
+  using NTNFactory =
+      Factory<NTNBaseFriction, std::tuple<bool, ID, ID>, NTNBaseContact &>;
+
+  std::ostream & operator<<(std::ostream & stream,
+                            const std::tuple<bool, ID, ID> & tuple) {
+    stream << "[" << std::get<0>(tuple) << ", " << std::get<1>(tuple) << ", "
+           << std::get<2>(tuple) << ", "
+           << "]" << std::endl;
+    return stream;
+  }
+
+  template <bool is_ntn, template <class> class FrictionLaw, class FrictionReg>
+  bool registerFriction(const ID & friction_law, const ID & friction_reg) {
+    NTNFactory::getInstance().registerAllocator(
+        std::make_tuple(is_ntn, friction_law, friction_reg),
+        [](NTNBaseContact & contact) -> std::unique_ptr<NTNBaseFriction> {
+          return std::make_unique<
+              std::conditional_t<is_ntn, NTNFriction<FrictionLaw, FrictionReg>,
+                                 NTRFFriction<FrictionLaw, FrictionReg>>>(
+              contact);
+        });
+    return true;
+  }
+
+  template <template <class> class FrictionLaw, class FrictionReg>
+  bool registerFrictionNTNandNTRF(const ID & friction_law,
+                                  const ID & friction_reg) {
+    registerFriction<true, FrictionLaw, FrictionReg>(friction_law,
+                                                     friction_reg);
+    registerFriction<false, FrictionLaw, FrictionReg>(friction_law,
+                                                      friction_reg);
+    return true;
+  }
+
+  template <template <class> class FrictionLaw>
+  bool registerFrictionRegs(const ID & friction_law) {
+    registerFrictionNTNandNTRF<FrictionLaw, NTNFricRegRubinAmpuero>(
+        friction_law, "no_regularisation");
+    registerFrictionNTNandNTRF<FrictionLaw, NTNFricRegRubinAmpuero>(
+        friction_law, "rubin_ampuero");
+    registerFrictionNTNandNTRF<FrictionLaw, NTNFricRegSimplifiedPrakashClifton>(
+        friction_law, "simplified_prakash_clifton");
+    return true;
+  }
+
+  bool registerFrictionLaws() {
+    registerFrictionRegs<NTNFricLawCoulomb>("coulomb");
+    registerFrictionRegs<NTNFricLawLinearSlipWeakening>(
+        "linear_slip_weakening");
+    registerFrictionRegs<NTNFricLawLinearSlipWeakeningNoHealing>(
+        "linear_slip_weakening_no_healing");
+    registerFrictionRegs<NTNFricLawLinearCohesive>("linear_cohesive");
+    return true;
+  }
+
+  static bool _ = registerFrictionLaws();
+} // namespace
+
 /* -------------------------------------------------------------------------- */
-NTNBaseFriction * initializeNTNFriction(NTNBaseContact * contact,
-                                        const std::string & friction_law,
-                                        const std::string & friction_reg) {
-  AKANTU_DEBUG_IN();
-
-  NTNBaseFriction * friction;
-
-  // check whether is is node-to-rigid-flat contact or mIIasym (which is also
-  // ntrf)
-  bool is_ntn_contact = true;
-  if (dynamic_cast<NTRFContact *>(contact) != NULL ||
-      dynamic_cast<MIIASYMContact *>(contact) != NULL) {
-    is_ntn_contact = false;
-  }
-
-  if (friction_law == "coulomb") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction =
-            new NTNFriction<NTNFricLawCoulomb, NTNFricRegNoRegularisation>(
-                contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawCoulomb, NTNFricRegNoRegularisation>(
-                contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction =
-            new NTNFriction<NTNFricLawCoulomb, NTNFricRegRubinAmpuero>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawCoulomb, NTNFricRegRubinAmpuero>(
-            contact);
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawCoulomb,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawCoulomb,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-  }
-
-  // Friction Law: Linear Slip Weakening
-  else if (friction_law == "linear_slip_weakening") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakening,
-                                   NTNFricRegNoRegularisation>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakening,
-                                    NTNFricRegNoRegularisation>(contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakening,
-                                   NTNFricRegRubinAmpuero>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakening,
-                                    NTNFricRegRubinAmpuero>(contact);
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakening,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearSlipWeakening,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-  }
-
-  // Friction Law: Linear Slip Weakening No Healing
-  else if (friction_law == "linear_slip_weakening_no_healing") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                   NTNFricRegNoRegularisation>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                    NTNFricRegNoRegularisation>(contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                   NTNFricRegRubinAmpuero>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                    NTNFricRegRubinAmpuero>(contact);
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearSlipWeakeningNoHealing,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-  }
-
-  // Friction Law: Linear Cohesive
-  else if (friction_law == "linear_cohesive") {
-    if (friction_reg == "no_regularisation") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearCohesive,
-                                   NTNFricRegNoRegularisation>(contact);
-      else
-        friction = new NTRFFriction<NTNFricLawLinearCohesive,
-                                    NTNFricRegNoRegularisation>(contact);
-    } else if (friction_reg == "rubin_ampuero") {
-      if (is_ntn_contact)
-        friction =
-            new NTNFriction<NTNFricLawLinearCohesive, NTNFricRegRubinAmpuero>(
-                contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearCohesive, NTNFricRegRubinAmpuero>(
-                contact);
-    } else if (friction_reg == "simplified_prakash_clifton") {
-      if (is_ntn_contact)
-        friction = new NTNFriction<NTNFricLawLinearCohesive,
-                                   NTNFricRegSimplifiedPrakashClifton>(contact);
-      else
-        friction =
-            new NTRFFriction<NTNFricLawLinearCohesive,
-                             NTNFricRegSimplifiedPrakashClifton>(contact);
-    } else {
-      AKANTU_ERROR("Do not know the following friction regularisation: "
-                   << friction_reg);
-    }
-  } else {
-    AKANTU_ERROR("Do not know the following friction law: " << friction_law);
-  }
-
-  AKANTU_DEBUG_OUT();
-  return friction;
+std::unique_ptr<NTNBaseFriction>
+initializeNTNFriction(NTNBaseContact & contact,
+                      const std::string & friction_law,
+                      const std::string & friction_reg) {
+  bool is_ntn_contact = contact.isNTNContact();
+  return NTNFactory::getInstance().allocate(
+      std::make_tuple(is_ntn_contact, friction_law, friction_reg), contact);
 }
 
 } // namespace akantu
