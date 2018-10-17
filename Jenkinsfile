@@ -2,6 +2,7 @@ pipeline {
   parameters {string(defaultValue: '', description: 'api-token', name: 'API_TOKEN')
               string(defaultValue: '', description: 'buildable phid', name: 'TARGET_PHID')
               string(defaultValue: '', description: 'Commit id', name: 'COMMIT_ID')
+              string(defaultValue: '', description: 'Diff id', name: 'DIFF_ID')
     }
 
   options {
