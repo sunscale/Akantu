@@ -63,7 +63,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// set range limitation for intrinsic cohesive element insertion
-  void setLimit(SpacialDirection axis, Real first_limit, Real second_limit);
+  void setLimit(SpatialDirection axis, Real first_limit, Real second_limit);
 
   /// insert intrinsic cohesive elements in a predefined range
   UInt insertIntrinsicElements();
