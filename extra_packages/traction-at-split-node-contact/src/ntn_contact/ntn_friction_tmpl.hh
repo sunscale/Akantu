@@ -37,7 +37,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <template <class> class FrictionLaw, class Regularisation>
 NTNFriction<FrictionLaw, Regularisation>::NTNFriction(
-    NTNBaseContact * contact, const FrictionID & id, const MemoryID & memory_id)
+    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
     : FrictionLaw<Regularisation>(contact, id, memory_id) {
   AKANTU_DEBUG_IN();
 
@@ -49,19 +49,19 @@ template <template <class> class FrictionLaw, class Regularisation>
 void NTNFriction<FrictionLaw, Regularisation>::applyFrictionTraction() {
   AKANTU_DEBUG_IN();
 
-  NTNContact * ntn_contact = dynamic_cast<NTNContact *>(this->contact);
-  SolidMechanicsModel & model = ntn_contact->getModel();
-  Array<Real> & residual = model.getResidual();
+  NTNContact & ntn_contact = dynamic_cast<NTNContact &>(this->contact);
+  SolidMechanicsModel & model = ntn_contact.getModel();
+  Array<Real> & residual = model.getInternalForce();
   UInt dim = model.getSpatialDimension();
 
-  const SynchronizedArray<UInt> & masters = ntn_contact->getMasters();
-  const SynchronizedArray<UInt> & slaves = ntn_contact->getSlaves();
+  const SynchronizedArray<UInt> & masters = ntn_contact.getMasters();
+  const SynchronizedArray<UInt> & slaves = ntn_contact.getSlaves();
   const SynchronizedArray<Real> & l_boundary_slaves =
-      ntn_contact->getLumpedBoundarySlaves();
+      ntn_contact.getLumpedBoundarySlaves();
   const SynchronizedArray<Real> & l_boundary_masters =
-      ntn_contact->getLumpedBoundaryMasters();
+      ntn_contact.getLumpedBoundaryMasters();
 
-  UInt nb_contact_nodes = ntn_contact->getNbContactNodes();
+  UInt nb_contact_nodes = ntn_contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     UInt master = masters(n);
     UInt slave = slaves(n);

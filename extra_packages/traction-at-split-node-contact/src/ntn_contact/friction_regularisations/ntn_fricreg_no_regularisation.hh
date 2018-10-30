@@ -45,8 +45,8 @@ class NTNFricRegNoRegularisation : public NTNBaseFriction {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFricRegNoRegularisation(NTNBaseContact * contact,
-                             const FrictionID & id = "no_regularisation",
+  NTNFricRegNoRegularisation(NTNBaseContact & contact,
+                             const ID & id = "no_regularisation",
                              const MemoryID & memory_id = 0);
   virtual ~NTNFricRegNoRegularisation(){};
 
@@ -84,7 +84,7 @@ public:
 protected:
   /// get the is_in_contact array
   virtual const SynchronizedArray<bool> & internalGetIsInContact() {
-    return this->contact->getIsInContact();
+    return this->contact.getIsInContact();
   };
 
   /// get the contact pressure (the norm: scalar value)

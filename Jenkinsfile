@@ -2,6 +2,7 @@ pipeline {
   parameters {string(defaultValue: '', description: 'api-token', name: 'API_TOKEN')
               string(defaultValue: '', description: 'buildable phid', name: 'TARGET_PHID')
               string(defaultValue: '', description: 'Commit id', name: 'COMMIT_ID')
+              string(defaultValue: '', description: 'Diff id', name: 'DIFF_ID')
     }
 
   options {
@@ -53,7 +54,7 @@ pipeline {
         sh """
         rm -rf build/gtest_reports
         cd build/
-        source ./akantu_environement.sh
+        #source ./akantu_environement.sh
         ctest -T test --no-compress-output || true
 	cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml
         """

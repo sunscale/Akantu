@@ -191,7 +191,7 @@ public:
   }
 
   void testModeI() {
-    EXPECT_NO_THROW(this->createModel());
+    this->createModel();
 
     auto & mat_el = this->model->getMaterial("body");
 
@@ -227,7 +227,7 @@ public:
   }
 
   void testModeII() {
-    EXPECT_NO_THROW(this->createModel());
+    ASSERT_NO_THROW(this->createModel());
     auto & mat_el = this->model->getMaterial("body");
     Real speed;
     try {

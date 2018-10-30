@@ -45,7 +45,7 @@ class NTNFricLawCoulomb : public Regularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFricLawCoulomb(NTNBaseContact * contact, const FrictionID & id = "coulomb",
+  NTNFricLawCoulomb(NTNBaseContact & contact, const ID & id = "coulomb",
                     const MemoryID & memory_id = 0);
   virtual ~NTNFricLawCoulomb(){};
 

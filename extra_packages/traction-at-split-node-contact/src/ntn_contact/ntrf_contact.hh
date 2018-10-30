@@ -45,7 +45,7 @@ class NTRFContact : public NTNBaseContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTRFContact(SolidMechanicsModel & model, const ContactID & id = "contact",
+  NTRFContact(SolidMechanicsModel & model, const ID & id = "contact",
               const MemoryID & memory_id = 0);
   virtual ~NTRFContact(){};
 
@@ -57,7 +57,7 @@ public:
   void setNormal(Real x = 1., Real y = 0., Real z = 0.);
 
   /// add surface and nodes according to the surface normal
-  void addSurface(const Surface & surf);
+  void addSurface(const ID & surf);
 
   // add nodes from a list
   void addNodes(Array<UInt> & nodes);

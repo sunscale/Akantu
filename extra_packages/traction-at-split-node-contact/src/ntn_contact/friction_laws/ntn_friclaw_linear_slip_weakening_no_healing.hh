@@ -46,8 +46,8 @@ class NTNFricLawLinearSlipWeakeningNoHealing
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricLawLinearSlipWeakeningNoHealing(
-      NTNBaseContact * contact,
-      const FrictionID & id = "linear_slip_weakening_no_healing",
+      NTNBaseContact & contact,
+      const ID & id = "linear_slip_weakening_no_healing",
       const MemoryID & memory_id = 0);
   virtual ~NTNFricLawLinearSlipWeakeningNoHealing(){};
 

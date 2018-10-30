@@ -87,7 +87,7 @@ void CohesiveElementInserter::limitCheckFacets() {
 }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::setLimit(SpacialDirection axis, Real first_limit,
+void CohesiveElementInserter::setLimit(SpatialDirection axis, Real first_limit,
                                        Real second_limit) {
   AKANTU_DEBUG_ASSERT(
       axis < mesh.getSpatialDimension(),
