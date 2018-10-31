@@ -1,2 +1,19 @@
+<<<<<<< Updated upstream
 export PYTHONPATH=$PYTHONPATH:"@PROJECT_BINARY_DIR@/python":"@PROJECT_SOURCE_DIR@/test":"@PROJECT_SOURCE_DIR@/test/test_fe_engine"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:"@PROJECT_BINARY_DIR@/src"
+=======
+AKANTU_HAS_PYBIND11=@_is_pybind11_activated@
+AKANTU_HAS_SWIG=@_is_swig_activated@
+
+if [ "${AKANTU_HAS_PYBIND11}" = "TRUE"  ]; then
+  PYTHONPATH=$PYTHONPATH:@PROJECT_BINARY_DIR@/python/pybind11:@PROJECT_SOURCE_DIR@/python/pybind11
+fi
+
+if [ "${AKANTU_HAS_SWIG}" = "TRUE"  ]; then
+  PYTHONPATH=$PYTHONPATH:@PROJECT_BINARY_DIR@/python/swig
+fi
+
+export PYTHONPATH=$PYTHONPATH:@PROJECT_SOURCE_DIR@/test:@PROJECT_SOURCE_DIR@/test/test_fe_engine
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:@PROJECT_BINARY_DIR@/src
+>>>>>>> Stashed changes

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 __author__ = "Nicolas Richart"
 __copyright__ = "Copyright (C) 2016-2018, EPFL (Ecole Polytechnique Fédérale" \

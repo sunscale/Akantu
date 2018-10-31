@@ -21,6 +21,8 @@
 #
 #===============================================================================
 
+add_akantu_test(pybind11 "Test the pybind11 interface")
+
 add_mesh(mesh_python mesh_dcb_2d.geo ORDER 2 DIM 2)
 
 register_test(test_multiple_init

@@ -31,7 +31,7 @@
 #===============================================================================
 package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
   DEPENDS numpy
-  EXTRA_PACKAGE_OPTIONS PREFIX PYTHON FOUND PYTHONLIBS_FOUND
+  EXTRA_PACKAGE_OPTIONS ARGS ${AKANTU_PREFERRED_PYTHON_VERSION} PREFIX PYTHON FOUND PYTHONLIBS_FOUND
   )
 
 package_set_package_system_dependency(PythonLibs deb libpython3)
@@ -42,7 +42,7 @@ package_declare_documentation(PythonLibs
   ""
   "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
   "\\begin{command}"
-  "  > sudo apt-get install libpython2.7-dev"
+  "  > sudo apt-get install libpython3-dev"
   "\\end{command}"
   ""
 )
