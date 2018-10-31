@@ -313,11 +313,16 @@ public:
 
   /// change the size of the Array
   virtual void resize(UInt size) {
-    if (size == 0) {
+    if (size * this->nb_component == 0) {
       free(values);
       values = nullptr;
       this->allocated_size = 0;
     } else {
+      if (this->values == nullptr) {
+        this->allocate(size, this->nb_component);
+        return;
+      }
+
       Int diff = size - allocated_size;
       UInt size_to_allocate = (std::abs(diff) > AKANTU_MIN_ALLOCATION)
                                   ? size
