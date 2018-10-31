@@ -814,20 +814,14 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   // allocate the normal arrays
-  for (auto & type : mesh.elementTypes(element_dimension, ghost_type, kind)) {
-    UInt size = mesh.getNbElement(type, ghost_type);
-    if (normals_on_integration_points.exists(type, ghost_type)) {
-      normals_on_integration_points(type, ghost_type).resize(size);
-    } else {
-      normals_on_integration_points.alloc(size, spatial_dimension, type,
-                                          ghost_type);
-    }
-  }
+  normals_on_integration_points.initialize(
+      *this, _nb_component = spatial_dimension,
+      _spatial_dimension = element_dimension, _ghost_type = ghost_type,
+      _element_kind = kind);
 
   // loop over the type to build the normals
   for (auto & type : mesh.elementTypes(element_dimension, ghost_type, kind)) {
-    Array<Real> & normals_on_quad =
-        normals_on_integration_points(type, ghost_type);
+    auto & normals_on_quad = normals_on_integration_points(type, ghost_type);
     computeNormalsOnIntegrationPoints(field, normals_on_quad, type, ghost_type);
   }
 

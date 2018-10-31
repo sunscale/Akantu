@@ -192,12 +192,9 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
   auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end()) {
-    std::stringstream sstr;
-    sstr << this->id << ":" << type << ghost_id;
-    tmp = &(Memory::alloc<T>(sstr.str(), size, nb_component, default_value));
-    std::stringstream sstrg;
-    sstrg << ghost_type;
-    // tmp->setTag(sstrg.str());
+    auto id = this->id + ":" + std::to_string(type) + ghost_id;
+    tmp = &(Memory::alloc<T>(id, size, nb_component, default_value));
+
     this->getData(ghost_type)[type] = tmp;
   } else {
     AKANTU_DEBUG_INFO(
