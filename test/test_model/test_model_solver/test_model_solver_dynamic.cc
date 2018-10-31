@@ -77,7 +77,7 @@ int main(int argc, char * argv[]) {
 
   mesh.distribute();
 
-  mesh.makePeriodic(_x);
+  //mesh.makePeriodic(_x);
 
   MyModel model(F, mesh, _explicit);
 
