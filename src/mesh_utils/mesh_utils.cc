@@ -63,30 +63,32 @@ void MeshUtils::buildNode2Elements(const Mesh & mesh,
   node_to_elem.resizeRows(nb_nodes);
   node_to_elem.clearRows();
 
-  for_each_element(mesh, [&](auto && element) {
-      Vector<UInt> conn = mesh.getConnectivity(element);
-      for(auto && node : conn) {
-        ++node_to_elem.rowOffset(node);
-      }
-    },
-    _spatial_dimension = spatial_dimension,
-    _element_kind = _ek_not_defined);
+  for_each_element(mesh,
+                   [&](auto && element) {
+                     Vector<UInt> conn = mesh.getConnectivity(element);
+                     for (auto && node : conn) {
+                       ++node_to_elem.rowOffset(node);
+                     }
+                   },
+                   _spatial_dimension = spatial_dimension,
+                   _element_kind = _ek_not_defined);
 
   node_to_elem.countToCSR();
   node_to_elem.resizeCols();
 
   /// rearrange element to get the node-element list
-  //Element e;
+  // Element e;
   node_to_elem.beginInsertions();
 
-  for_each_element(mesh, [&](auto && element) {
-      Vector<UInt> conn = mesh.getConnectivity(element);
-      for(auto && node : conn) {
-        node_to_elem.insertInRow(node, element);
-      }
-    },
-    _spatial_dimension = spatial_dimension,
-    _element_kind = _ek_not_defined);
+  for_each_element(mesh,
+                   [&](auto && element) {
+                     Vector<UInt> conn = mesh.getConnectivity(element);
+                     for (auto && node : conn) {
+                       node_to_elem.insertInRow(node, element);
+                     }
+                   },
+                   _spatial_dimension = spatial_dimension,
+                   _element_kind = _ek_not_defined);
 
   node_to_elem.endInsertions();
 
@@ -508,16 +510,9 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
   RemovedNodesEvent remove_nodes(mesh);
   Array<UInt> & nodes_removed = remove_nodes.getList();
 
-  for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
-    auto ghost_type = (GhostType)gt;
-
-    Mesh::type_iterator it =
-        mesh.firstType(_all_dimensions, ghost_type, _ek_not_defined);
-    Mesh::type_iterator end =
-        mesh.lastType(_all_dimensions, ghost_type, _ek_not_defined);
-    for (; it != end; ++it) {
-
-      ElementType type(*it);
+  for (auto ghost_type : ghost_types) {
+    for (auto type :
+         mesh.elementTypes(_all_dimensions, ghost_type, _ek_not_defined)) {
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
       Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
@@ -531,10 +526,8 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
   Array<UInt> & new_numbering = remove_nodes.getNewNumbering();
   std::fill(new_numbering.begin(), new_numbering.end(), UInt(-1));
 
-  auto it = renumbering_map.begin();
-  auto end = renumbering_map.end();
-  for (; it != end; ++it) {
-    new_numbering(it->first) = it->second;
+  for (auto && pair : renumbering_map) {
+    new_numbering(std::get<0>(pair)) = std::get<1>(pair);
   }
 
   for (UInt i = 0; i < new_numbering.size(); ++i) {
@@ -740,7 +733,7 @@ UInt MeshUtils::updateFacetToDouble(
 #if defined(AKANTU_COHESIVE_ELEMENT)
             || element_to_facet(f)[1].kind() == _ek_cohesive
 #endif
-            ) {
+        ) {
           AKANTU_DEBUG_WARNING("attempt to double a facet on the boundary");
           continue;
         }
@@ -1767,11 +1760,12 @@ bool MeshUtils::findElementsAroundSubfacet(
 /* -------------------------------------------------------------------------- */
 void MeshUtils::updateElementalConnectivity(
     Mesh & mesh, UInt old_node, UInt new_node,
-    const std::vector<Element> & element_list, const std::vector<Element> *
+    const std::vector<Element> & element_list,
+    const std::vector<Element> *
 #if defined(AKANTU_COHESIVE_ELEMENT)
-                                                   facet_list
+        facet_list
 #endif
-    ) {
+) {
   AKANTU_DEBUG_IN();
 
   for (auto & element : element_list) {

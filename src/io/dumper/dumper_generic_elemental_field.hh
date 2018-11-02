@@ -122,35 +122,30 @@ public:
   };
 
   virtual iterator begin() {
-    field_type_iterator tit;
-    field_type_iterator end;
-
     /// type iterators on the elemental field
-    tit = this->field.firstType(this->spatial_dimension, this->ghost_type,
-                                this->element_kind);
-    end = this->field.lastType(this->spatial_dimension, this->ghost_type,
-                               this->element_kind);
+    auto types = this->field.elementTypes(this->spatial_dimension, this->ghost_type,
+                                          this->element_kind);
+    auto tit = types.begin();
+    auto end = types.end();
 
     /// skip all types without data
-    ElementType type = *tit;
     for (; tit != end && this->field(*tit, this->ghost_type).size() == 0;
          ++tit) {
     }
 
-    type = *tit;
+    auto type = *tit;
 
     if (tit == end)
       return this->end();
 
     /// getting information for the field of the given type
-    const array_type & vect = this->field(type, this->ghost_type);
+    const auto & vect = this->field(type, this->ghost_type);
     UInt nb_data_per_elem = this->getNbDataPerElem(type);
-    UInt nb_component = vect.getNbComponent();
-    UInt size = (vect.size() * nb_component) / nb_data_per_elem;
 
     /// define element-wise iterator
-    array_iterator it = vect.begin_reinterpret(nb_data_per_elem, size);
-    array_iterator it_end = vect.end_reinterpret(nb_data_per_elem, size);
+    auto view = make_view(vect, nb_data_per_elem);
+    auto it = view.begin();
+    auto it_end = view.end();
     /// define data iterator
     iterator rit =
         iterator(this->field, tit, end, it, it_end, this->ghost_type);
@@ -159,33 +154,28 @@ public:
   }
 
   virtual iterator end() {
-    field_type_iterator tit;
-    field_type_iterator end;
+    auto types = this->field.elementTypes(this->spatial_dimension, this->ghost_type,
+                                          this->element_kind);
+    auto tit = types.begin();
+    auto end = types.end();
 
-    tit = this->field.firstType(this->spatial_dimension, this->ghost_type,
-                                this->element_kind);
-    end = this->field.lastType(this->spatial_dimension, this->ghost_type,
-                               this->element_kind);
-
-    ElementType type = *tit;
+    auto type = *tit;
     for (; tit != end; ++tit)
       type = *tit;
 
     const array_type & vect = this->field(type, this->ghost_type);
     UInt nb_data = this->getNbDataPerElem(type);
-    UInt nb_component = vect.getNbComponent();
-    UInt size = (vect.size() * nb_component) / nb_data;
-    array_iterator it = vect.end_reinterpret(nb_data, size);
-
-    iterator rit = iterator(this->field, end, end, it, it, this->ghost_type);
+    auto it = make_view(vect, nb_data).end();
+    auto rit = iterator(this->field, end, end, it, it, this->ghost_type);
     rit.setNbDataPerElem(this->nb_data_per_elem);
+
     return rit;
   }
 
   virtual UInt getDim() {
     if (this->homogeneous) {
-      field_type_iterator tit = this->field.firstType(
-          this->spatial_dimension, this->ghost_type, this->element_kind);
+      auto tit = this->field.elementTypes(
+          this->spatial_dimension, this->ghost_type, this->element_kind).begin();
       return this->getNbDataPerElem(*tit);
     }
 

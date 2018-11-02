@@ -37,78 +37,17 @@
 #ifndef __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_CC__
 #define __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_CC__
 
-AKANTU_ENUM_HASH(ElementType)
-
-#define AKANTU_PP_ELEMTYPE_TO_STR(s, data, elem)                               \
-  ({akantu::elem, BOOST_PP_STRINGIZE(elem)})
-
-#define AKANTU_PP_STR_TO_ELEMTYPE(s, data, elem)                               \
-  ({BOOST_PP_STRINGIZE(elem), akantu::elem})
-
-namespace aka {
-inline std::string to_string(const akantu::ElementType & type) {
-  static std::unordered_map<akantu::ElementType, std::string> convert{
-      BOOST_PP_SEQ_FOR_EACH_I(
-          AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(AKANTU_ALL_ELEMENT_TYPE),
-          BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_ELEMTYPE_TO_STR, _,
-                                 AKANTU_ALL_ELEMENT_TYPE)),
-      {akantu::_not_defined, "_not_defined"},
-      {akantu::_max_element_type, "_max_element_type"}};
-  return convert.at(type);
-}
-}
-
 namespace akantu {
 
-#define STRINGIFY(type) stream << BOOST_PP_STRINGIZE(type)
+AKANTU_ENUM_OUTPUT_STREAM(ElementType, AKANTU_ALL_ELEMENT_TYPE(_not_defined)(_max_element_type))
+AKANTU_ENUM_INPUT_STREAM(ElementType, AKANTU_ALL_ELEMENT_TYPE)
 
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator<<(std::ostream & stream,
-                                 const ElementType & type) {
-  stream << aka::to_string(type);
-  return stream;
-}
+AKANTU_ENUM_OUTPUT_STREAM(InterpolationType, AKANTU_INTERPOLATION_TYPES)
+AKANTU_ENUM_INPUT_STREAM(InterpolationType, AKANTU_INTERPOLATION_TYPES)
 
-/* -------------------------------------------------------------------------- */
+AKANTU_ENUM_OUTPUT_STREAM(ElementKind, AKANTU_ELEMENT_KIND)
+AKANTU_ENUM_INPUT_STREAM(ElementKind, AKANTU_ELEMENT_KIND)
 
-//! standard input stream operator for ElementType
-inline std::istream & operator>>(std::istream & stream, ElementType & type) {
-  std::string str;
-  stream >> str;
-  static std::unordered_map<std::string, ElementType> convert{
-      BOOST_PP_SEQ_FOR_EACH_I(
-          AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(AKANTU_ALL_ELEMENT_TYPE),
-          BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_ELEMTYPE, _,
-                                 AKANTU_ALL_ELEMENT_TYPE))};
-  type = convert.at(str);
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
-//! standard output stream operator for ElementType
-inline std::ostream & operator<<(std::ostream & stream, ElementKind kind) {
-  AKANTU_BOOST_ALL_KIND_SWITCH(STRINGIFY);
-
-  return stream;
-}
-
-/* -------------------------------------------------------------------------- */
-/// standard output stream operator for InterpolationType
-inline std::ostream & operator<<(std::ostream & stream,
-                                 InterpolationType type) {
-  switch (type) {
-    BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, STRINGIFY,
-                          AKANTU_INTERPOLATION_TYPES)
-  case _itp_not_defined:
-    stream << "_itp_not_defined";
-    break;
-  }
-  return stream;
-}
-
-#undef STRINGIFY
-
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_CC__ */

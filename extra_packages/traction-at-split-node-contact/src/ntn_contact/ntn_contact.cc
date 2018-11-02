@@ -262,34 +262,26 @@ void NTNContact::updateNormals() {
   FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   const Mesh & mesh = this->model.getMesh();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator it = mesh.firstType(dim - 1, *gt);
-    Mesh::type_iterator last = mesh.lastType(dim - 1, *gt);
-
-    for (; it != last; ++it) {
+  for (auto ghost_type: ghost_types) {
+    for (auto & type : mesh.elementTypes(dim - 1, ghost_type)) {
       // compute the normals
       Array<Real> quad_normals(0, dim);
-      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals, *it,
-                                                     *gt);
+      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals, type,
+                                                     ghost_type);
 
-      UInt nb_quad_points = boundary_fem.getNbIntegrationPoints(*it, *gt);
+      UInt nb_quad_points = boundary_fem.getNbIntegrationPoints(type, ghost_type);
 
       // new version: compute normals only based on master elements (and not all
       // boundary elements)
       // -------------------------------------------------------------------------------------
 
-      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
-      const Array<UInt> & connectivity = mesh.getConnectivity(*it, *gt);
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+      const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
 
-      Array<UInt>::const_iterator<UInt> elem_it =
-          (this->master_elements)(*it, *gt).begin();
-      Array<UInt>::const_iterator<UInt> elem_it_end =
-          (this->master_elements)(*it, *gt).end();
       // loop over contact nodes
-      for (; elem_it != elem_it_end; ++elem_it) {
+      for (auto & element : (this->master_elements)(type, ghost_type)) {
         for (UInt q = 0; q < nb_nodes_per_element; ++q) {
-          UInt node = connectivity(*elem_it, q);
+          UInt node = connectivity(element, q);
           UInt node_index = this->masters.find(node);
           AKANTU_DEBUG_ASSERT(node_index != UInt(-1), "Could not find node "
                                                           << node
@@ -299,36 +291,11 @@ void NTNContact::updateNormals() {
             // add quad normal to master normal
             for (UInt d = 0; d < dim; ++d) {
               this->normals(node_index, d) +=
-                  quad_normals((*elem_it) * nb_quad_points + q, d);
+                  quad_normals(element * nb_quad_points + q, d);
             }
           }
         }
       }
-      // -------------------------------------------------------------------------------------
-
-      /*
-      // get elements connected to each node
-      CSR<UInt> node_to_element;
-      MeshUtils::buildNode2ElementsElementTypeMap(mesh, node_to_element, *it,
-    *gt);
-
-      // add up normals to all master nodes
-      for (UInt n=0; n<nb_contact_nodes; ++n) {
-    UInt master = this->masters(n);
-    CSR<UInt>::iterator elem = node_to_element.begin(master);
-    // loop over all elements connected to this master node
-    for (; elem != node_to_element.end(master); ++elem) {
-      UInt e = *elem;
-      // loop over all quad points of this element
-      for (UInt q=0; q<nb_quad_points; ++q) {
-        // add quad normal to master normal
-        for (UInt d=0; d<dim; ++d) {
-          this->normals(n,d) += quad_normals(e*nb_quad_points + q, d);
-        }
-      }
-    }
-      }
-      */
     }
   }
 

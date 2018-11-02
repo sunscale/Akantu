@@ -64,8 +64,7 @@ public:
   InternalField(const ID & id, const InternalField<T> & other);
 
 private:
-  InternalField operator=(__attribute__((unused))
-                          const InternalField & other){};
+  InternalField operator=(const InternalField & ) = delete;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -125,35 +124,43 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  using type_iterator = typename ElementTypeMapArray<T>::type_iterator;
-  using filter_type_iterator =
-      typename ElementTypeMapArray<UInt>::type_iterator;
+  // using type_iterator = typename ElementTypeMapArray<T>::type_iterator;
+  // using filter_type_iterator =
+  //     typename ElementTypeMapArray<UInt>::type_iterator;
 
-  /// get the type iterator on all types contained in the internal field
-  type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
-    return ElementTypeMapArray<T>::firstType(this->spatial_dimension,
-                                             ghost_type, this->element_kind);
+  // /// get the type iterator on all types contained in the internal field
+  // type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
+  //   return ElementTypeMapArray<T>::firstType(this->spatial_dimension,
+  //                                            ghost_type, this->element_kind);
+  // }
+
+  // /// get the type iterator on the last type contained in the internal field
+  // type_iterator lastType(const GhostType & ghost_type = _not_ghost) const {
+  //   return ElementTypeMapArray<T>::lastType(this->spatial_dimension, ghost_type,
+  //                                           this->element_kind);
+  // }
+
+  // /// get the type iterator on all types contained in the internal field
+  // filter_type_iterator
+  // filterFirstType(const GhostType & ghost_type = _not_ghost) const {
+  //   return this->element_filter.firstType(this->spatial_dimension, ghost_type,
+  //                                         this->element_kind);
+  // }
+
+  // /// get the type iterator on the last type contained in the internal field
+  // filter_type_iterator
+  // filterLastType(const GhostType & ghost_type = _not_ghost) const {
+  //   return this->element_filter.lastType(this->spatial_dimension, ghost_type,
+  //                                        this->element_kind);
+  // }
+
+  /// get filter types for range loop
+  decltype(auto) elementTypes(const GhostType & ghost_type) const {
+    return ElementTypeMapArray<T>::elementTypes(
+        _spatial_dimension = this->spatial_dimension,
+        _element_kind = this->element_kind, _ghost_type = ghost_type);
   }
 
-  /// get the type iterator on the last type contained in the internal field
-  type_iterator lastType(const GhostType & ghost_type = _not_ghost) const {
-    return ElementTypeMapArray<T>::lastType(this->spatial_dimension, ghost_type,
-                                            this->element_kind);
-  }
-
-  /// get the type iterator on all types contained in the internal field
-  filter_type_iterator
-  filterFirstType(const GhostType & ghost_type = _not_ghost) const {
-    return this->element_filter.firstType(this->spatial_dimension, ghost_type,
-                                          this->element_kind);
-  }
-
-  /// get the type iterator on the last type contained in the internal field
-  filter_type_iterator
-  filterLastType(const GhostType & ghost_type = _not_ghost) const {
-    return this->element_filter.lastType(this->spatial_dimension, ghost_type,
-                                         this->element_kind);
-  }
 
   /// get filter types for range loop
   decltype(auto) filterTypes(const GhostType & ghost_type) const {

@@ -416,12 +416,7 @@ void FragmentManager::storeMassDensityPerIntegrationPoint() {
 
   UInt spatial_dimension = model.getSpatialDimension();
 
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension);
-  Mesh::type_iterator end = mesh.lastType(spatial_dimension);
-
-  for (; it != end; ++it) {
-    ElementType type = *it;
-
+  for (auto type : mesh.elementTypes(spatial_dimension)) {
     Array<Real> & mass_density_array = mass_density(type);
 
     UInt nb_element = mesh.getNbElement(type);

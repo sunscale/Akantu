@@ -157,18 +157,12 @@ public:
   getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
                   ElementKind kind = _ek_not_defined) override {
     ElementTypeMap<UInt> nb_components;
-    const ElementTypeMap<UInt> & old_nb_components =
+    const auto & old_nb_components =
         this->sub_field.getNbComponents(dim, ghost_type, kind);
 
-    ElementTypeMap<UInt>::type_iterator tit =
-        old_nb_components.firstType(dim, ghost_type, kind);
-    ElementTypeMap<UInt>::type_iterator end =
-        old_nb_components.lastType(dim, ghost_type, kind);
-
-    while (tit != end) {
-      UInt nb_comp = old_nb_components(*tit, ghost_type);
-      nb_components(*tit, ghost_type) = func.getNbComponent(nb_comp);
-      ++tit;
+    for(auto type : old_nb_components.elementTypes(dim, ghost_type, kind)) {
+      UInt nb_comp = old_nb_components(type, ghost_type);
+      nb_components(type, ghost_type) = func.getNbComponent(nb_comp);
     }
     return nb_components;
   };

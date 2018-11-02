@@ -77,18 +77,9 @@ void ElementGroup::append(const ElementGroup & other_group) {
   node_group.append(other_group.node_group);
 
   /// loop on all element types in all dimensions
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType ghost_type = *gt;
-
-    type_iterator it =
-        other_group.firstType(_all_dimensions, ghost_type, _ek_not_defined);
-    type_iterator last =
-        other_group.lastType(_all_dimensions, ghost_type, _ek_not_defined);
-
-    for (; it != last; ++it) {
-      ElementType type = *it;
+  for (auto ghost_type : ghost_types) {
+    for (auto type : other_group.elementTypes(_ghost_type = ghost_type,
+                     _element_kind = _ek_not_defined)) {
       const Array<UInt> & other_elem_list =
           other_group.elements(type, ghost_type);
       UInt nb_other_elem = other_elem_list.size();
@@ -137,15 +128,9 @@ void ElementGroup::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 void ElementGroup::optimize() {
   // increasing the locality of data when iterating on the element of a group
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
-    ElementList::type_iterator it =
-        elements.firstType(_all_dimensions, ghost_type);
-    ElementList::type_iterator last =
-        elements.lastType(_all_dimensions, ghost_type);
-    for (; it != last; ++it) {
-      Array<UInt> & els = elements(*it, ghost_type);
+  for (auto ghost_type : ghost_types) {
+    for (auto type : elements.elementTypes(_ghost_type = ghost_type)) {
+      Array<UInt> & els = elements(type, ghost_type);
       std::sort(els.begin(), els.end());
 
       Array<UInt>::iterator<> end = std::unique(els.begin(), els.end());
@@ -200,4 +185,4 @@ void ElementGroup::fillFromNodeGroup() {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

@@ -55,16 +55,13 @@ int main(int argc, char * argv[]) {
   UInt nb_component = 1;
 
   GhostType gt = _not_ghost;
-  Mesh::type_iterator tit = mesh.firstType(dim, gt);
-  Mesh::type_iterator tend = mesh.lastType(dim, gt);
-
-  for (; tit != tend; ++tit) {
-    UInt nb_element = mesh.getNbElement(*tit, gt);
-    partition.alloc(nb_element, nb_component, *tit, gt);
-    Array<UInt> & type_partition_reference = partition(*tit, gt);
+  for (auto & type : mesh.elementTypes(dim, gt)) {
+    UInt nb_element = mesh.getNbElement(type, gt);
+    partition.alloc(nb_element, nb_component, type, gt);
+    Array<UInt> & type_partition_reference = partition(type, gt);
     for (UInt i(0); i < nb_element; ++i) {
       Vector<Real> barycenter(dim);
-      Element element{*tit, i, gt};
+      Element element{type, i, gt};
       mesh.getBarycenter(element, barycenter);
 
       Real real_proc = barycenter[0] * nb_partitions;
@@ -76,7 +73,7 @@ int main(int argc, char * argv[]) {
         type_partition_reference(i) = floor(real_proc);
       }
       std::cout << "Assigned proc " << type_partition_reference(i)
-                << " to elem " << i << " (type " << *tit
+                << " to elem " << i << " (type " << type
                 << ", barycenter x-coordinate " << barycenter[0] << ")"
                 << std::endl;
     }
@@ -87,13 +84,12 @@ int main(int argc, char * argv[]) {
   partitioner->setPartitionMapping(partition);
   partitioner->partitionate(nb_partitions);
 
-  tit = mesh.firstType(dim, gt);
-  for (; tit != tend; ++tit) {
-    UInt nb_element = mesh.getNbElement(*tit, gt);
-    const Array<UInt> & type_partition_reference = partition(*tit, gt);
-    const Array<UInt> & type_partition = partitioner->getPartitions()(*tit, gt);
+  for (auto & type : mesh.elementTypes(dim, gt)) {
+    UInt nb_element = mesh.getNbElement(type, gt);
+    const Array<UInt> & type_partition_reference = partition(type, gt);
+    const Array<UInt> & type_partition = partitioner->getPartitions()(type, gt);
     for (UInt i(0); i < nb_element; ++i) {
-      if (not (type_partition(i) == type_partition_reference(i))) {
+      if (not(type_partition(i) == type_partition_reference(i))) {
         std::cout << "Incorrect partitioning" << std::endl;
         return 1;
       }

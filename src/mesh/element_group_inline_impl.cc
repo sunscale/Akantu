@@ -96,14 +96,14 @@ inline UInt ElementGroup::getNbNodes() const { return node_group.size(); }
 inline ElementGroup::type_iterator
 ElementGroup::firstType(UInt dim, const GhostType & ghost_type,
                         const ElementKind & kind) const {
-  return elements.firstType(dim, ghost_type, kind);
+  return elements.elementTypes(dim, ghost_type, kind).begin();
 }
 
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::type_iterator
 ElementGroup::lastType(UInt dim, const GhostType & ghost_type,
                        const ElementKind & kind) const {
-  return elements.lastType(dim, ghost_type, kind);
+  return elements.elementTypes(dim, ghost_type, kind).end();
 }
 
 /* -------------------------------------------------------------------------- */

@@ -502,23 +502,25 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
-  using type_iterator = ElementTypeMapArray<UInt, ElementType>::type_iterator;
+  using type_iterator [[deprecated]] = ElementTypeMapArray<UInt, ElementType>::type_iterator;
   using ElementTypesIteratorHelper =
       ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;
 
   template <typename... pack>
   ElementTypesIteratorHelper elementTypes(pack &&... _pack) const;
 
-  inline type_iterator firstType(UInt dim = _all_dimensions,
-                                 GhostType ghost_type = _not_ghost,
-                                 ElementKind kind = _ek_regular) const {
-    return connectivities.firstType(dim, ghost_type, kind);
+  [[deprecated("Use elementTypes instead")]]
+  inline decltype(auto)  firstType(UInt dim = _all_dimensions,
+                                   GhostType ghost_type = _not_ghost,
+                                   ElementKind kind = _ek_regular) const {
+    return connectivities.elementTypes(dim, ghost_type, kind).begin();
   }
 
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                GhostType ghost_type = _not_ghost,
-                                ElementKind kind = _ek_regular) const {
-    return connectivities.lastType(dim, ghost_type, kind);
+  [[deprecated("Use elementTypes instead")]]
+  inline decltype(auto) lastType(UInt dim = _all_dimensions,
+                                 GhostType ghost_type = _not_ghost,
+                                 ElementKind kind = _ek_regular) const {
+    return connectivities.elementTypes(dim, ghost_type, kind).end();
   }
 
   AKANTU_GET_MACRO(ElementSynchronizer, *element_synchronizer,
@@ -531,7 +533,8 @@ public:
                              NodeSynchronizer &);
   AKANTU_GET_MACRO(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
                    const PeriodicNodeSynchronizer &);
-  AKANTU_GET_MACRO_NOT_CONST(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
+  AKANTU_GET_MACRO_NOT_CONST(PeriodicNodeSynchronizer,
+                             *periodic_node_synchronizer,
                              PeriodicNodeSynchronizer &);
 
 // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
@@ -625,7 +628,7 @@ private:
   BBox bbox_local;
 
   /// Extra data loaded from the mesh file
-  //MeshData mesh_data;
+  // MeshData mesh_data;
 
   /// facets' mesh
   std::unique_ptr<Mesh> mesh_facets;

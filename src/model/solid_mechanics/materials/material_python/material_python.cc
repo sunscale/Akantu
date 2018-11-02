@@ -191,20 +191,19 @@ Real MaterialPython::getEnergyForType(const std::string & type,
 
 /* -------------------------------------------------------------------------- */
 
-Real MaterialPython::getEnergy(const std::string & type) {
+Real MaterialPython::getEnergy(const std::string & energy_type) {
   AKANTU_DEBUG_IN();
 
-  if (this->internals.find(type) == this->internals.end()) {
+  if (this->internals.find(energy_type) == this->internals.end()) {
     AKANTU_EXCEPTION("unknown energy type: "
-                     << type << " you must declare an internal named " << type);
+                     << energy_type << " you must declare an internal named "
+                     << energy_type);
   }
 
   Real energy = 0.;
   /// integrate the potential energy for each type of elements
-  Mesh::type_iterator it = element_filter.firstType(spatial_dimension);
-  Mesh::type_iterator last_type = element_filter.lastType(spatial_dimension);
-  for (; it != last_type; ++it) {
-    energy += this->getEnergyForType(type, *it);
+  for (auto & type : element_filter.elementTypes(spatial_dimension)) {
+    energy += this->getEnergyForType(energy_type, type);
   }
   AKANTU_DEBUG_OUT();
   return energy;
@@ -212,4 +211,4 @@ Real MaterialPython::getEnergy(const std::string & type) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

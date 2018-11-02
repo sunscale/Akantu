@@ -1115,18 +1115,11 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
       "remove mat filter elem", getID(), getMemoryID());
 
   Element element;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    ElementTypeMapArray<UInt>::type_iterator it =
-        element_filter.firstType(_all_dimensions, ghost_type, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end =
-        element_filter.lastType(_all_dimensions, ghost_type, _ek_not_defined);
-
-    for (; it != end; ++it) {
-      ElementType type = *it;
+    for (auto & type : element_filter.elementTypes(_ghost_type = ghost_type,
+                       _element_kind = _ek_not_defined)) {
       element.type = type;
 
       Array<UInt> & elem_filter = this->element_filter(type, ghost_type);
@@ -1289,13 +1282,9 @@ void Material::onDamageIteration() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
 void Material::onDamageUpdate() {
-  ElementTypeMapArray<UInt>::type_iterator it = this->element_filter.firstType(
-      _all_dimensions, _not_ghost, _ek_not_defined);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
-  for (; it != end; ++it) {
-    this->updateEnergiesAfterDamage(*it, _not_ghost);
+  for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
+                                                 _ek_not_defined)) {
+    this->updateEnergiesAfterDamage(type, _not_ghost);
   }
 }
 

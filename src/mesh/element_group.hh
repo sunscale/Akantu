@@ -73,10 +73,12 @@ public:
   /* Element iterator                                                         */
   /* ------------------------------------------------------------------------ */
   using type_iterator = ElementList::type_iterator;
+  [[deprecated("Use elementTypes instead")]]
   inline type_iterator firstType(UInt dim = _all_dimensions,
                                  const GhostType & ghost_type = _not_ghost,
                                  const ElementKind & kind = _ek_regular) const;
 
+  [[deprecated("Use elementTypes instead")]]
   inline type_iterator lastType(UInt dim = _all_dimensions,
                                 const GhostType & ghost_type = _not_ghost,
                                 const ElementKind & kind = _ek_regular) const;
@@ -89,6 +91,7 @@ public:
 #endif
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
+
   inline const_element_iterator
   begin(const ElementType & type,
         const GhostType & ghost_type = _not_ghost) const;

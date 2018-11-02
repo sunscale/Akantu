@@ -104,11 +104,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-MaterialCohesive::~MaterialCohesive() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+MaterialCohesive::~MaterialCohesive() = default;
 
 /* -------------------------------------------------------------------------- */
 void MaterialCohesive::initMaterial() {
