@@ -92,13 +92,13 @@ void MaterialDamage<spatial_dimension, Parent>::updateEnergies(
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
-  Matrix<Real> delta_gradu_it(*gradu_it);
-  delta_gradu_it -= *epsilon_p;
+  Matrix<Real> delta_gradu(grad_u);
+  delta_gradu -= *epsilon_p;
 
   Matrix<Real> sigma_h(sigma);
   sigma_h += *sigma_p;
 
-  Real dint = .5 * sigma_h.doubleDot(delta_gradu_it);
+  Real dint = .5 * sigma_h.doubleDot(delta_gradu);
 
   *ints += dint;
   *ed = *ints - *epot;

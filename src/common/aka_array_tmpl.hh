@@ -1221,7 +1221,13 @@ namespace detail {
     ArrayView(ArrayView && array_view) = default;
 
     ArrayView & operator=(const ArrayView & array_view) = default;
-    ArrayView & operator=(ArrayView && array_view) = default;
+    ArrayView & operator=(ArrayView && array_view) {
+      if(&array_view != this) {
+        std::swap(array, array_view.array);
+        std::swap(sizes, array_view.sizes);
+      }
+      return *this;
+    }
 
     decltype(auto) begin() {
       return aka::apply(
