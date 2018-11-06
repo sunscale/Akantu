@@ -106,7 +106,6 @@ inline std::ostream & operator<<(std::ostream & stream, const MeshIO & _this) {
 
 } // namespace akantu
 
-#include "mesh_io_abaqus.hh"
 #include "mesh_io_diana.hh"
 #include "mesh_io_msh.hh"
 
