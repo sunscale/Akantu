@@ -502,26 +502,27 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
-  using type_iterator [[deprecated]] = ElementTypeMapArray<UInt, ElementType>::type_iterator;
+#ifndef SWIG
+  using type_iterator[[deprecated]] =
+      ElementTypeMapArray<UInt, ElementType>::type_iterator;
   using ElementTypesIteratorHelper =
       ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;
 
   template <typename... pack>
   ElementTypesIteratorHelper elementTypes(pack &&... _pack) const;
 
-  [[deprecated("Use elementTypes instead")]]
-  inline decltype(auto)  firstType(UInt dim = _all_dimensions,
-                                   GhostType ghost_type = _not_ghost,
-                                   ElementKind kind = _ek_regular) const {
+  [[deprecated("Use elementTypes instead")]] inline decltype(auto)
+  firstType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+            ElementKind kind = _ek_regular) const {
     return connectivities.elementTypes(dim, ghost_type, kind).begin();
   }
 
-  [[deprecated("Use elementTypes instead")]]
-  inline decltype(auto) lastType(UInt dim = _all_dimensions,
-                                 GhostType ghost_type = _not_ghost,
-                                 ElementKind kind = _ek_regular) const {
+  [[deprecated("Use elementTypes instead")]] inline decltype(auto)
+  lastType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+           ElementKind kind = _ek_regular) const {
     return connectivities.elementTypes(dim, ghost_type, kind).end();
   }
+#endif
 
   AKANTU_GET_MACRO(ElementSynchronizer, *element_synchronizer,
                    const ElementSynchronizer &);

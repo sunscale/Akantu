@@ -46,7 +46,7 @@ public:
   BBox(UInt spatial_dimension)
       : dim(spatial_dimension),
         lower_bounds(spatial_dimension, std::numeric_limits<Real>::max()),
-        upper_bounds(spatial_dimension, -std::numeric_limits<Real>::max()) {}
+        upper_bounds(spatial_dimension, std::numeric_limits<Real>::lowest()) {}
 
   BBox(const BBox & other)
       : dim(other.dim), empty{false}, lower_bounds(other.lower_bounds),
@@ -157,7 +157,7 @@ public:
   /* ------------------------------------------------------------------------ */
   inline void reset() {
     lower_bounds.set(std::numeric_limits<Real>::max());
-    upper_bounds.set(-std::numeric_limits<Real>::max());
+    upper_bounds.set(std::numeric_limits<Real>::lowest());
   }
 
   /* ------------------------------------------------------------------------ */

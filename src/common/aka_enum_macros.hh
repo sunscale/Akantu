@@ -33,7 +33,6 @@
 #define AKANTU_PP_ENUM(s, data, i, elem)                                       \
   BOOST_PP_TUPLE_REM()                                                         \
   elem BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(i, BOOST_PP_DEC(data)))
-} // namespace akantu
 
 #if (defined(__GNUC__) || defined(__GNUG__))
 #define AKA_GCC_VERSION                                                        \
@@ -41,16 +40,16 @@
 #if AKA_GCC_VERSION < 60000
 #define AKANTU_ENUM_HASH(type_name)                                            \
   namespace std {                                                              \
-    template <> struct hash<::akantu::type_name> {                             \
-      using argument_type = ::akantu::type_name;                               \
-      size_t operator()(const argument_type & e) const noexcept {              \
-        auto ue = underlying_type_t<argument_type>(e);                         \
-        return uh(ue);                                                         \
-      }                                                                        \
+  template <> struct hash<::akantu::type_name> {                               \
+    using argument_type = ::akantu::type_name;                                 \
+    size_t operator()(const argument_type & e) const noexcept {                \
+      auto ue = underlying_type_t<argument_type>(e);                           \
+      return uh(ue);                                                           \
+    }                                                                          \
                                                                                \
-    private:                                                                   \
-      const hash<underlying_type_t<argument_type>> uh{};                       \
-    };                                                                         \
+  private:                                                                     \
+    const hash<underlying_type_t<argument_type>> uh{};                         \
+  };                                                                           \
   }
 #else
 #define AKANTU_ENUM_HASH(type_name)
@@ -74,21 +73,21 @@
   }                                                                            \
   AKANTU_ENUM_HASH(type_name)                                                  \
   namespace aka {                                                              \
-    inline std::string to_string(const ::akantu::type_name & type) {           \
-      using namespace akantu;                                                  \
-      static std::unordered_map<::akantu::type_name, std::string> convert{     \
-          BOOST_PP_SEQ_FOR_EACH_I(                                             \
-              AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                         \
-              BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR, prefix, list))};   \
-      return convert.at(type);                                                 \
-    }                                                                          \
+  inline std::string to_string(const ::akantu::type_name & type) {             \
+    using namespace akantu;                                                    \
+    static std::unordered_map<::akantu::type_name, std::string> convert{       \
+        BOOST_PP_SEQ_FOR_EACH_I(                                               \
+            AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
+            BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR, prefix, list))};     \
+    return convert.at(type);                                                   \
+  }                                                                            \
   }                                                                            \
   namespace akantu {                                                           \
-    inline std::ostream & operator<<(std::ostream & stream,                    \
-                                     const type_name & type) {                 \
-      stream << aka::to_string(type);                                          \
-      return stream;                                                           \
-    }
+  inline std::ostream & operator<<(std::ostream & stream,                      \
+                                   const type_name & type) {                   \
+    stream << aka::to_string(type);                                            \
+    return stream;                                                             \
+  }
 
 #define AKANTU_ENUM_INPUT_STREAM_(type_name, list, prefix)                     \
   inline std::istream & operator>>(std::istream & stream, type_name & type) {  \

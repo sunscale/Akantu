@@ -39,6 +39,8 @@
 
 namespace akantu {
 
+#ifndef SWIG
+
 AKANTU_ENUM_OUTPUT_STREAM(ElementType, AKANTU_ALL_ELEMENT_TYPE(_not_defined)(_max_element_type))
 AKANTU_ENUM_INPUT_STREAM(ElementType, AKANTU_ALL_ELEMENT_TYPE)
 
@@ -47,6 +49,8 @@ AKANTU_ENUM_INPUT_STREAM(InterpolationType, AKANTU_INTERPOLATION_TYPES)
 
 AKANTU_ENUM_OUTPUT_STREAM(ElementKind, AKANTU_ELEMENT_KIND)
 AKANTU_ENUM_INPUT_STREAM(ElementKind, AKANTU_ELEMENT_KIND)
+
+#endif
 
 } // namespace akantu
 
