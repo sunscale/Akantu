@@ -79,7 +79,7 @@ void NodeInfoPerProc::fillNodeGroupsFromBuffer(CommunicationBuffer & buffer) {
   }
 
   for (auto && ng_data : mesh.iterateNodeGroups()) {
-     ng_data.optimize();
+    ng_data.optimize();
   }
 
   AKANTU_DEBUG_OUT();
@@ -279,12 +279,10 @@ void NodeInfoPerProc::fillNodalData(DynamicCommunicationBuffer & buffer,
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, _, elem)                    \
   case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
     auto & nodal_data =                                                        \
-        mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name); \
+        mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name);          \
     nodal_data.resize(mesh.getNbNodes());                                      \
     for (auto && data : make_view(nodal_data)) {                               \
-      for (auto i[[gnu::unused]] : arange(nodal_data.getNbComponent())) {      \
-        buffer >> data;                                                        \
-      }                                                                        \
+      buffer >> data;                                                          \
     }                                                                          \
     break;                                                                     \
   }
@@ -642,7 +640,7 @@ void MasterNodeInfoPerProc::fillTagBuffers(
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, _, elem)                    \
   case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
     auto & nodal_data =                                                        \
-        mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name);     \
+        mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name);          \
     for (auto && data : enumerate(nodes_per_proc)) {                           \
       auto proc = std::get<0>(data);                                           \
       auto & nodes = std::get<1>(data);                                        \
@@ -865,4 +863,4 @@ void SlaveNodeInfoPerProc::synchronizeTags() {
   }
 }
 
-} // akantu
+} // namespace akantu
