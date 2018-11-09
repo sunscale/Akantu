@@ -56,7 +56,10 @@ pipeline {
         cd build/
         #source ./akantu_environement.sh
         ctest -T test --no-compress-output || true
-	cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml
+        TAG=`head -n 1 < build/Testing/TAG`
+        if [ -e build/Testing/${TAG}/Test.xml ]; then
+	   cp build/Testing/${TAG}/Test.xml CTestResults.xml
+        fi
         """
       }
     }
@@ -78,6 +81,7 @@ pipeline {
              [$class: 'SkippedThreshold', failureThreshold: '100'],
              [$class: 'FailedThreshold', failureThreshold: '0']],
             tools: [[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**']]])
+      archiveArtifacts artifacts: 'build/Testing/**', fingerprint: true
       createartifact()
     }
 
