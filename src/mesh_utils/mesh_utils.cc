@@ -715,12 +715,8 @@ UInt MeshUtils::updateFacetToDouble(
       auto & element_to_facet =
           mesh_facets.getElementToSubelement(type_facet, gt_facet);
 
-      ElementType el_type = _not_defined;
-      GhostType el_gt = _casper;
-      UInt nb_facet_per_element = 0;
       Element old_facet_el{type_facet, 0, gt_facet};
-
-      Array<Element> * facet_to_element = nullptr;
+      UInt nb_facets = mesh_facets.getNbElement(type_facet, gt_facet);
 
       for (UInt f = 0; f < f_insertion.size(); ++f) {
 
@@ -740,41 +736,34 @@ UInt MeshUtils::updateFacetToDouble(
 
         f_to_double.push_back(f);
 
-        UInt new_facet = mesh_facets.getNbElement(type_facet, gt_facet) +
-                         f_to_double.size() - 1;
+        UInt new_facet = nb_facets + f_to_double.size() - 1;
         old_facet_el.element = f;
 
         /// update facet_to_element vector
-        Element & elem_to_update = element_to_facet(f)[1];
+        auto & elem_to_update = element_to_facet(f)[1];
         UInt el = elem_to_update.element;
 
-        if (elem_to_update.ghost_type != el_gt ||
-            elem_to_update.type != el_type) {
-          el_type = elem_to_update.type;
-          el_gt = elem_to_update.ghost_type;
-          facet_to_element =
-              &mesh_facets.getSubelementToElement(el_type, el_gt);
-          nb_facet_per_element = facet_to_element->getNbComponent();
-        }
-
-        auto begin = facet_to_element->storage() + el * nb_facet_per_element;
+        auto & facet_to_element = mesh_facets.getSubelementToElement(
+            elem_to_update.type, elem_to_update.ghost_type);
+        auto el_facets = Vector<Element>(
+            make_view(facet_to_element, facet_to_element.getNbComponent())
+                .begin()[el]);
         auto f_update =
-            std::find(begin, begin + nb_facet_per_element, old_facet_el);
+            std::find(el_facets.begin(), el_facets.end(), old_facet_el);
 
-        AKANTU_DEBUG_ASSERT(f_update != begin + nb_facet_per_element,
-                            "Facet not found");
+        AKANTU_DEBUG_ASSERT(f_update != el_facets.end(), "Facet not found");
 
         f_update->element = new_facet;
 
         /// update elements connected to facet
-        std::vector<Element> first_facet_list = element_to_facet(f);
+        const auto & first_facet_list = element_to_facet(f);
         element_to_facet.push_back(first_facet_list);
 
         /// set new and original facets as boundary facets
         element_to_facet(new_facet)[0] = element_to_facet(new_facet)[1];
+        element_to_facet(new_facet)[1] = ElementNull;
 
         element_to_facet(f)[1] = ElementNull;
-        element_to_facet(new_facet)[1] = ElementNull;
       }
     }
   }

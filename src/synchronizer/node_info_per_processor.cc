@@ -678,14 +678,10 @@ void MasterNodeInfoPerProc::synchronizeTags() {
     tags_buffer << mesh.getNbComponent(tag_name);
   }
 
-  UInt tags_buffer_length = tags_buffer.size();
   AKANTU_DEBUG_INFO(
-      "Broadcasting the size of the information about the mesh data tags: ("
-      << tags_buffer_length << ").");
-  comm.broadcast(tags_buffer_length, root);
-
-  if (tags_buffer_length != 0)
-    comm.broadcast(tags_buffer, root);
+      "Broadcasting the information about the nodes mesh data tags: ("
+      << tags_buffer.size() << ").");
+  comm.broadcast(tags_buffer, root);
 
   for (auto && tag_data : enumerate(tag_names)) {
     auto tag_count = std::get<0>(tag_data);
@@ -786,11 +782,7 @@ void SlaveNodeInfoPerProc::synchronizeGroups() {
                     << root << " "
                     << Tag::genTag(root, this->rank, Tag::_NODE_GROUP));
 
-  CommunicationStatus status;
-  comm.probe<char>(root, Tag::genTag(root, this->rank, Tag::_NODE_GROUP),
-                   status);
-
-  CommunicationBuffer buffer(status.size());
+  DynamicCommunicationBuffer buffer;
   comm.receive(buffer, root, Tag::genTag(root, this->rank, Tag::_NODE_GROUP));
 
   this->fillNodeGroupsFromBuffer(buffer);
@@ -829,14 +821,7 @@ void SlaveNodeInfoPerProc::synchronizePeriodicity() {
 
 /* -------------------------------------------------------------------------- */
 void SlaveNodeInfoPerProc::synchronizeTags() {
-  UInt tags_buffer_length{0};
-  comm.broadcast(tags_buffer_length, root);
-  if (tags_buffer_length == 0) {
-    return;
-  }
-
-  CommunicationBuffer tags_buffer;
-  tags_buffer.resize(tags_buffer_length);
+  DynamicCommunicationBuffer tags_buffer;
   comm.broadcast(tags_buffer, root);
 
   std::vector<std::string> tag_names;
