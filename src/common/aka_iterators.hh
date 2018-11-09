@@ -108,15 +108,6 @@ namespace tuple {
 
 /* -------------------------------------------------------------------------- */
 namespace iterators {
-  namespace {
-    template <typename It, typename category>
-    struct is_at_least_category
-        : std::is_same<std::common_type_t<
-                           typename std::iterator_traits<It>::iterator_category,
-                           category>,
-                       category> {};
-  } // namespace
-
   template <class... Iterators> class ZipIterator {
   public:
     using value_type =
@@ -127,9 +118,9 @@ namespace iterators {
         std::tuple<typename std::iterator_traits<Iterators>::pointer...>;
     using reference =
         std::tuple<typename std::iterator_traits<Iterators>::reference...>;
-    using iterator_category = std::input_iterator_tag;
-    // std::common_type_t<typename
-    // std::iterator_traits<Iterators>::iterator_category...>;
+    using iterator_category = // std::input_iterator_tag;
+        std::common_type_t<
+            typename std::iterator_traits<Iterators>::iterator_category...>;
 
   private:
     using tuple_t = std::tuple<Iterators...>;
@@ -454,6 +445,8 @@ struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
   using reference =
       typename ::akantu::iterators::ZipIterator<Its...>::reference;
 };
+
+
 } // namespace std
 
 #endif /* __AKANTU_AKA_ITERATORS_HH__ */
