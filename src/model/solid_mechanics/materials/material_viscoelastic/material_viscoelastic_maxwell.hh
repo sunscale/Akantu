@@ -108,11 +108,7 @@ public:
   /// update the internal variable sigma_v on quadrature point
   void updateIntVarOnQuad(const Matrix<Real> & grad_u,
                           const Matrix<Real> & previous_grad_u,
-                          Tensor3<Real> & sigma_v);
-
-  /// set material to steady state
-  void setToSteadyState(ElementType el_type,
-                        GhostType ghost_type = _not_ghost) override;
+                          Tensor3<Real> & sigma_v, Tensor3<Real> & epsilon_v);
 
   /// constitutive law for all element of a type
   void computeStress(ElementType el_type,
@@ -126,18 +122,36 @@ public:
   /// save previous stress and strain values into "previous" arrays
   void savePreviousState() override;
 
+  /// change flag of updateIntVar to true
+  void forceUpdateVariable();
+
+  /// change flag of updateIntVar to false
+  void forceNotUpdateVariable();
+
+  /// compute the elastic potential energy
+  void computePotentialEnergy(ElementType el_type,
+                              GhostType ghost_type = _not_ghost) override;
 protected:
+
+  void computePotentialEnergyOnQuad(const Matrix<Real> & grad_u, Real & epot,
+                                    Tensor3<Real> & sigma_v, Tensor3<Real> & epsilon_v);
+
+
   /// update the dissipated energy, is called after the stress have been
   /// computed
   void updateDissipatedEnergy(ElementType el_type, GhostType ghost_type);
+
+
+  void updateDissipatedEnergyOnQuad(const Matrix<Real> & grad_u,
+                                    const Matrix<Real> & previous_grad_u,
+                                    const Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+                                    Real & dis_energy, Real & mech_work, const Real & pot_energy);
 
   /// compute stresses on a quadrature point
   void computeStressOnQuad(const Matrix<Real> & grad_u,
                            const Matrix<Real> & previous_grad_u,
                            Matrix<Real> & sigma,
-                           const Matrix<Real> & previous_sigma,
-                           Tensor3<Real> & sigma_v, const Real & sigma_th,
-                           const Real & previous_sigma_th);
+                           Tensor3<Real> & sigma_v, const Real & sigma_th);
 
   /// compute tangent moduli on a quadrature point
   void computeTangentModuliOnQuad(Matrix<Real> & tangent);
@@ -156,9 +170,17 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// give the dissipated energy for the time step
+  /// give the dissipated energy
   Real getDissipatedEnergy() const;
   Real getDissipatedEnergy(ElementType type, UInt index) const;
+
+  /// get the potential energy
+  Real getPotentialEnergy() const;
+  Real getPotentialEnergy(ElementType type, UInt index) const;
+
+  /// get the potential energy
+  Real getMechanicalWork() const;
+  Real getMechanicalWork(ElementType type, UInt index) const;
 
   /// get the energy using an energy type string for the time step
   Real getEnergy(const std::string & type) override;
@@ -167,7 +189,7 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
   using voigt_h = VoigtHelper<spatial_dimension>;
 
   /// Vectors of viscosity, viscous elastic modulus, one spring element elastic modulus
@@ -178,14 +200,25 @@ private:
   /// time step from previous solveStep
   Real previous_dt;
 
-  /// Effective viscoelastic stiffness tensor in voigt notation
+  /// Stiffness matrix template
   Matrix<Real> C;
+  /// Compliance matrix template
+  Matrix<Real> D;
 
   /// Internal variable: viscous_stress
   InternalField<Real> sigma_v;
 
+  /// Internal variable: spring strain in Maxwell element
+  InternalField<Real> epsilon_v;
+
   /// Dissipated energy
   InternalField<Real> dissipated_energy;
+
+  /// Mechanical work
+  InternalField<Real> mechanical_work;
+
+  /// Update internal variable after solve step or not
+  bool update_variable_flag;
 };
 
 } // namespace akantu
