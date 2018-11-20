@@ -37,6 +37,7 @@
 
 using namespace akantu;
 
+/* -------------------------------------------------------------------------- */
 template <class T> class A {
 public:
   A() = default;
@@ -177,5 +178,123 @@ TEST_F(TestZipFixutre, MoveTest) {
        zip(C<int>(0, this->size), C<int>(this->size, 2 * this->size))) {
     this->check(std::get<0>(pair), std::get<1>(pair), i, 0, 1);
     ++i;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+TEST(TestArangeIterator, Stop) {
+  size_t ref_i = 0;
+  for (auto i : arange(10)) {
+    EXPECT_EQ(ref_i, i);
+    ++ref_i;
+  }
+}
+
+TEST(TestArangeIterator, StartStop) {
+  size_t ref_i = 1;
+  for (auto i : arange(1, 10)) {
+    EXPECT_EQ(ref_i, i);
+    ++ref_i;
+  }
+}
+
+TEST(TestArangeIterator, StartStopStep) {
+  size_t ref_i = 1;
+  for (auto i : arange(1, 22, 2)) {
+    EXPECT_EQ(ref_i, i);
+    ref_i += 2;
+  }
+}
+
+TEST(TestArangeIterator, StartStopStepZipped) {
+  int ref_i1 = -1, ref_i2 = 1;
+  for (auto && i : zip(arange(-1, -10, -1), arange(1, 18, 2))) {
+    EXPECT_EQ(ref_i1, std::get<0>(i));
+    EXPECT_EQ(ref_i2, std::get<1>(i));
+    ref_i1 += -1;
+    ref_i2 += 2;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+TEST(TestTransformAdaptor, Keys) {
+  std::map<std::string, int> map{
+      {"1", 1}, {"2", 2}, {"3", 3}, {"3", 3}, {"4", 4}};
+
+  char counter = '1';
+  for (auto && key : make_keys_adaptor(map)) {
+    EXPECT_EQ(counter, key[0]);
+    ++counter;
+  }
+}
+
+TEST(TestTransformAdaptor, Values) {
+  std::map<std::string, int> map{
+      {"1", 1}, {"2", 2}, {"3", 3}, {"3", 3}, {"4", 4}};
+
+  int counter = 1;
+  for (auto && value : make_values_adaptor(map)) {
+    EXPECT_EQ(counter, value);
+    ++counter;
+  }
+}
+
+static int plus1(int value) { return value + 1; }
+
+struct Plus {
+  Plus(int a) : a(a) {}
+  int operator()(int b) { return a + b; }
+
+private:
+  int a{0};
+};
+
+TEST(TestTransformAdaptor, Lambda) {
+  auto && container = arange(10);
+
+  for (auto && data :
+       zip(container, make_transform_adaptor(container, [](auto && value) {
+             return value + 1;
+           }))) {
+    EXPECT_EQ(std::get<0>(data) + 1, std::get<1>(data));
+  }
+}
+
+TEST(TestTransformAdaptor, LambdaLambda) {
+  std::map<std::string, int> map{
+      {"1", 1}, {"2", 2}, {"3", 3}, {"3", 3}, {"4", 4}};
+
+  int counter = 1;
+  for (auto && data : make_transform_adaptor(
+           make_values_adaptor(map), [](auto && value) { return value + 1; })) {
+    EXPECT_EQ(counter + 1, data);
+    ++counter;
+  }
+
+  auto && container = arange(10);
+
+  for (auto && data :
+       zip(container, make_transform_adaptor(container, [](auto && value) {
+             return value + 1;
+           }))) {
+    EXPECT_EQ(std::get<0>(data) + 1, std::get<1>(data));
+  }
+}
+
+TEST(TestTransformAdaptor, Function) {
+  auto && container = arange(10);
+
+  for (auto && data :
+       zip(container, make_transform_adaptor(container, plus1))) {
+    EXPECT_EQ(std::get<0>(data) + 1, std::get<1>(data));
+  }
+}
+
+TEST(TestTransformAdaptor, Functor) {
+  auto && container = arange(10);
+
+  for (auto && data :
+       zip(container, make_transform_adaptor(container, Plus(1)))) {
+    EXPECT_EQ(std::get<0>(data) + 1, std::get<1>(data));
   }
 }

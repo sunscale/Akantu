@@ -44,8 +44,8 @@ class NTNFricRegRubinAmpuero : public NTNFricRegNoRegularisation {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFricRegRubinAmpuero(NTNBaseContact * contact,
-                         const FrictionID & id = "rubin_ampuero",
+  NTNFricRegRubinAmpuero(NTNBaseContact & contact,
+                         const ID & id = "rubin_ampuero",
                          const MemoryID & memory_id = 0);
   virtual ~NTNFricRegRubinAmpuero(){};
 

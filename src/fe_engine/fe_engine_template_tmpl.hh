@@ -597,6 +597,42 @@ inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeBtDB(
 }
 
 /* -------------------------------------------------------------------------- */
+namespace fe_engine {
+  namespace details {
+    template <ElementKind kind> struct ComputeNtbHelper {};
+
+#define COMPUTE_Ntb(type)                                                      \
+  shape_functions.template computeNtb<type>(bs, Ntbs, ghost_type,              \
+                                            filter_elements);
+
+#define AKANTU_SPECIALIZE_COMPUTE_Ntb_HELPER(kind)                             \
+  template <> struct ComputeNtbHelper<kind> {                                  \
+    template <class S>                                                         \
+    static void call(const S & shape_functions, const Array<Real> & bs,        \
+                     Array<Real> & Ntbs, const ElementType & type,             \
+                     const GhostType & ghost_type,                             \
+                     const Array<UInt> & filter_elements) {                    \
+      AKANTU_BOOST_KIND_ELEMENT_SWITCH(COMPUTE_Ntb, kind);                     \
+    }                                                                          \
+  };
+
+    AKANTU_BOOST_ALL_KIND(AKANTU_SPECIALIZE_COMPUTE_Ntb_HELPER)
+
+#undef AKANTU_SPECIALIZE_COMPUTE_Ntb_HELPER
+#undef COMPUTE_Ntb
+  } // namespace details
+} // namespace fe_engine
+
+template <template <ElementKind, class> class I, template <ElementKind> class S,
+          ElementKind kind, class IntegrationOrderFunctor>
+inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeNtb(
+    const Array<Real> & bs, Array<Real> & Ntbs, const ElementType & type,
+    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+  fe_engine::details::ComputeNtbHelper<kind>::call(
+      shape_functions, bs, Ntbs, type, ghost_type, filter_elements);
+}
+
+/* -------------------------------------------------------------------------- */
 template <template <ElementKind, class> class I, template <ElementKind> class S,
           ElementKind kind, class IntegrationOrderFunctor>
 inline void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
@@ -778,20 +814,14 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   UInt spatial_dimension = mesh.getSpatialDimension();
 
   // allocate the normal arrays
-  for (auto & type : mesh.elementTypes(element_dimension, ghost_type, kind)) {
-    UInt size = mesh.getNbElement(type, ghost_type);
-    if (normals_on_integration_points.exists(type, ghost_type)) {
-      normals_on_integration_points(type, ghost_type).resize(size);
-    } else {
-      normals_on_integration_points.alloc(size, spatial_dimension, type,
-                                          ghost_type);
-    }
-  }
+  normals_on_integration_points.initialize(
+      *this, _nb_component = spatial_dimension,
+      _spatial_dimension = element_dimension, _ghost_type = ghost_type,
+      _element_kind = kind);
 
   // loop over the type to build the normals
   for (auto & type : mesh.elementTypes(element_dimension, ghost_type, kind)) {
-    Array<Real> & normals_on_quad =
-        normals_on_integration_points(type, ghost_type);
+    auto & normals_on_quad = normals_on_integration_points(type, ghost_type);
     computeNormalsOnIntegrationPoints(field, normals_on_quad, type, ghost_type);
   }
 

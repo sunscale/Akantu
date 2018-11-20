@@ -86,21 +86,16 @@ public:
     AKANTU_DEBUG_IN();
 
     if (this->plane_stress) {
-
       AKANTU_DEBUG_ASSERT(this->finite_deformation,
                           "The Cauchy stress can only be computed if you are "
                           "working in finite deformation.");
 
-      // resizeInternalArray(stress);
-
-      Mesh::type_iterator it = this->fem.getMesh().firstType(2, ghost_type);
-      Mesh::type_iterator last_type =
-          this->fem.getMesh().lastType(2, ghost_type);
-
-      for (; it != last_type; ++it)
-        this->computeCauchyStressPlaneStress(*it, ghost_type);
-    } else
+      for (auto & type : this->fem.getMesh().elementTypes(2, ghost_type)) {
+        this->computeCauchyStressPlaneStress(type, ghost_type);
+      }
+    } else {
       ParentMaterial::computeAllCauchyStresses(ghost_type);
+    }
 
     AKANTU_DEBUG_OUT();
   }

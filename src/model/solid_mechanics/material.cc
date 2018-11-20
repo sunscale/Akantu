@@ -139,17 +139,7 @@ void Material::initMaterial() {
   if (use_previous_gradu)
     this->gradu.initializeHistory();
 
-  for (auto it = internal_vectors_real.begin();
-       it != internal_vectors_real.end(); ++it)
-    it->second->resize();
-
-  for (auto it = internal_vectors_uint.begin();
-       it != internal_vectors_uint.end(); ++it)
-    it->second->resize();
-
-  for (auto it = internal_vectors_bool.begin();
-       it != internal_vectors_bool.end(); ++it)
-    it->second->resize();
+  this->resizeInternals();
 
   is_init = true;
 
@@ -1013,7 +1003,7 @@ Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const InternalField<T> & Material::getInternal(__attribute__((unused))
+const InternalField<T> & Material::getInternal([[gnu::unused]]
                                                const ID & int_id) const {
   AKANTU_TO_IMPLEMENT();
   return NULL;
@@ -1021,7 +1011,7 @@ const InternalField<T> & Material::getInternal(__attribute__((unused))
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-InternalField<T> & Material::getInternal(__attribute__((unused))
+InternalField<T> & Material::getInternal([[gnu::unused]]
                                          const ID & int_id) {
   AKANTU_TO_IMPLEMENT();
   return NULL;
@@ -1115,18 +1105,11 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
       "remove mat filter elem", getID(), getMemoryID());
 
   Element element;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    ElementTypeMapArray<UInt>::type_iterator it =
-        element_filter.firstType(_all_dimensions, ghost_type, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end =
-        element_filter.lastType(_all_dimensions, ghost_type, _ek_not_defined);
-
-    for (; it != end; ++it) {
-      ElementType type = *it;
+    for (auto & type : element_filter.elementTypes(_ghost_type = ghost_type,
+                       _element_kind = _ek_not_defined)) {
       element.type = type;
 
       Array<UInt> & elem_filter = this->element_filter(type, ghost_type);
@@ -1204,7 +1187,7 @@ void Material::onElementsAdded(const Array<Element> &,
 void Material::onElementsRemoved(
     const Array<Element> & element_list,
     const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const RemovedElementsEvent & event) {
+    [[gnu::unused]] const RemovedElementsEvent & event) {
   UInt my_num = model.getInternalIndexFromID(getID());
 
   ElementTypeMapArray<UInt> material_local_new_numbering(
@@ -1289,13 +1272,9 @@ void Material::onDamageIteration() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
 void Material::onDamageUpdate() {
-  ElementTypeMapArray<UInt>::type_iterator it = this->element_filter.firstType(
-      _all_dimensions, _not_ghost, _ek_not_defined);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
-  for (; it != end; ++it) {
-    this->updateEnergiesAfterDamage(*it, _not_ghost);
+  for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
+                                                 _ek_not_defined)) {
+    this->updateEnergiesAfterDamage(type, _not_ghost);
   }
 }
 
@@ -1321,7 +1300,7 @@ void Material::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 /// extrapolate internal values
 void Material::extrapolateInternal(const ID & id, const Element & element,
-                                   __attribute__((unused))
+                                   [[gnu::unused]]
                                    const Matrix<Real> & point,
                                    Matrix<Real> & extrapolated) {
   if (this->isInternal<Real>(id, element.kind())) {

@@ -37,7 +37,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTNContact::NTNContact(SolidMechanicsModel & model, const ContactID & id,
+NTNContact::NTNContact(SolidMechanicsModel & model, const ID & id,
                        const MemoryID & memory_id)
     : NTNBaseContact(model, id, memory_id),
       masters(0, 1, 0, id + ":masters", std::numeric_limits<UInt>::quiet_NaN(),
@@ -51,7 +51,8 @@ NTNContact::NTNContact(SolidMechanicsModel & model, const ContactID & id,
   const Mesh & mesh = this->model.getMesh();
   UInt spatial_dimension = this->model.getSpatialDimension();
 
-  mesh.initElementTypeMapArray(this->master_elements, 1, spatial_dimension - 1);
+  this->master_elements.initialize(mesh, _nb_component = 1,
+                                   _spatial_dimension = spatial_dimension - 1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -77,10 +78,10 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
                                     << " for surface normal");
 
   // offset for projection computation
-  UInt offset[dim - 1];
+  Vector<UInt> offset(dim - 1);
   for (UInt i = 0, j = 0; i < dim; ++i) {
     if (surface_normal_dir != i) {
-      offset[j] = i;
+      offset(j) = i;
       ++j;
     }
   }
@@ -92,11 +93,10 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
   Array<Real> proj_slave_coord(slave_boundary.getNbNodes(), dim - 1, 0.);
   Array<UInt> slave_nodes(slave_boundary.getNbNodes());
   UInt n(0);
-  for (ElementGroup::const_node_iterator nodes_it(slave_boundary.node_begin());
-       nodes_it != slave_boundary.node_end(); ++nodes_it) {
+  for (auto && slave_node : slave_boundary.getNodes()) {
     for (UInt d = 0; d < dim - 1; ++d) {
-      proj_slave_coord(n, d) = coordinates(*nodes_it, offset[d]);
-      slave_nodes(n) = *nodes_it;
+      proj_slave_coord(n, d) = coordinates(slave_node, offset[d]);
+      slave_nodes(n) = slave_node;
     }
     ++n;
   }
@@ -105,11 +105,10 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
   Array<Real> proj_master_coord(master_boundary.getNbNodes(), dim - 1, 0.);
   Array<UInt> master_nodes(master_boundary.getNbNodes());
   n = 0;
-  for (ElementGroup::const_node_iterator nodes_it(master_boundary.node_begin());
-       nodes_it != master_boundary.node_end(); ++nodes_it) {
+  for (auto && master_node : master_boundary.getNodes()) {
     for (UInt d = 0; d < dim - 1; ++d) {
-      proj_master_coord(n, d) = coordinates(*nodes_it, offset[d]);
-      master_nodes(n) = *nodes_it;
+      proj_master_coord(n, d) = coordinates(master_node, offset[d]);
+      master_nodes(n) = master_node;
     }
     ++n;
   }
@@ -141,7 +140,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
       }
       dist = std::sqrt(dist);
       if (dist < local_tol) { // it is a pair
-        UInt pair[2];
+        Vector<UInt> pair(2);
         pair[0] = slave_nodes(i);
         pair[1] = master_nodes(j);
         pairs.push_back(pair);
@@ -154,7 +153,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNContact::addSurfacePair(const Surface & slave, const Surface & master,
+void NTNContact::addSurfacePair(const ID & slave, const ID & master,
                                 UInt surface_normal_dir) {
   AKANTU_DEBUG_IN();
 
@@ -177,8 +176,8 @@ void NTNContact::addSurfacePair(const Surface & slave, const Surface & master,
   Array<UInt>::const_vector_iterator end = pairs.end(2);
   for (; it != end; ++it) {
     const Vector<UInt> & pair = *it;
-    if (!this->model.isPBCSlaveNode(pair(0)) &&
-        !this->model.isPBCSlaveNode(pair(1))) {
+    if (not mesh.isPeriodicSlave(pair(0)) and
+        not mesh.isPeriodicSlave(pair(1))) {
       pairs_no_PBC_slaves.push_back(pair);
     }
   }
@@ -221,9 +220,7 @@ void NTNContact::getNodePairs(Array<UInt> & pairs) const {
                           << pairs.getNbComponent());
   UInt nb_pairs = this->getNbContactNodes();
   for (UInt n = 0; n < nb_pairs; ++n) {
-    UInt pair[2];
-    pair[0] = this->slaves(n);
-    pair[1] = this->masters(n);
+    Vector<UInt> pair{this->slaves(n), this->masters(n)};
     pairs.push_back(pair);
   }
 
@@ -265,73 +262,40 @@ void NTNContact::updateNormals() {
   FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   const Mesh & mesh = this->model.getMesh();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator it = mesh.firstType(dim - 1, *gt);
-    Mesh::type_iterator last = mesh.lastType(dim - 1, *gt);
-
-    for (; it != last; ++it) {
+  for (auto ghost_type: ghost_types) {
+    for (auto & type : mesh.elementTypes(dim - 1, ghost_type)) {
       // compute the normals
       Array<Real> quad_normals(0, dim);
-      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals, *it,
-                                                     *gt);
+      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals, type,
+                                                     ghost_type);
 
-      UInt nb_quad_points = boundary_fem.getNbIntegrationPoints(*it, *gt);
+      UInt nb_quad_points = boundary_fem.getNbIntegrationPoints(type, ghost_type);
 
       // new version: compute normals only based on master elements (and not all
       // boundary elements)
       // -------------------------------------------------------------------------------------
 
-      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
-      const Array<UInt> & connectivity = mesh.getConnectivity(*it, *gt);
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+      const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
 
-      Array<UInt>::const_iterator<UInt> elem_it =
-          (this->master_elements)(*it, *gt).begin();
-      Array<UInt>::const_iterator<UInt> elem_it_end =
-          (this->master_elements)(*it, *gt).end();
       // loop over contact nodes
-      for (; elem_it != elem_it_end; ++elem_it) {
+      for (auto & element : (this->master_elements)(type, ghost_type)) {
         for (UInt q = 0; q < nb_nodes_per_element; ++q) {
-          UInt node = connectivity(*elem_it, q);
+          UInt node = connectivity(element, q);
           UInt node_index = this->masters.find(node);
-          AKANTU_DEBUG_ASSERT(node_index != UInt(-1),
-                              "Could not find node " << node
-                                                     << " in the array!");
+          AKANTU_DEBUG_ASSERT(node_index != UInt(-1), "Could not find node "
+                                                          << node
+                                                          << " in the array!");
 
           for (UInt q = 0; q < nb_quad_points; ++q) {
             // add quad normal to master normal
             for (UInt d = 0; d < dim; ++d) {
               this->normals(node_index, d) +=
-                  quad_normals((*elem_it) * nb_quad_points + q, d);
+                  quad_normals(element * nb_quad_points + q, d);
             }
           }
         }
       }
-      // -------------------------------------------------------------------------------------
-
-      /*
-      // get elements connected to each node
-      CSR<UInt> node_to_element;
-      MeshUtils::buildNode2ElementsElementTypeMap(mesh, node_to_element, *it,
-    *gt);
-
-      // add up normals to all master nodes
-      for (UInt n=0; n<nb_contact_nodes; ++n) {
-    UInt master = this->masters(n);
-    CSR<UInt>::iterator elem = node_to_element.begin(master);
-    // loop over all elements connected to this master node
-    for (; elem != node_to_element.end(master); ++elem) {
-      UInt e = *elem;
-      // loop over all quad points of this element
-      for (UInt q=0; q<nb_quad_points; ++q) {
-        // add quad normal to master normal
-        for (UInt d=0; d<dim; ++d) {
-          this->normals(n,d) += quad_normals(e*nb_quad_points + q, d);
-        }
-      }
-    }
-      }
-      */
     }
   }
 
@@ -419,7 +383,7 @@ void NTNContact::applyContactPressure() {
   UInt nb_ntn_pairs = getNbContactNodes();
   UInt dim = this->model.getSpatialDimension();
 
-  Array<Real> & residual = this->model.getResidual();
+  Array<Real> & residual = this->model.getInternalForce();
 
   for (UInt n = 0; n < nb_ntn_pairs; ++n) {
     UInt master = this->masters(n);

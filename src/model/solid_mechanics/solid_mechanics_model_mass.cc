@@ -62,16 +62,8 @@ void SolidMechanicsModel::assembleMassLumped() {
   if (not need_to_reassemble_lumped_mass)
     return;
 
-  UInt nb_nodes = mesh.getNbNodes();
-
-  if (this->mass == nullptr) {
-    std::stringstream sstr_mass;
-    sstr_mass << id << ":mass";
-    mass =
-        &(alloc<Real>(sstr_mass.str(), nb_nodes, Model::spatial_dimension, 0));
-  } else {
-    mass->clear();
-  }
+  this->allocNodalField(this->mass, spatial_dimension, "mass");
+  mass->clear();
 
   if (!this->getDOFManager().hasLumpedMatrix("M")) {
     this->getDOFManager().getNewLumpedMatrix("M");

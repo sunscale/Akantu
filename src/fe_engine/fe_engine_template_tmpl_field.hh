@@ -165,8 +165,8 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   Array<Real> * field_times_shapes =
       new Array<Real>(0, shapes_size * nb_degree_of_freedom);
 
-  shape_functions.template fieldTimesShapes<type>(field, *field_times_shapes,
-                                                  ghost_type);
+  shape_functions.template computeNtb<type>(field, *field_times_shapes,
+                                            ghost_type);
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
   Array<Real> * int_field_times_shapes = new Array<Real>(

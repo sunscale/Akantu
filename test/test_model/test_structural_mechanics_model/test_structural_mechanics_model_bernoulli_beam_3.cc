@@ -44,7 +44,7 @@ public:
   void readMesh(std::string filename) override {
     parent::readMesh(filename);
     auto & normals =
-        this->mesh->registerData<Real>("extra_normal")
+        this->mesh->registerElementalData<Real>("extra_normal")
             .alloc(0, parent::spatial_dimension, parent::type, _not_ghost);
     Vector<Real> normal = {0, 0, 1};
     normals.push_back(normal);

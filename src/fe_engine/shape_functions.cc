@@ -154,17 +154,12 @@ void ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   for (auto ghost_type : ghost_types) {
-    Mesh::type_iterator it, last;
+    auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
     if (element_filter) {
-      it = element_filter->firstType(spatial_dimension, ghost_type);
-      last = element_filter->lastType(spatial_dimension, ghost_type);
-    } else {
-      it = mesh.firstType(spatial_dimension, ghost_type);
-      last = mesh.lastType(spatial_dimension, ghost_type);
+      types_iterable = element_filter->elementTypes(spatial_dimension, ghost_type);
     }
-    for (; it != last; ++it) {
 
-      ElementType type = *it;
+    for (auto type : types_iterable) {
       UInt nb_element = mesh.getNbElement(type, ghost_type);
       if (nb_element == 0)
         continue;
@@ -204,19 +199,12 @@ void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
-  Mesh::type_iterator it, last;
-
+  auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
   if (element_filter) {
-    it = element_filter->firstType(spatial_dimension, ghost_type);
-    last = element_filter->lastType(spatial_dimension, ghost_type);
-  } else {
-    it = mesh.firstType(spatial_dimension, ghost_type);
-    last = mesh.lastType(spatial_dimension, ghost_type);
+    types_iterable = element_filter->elementTypes(spatial_dimension, ghost_type);
   }
 
-  for (; it != last; ++it) {
-
-    ElementType type = *it;
+  for (auto type : types_iterable) {
     UInt nb_element = mesh.getNbElement(type, ghost_type);
     if (nb_element == 0)
       continue;

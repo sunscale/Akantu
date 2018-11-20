@@ -84,13 +84,12 @@ public:
                     const ID & group_support) override;
 
   /// Assemble an array to the global residual array
-  void assembleToResidual(const ID & dof_id,
-                          const Array<Real> & array_to_assemble,
+  void assembleToResidual(const ID & dof_id, Array<Real> & array_to_assemble,
                           Real scale_factor = 1.) override;
 
   /// Assemble an array to the global lumped matrix array
   void assembleToLumpedMatrix(const ID & dof_id,
-                              const Array<Real> & array_to_assemble,
+                              Array<Real> & array_to_assemble,
                               const ID & lumped_mtx,
                               Real scale_factor = 1.) override;
   /**
@@ -126,6 +125,9 @@ protected:
   void assembleToGlobalArray(const ID & dof_id,
                              const Array<T> & array_to_assemble,
                              Array<T> & global_array, T scale_factor);
+
+  template <typename T>
+  void makeConsistentForPeriodicity(const ID & dof_id, Array<T> & array);
 
 public:
   /// clear the residual
@@ -197,8 +199,14 @@ protected:
 
 private:
   void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
-                      UInt nb_new_pure_local,
+                      UInt nb_new_pure_local, UInt nb_nodes,
                       const std::function<UInt(UInt)> & getNode);
+
+  void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
+                      UInt nb_new_pure_local);
+
+  void resizeGlobalArrays();
+  auto computeFirstDOFIDs(UInt nb_new_local_dofs, UInt nb_new_pure_local);
 
 public:
   /// function to implement to react on  akantu::NewNodesEvent
@@ -273,7 +281,7 @@ public:
   inline UInt localToGlobalEquationNumber(UInt local) const;
 
   /// get the array of dof types (use only if you know what you do...)
-  inline Int getDOFType(UInt local_id) const;
+  inline NodeFlag getDOFFlag(UInt local_id) const;
 
   /// get the array of dof types (use only if you know what you do...)
   inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
@@ -325,7 +333,7 @@ protected:
   Array<bool> previous_global_blocked_dofs;
 
   /// define the dofs type, local, shared, ghost
-  Array<Int> dofs_type;
+  Array<NodeFlag> dofs_flag;
 
   /// Memory cache, this is an array to keep the temporary memory needed for
   /// some operations, it is meant to be resized or cleared when needed

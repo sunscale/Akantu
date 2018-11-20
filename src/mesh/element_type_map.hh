@@ -131,6 +131,8 @@ public:
   /*! iterator allows to iterate over type-data pairs of the map. The interface
    *  expects the SupportType to be ElementType. */
   using DataMap = std::map<SupportType, Stored>;
+
+  /// helper class to use in range for constructions
   class type_iterator
       : private std::iterator<std::forward_iterator_tag, const SupportType> {
   public:
@@ -189,10 +191,8 @@ public:
     ElementTypesIteratorHelper &
     operator=(ElementTypesIteratorHelper &&) = default;
 
-    iterator begin() {
-      return container.get().firstType(dim, ghost_type, kind);
-    }
-    iterator end() { return container.get().lastType(dim, ghost_type, kind); }
+    iterator begin();
+    iterator end();
 
   private:
     std::reference_wrapper<const Container> container;
@@ -233,7 +233,6 @@ public:
     return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);
   }
 
-public:
   /*! Get an iterator to the beginning of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when
@@ -245,9 +244,9 @@ public:
    *         aka_common.hh), by default all kinds are considered
    *  @return an iterator to the first stored data matching the filters
    *          or an iterator to the end of the map if none match*/
-  inline type_iterator firstType(UInt dim = _all_dimensions,
-                                 GhostType ghost_type = _not_ghost,
-                                 ElementKind kind = _ek_not_defined) const;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  firstType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+            ElementKind kind = _ek_not_defined) const;
   /*! Get an iterator to the end of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when
@@ -259,11 +258,10 @@ public:
    *         aka_common.hh), by default all kinds are considered
    *  @return an iterator to the last stored data matching the filters
    *          or an iterator to the end of the map if none match */
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                GhostType ghost_type = _not_ghost,
-                                ElementKind kind = _ek_not_defined) const;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  lastType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+           ElementKind kind = _ek_not_defined) const;
 
-protected:
   /*! Direct access to the underlying data map. for internal use by daughter
    *  classes only
    *  @param ghost_type whether to return the data map or the ghost_data map

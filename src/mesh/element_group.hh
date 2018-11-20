@@ -69,19 +69,21 @@ public:
   using ElementList = ElementTypeMapArray<UInt>;
   using NodeList = Array<UInt>;
 
-  /* ------------------------------------------------------------------------ */
-  /* Element iterator                                                         */
-  /* ------------------------------------------------------------------------ */
-  using type_iterator = ElementList::type_iterator;
-  inline type_iterator firstType(UInt dim = _all_dimensions,
-                                 const GhostType & ghost_type = _not_ghost,
-                                 const ElementKind & kind = _ek_regular) const;
-
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                const GhostType & ghost_type = _not_ghost,
-                                const ElementKind & kind = _ek_regular) const;
-
+/* ------------------------------------------------------------------------ */
+/* Element iterator                                                         */
+/* ------------------------------------------------------------------------ */
 #ifndef SWIG
+  using type_iterator = ElementList::type_iterator;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  firstType(UInt dim = _all_dimensions,
+            const GhostType & ghost_type = _not_ghost,
+            const ElementKind & kind = _ek_regular) const;
+
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  lastType(UInt dim = _all_dimensions,
+           const GhostType & ghost_type = _not_ghost,
+           const ElementKind & kind = _ek_regular) const;
+
   template <typename... pack>
   inline decltype(auto) elementTypes(pack &&... _pack) const {
     return elements.elementTypes(_pack...);
@@ -89,6 +91,7 @@ public:
 #endif
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
+
   inline const_element_iterator
   begin(const ElementType & type,
         const GhostType & ghost_type = _not_ghost) const;

@@ -93,6 +93,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
 #add_flags(cxx "-Wall -Wextra -pedantic -Werror")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_flags(cxx "-Wall -Wextra -pedantic") # -Weffc++
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG_INIT} -ggdb3"
+    CACHE STRING "Flags used by the compiler during debug builds" FORCE)
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT} -ggdb3"
+    CACHE STRING "Flags used by the compiler during debug builds" FORCE)
 else()
   add_flags(cxx "-Wall")
 endif()

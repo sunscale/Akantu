@@ -53,7 +53,7 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::init() {
         mesh.addConnectivityType(_igfem_triangle_4, ghost_type);
         mesh.addConnectivityType(_igfem_triangle_5, ghost_type);
       } else
-        AKANTU_DEBUG_ERROR("Not ready for mesh type " << *tit);
+        AKANTU_ERROR("Not ready for mesh type " << *tit);
     }
 
     tit = mesh.firstType(dim, ghost_type, _ek_not_defined);
@@ -275,7 +275,7 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh() {
               connec_new_elem(2) = connectivity(nel, 0);
               break;
             default:
-              AKANTU_DEBUG_ERROR("A triangle has only 3 segments not "
+              AKANTU_ERROR("A triangle has only 3 segments not "
                                  << new_node_per_elem(nel, 2));
               break;
             }
@@ -332,7 +332,7 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh() {
               connec_new_elem(3) = new_node_per_elem(nel, 1);
               connec_new_elem(4) = new_node_per_elem(nel, 3);
             } else
-              AKANTU_DEBUG_ERROR("A triangle has only 3 segments (0 to 2) not "
+              AKANTU_ERROR("A triangle has only 3 segments (0 to 2) not "
                                  << new_node_per_elem(nel, 2) << "and"
                                  << new_node_per_elem(nel, 4));
 
@@ -343,7 +343,7 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh() {
             break;
           }
           default:
-            AKANTU_DEBUG_ERROR("IGFEM cannot add " << new_node_per_elem(nel, 0)
+            AKANTU_ERROR("IGFEM cannot add " << new_node_per_elem(nel, 0)
                                                    << " nodes to triangles");
             break;
           }
@@ -467,7 +467,7 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(
       (type == _igfem_triangle_5)) {
     nb_prim_by_el = 3;
   } else {
-    AKANTU_DEBUG_ERROR("Not ready for mesh type " << type);
+    AKANTU_ERROR("Not ready for mesh type " << type);
   }
 
   // determine the node type for the local, master and slave nodes

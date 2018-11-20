@@ -48,7 +48,14 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  mesh.read("bar.msh");
+  if(Communicator::getStaticCommunicator().whoAmI() == 0)
+    mesh.read("bar.msh");
+
+  mesh.distribute();
+
+  mesh.makePeriodic(_x);
+  mesh.makePeriodic(_y);
+  mesh.makePeriodic(_z);
 
   SolidMechanicsModel model(mesh);
 
@@ -65,7 +72,7 @@ int main(int argc, char * argv[]) {
   const Array<Real> & nodes = mesh.getNodes();
 
   for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
-    Real x = nodes(n);
+    Real x = nodes(n) - 2;
     // Sinus * Gaussian
     Real L = pulse_width;
     Real k = 0.1 * 2 * M_PI * 3 / L;

@@ -67,9 +67,9 @@ namespace akantu {
 // clang-format on
 
 /// Defines the possible section types
-AKANTU_ENUM_DECLARE(ParserType, AKANTU_SECTION_TYPES)
-AKANTU_ENUM_OUTPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
-AKANTU_ENUM_INPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_CLASS_ENUM_DECLARE(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_CLASS_ENUM_INPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
 
 /// Defines the possible search contexts/scopes (for parameter search)
 enum ParserParameterSearchCxt {

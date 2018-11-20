@@ -105,44 +105,66 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
     conn(n, 0) = n;
     conn(n, 1) = n + 1;
   }
+  mesh_accessor.makeReady();
 }
 
 /* -------------------------------------------------------------------------- */
 void printResults(MyModel & model, UInt nb_nodes) {
-  UInt prank = model.mesh.getCommunicator().whoAmI();
-  auto & sync = dynamic_cast<DOFManagerDefault &>(model.getDOFManager())
-                    .getSynchronizer();
+  if (model.mesh.isDistributed()) {
+    UInt prank = model.mesh.getCommunicator().whoAmI();
+    auto & sync = dynamic_cast<DOFManagerDefault &>(model.getDOFManager())
+        .getSynchronizer();
 
-  if (prank == 0) {
-    Array<Real> global_displacement(nb_nodes);
-    Array<Real> global_forces(nb_nodes);
-    Array<bool> global_blocked(nb_nodes);
+    if (prank == 0) {
+      Array<Real> global_displacement(nb_nodes);
+      Array<Real> global_forces(nb_nodes);
+      Array<bool> global_blocked(nb_nodes);
 
-    sync.gather(model.forces, global_forces);
-    sync.gather(model.displacement, global_displacement);
-    sync.gather(model.blocked, global_blocked);
+      sync.gather(model.forces, global_forces);
+      sync.gather(model.displacement, global_displacement);
+      sync.gather(model.blocked, global_blocked);
 
-    auto force_it = global_forces.begin();
-    auto disp_it = global_displacement.begin();
-    auto blocked_it = global_blocked.begin();
+      auto force_it = global_forces.begin();
+      auto disp_it = global_displacement.begin();
+      auto blocked_it = global_blocked.begin();
 
-    std::cout << "node"
-              << ", " << std::setw(8) << "disp"
-              << ", " << std::setw(8) << "force"
-              << ", " << std::setw(8) << "blocked" << std::endl;
+      std::cout << "node"
+                << ", " << std::setw(8) << "disp"
+                << ", " << std::setw(8) << "force"
+                << ", " << std::setw(8) << "blocked" << std::endl;
 
-    UInt node = 0;
-    for (; disp_it != global_displacement.end();
-         ++disp_it, ++force_it, ++blocked_it, ++node) {
-      std::cout << node << ", " << std::setw(8) << *disp_it << ", "
-                << std::setw(8) << *force_it << ", " << std::setw(8)
-                << *blocked_it << std::endl;
+      UInt node = 0;
+      for (; disp_it != global_displacement.end();
+           ++disp_it, ++force_it, ++blocked_it, ++node) {
+        std::cout << node << ", " << std::setw(8) << *disp_it << ", "
+                  << std::setw(8) << *force_it << ", " << std::setw(8)
+                  << *blocked_it << std::endl;
 
-      std::cout << std::flush;
+        std::cout << std::flush;
+      }
+    } else {
+      sync.gather(model.forces);
+      sync.gather(model.displacement);
+      sync.gather(model.blocked);
     }
   } else {
-    sync.gather(model.forces);
-    sync.gather(model.displacement);
-    sync.gather(model.blocked);
+    auto force_it = model.forces.begin();
+    auto disp_it = model.displacement.begin();
+    auto blocked_it = model.blocked.begin();
+
+    std::cout << "node"
+                << ", " << std::setw(8) << "disp"
+                << ", " << std::setw(8) << "force"
+                << ", " << std::setw(8) << "blocked" << std::endl;
+
+    UInt node = 0;
+    for (; disp_it != model.displacement.end();
+           ++disp_it, ++force_it, ++blocked_it, ++node) {
+        std::cout << node << ", " << std::setw(8) << *disp_it << ", "
+                  << std::setw(8) << *force_it << ", " << std::setw(8)
+                  << *blocked_it << std::endl;
+
+        std::cout << std::flush;
+      }
   }
 }

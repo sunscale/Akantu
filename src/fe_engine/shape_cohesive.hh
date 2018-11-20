@@ -129,6 +129,7 @@ public:
         u, nablauq, nb_degree_of_freedom, ghost_type, filter_elements);
   }
 
+  /* ------------------------------------------------------------------------ */
   template <ElementType type>
   void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
                   GhostType /*ghost_type*/,
@@ -143,6 +144,15 @@ public:
     AKANTU_TO_IMPLEMENT();
   }
 
+  /// multiply a field by shape functions
+  template <ElementType type>
+  void computeNtb(const Array<Real> & /*bs*/, Array<Real> & /*Ntbs*/,
+                  const GhostType & /*ghost_type*/,
+                  const Array<UInt> & /*filter_elements*/ = empty_filter) const {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  /* ------------------------------------------------------------------------ */
   /// compute the gradient of u on the integration points
   template <ElementType type, class ReduceFunction>
   void variationOnIntegrationPoints(
@@ -156,15 +166,6 @@ public:
       const Array<Real> & u, Array<Real> & normals_u,
       GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
-
-  /// multiply a field by shape functions
-  template <ElementType type>
-  void fieldTimesShapes(__attribute__((unused)) const Array<Real> & field,
-                        __attribute__((unused))
-                        Array<Real> & fiedl_times_shapes,
-                        __attribute__((unused)) GhostType ghost_type) const {
-    AKANTU_TO_IMPLEMENT();
-  }
 };
 
 /// standard output stream operator

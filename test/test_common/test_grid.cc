@@ -62,11 +62,9 @@ int main(int argc, char * argv[]) {
   Element el;
   el.ghost_type = _not_ghost;
 
-  auto it = circle.firstType(spatial_dimension);
-  auto last_type = circle.lastType(spatial_dimension);
-  for (; it != last_type; ++it) {
-    UInt nb_element = circle.getNbElement(*it);
-    el.type = *it;
+  for (auto & type : circle.elementTypes(spatial_dimension)) {
+    UInt nb_element = circle.getNbElement(type);
+    el.type = type;
 
     for (UInt e = 0; e < nb_element; ++e) {
       el.element = e;
@@ -80,26 +78,6 @@ int main(int argc, char * argv[]) {
   grid.saveAsMesh(mesh);
   mesh.write("grid.msh");
 
-  Vector<Real> pos(spatial_dimension);
-
-  //  const SpatialGrid<Element>::CellID & id = grid.getCellID(pos);
-
-  // #if !defined AKANTU_NDEBUG
-  //   SpatialGrid<Element>::neighbor_cells_iterator nit =
-  //   grid.beginNeighborCells(id);
-  //   SpatialGrid<Element>::neighbor_cells_iterator nend =
-  //   grid.endNeighborCells(id);
-  //   for(;nit != nend; ++nit) {
-  //     std::cout << std::endl;
-  //     const SpatialGrid<Element>::Cell & cell = grid.getCell(*nit);
-  //     SpatialGrid<Element>::Cell::const_iterator cit = cell.begin();
-  //     SpatialGrid<Element>::Cell::position_iterator pit = cell.begin_pos();
-  //     SpatialGrid<Element>::Cell::const_iterator cend = cell.end();
-  //     for (; cit != cend; ++cit, ++pit) {
-  //       std::cout << *cit << " " << *pit << std::endl;
-  //     }
-  //   }
-  // #endif
 
   akantu::finalize();
 

@@ -137,20 +137,19 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
       UInt nb_elements = element_ids.size();
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
-      Array<Real> * dual_before_integ = new Array<Real>(
-          nb_elements * nb_quad_points, nb_degree_of_freedom, 0.);
-      Array<Real> * quad_coords =
-          new Array<Real>(nb_elements * nb_quad_points, dim);
+      Array<Real> dual_before_integ(nb_elements * nb_quad_points,
+                                    nb_degree_of_freedom, 0.);
+      Array<Real> quad_coords(nb_elements * nb_quad_points, dim);
 
       const auto & normals_on_quad =
           fem_boundary.getNormalsOnIntegrationPoints(type, ghost_type);
 
       fem_boundary.interpolateOnIntegrationPoints(
-          nodes_coords, *quad_coords, dim, type, ghost_type, element_ids);
+          nodes_coords, quad_coords, dim, type, ghost_type, element_ids);
       auto normals_begin = normals_on_quad.begin(dim);
       decltype(normals_begin) normals_iter;
-      auto quad_coords_iter = quad_coords->begin(dim);
-      auto dual_iter = dual_before_integ->begin(nb_degree_of_freedom);
+      auto quad_coords_iter = quad_coords.begin(dim);
+      auto dual_iter = dual_before_integ.begin(nb_degree_of_freedom);
 
       quad_point.type = type;
       for (auto el : element_ids) {
@@ -165,46 +164,21 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
         }
       }
 
-      delete quad_coords;
+      Array<Real> dual_by_shapes(nb_elements * nb_quad_points,
+                                 nb_degree_of_freedom * nb_nodes_per_element);
 
-      /* -------------------------------------------------------------------- */
-      // Initialization of iterators
-      auto dual_iter_mat = dual_before_integ->begin(nb_degree_of_freedom, 1);
-      auto shapes_iter_begin = fem_boundary.getShapes(type, ghost_type)
-                                   .begin(1, nb_nodes_per_element);
+      fem_boundary.computeNtb(dual_before_integ, dual_by_shapes, type,
+                              ghost_type, element_ids);
 
-      Array<Real> * dual_by_shapes =
-          new Array<Real>(nb_elements * nb_quad_points,
-                          nb_degree_of_freedom * nb_nodes_per_element);
-
-      auto dual_by_shapes_iter =
-          dual_by_shapes->begin(nb_degree_of_freedom, nb_nodes_per_element);
-
-      /* -------------------------------------------------------------------- */
-      // Loop computing dual x shapes
-      for (auto el : element_ids) {
-        auto shapes_iter = shapes_iter_begin + el * nb_quad_points;
-
-        for (UInt q(0); q < nb_quad_points;
-             ++q, ++dual_iter_mat, ++dual_by_shapes_iter, ++shapes_iter) {
-          dual_by_shapes_iter->template mul<false, false>(*dual_iter_mat,
-                                                          *shapes_iter);
-        }
-      }
-
-      delete dual_before_integ;
-
-      Array<Real> * dual_by_shapes_integ = new Array<Real>(
+      Array<Real> dual_by_shapes_integ(
           nb_elements, nb_degree_of_freedom * nb_nodes_per_element);
-      fem_boundary.integrate(*dual_by_shapes, *dual_by_shapes_integ,
+      fem_boundary.integrate(dual_by_shapes, dual_by_shapes_integ,
                              nb_degree_of_freedom * nb_nodes_per_element, type,
                              ghost_type, element_ids);
-      delete dual_by_shapes;
 
       // assemble the result into force vector
       model.getDOFManager().assembleElementalArrayLocalArray(
-          *dual_by_shapes_integ, dual, type, ghost_type, 1., element_ids);
-      delete dual_by_shapes_integ;
+          dual_by_shapes_integ, dual, type, ghost_type, 1., element_ids);
     }
   }
 };
@@ -229,7 +203,7 @@ BoundaryCondition<ModelType>::applyBC(const FunctorType & func,
     const ElementGroup & element_group =
         model->getMesh().getElementGroup(group_name);
     applyBC(func, element_group);
-  } catch (akantu::debug::Exception e) {
+  } catch (akantu::debug::Exception & e) {
     AKANTU_EXCEPTION("Error applying a boundary condition onto \""
                      << group_name << "\"! [" << e.what() << "]");
   }

@@ -119,11 +119,12 @@ public:
 /* ------------------------------------------------------------------------ */
 /* compatibility with old FEEngine fashion */
 /* ------------------------------------------------------------------------ */
-#ifndef SWIG
   /// get the number of integration points
   virtual UInt
   getNbIntegrationPoints(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost) const = 0;
+
+#ifndef SWIG
   /// get the precomputed shapes
   const virtual Array<Real> &
   getShapes(const ElementType & type, const GhostType & ghost_type = _not_ghost,
@@ -175,6 +176,12 @@ public:
   computeBtDB(const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
               const ElementType & type, const GhostType & ghost_type,
               const Array<UInt> & filter_elements = empty_filter) const = 0;
+
+  /// left multiples a vector by the shape functions
+  virtual void computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
+                          const ElementType & type,
+                          const GhostType & ghost_type,
+                          const Array<UInt> & filter_elements) const = 0;
 
   /// Compute the interpolation point position in the global coordinates for
   /// many element types
@@ -260,37 +267,6 @@ public:
       __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
     AKANTU_TO_IMPLEMENT();
   }
-
-// #ifdef AKANTU_STRUCTURAL_MECHANICS
-
-//   /// assemble a field as a matrix for structural elements (ex. rho to mass
-//   /// matrix)
-//   virtual void assembleFieldMatrix(
-//       __attribute__((unused)) const Array<Real> & field_1,
-//       __attribute__((unused)) UInt nb_degree_of_freedom,
-//       __attribute__((unused)) SparseMatrix & M,
-//       __attribute__((unused)) Array<Real> * n,
-//       __attribute__((unused)) ElementTypeMapArray<Real> & rotation_mat,
-//       __attribute__((unused)) ElementType type,
-//       __attribute__((unused)) const GhostType & ghost_type) const {
-
-//     AKANTU_TO_IMPLEMENT();
-//   }
-//   /// compute shapes function in a matrix for structural elements
-//   virtual void computeShapesMatrix(
-//       __attribute__((unused)) const ElementType & type,
-//       __attribute__((unused)) UInt nb_degree_of_freedom,
-//       __attribute__((unused)) UInt nb_nodes_per_element,
-//       __attribute__((unused)) Array<Real> * n, __attribute__((unused)) UInt id,
-//       __attribute__((unused)) UInt degree_to_interpolate,
-//       __attribute__((unused)) UInt degree_interpolated,
-//       __attribute__((unused)) const bool sign,
-//       __attribute__((unused)) const GhostType & ghost_type) const {
-
-//     AKANTU_TO_IMPLEMENT();
-//   }
-
-// #endif
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;

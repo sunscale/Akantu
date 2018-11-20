@@ -192,12 +192,9 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
   auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end()) {
-    std::stringstream sstr;
-    sstr << this->id << ":" << type << ghost_id;
-    tmp = &(Memory::alloc<T>(sstr.str(), size, nb_component, default_value));
-    std::stringstream sstrg;
-    sstrg << ghost_type;
-    // tmp->setTag(sstrg.str());
+    auto id = this->id + ":" + aka::to_string(type) + ghost_id;
+    tmp = &(Memory::alloc<T>(id, size, nb_component, default_value));
+
     this->getData(ghost_type)[type] = tmp;
   } else {
     AKANTU_DEBUG_INFO(
@@ -414,7 +411,7 @@ inline typename ElementTypeMap<Stored, SupportType>::type_iterator::reference
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator &
-    ElementTypeMap<Stored, SupportType>::type_iterator::operator++() {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator++() {
   ++list_begin;
   while ((list_begin != list_end) &&
          (((dim != _all_dimensions) &&
@@ -428,7 +425,7 @@ inline typename ElementTypeMap<Stored, SupportType>::type_iterator &
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 typename ElementTypeMap<Stored, SupportType>::type_iterator
-    ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
   type_iterator tmp(*this);
   operator++();
   return tmp;
@@ -450,30 +447,10 @@ operator!=(const type_iterator & other) const {
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypesImpl(UInt dim,
-                                                      GhostType ghost_type,
-                                                      ElementKind kind) const {
-  return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Stored, typename SupportType>
-template <typename... pack>
-typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypesImpl(
-    const use_named_args_t & unused, pack &&... _pack) const {
-  return ElementTypesIteratorHelper(*this, unused, _pack...);
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Stored, typename SupportType>
-inline typename ElementTypeMap<Stored, SupportType>::type_iterator
-ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
-                                               ElementKind kind) const {
-  typename DataMap::const_iterator b, e;
-  b = getData(ghost_type).begin();
-  e = getData(ghost_type).end();
+auto ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper::begin()
+    -> iterator {
+  auto b = container.get().getData(ghost_type).begin();
+  auto e = container.get().getData(ghost_type).end();
 
   // loop until the first valid type
   while ((b != e) &&
@@ -482,15 +459,44 @@ ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
           ((kind != _ek_not_defined) && (kind != Mesh::getKind(b->first)))))
     ++b;
 
-  return typename ElementTypeMap<Stored, SupportType>::type_iterator(b, e, dim,
-                                                                     kind);
+  return iterator(b, e, dim, kind);
+}
+
+template <class Stored, typename SupportType>
+auto ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper::end()
+    -> iterator {
+  auto e = container.get().getData(ghost_type).end();
+  return iterator(e, e, dim, kind);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline typename ElementTypeMap<Stored, SupportType>::type_iterator
-ElementTypeMap<Stored, SupportType>::lastType(UInt dim, GhostType ghost_type,
-                                              ElementKind kind) const {
+auto ElementTypeMap<Stored, SupportType>::elementTypesImpl(
+    UInt dim, GhostType ghost_type, ElementKind kind) const
+    -> ElementTypesIteratorHelper {
+  return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+template <typename... pack>
+auto ElementTypeMap<Stored, SupportType>::elementTypesImpl(
+    const use_named_args_t & unused, pack &&... _pack) const
+    -> ElementTypesIteratorHelper {
+  return ElementTypesIteratorHelper(*this, unused, _pack...);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+inline auto ElementTypeMap<Stored, SupportType>::firstType(
+    UInt dim, GhostType ghost_type, ElementKind kind) const -> type_iterator {
+  return elementTypes(dim, ghost_type, kind).begin();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+inline auto ElementTypeMap<Stored, SupportType>::lastType(
+    UInt dim, GhostType ghost_type, ElementKind kind) const -> type_iterator {
   typename DataMap::const_iterator e;
   e = getData(ghost_type).end();
   return typename ElementTypeMap<Stored, SupportType>::type_iterator(e, e, dim,

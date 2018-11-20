@@ -70,10 +70,14 @@ inline UInt CommunicationBufferTemplated<is_static>::sizeInBuffer(
 /* -------------------------------------------------------------------------- */
 template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
-  if (!is_static) {
+  if (not is_static) {
     char * values = buffer.storage();
-    buffer.resize(buffer.size() + size);
-    ptr_pack = buffer.storage() + (ptr_pack - values);
+    auto nb_packed = ptr_pack - values;
+
+    if(buffer.size() > nb_packed + size) return;
+
+    buffer.resize(nb_packed + size);
+    ptr_pack = buffer.storage() + nb_packed;
     ptr_unpack = buffer.storage() + (ptr_unpack - values);
   }
 }
@@ -279,14 +283,25 @@ CommunicationBufferTemplated<is_static>::extractStream(UInt block_size) {
 template <bool is_static>
 inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
   if (!is_static) {
-    buffer.resize(0);
+    buffer.resize(0, 0);
   } else {
-    buffer.resize(size);
+    buffer.resize(size, 0);
   }
   reset();
 #ifndef AKANTU_NDEBUG
   clear();
 #endif
+}
+
+/* -------------------------------------------------------------------------- */
+template <bool is_static>
+inline void CommunicationBufferTemplated<is_static>::reserve(UInt size) {
+  char * values = buffer.storage();
+  auto nb_packed = ptr_pack - values;
+
+  buffer.resize(size);
+  ptr_pack = buffer.storage() + nb_packed;
+  ptr_unpack = buffer.storage() + (ptr_unpack - values);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -173,12 +173,10 @@ void TimeStepSolverDefault::solveStep(SolverCallback & solver_callback) {
 
 /* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::predictor() {
-  AKANTU_DEBUG_IN();
-
   TimeStepSolver::predictor();
 
-  for (auto & pair : this->integration_schemes) {
-    auto & dof_id = pair.first;
+  for (auto && pair : this->integration_schemes) {
+    const auto & dof_id = pair.first;
     auto & integration_scheme = pair.second;
 
     if (this->dof_manager.hasPreviousDOFs(dof_id)) {
@@ -188,8 +186,6 @@ void TimeStepSolverDefault::predictor() {
     /// integrator predictor
     integration_scheme->predictor(this->time_step);
   }
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -257,8 +253,6 @@ void TimeStepSolverDefault::assembleMatrix(const ID & matrix_id) {
 
 /* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::assembleResidual() {
-  AKANTU_DEBUG_IN();
-
   if (this->needed_matrices.find("M") != needed_matrices.end()) {
     if (this->is_mass_lumped) {
       this->assembleLumpedMatrix("M");
@@ -269,13 +263,11 @@ void TimeStepSolverDefault::assembleResidual() {
 
   TimeStepSolver::assembleResidual();
 
-  for (auto & pair : this->integration_schemes) {
+  for (auto && pair : this->integration_schemes) {
     auto & integration_scheme = pair.second;
 
     integration_scheme->assembleResidual(this->is_mass_lumped);
   }
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

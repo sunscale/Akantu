@@ -74,7 +74,10 @@ public:
   }
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline auto & getNodesType() { return this->_mesh.getNodesTypePointer(); }
+  inline auto & getNodesFlags() { return this->_mesh.getNodesFlags(); }
+
+  /// get a pointer to the nodes_type Array<Int> and create it if necessary
+  inline void setNodePrank(UInt node, Int prank) { this->_mesh.nodes_prank[node] = prank; }
 
   /// get a pointer to the coordinates Array
   inline auto & getNodes() { return this->_mesh.getNodesPointer(); }
@@ -121,8 +124,6 @@ public:
                                          resize_with_parent);
   }
 
-  auto & getMeshData() { return this->_mesh.getMeshData(); }
-
   /// get the node synchonizer
   auto & getNodeSynchronizer() { return *this->_mesh.node_synchronizer; }
 
@@ -139,6 +140,26 @@ public:
     this->_mesh.registerGlobalDataUpdater(
         std::forward<std::unique_ptr<MeshGlobalDataUpdater>>(
             global_data_updater));
+  }
+
+  /* ------------------------------------------------------------------------ */
+  void makeReady() {
+    this->_mesh.makeReady();
+  }
+
+  /* ------------------------------------------------------------------------ */
+  void addPeriodicSlave(UInt slave, UInt master) {
+    this->_mesh.addPeriodicSlave(slave, master);
+  }
+
+  void markMeshPeriodic() {
+    for (UInt s : arange(this->_mesh.spatial_dimension)) {
+      this->_mesh.is_periodic |= 1 << s;
+    }
+  }
+
+  void wipePeriodicInfo() {
+    this->_mesh.wipePeriodicInfo();
   }
 
 private:

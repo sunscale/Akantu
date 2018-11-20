@@ -126,9 +126,9 @@ public:
 
   /// multiply a field by shape functions  @f$ fts_{ij} = f_i * \varphi_j @f$
   template <ElementType type>
-  void fieldTimesShapes(const Array<Real> & field,
-                        Array<Real> & field_times_shapes,
-                        GhostType ghost_type) const;
+  void computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
+                  GhostType ghost_type,
+                  const Array<UInt> & filter_elements = empty_filter) const;
 
   /// find natural coords from real coords provided an element
   template <ElementType type>

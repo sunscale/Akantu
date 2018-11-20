@@ -47,7 +47,7 @@ Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
     : Memory(id, memory_id), ModelSolver(mesh, type, id, memory_id), mesh(mesh),
       spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
                                                : dim),
-      is_pbc_slave_node(0, 1, "is_pbc_slave_node"), parser(getStaticParser()) {
+      parser(getStaticParser()) {
   AKANTU_DEBUG_IN();
 
   this->mesh.registerEventHandler(*this, _ehp_model);
@@ -72,6 +72,8 @@ void Model::initFullImpl(const ModelOptions & options) {
   initModel();
 
   initFEEngineBoundary();
+
+  //if(mesh.isPeriodic()) this->initPBC();
 
   AKANTU_DEBUG_OUT();
 }
@@ -99,32 +101,32 @@ void Model::initNewSolver(const AnalysisMethod & method) {
 }
 
 /* -------------------------------------------------------------------------- */
-void Model::initPBC() {
-  auto it = pbc_pair.begin();
-  auto end = pbc_pair.end();
+// void Model::initPBC() {
+//   auto it = pbc_pair.begin();
+//   auto end = pbc_pair.end();
 
-  is_pbc_slave_node.resize(mesh.getNbNodes());
-#ifndef AKANTU_NDEBUG
-  auto coord_it = mesh.getNodes().begin(this->spatial_dimension);
-#endif
+//  is_pbc_slave_node.resize(mesh.getNbNodes());
+//#ifndef AKANTU_NDEBUG
+//  auto coord_it = mesh.getNodes().begin(this->spatial_dimension);
+//#endif
 
-  while (it != end) {
-    UInt i1 = (*it).first;
+//   while (it != end) {
+//     UInt i1 = (*it).first;
 
-    is_pbc_slave_node(i1) = true;
+//     is_pbc_slave_node(i1) = true;
 
-#ifndef AKANTU_NDEBUG
-    UInt i2 = (*it).second;
-    UInt slave = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i1) : i1;
-    UInt master = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i2) : i2;
+// #ifndef AKANTU_NDEBUG
+//     UInt i2 = (*it).second;
+//     UInt slave = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i1) : i1;
+//     UInt master = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i2) : i2;
 
-    AKANTU_DEBUG_INFO("pairing " << slave << " (" << Vector<Real>(coord_it[i1])
-                                 << ") with " << master << " ("
-                                 << Vector<Real>(coord_it[i2]) << ")");
-#endif
-    ++it;
-  }
-}
+//     AKANTU_DEBUG_INFO("pairing " << slave << " (" << Vector<Real>(coord_it[i1])
+//                                  << ") with " << master << " ("
+//                                  << Vector<Real>(coord_it[i2]) << ")");
+// #endif
+//     ++it;
+//   }
+// }
 
 /* -------------------------------------------------------------------------- */
 void Model::initFEEngineBoundary() {

@@ -48,13 +48,13 @@ class NTNBaseContact;
 // class NTNContactSynchElementFilter : public SynchElementFilter {
 // public:
 //   // constructor
-//   NTNContactSynchElementFilter(NTNBaseContact * contact);
+//   NTNContactSynchElementFilter(NTNBaseContact & contact);
 
 //   // answer to: do we need this element ?
 //   virtual bool operator()(const Element & e);
 
 // private:
-//   const NTNBaseContact * contact;
+//   const NTNBaseContact & contact;
 //   const ElementTypeMapArray<UInt> & connectivity;
 // };
 
@@ -193,7 +193,9 @@ public:
 
   /// get number of contact nodes: nodes in the system locally (on this proc)
   /// is_in_contact = true and false, because just in the system
-  virtual UInt getNbContactNodes() const { return this->slaves.size(); };
+  virtual UInt getNbContactNodes() const { return this->slaves.size(); }
+
+  bool isNTNContact() const { return this->is_ntn_contact; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -226,6 +228,8 @@ protected:
   /// parallelisation
   std::unique_ptr<SynchronizerRegistry> synch_registry;
   std::unique_ptr<ElementSynchronizer> synchronizer;
+
+  bool is_ntn_contact{true};
 };
 
 /* -------------------------------------------------------------------------- */
