@@ -1,12 +1,11 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Seyedeh Mohadeseh Taheri Mousavi <mohadeseh.taherimousavi@epfl.ch>
+# @author Emil Gallyamov <emil.gallyamov@epfl.ch>
 #
-# @date creation: Mon Jan 18 2016
-# @date last modification: Tue Jan 19 2016
+# @date creation: Tue Nov 20 2018
 #
-# @brief  CMakeFile for new material example
+# @brief  CMakeFile for viscoelastic material example
 #
 # @section LICENSE
 #
@@ -32,18 +31,16 @@
 #===============================================================================
 
 #===============================================================================
-add_mesh(new_local_material_barre_trou_mesh barre_trou.geo 2 2)
 
-register_example(new_local_material
-  SOURCES
-    local_material_damage.cc
-    local_material_damage.hh
-    local_material_damage_inline_impl.hh
-    new_local_material.cc
-  DEPENDS
-    new_local_material_barre_trou_mesh
-  FILES_TO_COPY
-    material.dat
+
+
+
+add_mesh(material_viscoelastic_maxwell_mesh material_viscoelastic_maxwell_mesh.geo 2 1)
+register_example(material_viscoelastic_maxwell_energies
+  SOURCES material_viscoelastic_maxwell_energies.cc
+  DEPENDS material_viscoelastic_maxwell_mesh
+  USE_PACKAGES iohelper
+  FILES_TO_COPY material_viscoelastic_maxwell.dat
+  DIRECTORIES_TO_CREATE paraview
   )
 
-add_example(viscoelastic_maxwell  "Example on how to instantiate and obtaine energies from the viscoelastic maxwell material"      PACKAGE core)

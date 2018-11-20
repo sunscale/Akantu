@@ -1,0 +1,9 @@
+material viscoelastic_maxwell [
+	 name = anything
+	 rho  = 7800     # density
+	 Einf = 15e6      # young's modulus
+	 nu   = 0.0     # poisson's ratio
+	 Eta = [40e6]       # viscosity
+         Ev  =[10e6]      # viscous stiffness
+	 Plane_Stress = 0
+]
