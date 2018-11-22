@@ -478,8 +478,8 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::savePreviousState() {
     auto & previous_grad_u = *previous_gradu_it;
     auto & previous_sigma = *previous_sigma_it;
 
-    previous_grad_u.copy(*gradu_it);
-    previous_sigma.copy(*stress_it);
+    previous_grad_u.copy(grad_u);
+    previous_sigma.copy(sigma);
     *previous_sigma_th_it = *sigma_th_it;
 
     ++previous_gradu_it, ++previous_sigma_it, ++previous_sigma_th_it,
