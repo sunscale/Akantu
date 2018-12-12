@@ -69,19 +69,14 @@ int main(int argc, char * argv[]) {
                                             "coh3",      "coh4", "coh5"};
   UInt nb_surf = surfaces_name.size();
 
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_cohesive);
-  Mesh::type_iterator end =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_cohesive);
-
-  for (; it != end; ++it) {
+  for(auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_cohesive)) {
     for (UInt i = 0; i < nb_surf; ++i) {
 
       UInt expected_insertion = mesh.getElementGroup(surfaces_name[i])
-                                    .getElements(mesh.getFacetType(*it))
+                                    .getElements(mesh.getFacetType(type))
                                     .size();
       UInt inserted_elements =
-          model.getMaterial(surfaces_name[i]).getElementFilter()(*it).size();
+          model.getMaterial(surfaces_name[i]).getElementFilter()(type).size();
       if(not (expected_insertion == inserted_elements)) {
         std::cout <<  "!!! Mismatch in insertion of surface named "
                   << surfaces_name[i] << " --> "

@@ -97,7 +97,7 @@ void StaticMemory::sfree(const MemoryID & memory_id, const ID & name) {
       AKANTU_DEBUG_OUT();
       return;
     }
-  } catch (debug::Exception e) {
+  } catch (debug::Exception & e) {
     AKANTU_EXCEPTION("The memory "
                      << memory_id << " does not exist (perhaps already freed) ["
                      << e.what() << "]");

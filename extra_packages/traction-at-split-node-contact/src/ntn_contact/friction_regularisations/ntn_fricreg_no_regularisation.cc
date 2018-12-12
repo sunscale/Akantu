@@ -38,7 +38,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegNoRegularisation::NTNFricRegNoRegularisation(
-    NTNBaseContact * contact, const FrictionID & id, const MemoryID & memory_id)
+    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
     : NTNBaseFriction(contact, id, memory_id),
       frictional_contact_pressure(0, 1, 0., id + ":frictional_contact_pressure",
                                   0., "frictional_contact_pressure") {
@@ -68,16 +68,16 @@ NTNFricRegNoRegularisation::internalGetContactPressure() {
 void NTNFricRegNoRegularisation::computeFrictionalContactPressure() {
   AKANTU_DEBUG_IN();
 
-  SolidMechanicsModel & model = this->contact->getModel();
+  SolidMechanicsModel & model = this->contact.getModel();
   UInt dim = model.getSpatialDimension();
 
   // get contact arrays
   const SynchronizedArray<bool> & is_in_contact =
       this->internalGetIsInContact();
-  const Array<Real> & pressure = this->contact->getContactPressure().getArray();
+  const Array<Real> & pressure = this->contact.getContactPressure().getArray();
   Array<Real>::const_iterator<Vector<Real>> it = pressure.begin(dim);
 
-  UInt nb_contact_nodes = this->contact->getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     // node pair is NOT in contact
     if (!is_in_contact(n))
@@ -149,7 +149,7 @@ void NTNFricRegNoRegularisation::addDumpFieldToDumper(
 
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter =
-  //  &(this->contact->getSlaves());
+  //  &(this->contact.getSlaves());
 
   if (field_id == "frictional_contact_pressure") {
     this->internalAddDumpFieldToDumper(

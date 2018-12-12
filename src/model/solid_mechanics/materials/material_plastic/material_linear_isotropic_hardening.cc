@@ -180,7 +180,7 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(
 
   MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_matrix);
 
-  computeTangentModuliOnQuad(tangent, grad_u, *previous_gradu_it, sigma_tensor,
+  computeTangentModuliOnQuad(tangent, grad_u, *previous_gradu_it, sigma,
                              *previous_stress_it, *iso_hardening);
 
   ++previous_gradu_it;

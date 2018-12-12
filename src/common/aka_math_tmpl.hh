@@ -741,12 +741,12 @@ inline bool Math::are_vector_equal(UInt n, Real * x, Real * y) {
 
 /* -------------------------------------------------------------------------- */
 inline bool Math::intersects(Real x_min, Real x_max, Real y_min, Real y_max) {
-  return !((x_max <= y_min) || (x_min >= y_max));
+  return not ((x_max < y_min) or (x_min > y_max));
 }
 
 /* -------------------------------------------------------------------------- */
 inline bool Math::is_in_range(Real a, Real x_min, Real x_max) {
-  return ((a >= x_min) && (a <= x_max));
+  return ((a >= x_min) and (a <= x_max));
 }
 
 /* -------------------------------------------------------------------------- */

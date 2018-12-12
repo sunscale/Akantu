@@ -64,10 +64,9 @@ inline Matrix<type> typeConverter(const Matrix<type> & input,
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
-inline Vector<type> typeConverter(__attribute__((unused))
-                                  const Vector<type> & input,
-                                  __attribute__((unused)) Vector<type> & res,
-                                  __attribute__((unused)) UInt nb_data) {
+inline Vector<type> typeConverter(const Vector<type> & ,
+                                  Vector<type> & res,
+                                  UInt) {
 
   return res;
 }
@@ -90,8 +89,9 @@ class AvgHomogenizingFunctor : public ComputeFunctor<type, type> {
 public:
   AvgHomogenizingFunctor(ElementTypeMap<UInt> & nb_datas) {
 
-    ElementTypeMap<UInt>::type_iterator tit = nb_datas.firstType();
-    ElementTypeMap<UInt>::type_iterator end = nb_datas.lastType();
+    auto types = nb_datas.elementTypes();
+    auto tit = types.begin();
+    auto end = types.end();
 
     nb_data = nb_datas(*tit);
 

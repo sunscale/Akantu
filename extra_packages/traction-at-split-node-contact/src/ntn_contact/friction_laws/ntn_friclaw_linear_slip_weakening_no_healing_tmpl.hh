@@ -35,8 +35,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawLinearSlipWeakeningNoHealing<Regularisation>::
-    NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact * contact,
-                                           const FrictionID & id,
+    NTNFricLawLinearSlipWeakeningNoHealing(NTNBaseContact & contact,
+                                           const ID & id,
                                            const MemoryID & memory_id)
     : NTNFricLawLinearSlipWeakening<Regularisation>(contact, id, memory_id) {
   AKANTU_DEBUG_IN();
@@ -53,7 +53,7 @@ void NTNFricLawLinearSlipWeakeningNoHealing<
   // get arrays
   const SynchronizedArray<Real> & slip = this->internalGetCumulativeSlip();
 
-  UInt nb_contact_nodes = this->contact->getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     if (slip(n) >= this->d_c(n)) {
       this->mu(n) = this->mu_k(n);

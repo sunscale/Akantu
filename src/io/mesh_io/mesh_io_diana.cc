@@ -457,14 +457,10 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
   AKANTU_DEBUG_IN();
 
   std::string line;
-  std::stringstream sstr_tag_name;
-  sstr_tag_name << "tag_" << 0;
 
-  Mesh::type_iterator it = mesh.firstType();
-  Mesh::type_iterator end = mesh.lastType();
-  for (; it != end; ++it) {
-    UInt nb_element = mesh.getNbElement(*it);
-    mesh.getDataPointer<UInt>("material", *it, _not_ghost, 1)
+  for (auto type : mesh.elementTypes()) {
+    UInt nb_element = mesh.getNbElement(type);
+    mesh.getDataPointer<UInt>("material", type, _not_ghost, 1)
         .resize(nb_element);
   }
 
@@ -473,8 +469,8 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
     line =
         line.substr(line.find('/') + 1,
                     std::string::npos); // erase the first slash / of the line
-    char tutu[250];
-    strncpy(tutu, line.c_str(), 250);
+    char tutu[250] = {'\0'};
+    strncpy(tutu, line.c_str(), 249);
 
     AKANTU_DEBUG_WARNING("reading line " << line);
     Array<UInt> temp_id(0, 2);

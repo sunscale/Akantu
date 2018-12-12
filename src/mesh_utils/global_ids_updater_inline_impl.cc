@@ -47,7 +47,7 @@ inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
     size += Mesh::getNbNodesPerElementList(elements) *
                 sizeof(UInt);
 #ifndef AKANTU_NDEBUG
-    size += sizeof(NodeType) * Mesh::getNbNodesPerElementList(elements) +  sizeof(int);
+    size += sizeof(NodeFlag) * Mesh::getNbNodesPerElementList(elements) +  sizeof(int);
 #endif
   }
   return size;
@@ -78,7 +78,7 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
       }
       buffer << index;
 #ifndef AKANTU_NDEBUG
-      buffer << mesh.getNodeType(node);
+      buffer << mesh.getNodeFlag(node);
 #endif
     }
   }
@@ -108,10 +108,10 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
       UInt index;
       buffer >> index;
 #ifndef AKANTU_NDEBUG
-      NodeType node_type;
-      buffer >> node_type;
+      NodeFlag node_flag;
+      buffer >> node_flag;
       if (reduce)
-        nodes_types[node].push_back(std::make_pair(proc, node_type));
+        nodes_flags[node].push_back(std::make_pair(proc, node_flag));
 #endif
 
       if (index == UInt(-1))

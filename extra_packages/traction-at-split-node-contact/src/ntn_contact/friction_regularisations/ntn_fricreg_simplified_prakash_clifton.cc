@@ -38,7 +38,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegSimplifiedPrakashClifton::NTNFricRegSimplifiedPrakashClifton(
-    NTNBaseContact * contact, const FrictionID & id, const MemoryID & memory_id)
+    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
     : NTNFricRegNoRegularisation(contact, id, memory_id),
       t_star(0, 1, 0., id + ":t_star", 0., "t_star"),
       spc_internal(0, 1, 0., id + ":spc_internal", 0., "spc_internal") {
@@ -58,10 +58,10 @@ NTNFricRegSimplifiedPrakashClifton::NTNFricRegSimplifiedPrakashClifton(
 void NTNFricRegSimplifiedPrakashClifton::computeFrictionalStrength() {
   AKANTU_DEBUG_IN();
 
-  SolidMechanicsModel & model = this->contact->getModel();
+  SolidMechanicsModel & model = this->contact.getModel();
   Real delta_t = model.getTimeStep();
 
-  UInt nb_contact_nodes = this->contact->getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     Real alpha = delta_t / this->t_star(n);
     this->frictional_strength(n) += alpha * this->spc_internal(n);
@@ -79,7 +79,7 @@ void NTNFricRegSimplifiedPrakashClifton::setToSteadyState() {
   computeFrictionalStrength();
 
   /// set strength without regularisation
-  UInt nb_contact_nodes = this->contact->getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     this->frictional_strength(n) = this->spc_internal(n);
   }
@@ -145,7 +145,7 @@ void NTNFricRegSimplifiedPrakashClifton::addDumpFieldToDumper(
 
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter =
-  //  &(this->contact->getSlaves());
+  //  &(this->contact.getSlaves());
 
   if (field_id == "t_star") {
     this->internalAddDumpFieldToDumper(

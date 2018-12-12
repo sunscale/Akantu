@@ -33,12 +33,20 @@
 /* -------------------------------------------------------------------------- */
 
 TEST_F(TestSynchronizerFixture, DataDistribution) {
-  auto & barycenters = this->mesh->registerData<Real>("barycenters");
+  auto & barycenters = this->mesh->registerElementalData<Real>("barycenters");
   auto spatial_dimension = this->mesh->getSpatialDimension();
   barycenters.initialize(*this->mesh, _spatial_dimension = _all_dimensions,
                          _nb_component = spatial_dimension);
 
   this->initBarycenters(barycenters, *this->mesh);
+
+  auto & gids = this->mesh->registerNodalData<UInt>("gid");
+  gids.resize(this->mesh->getNbNodes());
+
+  for(auto && data : enumerate(gids)) {
+    std::get<1>(data) = std::get<0>(data);
+  }
+
   this->distribute();
 
   for (auto && ghost_type : ghost_types) {
@@ -56,6 +64,12 @@ TEST_F(TestSynchronizerFixture, DataDistribution) {
         auto dist = (std::get<1>(data) - barycenter).template norm<L_inf>();
         EXPECT_NEAR(dist, 0, 1e-7);
       }
+    }
+  }
+
+  if (psize > 1) {
+    for(auto && data : zip(gids, this->mesh->getGlobalNodesIds())) {
+      EXPECT_EQ(std::get<0>(data), std::get<1>(data));
     }
   }
 }

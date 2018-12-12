@@ -40,6 +40,7 @@
 %}
 
 namespace akantu {
+  %ignore NodeFlag;
   %ignore getUserParser;
   %ignore ghost_types;
   %ignore initialize(int & argc, char ** & argv);

@@ -262,21 +262,14 @@ public:
     }
   };
 
-  inline type_iterator firstType(UInt dim = _all_dimensions,
+  template <typename... Args>
+  decltype(auto) elementTypes(Args &&... args) const {
+    return filter.elementTypes(std::forward<decltype(args)>(args)...);
+  }
+
+  decltype(auto) getNbComponents(UInt dim = _all_dimensions,
                                  GhostType ghost_type = _not_ghost,
                                  ElementKind kind = _ek_not_defined) const {
-    return filter.firstType(dim, ghost_type, kind);
-  };
-
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                GhostType ghost_type = _not_ghost,
-                                ElementKind kind = _ek_not_defined) const {
-    return filter.lastType(dim, ghost_type, kind);
-  };
-
-  ElementTypeMap<UInt>
-  getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
-                  ElementKind kind = _ek_not_defined) const {
     return this->array.getNbComponents(dim, ghost_type, kind);
   };
 

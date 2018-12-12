@@ -763,7 +763,32 @@ public:
   inline bool operator!=(const Vector<T> & v) const { return !operator==(v); }
   inline bool operator<(const Vector<T> & v) const { return compare(v) == -1; }
   inline bool operator>(const Vector<T> & v) const { return compare(v) == 1; }
+#ifndef SWIG
+  template <typename Func, typename Acc>
+  decltype(auto) accumulate(const Vector<T> & v, Acc && accumulator,
+                            Func && func) const {
+    T * a = this->storage();
+    T * b = v.storage();
+    for (UInt i(0); i < this->_size; ++i, ++a, ++b) {
+      accumulator = func(*a, *b, std::forward<Acc>(accumulator));
+    }
+    return accumulator;
+  }
 
+  inline bool operator<=(const Vector<T> & v) const {
+    bool res = true;
+    return accumulate(v, res, [](auto && a, auto && b, auto && accumulator) {
+      return accumulator & (a <= b);
+    });
+  }
+
+  inline bool operator>=(const Vector<T> & v) const {
+    bool res = true;
+    return accumulate(v, res, [](auto && a, auto && b, auto && accumulator) {
+      return accumulator & (a >= b);
+    });
+  }
+#endif
   /* ------------------------------------------------------------------------ */
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const {
@@ -780,7 +805,12 @@ public:
     stream << "]";
   }
 
-  //  friend class ::akantu::Array<T>;
+  /* ---------------------------------------------------------------------- */
+  static inline Vector<T> zeros(UInt n) {
+    Vector<T> tmp(n);
+    tmp.set(T());
+    return tmp;
+  }
 };
 
 using RVector = Vector<Real>;

@@ -45,3 +45,5 @@ register_example(new_local_material
   FILES_TO_COPY
     material.dat
   )
+
+add_example(viscoelastic_maxwell  "Example on how to instantiate and obtaine energies from the viscoelastic maxwell material"      PACKAGE core)

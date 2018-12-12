@@ -55,20 +55,16 @@ int main(int argc, char * argv[]) {
 
   std::cout << "ELEMENT-SUBELEMENT MAPPING:" << std::endl;
 
-  for (ghost_type_t::iterator git = ghost_type_t::begin();
-       git != ghost_type_t::end(); ++git) {
-    Mesh::type_iterator tit = mesh.firstType(spatial_dimension, *git);
-    Mesh::type_iterator tend = mesh.lastType(spatial_dimension, *git);
-
+  for (auto ghost_type : ghost_types) {
     std::cout << "  "
-              << "Ghost type: " << *git << std::endl;
-    for (; tit != tend; ++tit) {
+              << "Ghost type: " << ghost_type << std::endl;
+    for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
 
       const SubelemToElemMapping & subelement_to_element =
-          mesh.getSubelementToElement(*tit, *git);
+          mesh.getSubelementToElement(type, ghost_type);
       std::cout << "  "
                 << "  "
-                << "Element type: " << *tit << std::endl;
+                << "Element type: " << type << std::endl;
 
       std::cout << "  "
                 << "  "
@@ -78,7 +74,7 @@ int main(int argc, char * argv[]) {
 
       for (UInt i(0); i < subelement_to_element.size(); ++i) {
         std::cout << "        ";
-        for (UInt j(0); j < mesh.getNbFacetsPerElement(*tit); ++j) {
+        for (UInt j(0); j < mesh.getNbFacetsPerElement(type); ++j) {
           if (subelement_to_element(i, j) != ElementNull) {
             std::cout << subelement_to_element(i, j);
             std::cout << ", ";
@@ -91,16 +87,12 @@ int main(int argc, char * argv[]) {
       }
     }
 
-    tit = mesh.firstType(spatial_dimension - 1, *git);
-    tend = mesh.lastType(spatial_dimension - 1, *git);
-
-    for (; tit != tend; ++tit) {
-
+    for (auto & type : mesh.elementTypes(spatial_dimension - 1, ghost_type)) {
       const ElemToSubelemMapping & element_to_subelement =
-          mesh.getElementToSubelement(*tit, *git);
+          mesh.getElementToSubelement(type, ghost_type);
       std::cout << "  "
                 << "  "
-                << "Element type: " << *tit << std::endl;
+                << "Element type: " << type << std::endl;
 
       std::cout << "  "
                 << "  "

@@ -47,6 +47,7 @@
 #include "facet_synchronizer.hh"
 #include "mesh_utils_distribution.hh"
 #include "node_synchronizer.hh"
+#include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_field.hh"
@@ -64,13 +65,12 @@ Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
            Communicator & communicator)
     : Memory(id, memory_id),
       GroupManager(*this, id + ":group_manager", memory_id),
+      MeshData("mesh_data", id, memory_id),
       connectivities("connectivities", id, memory_id),
       ghosts_counters("ghosts_counters", id, memory_id),
       normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
-      lower_bounds(spatial_dimension, 0.), upper_bounds(spatial_dimension, 0.),
-      size(spatial_dimension, 0.), local_lower_bounds(spatial_dimension, 0.),
-      local_upper_bounds(spatial_dimension, 0.),
-      mesh_data("mesh_data", id, memory_id), communicator(&communicator) {
+      size(spatial_dimension, 0.), bbox(spatial_dimension),
+      bbox_local(spatial_dimension), communicator(&communicator) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -84,6 +84,8 @@ Mesh::Mesh(UInt spatial_dimension, Communicator & communicator, const ID & id,
 
   this->nodes =
       std::make_shared<Array<Real>>(0, spatial_dimension, id + ":coordinates");
+  this->nodes_flags = std::make_shared<Array<NodeFlag>>(0, 1, NodeFlag::_normal,
+                                                        id + ":nodes_flags");
 
   AKANTU_DEBUG_OUT();
 }
@@ -124,105 +126,106 @@ void Mesh::getBarycenters(Array<Real> & barycenter, const ElementType & type,
 Mesh & Mesh::initMeshFacets(const ID & id) {
   AKANTU_DEBUG_IN();
 
-  if (!mesh_facets) {
-    mesh_facets = std::make_unique<Mesh>(spatial_dimension, this->nodes,
-                                         getID() + ":" + id, getMemoryID());
+  if (mesh_facets) {
+    AKANTU_DEBUG_OUT();
+    return *mesh_facets;
+  }
 
-    mesh_facets->mesh_parent = this;
-    mesh_facets->is_mesh_facets = true;
-    mesh_facets->nodes_type = this->nodes_type;
-    mesh_facets->nodes_global_ids = this->nodes_global_ids;
+  mesh_facets = std::make_unique<Mesh>(spatial_dimension, this->nodes,
+                                       getID() + ":" + id, getMemoryID());
 
-    MeshUtils::buildAllFacets(*this, *mesh_facets, 0);
+  mesh_facets->mesh_parent = this;
+  mesh_facets->is_mesh_facets = true;
+  mesh_facets->nodes_flags = this->nodes_flags;
+  mesh_facets->nodes_global_ids = this->nodes_global_ids;
 
-    if (mesh.isDistributed()) {
-      mesh_facets->is_distributed = true;
-      mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(
-          *mesh_facets, mesh.getElementSynchronizer());
-    }
+  MeshUtils::buildAllFacets(*this, *mesh_facets, 0);
 
-    /// transfers the the mesh physical names to the mesh facets
-    if (not this->hasData("physical_names")) {
-      AKANTU_DEBUG_OUT();
-      return *mesh_facets;
-    }
+  if (mesh.isDistributed()) {
+    mesh_facets->is_distributed = true;
+    mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(
+        *mesh_facets, mesh.getElementSynchronizer());
+  }
 
-    if (not mesh_facets->hasData("physical_names")) {
-      mesh_facets->registerData<std::string>("physical_names");
-    }
+  /// transfers the the mesh physical names to the mesh facets
+  if (not this->hasData("physical_names")) {
+    AKANTU_DEBUG_OUT();
+    return *mesh_facets;
+  }
 
-    auto & mesh_phys_data = this->getData<std::string>("physical_names");
-    auto & phys_data = mesh_facets->getData<std::string>("physical_names");
-    phys_data.initialize(*mesh_facets,
+  if (not mesh_facets->hasData("physical_names")) {
+    mesh_facets->registerElementalData<std::string>("physical_names");
+  }
+
+  auto & mesh_phys_data = this->getData<std::string>("physical_names");
+  auto & phys_data = mesh_facets->getData<std::string>("physical_names");
+  phys_data.initialize(*mesh_facets, _spatial_dimension = spatial_dimension - 1,
+                       _with_nb_element = true);
+
+  ElementTypeMapArray<Real> barycenters(getID(), "temporary_barycenters");
+  barycenters.initialize(*mesh_facets, _nb_component = spatial_dimension,
                          _spatial_dimension = spatial_dimension - 1,
                          _with_nb_element = true);
 
-    ElementTypeMapArray<Real> barycenters(getID(), "temporary_barycenters");
-    barycenters.initialize(*mesh_facets, _nb_component = spatial_dimension,
-                           _spatial_dimension = spatial_dimension - 1,
-                           _with_nb_element = true);
-
-    for (auto && ghost_type : ghost_types) {
-      for (auto && type :
-           barycenters.elementTypes(spatial_dimension - 1, ghost_type)) {
-        mesh_facets->getBarycenters(barycenters(type, ghost_type), type,
-                                    ghost_type);
-      }
+  for (auto && ghost_type : ghost_types) {
+    for (auto && type :
+         barycenters.elementTypes(spatial_dimension - 1, ghost_type)) {
+      mesh_facets->getBarycenters(barycenters(type, ghost_type), type,
+                                  ghost_type);
     }
-
-    for_each_element(
-        mesh,
-        [&](auto && element) {
-          Vector<Real> barycenter(spatial_dimension);
-          mesh.getBarycenter(element, barycenter);
-          auto norm_barycenter = barycenter.norm();
-          auto tolerance = Math::getTolerance();
-          if (norm_barycenter > tolerance)
-            tolerance *= norm_barycenter;
-
-          const auto & element_to_facet = mesh_facets->getElementToSubelement(
-              element.type, element.ghost_type);
-
-          Vector<Real> barycenter_facet(spatial_dimension);
-
-          auto range =
-              enumerate(make_view(barycenters(element.type, element.ghost_type),
-                                  spatial_dimension));
-#ifndef AKANTU_NDEBUG
-          auto min_dist = std::numeric_limits<Real>::max();
-#endif
-          // this is a spacial search coded the most inefficient way.
-          auto facet =
-              std::find_if(range.begin(), range.end(), [&](auto && data) {
-                auto facet = std::get<0>(data);
-                if (element_to_facet(facet)[1] == ElementNull)
-                  return false;
-
-                auto norm_distance = barycenter.distance(std::get<1>(data));
-#ifndef AKANTU_NDEBUG
-                min_dist = std::min(min_dist, norm_distance);
-#endif
-                return (norm_distance < tolerance);
-              });
-
-          if (facet == range.end()) {
-            AKANTU_DEBUG_INFO("The element "
-                              << element
-                              << " did not find its associated facet in the "
-                                 "mesh_facets! Try to decrease math tolerance. "
-                                 "The closest element was at a distance of "
-                              << min_dist);
-            return;
-          }
-
-          // set physical name
-          phys_data(Element{element.type, UInt(std::get<0>(*facet)),
-                            element.ghost_type}) = mesh_phys_data(element);
-        },
-        _spatial_dimension = spatial_dimension - 1);
-
-    mesh_facets->createGroupsFromMeshData<std::string>("physical_names");
   }
+
+  for_each_element(
+      mesh,
+      [&](auto && element) {
+        Vector<Real> barycenter(spatial_dimension);
+        mesh.getBarycenter(element, barycenter);
+        auto norm_barycenter = barycenter.norm();
+        auto tolerance = Math::getTolerance();
+        if (norm_barycenter > tolerance)
+          tolerance *= norm_barycenter;
+
+        const auto & element_to_facet = mesh_facets->getElementToSubelement(
+            element.type, element.ghost_type);
+
+        Vector<Real> barycenter_facet(spatial_dimension);
+
+        auto range = enumerate(make_view(
+            barycenters(element.type, element.ghost_type), spatial_dimension));
+#ifndef AKANTU_NDEBUG
+        auto min_dist = std::numeric_limits<Real>::max();
+#endif
+        // this is a spacial search coded the most inefficient way.
+        auto facet =
+            std::find_if(range.begin(), range.end(), [&](auto && data) {
+              auto facet = std::get<0>(data);
+              if (element_to_facet(facet)[1] == ElementNull)
+                return false;
+
+              auto norm_distance = barycenter.distance(std::get<1>(data));
+#ifndef AKANTU_NDEBUG
+              min_dist = std::min(min_dist, norm_distance);
+#endif
+              return (norm_distance < tolerance);
+            });
+
+        if (facet == range.end()) {
+          AKANTU_DEBUG_INFO("The element "
+                            << element
+                            << " did not find its associated facet in the "
+                               "mesh_facets! Try to decrease math tolerance. "
+                               "The closest element was at a distance of "
+                            << min_dist);
+          return;
+        }
+
+        // set physical name
+        phys_data(Element{element.type, UInt(std::get<0>(*facet)),
+                          element.ghost_type}) = mesh_phys_data(element);
+      },
+      _spatial_dimension = spatial_dimension - 1);
+
+  mesh_facets->createGroupsFromMeshData<std::string>("physical_names");
 
   AKANTU_DEBUG_OUT();
   return *mesh_facets;
@@ -243,27 +246,24 @@ Mesh::~Mesh() = default;
 
 /* -------------------------------------------------------------------------- */
 void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
+
+  AKANTU_DEBUG_ASSERT(not is_distributed,
+                      "You cannot read a mesh that is already distributed");
+
   MeshIO mesh_io;
   mesh_io.read(filename, *this, mesh_io_type);
 
-  type_iterator it =
-      this->firstType(spatial_dimension, _not_ghost, _ek_not_defined);
-  type_iterator last =
-      this->lastType(spatial_dimension, _not_ghost, _ek_not_defined);
+  auto types =
+      this->elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
+  auto it = types.begin();
+  auto last = types.end();
   if (it == last)
-    AKANTU_EXCEPTION(
+    AKANTU_DEBUG_WARNING(
         "The mesh contained in the file "
         << filename << " does not seem to be of the good dimension."
         << " No element of dimension " << spatial_dimension << " where read.");
 
-  this->nb_global_nodes = this->nodes->size();
-
-  this->computeBoundingBox();
-
-  this->nodes_to_elements.resize(nodes->size());
-  for (auto & node_set : nodes_to_elements) {
-    node_set = std::make_unique<std::set<Element>>();
-  }
+  this->makeReady();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -271,6 +271,17 @@ void Mesh::write(const std::string & filename,
                  const MeshIOType & mesh_io_type) {
   MeshIO mesh_io;
   mesh_io.write(filename, *this, mesh_io_type);
+}
+
+/* -------------------------------------------------------------------------- */
+void Mesh::makeReady() {
+  this->nb_global_nodes = this->nodes->size();
+  this->computeBoundingBox();
+  this->nodes_flags->resize(nodes->size(), NodeFlag::_normal);
+  this->nodes_to_elements.resize(nodes->size());
+  for (auto & node_set : nodes_to_elements) {
+    node_set = std::make_unique<std::set<Element>>();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -296,38 +307,21 @@ void Mesh::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 void Mesh::computeBoundingBox() {
   AKANTU_DEBUG_IN();
-  for (UInt k = 0; k < spatial_dimension; ++k) {
-    local_lower_bounds(k) = std::numeric_limits<double>::max();
-    local_upper_bounds(k) = -std::numeric_limits<double>::max();
-  }
 
-  for (UInt i = 0; i < nodes->size(); ++i) {
+  bbox_local.reset();
+
+  for (auto & pos : make_view(*nodes, spatial_dimension)) {
     //    if(!isPureGhostNode(i))
-    for (UInt k = 0; k < spatial_dimension; ++k) {
-      local_lower_bounds(k) = std::min(local_lower_bounds[k], (*nodes)(i, k));
-      local_upper_bounds(k) = std::max(local_upper_bounds[k], (*nodes)(i, k));
-    }
+    bbox_local += pos;
   }
 
   if (this->is_distributed) {
-    Matrix<Real> reduce_bounds(spatial_dimension, 2);
-    for (UInt k = 0; k < spatial_dimension; ++k) {
-      reduce_bounds(k, 0) = local_lower_bounds(k);
-      reduce_bounds(k, 1) = -local_upper_bounds(k);
-    }
-
-    communicator->allReduce(reduce_bounds, SynchronizerOperation::_min);
-
-    for (UInt k = 0; k < spatial_dimension; ++k) {
-      lower_bounds(k) = reduce_bounds(k, 0);
-      upper_bounds(k) = -reduce_bounds(k, 1);
-    }
+    bbox = bbox_local.allSum(*communicator);
   } else {
-    this->lower_bounds = this->local_lower_bounds;
-    this->upper_bounds = this->local_upper_bounds;
+    bbox = bbox_local;
   }
 
-  size = upper_bounds - lower_bounds;
+  size = bbox.size();
 
   AKANTU_DEBUG_OUT();
 }
@@ -359,9 +353,7 @@ void Mesh::getGlobalConnectivity(
       std::transform(local_conn.begin_reinterpret(nb_nodes),
                      local_conn.end_reinterpret(nb_nodes),
                      g_connectivity.begin_reinterpret(nb_nodes),
-                     [&](UInt l) -> UInt {
-                       return this->getNodeGlobalId(l);
-                     });
+                     [&](UInt l) -> UInt { return this->getNodeGlobalId(l); });
     }
   }
 
@@ -461,9 +453,6 @@ void Mesh::distribute(Communicator & communicator) {
   Int psize = this->communicator->getNbProc();
 
   if (psize > 1) {
-//   return;
-// }
-
 #ifdef AKANTU_USE_SCOTCH
     Int prank = this->communicator->whoAmI();
     if (prank == 0) {
@@ -475,14 +464,16 @@ void Mesh::distribute(Communicator & communicator) {
       MeshUtilsDistribution::distributeMeshCentralized(*this, 0);
     }
 #else
-    if (!(psize == 1)) {
+    if (psize > 1) {
       AKANTU_ERROR("Cannot distribute a mesh without a partitioning tool");
     }
 #endif
-    this->computeBoundingBox();
   }
 
+  // if (psize > 1)
   this->is_distributed = true;
+
+  this->computeBoundingBox();
 }
 
 /* -------------------------------------------------------------------------- */

@@ -36,6 +36,7 @@
 #include "element_synchronizer.hh"
 #include "mesh.hh"
 #include "model_solver.hh"
+#include "periodic_node_synchronizer.hh"
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -117,7 +118,7 @@ public:
   }
 
   void assembleLumpedMass(const GhostType & ghost_type) {
-    Array<Real> & M = this->getDOFManager().getLumpedMatrix("M");
+    Array<Real> M(nb_dofs, 1, 0.);
 
     Array<Real> m_all_el(this->mesh.getNbElement(_segment_2, ghost_type), 2);
 
@@ -142,6 +143,8 @@ public:
 
     this->getDOFManager().assembleElementalArrayLocalArray(
         m_all_el, M, _segment_2, ghost_type);
+
+    this->getDOFManager().assembleToLumpedMatrix("disp", M, "M");
   }
 
   void assembleMass() {

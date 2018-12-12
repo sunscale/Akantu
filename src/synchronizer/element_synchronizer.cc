@@ -173,15 +173,6 @@ Int ElementSynchronizer::getRank(const Element & element) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void ElementSynchronizer::reset() {
-  AKANTU_DEBUG_IN();
-
-  communications.resetSchemes();
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
 void ElementSynchronizer::renumberElements(
     const ElementTypeMapArray<UInt> & new_numbering) {
   for (auto && sr : iterate_send_recv) {

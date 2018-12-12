@@ -87,9 +87,6 @@ public:
                          const RemovedElementsEvent & event) override;
 
 protected:
-  /// reset send and recv element lists
-  void reset();
-
   /// remove elements from the synchronizer without renumbering them
   void removeElements(const Array<Element> & element_to_remove);
 

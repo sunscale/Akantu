@@ -41,28 +41,6 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Functions ArrayBase                                                       */
 /* -------------------------------------------------------------------------- */
-ArrayBase::ArrayBase(ID id)
-    : id(std::move(id)), allocated_size(0), size_(0), nb_component(1),
-      size_of_type(0) {}
-
-/* -------------------------------------------------------------------------- */
-ArrayBase::~ArrayBase() = default;
-
-/* -------------------------------------------------------------------------- */
-void ArrayBase::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
-  stream << space << "ArrayBase [" << std::endl;
-  stream << space << " + size             : " << size_ << std::endl;
-  stream << space << " + nb component     : " << nb_component << std::endl;
-  stream << space << " + allocated size   : " << allocated_size << std::endl;
-  Real mem_size = (allocated_size * nb_component * size_of_type) / 1024.;
-  stream << space << " + size of type     : " << size_of_type << "B"
-         << std::endl;
-  stream << space << " + memory allocated : " << mem_size << "kB" << std::endl;
-  stream << space << "]" << std::endl;
-}
 
 /* -------------------------------------------------------------------------- */
 template <> UInt Array<Real>::find(const Real & elem) const {

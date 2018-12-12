@@ -85,6 +85,8 @@ package_declare_sources(solid_mechanics
   model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening_inline_impl.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
+  model/solid_mechanics/materials/material_viscoelastic/material_viscoelastic_maxwell.cc
+  model/solid_mechanics/materials/material_viscoelastic/material_viscoelastic_maxwell.hh
 
   model/solid_mechanics/materials/material_non_local.hh
   model/solid_mechanics/materials/material_non_local_tmpl.hh

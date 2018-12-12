@@ -52,22 +52,17 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
   Mesh & mesh = this->model.getMesh();
   /// allocate the element type map arrays for _not_ghosts: One entry per quad
   GhostType ghost_type = _not_ghost;
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-
-  for (; it != last_type; ++it) {
-    UInt new_size = this->quad_coordinates(*it, ghost_type).size();
-    this->is_highest.alloc(new_size, 1, *it, ghost_type, true);
-    this->criterion.alloc(new_size, 1, *it, ghost_type, true);
+  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    UInt new_size = this->quad_coordinates(type, ghost_type).size();
+    this->is_highest.alloc(new_size, 1, type, ghost_type, true);
+    this->criterion.alloc(new_size, 1, type, ghost_type, true);
   }
 
   /// criterion needs allocation also for ghost
   ghost_type = _ghost;
-  it = mesh.firstType(spatial_dimension, ghost_type);
-  last_type = mesh.lastType(spatial_dimension, ghost_type);
-  for (; it != last_type; ++it) {
-    UInt new_size = this->quad_coordinates(*it, ghost_type).size();
-    this->criterion.alloc(new_size, 1, *it, ghost_type, true);
+  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    UInt new_size = this->quad_coordinates(type, ghost_type).size();
+    this->criterion.alloc(new_size, 1, type, ghost_type, true);
   }
 
   AKANTU_DEBUG_OUT();
@@ -99,10 +94,9 @@ void NeighborhoodMaxCriterion::initNeighborhood() {
   /// store the number of current ghost elements for each type in the mesh
   ElementTypeMap<UInt> nb_ghost_protected;
   Mesh & mesh = this->model.getMesh();
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, _ghost);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
-  for (; it != last_type; ++it)
-    nb_ghost_protected(mesh.getNbElement(*it, _ghost), *it, _ghost);
+  for (auto type : mesh.elementTypes(spatial_dimension, _ghost)) {
+    nb_ghost_protected(mesh.getNbElement(type, _ghost), type, _ghost);
+  }
 
   /// create the grid synchronizer
   this->createGridSynchronizer();
@@ -138,15 +132,13 @@ void NeighborhoodMaxCriterion::insertAllQuads(const GhostType & ghost_type) {
   q.ghost_type = ghost_type;
   Mesh & mesh = this->model.getMesh();
 
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, ghost_type);
-  for (; it != last_type; ++it) {
-    UInt nb_element = mesh.getNbElement(*it, ghost_type);
+  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    UInt nb_element = mesh.getNbElement(type, ghost_type);
     UInt nb_quad =
-        this->model.getFEEngine().getNbIntegrationPoints(*it, ghost_type);
+        this->model.getFEEngine().getNbIntegrationPoints(type, ghost_type);
 
-    const Array<Real> & quads = this->quad_coordinates(*it, ghost_type);
-    q.type = *it;
+    const Array<Real> & quads = this->quad_coordinates(type, ghost_type);
+    q.type = type;
 
     auto quad = quads.begin(spatial_dimension);
 
@@ -190,22 +182,17 @@ void NeighborhoodMaxCriterion::findMaxQuads(
   IntegrationPoint quad;
   quad.ghost_type = _not_ghost;
   Mesh & mesh = this->model.getMesh();
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, _not_ghost);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _not_ghost);
-  for (; it != last_type; ++it) {
-    quad.type = *it;
-    Array<bool>::const_scalar_iterator is_highest_it =
-        is_highest(*it, _not_ghost).begin();
-    Array<bool>::const_scalar_iterator is_highest_end =
-        is_highest(*it, _not_ghost).end();
 
+  for (auto type : mesh.elementTypes(spatial_dimension, _not_ghost)) {
+    quad.type = type;
     UInt nb_quadrature_points =
-        this->model.getFEEngine().getNbIntegrationPoints(*it, _not_ghost);
-    UInt q = 0;
+        this->model.getFEEngine().getNbIntegrationPoints(type, _not_ghost);
 
     /// loop over is_highest for the current element type
-    for (; is_highest_it != is_highest_end; ++is_highest_it, ++q) {
-      if (*is_highest_it) {
+    for (auto data : enumerate(is_highest(type, _not_ghost))) {
+      const auto & is_highest = std::get<1>(data);
+      if (is_highest) {
+        auto q = std::get<0>(data);
         /// gauss point has the highest stress in his neighbourhood
         quad.element = q / nb_quadrature_points;
         quad.global_num = q;
@@ -222,13 +209,10 @@ void NeighborhoodMaxCriterion::findMaxQuads(
 void NeighborhoodMaxCriterion::checkNeighbors(const GhostType & ghost_type2) {
   AKANTU_DEBUG_IN();
 
-  PairList::const_iterator first_pair = pair_list[ghost_type2].begin();
-  PairList::const_iterator last_pair = pair_list[ghost_type2].end();
-
   // Compute the weights
-  for (; first_pair != last_pair; ++first_pair) {
-    const IntegrationPoint & lq1 = first_pair->first;
-    const IntegrationPoint & lq2 = first_pair->second;
+  for (auto & pair : pair_list[ghost_type2]) {
+    const auto & lq1 = pair.first;
+    const auto & lq2 = pair.second;
 
     Array<bool> & has_highest_eq_stress_1 =
         is_highest(lq1.type, lq1.ghost_type);
@@ -256,35 +240,30 @@ void NeighborhoodMaxCriterion::cleanupExtraGhostElements(
   RemovedElementsEvent remove_elem(mesh);
   /// create set of ghosts to keep
   std::set<Element> relevant_ghost_elements;
-  PairList::const_iterator first_pair = pair_list[_ghost].begin();
-  PairList::const_iterator last_pair = pair_list[_ghost].end();
-  for (; first_pair != last_pair; ++first_pair) {
-    const IntegrationPoint & q2 = first_pair->second;
+  for (auto & pair : pair_list[_ghost]) {
+    const auto & q2 = pair.second;
     relevant_ghost_elements.insert(q2);
   }
 
   Array<Element> ghosts_to_erase(0);
-  Mesh::type_iterator it = mesh.firstType(spatial_dimension, _ghost);
-  Mesh::type_iterator last_type = mesh.lastType(spatial_dimension, _ghost);
 
   Element element;
   element.ghost_type = _ghost;
-
   auto end = relevant_ghost_elements.end();
-  for (; it != last_type; ++it) {
-    element.type = *it;
-    UInt nb_ghost_elem = mesh.getNbElement(*it, _ghost);
+  for (auto & type : mesh.elementTypes(spatial_dimension, _ghost)) {
+    element.type = type;
+    UInt nb_ghost_elem = mesh.getNbElement(type, _ghost);
     UInt nb_ghost_elem_protected = 0;
     try {
-      nb_ghost_elem_protected = nb_ghost_protected(*it, _ghost);
+      nb_ghost_elem_protected = nb_ghost_protected(type, _ghost);
     } catch (...) {
     }
 
-    if (!remove_elem.getNewNumbering().exists(*it, _ghost))
-      remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, *it, _ghost);
+    if (!remove_elem.getNewNumbering().exists(type, _ghost))
+      remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, type, _ghost);
     else
-      remove_elem.getNewNumbering(*it, _ghost).resize(nb_ghost_elem);
-    Array<UInt> & new_numbering = remove_elem.getNewNumbering(*it, _ghost);
+      remove_elem.getNewNumbering(type, _ghost).resize(nb_ghost_elem);
+    Array<UInt> & new_numbering = remove_elem.getNewNumbering(type, _ghost);
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
       element.element = g;
       if (element.element >= nb_ghost_elem_protected &&

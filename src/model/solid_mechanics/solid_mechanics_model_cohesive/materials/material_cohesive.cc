@@ -104,11 +104,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-MaterialCohesive::~MaterialCohesive() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+MaterialCohesive::~MaterialCohesive() = default;
 
 /* -------------------------------------------------------------------------- */
 void MaterialCohesive::initMaterial() {
@@ -182,23 +178,34 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
      * compute @f$\int t \cdot N\, dS@f$ by  @f$ \sum_q \mathbf{N}^t
      * \mathbf{t}_q \overline w_q J_q@f$
      */
-    Array<Real> * int_t_N = new Array<Real>(
+    Array<Real> * partial_int_t_N = new Array<Real>(
         nb_element, spatial_dimension * size_of_shapes, "int_t_N");
 
-    fem_cohesive.integrate(*traction_cpy, *int_t_N,
+    fem_cohesive.integrate(*traction_cpy, *partial_int_t_N,
                            spatial_dimension * size_of_shapes, type, ghost_type,
                            elem_filter);
 
     delete traction_cpy;
 
-    int_t_N->extendComponentsInterlaced(2, int_t_N->getNbComponent());
+    Array<Real> * int_t_N = new Array<Real>(
+        nb_element, 2 * spatial_dimension * size_of_shapes, "int_t_N");
 
     Real * int_t_N_val = int_t_N->storage();
+    Real * partial_int_t_N_val = partial_int_t_N->storage();
     for (UInt el = 0; el < nb_element; ++el) {
+      std::copy_n(partial_int_t_N_val, size_of_shapes * spatial_dimension,
+                  int_t_N_val);
+      std::copy_n(partial_int_t_N_val, size_of_shapes * spatial_dimension,
+                  int_t_N_val + size_of_shapes * spatial_dimension);
+
       for (UInt n = 0; n < size_of_shapes * spatial_dimension; ++n)
         int_t_N_val[n] *= -1.;
+
       int_t_N_val += nb_nodes_per_element * spatial_dimension;
+      partial_int_t_N_val += size_of_shapes * spatial_dimension;
     }
+
+    delete partial_int_t_N;
 
     /// assemble
     model->getDOFManager().assembleElementalArrayLocalArray(
@@ -238,9 +245,9 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     UInt * elem_filter_val = elem_filter.storage();
 
     for (UInt el = 0; el < nb_element; ++el) {
-      auto shapes_val =
-          shapes.storage() +
-          elem_filter_val[el] * size_of_shapes * nb_quadrature_points;
+      auto shapes_val = shapes.storage() + elem_filter_val[el] *
+                                               size_of_shapes *
+                                               nb_quadrature_points;
       memcpy(shapes_filtered_val, shapes_val,
              size_of_shapes * nb_quadrature_points * sizeof(Real));
       shapes_filtered_val += size_of_shapes * nb_quadrature_points;

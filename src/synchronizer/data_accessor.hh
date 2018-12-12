@@ -205,51 +205,51 @@ public:
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-template <template <class> class Op, class T>
-class ReduceUIntDataAccessor : public virtual DataAccessor<UInt> {
+template <class Entity, template <class> class Op, class T>
+class ReduceDataAccessor : public virtual DataAccessor<Entity> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ReduceUIntDataAccessor(Array<T> & data, const SynchronizationTag & tag)
+  ReduceDataAccessor(Array<T> & data, const SynchronizationTag & tag)
       : data(data), tag(tag) {}
 
-  ~ReduceUIntDataAccessor() override = default;
+  ~ReduceDataAccessor() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /* ------------------------------------------------------------------------ */
-  UInt getNbData(const Array<UInt> & elements,
+  UInt getNbData(const Array<Entity> & entities,
                  const SynchronizationTag & tag) const override {
     if (tag != this->tag)
       return 0;
 
     Vector<T> tmp(data.getNbComponent());
-    return elements.size() * CommunicationBuffer::sizeInBuffer(tmp);
+    return entities.size() * CommunicationBuffer::sizeInBuffer(tmp);
   }
 
   /* ------------------------------------------------------------------------ */
-  void packData(CommunicationBuffer & buffer, const Array<UInt> & elements,
+  void packData(CommunicationBuffer & buffer, const Array<Entity> & entities,
                 const SynchronizationTag & tag) const override {
     if (tag != this->tag)
       return;
 
     auto data_it = data.begin(data.getNbComponent());
-    for (auto el : elements) {
+    for (auto el : entities) {
       buffer << Vector<T>(data_it[el]);
     }
   }
 
   /* ------------------------------------------------------------------------ */
-  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & elements,
+  void unpackData(CommunicationBuffer & buffer, const Array<Entity> & entities,
                   const SynchronizationTag & tag) override {
     if (tag != this->tag)
       return;
 
     auto data_it = data.begin(data.getNbComponent());
-    for (auto el : elements) {
+    for (auto el : entities) {
       Vector<T> unpacked(data.getNbComponent());
       Vector<T> vect(data_it[el]);
       buffer >> unpacked;
@@ -271,7 +271,7 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 template <class T>
-using SimpleUIntDataAccessor = ReduceUIntDataAccessor<IdentityOperation, T>;
+using SimpleUIntDataAccessor = ReduceDataAccessor<UInt, IdentityOperation, T>;
 
 } // akantu
 

@@ -59,9 +59,9 @@ EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(
   // Initiating mesh connectivity and data
   interface_mesh.addConnectivityType(_segment_2, _not_ghost);
   interface_mesh.addConnectivityType(_segment_2, _ghost);
-  interface_mesh.registerData<Element>("associated_element")
+  interface_mesh.registerElementalData<Element>("associated_element")
       .alloc(0, 1, _segment_2);
-  interface_mesh.registerData<std::string>("physical_names")
+  interface_mesh.registerElementalData<std::string>("physical_names")
       .alloc(0, 1, _segment_2);
 }
 

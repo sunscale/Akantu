@@ -35,8 +35,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
-NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact * contact,
-                                                     const FrictionID & id,
+NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact & contact,
+                                                     const ID & id,
                                                      const MemoryID & memory_id)
     : Regularisation(contact, id, memory_id),
       mu(0, 1, 0., id + ":mu", 0., "mu") {
@@ -62,7 +62,7 @@ void NTNFricLawCoulomb<Regularisation>::computeFrictionalStrength() {
   // array to fill
   SynchronizedArray<Real> & strength = this->internalGetFrictionalStrength();
 
-  UInt nb_contact_nodes = this->contact->getNbContactNodes();
+  UInt nb_contact_nodes = this->contact.getNbContactNodes();
   for (UInt n = 0; n < nb_contact_nodes; ++n) {
     // node pair is NOT in contact
     if (!is_in_contact(n))
@@ -141,7 +141,7 @@ void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(
 
 #ifdef AKANTU_USE_IOHELPER
   //  const SynchronizedArray<UInt> * nodal_filter =
-  //  &(this->contact->getSlaves());
+  //  &(this->contact.getSlaves());
 
   if (field_id == "mu") {
     this->internalAddDumpFieldToDumper(

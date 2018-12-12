@@ -134,15 +134,6 @@ public:
     AKANTU_TO_IMPLEMENT();
   }
 
-  /// multiply a field by shape functions
-  template <ElementType type>
-  void
-  fieldTimesShapes(__attribute__((unused)) const Array<Real> & field,
-                   __attribute__((unused)) Array<Real> & field_times_shapes,
-                   __attribute__((unused)) const GhostType & ghost_type) const {
-    AKANTU_TO_IMPLEMENT();
-  }
-
   /// get the rotations vector
   inline const Array<Real> &
   getRotations(const ElementType & el_type,
@@ -151,6 +142,7 @@ public:
     return rotation_matrices(el_type);
   }
 
+  /* ------------------------------------------------------------------------ */
   template <ElementType type>
   void computeBtD(const Array<Real> & /*Ds*/, Array<Real> & /*BtDs*/,
                   GhostType /*ghost_type*/,
@@ -162,6 +154,15 @@ public:
   void computeBtDB(const Array<Real> & /*Ds*/, Array<Real> & /*BtDBs*/,
                    UInt /*order_d*/, GhostType /*ghost_type*/,
                    const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  /// multiply a field by shape functions
+  template <ElementType type>
+  void
+  computeNtb(const Array<Real> & /*bs*/, Array<Real> & /*Ntbs*/,
+             const GhostType & /*ghost_type*/,
+             const Array<UInt> & /*filter_elements*/ = empty_filter) const {
     AKANTU_TO_IMPLEMENT();
   }
 

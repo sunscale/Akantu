@@ -81,30 +81,24 @@ void MaterialDamage<spatial_dimension, Parent>::updateEnergies(
 
   this->computePotentialEnergy(el_type, ghost_type);
 
-  Array<Real>::matrix_iterator epsilon_p =
-      this->gradu.previous(el_type, ghost_type)
-          .begin(spatial_dimension, spatial_dimension);
-  Array<Real>::matrix_iterator sigma_p =
-      this->stress.previous(el_type, ghost_type)
-          .begin(spatial_dimension, spatial_dimension);
+  auto epsilon_p = this->gradu.previous(el_type, ghost_type)
+                       .begin(spatial_dimension, spatial_dimension);
+  auto sigma_p = this->stress.previous(el_type, ghost_type)
+                     .begin(spatial_dimension, spatial_dimension);
 
-  Array<Real>::const_scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
-
-  Array<Real>::scalar_iterator ints =
-      this->int_sigma(el_type, ghost_type).begin();
-  Array<Real>::scalar_iterator ed =
-      this->dissipated_energy(el_type, ghost_type).begin();
+  auto epot = this->potential_energy(el_type, ghost_type).begin();
+  auto ints = this->int_sigma(el_type, ghost_type).begin();
+  auto ed = this->dissipated_energy(el_type, ghost_type).begin();
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
-  Matrix<Real> delta_gradu_it(*gradu_it);
-  delta_gradu_it -= *epsilon_p;
+  Matrix<Real> delta_gradu(grad_u);
+  delta_gradu -= *epsilon_p;
 
   Matrix<Real> sigma_h(sigma);
   sigma_h += *sigma_p;
 
-  Real dint = .5 * sigma_h.doubleDot(delta_gradu_it);
+  Real dint = .5 * sigma_h.doubleDot(delta_gradu);
 
   *ints += dint;
   *ed = *ints - *epot;

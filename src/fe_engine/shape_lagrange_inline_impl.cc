@@ -495,27 +495,40 @@ inline void ShapeLagrange<_ek_regular>::computeBtDB<_point_1>(
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
 template <ElementType type>
-void ShapeLagrange<kind>::fieldTimesShapes(const Array<Real> & field,
-                                           Array<Real> & field_times_shapes,
-                                           GhostType ghost_type) const {
+void ShapeLagrange<kind>::computeNtb(
+    const Array<Real> & bs, Array<Real> & Ntbs, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
-  field_times_shapes.resize(field.size());
+  Ntbs.resize(bs.size());
 
   UInt size_of_shapes = ElementClass<type>::getShapeSize();
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
-  UInt nb_degree_of_freedom = field.getNbComponent();
+  UInt nb_degree_of_freedom = bs.getNbComponent();
 
-  const auto & shape = shapes(itp_type, ghost_type);
+  Array<Real> shapes_filtered(0, size_of_shapes);
+  auto && view = make_view(shapes(itp_type, ghost_type), 1, size_of_shapes);
+  auto N_it = view.begin();
+  auto N_end = view.end();
 
-  auto field_it = field.begin(nb_degree_of_freedom, 1);
-  auto shapes_it = shape.begin(1, size_of_shapes);
 
-  auto it = field_times_shapes.begin(nb_degree_of_freedom, size_of_shapes);
-  auto end = field_times_shapes.end(nb_degree_of_freedom, size_of_shapes);
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes(itp_type, ghost_type),
+                                  shapes_filtered, type, ghost_type,
+                                  filter_elements);
+    auto && view = make_view(shapes_filtered, 1, size_of_shapes);
+    N_it = view.begin();
+    N_end = view.end();
+  }
 
-  for (; it != end; ++it, ++field_it, ++shapes_it) {
-    it->template mul<false, false>(*field_it, *shapes_it);
+  for (auto && values :
+       zip(make_view(bs, nb_degree_of_freedom, 1), range(N_it, N_end),
+           make_view(Ntbs, nb_degree_of_freedom, size_of_shapes))) {
+    const auto & b = std::get<0>(values);
+    const auto & N = std::get<1>(values);
+    auto & Ntb = std::get<2>(values);
+
+    Ntb.template mul<false, false>(b, N);
   }
 
   AKANTU_DEBUG_OUT();

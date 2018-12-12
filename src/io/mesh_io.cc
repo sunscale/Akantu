@@ -61,8 +61,6 @@ std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
       t = _miot_gmsh;
     } else if (ext == "diana") {
       t = _miot_diana;
-    } else if (ext == "inp") {
-      t = _miot_abaqus;
     } else
       AKANTU_EXCEPTION("Cannot guess the type of file of "
                        << filename << " (ext " << ext << "). "
@@ -78,8 +76,6 @@ std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
 #endif
   case _miot_diana:
     return std::make_unique<MeshIODiana>();
-  case _miot_abaqus:
-    return std::make_unique<MeshIOAbaqus>();
   default:
     return nullptr;
   }
@@ -102,13 +98,11 @@ void MeshIO::write(const std::string & filename, Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
   if (!phys_name_map.empty()) {
-    for (Mesh::type_iterator type_it = mesh.firstType();
-         type_it != mesh.lastType(); ++type_it) {
-
+    for (auto type : mesh.elementTypes()) {
       auto & name_vec =
-          mesh.getDataPointer<std::string>("physical_names", *type_it);
+          mesh.getDataPointer<std::string>("physical_names", type);
 
-      const auto & tags_vec = mesh.getData<UInt>(tag_name, *type_it);
+      const auto & tags_vec = mesh.getData<UInt>(tag_name, type);
 
       for (auto pair : zip(tags_vec, name_vec)) {
         auto tag = std::get<0>(pair);

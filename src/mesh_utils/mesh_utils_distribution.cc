@@ -88,16 +88,14 @@ namespace MeshUtilsDistribution {
 
       MasterElementInfoPerProc proc_infos(element_synchronizer, count, my_rank,
                                           type, partition);
-      proc_infos.synchronizeConnectivities();
-      proc_infos.synchronizePartitions();
-      proc_infos.synchronizeTags();
-      proc_infos.synchronizeGroups();
+      proc_infos.synchronize();
       ++count;
     }
 
     { /// Ending the synchronization of elements by sending a stop message
       MasterElementInfoPerProc proc_infos(element_synchronizer, count, my_rank,
                                           _not_defined, partition);
+      proc_infos.synchronize();
       ++count;
     }
 
@@ -105,9 +103,7 @@ namespace MeshUtilsDistribution {
      * Nodes synchronization
      */
     MasterNodeInfoPerProc node_proc_infos(node_synchronizer, count, my_rank);
-    node_proc_infos.synchronizeNodes();
-    node_proc_infos.synchronizeTypes();
-    node_proc_infos.synchronizeGroups();
+    node_proc_infos.synchronize();
 
     MeshUtils::fillElementToSubElementsData(mesh);
 
@@ -143,14 +139,8 @@ namespace MeshUtilsDistribution {
     do {
       /* --------<<<<-SIZE--------------------------------------------------- */
       SlaveElementInfoPerProc proc_infos(element_synchronizer, count, root);
-      need_synchronize = proc_infos.needSynchronize();
+      need_synchronize = proc_infos.synchronize();
 
-      if (need_synchronize) {
-        proc_infos.synchronizeConnectivities();
-        proc_infos.synchronizePartitions();
-        proc_infos.synchronizeTags();
-        proc_infos.synchronizeGroups();
-      }
       ++count;
     } while (need_synchronize);
 
@@ -159,10 +149,7 @@ namespace MeshUtilsDistribution {
      */
 
     SlaveNodeInfoPerProc node_proc_infos(node_synchronizer, count, root);
-
-    node_proc_infos.synchronizeNodes();
-    node_proc_infos.synchronizeTypes();
-    node_proc_infos.synchronizeGroups();
+    node_proc_infos.synchronize();
 
     MeshUtils::fillElementToSubElementsData(mesh);
 

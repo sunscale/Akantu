@@ -101,21 +101,43 @@ public:
   /* Point to Point                                                           */
   /* ------------------------------------------------------------------------ */
   template <typename T>
+  void probe(Int sender, Int tag, CommunicationStatus & status) const;
+
+  template <typename T>
+  bool asyncProbe(Int sender, Int tag, CommunicationStatus & status) const;
+
+  /* ------------------------------------------------------------------------ */
+  template <typename T>
   inline void receive(Array<T> & values, Int sender, Int tag) const {
     return this->receiveImpl(
         values.storage(), values.size() * values.getNbComponent(), sender, tag);
   }
+
+  template <typename T>
+  inline void receive(std::vector<T> & values, Int sender, Int tag) const {
+    return this->receiveImpl(values.data(), values.size(), sender, tag);
+  }
+
   template <typename Tensor>
   inline void
   receive(Tensor & values, Int sender, Int tag,
           std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
     return this->receiveImpl(values.storage(), values.size(), sender, tag);
   }
-  template <bool is_static>
-  inline void receive(CommunicationBufferTemplated<is_static> & values,
-                      Int sender, Int tag) const {
+
+  inline void receive(CommunicationBufferTemplated<true> & values, Int sender,
+                      Int tag) const {
     return this->receiveImpl(values.storage(), values.size(), sender, tag);
   }
+
+  inline void receive(CommunicationBufferTemplated<false> & values, Int sender,
+                      Int tag) const {
+    CommunicationStatus status;
+    this->probe<char>(sender, tag, status);
+    values.reserve(status.size());
+    return this->receiveImpl(values.storage(), values.size(), sender, tag);
+  }
+
   template <typename T>
   inline void
   receive(T & values, Int sender, Int tag,
@@ -131,6 +153,14 @@ public:
                           values.size() * values.getNbComponent(), receiver,
                           tag, mode);
   }
+
+  template <typename T>
+  inline void
+  send(const std::vector<T> & values, Int receiver, Int tag,
+       const CommunicationMode & mode = CommunicationMode::_auto) const {
+    return this->sendImpl(values.data(), values.size(), receiver, tag, mode);
+  }
+
   template <typename Tensor>
   inline void
   send(const Tensor & values, Int receiver, Int tag,
@@ -138,6 +168,7 @@ public:
        std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
     return this->sendImpl(values.storage(), values.size(), receiver, tag, mode);
   }
+
   template <bool is_static>
   inline void
   send(const CommunicationBufferTemplated<is_static> & values, Int receiver,
@@ -219,13 +250,6 @@ public:
                Int tag) const {
     return this->asyncReceiveImpl(values.storage(), values.size(), sender, tag);
   }
-
-  /* ------------------------------------------------------------------------ */
-  template <typename T>
-  void probe(Int sender, Int tag, CommunicationStatus & status) const;
-
-  template <typename T>
-  bool asyncProbe(Int sender, Int tag, CommunicationStatus & status) const;
 
   /* ------------------------------------------------------------------------ */
   /* Collectives                                                              */

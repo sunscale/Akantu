@@ -184,7 +184,7 @@ protected:
   /* SolidMechanicsModelEventHandler inherited members                        */
   /* ------------------------------------------------------------------------ */
 public:
-  void onEndSolveStep(const AnalysisMethod & method) override;
+  void afterSolveStep() override;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
