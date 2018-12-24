@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     Real work = mat.getEnergy("work");
 
     // data output
-    output_data << s * time_step << " " << epsilon <<
+    output_data << s * time_step << " " << epsilon
                 << " " << epot << " " << edis << " " <<
         work << std::endl;
     time += time_step;

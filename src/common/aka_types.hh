@@ -578,6 +578,7 @@ namespace types {
 
       // input iterator dereference *it
       reference operator*() { return *ptr; }
+      pointer operator->() { return ptr; }
 
     private:
       pointer ptr;

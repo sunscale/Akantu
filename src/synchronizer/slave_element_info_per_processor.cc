@@ -109,62 +109,56 @@ void SlaveElementInfoPerProc::synchronizeTags() {
   }
 
   /* --------<<<<-TAGS------------------------------------------------- */
-  UInt mesh_data_sizes_buffer_length = 0;
-  CommunicationBuffer mesh_data_sizes_buffer;
+  DynamicCommunicationBuffer mesh_data_sizes_buffer;
+  comm.broadcast(mesh_data_sizes_buffer, root);
+  AKANTU_DEBUG_INFO("Size of the information about the mesh data: "
+                    << mesh_data_sizes_buffer.size());
 
-  AKANTU_DEBUG_INFO(
-      "Receiving the size of the information about the mesh data tags.");
-  comm.broadcast(mesh_data_sizes_buffer_length, root);
+  if (mesh_data_sizes_buffer.size() == 0)
+    return;
 
-  if (mesh_data_sizes_buffer_length != 0) {
-    mesh_data_sizes_buffer.resize(mesh_data_sizes_buffer_length);
-    AKANTU_DEBUG_INFO(
-        "Receiving the information about the mesh data tags, addr "
-        << (void *)mesh_data_sizes_buffer.storage());
-    comm.broadcast(mesh_data_sizes_buffer, root);
-    AKANTU_DEBUG_INFO("Size of the information about the mesh data: "
-                      << mesh_data_sizes_buffer_length);
+  AKANTU_DEBUG_INFO("Receiving the information about the mesh data tags, addr "
+                    << (void *)mesh_data_sizes_buffer.storage());
 
-    std::vector<std::string> tag_names;
-    std::vector<MeshDataTypeCode> tag_type_codes;
-    std::vector<UInt> tag_nb_component;
-    tag_names.resize(nb_tags);
-    tag_type_codes.resize(nb_tags);
-    tag_nb_component.resize(nb_tags);
-    CommunicationBuffer mesh_data_buffer;
-    UInt type_code_int;
-    for (UInt i(0); i < nb_tags; ++i) {
-      mesh_data_sizes_buffer >> tag_names[i];
-      mesh_data_sizes_buffer >> type_code_int;
-      tag_type_codes[i] = static_cast<MeshDataTypeCode>(type_code_int);
-      mesh_data_sizes_buffer >> tag_nb_component[i];
-    }
+  std::vector<std::string> tag_names;
+  std::vector<MeshDataTypeCode> tag_type_codes;
+  std::vector<UInt> tag_nb_component;
+  tag_names.resize(nb_tags);
+  tag_type_codes.resize(nb_tags);
+  tag_nb_component.resize(nb_tags);
+  CommunicationBuffer mesh_data_buffer;
+  UInt type_code_int;
+  for (UInt i(0); i < nb_tags; ++i) {
+    mesh_data_sizes_buffer >> tag_names[i];
+    mesh_data_sizes_buffer >> type_code_int;
+    tag_type_codes[i] = static_cast<MeshDataTypeCode>(type_code_int);
+    mesh_data_sizes_buffer >> tag_nb_component[i];
+  }
 
-    std::vector<std::string>::const_iterator names_it = tag_names.begin();
-    std::vector<std::string>::const_iterator names_end = tag_names.end();
+  std::vector<std::string>::const_iterator names_it = tag_names.begin();
+  std::vector<std::string>::const_iterator names_end = tag_names.end();
 
-    CommunicationStatus mesh_data_comm_status;
-    AKANTU_DEBUG_INFO("Checking size of data to receive for mesh data TAG("
-                      << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
-                      << ")");
-    comm.probe<char>(root,
-                     Tag::genTag(root, this->message_count, Tag::_MESH_DATA),
-                     mesh_data_comm_status);
-    UInt mesh_data_buffer_size(mesh_data_comm_status.size());
-    AKANTU_DEBUG_INFO("Receiving "
-                      << mesh_data_buffer_size << " bytes of mesh data TAG("
-                      << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
-                      << ")");
-    mesh_data_buffer.resize(mesh_data_buffer_size);
-    comm.receive(mesh_data_buffer, root,
-                 Tag::genTag(root, this->message_count, Tag::_MESH_DATA));
+  CommunicationStatus mesh_data_comm_status;
+  AKANTU_DEBUG_INFO("Checking size of data to receive for mesh data TAG("
+                    << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
+                    << ")");
+  comm.probe<char>(root,
+                   Tag::genTag(root, this->message_count, Tag::_MESH_DATA),
+                   mesh_data_comm_status);
+  UInt mesh_data_buffer_size(mesh_data_comm_status.size());
+  AKANTU_DEBUG_INFO("Receiving "
+                    << mesh_data_buffer_size << " bytes of mesh data TAG("
+                    << Tag::genTag(root, this->message_count, Tag::_MESH_DATA)
+                    << ")");
+  mesh_data_buffer.resize(mesh_data_buffer_size);
+  comm.receive(mesh_data_buffer, root,
+               Tag::genTag(root, this->message_count, Tag::_MESH_DATA));
 
-    // Loop over each tag for the current type
-    UInt k(0);
-    for (; names_it != names_end; ++names_it, ++k) {
-      this->fillMeshData(mesh_data_buffer, *names_it, tag_type_codes[k],
-                         tag_nb_component[k]);
-    }
+  // Loop over each tag for the current type
+  UInt k(0);
+  for (; names_it != names_end; ++names_it, ++k) {
+    this->fillMeshData(mesh_data_buffer, *names_it, tag_type_codes[k],
+                       tag_nb_component[k]);
   }
 
   AKANTU_DEBUG_OUT();
@@ -195,4 +189,4 @@ void SlaveElementInfoPerProc::synchronizeGroups() {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

@@ -32,6 +32,7 @@
 #include "communicator.hh"
 #include "global_ids_updater.hh"
 #include "mesh.hh"
+#include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__
@@ -43,11 +44,11 @@ namespace akantu {
 inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   UInt size = 0;
-  if (tag == _gst_giu_global_conn){
-    size += Mesh::getNbNodesPerElementList(elements) *
-                sizeof(UInt);
+  if (tag == _gst_giu_global_conn) {
+    size +=
+        Mesh::getNbNodesPerElementList(elements) * sizeof(UInt) + sizeof(int);
 #ifndef AKANTU_NDEBUG
-    size += sizeof(NodeFlag) * Mesh::getNbNodesPerElementList(elements) +  sizeof(int);
+    size += sizeof(NodeFlag) * Mesh::getNbNodesPerElementList(elements);
 #endif
   }
   return size;
@@ -61,9 +62,8 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
     return;
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
-#ifndef AKANTU_NDEBUG
   buffer << int(mesh.getCommunicator().whoAmI());
-#endif
+
   for (auto & element : elements) {
     /// get element connectivity
     const Vector<UInt> current_conn =
@@ -91,12 +91,11 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
   if (tag != _gst_giu_global_conn)
     return;
 
-  auto & global_nodes_ids = mesh.getGlobalNodesIds();
+  MeshAccessor mesh_accessor(mesh);
+  auto & global_nodes_ids = mesh_accessor.getNodesGlobalIds();
 
-#ifndef AKANTU_NDEBUG
   int proc;
   buffer >> proc;
-#endif
 
   for (auto & element : elements) {
     /// get element connectivity
@@ -117,12 +116,14 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
       if (index == UInt(-1))
         continue;
 
-      if (mesh.isSlaveNode(node))
+      if (mesh.isSlaveNode(node)) {
         global_nodes_ids(node) = index;
+        mesh_accessor.setNodePrank(node, proc);
+      }
     }
   }
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_CC__ */

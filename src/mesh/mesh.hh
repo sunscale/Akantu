@@ -281,7 +281,7 @@ public:
 
   /// get the Array of global ids of the nodes (only used in parallel)
   AKANTU_GET_MACRO(GlobalNodesIds, *nodes_global_ids, const Array<UInt> &);
-  AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt> &);
+  //AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt> &);
 
   /// get the global id of a node
   inline UInt getNodeGlobalId(UInt local_id) const;

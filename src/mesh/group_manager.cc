@@ -824,7 +824,7 @@ UInt GroupManager::getNbElementGroups(UInt dimension) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void GroupManager::checkAndAddGroups(CommunicationBuffer & buffer) {
+void GroupManager::checkAndAddGroups(DynamicCommunicationBuffer & buffer) {
   AKANTU_DEBUG_IN();
 
   UInt nb_node_group;
@@ -924,27 +924,19 @@ void GroupManager::synchronizeGroupNames() {
 
   if (my_rank == 0) {
     for (Int p = 1; p < nb_proc; ++p) {
-      CommunicationStatus status;
-      comm.probe<char>(p, p, status);
-      AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(status.size())
-                               << " from proc " << p);
-
-      CommunicationBuffer recv_buffer(status.size());
+      DynamicCommunicationBuffer recv_buffer;
       comm.receive(recv_buffer, p, p);
-
+      AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(recv_buffer.size())
+                               << " from proc " << p);
       this->checkAndAddGroups(recv_buffer);
     }
 
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
-    UInt buffer_size = comm_buffer.size();
-
-    comm.broadcast(buffer_size, 0);
-
     AKANTU_DEBUG_INFO("Initiating broadcast with "
                       << printMemorySize<char>(comm_buffer.size()));
-    comm.broadcast(comm_buffer, 0);
+    comm.broadcast(comm_buffer);
 
   } else {
     DynamicCommunicationBuffer comm_buffer;
@@ -954,13 +946,10 @@ void GroupManager::synchronizeGroupNames() {
                                  << " to proc " << 0);
     comm.send(comm_buffer, 0, my_rank);
 
-    UInt buffer_size = 0;
-    comm.broadcast(buffer_size, 0);
-
+    DynamicCommunicationBuffer recv_buffer;
+    comm.broadcast(recv_buffer);
     AKANTU_DEBUG_INFO("Receiving broadcast with "
-                      << printMemorySize<char>(comm_buffer.size()));
-    CommunicationBuffer recv_buffer(buffer_size);
-    comm.broadcast(recv_buffer, 0);
+                      << printMemorySize<char>(recv_buffer.size()));
 
     this->checkAndAddGroups(recv_buffer);
   }
