@@ -96,7 +96,7 @@ register_gtest_sources(
   SOURCES test_cohesive.cc
   PACKAGE cohesive_element
   DEPENDS ${_meshes}
-  FILES_TO_COPY material_0.dat material_1.dat
+  FILES_TO_COPY material_0.dat material_1.dat material_0_finite_def.dat
   )
 
 register_gtest_test(test_solid_mechanics_model_cohesive
