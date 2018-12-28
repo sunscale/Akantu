@@ -277,7 +277,7 @@ void NodeInfoPerProc::fillNodalData(DynamicCommunicationBuffer & buffer,
                                     std::string tag_name) {
 
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, _, elem)                    \
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+  case MeshDataTypeCode::BOOST_PP_TUPLE_ELEM(2, 0, elem): {                    \
     auto & nodal_data =                                                        \
         mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name);          \
     nodal_data.resize(mesh.getNbNodes());                                      \
@@ -638,7 +638,7 @@ void MasterNodeInfoPerProc::fillTagBuffers(
     std::vector<DynamicCommunicationBuffer> & buffers,
     const std::string & tag_name) {
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, _, elem)                    \
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+  case MeshDataTypeCode::BOOST_PP_TUPLE_ELEM(2, 0, elem): {                    \
     auto & nodal_data =                                                        \
         mesh.getNodalData<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(tag_name);          \
     for (auto && data : enumerate(nodes_per_proc)) {                           \

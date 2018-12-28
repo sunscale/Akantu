@@ -476,8 +476,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     std::stringstream sstr(line);
     sstr >> nb_periodic_entities;
 
-    mesh_accessor.getNodesFlags().resize(mesh.getNbNodes(),
-                                         NodeFlag::_normal);
+    mesh_accessor.getNodesFlags().resize(mesh.getNbNodes(), NodeFlag::_normal);
 
     for (UInt p = 0; p < nb_periodic_entities; ++p) {
       // dimension slave-tag master-tag
@@ -555,9 +554,10 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     auto && real_tags[[gnu::unused]] = read_data_tags(std::vector<double>());
     auto && int_tags = read_data_tags(std::vector<int>());
 
-    auto && data = mesh.registerNodalData<double>(trim(string_tags[0], '"'), int_tags[1]);
+    auto && data =
+        mesh.getNodalData<double>(trim(string_tags[0], '"'), int_tags[1]);
     data.resize(mesh.getNbNodes(), 0.);
-    for (auto n [[gnu::unused]] : arange(int_tags[2])) {
+    for (auto n[[gnu::unused]] : arange(int_tags[2])) {
       my_getline(infile, line);
       std::stringstream sstr(line);
       int node;
@@ -590,7 +590,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
     if (it != readers.end()) {
       it->second(line);
-    } else if(line.size() != 0) {
+    } else if (line.size() != 0) {
       readers["Unsupported"](line);
     }
   }
@@ -696,9 +696,14 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   if (mesh.hasData(MeshDataType::_nodal)) {
     auto && tags = mesh.getTagNames();
     for (auto && tag : tags) {
-      if (mesh.getTypeCode(tag, MeshDataType::_nodal) != _tc_real)
+      auto type = mesh.getTypeCode(tag, MeshDataType::_nodal);
+      if (type != MeshDataTypeCode::_real) {
+        AKANTU_DEBUG_WARNING(
+            "The field "
+            << tag << " is ignored by the MSH writer, msh files do not support "
+            << type << " data");
         continue;
-
+      }
       auto && data = mesh.getNodalData<double>(tag);
       outfile << "$NodeData"
               << "\n";

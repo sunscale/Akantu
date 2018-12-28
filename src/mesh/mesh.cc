@@ -153,10 +153,6 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
     return *mesh_facets;
   }
 
-  if (not mesh_facets->hasData("physical_names")) {
-    mesh_facets->registerElementalData<std::string>("physical_names");
-  }
-
   auto & mesh_phys_data = this->getData<std::string>("physical_names");
   auto & phys_data = mesh_facets->getData<std::string>("physical_names");
   phys_data.initialize(*mesh_facets, _spatial_dimension = spatial_dimension - 1,
