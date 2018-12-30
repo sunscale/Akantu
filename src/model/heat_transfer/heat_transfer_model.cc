@@ -90,8 +90,8 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
 
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();
-    this->registerSynchronizer(synchronizer, _gst_htm_temperature);
-    this->registerSynchronizer(synchronizer, _gst_htm_gradient_temperature);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_htm_temperature);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_htm_gradient_temperature);
   }
 
   registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
@@ -288,8 +288,8 @@ ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
       options.solution_type["temperature"] =
           IntegrationScheme::_temperature_rate;
     } else {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["temperature"] = _ist_backward_euler;
+      options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+      options.integration_scheme_type["temperature"] = IntegrationSchemeType::_backward_euler;
       options.solution_type["temperature"] = IntegrationScheme::_temperature;
     }
     break;
@@ -439,7 +439,7 @@ void HeatTransferModel::assembleInternalHeatRate() {
 
   this->internal_heat_rate->clear();
 
-  this->synchronize(_gst_htm_temperature);
+  this->synchronize(SynchronizationTag::_htm_temperature);
   auto & fem = this->getFEEngine();
 
   for (auto ghost_type : ghost_types) {
@@ -829,7 +829,7 @@ inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,
   UInt nb_nodes = indexes.size();
 
   switch (tag) {
-  case _gst_htm_temperature: {
+  case SynchronizationTag::_htm_temperature: {
     size += nb_nodes * sizeof(Real);
     break;
   }
@@ -848,7 +848,7 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
 
   for (auto index : indexes) {
     switch (tag) {
-    case _gst_htm_temperature: {
+    case SynchronizationTag::_htm_temperature: {
       buffer << (*temperature)(index);
       break;
     }
@@ -866,7 +866,7 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
 
   for (auto index : indexes) {
     switch (tag) {
-    case _gst_htm_temperature: {
+    case SynchronizationTag::_htm_temperature: {
       buffer >> (*temperature)(index);
       break;
     }
@@ -892,11 +892,11 @@ inline UInt HeatTransferModel::getNbData(const Array<Element> & elements,
   }
 
   switch (tag) {
-  case _gst_htm_temperature: {
+  case SynchronizationTag::_htm_temperature: {
     size += nb_nodes_per_element * sizeof(Real); // temperature
     break;
   }
-  case _gst_htm_gradient_temperature: {
+  case SynchronizationTag::_htm_gradient_temperature: {
     // temperature gradient
     size += getNbIntegrationPoints(elements) * spatial_dimension * sizeof(Real);
     size += nb_nodes_per_element * sizeof(Real); // nodal temperatures
@@ -914,11 +914,11 @@ inline void HeatTransferModel::packData(CommunicationBuffer & buffer,
                                         const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   switch (tag) {
-  case _gst_htm_temperature: {
+  case SynchronizationTag::_htm_temperature: {
     packNodalDataHelper(*temperature, buffer, elements, mesh);
     break;
   }
-  case _gst_htm_gradient_temperature: {
+  case SynchronizationTag::_htm_gradient_temperature: {
     packElementalDataHelper(temperature_gradient, buffer, elements, true,
                             getFEEngine());
     packNodalDataHelper(*temperature, buffer, elements, mesh);
@@ -933,11 +933,11 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
                                           const Array<Element> & elements,
                                           const SynchronizationTag & tag) {
   switch (tag) {
-  case _gst_htm_temperature: {
+  case SynchronizationTag::_htm_temperature: {
     unpackNodalDataHelper(*temperature, buffer, elements, mesh);
     break;
   }
-  case _gst_htm_gradient_temperature: {
+  case SynchronizationTag::_htm_gradient_temperature: {
     unpackElementalDataHelper(temperature_gradient, buffer, elements, true,
                               getFEEngine());
     unpackNodalDataHelper(*temperature, buffer, elements, mesh);

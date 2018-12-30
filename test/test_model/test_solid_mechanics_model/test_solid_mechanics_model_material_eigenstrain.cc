@@ -117,7 +117,7 @@ int main(int argc, char * argv[]) {
   auto & solver = model.getNonLinearSolver("static");
   solver.set("threshold", 2e-4);
   solver.set("max_iterations", 2);
-  solver.set("convergence_type", _scc_residual);
+  solver.set("convergence_type", SolveConvergenceCriteria::_residual);
 
   const Array<Real> & coordinates = mesh.getNodes();
   Array<Real> & displacement = model.getDisplacement();

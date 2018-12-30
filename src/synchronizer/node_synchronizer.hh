@@ -110,15 +110,15 @@ protected:
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void NodeSynchronizer::synchronizeData(Array<T> & array) const {
-  SimpleUIntDataAccessor<T> data_accessor(array, _gst_whatever);
-  this->synchronizeOnce(data_accessor, _gst_whatever);
+  SimpleUIntDataAccessor<T> data_accessor(array, SynchronizationTag::_whatever);
+  this->synchronizeOnce(data_accessor, SynchronizationTag::_whatever);
 }
 
 /* -------------------------------------------------------------------------- */
 template <template <class> class Op, typename T>
 void NodeSynchronizer::reduceSynchronize(Array<T> & array) const {
-  ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
-  this->slaveReductionOnceImpl(data_accessor, _gst_whatever);
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array, SynchronizationTag::_whatever);
+  this->slaveReductionOnceImpl(data_accessor, SynchronizationTag::_whatever);
   this->synchronizeData(array);
 }
 

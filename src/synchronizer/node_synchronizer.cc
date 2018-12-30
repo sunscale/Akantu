@@ -141,7 +141,7 @@ UInt NodeSynchronizer::sanityCheckDataSize(const Array<UInt> & nodes,
       SynchronizerImpl<UInt>::sanityCheckDataSize(nodes, tag, from_comm_desc);
 
   // global id
-  if (tag != _gst_giu_global_conn) {
+  if (tag != SynchronizationTag::_giu_global_conn) {
     size += sizeof(UInt) * nodes.size();
   }
 
@@ -160,7 +160,7 @@ void NodeSynchronizer::packSanityCheckData(
     const SynchronizationTag & tag) const {
   auto dim = mesh.getSpatialDimension();
   for (auto && node : nodes) {
-    if (tag != _gst_giu_global_conn) {
+    if (tag != SynchronizationTag::_giu_global_conn) {
       buffer << mesh.getNodeGlobalId(node);
     }
     buffer << mesh.getNodeFlag(node);
@@ -174,8 +174,8 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                              const SynchronizationTag & tag,
                                              UInt proc, UInt rank) const {
   auto dim = mesh.getSpatialDimension();
-  // std::set<SynchronizationTag> skip_conn_tags{_gst_smmc_facets_conn,
-  //                                             _gst_giu_global_conn};
+  // std::set<SynchronizationTag> skip_conn_tags{SynchronizationTag::_smmc_facets_conn,
+  //                                             SynchronizationTag::_giu_global_conn};
 
   // bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
 
@@ -183,7 +183,7 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
   auto distrib = [&](auto && flag) { return flag & NodeFlag::_shared_mask; };
 
   for (auto && node : nodes) {
-    if (tag != _gst_giu_global_conn) {
+    if (tag != SynchronizationTag::_giu_global_conn) {
       UInt global_id;
       buffer >> global_id;
       AKANTU_DEBUG_ASSERT(global_id == mesh.getNodeGlobalId(node),

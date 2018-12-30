@@ -238,7 +238,7 @@ Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
 /* -------------------------------------------------------------------------- */
 inline UInt Material::getNbData(const Array<Element> & elements,
                                 const SynchronizationTag & tag) const {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
            spatial_dimension * sizeof(Real) *
            this->getModel().getNbIntegrationPoints(elements);
@@ -250,7 +250,7 @@ inline UInt Material::getNbData(const Array<Element> & elements,
 inline void Material::packData(CommunicationBuffer & buffer,
                                const Array<Element> & elements,
                                const SynchronizationTag & tag) const {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements);
       packElementDataHelper(gradu, buffer, elements);
@@ -263,7 +263,7 @@ inline void Material::packData(CommunicationBuffer & buffer,
 inline void Material::unpackData(CommunicationBuffer & buffer,
                                  const Array<Element> & elements,
                                  const SynchronizationTag & tag) {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);
       unpackElementDataHelper(gradu, buffer, elements);

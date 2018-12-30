@@ -81,7 +81,7 @@ int main(int argc, char * argv[]) {
   Array<Real> x(nb_nodes);
   dof_manager.registerDOFs("x", x, _dst_nodal);
 
-  const auto & local_equation_number = dof_manager.getEquationsNumbers("x");
+  const auto & local_equation_number = dof_manager.getLocalEquationsNumbers("x");
 
   auto & A = dof_manager.getNewMatrix("A", _symmetric);
 

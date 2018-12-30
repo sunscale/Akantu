@@ -43,7 +43,7 @@ inline UInt NonLocalNeighborhood<WeightFunction>::getNbData(
     const Array<Element> & elements, const SynchronizationTag & tag) const {
   UInt size = 0;
 
-  if (tag == _gst_mnl_for_average) {
+  if (tag == SynchronizationTag::_mnl_for_average) {
     for (auto & variable_id : non_local_variables) {
       size += this->non_local_manager.getNbData(elements, variable_id);
     }
@@ -59,7 +59,7 @@ template <class WeightFunction>
 inline void NonLocalNeighborhood<WeightFunction>::packData(
     CommunicationBuffer & buffer, const Array<Element> & elements,
     const SynchronizationTag & tag) const {
-  if (tag == _gst_mnl_for_average) {
+  if (tag == SynchronizationTag::_mnl_for_average) {
     for (auto & variable_id : non_local_variables) {
       this->non_local_manager.packData(buffer, elements, variable_id);
     }
@@ -73,7 +73,7 @@ template <class WeightFunction>
 inline void NonLocalNeighborhood<WeightFunction>::unpackData(
     CommunicationBuffer & buffer, const Array<Element> & elements,
     const SynchronizationTag & tag) {
-  if (tag == _gst_mnl_for_average) {
+  if (tag == SynchronizationTag::_mnl_for_average) {
     for (auto & variable_id : non_local_variables) {
       this->non_local_manager.unpackData(buffer, elements, variable_id);
     }

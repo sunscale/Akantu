@@ -508,7 +508,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
 
   this->addToProfile(matrix_id, dof_id, type, ghost_type);
 
-  const auto & equation_number = this->getLocalEquationNumbers(dof_id);
+  const auto & equation_number = this->getLocalEquationsNumbers(dof_id);
   auto & A = this->getMatrix(matrix_id);
 
   UInt nb_element;
@@ -553,7 +553,7 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     this->extractElementEquationNumber(equation_number, *conn_it,
                                        nb_degree_of_freedom, element_eq_nb);
     std::transform(element_eq_nb.begin(), element_eq_nb.end(),
-                   element_eq_nb.begin(), [&](UInt & local) -> UInt {
+                   element_eq_nb.begin(), [&](auto && local) {
                      return this->localToGlobalEquationNumber(local);
                    });
 
@@ -614,7 +614,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 
   auto nb_degree_of_freedom_per_node = dof_data.dof->getNbComponent();
 
-  const auto & equation_number = this->getLocalEquationNumbers(dof_id);
+  const auto & equation_number = this->getLocalEquationsNumbers(dof_id);
 
   auto & A = this->getMatrix(matrix_id);
 
@@ -781,7 +781,7 @@ public:
 
   UInt getNbData(const Array<UInt> & nodes,
                  const SynchronizationTag & tag) const override {
-    if (tag == _gst_ask_nodes or tag == _gst_giu_global_conn) {
+    if (tag == SynchronizationTag::_ask_nodes or tag == SynchronizationTag::_giu_global_conn) {
       return nodes.size() * dof_data.dof->getNbComponent() * sizeof(UInt);
     }
 
@@ -790,7 +790,7 @@ public:
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                 const SynchronizationTag & tag) const override {
-    if (tag == _gst_ask_nodes or tag == _gst_giu_global_conn) {
+    if (tag == SynchronizationTag::_ask_nodes or tag == SynchronizationTag::_giu_global_conn) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node.at(node);
         for (auto & dof : dofs) {
@@ -802,7 +802,7 @@ public:
 
   void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                   const SynchronizationTag & tag) override {
-    if (tag == _gst_ask_nodes or tag == _gst_giu_global_conn) {
+    if (tag == SynchronizationTag::_ask_nodes or tag == SynchronizationTag::_giu_global_conn) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node[node];
         for (auto dof : dofs) {
@@ -946,11 +946,11 @@ void DOFManagerDefault::updateDOFsData(
 
     if (this->mesh->isPeriodic()) {
       mesh->getPeriodicNodeSynchronizer().synchronizeOnce(data_accessor,
-                                                          _gst_giu_global_conn);
+                                                          SynchronizationTag::_giu_global_conn);
     }
 
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
-    node_synchronizer.synchronizeOnce(data_accessor, _gst_ask_nodes);
+    node_synchronizer.synchronizeOnce(data_accessor, SynchronizationTag::_ask_nodes);
   }
 }
 

@@ -75,7 +75,7 @@ void NTNBaseFriction::updateSlip() {
   UInt dim = model.getSpatialDimension();
 
   // synchronize increment
-  this->contact.getSynchronizerRegistry().synchronize(_gst_cf_incr);
+  this->contact.getSynchronizerRegistry().synchronize(SynchronizationTag::_cf_incr);
 
   Array<Real> rel_tan_incr(0, dim);
   this->contact.computeRelativeTangentialField(model.getIncrement(),

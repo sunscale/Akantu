@@ -96,10 +96,10 @@ int main(int argc, char * argv[]) {
   TestDOFAccessor test_dof_accessor(
       dof_synchronizer.getGlobalDOFEquationNumbers());
   SynchronizerRegistry synch_registry(test_dof_accessor);
-  synch_registry.registerSynchronizer(dof_synchronizer, _gst_test);
+  synch_registry.registerSynchronizer(dof_synchronizer, SynchronizationTag::_test);
 
   AKANTU_DEBUG_INFO("Synchronizing tag");
-  synch_registry.synchronize(_gst_test);
+  synch_registry.synchronize(SynchronizationTag::_test);
 
   delete communicator;
   finalize();

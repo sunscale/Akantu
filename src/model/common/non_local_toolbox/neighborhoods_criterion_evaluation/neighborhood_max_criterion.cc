@@ -117,7 +117,7 @@ void NeighborhoodMaxCriterion::initNeighborhood() {
 void NeighborhoodMaxCriterion::createGridSynchronizer() {
   this->is_creating_grid = true;
   std::set<SynchronizationTag> tags;
-  tags.insert(_gst_nh_criterion);
+  tags.insert(SynchronizationTag::_nh_criterion);
 
   std::stringstream sstr;
   sstr << getID() << ":grid_synchronizer";
@@ -167,13 +167,13 @@ void NeighborhoodMaxCriterion::findMaxQuads(
   this->model.updateDataForNonLocalCriterion(criterion);
 
   /// start the exchange the value of the criterion on the ghost elements
-  this->model.asynchronousSynchronize(_gst_nh_criterion);
+  this->model.asynchronousSynchronize(SynchronizationTag::_nh_criterion);
 
   /// compare to not-ghost neighbors
   checkNeighbors(_not_ghost);
 
   /// finish the exchange
-  this->model.waitEndSynchronize(_gst_nh_criterion);
+  this->model.waitEndSynchronize(SynchronizationTag::_nh_criterion);
 
   /// compare to ghost neighbors
   checkNeighbors(_ghost);

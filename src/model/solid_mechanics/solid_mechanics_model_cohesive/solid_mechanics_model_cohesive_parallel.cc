@@ -55,7 +55,7 @@ public:
   UInt getNbData(const Array<Element> & elements,
                  const SynchronizationTag & tag) const {
     UInt size = 0;
-    if (tag == _gst_smmc_facets_conn) {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
       UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
       size += nb_nodes * sizeof(UInt);
     }
@@ -64,7 +64,7 @@ public:
 
   void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
                 const SynchronizationTag & tag) const {
-    if (tag == _gst_smmc_facets_conn) {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
       for (const auto & element : elements) {
         auto & conns = global_connectivity(element.type, element.ghost_type);
         for (auto n : arange(conns.getNbComponent())) {
@@ -76,7 +76,7 @@ public:
 
   void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
                   const SynchronizationTag & tag) {
-    if (tag == _gst_smmc_facets_conn) {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
       for (const auto & element : elements) {
         auto & conns = global_connectivity(element.type, element.ghost_type);
         for (auto n : arange(conns.getNbComponent())) {
@@ -111,7 +111,7 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
 
   /// communicate
   mesh_facets.getElementSynchronizer().synchronizeOnce(data_accessor,
-                                                       _gst_smmc_facets_conn);
+                                                       SynchronizationTag::_smmc_facets_conn);
 
   /// flip facets
   MeshUtils::flipFacets(mesh_facets, data_accessor.getGlobalConnectivity(),
@@ -338,16 +338,16 @@ UInt SolidMechanicsModelCohesive::getNbData(
   /// regular element case
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
-    // case _gst_smmc_facets: {
+    // case SynchronizationTag::_smmc_facets: {
     //   size += elements.size() * sizeof(bool);
     //   break;
     // }
-    case _gst_smmc_facets_stress: {
+    case SynchronizationTag::_smmc_facets_stress: {
       UInt nb_quads = getNbQuadsForFacetCheck(elements);
       size += nb_quads * spatial_dimension * spatial_dimension * sizeof(Real);
       break;
     }
-    case _gst_material_id: {
+    case SynchronizationTag::_material_id: {
       for (auto && element : elements) {
         if (Mesh::getSpatialDimension(element.type) == (spatial_dimension - 1))
           size += sizeof(UInt);
@@ -364,11 +364,11 @@ UInt SolidMechanicsModelCohesive::getNbData(
   else if (elements(0).kind() == _ek_cohesive) {
 
     switch (tag) {
-    case _gst_material_id: {
+    case SynchronizationTag::_material_id: {
       size += elements.size() * sizeof(UInt);
       break;
     }
-    case _gst_smm_boundary: {
+    case SynchronizationTag::_smm_boundary: {
       UInt nb_nodes_per_element = 0;
 
       for (auto && el : elements) {
@@ -384,7 +384,7 @@ UInt SolidMechanicsModelCohesive::getNbData(
       break;
     }
 
-    if (tag != _gst_material_id && tag != _gst_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         size += mat.getNbData(elements, tag);
       });
@@ -406,17 +406,17 @@ void SolidMechanicsModelCohesive::packData(
 
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
-    // case _gst_smmc_facets: {
+    // case SynchronizationTag::_smmc_facets: {
     //   packElementalDataHelper(inserter->getInsertionFacetsByElement(),
     //   buffer,
     //                           elements, false, getFEEngine());
     //   break;
     // }
-    case _gst_smmc_facets_stress: {
+    case SynchronizationTag::_smmc_facets_stress: {
       packFacetStressDataHelper(facet_stress, buffer, elements);
       break;
     }
-    case _gst_material_id: {
+    case SynchronizationTag::_material_id: {
       for (auto && element : elements) {
         if (Mesh::getSpatialDimension(element.type) != (spatial_dimension - 1))
           continue;
@@ -435,12 +435,12 @@ void SolidMechanicsModelCohesive::packData(
 
   if (elements(0).kind() == _ek_cohesive) {
     switch (tag) {
-    case _gst_material_id: {
+    case SynchronizationTag::_material_id: {
       packElementalDataHelper(material_index, buffer, elements, false,
                               getFEEngine("CohesiveFEEngine"));
       break;
     }
-    case _gst_smm_boundary: {
+    case SynchronizationTag::_smm_boundary: {
       packNodalDataHelper(*internal_force, buffer, elements, mesh);
       packNodalDataHelper(*velocity, buffer, elements, mesh);
       packNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
@@ -449,7 +449,7 @@ void SolidMechanicsModelCohesive::packData(
     default: {}
     }
 
-    if (tag != _gst_material_id && tag != _gst_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         mat.packData(buffer, elements, tag);
       });
@@ -470,17 +470,17 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
 
   if (elements(0).kind() == _ek_regular) {
     switch (tag) {
-    // case _gst_smmc_facets: {
+    // case SynchronizationTag::_smmc_facets: {
     //   unpackElementalDataHelper(inserter->getInsertionFacetsByElement(),
     //   buffer,
     //                             elements, false, getFEEngine());
     //   break;
     // }
-    case _gst_smmc_facets_stress: {
+    case SynchronizationTag::_smmc_facets_stress: {
       unpackFacetStressDataHelper(facet_stress, buffer, elements);
       break;
     }
-    case _gst_material_id: {
+    case SynchronizationTag::_material_id: {
       for (auto && element : elements) {
         if (Mesh::getSpatialDimension(element.type) != (spatial_dimension - 1))
           continue;
@@ -511,7 +511,7 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
 
   if (elements(0).kind() == _ek_cohesive) {
     switch (tag) {
-    case _gst_material_id: {
+    case SynchronizationTag::_material_id: {
       for (auto && element : elements) {
         UInt recv_mat_index;
         buffer >> recv_mat_index;
@@ -526,7 +526,7 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
       }
       break;
     }
-    case _gst_smm_boundary: {
+    case SynchronizationTag::_smm_boundary: {
       unpackNodalDataHelper(*internal_force, buffer, elements, mesh);
       unpackNodalDataHelper(*velocity, buffer, elements, mesh);
       unpackNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
@@ -535,7 +535,7 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
     default: {}
     }
 
-    if (tag != _gst_material_id && tag != _gst_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         mat.unpackData(buffer, elements, tag);
       });

@@ -203,7 +203,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
 
   if (mesh_facets.isDistributed()) {
     mesh_facets.getElementSynchronizer().synchronizeOnce(
-        *this, _gst_ce_groups);
+        *this, SynchronizationTag::_ce_groups);
   }
 
   UInt nb_new_elements = MeshUtils::insertCohesiveElements(

@@ -46,7 +46,7 @@ NeighborhoodMaxCriterion::getNbDataForElements(const Array<Element> & elements,
   UInt nb_quadrature_points = this->model.getNbIntegrationPoints(elements);
   UInt size = 0;
 
-  if (tag == _gst_nh_criterion) {
+  if (tag == SynchronizationTag::_nh_criterion) {
     size += sizeof(Real) * nb_quadrature_points;
   }
 
@@ -58,7 +58,7 @@ inline void
 NeighborhoodMaxCriterion::packElementData(CommunicationBuffer & buffer,
                                           const Array<Element> & elements,
                                           SynchronizationTag tag) const {
-  if (tag == _gst_nh_criterion) {
+  if (tag == SynchronizationTag::_nh_criterion) {
     this->packElementalDataHelper(criterion, buffer, elements, true,
                                   this->model.getFEEngine());
   }
@@ -69,7 +69,7 @@ inline void
 NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
                                             const Array<Element> & elements,
                                             SynchronizationTag tag) {
-  if (tag == _gst_nh_criterion) {
+  if (tag == SynchronizationTag::_nh_criterion) {
     this->unpackElementalDataHelper(criterion, buffer, elements, true,
                                     this->model.getFEEngine());
   }

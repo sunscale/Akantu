@@ -96,7 +96,7 @@ void SynchronizerImpl<Entity>::communicateOnce(
       if (sr == recv_dir) {
         requests.push_back(communicator.asyncReceive(
             buffer, proc,
-            Tag::genTag(this->rank, tag, comm_tag, this->hash_id)));
+            Tag::genTag(this->rank, UInt(tag), comm_tag, this->hash_id)));
       } else {
 #ifndef AKANTU_NDEBUG
         this->packSanityCheckData(buffer, scheme, tag);
@@ -113,7 +113,8 @@ void SynchronizerImpl<Entity>::communicateOnce(
                 << "bytes per entity missing])");
 
         send_requests.push_back(communicator.asyncSend(
-            buffer, proc, Tag::genTag(proc, tag, comm_tag, this->hash_id)));
+            buffer, proc,
+            Tag::genTag(proc, UInt(tag), comm_tag, this->hash_id)));
       }
     }
   };
@@ -426,13 +427,11 @@ template <class Entity> void SynchronizerImpl<Entity>::swapSendRecv() {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-void SynchronizerImpl<Entity>::
-copySchemes(const SynchronizerImpl & other) {
+void SynchronizerImpl<Entity>::copySchemes(const SynchronizerImpl & other) {
   reset();
 
   for (auto sr : iterate_send_recv) {
-    for (auto & scheme_pair :
-             other.communications.iterateSchemes(sr)) {
+    for (auto & scheme_pair : other.communications.iterateSchemes(sr)) {
       auto proc = scheme_pair.first;
       auto & other_scheme = scheme_pair.second;
       auto & scheme = communications.createScheme(proc, sr);

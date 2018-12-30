@@ -57,7 +57,7 @@ NonLinearSolverNewtonRaphson::NonLinearSolverNewtonRaphson(
   this->registerParam("threshold", convergence_criteria, 1e-10, _pat_parsmod,
                       "Threshold to consider results as converged");
   this->registerParam("convergence_type", convergence_criteria_type,
-                      _scc_solution, _pat_parsmod,
+                      SolveConvergenceCriteria::_solution, _pat_parsmod,
                       "Type of convergence criteria");
   this->registerParam("max_iterations", max_iterations, 10, _pat_parsmod,
                       "Max number of iterations");
@@ -80,7 +80,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   solver_callback.predictor();
 
-  if (non_linear_solver_type == _nls_linear and
+  if (non_linear_solver_type == NonLinearSolverType::_linear and
       solver_callback.canSplitResidual())
     solver_callback.assembleMatrix("K");
 
@@ -96,7 +96,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   this->n_iter = 0;
   this->converged = false;
 
-  if (this->convergence_criteria_type == _scc_residual) {
+  if (this->convergence_criteria_type == SolveConvergenceCriteria::_residual) {
     this->converged = this->testConvergence(this->dof_manager.getResidual());
 
     if (this->converged)
@@ -113,7 +113,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
     // EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
 
-    if (this->convergence_criteria_type == _scc_residual) {
+    if (this->convergence_criteria_type == SolveConvergenceCriteria::_residual) {
       this->assembleResidual(solver_callback);
       this->converged = this->testConvergence(this->dof_manager.getResidual());
     } else {
@@ -121,7 +121,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
           this->testConvergence(this->dof_manager.getGlobalSolution());
     }
 
-    if (this->convergence_criteria_type == _scc_solution and
+    if (this->convergence_criteria_type == SolveConvergenceCriteria::_solution and
         not this->converged)
       this->assembleResidual(solver_callback);
     // this->dump();
@@ -137,7 +137,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   // this makes sure that you have correct strains and stresses after the
   // solveStep function (e.g., for dumping)
-  if (this->convergence_criteria_type == _scc_solution)
+  if (this->convergence_criteria_type == SolveConvergenceCriteria::_solution)
     this->assembleResidual(solver_callback);
 
   if (this->converged) {

@@ -132,8 +132,8 @@ int main(int argc, char ** argv) {
 
   mesh.dump();
 
-  // SimpleUIntDataAccessor<Int> data_accessor(data, _gst_user_1);
+  // SimpleUIntDataAccessor<Int> data_accessor(data, SynchronizationTag::_user_1);
   // mesh.getPeriodicNodeSynchronizer().synchronizeOnce(data_accessor,
-  //                                                    _gst_user_1);
+  //                                                    SynchronizationTag::_user_1);
   mesh.dump();
 }

@@ -256,7 +256,7 @@ void NTNContact::updateNormals() {
   UInt dim = this->model.getSpatialDimension();
   UInt nb_contact_nodes = this->getNbContactNodes();
 
-  this->synch_registry->synchronize(_gst_cf_nodal); // synchronize current pos
+  this->synch_registry->synchronize(SynchronizationTag::_cf_nodal); // synchronize current pos
   const Array<Real> & cur_pos = this->model.getCurrentPosition();
 
   FEEngine & boundary_fem = this->model.getFEEngineBoundary();

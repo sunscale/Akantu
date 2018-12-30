@@ -136,7 +136,7 @@ void SolverPETSc::solve() {
 //       }
 //     }
 //   }
-//   synch_registry->synchronize(_gst_solver_solution);
+//   synch_registry->synchronize(SynchronizationTag::_solver_solution);
 
 //   AKANTU_DEBUG_OUT();
 // }

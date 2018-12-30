@@ -147,9 +147,9 @@ void NTNBaseContact::initParallel() {
   });
 
   this->synch_registry->registerSynchronizer(*(this->synchronizer),
-                                             _gst_cf_nodal);
+                                             SynchronizationTag::_cf_nodal);
   this->synch_registry->registerSynchronizer(*(this->synchronizer),
-                                             _gst_cf_incr);
+                                             SynchronizationTag::_cf_incr);
 
   AKANTU_DEBUG_OUT();
 }
@@ -361,7 +361,7 @@ void NTNBaseContact::computeContactPressure() {
                       "Cannot compute contact pressure if no time step is set");
 
   // synchronize data
-  this->synch_registry->synchronize(_gst_cf_nodal);
+  this->synch_registry->synchronize(SynchronizationTag::_cf_nodal);
 
   auto && dof_manager =
       dynamic_cast<DOFManagerDefault &>(model.getDOFManager());

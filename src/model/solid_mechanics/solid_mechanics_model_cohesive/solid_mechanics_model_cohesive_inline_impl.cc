@@ -126,7 +126,7 @@ namespace akantu {
 // //   UInt iter = 0;
 // //   converged = false;
 // //   error = 0.;
-// //   if (criteria == _scc_residual) {
+// //   if (criteria == SolveConvergenceCriteria::_residual) {
 // //     converged = this->testConvergence<criteria>(tolerance, error);
 // //     if (converged)
 // //       return converged;

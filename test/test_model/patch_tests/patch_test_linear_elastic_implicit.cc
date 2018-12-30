@@ -43,7 +43,7 @@ TYPED_TEST(TestPatchTestSMMLinear, Implicit) {
   auto & solver = this->model->getNonLinearSolver();
   solver.set("max_iterations", 2);
   solver.set("threshold", 2e-4);
-  solver.set("convergence_type", _scc_residual);
+  solver.set("convergence_type", SolveConvergenceCriteria::_residual);
 
   this->model->solveStep();
 

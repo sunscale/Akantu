@@ -293,7 +293,7 @@ private:
   /// material to use if a cohesive element is created on a facet
   ElementTypeMapArray<UInt> facet_material;
 
-  bool is_extrinsic;
+  bool is_extrinsic{false};
 
   /// cohesive element inserter
   std::unique_ptr<CohesiveElementInserter> inserter;

@@ -289,7 +289,7 @@ public:
                         nb_cluster_per_proc.end(), starting_index);
 
     /// create the local to distant cluster pairs with neighbors
-    element_synchronizer.synchronizeOnce(*this, _gst_gm_clusters);
+    element_synchronizer.synchronizeOnce(*this, SynchronizationTag::_gm_clusters);
 
     /// count total number of pairs
     Array<int> nb_pairs(nb_proc); // This is potentially a bug for more than
@@ -412,7 +412,7 @@ private:
   /// functions for parallel communications
   inline UInt getNbData(const Array<Element> & elements,
                         const SynchronizationTag & tag) const override {
-    if (tag == _gst_gm_clusters)
+    if (tag == SynchronizationTag::_gm_clusters)
       return elements.size() * sizeof(UInt);
 
     return 0;
@@ -421,7 +421,7 @@ private:
   inline void packData(CommunicationBuffer & buffer,
                        const Array<Element> & elements,
                        const SynchronizationTag & tag) const override {
-    if (tag != _gst_gm_clusters)
+    if (tag != SynchronizationTag::_gm_clusters)
       return;
 
     Array<Element>::const_iterator<> el_it = elements.begin();
@@ -440,7 +440,7 @@ private:
   inline void unpackData(CommunicationBuffer & buffer,
                          const Array<Element> & elements,
                          const SynchronizationTag & tag) override {
-    if (tag != _gst_gm_clusters)
+    if (tag != SynchronizationTag::_gm_clusters)
       return;
 
     Array<Element>::const_iterator<> el_it = elements.begin();

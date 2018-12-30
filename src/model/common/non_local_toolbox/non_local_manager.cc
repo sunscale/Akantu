@@ -302,7 +302,7 @@ void NonLocalManager::computeWeights() {
       it->second->updateWeights();
     else {
       dummy_synchronizers[global_neighborhood]->synchronize(dummy_accessor,
-                                                            _gst_mnl_weight);
+                                                            SynchronizationTag::_mnl_weight);
     }
   }
 
@@ -400,7 +400,7 @@ void NonLocalManager::computeAllNonLocalStresses() {
 
   for (auto & pair : neighborhoods) {
     auto & neighborhood = *pair.second;
-    neighborhood.asynchronousSynchronize(_gst_mnl_for_average);
+    neighborhood.asynchronousSynchronize(SynchronizationTag::_mnl_for_average);
   }
 
   this->averageInternals(_not_ghost);
@@ -409,7 +409,7 @@ void NonLocalManager::computeAllNonLocalStresses() {
 
   for (auto & pair : neighborhoods) {
     auto & neighborhood = *pair.second;
-    neighborhood.waitEndSynchronize(_gst_mnl_for_average);
+    neighborhood.waitEndSynchronize(SynchronizationTag::_mnl_for_average);
   }
 
   this->averageInternals(_ghost);

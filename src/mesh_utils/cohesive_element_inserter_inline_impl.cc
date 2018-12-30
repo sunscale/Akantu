@@ -45,7 +45,7 @@ CohesiveElementInserter::getNbData(const Array<Element> & elements,
 
   UInt size = 0;
 
-  if (tag == _gst_ce_groups) {
+  if (tag == SynchronizationTag::_ce_groups) {
     size = elements.size() * sizeof(bool);
   }
 
@@ -59,7 +59,7 @@ CohesiveElementInserter::packData(CommunicationBuffer & buffer,
                                   const Array<Element> & elements,
                                   const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
-  if (tag == _gst_ce_groups) {
+  if (tag == SynchronizationTag::_ce_groups) {
     for (const auto & el : elements) {
       const bool & data = insertion_facets(el);
       buffer << data;
@@ -75,7 +75,7 @@ CohesiveElementInserter::unpackData(CommunicationBuffer & buffer,
                                     const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  if (tag == _gst_ce_groups) {
+  if (tag == SynchronizationTag::_ce_groups) {
     for (const auto & el : elements) {
       bool & data = insertion_facets(el);
       buffer >> data;

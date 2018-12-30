@@ -26,7 +26,7 @@ def foo(self):
     solver = self.model.getNonLinearSolver()
     solver.set("max_iterations", 2)
     solver.set("threshold", 2e-4)
-    solver.set("convergence_type", akantu._scc_residual)
+    solver.set("convergence_type", akantu.SolveConvergenceCriteria__residual)
 
     self.model.solveStep()
 
