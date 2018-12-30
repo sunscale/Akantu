@@ -145,7 +145,7 @@ void FragmentManager::buildFragments(Real damage_limit) {
       const_cast<ElementSynchronizer *>(&model.getCohesiveSynchronizer());
 
   if (cohesive_synchronizer) {
-    cohesive_synchronizer->synchronize(model, _gst_smmc_damage);
+    cohesive_synchronizer->synchronize(model, SynchronizationTag::_smmc_damage);
   }
 
   auto & mesh_facets = const_cast<Mesh &>(mesh.getMeshFacets());

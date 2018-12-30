@@ -30,16 +30,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "communicator.hh"
-#include "data_accessor.hh"
-#include "dof_manager.hh"
-#include "dof_manager_default.hh"
-#include "element_synchronizer.hh"
+#include "element_group.hh"
 #include "mesh.hh"
 #include "mesh_accessor.hh"
-#include "model_solver.hh"
 #include "non_linear_solver.hh"
-#include "sparse_matrix.hh"
-#include "synchronizer_registry.hh"
 /* -------------------------------------------------------------------------- */
 #include "dumpable_inline_impl.hh"
 #include "dumper_element_partition.hh"
@@ -55,6 +49,27 @@
 #endif
 
 using namespace akantu;
+
+class Sinusoidal : public BC::Dirichlet::DirichletFunctor {
+public:
+  Sinusoidal(MyModel & model, Real amplitude, Real pulse_width, Real t)
+      : model(model), A(amplitude), k(2 * M_PI / pulse_width),
+        t(t), v{std::sqrt(model.E / model.rho)} {}
+
+  void operator()(UInt n, Vector<bool> & /*flags*/, Vector<Real> & disp,
+                  const Vector<Real> & coord) const {
+    auto x = coord(_x);
+    model.velocity(n, _x) = k * v * A * sin(k * (x - v * t));
+    disp(_x) = A * cos(k * (x - v * t));
+  }
+
+private:
+  MyModel & model;
+  Real A{1.};
+  Real k{2 * M_PI};
+  Real t{1.};
+  Real v{1.};
+};
 
 static void genMesh(Mesh & mesh, UInt nb_nodes);
 
@@ -77,22 +92,15 @@ int main(int argc, char * argv[]) {
 
   mesh.distribute();
 
-  //mesh.makePeriodic(_x);
+  // mesh.makePeriodic(_x);
 
   MyModel model(F, mesh, _explicit);
 
   model.forces.clear();
   model.blocked.clear();
 
-  for (auto && n : arange(mesh.getNbNodes())) {
-    Real x = mesh.getNodes()(n) - 0.2;
-    // Sinus * Gaussian
-    Real L = pulse_width;
-    Real k = 2 * M_PI / L;
-    //model.displacement(n) = A * sin(k * x) * exp(-(k * x) * (k * x) / (L * L));
-    model.displacement(n) = A * cos(k * x);
-    model.velocity(n) = k * A * sin(k * x);
-  }
+  model.applyBC(Sinusoidal(model, A, pulse_width, 0.), "all");
+  model.applyBC(BC::Dirichlet::FlagOnly(_x), "border");
 
   if (!_explicit) {
     model.getNewSolver("dynamic", TimeStepSolverType::_dynamic,
@@ -109,12 +117,6 @@ int main(int argc, char * argv[]) {
   }
 
   model.setTimeStep(time_step);
-
-  // #if EXPLICIT == true
-  //   std::ofstream output("output_dynamic_explicit.csv");
-  // #else
-  //   std::ofstream output("output_dynamic_implicit.csv");
-  // #endif
 
   if (prank == 0) {
     std::cout << std::scientific;
@@ -170,15 +172,11 @@ int main(int argc, char * argv[]) {
   mesh.dump();
 
   for (UInt i = 1; i < max_steps + 1; ++i) {
+    model.applyBC(Sinusoidal(model, A, pulse_width, time_step * (i - 1)),
+                  "border");
+
     model.solveStep("dynamic");
     mesh.dump();
-#if EXPLICIT == false
-// int nb_iter = solver.get("nb_iterations");
-// Real error = solver.get("error");
-// bool converged = solver.get("converged");
-// if (prank == 0)
-// std::cerr << error << " " << nb_iter << " -> " << converged << std::endl;
-#endif
 
     epot = model.getPotentialEnergy();
     ekin = model.getKineticEnergy();
@@ -197,10 +195,6 @@ int main(int argc, char * argv[]) {
                 << ekin << "," << std::setw(14) << etot << "," << std::setw(14)
                 << max_disp << "," << std::setw(14) << min_disp << std::endl;
     }
-
-    // if (std::abs(etot) > 1e-1) {
-    //   AKANTU_ERROR("The total energy of the system is not conserved!");
-    //}
   }
 
   // output.close();
@@ -216,15 +210,30 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 
   nodes.resize(nb_nodes);
 
+  auto & all = mesh.createNodeGroup("all_nodes");
+
   for (UInt n = 0; n < nb_nodes; ++n) {
     nodes(n, _x) = n * (1. / (nb_nodes - 1));
+    all.add(n);
   }
+
+  mesh.createElementGroupFromNodeGroup("all", "all_nodes");
 
   conn.resize(nb_nodes - 1);
   for (UInt n = 0; n < nb_nodes - 1; ++n) {
     conn(n, 0) = n;
     conn(n, 1) = n + 1;
   }
+
+  Array<UInt> & conn_points = mesh_accessor.getConnectivity(_point_1);
+  conn_points.resize(2);
+
+  conn_points(0, 0) = 0;
+  conn_points(1, 0) = nb_nodes - 1;
+
+  auto & border = mesh.createElementGroup("border", 0);
+  border.add({_point_1, 0, _not_ghost}, true);
+  border.add({_point_1, 1, _not_ghost}, true);
 
   mesh_accessor.makeReady();
 }

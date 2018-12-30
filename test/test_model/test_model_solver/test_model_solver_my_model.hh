@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_iterators.hh"
+#include "boundary_condition.hh"
 #include "communicator.hh"
 #include "data_accessor.hh"
 #include "dof_manager_default.hh"
@@ -38,6 +39,7 @@
 #include "model_solver.hh"
 #include "periodic_node_synchronizer.hh"
 #include "sparse_matrix.hh"
+
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -50,19 +52,21 @@ namespace akantu {
  *     |           |
  *     |---- L ----|
  */
-class MyModel : public ModelSolver, public DataAccessor<Element> {
+class MyModel : public ModelSolver,
+                public BoundaryCondition<MyModel>,
+                public DataAccessor<Element> {
 public:
   MyModel(Real F, Mesh & mesh, bool lumped)
       : ModelSolver(mesh, ModelType::_model, "model_solver", 0),
-        nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement()), E(1.),
-        A(1.), rho(1.), lumped(lumped), mesh(mesh),
+        nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement(_segment_2)),
+        lumped(lumped), E(1.), A(1.), rho(1.), mesh(mesh),
         displacement(nb_dofs, 1, "disp"), velocity(nb_dofs, 1, "velo"),
         acceleration(nb_dofs, 1, "accel"), blocked(nb_dofs, 1, "blocked"),
         forces(nb_dofs, 1, "force_ext"),
         internal_forces(nb_dofs, 1, "force_int"),
         stresses(nb_elements, 1, "stress"), strains(nb_elements, 1, "strain"),
         initial_lengths(nb_elements, 1, "L0") {
-
+    this->initBC(*this, displacement, forces);
     this->initDOFManager();
     this->getDOFManager().registerDOFs("disp", displacement, _dst_nodal);
     this->getDOFManager().registerDOFsDerivative("disp", 1, velocity);
@@ -103,7 +107,7 @@ public:
     this->registerDataAccessor(*this);
     this->registerSynchronizer(
         const_cast<ElementSynchronizer &>(this->mesh.getElementSynchronizer()),
-        _gst_user_1);
+        SynchronizationTag::_user_1);
   }
 
   void assembleLumpedMass() {
@@ -122,13 +126,12 @@ public:
 
     Array<Real> m_all_el(this->mesh.getNbElement(_segment_2, ghost_type), 2);
 
-    auto m_it = m_all_el.begin(2);
+    for (auto && data :
+         zip(make_view(this->mesh.getConnectivity(_segment_2), 2),
+             make_view(m_all_el, 2))) {
+      const auto & conn = std::get<0>(data);
+      auto & m_el = std::get<1>(data);
 
-    auto cit = this->mesh.getConnectivity(_segment_2, ghost_type).begin(2);
-    auto cend = this->mesh.getConnectivity(_segment_2, ghost_type).end(2);
-
-    for (; cit != cend; ++cit, ++m_it) {
-      const Vector<UInt> & conn = *cit;
       UInt n1 = conn(0);
       UInt n2 = conn(1);
 
@@ -138,7 +141,7 @@ public:
       Real L = std::abs(p2 - p1);
 
       Real M_n = rho * A * L / 2;
-      (*m_it)(0) = (*m_it)(1) = M_n;
+      m_el(0) = m_el(1) = M_n;
     }
 
     this->getDOFManager().assembleElementalArrayLocalArray(
@@ -152,10 +155,6 @@ public:
     M.clear();
 
     Array<Real> m_all_el(this->nb_elements, 4);
-    Array<Real>::matrix_iterator m_it = m_all_el.begin(2, 2);
-
-    auto cit = this->mesh.getConnectivity(_segment_2).begin(2);
-    auto cend = this->mesh.getConnectivity(_segment_2).end(2);
 
     Matrix<Real> m(2, 2);
     m(0, 0) = m(1, 1) = 2;
@@ -170,8 +169,11 @@ public:
     // m(1, 1) += m(1, 0);
     // m(0, 1) = m(1, 0) = 0;
 
-    for (; cit != cend; ++cit, ++m_it) {
-      const Vector<UInt> & conn = *cit;
+    for (auto && data :
+         zip(make_view(this->mesh.getConnectivity(_segment_2), 2),
+             make_view(m_all_el, 2, 2))) {
+      const auto & conn = std::get<0>(data);
+      auto & m_el = std::get<1>(data);
       UInt n1 = conn(0);
       UInt n2 = conn(1);
 
@@ -180,10 +182,10 @@ public:
 
       Real L = std::abs(p2 - p1);
 
-      Matrix<Real> & m_el = *m_it;
       m_el = m;
       m_el *= rho * A * L / 6.;
     }
+
     this->getDOFManager().assembleElementalMatricesToMatrix(
         "M", "disp", m_all_el, _segment_2);
 
@@ -258,36 +260,9 @@ public:
 
     this->assembleResidual(_not_ghost);
 
-    this->synchronize(_gst_user_1);
+    this->synchronize(SynchronizationTag::_user_1);
 
     this->getDOFManager().assembleToResidual("disp", internal_forces, -1.);
-
-    // auto & comm = Communicator::getStaticCommunicator();
-    // const auto & dof_manager_default =
-    //   dynamic_cast<DOFManagerDefault &>(this->getDOFManager());
-    // const auto & residual = dof_manager_default.getResidual();
-    // int prank = comm.whoAmI();
-    // int psize = comm.getNbProc();
-
-    // for (int p = 0; p < psize; ++p) {
-    //   if (prank == p) {
-    //     UInt local_dof = 0;
-    //     for (auto res : residual) {
-    //       UInt global_dof =
-    //       dof_manager_default.localToGlobalEquationNumber(local_dof);
-    //       std::cout << local_dof << " [" << global_dof << " - "
-    //                 << dof_manager_default.getDOFType(local_dof) << "]: " <<
-    //                 res
-    //                 << std::endl;
-    //       ++local_dof;
-    //     }
-    //     std::cout << std::flush;
-    //   }
-    //   comm.barrier();
-    // }
-
-    // comm.barrier();
-    // if(prank == 0) std::cout << "===========================" << std::endl;
   }
 
   void assembleResidual(const GhostType & ghost_type) {
@@ -349,7 +324,7 @@ public:
 
   Real getKineticEnergy() {
     Real res = 0;
-    if (!lumped) {
+    if (not lumped) {
       res = this->mulVectMatVect(
           this->velocity, this->getDOFManager().getMatrix("M"), this->velocity);
     } else {
@@ -418,7 +393,7 @@ public:
 
   void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
                 const SynchronizationTag & tag) const {
-    if (tag == _gst_user_1) {
+    if (tag == SynchronizationTag::_user_1) {
       for (const auto & el : elements) {
         buffer << this->stresses(el.element);
       }
@@ -427,7 +402,7 @@ public:
 
   void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
                   const SynchronizationTag & tag) {
-    if (tag == _gst_user_1) {
+    if (tag == SynchronizationTag::_user_1) {
       auto cit = this->mesh.getConnectivity(_segment_2, _ghost).begin(2);
 
       for (const auto & el : elements) {
@@ -443,10 +418,15 @@ public:
     }
   }
 
+  const Mesh & getMesh() const { return mesh; }
+
+  UInt getSpatialDimension() const { return 1; }
+
+  auto & getBlockedDOFs() { return blocked; }
+
 private:
   UInt nb_dofs;
   UInt nb_elements;
-  Real E, A, rho;
 
   bool lumped;
 
@@ -455,6 +435,8 @@ private:
   bool is_lumped_mass_assembled{false};
 
 public:
+  Real E, A, rho;
+
   Mesh & mesh;
   Array<Real> displacement;
   Array<Real> velocity;
@@ -471,4 +453,4 @@ public:
 
 #endif /* __AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH__ */
 
-} // akantu
+} // namespace akantu

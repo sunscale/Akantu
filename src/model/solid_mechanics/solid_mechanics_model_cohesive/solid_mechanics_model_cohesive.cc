@@ -153,9 +153,9 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       return Mesh::getKind(el.type) == _ek_cohesive;
     });
 
-    this->registerSynchronizer(*cohesive_synchronizer, _gst_material_id);
-    this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_stress);
-    this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_boundary);
+    this->registerSynchronizer(*cohesive_synchronizer, SynchronizationTag::_material_id);
+    this->registerSynchronizer(*cohesive_synchronizer, SynchronizationTag::_smm_stress);
+    this->registerSynchronizer(*cohesive_synchronizer, SynchronizationTag::_smm_boundary);
   }
 
   this->inserter = std::make_unique<CohesiveElementInserter>(
@@ -204,7 +204,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
           synchronizer, id + ":facet_stress_synchronizer");
       facet_stress_synchronizer->swapSendRecv();
       this->registerSynchronizer(*facet_stress_synchronizer,
-                                 _gst_smmc_facets_stress);
+                                 SynchronizationTag::_smmc_facets_stress);
     }
   }
 
@@ -506,7 +506,7 @@ void SolidMechanicsModelCohesive::interpolateStress() {
       material->interpolateStressOnFacets(facet_stress, by_elem_result);
   }
 
-  this->synchronize(_gst_smmc_facets_stress);
+  this->synchronize(SynchronizationTag::_smmc_facets_stress);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -529,7 +529,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   }
 
   /// communicate data among processors
-  // this->synchronize(_gst_smmc_facets);
+  // this->synchronize(SynchronizationTag::_smmc_facets);
 
   /// insert cohesive elements
   UInt nb_new_elements = inserter->insertElements();

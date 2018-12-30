@@ -103,7 +103,8 @@ void TimeStepSolverDefault::setIntegrationScheme(
       break;
     }
     case IntegrationSchemeType::_backward_euler: {
-      integration_scheme = std::make_unique<BackwardEuler>(_dof_manager, dof_id);
+      integration_scheme =
+          std::make_unique<BackwardEuler>(_dof_manager, dof_id);
       break;
     }
     case IntegrationSchemeType::_central_difference: {
@@ -202,24 +203,22 @@ void TimeStepSolverDefault::corrector() {
 
     /// computing the increment of dof if needed
     if (this->_dof_manager.hasDOFsIncrement(dof_id)) {
-      if (!this->_dof_manager.hasPreviousDOFs(dof_id)) {
+      if (not this->_dof_manager.hasPreviousDOFs(dof_id)) {
         AKANTU_DEBUG_WARNING("In order to compute the increment of "
                              << dof_id << " a 'previous' has to be registered");
         continue;
       }
 
-      Array<Real> & increment = this->_dof_manager.getDOFsIncrement(dof_id);
-      Array<Real> & previous = this->_dof_manager.getPreviousDOFs(dof_id);
+      auto & increment = this->_dof_manager.getDOFsIncrement(dof_id);
+      auto & previous = this->_dof_manager.getPreviousDOFs(dof_id);
 
-      UInt dof_array_comp = this->_dof_manager.getDOFs(dof_id).getNbComponent();
-
-      auto prev_dof_it = previous.begin(dof_array_comp);
-      auto incr_it = increment.begin(dof_array_comp);
-      auto incr_end = increment.end(dof_array_comp);
+      auto dof_array_comp = this->_dof_manager.getDOFs(dof_id).getNbComponent();
 
       increment.copy(this->_dof_manager.getDOFs(dof_id));
-      for (; incr_it != incr_end; ++incr_it, ++prev_dof_it) {
-        *incr_it -= *prev_dof_it;
+
+      for (auto && data : zip(make_view(increment, dof_array_comp),
+                              make_view(previous, dof_array_comp))) {
+        std::get<0>(data) -= std::get<1>(data);
       }
     }
   }
