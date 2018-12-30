@@ -1,32 +1,32 @@
 123456==123456
 Section(global) global [
  Parameters [
-  + debug_level: 1 (input_file.dat:2:1)
-  + general: 50 (input_file.dat:22:1)
-  + mat: [[ 1, 23+2, 5, toto ],[ 0, 10, general, 5+8] ] (input_file.dat:27:1)
-  + rand1: 10 uniform [0.2, 0.5 ] (input_file.dat:30:1)
-  + rand2: 10 weibull [0.2, 0.5 ] (input_file.dat:31:1)
-  + rand3: 10 (input_file.dat:32:1)
-  + seed: 123456 (input_file.dat:1:1)
-  + toto: 2*pi + max(2, general) (input_file.dat:24:1)
-  + vect: [ 1, 23+2, 5, toto ] (input_file.dat:26:1)
+ + debug_level: 1 (input_file.dat:2:1)
+ + general: 50 (input_file.dat:22:1)
+ + mat: [[ 1, 23+2, 5, toto ],[ 0, 10, general, 5+8] ] (input_file.dat:27:1)
+ + rand1: 10 uniform [0.2, 0.5 ] (input_file.dat:30:1)
+ + rand2: 10 weibull [0.2, 0.5 ] (input_file.dat:31:1)
+ + rand3: 10 (input_file.dat:32:1)
+ + seed: 123456 (input_file.dat:1:1)
+ + toto: 2*pi + max(2, general) (input_file.dat:24:1)
+ + vect: [ 1, 23+2, 5, toto ] (input_file.dat:26:1)
  ]
  Subsections [
   Section(material) elastic opt1 [
    Parameters [
-    + E: 1 (input_file.dat:5:9)
-    + X135: 1 + 3* debug_level  (input_file.dat:6:9)
-    + a: c (input_file.dat:11:9)
-    + name: toto (input_file.dat:4:9)
-    + yop: yop (input_file.dat:9:9)
+   + E: 1 (input_file.dat:5:9)
+   + X135: 1 + 3* debug_level  (input_file.dat:6:9)
+   + a: c (input_file.dat:11:9)
+   + name: toto (input_file.dat:4:9)
+   + yop: yop (input_file.dat:9:9)
    ]
    Subsections [
     Section(rules) material [
      Parameters [
-      + E: 1 (input_file.dat:15:17)
-      + X135: 1 + 1  (input_file.dat:16:17)
-      + name: toto (input_file.dat:14:17)
-      + yop: yop (input_file.dat:18:17)
+     + E: 1 (input_file.dat:15:17)
+     + X135: 1 + 1  (input_file.dat:16:17)
+     + name: toto (input_file.dat:14:17)
+     + yop: yop (input_file.dat:18:17)
      ]
     ]
 

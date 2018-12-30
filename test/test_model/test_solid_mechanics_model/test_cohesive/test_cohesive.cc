@@ -54,7 +54,7 @@ TYPED_TEST(TestSMMCFixture, ExtrinsicModeI) {
 }
 
 TYPED_TEST(TestSMMCFixture, ExtrinsicModeIFiniteDef) {
-  if (this->mesh->getCommunicator().getNbProc() > 1 and this->dim == 1) {
+  if (this->dim == 1) {
     SUCCEED();
     return;
   }

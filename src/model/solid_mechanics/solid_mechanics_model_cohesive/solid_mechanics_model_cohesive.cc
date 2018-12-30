@@ -528,7 +528,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   }
 
   /// communicate data among processors
-  // this->synchronize(_gst_smmc_facets);
+  // this->synchronize(SynchronizationTag::_smmc_facets);
 
   /// insert cohesive elements
   UInt nb_new_elements = inserter->insertElements();

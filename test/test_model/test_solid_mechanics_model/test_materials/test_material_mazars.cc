@@ -31,6 +31,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model.hh"
+#include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
 /* -------------------------------------------------------------------------- */
@@ -46,18 +47,13 @@ int main(int argc, char * argv[]) {
 
   //  ElementType type = _quadrangle_4;
   ElementType type = _hexahedron_8;
-  //  UInt compression_steps = 5e5;
-  //  Real max_compression = 0.01;
-
-  //  UInt traction_steps = 1e4;
-  //  Real max_traction = 0.001;
 
   Mesh mesh(spatial_dimension);
-  mesh.addConnectivityType(type);
 
-  Array<Real> & nodes = const_cast<Array<Real> &>(mesh.getNodes());
-  Array<UInt> & connectivity =
-      const_cast<Array<UInt> &>(mesh.getConnectivity(type));
+  MeshAccessor mesh_accessor(mesh);
+
+  Array<Real> & nodes = mesh_accessor.getNodes();
+  Array<UInt> & connectivity = mesh_accessor.getConnectivity(type);
 
   const Real width = 1;
   UInt nb_dof = 0;
@@ -129,6 +125,8 @@ int main(int argc, char * argv[]) {
     connectivity(0, 2) = 2;
     connectivity(0, 3) = 3;
   }
+
+  mesh_accessor.makeReady();
 
   SolidMechanicsModel model(mesh);
   model.initFull();
