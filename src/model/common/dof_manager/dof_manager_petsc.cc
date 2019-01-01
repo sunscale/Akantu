@@ -32,8 +32,8 @@
 #include "dof_manager_petsc.hh"
 #include "communicator.hh"
 #include "cppargparse.hh"
-#include "sparse_matrix_petsc.hh"
 #include "non_linear_solver_petsc.hh"
+#include "sparse_matrix_petsc.hh"
 #include "time_step_solver_default.hh"
 #if defined(AKANTU_USE_MPI)
 #include "mpi_communicator_data.hh"
@@ -92,6 +92,7 @@ void DOFManagerPETSc::init() {
     int & argc = argparser.getArgC();
     char **& argv = argparser.getArgV();
     PETSc_call(PetscInitialize, &argc, &argv, NULL, NULL);
+    PETSc_call(PetscPopErrorHandler); // remove the default PETSc signal handler
     PETSc_call(PetscPushErrorHandler, PetscIgnoreErrorHandler, NULL);
   }
 
@@ -149,7 +150,7 @@ void DOFManagerPETSc::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerPETSc::assembleToResidual(const ID & dof_id,
-                                         const Array<Real> & array_to_assemble,
+                                         Array<Real> & array_to_assemble,
                                          Real scale_factor) {
   const auto & is = getDOFDataTyped<DOFDataPETSc>(dof_id).is;
   Vec y;
@@ -215,14 +216,11 @@ void DOFManagerPETSc::getSolutionPerDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-NonLinearSolver & DOFManagerPETSc::getNewNonLinearSolver(
-    const ID & id,
-    const NonLinearSolverType & type) {
-  ID non_linear_solver_id = this->id + ":nls:" + id;
-  std::unique_ptr<NonLinearSolver> nls = std::make_unique<NonLinearSolverPETSc>(
-        *this, type, non_linear_solver_id, this->memory_id);
-
-  return this->registerNonLinearSolver(non_linear_solver_id, nls);
+NonLinearSolver &
+DOFManagerPETSc::getNewNonLinearSolver(const ID & id,
+                                       const NonLinearSolverType & type) {
+  return this->registerNonLinearSolver<NonLinearSolverPETSc>(*this, id,
+                                                              type);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -230,20 +228,36 @@ TimeStepSolver &
 DOFManagerPETSc::getNewTimeStepSolver(const ID & id,
                                       const TimeStepSolverType & type,
                                       NonLinearSolver & non_linear_solver) {
-  ID time_step_solver_id = this->id + ":tss:" + id;
-
-  std::unique_ptr<TimeStepSolver> tss = std::make_unique<TimeStepSolverDefault>(
-      *this, type, non_linear_solver, time_step_solver_id, this->memory_id);
-
-  return this->registerTimeStepSolver(time_step_solver_id, tss);
+  return this->registerTimeStepSolver<TimeStepSolverDefault>(*this, id, type,
+                                                             non_linear_solver);
 }
 
 /* -------------------------------------------------------------------------- */
-static bool dof_manager_is_registered[[gnu::unused]] =
+/* -------------------------------------------------------------------------- */
+SparseMatrix & DOFManagerPETSc::getNewMatrix(const ID & id,
+                                               const MatrixType & matrix_type) {
+  return this->registerSparseMatrix<SparseMatrixPETSc>(*this, id, matrix_type);
+}
+
+/* -------------------------------------------------------------------------- */
+SparseMatrix & DOFManagerPETSc::getNewMatrix(const ID & id,
+                                               const ID & matrix_to_copy_id) {
+  return this->registerSparseMatrix<SparseMatrixPETSc>(id, matrix_to_copy_id);
+}
+
+/* -------------------------------------------------------------------------- */
+SparseMatrixPETSc & DOFManagerPETSc::getMatrix(const ID & id) {
+  auto & matrix = DOFManager::getMatrix(id);
+  return dynamic_cast<SparseMatrixPETSc &>(matrix);
+}
+
+/* -------------------------------------------------------------------------- */
+static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
-        "petsc", [](Mesh & mesh, const ID & id,
-                    const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "petsc",
+        [](Mesh & mesh, const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerPETSc>(mesh, id, mem_id);
         });
 
-} // akantu
+} // namespace akantu

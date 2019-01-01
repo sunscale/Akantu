@@ -36,6 +36,8 @@
 #include "node_synchronizer.hh"
 #include "non_linear_solver_default.hh"
 #include "periodic_node_synchronizer.hh"
+#include "solver_vector_default.hh"
+#include "solver_vector_distributed.hh"
 #include "sparse_matrix_aij.hh"
 #include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
@@ -103,23 +105,24 @@ inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
-    : DOFManager(id, memory_id), residual(0, 1, std::string(id + ":residual")),
-      global_residual(nullptr),
-      global_solution(0, 1, std::string(id + ":global_solution")),
+    : DOFManager(id, memory_id),
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
       previous_global_blocked_dofs(
           0, 1, std::string(id + ":previous_global_blocked_dofs")),
       dofs_flag(0, 1, std::string(id + ":dofs_type")),
       data_cache(0, 1, std::string(id + ":data_cache_array")),
       global_equation_number(0, 1, "global_equation_number"),
-      synchronizer(nullptr) {}
+      synchronizer(nullptr) {
+  residual = std::make_unique<SolverVectorDefault>(
+      *this, std::string(id + ":residual"));
+  solution = std::make_unique<SolverVectorDefault>(
+      *this, std::string(id + ":solution"));
+}
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
                                      const MemoryID & memory_id)
     : DOFManager(mesh, id, memory_id),
-      residual(0, 1, std::string(id + ":residual")), global_residual(nullptr),
-      global_solution(0, 1, std::string(id + ":global_solution")),
       global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
       previous_global_blocked_dofs(
           0, 1, std::string(id + ":previous_global_blocked_dofs")),
@@ -127,9 +130,19 @@ DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
       data_cache(0, 1, std::string(id + ":data_cache_array")),
       global_equation_number(0, 1, "global_equation_number"),
       first_global_dof_id(0), synchronizer(nullptr) {
-  if (this->mesh->isDistributed())
+  if (this->mesh->isDistributed()) {
     this->synchronizer = std::make_unique<DOFSynchronizer>(
         *this, this->id + ":dof_synchronizer", this->memory_id);
+    residual = std::make_unique<SolverVectorDistributed>(
+        *this, std::string(id + ":residual"));
+    solution = std::make_unique<SolverVectorDistributed>(
+        *this, std::string(id + ":solution"));
+  } else {
+    residual = std::make_unique<SolverVectorDefault>(
+        *this, std::string(id + ":residual"));
+    solution = std::make_unique<SolverVectorDefault>(
+        *this, std::string(id + ":solution"));
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -266,27 +279,18 @@ void DOFManagerDefault::registerDOFs(const ID & dof_id,
 /* -------------------------------------------------------------------------- */
 SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const MatrixType & matrix_type) {
-  ID matrix_id = this->id + ":mtx:" + id;
-  std::unique_ptr<SparseMatrix> sm =
-      std::make_unique<SparseMatrixAIJ>(*this, matrix_type, matrix_id);
-  return this->registerSparseMatrix(matrix_id, sm);
+  return this->registerSparseMatrix<SparseMatrixAIJ>(*this, id, matrix_type);
 }
 
 /* -------------------------------------------------------------------------- */
 SparseMatrix & DOFManagerDefault::getNewMatrix(const ID & id,
                                                const ID & matrix_to_copy_id) {
-
-  ID matrix_id = this->id + ":mtx:" + id;
-  SparseMatrixAIJ & sm_to_copy = this->getMatrix(matrix_to_copy_id);
-  std::unique_ptr<SparseMatrix> sm =
-      std::make_unique<SparseMatrixAIJ>(sm_to_copy, matrix_id);
-  return this->registerSparseMatrix(matrix_id, sm);
+  return this->registerSparseMatrix<SparseMatrixAIJ>(id, matrix_to_copy_id);
 }
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & id) {
-  SparseMatrix & matrix = DOFManager::getMatrix(id);
-
+  auto & matrix = DOFManager::getMatrix(id);
   return dynamic_cast<SparseMatrixAIJ &>(matrix);
 }
 
@@ -294,33 +298,28 @@ SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & id) {
 NonLinearSolver &
 DOFManagerDefault::getNewNonLinearSolver(const ID & id,
                                          const NonLinearSolverType & type) {
-  ID non_linear_solver_id = this->id + ":nls:" + id;
-  std::unique_ptr<NonLinearSolver> nls;
   switch (type) {
 #if defined(AKANTU_IMPLICIT)
   case NonLinearSolverType::_newton_raphson:
+    /* FALLTHRU */
+    /* [[fallthrough]]; un-comment when compiler will get it */
   case NonLinearSolverType::_newton_raphson_modified: {
-    nls = std::make_unique<NonLinearSolverNewtonRaphson>(
-        *this, type, non_linear_solver_id, this->memory_id);
-    break;
+    return this->registerNonLinearSolver<NonLinearSolverNewtonRaphson>(
+        *this, id, type);
   }
   case NonLinearSolverType::_linear: {
-    nls = std::make_unique<NonLinearSolverLinear>(
-        *this, type, non_linear_solver_id, this->memory_id);
-    break;
+    return this->registerNonLinearSolver<NonLinearSolverLinear>(*this, id,
+                                                                type);
   }
 #endif
   case NonLinearSolverType::_lumped: {
-    nls = std::make_unique<NonLinearSolverLumped>(
-        *this, type, non_linear_solver_id, this->memory_id);
-    break;
+    return this->registerNonLinearSolver<NonLinearSolverLumped>(*this, id,
+                                                                type);
   }
   default:
     AKANTU_EXCEPTION("The asked type of non linear solver is not supported by "
                      "this dof manager");
   }
-
-  return this->registerNonLinearSolver(non_linear_solver_id, nls);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -328,18 +327,14 @@ TimeStepSolver &
 DOFManagerDefault::getNewTimeStepSolver(const ID & id,
                                         const TimeStepSolverType & type,
                                         NonLinearSolver & non_linear_solver) {
-  ID time_step_solver_id = this->id + ":tss:" + id;
-
-  std::unique_ptr<TimeStepSolver> tss = std::make_unique<TimeStepSolverDefault>(
-      *this, type, non_linear_solver, time_step_solver_id, this->memory_id);
-
-  return this->registerTimeStepSolver(time_step_solver_id, tss);
+  return this->registerTimeStepSolver<TimeStepSolverDefault>(*this, id, type,
+                                                             non_linear_solver);
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::clearResidual() {
-  this->residual.resize(this->local_system_size);
-  this->residual.clear();
+  this->residual->resize();
+  this->residual->clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -384,7 +379,6 @@ void DOFManagerDefault::splitSolutionPerDOFs() {
   }
 }
 
-
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
@@ -411,7 +405,7 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
 void DOFManagerDefault::getSolutionPerDOFs(const ID & dof_id,
                                            Array<Real> & solution_array) {
   AKANTU_DEBUG_IN();
-  this->getArrayPerDOFs(dof_id, this->global_solution, solution_array);
+  this->getArrayPerDOFs(dof_id, this->getSolutionArray(), solution_array);
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */
@@ -431,8 +425,8 @@ void DOFManagerDefault::assembleToResidual(const ID & dof_id,
 
   this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
 
-  this->assembleToGlobalArray(dof_id, array_to_assemble, this->residual,
-                              scale_factor);
+  this->assembleToGlobalArray(dof_id, array_to_assemble,
+                              this->getResidualArray(), scale_factor);
 
   AKANTU_DEBUG_OUT();
 }
@@ -453,22 +447,47 @@ void DOFManagerDefault::assembleToLumpedMatrix(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assembleMatMulVectToGlobalArray(const ID & dof_id,
+                                                  const ID & A_id,
+                                                  const Array<Real> & x,
+                                                  Array<Real> & array,
+                                                  Real scale_factor) {
+  SparseMatrixAIJ & A = this->getMatrix(A_id);
+
+  // Array<Real> data_cache(this->local_system_size, 1, 0.);
+  auto && tmp_data_cache = make_solver_vector_default_wrap(*this, this->data_cache);
+  tmp_data_cache.resize();
+  tmp_data_cache.clear();
+
+  this->assembleToGlobalArray(dof_id, x, data_cache, 1.);
+
+  auto && tmp_array = make_solver_vector_default_wrap(*this, array);
+  tmp_array.resize();
+  tmp_array.clear();
+
+  A.matVecMul(tmp_data_cache, tmp_array, scale_factor, 1.);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assembleMatMulVectToArray(const ID & dof_id,
+                                                  const ID & A_id,
+                                                  const Array<Real> & x,
+                                                  Array<Real> & array,
+                                                  Real scale_factor) {
+  Array<Real> tmp_array(0, 1, id + ":tmp_array");
+  assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_array, scale_factor);
+  getArrayPerDOFs(dof_id, tmp_array, array);
+}
+
+
+/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
                                                      const ID & A_id,
                                                      const Array<Real> & x,
                                                      Real scale_factor) {
-  SparseMatrixAIJ & A = this->getMatrix(A_id);
-
-  // Array<Real> data_cache(this->local_system_size, 1, 0.);
-  this->data_cache.resize(this->local_system_size);
-  this->data_cache.clear();
-
-  this->assembleToGlobalArray(dof_id, x, data_cache, 1.);
-
-  Array<Real> tmp_residual(this->residual.size(), 1, 0.);
-
-  A.matVecMul(data_cache, tmp_residual, scale_factor, 1.);
-  this->residual += tmp_residual;
+  Array<Real> tmp_residual(0, 1, id + ":tmp_residual");
+  assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_residual, scale_factor);
+  this->getResidualArray() += tmp_residual;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -477,19 +496,16 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
     Real scale_factor) {
   const Array<Real> & A = this->getLumpedMatrix(A_id);
 
-  //  Array<Real> data_cache(this->local_system_size, 1, 0.);
   this->data_cache.resize(this->local_system_size);
   this->data_cache.clear();
-
   this->assembleToGlobalArray(dof_id, x, data_cache, scale_factor);
 
-  auto A_it = A.begin();
-  auto A_end = A.end();
-  auto x_it = data_cache.begin();
-  auto r_it = this->residual.begin();
-
-  for (; A_it != A_end; ++A_it, ++x_it, ++r_it) {
-    *r_it += *A_it * *x_it;
+  for (auto && data : zip(make_view(A), make_view(data_cache),
+                          make_view(this->getResidualArray()))) {
+    const auto & A = std::get<0>(data);
+    const auto & x = std::get<1>(data);
+    auto & r = std::get<2>(data);
+    r += A * x;
   }
 }
 
@@ -694,46 +710,56 @@ void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-const Array<Real> & DOFManagerDefault::getGlobalResidual() {
-  if (this->synchronizer) {
-    if (not this->global_residual) {
-      this->global_residual =
-          std::make_unique<Array<Real>>(0, 1, "global_residual");
-    }
+// const Array<Real> & DOFManagerDefault::getGlobalResidual() {
+//   if (this->synchronizer) {
+//     if (not this->global_residual) {
+//       this->global_residual =
+//           std::make_unique<Array<Real>>(0, 1, "global_residual");
+//     }
 
-    if (this->synchronizer->getCommunicator().whoAmI() == 0) {
-      this->global_residual->resize(this->system_size);
-      this->synchronizer->gather(this->residual, *this->global_residual);
-    } else {
-      this->synchronizer->gather(this->residual);
-    }
+//     if (this->synchronizer->getCommunicator().whoAmI() == 0) {
+//       this->global_residual->resize(this->system_size);
+//       this->synchronizer->gather(this->residual, *this->global_residual);
+//     } else {
+//       this->synchronizer->gather(this->residual);
+//     }
 
-    return *this->global_residual;
-  } else {
-    return this->residual;
-  }
+//     return *this->global_residual;
+//   } else {
+//     return this->residual;
+//   }
+// }
+
+/* -------------------------------------------------------------------------- */
+Array<Real> & DOFManagerDefault::getSolutionArray() {
+  return dynamic_cast<SolverVectorDefault *>(this->solution.get())->getVector();
 }
 
 /* -------------------------------------------------------------------------- */
-const Array<Real> & DOFManagerDefault::getResidual() const {
-  return this->residual;
+const Array<Real> & DOFManagerDefault::getResidualArray() const {
+  return dynamic_cast<SolverVectorDefault *>(this->residual.get())->getVector();
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
-  if (this->synchronizer) {
-    if (this->synchronizer->getCommunicator().whoAmI() == 0) {
-      this->synchronizer->scatter(this->global_solution, solution);
-    } else {
-      this->synchronizer->scatter(this->global_solution);
-    }
-  } else {
-    AKANTU_DEBUG_ASSERT(solution.size() == this->global_solution.size(),
-                        "Sequential call to this function needs the solution "
-                        "to be the same size as the global_solution");
-    this->global_solution.copy(solution);
-  }
+Array<Real> & DOFManagerDefault::getResidualArray() {
+  return dynamic_cast<SolverVectorDefault *>(this->residual.get())->getVector();
 }
+
+/* -------------------------------------------------------------------------- */
+// void DOFManagerDefault::setGlobalSolution(const Array<Real> & solution) {
+//   if (this->synchronizer) {
+//     if (this->synchronizer->getCommunicator().whoAmI() == 0) {
+//       this->synchronizer->scatter(this->global_solution, solution);
+//     } else {
+//       this->synchronizer->scatter(this->global_solution);
+//     }
+//   } else {
+//     AKANTU_DEBUG_ASSERT(solution.size() == this->global_solution.size(),
+//                         "Sequential call to this function needs the solution
+//                         " "to be the same size as the global_solution");
+//     this->global_solution.copy(solution);
+//   }
+// }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::onNodesAdded(const Array<UInt> & nodes_list,
@@ -781,7 +807,8 @@ public:
 
   UInt getNbData(const Array<UInt> & nodes,
                  const SynchronizationTag & tag) const override {
-    if (tag == SynchronizationTag::_ask_nodes or tag == SynchronizationTag::_giu_global_conn) {
+    if (tag == SynchronizationTag::_ask_nodes or
+        tag == SynchronizationTag::_giu_global_conn) {
       return nodes.size() * dof_data.dof->getNbComponent() * sizeof(UInt);
     }
 
@@ -790,7 +817,8 @@ public:
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                 const SynchronizationTag & tag) const override {
-    if (tag == SynchronizationTag::_ask_nodes or tag == SynchronizationTag::_giu_global_conn) {
+    if (tag == SynchronizationTag::_ask_nodes or
+        tag == SynchronizationTag::_giu_global_conn) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node.at(node);
         for (auto & dof : dofs) {
@@ -802,7 +830,8 @@ public:
 
   void unpackData(CommunicationBuffer & buffer, const Array<UInt> & nodes,
                   const SynchronizationTag & tag) override {
-    if (tag == SynchronizationTag::_ask_nodes or tag == SynchronizationTag::_giu_global_conn) {
+    if (tag == SynchronizationTag::_ask_nodes or
+        tag == SynchronizationTag::_giu_global_conn) {
       for (auto & node : nodes) {
         auto & dofs = dofs_per_node[node];
         for (auto dof : dofs) {
@@ -810,7 +839,7 @@ public:
           buffer >> global_dof;
           AKANTU_DEBUG_ASSERT(
               (dof_manager.global_equation_number(dof) == UInt(-1) or
-              dof_manager.global_equation_number(dof) == global_dof),
+               dof_manager.global_equation_number(dof) == global_dof),
               "This dof already had a global_dof_id which is different from "
               "the received one. "
                   << dof_manager.global_equation_number(dof)
@@ -831,9 +860,10 @@ protected:
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::resizeGlobalArrays() {
   // resize all relevant arrays
-  this->residual.resize(this->local_system_size, 0.);
+  this->residual->resize();
+  this->solution->resize();
+
   this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
-  this->global_solution.resize(this->local_system_size, 0.);
   this->global_blocked_dofs.resize(this->local_system_size, true);
   this->previous_global_blocked_dofs.resize(this->local_system_size, true);
   this->global_equation_number.resize(this->local_system_size, -1);
@@ -945,12 +975,13 @@ void DOFManagerDefault::updateDOFsData(
     GlobalDOFInfoDataAccessor data_accessor(dof_data, *this);
 
     if (this->mesh->isPeriodic()) {
-      mesh->getPeriodicNodeSynchronizer().synchronizeOnce(data_accessor,
-                                                          SynchronizationTag::_giu_global_conn);
+      mesh->getPeriodicNodeSynchronizer().synchronizeOnce(
+          data_accessor, SynchronizationTag::_giu_global_conn);
     }
 
     auto & node_synchronizer = this->mesh->getNodeSynchronizer();
-    node_synchronizer.synchronizeOnce(data_accessor, SynchronizationTag::_ask_nodes);
+    node_synchronizer.synchronizeOnce(data_accessor,
+                                      SynchronizationTag::_ask_nodes);
   }
 }
 
@@ -968,7 +999,7 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
       computeFirstDOFIDs(nb_new_local_dofs, nb_new_pure_local);
 
   // update per dof info
-  for (auto _[[gnu::unused]] : arange(nb_new_local_dofs)) {
+  for (auto _ [[gnu::unused]] : arange(nb_new_local_dofs)) {
     // update equation numbers
     this->dofs_flag(first_local_dof_id) = NodeFlag::_normal;
     ;
@@ -984,17 +1015,19 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
 
 /* -------------------------------------------------------------------------- */
 // register in factory
-static bool default_dof_manager_is_registered[[gnu::unused]] =
+static bool default_dof_manager_is_registered [[gnu::unused]] =
     DefaultDOFManagerFactory::getInstance().registerAllocator(
-        "default", [](const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "default",
+        [](const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(id, mem_id);
         });
 
-static bool dof_manager_is_registered[[gnu::unused]] =
+static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
-        "default", [](Mesh & mesh, const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "default",
+        [](Mesh & mesh, const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
         });
 } // namespace akantu

@@ -43,6 +43,7 @@ class SparseMatrixAIJ;
 class NonLinearSolverDefault;
 class TimeStepSolverDefault;
 class DOFSynchronizer;
+class SolverVectorDefault;
 } // namespace akantu
 
 namespace akantu {
@@ -102,6 +103,15 @@ public:
       const Array<Real> & elementary_mat, const ElementType & type,
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements) override;
+
+  void assembleMatMulVectToGlobalArray(const ID & dof_id, const ID & A_id,
+                                       const Array<Real> & x,
+                                       Array<Real> & array,
+                                       Real scale_factor = 1.);
+
+  void assembleMatMulVectToArray(const ID & dof_id, const ID & A_id,
+                                 const Array<Real> & x, Array<Real> & array,
+                                 Real scale_factor = 1.) override;
 
   /// multiply a vector by a matrix and assemble the result to the residual
   void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
@@ -241,15 +251,13 @@ public:
 
   /* ------------------------------------------------------------------------ */
   /// Get the solution array
-  AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, global_solution, Array<Real> &);
-  /// Set the global solution array
-  void setGlobalSolution(const Array<Real> & solution);
-
-  /// Get the global residual array across processors (SMP call)
-  const Array<Real> & getGlobalResidual();
+  Array<Real> & getSolutionArray();
 
   /// Get the residual array
-  const Array<Real> & getResidual() const;
+  const Array<Real> & getResidualArray() const;
+
+  /// Get the residual array
+  Array<Real> & getResidualArray();
 
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
@@ -291,11 +299,6 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   friend class GlobalDOFInfoDataAccessor;
-  // using AIJMatrixMap = std::map<ID, std::unique_ptr<SparseMatrixAIJ>>;
-  // using DefaultNonLinearSolversMap =
-  //     std::map<ID, std::unique_ptr<NonLinearSolverDefault>>;
-  // using DefaultTimeStepSolversMap =
-  //     std::map<ID, std::unique_ptr<TimeStepSolverDefault>>;
 
   using DOFToMatrixProfile =
       std::map<std::pair<ID, ID>,
@@ -304,16 +307,9 @@ protected:
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;
 
-  /// rhs to the system of equation corresponding to the residual linked to the
-  /// different dofs
-  Array<Real> residual;
-
   /// rhs used only on root proc in case of parallel computing, this is the full
   /// gathered rhs array
   std::unique_ptr<Array<Real>> global_residual;
-
-  /// solution of the system of equation corresponding to the different dofs
-  Array<Real> global_solution;
 
   /// blocked degree of freedom in the system equation corresponding to the
   /// different dofs

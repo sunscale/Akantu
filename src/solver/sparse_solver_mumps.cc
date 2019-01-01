@@ -93,12 +93,12 @@
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
 #include "sparse_matrix_aij.hh"
-
+#include "solver_vector_default.hh"
 #if defined(AKANTU_USE_MPI)
 #include "mpi_communicator_data.hh"
 #endif
-
 #include "sparse_solver_mumps.hh"
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 // static std::ostream & operator <<(std::ostream & stream, const DMUMPS_STRUC_C
@@ -271,8 +271,8 @@ void SparseSolverMumps::initialize() {
     break;
   case _master_slave_distributed:
     this->mumps_data.par = 0; // The host is not part of the computations
-  /* FALLTHRU */
-  /* [[fallthrough]]; un-comment when compiler will get it */
+    /* FALLTHRU */
+    /* [[fallthrough]]; un-comment when compiler will get it */
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
     const auto & mpi_data = dynamic_cast<const MPICommunicatorData &>(
@@ -358,11 +358,14 @@ void SparseSolverMumps::solve(Array<Real> & x, const Array<Real> & b) {
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::solve() {
-  this->master_rhs_solution.copy(this->dof_manager.getGlobalResidual());
+  this->master_rhs_solution.copy(
+      dynamic_cast<SolverVectorDefault &>(this->dof_manager.getResidual())
+          .getGlobalVector());
 
   this->solveInternal();
 
-  this->dof_manager.setGlobalSolution(this->master_rhs_solution);
+  dynamic_cast<SolverVectorDefault &>(this->dof_manager.getSolution())
+      .setGlobalVector(this->master_rhs_solution);
 
   this->dof_manager.splitSolutionPerDOFs();
 }
@@ -448,4 +451,4 @@ void SparseSolverMumps::printError() {
   }
 }
 
-} // akantu
+} // namespace akantu

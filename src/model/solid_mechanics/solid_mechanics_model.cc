@@ -171,24 +171,28 @@ ModelSolverOptions SolidMechanicsModel::getDefaultSolverOptions(
   switch (type) {
   case TimeStepSolverType::_dynamic_lumped: {
     options.non_linear_solver_type = NonLinearSolverType::_lumped;
-    options.integration_scheme_type["displacement"] = IntegrationSchemeType::_central_difference;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_central_difference;
     options.solution_type["displacement"] = IntegrationScheme::_acceleration;
     break;
   }
   case TimeStepSolverType::_static: {
     options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-    options.integration_scheme_type["displacement"] = IntegrationSchemeType::_pseudo_time;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;
   }
   case TimeStepSolverType::_dynamic: {
     if (this->method == _explicit_consistent_mass) {
       options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-      options.integration_scheme_type["displacement"] = IntegrationSchemeType::_central_difference;
+      options.integration_scheme_type["displacement"] =
+          IntegrationSchemeType::_central_difference;
       options.solution_type["displacement"] = IntegrationScheme::_acceleration;
     } else {
       options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-      options.integration_scheme_type["displacement"] = IntegrationSchemeType::_trapezoidal_rule_2;
+      options.integration_scheme_type["displacement"] =
+          IntegrationSchemeType::_trapezoidal_rule_2;
       options.solution_type["displacement"] = IntegrationScheme::_displacement;
     }
     break;
@@ -205,7 +209,8 @@ std::tuple<ID, TimeStepSolverType>
 SolidMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", TimeStepSolverType::_dynamic_lumped);
+    return std::make_tuple("explicit_lumped",
+                           TimeStepSolverType::_dynamic_lumped);
   }
   case _explicit_consistent_mass: {
     return std::make_tuple("explicit", TimeStepSolverType::_dynamic);
@@ -562,14 +567,13 @@ Real SolidMechanicsModel::getKineticEnergy() {
     }
   } else if (this->getDOFManager().hasMatrix("M")) {
     Array<Real> Mv(nb_nodes, Model::spatial_dimension);
-    this->getDOFManager().getMatrix("M").matVecMul(*this->velocity, Mv);
+    this->getDOFManager().assembleMatMulVectToArray("displacement", "M",
+                                                    *this->velocity, Mv);
 
-    auto mv_it = Mv.begin(Model::spatial_dimension);
-    auto mv_end = Mv.end(Model::spatial_dimension);
-    auto v_it = this->velocity->begin(Model::spatial_dimension);
-
-    for (; mv_it != mv_end; ++mv_it, ++v_it) {
-      ekin += v_it->dot(*mv_it);
+    for (auto && data : zip(arange(nb_nodes), make_view(Mv, spatial_dimension),
+                            make_view(*this->velocity, spatial_dimension))) {
+      ekin += std::get<2>(data).dot(std::get<1>(data)) *
+              mesh.isLocalOrMasterNode(std::get<0>(data));
     }
   } else {
     AKANTU_ERROR("No function called to assemble the mass matrix.");

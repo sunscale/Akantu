@@ -33,6 +33,7 @@
 #include "aka_iterators.hh"
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
+#include "solver_vector_default.hh"
 #include "terms_to_assemble.hh"
 /* -------------------------------------------------------------------------- */
 #include <fstream>
@@ -165,6 +166,16 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
     this->dof_manager.getSynchronizer().reduceSynchronize<AddOperation>(y);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrixAIJ::matVecMul(const SolverVector & _x, SolverVector & _y,
+                                Real alpha, Real beta) const {
+  AKANTU_DEBUG_IN();
+
+  auto && x = dynamic_cast<const SolverVectorDefault &>(_x).getVector();
+  auto && y = dynamic_cast<SolverVectorDefault &>(_y).getVector();
+  this->matVecMul(x, y, alpha, beta);
 }
 
 /* -------------------------------------------------------------------------- */

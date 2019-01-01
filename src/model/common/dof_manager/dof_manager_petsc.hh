@@ -83,43 +83,64 @@ public:
   void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
                     DOFSupportType & support_type);
 
-  void assembleToResidual(const ID & dof_id,
-                          const Array<Real> & array_to_assemble,
+  void assembleToResidual(const ID & dof_id, Array<Real> & array_to_assemble,
                           Real scale_factor = 1.) override;
 
-  void assembleElementalMatricesToMatrix(
-      const ID & matrix_id, const ID & dof_id,
-      const Array<Real> & elementary_mat, const ElementType & type,
-      const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
-      const Array<UInt> & filter_elements) override;
-
-  void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                    const Array<Real> & x,
-                                    Real scale_factor = 1) override {
-    AKANTU_DEBUG_TO_IMPLEMENT();
-  };
-
-  void assembleLumpedMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                          const Array<Real> & x,
-                                          Real scale_factor = 1) override {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  void assembleToLumpedMatrix(const ID & /*dof_id*/,
+                              Array<Real> & /*array_to_assemble*/,
+                              const ID & /*lumped_mtx*/,
+                              Real /*scale_factor*/ = 1.) {
+    AKANTU_TO_IMPLEMENT();
   }
 
-  void assemblePreassembledMatrix(const ID & dof_id_m, const ID & dof_id_n,
-                                  const ID & matrix_id,
-                                  const TermsToAssemble & terms) override {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+  void assembleElementalMatricesToMatrix(
+      const ID & /*matrix_id*/, const ID & /*dof_id*/,
+      const Array<Real> & /*elementary_mat*/, const ElementType & /*type*/,
+      const GhostType & /*ghost_type*/,
+      const MatrixType & /*elemental_matrix_type*/,
+      const Array<UInt> & /*filter_elements*/) override {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  void assembleMatMulVectToArray(const ID & /*dof_id*/, const ID & /*A_id*/,
+                                 const Array<Real> & /*x*/,
+                                 Array<Real> & /*array*/,
+                                 Real /*scale_factor*/ = 1.) override {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  void assembleMatMulVectToResidual(const ID & /*dof_id*/, const ID & /*A_id*/,
+                                    const Array<Real> & /*x*/,
+                                    Real /*scale_factor*/ = 1) override {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  void assembleLumpedMatMulVectToResidual(const ID & /*dof_id*/,
+                                          const ID & /*A_id*/,
+                                          const Array<Real> & /*x*/,
+                                          Real /*scale_factor*/ = 1) override {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  void assemblePreassembledMatrix(const ID & /* dof_id_m*/,
+                                  const ID & /*dof_id_n*/,
+                                  const ID & /*matrix_id*/,
+                                  const TermsToAssemble & /*terms*/) override {
+    AKANTU_TO_IMPLEMENT();
   }
 
   void clearResidual() override;
   void clearMatrix(const ID & mtx) override;
   void clearLumpedMatrix(const ID & mtx) override;
 
-  void applyBoundary(const ID & matrix_id = "J") override;
+  void applyBoundary(const ID & /*matrix_id*/ = "J") override {
+    AKANTU_TO_IMPLEMENT();
+  }
 
 protected:
   void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
                               Array<Real> & lumped) override;
+
   void getSolutionPerDOFs(const ID & dof_id,
                           Array<Real> & solution_array) override;
 
@@ -149,7 +170,9 @@ public:
   SparseMatrixPETSc & getMatrix(const ID & matrix_id);
 
   /// Get the reference of an existing matrix
-  Vec & getLumpedMatrix(const ID & matrix_id);
+  Vec & getLumpedMatrix(const ID & /*matrix_id*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
 
   /// Get the solution array
   AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, this->solution, Vec &);
@@ -159,6 +182,9 @@ public:
   /// Get the blocked dofs array
   //  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
   AKANTU_GET_MACRO(MPIComm, mpi_communicator, MPI_Comm);
+
+  AKANTU_GET_MACRO_NOT_CONST(ISLocalToGlobalMapping, is_ltog_map,
+                             ISLocalToGlobalMapping &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -189,6 +215,6 @@ private:
   static int petsc_dof_manager_instances;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DOF_MANAGER_PETSC_HH__ */

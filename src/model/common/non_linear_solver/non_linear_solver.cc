@@ -27,7 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver.hh"
 #include "dof_manager.hh"
@@ -77,4 +76,4 @@ void NonLinearSolver::assembleResidual(SolverCallback & solver_callback) {
   }
 }
 
-} // akantu
+} // namespace akantu

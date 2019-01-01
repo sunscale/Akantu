@@ -60,14 +60,14 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id)
 /* -------------------------------------------------------------------------- */
 SparseMatrix::~SparseMatrix() = default;
 
-/* -------------------------------------------------------------------------- */
-Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat) {
-  Array<Real> tmp(vect.size(), vect.getNbComponent(), 0.);
-  mat.matVecMul(vect, tmp);
+// /* -------------------------------------------------------------------------- */
+// Array<Real> & operator*=(SolverVector & vect, const SparseMatrix & mat) {
+//   Array<Real> tmp(vect.size(), vect.getNbComponent(), 0.);
+//   mat.matVecMul(vect, tmp);
 
-  vect.copy(tmp);
-  return vect;
-}
+//   vect.copy(tmp);
+//   return vect;
+// }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrix::add(const SparseMatrix & B, Real alpha) {

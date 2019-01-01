@@ -36,7 +36,6 @@
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
 /* -------------------------------------------------------------------------- */
-#include <petscao.h>
 #include <petscmat.h>
 /* -------------------------------------------------------------------------- */
 
@@ -55,7 +54,7 @@ public:
                     const MatrixType & matrix_type,
                     const ID & id = "sparse_matrix_petsc");
 
-  SparseMatrixPETSc(const SparseMatrix & matrix,
+  SparseMatrixPETSc(const SparseMatrixPETSc & matrix,
                     const ID & id = "sparse_matrix_petsc");
 
   virtual ~SparseMatrixPETSc();
@@ -73,6 +72,13 @@ public:
   /// assemble a local matrix in the sparse one
   void add(UInt i, UInt j, Real value) override;
 
+  void addLocal(UInt i, UInt j);
+  void addLocal(UInt i, UInt j, Real val);
+
+  void addLocal(Vector<Int> & rows,
+                Vector<Int> & cols,
+                Matrix<Real> & vals);
+
   /// save the profil in a file using the MatrixMarket file format
   // void saveProfile(__attribute__((unused)) const std::string &) const
   // override {
@@ -86,8 +92,8 @@ public:
   void mul(Real alpha) override;
 
   /// Equivalent of *gemv in blas
-  void matVecMul(const Vec & x, Vec & y, Real alpha = 1.,
-                 Real beta = 0.) const;
+  void matVecMul(const SolverVector & x, SolverVector & y,
+                         Real alpha = 1., Real beta = 0.) const override;
 
   /// modify the matrix to "remove" the blocked dof
   void applyBoundary(Real block_val = 1.) override;
@@ -99,6 +105,10 @@ protected:
   /// This is the specific implementation
   void addMeToImpl(SparseMatrixPETSc & B, Real alpha) const;
 
+  void performAssembly();
+  void beginAssembly();
+  void endAssembly();
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -106,15 +116,15 @@ public:
   /// return the values at potition i, j
   virtual inline Real operator()(__attribute__((unused)) UInt i,
                                  __attribute__((unused)) UInt j) const {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
   /// return the values at potition i, j
   virtual inline Real & operator()(__attribute__((unused)) UInt i,
                                    __attribute__((unused)) UInt j) {
-    AKANTU_DEBUG_TO_IMPLEMENT();
+    AKANTU_TO_IMPLEMENT();
   }
 
-  virtual UInt getRelease() const override;
+  virtual UInt getRelease() const override { return release; };
 
   AKANTU_GET_MACRO(PETScMat, mat, const Mat &);
   AKANTU_GET_MACRO_NOT_CONST(PETScMat, mat, Mat &);
@@ -122,12 +132,15 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-private:
+protected:
   // DOFManagerPETSc that contains the numbering for petsc
   DOFManagerPETSc & dof_manager;
 
   /// store the PETSc matrix
   Mat mat;
+
+  /// matrix release
+  UInt release{0};
 };
 
 } // akantu

@@ -37,6 +37,7 @@
 #include "node_group.hh"
 #include "non_linear_solver.hh"
 #include "sparse_matrix.hh"
+#include "solver_vector.hh"
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
@@ -369,13 +370,13 @@ void DOFManager::registerBlockedDOFs(const ID & dof_id,
 SparseMatrix &
 DOFManager::registerSparseMatrix(const ID & matrix_id,
                                  std::unique_ptr<SparseMatrix> & matrix) {
-  SparseMatricesMap::const_iterator it = this->matrices.find(matrix_id);
+  auto it = this->matrices.find(matrix_id);
   if (it != this->matrices.end()) {
     AKANTU_EXCEPTION("The matrix " << matrix_id << " already exists in "
                                    << this->id);
   }
 
-  SparseMatrix & ret = *matrix;
+  auto & ret = *matrix;
   this->matrices[matrix_id] = std::move(matrix);
   return ret;
 }

@@ -38,8 +38,8 @@
 #include "mesh.hh"
 #include "model_solver.hh"
 #include "periodic_node_synchronizer.hh"
+#include "solver_vector_default.hh"
 #include "sparse_matrix.hh"
-
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -302,10 +302,8 @@ public:
   Real getPotentialEnergy() {
     Real res = 0;
 
-    if (!lumped) {
-      res = this->mulVectMatVect(this->displacement,
-                                 this->getDOFManager().getMatrix("K"),
-                                 this->displacement);
+    if (not lumped) {
+      res = this->mulVectMatVect(this->displacement, "K", this->displacement);
     } else {
       auto strain_it = this->strains.begin();
       auto stress_it = this->stresses.begin();
@@ -325,8 +323,7 @@ public:
   Real getKineticEnergy() {
     Real res = 0;
     if (not lumped) {
-      res = this->mulVectMatVect(
-          this->velocity, this->getDOFManager().getMatrix("M"), this->velocity);
+      res = this->mulVectMatVect(this->velocity, "M", this->velocity);
     } else {
       auto & m = this->getDOFManager().getLumpedMatrix("M");
       auto it = velocity.begin();
@@ -363,19 +360,16 @@ public:
     return res * this->getTimeStep();
   }
 
-  Real mulVectMatVect(const Array<Real> & x, const SparseMatrix & A,
+  Real mulVectMatVect(const Array<Real> & x, const ID & A_id,
                       const Array<Real> & y) {
-    Array<Real> Ay(this->nb_dofs, 1, 0.);
-    A.matVecMul(y, Ay);
+    Array<Real> Ay(nb_dofs);
+    this->getDOFManager().assembleMatMulVectToArray("disp", A_id, y, Ay);
+
     Real res = 0.;
-
-    Array<Real>::const_scalar_iterator it = Ay.begin();
-    Array<Real>::const_scalar_iterator end = Ay.end();
-    Array<Real>::const_scalar_iterator x_it = x.begin();
-
-    for (UInt node = 0; it != end; ++it, ++x_it, ++node) {
-      if (mesh.isLocalOrMasterNode(node))
-        res += *x_it * *it;
+    for (auto && data : zip(arange(nb_dofs), make_view(Ay),
+                            make_view(x))) {
+      res += std::get<2>(data) * std::get<1>(data) *
+             mesh.isLocalOrMasterNode(std::get<0>(data));
     }
 
     mesh.getCommunicator().allReduce(res, SynchronizerOperation::_sum);

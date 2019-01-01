@@ -270,15 +270,21 @@ package_declare_sources(core
   model/model_inline_impl.cc
   model/model_options.hh
 
-  solver/sparse_solver.cc
-  solver/sparse_solver.hh
-  solver/sparse_solver_inline_impl.cc
+  solver/solver_vector.hh
+  solver/solver_vector_default.cc
+  solver/solver_vector_default.hh
+  solver/solver_vector_default_tmpl.hh
+  solver/solver_vector_distributed.cc
+  solver/solver_vector_distributed.hh
   solver/sparse_matrix.cc
   solver/sparse_matrix.hh
-  solver/sparse_matrix_inline_impl.cc
   solver/sparse_matrix_aij.cc
   solver/sparse_matrix_aij.hh
   solver/sparse_matrix_aij_inline_impl.cc
+  solver/sparse_matrix_inline_impl.cc
+  solver/sparse_solver.cc
+  solver/sparse_solver.hh
+  solver/sparse_solver_inline_impl.cc
   solver/terms_to_assemble.hh
 
   synchronizer/communication_buffer_inline_impl.cc

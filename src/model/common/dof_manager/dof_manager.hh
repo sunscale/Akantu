@@ -45,6 +45,7 @@ class TermsToAssemble;
 class NonLinearSolver;
 class TimeStepSolver;
 class SparseMatrix;
+class SolverVector;
 } // namespace akantu
 
 namespace akantu {
@@ -156,6 +157,13 @@ public:
                                             const Array<Real> & x,
                                             Real scale_factor = 1) = 0;
 
+  /// multiply a vector by a matrix and assemble the result to the residual
+  virtual void assembleMatMulVectToArray(const ID & dof_id, const ID & A_id,
+                                         const Array<Real> & x,
+                                         Array<Real> & array,
+                                         Real scale_factor = 1) = 0;
+
+
   /// multiply the dofs by a matrix and assemble the result to the residual
   virtual void assembleMatMulDOFsToResidual(const ID & A_id,
                                             Real scale_factor = 1);
@@ -199,22 +207,6 @@ protected:
                                            UInt nb_degree_of_freedom,
                                            Vector<Int> & local_equation_number);
 
-protected:
-  /* ------------------------------------------------------------------------ */
-  /// register a matrix
-  SparseMatrix & registerSparseMatrix(const ID & matrix_id,
-                                      std::unique_ptr<SparseMatrix> & matrix);
-
-  /// register a non linear solver instantiated by a derived class
-  NonLinearSolver &
-  registerNonLinearSolver(const ID & non_linear_solver_id,
-                          std::unique_ptr<NonLinearSolver> & non_linear_solver);
-
-  /// register a time step solver instantiated by a derived class
-  TimeStepSolver &
-  registerTimeStepSolver(const ID & time_step_solver_id,
-                         std::unique_ptr<TimeStepSolver> & time_step_solver);
-
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -228,6 +220,9 @@ public:
 
   /// Local number of dofs
   AKANTU_GET_MACRO(LocalSystemSize, this->local_system_size, UInt);
+
+  /// Pure local number of dofs
+  AKANTU_GET_MACRO(PureLocalSystemSize, this->pure_local_system_size, UInt);
 
   /// Retrieve all the registered DOFs
   std::vector<ID> getDOFIDs() const;
@@ -290,6 +285,65 @@ public:
   virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
                                       const ID & matrix_to_copy_id) = 0;
 
+protected:
+  /* ------------------------------------------------------------------------ */
+  /// register a matrix
+  SparseMatrix & registerSparseMatrix(const ID & matrix_id,
+                                      std::unique_ptr<SparseMatrix> & matrix);
+
+  /// register a non linear solver instantiated by a derived class
+  NonLinearSolver &
+  registerNonLinearSolver(const ID & non_linear_solver_id,
+                          std::unique_ptr<NonLinearSolver> & non_linear_solver);
+
+  /// register a time step solver instantiated by a derived class
+  TimeStepSolver &
+  registerTimeStepSolver(const ID & time_step_solver_id,
+                         std::unique_ptr<TimeStepSolver> & time_step_solver);
+
+  template <class NLSType, class DMType>
+  NonLinearSolver & registerNonLinearSolver(DMType & dm, const ID & id,
+                                            const NonLinearSolverType & type) {
+    ID non_linear_solver_id = this->id + ":nls:" + id;
+    std::unique_ptr<NonLinearSolver> nls =
+        std::make_unique<NLSType>(
+            dm, type, non_linear_solver_id, this->memory_id);
+    return this->registerNonLinearSolver(non_linear_solver_id, nls);
+  }
+
+  template<class TSSType, class DMType>
+  TimeStepSolver &
+  registerTimeStepSolver(DMType & dm, const ID & id,
+                         const TimeStepSolverType & type,
+                         NonLinearSolver & non_linear_solver) {
+    ID time_step_solver_id = this->id + ":tss:" + id;
+    std::unique_ptr<TimeStepSolver> tss = std::make_unique<TSSType>(
+        dm, type, non_linear_solver, time_step_solver_id, this->memory_id);
+    return this->registerTimeStepSolver(time_step_solver_id, tss);
+  }
+
+  template <class MatType, class DMType>
+  SparseMatrix & registerSparseMatrix(DMType & dm,
+                                      const ID & id,
+                                      const MatrixType & matrix_type) {
+    ID matrix_id = this->id + ":mtx:" + id;
+    std::unique_ptr<SparseMatrix> sm =
+        std::make_unique<MatType>(dm, matrix_type, matrix_id);
+    return this->registerSparseMatrix(matrix_id, sm);
+  }
+
+  template <class MatType>
+  SparseMatrix & registerSparseMatrix(const ID & id,
+                                      const ID & matrix_to_copy_id) {
+    ID matrix_id = this->id + ":mtx:" + id;
+    auto & sm_to_copy =
+        dynamic_cast<MatType &>(this->getMatrix(matrix_to_copy_id));
+    std::unique_ptr<SparseMatrix> sm =
+        std::make_unique<MatType>(sm_to_copy, matrix_id);
+    return this->registerSparseMatrix(matrix_id, sm);
+  }
+
+public:
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
 
@@ -349,6 +403,13 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(Communicator, communicator, auto &);
 
   /* ------------------------------------------------------------------------ */
+  AKANTU_GET_MACRO(Solution, *(solution.get()), const auto &);
+  AKANTU_GET_MACRO_NOT_CONST(Solution, *(solution.get()), auto &);
+
+  AKANTU_GET_MACRO(Residual, *(residual.get()), const auto &);
+  AKANTU_GET_MACRO_NOT_CONST(Residual, *(residual.get()), auto &);
+
+  /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
   /* ------------------------------------------------------------------------ */
 protected:
@@ -358,7 +419,7 @@ protected:
 
   template <typename Func>
   auto countDOFsForNodes(const DOFData & dof_data, UInt nb_nodes,
-                        Func && getNode);
+                         Func && getNode);
 
 public:
   /// function to implement to react on  akantu::NewNodesEvent
@@ -473,6 +534,13 @@ protected:
 
   /// Total number of degrees of freedom
   UInt system_size{0};
+
+  /// rhs to the system of equation corresponding to the residual linked to the
+  /// different dofs
+  std::unique_ptr<SolverVector> residual;
+
+  /// solution of the system of equation corresponding to the different dofs
+  std::unique_ptr<SolverVector> solution;
 
   /// Communicator used for this manager, should be the same as in the mesh if a
   /// mesh is registered

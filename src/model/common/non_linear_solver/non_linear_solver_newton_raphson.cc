@@ -86,7 +86,8 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
   this->assembleResidual(solver_callback);
 
-  if (this->non_linear_solver_type == NonLinearSolverType::_newton_raphson_modified ||
+  if (this->non_linear_solver_type ==
+          NonLinearSolverType::_newton_raphson_modified ||
       (this->non_linear_solver_type == NonLinearSolverType::_linear &&
        this->force_linear_recompute)) {
     solver_callback.assembleMatrix("J");
@@ -97,7 +98,8 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   this->converged = false;
 
   if (this->convergence_criteria_type == SolveConvergenceCriteria::_residual) {
-    this->converged = this->testConvergence(this->dof_manager.getResidual());
+    this->converged =
+        this->testConvergence(this->dof_manager.getResidualArray());
 
     if (this->converged)
       return;
@@ -113,15 +115,18 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 
     // EventManager::sendEvent(NonLinearSolver::AfterSparseSolve(method));
 
-    if (this->convergence_criteria_type == SolveConvergenceCriteria::_residual) {
+    if (this->convergence_criteria_type ==
+        SolveConvergenceCriteria::_residual) {
       this->assembleResidual(solver_callback);
-      this->converged = this->testConvergence(this->dof_manager.getResidual());
+      this->converged =
+          this->testConvergence(this->dof_manager.getResidualArray());
     } else {
       this->converged =
-          this->testConvergence(this->dof_manager.getGlobalSolution());
+          this->testConvergence(this->dof_manager.getSolutionArray());
     }
 
-    if (this->convergence_criteria_type == SolveConvergenceCriteria::_solution and
+    if (this->convergence_criteria_type ==
+            SolveConvergenceCriteria::_solution and
         not this->converged)
       this->assembleResidual(solver_callback);
     // this->dump();
@@ -189,4 +194,4 @@ bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

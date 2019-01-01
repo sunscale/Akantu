@@ -165,11 +165,14 @@ enum DOFSupportType { _dst_nodal, _dst_generic };
 
 #if !defined(SWIG) && !defined(DOXYGEN)
 // clang-format off
-#define AKANTU_NON_LINEAR_SOLVER_TYPES                                  \
+#define AKANTU_NON_LINEAR_SOLVER_TYPES                                 \
   (linear)                                                             \
   (newton_raphson)                                                     \
   (newton_raphson_modified)                                            \
   (lumped)                                                             \
+  (gmres)                                                              \
+  (bfgs)                                                               \
+  (cg)                                                                 \
   (auto)
 // clang-format on
 AKANTU_CLASS_ENUM_DECLARE(NonLinearSolverType, AKANTU_NON_LINEAR_SOLVER_TYPES)
@@ -184,6 +187,9 @@ enum class NonLinearSolverType {
   _newton_raphson,          ///< Regular Newton-Raphson
   _newton_raphson_modified, ///< Newton-Raphson with initial tangent
   _lumped,                  ///< Case of lumped mass or equivalent matrix
+  _gmres,
+  _bfgs,
+  _cg,
   _auto ///< This will take a default value that make sense in case of
         ///  model::getNewSolver
 };

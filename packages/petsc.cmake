@@ -36,15 +36,17 @@ package_declare(PETSc EXTERNAL
   DEPENDS parallel)
 
 package_declare_sources(petsc
-  model/common/dof_manager/dof_manager_petsc.hh
   model/common/dof_manager/dof_manager_petsc.cc
+  model/common/dof_manager/dof_manager_petsc.hh
   model/common/non_linear_solver/non_linear_solver_petsc.cc
   model/common/non_linear_solver/non_linear_solver_petsc.hh
-  solver/sparse_matrix_petsc.hh
-  solver/sparse_matrix_petsc.cc
-  solver/solver_petsc.hh
-  solver/solver_petsc.cc
   solver/petsc_wrapper.hh
+  solver/solver_petsc.cc
+  solver/solver_petsc.hh
+  solver/solver_vector_petsc.cc
+  solver/solver_vector_petsc.hh
+  solver/sparse_matrix_petsc.cc
+  solver/sparse_matrix_petsc.hh
   )
 
 package_declare_extra_files_to_package(PETSc
@@ -60,6 +62,29 @@ package_declare_documentation(PETSc
   "\\end{command}"
   ""
 )
+
+package_get_option_name(PETSc _opt_name)
+if(${_opt_name})
+  include(CheckTypeSize)
+
+  package_get_include_dir(PETSc _petsc_include_dir)
+  if(_petsc_include_dir)
+      package_get_include_dir(MPI _mpi_include_dir)
+    set(CMAKE_EXTRA_INCLUDE_FILES petscsys.h)
+    set(CMAKE_REQUIRED_INCLUDES ${_petsc_include_dir} ${_mpi_include_dir})
+    check_type_size("PetscInt" PETSC_INT_SIZE)
+
+    if(PETSC_INT_SIZE AND NOT PETSC_INT_SIZE EQUAL AKANTU_INTEGER_SIZE)
+      message(SEND_ERROR "This version ofma PETSc cannot be used, it is compiled with the wrong size for PetscInt.")
+    endif()
+
+    check_type_size("PetscReal" PETSC_REAL_SIZE)
+    if(PETSC_REAL_SIZE AND NOT PETSC_REAL_SIZE EQUAL AKANTU_FLOAT_SIZE)
+      message(SEND_ERROR "This version of PETSc cannot be used, it is compiled with the wrong size for PetscInt.")
+    endif()
+  endif()
+endif()
+
 
 package_set_package_system_dependency(PETSc deb libpetsc3.4.2)
 package_set_package_system_dependency(PETSc deb-src libpetsc3.4.2-dev)
