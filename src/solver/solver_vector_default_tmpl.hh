@@ -27,8 +27,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#include "solver_vector_default.hh"
 #include "dof_manager_default.hh"
+#include "solver_vector_default.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH__
@@ -40,15 +40,13 @@ namespace akantu {
 template <class Array>
 SolverVectorDefaultWrap<Array>::SolverVectorDefaultWrap(
     DOFManagerDefault & dof_manager, Array & vector)
-    : SolverVector(dof_manager, vector.getID()), dof_manager(dof_manager),
-      vector(vector) {}
+    : SolverVectorArray(dof_manager, vector.getID()), vector(vector) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Array>
 SolverVectorDefaultWrap<Array>::SolverVectorDefaultWrap(
     const SolverVectorDefaultWrap & vector, const ID & id)
-    : SolverVector(vector, id), dof_manager(vector.dof_manager),
-      vector(vector.vector) {}
+    : SolverVectorArray(vector, id), vector(vector.vector) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Array> void SolverVectorDefaultWrap<Array>::resize() {

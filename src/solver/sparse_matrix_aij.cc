@@ -173,8 +173,8 @@ void SparseMatrixAIJ::matVecMul(const SolverVector & _x, SolverVector & _y,
                                 Real alpha, Real beta) const {
   AKANTU_DEBUG_IN();
 
-  auto && x = dynamic_cast<const SolverVectorDefault &>(_x).getVector();
-  auto && y = dynamic_cast<SolverVectorDefault &>(_y).getVector();
+  auto && x = dynamic_cast<const SolverVectorArray &>(_x).getVector();
+  auto && y = dynamic_cast<SolverVectorArray &>(_y).getVector();
   this->matVecMul(x, y, alpha, beta);
 }
 

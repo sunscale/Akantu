@@ -34,16 +34,24 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+SolverVectorArray::SolverVectorArray(DOFManagerDefault & dof_manager,
+                                     const ID & id)
+    : SolverVector(dof_manager, id), dof_manager(dof_manager) {}
+
+/* -------------------------------------------------------------------------- */
+SolverVectorArray::SolverVectorArray(const SolverVectorArray & vector,
+                                     const ID & id)
+    : SolverVector(vector, id), dof_manager(vector.dof_manager) {}
+
+/* -------------------------------------------------------------------------- */
 SolverVectorDefault::SolverVectorDefault(DOFManagerDefault & dof_manager,
                                          const ID & id)
-    : SolverVector(dof_manager, id), dof_manager(dof_manager),
-      vector(0, 1, id + ":vector") {}
+    : SolverVectorArray(dof_manager, id), vector(0, 1, id + ":vector") {}
 
 /* -------------------------------------------------------------------------- */
 SolverVectorDefault::SolverVectorDefault(const SolverVectorDefault & vector,
                                          const ID & id)
-    : SolverVector(vector, id), dof_manager(vector.dof_manager),
-      vector(vector.vector, id + ":vector") {}
+    : SolverVectorArray(vector, id), vector(vector.vector, id + ":vector") {}
 
 /* -------------------------------------------------------------------------- */
 void SolverVectorDefault::resize() {

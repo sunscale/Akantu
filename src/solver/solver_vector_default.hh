@@ -41,8 +41,25 @@ class DOFManagerDefault;
 
 namespace akantu {
 
+class SolverVectorArray : public SolverVector {
+public:
+  SolverVectorArray(DOFManagerDefault & dof_manager,
+                    const ID & id = "solver_vector_default");
+
+  SolverVectorArray(const SolverVectorArray & vector,
+                    const ID & id = "solver_vector_default");
+
+public:
+  virtual Array<Real> & getVector() = 0;
+  virtual const Array<Real> & getVector() const = 0;
+
+protected:
+  DOFManagerDefault & dof_manager;
+};
+
+
 /* -------------------------------------------------------------------------- */
-class SolverVectorDefault : public SolverVector {
+class SolverVectorDefault : public SolverVectorArray {
 public:
   SolverVectorDefault(DOFManagerDefault & dof_manager,
                       const ID & id = "solver_vector_default");
@@ -55,19 +72,18 @@ public:
   void clear() override;
 
 public:
-  AKANTU_GET_MACRO_NOT_CONST(Vector, vector, auto &);
-  AKANTU_GET_MACRO(Vector, vector, const auto &);
+  Array<Real> & getVector() override { return vector; }
+  const Array<Real> & getVector() const override { return vector; }
 
   virtual Array<Real> & getGlobalVector();
   virtual void setGlobalVector(const Array<Real> & global_vector);
 
 protected:
-  DOFManagerDefault & dof_manager;
   Array<Real> vector;
 };
 
 /* -------------------------------------------------------------------------- */
-template <class Array> class SolverVectorDefaultWrap : public SolverVector {
+template <class Array> class SolverVectorDefaultWrap : public SolverVectorArray {
 public:
   SolverVectorDefaultWrap(DOFManagerDefault & dof_manager, Array & vector);
 
@@ -83,11 +99,10 @@ public:
   void clear() override;
 
 public:
-  AKANTU_GET_MACRO_NOT_CONST(Vector, vector, auto &);
-  AKANTU_GET_MACRO(Vector, vector, const auto &);
+  Array & getVector() override { return vector; }
+  const Array & getVector() const override { return vector; }
 
 protected:
-  DOFManagerDefault & dof_manager;
   Array & vector;
 };
 
