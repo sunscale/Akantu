@@ -72,6 +72,7 @@ namespace phasefield {
 PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
 				 const MemoryID & memory_id)
   : Model(mesh, ModelType::_phase_field_model, dim, id, memory_id),
+    BoundaryCondition<PhaseFieldModel>(),
     damage_on_qpoints(                "damage_on_qpoints",                id),
     damage_energy_on_qpoints(         "damage_energy_on_qpoints",         id),
     damage_energy_density_on_qpoints( "damage_energy_density_on_qpoints", id),
@@ -142,6 +143,7 @@ void PhaseFieldModel::initFullImpl(const ModelOptions & options) {
   Model::initFullImpl(options);
 
   readMaterials();
+  this->initBC(*this, *damage, *external_force);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -184,6 +186,13 @@ void PhaseFieldModel::predictor() {
   //AKANTU_TO_IMPLEMENT();
 }  
 
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::corrector() {
+  //AKANTU_TO_IMPLEMENT();
+}  
+
+  
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
                                  NonLinearSolverType) {
@@ -193,10 +202,16 @@ void PhaseFieldModel::initSolver(TimeStepSolverType time_step_solver_type,
   this->allocNodalField(this->external_force, 1, "external_force");
   this->allocNodalField(this->internal_force, 1, "internal_force");
   this->allocNodalField(this->blocked_dofs, 1, "blocked_dofs");
+  this->allocNodalField(this->previous_damage, 1, "previous_damage");
+  this->allocNodalField(this->damage_increment, 1, "damage_increment");
 
   if (!dof_manager.hasDOFs("damage")) {
     dof_manager.registerDOFs("damage", *this->damage, _dst_nodal);
     dof_manager.registerBlockedDOFs("damage", *this->blocked_dofs);
+    dof_manager.registerDOFsIncrement("damage",
+                                      *this->damage_increment);
+    dof_manager.registerDOFsPrevious("damage",
+                                     *this->previous_damage);
   }
 
   if (time_step_solver_type == _tsst_dynamic) {
@@ -263,11 +278,9 @@ void PhaseFieldModel::beforeSolveStep() {
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::afterSolveStep() {
-
-  //for (auto & dam : *damage) {
-  //  dam = std::min(1., 2*dam -dam * dam);
-  //}
-  
+  for (auto & dam : *damage) {
+    dam = std::min(1., 2*dam -dam * dam);
+  }
 }
   
 /* -------------------------------------------------------------------------- */
@@ -467,7 +480,7 @@ void PhaseFieldModel::computePhiHistoryOnQuadPoints(
       Matrix<Real> sigma_plus( spatial_dimension, spatial_dimension);
       Matrix<Real> sigma_minus(spatial_dimension, spatial_dimension);
 
-      mat_tmp.mul<false,true>(strain_diag_plus, strain_dir);
+      mat_tmp.mul<false, true>(strain_diag_plus, strain_dir);
       strain_plus.mul<false, false>(strain_dir, mat_tmp);
       mat_tmp.mul<false, true>(strain_diag_minus, strain_dir);
       strain_minus.mul<false, true>(strain_dir, mat_tmp);

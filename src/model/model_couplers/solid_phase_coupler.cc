@@ -138,8 +138,13 @@ void SolidPhaseCoupler<SolidType, PhaseType>::solve() {
     auto u_new = solid.getDisplacement();
     auto d_new = phase.getDamage();
 
+    //auto u_new = solid.getDOFManager().getDOFs("displacement");
+    //auto u_old = solid.getDOFManager().getPreviousDOFs("displacement");
+    
+    //auto d_new = phase.getDOFManager().getDOFs("damage");
+    //auto d_old = phase.getDOFManager().getPreviousDOFs("damage");
    
-    //this->testConvergence(u_new, u_old, d_new, d_old);
+    this->checkConvergence(u_new, u_old, d_new, d_old);
     
     if (this->convergence) {
       break;
@@ -162,7 +167,7 @@ void SolidPhaseCoupler<SolidType, PhaseType>::gradUToEpsilon(const Matrix<Real> 
 
 /* -------------------------------------------------------------------------- */
 template<typename SolidType, typename PhaseType>
-bool SolidPhaseCoupler<SolidType, PhaseType>::testConvergence(Array<Real> & u_new, Array<Real> & u_old, Array<Real> & d_new, Array<Real> & d_old) {
+bool SolidPhaseCoupler<SolidType, PhaseType>::checkConvergence(Array<Real> & u_new, Array<Real> & u_old, Array<Real> & d_new, Array<Real> & d_old) {
 
   const Array<bool> & blocked_dofs = solid.getBlockedDOFs(); 
   UInt nb_degree_of_freedom = u_new.size();

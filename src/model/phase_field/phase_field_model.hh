@@ -29,6 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "boundary_condition.hh"
 #include "data_accessor.hh"
 #include "fe_engine.hh"
 #include "model.hh"
@@ -49,7 +50,8 @@ namespace akantu {
 
 class PhaseFieldModel : public Model,
 			public DataAccessor<Element>,
-			public DataAccessor<UInt> {
+			public DataAccessor<UInt>,
+			public BoundaryCondition<PhaseFieldModel> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -79,7 +81,11 @@ protected:
   /// initialize the model
   void initModel() override;
 
+  /// predictor 
   void predictor() override;
+
+  /// corrector
+  void corrector() override;
 
   /// compute the heat flux
   void assembleResidual() override;
@@ -185,9 +191,18 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
+  /// return the dimension of the system space
+  AKANTU_GET_MACRO(SpatialDimension, Model::spatial_dimension, UInt);
+
+  /// return the damage array
   AKANTU_GET_MACRO(Damage, *damage, Array<Real> &);
+
+  /// 
   AKANTU_GET_MACRO_NOT_CONST(Strain, strain_on_qpoints, ElementTypeMapArray<Real> &);
-  
+
+  /// get the PhaseFieldModel::blocked_dofs vector
+  AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
+
   /* ------------------------------------------------------------------------ */
   /* Dumpable Interface                                                       */
   /* ------------------------------------------------------------------------ */
@@ -231,6 +246,12 @@ private:
 
   /// damage array
   Array<Real> * damage{nullptr};
+
+  /// damage array at the previous time step (used in finite deformation)
+  Array<Real> * previous_damage{nullptr};
+
+  /// increment of damage
+  Array<Real> * damage_increment{nullptr};
 
   /// damage field on quadrature points
   ElementTypeMapArray<Real> damage_on_qpoints;

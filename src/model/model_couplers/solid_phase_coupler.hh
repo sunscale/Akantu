@@ -77,7 +77,7 @@ private:
 		      Matrix<Real> & epsilon);
 
   /// test the convergence criteria
-  bool testConvergence(Array<Real> &, Array<Real> &, Array<Real> &, Array<Real> &);
+  bool checkConvergence(Array<Real> &, Array<Real> &, Array<Real> &, Array<Real> &);
   
   
 

@@ -1,12 +1,12 @@
 #===============================================================================
 # @file   CMakeLists.txt
 #
-# @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
+# @author Mohit Pundir <mohit.pundir@epfl.ch>
 #
-# @date creation: Fri Sep 03 2010
-# @date last modification: Tue Jan 30 2018
+# @date creation: Thu Dec 20 2018
+# @date last modification: Thu Dec 20 2018
 #
-# @brief  configuration for model tests
+# @brief  test for the phase field model
 #
 # @section LICENSE
 #
@@ -18,14 +18,26 @@
 #
 # You should  have received  a copy  of the GNU  Lesser General  Public License along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
-# @section DESCRIPTION
-#
 #===============================================================================
 
-add_subdirectory(patch_tests)
-add_akantu_test(test_model_solver "Test for the solvers")
-add_akantu_test(test_solid_mechanics_model "Test for the solid mechanics model")
-add_akantu_test(test_structural_mechanics_model "Test for the structural mechanics model")
-add_akantu_test(test_non_local_toolbox "Test of the functionalities in the non-local toolbox")
-add_akantu_test(test_heat_transfer_model "Test heat transfer model")
-add_akantu_test(test_phase_field_model "Test phase field model")
+add_mesh(test_one_element test_one_element.geo 2 1)
+register_test(test_phase_field_model_2d
+  SOURCES test_phase_field_model_2d.cc
+  DEPENDS test_one_element
+  FILES_TO_COPY material.dat
+  PACKAGE phase_field
+  )
+
+register_test(test_solid_one_element
+  SOURCES test_solid_one_element.cc
+  DEPENDS test_one_element
+  FILES_TO_COPY material_solid.dat
+  PACKAGE core
+  )
+
+register_test(test_phase_solid_coupling
+  SOURCES test_phase_solid_coupling.cc
+  DEPENDS test_one_element
+  FILES_TO_COPY material_coupling.dat
+  PACKAGE phase_field core
+  )

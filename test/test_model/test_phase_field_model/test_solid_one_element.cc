@@ -1,5 +1,5 @@
 /**
- * @file   phase_field_static_2d.cc
+ * @file   tets_phase_field_2d.cc
  *
  * @author Mohit Pundir <mohit.pundir@epfl.ch>
  *
@@ -27,11 +27,10 @@
  *
  */
 
+
 /* -------------------------------------------------------------------------- */
 #include "non_linear_solver.hh"
-#include "phase_field_model.hh"
 #include "solid_mechanics_model.hh"
-#include "solid_phase_coupler.hh"
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 /* -------------------------------------------------------------------------- */
@@ -39,55 +38,60 @@
 using namespace akantu;
 const UInt spatial_dimension = 2;
 /* -------------------------------------------------------------------------- */
+void applyDisplacement(SolidMechanicsModel &);
+/* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[])
-{
-  initialize("material_notch.dat", argc, argv);
+int main(int argc, char *argv[]) {
 
-  // create mesh
+  initialize("material_solid.dat", argc, argv);
+  
   Mesh mesh(spatial_dimension);
-  mesh.read("square_notch.msh");
-    
-  //Phase field model initialization
-  PhaseFieldModel pfm(mesh);
-  pfm.initFull(_analysis_method = _static);
-   
-  // solid mechanics model initialization
-  SolidMechanicsModel smm(mesh);
-  smm.initFull(_analysis_method  = _static);
+  mesh.read("test_one_element.msh");
 
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
+  SolidMechanicsModel model(mesh);
+  model.initFull(_analysis_method = _static);
 
-  smm.setBaseName(        "square_notch_modified");
-  smm.addDumpFieldVector( "displacement");
-  smm.addDumpFieldVector( "internal_force");
-  smm.addDumpField(       "stress");
-  smm.addDumpField(       "grad_u");
-  smm.addDumpField(       "damage");
-  smm.addDumpField(       "blocked_dofs");
-  smm.dump();
+  model.setBaseName("solid_one_element");
+  model.addDumpField("stress");
+  model.addDumpField("grad_u");
+  model.addDumpField("displacement");
+  model.dump();
 
-  auto & smm_solver = smm.getNonLinearSolver();
-  smm_solver.set("max_iterations", 1000);
-  smm_solver.set("threshold", 1e-8);
-  smm_solver.set("convergence_type", _scc_residual);
-  
-  // coupling of models
-  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
+  UInt nbSteps = 1000;
 
-  UInt nbSteps   = 200;
-  Real increment = 1.e-5;
-  
-  for (UInt s = 1; s < nbSteps; ++s) {
-    smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
-    //smm.solveStep();
-    coupler.solve();
-    smm.dump();
-    std::cout << "Step " << s << "/" << nbSteps << std::endl;
-    
+  for (UInt s = 0; s < nbSteps; ++s) {
+    applyDisplacement(model);
+    model.solveStep();
+    model.dump();
   }
-
+  
   finalize();
+
   return EXIT_SUCCESS;
+
+}
+
+
+/* -------------------------------------------------------------------------- */
+void applyDisplacement(SolidMechanicsModel & model) {
+  auto & displacement = model.getDisplacement();
+
+  auto & positions = model.getMesh().getNodes();
+  auto & blocked_dofs = model.getBlockedDOFs();
+
+  
+  for (UInt n = 0; n < model.getMesh().getNbNodes(); ++n) {
+    if (positions(n, 1) == -0.5) {
+      displacement(n, 0) = 0;
+      displacement(n, 1) = 0;
+      blocked_dofs(n, 0) = true;
+      blocked_dofs(n ,1) = true;
+    }
+    else {
+      displacement(n, 0) = 0;
+      displacement(n, 1) += 1.e-4;
+      blocked_dofs(n, 0) = true;
+      blocked_dofs(n ,1) = true;
+    }
+  }
 }
