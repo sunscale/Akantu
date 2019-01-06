@@ -47,18 +47,22 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
   auto mpi_comm = dof_manager.getMPIComm();
 
   PETSc_call(MatCreate, mpi_comm, &mat);
-  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(mat),
-             id.c_str());
 
   if (sparse_matrix_type == _symmetric)
     PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_TRUE);
   PETSc_call(MatSetOption, mat, MAT_ROW_ORIENTED, PETSC_TRUE);
 
-  PETSc_call(MatSetSizes, mat, PETSC_DECIDE, PETSC_DECIDE, size_, size_);
+  auto local_size = dof_manager.getPureLocalSystemSize();
+  PETSc_call(MatSetSizes, mat, local_size, local_size, size_, size_);
 
   auto & is_ltog_mapping = dof_manager.getISLocalToGlobalMapping();
 
+  PETSc_call(MatSetUp, mat);
+
   PETSc_call(MatSetLocalToGlobalMapping, mat, is_ltog_mapping, is_ltog_mapping);
+
+  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(mat),
+             id.c_str());
 
   AKANTU_DEBUG_OUT();
 }
@@ -95,15 +99,9 @@ void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
   /// create Petsc viewer
   PetscViewer viewer;
   PETSc_call(PetscViewerASCIIOpen, mpi_comm, filename.c_str(), &viewer);
-
-  /// set the format
-  // PETSc_call(PetscViewerSetFormat, viewer, PETSC_VIEWER_DEFAULT);
-
-  /// save the matrix
-  /// @todo Write should be done in serial -> might cause problems
+  PETSc_call(PetscViewerPushFormat, viewer, PETSC_VIEWER_ASCII_MATRIXMARKET);
   PETSc_call(MatView, mat, viewer);
-
-  /// destroy the viewer
+  PETSc_call(PetscViewerPopFormat, viewer);
   PETSc_call(PetscViewerDestroy, &viewer);
 
   AKANTU_DEBUG_OUT();
@@ -116,13 +114,18 @@ void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
   auto & x = dynamic_cast<const SolverVectorPETSc &>(_x).getVector();
   auto & y = dynamic_cast<SolverVectorPETSc &>(_y).getVector();
 
-  PETSc_call(MatMult, mat, x, y);
+  // y = alpha A x + beta y
+  SolverVectorPETSc w(x);
 
+  // w = A x
+  PETSc_call(MatMult, mat, x, w);
   if (alpha != 1.) {
-    PETSc_call(VecScale, y, alpha);
+    // w = alpha w
+    PETSc_call(VecScale, w, alpha);
   }
 
-  PETSc_call(VecAYPX, y, beta, x);
+  // y = w + beta y
+  PETSc_call(VecAYPX, y, beta, w);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -166,27 +169,25 @@ void SparseMatrixPETSc::beginAssembly() {
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::endAssembly() {
   PETSc_call(MatAssemblyEnd, mat, MAT_FINAL_ASSEMBLY);
-  PETSc_call(MatSetOption, mat, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);
+  PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
   // PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
   // PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixPETSc::applyBoundary(Real /*block_val*/) {
+void SparseMatrixPETSc::applyBoundary(Real block_val) {
   AKANTU_DEBUG_IN();
 
-  // const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  std::vector<PetscInt> rows;
+  for (auto && data : enumerate(blocked)) {
+    if (std::get<1>(data)) {
+      rows.push_back(std::get<0>(data));
+    }
+  }
 
-  // for (auto && data : arange(blocked_dofs)) {
-  //   auto & dof = std::get<0>(data);
-  //   auto & blocked = std::get<1>(data);
-
-  //   if (blocked)
-  //     blocked_list.push_back(dof);
-  // }
-
-  // PETSc_call(MatZeroRowsColumnsLocal, mat, blocked_list.size(),
-  //            blocked_list.storage(), block_val, 0, 0);
+  PETSc_call(MatZeroRowsColumnsLocal, mat, roew.size(),
+             rows.storage(), block_val, nullptr, nullptr);
 
   AKANTU_DEBUG_OUT();
 }

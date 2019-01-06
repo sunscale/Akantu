@@ -149,7 +149,7 @@ protected:
   UInt nb_non_zero;
 };
 
-Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
+//Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
 
 } // akantu
 

@@ -49,6 +49,9 @@ public:
   SolverVectorPETSc(const SolverVectorPETSc & vector,
                     const ID & id = "solver_vector_petsc");
 
+  SolverVectorPETSc(Vec vec,
+                    const ID & id = "solver_vector_petsc");
+
   ~SolverVectorPETSc() override;
 
   // resize the vector to the size of the problem

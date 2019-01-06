@@ -54,6 +54,15 @@ SolverVectorPETSc::SolverVectorPETSc(const SolverVectorPETSc & vector,
 }
 
 /* -------------------------------------------------------------------------- */
+SolverVectorPETSc::SolverVectorPETSc(Vec vec,
+                                     const ID & id = "solver_vector_petsc") {
+  PETSc_call(VecDuplicate, vec.vector, &vector);
+  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(this->vector), id.c_str());
+  PETSc_call(VecCopy, vector.vector, this->vector);
+}
+
+
+/* -------------------------------------------------------------------------- */
 SolverVectorPETSc::~SolverVectorPETSc() {
   if (vector) {
     PETSc_call(VecDestroy, &vector);

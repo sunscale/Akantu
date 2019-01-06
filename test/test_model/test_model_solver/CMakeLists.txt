@@ -41,3 +41,10 @@ register_test(test_model_solver_dynamic_implicit
   PACKAGE mumps
   COMPILE_OPTIONS "EXPLICIT=false"
   )
+
+
+register_test(test_model_solver_dynamic_petsc
+  SOURCES test_model_solver_dynamic_petsc.cc
+  PACKAGE petsc
+  COMPILE_OPTIONS "EXPLICIT=false"
+  )
