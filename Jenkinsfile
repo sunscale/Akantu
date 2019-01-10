@@ -70,10 +70,12 @@ pipeline {
 			}
 			post {
 				always {
-					def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
-			
-					if (fileExists("build/Testing/${TAG}/Test.xml")) {
-						sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
+					script {
+						def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
+						
+						if (fileExists("build/Testing/${TAG}/Test.xml")) {
+							sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
+						}
 					}
 				}
 			}
