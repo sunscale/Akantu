@@ -61,15 +61,16 @@ pipeline {
     stage('Tests') {
       steps {
         sh '''
-        rm -rf build/gtest_reports
-        cd build/
-        #source ./akantu_environement.sh
+          rm -rf build/gtest_reports
+          cd build/
+          #source ./akantu_environement.sh
         
-        ctest -T test --no-compress-output || true
-        TAG=`head -n 1 < build/Testing/TAG`
-        if [ -e build/Testing/${TAG}/Test.xml ]; then
-	         cp build/Testing/${TAG}/Test.xml CTestResults.xml
-        fi
+          ctest -T test --no-compress-output || true
+        '''
+        def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
+				if (fileExists("build/Testing/${TAG}/Test.xml")) {
+					sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
+        }
         '''
       }
     }
