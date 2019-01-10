@@ -3,7 +3,7 @@ pipeline {
               string(defaultValue: '', description: 'buildable phid', name: 'TARGET_PHID')
               string(defaultValue: '', description: 'Commit id', name: 'COMMIT_ID')
               string(defaultValue: '', description: 'Diff id', name: 'DIFF_ID')
-    }
+  }
 
   options {
     disableConcurrentBuilds()
@@ -21,13 +21,22 @@ pipeline {
         env
         mkdir -p build
         cd build
-        cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE -DAKANTU_IMPLICIT:BOOL=TRUE -DAKANTU_PARALLEL:BOOL=TRUE -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE -DAKANTU_TESTS:BOOL=TRUE ..
+        cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
+              -DAKANTU_IMPLICIT:BOOL=TRUE \
+              -DAKANTU_PARALLEL:BOOL=TRUE \
+              -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
+              -DAKANTU_TESTS:BOOL=TRUE ..
         """
       }
+	    post {
+				failure {
+					deleteDir()
+				}
+			}
     }
     stage('Compile') {
       steps {
-	sh 'make -C build/src || true'
+				sh 'make -C build/src || true'
       }
     }
 
@@ -55,10 +64,11 @@ pipeline {
         rm -rf build/gtest_reports
         cd build/
         #source ./akantu_environement.sh
+        
         ctest -T test --no-compress-output || true
         TAG=`head -n 1 < build/Testing/TAG`
         if [ -e build/Testing/${TAG}/Test.xml ]; then
-	   cp build/Testing/${TAG}/Test.xml CTestResults.xml
+	         cp build/Testing/${TAG}/Test.xml CTestResults.xml
         fi
         """
       }
@@ -71,58 +81,62 @@ pipeline {
   }
   post {
     always {
+			step([$class: 'XUnitBuilder',
+			  thresholds: [
+          [$class: 'SkippedThreshold', failureThreshold: '0'],
+          [$class: 'FailedThreshold', failureThreshold: '0']],
+				tools: [
+			  	[$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
+				]])
       step([$class: 'XUnitBuilder',
          thresholds: [
-             [$class: 'SkippedThreshold', failureThreshold: '0'],
-             [$class: 'FailedThreshold', failureThreshold: '0']],
-          tools: [[$class: 'CTestType', pattern: 'CTestResults.xml']]])
-      step([$class: 'XUnitBuilder',
-         thresholds: [
-             [$class: 'SkippedThreshold', failureThreshold: '100'],
-             [$class: 'FailedThreshold', failureThreshold: '0']],
-            tools: [[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**']]])
+          [$class: 'SkippedThreshold', failureThreshold: '100'],
+          [$class: 'FailedThreshold', failureThreshold: '0']],
+         tools: [
+					[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
+				]])
       archiveArtifacts artifacts: 'build/Testing/**', fingerprint: true
-      createartifact()
+      createArtifact()
     }
 
     success {
-      send_fail_pass('pass')
+      sendFailPass('pass')
     }
 
     failure {
       emailext(
-          body: '''${SCRIPT, template="groovy-html.template"}''',
-	  mimeType: 'text/html',
-          subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
-	  recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-	  to: 'akantu-admins@akantu.ch',
-	  replyTo: 'akantu-admins@akantu.ch',
-	  attachLog: true,
-          compressLog: false)
-      send_fail_pass('fail')
+        body: '''${SCRIPT, template="groovy-html.template"}''',
+				mimeType: 'text/html',
+        subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
+				recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+				to: 'akantu-admins@akantu.ch',
+				replyTo: 'akantu-admins@akantu.ch',
+				attachLog: true,
+        compressLog: false)
+      sendFailPass('fail')
     }
   }
 }
 
-def send_fail_pass(state) {
+def sendFailPass(state) {
     sh """
-set +x
-curl https://c4science.ch/api/harbormaster.sendmessage \
--d api.token=${API_TOKEN} \
--d buildTargetPHID=${TARGET_PHID} \
--d type=${state}
-"""
+       set +x
+       curl https://c4science.ch/api/harbormaster.sendmessage \
+            -d api.token=${API_TOKEN} \
+            -d buildTargetPHID=${TARGET_PHID} \
+            -d type=${state}
+       """
 }
 
-def createartifact() {
+def createArtifact() {
     sh """ set +x
-curl https://c4science.ch/api/harbormaster.createartifact \
--d api.token=${API_TOKEN} \
--d buildTargetPHID=${TARGET_PHID} \
--d artifactKey="Jenkins URI" \
--d artifactType=uri \
--d artifactData[uri]=${BUILD_URL} \
--d artifactData[name]="View Jenkins result" \
--d artifactData[ui.external]=1
-"""
+       curl https://c4science.ch/api/harbormaster.createartifact \
+            -d api.token=${API_TOKEN} \
+            -d buildTargetPHID=${TARGET_PHID} \
+            -d artifactKey="Jenkins URI" \
+            -d artifactType=uri \
+            -d artifactData[uri]=${BUILD_URL} \
+            -d artifactData[name]="View Jenkins result" \
+            -d artifactData[ui.external]=1
+       """
 }
