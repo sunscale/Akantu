@@ -72,7 +72,8 @@ pipeline {
 				always {
 					script {
 						def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
-						
+						def TAG_ = TAG.trim()
+
 						if (fileExists("build/Testing/${TAG}/Test.xml")) {
 							sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
 						}
@@ -103,8 +104,8 @@ pipeline {
          tools: [
 					[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
 				]])
-      archiveArtifacts artifacts: 'build/Testing/**', fingerprint: true
-      createArtifact()
+      zip zipFile: "results_${BUILD_TAG}.zip", glob: 'build/Testing/**, build/gtest_reports/**', archive: true
+      createArtifact("results_${BUILD_TAG}.zip")
     }
 
     success {
@@ -136,7 +137,7 @@ def sendFailPass(state) {
        """
 }
 
-def createArtifact() {
+def createArtifact(artefact) {
     sh """ set +x
        curl https://c4science.ch/api/harbormaster.createartifact \
             -d api.token=${API_TOKEN} \
@@ -146,5 +147,23 @@ def createArtifact() {
             -d artifactData[uri]=${BUILD_URL} \
             -d artifactData[name]="View Jenkins result" \
             -d artifactData[ui.external]=1
+       """
+
+	def fileBase64 = readFile file: artefact, encoding: "Base64"   
+  def phid = sh returnStdout: true, script: """
+     set +x
+     curl https://c4science.ch/api/file.upload \
+          -d api.token=${API_TOKEN} \
+          -d data_base64=${fileBase64} \
+          -d filename=${artefact}
+    """
+  echo "${phid}"
+	sh """ set +x
+     curl https://c4science.ch/api/harbormaster.createartifact \
+          -d api.token=${API_TOKEN} \
+          -d buildTargetPHID=${TARGET_PHID} \
+          -d artifactKey="Results" \
+          -d artifactType=file \
+          -d artifactData[filePHID]=${phid}
        """
 }
