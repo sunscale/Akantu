@@ -60,7 +60,7 @@ pipeline {
 
     stage('Tests') {
       steps {
-        sh """
+        sh '''
         rm -rf build/gtest_reports
         cd build/
         #source ./akantu_environement.sh
@@ -70,7 +70,7 @@ pipeline {
         if [ -e build/Testing/${TAG}/Test.xml ]; then
 	         cp build/Testing/${TAG}/Test.xml CTestResults.xml
         fi
-        """
+        '''
       }
     }
   }
