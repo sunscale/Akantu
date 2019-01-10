@@ -67,11 +67,12 @@ pipeline {
         
           ctest -T test --no-compress-output || true
         '''
+				
         def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
+
 				if (fileExists("build/Testing/${TAG}/Test.xml")) {
 					sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
         }
-        '''
       }
     }
   }
