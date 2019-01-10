@@ -105,9 +105,7 @@ pipeline {
 					[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
 				]])
 			script {
-				def artefact_name = "results_${BUILD_TAG}.zip"
-				zip zipFile: "", glob: 'build/Testing/**, build/gtest_reports/**', archive: true
-				createArtifact(artefact_name)
+				createArtifact("results_${BUILD_TAG}.zip")
 			}
       
     }
@@ -142,6 +140,8 @@ def sendFailPass(state) {
 }
 
 def createArtifact(artefact) {
+	  //zip zipFile: artefact, glob: 'build/Testing/**, build/gtest_reports/**', archive: true
+
     sh """ set +x
        curl https://c4science.ch/api/harbormaster.createartifact \
             -d api.token=${API_TOKEN} \
@@ -153,20 +153,21 @@ def createArtifact(artefact) {
             -d artifactData[ui.external]=1
        """
 
-	def fileBase64 = readFile file: artefact, encoding: "Base64"   
+	def fileBase64 = readFile file: 'CTestResults.xml', encoding: "Base64"   
   def phid = sh returnStdout: true, script: """
      set +x
      curl https://c4science.ch/api/file.upload \
           -d api.token=${API_TOKEN} \
           -d data_base64=${fileBase64} \
-          -d filename=${artefact}
+          -d filename=CTestResults-${BUILD_ID}.xml \
+          -d viewPolicy=PHID-PROJ-76ssq2ovx7gc3ikehamv
     """
   echo "${phid}"
 	sh """ set +x
      curl https://c4science.ch/api/harbormaster.createartifact \
           -d api.token=${API_TOKEN} \
           -d buildTargetPHID=${TARGET_PHID} \
-          -d artifactKey="Results" \
+          -d artifactKey=Results \
           -d artifactType=file \
           -d artifactData[filePHID]=${phid}
        """
