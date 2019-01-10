@@ -104,8 +104,12 @@ pipeline {
          tools: [
 					[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
 				]])
-      zip zipFile: "results_${BUILD_TAG}.zip", glob: 'build/Testing/**, build/gtest_reports/**', archive: true
-      createArtifact("results_${BUILD_TAG}.zip")
+			script {
+				def artefact_name = "results_${BUILD_TAG}.zip"
+				zip zipFile: "", glob: 'build/Testing/**, build/gtest_reports/**', archive: true
+				createArtifact(artefact_name)
+			}
+      
     }
 
     success {
