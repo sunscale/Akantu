@@ -9,7 +9,7 @@ RUN apt-get -qq update && apt-get -qq -y install \
     python3 python3-dev \
     python3-numpy python3-scipy python3-mpi4py\
     swig3.0 gmsh curl \
-    git arcanist clang-format xsltproc \
+    git arcanist clang-format xsltproc jq \
     && rm -rf /var/lib/apt/lists/*
 
 # apt-get on one line due to https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run

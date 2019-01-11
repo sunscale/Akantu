@@ -129,6 +129,8 @@ pipeline {
   }
 }
 
+import groovy.json.JsonOutput
+
 def sendFailPass(state) {
     sh """
        set +x
@@ -142,7 +144,7 @@ def sendFailPass(state) {
 def createArtifact(artefact) {
 	  //zip zipFile: artefact, glob: 'build/Testing/**, build/gtest_reports/**', archive: true
 
-    sh """ set +x
+  sh """ set +x
        curl https://c4science.ch/api/harbormaster.createartifact \
             -d api.token=${API_TOKEN} \
             -d buildTargetPHID=${TARGET_PHID} \
@@ -153,22 +155,38 @@ def createArtifact(artefact) {
             -d artifactData[ui.external]=1
        """
 
-	def fileBase64 = readFile file: 'CTestResults.xml', encoding: "Base64"   
-  def phid = sh returnStdout: true, script: """
-     set +x
-     curl https://c4science.ch/api/file.upload \
-          -d api.token=${API_TOKEN} \
-          -d data_base64=${fileBase64} \
-          -d filename=CTestResults-${BUILD_ID}.xml \
-          -d viewPolicy=PHID-PROJ-76ssq2ovx7gc3ikehamv
+	def file = "CTestResults.xml"
+  def site = new XmlSlurper().parse(new File(file))
+  def convertion = [passed: 'pass', failed: 'fail']
+  def unit_tests = []
+    
+  site.Testing.'*'.findAll{ test ->
+    test.name() == 'Test'
+  }.each{ p ->
+    def results = [
+			name: p.Name.text(),
+			result: convertion[p.@Status],
+			engine: 'ctest',
+			path: p.FullName,
+			duration: p.Results.'*'.find { m ->
+				m.name() == 'NamedMeasurement' && m.@name=='Execution Time'
+			}.Value.text()
+    ]
+    unit_tests << results;
+  }
+
+  def data = [ 
+    buildTargetPHID: 'PHID-HMBT-xatqaaa4ihzuwbvadgpb',
+    type: 'work',
+    unit: unit_tests
+  ]
+  
+	def json = JsonOutput.toJson(data)
+	
+	sh """
+     echo "${json}" | arc call-conduit \
+                          --conduit-uri https://c4science.ch/ \
+                          --conduit-token ${API_TOKEN} \
+                          harbormaster.sendmessage
     """
-  echo "${phid}"
-	sh """ set +x
-     curl https://c4science.ch/api/harbormaster.createartifact \
-          -d api.token=${API_TOKEN} \
-          -d buildTargetPHID=${TARGET_PHID} \
-          -d artifactKey=Results \
-          -d artifactType=file \
-          -d artifactData[filePHID]=${phid}
-       """
 }
