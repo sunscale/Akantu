@@ -10,7 +10,7 @@ pipeline {
   }
 
   environment { 
-    PYTHONPATH = '${env.WORKSPACE}/test/ci/script/'
+    PYTHONPATH = sh returnStdout: true, script: 'echo ${WORKSPACE}/test/ci/script/'
     BLA_VENDOR = 'OpenBLAS'
     OMPI_MCA_plm = 'isolated'
     OMPI_MCA_btl = 'tcp,self'
