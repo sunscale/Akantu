@@ -22,11 +22,12 @@ def send_ctest_results(ctx, filename):
 
 @hbm.command()
 @click.option('-k', '--key')
+@click.option('-u', '--uri')
 @click.option('-l', '--label')
 @click.pass_context
-def send_uri(ctx, key, label):
+def send_uri(ctx, key, uri, label):
     _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
-    _hbm.send_uri(key, label)
+    _hbm.send_uri(key, uri, label)
 
 
 @hbm.command()
