@@ -64,7 +64,6 @@ class Harbormaster:
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
                 'unit':_unit_tests}
-        print(_msg)
         self.__phab.harbormaster.sendmessage(**_msg)
 
     def send_uri(self, key, uri, name):
