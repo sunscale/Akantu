@@ -28,7 +28,6 @@ pipeline {
     stage('Configure') {
       steps {
         sh """
-        env
         mkdir -p build
         cd build
         cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
@@ -142,6 +141,5 @@ def passed() {
 
 def createArtifact(artefact) {
   sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
-
   sh "./test/ci/scripts/hbm send-ctest-results -f ${artefact}"
 }
