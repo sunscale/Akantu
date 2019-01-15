@@ -141,13 +141,7 @@ def passed() {
 }
 
 def createArtifact(artefact) {
-  sh """
-     ./test/ci/scripts/hbm \
-           send-uri -k "Jenkins URI" -l "View Jenkins result"
+  sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
 
-     if [ -e ${artefact} ]; then
-        ./test/ci/scripts/hbm \
-           send-ctest-results -f ${artefact}
-     fi
-     """
+  sh "./test/ci/scripts/hbm send-ctest-results -f ${artefact}"
 }
