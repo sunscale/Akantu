@@ -66,7 +66,7 @@ class Harbormaster:
             status = self.STATUS[_test.status]
             if _test.name in _previously_failed and \
                (_previously_failed[_test.name] == self.STATUS[_test.status] or \
-                _previously_failed[_test.name] == 'unsound'):
+                (_previously_failed[_test.name] == 'unsound' and _test.status != Results.PASS)):
                 status = 'unsound'
 
             _test_dict = {
