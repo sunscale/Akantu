@@ -67,7 +67,7 @@ class Harbormaster:
         print(_msg)
         self.__phab.harbormaster.sendmessage(**_msg)
 
-    def attach_uri(self, key, uri, name):
+    def send_uri(self, key, uri, name):
         self.__phab.harbormaster.createartifact(buildTargetPHID=self.__phid,
                                                 artifactType='uri',
                                                 artifactKey=name,
