@@ -20,15 +20,14 @@ def get_phabricator_instance(ctx=None):
         # this request is just to make an actual connection
         _phab.user.whoami()
     except Exception as e:
-        _logger.error(
-            'Could not connect to phabricator, either give the' +
-            ' connection with the default configuration of arc' +
-            ' or in the backend configuration of the configuration' +
-            ' file:\n' +
-            '  in/out:\n' +
-            '    username: mylogin\n' +
-            '    host: https://c4science.ch/\n' +
-            '    token: cli-g3amff25kdpnnv2tqvigmr4omnn7\n')
+        print('Could not connect to phabricator, either give the' +
+              ' connection with the default configuration of arc' +
+              ' or in the backend configuration of the configuration' +
+              ' file:\n' +
+              '  in/out:\n' +
+              '    username: mylogin\n' +
+              '    host: https://c4science.ch/\n' +
+              '    token: cli-g3amff25kdpnnv2tqvigmr4omnn7\n')
         raise e
     return _phab
 
