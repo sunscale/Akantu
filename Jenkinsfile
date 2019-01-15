@@ -151,7 +151,9 @@ def createArtifact(artefact) {
      ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
            send-uri -k "Jenkins URI" -l "View Jenkins result"
 
-     ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
-           send-ctest-results -f ${artifact}
+     if [ -e ${artefact} ]; then
+        ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
+           send-ctest-results -f ${artefact}
+     fi
      """
 }
