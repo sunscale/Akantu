@@ -9,7 +9,8 @@ pipeline {
     disableConcurrentBuilds()
   }
 
-  environment { 
+  environment {
+    PHABRICATOR_HOST = 'https://c4science.ch/api/'
     PYTHONPATH = sh returnStdout: true, script: 'echo ${WORKSPACE}/test/ci/script/'
     BLA_VENDOR = 'OpenBLAS'
     OMPI_MCA_plm = 'isolated'
@@ -132,27 +133,20 @@ pipeline {
 }
 
 def failed() {
-    sh """
-       set +x
-       ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} failed
-       """
+    sh "./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} failed"
 }
 
 def passed() {
-    sh """
-       set +x
-       ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} passed
-       """
+    sh "./test/ci/scripts/hbm passed"
 }
 
 def createArtifact(artefact) {
   sh """
-     set +x
-     ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
+     ./test/ci/scripts/hbm \
            send-uri -k "Jenkins URI" -l "View Jenkins result"
 
      if [ -e ${artefact} ]; then
-        ./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
+        ./test/ci/scripts/hbm \
            send-ctest-results -f ${artefact}
      fi
      """

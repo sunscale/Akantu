@@ -3,9 +3,9 @@ import click
 import harbomaster
 
 @click.group()
-@click.option('-a', '--api-token', default=None)
-@click.option('-h', '--host', default=None)
-@click.option('-b', '--build-target-phid')
+@click.option('-a', '--api-token', default=None, envvar='API_TOKEN')
+@click.option('-h', '--host', default=None, envvar='PHABRICATOR_HOST')
+@click.option('-b', '--build-target-phid', envvar='BUILD_TARGET_PHID')
 @click.pass_context
 def hbm(ctx, api_token, host, build_target_phid):
     ctx.obj['API_TOKEN'] = api_token
