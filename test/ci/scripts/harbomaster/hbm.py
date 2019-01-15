@@ -1,4 +1,5 @@
 from phabricator import Phabricator
+import yaml
 from . import export
 from .results import Results
 
@@ -34,7 +35,10 @@ def get_phabricator_instance(ctx=None):
 @export
 class Harbormaster:
     STATUS = {Results.PASS: 'pass',
-              Results.FAIL: 'fail'}
+              Results.FAIL: 'fail',
+              Results.BROKEN: 'broken',
+              Results.SKIP: 'skip',
+              Results.UNSTABLE: 'unsound'}
     
     def __init__(self, **kwargs):
         ctx = kwargs['ctx']
@@ -48,19 +52,44 @@ class Harbormaster:
     def send_unit_tests(self, tests):
         _unit_tests = []
         _format = tests.test_format
+        _list_of_failed = {}
+        try:
+            _yaml = open(".tests_previous_state", 'r')
+            _previously_failed = yaml.load(_yaml)
+            if not _previously_failed:
+                _previously_failed = {}
+            _yaml.close()
+        except OSError:
+            _previously_failed = {}
+        
         for _test in tests:
+            status = self.STATUS[_test.status]
+            if _test.name in _previously_failed and \
+               (_previously_failed[_test.name] == self.STATUS[_test.status] or \
+                _previously_failed[_test.name] == 'unsound'):
+                status = 'unsound'
+
             _test_dict = {
                 'name': _test.name,
-                'result': self.STATUS[_test.status],
+                'result': status,
                 'format': _format
             }
+            
             if _test.duration:
                 _test_dict['duration'] = _test.duration
             if _test.path:
                 _test_dict['path'] = _test.path
-                
+            if _test.reason:
+                _test_dict['detail'] = _test.reason
             _unit_tests.append(_test_dict)
-
+            if status != 'pass':
+                _list_of_failed[_test.name] = status
+        
+        with open(".tests_previous_state", 'w+') as _cache_file:
+            yaml.dump(_list_of_failed,
+                      _cache_file,
+                      default_flow_style=False)
+    
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
                 'unit':_unit_tests}

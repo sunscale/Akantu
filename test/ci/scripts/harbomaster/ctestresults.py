@@ -24,7 +24,16 @@ class CTestResults:
                 self.path = element.find('FullName').text
                 self.status = CTestResults.STATUS[element.attrib['Status']]
                 self.duration = float(element.find("./Results/NamedMeasurement[@name='Execution Time']/Value").text)
-
+                self.reason = None
+                if self.status == Results.FAIL:
+                    self.reason = element.find("./Results/NamedMeasurement[@name='Exit Code']/Value").text
+                    if self.reason == "Timeout":
+                        self.status = Results.BROKEN
+                    else:
+                        self.reason = "{0} with exit code [{1}]".format(
+                            self.reason,
+                            element.find("./Results/NamedMeasurement[@name='Exit Value']/Value").text)
+                
             def __str__(self):
                 return f'{self._name}: {self._status} in {self._duration}'
 
