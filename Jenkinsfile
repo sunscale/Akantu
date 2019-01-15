@@ -10,8 +10,8 @@ pipeline {
   }
 
   environment { 
-    PYTHONPATH = '${WORKSPACE}/test/ci/script/'
-    PATH = '${PATH}:${WORKSPACE}/test/ci/script/'
+    PYTHONPATH = sh returnStdout:true, script: 'echo ${WORKSPACE}/test/ci/script/'
+    PATH = sh returnStdout:true, script:'echo ${PATH}:${WORKSPACE}/test/ci/script/'
     BLA_VENDOR = 'OpenBLAS'
     OMPI_MCA_plm = 'isolated'
     OMPI_MCA_btl = 'tcp,self'
@@ -135,27 +135,24 @@ pipeline {
 def failed() {
     sh """
        set +x
-       export PYTHONPATH=$PWD/tests/ci/scripts
-       ./tests/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} failed
+       hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} failed
        """
 }
 
 def passed() {
     sh """
        set +x
-       export PYTHONPATH=$PWD/tests/ci/scripts
-       ./tests/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} passed
+       hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} passed
        """
 }
 
 def createArtifact(artefact) {
   sh """
      set +x
-     export PYTHONPATH=$PWD/tests/ci/scripts
-     ./tests/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
+     hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
            send-uri -k "Jenkins URI" -l "View Jenkins result"
 
-     ./tests/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
+     hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} \
            send-ctest-results -f ${artifact}
      """
 }
