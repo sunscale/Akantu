@@ -16,17 +16,23 @@ def hbm(ctx, api_token, host, build_target_phid):
 @click.option('-f', '--filename')
 @click.pass_context
 def send_ctest_results(ctx, filename):
-    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
-    with harbomaster.CTestResults(filename) as tests:
-        _hbm.send_unit_tests(tests)
+    try:
+        _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+        with harbomaster.CTestResults(filename) as tests:
+            _hbm.send_unit_tests(tests)
+    except e:
+        pass
 
 @hbm.command()
 @click.option('-f', '--filename')
 @click.pass_context
 def send_arc_lint(ctx, filename):
-    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
-    with harbomaster.ARCLintJson(filename) as tests:
-        _hbm.send_lint(tests)
+    try:
+        _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+        with harbomaster.ARCLintJson(filename) as tests:
+            _hbm.send_lint(tests)
+    except e:
+        pass
         
 @hbm.command()
 @click.option('-k', '--key')

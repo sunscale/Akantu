@@ -24,12 +24,13 @@ pipeline {
       additionalBuildArgs '--tag akantu-environment'
     }
   }
+  
   stages {
     stage('Lint') {
       steps {
 	script {
 	  try {
-            sh 'arc lint --output json --rev ${COMMIT_ID}^ | jq . -srM | lint.json'
+            sh 'arc lint --output json --rev ${COMMIT_ID}^ | jq . -srM | tee lint.json'
 	  }
 	  catch (exc) {
       	    sh """
