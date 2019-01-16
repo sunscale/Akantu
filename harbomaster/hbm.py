@@ -80,11 +80,12 @@ class Harbormaster:
             if _test.path:
                 _test_dict['path'] = _test.path
             if _test.reason:
-                _test_dict['detail'] = _test.reason
-            _unit_tests.append(_test_dict)
+                _test_dict['details'] = _test.reason
+            
             if status != 'pass':
                 _list_of_failed[_test.name] = status
-        
+            _unit_tests.append(_test_dict)
+            
         with open(".tests_previous_state", 'w+') as _cache_file:
             yaml.dump(_list_of_failed,
                       _cache_file,
@@ -93,6 +94,24 @@ class Harbormaster:
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
                 'unit':_unit_tests}
+        self.__phab.harbormaster.sendmessage(**_msg)
+
+    def send_lint(self, linter_processor):
+        _lints = []
+        for lint in linter_processor:
+            _lint = {}
+            for key in ['code', 'name', 'severity', 'path', 'line',
+                      'char', 'description']:
+                val = getattr(lint, key)
+                if val:
+                    _lint[key] = val
+            
+            _lints.append(_lint)
+            
+        _msg = {'buildTargetPHID': self.__phid,
+                'type': 'work',
+                'lint':_lints}
+        
         self.__phab.harbormaster.sendmessage(**_msg)
 
     def send_uri(self, key, uri, name):

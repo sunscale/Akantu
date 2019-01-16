@@ -22,4 +22,5 @@ def export(definition):
 
 
 from . import ctestresults
+from . import arclint
 from . import hbm
