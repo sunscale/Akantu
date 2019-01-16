@@ -132,7 +132,7 @@ pipeline {
 }
 
 def failed() {
-    sh "./test/ci/scripts/hbm -a ${API_TOKEN} -b ${BUILD_TARGET_PHID} failed"
+    sh "./test/ci/scripts/hbm failed"
 }
 
 def passed() {
