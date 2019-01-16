@@ -27,14 +27,17 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-        sh 'arc lint --output json | jq . -srcM > lint.json'
-      }
-      post {
-	always {
-	  sh """
-             ./test/ci/scripts/hbm send-arc-lint -f lint.json
-             rm lint.json
-             """
+	script {
+	  try {
+            sh 'arc lint --output json --rev ${COMMIT_ID}^ | jq . -srM | lint.json'
+	  }
+	  catch (exc) {
+      	    sh """
+               ./test/ci/scripts/hbm send-arc-lint -f lint.json
+               rm lint.json
+               """
+	    currentBuild.result = 'UNSTABLE'
+	  }
 	}
       }
     }
