@@ -110,6 +110,6 @@ class Harbormaster:
         self._send_message(Results.PASS)
 
     def failed(self):
-        self._send_message(Results.PASS)
+        self._send_message(Results.FAIL)
 
     
