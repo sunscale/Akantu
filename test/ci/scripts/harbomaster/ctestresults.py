@@ -30,18 +30,14 @@ class CTestResults:
                     if self.reason == "Timeout":
                         self.status = Results.BROKEN
                     else:
-                        self.reason = "{0} with exit code [{1}]".format(
+                        self.reason = "{0} with exit code [{1}]\nSTDOUT:\n{2}".format(
                             self.reason,
-                            element.find("./Results/NamedMeasurement[@name='Exit Value']/Value").text)
+                            element.find("./Results/NamedMeasurement[@name='Exit Value']/Value").text,
+                            '\n'.join((el.text for el in element.findall("./Results/Measurement/Value"))),
+                        )
                 
-            def __str__(self):
-                return f'{self._name}: {self._status} in {self._duration}'
-
         test = next(self._tests)
-        #print(test.find('Name'))
-        #while not test.find('Name'):
-        #    test = next(self._tests)
-            
+                    
         return Test(test)
 
     def __exit__(self, exc_type, exc_value, traceback):

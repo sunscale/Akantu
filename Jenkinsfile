@@ -25,6 +25,19 @@ pipeline {
     }
   }
   stages {
+    stage('Lint') {
+      steps {
+        sh 'arc lint --output json | jq . -srcM > lint.json'
+      }
+      post {
+	always {
+	  sh """
+             ./test/ci/scripts/hbm send-arc-lint -f lint.json
+             rm lint.json
+             """
+	}
+      }
+    }
     stage('Configure') {
       steps {
         sh """

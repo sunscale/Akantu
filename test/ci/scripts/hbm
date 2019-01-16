@@ -21,6 +21,14 @@ def send_ctest_results(ctx, filename):
         _hbm.send_unit_tests(tests)
 
 @hbm.command()
+@click.option('-f', '--filename')
+@click.pass_context
+def send_arc_lint(ctx, filename):
+    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+    with harbomaster.ARCLintJson(filename) as tests:
+        _hbm.send_lint(tests)
+        
+@hbm.command()
 @click.option('-k', '--key')
 @click.option('-u', '--uri')
 @click.option('-l', '--label')
