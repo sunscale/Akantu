@@ -21,6 +21,6 @@ def export(definition):
     return definition
 
 
-from . import ctestresults  
-from . import arclint       
-from . import hbm
+from . import ctestresults  # noqa
+from . import arclint       # noqa
+from . import hbm           # noqa

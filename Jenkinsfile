@@ -30,7 +30,12 @@ pipeline {
       steps {
 	script {
 	  try {
-            sh 'arc lint --output json --rev ${COMMIT_ID}^ | jq . -srM | tee lint.json'
+	    sh """
+               arc lint --output json --rev HEAD^${}^ | jq . -srM | tee lint.json
+               if [ -n "$(grep '\[\]' lint.json)" ]; then
+                  exit 1
+               fi
+               """
 	  }
 	  catch (exc) {
       	    sh """
