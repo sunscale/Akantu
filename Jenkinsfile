@@ -28,23 +28,10 @@ pipeline {
   stages {
     stage('Lint') {
       steps {
-	script {
-	  try {
-	    sh """
-               arc lint --output json --rev \${GIT_PREVIOUS_COMMIT}^1 | jq . -srM | tee lint.json
-               if [ -n "$(grep '\[\]' lint.json)" ]; then
-                  exit 1
-               fi
-               """
-	  }
-	  catch (exc) {
-      	    sh """
-               ./test/ci/scripts/hbm send-arc-lint -f lint.json
-               rm lint.json
-               """
-	    currentBuild.result = 'UNSTABLE'
-	  }
-	}
+	sh """
+           arc lint --output json --rev ${GIT_PREVIOUS_COMMIT}^1 | jq . -srM | tee lint.json
+           ./test/ci/scripts/hbm send-arc-lint -f lint.json
+           """
       }
     }
     stage('Configure') {
