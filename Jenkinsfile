@@ -31,7 +31,7 @@ pipeline {
 	script {
 	  try {
 	    sh """
-               arc lint --output json --rev HEAD^${}^ | jq . -srM | tee lint.json
+               arc lint --output json --rev ${GIT_PREVIOUS_COMMIT}^1 | jq . -srM | tee lint.json
                if [ -n "$(grep '\[\]' lint.json)" ]; then
                   exit 1
                fi
