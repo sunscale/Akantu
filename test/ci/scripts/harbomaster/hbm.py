@@ -1,5 +1,6 @@
 from phabricator import Phabricator
 import yaml
+import base64
 from . import export
 from .results import Results
 
@@ -131,4 +132,24 @@ class Harbormaster:
     def failed(self):
         self._send_message(Results.FAIL)
 
-    
+    def upload_file(self, filename, name, view_phid=None):
+        with open(filename, 'rb') as f:
+            data = f.read()
+            base64_data = base64.b64encode(data)
+            _msg = {
+                'data_base64': base64_data.decode('ascii'),
+                'name': filename,
+                }
+            if view_phid:
+                _msg['viewPolicy'] = view_phid
+
+                print(_msg)
+            _res = self.__phab.file.upload(**_msg)
+
+            self.__phab.harbormaster.createartifact(
+                buildTargetPHID=self.__phid,
+                artifactType='file',
+                artifactKey=name,
+                artifactData={
+                    'filePHID': _res.response
+                })

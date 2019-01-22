@@ -43,18 +43,24 @@ pipeline {
               -DAKANTU_IMPLICIT:BOOL=TRUE \
               -DAKANTU_PARALLEL:BOOL=TRUE \
               -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
-              -DAKANTU_TESTS:BOOL=TRUE ..
+              -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
         """
       }
       post {
 	failure {
+	  uploadArtifact('configure.txt', 'Configure')
 	  deleteDir()
 	}
       }
     }
     stage('Compile') {
       steps {
-	sh 'make -C build/src || true'
+	sh 'make -C build/src |tee compilation.txt || true'
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation.txt', 'Compilation')
+	}
       }
     }
 
@@ -66,13 +72,23 @@ pipeline {
 
     stage('Compile python') {
       steps {
-        sh 'make -C build/python || true'
+        sh 'make -C build/python | tee compilation_python.txt || true'
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation_python.txt', 'Compilation_Python')
+	}
       }
     }
 
     stage('Compile tests') {
       steps {
-        sh 'make -C build/test || true'
+        sh 'make -C build/test | tee compilation_test.txt || true'
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation_test.txt', 'Compilation_Tests')
+	}
       }
     }
 
@@ -142,14 +158,18 @@ pipeline {
 }
 
 def failed() {
-    sh "./test/ci/scripts/hbm failed"
+  sh "./test/ci/scripts/hbm failed"
 }
 
 def passed() {
-    sh "./test/ci/scripts/hbm passed"
+  sh "./test/ci/scripts/hbm passed"
 }
 
-def createArtifact(artefact) {
+def createArtifact(artifact) {
   sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
-  sh "./test/ci/scripts/hbm send-ctest-results -f ${artefact}"
+  sh "./test/ci/scripts/hbm send-ctest-results -f ${artifact}"
+}
+
+def uploadArtifact(name, artifact) {
+  sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v PHID-PROJ-5eqyu6ooyjktagbhf473"
 }
