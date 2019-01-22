@@ -128,9 +128,8 @@ protected:
   }
 
 #ifndef SWIG
-  template <class Other,
-            typename = std::enable_if_t<
-                tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other, typename = std::enable_if_t<
+                             tensors::is_copyable<TensorProxy, Other>::value>>
   explicit TensorProxy(const Other & other) {
     this->values = other.storage();
     for (UInt i = 0; i < ndim; ++i)
@@ -141,9 +140,9 @@ public:
   using RetType = _RetType;
 
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim,
-                        "This tensor has only " << ndim << " dimensions, not "
-                                                << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
+                                                          << " dimensions, not "
+                                                          << (i + 1));
     return n[i];
   }
 
@@ -157,9 +156,8 @@ public:
   T * storage() const { return values; }
 
 #ifndef SWIG
-  template <class Other,
-            typename = std::enable_if_t<
-                tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other, typename = std::enable_if_t<
+                             tensors::is_copyable<TensorProxy, Other>::value>>
   inline TensorProxy & operator=(const Other & other) {
     AKANTU_DEBUG_ASSERT(
         other.size() == this->size(),
@@ -442,9 +440,9 @@ public:
   T * storage() const { return values; }
   UInt size() const { return _size; }
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim,
-                        "This tensor has only " << ndim << " dimensions, not "
-                                                << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
+                                                          << " dimensions, not "
+                                                          << (i + 1));
     return n[i];
   };
   /* ------------------------------------------------------------------------ */
@@ -657,7 +655,8 @@ public:
   inline Vector<T> & operator/=(Real x) { return parent::operator/=(x); }
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(const Vector<T> & vect) {
-    AKANTU_DEBUG_ASSERT(this->_size == vect._size, "The vectors have non matching sizes");
+    AKANTU_DEBUG_ASSERT(this->_size == vect._size,
+                        "The vectors have non matching sizes");
     T * a = this->storage();
     T * b = vect.storage();
     for (UInt i = 0; i < this->_size; ++i)
@@ -922,6 +921,43 @@ public:
     return VectorProxy<T>(this->values + j * this->n[0], this->n[0]);
   }
 
+#ifndef SWIG
+private:
+  template <typename Mat> class col_iterator {
+  public:
+    col_iterator(Mat & mat, UInt col) : mat(mat), col(col) {}
+    decltype(auto) operator*() { return mat(col); }
+    decltype(auto) operator++() {
+      ++col;
+      AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
+      return *this;
+    }
+    decltype(auto) operator++(int) {
+      auto tmp = *this;
+      ++col;
+      AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
+      return tmp;
+    }
+    bool operator!=(const col_iterator & other) { return col != other.col(); }
+
+  private:
+    Mat & mat;
+    UInt col;
+  };
+
+public:
+  decltype(auto) begin() { return col_iterator<Matrix<T>>(*this, 0); }
+  decltype(auto) begin() const {
+    return col_iterator<const Matrix<T>>(*this, 0);
+  }
+
+  decltype(auto) end() { return col_iterator<Matrix<T>>(*this, this->cols()); }
+  decltype(auto) end() const {
+    return col_iterator<const Matrix<T>>(*this, this->cols());
+  }
+#endif
+
+  /* ------------------------------------------------------------------------ */
   inline void block(const Matrix & block, UInt pos_i, UInt pos_j) {
     AKANTU_DEBUG_ASSERT(pos_i + block.rows() <= rows(),
                         "The block size or position are not correct");
