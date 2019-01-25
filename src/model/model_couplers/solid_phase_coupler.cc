@@ -117,7 +117,7 @@ template<typename SolidType, typename PhaseType>
 void SolidPhaseCoupler<SolidType, PhaseType>::solve() {
 
   this->convergence = true;
-  UInt iter = 0;
+  UInt iter = 9;
   UInt max_iter = 10;
   
   while(iter < max_iter) {
@@ -144,11 +144,11 @@ void SolidPhaseCoupler<SolidType, PhaseType>::solve() {
     //auto d_new = phase.getDOFManager().getDOFs("damage");
     //auto d_old = phase.getDOFManager().getPreviousDOFs("damage");
    
-    this->checkConvergence(u_new, u_old, d_new, d_old);
+    //this->checkConvergence(u_new, u_old, d_new, d_old);
     
-    if (this->convergence) {
-      break;
-    }
+    //if (this->convergence) {
+    //  break;
+    //}
 
     iter++;
   }

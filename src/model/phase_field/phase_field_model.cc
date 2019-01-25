@@ -278,8 +278,15 @@ void PhaseFieldModel::beforeSolveStep() {
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::afterSolveStep() {
-  for (auto & dam : *damage) {
-    dam = std::min(1., 2*dam -dam * dam);
+
+  for (auto && values : zip(*damage,
+			    *previous_damage)) {
+    auto & dam      = std::get<0>(values);
+    auto & prev_dam = std::get<1>(values);
+
+    dam -= prev_dam;
+    dam = std::min(1., 2* dam -dam * dam);
+    prev_dam = dam;
   }
 }
   
