@@ -55,7 +55,10 @@ pipeline {
     }
     stage('Compile') {
       steps {
-	sh 'make -C build/src | tee compilation.txt'
+	sh '''
+           set pipefail,errexit
+           make -C build/src | tee compilation.txt
+           '''
       }
       post {
 	failure {
@@ -72,7 +75,10 @@ pipeline {
 
     stage('Compile python') {
       steps {
-        sh 'make -C build/python | tee compilation_python.txt'
+        sh '''
+           set pipefail,errexit
+           make -C build/python | tee compilation_python.txt
+           '''
       }
       post {
 	failure {
@@ -83,7 +89,10 @@ pipeline {
 
     stage('Compile tests') {
       steps {
-        sh 'make -C build/test | tee compilation_test.txt'
+        sh '''
+           set pipefail,errexit
+           make -C build/test | tee compilation_test.txt
+           '''
       }
       post {
 	failure {
