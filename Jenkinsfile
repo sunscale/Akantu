@@ -36,7 +36,7 @@ pipeline {
     }
     stage('Configure') {
       steps {
-        sh """
+        sh """#!/bin/bash
            set -o pipefail
            mkdir -p build
            cd build
@@ -56,7 +56,7 @@ pipeline {
     }
     stage('Compile') {
       steps {
-	sh '''
+	sh '''#!/bin/bash
            set -o pipefail
            make -C build/src | tee compilation.txt
            '''
@@ -76,7 +76,7 @@ pipeline {
 
     stage('Compile python') {
       steps {
-        sh '''
+        sh '''#!/bin/bash
            set -o pipefail
            make -C build/python | tee compilation_python.txt
            '''
@@ -90,7 +90,7 @@ pipeline {
 
     stage('Compile tests') {
       steps {
-        sh '''
+        sh '''#!/bin/bash
            set -o pipefail
            make -C build/test | tee compilation_test.txt
            '''
@@ -180,6 +180,6 @@ def createArtifact(artifact) {
   sh "./test/ci/scripts/hbm send-ctest-results -f ${artifact}"
 }
 
-def uploadArtifact(name, artifact) {
+def uploadArtifact(artifact, name) {
   sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v PHID-PROJ-5eqyu6ooyjktagbhf473"
 }
