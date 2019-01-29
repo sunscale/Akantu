@@ -37,14 +37,15 @@ pipeline {
     stage('Configure') {
       steps {
         sh """
-        mkdir -p build
-        cd build
-        cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
-              -DAKANTU_IMPLICIT:BOOL=TRUE \
-              -DAKANTU_PARALLEL:BOOL=TRUE \
-              -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
-              -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
-        """
+           set -o pipefail
+           mkdir -p build
+           cd build
+           cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
+                 -DAKANTU_IMPLICIT:BOOL=TRUE \
+                 -DAKANTU_PARALLEL:BOOL=TRUE \
+                 -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
+                 -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
+           """
       }
       post {
 	failure {
@@ -56,9 +57,14 @@ pipeline {
     stage('Compile') {
       steps {
 	sh '''
-           set pipefail,errexit
+           set -o pipefail
            make -C build/src | tee compilation.txt
            '''
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation.txt', 'Compilation')
+	}
       }
     }
 
@@ -71,18 +77,28 @@ pipeline {
     stage('Compile python') {
       steps {
         sh '''
-           set pipefail,errexit
+           set -o pipefail
            make -C build/python | tee compilation_python.txt
            '''
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation_python.txt', 'Compilation_Python')
+	}
       }
     }
 
     stage('Compile tests') {
       steps {
         sh '''
-           set pipefail,errexit
+           set -o pipefail
            make -C build/test | tee compilation_test.txt
            '''
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation_test.txt', 'Compilation_Tests')
+	}
       }
     }
 
@@ -94,22 +110,25 @@ pipeline {
           #source ./akantu_environement.sh
         
           ctest -T test --no-compress-output || true
+        '''
+      }
+      post {
+	always {
+	  script {
+	    def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
+	    def TAG_ = TAG.trim()
 
-	  TAG=`head -n 1 < build/Testing/TAG`
-          if [ -e build/Testing/\${TAG}/Test.xml]; then
-            cp build/Testing/\${TAG}/Test.xml CTestResults.xml
-	  fi
-          '''
+	    if (fileExists("build/Testing/${TAG}/Test.xml")) {
+	      sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
+	    }
+	  }
+	}
       }
     }
   }
 
   post {
     always {
-      uploadArtifact('compilation.txt', 'Compilation')
-      uploadArtifact('compilation_python.txt', 'Compilation_Python')
-      uploadArtifact('compilation_test.txt', 'Compilation_Tests')
-      
       createArtifact("./CTestResults.xml")
       
       step([$class: 'XUnitBuilder',
