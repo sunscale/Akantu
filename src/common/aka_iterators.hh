@@ -128,6 +128,27 @@ namespace iterators {
   public:
     explicit ZipIterator(tuple_t iterators) : iterators(std::move(iterators)) {}
 
+    template <class iterator_category_ = iterator_category,
+              std::enable_if_t<std::is_same<
+                  std::common_type_t<iterator_category_,
+                                     std::bidirectional_iterator_tag>,
+                  std::bidirectional_iterator_tag>::value> * = nullptr>
+    ZipIterator & operator--() {
+      tuple::foreach ([](auto && it) { --it; }, iterators);
+      return *this;
+    }
+
+    template <class iterator_category_ = iterator_category,
+              std::enable_if_t<std::is_same<
+                  std::common_type_t<iterator_category_,
+                                     std::bidirectional_iterator_tag>,
+                  std::bidirectional_iterator_tag>::value> * = nullptr>
+    ZipIterator operator--(int a) {
+      auto cpy = *this;
+      this->operator--(a);
+      return cpy;
+    }
+
     // input iterator ++it
     ZipIterator & operator++() {
       tuple::foreach ([](auto && it) { ++it; }, iterators);
@@ -137,7 +158,7 @@ namespace iterators {
     // input iterator it++
     ZipIterator operator++(int) {
       auto cpy = *this;
-      tuple::foreach ([](auto && it) { ++it; }, iterators);
+      this->operator++();
       return cpy;
     }
 
@@ -150,6 +171,17 @@ namespace iterators {
     decltype(auto) operator*() {
       return tuple::transform([](auto && it) -> decltype(auto) { return *it; },
                               iterators);
+    }
+
+    // random iterator it[idx]
+    template <class iterator_category_ = iterator_category,
+              std::enable_if_t<std::is_same<
+                  std::common_type_t<iterator_category_,
+                                     std::random_access_iterator_tag>,
+                  std::random_access_iterator_tag>::value> * = nullptr>
+    decltype(auto) operator[](std::size_t idx) {
+      return tuple::transform(
+          [idx](auto && it) -> decltype(auto) { return it[idx]; }, iterators);
     }
 
     bool operator==(const ZipIterator & other) const {
@@ -431,6 +463,98 @@ decltype(auto) make_dereference_adaptor(container_t && cont) {
       [](auto && value) -> decltype(*value) { return *value; });
 }
 
+/* -------------------------------------------------------------------------- */
+namespace iterators {
+  template <class filter_iterator_t, class container_iterator_t>
+  class RandomAccessFilterIterator {
+  public:
+    using value_type =
+        decltype(std::declval<container_iterator_t>().operator[](0));
+    using difference_type = typename filter_iterator_t::difference_type;
+    using pointer = std::decay_t<value_type> *;
+    using reference = value_type &;
+    using iterator_category = typename filter_iterator_t::iterator_category;
+
+    RandomAccessFilterIterator(filter_iterator_t && filter_it,
+                               container_iterator_t && container_begin)
+        : filter_it(std::forward<filter_iterator_t>(filter_it)),
+          container_begin(std::forward<container_iterator_t>(container_begin)) {}
+
+    RandomAccessFilterIterator(const RandomAccessFilterIterator &) = default;
+
+    RandomAccessFilterIterator & operator++() {
+      ++filter_it;
+      return *this;
+    }
+
+    decltype(auto) operator*() const { return container_begin[*filter_it]; }
+
+    bool operator==(const RandomAccessFilterIterator & other) const {
+      return (filter_it == other.filter_it) and
+             (container_begin == other.container_begin);
+    }
+
+    bool operator!=(const RandomAccessFilterIterator & other) const {
+      return not operator==(other);
+    }
+
+  private:
+    filter_iterator_t filter_it;
+    container_iterator_t container_begin;
+  };
+
+  template <class filter_iterator_t, class container_iterator_t>
+  decltype(auto)
+  make_random_access_filter_iterator(filter_iterator_t && filter_it,
+                                     container_iterator_t && container_begin) {
+    return RandomAccessFilterIterator<filter_iterator_t, container_iterator_t>(
+        std::forward<filter_iterator_t>(filter_it),
+        std::forward<container_iterator_t>(container_begin));
+  }
+} // namespace iterators
+
+namespace containers {
+  template <class filter_t, class container_t> class RandomAccessFilterAdaptor {
+  public:
+    RandomAccessFilterAdaptor(filter_t && filter, container_t && container)
+        : filter(std::forward<filter_t>(filter)),
+          container(std::forward<container_t>(container)) {}
+
+    decltype(auto) begin() const {
+      return iterators::make_random_access_filter_iterator(filter.begin(),
+                                                           container.begin());
+    }
+    decltype(auto) begin() {
+      return iterators::make_random_access_filter_iterator(filter.begin(),
+                                                           container.begin());
+    }
+
+    decltype(auto) end() const {
+      return iterators::make_random_access_filter_iterator(filter.end(),
+                                                           container.begin());
+    }
+    decltype(auto) end() {
+      return iterators::make_random_access_filter_iterator(filter.end(),
+                                                           container.begin());
+    }
+
+  private:
+    filter_t filter;
+    container_t container;
+  };
+} // namespace containers
+
+template <class filter_t, class container_t,
+          std::enable_if_t<std::is_same<
+              std::random_access_iterator_tag,
+			     typename std::decay_t<container_t>::iterator::iterator_category>::value> * = nullptr>
+decltype(auto) make_filtered_adaptor(filter_t && filter, container_t && container) {
+  return containers::RandomAccessFilterAdaptor<filter_t, container_t>(
+      std::forward<filter_t>(filter), std::forward<container_t>(container));
+}
+
+
+
 } // namespace akantu
 
 namespace std {
@@ -445,7 +569,6 @@ struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
   using reference =
       typename ::akantu::iterators::ZipIterator<Its...>::reference;
 };
-
 
 } // namespace std
 
