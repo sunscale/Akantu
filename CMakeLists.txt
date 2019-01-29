@@ -57,7 +57,11 @@ enable_language(CXX)
 set(AKANTU_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules")
+
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries.")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
+  "Enable/Disable output of compile commands during generation" FORCE)
+
 mark_as_advanced(BUILD_SHARED_LIBS)
 
 if(NOT AKANTU_TARGETS_EXPORT)
