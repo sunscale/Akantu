@@ -938,7 +938,7 @@ private:
       AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
       return tmp;
     }
-    bool operator!=(const col_iterator & other) { return col != other.col(); }
+    bool operator!=(const col_iterator & other) { return col != other.col; }
 
   private:
     Mat & mat;
