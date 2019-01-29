@@ -60,11 +60,6 @@ pipeline {
            make -C build/src | tee compilation.txt
            '''
       }
-      post {
-	failure {
-	  uploadArtifact('compilation.txt', 'Compilation')
-	}
-      }
     }
 
     stage ('Warnings gcc') {
@@ -80,11 +75,6 @@ pipeline {
            make -C build/python | tee compilation_python.txt
            '''
       }
-      post {
-	failure {
-	  uploadArtifact('compilation_python.txt', 'Compilation_Python')
-	}
-      }
     }
 
     stage('Compile tests') {
@@ -93,11 +83,6 @@ pipeline {
            set pipefail,errexit
            make -C build/test | tee compilation_test.txt
            '''
-      }
-      post {
-	failure {
-	  uploadArtifact('compilation_test.txt', 'Compilation_Tests')
-	}
       }
     }
 
@@ -109,25 +94,22 @@ pipeline {
           #source ./akantu_environement.sh
         
           ctest -T test --no-compress-output || true
-        '''
-      }
-      post {
-	always {
-	  script {
-	    def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
-	    def TAG_ = TAG.trim()
 
-	    if (fileExists("build/Testing/${TAG}/Test.xml")) {
-	      sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
-	    }
-	  }
-	}
+	  TAG=`head -n 1 < build/Testing/TAG`
+          if [ -e build/Testing/\${TAG}/Test.xml]; then
+            cp build/Testing/\${TAG}/Test.xml CTestResults.xml
+	  fi
+          '''
       }
     }
   }
 
   post {
     always {
+      uploadArtifact('compilation.txt', 'Compilation')
+      uploadArtifact('compilation_python.txt', 'Compilation_Python')
+      uploadArtifact('compilation_test.txt', 'Compilation_Tests')
+      
       createArtifact("./CTestResults.xml")
       
       step([$class: 'XUnitBuilder',
