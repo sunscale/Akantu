@@ -23,8 +23,7 @@
 #===============================================================================
 
 add_subdirectory(patch_tests)
-add_akantu_test(test_model_solver "Test for the solvers")
+add_akantu_test(test_common "Tests the common part of the models")
 add_akantu_test(test_solid_mechanics_model "Test for the solid mechanics model")
 add_akantu_test(test_structural_mechanics_model "Test for the structural mechanics model")
-add_akantu_test(test_non_local_toolbox "Test of the functionalities in the non-local toolbox")
 add_akantu_test(test_heat_transfer_model "Test heat transfer model")

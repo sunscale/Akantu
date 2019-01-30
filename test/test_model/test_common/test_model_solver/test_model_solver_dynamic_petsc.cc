@@ -809,14 +809,14 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 
   nodes.resize(nb_nodes);
 
-  auto & all = mesh.createNodeGroup("all_nodes");
+  //auto & all = mesh.createNodeGroup("all_nodes");
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     nodes(n, _x) = n * (1. / (nb_nodes - 1));
-    all.add(n);
+    //all.add(n);
   }
 
-  mesh.createElementGroupFromNodeGroup("all", "all_nodes");
+  //mesh.createElementGroupFromNodeGroup("all", "all_nodes");
 
   conn.resize(nb_nodes - 1);
   for (UInt n = 0; n < nb_nodes - 1; ++n) {
@@ -824,15 +824,15 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
     conn(n, 1) = n + 1;
   }
 
-  Array<UInt> & conn_points = mesh_accessor.getConnectivity(_point_1);
-  conn_points.resize(2);
+  // Array<UInt> & conn_points = mesh_accessor.getConnectivity(_point_1);
+  // conn_points.resize(2);
 
-  conn_points(0, 0) = 0;
-  conn_points(1, 0) = nb_nodes - 1;
+  // conn_points(0, 0) = 0;
+  // conn_points(1, 0) = nb_nodes - 1;
 
-  auto & border = mesh.createElementGroup("border", 0);
-  border.add({_point_1, 0, _not_ghost}, true);
-  border.add({_point_1, 1, _not_ghost}, true);
+  // auto & border = mesh.createElementGroup("border", 0);
+  // border.add({_point_1, 0, _not_ghost}, true);
+  // border.add({_point_1, 1, _not_ghost}, true);
 
   mesh_accessor.makeReady();
 }
