@@ -104,6 +104,20 @@ namespace tuple {
         std::make_index_sequence<
             std::tuple_size<std::decay_t<Tuple>>::value>{});
   }
+
+  namespace details {
+    template <class Tuple, std::size_t... Is>
+    decltype(auto) flatten(Tuple && tuples, std::index_sequence<Is...>) {
+      return std::tuple_cat(std::get<Is>(tuples)...);
+    }
+  } // namespace details
+
+  template <class Tuple> decltype(auto) flatten(Tuple && tuples) {
+    return details::flatten(std::forward<Tuple>(tuples),
+                            std::make_index_sequence<
+                                std::tuple_size<std::decay_t<Tuple>>::value>());
+  }
+
 } // namespace tuple
 
 /* -------------------------------------------------------------------------- */
@@ -234,12 +248,20 @@ namespace containers {
                            std::forward<containers_t>(containers)));
     }
 
+    // using iterator = iterators::ZipIterator<typename
+    // std::decay_t<Containers>::iterator...>; using const_iterator =
+    // iterators::ZipIterator<typename
+    // std::decay_t<Containers>::const_iterator...>;
   private:
     containers_t containers;
   };
 
   template <class Iterator> class Range {
   public:
+    using iterator = Iterator;
+    // ugly trick
+    using const_iterator = Iterator;
+
     explicit Range(Iterator && it1, Iterator && it2)
         : iterators(std::forward<Iterator>(it1), std::forward<Iterator>(it2)) {}
 
@@ -381,6 +403,7 @@ namespace iterators {
       return *this;
     }
 
+    decltype(auto) operator*() { return op(*it); }
     decltype(auto) operator*() const { return op(*it); }
 
     bool operator==(const transform_adaptor_iterator & other) const {
@@ -409,8 +432,9 @@ namespace containers {
   template <class container_t, class operator_t>
   class TransformIteratorAdaptor {
   public:
-    using const_iterator = typename std::decay_t<container_t>::const_iterator;
-    using iterator = typename std::decay_t<container_t>::iterator;
+    // using const_iterator = typename
+    // std::decay_t<container_t>::const_iterator; using iterator = typename
+    // std::decay_t<container_t>::iterator;
 
     TransformIteratorAdaptor(container_t && cont, operator_t && op)
         : cont(std::forward<container_t>(cont)),
@@ -463,6 +487,13 @@ decltype(auto) make_dereference_adaptor(container_t && cont) {
       [](auto && value) -> decltype(*value) { return *value; });
 }
 
+template <class... zip_container_t>
+decltype(auto) make_zip_cat(zip_container_t &&... cont) {
+  return make_transform_adaptor(
+      zip(std::forward<zip_container_t>(cont)...),
+      [](auto && value) { return tuple::flatten(value); });
+}
+
 /* -------------------------------------------------------------------------- */
 namespace iterators {
   template <class filter_iterator_t, class container_iterator_t>
@@ -478,7 +509,8 @@ namespace iterators {
     RandomAccessFilterIterator(filter_iterator_t && filter_it,
                                container_iterator_t && container_begin)
         : filter_it(std::forward<filter_iterator_t>(filter_it)),
-          container_begin(std::forward<container_iterator_t>(container_begin)) {}
+          container_begin(std::forward<container_iterator_t>(container_begin)) {
+    }
 
     RandomAccessFilterIterator(const RandomAccessFilterIterator &) = default;
 
@@ -487,6 +519,7 @@ namespace iterators {
       return *this;
     }
 
+    decltype(auto) operator*() { return container_begin[*filter_it]; }
     decltype(auto) operator*() const { return container_begin[*filter_it]; }
 
     bool operator==(const RandomAccessFilterIterator & other) const {
@@ -544,16 +577,17 @@ namespace containers {
   };
 } // namespace containers
 
-template <class filter_t, class container_t,
-          std::enable_if_t<std::is_same<
-              std::random_access_iterator_tag,
-			     typename std::decay_t<container_t>::iterator::iterator_category>::value> * = nullptr>
-decltype(auto) make_filtered_adaptor(filter_t && filter, container_t && container) {
+template <
+    class filter_t, class container_t,
+    std::enable_if_t<std::is_same<
+        std::random_access_iterator_tag,
+        typename std::decay_t<decltype(std::declval<container_t>().begin())>::
+            iterator_category>::value> * = nullptr>
+decltype(auto) make_filtered_adaptor(filter_t && filter,
+                                     container_t && container) {
   return containers::RandomAccessFilterAdaptor<filter_t, container_t>(
       std::forward<filter_t>(filter), std::forward<container_t>(container));
 }
-
-
 
 } // namespace akantu
 
