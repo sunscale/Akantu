@@ -121,7 +121,7 @@ public:
   template <typename Tensor>
   inline void
   receive(Tensor & values, Int sender, Int tag,
-          std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+          std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     return this->receiveImpl(values.storage(), values.size(), sender, tag);
   }
 
@@ -165,7 +165,7 @@ public:
   inline void
   send(const Tensor & values, Int receiver, Int tag,
        const CommunicationMode & mode = CommunicationMode::_auto,
-       std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+       std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     return this->sendImpl(values.storage(), values.size(), receiver, tag, mode);
   }
 
@@ -205,7 +205,7 @@ public:
   inline CommunicationRequest
   asyncSend(const Tensor & values, Int receiver, Int tag,
             const CommunicationMode & mode = CommunicationMode::_auto,
-            std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+            std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     return this->asyncSendImpl(values.storage(), values.size(), receiver, tag,
                                mode);
   }
@@ -239,7 +239,7 @@ public:
   }
 
   template <typename Tensor,
-            typename = std::enable_if_t<is_tensor<Tensor>::value>>
+            typename = std::enable_if_t<aka::is_tensor<Tensor>::value>>
   inline CommunicationRequest asyncReceive(Tensor & values, Int sender,
                                            Int tag) const {
     return this->asyncReceiveImpl(values.storage(), values.size(), sender, tag);
@@ -266,7 +266,7 @@ public:
   inline void
   allReduce(Tensor & values,
             SynchronizerOperation op = SynchronizerOperation::_sum,
-            std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+            std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     this->allReduceImpl(values.storage(), values.size(), op);
   }
 
@@ -288,7 +288,7 @@ public:
   template <typename Tensor>
   inline void
   scan(Tensor & values, SynchronizerOperation op,
-       std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+       std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     this->scanImpl(values.storage(), values.size(), op);
   }
 
@@ -311,7 +311,7 @@ public:
   inline void
   exclusiveScan(Tensor & values,
                 SynchronizerOperation op = SynchronizerOperation::_sum,
-                std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+                std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     this->exclusiveScanImpl(values.storage(), values.size(), op);
   }
 
@@ -330,7 +330,7 @@ public:
   }
 
   template <typename Tensor,
-            typename = std::enable_if_t<is_tensor<Tensor>::value>>
+            typename = std::enable_if_t<aka::is_tensor<Tensor>::value>>
   inline void allGather(Tensor & values) const {
     AKANTU_DEBUG_ASSERT(values.size() / UInt(psize) > 0,
                         "The vector size is not correct");
@@ -355,7 +355,7 @@ public:
   template <typename Tensor>
   inline void
   gather(Tensor & values, int root = 0,
-         std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+         std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     this->gatherImpl(values.storage(), values.getNbComponent(), root);
   }
   template <typename T>
@@ -368,7 +368,7 @@ public:
   template <typename Tensor, typename T>
   inline void
   gather(Tensor & values, Array<T> & gathered,
-         std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+         std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     AKANTU_DEBUG_ASSERT(values.size() == gathered.getNbComponent(),
                         "The array size is not correct");
     gathered.resize(psize);

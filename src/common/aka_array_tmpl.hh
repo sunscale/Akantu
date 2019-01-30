@@ -291,7 +291,7 @@ public:
 #ifndef SWIG
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
   inline void push_back(const C<T> & new_elem) {
     AKANTU_DEBUG_ASSERT(
         nb_component == new_elem.size(),
@@ -1295,17 +1295,17 @@ public:
   const_iterator(const const_iterator & it) = default;
   const_iterator(const_iterator && it) = default;
 
-  template <typename P, typename = std::enable_if_t<not is_tensor<P>::value>>
+  template <typename P, typename = std::enable_if_t<not aka::is_tensor<P>::value>>
   const_iterator(P * data) : parent(data) {}
 
   template <typename UP_P, typename = std::enable_if_t<
-                               is_tensor<typename UP_P::element_type>::value>>
+                               aka::is_tensor<typename UP_P::element_type>::value>>
   const_iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
 
   const_iterator & operator=(const const_iterator & it) = default;
 };
 
-template <class T, class R, bool is_tensor_ = is_tensor<R>::value>
+template <class T, class R, bool is_tensor_ = aka::is_tensor<R>::value>
 struct ConstConverterIteratorHelper {
   using const_iterator = typename Array<T>::template const_iterator<R>;
   using iterator = typename Array<T>::template iterator<R>;
@@ -1340,11 +1340,11 @@ public:
   iterator(const iterator & it) = default;
   iterator(iterator && it) = default;
 
-  template <typename P, typename = std::enable_if_t<not is_tensor<P>::value>>
+  template <typename P, typename = std::enable_if_t<not aka::is_tensor<P>::value>>
   iterator(P * data) : parent(data) {}
 
   template <typename UP_P, typename = std::enable_if_t<
-                               is_tensor<typename UP_P::element_type>::value>>
+                               aka::is_tensor<typename UP_P::element_type>::value>>
   iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
 
   iterator & operator=(const iterator & it) = default;

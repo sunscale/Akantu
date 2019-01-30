@@ -481,16 +481,6 @@ inline std::ostream & operator<<(std::ostream & stream, GhostType type);
 #define AKANTU_INCLUDE_INLINE_IMPL
 
 /* -------------------------------------------------------------------------- */
-/* Type traits                                                                */
-/* -------------------------------------------------------------------------- */
-struct TensorTrait {};
-/* -------------------------------------------------------------------------- */
-template <typename T> using is_tensor = std::is_base_of<TensorTrait, T>;
-/* -------------------------------------------------------------------------- */
-template <typename T> using is_scalar = std::is_arithmetic<T>;
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
 #define AKANTU_SET_MACRO(name, variable, type)                                 \
   inline void set##name(type variable) { this->variable = variable; }
 
@@ -544,7 +534,40 @@ inline std::string trim(const std::string & to_trim, char c);
 template <typename T> std::string printMemorySize(UInt size);
 /* -------------------------------------------------------------------------- */
 
+struct TensorTrait {};
 } // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+/* Type traits                                                                */
+/* -------------------------------------------------------------------------- */
+namespace aka {
+
+/* ------------------------------------------------------------------------ */
+template <typename T> using is_tensor = std::is_base_of<akantu::TensorTrait, T>;
+/* ------------------------------------------------------------------------ */
+template <typename T> using is_scalar = std::is_arithmetic<T>;
+/* ------------------------------------------------------------------------ */
+template <typename R, typename T> bool is_of_type(T && t) {
+  static_assert(conjunction<std::is_base_of<std::decay_t<T>, R>,
+                            std::is_polymorphic<std::decay_t<T>>,
+                            std::is_reference<T>>::value,
+                "Type T and R are not valid for a as_type conversion");
+  return (
+      dynamic_cast<std::add_pointer_t<
+          std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
+                             std::add_const_t<R>, R>>>(&t) != nullptr);
+}
+/* ------------------------------------------------------------------------ */
+template <typename R, typename T> decltype(auto) as_type(T && t) {
+  static_assert(conjunction<std::is_base_of<std::decay_t<T>, std::decay_t<R>>,
+                            std::is_polymorphic<std::decay_t<T>>,
+                            std::is_reference<T>>::value,
+                "Type T and R are not valid for a as_type conversion");
+  return dynamic_cast<std::add_lvalue_reference_t<
+      std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
+                         std::add_const_t<R>, R>>>(t);
+}
+} // namespace aka
 
 #include "aka_fwd.hh"
 
@@ -557,6 +580,7 @@ Parser & getStaticParser();
 
 /// get access to the user part of the internal input file parser
 const ParserSection & getUserParser();
+
 } // namespace akantu
 
 #include "aka_common_inline_impl.cc"
