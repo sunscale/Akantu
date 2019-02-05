@@ -827,6 +827,46 @@ inline bool Vector<UInt>::equal(const Vector<UInt> & v,
   return i == this->_size;
 }
 
+/* -------------------------------------------------------------------------- */
+namespace types {
+  namespace details {
+    template <typename Mat> class column_iterator {
+    public:
+      using difference_type = std::ptrdiff_t;
+      using value_type = decltype(std::declval<Mat>().operator()(0));
+      using pointer = value_type *;
+      using reference = value_type &;
+      using iterator_category = std::input_iterator_tag;
+
+      
+      column_iterator(Mat & mat, UInt col) : mat(mat), col(col) {}
+      decltype(auto) operator*() { return mat(col); }
+      decltype(auto) operator++() {
+        ++col;
+        AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
+        return *this;
+      }
+      decltype(auto) operator++(int) {
+        auto tmp = *this;
+        ++col;
+        AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
+        return tmp;
+      }
+      bool operator!=(const column_iterator & other) const {
+        return col != other.col;
+      }
+
+      bool operator==(const column_iterator & other) const {
+        return not operator!=(other);
+      }
+
+    private:
+      Mat & mat;
+      UInt col;
+    };
+  } // namespace details
+} // namespace types
+
 /* ------------------------------------------------------------------------ */
 /* Matrix                                                                   */
 /* ------------------------------------------------------------------------ */
@@ -922,38 +962,20 @@ public:
   }
 
 #ifndef SWIG
-private:
-  template <typename Mat> class col_iterator {
-  public:
-    col_iterator(Mat & mat, UInt col) : mat(mat), col(col) {}
-    decltype(auto) operator*() { return mat(col); }
-    decltype(auto) operator++() {
-      ++col;
-      AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
-      return *this;
-    }
-    decltype(auto) operator++(int) {
-      auto tmp = *this;
-      ++col;
-      AKANTU_DEBUG_ASSERT(col <= mat.cols(), "The iterator is out of bound");
-      return tmp;
-    }
-    bool operator!=(const col_iterator & other) { return col != other.col; }
-
-  private:
-    Mat & mat;
-    UInt col;
-  };
-
 public:
-  decltype(auto) begin() { return col_iterator<Matrix<T>>(*this, 0); }
+  decltype(auto) begin() {
+    return types::details::column_iterator<Matrix<T>>(*this, 0);
+  }
   decltype(auto) begin() const {
-    return col_iterator<const Matrix<T>>(*this, 0);
+    return types::details::column_iterator<const Matrix<T>>(*this, 0);
   }
 
-  decltype(auto) end() { return col_iterator<Matrix<T>>(*this, this->cols()); }
+  decltype(auto) end() {
+    return types::details::column_iterator<Matrix<T>>(*this, this->cols());
+  }
   decltype(auto) end() const {
-    return col_iterator<const Matrix<T>>(*this, this->cols());
+    return types::details::column_iterator<const Matrix<T>>(*this,
+                                                            this->cols());
   }
 #endif
 
@@ -1449,6 +1471,20 @@ public:
   using pointer = typename iterator::pointer;
   using reference = typename iterator::reference;
 };
+
+template <typename Mat>
+struct iterator_traits<::akantu::types::details::column_iterator<Mat>> {
+protected:
+  using iterator = ::akantu::types::details::column_iterator<Mat>;
+
+public:
+  using iterator_category = typename iterator::iterator_category;
+  using value_type = typename iterator::value_type;
+  using difference_type = typename iterator::difference_type;
+  using pointer = typename iterator::pointer;
+  using reference = typename iterator::reference;
+};
+
 } // namespace std
 
 #endif /* __AKANTU_AKA_TYPES_HH__ */
