@@ -143,9 +143,10 @@ class Harbormaster:
             if view_phid:
                 _msg['viewPolicy'] = view_phid
 
-                print(_msg)
-            _res = self.__phab.file.upload(**_msg)
 
+            _res = self.__phab.file.upload(**_msg)
+            
+            print(f"{_msg} -> {_res}")
             self.__phab.harbormaster.createartifact(
                 buildTargetPHID=self.__phid,
                 artifactType='file',
