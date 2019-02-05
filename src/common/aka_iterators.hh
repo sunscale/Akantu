@@ -198,6 +198,11 @@ namespace iterators {
           [idx](auto && it) -> decltype(auto) { return it[idx]; }, iterators);
     }
 
+    template <
+        class iterator_category_ = iterator_category,
+        std::enable_if_t<std::is_same<
+            std::common_type_t<iterator_category_, std::forward_iterator_tag>,
+            std::forward_iterator_tag>::value> * = nullptr>
     bool operator==(const ZipIterator & other) const {
       return not tuple::are_not_equal(iterators, other.iterators);
     }
@@ -297,7 +302,7 @@ namespace iterators {
     using pointer = T *;
     using reference = T &;
     using difference_type = size_t;
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = std::forward_iterator_tag;
 
     constexpr ArangeIterator(T value, T step) : value(value), step(step) {}
     constexpr ArangeIterator(const ArangeIterator &) = default;
@@ -383,6 +388,8 @@ inline constexpr decltype(auto) enumerate(Container && container,
   return zip(arange(start, stop), std::forward<Container>(container));
 }
 
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 namespace iterators {
   template <class iterator_t, class operator_t>
   class transform_adaptor_iterator {
