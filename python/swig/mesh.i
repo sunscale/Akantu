@@ -193,7 +193,7 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
       break;
     case 1 : full_array = new akantu::Array<akantu::Real>(model.getVelocity());
       break;
-    case 2 : full_array = new akantu::Array<akantu::Real>(model.getForce());
+    case 2 : full_array = new akantu::Array<akantu::Real>(model.getExternalForce());
       break;
     }
     akantu::Array<akantu::UInt> group_node = $self->getNodes();

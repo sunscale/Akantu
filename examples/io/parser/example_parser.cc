@@ -52,7 +52,7 @@ int main(int argc, char * argv[]) {
 
   // getParameter() can be used with variable declaration (destination type is
   // explicitly known).
-  UInt max_iter = usersect.getParameter("max_nb_iterations");
+  Int max_iter = usersect.getParameter("max_nb_iterations");
   Real precision = usersect.getParameter("precision");
 
   // Following NumPy convention, data can be interpreted as Vector or Matrix
@@ -60,7 +60,6 @@ int main(int argc, char * argv[]) {
   Matrix<Real> eigen_stress = usersect.getParameter("stress");
 
   SolidMechanicsModel model(mesh);
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
   model.initFull(SolidMechanicsModelOptions(_static));
 
   model.applyBC(BC::Dirichlet::FixedValue(0.0, _x),
