@@ -828,6 +828,7 @@ inline bool Vector<UInt>::equal(const Vector<UInt> & v,
 }
 
 /* -------------------------------------------------------------------------- */
+#ifndef SWIG
 namespace types {
   namespace details {
     template <typename Mat> class column_iterator {
@@ -866,6 +867,7 @@ namespace types {
     };
   } // namespace details
 } // namespace types
+#endif
 
 /* ------------------------------------------------------------------------ */
 /* Matrix                                                                   */
