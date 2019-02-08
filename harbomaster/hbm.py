@@ -4,6 +4,7 @@ import base64
 from . import export
 from .results import Results
 
+
 def get_phabricator_instance(ctx=None):
     _phab = None
     try:
@@ -32,6 +33,7 @@ def get_phabricator_instance(ctx=None):
               '    token: cli-g3amff25kdpnnv2tqvigmr4omnn7\n')
         raise e
     return _phab
+
 
 @export
 class Harbormaster:
@@ -65,9 +67,10 @@ class Harbormaster:
         
         for _test in tests:
             status = self.STATUS[_test.status]
-            if _test.name in _previously_failed and \
-               (_previously_failed[_test.name] == self.STATUS[_test.status] or \
-                (_previously_failed[_test.name] == 'unsound' and _test.status != Results.PASS)):
+            if (_test.status != Results.PASS and
+                (_test.name in _previously_failed and
+                 (_previously_failed[_test.name] == self.STATUS[_test.status] or  # noqa: E501
+                  _previously_failed[_test.name] == 'unsound'))):
                 status = 'unsound'
 
             _test_dict = {
@@ -94,7 +97,7 @@ class Harbormaster:
     
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
-                'unit':_unit_tests}
+                'unit': _unit_tests}
         self.__phab.harbormaster.sendmessage(**_msg)
 
     def send_lint(self, linter_processor):
@@ -102,7 +105,7 @@ class Harbormaster:
         for lint in linter_processor:
             _lint = {}
             for key in ['code', 'name', 'severity', 'path', 'line',
-                      'char', 'description']:
+                        'char', 'description']:
                 val = getattr(lint, key)
                 if val:
                     _lint[key] = val
@@ -111,7 +114,7 @@ class Harbormaster:
             
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
-                'lint':_lints}
+                'lint': _lints}
         
         self.__phab.harbormaster.sendmessage(**_msg)
 
@@ -124,7 +127,6 @@ class Harbormaster:
                                                     'name': name,
                                                     'ui.external': True
                                                 })
-                                                
         
     def passed(self):
         self._send_message(Results.PASS)
@@ -143,10 +145,9 @@ class Harbormaster:
             if view_phid:
                 _msg['viewPolicy'] = view_phid
 
-
             _res = self.__phab.file.upload(**_msg)
             
-            print(f"{_msg} -> {_res}")
+            print(f"{name} -> {_res}")
             self.__phab.harbormaster.createartifact(
                 buildTargetPHID=self.__phid,
                 artifactType='file',
