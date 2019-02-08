@@ -44,8 +44,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 TimeStepSolverDefault::TimeStepSolverDefault(
     DOFManagerDefault & dof_manager, const TimeStepSolverType & type,
-    NonLinearSolver & non_linear_solver, const ID & id, UInt memory_id)
-    : TimeStepSolver(dof_manager, type, non_linear_solver, id, memory_id),
+    NonLinearSolver & non_linear_solver, SolverCallback & solver_callback,
+    const ID & id, UInt memory_id)
+    : TimeStepSolver(dof_manager, type, non_linear_solver, solver_callback, id,
+                     memory_id),
       dof_manager(dof_manager), is_mass_lumped(false) {
   switch (type) {
   case _tsst_dynamic:
@@ -62,7 +64,7 @@ TimeStepSolverDefault::TimeStepSolverDefault(
 }
 
 /* -------------------------------------------------------------------------- */
-void TimeStepSolverDefault::setIntegrationScheme(
+void TimeStepSolverDefault::setIntegrationSchemeInternal(
     const ID & dof_id, const IntegrationSchemeType & type,
     IntegrationScheme::SolutionType solution_type) {
   if (this->integration_schemes.find(dof_id) !=

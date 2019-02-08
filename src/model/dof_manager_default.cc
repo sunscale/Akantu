@@ -328,14 +328,14 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-TimeStepSolver &
-DOFManagerDefault::getNewTimeStepSolver(const ID & id,
-                                        const TimeStepSolverType & type,
-                                        NonLinearSolver & non_linear_solver) {
+TimeStepSolver & DOFManagerDefault::getNewTimeStepSolver(
+    const ID & id, const TimeStepSolverType & type,
+    NonLinearSolver & non_linear_solver, SolverCallback & solver_callback) {
   ID time_step_solver_id = this->id + ":tss:" + id;
 
   std::unique_ptr<TimeStepSolver> tss = std::make_unique<TimeStepSolverDefault>(
-      *this, type, non_linear_solver, time_step_solver_id, this->memory_id);
+      *this, type, non_linear_solver, solver_callback, time_step_solver_id,
+      this->memory_id);
 
   return this->registerTimeStepSolver(time_step_solver_id, tss);
 }
@@ -805,7 +805,7 @@ public:
           buffer >> global_dof;
           AKANTU_DEBUG_ASSERT(
               (dof_manager.global_equation_number(dof) == UInt(-1) or
-              dof_manager.global_equation_number(dof) == global_dof),
+               dof_manager.global_equation_number(dof) == global_dof),
               "This dof already had a global_dof_id which is different from "
               "the received one. "
                   << dof_manager.global_equation_number(dof)
@@ -963,7 +963,7 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
       computeFirstDOFIDs(nb_new_local_dofs, nb_new_pure_local);
 
   // update per dof info
-  for (auto _[[gnu::unused]] : arange(nb_new_local_dofs)) {
+  for (auto _ [[gnu::unused]] : arange(nb_new_local_dofs)) {
     // update equation numbers
     this->dofs_flag(first_local_dof_id) = NodeFlag::_normal;
     ;
@@ -979,17 +979,19 @@ void DOFManagerDefault::updateDOFsData(DOFDataDefault & dof_data,
 
 /* -------------------------------------------------------------------------- */
 // register in factory
-static bool default_dof_manager_is_registered[[gnu::unused]] =
+static bool default_dof_manager_is_registered [[gnu::unused]] =
     DefaultDOFManagerFactory::getInstance().registerAllocator(
-        "default", [](const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "default",
+        [](const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(id, mem_id);
         });
 
-static bool dof_manager_is_registered[[gnu::unused]] =
+static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
-        "default", [](Mesh & mesh, const ID & id,
-                      const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+        "default",
+        [](Mesh & mesh, const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
         });
 } // namespace akantu
