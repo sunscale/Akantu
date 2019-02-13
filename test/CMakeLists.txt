@@ -38,6 +38,8 @@ include_directories(
   )
 
 set(AKANTU_TESTS_FILES CACHE INTERNAL "")
+
+akantu_pybind11_add_module(aka_test MODULE pybind11_akantu.cc)
 #===============================================================================
 # List of tests
 #===============================================================================
