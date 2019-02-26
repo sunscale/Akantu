@@ -55,9 +55,12 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void partitionate(
+    virtual void partitionate(
       UInt nb_part,
-      const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor()) override;
+      std::function<Int(const Element &, const Element &)> edge_load_func =
+          [](auto &&, auto &&) { return 1; },
+      std::function<Int(const Element &)> vertex_load_func =
+          [](auto &&) { return 1; }) override;
 
   void reorder() override;
 

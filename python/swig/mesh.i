@@ -39,6 +39,7 @@
 #include "mesh_utils.hh"
 #include "aka_bbox.hh"
 #include "mesh_accessor.hh"
+#include "communicator.hh"
 
 using akantu::IntegrationPoint;
 using akantu::Vector;
@@ -49,6 +50,7 @@ using akantu::UInt;
 using akantu::Real;
 using akantu::Array;
 using akantu::BBox;
+using akantu::Communicator;
 using akantu::SolidMechanicsModel;
 %}
 

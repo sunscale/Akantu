@@ -41,6 +41,7 @@
 #include "aka_bbox.hh"
 #include "aka_event_handler_manager.hh"
 #include "aka_memory.hh"
+#include "communicator.hh"
 #include "dumpable.hh"
 #include "element.hh"
 #include "element_class.hh"
@@ -49,12 +50,12 @@
 #include "mesh_data.hh"
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
+#include <functional>
 #include <set>
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-class Communicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
 class PeriodicNodeSynchronizer;
@@ -62,6 +63,12 @@ class MeshGlobalDataUpdater;
 } // namespace akantu
 
 namespace akantu {
+
+namespace {
+  DECLARE_NAMED_ARGUMENT(communicator);
+  DECLARE_NAMED_ARGUMENT(edge_weight_function);
+  DECLARE_NAMED_ARGUMENT(vertex_weight_function);
+} // namespace
 
 /* -------------------------------------------------------------------------- */
 /* Mesh                                                                       */
@@ -142,9 +149,32 @@ private:
   /* Distributed memory methods and accessors                                 */
   /* ------------------------------------------------------------------------ */
 public:
+protected:
   /// patitionate the mesh among the processors involved in their computation
-  virtual void distribute(Communicator & communicator);
-  virtual void distribute();
+  virtual void distributeImpl(
+      Communicator & communicator,
+      std::function<Int(const Element &, const Element &)> edge_weight_function,
+      std::function<Int(const Element &)> vertex_weight_function);
+
+#ifndef SWIG
+public:
+  /// with the arguments to pass to the partitionner
+  template <typename... pack>
+  std::enable_if_t<are_named_argument<pack...>::value>
+  distribute(pack &&... _pack) {
+    distributeImpl(
+        OPTIONAL_NAMED_ARG(communicator, Communicator::getStaticCommunicator()),
+        OPTIONAL_NAMED_ARG(edge_weight_function,
+                           [](auto &&, auto &&) { return 1; }),
+        OPTIONAL_NAMED_ARG(vertex_weight_function, [](auto &&) { return 1; }));
+  }
+#else
+  void distribute() {
+    distributeImpl(Communicator::getStaticCommunicator(),
+                   [](auto &&, auto &&) { return 1; },
+                   [](auto &&) { return 1; });
+  }
+#endif
 
   /// defines is the mesh is distributed or not
   inline bool isDistributed() const { return this->is_distributed; }
@@ -280,7 +310,8 @@ public:
 
   /// get the Array of global ids of the nodes (only used in parallel)
   AKANTU_GET_MACRO(GlobalNodesIds, *nodes_global_ids, const Array<UInt> &);
-  //AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt> &);
+  // AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt>
+  // &);
 
   /// get the global id of a node
   inline UInt getNodeGlobalId(UInt local_id) const;
@@ -502,7 +533,7 @@ public:
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
 #ifndef SWIG
-  using type_iterator[[deprecated]] =
+  using type_iterator [[deprecated]] =
       ElementTypeMapArray<UInt, ElementType>::type_iterator;
   using ElementTypesIteratorHelper =
       ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;

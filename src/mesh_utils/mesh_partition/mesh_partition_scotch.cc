@@ -238,8 +238,10 @@ static void destroyMesh(SCOTCH_Mesh * meshptr) {
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshPartitionScotch::partitionate(UInt nb_part,
-                                       const EdgeLoadFunctor & edge_load_func) {
+void MeshPartitionScotch::partitionate(
+    UInt nb_part,
+    std::function<Int(const Element &, const Element &)> edge_load_func,
+    std::function<Int(const Element &)> vertex_load_func) {
   AKANTU_DEBUG_IN();
 
   nb_partitions = nb_part;
@@ -254,7 +256,9 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
   Array<Int> dxadj;
   Array<Int> dadjncy;
   Array<Int> edge_loads;
-  buildDualGraph(dxadj, dadjncy, edge_loads, edge_load_func);
+  Array<Int> vertex_loads;
+  buildDualGraph(dxadj, dadjncy, edge_loads, edge_load_func, vertex_loads,
+                 vertex_load_func);
 
   /// variables that will hold our structures in scotch format
   SCOTCH_Graph scotch_graph;
@@ -269,7 +273,8 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
   //(an "edge" bounds two nodes)
   SCOTCH_Num * verttab = dxadj.storage(); // array of start indices in edgetab
   SCOTCH_Num * vendtab = nullptr; // array of after-last indices in edgetab
-  SCOTCH_Num * velotab = nullptr; // integer  load  associated with
+  SCOTCH_Num * velotab =
+      vertex_loads.storage(); // integer  load  associated with
   // every vertex ( optional )
   SCOTCH_Num * edlotab = edge_loads.storage(); // integer  load  associated with
   // every edge ( optional )
@@ -306,7 +311,8 @@ void MeshPartitionScotch::partitionate(UInt nb_part,
     auto nodes_it = nodes.begin(spatial_dimension);
 
     UInt out_linerized_el = 0;
-    for(auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
+    for (auto & type :
+         mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
       UInt nb_element = mesh.getNbElement(type);
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
       const Array<UInt> & connectivity = mesh.getConnectivity(type);

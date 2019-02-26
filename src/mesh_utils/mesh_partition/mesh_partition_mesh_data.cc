@@ -64,8 +64,9 @@ MeshPartitionMeshData::MeshPartitionMeshData(
 }
 
 /* -------------------------------------------------------------------------- */
-void MeshPartitionMeshData::partitionate(UInt nb_part,
-                                         const EdgeLoadFunctor &) {
+void MeshPartitionMeshData::partitionate(
+    UInt nb_part, std::function<Int(const Element &, const Element &)>,
+    std::function<Int(const Element &)>) {
   AKANTU_DEBUG_IN();
 
   if (mesh.isPeriodic()) {
@@ -86,8 +87,7 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 #endif
   for (auto type :
        mesh.elementTypes(spatial_dimension, ghost_type, _ek_not_defined)) {
-    const auto & partition_array =
-        (*partition_mapping)(type, ghost_type);
+    const auto & partition_array = (*partition_mapping)(type, ghost_type);
     AKANTU_DEBUG_ASSERT(partition_array.size() ==
                             mesh.getNbElement(type, ghost_type),
                         "The partition mapping does not have the right number "
@@ -115,12 +115,12 @@ void MeshPartitionMeshData::partitionate(UInt nb_part,
 
   delete[] partition_list;
 
-  if(mesh.isPeriodic()) {
+  if (mesh.isPeriodic()) {
     restoreConnectivity();
   }
 
   AKANTU_DEBUG_OUT();
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 void MeshPartitionMeshData::reorder() { AKANTU_TO_IMPLEMENT(); }
@@ -137,4 +137,4 @@ void MeshPartitionMeshData::setPartitionMappingFromMeshData(
   partition_mapping = &(mesh.getData<UInt>(data_name));
 }
 
-} // akantu
+} // namespace akantu
