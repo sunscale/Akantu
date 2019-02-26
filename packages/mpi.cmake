@@ -66,7 +66,12 @@ function(add_extra_mpi_options)
               set(MPI_VERSION_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
             endif()
           endforeach()
-          set(MPI_ID_VERSION "${MPI_VERSION_MAJOR}.${MPI_VERSION_MINOR}.${MPI_VERSION_RELEASE}" CACHE INTERNAL "")
+          set(MPI_ID_VERSION "${MPI_VERSION_MAJOR}.${MPI_VERSION_MINOR}.${MPI_VERSION_RELEASE}"
+	    CACHE INTERNAL "")
+	  if(NOT MPIEXEC_PREFLAGS MATCHES "-oversubscribe")
+	    string(STRIP "-oversubscribe ${MPIEXEC_PREFLAGS}" _preflags)
+	    set(MPIEXEC_PREFLAGS "${_preflags}" CACHE STRING "" FORCE)
+	  endif()
         endif()
       endif()
 
