@@ -66,10 +66,6 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-private:
-  /// common function to help registering dofs
-  void registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array);
-
 public:
   /// register an array of degree of freedom
   virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
@@ -99,13 +95,13 @@ public:
   /// Assemble an array to the global residual array
   virtual void assembleToResidual(const ID & dof_id,
                                   Array<Real> & array_to_assemble,
-                                  Real scale_factor = 1.) = 0;
+                                  Real scale_factor = 1.);
 
   /// Assemble an array to the global lumped matrix array
   virtual void assembleToLumpedMatrix(const ID & dof_id,
                                       Array<Real> & array_to_assemble,
                                       const ID & lumped_mtx,
-                                      Real scale_factor = 1.) = 0;
+                                      Real scale_factor = 1.);
 
   /**
    * Assemble elementary values to a local array of the size nb_nodes *
@@ -163,7 +159,6 @@ public:
                                          Array<Real> & array,
                                          Real scale_factor = 1) = 0;
 
-
   /// multiply the dofs by a matrix and assemble the result to the residual
   virtual void assembleMatMulDOFsToResidual(const ID & A_id,
                                             Real scale_factor = 1);
@@ -182,23 +177,35 @@ public:
                                           const TermsToAssemble & terms) = 0;
 
   /// sets the residual to 0
-  virtual void clearResidual() = 0;
+  virtual void clearResidual();
   /// sets the matrix to 0
-  virtual void clearMatrix(const ID & mtx) = 0;
+  virtual void clearMatrix(const ID & mtx);
   /// sets the lumped matrix to 0
-  virtual void clearLumpedMatrix(const ID & mtx) = 0;
+  virtual void clearLumpedMatrix(const ID & mtx);
 
   virtual void applyBoundary(const ID & matrix_id = "J") = 0;
 
   /// extract a lumped matrix part corresponding to a given dof
   virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
-                                      Array<Real> & lumped) = 0;
+                                      Array<Real> & lumped);
+  
+  /// splits the solution storage from a global view to the per dof storages
+  void splitSolutionPerDOFs();
+
+private:
+  /// dispatch the creation of the dof data and register it
+  DOFData & getNewDOFDataInternal(const ID & dof_id);
 
 protected:
+  /// common function to help registering dofs the return values are the add new
+  /// numbers of local dofs, pure local dofs, and system size
+  virtual std::tuple<UInt, UInt, UInt>
+  registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array);
+
   /// minimum functionality to implement per derived version of the DOFManager
   /// to allow the splitSolutionPerDOFs function to work
   virtual void getSolutionPerDOFs(const ID & dof_id,
-                                  Array<Real> & solution_array) = 0;
+                                  Array<Real> & solution_array);
 
   /// fill a Vector with the equation numbers corresponding to the given
   /// connectivity
@@ -211,9 +218,23 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  /// Get the equation numbers corresponding to a dof_id. This might be used to
-  /// access the matrix.
-  inline const Array<Int> & getLocalEquationsNumbers(const ID & dof_id) const;
+  /// Get the location type of a given dof
+  inline bool isLocalOrMasterDOF(UInt local_dof_num);
+
+  /// Answer to the question is a dof a slave dof ?
+  inline bool isSlaveDOF(UInt local_dof_num);
+
+  /// tells if the dof manager knows about a global dof
+  bool hasGlobalEquationNumber(Int global) const;
+
+  /// return the local index of the global equation number
+  inline Int globalToLocalEquationNumber(Int global) const;
+
+  /// converts local equation numbers to global equation numbers;
+  inline Int localToGlobalEquationNumber(Int local) const;
+
+  /// get the array of dof types (use only if you know what you do...)
+  inline NodeFlag getDOFFlag(Int local_id) const;
 
   /// Global number of dofs
   AKANTU_GET_MACRO(SystemSize, this->system_size, UInt);
@@ -291,6 +312,10 @@ protected:
   SparseMatrix & registerSparseMatrix(const ID & matrix_id,
                                       std::unique_ptr<SparseMatrix> & matrix);
 
+  /// register a lumped matrix (aka a Vector)
+  SolverVector & registerLumpedMatrix(const ID & matrix_id,
+                                      std::unique_ptr<SolverVector> & matrix);
+
   /// register a non linear solver instantiated by a derived class
   NonLinearSolver &
   registerNonLinearSolver(const ID & non_linear_solver_id,
@@ -305,17 +330,15 @@ protected:
   NonLinearSolver & registerNonLinearSolver(DMType & dm, const ID & id,
                                             const NonLinearSolverType & type) {
     ID non_linear_solver_id = this->id + ":nls:" + id;
-    std::unique_ptr<NonLinearSolver> nls =
-        std::make_unique<NLSType>(
-            dm, type, non_linear_solver_id, this->memory_id);
+    std::unique_ptr<NonLinearSolver> nls = std::make_unique<NLSType>(
+        dm, type, non_linear_solver_id, this->memory_id);
     return this->registerNonLinearSolver(non_linear_solver_id, nls);
   }
 
-  template<class TSSType, class DMType>
-  TimeStepSolver &
-  registerTimeStepSolver(DMType & dm, const ID & id,
-                         const TimeStepSolverType & type,
-                         NonLinearSolver & non_linear_solver) {
+  template <class TSSType, class DMType>
+  TimeStepSolver & registerTimeStepSolver(DMType & dm, const ID & id,
+                                          const TimeStepSolverType & type,
+                                          NonLinearSolver & non_linear_solver) {
     ID time_step_solver_id = this->id + ":tss:" + id;
     std::unique_ptr<TimeStepSolver> tss = std::make_unique<TSSType>(
         dm, type, non_linear_solver, time_step_solver_id, this->memory_id);
@@ -323,8 +346,7 @@ protected:
   }
 
   template <class MatType, class DMType>
-  SparseMatrix & registerSparseMatrix(DMType & dm,
-                                      const ID & id,
+  SparseMatrix & registerSparseMatrix(DMType & dm, const ID & id,
                                       const MatrixType & matrix_type) {
     ID matrix_id = this->id + ":mtx:" + id;
     std::unique_ptr<SparseMatrix> sm =
@@ -343,6 +365,24 @@ protected:
     return this->registerSparseMatrix(matrix_id, sm);
   }
 
+  template <class MatType, class DMType>
+  SolverVector & registerLumpedMatrix(DMType & dm, const ID & id) {
+    ID matrix_id = this->id + ":lumped_mtx:" + id;
+    std::unique_ptr<SolverVector> sm = std::make_unique<MatType>(dm, matrix_id);
+    return this->registerLumpedMatrix(matrix_id, sm);
+  }
+
+protected:
+  virtual void makeConsistentForPeriodicity(const ID & dof_id,
+                                            SolverVector & array) = 0;
+
+  virtual void assembleToGlobalArray(const ID & dof_id,
+                                     const Array<Real> & array_to_assemble,
+                                     SolverVector & global_array,
+                                     Real scale_factor) = 0;
+  virtual void getArrayPerDOFs(const ID & dof_id, const SolverVector & global,
+                               Array<Real> & local) = 0;
+
 public:
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
@@ -351,11 +391,11 @@ public:
   bool hasMatrix(const ID & matrix_id) const;
 
   /// Get an instance of a new lumped matrix
-  virtual Array<Real> & getNewLumpedMatrix(const ID & matrix_id);
+  virtual SolverVector & getNewLumpedMatrix(const ID & matrix_id) = 0;
   /// Get the lumped version of a given matrix
-  const Array<Real> & getLumpedMatrix(const ID & matrix_id) const;
+  const SolverVector & getLumpedMatrix(const ID & matrix_id) const;
   /// Get the lumped version of a given matrix
-  Array<Real> & getLumpedMatrix(const ID & matrix_id);
+  SolverVector & getLumpedMatrix(const ID & matrix_id);
 
   /// check if the given matrix exists
   bool hasLumpedMatrix(const ID & matrix_id) const;
@@ -413,6 +453,7 @@ public:
   /* MeshEventHandler interface                                               */
   /* ------------------------------------------------------------------------ */
 protected:
+  friend class GlobalDOFInfoDataAccessor;
   /// helper function for the DOFManager::onNodesAdded method
   virtual std::pair<UInt, UInt> updateNodalDOFs(const ID & dof_id,
                                                 const Array<UInt> & nodes_list);
@@ -420,6 +461,19 @@ protected:
   template <typename Func>
   auto countDOFsForNodes(const DOFData & dof_data, UInt nb_nodes,
                          Func && getNode);
+
+  void updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
+                      UInt nb_new_pure_local, UInt nb_nodes,
+                      const std::function<UInt(UInt)> & getNode);
+
+  void updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
+                      UInt nb_new_pure_local);
+
+  auto computeFirstDOFIDs(UInt nb_new_local_dofs, UInt nb_new_pure_local);
+
+  /// resize all the global information and takes the needed measure like
+  /// cleaning matrices profiles
+  virtual void resizeGlobalArrays();
 
 public:
   /// function to implement to react on  akantu::NewNodesEvent
@@ -450,7 +504,7 @@ protected:
   template <class _DOFData>
   inline const _DOFData & getDOFDataTyped(const ID & dof_id) const;
 
-  virtual DOFData & getNewDOFData(const ID & dof_id);
+  virtual std::unique_ptr<DOFData> getNewDOFData(const ID & dof_id) = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -469,28 +523,41 @@ protected:
     ID group_support;
 
     /// Degree of freedom array
-    Array<Real> * dof;
+    Array<Real> * dof{nullptr};
 
     /// Blocked degree of freedoms array
-    Array<bool> * blocked_dofs;
+    Array<bool> * blocked_dofs{nullptr};
 
     /// Degree of freedoms increment
-    Array<Real> * increment;
+    Array<Real> * increment{nullptr};
 
     /// Degree of freedoms at previous step
-    Array<Real> * previous;
+    Array<Real> * previous{nullptr};
 
     /// Solution associated to the dof
     Array<Real> solution;
-
-    /// local numbering equation numbers
-    Array<Int> local_equation_number;
 
     /* ---------------------------------------------------------------------- */
     /* data for dynamic simulations                                           */
     /* ---------------------------------------------------------------------- */
     /// Degree of freedom derivatives arrays
     std::vector<Array<Real> *> dof_derivatives;
+
+    /* ---------------------------------------------------------------------- */
+    /// number of dofs to consider locally for this dof id
+    UInt local_nb_dofs{0};
+
+    /// Number of purely local dofs
+    UInt pure_local_nb_dofs{0};
+
+    /// number of ghost dofs
+    UInt ghosts_nb_dofs{0};
+
+    /// local numbering equation numbers
+    Array<Int> local_equation_number;
+
+    /// associated node for _dst_nodal dofs only
+    Array<UInt> associated_nodes;
   };
 
   /// type to store dofs information
@@ -500,7 +567,7 @@ protected:
   using SparseMatricesMap = std::map<ID, std::unique_ptr<SparseMatrix>>;
 
   /// type to store all the lumped matrices
-  using LumpedMatricesMap = std::map<ID, std::unique_ptr<Array<Real>>>;
+  using LumpedMatricesMap = std::map<ID, std::unique_ptr<SolverVector>>;
 
   /// type to store all the non linear solver
   using NonLinearSolversMap = std::map<ID, std::unique_ptr<NonLinearSolver>>;
@@ -542,9 +609,23 @@ protected:
   /// solution of the system of equation corresponding to the different dofs
   std::unique_ptr<SolverVector> solution;
 
+  /// define the dofs type, local, shared, ghost
+  Array<NodeFlag> dofs_flag;
+
+  /// equation number in global numbering
+  Array<Int> global_equation_number;
+
+  using equation_numbers_map = std::unordered_map<Int, Int>;
+
+  /// dual information of global_equation_number
+  equation_numbers_map global_to_local_mapping;
+
   /// Communicator used for this manager, should be the same as in the mesh if a
   /// mesh is registered
   Communicator & communicator;
+
+  /// accumulator to know what would be the next global id to use
+  UInt first_global_dof_id{0};
 };
 
 using DefaultDOFManagerFactory =

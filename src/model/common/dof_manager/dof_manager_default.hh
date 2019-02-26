@@ -62,37 +62,22 @@ public:
 protected:
   struct DOFDataDefault : public DOFData {
     explicit DOFDataDefault(const ID & dof_id);
-
-    /// associated node for _dst_nodal dofs only
-    Array<UInt> associated_nodes;
   };
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-private:
-  void registerDOFsInternal(const ID & dof_id, UInt nb_dofs,
-                            UInt nb_pure_local_dofs);
-
 public:
-  /// register an array of degree of freedom
-  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                    const DOFSupportType & support_type) override;
+  // /// register an array of degree of freedom
+  // void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+  //                   const DOFSupportType & support_type) override;
 
-  /// the dof as an implied type of _dst_nodal and is defined only on a subset
-  /// of nodes
-  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                    const ID & group_support) override;
+  // /// the dof as an implied type of _dst_nodal and is defined only on a
+  // subset
+  // /// of nodes
+  // void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
+  //                   const ID & group_support) override;
 
-  /// Assemble an array to the global residual array
-  void assembleToResidual(const ID & dof_id, Array<Real> & array_to_assemble,
-                          Real scale_factor = 1.) override;
-
-  /// Assemble an array to the global lumped matrix array
-  void assembleToLumpedMatrix(const ID & dof_id,
-                              Array<Real> & array_to_assemble,
-                              const ID & lumped_mtx,
-                              Real scale_factor = 1.) override;
   /**
    * Assemble elementary values to the global matrix. The dof number is
    * implicitly considered as conn(el, n) * nb_nodes_per_element + d.
@@ -130,48 +115,32 @@ public:
                                   const TermsToAssemble & terms) override;
 
 protected:
-  /// Assemble an array to the global residual array
+  void assembleToGlobalArray(const ID & dof_id,
+                             const Array<Real> & array_to_assemble,
+                             SolverVector & global_array,
+                             Real scale_factor) override;
+
   template <typename T>
   void assembleToGlobalArray(const ID & dof_id,
                              const Array<T> & array_to_assemble,
                              Array<T> & global_array, T scale_factor);
 
+  void getArrayPerDOFs(const ID & dof_id, const SolverVector & global,
+                       Array<Real> & local) override;
+
   template <typename T>
-  void makeConsistentForPeriodicity(const ID & dof_id, Array<T> & array);
+  void getArrayPerDOFs(const ID & dof_id,
+                                          const Array<T> & global_array,
+                                          Array<T> & local_array) const;
+  void makeConsistentForPeriodicity(const ID & dof_id,
+                                    SolverVector & array) override;
 
 public:
-  /// clear the residual
-  void clearResidual() override;
-
-  /// sets the matrix to 0
-  void clearMatrix(const ID & mtx) override;
-
-  /// sets the lumped matrix to 0
-  void clearLumpedMatrix(const ID & mtx) override;
-
   /// update the global dofs vector
   virtual void updateGlobalBlockedDofs();
 
   /// apply boundary conditions to jacobian matrix
   void applyBoundary(const ID & matrix_id = "J") override;
-
-  /// splits the solution storage from a global view to the per dof storages
-  void splitSolutionPerDOFs();
-
-protected:
-  /// Get local part of an array corresponding to a given dofdata
-  template <typename T>
-  void getArrayPerDOFs(const ID & dof_id, const Array<T> & global_array,
-                       Array<T> & local_array) const;
-
-  /// Get the part of the solution corresponding to the dof_id
-  void getSolutionPerDOFs(const ID & dof_id,
-                          Array<Real> & solution_array) override;
-
-public:
-  /// extract a lumped matrix part corresponding to a given dof
-  void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
-                              Array<Real> & lumped) override;
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -198,19 +167,14 @@ private:
   /* MeshEventHandler interface                                               */
   /* ------------------------------------------------------------------------ */
 protected:
-  std::pair<UInt, UInt>
-  updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) override;
+  std::tuple<UInt, UInt, UInt>
+  registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) override;
 
-private:
-  void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
-                      UInt nb_new_pure_local, UInt nb_nodes,
-                      const std::function<UInt(UInt)> & getNode);
+  // std::pair<UInt, UInt>
+  // updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list)
+  // override;
 
-  void updateDOFsData(DOFDataDefault & dof_data, UInt nb_new_local_dofs,
-                      UInt nb_new_pure_local);
-
-  void resizeGlobalArrays();
-  auto computeFirstDOFIDs(UInt nb_new_local_dofs, UInt nb_new_pure_local);
+  void resizeGlobalArrays() override;
 
 public:
   /// function to implement to react on  akantu::NewNodesEvent
@@ -233,6 +197,9 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixAIJ & getMatrix(const ID & matrix_id);
 
+  /// Get an instance of a new lumped matrix
+  SolverVector & getNewLumpedMatrix(const ID & matrix_id) override;
+
   /* ------------------------------------------------------------------------ */
   /* Non Linear Solver                                                        */
   /* ------------------------------------------------------------------------ */
@@ -250,6 +217,7 @@ public:
                        NonLinearSolver & non_linear_solver) override;
 
   /* ------------------------------------------------------------------------ */
+private:
   /// Get the solution array
   Array<Real> & getSolutionArray();
 
@@ -259,28 +227,16 @@ public:
   /// Get the residual array
   Array<Real> & getResidualArray();
 
+public:
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
   /// Get the blocked dofs array
   AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
                    const Array<bool> &);
-  /// Get the location type of a given dof
-  inline bool isLocalOrMasterDOF(UInt local_dof_num);
 
-  /// Answer to the question is a dof a slave dof ?
-  inline bool isSlaveDOF(UInt local_dof_num);
-
-  /// tells if the dof manager knows about a global dof
-  bool hasGlobalEquationNumber(UInt global) const;
-
-  /// return the local index of the global equation number
-  inline UInt globalToLocalEquationNumber(UInt global) const;
-
-  /// converts local equation numbers to global equation numbers;
-  inline UInt localToGlobalEquationNumber(UInt local) const;
-
-  /// get the array of dof types (use only if you know what you do...)
-  inline NodeFlag getDOFFlag(UInt local_id) const;
+  /// Get the equation numbers corresponding to a dof_id. This might be used to
+  /// access the matrix.
+  inline const Array<Int> & getLocalEquationsNumbers(const ID & dof_id) const;
 
   /// get the array of dof types (use only if you know what you do...)
   inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
@@ -292,14 +248,12 @@ public:
   bool hasSynchronizer() const { return synchronizer != nullptr; }
 
 protected:
-  DOFData & getNewDOFData(const ID & dof_id) override;
+  std::unique_ptr<DOFData> getNewDOFData(const ID & dof_id) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  friend class GlobalDOFInfoDataAccessor;
-
   using DOFToMatrixProfile =
       std::map<std::pair<ID, ID>,
                std::vector<std::pair<ElementType, GhostType>>>;
@@ -319,26 +273,12 @@ protected:
   /// different dofs
   Array<bool> previous_global_blocked_dofs;
 
-  /// define the dofs type, local, shared, ghost
-  Array<NodeFlag> dofs_flag;
-
   /// Memory cache, this is an array to keep the temporary memory needed for
   /// some operations, it is meant to be resized or cleared when needed
   Array<Real> data_cache;
 
   /// Release at last apply boundary on jacobian
   UInt jacobian_release{0};
-
-  /// equation number in global numbering
-  Array<UInt> global_equation_number;
-
-  using equation_numbers_map = std::unordered_map<UInt, UInt>;
-
-  /// dual information of global_equation_number
-  equation_numbers_map global_to_local_mapping;
-
-  /// accumulator to know what would be the next global id to use
-  UInt first_global_dof_id{0};
 
   /// synchronizer to maintain coherency in dof fields
   std::unique_ptr<DOFSynchronizer> synchronizer;

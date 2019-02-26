@@ -77,12 +77,6 @@ inline void DOFManager::extractElementEquationNumber(
 }
 
 /* -------------------------------------------------------------------------- */
-const Array<Int> &
-DOFManager::getLocalEquationsNumbers(const ID & dof_id) const {
-  return getDOFData(dof_id).local_equation_number;
-}
-
-/* -------------------------------------------------------------------------- */
 template <class _DOFData>
 inline _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) {
   return dynamic_cast<_DOFData &>(this->getDOFData(dof_id));
@@ -166,6 +160,43 @@ inline bool DOFManager::hasBlockedDOFs(const ID & dofs_id) const {
   return (this->getDOFData(dofs_id).blocked_dofs != nullptr);
 }
 
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::isLocalOrMasterDOF(UInt dof_num) {
+  auto dof_flag = this->dofs_flag(dof_num);
+  return (dof_flag & NodeFlag::_local_master_mask) == NodeFlag::_normal;
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::isSlaveDOF(UInt dof_num) {
+  auto dof_flag = this->dofs_flag(dof_num);
+  return (dof_flag & NodeFlag::_shared_mask) == NodeFlag::_slave;
+}
+
+/* -------------------------------------------------------------------------- */
+inline Int DOFManager::localToGlobalEquationNumber(Int local) const {
+  return this->global_equation_number(local);
+}
+
+/* -------------------------------------------------------------------------- */
+inline bool DOFManager::hasGlobalEquationNumber(Int global) const {
+  auto it = this->global_to_local_mapping.find(global);
+  return (it != this->global_to_local_mapping.end());
+}
+
+/* -------------------------------------------------------------------------- */
+inline Int DOFManager::globalToLocalEquationNumber(Int global) const {
+  auto it = this->global_to_local_mapping.find(global);
+  AKANTU_DEBUG_ASSERT(it != this->global_to_local_mapping.end(),
+                      "This global equation number "
+                          << global << " does not exists in " << this->id);
+
+  return it->second;
+}
+
+/* -------------------------------------------------------------------------- */
+inline NodeFlag DOFManager::getDOFFlag(Int local_id) const {
+  return this->dofs_flag(local_id);
+}
 /* -------------------------------------------------------------------------- */
 
 } // akantu

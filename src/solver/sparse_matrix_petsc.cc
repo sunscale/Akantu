@@ -111,21 +111,21 @@ void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
 /// Equivalent of *gemv in blas
 void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
                                   Real alpha, Real beta) const {
-  auto & x = dynamic_cast<const SolverVectorPETSc &>(_x).getVector();
-  auto & y = dynamic_cast<SolverVectorPETSc &>(_y).getVector();
+  auto & x = aka::as_type<SolverVectorPETSc>(_x);
+  auto & y = aka::as_type<SolverVectorPETSc>(_y);
 
   // y = alpha A x + beta y
-  SolverVectorPETSc w(x);
+  SolverVectorPETSc w(x, this->id + ":tmp");
 
   // w = A x
-  PETSc_call(MatMult, mat, x, w);
+  PETSc_call(MatMult, mat, x.getVec(), w.getVec());
   if (alpha != 1.) {
     // w = alpha w
-    PETSc_call(VecScale, w, alpha);
+    PETSc_call(VecScale, w.getVec(), alpha);
   }
 
   // y = w + beta y
-  PETSc_call(VecAYPX, y, beta, w);
+  PETSc_call(VecAYPX, y.getVec(), beta, w.getVec());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -175,19 +175,19 @@ void SparseMatrixPETSc::endAssembly() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixPETSc::applyBoundary(Real block_val) {
+void SparseMatrixPETSc::applyBoundary(Real /*block_val*/) {
   AKANTU_DEBUG_IN();
 
-  const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
-  std::vector<PetscInt> rows;
-  for (auto && data : enumerate(blocked)) {
-    if (std::get<1>(data)) {
-      rows.push_back(std::get<0>(data));
-    }
-  }
+  // const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  // std::vector<PetscInt> rows;
+  // for (auto && data : enumerate(blocked)) {
+  //   if (std::get<1>(data)) {
+  //     rows.push_back(std::get<0>(data));
+  //   }
+  // }
 
-  PETSc_call(MatZeroRowsColumnsLocal, mat, roew.size(),
-             rows.storage(), block_val, nullptr, nullptr);
+  // PETSc_call(MatZeroRowsColumnsLocal, mat, roew.size(),
+  //            rows.storage(), block_val, nullptr, nullptr);
 
   AKANTU_DEBUG_OUT();
 }

@@ -35,6 +35,7 @@
 #include "dof_manager_petsc.hh"
 #include "mpi_communicator_data.hh"
 #include "sparse_matrix_petsc.hh"
+#include "solver_vector_petsc.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscksp.h>
 //#include <petscsys.h>
@@ -87,8 +88,8 @@ void SolverPETSc::setOperators() {
 
 /* -------------------------------------------------------------------------- */
 void SolverPETSc::solve() {
-  Vec & rhs = this->dof_manager.getResidual();
-  Vec & solution = this->dof_manager.getGlobalSolution();
+  Vec & rhs(this->dof_manager.getResidual());
+  Vec & solution(this->dof_manager.getSolution());
 
   PETSc_call(KSPSolve, ksp, rhs, solution);
 }

@@ -281,45 +281,53 @@ public:
   inline void
   scan(Array<T> & values,
        SynchronizerOperation op = SynchronizerOperation::_sum) const {
-    this->scanImpl(values.storage(), values.size() * values.getNbComponent(),
-                   op);
+    this->scanImpl(values.storage(), values.storage(),
+                   values.size() * values.getNbComponent(), op);
   }
 
   template <typename Tensor>
   inline void
   scan(Tensor & values, SynchronizerOperation op,
        std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
-    this->scanImpl(values.storage(), values.size(), op);
+    this->scanImpl(values.storage(), values.storage(), values.size(), op);
   }
 
   template <typename T>
   inline void
   scan(T & values, SynchronizerOperation op = SynchronizerOperation::_sum,
        std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
-    this->scanImpl(&values, 1, op);
+    this->scanImpl(&values, &values, 1, op);
   }
 
   template <typename T>
   inline void
   exclusiveScan(Array<T> & values,
                 SynchronizerOperation op = SynchronizerOperation::_sum) const {
-    this->exclusiveScanImpl(values.storage(),
+    this->exclusiveScanImpl(values.storage(), values.storage(),
                             values.size() * values.getNbComponent(), op);
   }
 
   template <typename Tensor>
-  inline void
-  exclusiveScan(Tensor & values,
-                SynchronizerOperation op = SynchronizerOperation::_sum,
-                std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
-    this->exclusiveScanImpl(values.storage(), values.size(), op);
+  inline void exclusiveScan(
+      Tensor & values, SynchronizerOperation op = SynchronizerOperation::_sum,
+      std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
+    this->exclusiveScanImpl(values.storage(), values.storage(), values.size(),
+                            op);
   }
 
   template <typename T>
   inline void exclusiveScan(
       T & values, SynchronizerOperation op = SynchronizerOperation::_sum,
       std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
-    this->exclusiveScanImpl(&values, 1, op);
+    this->exclusiveScanImpl(&values, &values, 1, op);
+  }
+
+  template <typename T>
+  inline void exclusiveScan(
+      T & values, T & result,
+      SynchronizerOperation op = SynchronizerOperation::_sum,
+      std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
+    this->exclusiveScanImpl(&values, &result, 1, op);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -397,6 +405,11 @@ public:
                         values.size() * values.getNbComponent(), root);
   }
 
+  template <typename T>
+  inline void broadcast(std::vector<T> & values, int root = 0) const {
+    this->broadcastImpl(values.data(), values.size(), root);
+  }
+
   inline void broadcast(CommunicationBufferTemplated<true> & buffer,
                         int root = 0) const {
     this->broadcastImpl(buffer.storage(), buffer.size(), root);
@@ -406,10 +419,11 @@ public:
                         int root = 0) const {
     UInt buffer_size = buffer.size();
     this->broadcastImpl(&buffer_size, 1, root);
-    if(prank != root)
+    if (prank != root)
       buffer.reserve(buffer_size);
 
-    if(buffer_size == 0) return;
+    if (buffer_size == 0)
+      return;
     this->broadcastImpl(buffer.storage(), buffer.size(), root);
   }
 
@@ -460,10 +474,11 @@ protected:
   void allReduceImpl(T * values, int nb_values, SynchronizerOperation op) const;
 
   template <typename T>
-  void scanImpl(T * values, int nb_values, SynchronizerOperation op) const;
+  void scanImpl(T * values, T * results, int nb_values,
+                SynchronizerOperation op) const;
 
   template <typename T>
-  void exclusiveScanImpl(T * values, int nb_values,
+  void exclusiveScanImpl(T * values, T * results, int nb_values,
                          SynchronizerOperation op) const;
 
   template <typename T> void allGatherImpl(T * values, int nb_values) const;

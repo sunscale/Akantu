@@ -49,8 +49,18 @@
   } while (false)
 
 namespace akantu {
+namespace detail {
+  template <typename T> void PETScSetName(T t, const ID & id) {
+    PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(t),
+               id.c_str());
+  }
+} // namespace detail
+} // namespace akantu
+
+namespace akantu {
 class SparseMatrixPETSc;
-}
+class SolverVectorPETSc;
+} // namespace akantu
 
 namespace akantu {
 
@@ -73,19 +83,13 @@ protected:
     explicit DOFDataPETSc(const ID & dof_id);
 
     /// local equation numbers in PETSc type
-    IS is;
+    IS is{nullptr};
   };
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                    DOFSupportType & support_type);
-
-  void assembleToResidual(const ID & dof_id, Array<Real> & array_to_assemble,
-                          Real scale_factor = 1.) override;
-
   void assembleToLumpedMatrix(const ID & /*dof_id*/,
                               Array<Real> & /*array_to_assemble*/,
                               const ID & /*lumped_mtx*/,
@@ -129,20 +133,33 @@ public:
     AKANTU_TO_IMPLEMENT();
   }
 
-  void clearResidual() override;
-  void clearMatrix(const ID & mtx) override;
-  void clearLumpedMatrix(const ID & mtx) override;
-
   void applyBoundary(const ID & /*matrix_id*/ = "J") override {
     AKANTU_TO_IMPLEMENT();
   }
 
 protected:
-  void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
-                              Array<Real> & lumped) override;
+  void assembleToGlobalArray(const ID & dof_id,
+                             const Array<Real> & array_to_assemble,
+                             SolverVector & global_array,
+                             Real scale_factor) override;
+  void getArrayPerDOFs(const ID & dof_id, const SolverVector & global,
+                       Array<Real> & local) override;
 
-  void getSolutionPerDOFs(const ID & dof_id,
-                          Array<Real> & solution_array) override;
+  void makeConsistentForPeriodicity(const ID & dof_id,
+                                    SolverVector & array) override;
+
+  std::unique_ptr<DOFData> getNewDOFData(const ID & dof_id) override;
+
+  std::tuple<UInt, UInt, UInt>
+  registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) override;
+
+  void updateDOFsData(DOFDataPETSc & dof_data, UInt nb_new_local_dofs,
+                      UInt nb_new_pure_local, UInt nb_node,
+                      const std::function<UInt(UInt)> & getNode);
+
+protected:
+  void getLumpedMatrixPerDOFs(const ID & /*dof_id*/, const ID & /*lumped_mtx*/,
+                              Array<Real> & /*lumped*/) override {}
 
   NonLinearSolver & getNewNonLinearSolver(
       const ID & nls_solver_id,
@@ -169,15 +186,8 @@ public:
   /// Get the reference of an existing matrix
   SparseMatrixPETSc & getMatrix(const ID & matrix_id);
 
-  /// Get the reference of an existing matrix
-  Vec & getLumpedMatrix(const ID & /*matrix_id*/) {
-    AKANTU_TO_IMPLEMENT();
-  }
-
-  /// Get the solution array
-  AKANTU_GET_MACRO_NOT_CONST(GlobalSolution, this->solution, Vec &);
-  /// Get the residual array
-  AKANTU_GET_MACRO_NOT_CONST(Residual, this->residual, Vec &);
+  /// Get an instance of a new lumped matrix
+  SolverVector & getNewLumpedMatrix(const ID & matrix_id) override;
 
   /// Get the blocked dofs array
   //  AKANTU_GET_MACRO(BlockedDOFs, blocked_dofs, const Array<bool> &);
@@ -186,12 +196,18 @@ public:
   AKANTU_GET_MACRO_NOT_CONST(ISLocalToGlobalMapping, is_ltog_map,
                              ISLocalToGlobalMapping &);
 
+  SolverVectorPETSc & getSolution();
+  const SolverVectorPETSc & getSolution() const;
+
+  SolverVectorPETSc & getResidual();
+  const SolverVectorPETSc & getResidual() const;
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
   using PETScMatrixMap = std::map<ID, SparseMatrixPETSc *>;
-  using PETScLumpedMatrixMap = std::map<ID, Vec>;
+  using PETScLumpedMatrixMap = std::map<ID, SolverVectorPETSc *>;
 
   /// list of matrices registered to the dof manager
   PETScMatrixMap petsc_matrices;
@@ -199,21 +215,82 @@ private:
   /// list of lumped matrices registered
   PETScLumpedMatrixMap petsc_lumped_matrices;
 
-  /// PETSc version of the solution
-  Vec solution;
-
-  /// PETSc version of the residual
-  Vec residual;
-
   /// PETSc local to global mapping of dofs
-  ISLocalToGlobalMapping is_ltog_map;
+  ISLocalToGlobalMapping is_ltog_map{nullptr};
 
   /// Communicator associated to PETSc
   MPI_Comm mpi_communicator;
 
+  /// list of the dof ids to be able to always iterate in the same order
+  std::vector<ID> dofs_ids;
+
   /// counter of instances to know when to finalize
   static int petsc_dof_manager_instances;
 };
+
+namespace internal {
+  /* ------------------------------------------------------------------------ */
+  class PETScVector {
+  public:
+    virtual ~PETScVector();
+
+    operator Vec();
+    Int size() const;
+    Int local_size() const;
+
+    AKANTU_GET_MACRO_NOT_CONST(Vec, x, auto &);
+    AKANTU_GET_MACRO(Vec, x, const auto &);
+
+  protected:
+    Vec x{nullptr};
+  };
+
+  /* ------------------------------------------------------------------------ */
+  template <class Array> class PETScWrapedVector : public PETScVector {
+  public:
+    PETScWrapedVector(Array && array);
+    ~PETScWrapedVector();
+
+  private:
+    Array array;
+  };
+
+  /* ------------------------------------------------------------------------ */
+  template <class V> class PETScLocalVector : public PETScVector {
+  public:
+    PETScLocalVector(const SolverVector & g);
+
+    template <
+        typename T = V,
+        std::enable_if_t<std::is_same<Vec, std::decay_t<T>>::value> * = nullptr>
+    PETScLocalVector(V && g) : g(g) {
+      PETSc_call(VecGetLocalVector, g, x);
+    }
+
+    ~PETScLocalVector();
+
+  private:
+    V g;
+  };
+
+  /* ------------------------------------------------------------------------ */
+  template <class Array>
+  decltype(auto) make_petsc_wraped_vector(Array && array) {
+    return PETScWrapedVector<Array>(std::forward<Array>(array));
+  }
+
+  PETScLocalVector<const Vec &>
+  make_petsc_local_vector(const SolverVector & vec);
+
+  template <
+      typename V,
+      std::enable_if_t<std::is_same<Vec, std::decay_t<V>>::value> * = nullptr>
+  decltype(auto) make_petsc_local_vector(V && vec) {
+    return PETScLocalVector<V>(std::forward<V>(vec));
+  }
+
+} // namespace internal
+/* -------------------------------------------------------------------------- */
 
 } // namespace akantu
 

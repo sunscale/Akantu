@@ -27,6 +27,7 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "dof_manager_petsc.hh"
 #include "solver_vector.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscvec.h>
@@ -41,7 +42,7 @@ class DOFManagerPETSc;
 
 namespace akantu {
 
-class SolverVectorPETSc : public SolverVector {
+class SolverVectorPETSc : public SolverVector, public internal::PETScVector {
 public:
   SolverVectorPETSc(DOFManagerPETSc & dof_manager,
                     const ID & id = "solver_vector_petsc");
@@ -49,7 +50,7 @@ public:
   SolverVectorPETSc(const SolverVectorPETSc & vector,
                     const ID & id = "solver_vector_petsc");
 
-  SolverVectorPETSc(Vec vec,
+  SolverVectorPETSc(Vec vec, DOFManagerPETSc & dof_manager,
                     const ID & id = "solver_vector_petsc");
 
   ~SolverVectorPETSc() override;
@@ -58,15 +59,18 @@ public:
   void resize() override;
   void clear() override;
 
+  operator const Array<Real> &() const override;
+  operator Vec &() { return getVec(); };
+  operator const Vec &() const { return getVec(); };
+
 protected:
   void applyModifications();
-public:
-  AKANTU_GET_MACRO_NOT_CONST(Vector, vector, auto &);
-  AKANTU_GET_MACRO(Vector, vector, const auto &);
 
 protected:
   DOFManagerPETSc & dof_manager;
-  Vec vector;
+
+  // used for the conversion operator
+  Array<Real> cache;
 };
 } // namespace akantu
 

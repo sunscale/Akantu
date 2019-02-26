@@ -111,7 +111,7 @@ public:
   }
 
   void assembleLumpedMass() {
-    Array<Real> & M = this->getDOFManager().getLumpedMatrix("M");
+    auto & M = this->getDOFManager().getLumpedMatrix("M");
     M.clear();
 
     this->assembleLumpedMass(_not_ghost);
@@ -325,7 +325,8 @@ public:
     if (not lumped) {
       res = this->mulVectMatVect(this->velocity, "M", this->velocity);
     } else {
-      auto & m = this->getDOFManager().getLumpedMatrix("M");
+      Array<Real> & m = dynamic_cast<SolverVectorDefault &>(
+          this->getDOFManager().getLumpedMatrix("M"));
       auto it = velocity.begin();
       auto end = velocity.end();
       auto m_it = m.begin();
@@ -366,8 +367,7 @@ public:
     this->getDOFManager().assembleMatMulVectToArray("disp", A_id, y, Ay);
 
     Real res = 0.;
-    for (auto && data : zip(arange(nb_dofs), make_view(Ay),
-                            make_view(x))) {
+    for (auto && data : zip(arange(nb_dofs), make_view(Ay), make_view(x))) {
       res += std::get<2>(data) * std::get<1>(data) *
              mesh.isLocalOrMasterNode(std::get<0>(data));
     }

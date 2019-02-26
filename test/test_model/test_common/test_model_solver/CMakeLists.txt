@@ -48,3 +48,8 @@ register_test(test_model_solver_dynamic_petsc
   PACKAGE petsc
   COMPILE_OPTIONS "EXPLICIT=false"
   )
+
+register_test(test_vector_petsc
+  SOURCES test_vector_petsc.cc
+  PACKAGE petsc
+  )

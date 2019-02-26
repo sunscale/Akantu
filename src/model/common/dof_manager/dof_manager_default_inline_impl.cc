@@ -38,18 +38,6 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline bool DOFManagerDefault::isLocalOrMasterDOF(UInt dof_num) {
-  auto dof_flag = this->dofs_flag(dof_num);
-  return (dof_flag & NodeFlag::_local_master_mask) == NodeFlag::_normal;
-}
-
-/* -------------------------------------------------------------------------- */
-inline bool DOFManagerDefault::isSlaveDOF(UInt dof_num) {
-  auto dof_flag = this->dofs_flag(dof_num);
-  return (dof_flag & NodeFlag::_shared_mask) == NodeFlag::_slave;
-}
-
-/* -------------------------------------------------------------------------- */
 inline const Array<UInt> &
 DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
   const auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
@@ -57,31 +45,11 @@ DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt DOFManagerDefault::localToGlobalEquationNumber(UInt local) const {
-  return this->global_equation_number(local);
+const Array<Int> &
+DOFManagerDefault::getLocalEquationsNumbers(const ID & dof_id) const {
+  return getDOFDataTyped<DOFDataDefault>(dof_id).local_equation_number;
 }
 
-/* -------------------------------------------------------------------------- */
-inline bool DOFManagerDefault::hasGlobalEquationNumber(UInt global) const {
-  auto it = this->global_to_local_mapping.find(global);
-  return (it != this->global_to_local_mapping.end());
-}
-
-/* -------------------------------------------------------------------------- */
-inline UInt DOFManagerDefault::globalToLocalEquationNumber(UInt global) const {
-  auto it = this->global_to_local_mapping.find(global);
-  AKANTU_DEBUG_ASSERT(it != this->global_to_local_mapping.end(),
-                      "This global equation number "
-                          << global << " does not exists in " << this->id);
-
-  return it->second;
-}
-
-/* -------------------------------------------------------------------------- */
-inline NodeFlag DOFManagerDefault::getDOFFlag(UInt local_id) const {
-  return this->dofs_flag(local_id);
-}
-/* -------------------------------------------------------------------------- */
 
 } // akantu
 

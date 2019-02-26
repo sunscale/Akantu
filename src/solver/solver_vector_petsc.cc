@@ -31,64 +31,99 @@
 #include "dof_manager_petsc.hh"
 #include "mpi_communicator_data.hh"
 /* -------------------------------------------------------------------------- */
+#include <petscvec.h>
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SolverVectorPETSc::SolverVectorPETSc(DOFManagerPETSc & dof_manager,
                                      const ID & id)
-    : SolverVector(dof_manager, id), dof_manager(dof_manager) {
-  auto && mpi_comm = dof_manager.getMPIComm();
-  PETSc_call(VecCreate, mpi_comm, &vector);
-  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(vector), id.c_str());
-}
+    : SolverVector(dof_manager, id), dof_manager(dof_manager) {}
 
 /* -------------------------------------------------------------------------- */
 SolverVectorPETSc::SolverVectorPETSc(const SolverVectorPETSc & vector,
                                      const ID & id)
     : SolverVector(vector, id), dof_manager(vector.dof_manager) {
-  PETSc_call(VecDuplicate, vector.vector, &this->vector);
-  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(this->vector), id.c_str());
-
-  PETSc_call(VecCopy, vector.vector, this->vector);
+  if (vector.x) {
+    PETSc_call(VecDuplicate, vector.x, &x);
+    PETSc_call(VecCopy, vector.x, x);
+    detail::PETScSetName(x, id);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
-SolverVectorPETSc::SolverVectorPETSc(Vec vec,
-                                     const ID & id = "solver_vector_petsc") {
-  PETSc_call(VecDuplicate, vec.vector, &vector);
-  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(this->vector), id.c_str());
-  PETSc_call(VecCopy, vector.vector, this->vector);
+SolverVectorPETSc::SolverVectorPETSc(Vec x, DOFManagerPETSc & dof_manager,
+                                     const ID & id)
+    : SolverVector(dof_manager, id), dof_manager(dof_manager) {
+  PETSc_call(VecDuplicate, x, &this->x);
+  PETSc_call(VecCopy, x, this->x);
+  detail::PETScSetName(x, id);
 }
-
 
 /* -------------------------------------------------------------------------- */
 SolverVectorPETSc::~SolverVectorPETSc() {
-  if (vector) {
-    PETSc_call(VecDestroy, &vector);
+  if (x) {
+    PETSc_call(VecDestroy, &x);
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void SolverVectorPETSc::resize() {
-  PETSc_call(VecSetSizes, vector, dof_manager.getPureLocalSystemSize(),
-             dof_manager.getSystemSize());
+  if (not x) {
+    auto && mpi_comm = dof_manager.getMPIComm();
+    PETSc_call(VecCreate, mpi_comm, &x);
+    detail::PETScSetName(x, id);
+  }
+
+  auto local_system_size = dof_manager.getLocalSystemSize();
+  auto nb_local_dofs = dof_manager.getPureLocalSystemSize();
+  PETSc_call(VecSetSizes, x, nb_local_dofs, PETSC_DECIDE);
+
+  VecType vec_type;
+  PETSc_call(VecGetType, x, &vec_type);
+  if (vec_type == VECMPI) {
+    std::vector<PetscInt> idx;
+    idx.reserve(local_system_size - nb_local_dofs);
+
+    for (auto && d : arange(dof_manager.getLocalSystemSize())) {
+      if (not dof_manager.isLocalOrMasterDOF(d)) {
+        idx.push_back(dof_manager.localToGlobalEquationNumber(d));
+      }
+    }
+    AKANTU_DEBUG_ASSERT(
+        idx.size() == (local_system_size - nb_local_dofs),
+        "One developer that I will not name does not know how to count");
+
+    PETSc_call(VecMPISetGhost, x, idx.size(), idx.data());
+  }
 
   auto & is_ltog_mapping = dof_manager.getISLocalToGlobalMapping();
 
-  PETSc_call(VecSetLocalToGlobalMapping, vector, is_ltog_mapping);
+  PETSc_call(VecSetLocalToGlobalMapping, x, is_ltog_mapping);
 }
 
 /* -------------------------------------------------------------------------- */
 void SolverVectorPETSc::clear() {
-  PETSc_call(VecSet, vector, 0.);
+  PETSc_call(VecSet, x, 0.);
   applyModifications();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolverVectorPETSc::applyModifications() {
-  PETSc_call(VecAssemblyBegin, vector);
-  PETSc_call(VecAssemblyEnd, vector);
+  PETSc_call(VecAssemblyBegin, x);
+  PETSc_call(VecAssemblyEnd, x);
+}
+
+/* -------------------------------------------------------------------------- */
+SolverVectorPETSc::operator const Array<Real> &()  const {
+  const_cast<Array<Real> &>(cache).resize(local_size());
+  
+  auto xl = internal::make_petsc_local_vector(x);
+  auto cachep = internal::make_petsc_wraped_vector(this->cache);
+
+  PETSc_call(VecCopy, cachep, xl);
+  return cache;
 }
 
 } // namespace akantu

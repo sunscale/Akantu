@@ -55,6 +55,8 @@ public:
   // clear the vector
   virtual void clear() = 0;
 
+  virtual operator const Array<Real> &() const = 0;
+  
 protected:
   ID id;
 

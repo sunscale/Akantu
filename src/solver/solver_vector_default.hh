@@ -49,6 +49,9 @@ public:
   SolverVectorArray(const SolverVectorArray & vector,
                     const ID & id = "solver_vector_default");
 
+  virtual operator const Array<Real> &() const { return getVector(); };
+  virtual operator Array<Real> &() { return getVector(); };
+
 public:
   virtual Array<Real> & getVector() = 0;
   virtual const Array<Real> & getVector() const = 0;
@@ -56,7 +59,6 @@ public:
 protected:
   DOFManagerDefault & dof_manager;
 };
-
 
 /* -------------------------------------------------------------------------- */
 class SolverVectorDefault : public SolverVectorArray {
@@ -83,7 +85,8 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-template <class Array> class SolverVectorDefaultWrap : public SolverVectorArray {
+template <class Array>
+class SolverVectorDefaultWrap : public SolverVectorArray {
 public:
   SolverVectorDefaultWrap(DOFManagerDefault & dof_manager, Array & vector);
 
@@ -109,8 +112,7 @@ protected:
 template <class Array>
 decltype(auto) make_solver_vector_default_wrap(DOFManagerDefault & dof_manager,
                                                Array & vector) {
-  return SolverVectorDefaultWrap<Array>(dof_manager,
-                                        vector);
+  return SolverVectorDefaultWrap<Array>(dof_manager, vector);
 }
 
 } // namespace akantu

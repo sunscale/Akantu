@@ -40,6 +40,7 @@
 namespace akantu {
 class DOFManagerDefault;
 class SparseSolverMumps;
+class SolverVector;
 }
 
 namespace akantu {
@@ -68,7 +69,7 @@ public:
 
 protected:
   /// test the convergence compare norm of array to convergence_criteria
-  bool testConvergence(const Array<Real> & array);
+  bool testConvergence(const SolverVector & array);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

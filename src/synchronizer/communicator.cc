@@ -136,10 +136,10 @@ namespace akantu {
                                                int root) const;                \
   template void Communicator::allReduceImpl<T>(                                \
       T * values, int nb_values, SynchronizerOperation op) const;              \
-  template void Communicator::scanImpl<T>(T * values, int nb_values,           \
+  template void Communicator::scanImpl<T>(T * values, T *, int nb_values,      \
                                           SynchronizerOperation op) const;     \
   template void Communicator::exclusiveScanImpl<T>(                            \
-      T * values, int nb_values, SynchronizerOperation op) const
+      T * values, T *, int nb_values, SynchronizerOperation op) const
 
 #define MIN_MAX_REAL SCMinMaxLoc<Real, int>
 

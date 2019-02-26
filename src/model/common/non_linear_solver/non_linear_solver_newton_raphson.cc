@@ -33,6 +33,7 @@
 #include "communicator.hh"
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
+#include "solver_vector.hh"
 #include "sparse_solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -98,8 +99,7 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   this->converged = false;
 
   if (this->convergence_criteria_type == SolveConvergenceCriteria::_residual) {
-    this->converged =
-        this->testConvergence(this->dof_manager.getResidualArray());
+    this->converged = this->testConvergence(this->dof_manager.getResidual());
 
     if (this->converged)
       return;
@@ -118,11 +118,9 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
     if (this->convergence_criteria_type ==
         SolveConvergenceCriteria::_residual) {
       this->assembleResidual(solver_callback);
-      this->converged =
-          this->testConvergence(this->dof_manager.getResidualArray());
+      this->converged = this->testConvergence(this->dof_manager.getResidual());
     } else {
-      this->converged =
-          this->testConvergence(this->dof_manager.getSolutionArray());
+      this->converged = this->testConvergence(this->dof_manager.getSolution());
     }
 
     if (this->convergence_criteria_type ==
@@ -162,11 +160,13 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
 }
 
 /* -------------------------------------------------------------------------- */
-bool NonLinearSolverNewtonRaphson::testConvergence(const Array<Real> & array) {
+bool NonLinearSolverNewtonRaphson::testConvergence(
+    const SolverVector & solver_vector) {
   AKANTU_DEBUG_IN();
 
   const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
 
+  const Array<Real> & array(solver_vector);
   UInt nb_degree_of_freedoms = array.size();
 
   auto arr_it = array.begin();

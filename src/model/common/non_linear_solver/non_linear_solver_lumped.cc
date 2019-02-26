@@ -33,6 +33,7 @@
 #include "communicator.hh"
 #include "dof_manager_default.hh"
 #include "solver_callback.hh"
+#include "solver_vector_default.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -59,12 +60,13 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   this->dof_manager.updateGlobalBlockedDofs();
   solver_callback.predictor();
 
-  auto & x = this->dof_manager.getSolutionArray();
-  const auto & b = this->dof_manager.getResidualArray();
+  auto & x =
+      dynamic_cast<SolverVectorDefault &>(this->dof_manager.getSolution());
+  const auto & b = this->dof_manager.getResidual();
 
-  x.resize(b.size());
+  x.resize();
 
-  //this->dof_manager.updateGlobalBlockedDofs();
+  // this->dof_manager.updateGlobalBlockedDofs();
   const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
 
   solver_callback.assembleResidual();
@@ -100,4 +102,4 @@ void NonLinearSolverLumped::solveLumped(const Array<Real> & A, Array<Real> & x,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

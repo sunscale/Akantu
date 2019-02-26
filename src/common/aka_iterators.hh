@@ -349,7 +349,12 @@ namespace iterators {
       return *this;
     }
 
-    decltype(auto) operator*() const { return op(*it); }
+    decltype(auto) operator*() const {
+      return op(std::forward<decltype(*it)>(*it));
+    }
+    decltype(auto) operator*() {
+      return op(std::forward<decltype(*it)>(*it));
+    }
 
     bool operator==(const transform_adaptor_iterator & other) const {
       return (it == other.it);
@@ -420,8 +425,9 @@ decltype(auto) make_keys_adaptor(container_t && cont) {
 template <class container_t>
 decltype(auto) make_values_adaptor(container_t && cont) {
   return make_transform_adaptor(
-      std::forward<container_t>(cont),
-      [](auto && pair) -> decltype(pair.second) { return pair.second; });
+      std::forward<container_t>(cont), [](auto && pair) {
+        return std::forward<decltype(pair.second)>(pair.second);
+      });
 }
 
 template <class container_t>
@@ -445,7 +451,6 @@ struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
   using reference =
       typename ::akantu::iterators::ZipIterator<Its...>::reference;
 };
-
 
 } // namespace std
 
