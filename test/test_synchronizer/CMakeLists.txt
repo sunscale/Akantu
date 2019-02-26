@@ -48,6 +48,12 @@ register_test(test_dof_synchronizer
 #   )
 
 register_gtest_sources(
+  SOURCES test_communicator.cc
+  PACKAGE core
+  )
+
+
+register_gtest_sources(
   SOURCES test_synchronizer_communication.cc  test_data_accessor.hh test_synchronizers_fixture.hh
   PACKAGE parallel
   )
