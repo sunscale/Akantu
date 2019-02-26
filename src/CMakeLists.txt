@@ -214,8 +214,16 @@ if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
   export(PACKAGE Akantu)
 endif()
 
-
-
+#===============================================================================
+# Adding module names for debug
+package_get_all_packages(_pkg_list)
+foreach(_pkg ${_pkg_list})
+  _package_get_real_name(${_pkg} _pkg_name)
+  _package_get_source_files(${_pkg} _srcs _public_hdrs _private_hdrs)
+  string(TOLOWER "${_pkg_name}" _l_package_name)
+  set_property(SOURCE ${_srcs} ${_public_hdrs} ${_private_hdrs} 
+    APPEND PROPERTY COMPILE_DEFINITIONS AKANTU_MODULE=${_l_package_name})
+endforeach()
 
 # print out the list of materials
 generate_material_list()
