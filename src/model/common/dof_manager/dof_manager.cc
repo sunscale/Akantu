@@ -309,6 +309,8 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   dofs_storage.support_type = support_type;
 
   this->registerDOFsInternal(dof_id, dofs_array);
+
+  resizeGlobalArrays();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -319,6 +321,8 @@ void DOFManager::registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
   dofs_storage.group_support = support_group;
 
   this->registerDOFsInternal(dof_id, dofs_array);
+
+  resizeGlobalArrays();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -379,6 +383,9 @@ DOFManager::registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) {
 
   this->system_size += nb_total_pure_local;
 
+  this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
+  this->global_equation_number.resize(this->local_system_size, -1);
+  
   // updating the dofs data after counting is finished
   switch (support_type) {
   case _dst_nodal: {
@@ -674,9 +681,9 @@ DOFManager::updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) {
 /* -------------------------------------------------------------------------- */
 void DOFManager::resizeGlobalArrays() {
   // resize all relevant arrays
-  this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
-  this->global_equation_number.resize(this->local_system_size, -1);
-
+  this->residual->resize();
+  this->solution->resize();
+  
   for (auto & lumped_matrix : lumped_matrices)
     lumped_matrix.second->resize();
 
@@ -808,8 +815,6 @@ void DOFManager::updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
                                 const std::function<UInt(UInt)> & getNode) {
   auto nb_local_dofs_added = nb_node * dof_data.dof->getNbComponent();
 
-  resizeGlobalArrays();
-
   auto first_dof_pos = dof_data.local_equation_number.size();
   dof_data.local_equation_number.reserve(dof_data.local_equation_number.size() +
                                          nb_local_dofs_added);
@@ -891,8 +896,6 @@ void DOFManager::updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
 /* -------------------------------------------------------------------------- */
 void DOFManager::updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
                                 UInt nb_new_pure_local) {
-  resizeGlobalArrays();
-
   dof_data.local_equation_number.reserve(dof_data.local_equation_number.size() +
                                          nb_new_local_dofs);
 

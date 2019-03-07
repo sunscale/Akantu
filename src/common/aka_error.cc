@@ -282,7 +282,7 @@ namespace debug {
 
 #if !defined(AKANTU_NDEBUG)
     if (!silent) {
-      printMessage("###", dblWarning, info + location);
+      printMessage("###", dblWarning, info + " " + location);
     }
 #endif
 

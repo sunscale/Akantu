@@ -30,6 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager_petsc.hh"
+#include "aka_iterators.hh"
 #include "communicator.hh"
 #include "cppargparse.hh"
 #include "non_linear_solver_petsc.hh"
@@ -46,52 +47,40 @@
 
 namespace akantu {
 
-int DOFManagerPETSc::petsc_dof_manager_instances = 0;
+class PETScSingleton {
+private:
+  PETScSingleton() {
+    PETSc_call(PetscInitialized, &is_initialized);
 
-/* -------------------------------------------------------------------------- */
-namespace internal {
-  PETScVector::~PETScVector() = default;
-
-  PETScVector::operator Vec() { return x; }
-
-  Int PETScVector::size() const {
-    PetscInt n;
-    PETSc_call(VecGetSize, x, &n);
-    return n;
+    if (not is_initialized) {
+      cppargparse::ArgumentParser & argparser = getStaticArgumentParser();
+      int & argc = argparser.getArgC();
+      char **& argv = argparser.getArgV();
+      PETSc_call(PetscInitialize, &argc, &argv, NULL, NULL);
+      PETSc_call(
+          PetscPopErrorHandler); // remove the default PETSc signal handler
+      PETSc_call(PetscPushErrorHandler, PetscIgnoreErrorHandler, NULL);
+    }
   }
 
-  Int PETScVector::local_size() const {
-    PetscInt n;
-    PETSc_call(VecGetLocalSize, x, &n);
-    return n;
+public:
+  PETScSingleton(const PETScSingleton &) = delete;
+  PETScSingleton & operator=(const PETScSingleton &) = delete;
+
+  ~PETScSingleton() {
+    if (not is_initialized) {
+      PetscFinalize();
+    }
   }
 
-  template <class Array>
-  PETScWrapedVector<Array>::PETScWrapedVector(Array && array) : array(array) {
-    PETSc_call(VecCreateSeqWithArray, PETSC_COMM_SELF, 1, array.size(),
-               array.storage(), &x);
+  static PETScSingleton & getInstance() {
+    static PETScSingleton instance;
+    return instance;
   }
 
-  template <class Array> PETScWrapedVector<Array>::~PETScWrapedVector() {
-    PETSc_call(VecDestroy, &x);
-  }
-
-  template <class V>
-  PETScLocalVector<V>::PETScLocalVector(const SolverVector & g)
-      : g(dynamic_cast<const SolverVectorPETSc &>(g).getVec()) {
-    PETSc_call(VecGetLocalVector, this->g, x);
-  }
-
-  template <class V> PETScLocalVector<V>::~PETScLocalVector() {
-    PETSc_call(VecRestoreLocalVector, x, g);
-    PETSc_call(VecDestroy, &x);
-  }
-
-  PETScLocalVector<const Vec &> make_petsc_local_vector(const SolverVector & vec) {
-    return PETScLocalVector<const Vec &>(vec);
-  }
-
-} // namespace internal
+private:
+  PetscBool is_initialized;
+};
 
 /* -------------------------------------------------------------------------- */
 DOFManagerPETSc::DOFDataPETSc::DOFDataPETSc(const ID & dof_id)
@@ -119,6 +108,7 @@ void DOFManagerPETSc::init() {
                 "The integer type of Akantu does not match the one from PETSc");
 
 #if defined(AKANTU_USE_MPI)
+
   const auto & mpi_data =
       aka::as_type<MPICommunicatorData>(communicator.getCommunicatorData());
   MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
@@ -127,25 +117,11 @@ void DOFManagerPETSc::init() {
   this->mpi_communicator = PETSC_COMM_SELF;
 #endif
 
-  PetscBool isInitialized;
-  PETSc_call(PetscInitialized, &isInitialized);
-
-  if (not isInitialized) {
-    cppargparse::ArgumentParser & argparser = getStaticArgumentParser();
-    int & argc = argparser.getArgC();
-    char **& argv = argparser.getArgV();
-    PETSc_call(PetscInitialize, &argc, &argv, NULL, NULL);
-    PETSc_call(PetscPopErrorHandler); // remove the default PETSc signal handler
-    PETSc_call(PetscPushErrorHandler, PetscIgnoreErrorHandler, NULL);
-  }
-
-  this->petsc_dof_manager_instances++;
+  PETScSingleton & instance [[gnu::unused]] = PETScSingleton::getInstance();
 }
 
 /* -------------------------------------------------------------------------- */
 DOFManagerPETSc::~DOFManagerPETSc() {
-  this->petsc_dof_manager_instances--;
-
   for (auto && data : dofs) {
     auto & dof_data_petsc = dynamic_cast<DOFDataPETSc &>(*(data.second));
     if (dof_data_petsc.is) {
@@ -155,10 +131,6 @@ DOFManagerPETSc::~DOFManagerPETSc() {
 
   if (is_ltog_map)
     PETSc_call(ISLocalToGlobalMappingDestroy, &is_ltog_map);
-
-  if (this->petsc_dof_manager_instances == 0) {
-    PetscFinalize();
-  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -176,18 +148,32 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
   UInt nb_dofs, nb_pure_local_dofs;
   std::tie(nb_dofs, nb_pure_local_dofs, std::ignore) = ret;
 
-  auto & dof_data = this->getDOFDataTyped<DOFDataPETSc>(dof_id);
+  auto && vector = std::make_unique<SolverVectorPETSc>(*this, id + ":solution");
+  auto x = vector->getVec();
+  ISLocalToGlobalMapping is_ltog_map;
+  PETSc_call(VecGetLocalToGlobalMapping, x, &is_ltog_map);
 
-  ISCreateGeneral(PETSC_COMM_SELF, dof_data.local_equation_number.size(),
-                  dof_data.local_equation_number.storage(), PETSC_USE_POINTER,
-                  &(dof_data.is));
+  // redoing the indexes based on the petsc numbering
+  for(auto & dof_id : dofs_ids) {
+    auto & dof_data = this->getDOFDataTyped<DOFDataPETSc>(dof_id);
 
-  if (is_ltog_map)
-    PETSc_call(ISLocalToGlobalMappingDestroy, &is_ltog_map);
+    Array<PetscInt> gidx(dof_data.local_equation_number.size());
+    for (auto && data : zip(dof_data.local_equation_number, gidx)) {
+      std::get<1>(data) = localToGlobalEquationNumber(std::get<0>(data));
+    }
 
-  PETSc_call(ISLocalToGlobalMappingCreate, PETSC_COMM_SELF, 1,
-             global_equation_number.size(), global_equation_number.storage(),
-             PETSC_COPY_VALUES, &is_ltog_map);
+    auto & lidx = dof_data.local_equation_number_petsc;
+    if (is_ltog_map) {
+      lidx.resize(gidx.size());
+
+      PetscInt n;
+      PETSc_call(ISGlobalToLocalMappingApply, is_ltog_map, IS_GTOLM_MASK,
+                 gidx.size(), gidx.storage(), &n, lidx.storage());
+    }
+  }
+
+  residual = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
+  solution = std::move(vector);
 
   return ret;
 }
@@ -196,37 +182,35 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
 void DOFManagerPETSc::assembleToGlobalArray(
     const ID & dof_id, const Array<Real> & array_to_assemble,
     SolverVector & global_array, Real scale_factor) {
-  const auto & is = getDOFDataTyped<DOFDataPETSc>(dof_id).is;
+  const auto & dof_data = getDOFDataTyped<DOFDataPETSc>(dof_id);
+  auto & g = dynamic_cast<SolverVectorPETSc &>(global_array);
 
-  auto y = internal::make_petsc_local_vector(global_array);
-  auto x = internal::make_petsc_wraped_vector(array_to_assemble);
+  AKANTU_DEBUG_ASSERT(array_to_assemble.size() *
+                              array_to_assemble.getNbComponent() ==
+                          dof_data.local_nb_dofs,
+                      "The array to assemble does not have the proper size");
 
-  PETSc_call(VecISAXPY, y, is, scale_factor, x);
+  g.addValuesLocal(dof_data.local_equation_number_petsc, array_to_assemble,
+              scale_factor);
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerPETSc::getArrayPerDOFs(const ID & dof_id,
-                                      const SolverVector & global,
+                                      const SolverVector & global_array,
                                       Array<Real> & local) {
-  const auto & is = getDOFDataTyped<DOFDataPETSc>(dof_id).is;
+  const auto & dof_data = getDOFDataTyped<DOFDataPETSc>(dof_id);
+  const auto & petsc_vector = dynamic_cast<const SolverVectorPETSc &>(global_array);
 
-  auto g = internal::make_petsc_local_vector(global);
+  AKANTU_DEBUG_ASSERT(
+      local.size() * local.getNbComponent() == dof_data.local_nb_dofs,
+      "The array to get the values does not have the proper size");
 
-  const PetscInt * idx;
-  PETSc_call(ISGetIndices, is, &idx);
-
-  PETSc_call(VecGetValues, g, local.size(), idx, local.storage());
-
-  PETSc_call(ISRestoreIndices, is, &idx);
+  petsc_vector.getValuesLocal(dof_data.local_equation_number_petsc, local);
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerPETSc::makeConsistentForPeriodicity(const ID & /*dof_id*/,
-                                                   SolverVector & /*array*/) {
-
-}
-
-
+                                                   SolverVector & /*array*/) {}
 
 /* -------------------------------------------------------------------------- */
 NonLinearSolver &

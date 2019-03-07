@@ -173,6 +173,12 @@ inline bool DOFManager::isSlaveDOF(UInt dof_num) {
 }
 
 /* -------------------------------------------------------------------------- */
+inline bool DOFManager::isPureGhostDOF(UInt dof_num) {
+  auto dof_flag = this->dofs_flag(dof_num);
+  return (dof_flag & NodeFlag::_shared_mask) == NodeFlag::_pure_ghost;
+}
+
+/* -------------------------------------------------------------------------- */
 inline Int DOFManager::localToGlobalEquationNumber(Int local) const {
   return this->global_equation_number(local);
 }

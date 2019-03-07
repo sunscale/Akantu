@@ -224,6 +224,9 @@ public:
   /// Answer to the question is a dof a slave dof ?
   inline bool isSlaveDOF(UInt local_dof_num);
 
+/// Answer to the question is a dof a slave dof ?
+  inline bool isPureGhostDOF(UInt local_dof_num);
+  
   /// tells if the dof manager knows about a global dof
   bool hasGlobalEquationNumber(Int global) const;
 
@@ -626,6 +629,10 @@ protected:
 
   /// accumulator to know what would be the next global id to use
   UInt first_global_dof_id{0};
+
+private:
+  /// This is for unit testing
+  friend class DOFManagerTester;
 };
 
 using DefaultDOFManagerFactory =

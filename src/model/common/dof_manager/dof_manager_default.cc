@@ -629,10 +629,6 @@ void DOFManagerDefault::onNodesAdded(const Array<UInt> & nodes_list,
 void DOFManagerDefault::resizeGlobalArrays() {
   DOFManager::resizeGlobalArrays();
 
-  // resize all relevant arrays
-  this->residual->resize();
-  this->solution->resize();
-
   this->global_blocked_dofs.resize(this->local_system_size, true);
   this->previous_global_blocked_dofs.resize(this->local_system_size, true);
 

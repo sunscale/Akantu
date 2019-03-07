@@ -31,7 +31,6 @@
 #include "dof_manager.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscis.h>
-#include <petscvec.h>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
@@ -82,6 +81,9 @@ protected:
   struct DOFDataPETSc : public DOFData {
     explicit DOFDataPETSc(const ID & dof_id);
 
+    /// petsc compressed version of local_equation_number
+    Array<PetscInt> local_equation_number_petsc;
+    
     /// local equation numbers in PETSc type
     IS is{nullptr};
   };
@@ -223,73 +225,8 @@ private:
 
   /// list of the dof ids to be able to always iterate in the same order
   std::vector<ID> dofs_ids;
-
-  /// counter of instances to know when to finalize
-  static int petsc_dof_manager_instances;
 };
 
-namespace internal {
-  /* ------------------------------------------------------------------------ */
-  class PETScVector {
-  public:
-    virtual ~PETScVector();
-
-    operator Vec();
-    Int size() const;
-    Int local_size() const;
-
-    AKANTU_GET_MACRO_NOT_CONST(Vec, x, auto &);
-    AKANTU_GET_MACRO(Vec, x, const auto &);
-
-  protected:
-    Vec x{nullptr};
-  };
-
-  /* ------------------------------------------------------------------------ */
-  template <class Array> class PETScWrapedVector : public PETScVector {
-  public:
-    PETScWrapedVector(Array && array);
-    ~PETScWrapedVector();
-
-  private:
-    Array array;
-  };
-
-  /* ------------------------------------------------------------------------ */
-  template <class V> class PETScLocalVector : public PETScVector {
-  public:
-    PETScLocalVector(const SolverVector & g);
-
-    template <
-        typename T = V,
-        std::enable_if_t<std::is_same<Vec, std::decay_t<T>>::value> * = nullptr>
-    PETScLocalVector(V && g) : g(g) {
-      PETSc_call(VecGetLocalVector, g, x);
-    }
-
-    ~PETScLocalVector();
-
-  private:
-    V g;
-  };
-
-  /* ------------------------------------------------------------------------ */
-  template <class Array>
-  decltype(auto) make_petsc_wraped_vector(Array && array) {
-    return PETScWrapedVector<Array>(std::forward<Array>(array));
-  }
-
-  PETScLocalVector<const Vec &>
-  make_petsc_local_vector(const SolverVector & vec);
-
-  template <
-      typename V,
-      std::enable_if_t<std::is_same<Vec, std::decay_t<V>>::value> * = nullptr>
-  decltype(auto) make_petsc_local_vector(V && vec) {
-    return PETScLocalVector<V>(std::forward<V>(vec));
-  }
-
-} // namespace internal
 /* -------------------------------------------------------------------------- */
 
 } // namespace akantu

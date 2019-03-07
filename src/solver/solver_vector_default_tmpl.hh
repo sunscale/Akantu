@@ -60,6 +60,9 @@ template <class Array> void SolverVectorDefaultWrap<Array>::clear() {
   this->vector.clear();
 }
 
+inline Int SolverVectorArray::size() { return dof_manager.getSystemSize(); }
+inline Int SolverVectorArray::localSize() { return dof_manager.getLocalSystemSize(); }
+
 } // namespace akantu
 
 #endif /* __AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH__ */

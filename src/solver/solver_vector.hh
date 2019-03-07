@@ -56,7 +56,9 @@ public:
   virtual void clear() = 0;
 
   virtual operator const Array<Real> &() const = 0;
-  
+
+  virtual Int size() = 0;
+  virtual Int localSize() = 0;
 protected:
   ID id;
 

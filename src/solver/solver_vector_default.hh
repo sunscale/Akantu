@@ -56,6 +56,9 @@ public:
   virtual Array<Real> & getVector() = 0;
   virtual const Array<Real> & getVector() const = 0;
 
+  Int size() override;
+  Int localSize() override;
+
 protected:
   DOFManagerDefault & dof_manager;
 };
@@ -79,7 +82,6 @@ public:
 
   virtual Array<Real> & getGlobalVector();
   virtual void setGlobalVector(const Array<Real> & global_vector);
-
 protected:
   Array<Real> vector;
 };
