@@ -30,6 +30,10 @@
 
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
+#include "element_group.hh"
+#include "solver_vector.hh"
+#include "sparse_matrix.hh"
+#include "terms_to_assemble.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__
@@ -203,8 +207,122 @@ inline Int DOFManager::globalToLocalEquationNumber(Int global) const {
 inline NodeFlag DOFManager::getDOFFlag(Int local_id) const {
   return this->dofs_flag(local_id);
 }
+
+/* -------------------------------------------------------------------------- */
+inline const Array<UInt> &
+DOFManager::getDOFsAssociatedNodes(const ID & dof_id) const {
+  const auto & dof_data = this->getDOFData(dof_id);
+  return dof_data.associated_nodes;
+}
+
+/* -------------------------------------------------------------------------- */
+const Array<Int> &
+DOFManager::getLocalEquationsNumbers(const ID & dof_id) const {
+  return getDOFData(dof_id).local_equation_number;
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename Vec>
+void DOFManager::assembleMatMulVectToArray_(const ID & dof_id, const ID & A_id,
+                                            const Array<Real> & x,
+                                            Array<Real> & array,
+                                            Real scale_factor) {
+  Vec tmp_array(dynamic_cast<Vec &>(*data_cache), this->id + ":tmp_array");
+  tmp_array.clear();
+  assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_array, scale_factor);
+  getArrayPerDOFs(dof_id, tmp_array, array);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename Mat>
+void DOFManager::assembleElementalMatricesToMatrix_(
+    Mat & A, const ID & dof_id, const Array<Real> & elementary_mat,
+    const ElementType & type, const GhostType & ghost_type,
+    const MatrixType & elemental_matrix_type,
+    const Array<UInt> & filter_elements) {
+  AKANTU_DEBUG_IN();
+
+  auto & dof_data = this->getDOFData(dof_id);
+
+  AKANTU_DEBUG_ASSERT(dof_data.support_type == _dst_nodal,
+                      "This function applies only on Nodal dofs");
+
+  const auto & equation_number = this->getLocalEquationsNumbers(dof_id);
+
+  UInt nb_element;
+  UInt * filter_it = nullptr;
+  if (filter_elements != empty_filter) {
+    nb_element = filter_elements.size();
+    filter_it = filter_elements.storage();
+  } else {
+    if (dof_data.group_support != "__mesh__") {
+      const auto & group_elements =
+          this->mesh->getElementGroup(dof_data.group_support)
+              .getElements(type, ghost_type);
+      nb_element = group_elements.size();
+      filter_it = group_elements.storage();
+    } else {
+      nb_element = this->mesh->getNbElement(type, ghost_type);
+    }
+  }
+
+  AKANTU_DEBUG_ASSERT(elementary_mat.size() == nb_element,
+                      "The vector elementary_mat("
+                          << elementary_mat.getID()
+                          << ") has not the good size.");
+
+  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+
+  UInt nb_degree_of_freedom = dof_data.dof->getNbComponent();
+
+  const Array<UInt> & connectivity =
+      this->mesh->getConnectivity(type, ghost_type);
+  auto conn_begin = connectivity.begin(nb_nodes_per_element);
+  auto conn_it = conn_begin;
+  auto size_mat = nb_nodes_per_element * nb_degree_of_freedom;
+
+  Vector<Int> element_eq_nb(nb_degree_of_freedom * nb_nodes_per_element);
+  auto el_mat_it = elementary_mat.begin(size_mat, size_mat);
+
+  for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
+    if (filter_it)
+      conn_it = conn_begin + *filter_it;
+
+    this->extractElementEquationNumber(equation_number, *conn_it,
+                                       nb_degree_of_freedom, element_eq_nb);
+    std::transform(element_eq_nb.begin(), element_eq_nb.end(),
+                   element_eq_nb.begin(), [&](auto && local) {
+                     return this->localToGlobalEquationNumber(local);
+                   });
+
+    if (filter_it)
+      ++filter_it;
+    else
+      ++conn_it;
+
+    A.addValues(element_eq_nb, element_eq_nb, *el_mat_it,
+                elemental_matrix_type);
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename Mat>
+void DOFManager::assemblePreassembledMatrix_(Mat & A, const ID & dof_id_m,
+                                             const ID & dof_id_n,
+                                             const TermsToAssemble & terms) {
+  const auto & equation_number_m = this->getLocalEquationsNumbers(dof_id_m);
+  const auto & equation_number_n = this->getLocalEquationsNumbers(dof_id_n);
+
+  for (const auto & term : terms) {
+    auto gi = this->localToGlobalEquationNumber(equation_number_m(term.i()));
+    auto gj = this->localToGlobalEquationNumber(equation_number_n(term.j()));
+    A.add(gi, gj, term);
+  }
+}
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DOF_MANAGER_INLINE_IMPL_CC__ */

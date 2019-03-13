@@ -248,4 +248,23 @@ SolverVectorPETSc::operator const Array<Real> &() const {
   return cache;
 }
 
+/* -------------------------------------------------------------------------- */
+SolverVector & SolverVectorPETSc::operator=(const SolverVector & y) {
+  auto & y_ = dynamic_cast<const SolverVectorPETSc &>(y);
+  PETSc_call(VecCopy, y_.x, x);
+  release_ = y_.release_;
+  return *this;
+}
+
+
+/* -------------------------------------------------------------------------- */
+SolverVector & SolverVectorPETSc::operator+(const SolverVector & y) {
+  auto & y_ = dynamic_cast<const SolverVectorPETSc &>(y);
+  PETSc_call(VecAXPY, x, 1., y_.x);
+  release_ = y_.release_;
+  return *this;
+}
+
+
+
 } // namespace akantu

@@ -43,7 +43,6 @@ class SparseMatrixAIJ;
 class NonLinearSolverDefault;
 class TimeStepSolverDefault;
 class DOFSynchronizer;
-class SolverVectorDefault;
 } // namespace akantu
 
 namespace akantu {
@@ -89,19 +88,9 @@ public:
       const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements) override;
 
-  void assembleMatMulVectToGlobalArray(const ID & dof_id, const ID & A_id,
-                                       const Array<Real> & x,
-                                       Array<Real> & array,
-                                       Real scale_factor = 1.);
-
   void assembleMatMulVectToArray(const ID & dof_id, const ID & A_id,
                                  const Array<Real> & x, Array<Real> & array,
                                  Real scale_factor = 1.) override;
-
-  /// multiply a vector by a matrix and assemble the result to the residual
-  void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                    const Array<Real> & x,
-                                    Real scale_factor = 1) override;
 
   /// multiply a vector by a lumped matrix and assemble the result to the
   /// residual
@@ -129,18 +118,18 @@ protected:
                        Array<Real> & local) override;
 
   template <typename T>
-  void getArrayPerDOFs(const ID & dof_id,
-                                          const Array<T> & global_array,
-                                          Array<T> & local_array) const;
+  void getArrayPerDOFs(const ID & dof_id, const Array<T> & global_array,
+                       Array<T> & local_array) const;
   void makeConsistentForPeriodicity(const ID & dof_id,
                                     SolverVector & array) override;
 
-public:
-  /// update the global dofs vector
-  virtual void updateGlobalBlockedDofs();
 
-  /// apply boundary conditions to jacobian matrix
-  void applyBoundary(const ID & matrix_id = "J") override;
+public:
+   /// update the global dofs vector
+  void updateGlobalBlockedDofs() override;
+
+//   /// apply boundary conditions to jacobian matrix
+//   void applyBoundary(const ID & matrix_id = "J") override;
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -228,25 +217,15 @@ private:
   Array<Real> & getResidualArray();
 
 public:
-  /// Get the blocked dofs array
-  AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<bool> &);
-  /// Get the blocked dofs array
-  AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
-                   const Array<bool> &);
-
-  /// Get the equation numbers corresponding to a dof_id. This might be used to
-  /// access the matrix.
-  inline const Array<Int> & getLocalEquationsNumbers(const ID & dof_id) const;
-
-  /// get the array of dof types (use only if you know what you do...)
-  inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
-
   /// access the internal dof_synchronizer
   AKANTU_GET_MACRO_NOT_CONST(Synchronizer, *synchronizer, DOFSynchronizer &);
 
   /// access the internal dof_synchronizer
   bool hasSynchronizer() const { return synchronizer != nullptr; }
 
+  Array<bool> & getBlockedDOFs();
+  const Array<bool> & getBlockedDOFs() const;
+  
 protected:
   std::unique_ptr<DOFData> getNewDOFData(const ID & dof_id) override;
 
@@ -261,27 +240,13 @@ protected:
   /// contains the the dofs that where added to the profile of a given matrix.
   DOFToMatrixProfile matrix_profiled_dofs;
 
-  /// rhs used only on root proc in case of parallel computing, this is the full
-  /// gathered rhs array
-  std::unique_ptr<Array<Real>> global_residual;
-
-  /// blocked degree of freedom in the system equation corresponding to the
-  /// different dofs
-  Array<bool> global_blocked_dofs;
-
-  /// blocked degree of freedom in the system equation corresponding to the
-  /// different dofs
-  Array<bool> previous_global_blocked_dofs;
-
-  /// Memory cache, this is an array to keep the temporary memory needed for
-  /// some operations, it is meant to be resized or cleared when needed
-  Array<Real> data_cache;
-
-  /// Release at last apply boundary on jacobian
-  UInt jacobian_release{0};
-
   /// synchronizer to maintain coherency in dof fields
   std::unique_ptr<DOFSynchronizer> synchronizer;
+
+  friend class DOFSynchronizer;
+
+  /// Array containing the true or false if the node is in global_blocked_dofs
+  Array<bool> global_blocked_dofs_uint;
 };
 
 } // namespace akantu

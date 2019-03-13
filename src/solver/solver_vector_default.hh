@@ -43,73 +43,82 @@ namespace akantu {
 
 class SolverVectorArray : public SolverVector {
 public:
-  SolverVectorArray(DOFManagerDefault & dof_manager,
-                    const ID & id = "solver_vector_default");
+  SolverVectorArray(DOFManagerDefault & dof_manager, const ID & id);
+  SolverVectorArray(const SolverVectorArray & vector, const ID & id);
 
-  SolverVectorArray(const SolverVectorArray & vector,
-                    const ID & id = "solver_vector_default");
+  virtual ~SolverVectorArray() = default;
 
-  virtual operator const Array<Real> &() const { return getVector(); };
-  virtual operator Array<Real> &() { return getVector(); };
-
-public:
   virtual Array<Real> & getVector() = 0;
   virtual const Array<Real> & getVector() const = 0;
 
-  Int size() override;
-  Int localSize() override;
-
-protected:
-  DOFManagerDefault & dof_manager;
+  virtual Int size() = 0;
+  virtual Int localSize() = 0;
 };
 
 /* -------------------------------------------------------------------------- */
-class SolverVectorDefault : public SolverVectorArray {
+template <class Array_> class SolverVectorArrayTmpl : public SolverVectorArray {
 public:
-  SolverVectorDefault(DOFManagerDefault & dof_manager,
-                      const ID & id = "solver_vector_default");
+  SolverVectorArrayTmpl(DOFManagerDefault & dof_manager, Array_ & vector,
+                        const ID & id = "solver_vector_default")
+      : SolverVectorArray(dof_manager, id), dof_manager(dof_manager),
+        vector(vector) {}
 
-  SolverVectorDefault(const SolverVectorDefault & vector,
-                      const ID & id = "solver_vector_default");
+  template <class A = Array_,
+            std::enable_if_t<not std::is_reference<A>::value> * = nullptr>
+  SolverVectorArrayTmpl(DOFManagerDefault & dof_manager,
+                        const ID & id = "solver_vector_default")
+      : SolverVectorArray(dof_manager, id), dof_manager(dof_manager),
+        vector(0, 1, id + ":vector") {}
 
-  // resize the vector to the size of the problem
-  void resize() override;
-  void clear() override;
+  SolverVectorArrayTmpl(const SolverVectorArrayTmpl & vector,
+                        const ID & id = "solver_vector_default")
+      : SolverVectorArray(vector, id), dof_manager(vector.dof_manager), vector(vector.vector) {}
+
+  operator const Array<Real> &() const override { return getVector(); };
+  virtual operator Array<Real> &() { return getVector(); };
+
+  SolverVector & operator+(const SolverVector & y) override;
+  SolverVector & operator=(const SolverVector & y) override;
+
+  void resize() {
+    static_assert(not std::is_const<std::remove_reference_t<Array_>>::value,
+                  "Cannot resize a const Array");
+    this->vector.resize(this->localSize(), 0.);
+    ++this->release_;
+  }
+
+  void clear() {
+    static_assert(not std::is_const<std::remove_reference_t<Array_>>::value,
+                  "Cannot clear a const Array");
+    this->vector.clear();
+    ++this->release_;
+  }
 
 public:
   Array<Real> & getVector() override { return vector; }
   const Array<Real> & getVector() const override { return vector; }
 
-  virtual Array<Real> & getGlobalVector();
-  virtual void setGlobalVector(const Array<Real> & global_vector);
+  Int size() override;
+  Int localSize() override;
+
+  virtual Array<Real> & getGlobalVector() { return this->vector; }
+  virtual void setGlobalVector(const Array<Real> & solution) {
+    this->vector.copy(solution);
+  }
+
 protected:
-  Array<Real> vector;
+  DOFManagerDefault & dof_manager;
+  Array_ vector;
+
+  template <class A> friend class SolverVectorArrayTmpl;
 };
 
 /* -------------------------------------------------------------------------- */
+using SolverVectorDefault = SolverVectorArrayTmpl<Array<Real>>;
+
+/* -------------------------------------------------------------------------- */
 template <class Array>
-class SolverVectorDefaultWrap : public SolverVectorArray {
-public:
-  SolverVectorDefaultWrap(DOFManagerDefault & dof_manager, Array & vector);
-
-  SolverVectorDefaultWrap(const SolverVectorDefaultWrap & vector,
-                          const ID & id = "solver_vector_default");
-
-  SolverVectorDefaultWrap(SolverVectorDefaultWrap && vector) = default;
-
-  // resize the vector to the size of the problem
-  void resize() override;
-
-  // clear the vector
-  void clear() override;
-
-public:
-  Array & getVector() override { return vector; }
-  const Array & getVector() const override { return vector; }
-
-protected:
-  Array & vector;
-};
+using SolverVectorDefaultWrap = SolverVectorArrayTmpl<Array &>;
 
 template <class Array>
 decltype(auto) make_solver_vector_default_wrap(DOFManagerDefault & dof_manager,

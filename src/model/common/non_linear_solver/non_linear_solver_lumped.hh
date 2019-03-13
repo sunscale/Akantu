@@ -63,8 +63,8 @@ public:
   void solve(SolverCallback & solver_callback) override;
 
   static void solveLumped(const Array<Real> & A, Array<Real> & x,
-                          const Array<Real> & b,
-                          const Array<bool> & blocked_dofs, Real alpha);
+                          const Array<Real> & b, Real alpha,
+                          const Array<bool> & blocked_dofs);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -76,6 +76,6 @@ private:
   Real alpha;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_LUMPED_HH__ */

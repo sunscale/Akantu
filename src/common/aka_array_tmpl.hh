@@ -148,7 +148,11 @@ void ArrayDataLayer<T, allocation_trait>::resize(UInt new_size,
 
 /* -------------------------------------------------------------------------- */
 template <typename T, ArrayAllocationType allocation_trait>
-void ArrayDataLayer<T, allocation_trait>::reserve(UInt size) {
+void ArrayDataLayer<T, allocation_trait>::reserve(UInt size, UInt new_size) {
+  if(new_size != UInt(-1)) {
+    this->data_storage.resize(new_size * this->nb_component);
+  }    
+    
   this->data_storage.reserve(size * this->nb_component);
   this->values = this->data_storage.data();
 }
@@ -306,10 +310,11 @@ public:
 #endif
 
   /// changes the allocated size but not the size
-  virtual void reserve(UInt size) {
+  virtual void reserve(UInt size, UInt new_size = UInt(-1)) {
     UInt tmp_size = this->size_;
+    if (new_size != UInt(-1)) tmp_size = new_size;
     this->resize(size);
-    this->size_ = tmp_size;
+    this->size_ = std::min(this->size_, tmp_size);
   }
 
   /// change the size of the Array

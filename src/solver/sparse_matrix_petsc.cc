@@ -39,7 +39,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
-                                     const MatrixType & sparse_matrix_type,
+                                     const MatrixType & matrix_type,
                                      const ID & id)
     : SparseMatrix(dof_manager, matrix_type, id), dof_manager(dof_manager) {
   AKANTU_DEBUG_IN();
@@ -48,7 +48,7 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
 
   PETSc_call(MatCreate, mpi_comm, &mat);
 
-  if (sparse_matrix_type == _symmetric)
+  if (matrix_type == _symmetric)
     PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_TRUE);
   PETSc_call(MatSetOption, mat, MAT_ROW_ORIENTED, PETSC_TRUE);
 
@@ -61,8 +61,7 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
 
   PETSc_call(MatSetLocalToGlobalMapping, mat, is_ltog_mapping, is_ltog_mapping);
 
-  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(mat),
-             id.c_str());
+  detail::PETScSetName(mat, id);
 
   AKANTU_DEBUG_OUT();
 }
@@ -72,8 +71,7 @@ SparseMatrixPETSc::SparseMatrixPETSc(const SparseMatrixPETSc & matrix,
                                      const ID & id)
     : SparseMatrix(matrix, id), dof_manager(matrix.dof_manager) {
   PETSc_call(MatDuplicate, matrix.mat, MAT_COPY_VALUES, &mat);
-  PETSc_call(PetscObjectSetName, reinterpret_cast<PetscObject>(mat),
-             id.c_str());
+  detail::PETScSetName(mat, id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -155,10 +153,9 @@ void SparseMatrixPETSc::addMeTo(SparseMatrix & B, Real alpha) const {
  * use only after MatAssemblyBegin() and MatAssemblyEnd() have been
  * called. (http://www.mcs.anl.gov/petsc/)
  */
-void SparseMatrixPETSc::performAssembly() {
+void SparseMatrixPETSc::applyModifications() {
   this->beginAssembly();
   this->endAssembly();
-  this->release++;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -172,6 +169,7 @@ void SparseMatrixPETSc::endAssembly() {
   PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
   // PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
   // PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
+  this->release++;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -218,34 +216,43 @@ void SparseMatrixPETSc::clear() {
 /* -------------------------------------------------------------------------- */
 UInt SparseMatrixPETSc::add(UInt i, UInt j) {
   PETSc_call(MatSetValue, mat, i, j, 0, ADD_VALUES);
-  this->release++;
   return 0;
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::add(UInt i, UInt j, Real val) {
   PETSc_call(MatSetValue, mat, i, j, val, ADD_VALUES);
-  this->release++;
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addLocal(UInt i, UInt j) {
   PETSc_call(MatSetValueLocal, mat, i, j, 0, ADD_VALUES);
-  this->release++;
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addLocal(UInt i, UInt j, Real val) {
   PETSc_call(MatSetValueLocal, mat, i, j, val, ADD_VALUES);
-  this->release++;
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixPETSc::addLocal(Vector<Int> & rows, Vector<Int> & cols,
-                                 Matrix<Real> & vals) {
+void SparseMatrixPETSc::addLocal(const Vector<Int> & rows,
+                                 const Vector<Int> & cols,
+                                 const Matrix<Real> & vals) {
   PETSc_call(MatSetValuesLocal, mat, rows.size(), rows.storage(), cols.size(),
              cols.storage(), vals.storage(), ADD_VALUES);
-  this->release++;
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrixPETSc::addValues(const Vector<Int> & rows,
+                                  const Vector<Int> & cols,
+                                  const Matrix<Real> & vals, MatrixType type) {
+  if (type == _unsymmetric and matrix_type == _symmetric) {
+    PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_FALSE);
+    PETSc_call(MatSetOption, mat, MAT_STRUCTURALLY_SYMMETRIC, PETSC_FALSE);
+  }
+
+  PETSc_call(MatSetValues, mat, rows.size(), rows.storage(), cols.size(),
+             cols.storage(), vals.storage(), ADD_VALUES);
 }
 
 /* -------------------------------------------------------------------------- */

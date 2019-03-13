@@ -59,11 +59,20 @@ public:
 
   virtual Int size() = 0;
   virtual Int localSize() = 0;
+
+  virtual SolverVector & operator+(const SolverVector & y) = 0;
+  virtual SolverVector & operator=(const SolverVector & y) = 0;
+  
+  UInt & release() { return release_; }
+  UInt release() const { return release_; }
+
 protected:
   ID id;
 
   /// Underlying dof manager
   DOFManager & _dof_manager;
+
+  UInt release_{0};
 };
 
 } // namespace akantu

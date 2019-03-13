@@ -250,6 +250,29 @@ void TimeStepSolverDefault::assembleMatrix(const ID & matrix_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+// void TimeStepSolverDefault::assembleLumpedMatrix(const ID & matrix_id) {
+//   AKANTU_DEBUG_IN();
+
+//   TimeStepSolver::assembleLumpedMatrix(matrix_id);
+
+//   if (matrix_id != "J")
+//     return;
+
+//   for (auto & pair : this->integration_schemes) {
+//     auto & dof_id = pair.first;
+//     auto & integration_scheme = pair.second;
+
+//     const auto & solution_type = this->solution_types[dof_id];
+
+//     integration_scheme->assembleJacobianLumped(solution_type, this->time_step);
+//   }
+
+//   this->_dof_manager.applyBoundaryLumped("J");
+
+//   AKANTU_DEBUG_OUT();
+// }
+
+/* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::assembleResidual() {
   if (this->needed_matrices.find("M") != needed_matrices.end()) {
     if (this->is_mass_lumped) {

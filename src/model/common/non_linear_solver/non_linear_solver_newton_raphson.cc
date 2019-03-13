@@ -164,7 +164,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(
     const SolverVector & solver_vector) {
   AKANTU_DEBUG_IN();
 
-  const Array<bool> & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  const auto & blocked_dofs = this->dof_manager.getBlockedDOFs();
 
   const Array<Real> & array(solver_vector);
   UInt nb_degree_of_freedoms = array.size();

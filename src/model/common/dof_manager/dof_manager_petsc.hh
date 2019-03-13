@@ -83,7 +83,7 @@ protected:
 
     /// petsc compressed version of local_equation_number
     Array<PetscInt> local_equation_number_petsc;
-    
+
     /// local equation numbers in PETSc type
     IS is{nullptr};
   };
@@ -104,22 +104,12 @@ public:
       const Array<Real> & /*elementary_mat*/, const ElementType & /*type*/,
       const GhostType & /*ghost_type*/,
       const MatrixType & /*elemental_matrix_type*/,
-      const Array<UInt> & /*filter_elements*/) override {
-    AKANTU_TO_IMPLEMENT();
-  }
+      const Array<UInt> & /*filter_elements*/) override;
 
   void assembleMatMulVectToArray(const ID & /*dof_id*/, const ID & /*A_id*/,
                                  const Array<Real> & /*x*/,
                                  Array<Real> & /*array*/,
-                                 Real /*scale_factor*/ = 1.) override {
-    AKANTU_TO_IMPLEMENT();
-  }
-
-  void assembleMatMulVectToResidual(const ID & /*dof_id*/, const ID & /*A_id*/,
-                                    const Array<Real> & /*x*/,
-                                    Real /*scale_factor*/ = 1) override {
-    AKANTU_TO_IMPLEMENT();
-  }
+                                 Real /*scale_factor*/ = 1.) override;
 
   void assembleLumpedMatMulVectToResidual(const ID & /*dof_id*/,
                                           const ID & /*A_id*/,
@@ -131,9 +121,7 @@ public:
   void assemblePreassembledMatrix(const ID & /* dof_id_m*/,
                                   const ID & /*dof_id_n*/,
                                   const ID & /*matrix_id*/,
-                                  const TermsToAssemble & /*terms*/) override {
-    AKANTU_TO_IMPLEMENT();
-  }
+                                  const TermsToAssemble & /*terms*/) override;
 
   void applyBoundary(const ID & /*matrix_id*/ = "J") override {
     AKANTU_TO_IMPLEMENT();

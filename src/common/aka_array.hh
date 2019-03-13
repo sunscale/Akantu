@@ -195,8 +195,9 @@ public:
   inline void push_back(const C<T> & new_elem);
 #endif
 
-  /// changes the allocated size but not the size
-  virtual void reserve(UInt size);
+  /// changes the allocated size but not the size, if new_size = 0, the size is
+  /// set to min(current_size and reserve size)
+  virtual void reserve(UInt size, UInt new_size = UInt(-1));
 
   /// change the size of the Array
   virtual void resize(UInt size);

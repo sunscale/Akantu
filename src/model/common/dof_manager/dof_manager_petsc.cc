@@ -122,15 +122,8 @@ void DOFManagerPETSc::init() {
 
 /* -------------------------------------------------------------------------- */
 DOFManagerPETSc::~DOFManagerPETSc() {
-  for (auto && data : dofs) {
-    auto & dof_data_petsc = dynamic_cast<DOFDataPETSc &>(*(data.second));
-    if (dof_data_petsc.is) {
-      PETSc_call(ISDestroy, &dof_data_petsc.is);
-    }
-  }
-
-  if (is_ltog_map)
-    PETSc_call(ISLocalToGlobalMappingDestroy, &is_ltog_map);
+  // if (is_ltog_map)
+  //   PETSc_call(ISLocalToGlobalMappingDestroy, &is_ltog_map);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -150,11 +143,10 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
 
   auto && vector = std::make_unique<SolverVectorPETSc>(*this, id + ":solution");
   auto x = vector->getVec();
-  ISLocalToGlobalMapping is_ltog_map;
   PETSc_call(VecGetLocalToGlobalMapping, x, &is_ltog_map);
 
   // redoing the indexes based on the petsc numbering
-  for(auto & dof_id : dofs_ids) {
+  for (auto & dof_id : dofs_ids) {
     auto & dof_data = this->getDOFDataTyped<DOFDataPETSc>(dof_id);
 
     Array<PetscInt> gidx(dof_data.local_equation_number.size());
@@ -173,7 +165,10 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
   }
 
   residual = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
+  data_cache = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
   solution = std::move(vector);
+
+  // should also redo the lumped matrix
 
   return ret;
 }
@@ -191,7 +186,7 @@ void DOFManagerPETSc::assembleToGlobalArray(
                       "The array to assemble does not have the proper size");
 
   g.addValuesLocal(dof_data.local_equation_number_petsc, array_to_assemble,
-              scale_factor);
+                   scale_factor);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -199,13 +194,48 @@ void DOFManagerPETSc::getArrayPerDOFs(const ID & dof_id,
                                       const SolverVector & global_array,
                                       Array<Real> & local) {
   const auto & dof_data = getDOFDataTyped<DOFDataPETSc>(dof_id);
-  const auto & petsc_vector = dynamic_cast<const SolverVectorPETSc &>(global_array);
+  const auto & petsc_vector =
+      dynamic_cast<const SolverVectorPETSc &>(global_array);
 
   AKANTU_DEBUG_ASSERT(
       local.size() * local.getNbComponent() == dof_data.local_nb_dofs,
       "The array to get the values does not have the proper size");
 
   petsc_vector.getValuesLocal(dof_data.local_equation_number_petsc, local);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::assembleElementalMatricesToMatrix(
+    const ID & matrix_id, const ID & dof_id, const Array<Real> & elementary_mat,
+    const ElementType & type, const GhostType & ghost_type,
+    const MatrixType & elemental_matrix_type,
+    const Array<UInt> & filter_elements) {
+  auto & A = getMatrix(matrix_id);
+  DOFManager::assembleElementalMatricesToMatrix_(
+      A, dof_id, elementary_mat, type, ghost_type, elemental_matrix_type,
+      filter_elements);
+
+  A.applyModifications();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::assemblePreassembledMatrix(
+    const ID & dof_id_m, const ID & dof_id_n, const ID & matrix_id,
+    const TermsToAssemble & terms) {
+  auto & A = getMatrix(matrix_id);
+  DOFManager::assemblePreassembledMatrix_(A, dof_id_m, dof_id_n, terms);
+
+  A.applyModifications();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerPETSc::assembleMatMulVectToArray(const ID & dof_id,
+                                                const ID & A_id,
+                                                const Array<Real> & x,
+                                                Array<Real> & array,
+                                                Real scale_factor) {
+  DOFManager::assembleMatMulVectToArray_<SolverVectorPETSc>(
+      dof_id, A_id, x, array, scale_factor);
 }
 
 /* -------------------------------------------------------------------------- */

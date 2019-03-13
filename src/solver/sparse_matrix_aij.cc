@@ -60,22 +60,30 @@ SparseMatrixAIJ::~SparseMatrixAIJ() = default;
 void SparseMatrixAIJ::applyBoundary(Real block_val) {
   AKANTU_DEBUG_IN();
 
-  // clang-format off
   const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  auto begin = blocked_dofs.begin();
+  auto end = blocked_dofs.end();
+
+  auto is_blocked = [&](auto && i) -> bool {
+    auto il = this->dof_manager.globalToLocalEquationNumber(i);
+    return std::binary_search(begin, end, il);
+  };
 
   for (auto && ij_a : zip(irn, jcn, a)) {
-    UInt ni = this->dof_manager.globalToLocalEquationNumber(std::get<0>(ij_a) - 1);
-    UInt nj = this->dof_manager.globalToLocalEquationNumber(std::get<1>(ij_a) - 1);
-    if (blocked_dofs(ni) || blocked_dofs(nj)) {
+    UInt ni = std::get<0>(ij_a) - 1;
+    UInt nj = std::get<1>(ij_a) - 1;
+
+    if (is_blocked(ni) or is_blocked(nj)) {
+      // clang-format off
       std::get<2>(ij_a) =
           std::get<0>(ij_a) != std::get<1>(ij_a)   ? 0.
         : this->dof_manager.isLocalOrMasterDOF(ni) ? block_val
         :                                            0.;
+      // clang-format on
     }
   }
 
   this->value_release++;
-  // clang-format on
 
   AKANTU_DEBUG_OUT();
 }

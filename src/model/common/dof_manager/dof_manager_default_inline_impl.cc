@@ -37,19 +37,6 @@
 
 namespace akantu {
 
-/* -------------------------------------------------------------------------- */
-inline const Array<UInt> &
-DOFManagerDefault::getDOFsAssociatedNodes(const ID & dof_id) const {
-  const auto & dof_data = this->getDOFDataTyped<DOFDataDefault>(dof_id);
-  return dof_data.associated_nodes;
-}
-
-/* -------------------------------------------------------------------------- */
-const Array<Int> &
-DOFManagerDefault::getLocalEquationsNumbers(const ID & dof_id) const {
-  return getDOFDataTyped<DOFDataDefault>(dof_id).local_equation_number;
-}
-
 
 } // akantu
 

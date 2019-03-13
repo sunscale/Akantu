@@ -37,31 +37,44 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-template <class Array>
-SolverVectorDefaultWrap<Array>::SolverVectorDefaultWrap(
-    DOFManagerDefault & dof_manager, Array & vector)
-    : SolverVectorArray(dof_manager, vector.getID()), vector(vector) {}
+inline SolverVectorArray::SolverVectorArray(DOFManagerDefault & dof_manager, const ID & id)
+    : SolverVector(dof_manager, id) {}
 
 /* -------------------------------------------------------------------------- */
-template <class Array>
-SolverVectorDefaultWrap<Array>::SolverVectorDefaultWrap(
-    const SolverVectorDefaultWrap & vector, const ID & id)
-    : SolverVectorArray(vector, id), vector(vector.vector) {}
+inline SolverVectorArray::SolverVectorArray(const SolverVectorArray & vector, const ID & id)
+      : SolverVector(vector, id) {}
 
 /* -------------------------------------------------------------------------- */
-template <class Array> void SolverVectorDefaultWrap<Array>::resize() {
-  static_assert(not std::is_const<Array>::value, "Cannot resize a const Array");
-  this->vector.resize(dof_manager.getLocalSystemSize(), 0.);
+template <class Array_>
+SolverVector & SolverVectorArrayTmpl<Array_>::
+operator+(const SolverVector & y) {
+  const auto & y_ = dynamic_cast<const SolverVectorArray &>(y);
+  this->vector += y_.getVector();
+
+  ++this->release_;
+  return *this;
 }
 
 /* -------------------------------------------------------------------------- */
-template <class Array> void SolverVectorDefaultWrap<Array>::clear() {
-  static_assert(not std::is_const<Array>::value, "Cannot clear a const Array");
-  this->vector.clear();
+template <class Array_>
+SolverVector & SolverVectorArrayTmpl<Array_>::
+operator=(const SolverVector & y) {
+  const auto & y_ = dynamic_cast<const SolverVectorArray &>(y);
+  this->vector.copy(y_.getVector());
+
+  this->release_ = y.release();
+  return *this;
 }
 
-inline Int SolverVectorArray::size() { return dof_manager.getSystemSize(); }
-inline Int SolverVectorArray::localSize() { return dof_manager.getLocalSystemSize(); }
+/* -------------------------------------------------------------------------- */
+template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::size() {
+  return this->dof_manager.getSystemSize();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::localSize() {
+  return dof_manager.getLocalSystemSize();
+}
 
 } // namespace akantu
 

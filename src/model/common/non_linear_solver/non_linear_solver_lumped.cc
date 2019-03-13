@@ -60,23 +60,22 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   this->dof_manager.updateGlobalBlockedDofs();
   solver_callback.predictor();
 
+  solver_callback.assembleResidual();
+  
   auto & x =
       dynamic_cast<SolverVectorDefault &>(this->dof_manager.getSolution());
   const auto & b = this->dof_manager.getResidual();
 
   x.resize();
 
-  // this->dof_manager.updateGlobalBlockedDofs();
-  const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
-
-  solver_callback.assembleResidual();
-
+  const auto & blocked_dofs = this->dof_manager.getBlockedDOFs();
   const auto & A = this->dof_manager.getLumpedMatrix("M");
+
   // alpha is the conversion factor from from force/mass to acceleration needed
   // in model coupled with atomistic \todo find a way to define alpha per dof
   // type
+  this->solveLumped(A, x, b, alpha, blocked_dofs);
 
-  this->solveLumped(A, x, b, blocked_dofs, alpha);
   this->dof_manager.splitSolutionPerDOFs();
 
   solver_callback.corrector();
@@ -84,18 +83,16 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
 
 /* -------------------------------------------------------------------------- */
 void NonLinearSolverLumped::solveLumped(const Array<Real> & A, Array<Real> & x,
-                                        const Array<Real> & b,
-                                        const Array<bool> & blocked_dofs,
-                                        Real alpha) {
-  auto A_it = A.begin();
-  auto x_it = x.begin();
-  auto x_end = x.end();
-  auto b_it = b.begin();
-  auto blocked_it = blocked_dofs.begin();
-
-  for (; x_it != x_end; ++x_it, ++b_it, ++A_it, ++blocked_it) {
-    if (!(*blocked_it)) {
-      *x_it = alpha * (*b_it / *A_it);
+                                        const Array<Real> & b, Real alpha,
+                                        const Array<bool> & blocked_dofs) {
+  for (auto && data :
+       zip(make_view(A), make_view(x), make_view(b), make_view(blocked_dofs))) {
+    const auto & A = std::get<0>(data);
+    auto & x = std::get<1>(data);
+    const auto & b = std::get<2>(data);
+    const auto & blocked = std::get<3>(data);
+    if (not blocked) {
+      x = alpha * (b / A);
     }
   }
 }

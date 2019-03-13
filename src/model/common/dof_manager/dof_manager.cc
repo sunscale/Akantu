@@ -31,15 +31,12 @@
 /* -------------------------------------------------------------------------- */
 #include "dof_manager.hh"
 #include "communicator.hh"
-#include "element_group.hh"
 #include "mesh.hh"
 #include "mesh_utils.hh"
 #include "node_group.hh"
 #include "node_synchronizer.hh"
 #include "non_linear_solver.hh"
 #include "periodic_node_synchronizer.hh"
-#include "solver_vector.hh"
-#include "sparse_matrix.hh"
 #include "time_step_solver.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
@@ -64,7 +61,7 @@ DOFManager::DOFManager(Mesh & mesh, const ID & id, const MemoryID & memory_id)
 
 /* -------------------------------------------------------------------------- */
 DOFManager::~DOFManager() {
-  if(mesh) {
+  if (mesh) {
     this->mesh->unregisterEventHandler(*this);
   }
 }
@@ -211,7 +208,6 @@ void DOFManager::splitSolutionPerDOFs() {
   }
 }
 
-
 /* -------------------------------------------------------------------------- */
 void DOFManager::getSolutionPerDOFs(const ID & dof_id,
                                     Array<Real> & solution_array) {
@@ -234,7 +230,7 @@ void DOFManager::assembleToResidual(const ID & dof_id,
                                     Real scale_factor) {
   AKANTU_DEBUG_IN();
 
-  //this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
+  // this->makeConsistentForPeriodicity(dof_id, array_to_assemble);
   this->assembleToGlobalArray(dof_id, array_to_assemble, this->getResidual(),
                               scale_factor);
 
@@ -385,7 +381,7 @@ DOFManager::registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) {
 
   this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
   this->global_equation_number.resize(this->local_system_size, -1);
-  
+
   // updating the dofs data after counting is finished
   switch (support_type) {
   case _dst_nodal: {
@@ -633,19 +629,13 @@ void DOFManager::savePreviousDOFs(const ID & dofs_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::clearResidual() {
-  this->residual->resize();
-  this->residual->clear();
-}
+void DOFManager::clearResidual() { this->residual->clear(); }
 
 /* -------------------------------------------------------------------------- */
-void DOFManager::clearMatrix(const ID & mtx) {
-  this->getMatrix(mtx).clear();
-}
+void DOFManager::clearMatrix(const ID & mtx) { this->getMatrix(mtx).clear(); }
 
 /* -------------------------------------------------------------------------- */
 void DOFManager::clearLumpedMatrix(const ID & mtx) {
-  this->getLumpedMatrix(mtx).resize();
   this->getLumpedMatrix(mtx).clear();
 }
 
@@ -683,7 +673,8 @@ void DOFManager::resizeGlobalArrays() {
   // resize all relevant arrays
   this->residual->resize();
   this->solution->resize();
-  
+  this->data_cache->resize();
+
   for (auto & lumped_matrix : lumped_matrices)
     lumped_matrix.second->resize();
 
@@ -796,7 +787,7 @@ auto DOFManager::computeFirstDOFIDs(UInt nb_new_local_dofs,
                                     UInt nb_new_pure_local) {
   // determine the first local/global dof id to use
   UInt offset = 0;
-  
+
   this->communicator.exclusiveScan(nb_new_pure_local, offset);
 
   auto first_global_dof_id = this->first_global_dof_id + offset;
@@ -938,5 +929,81 @@ void DOFManager::onElementsChanged(const Array<Element> &,
                                    const ChangedElementsEvent &) {}
 
 /* -------------------------------------------------------------------------- */
+void DOFManager::updateGlobalBlockedDofs() {
+  this->previous_global_blocked_dofs.copy(this->global_blocked_dofs);
+  this->global_blocked_dofs.reserve(this->local_system_size, 0);
+  this->previous_global_blocked_dofs_release =
+      this->global_blocked_dofs_release;
+
+  for (auto & pair : dofs) {
+    if (!this->hasBlockedDOFs(pair.first))
+      continue;
+
+    DOFData & dof_data = *pair.second;
+    for (auto && data : zip(dof_data.local_equation_number,
+                            make_view(*dof_data.blocked_dofs))) {
+      const auto & dof = std::get<0>(data);
+      const auto & is_blocked = std::get<1>(data);
+      if (is_blocked) {
+        this->global_blocked_dofs.push_back(dof);
+      }
+    }
+  }
+
+  std::sort(this->global_blocked_dofs.begin(), this->global_blocked_dofs.end());
+  auto last = std::unique(this->global_blocked_dofs.begin(),
+                          this->global_blocked_dofs.end());
+  this->global_blocked_dofs.resize(last - this->global_blocked_dofs.begin());
+
+  auto are_equal =
+      std::equal(global_blocked_dofs.begin(), global_blocked_dofs.end(),
+                 previous_global_blocked_dofs.begin());
+
+  if (not are_equal)
+    ++this->global_blocked_dofs_release;
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::applyBoundary(const ID & matrix_id) {
+  auto & J = this->getMatrix(matrix_id);
+
+  if (this->jacobian_release == J.getRelease()) {
+    auto are_equal = this->global_blocked_dofs_release ==
+                     this->previous_global_blocked_dofs_release;
+    // std::equal(global_blocked_dofs.begin(), global_blocked_dofs.end(),
+    //           previous_global_blocked_dofs.begin());
+
+    if (not are_equal)
+      J.applyBoundary();
+
+    previous_global_blocked_dofs.copy(global_blocked_dofs);
+  } else {
+    J.applyBoundary();
+  }
+
+  this->jacobian_release = J.getRelease();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::assembleMatMulVectToGlobalArray(const ID & dof_id,
+                                                 const ID & A_id,
+                                                 const Array<Real> & x,
+                                                 SolverVector & array,
+                                                 Real scale_factor) {
+  auto & A = this->getMatrix(A_id);
+
+  data_cache->clear();
+  this->assembleToGlobalArray(dof_id, x, *data_cache, 1.);
+
+  A.matVecMul(*data_cache, array, scale_factor, 1.);
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManager::assembleMatMulVectToResidual(const ID & dof_id,
+                                              const ID & A_id,
+                                              const Array<Real> & x,
+                                              Real scale_factor) {
+  assembleMatMulVectToGlobalArray(dof_id, A_id, x, *residual, scale_factor);
+}
 
 } // namespace akantu

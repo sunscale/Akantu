@@ -681,7 +681,7 @@ int main(int argc, char * argv[]) {
   Mesh mesh(1);
   Real F = -9.81;
   bool _explicit = EXPLICIT;
-  const Real pulse_width = 0.2;
+  //const Real pulse_width = 0.2;
   const Real A = 0.01;
 
   if (prank == 0)

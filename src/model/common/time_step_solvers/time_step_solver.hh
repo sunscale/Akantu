@@ -86,7 +86,7 @@ public:
   /// implementation of the SolverCallback::assembleJacobian()
   void assembleMatrix(const ID & matrix_id) override;
   /// implementation of the SolverCallback::assembleJacobian()
-  void assembleLumpedMatrix(const ID & matrix_id) final;
+  void assembleLumpedMatrix(const ID & matrix_id) override;
   /// implementation of the SolverCallback::assembleResidual()
   void assembleResidual() override;
   /// implementation of the SolverCallback::assembleResidual()

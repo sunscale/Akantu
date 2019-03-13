@@ -149,19 +149,10 @@ public:
       const Array<UInt> & filter_elements = empty_filter) = 0;
 
   /// multiply a vector by a matrix and assemble the result to the residual
-  virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
-                                            const Array<Real> & x,
-                                            Real scale_factor = 1) = 0;
-
-  /// multiply a vector by a matrix and assemble the result to the residual
   virtual void assembleMatMulVectToArray(const ID & dof_id, const ID & A_id,
                                          const Array<Real> & x,
                                          Array<Real> & array,
                                          Real scale_factor = 1) = 0;
-
-  /// multiply the dofs by a matrix and assemble the result to the residual
-  virtual void assembleMatMulDOFsToResidual(const ID & A_id,
-                                            Real scale_factor = 1);
 
   /// multiply a vector by a lumped matrix and assemble the result to the
   /// residual
@@ -176,6 +167,18 @@ public:
                                           const ID & matrix_id,
                                           const TermsToAssemble & terms) = 0;
 
+  /// multiply a vector by a matrix and assemble the result to the residual
+  virtual void assembleMatMulVectToResidual(const ID & dof_id, const ID & A_id,
+                                            const Array<Real> & x,
+                                            Real scale_factor = 1);
+
+  /// multiply the dofs by a matrix and assemble the result to the residual
+  virtual void assembleMatMulDOFsToResidual(const ID & A_id,
+                                            Real scale_factor = 1);
+
+  /// updates the global blocked_dofs array
+  virtual void updateGlobalBlockedDofs();
+
   /// sets the residual to 0
   virtual void clearResidual();
   /// sets the matrix to 0
@@ -183,12 +186,13 @@ public:
   /// sets the lumped matrix to 0
   virtual void clearLumpedMatrix(const ID & mtx);
 
-  virtual void applyBoundary(const ID & matrix_id = "J") = 0;
+  virtual void applyBoundary(const ID & matrix_id = "J");
+  //virtual void applyBoundaryLumped(const ID & matrix_id = "J");
 
   /// extract a lumped matrix part corresponding to a given dof
   virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
                                       Array<Real> & lumped);
-  
+
   /// splits the solution storage from a global view to the per dof storages
   void splitSolutionPerDOFs();
 
@@ -214,6 +218,31 @@ protected:
                                            UInt nb_degree_of_freedom,
                                            Vector<Int> & local_equation_number);
 
+  /// Assemble a array to a global one
+  void assembleMatMulVectToGlobalArray(const ID & dof_id, const ID & A_id,
+                                       const Array<Real> & x,
+                                       SolverVector & array,
+                                       Real scale_factor = 1.);
+
+  /// common function that can be called by derived class with proper matrice
+  /// types
+  template <typename Mat>
+  void assemblePreassembledMatrix_(Mat & A, const ID & dof_id_m,
+                                   const ID & dof_id_n,
+                                   const TermsToAssemble & terms);
+
+  template <typename Mat>
+  void assembleElementalMatricesToMatrix_(
+      Mat & A, const ID & dof_id, const Array<Real> & elementary_mat,
+      const ElementType & type, const GhostType & ghost_type,
+      const MatrixType & elemental_matrix_type,
+      const Array<UInt> & filter_elements);
+
+  template <typename Vec>
+  void assembleMatMulVectToArray_(const ID & dof_id, const ID & A_id,
+                                  const Array<Real> & x, Array<Real> & array,
+                                  Real scale_factor);
+
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -224,9 +253,9 @@ public:
   /// Answer to the question is a dof a slave dof ?
   inline bool isSlaveDOF(UInt local_dof_num);
 
-/// Answer to the question is a dof a slave dof ?
+  /// Answer to the question is a dof a slave dof ?
   inline bool isPureGhostDOF(UInt local_dof_num);
-  
+
   /// tells if the dof manager knows about a global dof
   bool hasGlobalEquationNumber(Int global) const;
 
@@ -297,6 +326,12 @@ public:
   /// Get a reference to the solution array registered for the given id
   inline Array<Real> & getSolution(const ID & dofs_id);
 
+  /// Get the blocked dofs array
+  AKANTU_GET_MACRO(GlobalBlockedDOFs, global_blocked_dofs, const Array<Int> &);
+  /// Get the blocked dofs array
+  AKANTU_GET_MACRO(PreviousGlobalBlockedDOFs, previous_global_blocked_dofs,
+                   const Array<Int> &);
+
   /* ------------------------------------------------------------------------ */
   /* Matrices accessors                                                       */
   /* ------------------------------------------------------------------------ */
@@ -308,6 +343,14 @@ public:
   /// matrix_to_copy_id
   virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
                                       const ID & matrix_to_copy_id) = 0;
+
+protected:
+  /// Get the equation numbers corresponding to a dof_id. This might be used to
+  /// access the matrix.
+  inline const Array<Int> & getLocalEquationsNumbers(const ID & dof_id) const;
+
+  /// get the array of dof types (use only if you know what you do...)
+  inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
 
 protected:
   /* ------------------------------------------------------------------------ */
@@ -612,6 +655,9 @@ protected:
   /// solution of the system of equation corresponding to the different dofs
   std::unique_ptr<SolverVector> solution;
 
+  /// a vector that helps internally to perform some tasks
+  std::unique_ptr<SolverVector> data_cache;
+
   /// define the dofs type, local, shared, ghost
   Array<NodeFlag> dofs_flag;
 
@@ -629,6 +675,21 @@ protected:
 
   /// accumulator to know what would be the next global id to use
   UInt first_global_dof_id{0};
+
+  /// Release at last apply boundary on jacobian
+  UInt jacobian_release{0};
+
+  /// blocked degree of freedom in the system equation corresponding to the
+  /// different dofs
+  Array<Int> global_blocked_dofs;
+
+  UInt global_blocked_dofs_release{0};
+
+  /// blocked degree of freedom in the system equation corresponding to the
+  /// different dofs
+  Array<Int> previous_global_blocked_dofs;
+
+  UInt previous_global_blocked_dofs_release{0};
 
 private:
   /// This is for unit testing

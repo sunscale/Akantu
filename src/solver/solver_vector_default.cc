@@ -33,40 +33,5 @@
 
 namespace akantu {
 
-/* -------------------------------------------------------------------------- */
-SolverVectorArray::SolverVectorArray(DOFManagerDefault & dof_manager,
-                                     const ID & id)
-    : SolverVector(dof_manager, id), dof_manager(dof_manager) {}
-
-/* -------------------------------------------------------------------------- */
-SolverVectorArray::SolverVectorArray(const SolverVectorArray & vector,
-                                     const ID & id)
-    : SolverVector(vector, id), dof_manager(vector.dof_manager) {}
-
-/* -------------------------------------------------------------------------- */
-SolverVectorDefault::SolverVectorDefault(DOFManagerDefault & dof_manager,
-                                         const ID & id)
-    : SolverVectorArray(dof_manager, id), vector(0, 1, id + ":vector") {}
-
-/* -------------------------------------------------------------------------- */
-SolverVectorDefault::SolverVectorDefault(const SolverVectorDefault & vector,
-                                         const ID & id)
-    : SolverVectorArray(vector, id), vector(vector.vector, id + ":vector") {}
-
-/* -------------------------------------------------------------------------- */
-void SolverVectorDefault::resize() {
-  this->vector.resize(dof_manager.getLocalSystemSize(), 0.);
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverVectorDefault::clear() { this->vector.clear(); }
-
-/* -------------------------------------------------------------------------- */
-Array<Real> & SolverVectorDefault::getGlobalVector() { return vector; }
-
-/* -------------------------------------------------------------------------- */
-void SolverVectorDefault::setGlobalVector(const Array<Real> & solution) {
-  vector.copy(solution);
-}
 
 } // namespace akantu

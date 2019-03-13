@@ -93,6 +93,9 @@ public:
   operator Vec &() { return getVec(); };
   operator const Vec &() const { return getVec(); };
 
+  SolverVector & operator+(const SolverVector & y) override;
+  SolverVector & operator=(const SolverVector & y) override;
+  
   /// get values using processors global indexes
   void getValues(const Array<Int> & idx, Array<Real> & values) const;
 

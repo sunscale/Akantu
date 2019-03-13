@@ -38,7 +38,6 @@
 #include "solver_vector_default.hh"
 #include "solver_vector_distributed.hh"
 #include "sparse_matrix_aij.hh"
-#include "terms_to_assemble.hh"
 #include "time_step_solver_default.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
@@ -50,81 +49,20 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline void DOFManagerDefault::addSymmetricElementalMatrixToSymmetric(
-    SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
-    const Vector<Int> & equation_numbers, UInt max_size) {
-  for (UInt i = 0; i < elementary_mat.rows(); ++i) {
-    UInt c_irn = equation_numbers(i);
-    if (c_irn < max_size) {
-      for (UInt j = i; j < elementary_mat.cols(); ++j) {
-        UInt c_jcn = equation_numbers(j);
-        if (c_jcn < max_size) {
-          matrix(c_irn, c_jcn) += elementary_mat(i, j);
-        }
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-inline void DOFManagerDefault::addUnsymmetricElementalMatrixToSymmetric(
-    SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
-    const Vector<Int> & equation_numbers, UInt max_size) {
-  for (UInt i = 0; i < elementary_mat.rows(); ++i) {
-    UInt c_irn = equation_numbers(i);
-    if (c_irn < max_size) {
-      for (UInt j = 0; j < elementary_mat.cols(); ++j) {
-        UInt c_jcn = equation_numbers(j);
-        if (c_jcn < max_size) {
-          if (c_jcn >= c_irn) {
-            matrix(c_irn, c_jcn) += elementary_mat(i, j);
-          }
-        }
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-inline void DOFManagerDefault::addElementalMatrixToUnsymmetric(
-    SparseMatrixAIJ & matrix, const Matrix<Real> & elementary_mat,
-    const Vector<Int> & equation_numbers, UInt max_size) {
-  for (UInt i = 0; i < elementary_mat.rows(); ++i) {
-    UInt c_irn = equation_numbers(i);
-    if (c_irn < max_size) {
-      for (UInt j = 0; j < elementary_mat.cols(); ++j) {
-        UInt c_jcn = equation_numbers(j);
-        if (c_jcn < max_size) {
-          matrix(c_irn, c_jcn) += elementary_mat(i, j);
-        }
-      }
-    }
-  }
-}
-
-/* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
-    : DOFManager(id, memory_id),
-      global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
-      previous_global_blocked_dofs(
-          0, 1, std::string(id + ":previous_global_blocked_dofs")),
-      data_cache(0, 1, std::string(id + ":data_cache_array")),
-      synchronizer(nullptr) {
+    : DOFManager(id, memory_id), synchronizer(nullptr) {
   residual = std::make_unique<SolverVectorDefault>(
       *this, std::string(id + ":residual"));
   solution = std::make_unique<SolverVectorDefault>(
       *this, std::string(id + ":solution"));
+  data_cache = std::make_unique<SolverVectorDefault>(
+      *this, std::string(id + ":data_cache"));
 }
 
 /* -------------------------------------------------------------------------- */
 DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
                                      const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id),
-      global_blocked_dofs(0, 1, std::string(id + ":global_blocked_dofs")),
-      previous_global_blocked_dofs(
-          0, 1, std::string(id + ":previous_global_blocked_dofs")),
-      data_cache(0, 1, std::string(id + ":data_cache_array")),
-      synchronizer(nullptr) {
+    : DOFManager(mesh, id, memory_id), synchronizer(nullptr) {
   if (this->mesh->isDistributed()) {
     this->synchronizer = std::make_unique<DOFSynchronizer>(
         *this, this->id + ":dof_synchronizer", this->memory_id);
@@ -132,11 +70,16 @@ DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
         *this, std::string(id + ":residual"));
     solution = std::make_unique<SolverVectorDistributed>(
         *this, std::string(id + ":solution"));
+    data_cache = std::make_unique<SolverVectorDistributed>(
+        *this, std::string(id + ":data_cache"));
+
   } else {
     residual = std::make_unique<SolverVectorDefault>(
         *this, std::string(id + ":residual"));
     solution = std::make_unique<SolverVectorDefault>(
         *this, std::string(id + ":solution"));
+    data_cache = std::make_unique<SolverVectorDefault>(
+        *this, std::string(id + ":data_cache"));
   }
 }
 
@@ -288,25 +231,6 @@ DOFManagerDefault::getNewTimeStepSolver(const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::updateGlobalBlockedDofs() {
-  auto it = this->dofs.begin();
-  auto end = this->dofs.end();
-
-  this->previous_global_blocked_dofs.copy(this->global_blocked_dofs);
-  this->global_blocked_dofs.resize(this->local_system_size);
-  this->global_blocked_dofs.clear();
-
-  for (; it != end; ++it) {
-    if (!this->hasBlockedDOFs(it->first))
-      continue;
-
-    DOFData & dof_data = *it->second;
-    this->assembleToGlobalArray(it->first, *dof_data.blocked_dofs,
-                                this->global_blocked_dofs, true);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
 template <typename T>
 void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
                                         const Array<T> & global_array,
@@ -339,60 +263,16 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assembleMatMulVectToGlobalArray(const ID & dof_id,
-                                                        const ID & A_id,
-                                                        const Array<Real> & x,
-                                                        Array<Real> & array,
-                                                        Real scale_factor) {
-  SparseMatrixAIJ & A = this->getMatrix(A_id);
-
-  // Array<Real> data_cache(this->local_system_size, 1, 0.);
-  auto && tmp_data_cache =
-      make_solver_vector_default_wrap(*this, this->data_cache);
-  tmp_data_cache.resize();
-  tmp_data_cache.clear();
-
-  this->assembleToGlobalArray(dof_id, x, data_cache, 1.);
-
-  auto && tmp_array = make_solver_vector_default_wrap(*this, array);
-  tmp_array.resize();
-  tmp_array.clear();
-
-  A.matVecMul(tmp_data_cache, tmp_array, scale_factor, 1.);
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assembleMatMulVectToArray(const ID & dof_id,
-                                                  const ID & A_id,
-                                                  const Array<Real> & x,
-                                                  Array<Real> & array,
-                                                  Real scale_factor) {
-  Array<Real> tmp_array(0, 1, id + ":tmp_array");
-  assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_array, scale_factor);
-  getArrayPerDOFs(dof_id, tmp_array, array);
-}
-
-/* -------------------------------------------------------------------------- */
-void DOFManagerDefault::assembleMatMulVectToResidual(const ID & dof_id,
-                                                     const ID & A_id,
-                                                     const Array<Real> & x,
-                                                     Real scale_factor) {
-  Array<Real> tmp_residual(0, 1, id + ":tmp_residual");
-  assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_residual, scale_factor);
-  this->getResidualArray() += tmp_residual;
-}
-
-/* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
     const ID & dof_id, const ID & A_id, const Array<Real> & x,
     Real scale_factor) {
   const Array<Real> & A = this->getLumpedMatrix(A_id);
+  auto & cache = dynamic_cast<SolverVectorArray &>(*this->data_cache);
 
-  this->data_cache.resize(this->local_system_size);
-  this->data_cache.clear();
-  this->assembleToGlobalArray(dof_id, x, data_cache, scale_factor);
+  cache.clear();
+  this->assembleToGlobalArray(dof_id, x, cache.getVector(), scale_factor);
 
-  for (auto && data : zip(make_view(A), make_view(data_cache),
+  for (auto && data : zip(make_view(A), make_view(cache.getVector()),
                           make_view(this->getResidualArray()))) {
     const auto & A = std::get<0>(data);
     const auto & x = std::get<1>(data);
@@ -407,96 +287,34 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const ElementType & type, const GhostType & ghost_type,
     const MatrixType & elemental_matrix_type,
     const Array<UInt> & filter_elements) {
-  AKANTU_DEBUG_IN();
-
-  auto & dof_data = this->getDOFData(dof_id);
-
-  AKANTU_DEBUG_ASSERT(dof_data.support_type == _dst_nodal,
-                      "This function applies only on Nodal dofs");
-
   this->addToProfile(matrix_id, dof_id, type, ghost_type);
 
-  const auto & equation_number = this->getLocalEquationsNumbers(dof_id);
-  auto & A = this->getMatrix(matrix_id);
-
-  UInt nb_element;
-  UInt * filter_it = nullptr;
-  if (filter_elements != empty_filter) {
-    nb_element = filter_elements.size();
-    filter_it = filter_elements.storage();
-  } else {
-    if (dof_data.group_support != "__mesh__") {
-      const auto & group_elements =
-          this->mesh->getElementGroup(dof_data.group_support)
-              .getElements(type, ghost_type);
-      nb_element = group_elements.size();
-      filter_it = group_elements.storage();
-    } else {
-      nb_element = this->mesh->getNbElement(type, ghost_type);
-    }
-  }
-
-  AKANTU_DEBUG_ASSERT(elementary_mat.size() == nb_element,
-                      "The vector elementary_mat("
-                          << elementary_mat.getID()
-                          << ") has not the good size.");
-
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-
-  UInt nb_degree_of_freedom = dof_data.dof->getNbComponent();
-
-  const Array<UInt> & connectivity =
-      this->mesh->getConnectivity(type, ghost_type);
-  auto conn_begin = connectivity.begin(nb_nodes_per_element);
-  auto conn_it = conn_begin;
-  auto size_mat = nb_nodes_per_element * nb_degree_of_freedom;
-
-  Vector<Int> element_eq_nb(nb_degree_of_freedom * nb_nodes_per_element);
-  auto el_mat_it = elementary_mat.begin(size_mat, size_mat);
-
-  for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
-    if (filter_it)
-      conn_it = conn_begin + *filter_it;
-
-    this->extractElementEquationNumber(equation_number, *conn_it,
-                                       nb_degree_of_freedom, element_eq_nb);
-    std::transform(element_eq_nb.begin(), element_eq_nb.end(),
-                   element_eq_nb.begin(), [&](auto && local) {
-                     return this->localToGlobalEquationNumber(local);
-                   });
-
-    if (filter_it)
-      ++filter_it;
-    else
-      ++conn_it;
-
-    if (A.getMatrixType() == _symmetric)
-      if (elemental_matrix_type == _symmetric)
-        this->addSymmetricElementalMatrixToSymmetric(A, *el_mat_it,
-                                                     element_eq_nb, A.size());
-      else
-        this->addUnsymmetricElementalMatrixToSymmetric(A, *el_mat_it,
-                                                       element_eq_nb, A.size());
-    else
-      this->addElementalMatrixToUnsymmetric(A, *el_mat_it, element_eq_nb,
-                                            A.size());
-  }
-
-  AKANTU_DEBUG_OUT();
+  auto & A = getMatrix(matrix_id);
+  DOFManager::assembleElementalMatricesToMatrix_(
+      A, dof_id, elementary_mat, type, ghost_type, elemental_matrix_type,
+      filter_elements);
 }
 
 /* -------------------------------------------------------------------------- */
 void DOFManagerDefault::assemblePreassembledMatrix(
     const ID & dof_id_m, const ID & dof_id_n, const ID & matrix_id,
     const TermsToAssemble & terms) {
-  const auto & equation_number_m = this->getLocalEquationsNumbers(dof_id_m);
-  const auto & equation_number_n = this->getLocalEquationsNumbers(dof_id_n);
-  SparseMatrixAIJ & A = this->getMatrix(matrix_id);
+  auto & A = getMatrix(matrix_id);
+  DOFManager::assemblePreassembledMatrix_(A, dof_id_m, dof_id_n, terms);
+}
 
-  for (const auto & term : terms) {
-    auto gi = this->localToGlobalEquationNumber(equation_number_m(term.i()));
-    auto gj = this->localToGlobalEquationNumber(equation_number_n(term.j()));
-    A.add(gi, gj, term);
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::assembleMatMulVectToArray(const ID & dof_id,
+                                                  const ID & A_id,
+                                                  const Array<Real> & x,
+                                                  Array<Real> & array,
+                                                  Real scale_factor) {
+  if (mesh->isDistributed()) {
+    DOFManager::assembleMatMulVectToArray_<SolverVectorDistributed>(
+        dof_id, A_id, x, array, scale_factor);
+  } else {
+    DOFManager::assembleMatMulVectToArray_<SolverVectorDefault>(
+        dof_id, A_id, x, array, scale_factor);
   }
 }
 
@@ -582,26 +400,6 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFManagerDefault::applyBoundary(const ID & matrix_id) {
-  SparseMatrixAIJ & J = this->getMatrix(matrix_id);
-
-  if (this->jacobian_release == J.getValueRelease()) {
-    auto are_equal =
-        std::equal(global_blocked_dofs.begin(), global_blocked_dofs.end(),
-                   previous_global_blocked_dofs.begin());
-
-    if (not are_equal)
-      J.applyBoundary();
-
-    previous_global_blocked_dofs.copy(global_blocked_dofs);
-  } else {
-    J.applyBoundary();
-  }
-
-  this->jacobian_release = J.getValueRelease();
-}
-
-/* -------------------------------------------------------------------------- */
 Array<Real> & DOFManagerDefault::getSolutionArray() {
   return dynamic_cast<SolverVectorDefault *>(this->solution.get())->getVector();
 }
@@ -633,6 +431,31 @@ void DOFManagerDefault::resizeGlobalArrays() {
   this->previous_global_blocked_dofs.resize(this->local_system_size, true);
 
   matrix_profiled_dofs.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+void DOFManagerDefault::updateGlobalBlockedDofs() {
+  DOFManager::updateGlobalBlockedDofs();
+
+  if (this->global_blocked_dofs_release ==
+      this->previous_global_blocked_dofs_release)
+    return;
+
+  global_blocked_dofs_uint.resize(local_system_size);
+  global_blocked_dofs_uint.set(false);
+  for (const auto & dof : global_blocked_dofs) {
+    global_blocked_dofs_uint[dof] = true;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+Array<bool> & DOFManagerDefault::getBlockedDOFs() {
+  return global_blocked_dofs_uint;
+}
+
+/* -------------------------------------------------------------------------- */
+const Array<bool> & DOFManagerDefault::getBlockedDOFs() const {
+  return global_blocked_dofs_uint;
 }
 
 /* -------------------------------------------------------------------------- */

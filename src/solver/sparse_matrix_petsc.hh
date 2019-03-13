@@ -75,9 +75,12 @@ public:
   void addLocal(UInt i, UInt j);
   void addLocal(UInt i, UInt j, Real val);
 
-  void addLocal(Vector<Int> & rows,
-                Vector<Int> & cols,
-                Matrix<Real> & vals);
+  void addLocal(const Vector<Int> & rows, const Vector<Int> & cols,
+                const Matrix<Real> & vals);
+
+  /// add a block of values
+  void addValues(const Vector<Int> & is, const Vector<Int> & js,
+                 const Matrix<Real> & values, MatrixType values_type);
 
   /// save the profil in a file using the MatrixMarket file format
   // void saveProfile(__attribute__((unused)) const std::string &) const
@@ -92,11 +95,13 @@ public:
   void mul(Real alpha) override;
 
   /// Equivalent of *gemv in blas
-  void matVecMul(const SolverVector & x, SolverVector & y,
-                         Real alpha = 1., Real beta = 0.) const override;
+  void matVecMul(const SolverVector & x, SolverVector & y, Real alpha = 1.,
+                 Real beta = 0.) const override;
 
   /// modify the matrix to "remove" the blocked dof
   void applyBoundary(Real block_val = 1.) override;
+
+  void applyModifications();
 
 protected:
   /// This is the revert of add B += \alpha * *this;
@@ -105,7 +110,6 @@ protected:
   /// This is the specific implementation
   void addMeToImpl(SparseMatrixPETSc & B, Real alpha) const;
 
-  void performAssembly();
   void beginAssembly();
   void endAssembly();
 
@@ -143,6 +147,6 @@ protected:
   UInt release{0};
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_PETSC_MATRIX_HH__ */

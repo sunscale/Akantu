@@ -72,6 +72,10 @@ public:
   /// assemble the jacobian matrix
   virtual void assembleJacobian(const SolutionType & type, Real delta_t) = 0;
 
+  /// assemble the jacobian matrix
+  //  virtual void assembleJacobianLumped(const SolutionType & type, Real
+  //  delta_t);
+
   /// assemble the residual
   virtual void assembleResidual(bool is_lumped) = 0;
 
@@ -97,6 +101,9 @@ protected:
 
   /// The order of the integrator
   UInt order;
+
+  /// last release of M matrix
+  UInt m_release{UInt(-1)};
 };
 
 /* -------------------------------------------------------------------------- */
