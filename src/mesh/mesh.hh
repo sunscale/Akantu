@@ -169,6 +169,7 @@ public:
         OPTIONAL_NAMED_ARG(vertex_weight_function, [](auto &&) { return 1; }));
   }
 #else
+public:
   void distribute() {
     distributeImpl(Communicator::getStaticCommunicator(),
                    [](auto &&, auto &&) { return 1; },

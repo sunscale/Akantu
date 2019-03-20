@@ -32,6 +32,7 @@ setup(
         language='c++',
         libraries=cmake_to_list('@_akantu_lib_name@'),
         library_dirs=cmake_to_list('@_lib_dirs@'),
+        runtime_library_dirs=cmake_to_list('@_lib_dirs@'),
         extra_compile_args=cmake_to_list('@_flags@')
     )]
 )
