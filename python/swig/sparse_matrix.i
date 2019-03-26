@@ -1,6 +1,8 @@
 
 
 %include "sparse_matrix.hh"
+%include "sparse_matrix_aij.hh"
+
 
 %pythoncode %{
 import scipy.sparse
@@ -10,7 +12,7 @@ class AkantuSparseMatrix (scipy.sparse.coo_matrix) :
     def __init__(self,aka_sparse):
         
         self.aka_sparse = aka_sparse
-        matrix_type = self.aka_sparse.getSparseMatrixType()
+        matrix_type = self.aka_sparse.getMatrixType()
         sz = self.aka_sparse.size()
         row = self.aka_sparse.getIRN()[:,0] -1
         col = self.aka_sparse.getJCN()[:,0] -1
