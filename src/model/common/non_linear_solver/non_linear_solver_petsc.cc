@@ -173,7 +173,7 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   callback.predictor();
   PETSc_call(SNESSolve, snes, nullptr, *x);
 
-  PETSc_call(VecCopy, *x, x_);
+  PETSc_call(VecAXPY, x_, -1.0, *x);
   dof_manager.splitSolutionPerDOFs();
   callback.corrector();
 }

@@ -75,7 +75,8 @@ inline void SparseMatrixAIJ::clearProfile() {
   this->a.resize(0);
 
   this->size_ = 0;
-
+  this->nb_non_zero = 0;
+  
   this->profile_release++;
   this->value_release++;
 }

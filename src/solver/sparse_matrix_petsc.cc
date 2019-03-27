@@ -135,11 +135,6 @@ void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addMeToImpl(SparseMatrixPETSc & B, Real alpha) const {
-  saveMatrix("K.mtx");
-
-  MatDestroy(&B.mat);
-  MatDuplicate(mat, MAT_DO_NOT_COPY_VALUES, &B.mat);
-  
   PETSc_call(MatAXPY, B.mat, alpha, mat, SAME_NONZERO_PATTERN);
   
   B.release++;
@@ -183,6 +178,15 @@ void SparseMatrixPETSc::endAssembly() {
 
   this->release++;
 }
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrixPETSc::copyProfile(const SparseMatrix & other)  {
+  auto & A = dynamic_cast<const SparseMatrixPETSc &>(other);
+  
+  MatDestroy(&mat);
+  MatDuplicate(A.mat, MAT_DO_NOT_COPY_VALUES, &mat);
+}
+  
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::applyBoundary(Real block_val) {

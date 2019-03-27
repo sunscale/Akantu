@@ -232,7 +232,8 @@ void NewmarkBeta::assembleJacobian(const SolutionType & type, Real delta_t) {
     return;
   }
 
-  J.clear();
+  J.copyProfile(K);
+  //J.clear();
 
   Real c = this->getAccelerationCoefficient(type, delta_t);
   Real e = this->getDisplacementCoefficient(type, delta_t);

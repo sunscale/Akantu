@@ -67,7 +67,8 @@ public:
         stresses(nb_elements, 1, "stress"), strains(nb_elements, 1, "strain"),
         initial_lengths(nb_elements, 1, "L0") {
     this->initBC(*this, displacement, forces);
-    this->initDOFManager("petsc");
+    //this->initDOFManager("petsc");
+    this->initDOFManager("default");
     this->getDOFManager().registerDOFs("disp", displacement, _dst_nodal);
     this->getDOFManager().registerDOFsDerivative("disp", 1, velocity);
     this->getDOFManager().registerDOFsDerivative("disp", 2, acceleration);

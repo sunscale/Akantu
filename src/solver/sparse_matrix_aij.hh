@@ -109,6 +109,9 @@ public:
   void matVecMul(const Array<Real> & x, Array<Real> & y, Real alpha = 1.,
                  Real beta = 0.) const;
 
+  /// copy the profile of another matrix
+  void copyProfile(const SparseMatrix & other) override;
+
   /* ------------------------------------------------------------------------ */
   /// accessor to A_{ij} - if (i, j) not present it returns 0
   inline Real operator()(UInt i, UInt j) const override;

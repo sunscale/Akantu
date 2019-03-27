@@ -69,7 +69,8 @@ void PseudoTime::assembleJacobian(const SolutionType &, Real) {
   if (K.getRelease() == k_release)
     return;
 
-  J.clear();
+  J.copyProfile(K);
+  //J.clear();
   J.add(K);
 
   k_release = K.getRelease();

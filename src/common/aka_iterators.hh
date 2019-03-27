@@ -478,10 +478,10 @@ namespace containers {
   };
 } // namespace containers
 
-template <class Container>
-inline constexpr decltype(auto) enumerate(Container && container) {
-  return containers::EnumerateContainer<Container>(
-      std::forward<Container>(container));
+template <class... Container>
+inline constexpr decltype(auto) enumerate(Container &&... container) {
+  return containers::EnumerateContainer<Container...>(
+      std::forward<Container>(container)...);
 }
 
 /* -------------------------------------------------------------------------- */

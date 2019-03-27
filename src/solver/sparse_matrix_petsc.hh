@@ -102,6 +102,9 @@ public:
   /// modify the matrix to "remove" the blocked dof
   void applyBoundary(Real block_val = 1.) override;
 
+  /// copy the profile of a matrix
+  void copyProfile(const SparseMatrix & other) override;
+    
   void applyModifications();
 
   void resize();

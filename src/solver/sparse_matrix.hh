@@ -96,6 +96,9 @@ public:
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(Real block_val = 1.) = 0;
 
+  /// copy the profile of another matrix
+  virtual void copyProfile(const SparseMatrix & other) = 0;
+  
   /// operator *=
   SparseMatrix & operator*=(Real alpha) {
     this->mul(alpha);

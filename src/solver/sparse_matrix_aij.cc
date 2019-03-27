@@ -227,6 +227,34 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 }
 
 /* -------------------------------------------------------------------------- */
+void SparseMatrixAIJ::copyProfile(const SparseMatrix & other)  {
+  auto & A = dynamic_cast<const SparseMatrixAIJ &>(other);
+
+  SparseMatrix::clearProfile();
+
+  this->irn = A.irn;
+  this->jcn = A.jcn;
+
+  this->irn_jcn_k.clear();
+
+  UInt i, j, k;
+  for(auto && data : enumerate(irn, jcn)) {
+    std::tie(k, i, j) = data;
+    
+    this->irn_jcn_k[this->key(i - 1, j - 1)] = k;
+  }
+
+  this->nb_non_zero = this->irn.size();
+  this->a.resize(this->nb_non_zero);
+
+  this->a.set(0.);
+  this->size_ = A.size_;
+
+  this->profile_release++;
+  this->value_release++;
+}
+
+/* -------------------------------------------------------------------------- */
 template <class MatrixType>
 void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
   UInt i, j;
