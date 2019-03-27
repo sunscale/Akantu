@@ -71,7 +71,7 @@ public:
     nb_quadrature_points_total =
         GaussIntegrationElement<type>::getNbQuadraturePoints() * nb_element;
 
-    SCOPED_TRACE(aka::to_string(type));
+    SCOPED_TRACE(std::to_string(type));
   }
 
   void TearDown() override {

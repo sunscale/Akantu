@@ -47,22 +47,20 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
   auto mpi_comm = dof_manager.getMPIComm();
 
   PETSc_call(MatCreate, mpi_comm, &mat);
+  detail::PETScSetName(mat, id);
+ 
+  resize();
+
+  PETSc_call(MatSetFromOptions, mat);
+  
+  PETSc_call(MatSetUp, mat);
+
+  PETSc_call(MatSetOption, mat, MAT_ROW_ORIENTED, PETSC_TRUE);
+  PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
 
   if (matrix_type == _symmetric)
     PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_TRUE);
-  PETSc_call(MatSetOption, mat, MAT_ROW_ORIENTED, PETSC_TRUE);
-
-  auto local_size = dof_manager.getPureLocalSystemSize();
-  PETSc_call(MatSetSizes, mat, local_size, local_size, size_, size_);
-
-  auto & is_ltog_mapping = dof_manager.getISLocalToGlobalMapping();
-
-  PETSc_call(MatSetUp, mat);
-
-  PETSc_call(MatSetLocalToGlobalMapping, mat, is_ltog_mapping, is_ltog_mapping);
-
-  detail::PETScSetName(mat, id);
-
+    
   AKANTU_DEBUG_OUT();
 }
 
@@ -82,6 +80,15 @@ SparseMatrixPETSc::~SparseMatrixPETSc() {
     PETSc_call(MatDestroy, &mat);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void SparseMatrixPETSc::resize() {
+  auto local_size = dof_manager.getPureLocalSystemSize();
+  PETSc_call(MatSetSizes, mat, local_size, local_size, size_, size_);
+
+  auto & is_ltog_mapping = dof_manager.getISLocalToGlobalMapping();
+  PETSc_call(MatSetLocalToGlobalMapping, mat, is_ltog_mapping, is_ltog_mapping);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -128,7 +135,13 @@ void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addMeToImpl(SparseMatrixPETSc & B, Real alpha) const {
+  saveMatrix("K.mtx");
+
+  MatDestroy(&B.mat);
+  MatDuplicate(mat, MAT_DO_NOT_COPY_VALUES, &B.mat);
+  
   PETSc_call(MatAXPY, B.mat, alpha, mat, SAME_NONZERO_PATTERN);
+  
   B.release++;
 }
 
@@ -167,26 +180,33 @@ void SparseMatrixPETSc::beginAssembly() {
 void SparseMatrixPETSc::endAssembly() {
   PETSc_call(MatAssemblyEnd, mat, MAT_FINAL_ASSEMBLY);
   PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
-  // PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
-  // PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
+
   this->release++;
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixPETSc::applyBoundary(Real /*block_val*/) {
+void SparseMatrixPETSc::applyBoundary(Real block_val) {
   AKANTU_DEBUG_IN();
 
-  // const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
+  const auto & blocked_dofs = this->dof_manager.getGlobalBlockedDOFs();
   // std::vector<PetscInt> rows;
   // for (auto && data : enumerate(blocked)) {
   //   if (std::get<1>(data)) {
   //     rows.push_back(std::get<0>(data));
   //   }
   // }
+  //applyModifications();
 
-  // PETSc_call(MatZeroRowsColumnsLocal, mat, roew.size(),
-  //            rows.storage(), block_val, nullptr, nullptr);
+  static int c = 0;
+  
+  saveMatrix("before_blocked_" + std::to_string(c) + ".mtx");
+  
+  PETSc_call(MatZeroRowsColumnsLocal, mat, blocked_dofs.size(),
+             blocked_dofs.storage(), block_val, nullptr, nullptr);
 
+  saveMatrix("after_blocked_" + std::to_string(c) + ".mtx");
+  ++c;
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -203,15 +223,16 @@ void SparseMatrixPETSc::clear() {
 }
 
 /* -------------------------------------------------------------------------- */
-// void SparseMatrixPETSc::clearProfile() {
-//   SparseMatrix::clearProfile();
+void SparseMatrixPETSc::clearProfile() {
+  SparseMatrix::clearProfile();
+  PETSc_call(MatResetPreallocation, mat);
+  PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
 //   PETSc_call(MatSetOption, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);
 //   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
 //   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
 
-//   PETSc_call(MatZeroEntries, mat);
-//   //this->value_release++;
-// }
+  clear();
+}
 
 /* -------------------------------------------------------------------------- */
 UInt SparseMatrixPETSc::add(UInt i, UInt j) {

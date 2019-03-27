@@ -167,7 +167,13 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
   residual = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
   data_cache = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
   solution = std::move(vector);
+  
+  for(auto & mat : matrices) {
+    auto & A = this->getMatrix(mat.first);
+    A.resize();
+  }
 
+  std::cout << "Allocating vectors " << solution.get() << std::endl;
   // should also redo the lumped matrix
 
   return ret;

@@ -181,7 +181,7 @@ class TestSMMFixtureBar : public TestSMMFixture<type_> {
 public:
   void SetUp() override {
     this->mesh_file =
-        "../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
+        "../patch_tests/data/bar" + std::to_string(this->type) + ".msh";
     parent::SetUp();
 
     auto analysis_method = analysis_method_::value;

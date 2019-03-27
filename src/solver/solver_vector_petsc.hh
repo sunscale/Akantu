@@ -49,7 +49,9 @@ namespace internal {
   public:
     virtual ~PETScVector() = default;
 
-    operator Vec() { return x; }
+    operator Vec&() { return x; }
+    operator const Vec&() const { return x; }
+    
     Int size() const {
       PetscInt n;
       PETSc_call(VecGetSize, x, &n);
@@ -90,9 +92,7 @@ public:
   void clear() override;
 
   operator const Array<Real> &() const override;
-  operator Vec &() { return getVec(); };
-  operator const Vec &() const { return getVec(); };
-
+  
   SolverVector & operator+(const SolverVector & y) override;
   SolverVector & operator=(const SolverVector & y) override;
   

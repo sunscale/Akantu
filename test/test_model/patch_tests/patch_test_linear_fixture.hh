@@ -53,7 +53,7 @@ public:
 
   virtual void SetUp() {
     mesh = std::make_unique<Mesh>(dim);
-    mesh->read(aka::to_string(type) + ".msh");
+    mesh->read(std::to_string(type) + ".msh");
     MeshUtils::buildFacets(*mesh);
     mesh->createBoundaryGroupFromGeometry();
 

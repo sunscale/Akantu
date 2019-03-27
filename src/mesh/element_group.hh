@@ -62,6 +62,8 @@ public:
                const std::string & id = "element_group",
                const MemoryID & memory_id = 0);
 
+  ElementGroup(const ElementGroup &) = default;
+  
   /* ------------------------------------------------------------------------ */
   /* Type definitions                                                         */
   /* ------------------------------------------------------------------------ */

@@ -58,10 +58,10 @@ public:
 
     mesh->distribute();
 
-    SCOPED_TRACE(aka::to_string(this->type).c_str());
+    SCOPED_TRACE(std::to_string(this->type).c_str());
 
     model = std::make_unique<SolidMechanicsModel>(*mesh, _all_dimensions,
-                                                  aka::to_string(this->type));
+                                                  std::to_string(this->type));
   }
 
   void initModel(const ID & input, const AnalysisMethod & analysis_method) {
@@ -100,7 +100,7 @@ public:
   }
 
 protected:
-  std::string mesh_file{aka::to_string(this->type) + ".msh"};
+  std::string mesh_file{std::to_string(this->type) + ".msh"};
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModel> model;
   bool dump_paraview{true};

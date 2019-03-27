@@ -187,7 +187,7 @@ public:
   virtual void clearLumpedMatrix(const ID & mtx);
 
   virtual void applyBoundary(const ID & matrix_id = "J");
-  //virtual void applyBoundaryLumped(const ID & matrix_id = "J");
+  // virtual void applyBoundaryLumped(const ID & matrix_id = "J");
 
   /// extract a lumped matrix part corresponding to a given dof
   virtual void getLumpedMatrixPerDOFs(const ID & dof_id, const ID & lumped_mtx,
@@ -344,11 +344,11 @@ public:
   virtual SparseMatrix & getNewMatrix(const ID & matrix_id,
                                       const ID & matrix_to_copy_id) = 0;
 
-protected:
   /// Get the equation numbers corresponding to a dof_id. This might be used to
   /// access the matrix.
   inline const Array<Int> & getLocalEquationsNumbers(const ID & dof_id) const;
 
+protected:
   /// get the array of dof types (use only if you know what you do...)
   inline const Array<UInt> & getDOFsAssociatedNodes(const ID & dof_id) const;
 
@@ -604,6 +604,10 @@ protected:
 
     /// associated node for _dst_nodal dofs only
     Array<UInt> associated_nodes;
+
+    virtual Array<Int> & getLocalEquationsNumbers() {
+      return local_equation_number;
+    }
   };
 
   /// type to store dofs information

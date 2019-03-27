@@ -131,6 +131,10 @@ protected:
 
   /// List of required matrices
   std::map<std::string, MatrixType> needed_matrices;
+
+  /// specifies if the solvers gives to full solution or just the increment of
+  /// solution
+  bool is_solution_increment{true};
 };
 
 } // akantu

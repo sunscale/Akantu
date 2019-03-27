@@ -37,6 +37,8 @@
 
 namespace akantu {
 class DOFManagerPETSc;
+class NonLinearSolverPETScCallback;
+class SolverVectorPETSc;
 } // namespace akanatu
 
 namespace akantu {
@@ -67,9 +69,24 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
+  static PetscErrorCode FormFunction(SNES snes, Vec dx, Vec f,
+                                     void * ctx);
+  static PetscErrorCode FormJacobian(SNES snes, Vec dx, Mat J,
+                                     Mat P, void * ctx);  
+  
+  void set_param(const ID & param, const std::string & value) override;
+   
   DOFManagerPETSc & dof_manager;
 
+  /// PETSc non linear solver
   SNES snes;
+
+  SolverCallback * callback{nullptr};
+
+  std::unique_ptr<SolverVectorPETSc> x;
+  std::unique_ptr<NonLinearSolverPETScCallback> ctx;
+  
+  Int n_iter{0};
 };
 
 } // namepsace akantu

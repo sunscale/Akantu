@@ -201,8 +201,8 @@ public:
     auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
     nb_steps = length / 2. / speed / model->getTimeStep();
 
-    SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
-                 ":" + aka::to_string(type_2));
+    SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
+                 ":" + std::to_string(type_2));
 
     auto & mat_co = this->model->getMaterial("insertion");
     Real sigma_c = mat_co.get("sigma_c");
@@ -241,8 +241,8 @@ public:
     auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
     nb_steps = length / 2. / speed / model->getTimeStep();
 
-    SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
-                 ":" + aka::to_string(type_2));
+    SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
+                 ":" + std::to_string(type_2));
 
     if (this->dim > 1)
       this->model->applyBC(BC::Dirichlet::FlagOnly(_y), "sides");
@@ -279,8 +279,8 @@ protected:
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModelCohesive> model;
 
-  std::string mesh_name{aka::to_string(cohesive_type) + aka::to_string(type_1) +
-                        (type_1 == type_2 ? "" : aka::to_string(type_2)) +
+  std::string mesh_name{std::to_string(cohesive_type) + std::to_string(type_1) +
+                        (type_1 == type_2 ? "" : std::to_string(type_2)) +
                         ".msh"};
 
   bool is_extrinsic;

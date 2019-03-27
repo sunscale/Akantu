@@ -42,7 +42,7 @@
 namespace akantu {
 class DOFManager;
 class SolverCallback;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -64,11 +64,22 @@ public:
   /// the dof manager
   virtual void solve(SolverCallback & callback) = 0;
 
+  /// intercept the call to set for options
+  template <typename T> void set(const ID & param, T && t) {
+    if(has_internal_set_param) {
+      set_param(param, std::to_string(t));
+    } else      {
+      ParameterRegistry::set(param, t);
+    }
+  }
+
 protected:
   void checkIfTypeIsSupported();
 
   void assembleResidual(SolverCallback & callback);
 
+  /// internal set param for solvers that should intercept the parameters
+  virtual void set_param(const ID & /*param*/, const std::string & /*value*/) {}
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -80,6 +91,9 @@ protected:
 
   /// list of supported non linear solver types
   std::set<NonLinearSolverType> supported_type;
+
+  /// specifies if the set param should be redirected
+  bool has_internal_set_param{false};
 };
 
 namespace debug {
@@ -92,8 +106,8 @@ namespace debug {
     UInt niter;
     Real error;
   };
-}
+} // namespace debug
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_HH__ */

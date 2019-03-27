@@ -34,8 +34,8 @@
 #include "solver_petsc.hh"
 #include "dof_manager_petsc.hh"
 #include "mpi_communicator_data.hh"
-#include "sparse_matrix_petsc.hh"
 #include "solver_vector_petsc.hh"
+#include "sparse_matrix_petsc.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscksp.h>
 //#include <petscsys.h>
@@ -70,11 +70,11 @@ void SolverPETSc::setOperators() {
   // set the matrix that defines the linear system and the matrix for
 // preconditioning (here they are the same)
 #if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
-  PETSc_call(KSPSetOperators, ksp, this->matrix.getPETScMat(),
-             this->matrix.getPETScMat());
+  PETSc_call(KSPSetOperators, ksp, this->matrix.getMat(),
+             this->matrix.getMat());
 #else
-  PETSc_call(KSPSetOperators, ksp, this->matrix.getPETScMat(),
-             this->matrix.getPETScMat(), SAME_NONZERO_PATTERN);
+  PETSc_call(KSPSetOperators, ksp, this->matrix.getMat(), this->matrix.getMat(),
+             SAME_NONZERO_PATTERN);
 #endif
 
   // If this is not called the solution vector is zeroed in the call to
@@ -84,7 +84,6 @@ void SolverPETSc::setOperators() {
 
   AKANTU_DEBUG_OUT();
 }
-
 
 /* -------------------------------------------------------------------------- */
 void SolverPETSc::solve() {

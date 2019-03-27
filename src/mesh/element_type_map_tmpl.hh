@@ -190,7 +190,7 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
   auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end()) {
-    auto id = this->id + ":" + aka::to_string(type) + ghost_id;
+    auto id = this->id + ":" + std::to_string(type) + ghost_id;
     tmp = &(Memory::alloc<T>(id, size, nb_component, default_value));
 
     this->getData(ghost_type)[type] = tmp;

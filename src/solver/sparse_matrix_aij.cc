@@ -96,17 +96,30 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
   outfile.open(filename.c_str());
 
   UInt m = this->size_;
-  outfile << "%%MatrixMarket matrix coordinate pattern";
-  if (this->matrix_type == _symmetric)
-    outfile << " symmetric";
-  else
-    outfile << " general";
-  outfile << std::endl;
-  outfile << m << " " << m << " " << this->nb_non_zero << std::endl;
 
-  for (UInt i = 0; i < this->nb_non_zero; ++i) {
-    outfile << this->irn.storage()[i] << " " << this->jcn.storage()[i] << " 1"
-            << std::endl;
+  auto & comm = dof_manager.getCommunicator();
+
+  // write header
+  if (comm.whoAmI() == 0) {
+
+    outfile << "%%MatrixMarket matrix coordinate pattern";
+    if (this->matrix_type == _symmetric)
+      outfile << " symmetric";
+    else
+      outfile << " general";
+    outfile << std::endl;
+    outfile << m << " " << m << " " << this->nb_non_zero << std::endl;
+  }
+
+  for (auto p : arange(comm.getNbProc())) {
+    // write content
+    if (comm.whoAmI() == p) {
+      for (UInt i = 0; i < this->nb_non_zero; ++i) {
+        outfile << this->irn.storage()[i] << " " << this->jcn.storage()[i]
+                << " 1" << std::endl;
+      }
+    }
+    comm.barrier();
   }
 
   outfile.close();
@@ -117,28 +130,42 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
   AKANTU_DEBUG_IN();
+  auto & comm = dof_manager.getCommunicator();
 
   // open and set the properties of the stream
   std::ofstream outfile;
-  outfile.open(filename.c_str());
-  outfile.precision(std::numeric_limits<Real>::digits10);
 
-  // write header
-  outfile << "%%MatrixMarket matrix coordinate real";
-  if (this->matrix_type == _symmetric)
-    outfile << " symmetric";
-  else
-    outfile << " general";
-  outfile << std::endl;
-  outfile << this->size_ << " " << this->size_ << " " << this->nb_non_zero
-          << std::endl;
-
-  // write content
-  for (UInt i = 0; i < this->nb_non_zero; ++i) {
-    outfile << this->irn(i) << " " << this->jcn(i) << " " << this->a(i)
-            << std::endl;
+  if (0 == comm.whoAmI()) {
+    outfile.open(filename.c_str());
+  } else {
+    outfile.open(filename.c_str(), std::ios_base::app);
   }
 
+  outfile.precision(std::numeric_limits<Real>::digits10);
+  // write header
+  decltype(nb_non_zero) nnz = this->nb_non_zero;
+  comm.allReduce(nnz);
+
+  if (comm.whoAmI() == 0) {
+    outfile << "%%MatrixMarket matrix coordinate real";
+    if (this->matrix_type == _symmetric)
+      outfile << " symmetric";
+    else
+      outfile << " general";
+    outfile << std::endl;
+    outfile << this->size_ << " " << this->size_ << " " << nnz << std::endl;
+  }
+
+  for (auto p : arange(comm.getNbProc())) {
+    // write content
+    if (comm.whoAmI() == p) {
+      for (UInt i = 0; i < this->nb_non_zero; ++i) {
+        outfile << this->irn(i) << " " << this->jcn(i) << " " << this->a(i)
+                << std::endl;
+      }
+    }
+    comm.barrier();
+  }
   // time to end
   outfile.close();
 

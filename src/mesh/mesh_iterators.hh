@@ -166,7 +166,7 @@ namespace mesh_iterators {
       explicit ElementGroupsIterable(GroupManager && group_manager)
           : group_manager(std::forward<GroupManager>(group_manager)) {}
 
-      size_t size() { return group_manager.getNbElementGroups(); }
+      size_t size() const { return group_manager.getNbElementGroups(); }
       decltype(auto) begin() {
         return delegated_iterator<decltype(
             group_manager.element_group_begin())>(

@@ -340,7 +340,7 @@ DOFManager::registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) {
     if (group == "__mesh__") {
       AKANTU_DEBUG_ASSERT(
           dofs_array.size() == this->mesh->getNbNodes(),
-          "The array of dof is too shot to be associated to nodes.");
+          "The array of dof is too short to be associated to nodes.");
 
       std::tie(nb_local_dofs, nb_pure_local) = countDOFsForNodes(
           dof_data, this->mesh->getNbNodes(), [](auto && n) { return n; });
@@ -940,7 +940,7 @@ void DOFManager::updateGlobalBlockedDofs() {
       continue;
 
     DOFData & dof_data = *pair.second;
-    for (auto && data : zip(dof_data.local_equation_number,
+    for (auto && data : zip(dof_data.getLocalEquationsNumbers(),
                             make_view(*dof_data.blocked_dofs))) {
       const auto & dof = std::get<0>(data);
       const auto & is_blocked = std::get<1>(data);
@@ -956,6 +956,7 @@ void DOFManager::updateGlobalBlockedDofs() {
   this->global_blocked_dofs.resize(last - this->global_blocked_dofs.begin());
 
   auto are_equal =
+      global_blocked_dofs.size() == previous_global_blocked_dofs.size() and
       std::equal(global_blocked_dofs.begin(), global_blocked_dofs.end(),
                  previous_global_blocked_dofs.begin());
 

@@ -288,7 +288,6 @@ void DOFManagerDefault::assembleElementalMatricesToMatrix(
     const MatrixType & elemental_matrix_type,
     const Array<UInt> & filter_elements) {
   this->addToProfile(matrix_id, dof_id, type, ghost_type);
-
   auto & A = getMatrix(matrix_id);
   DOFManager::assembleElementalMatricesToMatrix_(
       A, dof_id, elementary_mat, type, ghost_type, elemental_matrix_type,
@@ -343,7 +342,6 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   const auto & equation_number = this->getLocalEquationsNumbers(dof_id);
 
   auto & A = this->getMatrix(matrix_id);
-
   auto size = A.size();
 
   auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);

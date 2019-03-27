@@ -84,8 +84,7 @@ protected:
     /// petsc compressed version of local_equation_number
     Array<PetscInt> local_equation_number_petsc;
 
-    /// local equation numbers in PETSc type
-    IS is{nullptr};
+    virtual Array<Int> & getLocalEquationsNumbers() {return local_equation_number_petsc;}
   };
 
   /* ------------------------------------------------------------------------ */
@@ -122,10 +121,6 @@ public:
                                   const ID & /*dof_id_n*/,
                                   const ID & /*matrix_id*/,
                                   const TermsToAssemble & /*terms*/) override;
-
-  void applyBoundary(const ID & /*matrix_id*/ = "J") override {
-    AKANTU_TO_IMPLEMENT();
-  }
 
 protected:
   void assembleToGlobalArray(const ID & dof_id,

@@ -72,10 +72,10 @@
 #define AKANTU_ENUM_OUTPUT_STREAM_(type_name, list, prefix)                    \
   }                                                                            \
   AKANTU_ENUM_HASH(type_name)                                                  \
-  namespace aka {                                                              \
-  inline std::string to_string(const ::akantu::type_name & type) {             \
+  namespace std {                                                              \
+  inline string to_string(const ::akantu::type_name & type) {                  \
     using namespace akantu;                                                    \
-    static std::unordered_map<::akantu::type_name, std::string> convert{       \
+    static unordered_map<::akantu::type_name, string> convert{                 \
         BOOST_PP_SEQ_FOR_EACH_I(                                               \
             AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
             BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR, prefix, list))};     \
@@ -85,7 +85,7 @@
   namespace akantu {                                                           \
   inline std::ostream & operator<<(std::ostream & stream,                      \
                                    const type_name & type) {                   \
-    stream << aka::to_string(type);                                            \
+    stream << std::to_string(type);                                            \
     return stream;                                                             \
   }
 

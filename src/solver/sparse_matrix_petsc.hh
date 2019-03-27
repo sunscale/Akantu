@@ -65,6 +65,7 @@ public:
 public:
   /// set the matrix to 0
   void clear() override;
+  void clearProfile() override;
 
   /// add a non-zero element to the profile
   UInt add(UInt i, UInt j) override;
@@ -103,6 +104,7 @@ public:
 
   void applyModifications();
 
+  void resize();
 protected:
   /// This is the revert of add B += \alpha * *this;
   void addMeTo(SparseMatrix & B, Real alpha) const override;
@@ -130,8 +132,10 @@ public:
 
   virtual UInt getRelease() const override { return release; };
 
-  AKANTU_GET_MACRO(PETScMat, mat, const Mat &);
-  AKANTU_GET_MACRO_NOT_CONST(PETScMat, mat, Mat &);
+  operator Mat &() { return mat; }
+  operator const Mat &() const { return mat; }
+  AKANTU_GET_MACRO(Mat, mat, const Mat &);
+  AKANTU_GET_MACRO_NOT_CONST(Mat, mat, Mat &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
