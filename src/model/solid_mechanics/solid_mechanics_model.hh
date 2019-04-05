@@ -399,9 +399,6 @@ public:
   /// get the SolidMechanicsModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
-  /// get the value of the SolidMechanicsModel::increment_flag
-  AKANTU_GET_MACRO(IncrementFlag, increment_flag, bool);
-
   /// get a particular material (by material index)
   inline Material & getMaterial(UInt mat_index);
 

@@ -51,8 +51,13 @@ public:
   virtual Array<Real> & getVector() = 0;
   virtual const Array<Real> & getVector() const = 0;
 
-  virtual Int size() = 0;
-  virtual Int localSize() = 0;
+  void printself(std::ostream & stream, int indent = 0) const override{
+    std::string space(indent, AKANTU_INDENT);
+    stream << space << "SolverVectorArray [" << std::endl;
+    stream << space << " + id: " << id << std::endl;
+    this->getVector().printself(stream, indent + 1);
+    stream << space << "]" << std::endl;
+  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -98,8 +103,8 @@ public:
   Array<Real> & getVector() override { return vector; }
   const Array<Real> & getVector() const override { return vector; }
 
-  Int size() override;
-  Int localSize() override;
+  Int size() const override;
+  Int localSize() const override;
 
   virtual Array<Real> & getGlobalVector() { return this->vector; }
   virtual void setGlobalVector(const Array<Real> & solution) {

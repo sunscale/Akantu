@@ -208,15 +208,15 @@ void SparseMatrixAIJ::matVecMul(const SolverVector & _x, SolverVector & _y,
                                 Real alpha, Real beta) const {
   AKANTU_DEBUG_IN();
 
-  auto && x = dynamic_cast<const SolverVectorArray &>(_x).getVector();
-  auto && y = dynamic_cast<SolverVectorArray &>(_y).getVector();
+  auto && x = aka::as_type<SolverVectorArray>(_x).getVector();
+  auto && y = aka::as_type<SolverVectorArray>(_y).getVector();
   this->matVecMul(x, y, alpha, beta);
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
   AKANTU_DEBUG_IN();
-  const auto & mat = dynamic_cast<const SparseMatrixAIJ &>(matrix);
+  const auto & mat = aka::as_type<SparseMatrixAIJ>(matrix);
   AKANTU_DEBUG_ASSERT(nb_non_zero == mat.getNbNonZero(),
                       "The to matrix don't have the same profiles");
   memcpy(a.storage(), mat.getA().storage(), nb_non_zero * sizeof(Real));
@@ -228,7 +228,7 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::copyProfile(const SparseMatrix & other)  {
-  auto & A = dynamic_cast<const SparseMatrixAIJ &>(other);
+  auto & A = aka::as_type<SparseMatrixAIJ>(other);
 
   SparseMatrix::clearProfile();
 

@@ -95,6 +95,7 @@ public:
   
   SolverVector & operator+(const SolverVector & y) override;
   SolverVector & operator=(const SolverVector & y) override;
+  SolverVectorPETSc & operator=(const SolverVectorPETSc & y);
   
   /// get values using processors global indexes
   void getValues(const Array<Int> & idx, Array<Real> & values) const;
@@ -110,9 +111,11 @@ public:
   void addValuesLocal(const Array<Int> & lidx, const Array<Real> & values,
                       Real scale_factor = 1.);
 
-  Int size() override { return internal::PETScVector::size(); }
-  Int localSize() override { return internal::PETScVector::local_size(); }
+  Int size() const override { return internal::PETScVector::size(); }
+  Int localSize() const override { return internal::PETScVector::local_size(); }
 
+  void printself(std::ostream & stream, int indent = 0) const override;
+  
 protected:
   void applyModifications();
   void updateGhost();

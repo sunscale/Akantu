@@ -57,8 +57,8 @@ public:
 
   virtual operator const Array<Real> &() const = 0;
 
-  virtual Int size() = 0;
-  virtual Int localSize() = 0;
+  virtual Int size() const = 0;
+  virtual Int localSize() const = 0;
 
   virtual SolverVector & operator+(const SolverVector & y) = 0;
   virtual SolverVector & operator=(const SolverVector & y) = 0;
@@ -66,6 +66,8 @@ public:
   UInt & release() { return release_; }
   UInt release() const { return release_; }
 
+  virtual void printself(std::ostream & stream, int indent = 0) const = 0;
+  
 protected:
   ID id;
 
@@ -74,6 +76,11 @@ protected:
 
   UInt release_{0};
 };
+
+inline std::ostream & operator<<(std::ostream & stream, SolverVector & _this) {
+  _this.printself(stream);
+  return stream;
+}
 
 } // namespace akantu
 

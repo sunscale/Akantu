@@ -165,7 +165,7 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
   }
 
   residual = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
-  data_cache = std::make_unique<SolverVectorPETSc>(*vector, id + ":residual");
+  data_cache = std::make_unique<SolverVectorPETSc>(*vector, id + ":data_cache");
   solution = std::move(vector);
   
   for(auto & mat : matrices) {

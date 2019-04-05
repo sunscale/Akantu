@@ -88,8 +88,6 @@ public:
   void corrector() {
     auto & dx = dof_manager.getSolution();
     PETSc_call(VecWAXPY, dx, -1., x_prev, x);
-    VecView(x_prev, PETSC_VIEWER_STDOUT_WORLD);
-    VecView(x, PETSC_VIEWER_STDOUT_WORLD);
 
     dof_manager.splitSolutionPerDOFs();
     callback->corrector();
@@ -100,10 +98,6 @@ public:
   void assembleResidual() {
     corrector();
     callback->assembleResidual();
-
-    auto & r =
-        dynamic_cast<SolverVectorPETSc &>(dof_manager.getResidual());
-    VecView(r, PETSC_VIEWER_STDOUT_WORLD);
   }
 
   void assembleJacobian() {
@@ -148,21 +142,25 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   this->dof_manager.updateGlobalBlockedDofs();
 
   callback.assembleMatrix("J");
-  auto & x_ = dof_manager.getSolution();
-
-  if (not x or x->size() != x_.size()) {
-    x = std::make_unique<SolverVectorPETSc>(x_, "temporary_solution");
+  auto & global_x = dof_manager.getSolution();
+  global_x.clear();
+  
+  if (not x) {
+    x = std::make_unique<SolverVectorPETSc>(global_x, "temporary_solution");
   }
 
-  x->clear();
+  *x = global_x;
+  
   if (not ctx) {
     ctx = std::make_unique<NonLinearSolverPETScCallback>(dof_manager, *x);
   }
+  
   ctx->setCallback(callback);
-  ctx->setInitialSolution(x_);
-
+  ctx->setInitialSolution(global_x);
+ 
   auto & rhs = dof_manager.getResidual();
   auto & J = dof_manager.getMatrix("J");
+  
   PETSc_call(SNESSetFunction, snes, rhs, NonLinearSolverPETSc::FormFunction,
              ctx.get());
   PETSc_call(SNESSetJacobian, snes, J, J, NonLinearSolverPETSc::FormJacobian,
@@ -171,9 +169,13 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   rhs.clear();
 
   callback.predictor();
+  callback.assembleResidual();
+
   PETSc_call(SNESSolve, snes, nullptr, *x);
 
-  PETSc_call(VecAXPY, x_, -1.0, *x);
+  PETSc_call(VecAXPY, global_x, -1.0, *x);
+
+  
   dof_manager.splitSolutionPerDOFs();
   callback.corrector();
 }

@@ -67,12 +67,12 @@ operator=(const SolverVector & y) {
 }
 
 /* -------------------------------------------------------------------------- */
-template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::size() {
+template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::size() const {
   return this->dof_manager.getSystemSize();
 }
 
 /* -------------------------------------------------------------------------- */
-template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::localSize() {
+template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::localSize() const {
   return dof_manager.getLocalSystemSize();
 }
 

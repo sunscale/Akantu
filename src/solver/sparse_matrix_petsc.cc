@@ -123,14 +123,19 @@ void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
   SolverVectorPETSc w(x, this->id + ":tmp");
 
   // w = A x
-  PETSc_call(MatMult, mat, x.getVec(), w.getVec());
+  if (release == 0) {
+    PETSc_call(VecZeroEntries, w);
+  } else {
+    PETSc_call(MatMult, mat, x, w);
+  }
+  
   if (alpha != 1.) {
     // w = alpha w
-    PETSc_call(VecScale, w.getVec(), alpha);
+    PETSc_call(VecScale, w, alpha);
   }
 
   // y = w + beta y
-  PETSc_call(VecAYPX, y.getVec(), beta, w.getVec());
+  PETSc_call(VecAYPX, y, beta, w);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -147,8 +152,9 @@ void SparseMatrixPETSc::addMeToImpl(SparseMatrixPETSc & B, Real alpha) const {
  * @param alpha the factor specifying how many times the matrix should be added
  */
 void SparseMatrixPETSc::addMeTo(SparseMatrix & B, Real alpha) const {
-  if (auto * B_petsc = dynamic_cast<SparseMatrixPETSc *>(&B)) {
-    this->addMeToImpl(*B_petsc, alpha);
+  if (aka::is_of_type<SparseMatrixPETSc>(B)) {
+    auto & B_petsc = aka::as_type<SparseMatrixPETSc>(B);
+    this->addMeToImpl(B_petsc, alpha);
   } else {
     AKANTU_TO_IMPLEMENT();
     //    this->addMeToTemplated<SparseMatrix>(*this, alpha);
@@ -181,7 +187,7 @@ void SparseMatrixPETSc::endAssembly() {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::copyProfile(const SparseMatrix & other)  {
-  auto & A = dynamic_cast<const SparseMatrixPETSc &>(other);
+  auto & A = aka::as_type<SparseMatrixPETSc>(other);
   
   MatDestroy(&mat);
   MatDuplicate(A.mat, MAT_DO_NOT_COPY_VALUES, &mat);

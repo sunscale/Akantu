@@ -91,6 +91,18 @@ SolverVectorPETSc::SolverVectorPETSc(const SolverVectorPETSc & vector,
 }
 
 /* -------------------------------------------------------------------------- */
+void SolverVectorPETSc::printself(std::ostream & stream, int indent) const {
+  std::string space(indent, AKANTU_INDENT);
+  stream << space << "SolverVectorPETSc [" << std::endl;
+  stream << space << " + id: " << id << std::endl;
+  PETSc_call(PetscViewerPushFormat, PETSC_VIEWER_STDOUT_WORLD,
+             PETSC_VIEWER_ASCII_INDEX);
+  PETSc_call(VecView, x, PETSC_VIEWER_STDOUT_WORLD);
+  PETSc_call(PetscViewerPopFormat, PETSC_VIEWER_STDOUT_WORLD);
+  stream << space << "]" << std::endl;
+}
+
+/* -------------------------------------------------------------------------- */
 SolverVectorPETSc::SolverVectorPETSc(Vec x, DOFManagerPETSc & dof_manager,
                                      const ID & id)
     : SolverVector(dof_manager, id), dof_manager(dof_manager) {
@@ -192,7 +204,7 @@ void SolverVectorPETSc::addValues(const Array<Int> & gidx,
   Real * to_add = values.storage();
   Array<Real> scaled_array;
   if (scale_factor != 1.) {
-    scaled_array = values;
+    scaled_array.copy(values, false);
     scaled_array *= scale_factor;
     to_add = scaled_array.storage();
   }
@@ -214,13 +226,12 @@ void SolverVectorPETSc::addValuesLocal(const Array<Int> & lidx,
     Real * to_add = values.storage();
     Array<Real> scaled_array;
     if (scale_factor != 1.) {
-      scaled_array = values;
+      scaled_array.copy(values, false);
       scaled_array *= scale_factor;
       to_add = scaled_array.storage();
     }
 
-    PETSc_call(VecSetOption, x, VEC_IGNORE_NEGATIVE_INDICES,
-               PETSC_TRUE);
+    PETSc_call(VecSetOption, x, VEC_IGNORE_NEGATIVE_INDICES, PETSC_TRUE);
     PETSc_call(VecSetValuesLocal, x, lidx.size(), lidx.storage(), to_add,
                ADD_VALUES);
     return;
@@ -249,13 +260,21 @@ SolverVectorPETSc::operator const Array<Real> &() const {
 }
 
 /* -------------------------------------------------------------------------- */
-SolverVector & SolverVectorPETSc::operator=(const SolverVector & y) {
-  auto & y_ = dynamic_cast<const SolverVectorPETSc &>(y);
-  PETSc_call(VecCopy, y_.x, x);
-  release_ = y_.release_;
+SolverVectorPETSc & SolverVectorPETSc::operator=(const SolverVectorPETSc & y) {
+  if (size() != y.size()) {
+    PETSc_call(VecDuplicate, y, &x);
+  }
+
+  PETSc_call(VecCopy, y.x, x);
+  release_ = y.release_;
   return *this;
 }
 
+/* -------------------------------------------------------------------------- */
+SolverVector & SolverVectorPETSc::operator=(const SolverVector & y) {
+  const auto & y_ = aka::as_type<SolverVectorPETSc>(y);
+  return operator=(y_);
+}
 
 /* -------------------------------------------------------------------------- */
 SolverVector & SolverVectorPETSc::operator+(const SolverVector & y) {
@@ -264,7 +283,5 @@ SolverVector & SolverVectorPETSc::operator+(const SolverVector & y) {
   release_ = y_.release_;
   return *this;
 }
-
-
 
 } // namespace akantu
