@@ -126,7 +126,7 @@ void HeatTransferModel::initModel() {
 
 /* -------------------------------------------------------------------------- */
 FEEngine & HeatTransferModel::getFEEngineBoundary(const ID & name) {
-  return dynamic_cast<FEEngine &>(getFEEngineClassBoundary<FEEngineType>(name));
+  return aka::as_type<FEEngine>(getFEEngineClassBoundary<FEEngineType>(name));
 }
 
 /* -------------------------------------------------------------------------- */

@@ -83,13 +83,13 @@ inline void DOFManager::extractElementEquationNumber(
 /* -------------------------------------------------------------------------- */
 template <class _DOFData>
 inline _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) {
-  return dynamic_cast<_DOFData &>(this->getDOFData(dof_id));
+  return aka::as_type<_DOFData>(this->getDOFData(dof_id));
 }
 
 /* -------------------------------------------------------------------------- */
 template <class _DOFData>
 inline const _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) const {
-  return dynamic_cast<const _DOFData &>(this->getDOFData(dof_id));
+  return aka::as_type<_DOFData>(this->getDOFData(dof_id));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -227,7 +227,7 @@ void DOFManager::assembleMatMulVectToArray_(const ID & dof_id, const ID & A_id,
                                             const Array<Real> & x,
                                             Array<Real> & array,
                                             Real scale_factor) {
-  Vec tmp_array(dynamic_cast<Vec &>(*data_cache), this->id + ":tmp_array");
+  Vec tmp_array(aka::as_type<Vec>(*data_cache), this->id + ":tmp_array");
   tmp_array.clear();
   assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_array, scale_factor);
   getArrayPerDOFs(dof_id, tmp_array, array);

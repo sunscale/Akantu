@@ -98,7 +98,7 @@ void DOFManagerDefault::makeConsistentForPeriodicity(const ID & dof_id,
 
   this->mesh->getPeriodicNodeSynchronizer()
       .reduceSynchronizeWithPBCSlaves<AddOperation>(
-          dynamic_cast<SolverVectorDefault &>(array).getVector());
+          aka::as_type<SolverVectorDefault>(array).getVector());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -143,7 +143,7 @@ void DOFManagerDefault::assembleToGlobalArray(
 
   assembleToGlobalArray(
       dof_id, array_to_assemble,
-      dynamic_cast<SolverVectorDefault &>(global_array_v).getVector(),
+      aka::as_type<SolverVectorDefault>(global_array_v).getVector(),
       scale_factor);
 }
 
@@ -190,7 +190,7 @@ SolverVector & DOFManagerDefault::getNewLumpedMatrix(const ID & id) {
 /* -------------------------------------------------------------------------- */
 SparseMatrixAIJ & DOFManagerDefault::getMatrix(const ID & id) {
   auto & matrix = DOFManager::getMatrix(id);
-  return dynamic_cast<SparseMatrixAIJ &>(matrix);
+  return aka::as_type<SparseMatrixAIJ>(matrix);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -258,7 +258,7 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
                                         Array<Real> & local_array) {
   getArrayPerDOFs(
       dof_id,
-      dynamic_cast<const SolverVectorDefault &>(global_array).getVector(),
+      aka::as_type<SolverVectorDefault>(global_array).getVector(),
       local_array);
 }
 
@@ -267,7 +267,7 @@ void DOFManagerDefault::assembleLumpedMatMulVectToResidual(
     const ID & dof_id, const ID & A_id, const Array<Real> & x,
     Real scale_factor) {
   const Array<Real> & A = this->getLumpedMatrix(A_id);
-  auto & cache = dynamic_cast<SolverVectorArray &>(*this->data_cache);
+  auto & cache = aka::as_type<SolverVectorArray>(*this->data_cache);
 
   cache.clear();
   this->assembleToGlobalArray(dof_id, x, cache.getVector(), scale_factor);

@@ -349,7 +349,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   inline TensorStorage & operator=(const TensorStorage & src) {
-    return this->operator=(dynamic_cast<RetType &>(src));
+    return this->operator=(aka::as_type<RetType>(src));
   }
 
   /* ------------------------------------------------------------------------ */

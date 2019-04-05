@@ -275,7 +275,7 @@ void SparseSolverMumps::initialize() {
     /* [[fallthrough]]; un-comment when compiler will get it */
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
-    const auto & mpi_data = dynamic_cast<const MPICommunicatorData &>(
+    const auto & mpi_data = aka::as_type<MPICommunicatorData>(
         communicator.getCommunicatorData());
     MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
     this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
@@ -359,12 +359,12 @@ void SparseSolverMumps::solve(Array<Real> & x, const Array<Real> & b) {
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::solve() {
   this->master_rhs_solution.copy(
-      dynamic_cast<SolverVectorDefault &>(this->dof_manager.getResidual())
+      aka::as_type<SolverVectorDefault>(this->dof_manager.getResidual())
           .getGlobalVector());
 
   this->solveInternal();
 
-  dynamic_cast<SolverVectorDefault &>(this->dof_manager.getSolution())
+  aka::as_type<SolverVectorDefault>(this->dof_manager.getSolution())
       .setGlobalVector(this->master_rhs_solution);
 
   this->dof_manager.splitSolutionPerDOFs();

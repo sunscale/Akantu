@@ -63,7 +63,7 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   solver_callback.assembleResidual();
   
   auto & x =
-      dynamic_cast<SolverVectorDefault &>(this->dof_manager.getSolution());
+      aka::as_type<SolverVectorDefault>(this->dof_manager.getSolution());
   const auto & b = this->dof_manager.getResidual();
 
   x.resize();

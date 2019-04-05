@@ -267,8 +267,9 @@ void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::addMeTo(SparseMatrix & B, Real alpha) const {
-  if (auto * B_aij = dynamic_cast<SparseMatrixAIJ *>(&B)) {
-    this->addMeToTemplated<SparseMatrixAIJ>(*B_aij, alpha);
+  
+  if (aka::is_of_type<SparseMatrixAIJ>(B)) {
+    this->addMeToTemplated<SparseMatrixAIJ>(aka::as_type<SparseMatrixAIJ>(B), alpha);
   } else {
     //    this->addMeToTemplated<SparseMatrix>(*this, alpha);
   }

@@ -278,7 +278,7 @@ SolverVector & SolverVectorPETSc::operator=(const SolverVector & y) {
 
 /* -------------------------------------------------------------------------- */
 SolverVector & SolverVectorPETSc::operator+(const SolverVector & y) {
-  auto & y_ = dynamic_cast<const SolverVectorPETSc &>(y);
+  auto & y_ = aka::as_type<SolverVectorPETSc>(y);
   PETSc_call(VecAXPY, x, 1., y_.x);
   release_ = y_.release_;
   return *this;

@@ -887,7 +887,7 @@ void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
 void SolidMechanicsModel::computeNonLocalStresses(
     const GhostType & ghost_type) {
   for (auto & mat : materials) {
-    if (dynamic_cast<MaterialNonLocalInterface *>(mat.get()) == nullptr)
+    if (aka::is_of_type<MaterialNonLocalInterface>(*mat))
       continue;
 
     auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
@@ -914,10 +914,10 @@ void SolidMechanicsModel::updateNonLocalInternal(
   const ID field_name = internal_flat.getName();
 
   for (auto & mat : materials) {
-    if (dynamic_cast<MaterialNonLocalInterface *>(mat.get()) == nullptr)
+    if (aka::is_of_type<MaterialNonLocalInterface>(*mat))
       continue;
 
-    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
+    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface&>(*mat);
     mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type,
                                           kind);
   }
@@ -925,8 +925,7 @@ void SolidMechanicsModel::updateNonLocalInternal(
 
 /* -------------------------------------------------------------------------- */
 FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
-  return dynamic_cast<FEEngine &>(
-      getFEEngineClassBoundary<MyFEEngineType>(name));
+  return getFEEngineClassBoundary<MyFEEngineType>(name);
 }
 
 /* -------------------------------------------------------------------------- */

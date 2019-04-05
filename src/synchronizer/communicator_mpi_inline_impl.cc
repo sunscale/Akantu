@@ -130,7 +130,7 @@ namespace {
     for (auto && request_pair : zip(requests, mpi_requests)) {
       auto && req = std::get<0>(request_pair);
       auto && mpi_req = std::get<1>(request_pair);
-      mpi_req = dynamic_cast<CommunicationRequestMPI &>(req.getInternal())
+      mpi_req = aka::as_type<CommunicationRequestMPI>(req.getInternal())
                     .getMPIRequest();
     }
     return mpi_requests;
@@ -267,7 +267,7 @@ bool Communicator::test(CommunicationRequest & request) const {
   MPI_Status status;
   int flag;
   auto & req_mpi =
-      dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
+      aka::as_type<CommunicationRequestMPI>(request.getInternal());
 
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Test(&req, &flag, &status);
@@ -292,7 +292,7 @@ bool Communicator::testAll(std::vector<CommunicationRequest> & requests) const {
 void Communicator::wait(CommunicationRequest & request) const {
   MPI_Status status;
   auto & req_mpi =
-      dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
+      aka::as_type<CommunicationRequestMPI>(request.getInternal());
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Wait(&req, &status);
 }

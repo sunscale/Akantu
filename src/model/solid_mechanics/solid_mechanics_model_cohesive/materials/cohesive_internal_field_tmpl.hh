@@ -41,7 +41,7 @@ CohesiveInternalField<T>::CohesiveInternalField(const ID & id,
                                                 Material & material)
     : InternalField<T>(
           id, material, material.getModel().getFEEngine("CohesiveFEEngine"),
-          dynamic_cast<MaterialCohesive &>(material).getElementFilter()) {
+          aka::as_type<MaterialCohesive>(material).getElementFilter()) {
   this->element_kind = _ek_cohesive;
 }
 
@@ -58,7 +58,7 @@ template <typename T>
 FacetInternalField<T>::FacetInternalField(const ID & id, Material & material)
     : InternalField<T>(
           id, material, material.getModel().getFEEngine("FacetsFEEngine"),
-          dynamic_cast<MaterialCohesive &>(material).getFacetFilter()) {
+          aka::as_type<MaterialCohesive>(material).getFacetFilter()) {
   this->spatial_dimension -= 1;
   this->element_kind = _ek_regular;
 }

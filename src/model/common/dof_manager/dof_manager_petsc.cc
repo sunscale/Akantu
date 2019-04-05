@@ -184,7 +184,7 @@ void DOFManagerPETSc::assembleToGlobalArray(
     const ID & dof_id, const Array<Real> & array_to_assemble,
     SolverVector & global_array, Real scale_factor) {
   const auto & dof_data = getDOFDataTyped<DOFDataPETSc>(dof_id);
-  auto & g = dynamic_cast<SolverVectorPETSc &>(global_array);
+  auto & g = aka::as_type<SolverVectorPETSc>(global_array);
 
   AKANTU_DEBUG_ASSERT(array_to_assemble.size() *
                               array_to_assemble.getNbComponent() ==
@@ -201,7 +201,7 @@ void DOFManagerPETSc::getArrayPerDOFs(const ID & dof_id,
                                       Array<Real> & local) {
   const auto & dof_data = getDOFDataTyped<DOFDataPETSc>(dof_id);
   const auto & petsc_vector =
-      dynamic_cast<const SolverVectorPETSc &>(global_array);
+      aka::as_type<SolverVectorPETSc>(global_array);
 
   AKANTU_DEBUG_ASSERT(
       local.size() * local.getNbComponent() == dof_data.local_nb_dofs,
@@ -279,7 +279,7 @@ SparseMatrix & DOFManagerPETSc::getNewMatrix(const ID & id,
 /* -------------------------------------------------------------------------- */
 SparseMatrixPETSc & DOFManagerPETSc::getMatrix(const ID & id) {
   auto & matrix = DOFManager::getMatrix(id);
-  return dynamic_cast<SparseMatrixPETSc &>(matrix);
+  return aka::as_type<SparseMatrixPETSc>(matrix);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -289,19 +289,19 @@ SolverVector & DOFManagerPETSc::getNewLumpedMatrix(const ID & id) {
 
 /* -------------------------------------------------------------------------- */
 SolverVectorPETSc & DOFManagerPETSc::getSolution() {
-  return dynamic_cast<SolverVectorPETSc &>(*this->solution);
+  return aka::as_type<SolverVectorPETSc>(*this->solution);
 }
 
 const SolverVectorPETSc & DOFManagerPETSc::getSolution() const {
-  return dynamic_cast<const SolverVectorPETSc &>(*this->solution);
+  return aka::as_type<SolverVectorPETSc>(*this->solution);
 }
 
 SolverVectorPETSc & DOFManagerPETSc::getResidual() {
-  return dynamic_cast<SolverVectorPETSc &>(*this->residual);
+  return aka::as_type<SolverVectorPETSc>(*this->residual);
 }
 
 const SolverVectorPETSc & DOFManagerPETSc::getResidual() const {
-  return dynamic_cast<const SolverVectorPETSc &>(*this->residual);
+  return aka::as_type<SolverVectorPETSc>(*this->residual);
 }
 
 /* -------------------------------------------------------------------------- */

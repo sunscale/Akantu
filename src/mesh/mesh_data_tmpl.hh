@@ -180,7 +180,7 @@ const Array<T> & MeshData::getNodalData(const ID & name) const {
   auto it = nodal_data.find(name);
   if (it == nodal_data.end())
     AKANTU_EXCEPTION("No nodal dataset named " << name << " found.");
-  return dynamic_cast<const Array<T> &>(*(it->second.get()));
+  return aka::as_type<Array<T>>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -191,7 +191,7 @@ Array<T> & MeshData::getNodalData(const ID & name, UInt nb_components) {
   if (it == nodal_data.end())
     return allocNodalData<T>(name, nb_components);
 
-  return dynamic_cast<Array<T> &>(*(it->second.get()));
+  return aka::as_type<Array<T>>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -201,7 +201,7 @@ MeshData::getElementalData(const ID & name) const {
   auto it = elemental_data.find(name);
   if (it == elemental_data.end())
     AKANTU_EXCEPTION("No dataset named " << name << " found.");
-  return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second.get()));
+  return aka::as_type<ElementTypeMapArray<T>>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -213,7 +213,7 @@ ElementTypeMapArray<T> & MeshData::getElementalData(const ID & name) {
     return allocElementalData<T>(name);
   }
 
-  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second.get()));
+  return aka::as_type<ElementTypeMapArray<T>>(*(it->second.get()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -224,7 +224,7 @@ bool MeshData::hasData(const ID & name, const ElementType & elem_type,
   if (it == elemental_data.end())
     return false;
 
-  auto & elem_map = dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second));
+  auto & elem_map = aka::as_type<ElementTypeMapArray<T>>(*(it->second));
   return elem_map.exists(elem_type, ghost_type);
 }
 
@@ -266,7 +266,7 @@ MeshData::getElementalDataArray(const ID & name, const ElementType & elem_type,
                                    << " not registered for type: " << elem_type
                                    << " - ghost_type:" << ghost_type << "!");
   }
-  return dynamic_cast<const ElementTypeMapArray<T> &>(*(it->second))(
+  return aka::as_type<ElementTypeMapArray<T>>(*(it->second))(
       elem_type, ghost_type);
 }
 
@@ -280,7 +280,7 @@ Array<T> & MeshData::getElementalDataArray(const ID & name,
                                    << " not registered for type: " << elem_type
                                    << " - ghost_type:" << ghost_type << "!");
   }
-  return dynamic_cast<ElementTypeMapArray<T> &>(*(it->second.get()))(
+  return aka::as_type<ElementTypeMapArray<T>>(*(it->second.get()))(
       elem_type, ghost_type);
 }
 

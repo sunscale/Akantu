@@ -493,7 +493,7 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
 
         // add ghosts element to the correct material
         mat_index = recv_mat_index;
-        auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
+        auto & mat = aka::as_type<MaterialCohesive>(*materials[mat_index]);
         if (is_extrinsic) {
           mat.addFacet(element);
         }

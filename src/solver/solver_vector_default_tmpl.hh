@@ -48,7 +48,7 @@ inline SolverVectorArray::SolverVectorArray(const SolverVectorArray & vector, co
 template <class Array_>
 SolverVector & SolverVectorArrayTmpl<Array_>::
 operator+(const SolverVector & y) {
-  const auto & y_ = dynamic_cast<const SolverVectorArray &>(y);
+  const auto & y_ = aka::as_type<SolverVectorArray>(y);
   this->vector += y_.getVector();
 
   ++this->release_;
@@ -59,7 +59,7 @@ operator+(const SolverVector & y) {
 template <class Array_>
 SolverVector & SolverVectorArrayTmpl<Array_>::
 operator=(const SolverVector & y) {
-  const auto & y_ = dynamic_cast<const SolverVectorArray &>(y);
+  const auto & y_ = aka::as_type<SolverVectorArray>(y);
   this->vector.copy(y_.getVector());
 
   this->release_ = y.release();

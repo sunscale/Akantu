@@ -405,7 +405,7 @@ protected:
                                       const ID & matrix_to_copy_id) {
     ID matrix_id = this->id + ":mtx:" + id;
     auto & sm_to_copy =
-        dynamic_cast<MatType &>(this->getMatrix(matrix_to_copy_id));
+        aka::as_type<MatType>(this->getMatrix(matrix_to_copy_id));
     std::unique_ptr<SparseMatrix> sm =
         std::make_unique<MatType>(sm_to_copy, matrix_id);
     return this->registerSparseMatrix(matrix_id, sm);

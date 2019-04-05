@@ -117,7 +117,7 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
 
   try {
-    auto & templated_dumper = dynamic_cast<T &>(dumper);
+    auto & templated_dumper = aka::as_type<T>(dumper);
     return templated_dumper;
   } catch (std::bad_cast &) {
     AKANTU_EXCEPTION("Dumper " << dumper_name << " is not of type: "

@@ -95,7 +95,7 @@ namespace debug {
 template <typename T>
 const ParameterTyped<T> & Parameter::getParameterTyped() const {
   try {
-    const auto & tmp = dynamic_cast<const ParameterTyped<T> &>(*this);
+    const auto & tmp = aka::as_type<ParameterTyped<T>>(*this);
     return tmp;
   } catch (std::bad_cast &) {
     AKANTU_CUSTOM_EXCEPTION(
@@ -106,7 +106,7 @@ const ParameterTyped<T> & Parameter::getParameterTyped() const {
 /* -------------------------------------------------------------------------- */
 template <typename T> ParameterTyped<T> & Parameter::getParameterTyped() {
   try {
-    auto & tmp = dynamic_cast<ParameterTyped<T> &>(*this);
+    auto & tmp = aka::as_type<ParameterTyped<T>>(*this);
     return tmp;
   } catch (std::bad_cast &) {
     AKANTU_CUSTOM_EXCEPTION(

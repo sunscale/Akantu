@@ -185,7 +185,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
   const auto & smmc_options =
-      dynamic_cast<const SolidMechanicsModelCohesiveOptions &>(options);
+      aka::as_type<SolidMechanicsModelCohesiveOptions>(options);
 
   this->is_extrinsic = smmc_options.is_extrinsic;
 
@@ -194,7 +194,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   if (mesh.isDistributed()) {
     auto & mesh_facets = inserter->getMeshFacets();
     auto & synchronizer =
-        dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
+        aka::as_type<FacetSynchronizer>(mesh_facets.getElementSynchronizer());
 
     synchronizeGhostFacetsConnectivity();
 
@@ -265,7 +265,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
       mesh_facets,
       [&](auto && element) {
         auto mat_index = (*material_selector)(element);
-        auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
+        auto & mat = aka::as_type<MaterialCohesive>(*materials[mat_index]);
         facet_material(element) = mat_index;
         if (is_extrinsic) {
           mat.addFacet(element);
@@ -449,7 +449,7 @@ void SolidMechanicsModelCohesive::assembleInternalForces() {
   // f_int += f_int_cohe
   for (auto & material : this->materials) {
     try {
-      auto & mat = dynamic_cast<MaterialCohesive &>(*material);
+      auto & mat = aka::as_type<MaterialCohesive>(*material);
       mat.computeTraction(_not_ghost);
     } catch (std::bad_cast & bce) {
     }

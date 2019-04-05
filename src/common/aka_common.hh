@@ -547,22 +547,25 @@ template <typename T> using is_tensor = std::is_base_of<akantu::TensorTrait, T>;
 /* ------------------------------------------------------------------------ */
 template <typename T> using is_scalar = std::is_arithmetic<T>;
 /* ------------------------------------------------------------------------ */
-template <typename R, typename T> bool is_of_type(T && t) {
-  static_assert(conjunction<std::is_base_of<std::decay_t<T>, R>,
-                            std::is_polymorphic<std::decay_t<T>>,
-                            std::is_reference<T>>::value,
-                "Type T and R are not valid for a as_type conversion");
+template <typename R, typename T,
+          std::enable_if_t<std::is_reference<T>::value> * = nullptr>
+bool is_of_type(T && t) {
   return (
       dynamic_cast<std::add_pointer_t<
           std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
                              std::add_const_t<R>, R>>>(&t) != nullptr);
 }
+
 /* ------------------------------------------------------------------------ */
-template <typename R, typename T> decltype(auto) as_type(T && t) {
-  static_assert(conjunction<std::is_base_of<std::decay_t<T>, std::decay_t<R>>,
-                            std::is_polymorphic<std::decay_t<T>>,
-                            std::is_reference<T>>::value,
-                "Type T and R are not valid for a as_type conversion");
+template <typename R, typename T,
+          std::enable_if_t<std::is_reference<T>::value> * = nullptr>
+decltype(auto) as_type(T && t) {
+  static_assert(
+      disjunction<
+          std::is_base_of<std::decay_t<T>, std::decay_t<R>>, // down-cast
+          std::is_base_of<std::decay_t<R>, std::decay_t<T>>  // up-cast
+          >::value,
+      "Type T and R are not valid for a as_type conversion");
   return dynamic_cast<std::add_lvalue_reference_t<
       std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
                          std::add_const_t<R>, R>>>(t);
