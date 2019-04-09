@@ -152,3 +152,12 @@ namespace detail {
   };
 } // namespace detail
 } // namespace pybind11
+
+namespace{
+  py::module & register_arrays(py::module & mod) {
+
+    py::class_<_aka::Vector<bool>>(mod, "VectorBool");
+    py::class_<_aka::Vector<double>>(mod, "VectorReal");    
+    return mod;
+  }
+}
