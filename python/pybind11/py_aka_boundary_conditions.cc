@@ -5,7 +5,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 /* -------------------------------------------------------------------------- */
-#include "boundary_condition_python_functor.hh"
+#include "boundary_condition_functor.hh"
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
 namespace _aka = akantu;
