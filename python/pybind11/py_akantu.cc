@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 namespace py = pybind11;
 
@@ -14,4 +15,5 @@ PYBIND11_MODULE(py11_akantu, mod) {
   register_arrays(mod);
   register_boundary_conditions(mod);
   register_solid_mechanics_models(mod);
+
 } // Module akantu

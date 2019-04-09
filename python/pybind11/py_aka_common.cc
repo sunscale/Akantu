@@ -5,6 +5,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 /* -------------------------------------------------------------------------- */
+#include "integration_point.hh"
 #include "mesh.hh"
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
@@ -108,6 +109,8 @@ py::module & register_enums(py::module & mod) {
       .def("read", &_aka::Mesh::read, py::arg("filename"),
            py::arg("mesh_io_type") = _aka::_miot_auto,
            "read the mesh from a file");
+
+  py::class_<_aka::IntegrationPoint>(mod, "IntegrationPoint");
 
   return mod;
 } // namespace

@@ -15,10 +15,13 @@ protected:
   void deallocate() override final {}
 
   // allocate the memory
-  void allocate(UInt size, UInt nb_component) override final {}
+  void allocate(__attribute__((unused)) UInt size,
+                __attribute__((unused)) UInt nb_component) override final {}
 
   // allocate and initialize the memory
-  void allocate(UInt size, UInt nb_component, const T & value) override final {}
+  void allocate(__attribute__((unused)) UInt size,
+                __attribute__((unused)) UInt nb_component,
+                __attribute__((unused)) const T & value) override final {}
 
 public:
   ArrayProxy(T * data, UInt size, UInt nb_component) {
@@ -33,15 +36,16 @@ public:
     this->nb_component = src.getNbComponent();
   }
 
-  void resize(UInt size, const T & val) override final {
+  void resize(__attribute__((unused)) UInt size,
+              __attribute__((unused)) const T & val) override final {
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 
-  void resize(UInt new_size) override final {
+  void resize(__attribute__((unused)) UInt new_size) override final {
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 
-  void reserve(UInt new_size) override final {
+  void reserve(__attribute__((unused)) UInt new_size) override final {
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 };
@@ -69,11 +73,14 @@ namespace detail {
   template <typename T> struct type_caster<_aka::Array<T>> {
   protected:
     using py_array = array_t<T, array::forcecast | array::c_style>;
+    using type = _aka::Array<T>;
 
   public:
-    static constexpr auto name =
-        _("numpy.ndarray[") + npy_format_descriptor<T>::name +
-        _(", flags.writeable") + _(", flags.c_contiguous") + _("]");
+    PYBIND11_TYPE_CASTER(type, _("Array<T>"));
+
+    // static constexpr auto name =
+    //     _("numpy.ndarray[") + npy_format_descriptor<T>::name +
+    //     _(", flags.writeable") + _(", flags.c_contiguous") + _("]");
 
     /**
      * Conversion part 1 (Python->C++)
@@ -122,10 +129,10 @@ namespace detail {
       return true;
     }
 
-    operator _aka::Array<T> *() { return array_proxy.get(); }
-    operator _aka::Array<T> &() { return *array_proxy; }
-    template <typename _T>
-    using cast_op_type = pybind11::detail::cast_op_type<_T>;
+    // operator _aka::Array<T> *() { return array_proxy.get(); }
+    // operator _aka::Array<T> &() { return *array_proxy; }
+    // template <typename _T>
+    // using cast_op_type = pybind11::detail::cast_op_type<_T>;
 
     /**
      * Conversion part 2 (C++ -> Python)
@@ -150,14 +157,59 @@ namespace detail {
     std::unique_ptr<_aka::Array<T>> array_proxy;
     py_array copy_or_ref;
   };
+
+  /**
+   * Type caster for Vector classes
+   */
+  template <template <typename> class V, typename T> struct type_caster<V<T>> {
+    using type = V<T>;
+    template <typename U>
+    using array_type = array_t<U, array::c_style | array::forcecast>;
+
+  public:
+    PYBIND11_TYPE_CASTER(type, _("Vector<T>"));
+
+    /**
+     * Conversion part 1 (Python->C++): convert a PyObject into a Vector
+     * instance or return false upon failure. The second argument
+     * indicates whether implicit conversions should be applied.
+     */
+    bool load(handle src, bool convert) {
+      if (!convert && !array_type<typename type::value_type>::check_(src))
+        return false;
+
+      auto buf = array_type<typename type::value_type>::ensure(src);
+      value.move(_aka::VectorProxy<T>(buf));
+
+      return true;
+    }
+
+    /**
+     * Conversion part 2 (C++ -> Python): convert a grid instance into
+     * a Python object. The second and third arguments are used to
+     * indicate the return value policy and parent object (for
+     * ``return_value_policy::reference_internal``) and are generally
+     * ignored by implicit casters.
+     *
+     * TODO: do not ignore policy (see pybind11/eigen.h)
+     */
+    static handle cast(const type & src, return_value_policy /* policy */,
+                       handle /*parent*/) {
+      // none() passed as parent to get a correct nocopy
+      auto a = array_type<typename type::value_type>(src.size(), src.storage(),
+                                                     none());
+      return a.release();
+    }
+  };
+
 } // namespace detail
 } // namespace pybind11
 
-namespace{
-  py::module & register_arrays(py::module & mod) {
+namespace {
+py::module & register_arrays(py::module & mod) {
 
-    py::class_<_aka::Vector<bool>>(mod, "VectorBool");
-    py::class_<_aka::Vector<double>>(mod, "VectorReal");    
-    return mod;
-  }
+  // py::class_<_aka::Vector<bool>>(mod, "VectorBool");
+  // py::class_<_aka::Vector<double>>(mod, "VectorReal");
+  return mod;
 }
+} // namespace

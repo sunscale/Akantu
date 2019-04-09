@@ -30,6 +30,24 @@ public:
 };
 /* -------------------------------------------------------------------------- */
 
+class PyNeumannFunctor : public _aka::BC::NeumannFunctor {
+public:
+  /* Inherit the constructors */
+  using _aka::BC::NeumannFunctor::NeumannFunctor;
+
+  /* Trampoline (need one for each virtual function) */
+  void operator()(const _aka::IntegrationPoint & quad_point,
+                  _aka::Vector<_aka::Real> & dual,
+                  const _aka::Vector<_aka::Real> & coord,
+                  const _aka::Vector<_aka::Real> & normals) const override {
+
+    PYBIND11_OVERLOAD_PURE_NAME(void, _aka::BC::NeumannFunctor,
+                           "__call__", operator(), quad_point, dual, coord,
+                           normals);
+  }
+};
+/* -------------------------------------------------------------------------- */
+
 py::module & register_boundary_conditions(py::module & mod) {
 
   py::class_<_aka::BC::Functor>(mod, "BCFunctor");
@@ -38,6 +56,9 @@ py::module & register_boundary_conditions(py::module & mod) {
       .def(py::init())
       .def(py::init<_aka::SpatialDirection>());
 
+  py::class_<_aka::BC::NeumannFunctor, PyNeumannFunctor, _aka::BC::Functor>(
+      mod, "NeumannFunctor")
+      .def(py::init());
 
   return mod;
 } // namespace
