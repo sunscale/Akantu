@@ -153,7 +153,12 @@ mesh.read(mesh_file)
 
 # create the custom material
 mat = LocalElastic()
-aka.registerNewPythonMaterial(mat, "local_elastic")
+
+mat_factory = aka.MaterialFactory.getInstance()
+
+mat_factory.registerAllocator(
+    "local_elastic",
+    lambda a, _id__, model, _id: LocalElastic(model, _id))
 
 # parse input file
 aka.parseInput('material.dat')

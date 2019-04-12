@@ -9,6 +9,45 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
+
+/* -------------------------------------------------------------------------- */
+
+namespace akantu {
+
+class MaterialPython : public Material {
+
+public:
+  MaterialPython(SolidMechanicsModel & model, PyObject * obj,
+                 const ID & id = "");
+
+  ~MaterialPython() override = default;
+
+public:
+  void registerInternals();
+
+  void initMaterial() override;
+
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override;
+
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override;
+
+  Real getPushWaveSpeed(const Element & element) const override;
+
+  Real getEnergy(const std::string & type) override;
+
+  Real getEnergyForType(const std::string & type, ElementType el_type);
+
+protected:
+  std::map<std::string, Real> local_params;
+  std::map<std::string, std::unique_ptr<InternalField<Real>>> internals;
+};
+
+} // namespace akantu
+
+/* -------------------------------------------------------------------------- */
 namespace _aka = akantu;
 
 namespace {
@@ -115,6 +154,8 @@ py::module & register_solid_mechanics_models(py::module & mod) {
       .def_function_nocopy(getInternalForce)
       .def_function_nocopy(getBlockedDOFs)
       .def_function_nocopy(getIncrementFlag);
+
+  py::class_<_aka::MaterialFactory>(mod, "MaterialFactory");
 
   return mod;
 } // namespace
