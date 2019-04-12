@@ -85,14 +85,14 @@ py::module & register_boundary_conditions(py::module & mod) {
   declareDirichletFunctor<_aka::BC::IncrementValue>(
       mod, "IncrementValue", py::init<_aka::Real, _aka::BC::Axis>());
 
-  // declareDirichletFunctor<_aka::BC::Increment>(
-  //     mod, "Increment", py::init<_aka::Vector<_aka::Real> &>());
+  declareDirichletFunctor<_aka::BC::Increment>(
+      mod, "Increment", py::init<_aka::Vector<_aka::Real> &>());
 
-  // declareNeumannFunctor<_aka::BC::FromHigherDim>(
-  //     mod, "FromHigherDim", py::init<_aka::Matrix<_aka::Real> &>());
+  declareNeumannFunctor<_aka::BC::FromHigherDim>(
+      mod, "FromHigherDim", py::init<_aka::Matrix<_aka::Real> &>());
 
-  // declareNeumannFunctor<_aka::BC::FromSameDim>(
-  //     mod, "FromSameDim", py::init<_aka::Vector<_aka::Real> &>());
+  declareNeumannFunctor<_aka::BC::FromSameDim>(
+      mod, "FromSameDim", py::init<_aka::Vector<_aka::Real> &>());
 
   declareNeumannFunctor<_aka::BC::FreeBoundary>(mod, "FreeBoundary",
                                                 py::init());

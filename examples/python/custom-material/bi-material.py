@@ -4,6 +4,7 @@ import akantu as aka
 import subprocess
 import numpy as np
 import time
+import os
 # ------------------------------------------------------------- #
 
 
@@ -131,17 +132,20 @@ def applyBC(model):
             blocked_dofs[node, 1] = True
             displacement[node, 1] = 1.
 
+
 # main parameters
 spatial_dimension = 2
 mesh_file = 'square.msh'
 
-# call gmsh to generate the mesh
-ret = subprocess.call('gmsh -format msh2 -2 square.geo -optimize square.msh', shell=True)
-if ret != 0:
-    raise Exception(
-        'execution of GMSH failed: do you have it installed ?')
+if not os.path.isfile(mesh_file):
+    # call gmsh to generate the mesh
+    ret = subprocess.call(
+        'gmsh -format msh2 -2 square.geo -optimize square.msh', shell=True)
+    if ret != 0:
+        raise Exception(
+            'execution of GMSH failed: do you have it installed ?')
 
-time.sleep(1)
+time.sleep(2)
 
 # read mesh
 mesh = aka.Mesh(spatial_dimension)
