@@ -136,7 +136,7 @@ spatial_dimension = 2
 mesh_file = 'square.msh'
 
 # call gmsh to generate the mesh
-ret = subprocess.call(['gmsh', '-2', 'square.geo', '-optimize', 'square.msh'])
+ret = subprocess.call('gmsh -format msh2 -2 square.geo -optimize square.msh', shell=True)
 if ret != 0:
     raise Exception(
         'execution of GMSH failed: do you have it installed ?')

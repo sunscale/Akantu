@@ -49,12 +49,12 @@ int main(int argc, char * argv[]) {
 
   model.initFull(_analysis_method = _static);
 
-  model.applyBC(BC::Dirichlet::FlagOnly(_y), "ground");
-  model.applyBC(BC::Dirichlet::FlagOnly(_x), "corner");
+  model.applyBC(BC::FlagOnly(_y), "ground");
+  model.applyBC(BC::FlagOnly(_x), "corner");
 
   Vector<Real> trac(spatial_dimension, 0.);
   trac(_y) = 1.;
-  model.applyBC(BC::Neumann::FromTraction(trac), "air");
+  model.applyBC(BC::FromTraction(trac), "air");
 
   model.addDumpField("external_force");
   model.addDumpField("internal_force");

@@ -147,7 +147,7 @@ template <> struct Verification<3> {
 
 /* -------------------------------------------------------------------------- */
 template <ElementType _type>
-class SolutionFunctor : public BC::Dirichlet::DirichletFunctor {
+class SolutionFunctor : public BC::DirichletFunctor {
 public:
   SolutionFunctor(Real current_time, SolidMechanicsModel & model)
       : current_time(current_time), model(model) {}

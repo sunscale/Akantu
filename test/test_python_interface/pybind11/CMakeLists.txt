@@ -4,7 +4,6 @@ set_property(TARGET py11_akantu_test_common PROPERTY DEBUG_POSTFIX "")
 
 register_test(test_pybind11_common
   SCRIPT test_common.py
-  DEPENDS py11_akantu
   PACKAGE pybind11 python_interface
   PYTHON
   )

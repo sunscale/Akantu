@@ -71,15 +71,15 @@ namespace BC {
   }
 
   /* ---------------------------------------------------------------------- */
-  inline void FreeBoundary::
-  operator()(__attribute__((unused)) UInt node, Vector<bool> & flags,
-             __attribute__((unused)) Vector<Real> & primal,
-             __attribute__((unused)) const Vector<Real> & coord) const {
+  // inline void FreeBoundary::
+  // operator()(__attribute__((unused)) UInt node, Vector<bool> & flags,
+  //            __attribute__((unused)) Vector<Real> & primal,
+  //            __attribute__((unused)) const Vector<Real> & coord) const {
 
-    DIRICHLET_SANITY_CHECK;
+  //   DIRICHLET_SANITY_CHECK;
 
-    flags(this->axis) = false;
-  }
+  //   flags(this->axis) = false;
+  // }
 
   /* ---------------------------------------------------------------------- */
   inline void FixedValue::operator()(__attribute__((unused)) UInt node,
@@ -116,15 +116,15 @@ namespace BC {
   /* ------------------------------------------------------------------------ */
   /* Neumann */
   /* ------------------------------------------------------------------------ */
-  // inline void FreeBoundary::
-  // operator()(__attribute__((unused)) const IntegrationPoint & quad_point,
-  //            Vector<Real> & dual,
-  //            __attribute__((unused)) const Vector<Real> & coord,
-  //            __attribute__((unused)) const Vector<Real> & normals) const {
-  //   for (UInt i(0); i < dual.size(); ++i) {
-  //     dual(i) = 0.0;
-  //   }
-  // }
+  inline void FreeBoundary::
+  operator()(__attribute__((unused)) const IntegrationPoint & quad_point,
+             Vector<Real> & dual,
+             __attribute__((unused)) const Vector<Real> & coord,
+             __attribute__((unused)) const Vector<Real> & normals) const {
+    for (UInt i(0); i < dual.size(); ++i) {
+      dual(i) = 0.0;
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   inline void FromHigherDim::operator()(__attribute__((unused))

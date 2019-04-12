@@ -53,7 +53,8 @@ template <typename type_>
 class TestSMMFixtureWorkDynamic : public TestSMMFixture<type_> {
 public:
   void SetUp() override {
-    this->mesh_file = "../../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
+    this->mesh_file =
+        "../../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
     TestSMMFixture<type_>::SetUp();
 
     getStaticParser().parse("test_solid_mechanics_model_"
@@ -102,7 +103,7 @@ public:
         }
       }
     } else {
-      this->model->applyBC(BC::Neumann::FromTraction(surface_traction),
+      this->model->applyBC(BC::FromTraction(surface_traction),
                            "el_apply_force");
     }
 
@@ -125,7 +126,7 @@ TYPED_TEST(TestSMMFixtureWorkDynamic, WorkExplicit) {
   std::vector<Real> displacements{0.00, 0.01, -0.01};
 
   for (auto && u : displacements) {
-    this->model->applyBC(BC::Dirichlet::FixedValue(u, _x), "el_fixed");
+    this->model->applyBC(BC::FixedValue(u, _x), "el_fixed");
 
     // First, "equilibrate" a bit to get a reference state of total
     // energy and work. This is needed when we have a Dirichlet with
@@ -154,4 +155,4 @@ TYPED_TEST(TestSMMFixtureWorkDynamic, WorkExplicit) {
     // Sadly not very exact for such a coarse mesh.
   }
 }
-}
+} // namespace

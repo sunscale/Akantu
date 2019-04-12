@@ -57,8 +57,8 @@ namespace debug {
   public:
     ParameterUnexistingException(const std::string & name,
                                  const ParameterRegistry & registery)
-        : ParameterException(
-              name, "Parameter " + name + " does not exists in this scope") {
+        : ParameterException(name, "Parameter " + name +
+                                       " does not exists in this scope") {
       auto && params = registery.listParameters();
       this->_info =
           std::accumulate(params.begin(), params.end(),
@@ -84,11 +84,10 @@ namespace debug {
     ParameterWrongTypeException(const std::string & name,
                                 const std::type_info & wrong_type,
                                 const std::type_info & type)
-        : ParameterException(name,
-                             "Parameter " + name +
-                                 " type error, cannot convert " +
-                                 debug::demangle(type.name()) + " to " +
-                                 debug::demangle(wrong_type.name())) {}
+        : ParameterException(name, "Parameter " + name +
+                                       " type error, cannot convert " +
+                                       debug::demangle(type.name()) + " to " +
+                                       debug::demangle(wrong_type.name())) {}
   };
 } // namespace debug
 /* -------------------------------------------------------------------------- */
@@ -383,7 +382,6 @@ Parameter & ParameterRegistry::get(const std::string & name) {
   Parameter & param = *(it->second);
   return param;
 }
-
 
 /* -------------------------------------------------------------------------- */
 namespace {

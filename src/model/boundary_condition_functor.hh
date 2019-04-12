@@ -55,7 +55,6 @@ namespace BC {
   /* ---------------------------------------------------------------------- */
   class DirichletFunctor : public Functor {
   public:
-
     DirichletFunctor() = default;
     explicit DirichletFunctor(Axis ax) : axis(ax) {}
 
@@ -86,15 +85,15 @@ namespace BC {
   };
 
   /* ---------------------------------------------------------------------- */
-  class FreeBoundary : public DirichletFunctor {
-  public:
-    explicit FreeBoundary(Axis ax = _x) : DirichletFunctor(ax) {}
+  // class FreeBoundary : public DirichletFunctor {
+  // public:
+  //   explicit FreeBoundary(Axis ax = _x) : DirichletFunctor(ax) {}
 
-  public:
-    inline void operator()(UInt node, Vector<bool> & flags,
-                           Vector<Real> & primal,
-                           const Vector<Real> & coord) const;
-  };
+  // public:
+  //   inline void operator()(UInt node, Vector<bool> & flags,
+  //                          Vector<Real> & primal,
+  //                          const Vector<Real> & coord) const;
+  // };
 
   /* ---------------------------------------------------------------------- */
   class FixedValue : public DirichletFunctor {
@@ -193,12 +192,12 @@ namespace BC {
   };
 
   /* ---------------------------------------------------------------------- */
-  // class FreeBoundary : public NeumannFunctor {
-  // public:
-  //   inline void operator()(const IntegrationPoint & quad_point,
-  //                          Vector<Real> & dual, const Vector<Real> & coord,
-  //                          const Vector<Real> & normals) const override;
-  // };
+  class FreeBoundary : public NeumannFunctor {
+  public:
+    inline void operator()(const IntegrationPoint & quad_point,
+                           Vector<Real> & dual, const Vector<Real> & coord,
+                           const Vector<Real> & normals) const override;
+  };
 } // namespace BC
 } // namespace akantu
 

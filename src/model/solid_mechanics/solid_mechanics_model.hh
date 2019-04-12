@@ -547,10 +547,8 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 namespace BC {
-  namespace Neumann {
-    using FromStress = FromHigherDim;
-    using FromTraction = FromSameDim;
-  } // namespace Neumann
+  using FromStress = FromHigherDim;
+  using FromTraction = FromSameDim;
 } // namespace BC
 
 } // namespace akantu

@@ -9,10 +9,10 @@
 #include "mesh.hh"
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
-namespace py = pybind11;
-namespace _aka = akantu;
 
 namespace {
+namespace py = pybind11;
+namespace _aka = akantu;
 
 /* -------------------------------------------------------------------------- */
 
@@ -107,8 +107,11 @@ py::module & register_enums(py::module & mod) {
            py::arg("spatial_dimension"), py::arg("id") = "mesh",
            py::arg("memory_id") = 0)
       .def("read", &_aka::Mesh::read, py::arg("filename"),
-           py::arg("mesh_io_type") = _aka::_miot_auto,
-           "read the mesh from a file");
+           py::arg("mesh_io_type") = _aka::_miot_auto, "read the mesh from a file")
+      .def("getNodes",
+           [](_aka::Mesh & self) -> _aka::Array<_aka::Real> { return self.getNodes(); },
+           py::return_value_policy::reference)
+      .def("getNbNodes", &_aka::Mesh::getNbNodes);
 
   py::class_<_aka::IntegrationPoint>(mod, "IntegrationPoint");
 

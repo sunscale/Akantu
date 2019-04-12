@@ -12,7 +12,6 @@ PYBIND11_MODULE(py11_akantu, mod) {
   mod.doc() = "Akantu python interface";
 
   register_enums(mod);
-  register_arrays(mod);
   register_boundary_conditions(mod);
   register_solid_mechanics_models(mod);
 

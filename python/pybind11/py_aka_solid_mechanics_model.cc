@@ -14,11 +14,26 @@ namespace _aka = akantu;
 namespace {
 
 /* -------------------------------------------------------------------------- */
+#define def_deprecated(func_name, mesg)                                        \
+  def(func_name, [](py::args, py::kwargs) { AKANTU_ERROR(mesg); })
+
+#define def_function_nocopy(func_name)                                         \
+  def(#func_name,                                                              \
+      [](_aka::SolidMechanicsModel & self) -> decltype(auto) {                 \
+        return self.func_name();                                               \
+      },                                                                       \
+      py::return_value_policy::reference)
+
+#define def_function(func_name)                                                \
+  def(#func_name, [](_aka::SolidMechanicsModel & self) -> decltype(auto) {     \
+    return self.func_name();                                                   \
+  })
+/* -------------------------------------------------------------------------- */
 
 py::module & register_solid_mechanics_models(py::module & mod) {
 
-  py::class_<_aka::SolidMechanicsModelOptions>(mod,
-                                               "SolidMechanicsModelOptions")
+  py::class_<_aka::SolidMechanicsModelOptions>(
+      mod, "_aka::SolidMechanicsModelOptions")
       .def(py::init<_aka::AnalysisMethod>(),
            py::arg("analysis_method") = _aka::_explicit_lumped_mass);
 
@@ -50,7 +65,7 @@ py::module & register_solid_mechanics_models(py::module & mod) {
            py::arg("solver_id") = "");
 
   py::class_<_aka::SolidMechanicsModel, _aka::Model, _aka::ModelSolver>(
-      mod, "SolidMechanicsModel")
+      mod, "_aka::SolidMechanicsModel")
       .def(py::init<_aka::Mesh &, _aka::UInt, const _aka::ID &,
                     const _aka::MemoryID &, const _aka::ModelType>(),
            py::arg("mesh"),
@@ -62,7 +77,14 @@ py::module & register_solid_mechanics_models(py::module & mod) {
               const _aka::SolidMechanicsModelOptions & options) {
              self.initFull(options);
            },
-           py::arg("options") = _aka::SolidMechanicsModelOptions())
+           py::arg("_analysis_method") = _aka::SolidMechanicsModelOptions())
+      .def("initFull",
+           [](_aka::SolidMechanicsModel & self,
+              const _aka::AnalysisMethod & _analysis_method) {
+             self.initFull(_aka::SolidMechanicsModelOptions(_analysis_method));
+           },
+           py::arg("_analysis_method"))
+      .def_deprecated("applyDirichletBC", "Deprecated: use applyBC")
       .def("applyBC",
            [](_aka::SolidMechanicsModel & self,
               _aka::BC::DirichletFunctor & func,
@@ -74,7 +96,25 @@ py::module & register_solid_mechanics_models(py::module & mod) {
               const std::string & element_group) {
              self.applyBC(func, element_group);
            })
-      .def("getExternalForce", &_aka::SolidMechanicsModel::getExternalForce);
+      .def("setTimeStep", &_aka::SolidMechanicsModel::setTimeStep,
+           py::arg("time_step"), py::arg("solver_id") = "")
+      .def("getEnergy",
+           py::overload_cast<const std::string &>(
+               &_aka::SolidMechanicsModel::getEnergy),
+           py::arg("energy_id"))
+      .def_function(assembleStiffnessMatrix)
+      .def_function(assembleInternalForces)
+      .def_function(getStableTimeStep)
+      .def_function_nocopy(getExternalForce)
+      .def_function_nocopy(getDisplacement)
+      .def_function_nocopy(getPreviousDisplacement)
+      .def_function_nocopy(getIncrement)
+      .def_function_nocopy(getMass)
+      .def_function_nocopy(getVelocity)
+      .def_function_nocopy(getAcceleration)
+      .def_function_nocopy(getInternalForce)
+      .def_function_nocopy(getBlockedDOFs)
+      .def_function_nocopy(getIncrementFlag);
 
   return mod;
 } // namespace
