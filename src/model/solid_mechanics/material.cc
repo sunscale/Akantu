@@ -1383,4 +1383,9 @@ void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
   }
 }
 
+/* -------------------------------------------------------------------------- */
+MaterialFactory & Material::getFactory() {
+  return MaterialFactory::getInstance();
+}
+
 } // namespace akantu

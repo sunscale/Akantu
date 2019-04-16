@@ -8,6 +8,7 @@
 #include "integration_point.hh"
 #include "mesh.hh"
 #include "parser.hh"
+#include "parameter_registry.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace {
@@ -84,6 +85,15 @@ py::module & register_enums(py::module & mod) {
       .value("_miot_abaqus", _aka::_miot_abaqus)
       .export_values();
 
+  py::enum_<_aka::ParameterAccessType>(mod, "ParameterAccessType")
+      .value("_pat_internal", _aka::_pat_internal)
+      .value("_pat_writable", _aka::_pat_writable)
+      .value("_pat_readable", _aka::_pat_readable)
+      .value("_pat_modifiable", _aka::_pat_modifiable)
+      .value("_pat_parsable", _aka::_pat_parsable)
+      .value("_pat_parsmod", _aka::_pat_parsmod)
+      .export_values();
+
   py::enum_<_aka::ModelType>(mod, "ModelType")
 
       .value("_model", _aka::ModelType::_model)
@@ -107,9 +117,12 @@ py::module & register_enums(py::module & mod) {
            py::arg("spatial_dimension"), py::arg("id") = "mesh",
            py::arg("memory_id") = 0)
       .def("read", &_aka::Mesh::read, py::arg("filename"),
-           py::arg("mesh_io_type") = _aka::_miot_auto, "read the mesh from a file")
+           py::arg("mesh_io_type") = _aka::_miot_auto,
+           "read the mesh from a file")
       .def("getNodes",
-           [](_aka::Mesh & self) -> _aka::Array<_aka::Real> { return self.getNodes(); },
+           [](_aka::Mesh & self) -> _aka::Array<_aka::Real> {
+             return self.getNodes();
+           },
            py::return_value_policy::reference)
       .def("getNbNodes", &_aka::Mesh::getNbNodes);
 

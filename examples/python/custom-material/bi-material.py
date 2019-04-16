@@ -8,7 +8,11 @@ import os
 # ------------------------------------------------------------- #
 
 
-class LocalElastic:
+class LocalElastic(aka.Material):
+
+    def __init__(self, model, _id):
+        super().__init__(model, _id)
+        super().registerParamReal('E', aka._pat_readable, 'Youngs modulus')
 
     # declares all the internals
     def initMaterial(self, internals, params):
@@ -152,18 +156,22 @@ mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
 
 # create the custom material
-mat = LocalElastic()
+# mat = LocalElastic()
 
 mat_factory = aka.MaterialFactory.getInstance()
 
-mat_factory.registerAllocator(
-    "local_elastic",
-    lambda a, _id__, model, _id: LocalElastic(model, _id))
+
+def allocator(_dim, _unused, model, _id):
+    return LocalElastic(model, _id)
+
+
+mat_factory.registerAllocator("local_elastic", allocator)
 
 # parse input file
 aka.parseInput('material.dat')
 
 # init the SolidMechanicsModel
+print(dir(aka))
 model = aka.SolidMechanicsModel(mesh)
 model.initFull(_analysis_method=aka._static)
 

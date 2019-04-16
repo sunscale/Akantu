@@ -52,9 +52,14 @@
 namespace akantu {
 class Model;
 class SolidMechanicsModel;
+class Material;
 } // namespace akantu
 
 namespace akantu {
+
+using MaterialFactory =
+    Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
+
 
 /**
  * Interface of all materials
@@ -487,6 +492,9 @@ public:
   /// specify if the matrix need to be recomputed for this material
   virtual bool hasStiffnessMatrixChanged() { return true; }
 
+  /// static method to reteive the material factory
+  static MaterialFactory & getFactory();
+
 protected:
   bool isInit() const { return is_init; }
 
@@ -643,10 +651,6 @@ inline std::ostream & operator<<(std::ostream & stream,
 #define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END }
 
 /* -------------------------------------------------------------------------- */
-namespace akantu {
-using MaterialFactory =
-    Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
-} // namespace akantu
 
 #define INSTANTIATE_MATERIAL_ONLY(mat_name)                                    \
   template class mat_name<1>;                                                  \
