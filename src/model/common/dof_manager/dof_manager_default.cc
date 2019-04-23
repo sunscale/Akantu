@@ -458,13 +458,13 @@ const Array<bool> & DOFManagerDefault::getBlockedDOFs() const {
 
 /* -------------------------------------------------------------------------- */
 // register in factory
-static bool default_dof_manager_is_registered [[gnu::unused]] =
-    DefaultDOFManagerFactory::getInstance().registerAllocator(
-        "default",
-        [](const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(id, mem_id);
-        });
+// static bool default_dof_manager_is_registered [[gnu::unused]] =
+//     DefaultDOFManagerFactory::getInstance().registerAllocator(
+//         "default",
+//         [](const ID & id,
+//            const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+//           return std::make_unique<DOFManagerDefault>(id, mem_id);
+//         });
 
 static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
@@ -473,4 +473,13 @@ static bool dof_manager_is_registered [[gnu::unused]] =
            const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
           return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
         });
+
+static bool dof_manager_is_registered_mumps [[gnu::unused]] =
+    DOFManagerFactory::getInstance().registerAllocator(
+        "mumps",
+        [](Mesh & mesh, const ID & id,
+           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        });
+
 } // namespace akantu

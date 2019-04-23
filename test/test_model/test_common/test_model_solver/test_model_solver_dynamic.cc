@@ -87,6 +87,11 @@ int main(int argc, char * argv[]) {
   const Real pulse_width = 0.2;
   const Real A = 0.01;
 
+  ID dof_manager_type = "default";
+#if defined(DOF_MANAGER_TYPE)
+  dof_manager_type = DOF_MANAGER_TYPE;
+#endif
+  
   if (prank == 0)
     genMesh(mesh, global_nb_nodes);
 
@@ -94,7 +99,7 @@ int main(int argc, char * argv[]) {
 
   // mesh.makePeriodic(_x);
 
-  MyModel model(F, mesh, _explicit);
+  MyModel model(F, mesh, _explicit, dof_manager_type);
 
   model.forces.clear();
   model.blocked.clear();

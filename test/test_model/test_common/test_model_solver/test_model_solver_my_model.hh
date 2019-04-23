@@ -56,7 +56,7 @@ class MyModel : public ModelSolver,
                 public BoundaryCondition<MyModel>,
                 public DataAccessor<Element> {
 public:
-  MyModel(Real F, Mesh & mesh, bool lumped)
+  MyModel(Real F, Mesh & mesh, bool lumped, const ID & dof_manager_type = "default")
       : ModelSolver(mesh, ModelType::_model, "model_solver", 0),
         nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement(_segment_2)),
         lumped(lumped), E(1.), A(1.), rho(1.), mesh(mesh),
@@ -67,8 +67,7 @@ public:
         stresses(nb_elements, 1, "stress"), strains(nb_elements, 1, "strain"),
         initial_lengths(nb_elements, 1, "L0") {
     this->initBC(*this, displacement, forces);
-    this->initDOFManager("petsc");
-    //this->initDOFManager("default");
+    this->initDOFManager(dof_manager_type);
     this->getDOFManager().registerDOFs("disp", displacement, _dst_nodal);
     this->getDOFManager().registerDOFsDerivative("disp", 1, velocity);
     this->getDOFManager().registerDOFsDerivative("disp", 2, acceleration);

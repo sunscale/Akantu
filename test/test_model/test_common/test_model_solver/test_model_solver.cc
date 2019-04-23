@@ -59,7 +59,12 @@ int main(int argc, char * argv[]) {
 
   std::cout << std::setprecision(7);
 
-  UInt global_nb_nodes = 5;
+  ID dof_manager_type = "default";
+#if defined(DOF_MANAGER_TYPE)
+  dof_manager_type = DOF_MANAGER_TYPE;
+#endif
+  
+  UInt global_nb_nodes = 100;
   Mesh mesh(1);
 
   RandomGenerator<UInt>::seed(1);
@@ -67,11 +72,11 @@ int main(int argc, char * argv[]) {
   if (prank == 0) {
     genMesh(mesh, global_nb_nodes);
   }
-
+ 
   // std::cout << prank << RandGenerator<Real>::seed() << std::endl;
   mesh.distribute();
 
-  MyModel model(F, mesh, false);
+  MyModel model(F, mesh, false, dof_manager_type);
 
   model.getNewSolver("static", TimeStepSolverType::_static, NonLinearSolverType::_newton_raphson);
   model.setIntegrationScheme("static", "disp", IntegrationSchemeType::_pseudo_time);
@@ -109,7 +114,7 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 }
 
 /* -------------------------------------------------------------------------- */
-void printResults(MyModel & model, UInt nb_nodes) {
+void printResults(MyModel & model, UInt /*nb_nodes*/) {
   // if (model.mesh.isDistributed()) {
   //   UInt prank = model.mesh.getCommunicator().whoAmI();
   //   auto & sync = dynamic_cast<DOFManagerDefault &>(model.getDOFManager())

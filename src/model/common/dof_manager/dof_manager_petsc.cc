@@ -173,9 +173,6 @@ DOFManagerPETSc::registerDOFsInternal(const ID & dof_id,
     A.resize();
   }
 
-  std::cout << "Allocating vectors " << solution.get() << std::endl;
-  // should also redo the lumped matrix
-
   return ret;
 }
 

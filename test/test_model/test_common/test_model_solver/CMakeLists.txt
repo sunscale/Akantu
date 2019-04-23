@@ -25,9 +25,16 @@ register_test(test_dof_manager_default
   PACKAGE mumps
   )
 
-register_test(test_model_solver
+register_test(test_model_solver_mumps
   SOURCES test_model_solver.cc
+  COMPILE_OPTIONS "DOF_MANAGER_TYPE=\"mumps\""
   PACKAGE mumps
+  )
+
+register_test(test_model_solver_petsc
+  SOURCES test_model_solver.cc
+  COMPILE_OPTIONS "DOF_MANAGER_TYPE=\"petsc\""
+  PACKAGE petsc
   )
 
 register_test(test_model_solver_dynamic_explicit
@@ -44,9 +51,9 @@ register_test(test_model_solver_dynamic_implicit
 
 
 register_test(test_model_solver_dynamic_petsc
-  SOURCES test_model_solver_dynamic_petsc.cc
+  SOURCES test_model_solver_dynamic.cc
   PACKAGE petsc
-  COMPILE_OPTIONS "EXPLICIT=false"
+  COMPILE_OPTIONS "EXPLICIT=false;DOF_MANAGER_TYPE=\"petsc\""
   )
 
 register_test(test_vector_petsc
