@@ -497,7 +497,7 @@ namespace iterators {
     using reference = value_type &;
     using iterator_category = typename iterator_t::iterator_category;
 
-    transform_adaptor_iterator(iterator_t it, operator_t && op)
+    transform_adaptor_iterator(iterator_t it, operator_t op)
         : it(std::move(it)), op(op) {}
     transform_adaptor_iterator(const transform_adaptor_iterator &) = default;
 
@@ -507,8 +507,7 @@ namespace iterators {
     }
 
     decltype(auto) operator*() {
-      return std::forward<decltype(op(*it))>(
-          op(std::forward<decltype(*it)>(*it)));
+      return op(std::forward<decltype(*it)>(*it));
     }
 
     bool operator==(const transform_adaptor_iterator & other) const {
@@ -534,7 +533,7 @@ namespace iterators {
 
   template <class iterator_t, class operator_t>
   decltype(auto) make_transform_adaptor_iterator(iterator_t it,
-                                                 operator_t && op) {
+                                                 operator_t op) {
     return transform_adaptor_iterator<iterator_t, operator_t>(
         it, std::forward<operator_t>(op));
   }
@@ -549,7 +548,7 @@ namespace containers {
     // std::decay_t<container_t>::const_iterator; using iterator = typename
     // std::decay_t<container_t>::iterator;
 
-    TransformIteratorAdaptor(container_t && cont, operator_t && op)
+    TransformIteratorAdaptor(container_t && cont, operator_t op)
         : cont(std::forward<container_t>(cont)),
           op(std::forward<operator_t>(op)) {}
 
@@ -583,14 +582,14 @@ template <class container_t>
 decltype(auto) make_keys_adaptor(container_t && cont) {
   return make_transform_adaptor(
       std::forward<container_t>(cont),
-      [](auto && pair) -> decltype(pair.first) { return pair.first; });
+      [](auto && pair) -> const auto & { return pair.first; });
 }
 
 template <class container_t>
 decltype(auto) make_values_adaptor(container_t && cont) {
   return make_transform_adaptor(
       std::forward<container_t>(cont),
-      [](auto && pair) -> decltype(pair.second) { return pair.second; });
+      [](auto && pair) -> auto & { return pair.second; });
 }
 
 template <class container_t>
