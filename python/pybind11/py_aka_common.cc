@@ -7,8 +7,8 @@
 /* -------------------------------------------------------------------------- */
 #include "integration_point.hh"
 #include "mesh.hh"
-#include "parser.hh"
 #include "parameter_registry.hh"
+#include "parser.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace {
@@ -85,7 +85,8 @@ py::module & register_enums(py::module & mod) {
       .value("_miot_abaqus", _aka::_miot_abaqus)
       .export_values();
 
-  py::enum_<_aka::ParameterAccessType>(mod, "ParameterAccessType")
+  py::enum_<_aka::ParameterAccessType>(mod, "ParameterAccessType",
+                                       py::arithmetic())
       .value("_pat_internal", _aka::_pat_internal)
       .value("_pat_writable", _aka::_pat_writable)
       .value("_pat_readable", _aka::_pat_readable)
@@ -95,7 +96,6 @@ py::module & register_enums(py::module & mod) {
       .export_values();
 
   py::enum_<_aka::ModelType>(mod, "ModelType")
-
       .value("_model", _aka::ModelType::_model)
       .value("_solid_mechanics_model", _aka::ModelType::_solid_mechanics_model)
       .value("_solid_mechanics_model_cohesive",
@@ -104,6 +104,22 @@ py::module & register_enums(py::module & mod) {
       .value("_structural_mechanics_model",
              _aka::ModelType::_structural_mechanics_model)
       .value("_embedded_model", _aka::ModelType::_embedded_model)
+      .export_values();
+
+  py::enum_<_aka::ElementType>(mod, "ElementType")
+      .value("_point_1", _aka::_point_1)
+      .value("_segment_2", _aka::_segment_2)
+      .value("_segment_3", _aka::_segment_3)
+      .value("_triangle_3", _aka::_triangle_3)
+      .value("_triangle_6", _aka::_triangle_6)
+      .value("_quadrangle_4", _aka::_quadrangle_4)
+      .value("_quadrangle_8", _aka::_quadrangle_8)
+      .value("_tetrahedron_4", _aka::_tetrahedron_4)
+      .value("_tetrahedron_10", _aka::_tetrahedron_10)
+      .value("_pentahedron_6", _aka::_pentahedron_6)
+      .value("_pentahedron_15", _aka::_pentahedron_15)
+      .value("_hexahedron_8", _aka::_hexahedron_8)
+      .value("_hexahedron_20", _aka::_hexahedron_20)
       .export_values();
 
   mod.def("parseInput",

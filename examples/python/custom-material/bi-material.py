@@ -1,5 +1,3 @@
-from __future__ import print_function
-# ------------------------------------------------------------- #
 import akantu as aka
 import subprocess
 import numpy as np
@@ -12,30 +10,24 @@ class LocalElastic(aka.Material):
 
     def __init__(self, model, _id):
         super().__init__(model, _id)
-        super().registerParamReal('E', aka._pat_readable, 'Youngs modulus')
-
+        super().registerParamReal('E',
+                                  aka._pat_readable | aka._pat_parsable,
+                                  'Youngs modulus')
+        super().registerParamReal('nu',
+                                  aka._pat_readable | aka._pat_parsable,
+                                  'Poisson ratio')
     # declares all the internals
-    def initMaterial(self, internals, params):
-        self.E = params['E']
-        self.nu = params['nu']
-        self.rho = params['rho']
-        # print(self.__dict__)
-        # First Lame coefficient
-        self.lame_lambda = self.nu * self.E / (
-            (1. + self.nu) * (1. - 2. * self.nu))
+    def initMaterial(self):
+        nu = self.getReal('nu')
+        E = self.getReal('E')
+        self.lbda = nu * E / ((1 + nu) * (1 - 2 * nu));
+        self.mu = E / (2 * (1 + nu));
+        self.lame_lambda = nu * E / (
+            (1. + nu) * (1. - 2. * nu))
         # Second Lame coefficient (shear modulus)
-        self.lame_mu = self.E / (2. * (1. + self.nu))
-
-        all_factor = internals['factor']
-        all_quad_coords = internals['quad_coordinates']
-
-        for elem_type in all_factor.keys():
-            factor = all_factor[elem_type]
-            quad_coords = all_quad_coords[elem_type]
-
-            factor[:] = 1.
-            factor[quad_coords[:, 1] < 0.5] = .5
-
+        self.lame_mu = E / (2. * (1. + nu))
+        super().initMaterial()
+        
     # declares all the internals
     @staticmethod
     def registerInternals():
@@ -61,10 +53,14 @@ class LocalElastic(aka.Material):
         return 0.5 * (grad_u + np.einsum('aij->aji', grad_u))
 
     # constitutive law
-    def computeStress(self, grad_u, sigma, internals, params):
+    def computeStress(self, el_type, ghost_type):
+
+        grad_u = self.getGradU(el_type, ghost_type)
+        sigma  = self.getStress(el_type, ghost_type)          
+        
         n_quads = grad_u.shape[0]
         grad_u = grad_u.reshape((n_quads, 2, 2))
-        factor = internals['factor'].reshape(n_quads)
+        # factor = internals['factor'].reshape(n_quads)
         epsilon = self.computeEpsilon(grad_u)
         sigma = sigma.reshape((n_quads, 2, 2))
         trace = np.einsum('aii->a', grad_u)
@@ -76,13 +72,13 @@ class LocalElastic(aka.Material):
 
         # print(sigma.reshape((n_quads, 4)))
         # print(grad_u.reshape((n_quads, 4)))
-        sigma[:, :, :] = np.einsum('aij, a->aij', sigma, factor)
+        # sigma[:, :, :] = np.einsum('aij, a->aij', sigma, factor)
 
     # constitutive law tangent modulii
-    def computeTangentModuli(self, grad_u, tangent, internals, params):
-        n_quads = tangent.shape[0]
-        tangent = tangent.reshape(n_quads, 3, 3)
-        factor = internals['factor'].reshape(n_quads)
+    def computeTangentModuli(self, el_type, tangent_matrix, ghost_type):
+        n_quads = tangent_matrix.shape[0]
+        tangent = tangent_matrix.reshape(n_quads, 3, 3)
+        # factor = internals['factor'].reshape(n_quads)
 
         Miiii = self.lame_lambda + 2 * self.lame_mu
         Miijj = self.lame_lambda
@@ -93,7 +89,7 @@ class LocalElastic(aka.Material):
         tangent[:, 0, 1] = Miijj
         tangent[:, 1, 0] = Miijj
         tangent[:, 2, 2] = Mijij
-        tangent[:, :, :] = np.einsum('aij, a->aij', tangent, factor)
+        # tangent[:, :, :] = np.einsum('aij, a->aij', tangent, factor)
 
     # computes the energy density
     def getEnergyDensity(self, energy_type, energy_density,
@@ -171,7 +167,6 @@ mat_factory.registerAllocator("local_elastic", allocator)
 aka.parseInput('material.dat')
 
 # init the SolidMechanicsModel
-print(dir(aka))
 model = aka.SolidMechanicsModel(mesh)
 model.initFull(_analysis_method=aka._static)
 
@@ -188,7 +183,7 @@ model.addDumpFieldVector("internal_force")
 model.addDumpFieldVector("external_force")
 model.addDumpField("strain")
 model.addDumpField("stress")
-model.addDumpField("factor")
+# model.addDumpField("factor")
 model.addDumpField("blocked_dofs")
 
 # Boundary conditions

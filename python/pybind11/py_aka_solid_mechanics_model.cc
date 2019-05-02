@@ -25,13 +25,19 @@ public:
   using Material::Material;
 
   virtual ~PyMaterial(){};
-  // void registerInternals();
-  // void initMaterial() override;
-  // void computeStress(ElementType el_type,
-  //                    GhostType ghost_type = _not_ghost) override;
-  // void computeTangentModuli(const ElementType & el_type,
-  //                           Array<Real> & tangent_matrix,
-  //                           GhostType ghost_type = _not_ghost) override;
+  void initMaterial() override {
+    PYBIND11_OVERLOAD(void, Material, initMaterial);
+  };
+  void computeStress(ElementType el_type,
+                     GhostType ghost_type = _not_ghost) override {
+    PYBIND11_OVERLOAD_PURE(void, Material, computeStress, el_type, ghost_type);
+  }
+  void computeTangentModuli(const ElementType & el_type,
+                            Array<Real> & tangent_matrix,
+                            GhostType ghost_type = _not_ghost) override {
+    PYBIND11_OVERLOAD_PURE(void, Material, computeTangentModuli, el_type,
+                           tangent_matrix, ghost_type);
+  }
   // Real getPushWaveSpeed(const Element & element) const override;
   // Real getEnergy(const std::string & type) override;
   // Real getEnergyForType(const std::string & type, ElementType el_type);
@@ -149,31 +155,54 @@ py::module & register_solid_mechanics_models(py::module & mod) {
       .def_function_nocopy(getAcceleration)
       .def_function_nocopy(getInternalForce)
       .def_function_nocopy(getBlockedDOFs)
-      .def_function_nocopy(getIncrementFlag);
+      .def_function_nocopy(getIncrementFlag)
+      .def_function_nocopy(getMesh);
 
-  py::class_<_aka::ParameterRegistry>(mod, "ParameterRegistry")
+  py::class_<_aka::ParameterRegistry>(mod, "ParameterRegistry",
+                                      py::multiple_inheritance())
       .def("registerParamReal",
-           [](_aka::ParameterRegistry & self, std::string name,
-              _aka::ParameterAccessType type, const std::string & description) {
+           [](_aka::ParameterRegistry & self, const std::string & name,
+              _aka::UInt type, const std::string & description) {
              _aka::Real * p = new _aka::Real;
              map_params[&self][name] = p;
-             self.registerParam<_aka::Real>(name, *p, type, description);
+             self.registerParam<_aka::Real>(
+                 name, *p, _aka::ParameterAccessType(type), description);
            })
       .def("registerParamReal",
            [](_aka::ParameterRegistry & self, const _aka::Real & _default,
-              std::string name, _aka::ParameterAccessType type,
+              const std::string & name, _aka::UInt type,
               const std::string & description) {
              _aka::Real * p = new _aka::Real;
              map_params[&self][name] = p;
-             self.registerParam<_aka::Real>(name, *p, _default, type,
+             self.registerParam<_aka::Real>(name, *p, _default,
+                                            _aka::ParameterAccessType(type),
                                             description);
+           })
+      .def("getReal",
+           [](_aka::ParameterRegistry & self, const std::string & name) {
+             return _aka::Real(self.get(name));
            });
 
-  py::class_<_aka::Parsable, _aka::ParameterRegistry>(mod, "Parsable")
+  py::class_<_aka::Parsable, _aka::ParameterRegistry>(
+      mod, "Parsable", py::multiple_inheritance())
       .def(py::init<const _aka::ParserType &, const _aka::ID &>());
 
-  py::class_<_aka::Material, _aka::PyMaterial, _aka::Parsable>(mod, "Material")
-      .def(py::init<_aka::SolidMechanicsModel &, const _aka::ID &>());
+  py::class_<_aka::Material, _aka::PyMaterial, _aka::Parsable>(
+      mod, "Material", py::multiple_inheritance())
+      .def(py::init<_aka::SolidMechanicsModel &, const _aka::ID &>())
+      .def("getGradU",
+           [](_aka::Material & self, _aka::ElementType el_type,
+              _aka::GhostType ghost_type = _aka::_not_ghost) -> decltype(auto) {
+             return self.getGradU(el_type, ghost_type);
+           },
+           py::return_value_policy::reference)
+      .def("getStress",
+           [](_aka::Material & self, _aka::ElementType el_type,
+              _aka::GhostType ghost_type = _aka::_not_ghost) -> decltype(auto) {
+             return self.getStress(el_type, ghost_type);
+           },
+           py::return_value_policy::reference)
+      .def("initMaterial", &_aka::Material::initMaterial);
 
   py::class_<_aka::MaterialFactory>(mod, "MaterialFactory")
       .def_static("getInstance",
