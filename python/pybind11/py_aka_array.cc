@@ -143,8 +143,8 @@ namespace detail {
   }
 
   /* ------------------------------------------------------------------------ */
-
-  template <typename VecType, typename T> struct my_type_caster {
+  template <typename VecType, typename T>
+  class [[gnu::visibility("default")]] my_type_caster  {
   protected:
     using type = VecType;
     using proxy_type = typename _aka::Proxy<VecType, T>;

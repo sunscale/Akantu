@@ -1,7 +1,9 @@
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "non_linear_solver.hh"
-#include "solid_mechanics_model.hh"
+#include "py_aka_array.cc"
+/* -------------------------------------------------------------------------- */
+#include <non_linear_solver.hh>
+#include <solid_mechanics_model.hh>
+/* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -28,7 +30,7 @@ namespace akantu {
   })
 /* -------------------------------------------------------------------------- */
 
-__attribute__((visibility("default"))) void
+[[gnu::visibility("default")]] void
 register_solid_mechanics_model(py::module & mod) {
 
   py::class_<SolidMechanicsModelOptions>(mod, "SolidMechanicsModelOptions")
@@ -37,6 +39,8 @@ register_solid_mechanics_model(py::module & mod) {
 
   py::class_<Model>(mod, "Model")
       .def("setBaseName", &Model::setBaseName)
+      .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
+           py::return_value_policy::reference)
       .def("addDumpFieldVector", &Model::addDumpFieldVector)
       .def("addDumpField", &Model::addDumpField)
       .def("dump", &Model::dump);

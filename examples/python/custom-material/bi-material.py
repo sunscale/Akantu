@@ -17,10 +17,14 @@ class LocalElastic(aka.Material):
                                   aka._pat_readable | aka._pat_parsable,
                                   'Poisson ratio')
 
+
+        # change it to have the initialize wrapped
+        super().registerInternal('factor', 1)
+        super().registerInternal('quad_coordinates', 2)
+
     def initMaterial(self):
         nu = self.getReal('nu')
         E = self.getReal('E')
-        self.lbda = nu * E / ((1 + nu) * (1 - 2 * nu))
         self.mu = E / (2 * (1 + nu))
         self.lame_lambda = nu * E / (
             (1. + nu) * (1. - 2. * nu))
@@ -28,21 +32,20 @@ class LocalElastic(aka.Material):
         self.lame_mu = E / (2. * (1. + nu))
         super().initMaterial()
 
-    # declares all the internals
-    @staticmethod
-    def registerInternals():
-        return ['potential', 'factor']
+        quad_coords = self.internals["quad_coordinates"]
+        factor = self.internals["factor"]
+        model = self.getModel()
 
-    # declares all the internals
-    @staticmethod
-    def registerInternalSizes():
-        return [1, 1]
+        model.getFEEngine().computeIntegrationPointsCoordinates(
+            quad_coords, self.element_filter)
 
-    # declares all the parameters that could be parsed
-    @staticmethod
-    def registerParam():
-        return ['E', 'nu']
+        for elem_type in factor.elementTypes():
+            factor = factor(elem_type)
+            coords = quad_coords(elem_type)
 
+            factor[:] = 1.
+            factor[coords[:, 1] < 0.5] = .5
+        
     # declares all the parameters that are needed
     def getPushWaveSpeed(self, params):
         return np.sqrt((self.lame_lambda + 2 * self.lame_mu) / self.rho)
@@ -59,7 +62,7 @@ class LocalElastic(aka.Material):
 
         n_quads = grad_u.shape[0]
         grad_u = grad_u.reshape((n_quads, 2, 2))
-        # factor = internals['factor'].reshape(n_quads)
+        factor = self.internals['factor'](el_type, ghost_type).reshape(n_quads)
         epsilon = self.computeEpsilon(grad_u)
         sigma = sigma.reshape((n_quads, 2, 2))
         trace = np.einsum('aii->a', grad_u)
@@ -69,15 +72,13 @@ class LocalElastic(aka.Material):
                       self.lame_lambda * np.eye(2))
             + 2. * self.lame_mu * epsilon)
 
-        # print(sigma.reshape((n_quads, 4)))
-        # print(grad_u.reshape((n_quads, 4)))
-        # sigma[:, :, :] = np.einsum('aij, a->aij', sigma, factor)
+        sigma[:, :, :] = np.einsum('aij, a->aij', sigma, factor)
 
     # constitutive law tangent modulii
     def computeTangentModuli(self, el_type, tangent_matrix, ghost_type):
         n_quads = tangent_matrix.shape[0]
         tangent = tangent_matrix.reshape(n_quads, 3, 3)
-        # factor = internals['factor'].reshape(n_quads)
+        factor = self.internals['factor'](el_type, ghost_type).reshape(n_quads)
 
         Miiii = self.lame_lambda + 2 * self.lame_mu
         Miijj = self.lame_lambda
@@ -88,23 +89,21 @@ class LocalElastic(aka.Material):
         tangent[:, 0, 1] = Miijj
         tangent[:, 1, 0] = Miijj
         tangent[:, 2, 2] = Mijij
-        # tangent[:, :, :] = np.einsum('aij, a->aij', tangent, factor)
+        tangent[:, :, :] = np.einsum('aij, a->aij', tangent, factor)
 
     # computes the energy density
-    def getEnergyDensity(self, energy_type, energy_density,
-                         grad_u, stress, internals, params):
+    def computePotentialEnergy(self, el_type):
 
-        nquads = stress.shape[0]
-        stress = stress.reshape(nquads, 2, 2)
+        sigma = self.getStress(el_type)
+        grad_u = self.getGradU(el_type)
+
+        nquads = sigma.shape[0]
+        stress = sigma.reshape(nquads, 2, 2)
         grad_u = grad_u.reshape((nquads, 2, 2))
-
-        if energy_type != 'potential':
-            raise RuntimeError('not known energy')
-
         epsilon = self.computeEpsilon(grad_u)
 
-        energy_density[:, 0] = (
-            0.5 * np.einsum('aij,aij->a', stress, epsilon))
+        energy_density = self.getPotentialEnergy(el_type)
+        energy_density[:, 0] = 0.5 * np.einsum('aij,aij->a', stress, epsilon)
 
 
 # applies manually the boundary conditions
@@ -190,3 +189,6 @@ model.solveStep()
 
 # dump paraview files
 model.dump()
+
+epot = model.getEnergy('potential')
+print('Potential energy: ' + str(epot))

@@ -119,6 +119,10 @@ __attribute__((visibility("default"))) void register_enums(py::module & mod) {
       .value("_hexahedron_20", _hexahedron_20)
       .export_values();
 
+  py::enum_<ElementKind>(mod, "ElementKind")
+      .value("_ek_regular", _ek_regular)
+      .export_values();
+
   py::class_<IntegrationPoint>(mod, "IntegrationPoint");
 }
 } // namespace akantu

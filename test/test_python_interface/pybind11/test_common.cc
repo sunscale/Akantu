@@ -4,6 +4,7 @@
 
 #include "../../python/pybind11/py_aka_boundary_conditions.hh"
 #include "../../python/pybind11/py_aka_common.hh"
+#include "../../python/pybind11/py_aka_array.cc"
 
 namespace py = pybind11;
 namespace _aka = akantu;

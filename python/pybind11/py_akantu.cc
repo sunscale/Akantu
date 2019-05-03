@@ -3,8 +3,10 @@
 
 namespace py = pybind11;
 
+#include "py_aka_array.cc"
 #include "py_aka_boundary_conditions.hh"
 #include "py_aka_common.hh"
+#include "py_aka_fe_engine.hh"
 #include "py_aka_material.hh"
 #include "py_aka_mesh.hh"
 #include "py_aka_parser.hh"
@@ -16,8 +18,8 @@ PYBIND11_MODULE(py11_akantu, mod) {
   akantu::register_enums(mod);
   akantu::register_parser(mod);
   akantu::register_boundary_conditions(mod);
+  akantu::register_fe_engine(mod);
   akantu::register_solid_mechanics_model(mod);
   akantu::register_material(mod);
   akantu::register_mesh(mod);
-
 } // Module akantu
