@@ -119,13 +119,6 @@ __attribute__((visibility("default"))) void register_enums(py::module & mod) {
       .value("_hexahedron_20", _hexahedron_20)
       .export_values();
 
-  mod.def("parseInput",
-          [](const std::string & input_file) {
-            getStaticParser().parse(input_file);
-          },
-          "Parse an Akantu input file");
-
-
   py::class_<IntegrationPoint>(mod, "IntegrationPoint");
 }
 } // namespace akantu

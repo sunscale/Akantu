@@ -11,8 +11,6 @@ namespace py = pybind11;
 
 namespace akantu {
 
-std::map<void *, std::map<std::string, void *>> map_params;
-
 /* -------------------------------------------------------------------------- */
 #define def_deprecated(func_name, mesg)                                        \
   def(func_name, [](py::args, py::kwargs) { AKANTU_ERROR(mesg); })
@@ -113,33 +111,6 @@ register_solid_mechanics_model(py::module & mod) {
       .def_function_nocopy(getBlockedDOFs)
       .def_function_nocopy(getIncrementFlag)
       .def_function_nocopy(getMesh);
-
-  py::class_<ParameterRegistry>(mod, "ParameterRegistry",
-                                py::multiple_inheritance())
-      .def("registerParamReal",
-           [](ParameterRegistry & self, const std::string & name, UInt type,
-              const std::string & description) {
-             Real * p = new Real;
-             map_params[&self][name] = p;
-             self.registerParam<Real>(name, *p, ParameterAccessType(type),
-                                      description);
-           })
-      .def("registerParamReal",
-           [](ParameterRegistry & self, const Real & _default,
-              const std::string & name, UInt type,
-              const std::string & description) {
-             Real * p = new Real;
-             map_params[&self][name] = p;
-             self.registerParam<Real>(name, *p, _default,
-                                      ParameterAccessType(type), description);
-           })
-      .def("getReal", [](ParameterRegistry & self, const std::string & name) {
-        return Real(self.get(name));
-      });
-
-  py::class_<Parsable, ParameterRegistry>(mod, "Parsable",
-                                          py::multiple_inheritance())
-      .def(py::init<const ParserType &, const ID &>());
 }
 
 } // namespace akantu
