@@ -227,21 +227,19 @@ void MaterialElasticLinearAnisotropic<dim>::computeTangentModuli(
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergy(
-    ElementType el_type, GhostType ghost_type) {
+    ElementType el_type) {
   AKANTU_DEBUG_IN();
 
-  Material::computePotentialEnergy(el_type, ghost_type);
+  Material::computePotentialEnergy(el_type);
 
   AKANTU_DEBUG_ASSERT(!this->finite_deformation,
                       "finite deformation not possible in material anisotropic "
                       "(TO BE IMPLEMENTED)");
 
-  if (ghost_type != _not_ghost)
-    return;
   Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
+      this->potential_energy(el_type, _not_ghost).begin();
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
   computePotentialEnergyOnQuad(grad_u, sigma, *epot);
   ++epot;
@@ -262,4 +260,4 @@ Real MaterialElasticLinearAnisotropic<dim>::getCelerity(
 
 INSTANTIATE_MATERIAL(elastic_anisotropic, MaterialElasticLinearAnisotropic);
 
-} // akantu
+} // namespace akantu

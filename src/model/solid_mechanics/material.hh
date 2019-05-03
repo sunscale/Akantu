@@ -60,7 +60,6 @@ namespace akantu {
 using MaterialFactory =
     Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
 
-
 /**
  * Interface of all materials
  * Prerequisites for a new material
@@ -128,8 +127,7 @@ protected:
   }
 
   /// compute the potential energy
-  virtual void computePotentialEnergy(ElementType el_type,
-                                      GhostType ghost_type = _not_ghost);
+  virtual void computePotentialEnergy(ElementType el_type);
 
   /// compute the potential energy for an element
   virtual void
@@ -140,14 +138,10 @@ protected:
     AKANTU_TO_IMPLEMENT();
   }
 
-  virtual void updateEnergies(__attribute__((unused)) ElementType el_type,
-                              __attribute__((unused))
-                              GhostType ghost_type = _not_ghost) {}
+  virtual void updateEnergies(__attribute__((unused)) ElementType el_type) {}
 
   virtual void updateEnergiesAfterDamage(__attribute__((unused))
-                                         ElementType el_type,
-                                         __attribute__((unused))
-                                         GhostType ghost_type = _not_ghost) {}
+                                         ElementType el_type) {}
 
   /// set the material to steady state (to be implemented for materials that
   /// need it)
@@ -676,7 +670,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 #define INSTANTIATE_MATERIAL(id, mat_name)                                     \
   INSTANTIATE_MATERIAL_ONLY(mat_name);                                         \
-  static bool material_is_alocated_##id[[gnu::unused]] =                       \
+  static bool material_is_alocated_##id [[gnu::unused]] =                      \
       MaterialFactory::getInstance().registerAllocator(                        \
           #id, MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name))
 

@@ -123,20 +123,16 @@ Real MaterialPlastic<spatial_dimension>::getPlasticEnergy() {
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialPlastic<spatial_dimension>::computePotentialEnergy(
-    ElementType el_type, GhostType ghost_type) {
+    ElementType el_type) {
   AKANTU_DEBUG_IN();
 
-  if (ghost_type != _not_ghost)
-    return;
-
-  Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
+  Array<Real>::scalar_iterator epot = this->potential_energy(el_type).begin();
 
   Array<Real>::const_iterator<Matrix<Real>> inelastic_strain_it =
-      this->inelastic_strain(el_type, ghost_type)
-          .begin(spatial_dimension, spatial_dimension);
+      this->inelastic_strain(el_type).begin(spatial_dimension,
+                                            spatial_dimension);
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
   Matrix<Real> elastic_strain(spatial_dimension, spatial_dimension);
   elastic_strain.copy(grad_u);
@@ -155,31 +151,28 @@ void MaterialPlastic<spatial_dimension>::computePotentialEnergy(
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
-void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type,
-                                                        GhostType ghost_type) {
+void MaterialPlastic<spatial_dimension>::updateEnergies(ElementType el_type) {
   AKANTU_DEBUG_IN();
 
-  MaterialElastic<spatial_dimension>::updateEnergies(el_type, ghost_type);
+  MaterialElastic<spatial_dimension>::updateEnergies(el_type);
 
-  Array<Real>::iterator<> pe_it =
-      this->plastic_energy(el_type, ghost_type).begin();
+  Array<Real>::iterator<> pe_it = this->plastic_energy(el_type).begin();
 
-  Array<Real>::iterator<> wp_it =
-      this->d_plastic_energy(el_type, ghost_type).begin();
+  Array<Real>::iterator<> wp_it = this->d_plastic_energy(el_type).begin();
 
   Array<Real>::iterator<Matrix<Real>> inelastic_strain_it =
-      this->inelastic_strain(el_type, ghost_type)
-          .begin(spatial_dimension, spatial_dimension);
+      this->inelastic_strain(el_type).begin(spatial_dimension,
+                                            spatial_dimension);
 
   Array<Real>::iterator<Matrix<Real>> previous_inelastic_strain_it =
-      this->inelastic_strain.previous(el_type, ghost_type)
-          .begin(spatial_dimension, spatial_dimension);
+      this->inelastic_strain.previous(el_type).begin(spatial_dimension,
+                                                     spatial_dimension);
 
   Array<Real>::matrix_iterator previous_sigma =
-      this->stress.previous(el_type, ghost_type)
-          .begin(spatial_dimension, spatial_dimension);
+      this->stress.previous(el_type).begin(spatial_dimension,
+                                           spatial_dimension);
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
   Matrix<Real> delta_strain_it(*inelastic_strain_it);
   delta_strain_it -= *previous_inelastic_strain_it;

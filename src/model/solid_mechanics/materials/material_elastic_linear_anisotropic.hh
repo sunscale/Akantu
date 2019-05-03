@@ -75,8 +75,7 @@ public:
                             GhostType ghost_type = _not_ghost) override;
 
   /// compute the elastic potential energy
-  void computePotentialEnergy(ElementType el_type,
-                              GhostType ghost_type = _not_ghost) override;
+  void computePotentialEnergy(ElementType el_type) override;
 
   void updateInternalParameters() override;
 

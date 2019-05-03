@@ -65,12 +65,10 @@ public:
   Real getEnergy(const std::string & type) override;
 
   /// Compute the plastic energy
-  void updateEnergies(ElementType el_type,
-                      GhostType ghost_type = _not_ghost) override;
+  void updateEnergies(ElementType el_type) override;
 
   /// Compute the true potential energy
-  void computePotentialEnergy(ElementType el_type,
-                              GhostType ghost_type) override;
+  void computePotentialEnergy(ElementType el_type) override;
 
 protected:
   /// compute the stress and inelastic strain for the quadrature point
@@ -124,7 +122,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #include "material_plastic_inline_impl.cc"
 #endif /* __AKANTU_MATERIAL_PLASTIC_HH__ */
