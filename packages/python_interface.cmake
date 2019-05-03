@@ -58,7 +58,6 @@ else()
 endif()
 
 if(AKANTU_PYTHON_INTERFACE_IMPL MATCHES "pybind11" OR AKANTU_PYTHON_INTERFACE_IMPL MATCHES "all")
-  message("blip")
   package_add_dependencies(python_interface PUBLIC pybind11)
 else()
   package_remove_dependencies(python_interface pybind11)

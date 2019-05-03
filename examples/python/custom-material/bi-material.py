@@ -16,18 +16,18 @@ class LocalElastic(aka.Material):
         super().registerParamReal('nu',
                                   aka._pat_readable | aka._pat_parsable,
                                   'Poisson ratio')
-    # declares all the internals
+
     def initMaterial(self):
         nu = self.getReal('nu')
         E = self.getReal('E')
-        self.lbda = nu * E / ((1 + nu) * (1 - 2 * nu));
-        self.mu = E / (2 * (1 + nu));
+        self.lbda = nu * E / ((1 + nu) * (1 - 2 * nu))
+        self.mu = E / (2 * (1 + nu))
         self.lame_lambda = nu * E / (
             (1. + nu) * (1. - 2. * nu))
         # Second Lame coefficient (shear modulus)
         self.lame_mu = E / (2. * (1. + nu))
         super().initMaterial()
-        
+
     # declares all the internals
     @staticmethod
     def registerInternals():
@@ -54,10 +54,9 @@ class LocalElastic(aka.Material):
 
     # constitutive law
     def computeStress(self, el_type, ghost_type):
-
         grad_u = self.getGradU(el_type, ghost_type)
-        sigma  = self.getStress(el_type, ghost_type)          
-        
+        sigma = self.getStress(el_type, ghost_type)
+
         n_quads = grad_u.shape[0]
         grad_u = grad_u.reshape((n_quads, 2, 2))
         # factor = internals['factor'].reshape(n_quads)
@@ -150,9 +149,6 @@ time.sleep(2)
 # read mesh
 mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
-
-# create the custom material
-# mat = LocalElastic()
 
 mat_factory = aka.MaterialFactory.getInstance()
 
