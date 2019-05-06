@@ -181,7 +181,9 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergy(
     ElementType el_type) {
   AKANTU_DEBUG_IN();
 
-  MaterialThermal<spatial_dimension>::computePotentialEnergy(el_type);
+  // MaterialThermal<dim>::computePotentialEnergy(ElementType)
+  // needs to be implemented
+  // MaterialThermal<spatial_dimension>::computePotentialEnergy(el_type);
 
   auto epot = this->potential_energy(el_type, _not_ghost).begin();
 

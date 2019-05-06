@@ -105,6 +105,16 @@ void MaterialThermal<dim>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 
+template <UInt dim>
+void MaterialThermal<dim>::computePotentialEnergy(ElementType) {
+  AKANTU_DEBUG_IN();
+  AKANTU_TO_IMPLEMENT();
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+
+
 INSTANTIATE_MATERIAL_ONLY(MaterialThermal);
 
 } // akantu
