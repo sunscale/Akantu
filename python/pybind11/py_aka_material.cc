@@ -95,6 +95,7 @@ void register_element_type_map_array(py::module & mod,
 /* -------------------------------------------------------------------------- */
 
 [[gnu::visibility("default")]] void register_material(py::module & mod) {
+
   py::class_<Material, PyMaterial, Parsable>(mod, "Material",
                                              py::multiple_inheritance())
       .def(py::init<SolidMechanicsModel &, const ID &>())

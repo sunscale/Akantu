@@ -1,6 +1,10 @@
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "boundary_condition_functor.hh"
+#include "py_aka_boundary_conditions.hh"
+#include "py_aka_array.cc"
+/* -------------------------------------------------------------------------- */
+#include <aka_common.hh>
+#include <boundary_condition_functor.hh>
+/* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
