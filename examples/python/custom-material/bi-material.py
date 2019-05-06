@@ -17,7 +17,6 @@ class LocalElastic(aka.Material):
                                   aka._pat_readable | aka._pat_parsable,
                                   'Poisson ratio')
 
-
         # change it to have the initialize wrapped
         super().registerInternal('factor', 1)
         super().registerInternal('quad_coordinates', 2)
@@ -45,7 +44,7 @@ class LocalElastic(aka.Material):
 
             factor[:] = 1.
             factor[coords[:, 1] < 0.5] = .5
-        
+
     # declares all the parameters that are needed
     def getPushWaveSpeed(self, params):
         return np.sqrt((self.lame_lambda + 2 * self.lame_mu) / self.rho)
