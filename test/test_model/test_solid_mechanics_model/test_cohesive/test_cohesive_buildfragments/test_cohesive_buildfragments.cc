@@ -80,8 +80,8 @@ int main(int argc, char * argv[]) {
     velocity(n, 0) = strain_rate * position(n, 0);
 
   /// boundary conditions
-  model.applyBC(BC::Dirichlet::FixedValue(0, _x), "Left_side");
-  model.applyBC(BC::Dirichlet::FixedValue(0, _x), "Right_side");
+  model.applyBC(BC::FixedValue(0, _x), "Left_side");
+  model.applyBC(BC::FixedValue(0, _x), "Right_side");
 
   UInt cohesive_index = 1;
 
@@ -100,9 +100,9 @@ int main(int argc, char * argv[]) {
     model.solveStep();
 
     /// apply boundary conditions
-    model.applyBC(BC::Dirichlet::IncrementValue(-disp_increment, _x),
+    model.applyBC(BC::IncrementValue(-disp_increment, _x),
                   "Left_side");
-    model.applyBC(BC::Dirichlet::IncrementValue(disp_increment, _x),
+    model.applyBC(BC::IncrementValue(disp_increment, _x),
                   "Right_side");
 
     if (s % 1 == 0) {
