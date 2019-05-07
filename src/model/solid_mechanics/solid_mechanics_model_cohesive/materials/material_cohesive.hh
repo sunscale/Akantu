@@ -128,7 +128,7 @@ protected:
                          const SynchronizationTag & tag) override;
 
 protected:
-  void updateEnergies(ElementType el_type, GhostType ghost_type) override;
+  void updateEnergies(ElementType el_type) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
