@@ -439,6 +439,9 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 void MaterialCohesive::updateEnergies(ElementType type) {
   AKANTU_DEBUG_IN();
 
+  if (Mesh::getKind(type) != _ek_cohesive)
+    return;
+  
   Vector<Real> b(spatial_dimension);
   Vector<Real> h(spatial_dimension);
   auto erev = reversible_energy(type).begin();
