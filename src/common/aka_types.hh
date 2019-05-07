@@ -128,9 +128,8 @@ protected:
   }
 
 #ifndef SWIG
-  template <class Other,
-            typename = std::enable_if_t<
-                tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other, typename = std::enable_if_t<
+                             tensors::is_copyable<TensorProxy, Other>::value>>
   explicit TensorProxy(const Other & other) {
     this->values = other.storage();
     for (UInt i = 0; i < ndim; ++i)
@@ -141,9 +140,9 @@ public:
   using RetType = _RetType;
 
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim,
-                        "This tensor has only " << ndim << " dimensions, not "
-                                                << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
+                                                          << " dimensions, not "
+                                                          << (i + 1));
     return n[i];
   }
 
@@ -157,9 +156,8 @@ public:
   T * storage() const { return values; }
 
 #ifndef SWIG
-  template <class Other,
-            typename = std::enable_if_t<
-                tensors::is_copyable<TensorProxy, Other>::value>>
+  template <class Other, typename = std::enable_if_t<
+                             tensors::is_copyable<TensorProxy, Other>::value>>
   inline TensorProxy & operator=(const Other & other) {
     AKANTU_DEBUG_ASSERT(
         other.size() == this->size(),
@@ -360,7 +358,8 @@ public:
                       "Cannot copy a tensor on non trivial types");
         // this test is not sufficient for Tensor of order higher than 1
         AKANTU_DEBUG_ASSERT(this->_size == src.size(),
-                            "Tensors of different size");
+                            "Tensors of different size ("
+                            << this->_size << " != " << src.size() << ")");
         memcpy((void *)this->values, (void *)src.storage(),
                this->_size * sizeof(T));
       } else {
@@ -442,9 +441,9 @@ public:
   T * storage() const { return values; }
   UInt size() const { return _size; }
   UInt size(UInt i) const {
-    AKANTU_DEBUG_ASSERT(i < ndim,
-                        "This tensor has only " << ndim << " dimensions, not "
-                                                << (i + 1));
+    AKANTU_DEBUG_ASSERT(i < ndim, "This tensor has only " << ndim
+                                                          << " dimensions, not "
+                                                          << (i + 1));
     return n[i];
   };
   /* ------------------------------------------------------------------------ */
@@ -656,7 +655,8 @@ public:
   inline Vector<T> & operator/=(Real x) { return parent::operator/=(x); }
   /* ------------------------------------------------------------------------ */
   inline Vector<T> & operator*=(const Vector<T> & vect) {
-    AKANTU_DEBUG_ASSERT(this->_size == vect._size, "The vectors have non matching sizes");
+    AKANTU_DEBUG_ASSERT(this->_size == vect._size,
+                        "The vectors have non matching sizes");
     T * a = this->storage();
     T * b = vect.storage();
     for (UInt i = 0; i < this->_size; ++i)
