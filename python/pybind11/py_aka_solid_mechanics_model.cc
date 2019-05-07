@@ -86,8 +86,14 @@ register_solid_mechanics_model(py::module & mod) {
       .def_function_nocopy(getInternalForce)
       .def_function_nocopy(getBlockedDOFs)
       .def_function_nocopy(getIncrementFlag)
-      .def_function_nocopy(getMesh);
-
+      .def_function_nocopy(getMesh)
+      .def("dump", py::overload_cast<>(&SolidMechanicsModel::dump))
+      .def("dump",
+           py::overload_cast<const std::string &>(&SolidMechanicsModel::dump))
+      .def("dump", py::overload_cast<const std::string &, UInt>(
+                       &SolidMechanicsModel::dump))
+      .def("dump", py::overload_cast<const std::string &, Real, UInt>(
+                       &SolidMechanicsModel::dump));
 }
 
 } // namespace akantu

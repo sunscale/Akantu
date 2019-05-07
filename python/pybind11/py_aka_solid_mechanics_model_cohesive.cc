@@ -43,7 +43,9 @@ register_solid_mechanics_model_cohesive(py::module & mod) {
       mod, "SolidMechanicsModelCohesive")
       .def(py::init<Mesh &, UInt, const ID &, const MemoryID &>(),
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
-           py::arg("id") = "solid_mechanics_model", py::arg("memory_id") = 0);
+           py::arg("id") = "solid_mechanics_model", py::arg("memory_id") = 0)
+      .def("checkCohesiveStress",
+           &SolidMechanicsModelCohesive::checkCohesiveStress);
 }
 
 } // namespace akantu
