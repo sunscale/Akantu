@@ -1,6 +1,8 @@
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "fe_engine.hh"
+#include <aka_common.hh>
+#include <fe_engine.hh>
+#include <integration_point.hh>
+/* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -23,6 +25,7 @@ register_fe_engine(py::module & mod) {
              return self.computeIntegrationPointsCoordinates(coordinates,
                                                              filter_elements);
            });
-}
 
+  py::class_<IntegrationPoint>(mod, "IntegrationPoint");
+}
 } // namespace akantu

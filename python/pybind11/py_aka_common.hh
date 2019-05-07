@@ -8,6 +8,7 @@ struct module;
 namespace akantu {
 
 void register_enums(pybind11::module & mod);
+void register_initialize(pybind11::module & mod);
 
 }
 

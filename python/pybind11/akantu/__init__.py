@@ -1,4 +1,3 @@
-from py11_akantu import *  # noqa: F401, F403
 import py11_akantu
 private_keys = set(dir(py11_akantu)) - set(dir())
 
@@ -13,3 +12,8 @@ def initialize(*args, **kwargs):
 
 def finalize(*args, **kwargs):
     raise RuntimeError("No need to call finalize")
+
+
+FromStress = py11_akantu.FromHigherDim
+FromTraction = py11_akantu.FromSameDim
+py11_akantu.__initialize()

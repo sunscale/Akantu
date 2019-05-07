@@ -1,20 +1,27 @@
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
+#include <aka_common.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-/* -------------------------------------------------------------------------- */
-#include "integration_point.hh"
-#include "mesh.hh"
-#include "parameter_registry.hh"
-#include "parser.hh"
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+
+__attribute__((visibility("default"))) void
+register_initialize(py::module & mod) {
+  mod.def("__initialize", []() {
+    int nb_args = 0;
+    char ** null = nullptr;
+    initialize(nb_args, null);
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+
 __attribute__((visibility("default"))) void register_enums(py::module & mod) {
   py::enum_<SpatialDirection>(mod, "SpatialDirection")
       .value("_x", _x)
@@ -83,15 +90,6 @@ __attribute__((visibility("default"))) void register_enums(py::module & mod) {
       .value("_miot_abaqus", _miot_abaqus)
       .export_values();
 
-  py::enum_<ParameterAccessType>(mod, "ParameterAccessType", py::arithmetic())
-      .value("_pat_internal", _pat_internal)
-      .value("_pat_writable", _pat_writable)
-      .value("_pat_readable", _pat_readable)
-      .value("_pat_modifiable", _pat_modifiable)
-      .value("_pat_parsable", _pat_parsable)
-      .value("_pat_parsmod", _pat_parsmod)
-      .export_values();
-
   py::enum_<ModelType>(mod, "ModelType")
       .value("_model", ModelType::_model)
       .value("_solid_mechanics_model", ModelType::_solid_mechanics_model)
@@ -122,7 +120,5 @@ __attribute__((visibility("default"))) void register_enums(py::module & mod) {
   py::enum_<ElementKind>(mod, "ElementKind")
       .value("_ek_regular", _ek_regular)
       .export_values();
-
-  py::class_<IntegrationPoint>(mod, "IntegrationPoint");
 }
 } // namespace akantu

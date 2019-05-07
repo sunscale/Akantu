@@ -10,27 +10,9 @@ namespace _aka = akantu;
 
 namespace akantu {
 
-template <typename VecType, typename T> class Proxy : public VecType {
-
-public:
-  Proxy(T * data, UInt size) {
-    this->values = data;
-    this->wrapped = true;
-    this->n[0] = size;
-  }
-
-  Proxy(T * data, UInt size1, UInt size2) {
-    this->values = data;
-    this->wrapped = true;
-    this->n[0] = size1;
-    this->n[1] = size2;
-  }
-
-  ~Proxy() { this->values = nullptr; }
-};
-
-template <typename T> class Proxy<_aka::Array<T>, T> : public _aka::Array<T> {
+template <typename VecType> class Proxy : public VecType {
 protected:
+  using T = typename VecType::value_type;
   // deallocate the memory
   void deallocate() override final {}
 
@@ -72,9 +54,16 @@ public:
   }
 };
 
-template <typename T> using vec_proxy = Proxy<Vector<T>, T>;
-template <typename T> using mat_proxy = Proxy<Matrix<T>, T>;
-template <typename T> using array_proxy = Proxy<Array<T>, T>;
+template <typename T> using vec_proxy = Vector<T>;
+template <typename T> using mat_proxy = Matrix<T>;
+template <typename T> using array_proxy = Proxy<Array<T>>;
+
+template <typename array> struct ProxyType { using type = Proxy<array>; };
+
+template <typename T> struct ProxyType<Vector<T>> { using type = Vector<T>; };
+template <typename T> struct ProxyType<Matrix<T>> { using type = Matrix<T>; };
+
+template <typename array> using ProxyType_t = typename ProxyType<array>::type;
 
 } // namespace akantu
 
@@ -143,11 +132,12 @@ namespace detail {
   }
 
   /* ------------------------------------------------------------------------ */
-  template <typename VecType, typename T>
-  class [[gnu::visibility("default")]] my_type_caster  {
+  template <typename VecType>
+  class [[gnu::visibility("default")]] my_type_caster {
   protected:
+    using T = typename VecType::value_type;
     using type = VecType;
-    using proxy_type = typename _aka::Proxy<VecType, T>;
+    using proxy_type = _aka::ProxyType_t<VecType>;
     type value;
 
   public:
@@ -232,76 +222,15 @@ namespace detail {
   /* ------------------------------------------------------------------------ */
 
   template <typename T>
-  struct type_caster<_aka::Array<T>>
-      : public my_type_caster<_aka::Array<T>, T> {
-    using my_type_caster<_aka::Array<T>, T>::cast_op_type;
-    using my_type_caster<_aka::Array<T>, T>::cast;
-    using my_type_caster<_aka::Array<T>, T>::load;
+  struct type_caster<_aka::Array<T>> : public my_type_caster<_aka::Array<T>> {};
+
+  template <typename T>
+  struct type_caster<_aka::Vector<T>> : public my_type_caster<_aka::Vector<T>> {
   };
 
   template <typename T>
-  struct type_caster<_aka::Vector<T>>
-      : public my_type_caster<_aka::Vector<T>, T> {
-    using my_type_caster<_aka::Vector<T>, T>::cast_op_type;
-    using my_type_caster<_aka::Vector<T>, T>::cast;
-    using my_type_caster<_aka::Vector<T>, T>::load;
+  struct type_caster<_aka::Matrix<T>> : public my_type_caster<_aka::Matrix<T>> {
   };
-
-  template <typename T>
-  struct type_caster<_aka::Matrix<T>>
-      : public my_type_caster<_aka::Matrix<T>, T> {
-    using my_type_caster<_aka::Matrix<T>, T>::cast_op_type;
-    using my_type_caster<_aka::Matrix<T>, T>::cast;
-    using my_type_caster<_aka::Matrix<T>, T>::load;
-  };
-
-  // template <typename T>
-  // struct type_caster<_aka::Vector<T>>
-  //     : public my_type_caster<_aka::Vector<T>, T> {};
-
-  // /**
-  //  * Type caster for Vector classes
-  //  */
-  // template <template <typename> class V, typename T> struct type_caster<V<T>>
-  // {
-  //   using type = V<T>;
-
-  // public:
-  //   PYBIND11_TYPE_CASTER(type, _("Vector<T>"));
-
-  //   /**
-  //    * Conversion part 1 (Python->C++): convert a PyObject into a Vector
-  //    * instance or return false upon failure. The second argument
-  //    * indicates whether implicit conversions should be applied.
-  //    */
-  //   bool load(handle src, bool convert) {
-  //     if (!convert && !array_type<typename type::value_type>::check_(src))
-  //       return false;
-
-  //     auto buf = array_type<typename type::value_type>::ensure(src);
-  //     value.move(_aka::VectorProxy<T>(buf));
-
-  //     return true;
-  //   }
-
-  //   /**
-  //    * Conversion part 2 (C++ -> Python): convert a grid instance into
-  //    * a Python object. The second and third arguments are used to
-  //    * indicate the return value policy and parent object (for
-  //    * ``return_value_policy::reference_internal``) and are generally
-  //    * ignored by implicit casters.
-  //    *
-  //    * TODO: do not ignore policy (see pybind11/eigen.h)
-  //    */
-  //   static handle cast(const type & src, return_value_policy /* policy */,
-  //                      handle /*parent*/) {
-  //     // none() passed as parent to get a correct nocopy
-  //     auto a = array_type<typename type::value_type>(src.size(),
-  //     src.storage(),
-  //                                                    none());
-  //     return a.release();
-  //   }
-  // };
 
 } // namespace detail
 } // namespace pybind11

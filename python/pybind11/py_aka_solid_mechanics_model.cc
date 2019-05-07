@@ -37,34 +37,6 @@ register_solid_mechanics_model(py::module & mod) {
       .def(py::init<AnalysisMethod>(),
            py::arg("analysis_method") = _explicit_lumped_mass);
 
-  py::class_<Model>(mod, "Model")
-      .def("setBaseName", &Model::setBaseName)
-      .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
-           py::return_value_policy::reference)
-      .def("addDumpFieldVector", &Model::addDumpFieldVector)
-      .def("addDumpField", &Model::addDumpField)
-      .def("dump", &Model::dump);
-
-  py::class_<NonLinearSolver>(mod, "NonLinearSolver")
-      .def(
-          "set",
-          [](NonLinearSolver & self, const std::string & id, const Real & val) {
-            if (id == "max_iterations")
-              self.set(id, int(val));
-            else if (id == "convergence_type")
-              self.set(id, akantu::SolveConvergenceCriteria(UInt(val)));
-            else
-              self.set(id, val);
-          })
-      .def("set", &NonLinearSolver::set<SolveConvergenceCriteria>);
-
-  py::class_<ModelSolver>(mod, "ModelSolver")
-      .def("getNonLinearSolver",
-           (NonLinearSolver & (ModelSolver::*)(const ID &)) &
-               ModelSolver::getNonLinearSolver,
-           py::arg("solver_id") = "", py::return_value_policy::reference)
-      .def("solveStep", &ModelSolver::solveStep, py::arg("solver_id") = "");
-
   py::class_<SolidMechanicsModel, Model, ModelSolver>(mod,
                                                       "SolidMechanicsModel")
       .def(py::init<Mesh &, UInt, const ID &, const MemoryID &,
@@ -115,6 +87,7 @@ register_solid_mechanics_model(py::module & mod) {
       .def_function_nocopy(getBlockedDOFs)
       .def_function_nocopy(getIncrementFlag)
       .def_function_nocopy(getMesh);
+
 }
 
 } // namespace akantu

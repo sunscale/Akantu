@@ -93,5 +93,6 @@ register_boundary_conditions(py::module & mod) {
                                          py::init<Vector<Real> &>());
 
   declareNeumannFunctor<BC::FreeBoundary>(mod, "FreeBoundary", py::init());
+
 }
 } // namespace akantu

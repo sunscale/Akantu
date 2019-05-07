@@ -16,6 +16,15 @@ std::map<void *, std::map<std::string, void *>> map_params;
 
 __attribute__((visibility("default"))) void register_parser(py::module & mod) {
 
+  py::enum_<ParameterAccessType>(mod, "ParameterAccessType", py::arithmetic())
+      .value("_pat_internal", _pat_internal)
+      .value("_pat_writable", _pat_writable)
+      .value("_pat_readable", _pat_readable)
+      .value("_pat_modifiable", _pat_modifiable)
+      .value("_pat_parsable", _pat_parsable)
+      .value("_pat_parsmod", _pat_parsmod)
+      .export_values();
+
   py::class_<ParameterRegistry>(mod, "ParameterRegistry",
                                 py::multiple_inheritance())
       .def("registerParamReal",
