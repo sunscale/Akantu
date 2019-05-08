@@ -15,16 +15,33 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 __attribute__((visibility("default"))) void register_mesh(py::module & mod) {
 
-  py::class_<ElementGroup>(mod, "ElementGroup");
+  py::class_<ElementGroup>(mod, "ElementGroup")
+      .def("getNodes", &ElementGroup::getNodes);
 
   py::class_<GroupManager>(mod, "GroupManager")
       .def("getElementGroup",
            [](GroupManager & self, const std::string & name) -> decltype(auto) {
              return self.getElementGroup(name);
            },
+           py::return_value_policy::reference)
+      .def("createNodeGroup", &GroupManager::createNodeGroup,
+           py::return_value_policy::reference)
+      .def("createElementGroup",
+           py::overload_cast<const std::string &, UInt, bool>(
+               &GroupManager::createElementGroup),
+           py::return_value_policy::reference)
+      .def("createGroupsFromMeshDataUInt",
+           &GroupManager::createGroupsFromMeshData<UInt>)
+      .def("createElementGroupFromNodeGroup",
+           &GroupManager::createElementGroupFromNodeGroup, py::arg("name"),
+           py::arg("node_group"), py::arg("dimension") = _all_dimensions)
+      .def("getNodeGroup",
+           [](GroupManager & self, const std::string & name) -> decltype(auto) {
+             return self.getNodeGroup(name);
+           },
            py::return_value_policy::reference);
 
-  py::class_<Mesh, GroupManager>(mod, "Mesh")
+  py::class_<Mesh, GroupManager>(mod, "Mesh", py::multiple_inheritance())
       .def(py::init<UInt, const ID &, const MemoryID &>(),
            py::arg("spatial_dimension"), py::arg("id") = "mesh",
            py::arg("memory_id") = 0)
