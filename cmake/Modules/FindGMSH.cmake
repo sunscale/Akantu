@@ -88,7 +88,7 @@ function(ADD_MESH MESH_TARGET GEO_FILE)
       OUTPUT ${_msh_file}
       DEPENDS ${_geo_file}
       COMMAND ${GMSH}
-      ARGS -${_add_mesh_DIM} -order ${_add_mesh_ORDER} ${OPTIMIZE} -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
+      ARGS -format msh2 -${_add_mesh_DIM} -order ${_add_mesh_ORDER} ${OPTIMIZE} -o ${_msh_file} ${_geo_file} 2>&1 > /dev/null
       COMMENT "Generating the ${_add_mesh_DIM}D mesh ${_r_msh_file} (order ${_add_mesh_ORDER}) form the geometry ${_r_geo_file}"
       )
 
