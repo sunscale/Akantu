@@ -50,7 +50,7 @@
 
 using namespace akantu;
 
-class Sinusoidal : public BC::Dirichlet::DirichletFunctor {
+class Sinusoidal : public BC::DirichletFunctor {
 public:
   Sinusoidal(MyModel & model, Real amplitude, Real pulse_width, Real t)
       : model(model), A(amplitude), k(2 * M_PI / pulse_width),
@@ -100,7 +100,7 @@ int main(int argc, char * argv[]) {
   model.blocked.clear();
 
   model.applyBC(Sinusoidal(model, A, pulse_width, 0.), "all");
-  model.applyBC(BC::Dirichlet::FlagOnly(_x), "border");
+  model.applyBC(BC::FlagOnly(_x), "border");
 
   if (!_explicit) {
     model.getNewSolver("dynamic", _tsst_dynamic, _nls_newton_raphson);
