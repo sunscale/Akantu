@@ -222,8 +222,7 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
 
     # Testing that nodes are correctly blocked
     for n in blocked_nodes:
-        if not boundary[n, 0]:
-            return -1
+        assert boundary[n, 0]
 
     boundary.fill(False)
 
@@ -232,7 +231,6 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
 
     # Checking that nodes have a force in the correct direction
     for n in blocked_nodes:
-        if not force[n, 0] > 0:
-            return -1
+        assert force[n, 0] > 0
 
     return 0
