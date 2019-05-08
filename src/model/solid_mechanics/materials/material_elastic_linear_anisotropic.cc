@@ -230,8 +230,6 @@ void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergy(
     ElementType el_type) {
   AKANTU_DEBUG_IN();
 
-  Material::computePotentialEnergy(el_type);
-
   AKANTU_DEBUG_ASSERT(!this->finite_deformation,
                       "finite deformation not possible in material anisotropic "
                       "(TO BE IMPLEMENTED)");
