@@ -59,7 +59,6 @@ int main(int argc, char * argv[]) {
   UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("swiss_train.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   /*
     swiss_train.msh has the following physical groups that can be viewed with

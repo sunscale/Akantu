@@ -30,7 +30,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
 #include "aka_iterators.hh"
@@ -104,12 +103,12 @@ public:
       MeshUtils::resetFacetToDouble(mesh.getMeshFacets());
     }
 
-    if (nb_new_nodes > 0) {
+    if (nb_new_stuff(0) > 0) {
       mesh.sendEvent(nodes_event);
       // mesh.sendEvent(global_ids_updater.getChangedNodeEvent());
     }
 
-    return std::make_tuple(nb_new_nodes, nb_new_stuff(1));
+    return std::make_tuple(nb_new_stuff(0), nb_new_stuff(1));
   }
 
 private:
@@ -188,8 +187,6 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
       dynamic_cast<const SolidMechanicsModelCohesiveOptions &>(options);
 
   this->is_extrinsic = smmc_options.is_extrinsic;
-
-  std::cout << "Extrinsic " << is_extrinsic << std::endl;
 
   inserter->setIsExtrinsic(is_extrinsic);
 
@@ -531,7 +528,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   }
 
   /// communicate data among processors
-  // this->synchronize(_gst_smmc_facets);
+  // this->synchronize(SynchronizationTag::_smmc_facets);
 
   /// insert cohesive elements
   UInt nb_new_elements = inserter->insertElements();

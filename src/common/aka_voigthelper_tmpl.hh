@@ -116,8 +116,7 @@ inline void VoigtHelper<1>::transferBMatrixToBL2(const Matrix<Real> & B,
                                                  UInt nb_nodes_per_element) {
   Bvoigt.clear();
   for (UInt j = 0; j < nb_nodes_per_element; ++j)
-    for (UInt k = 0; k < 2; ++k)
-      Bvoigt(0, j * 2 + k) = grad_u(k, 0) * B(0, j);
+    Bvoigt(0, j) = grad_u(0, 0) * B(0, j);
 }
 
 /* -------------------------------------------------------------------------- */

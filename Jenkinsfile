@@ -1,33 +1,70 @@
 pipeline {
   parameters {string(defaultValue: '', description: 'api-token', name: 'API_TOKEN')
-              string(defaultValue: '', description: 'buildable phid', name: 'TARGET_PHID')
+              string(defaultValue: '', description: 'buildable phid', name: 'BUILD_TARGET_PHID')
               string(defaultValue: '', description: 'Commit id', name: 'COMMIT_ID')
               string(defaultValue: '', description: 'Diff id', name: 'DIFF_ID')
-    }
+  }
 
   options {
     disableConcurrentBuilds()
   }
 
+  environment {
+    PHABRICATOR_HOST = 'https://c4science.ch/api/'
+    PYTHONPATH = sh returnStdout: true, script: 'echo ${WORKSPACE}/test/ci/script/'
+    BLA_VENDOR = 'OpenBLAS'
+    OMPI_MCA_plm = 'isolated'
+    OMPI_MCA_btl = 'tcp,self'
+  }
+  
   agent {
     dockerfile {
+      filename 'Dockerfile'
+      dir 'test/ci'
       additionalBuildArgs '--tag akantu-environment'
     }
   }
+  
   stages {
+    stage('Lint') {
+      steps {
+	sh """
+           arc lint --output json --rev ${GIT_PREVIOUS_COMMIT}^1 | jq . -srM | tee lint.json
+           ./test/ci/scripts/hbm send-arc-lint -f lint.json
+           """
+      }
+    }
     stage('Configure') {
       steps {
-        sh """
-        env
-        mkdir -p build
-        cd build
-        cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE -DAKANTU_IMPLICIT:BOOL=TRUE -DAKANTU_PARALLEL:BOOL=TRUE -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE -DAKANTU_TESTS:BOOL=TRUE ..
-        """
+        sh """#!/bin/bash
+           set -o pipefail
+           mkdir -p build
+           cd build
+           cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
+                 -DAKANTU_IMPLICIT:BOOL=TRUE \
+                 -DAKANTU_PARALLEL:BOOL=TRUE \
+                 -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
+                 -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
+           """
+      }
+      post {
+	failure {
+	  uploadArtifact('configure.txt', 'Configure')
+	  deleteDir()
+	}
       }
     }
     stage('Compile') {
       steps {
-	sh 'make -C build/src || true'
+	sh '''#!/bin/bash
+           set -o pipefail
+           make -C build/src | tee compilation.txt
+           '''
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation.txt', 'Compilation')
+	}
       }
     }
 
@@ -39,86 +76,110 @@ pipeline {
 
     stage('Compile python') {
       steps {
-        sh 'make -C build/python || true'
+        sh '''#!/bin/bash
+           set -o pipefail
+           make -C build/python | tee compilation_python.txt
+           '''
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation_python.txt', 'Compilation_Python')
+	}
       }
     }
 
     stage('Compile tests') {
       steps {
-        sh 'make -C build/test || true'
+        sh '''#!/bin/bash
+           set -o pipefail
+           make -C build/test | tee compilation_test.txt
+           '''
+      }
+      post {
+	failure {
+	  uploadArtifact('compilation_test.txt', 'Compilation_Tests')
+	}
       }
     }
 
     stage('Tests') {
       steps {
-        sh """
-        rm -rf build/gtest_reports
-        cd build/
-        #source ./akantu_environement.sh
-        ctest -T test --no-compress-output || true
-	cp build/Testing/`head -n 1 < build/Testing/TAG`/Test.xml CTestResults.xml
-        """
+        sh '''
+          #rm -rf build/gtest_reports
+          cd build/
+          #source ./akantu_environement.sh
+        
+          ctest -T test --no-compress-output || true
+        '''
+      }
+      post {
+	always {
+	  script {
+	    def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
+	    def TAG_ = TAG.trim()
+
+	    if (fileExists("build/Testing/${TAG}/Test.xml")) {
+	      sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
+	    }
+	  }
+	}
       }
     }
   }
-  environment {
-    BLA_VENDOR = 'OpenBLAS'
-    OMPI_MCA_plm = 'isolated'
-    OMPI_MCA_btl = 'tcp,self'
-  }
+
   post {
     always {
+      createArtifact("./CTestResults.xml")
+      
       step([$class: 'XUnitBuilder',
-         thresholds: [
-             [$class: 'SkippedThreshold', failureThreshold: '0'],
-             [$class: 'FailedThreshold', failureThreshold: '0']],
-          tools: [[$class: 'CTestType', pattern: 'CTestResults.xml']]])
-      step([$class: 'XUnitBuilder',
-         thresholds: [
-             [$class: 'SkippedThreshold', failureThreshold: '100'],
-             [$class: 'FailedThreshold', failureThreshold: '0']],
-            tools: [[$class: 'GoogleTestType', pattern: 'build/gtest_reports/**']]])
-      createartifact()
+	    thresholds: [
+          [$class: 'SkippedThreshold', failureThreshold: '0'],
+          [$class: 'FailedThreshold', failureThreshold: '0']],
+	    tools: [
+	  [$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
+	]])
+
+      // step([$class: 'XUnitBuilder',
+      //       thresholds: [
+      //     [$class: 'SkippedThreshold', failureThreshold: '100'],
+      //     [$class: 'FailedThreshold', failureThreshold: '0']],
+      //       tools: [
+      // 	  [$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
+      // 	]])
     }
 
     success {
-      send_fail_pass('pass')
+      passed()
     }
 
     failure {
-      emailext(
-          body: '''${SCRIPT, template="groovy-html.template"}''',
-	  mimeType: 'text/html',
-          subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
-	  recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-	  to: 'akantu-admins@akantu.ch',
-	  replyTo: 'akantu-admins@akantu.ch',
-	  attachLog: true,
-          compressLog: false)
-      send_fail_pass('fail')
+      // emailext(
+      //   body: '''${SCRIPT, template="groovy-html.template"}''',
+      // 	mimeType: 'text/html',
+      //   subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
+      // 	recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+      // 	to: 'akantu-admins@akantu.ch',
+      // 	replyTo: 'akantu-admins@akantu.ch',
+      // 	attachLog: true,
+      //   compressLog: false)
+      failed()
     }
   }
 }
 
-def send_fail_pass(state) {
-    sh """
-set +x
-curl https://c4science.ch/api/harbormaster.sendmessage \
--d api.token=${API_TOKEN} \
--d buildTargetPHID=${TARGET_PHID} \
--d type=${state}
-"""
+def failed() {
+  sh "./test/ci/scripts/hbm failed"
 }
 
-def createartifact() {
-    sh """ set +x
-curl https://c4science.ch/api/harbormaster.createartifact \
--d api.token=${API_TOKEN} \
--d buildTargetPHID=${TARGET_PHID} \
--d artifactKey="Jenkins URI" \
--d artifactType=uri \
--d artifactData[uri]=${BUILD_URL} \
--d artifactData[name]="View Jenkins result" \
--d artifactData[ui.external]=1
-"""
+def passed() {
+  sh "./test/ci/scripts/hbm passed"
+}
+
+def createArtifact(artifact) {
+  sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
+  sh "./test/ci/scripts/hbm send-ctest-results -f ${artifact}"
+}
+
+def uploadArtifact(artifact, name) {
+  sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v PHID-PROJ-5eqyu6ooyjktagbhf473"
 }

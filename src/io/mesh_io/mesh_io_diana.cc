@@ -457,14 +457,10 @@ std::string MeshIODiana::readMaterialElement(std::ifstream & infile,
   AKANTU_DEBUG_IN();
 
   std::string line;
-  std::stringstream sstr_tag_name;
-  sstr_tag_name << "tag_" << 0;
 
-  Mesh::type_iterator it = mesh.firstType();
-  Mesh::type_iterator end = mesh.lastType();
-  for (; it != end; ++it) {
-    UInt nb_element = mesh.getNbElement(*it);
-    mesh.getDataPointer<UInt>("material", *it, _not_ghost, 1)
+  for (auto type : mesh.elementTypes()) {
+    UInt nb_element = mesh.getNbElement(type);
+    mesh.getDataPointer<UInt>("material", type, _not_ghost, 1)
         .resize(nb_element);
   }
 

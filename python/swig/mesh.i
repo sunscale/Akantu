@@ -39,6 +39,7 @@
 #include "mesh_utils.hh"
 #include "aka_bbox.hh"
 #include "mesh_accessor.hh"
+#include "communicator.hh"
 
 using akantu::IntegrationPoint;
 using akantu::Vector;
@@ -49,6 +50,7 @@ using akantu::UInt;
 using akantu::Real;
 using akantu::Array;
 using akantu::BBox;
+using akantu::Communicator;
 using akantu::SolidMechanicsModel;
 %}
 
@@ -193,7 +195,7 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
       break;
     case 1 : full_array = new akantu::Array<akantu::Real>(model.getVelocity());
       break;
-    case 2 : full_array = new akantu::Array<akantu::Real>(model.getForce());
+    case 2 : full_array = new akantu::Array<akantu::Real>(model.getExternalForce());
       break;
     }
     akantu::Array<akantu::UInt> group_node = $self->getNodes();

@@ -72,7 +72,7 @@ int main(int argc, char * argv[]) {
   model.initFull(_analysis_method = _static);
 
   Array<Real> & nodes = mesh.getNodes();
-  Array<Real> & forces = model.getForce();
+  Array<Real> & forces = model.getExternalForce();
   Array<bool> & bound = model.getBlockedDOFs();
 
   forces(2, 0) = -250;

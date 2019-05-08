@@ -101,7 +101,7 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
     Real Epot;
     static const UInt N = 100;
     for (UInt i = 0; i <= N; ++i) {
-      this->model->getForce().clear(); // reset external forces to zero
+      this->model->getExternalForce().clear(); // reset external forces to zero
 
       surface_traction(_x) = (1.0 * i) / N;
 
@@ -109,7 +109,7 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
         // \TODO: this is a hack to work
         //      around non-implemented
         //      BC::Neumann::FromTraction for 1D
-        auto & force = this->model->getForce();
+        auto & force = this->model->getExternalForce();
         for (auto && pair : zip(make_view(pos, spatial_dimension),
                                 make_view(force, spatial_dimension))) {
           auto & posv = std::get<0>(pair);

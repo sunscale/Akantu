@@ -561,7 +561,7 @@ DOFManager::updateNodalDOFs(const ID & dof_id, const Array<UInt> & nodes_list) {
 
   this->system_size += nb_new_global;
 
-  dof_data.solution.resize(dof_data.solution.size() + nb_new_local_dofs);
+  dof_data.solution.resize(local_system_size);
 
   return std::make_pair(nb_new_local_dofs, nb_new_pure_local);
 }

@@ -104,11 +104,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-MaterialCohesive::~MaterialCohesive() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+MaterialCohesive::~MaterialCohesive() = default;
 
 /* -------------------------------------------------------------------------- */
 void MaterialCohesive::initMaterial() {
@@ -403,7 +399,9 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
   auto & fem_cohesive =
       this->model->getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine");
 
-#define COMPUTE_NORMAL(type)                                                   \
+  normal.clear();
+
+#define COMPUTE_NORMAL(type)                                            \
   fem_cohesive.getShapeFunctions()                                             \
       .computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(    \
           position, normal, ghost_type, element_filter(type, ghost_type));

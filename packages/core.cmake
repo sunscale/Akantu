@@ -50,6 +50,7 @@ package_declare_sources(core
   common/aka_common_inline_impl.cc
   common/aka_csr.hh
   common/aka_element_classes_info_inline_impl.cc
+  common/aka_enum_macros.hh
   common/aka_error.cc
   common/aka_error.hh
   common/aka_event_handler_manager.hh

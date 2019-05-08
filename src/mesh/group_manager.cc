@@ -543,22 +543,15 @@ UInt GroupManager::createClusters(UInt element_dimension,
   // mesh.initElementTypeMapArray(seen_elements, 1, element_dimension, false,
   //                              _ek_not_defined, true);
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     Element el;
     el.ghost_type = ghost_type;
-
-    Mesh::type_iterator type_it =
-        mesh.firstType(element_dimension, ghost_type, _ek_not_defined);
-    Mesh::type_iterator type_end =
-        mesh.lastType(element_dimension, ghost_type, _ek_not_defined);
-
-    for (; type_it != type_end; ++type_it) {
-      el.type = *type_it;
-      UInt nb_element = mesh.getNbElement(*type_it, ghost_type);
-      Array<bool> & seen_elements_array = seen_elements(el.type, ghost_type);
+    for (auto type :
+         mesh.elementTypes(_spatial_dimension = element_dimension,
+         _ghost_type = ghost_type, _element_kind = _ek_not_defined)) {
+      el.type = type;
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
+      Array<bool> & seen_elements_array = seen_elements(type, ghost_type);
 
       for (UInt e = 0; e < nb_element; ++e) {
         el.element = e;
@@ -572,21 +565,13 @@ UInt GroupManager::createClusters(UInt element_dimension,
 
   UInt nb_cluster = 0;
 
-  /// keep looping until all elements are seen
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     Element uns_el;
     uns_el.ghost_type = ghost_type;
-
-    Mesh::type_iterator type_it =
-        mesh.firstType(element_dimension, ghost_type, _ek_not_defined);
-    Mesh::type_iterator type_end =
-        mesh.lastType(element_dimension, ghost_type, _ek_not_defined);
-
-    for (; type_it != type_end; ++type_it) {
-      uns_el.type = *type_it;
+    for (auto type :
+         mesh.elementTypes(_spatial_dimension = element_dimension,
+         _ghost_type = ghost_type, _element_kind = _ek_not_defined)) {
+      uns_el.type = type;
       Array<bool> & seen_elements_vec =
           seen_elements(uns_el.type, uns_el.ghost_type);
 
@@ -712,21 +697,17 @@ UInt GroupManager::createClusters(UInt element_dimension,
 template <typename T>
 void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
   std::set<std::string> group_names;
-  const ElementTypeMapArray<T> & datas = mesh.getData<T>(dataset_name);
-  using type_iterator = typename ElementTypeMapArray<T>::type_iterator;
+  const auto & datas = mesh.getData<T>(dataset_name);
 
   std::map<std::string, UInt> group_dim;
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    type_iterator type_it = datas.firstType(_all_dimensions, *gt);
-    type_iterator type_end = datas.lastType(_all_dimensions, *gt);
-    for (; type_it != type_end; ++type_it) {
-      const Array<T> & dataset = datas(*type_it, *gt);
-      UInt nb_element = mesh.getNbElement(*type_it, *gt);
+  for (auto ghost_type : ghost_types) {
+    for (auto type : datas.elementTypes(_ghost_type = ghost_type)) {
+      const Array<T> & dataset = datas(type, ghost_type);
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
       AKANTU_DEBUG_ASSERT(dataset.size() == nb_element,
                           "Not the same number of elements ("
-                              << *type_it << ":" << *gt
+                              << type << ":" << ghost_type
                               << ") in the map from MeshData ("
                               << dataset.size() << ") " << dataset_name
                               << " and in the mesh (" << nb_element << ")!");
@@ -738,9 +719,9 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
 
         auto it = group_dim.find(gname);
         if (it == group_dim.end()) {
-          group_dim[gname] = mesh.getSpatialDimension(*type_it);
+          group_dim[gname] = mesh.getSpatialDimension(type);
         } else {
-          it->second = std::max(it->second, mesh.getSpatialDimension(*type_it));
+          it->second = std::max(it->second, mesh.getSpatialDimension(type));
         }
       }
     }
@@ -755,17 +736,12 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
     this->synchronizeGroupNames();
 
   Element el;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    el.ghost_type = *gt;
-
-    type_iterator type_it = datas.firstType(_all_dimensions, *gt);
-    type_iterator type_end = datas.lastType(_all_dimensions, *gt);
-    for (; type_it != type_end; ++type_it) {
-      el.type = *type_it;
-
-      const Array<T> & dataset = datas(*type_it, *gt);
-      UInt nb_element = mesh.getNbElement(*type_it, *gt);
+  for (auto ghost_type : ghost_types) {
+    el.ghost_type = ghost_type;
+    for (auto type : datas.elementTypes(_ghost_type = ghost_type)) {
+      el.type = type;
+      const Array<T> & dataset = datas(type, ghost_type);
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
       AKANTU_DEBUG_ASSERT(dataset.size() == nb_element,
                           "Not the same number of elements in the map from "
                           "MeshData and in the mesh!");
@@ -773,7 +749,7 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(el.type);
 
       Array<UInt>::const_iterator<Vector<UInt>> cit =
-          mesh.getConnectivity(*type_it, *gt).begin(nb_nodes_per_element);
+          mesh.getConnectivity(type, ghost_type).begin(nb_nodes_per_element);
 
       for (UInt e(0); e < nb_element; ++e, ++cit) {
         el.element = e;
@@ -848,7 +824,7 @@ UInt GroupManager::getNbElementGroups(UInt dimension) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void GroupManager::checkAndAddGroups(CommunicationBuffer & buffer) {
+void GroupManager::checkAndAddGroups(DynamicCommunicationBuffer & buffer) {
   AKANTU_DEBUG_IN();
 
   UInt nb_node_group;
@@ -948,27 +924,19 @@ void GroupManager::synchronizeGroupNames() {
 
   if (my_rank == 0) {
     for (Int p = 1; p < nb_proc; ++p) {
-      CommunicationStatus status;
-      comm.probe<char>(p, p, status);
-      AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(status.size())
-                               << " from proc " << p);
-
-      CommunicationBuffer recv_buffer(status.size());
+      DynamicCommunicationBuffer recv_buffer;
       comm.receive(recv_buffer, p, p);
-
+      AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(recv_buffer.size())
+                               << " from proc " << p);
       this->checkAndAddGroups(recv_buffer);
     }
 
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
-    UInt buffer_size = comm_buffer.size();
-
-    comm.broadcast(buffer_size, 0);
-
     AKANTU_DEBUG_INFO("Initiating broadcast with "
                       << printMemorySize<char>(comm_buffer.size()));
-    comm.broadcast(comm_buffer, 0);
+    comm.broadcast(comm_buffer);
 
   } else {
     DynamicCommunicationBuffer comm_buffer;
@@ -978,13 +946,10 @@ void GroupManager::synchronizeGroupNames() {
                                  << " to proc " << 0);
     comm.send(comm_buffer, 0, my_rank);
 
-    UInt buffer_size = 0;
-    comm.broadcast(buffer_size, 0);
-
+    DynamicCommunicationBuffer recv_buffer;
+    comm.broadcast(recv_buffer);
     AKANTU_DEBUG_INFO("Receiving broadcast with "
-                      << printMemorySize<char>(comm_buffer.size()));
-    CommunicationBuffer recv_buffer(buffer_size);
-    comm.broadcast(recv_buffer, 0);
+                      << printMemorySize<char>(recv_buffer.size()));
 
     this->checkAndAddGroups(recv_buffer);
   }

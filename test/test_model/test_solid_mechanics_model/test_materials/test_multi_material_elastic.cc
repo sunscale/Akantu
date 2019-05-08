@@ -99,11 +99,7 @@ int main(int argc, char * argv[]) {
     return true;
   };
 
-  auto tit = mesh.firstType(spatial_dimension);
-  auto tend = mesh.lastType(spatial_dimension);
-  for (; tit != tend; ++tit) {
-    auto & type = *tit;
-
+  for (auto & type : mesh.elementTypes(spatial_dimension)) {
     for (auto mat_id : mats) {
       auto & stress = model.getMaterial(mat_id).getStress(type);
       auto & grad_u = model.getMaterial(mat_id).getGradU(type);

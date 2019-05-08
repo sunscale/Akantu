@@ -49,7 +49,8 @@ int main(int argc, char * argv[]) {
 
   /// model initialization
   model.initFull(
-      SolidMechanicsModelCohesiveOptions(_explicit_lumped_mass, true));
+      _analysis_method = _explicit_lumped_mass,
+      _is_extrinsic = true);
 
   Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);
@@ -79,7 +80,7 @@ int main(int argc, char * argv[]) {
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("residual");
+  model.addDumpField("internal_force");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.dump();

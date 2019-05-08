@@ -40,10 +40,11 @@ namespace akantu {
 TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
                                const TimeStepSolverType & type,
                                NonLinearSolver & non_linear_solver,
-                               const ID & id, UInt memory_id)
+                               SolverCallback & solver_callback, const ID & id,
+                               UInt memory_id)
     : Memory(id, memory_id), SolverCallback(dof_manager),
       _dof_manager(dof_manager), type(type), time_step(0.),
-      solver_callback(nullptr), non_linear_solver(non_linear_solver) {
+      solver_callback(&solver_callback), non_linear_solver(non_linear_solver) {
   this->registerSubRegistry("non_linear_solver", non_linear_solver);
 }
 
@@ -51,14 +52,31 @@ TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
 TimeStepSolver::~TimeStepSolver() = default;
 
 /* -------------------------------------------------------------------------- */
+void TimeStepSolver::setIntegrationScheme(
+    const ID & dof_id, const IntegrationSchemeType & type,
+    IntegrationScheme::SolutionType solution_type) {
+  this->setIntegrationSchemeInternal(dof_id, type, solution_type);
+
+  for (auto & pair : needed_matrices) {
+    auto & mat_type = pair.second;
+    const auto & name = pair.first;
+    if (mat_type == _mt_not_defined) {
+      mat_type = this->solver_callback->getMatrixType(name);
+    }
+
+    if (mat_type == _mt_not_defined)
+      continue;
+
+    if (not _dof_manager.hasMatrix(name))
+      _dof_manager.getNewMatrix(name, mat_type);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 MatrixType TimeStepSolver::getCommonMatrixType() {
   MatrixType common_type = _mt_not_defined;
   for (auto & pair : needed_matrices) {
     auto & type = pair.second;
-    if (type == _mt_not_defined) {
-      type = this->solver_callback->getMatrixType(pair.first);
-    }
-
     common_type = std::min(common_type, type);
   }
 
@@ -140,14 +158,12 @@ void TimeStepSolver::assembleMatrix(const ID & matrix_id) {
   if (not _dof_manager.hasMatrix("J"))
     _dof_manager.getNewMatrix("J", common_type);
 
+  MatrixType type;
+  ID name;
   for (auto & pair : needed_matrices) {
-    auto type = pair.second;
+    std::tie(name, type) = pair;
     if (type == _mt_not_defined)
       continue;
-
-    auto name = pair.first;
-    if (not _dof_manager.hasMatrix(name))
-      _dof_manager.getNewMatrix(name, type);
 
     this->solver_callback->assembleMatrix(name);
   }

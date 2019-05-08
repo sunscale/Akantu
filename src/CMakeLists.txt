@@ -214,9 +214,6 @@ if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
   export(PACKAGE Akantu)
 endif()
 
-
-
-
 # print out the list of materials
 generate_material_list()
 

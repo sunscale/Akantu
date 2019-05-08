@@ -79,7 +79,7 @@ public:
   void SetUp() override {
     mesh = std::make_unique<Mesh>(this->dim);
     if (Communicator::getStaticCommunicator().whoAmI() == 0) {
-      EXPECT_NO_THROW({ mesh->read(this->mesh_name); });
+      ASSERT_NO_THROW({ mesh->read(this->mesh_name); });
     }
     mesh->distribute();
   }
@@ -227,7 +227,7 @@ public:
   }
 
   void testModeII() {
-    ASSERT_NO_THROW(this->createModel());
+    this->createModel();
     auto & mat_el = this->model->getMaterial("body");
     Real speed;
     try {

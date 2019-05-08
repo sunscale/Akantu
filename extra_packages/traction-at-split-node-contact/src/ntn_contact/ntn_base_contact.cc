@@ -311,19 +311,16 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
 
   const Mesh & mesh = this->model.getMesh();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator it = mesh.firstType(dim - 1, *gt);
-    Mesh::type_iterator last = mesh.lastType(dim - 1, *gt);
-    for (; it != last; ++it) {
-      UInt nb_elements = mesh.getNbElement(*it, *gt);
-      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
-      const Array<UInt> & connectivity = mesh.getConnectivity(*it, *gt);
+  for(auto ghost_type : ghost_types) {
+    for (auto & type : mesh.elementTypes(dim - 1, ghost_type)) {
+      UInt nb_elements = mesh.getNbElement(type, ghost_type);
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+      const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
 
       // get shapes and compute integral
-      const Array<Real> & shapes = boundary_fem.getShapes(*it, *gt);
+      const Array<Real> & shapes = boundary_fem.getShapes(type, ghost_type);
       Array<Real> area(nb_elements, nb_nodes_per_element);
-      boundary_fem.integrate(shapes, area, nb_nodes_per_element, *it, *gt);
+      boundary_fem.integrate(shapes, area, nb_nodes_per_element, type, ghost_type);
 
       if (this->contact_surfaces.size() == 0) {
         AKANTU_DEBUG_WARNING(
@@ -331,9 +328,9 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
             << " You have to define the lumped boundary by yourself.");
       }
 
-      Array<UInt>::const_iterator<UInt> elem_it = (elements)(*it, *gt).begin();
+      Array<UInt>::const_iterator<UInt> elem_it = (elements)(type, ghost_type).begin();
       Array<UInt>::const_iterator<UInt> elem_it_end =
-          (elements)(*it, *gt).end();
+          (elements)(type, ghost_type).end();
       // loop over contact nodes
       for (; elem_it != elem_it_end; ++elem_it) {
         for (UInt q = 0; q < nb_nodes_per_element; ++q) {

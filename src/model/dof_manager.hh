@@ -45,6 +45,7 @@ class TermsToAssemble;
 class NonLinearSolver;
 class TimeStepSolver;
 class SparseMatrix;
+class SolverCallback;
 } // namespace akantu
 
 namespace akantu {
@@ -321,7 +322,8 @@ public:
   virtual TimeStepSolver &
   getNewTimeStepSolver(const ID & time_step_solver_id,
                        const TimeStepSolverType & type,
-                       NonLinearSolver & non_linear_solver) = 0;
+                       NonLinearSolver & non_linear_solver,
+                       SolverCallback & solver_callback) = 0;
 
   /// get instance of a time step solver
   virtual TimeStepSolver & getTimeStepSolver(const ID & time_step_solver_id);

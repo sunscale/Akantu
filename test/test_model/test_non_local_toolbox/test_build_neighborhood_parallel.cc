@@ -114,14 +114,9 @@ int main(int argc, char * argv[]) {
   model.getFEEngine().computeIntegrationPointsCoordinates(quad_coords);
 
   Vector<Real> center(spatial_dimension, 0.);
-  Mesh::type_iterator it =
-      mesh.firstType(spatial_dimension, _not_ghost, _ek_regular);
-  Mesh::type_iterator last_type =
-      mesh.lastType(spatial_dimension, _not_ghost, _ek_regular);
   Real min_distance = 2;
   IntegrationPoint q_min;
-  for (; it != last_type; ++it) {
-    ElementType type = *it;
+  for (auto type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
     UInt nb_elements = mesh.getNbElement(type, _not_ghost);
     UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(type);
     Array<Real> & coords = quad_coords(type, _not_ghost);

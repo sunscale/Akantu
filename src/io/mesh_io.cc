@@ -98,13 +98,11 @@ void MeshIO::write(const std::string & filename, Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
   if (!phys_name_map.empty()) {
-    for (Mesh::type_iterator type_it = mesh.firstType();
-         type_it != mesh.lastType(); ++type_it) {
-
+    for (auto type : mesh.elementTypes()) {
       auto & name_vec =
-          mesh.getDataPointer<std::string>("physical_names", *type_it);
+          mesh.getDataPointer<std::string>("physical_names", type);
 
-      const auto & tags_vec = mesh.getData<UInt>(tag_name, *type_it);
+      const auto & tags_vec = mesh.getData<UInt>(tag_name, type);
 
       for (auto pair : zip(tags_vec, name_vec)) {
         auto tag = std::get<0>(pair);

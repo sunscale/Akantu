@@ -42,7 +42,7 @@
 namespace akantu {
 class DOFManager;
 class NonLinearSolver;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -54,7 +54,8 @@ class TimeStepSolver : public Memory,
   /* ------------------------------------------------------------------------ */
 public:
   TimeStepSolver(DOFManager & dof_manager, const TimeStepSolverType & type,
-                 NonLinearSolver & non_linear_solver, const ID & id,
+                 NonLinearSolver & non_linear_solver,
+                 SolverCallback & solver_callback, const ID & id,
                  UInt memory_id);
   ~TimeStepSolver() override;
 
@@ -66,11 +67,20 @@ public:
   virtual void solveStep(SolverCallback & solver_callback) = 0;
 
   /// register an integration scheme for a given dof
-  virtual void
-  setIntegrationScheme(const ID & dof_id, const IntegrationSchemeType & type,
-                       IntegrationScheme::SolutionType solution_type =
-                           IntegrationScheme::_not_defined) = 0;
+  void setIntegrationScheme(const ID & dof_id,
+                            const IntegrationSchemeType & type,
+                            IntegrationScheme::SolutionType solution_type =
+                                IntegrationScheme::_not_defined);
 
+protected:
+  /// register an integration scheme for a given dof
+  virtual void
+  setIntegrationSchemeInternal(const ID & dof_id,
+                               const IntegrationSchemeType & type,
+                               IntegrationScheme::SolutionType solution_type =
+                                   IntegrationScheme::_not_defined) = 0;
+
+public:
   /// replies if a integration scheme has been set
   virtual bool hasIntegrationScheme(const ID & dof_id) const = 0;
   /* ------------------------------------------------------------------------ */
@@ -95,7 +105,9 @@ public:
   void beforeSolveStep() override;
   void afterSolveStep() override;
 
-  bool canSplitResidual() override { return solver_callback->canSplitResidual(); }
+  bool canSplitResidual() override {
+    return solver_callback->canSplitResidual();
+  }
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -133,6 +145,6 @@ protected:
   std::map<std::string, MatrixType> needed_matrices;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_HH__ */

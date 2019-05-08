@@ -262,7 +262,7 @@ protected:
       CommunicationBufferTemplated<false> & comm_buffer) const;
 
   /// take a buffer and create the missing groups localy
-  void checkAndAddGroups(CommunicationBufferTemplated<true> & buffer);
+  void checkAndAddGroups(CommunicationBufferTemplated<false> & buffer);
 
   /// register an elemental field to the given group name
   template <class dump_type, typename field_type>
