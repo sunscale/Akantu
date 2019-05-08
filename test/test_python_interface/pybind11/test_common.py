@@ -228,7 +228,7 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
     boundary.fill(False)
 
     model.applyBC(FromStress(stress), "edge")
-    force = model.getForce()
+    force = model.getExternalForce()
 
     # Checking that nodes have a force in the correct direction
     for n in blocked_nodes:
