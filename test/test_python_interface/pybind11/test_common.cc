@@ -2,9 +2,9 @@
 #include <pybind11/pybind11.h>
 #include <map>
 
-#include "../../python/pybind11/py_aka_boundary_conditions.hh"
+#warning "change this for full path"
 #include "../../python/pybind11/py_aka_common.hh"
-#include "../../python/pybind11/py_aka_array.cc"
+#include "../../python/pybind11/py_aka_array.hh"
 
 namespace py = pybind11;
 namespace _aka = akantu;
@@ -16,8 +16,7 @@ std::map<long, std::shared_ptr<_aka::Matrix<_aka::Real>>> matrices;
 PYBIND11_MODULE(py11_akantu_test_common, mod) {
   mod.doc() = "Akantu Test function for common ";
 
-  _aka::register_enums(mod);
-  _aka::register_boundary_conditions(mod);
+  _aka::register_all(mod);
 
   mod.def("createArray",
           [&](_aka::UInt size, _aka::UInt nb_components) {

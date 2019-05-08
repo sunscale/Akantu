@@ -12,8 +12,6 @@ __maintainer__ = "Fabian Barras"
 __email__ = "fabian.barras@epfl.ch"
 # ------------------------------------------------------------------------------
 
-import sys
-import os
 import akantu as aka
 
 aka.parseInput('input_test.dat')

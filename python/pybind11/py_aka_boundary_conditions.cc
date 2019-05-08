@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------- */
 #include "py_aka_boundary_conditions.hh"
-#include "py_aka_array.cc"
+#include "py_aka_array.hh"
 /* -------------------------------------------------------------------------- */
 #include <aka_common.hh>
 #include <boundary_condition_functor.hh>

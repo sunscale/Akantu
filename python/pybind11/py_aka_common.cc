@@ -1,4 +1,15 @@
 /* -------------------------------------------------------------------------- */
+#include "py_aka_common.hh"
+#include "py_aka_boundary_conditions.hh"
+#include "py_aka_error.hh"
+#include "py_aka_fe_engine.hh"
+#include "py_aka_material.hh"
+#include "py_aka_mesh.hh"
+#include "py_aka_model.hh"
+#include "py_aka_parser.hh"
+#include "py_aka_solid_mechanics_model.hh"
+#include "py_aka_solid_mechanics_model_cohesive.hh"
+/* -------------------------------------------------------------------------- */
 #include <aka_common.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
@@ -8,6 +19,22 @@
 namespace py = pybind11;
 
 namespace akantu {
+
+/* -------------------------------------------------------------------------- */
+
+__attribute__((visibility("default"))) void register_all(py::module & mod) {
+  register_initialize(mod);
+  register_enums(mod);
+  register_error(mod);
+  register_parser(mod);
+  register_boundary_conditions(mod);
+  register_fe_engine(mod);
+  register_model(mod);
+  register_solid_mechanics_model(mod);
+  register_solid_mechanics_model_cohesive(mod);
+  register_material(mod);
+  register_mesh(mod);
+}
 
 /* -------------------------------------------------------------------------- */
 

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-#include "py_aka_array.cc"
+#include "py_aka_array.hh"
 /* -------------------------------------------------------------------------- */
 #include <non_linear_solver.hh>
 #include <solid_mechanics_model.hh>

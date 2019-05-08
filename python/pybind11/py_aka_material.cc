@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-#include "py_aka_array.cc"
+#include "py_aka_array.hh"
 /* -------------------------------------------------------------------------- */
 #include <solid_mechanics_model.hh>
 /* -------------------------------------------------------------------------- */
@@ -12,37 +12,37 @@ namespace py = pybind11;
 
 namespace akantu {
 
-class PyMaterial : public Material {
+template <typename _Material> class PyMaterial : public _Material {
 
 public:
   /* Inherit the constructors */
-  using Material::Material;
+  using _Material::_Material;
 
   virtual ~PyMaterial(){};
   void initMaterial() override {
-    PYBIND11_OVERLOAD(void, Material, initMaterial);
+    PYBIND11_OVERLOAD(void, _Material, initMaterial);
   };
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override {
-    PYBIND11_OVERLOAD_PURE(void, Material, computeStress, el_type, ghost_type);
+    PYBIND11_OVERLOAD_PURE(void, _Material, computeStress, el_type, ghost_type);
   }
   void computeTangentModuli(const ElementType & el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override {
-    PYBIND11_OVERLOAD(void, Material, computeTangentModuli, el_type,
+    PYBIND11_OVERLOAD(void, _Material, computeTangentModuli, el_type,
                       tangent_matrix, ghost_type);
   }
 
   void computePotentialEnergy(ElementType el_type) override {
-    PYBIND11_OVERLOAD(void, Material, computePotentialEnergy, el_type);
+    PYBIND11_OVERLOAD(void, _Material, computePotentialEnergy, el_type);
   }
 
   Real getPushWaveSpeed(const Element & element) const override {
-    PYBIND11_OVERLOAD(Real, Material, getPushWaveSpeed, element);
+    PYBIND11_OVERLOAD(Real, _Material, getPushWaveSpeed, element);
   }
 
   Real getShearWaveSpeed(const Element & element) const override {
-    PYBIND11_OVERLOAD(Real, Material, getShearWaveSpeed, element);
+    PYBIND11_OVERLOAD(Real, _Material, getShearWaveSpeed, element);
   }
 
   void registerInternal(const std::string & name, UInt nb_component) {
@@ -93,12 +93,13 @@ void register_element_type_map_array(py::module & mod,
 }
 
 /* -------------------------------------------------------------------------- */
+template <typename _Material>
+void define_material(py::module & mod, const std::string & name) {
 
-[[gnu::visibility("default")]] void register_material(py::module & mod) {
+  auto mat = py::class_<_Material, PyMaterial<_Material>, Parsable>(
+      mod, name.c_str(), py::multiple_inheritance());
 
-  py::class_<Material, PyMaterial, Parsable>(mod, "Material",
-                                             py::multiple_inheritance())
-      .def(py::init<SolidMechanicsModel &, const ID &>())
+  mat.def(py::init<SolidMechanicsModel &, const ID &>())
       .def("getGradU",
            [](Material & self, ElementType el_type,
               GhostType ghost_type = _not_ghost) -> decltype(auto) {
@@ -122,19 +123,24 @@ void register_element_type_map_array(py::module & mod,
       .def("getModel", &Material::getModel)
       .def("registerInternal",
            [](Material & self, const std::string & name, UInt nb_component) {
-             return dynamic_cast<PyMaterial &>(self).registerInternal(
+             return dynamic_cast<PyMaterial<Material> &>(self).registerInternal(
                  name, nb_component);
            })
       .def_property_readonly(
           "internals",
           [](Material & self) {
-            return dynamic_cast<PyMaterial &>(self).getInternals();
+            return dynamic_cast<PyMaterial<Material> &>(self).getInternals();
           })
       .def_property_readonly("element_filter",
                              [](Material & self) -> decltype(auto) {
                                return self.getElementFilter();
                              },
                              py::return_value_policy::reference);
+}
+
+/* -------------------------------------------------------------------------- */
+
+[[gnu::visibility("default")]] void register_material(py::module & mod) {
 
   py::class_<MaterialFactory>(mod, "MaterialFactory")
       .def_static("getInstance",
@@ -154,9 +160,10 @@ void register_element_type_map_array(py::module & mod,
                  });
            });
 
-  
   register_element_type_map_array<Real>(mod, "Real");
   register_element_type_map_array<UInt>(mod, "UInt");
+
+  define_material<Material>(mod, "Material");
 }
 
 } // namespace akantu

@@ -20,28 +20,34 @@ import akantu as aka
 ######################################################################
 # Boundary conditions founctors
 ######################################################################
+
+
 class FixedValue:
-  """Functor for Dirichlet boundary conditions"""
-  def __init__(self, value, axis):
-    self.value = value
-    axis_dict = {'x':0, 'y':1, 'z':2}
-    self.axis = axis_dict[axis]
+    """Functor for Dirichlet boundary conditions"""
 
-  def operator(self, node, flags, primal, coord):
-    primal[self.axis] = self.value
-    flags[self.axis]  = True
+    def __init__(self, value, axis):
+        self.value = value
+        axis_dict = {'x': 0, 'y': 1, 'z': 2}
+        self.axis = axis_dict[axis]
 
-#---------------------------------------------------------------------
+    def operator(self, node, flags, primal, coord):
+        primal[self.axis] = self.value
+        flags[self.axis] = True
+
+# ---------------------------------------------------------------------
+
 
 class FromStress:
-  """Functor for Neumann boundary conditions"""
-  def __init__(self, stress):
-    self.stress = stress
+    """Functor for Neumann boundary conditions"""
 
-  def operator(self, quad_point, dual, coord, normals):
-    dual[:] = np.dot(self.stress,normals)
+    def __init__(self, stress):
+        self.stress = stress
+
+    def operator(self, quad_point, dual, coord, normals):
+        dual[:] = np.dot(self.stress, normals)
 
 ######################################################################
+
 
 def main():
     aka.parseInput("input_test.dat")
@@ -56,7 +62,6 @@ def main():
 
     stress = np.array([[1, 0],
                        [0, 0]])
-
 
     blocked_nodes = mesh.getElementGroup("edge").getNodes().flatten()
     boundary = model.getBlockedDOFs()
@@ -77,6 +82,7 @@ def main():
             return -1
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
