@@ -13,11 +13,11 @@ __email__ = "guillaume.anciaux@epfl.ch"
 
 from patch_test_linear_heat_transfer_fixture import TestPatchTestHTMLinear
 import akantu
+import sys
 
 
 def foo(self):
-    self.initModel(akantu.HeatTransferModelOptions(akantu._implicit_dynamic),
-                   "heat_transfer_input.dat")
+    self.initModel(akantu._implicit_dynamic, "heat_transfer_input.dat")
 
     coordinates = self.mesh.getNodes()
     temperature = self.model.getTemperature()
@@ -30,4 +30,9 @@ def foo(self):
     self.checkAll()
 
 
-TestPatchTestHTMLinear.TYPED_TEST(foo, "Explicit")
+def test():
+    TestPatchTestHTMLinear.TYPED_TEST(foo, "Explicit")
+
+
+if 'pytest' not in sys.modules:
+    test()

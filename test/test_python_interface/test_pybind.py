@@ -161,7 +161,7 @@ def elastic_material():
     return mat_file
 
 
-def test_multiple_init(dcb_mesh, elastic_material):
+def test_multiple_init(dcb_mesh):
 
     aka.parseInput(elastic_material)
 
@@ -247,3 +247,12 @@ def test_mesh_interface(dcb_mesh):
                         " {0} != {1}".format(
                             mesh.getNbElement(aka._quadrangle_8),
                             mesh.getNbElement(2)))
+
+
+def test_heat_transfer():
+
+    mesh = aka.Mesh(2)
+    model = aka.HeatTransferModel(mesh)
+    print(aka._explicit_lumped_mass)
+    model.initFull(aka._explicit_lumped_mass)
+

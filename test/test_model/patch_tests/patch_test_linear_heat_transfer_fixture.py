@@ -26,7 +26,7 @@ class TestPatchTestHTMLinear(patch_test_linear_fixture.TestPatchTestLinear):
 
     def checkAll(self):
         temperature = self.model.getTemperature()
-        C = self.model.getParamMatrix("conductivity")
+        C = self.model.getMatrix("conductivity")
         self.checkDOFs(temperature)
         self.checkGradient(self.model.getTemperatureGradient(self.elem_type),
                            temperature)
