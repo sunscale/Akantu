@@ -1,8 +1,11 @@
 /* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "parameter_registry.hh"
-#include "parsable.hh"
-#include "parser.hh"
+#include "py_aka_array.hh"
+/* -------------------------------------------------------------------------- */
+#include <aka_common.hh>
+#include <parameter_registry.hh>
+#include <parsable.hh>
+#include <parser.hh>
+/* -------------------------------------------------------------------------- */
 #include <map>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -44,8 +47,13 @@ __attribute__((visibility("default"))) void register_parser(py::module & mod) {
              self.registerParam<Real>(name, *p, _default,
                                       ParameterAccessType(type), description);
            })
-      .def("getReal", [](ParameterRegistry & self, const std::string & name) {
-        return Real(self.get(name));
+      .def("getReal",
+           [](ParameterRegistry & self, const std::string & name) {
+             return Real(self.get(name));
+           })
+      .def("getMatrix", [](ParameterRegistry & self, const std::string & name) {
+        Matrix<Real> res = self.get(name);
+        return res;
       });
 
   py::class_<Parsable, ParameterRegistry>(mod, "Parsable",

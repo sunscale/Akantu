@@ -3,6 +3,7 @@
 #include "py_aka_boundary_conditions.hh"
 #include "py_aka_error.hh"
 #include "py_aka_fe_engine.hh"
+#include "py_aka_heat_transfer_model.hh"
 #include "py_aka_material.hh"
 #include "py_aka_mesh.hh"
 #include "py_aka_model.hh"
@@ -166,6 +167,7 @@ __attribute__((visibility("default"))) void register_all(py::module & mod) {
   register_boundary_conditions(mod);
   register_fe_engine(mod);
   register_model(mod);
+  register_heat_transfer_model(mod);
   register_solid_mechanics_model(mod);
   register_solid_mechanics_model_cohesive(mod);
   register_material(mod);

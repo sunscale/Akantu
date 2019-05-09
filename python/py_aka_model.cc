@@ -62,7 +62,8 @@ namespace akantu {
           })
       .def("set", &NonLinearSolver::set<SolveConvergenceCriteria>);
 
-  py::class_<ModelSolver>(mod, "ModelSolver")
+  py::class_<ModelSolver, Parsable>(mod, "ModelSolver",
+                                    py::multiple_inheritance())
       .def("getNonLinearSolver",
            (NonLinearSolver & (ModelSolver::*)(const ID &)) &
                ModelSolver::getNonLinearSolver,

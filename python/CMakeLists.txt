@@ -29,7 +29,7 @@
 #===============================================================================
 
 
-add_library(pyakantu py_aka_model.cc py_aka_error.cc py_aka_solid_mechanics_model.cc py_aka_solid_mechanics_model_cohesive.cc py_aka_material.cc py_aka_boundary_conditions.cc py_aka_common.cc py_aka_mesh.cc py_aka_parser.cc py_aka_fe_engine.cc)
+add_library(pyakantu py_aka_model.cc py_aka_error.cc py_aka_solid_mechanics_model.cc py_aka_heat_transfer_model.cc py_aka_solid_mechanics_model_cohesive.cc py_aka_material.cc py_aka_boundary_conditions.cc py_aka_common.cc py_aka_mesh.cc py_aka_parser.cc py_aka_fe_engine.cc)
 target_link_libraries(pyakantu PUBLIC  akantu pybind11)
 pybind11_add_module(py11_akantu py_akantu.cc)
 target_link_libraries(py11_akantu PRIVATE pyakantu)
