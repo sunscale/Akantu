@@ -130,6 +130,11 @@ void register_enums(py::module & mod) {
   py::enum_<ElementKind>(mod, "ElementKind")
       .value("_ek_regular", _ek_regular)
       .export_values();
+
+  py::enum_<MatrixType>(mod, "MatrixType")
+      .value("_unsymmetric", _unsymmetric)
+      .value("_symmetric", _symmetric)
+      .export_values();
 }
 
 /* -------------------------------------------------------------------------- */

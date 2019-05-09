@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 #include <model.hh>
 #include <non_linear_solver.hh>
-#include <sparse_matrix.hh>
+#include <sparse_matrix_aij.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -18,10 +18,20 @@ namespace akantu {
 
 [[gnu::visibility("default")]] void register_model(py::module & mod) {
 
+  py::class_<SparseMatrix>(mod, "SparseMatrix")
+      .def("getMatrixType", &SparseMatrix::getMatrixType)
+      .def("size", &SparseMatrix::size);
+
+  py::class_<SparseMatrixAIJ, SparseMatrix>(mod, "SparseMatrixAIJ")
+      .def("getIRN", &SparseMatrixAIJ::getIRN)
+      .def("getJCN", &SparseMatrixAIJ::getJCN)
+      .def("getA", &SparseMatrixAIJ::getA);
+
   py::class_<DOFManager>(mod, "DOFManager")
       .def("getMatrix",
-           [](DOFManager::getMatrix & self, const std::string & name) {
-             return 
+           [](DOFManager & self, const std::string & name) {
+             return dynamic_cast<akantu::SparseMatrixAIJ &>(
+                 self.getMatrix(name));
            },
            py::return_value_policy::reference);
 
