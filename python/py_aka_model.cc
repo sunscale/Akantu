@@ -3,6 +3,7 @@
 /* -------------------------------------------------------------------------- */
 #include <model.hh>
 #include <non_linear_solver.hh>
+#include <sparse_matrix.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -17,6 +18,13 @@ namespace akantu {
 
 [[gnu::visibility("default")]] void register_model(py::module & mod) {
 
+  py::class_<DOFManager>(mod, "DOFManager")
+      .def("getMatrix",
+           [](DOFManager::getMatrix & self, const std::string & name) {
+             return 
+           },
+           py::return_value_policy::reference);
+
   py::class_<Model>(mod, "Model")
       .def("setBaseName", &Model::setBaseName)
       .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
@@ -27,7 +35,9 @@ namespace akantu {
       .def("addDumpFieldVectorToDumper", &Model::addDumpFieldVectorToDumper)
       .def("addDumpFieldToDumper", &Model::addDumpFieldToDumper)
       .def("dump", &Model::dump)
-      .def("initNewSolver", &Model::initNewSolver);
+      .def("initNewSolver", &Model::initNewSolver)
+      .def("getDOFManager", &Model::getDOFManager,
+           py::return_value_policy::reference);
 
   py::class_<NonLinearSolver>(mod, "NonLinearSolver")
       .def(
