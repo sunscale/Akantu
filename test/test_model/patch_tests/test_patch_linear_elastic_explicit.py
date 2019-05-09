@@ -13,6 +13,7 @@ __email__ = "guillaume.anciaux@epfl.ch"
 
 from patch_test_linear_solid_mechanics_fixture import TestPatchTestSMMLinear
 import akantu
+import sys
 
 
 def foo(self):
@@ -38,3 +39,7 @@ def foo(self):
 
 def test():
     TestPatchTestSMMLinear.TYPED_TEST(foo, "Explicit")
+
+
+if 'pytest' not in sys.modules:
+    test()

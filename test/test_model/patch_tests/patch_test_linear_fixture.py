@@ -14,7 +14,6 @@ __email__ = "guillaume.anciaux@epfl.ch"
 import akantu
 import unittest
 import numpy as np
-from local_elastic import LocalElastic
 
 
 class TestPatchTestLinear(unittest.TestCase):

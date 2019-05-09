@@ -13,20 +13,27 @@ __email__ = "guillaume.anciaux@epfl.ch"
 
 from patch_test_linear_heat_transfer_fixture import TestPatchTestHTMLinear
 import akantu
+import sys
 
 
 def foo(self):
-    self.initModel(akantu.HeatTransferModelOptions(akantu._static),
-                   "heat_transfer_input.dat")
 
-    solver = self.model.getNonLinearSolver()
-    solver.set("max_iterations", 2)
-    solver.set("threshold", 2e-4)
-    solver.set("convergence_type", akantu._scc_residual)
+    self.initModel(akantu._explicit_lumped_mass, "heat_transfer_input.dat")
 
-    self.model.solveStep()
+    coordinates = self.mesh.getNodes()
+    temperature = self.model.getTemperature()
+    # set the position of all nodes to the static solution
+    self.setLinearDOF(temperature, coordinates)
+
+    for s in range(0, 100):
+        self.model.solveStep()
 
     self.checkAll()
 
 
-TestPatchTestHTMLinear.TYPED_TEST(foo, "Static")
+def test():
+    TestPatchTestHTMLinear.TYPED_TEST(foo, "Explicit")
+
+
+if 'pytest' not in sys.modules:
+    test()
