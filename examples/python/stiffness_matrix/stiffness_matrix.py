@@ -18,7 +18,7 @@ def getStiffnessMatrix(material_file, mesh_file, traction):
     model = akantu.SolidMechanicsModel(mesh)
     model.initFull(akantu._static)
     model.assembleStiffnessMatrix()
-    K = model.getMatrix('K')
+    K = model.getDOFManager().getMatrix('K')
     stiff = akantu.AkantuSparseMatrix(K).toarray()
     return stiff
 
