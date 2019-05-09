@@ -3,8 +3,8 @@
 #include <map>
 
 #warning "change this for full path"
-#include "../../python/pybind11/py_aka_common.hh"
-#include "../../python/pybind11/py_aka_array.hh"
+#include "../../python/py_aka_common.hh"
+#include "../../python/py_aka_array.hh"
 
 namespace py = pybind11;
 namespace _aka = akantu;
