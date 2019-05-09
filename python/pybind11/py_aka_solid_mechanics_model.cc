@@ -92,7 +92,15 @@ register_solid_mechanics_model(py::module & mod) {
       .def("dump", py::overload_cast<const std::string &, UInt>(
                        &SolidMechanicsModel::dump))
       .def("dump", py::overload_cast<const std::string &, Real, UInt>(
-                       &SolidMechanicsModel::dump));
+                       &SolidMechanicsModel::dump))
+      .def("getMaterial",
+           py::overload_cast<UInt>(&SolidMechanicsModel::getMaterial),
+           py::return_value_policy::reference)
+      .def("getMaterial",
+           py::overload_cast<const std::string &>(
+               &SolidMechanicsModel::getMaterial),
+           py::return_value_policy::reference)
+      .def("getMaterialIndex", &SolidMechanicsModel::getMaterialIndex);
 }
 
 } // namespace akantu

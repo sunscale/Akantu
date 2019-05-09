@@ -22,24 +22,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
-__attribute__((visibility("default"))) void register_all(py::module & mod) {
-  register_initialize(mod);
-  register_enums(mod);
-  register_error(mod);
-  register_parser(mod);
-  register_boundary_conditions(mod);
-  register_fe_engine(mod);
-  register_model(mod);
-  register_solid_mechanics_model(mod);
-  register_solid_mechanics_model_cohesive(mod);
-  register_material(mod);
-  register_mesh(mod);
-}
-
-/* -------------------------------------------------------------------------- */
-
-__attribute__((visibility("default"))) void
-register_initialize(py::module & mod) {
+void register_initialize(py::module & mod) {
   mod.def("__initialize", []() {
     int nb_args = 0;
     char ** null = nullptr;
@@ -49,7 +32,7 @@ register_initialize(py::module & mod) {
 
 /* -------------------------------------------------------------------------- */
 
-__attribute__((visibility("default"))) void register_enums(py::module & mod) {
+void register_enums(py::module & mod) {
   py::enum_<SpatialDirection>(mod, "SpatialDirection")
       .value("_x", _x)
       .value("_y", _y)
@@ -148,4 +131,40 @@ __attribute__((visibility("default"))) void register_enums(py::module & mod) {
       .value("_ek_regular", _ek_regular)
       .export_values();
 }
+
+/* -------------------------------------------------------------------------- */
+#define AKANTU_PP_STR_TO_TYPE2(s, data, elem) ({BOOST_PP_STRINGIZE(elem), elem})
+
+void register_functions(py::module & mod) {
+
+  mod.def("getElementTypes", []() {
+    std::map<std::string, akantu::ElementType> element_types{
+        BOOST_PP_SEQ_FOR_EACH_I(
+            AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(AKANTU_ek_regular_ELEMENT_TYPE),
+            BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE2, akantu,
+                                   AKANTU_ek_regular_ELEMENT_TYPE))};
+
+    return element_types;
+  });
+}
+
+#undef AKANTU_PP_STR_TO_TYPE2
+
+/* -------------------------------------------------------------------------- */
+
+__attribute__((visibility("default"))) void register_all(py::module & mod) {
+  register_initialize(mod);
+  register_enums(mod);
+  register_error(mod);
+  register_functions(mod);
+  register_parser(mod);
+  register_boundary_conditions(mod);
+  register_fe_engine(mod);
+  register_model(mod);
+  register_solid_mechanics_model(mod);
+  register_solid_mechanics_model_cohesive(mod);
+  register_material(mod);
+  register_mesh(mod);
+}
+
 } // namespace akantu
