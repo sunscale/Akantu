@@ -61,7 +61,7 @@ int main(int argc, char * argv[]) {
   // Boundary condition (Neumann)
   Matrix<Real> stress(2, 2);
   stress.eye(Real(1e3));
-  model.applyBC(BC::FromHigherDim(stress), "boundary_0");
+  model.applyBC(BC::Neumann::FromHigherDim(stress), "boundary_0");
 
   model.setBaseName("square-orthotrope");
   model.addDumpFieldVector("displacement");

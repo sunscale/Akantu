@@ -245,9 +245,9 @@ public:
                  ":" + aka::to_string(type_2));
 
     if (this->dim > 1)
-      this->model->applyBC(BC::FlagOnly(_y), "sides");
+      this->model->applyBC(BC::Dirichlet::FlagOnly(_y), "sides");
     if (this->dim > 2)
-      this->model->applyBC(BC::FlagOnly(_z), "sides");
+      this->model->applyBC(BC::Dirichlet::FlagOnly(_z), "sides");
 
     auto & mat_co = this->model->getMaterial("insertion");
     Real sigma_c = mat_co.get("sigma_c");

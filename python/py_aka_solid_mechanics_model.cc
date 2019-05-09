@@ -58,12 +58,12 @@ register_solid_mechanics_model(py::module & mod) {
            py::arg("_analysis_method"))
       .def_deprecated("applyDirichletBC", "Deprecated: use applyBC")
       .def("applyBC",
-           [](SolidMechanicsModel & self, BC::DirichletFunctor & func,
+           [](SolidMechanicsModel & self, BC::Dirichlet::DirichletFunctor & func,
               const std::string & element_group) {
              self.applyBC(func, element_group);
            })
       .def("applyBC",
-           [](SolidMechanicsModel & self, BC::NeumannFunctor & func,
+           [](SolidMechanicsModel & self, BC::Neumann::NeumannFunctor & func,
               const std::string & element_group) {
              self.applyBC(func, element_group);
            })

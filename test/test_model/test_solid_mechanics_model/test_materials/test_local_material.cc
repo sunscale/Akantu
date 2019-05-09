@@ -74,11 +74,11 @@ int main(int argc, char * argv[]) {
   model.setTimeStep(time_step / 2.5);
 
   /// Dirichlet boundary conditions
-  model.applyBC(BC::FixedValue(0.0, _x), "Fixed");
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "Fixed");
   // model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "Fixed");
   Matrix<Real> stress(2, 2);
   stress.eye(5e7);
-  model.applyBC(BC::FromHigherDim(stress), "Traction");
+  model.applyBC(BC::Neumann::FromHigherDim(stress), "Traction");
 
   for (UInt s = 0; s < max_steps; ++s)
     model.solveStep();

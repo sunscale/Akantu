@@ -15,7 +15,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 
-template <typename daughter = BC::DirichletFunctor>
+template <typename daughter = BC::Dirichlet::DirichletFunctor>
 class PyDirichletFunctor : public daughter {
 public:
   /* Inherit the constructors */
@@ -31,7 +31,7 @@ public:
 };
 /* -------------------------------------------------------------------------- */
 
-template <typename daughter = BC::NeumannFunctor>
+template <typename daughter = BC::Neumann::NeumannFunctor>
 class PyNeumannFunctor : public daughter {
 public:
   /* Inherit the constructors */
@@ -52,14 +52,15 @@ public:
 template <typename Functor, typename Constructor>
 decltype(auto) declareDirichletFunctor(py::module mod, const char * name,
                                        Constructor && cons) {
-  py::class_<Functor, PyDirichletFunctor<Functor>, BC::DirichletFunctor>(mod,
-                                                                         name)
+  py::class_<Functor, PyDirichletFunctor<Functor>,
+             BC::Dirichlet::DirichletFunctor>(mod, name)
       .def(cons);
 }
 template <typename Functor, typename Constructor>
 decltype(auto) declareNeumannFunctor(py::module mod, const char * name,
                                      Constructor && cons) {
-  py::class_<Functor, PyNeumannFunctor<Functor>, BC::NeumannFunctor>(mod, name)
+  py::class_<Functor, PyNeumannFunctor<Functor>, BC::Neumann::NeumannFunctor>(
+      mod, name)
       .def(cons);
 }
 
@@ -68,31 +69,31 @@ __attribute__((visibility("default"))) void
 register_boundary_conditions(py::module & mod) {
 
   py::class_<BC::Functor>(mod, "BCFunctor");
-  py::class_<BC::DirichletFunctor, PyDirichletFunctor<>, BC::Functor>(
-      mod, "DirichletFunctor")
+  py::class_<BC::Dirichlet::DirichletFunctor, PyDirichletFunctor<>,
+             BC::Functor>(mod, "DirichletFunctor")
       .def(py::init())
       .def(py::init<SpatialDirection>());
 
-  py::class_<BC::NeumannFunctor, PyNeumannFunctor<>, BC::Functor>(
+  py::class_<BC::Neumann::NeumannFunctor, PyNeumannFunctor<>, BC::Functor>(
       mod, "NeumannFunctor")
       .def(py::init());
 
-  declareDirichletFunctor<BC::FixedValue>(mod, "FixedValue",
-                                          py::init<Real, BC::Axis>());
+  declareDirichletFunctor<BC::Dirichlet::FixedValue>(
+      mod, "FixedValue", py::init<Real, BC::Axis>());
 
-  declareDirichletFunctor<BC::IncrementValue>(mod, "IncrementValue",
-                                              py::init<Real, BC::Axis>());
+  declareDirichletFunctor<BC::Dirichlet::IncrementValue>(
+      mod, "IncrementValue", py::init<Real, BC::Axis>());
 
-  declareDirichletFunctor<BC::Increment>(mod, "Increment",
-                                         py::init<Vector<Real> &>());
+  declareDirichletFunctor<BC::Dirichlet::Increment>(mod, "Increment",
+                                                    py::init<Vector<Real> &>());
 
-  declareNeumannFunctor<BC::FromHigherDim>(mod, "FromHigherDim",
-                                           py::init<Matrix<Real> &>());
+  declareNeumannFunctor<BC::Neumann::FromHigherDim>(mod, "FromHigherDim",
+                                                    py::init<Matrix<Real> &>());
 
-  declareNeumannFunctor<BC::FromSameDim>(mod, "FromSameDim",
-                                         py::init<Vector<Real> &>());
+  declareNeumannFunctor<BC::Neumann::FromSameDim>(mod, "FromSameDim",
+                                                  py::init<Vector<Real> &>());
 
-  declareNeumannFunctor<BC::FreeBoundary>(mod, "FreeBoundary", py::init());
-
+  declareNeumannFunctor<BC::Neumann::FreeBoundary>(mod, "FreeBoundary",
+                                                   py::init());
 }
 } // namespace akantu

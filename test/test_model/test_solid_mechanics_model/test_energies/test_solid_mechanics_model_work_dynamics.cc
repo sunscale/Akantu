@@ -103,7 +103,7 @@ public:
         }
       }
     } else {
-      this->model->applyBC(BC::FromTraction(surface_traction),
+      this->model->applyBC(BC::Neumann::FromTraction(surface_traction),
                            "el_apply_force");
     }
 
@@ -126,7 +126,7 @@ TYPED_TEST(TestSMMFixtureWorkDynamic, WorkExplicit) {
   std::vector<Real> displacements{0.00, 0.01, -0.01};
 
   for (auto && u : displacements) {
-    this->model->applyBC(BC::FixedValue(u, _x), "el_fixed");
+    this->model->applyBC(BC::Dirichlet::FixedValue(u, _x), "el_fixed");
 
     // First, "equilibrate" a bit to get a reference state of total
     // energy and work. This is needed when we have a Dirichlet with

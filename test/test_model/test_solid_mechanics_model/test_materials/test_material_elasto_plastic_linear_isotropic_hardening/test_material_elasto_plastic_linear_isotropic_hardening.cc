@@ -59,13 +59,13 @@ int main(int argc, char * argv[]) {
   solver.set("max_iterations", 300);
   solver.set("threshold", 1e-5);
 
-  model.applyBC(BC::FixedValue(0.0, _x), "left");
-  model.applyBC(BC::FixedValue(0.0, _y), "bottom");
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _x), "left");
+  model.applyBC(BC::Dirichlet::FixedValue(0.0, _y), "bottom");
 
   std::cout.precision(4);
   for (UInt i = 0; i < steps; ++i) {
 
-    model.applyBC(BC::FixedValue(i * u_increment, _x), "right");
+    model.applyBC(BC::Dirichlet::FixedValue(i * u_increment, _x), "right");
 
     try {
       model.solveStep();

@@ -94,7 +94,7 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
 
   std::vector<Real> displacements{0.0, 0.1, -0.1};
   for (auto && u : displacements) {
-    this->model->applyBC(BC::FixedValue(u, _x), "el_fixed");
+    this->model->applyBC(BC::Dirichlet::FixedValue(u, _x), "el_fixed");
 
     Vector<Real> surface_traction(spatial_dimension);
     Real work = 0.0;
@@ -119,7 +119,7 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
           }
         }
       } else {
-        this->model->applyBC(BC::FromTraction(surface_traction),
+        this->model->applyBC(BC::Neumann::FromTraction(surface_traction),
                              "el_apply_force");
       }
 

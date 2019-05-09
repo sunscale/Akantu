@@ -89,8 +89,6 @@ void LocalMaterialDamage::computePotentialEnergy(ElementType el_type,
                                                  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Material::computePotentialEnergy(el_type, ghost_type);
-
   if (ghost_type != _not_ghost)
     return;
   Real * epot = potential_energy(el_type).storage();
