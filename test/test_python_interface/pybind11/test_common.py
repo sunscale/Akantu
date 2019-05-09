@@ -139,7 +139,7 @@ Mesh.SecondOrderIncomplete = 1;
     """)
 
     ret = subprocess.call(
-        'gmsh -format msh2 -2 {0} -o {1}'.format(
+        'gmsh -format msh2 -2 {0} -order 2 -o {1}'.format(
             geo_file, mesh_file), shell=True)
     if not ret == 0:
         raise Exception(
@@ -234,3 +234,16 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
         assert force[n, 0] > 0
 
     return 0
+
+
+def test_mesh_interface(dcb_mesh):
+
+    mesh = aka.Mesh(2)
+    mesh.read(dcb_mesh)
+
+    # Tests the getNbElement() function
+    if mesh.getNbElement(aka._quadrangle_8) != mesh.getNbElement(2):
+        raise Exception("Number of elements wrong: "
+                        " {0} != {1}".format(
+                            mesh.getNbElement(aka._quadrangle_8),
+                            mesh.getNbElement(2)))
