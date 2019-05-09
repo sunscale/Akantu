@@ -71,9 +71,8 @@ public:
   /// remove a node
   inline void remove(UInt node);
 
-#ifndef SWIG
   inline decltype(auto) find(UInt node) const { return node_group.find(node); }
-#endif
+
   /// remove duplicated nodes
   void optimize();
 

@@ -178,7 +178,6 @@ public:
   using iterator = typename Array<T>::scalar_iterator;
   using const_iterator = typename Array<T>::const_scalar_iterator;
 
-#ifndef SWIG
   template <typename iterator_internal> class CSRRow {
   public:
     CSRRow(iterator_internal begin, iterator_internal end)
@@ -190,7 +189,6 @@ public:
   private:
     iterator_internal begin_, end_;
   };
-#endif
 
   inline iterator begin(UInt row) { return rows.begin() + rows_offsets(row); };
   inline iterator end(UInt row) {
@@ -204,7 +202,6 @@ public:
     return rows.begin() + rows_offsets(row + 1);
   };
 
-#ifndef SWIG
 private:
   template <typename iterator_internal>
   decltype(auto) make_row(iterator_internal begin, iterator_internal end) {
@@ -216,7 +213,6 @@ public:
   inline decltype(auto) getRow(UInt row) const {
     return make_row(begin(row), end(row));
   }
-#endif
 
   inline iterator rbegin(UInt row) {
     return rows.begin() + rows_offsets(row + 1) - 1;

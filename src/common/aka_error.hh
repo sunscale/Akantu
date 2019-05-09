@@ -83,9 +83,7 @@ namespace debug {
 
   void initSignalHandler();
   std::string demangle(const char * symbol);
-#ifndef SWIG
   std::string exec(const std::string & cmd);
-#endif
   void printBacktrace(int sig);
 
   void exit(int status) __attribute__((noreturn));

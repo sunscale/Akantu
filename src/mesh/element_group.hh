@@ -72,7 +72,7 @@ public:
 /* ------------------------------------------------------------------------ */
 /* Element iterator                                                         */
 /* ------------------------------------------------------------------------ */
-#ifndef SWIG
+
   using type_iterator = ElementList::type_iterator;
   [[deprecated("Use elementTypes instead")]] inline type_iterator
   firstType(UInt dim = _all_dimensions,
@@ -88,7 +88,6 @@ public:
   inline decltype(auto) elementTypes(pack &&... _pack) const {
     return elements.elementTypes(_pack...);
   }
-#endif
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
 

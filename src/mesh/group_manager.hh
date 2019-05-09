@@ -66,16 +66,8 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-#ifdef SWIGPYTHON
-public:
   using ElementGroups = std::map<std::string, ElementGroup *>;
   using NodeGroups = std::map<std::string, NodeGroup *>;
-
-private:
-#else
-  using ElementGroups = std::map<std::string, ElementGroup *>;
-  using NodeGroups = std::map<std::string, NodeGroup *>;
-#endif
 
 public:
   using GroupManagerTypeSet = std::set<ElementType>;
@@ -98,7 +90,6 @@ public:
   using const_node_group_iterator = NodeGroups::const_iterator;
   using const_element_group_iterator = ElementGroups::const_iterator;
 
-#ifndef SWIG
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,    \
                                                       param_in, param_out)     \
   inline BOOST_PP_CAT(BOOST_PP_CAT(const_, group_type), _iterator)             \
@@ -123,16 +114,13 @@ public:
                                                 const std::string & name, name);
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(node_group, find,
                                                 const std::string & name, name);
-#endif
 public:
-#ifndef SWIG
   decltype(auto) iterateNodeGroups() {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
   }
   decltype(auto) iterateNodeGroups() const {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
   }
-#endif
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
   /* -------------------------------------------------------------------9+
@@ -218,7 +206,6 @@ public:
 
 /// register an elemental field to the given group name (overloading for
 /// ElementalPartionField)
-#ifndef SWIG
   template <typename T, template <bool> class dump_type>
   dumper::Field * createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
@@ -278,7 +265,6 @@ protected:
                                const std::string & group_name,
                                UInt spatial_dimension, const ElementKind & kind,
                                ElementTypeMap<UInt> nb_data_per_elem);
-#endif
 
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */

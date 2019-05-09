@@ -77,7 +77,6 @@ ArrayDataLayer<T, allocation_trait>::ArrayDataLayer(const ArrayDataLayer & vect,
   this->values = this->data_storage.data();
 }
 
-#ifndef SWIG
 /* -------------------------------------------------------------------------- */
 template <typename T, ArrayAllocationType allocation_trait>
 ArrayDataLayer<T, allocation_trait>::ArrayDataLayer(
@@ -87,7 +86,6 @@ ArrayDataLayer<T, allocation_trait>::ArrayDataLayer(
   this->nb_component = 1;
   this->values = this->data_storage.data();
 }
-#endif
 
 /* -------------------------------------------------------------------------- */
 template <typename T, ArrayAllocationType allocation_trait>
@@ -167,7 +165,6 @@ inline void ArrayDataLayer<T, allocation_trait>::push_back(const T & value) {
 }
 
 /* -------------------------------------------------------------------------- */
-#ifndef SWIG
 /**
  * append a matrix or a vector to the array
  * @param new_elem a reference to a Matrix<T> or Vector<T> */
@@ -187,7 +184,6 @@ ArrayDataLayer<T, allocation_trait>::push_back(const C<T> & new_elem) {
   this->values = this->data_storage.data();
   this->size_ += 1;
 }
-#endif
 
 /* -------------------------------------------------------------------------- */
 template <typename T, ArrayAllocationType allocation_trait>
@@ -235,13 +231,11 @@ public:
     std::copy_n(vect.storage(), this->size_ * this->nb_component, values);
   }
 
-#ifndef SWIG
   /// Copy constructor (deep copy)
   explicit ArrayDataLayer(const std::vector<value_type> & vect) {
     allocate(vect.size(), 1);
     std::copy_n(vect.data(), this->size_ * this->nb_component, values);
   }
-#endif
 
   // copy operator
   inline ArrayDataLayer & operator=(const ArrayDataLayer & other) {
@@ -288,7 +282,6 @@ public:
     resize(this->size_ + 1, value);
   }
 
-#ifndef SWIG
   /// append a Vector or a Matrix
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>::value>>
@@ -303,7 +296,6 @@ public:
     std::copy_n(new_elem.storage(), new_elem.size(),
                 values + this->nb_component * (this->size_ - 1));
   }
-#endif
 
   /// changes the allocated size but not the size
   virtual void reserve(UInt size) {
@@ -572,7 +564,6 @@ operator+=(const Array<T, is_scal> & vect) {
  * @return reference to modified this
  */
 
-#ifndef SWIG
 template <class T, bool is_scal>
 Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
   T * a = this->values;
@@ -582,7 +573,6 @@ Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
 
   return *this;
 }
-#endif
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -613,7 +603,6 @@ bool Array<T, is_scal>::operator!=(const Array<T, is_scal> & array) const {
 }
 
 /* -------------------------------------------------------------------------- */
-#ifndef SWIG
 /**
  * set all tuples of the array to a given vector or matrix
  * @param vm Matrix or Vector to fill the array with
@@ -630,7 +619,6 @@ inline void Array<T, is_scal>::set(const C<T> & vm) {
     std::copy_n(vm.storage(), this->nb_component, it);
   }
 }
-#endif
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 void Array<T, is_scal>::append(const Array<T> & other) {
@@ -683,10 +671,8 @@ operator=(const Array<T, is_scal> & other) {
 }
 
 /* -------------------------------------------------------------------------- */
-#ifndef SWIG
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(const std::vector<T> & vect) : parent(vect) {}
-#endif
 
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal> Array<T, is_scal>::~Array() = default;
@@ -842,7 +828,6 @@ void Array<T, is_scal>::printself(std::ostream & stream, int indent) const {
 
 inline void ArrayBase::empty() { this->size_ = 0; }
 
-#ifndef SWIG
 /* -------------------------------------------------------------------------- */
 /* Iterators                                                                  */
 /* -------------------------------------------------------------------------- */
@@ -1367,7 +1352,6 @@ Array<T, is_scal>::erase(const iterator<R> & it) {
   iterator<R> rit = it;
   return --rit;
 }
-#endif
 
 } // namespace akantu
 

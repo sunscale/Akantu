@@ -158,10 +158,8 @@ public:
   /// Copy constructor (deep copy)
   ArrayDataLayer(const ArrayDataLayer & vect, const ID & id = "");
 
-#ifndef SWIG
   /// Copy constructor (deep copy)
   explicit ArrayDataLayer(const std::vector<value_type> & vect);
-#endif
 
   // copy operator
   ArrayDataLayer & operator=(const ArrayDataLayer & other);
@@ -188,12 +186,10 @@ public:
   /// append a vector
   // inline void push_back(const value_type new_elem[]);
 
-#ifndef SWIG
   /// append a Vector or a Matrix
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline void push_back(const C<T> & new_elem);
-#endif
 
   /// changes the allocated size but not the size
   virtual void reserve(UInt size);
@@ -248,10 +244,8 @@ public:
   /// Copy constructor (deep copy if deep=true)
   Array(const Array & vect, const ID & id = "");
 
-#ifndef SWIG
   /// Copy constructor (deep copy)
   explicit Array(const std::vector<T> & vect);
-#endif
 
   // copy operator
   Array & operator=(const Array & other);
@@ -262,7 +256,6 @@ public:
   // move assign
   Array & operator=(Array && other) = default;
 
-#ifndef SWIG
   /* ------------------------------------------------------------------------ */
   /* Iterator                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -321,7 +314,6 @@ public:
   inline decltype(auto) begin_reinterpret(Ns &&... n) const;
   template <typename... Ns>
   inline decltype(auto) end_reinterpret(Ns &&... n) const;
-#endif // SWIG
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -336,7 +328,6 @@ public:
 
   inline void push_back(const_reference value) { parent::push_back(value); }
 
-#ifndef SWIG
   /// append a Vector or a Matrix
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>::value>>
@@ -357,7 +348,6 @@ public:
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline UInt find(const C<T> & elem);
-#endif
 
   /// set all entries of the array to the value t
   /// @param t value to fill the array with
@@ -368,13 +358,11 @@ public:
   /// set all entries of the array to 0
   inline void clear() { set(T()); }
 
-#ifndef SWIG
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
   template <template <typename> class C,
             typename = std::enable_if_t<is_tensor<C<T>>::value>>
   inline void set(const C<T> & vm);
-#endif
 
   /// Append the content of the other array to the current one
   void append(const Array<T> & other);

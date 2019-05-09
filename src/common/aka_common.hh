@@ -85,9 +85,7 @@ using MemoryID = UInt;
 }
 /* -------------------------------------------------------------------------- */
 
-#ifndef SWIG
 #include "aka_enum_macros.hh"
-#endif
 /* -------------------------------------------------------------------------- */
 #include "aka_element_classes_info.hh"
 
@@ -124,7 +122,6 @@ namespace akantu {
     _ehp_lowest = 100
   };
 
-#ifndef SWIG
 // clang-format off
 #define AKANTU_MODEL_TYPES                                              \
   (model)                                                               \
@@ -139,16 +136,6 @@ namespace akantu {
   AKANTU_CLASS_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
   AKANTU_CLASS_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
   AKANTU_CLASS_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
-#else
-  enum class ModelType {
-    _model,
-    _solid_mechanics_model,
-    _solid_mechanics_model_cohesive,
-    _heat_transfer_model,
-    _structural_mechanics_model,
-    _embedded_model
-  };
-#endif
 
   /// enum AnalysisMethod type of solving method used to solve the equation of
   /// motion
@@ -348,9 +335,7 @@ namespace akantu {
 
 } // namespace akantu
 
-#ifndef SWIG
 AKANTU_ENUM_HASH(GhostType)
-#endif
 
 namespace akantu {
 

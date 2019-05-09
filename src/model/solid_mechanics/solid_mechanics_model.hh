@@ -303,7 +303,6 @@ public:
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name,
                   const ElementKind & element_kind);
-#ifndef SWIG
   //! give the amount of data per element
   virtual ElementTypeMap<UInt>
   getInternalDataPerElem(const std::string & field_name,
@@ -315,7 +314,6 @@ public:
                   const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
-#endif
 
   dumper::Field * createNodalFieldReal(const std::string & field_name,
                                        const std::string & group_name,

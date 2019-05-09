@@ -124,7 +124,6 @@ public:
   getNbIntegrationPoints(const ElementType & type,
                          const GhostType & ghost_type = _not_ghost) const = 0;
 
-#ifndef SWIG
   /// get the precomputed shapes
   const virtual Array<Real> &
   getShapes(const ElementType & type, const GhostType & ghost_type = _not_ghost,
@@ -140,7 +139,7 @@ public:
   const virtual Matrix<Real> &
   getIntegrationPoints(const ElementType & type,
                        const GhostType & ghost_type = _not_ghost) const = 0;
-#endif
+
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
   /* ------------------------------------------------------------------------ */
