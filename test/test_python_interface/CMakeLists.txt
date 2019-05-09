@@ -21,28 +21,10 @@
 #
 #===============================================================================
 
-add_akantu_test(pybind11 "Test the pybind11 interface")
+pybind11_add_module(py11_akantu_test_common test_common.cc)
+target_link_libraries(py11_akantu_test_common PRIVATE pyakantu)
+set_property(TARGET py11_akantu_test_common PROPERTY DEBUG_POSTFIX "")
 
-add_mesh(mesh_python mesh_dcb_2d.geo ORDER 2 DIM 2)
-
-register_test(test_multiple_init
-  SCRIPT test_multiple_init.py
-  PYTHON
-  DEPENDS mesh_python
-  PACKAGE python_interface
-  FILES_TO_COPY input_test.dat
-  )
-
-register_test(test_mesh_interface
-  SCRIPT test_mesh_interface.py
-  PYTHON
-  DEPENDS mesh_python
-  PACKAGE python_interface
-  )
-
-register_test(test_boundary_condition_functors
-  SCRIPT test_boundary_condition_functors.py
-  PYTHON
-  DEPENDS mesh_python
-  PACKAGE python_interface
-  FILES_TO_COPY input_test.dat)
+message("@Nico: please help making this better")
+add_test(test_pybind11_common pytest-3 -v)
+file(COPY test_pybind.py DESTINATION .)
