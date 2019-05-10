@@ -51,10 +51,13 @@ __attribute__((visibility("default"))) void register_parser(py::module & mod) {
            [](ParameterRegistry & self, const std::string & name) {
              return Real(self.get(name));
            })
-      .def("getMatrix", [](ParameterRegistry & self, const std::string & name) {
-        Matrix<Real> res = self.get(name);
-        return res;
-      });
+      .def("getMatrix",
+           [](ParameterRegistry & self, const std::string & name) {
+             const Matrix<Real> & res =
+                 static_cast<const Matrix<Real> &>(self.get(name));
+             return res;
+           },
+           py::return_value_policy::copy);
 
   py::class_<Parsable, ParameterRegistry>(mod, "Parsable",
                                           py::multiple_inheritance())
