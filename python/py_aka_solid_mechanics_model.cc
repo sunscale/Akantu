@@ -58,7 +58,8 @@ register_solid_mechanics_model(py::module & mod) {
            py::arg("_analysis_method"))
       .def_deprecated("applyDirichletBC", "Deprecated: use applyBC")
       .def("applyBC",
-           [](SolidMechanicsModel & self, BC::Dirichlet::DirichletFunctor & func,
+           [](SolidMechanicsModel & self,
+              BC::Dirichlet::DirichletFunctor & func,
               const std::string & element_group) {
              self.applyBC(func, element_group);
            })
@@ -75,11 +76,14 @@ register_solid_mechanics_model(py::module & mod) {
            py::arg("energy_id"))
       .def_function(assembleStiffnessMatrix)
       .def_function(assembleInternalForces)
+      .def_function(assembleMass)
+      .def_function(assembleMassLumped)
       .def_function(getStableTimeStep)
       .def_function_nocopy(getExternalForce)
       .def_function_nocopy(getDisplacement)
       .def_function_nocopy(getPreviousDisplacement)
       .def_function_nocopy(getIncrement)
+      .def_function_nocopy(getInternalForce)
       .def_function_nocopy(getMass)
       .def_function_nocopy(getVelocity)
       .def_function_nocopy(getAcceleration)
