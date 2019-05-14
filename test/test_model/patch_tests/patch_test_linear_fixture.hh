@@ -124,7 +124,7 @@ public:
     }
   }
 
-  template <typename presult_func_t, typename Result, typename DOFs>
+  template <typename presult_func_t, typename Result, typename DOFs> 
   void checkResults(presult_func_t && presult_func, const Result & results,
                     const DOFs & dofs) {
     auto presult = presult_func(prescribed_gradient(dofs));
@@ -132,7 +132,7 @@ public:
          make_view(results, results.getNbComponent() / dim, dim)) {
       auto diff = result - presult;
       auto result_error =
-          diff.template norm<L_inf>() / result.template norm<L_inf>();
+          diff.template norm<L_inf>() / presult.template norm<L_inf>();
 
       EXPECT_NEAR(0, result_error, result_tolerance);
     }

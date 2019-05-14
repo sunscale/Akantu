@@ -136,17 +136,20 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
 
   // make sure the vectors form a right-handed base
   Vector<Real> test_axis(3);
-  Vector<Real> v1(3), v2(3), v3(3);
+  Vector<Real> v1(3), v2(3), v3(3, 0.);
 
   if (Dim == 2) {
     for (UInt i = 0; i < Dim; ++i) {
       v1[i] = this->rot_mat(0, i);
       v2[i] = this->rot_mat(1, i);
-      v3[i] = 0.;
     }
-    v3[2] = 1.;
-    v1[2] = 0.;
-    v2[2] = 0.;
+    
+    v3.crossProduct(v1, v2);
+    if (v3.norm() < 8 * std::numeric_limits<Real>::epsilon()) {
+       AKANTU_ERROR("The axis vectors parallel.");
+    }
+    
+    v3.normalize();
   } else if (Dim == 3) {
     v1 = this->rot_mat(0);
     v2 = this->rot_mat(1);

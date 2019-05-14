@@ -73,6 +73,10 @@ template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
 
+  AKANTU_DEBUG_ASSERT(not this->finite_deformation,
+                      "finite deformation not possible in material orthotropic "
+                      "(TO BE IMPLEMENTED)");
+
   updateInternalParameters();
 
   AKANTU_DEBUG_OUT();
@@ -134,10 +138,6 @@ void MaterialElasticOrthotropic<spatial_dimension>::
     computePotentialEnergyByElement(ElementType type, UInt index,
                                     Vector<Real> & epot_on_quad_points) {
 
-  AKANTU_DEBUG_ASSERT(!this->finite_deformation,
-                      "finite deformation not possible in material orthotropic "
-                      "(TO BE IMPLEMENTED)");
-
   Array<Real>::matrix_iterator gradu_it =
       this->gradu(type).begin(spatial_dimension, spatial_dimension);
   Array<Real>::matrix_iterator gradu_end =
@@ -165,4 +165,4 @@ void MaterialElasticOrthotropic<spatial_dimension>::
 /* -------------------------------------------------------------------------- */
 INSTANTIATE_MATERIAL(elastic_orthotropic, MaterialElasticOrthotropic);
 
-} // akantu
+} // namespace akantu
