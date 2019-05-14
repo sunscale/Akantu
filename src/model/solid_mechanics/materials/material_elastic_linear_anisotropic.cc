@@ -197,11 +197,9 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
   // http://en.wikipedia.org/wiki/Voigt_notation
   AKANTU_DEBUG_IN();
 
-  Matrix<Real> strain(dim, dim);
-
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
-  this->computeStressOnQuad(strain, sigma);
+  this->computeStressOnQuad(grad_u, sigma);
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 }
