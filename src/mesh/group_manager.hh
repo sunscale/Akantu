@@ -151,6 +151,28 @@ public:
   NodeGroup & createNodeGroup(const std::string & group_name,
                               bool replace_group = false);
 
+    /// create an element group and the associated node group
+  ElementGroup & createElementGroup(const std::string & group_name,
+                                    UInt dimension = _all_dimensions,
+                                    bool replace_group = false);
+
+  /* ------------------------------------------------------------------------ */
+  /// renames an element group
+  void renameElementGroup(const std::string & name, const std::string & new_name);
+
+  /// renames a node group
+  void renameNodeGroup(const std::string & name, const std::string & new_name);
+
+  /// copy an existing element group
+  void copyElementGroup(const std::string & name,
+                        const std::string & new_name);
+
+  /// copy an existing node group
+  void copyNodeGroup(const std::string & name,
+                     const std::string & new_name);
+
+  /* ------------------------------------------------------------------------ */
+
   /// create a node group from another node group but filtered
   template <typename T>
   NodeGroup & createFilteredNodeGroup(const std::string & group_name,
@@ -158,11 +180,6 @@ public:
 
   /// destroy a node group
   void destroyNodeGroup(const std::string & group_name);
-
-  /// create an element group and the associated node group
-  ElementGroup & createElementGroup(const std::string & group_name,
-                                    UInt dimension = _all_dimensions,
-                                    bool replace_group = false);
 
   /// create an element group from another element group but filtered
   template <typename T>
@@ -295,6 +312,19 @@ public:
   UInt getNbElementGroups(UInt dimension = _all_dimensions) const;
   UInt getNbNodeGroups() { return node_groups.size(); };
 
+  bool elementGroupExists(const std::string & name) {
+    return element_groups.find(name) != element_groups.end();
+  }
+
+  bool nodeGroupExists(const std::string & name) {
+    return node_groups.find(name) != node_groups.end();
+  }
+  
+private:
+
+  template<typename GroupsType>
+  void renameGroup(GroupsType & groups, const std::string & name, const std::string & new_name);
+  
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

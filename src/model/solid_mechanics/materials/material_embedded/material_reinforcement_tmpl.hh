@@ -197,7 +197,7 @@ namespace detail {
   protected:
     ElementTypeMap<UInt> array_size_per_bg_type;
   };
-}
+} // namespace detail
 
 /**
  * Background shape derivatives need to be stored per background element
@@ -295,14 +295,11 @@ void MaterialReinforcement<Mat, dim>::initDirectingCosines() {
 
   Mesh & mesh = emodel.getInterfaceMesh();
 
-  Mesh::type_iterator type_it = mesh.firstType(1, _not_ghost);
-  Mesh::type_iterator type_end = mesh.lastType(1, _not_ghost);
-
   const UInt voigt_size = VoigtHelper<dim>::size;
   directing_cosines.initialize(voigt_size);
 
-  for (; type_it != type_end; ++type_it) {
-    computeDirectingCosines(*type_it, _not_ghost);
+  for (auto && type : mesh.elementTypes(1, _not_ghost)) {
+    computeDirectingCosines(type, _not_ghost);
     // computeDirectingCosines(*type_it, _ghost);
   }
 
@@ -318,11 +315,8 @@ void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrix(
 
   Mesh & interface_mesh = emodel.getInterfaceMesh();
 
-  Mesh::type_iterator type_it = interface_mesh.firstType(1, _not_ghost);
-  Mesh::type_iterator type_end = interface_mesh.lastType(1, _not_ghost);
-
-  for (; type_it != type_end; ++type_it) {
-    assembleStiffnessMatrix(*type_it, ghost_type);
+  for (auto && type : interface_mesh.elementTypes(1, _not_ghost)) {
+    assembleStiffnessMatrix(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -337,11 +331,8 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForces(
 
   Mesh & interface_mesh = emodel.getInterfaceMesh();
 
-  Mesh::type_iterator type_it = interface_mesh.firstType(1, _not_ghost);
-  Mesh::type_iterator type_end = interface_mesh.lastType(1, _not_ghost);
-
-  for (; type_it != type_end; ++type_it) {
-    this->assembleInternalForces(*type_it, ghost_type);
+  for (auto && type : interface_mesh.elementTypes(1, _not_ghost)) {
+    this->assembleInternalForces(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -352,13 +343,11 @@ template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::computeAllStresses(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Mesh::type_iterator it = emodel.getInterfaceMesh().firstType();
-  Mesh::type_iterator last_type = emodel.getInterfaceMesh().lastType();
-
-  for (; it != last_type; ++it) {
-    computeGradU(*it, ghost_type);
-    this->computeStress(*it, ghost_type);
-    addPrestress(*it, ghost_type);
+  Mesh & interface_mesh = emodel.getInterfaceMesh();
+  for (auto && type : interface_mesh.elementTypes(_ghost_type = ghost_type)) {
+    computeGradU(type, ghost_type);
+    this->computeStress(type, ghost_type);
+    addPrestress(type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -384,11 +373,8 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForces(
 
   Mesh & mesh = emodel.getMesh();
 
-  Mesh::type_iterator type_it = mesh.firstType(dim, ghost_type);
-  Mesh::type_iterator type_end = mesh.lastType(dim, ghost_type);
-
-  for (; type_it != type_end; ++type_it) {
-    assembleInternalForcesInterface(type, *type_it, ghost_type);
+  for (auto && mesh_type : mesh.elementTypes(dim, ghost_type)) {
+    assembleInternalForcesInterface(type, mesh_type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -521,11 +507,8 @@ void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrix(
 
   Mesh & mesh = emodel.getMesh();
 
-  Mesh::type_iterator type_it = mesh.firstType(dim, ghost_type);
-  Mesh::type_iterator type_end = mesh.lastType(dim, ghost_type);
-
-  for (; type_it != type_end; ++type_it) {
-    assembleStiffnessMatrixInterface(type, *type_it, ghost_type);
+  for (auto && mesh_type : mesh.elementTypes(dim, ghost_type)) {
+    assembleStiffnessMatrixInterface(type, mesh_type, ghost_type);
   }
 
   AKANTU_DEBUG_OUT();
@@ -637,17 +620,12 @@ Real MaterialReinforcement<Mat, dim>::getEnergy(const std::string & id) {
 
     this->computePotentialEnergyByElements();
 
-    Mesh::type_iterator it = this->element_filter.firstType(
-                            this->spatial_dimension),
-                        end = this->element_filter.lastType(
-                            this->spatial_dimension);
-
-    for (; it != end; ++it) {
+    for (auto && type : this->element_filter.elementTypes(this->spatial_dimension)) {
       FEEngine & interface_engine =
           emodel.getFEEngine("EmbeddedInterfaceFEEngine");
       epot += interface_engine.integrate(
-          this->potential_energy(*it, _not_ghost), *it, _not_ghost,
-          this->element_filter(*it, _not_ghost));
+          this->potential_energy(type, _not_ghost), type, _not_ghost,
+          this->element_filter(type, _not_ghost));
       epot *= area;
     }
 
@@ -798,4 +776,4 @@ inline void MaterialReinforcement<Mat, dim>::strainTensorToVoigtVector(
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

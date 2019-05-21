@@ -31,6 +31,9 @@
 /* -------------------------------------------------------------------------- */
 #include "boundary_functions.hh"
 #include "communicator.hh"
+#include "element_group.hh"
+#include "node_group.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -44,7 +47,7 @@ Real integrateResidual(const std::string & sub_boundary_name,
   const Array<Real> & residual = model.getInternalForce();
 
   const ElementGroup & boundary = mesh.getElementGroup(sub_boundary_name);
-  for (auto & node : boundary.getNodes()) {
+  for (auto & node : boundary.getNodeGroup().getNodes()) {
     bool is_local_node = mesh.isLocalOrMasterNode(node);
     if (is_local_node) {
       int_res += residual(node, dir);
@@ -64,8 +67,8 @@ void boundaryFix(Mesh & mesh,
 
   for (; it != end; ++it) {
     if (mesh.element_group_find(*it) == mesh.element_group_end()) {
-      mesh.createElementGroup(
-          *it, mesh.getSpatialDimension() - 1); // empty element group
+      mesh.createElementGroup(*it, mesh.getSpatialDimension() -
+                                       1); // empty element group
     }
   }
 }

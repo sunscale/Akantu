@@ -96,7 +96,7 @@ register_test(test_linear_anisotropic_explicit_python
   PACKAGE python_interface lapack
   FILES_TO_COPY patch_test_linear_fixture.py
   FILES_TO_COPY patch_test_linear_solid_mechanics_fixture.py
-  FILES_TO_COPY data/material_anisotropic.dat)
+  FILES_TO_COPY data/material_anisotropic_3.dat)
 
 
 register_test(patch_test_linear_heat_transfer_explicit_python

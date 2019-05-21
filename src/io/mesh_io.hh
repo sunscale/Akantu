@@ -81,7 +81,7 @@ public:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  std::map<UInt, std::string> & getPhysicalNameMap() { return phys_name_map; }
+  auto & getPhysicalNames() { return this->physical_names; }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -92,7 +92,7 @@ protected:
   bool canReadExtendedData;
 
   /// correspondance between a tag and physical names (if applicable)
-  std::map<UInt, std::string> phys_name_map;
+  std::map<int, std::string> physical_names;
 };
 
 /* -------------------------------------------------------------------------- */
