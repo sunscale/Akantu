@@ -294,8 +294,8 @@ namespace {
 
     std::unordered_map<size_t, size_t> node_tags;
     std::unordered_map<size_t, Element> element_tags;
-    double version;
-
+    double version{0};
+    int size_of_size_t{0};
     Mesh & mesh;
     MeshAccessor mesh_accessor;
 
@@ -345,20 +345,25 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
     file.mesh_accessor.setNbGlobalNodes(nb_nodes);
 
     size_t index;
-    double coord[3];
-    UInt spatial_dimension = nodes.getNbComponent();
-    /// for each node, read the coordinates
-    for (UInt i = 0; i < nb_nodes; ++i) {
-      UInt offset = i * spatial_dimension;
+    Vector<double> coord(3);
 
-      file.read_line(index, coord[0], coord[1], coord[2]);
+    /// for each node, read the coordinates
+    for (auto && data : enumerate(make_view(nodes, nodes.getNbComponent()))) {
+      file.read_line(index, coord(0), coord(1), coord(2));
+
+      if (index > std::numeric_limits<UInt>::max()) {
+        AKANTU_EXCEPTION(
+            "There are more nodes in this files than the index type of akantu "
+            "can handle, consider recompiling with a bigger index type");
+      }
 
       file.first_node_number = std::min(file.first_node_number, index);
       file.last_node_number = std::max(file.last_node_number, index);
 
-      /// read the coordinates
-      for (UInt j = 0; j < spatial_dimension; ++j)
-        nodes.storage()[offset + j] = coord[j];
+      for (auto && coord_data : zip(std::get<1>(data), coord)) {
+        std::get<0>(coord_data) = std::get<1>(coord_data);
+      }
+      file.node_tags[index] = std::get<0>(data);
     }
   };
 
@@ -386,23 +391,14 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
         continue;
       }
 
+      Element elem{akantu_type, 0, _not_ghost};
+
       auto & connectivity = file.mesh_accessor.getConnectivity(akantu_type);
       auto node_per_element = connectivity.getNbComponent();
       auto & read_order = this->_read_order[akantu_type];
 
       /// read tags informations
-      if (file.version == 2) {
-        UInt nb_tags;
-        sstr_elem >> nb_tags;
-        for (UInt j = 0; j < nb_tags; ++j) {
-          Int tag;
-          sstr_elem >> tag;
-
-          auto & data = file.mesh_accessor.template getData<UInt>(
-              "tag_" + std::to_string(j), akantu_type);
-          data.push_back(tag);
-        }
-      } else if (file.version == 1) {
+      if (file.version < 2) {
         Int tag0, tag1, nb_nodes; // reg-phys, reg-elem, number-of-nodes
         sstr_elem >> tag0 >> tag1 >> nb_nodes;
 
@@ -413,6 +409,17 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
         auto & data1 =
             file.mesh_accessor.template getData<UInt>("tag_1", akantu_type);
         data1.push_back(tag1);
+      } else if (file.version < 4) {
+        UInt nb_tags;
+        sstr_elem >> nb_tags;
+        for (UInt j = 0; j < nb_tags; ++j) {
+          Int tag;
+          sstr_elem >> tag;
+
+          auto & data = file.mesh_accessor.template getData<UInt>(
+              "tag_" + std::to_string(j), akantu_type);
+          data.push_back(tag);
+        }
       }
 
       Vector<UInt> local_connect(node_per_element);
@@ -424,56 +431,12 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
                             "Node number not in range : line "
                                 << file.current_line);
 
-        node_index -= file.first_node_number;
-        local_connect(read_order[j]) = node_index;
+        local_connect(read_order[j]) = file.node_tags[node_index];
       }
+
       connectivity.push_back(local_connect);
-    }
-  };
-
-  readers["$NodeData"] = [&](const std::string &) {
-    /* $NodeData
-    number-of-string-tags
-    < "string-tag" >
-    …
-    number-of-real-tags
-    < real-tag >
-    …
-    number-of-integer-tags
-    < integer-tag >
-    …
-    node-number value …
-    …
-    $EndNodeData */
-
-    auto read_data_tags = [&](auto x) {
-      UInt number_of_tags{0};
-      file.read_line(number_of_tags);
-      std::vector<decltype(x)> tags(number_of_tags);
-
-      for (auto && tag : tags) {
-        file.read_line(tag);
-      }
-      return tags;
-    };
-
-    auto && string_tags = read_data_tags(std::string{});
-    auto && real_tags [[gnu::unused]] = read_data_tags(double{});
-    auto && int_tags = read_data_tags(int{});
-
-    auto && data = file.mesh.template registerNodalData<double>(
-        trim(string_tags[0], '"'), int_tags[1]);
-    data.resize(file.mesh.getNbNodes(), 0.);
-    for (auto n [[gnu::unused]] : arange(int_tags[2])) {
-      auto && sstr = file.get_line();
-
-      int node;
-      double value;
-      sstr >> node;
-      for (auto c : arange(int_tags[1])) {
-        sstr >> value;
-        data(node - file.first_node_number, c) = value;
-      }
+      elem.element = connectivity.size() - 1;
+      file.element_tags[index] = elem;
     }
   };
 
@@ -508,7 +471,8 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
 
           sstr >> slave;
           sstr >> master;
-          file.mesh_accessor.addPeriodicSlave(slave, master);
+          file.mesh_accessor.addPeriodicSlave(file.node_tags[slave],
+                                              file.node_tags[master]);
         }
       }
     }
@@ -593,8 +557,10 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
       size_t num_nodes_in_block;
       size_t node_id{0};
 
-      // auto & grp = file.mesh.createNodeGroup("msh_" + entity_type[entity_dim] +
-      //                                        "_block_" + std::to_string(block));
+      // auto & grp = file.mesh.createNodeGroup("msh_" + entity_type[entity_dim]
+      // +
+      //                                        "_block_" +
+      //                                        std::to_string(block));
 
       if (file.version >= 4.1) {
         file.read_line(entity_dim, entity_tag, parametric, num_nodes_in_block);
@@ -606,7 +572,7 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
           size_t tag;
           file.read_line(tag);
           file.node_tags[tag] = node_id;
-          //grp.add(node_id);
+          // grp.add(node_id);
           ++node_id;
         }
 
@@ -630,7 +596,7 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
 
           nodes.push_back(pos);
           file.node_tags[tag] = node_id;
-          //grp.add(node_id);
+          // grp.add(node_id);
           ++node_id;
         }
       }
@@ -688,7 +654,7 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
         connectivity.push_back(local_connect);
         elem.element = connectivity.size() - 1;
         file.element_tags[elem_tag] = elem;
-        
+
         auto range = file.entity_tag_to_physical_tags.equal_range(entity_tag);
         for (auto it = range.first; it != range.second; ++it) {
           file.mesh.getElementGroup(this->physical_names[it->second]).add(elem);
@@ -715,13 +681,12 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
       AKANTU_ERROR("This reader can only read ASCII files.");
 
     if (file.version > 2) {
-      int size_of_size_t;
-      sstr >> size_of_size_t;
-      if (size_of_size_t > int(sizeof(UInt))) {
-        AKANTU_DEBUG_WARNING("The size of the indexes in akantu are to small "
-                             "to read this file (akantu "
-                             << sizeof(UInt) << " vs. msh file "
-                             << size_of_size_t << ")");
+      sstr >> file.size_of_size_t;
+      if (file.size_of_size_t > int(sizeof(UInt))) {
+        AKANTU_DEBUG_INFO("The size of the indexes in akantu might be to small "
+                          "to read this file (akantu "
+                          << sizeof(UInt) << " vs. msh file "
+                          << file.size_of_size_t << ")");
       }
     }
 
@@ -730,6 +695,138 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     } else {
       this->populateReaders4(file, readers);
     }
+  };
+
+  auto && read_data = [&](auto && entity_tags, auto && get_data,
+                          auto && read_data) {
+    auto read_data_tags = [&](auto x) {
+      UInt number_of_tags{0};
+      file.read_line(number_of_tags);
+      std::vector<decltype(x)> tags(number_of_tags);
+
+      for (auto && tag : tags) {
+        file.read_line(tag);
+      }
+      return tags;
+    };
+
+    auto && string_tags = read_data_tags(std::string{});
+    auto && real_tags [[gnu::unused]] = read_data_tags(double{});
+    auto && int_tags = read_data_tags(int{});
+
+    for (auto & s : string_tags) {
+      s = trim(s, '"');
+    }
+
+    auto id = string_tags[0];
+    auto size = int_tags[2];
+    auto nb_component = int_tags[1];
+    auto & data = get_data(id, size, nb_component);
+
+    for (auto n [[gnu::unused]] : arange(size)) {
+      auto && sstr = file.get_line();
+
+      size_t tag;
+      sstr >> tag;
+      const auto & entity = entity_tags[tag];
+      read_data(entity, sstr, data, nb_component);
+    }
+  };
+
+  readers["$NodeData"] = [&](const std::string &) {
+    /* $NodeData
+       numStringTags(ASCII int)
+       stringTag(string) ...
+       numRealTags(ASCII int)
+       realTag(ASCII double) ...
+       numIntegerTags(ASCII int)
+       integerTag(ASCII int) ...
+       nodeTag(size_t) value(double) ...
+       ...
+       $EndNodeData */
+    read_data(file.node_tags,
+              [&](auto && id, auto && size [[gnu::unused]],
+                  auto && nb_component [[gnu::unused]]) -> Array<double> & {
+                auto & data = file.mesh.template registerNodalData<double>(
+                    id, nb_component);
+                data.resize(size);
+                return data;
+              },
+              [&](auto && node, auto && sstr, auto && data,
+                  auto && nb_component [[gnu::unused]]) {
+                for (auto c : arange(nb_component)) {
+                  sstr >> data(node, c);
+                }
+              });
+  };
+
+  readers["$ElementData"] = [&](const std::string &) {
+    /* $ElementData
+       numStringTags(ASCII int)
+       stringTag(string) ...
+       numRealTags(ASCII int)
+       realTag(ASCII double) ...
+       numIntegerTags(ASCII int)
+       integerTag(ASCII int) ...
+       elementTag(size_t) value(double) ...
+       ...
+       $EndElementData
+    */
+    read_data(
+        file.element_tags,
+        [&](auto && id, auto && size [[gnu::unused]],
+            auto && nb_component
+            [[gnu::unused]]) -> ElementTypeMapArray<double> & {
+          file.mesh.template registerElementalData<double>(id);
+          return file.mesh.template getElementalData<double>(id);
+        },
+        [&](auto && element, auto && sstr, auto && data, auto && nb_component) {
+          if (not data.exists(element.type)) {
+            data.alloc(mesh.getNbElement(element.type), nb_component,
+                       element.type, element.ghost_type);
+          }
+          auto & data_array = data(element.type);
+          for (auto c : arange(nb_component)) {
+            sstr >> data_array(element.element, c);
+          }
+        });
+  };
+
+  readers["$ElementNodeData"] = [&](const std::string &) {
+    /* $ElementNodeData
+       numStringTags(ASCII int)
+       stringTag(string) ...
+       numRealTags(ASCII int)
+       realTag(ASCII double) ...
+       numIntegerTags(ASCII int)
+       integerTag(ASCII int) ...
+       elementTag(size_t) value(double) ...
+       ...
+       $EndElementNodeData
+    */
+    read_data(
+        file.element_tags,
+        [&](auto && id, auto && size [[gnu::unused]],
+            auto && nb_component
+            [[gnu::unused]]) -> ElementTypeMapArray<double> & {
+          file.mesh.template registerElementalData<double>(id);
+          auto & data = file.mesh.template getElementalData<double>(id);
+          data.isNodal(true);
+          return data;
+        },
+        [&](auto && element, auto && sstr, auto && data, auto && nb_component) {
+          int nb_nodes_per_element;
+          sstr >> nb_nodes_per_element;
+          if (not data.exists(element.type)) {
+            data.alloc(mesh.getNbElement(element.type),
+                       nb_component * nb_nodes_per_element, element.type,
+                       element.ghost_type);
+          }
+          auto & data_array = data(element.type);
+          for (auto c : arange(nb_component)) {
+            sstr >> data_array(element.element, c);
+          }
+        });
   };
 
   readers["$PhysicalNames"] = [&](const std::string &) {
@@ -782,7 +879,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
   // mesh.updateTypesOffsets(_not_ghost);
 
-  if (file.version <= 2) {
+  if (file.version < 4) {
     this->constructPhysicalNames("tag_0", mesh);
     if (file.has_physical_names)
       mesh.createGroupsFromMeshData<std::string>("physical_names");
@@ -800,7 +897,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
 
   outfile << "$MeshFormat"
           << "\n";
-  outfile << "2.1 0 8"
+  outfile << "2.2 0 8"
           << "\n";
   outfile << "$EndMeshFormat"
           << "\n";
@@ -838,10 +935,14 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   }
   outfile << nb_elements << "\n";
 
+  std::map<Element, size_t> element_to_msh_element;
+
   UInt element_idx = 1;
+  Element element;
   for (auto && type :
        mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
     const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
+    element.type = type;
 
     UInt * tag[2] = {nullptr, nullptr};
     if (mesh.hasData<UInt>("tag_0", type, _not_ghost)) {
@@ -854,26 +955,29 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
       tag[1] = data_tag_1.storage();
     }
 
-    for (UInt i = 0; i < connectivity.size(); ++i) {
-      UInt offset = i * connectivity.getNbComponent();
+    for (auto && data :
+         enumerate(make_view(connectivity, connectivity.getNbComponent()))) {
+      element.element = std::get<0>(data);
+      const auto & conn = std::get<1>(data);
+      element_to_msh_element[element] = element_idx;
+
       outfile << element_idx << " " << _akantu_to_msh_element_types[type]
               << " 2";
 
       /// \todo write the real data in the file
       for (UInt t = 0; t < 2; ++t)
         if (tag[t])
-          outfile << " " << tag[t][i];
+          outfile << " " << tag[t][element.element];
         else
           outfile << " 0";
 
-      for (UInt j = 0; j < connectivity.getNbComponent(); ++j) {
-        outfile << " " << connectivity.storage()[offset + j] + 1;
+      for (auto && c : conn) {
+        outfile << " " << c + 1;
       }
       outfile << "\n";
       element_idx++;
     }
   }
-
   outfile << "$EndElements"
           << "\n";
 
@@ -903,6 +1007,50 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
         outfile << "\n";
       }
       outfile << "$EndNodeData"
+              << "\n";
+    }
+  }
+
+  if (mesh.hasData(MeshDataType::_elemental)) {
+    auto && tags = mesh.getTagNames();
+    for (auto && tag : tags) {
+      auto && data = mesh.getElementalData<double>(tag);
+      if (mesh.getTypeCode(tag, MeshDataType::_elemental) != _tc_real or
+          not data.isNodal())
+        continue;
+
+      auto size = data.size();
+      if (size == 0)
+        continue;
+      auto && nb_components = data.getNbComponents();
+      auto nb_component = nb_components(*(data.elementTypes().begin()));
+
+      outfile << "$ElementData"
+              << "\n";
+      outfile << "1"
+              << "\n";
+      outfile << "\"" << tag << "\"\n";
+      outfile << "1\n0.0"
+              << "\n";
+      outfile << "3\n0"
+              << "\n";
+      outfile << nb_component << "\n";
+      outfile << size << "\n";
+
+      Element element;
+      for (auto type : data.elementTypes()) {
+        element.type = type;
+        for (auto && _ :
+             enumerate(make_view(data(type), nb_components(type)))) {
+          element.element = std::get<0>(_);
+          outfile << element_to_msh_element[element];
+          for (auto && v : std::get<1>(_)) {
+            outfile << " " << v;
+          }
+          outfile << "\n";
+        }
+      }
+      outfile << "$EndElementData"
               << "\n";
     }
   }

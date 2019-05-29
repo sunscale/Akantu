@@ -533,6 +533,8 @@ public:
     return comp_func(type, ghostType());
   }
 
+  virtual bool isNodal() const { return false; }
+
 protected:
   CompFunc comp_func;
   UInt spatial_dimension;
@@ -591,6 +593,8 @@ public:
     return res;
   }
 
+  bool isNodal() const override { return with_nb_nodes_per_element; }
+
 protected:
   const Mesh & mesh;
   bool with_nb_element;
@@ -631,6 +635,7 @@ template <class Func>
 void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
                                                      const T & default_value,
                                                      bool do_not_default) {
+  this->is_nodal = f.isNodal();
   auto ghost_type = f.ghostType();
   for (auto & type : f.elementTypes()) {
     if (not this->exists(type, ghost_type))
@@ -743,6 +748,35 @@ inline const T & ElementTypeMapArray<T, SupportType>::
 operator()(const Element & element, UInt component) const {
   return this->operator()(element.type, element.ghost_type)(element.element,
                                                             component);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+UInt ElementTypeMapArray<T, SupportType>::sizeImpl(
+    UInt spatial_dimension, const GhostType & ghost_type, const ElementKind & kind) const {
+  UInt size = 0;
+  for(auto && type : this->elementTypes(spatial_dimension, ghost_type, kind)) {
+    size += this->operator()(type, ghost_type).size();
+  }
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+template <typename... pack>
+UInt ElementTypeMapArray<T, SupportType>::size(pack &&... _pack) const {
+  UInt size = 0;
+  bool all_ghost_types = OPTIONAL_NAMED_ARG(all_ghost_types, true);
+  GhostType requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _not_ghost);
+
+  for (auto ghost_type : ghost_types) {
+    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+      continue;
+
+    size += sizeImpl(OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+                     ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined));
+  }
+  return size;
 }
 
 } // namespace akantu
