@@ -152,14 +152,9 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
       this->synchronizer.getCommunications();
 
   { // send schemes
-    auto it = master_info.begin_reinterpret(2, master_info.size() / 2);
-    auto end = master_info.end_reinterpret(2, master_info.size() / 2);
-
     std::map<UInt, Array<UInt>> send_array_per_proc;
 
-    for (; it != end; ++it) {
-      const Vector<UInt> & send_info = *it;
-
+    for (const auto & send_info : make_view(master_info, 2)) {
       send_array_per_proc[send_info(0)].push_back(send_info(1));
     }
 
@@ -171,6 +166,8 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
       std::transform(sends.begin(), sends.end(), sends.begin(),
                      [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
       scheme.copy(sends);
+      std::cout << "Proc " << rank << " sends " << sends.size()
+                << " nodes to proc " << send_schemes.first << std::endl;
     }
   }
 
@@ -193,6 +190,9 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
                      [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
 
       scheme.copy(recvs);
+      std::cout << "Proc " << rank << " receives " << recvs.size()
+                << " nodes to proc " << recv_schemes.first << std::endl;
+
     }
   }
 
@@ -239,7 +239,7 @@ void NodeInfoPerProc::receiveMissingPeriodic(
   std::size_t nb_nodes;
   buffer >> nb_nodes;
 
-  for (auto _[[gnu::unused]] : arange(nb_nodes)) {
+  for (auto _ [[gnu::unused]] : arange(nb_nodes)) {
     Vector<Real> pos(spatial_dimension);
     Int prank;
     buffer >> pos;
@@ -346,11 +346,9 @@ void MasterNodeInfoPerProc::synchronizeNodes() {
       nodes_to_send = &local_nodes;
     }
 
-    Array<UInt>::const_scalar_iterator it = nodespp.begin();
-    Array<UInt>::const_scalar_iterator end = nodespp.end();
     /// get the coordinates for the selected nodes
-    for (; it != end; ++it) {
-      Vector<Real> coord(nodes.storage() + spatial_dimension * *it,
+    for (const auto & node : nodespp) {
+      Vector<Real> coord(nodes.storage() + spatial_dimension * node,
                          spatial_dimension);
       nodes_to_send->push_back(coord);
     }

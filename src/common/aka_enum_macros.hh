@@ -27,6 +27,9 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
+#include <string>
+/* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_AKA_ENUM_MACROS_HH__
 #define __AKANTU_AKA_ENUM_MACROS_HH__
 
@@ -97,7 +100,21 @@
         BOOST_PP_SEQ_FOR_EACH_I(                                               \
             AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
             BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE, prefix, list))};     \
-    type = convert.at(str);                                                    \
+    try {                                                                      \
+      type = convert.at(str);                                                  \
+    } catch (std::out_of_range &) {                                            \
+      std::ostringstream values;                                               \
+      std::for_each(convert.begin(), convert.end(), [&values](auto && pair) {  \
+        static bool first = true;                                              \
+        if (not first)                                                         \
+          values << ", ";                                                      \
+        values << "\"" << pair.first << "\"";                                  \
+        first = false;                                                         \
+      });                                                                      \
+      AKANTU_EXCEPTION("The value " << str << " is not a valid "               \
+                                    << BOOST_PP_STRINGIZE(type_name)           \
+                                    << " valid values are " << values.str());  \
+    }                                                                          \
     return stream;                                                             \
   }
 

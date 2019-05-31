@@ -232,8 +232,8 @@ void SparseMatrixAIJ::copyProfile(const SparseMatrix & other)  {
 
   SparseMatrix::clearProfile();
 
-  this->irn = A.irn;
-  this->jcn = A.jcn;
+  this->irn.copy(A.irn);
+  this->jcn.copy(A.jcn);
 
   this->irn_jcn_k.clear();
 
@@ -250,7 +250,7 @@ void SparseMatrixAIJ::copyProfile(const SparseMatrix & other)  {
   this->a.set(0.);
   this->size_ = A.size_;
 
-  this->profile_release++;
+  this->profile_release = A.profile_release;
   this->value_release++;
 }
 
