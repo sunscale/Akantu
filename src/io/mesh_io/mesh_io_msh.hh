@@ -102,8 +102,15 @@ protected:
 
   /// correspondence between akantu element types and msh element types
   std::map<ElementType, MSHElementType> _akantu_to_msh_element_types;
+
+protected:
+  template <typename File, typename Readers>
+  void populateReaders2(File & file, Readers & readers);
+
+  template <typename File, typename Readers>
+  void populateReaders4(File & file, Readers & readers);
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_IO_MSH_HH__ */

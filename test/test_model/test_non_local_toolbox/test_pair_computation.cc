@@ -155,10 +155,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
 
   /// loop in a n^2 way over all the quads to generate the pairs
   Real neighborhood_radius = 0.5;
-  Mesh::type_iterator it_1 =
-      mesh.firstType(spatial_dimension, _not_ghost, kind);
-  Mesh::type_iterator last_type_1 =
-      mesh.lastType(spatial_dimension, _not_ghost, kind);
+
   IntegrationPoint q1;
   IntegrationPoint q2;
   GhostType ghost_type_1 = _not_ghost;
@@ -166,8 +163,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
   Vector<Real> q1_coords(spatial_dimension);
   Vector<Real> q2_coords(spatial_dimension);
 
-  for (; it_1 != last_type_1; ++it_1) {
-    ElementType type_1 = *it_1;
+  for (auto type_1 : mesh.elementTypes(spatial_dimension, _not_ghost, kind)) {
     q1.type = type_1;
     UInt nb_elements_1 = mesh.getNbElement(type_1, ghost_type_1);
     UInt nb_quads_1 = model.getFEEngine().getNbIntegrationPoints(type_1);
@@ -186,12 +182,10 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
              gt != ghost_type_t::end(); ++gt) {
           GhostType ghost_type_2 = *gt;
           q2.ghost_type = ghost_type_2;
-          Mesh::type_iterator it_2 =
-              mesh.firstType(spatial_dimension, ghost_type_2, kind);
-          Mesh::type_iterator last_type_2 =
-              mesh.lastType(spatial_dimension, ghost_type_2, kind);
-          for (; it_2 != last_type_2; ++it_2) {
-            ElementType type_2 = *it_2;
+
+          for (auto type_2 :
+               mesh.elementTypes(spatial_dimension, ghost_type_2, kind)) {
+
             q2.type = type_2;
             UInt nb_elements_2 = mesh.getNbElement(type_2, ghost_type_2);
             UInt nb_quads_2 =

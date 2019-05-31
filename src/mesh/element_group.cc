@@ -49,6 +49,7 @@
 #endif
 
 namespace akantu {
+
 /* -------------------------------------------------------------------------- */
 ElementGroup::ElementGroup(const std::string & group_name, const Mesh & mesh,
                            NodeGroup & node_group, UInt dimension,
@@ -61,7 +62,7 @@ ElementGroup::ElementGroup(const std::string & group_name, const Mesh & mesh,
 #if defined(AKANTU_USE_IOHELPER)
   this->registerDumper<DumperParaview>("paraview_" + group_name, group_name,
                                        true);
-  this->addDumpFilteredMesh(mesh, elements, node_group.getNodes(), dimension);
+  this->addDumpFilteredMesh(mesh, elements, node_group.getNodes(), _all_dimensions);
 #endif
 
   AKANTU_DEBUG_OUT();
@@ -181,6 +182,11 @@ void ElementGroup::fillFromNodeGroup() {
   }
 
   this->optimize();
+}
+
+/* -------------------------------------------------------------------------- */
+void ElementGroup::addDimension(UInt dimension) {
+  this->dimension = std::max(dimension, this->dimension);
 }
 
 /* -------------------------------------------------------------------------- */

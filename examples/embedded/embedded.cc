@@ -46,9 +46,6 @@ int main(int argc, char * argv[]) {
   Mesh mesh(dim);
   mesh.read("concrete.msh");
 
-  // Necessary to define physical names
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
-
   // Loading the reinforcement mesh
   Mesh reinforcement_mesh(dim, "reinforcement_mesh");
 
@@ -58,9 +55,6 @@ int main(int argc, char * argv[]) {
     reinforcement_mesh.read("reinforcement.msh");
   } catch (debug::Exception & e) {
   }
-
-  // Necessary to define physical names as well
-  reinforcement_mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   // Model creation
   EmbeddedInterfaceModel model(mesh, reinforcement_mesh, dim);
@@ -79,8 +73,8 @@ int main(int argc, char * argv[]) {
   // Dumping the concrete
   model.setBaseName("concrete");
   model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("force");
-  model.addDumpFieldVector("residual");
+  model.addDumpFieldVector("external_force");
+  model.addDumpFieldVector("internal_force");
   model.addDumpFieldTensor("stress");
 
   // Dumping the reinforcement

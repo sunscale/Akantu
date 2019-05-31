@@ -6,10 +6,14 @@
             "exclude": "(^third-party/)"
         },
 	"python": {
-            "type": "pyflakes",
-	    "bin": "pyflakes3",
+            "type": "flake8",
             "include": [ "(\\.py$)" ],
-            "exclude": "(^third-party/)"
+            "exclude": "(^third-party/)",
+	    "severity.rules": {
+		"(^E)": "error",
+		"(^W)": "warning",
+		"(^F)": "advice"
+	    }
         },
 
         "merges": {

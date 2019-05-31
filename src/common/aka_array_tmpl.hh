@@ -260,14 +260,15 @@ public:
 
 protected:
   // deallocate the memory
-  virtual void deallocate() {
-    free(this->values);
-  }
+  virtual void deallocate() { free(this->values); }
 
   // allocate the memory
   virtual inline void allocate(UInt size, UInt nb_component) {
-    this->values =
-        reinterpret_cast<T *>(malloc(nb_component * size * sizeof(T)));
+    if (size != 0) { // malloc can return a non NULL pointer in case size is 0
+      this->values =
+          static_cast<T *>(std::malloc(nb_component * size * sizeof(T)));
+    }
+
     if (this->values == nullptr and size != 0) {
       throw std::bad_alloc();
     }
@@ -348,8 +349,8 @@ public:
     UInt tmp_size = this->size_;
     this->resize(size);
     if (size > tmp_size) {
-      std::fill_n(values + this->nb_component * tmp_size, (size - tmp_size),
-                  val);
+      std::fill_n(values + this->nb_component * tmp_size,
+                  (size - tmp_size) * this->nb_component, val);
     }
   }
 
@@ -1216,37 +1217,35 @@ namespace detail {
 
   public:
     ArrayView(Array && array, Ns... ns)
-        : array(std::forward<Array>(array)), sizes(std::move(ns)...) {}
+        : array(array), sizes(std::move(ns)...) {}
 
     ArrayView(ArrayView && array_view) = default;
 
     ArrayView & operator=(const ArrayView & array_view) = default;
-    ArrayView & operator=(ArrayView && array_view) {
-      if(&array_view != this) {
-        std::swap(array, array_view.array);
-        std::swap(sizes, array_view.sizes);
-      }
-      return *this;
-    }
+    ArrayView & operator=(ArrayView && array_view) = default;
 
     decltype(auto) begin() {
       return aka::apply(
-          [&](auto &&... ns) { return array.begin_reinterpret(ns...); }, sizes);
+          [&](auto &&... ns) { return array.get().begin_reinterpret(ns...); },
+          sizes);
     }
 
     decltype(auto) begin() const {
       return aka::apply(
-          [&](auto &&... ns) { return array.begin_reinterpret(ns...); }, sizes);
+          [&](auto &&... ns) { return array.get().begin_reinterpret(ns...); },
+          sizes);
     }
 
     decltype(auto) end() {
       return aka::apply(
-          [&](auto &&... ns) { return array.end_reinterpret(ns...); }, sizes);
+          [&](auto &&... ns) { return array.get().end_reinterpret(ns...); },
+          sizes);
     }
 
     decltype(auto) end() const {
       return aka::apply(
-          [&](auto &&... ns) { return array.end_reinterpret(ns...); }, sizes);
+          [&](auto &&... ns) { return array.get().end_reinterpret(ns...); },
+          sizes);
     }
 
     decltype(auto) size() const {
@@ -1256,7 +1255,7 @@ namespace detail {
     decltype(auto) dims() const { return std::tuple_size<tuple>::value - 1; }
 
   private:
-    Array array;
+    std::reference_wrapper<std::remove_reference_t<Array>> array;
     tuple sizes;
   };
 } // namespace detail

@@ -11,6 +11,15 @@ def cmake_to_list(cmake_list):
         return []
     return cmake_list.split(';')
 
+# https://stackoverflow.com/a/29634231
+# Remove the "-Wstrict-prototypes" compiler option, which isn't valid for C++.
+import distutils.sysconfig
+cfg_vars = distutils.sysconfig.get_config_vars()
+for key, value in cfg_vars.items():
+    if type(value) == str:
+        cfg_vars[key] = value.replace("-Wstrict-prototypes", "")
+# ==================================
+
 setup(
     name='akantu',
     license='LGPLv3',
@@ -23,6 +32,7 @@ setup(
         language='c++',
         libraries=cmake_to_list('@_akantu_lib_name@'),
         library_dirs=cmake_to_list('@_lib_dirs@'),
+        runtime_library_dirs=cmake_to_list('@_lib_dirs@'),
         extra_compile_args=cmake_to_list('@_flags@')
     )]
 )
