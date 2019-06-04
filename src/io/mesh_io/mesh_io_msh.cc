@@ -299,7 +299,7 @@ namespace {
     Mesh & mesh;
     MeshAccessor mesh_accessor;
 
-    std::multimap<int, int> entity_tag_to_physical_tags;
+    std::multimap<std::pair<int, int>, int> entity_tag_to_physical_tags;
 
     File(const std::string & filename, Mesh & mesh)
         : filename(filename), mesh(mesh), mesh_accessor(mesh) {
@@ -528,7 +528,7 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
             file.mesh.getElementGroup(physical_name).addDimension(entity_dim);
           }
           file.entity_tag_to_physical_tags.insert(
-              std::make_pair(tag, phys_tag));
+              std::make_pair(std::make_pair(tag, entity_dim), phys_tag));
         }
       }
     }
@@ -552,15 +552,13 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
           "can handle, consider recompiling with a bigger index type");
     }
 
+    size_t node_id{0};
+
     for (auto block [[gnu::unused]] : arange(num_blocks)) {
       int entity_dim, entity_tag, parametric;
       size_t num_nodes_in_block;
-      size_t node_id{0};
-
-      // auto & grp = file.mesh.createNodeGroup("msh_" + entity_type[entity_dim]
-      // +
-      //                                        "_block_" +
-      //                                        std::to_string(block));
+      Vector<double> pos(3);
+      Vector<double> real_pos(nodes.getNbComponent());
 
       if (file.version >= 4.1) {
         file.read_line(entity_dim, entity_tag, parametric, num_nodes_in_block);
@@ -572,21 +570,21 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
           size_t tag;
           file.read_line(tag);
           file.node_tags[tag] = node_id;
-          // grp.add(node_id);
           ++node_id;
         }
 
         for (auto _ [[gnu::unused]] : arange(num_nodes_in_block)) {
-          Vector<double> pos(3);
           file.read_line(pos(_x), pos(_y), pos(_z));
-          nodes.push_back(pos);
+          for (auto data : zip(real_pos, pos)) {
+            std::get<0>(data) = std::get<1>(data);
+          }
+          nodes.push_back(real_pos);
         }
       } else {
         file.read_line(entity_tag, entity_dim, parametric, num_nodes_in_block);
 
         for (auto _ [[gnu::unused]] : arange(num_nodes_in_block)) {
           size_t tag;
-          Vector<double> pos(3);
           file.read_line(tag, pos(_x), pos(_y), pos(_z));
 
           if (file.version < 4.1) {
@@ -594,9 +592,11 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
             file.last_node_number = std::max(file.last_node_number, tag);
           }
 
-          nodes.push_back(pos);
+          for (auto data : zip(real_pos, pos)) {
+            std::get<0>(data) = std::get<1>(data);
+          }
+          nodes.push_back(real_pos);
           file.node_tags[tag] = node_id;
-          // grp.add(node_id);
           ++node_id;
         }
       }
@@ -636,6 +636,14 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
       Vector<UInt> local_connect(connectivity.getNbComponent());
       auto && read_order = this->_read_order[akantu_type];
 
+      auto & data0 =
+          file.mesh_accessor.template getData<UInt>("tag_0", akantu_type);
+      data0.resize(data0.size() + num_elements_in_block, 0);
+
+      auto & physical_data = file.mesh_accessor.template getData<std::string>(
+          "physical_names", akantu_type);
+      physical_data.resize(physical_data.size() + num_elements_in_block, "");
+
       for (auto _ [[gnu::unused]] : arange(num_elements_in_block)) {
         auto && sstr_elem = file.get_line();
         size_t elem_tag;
@@ -655,11 +663,24 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
         elem.element = connectivity.size() - 1;
         file.element_tags[elem_tag] = elem;
 
-        auto range = file.entity_tag_to_physical_tags.equal_range(entity_tag);
+        auto range = file.entity_tag_to_physical_tags.equal_range(
+            std::make_pair(entity_tag, entity_dim));
+        bool first = true;
         for (auto it = range.first; it != range.second; ++it) {
-          file.mesh.getElementGroup(this->physical_names[it->second]).add(elem);
+          const auto & str = this->physical_names[it->second];
+          if (first) {
+            data0(elem.element) =
+                it->second; // for compatibility with version 2
+            physical_data(elem.element) = str;
+            first = false;
+          }
+          file.mesh.getElementGroup(str).add(elem, true, false);
         }
       }
+    }
+
+    for (auto && element_group : file.mesh.iterateElementGroups()) {
+      element_group.getNodeGroup().optimize();
     }
   };
 }
@@ -878,7 +899,6 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
   }
 
   // mesh.updateTypesOffsets(_not_ghost);
-
   if (file.version < 4) {
     this->constructPhysicalNames("tag_0", mesh);
     if (file.has_physical_names)

@@ -132,6 +132,14 @@ public:
   decltype(auto) iterateNodeGroups() const {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
   }
+
+  decltype(auto) iterateElementGroups() {
+    return make_dereference_adaptor(make_values_adaptor(element_groups));
+  }
+  decltype(auto) iterateElementGroups() const {
+    return make_dereference_adaptor(make_values_adaptor(element_groups));
+  }
+
 #endif
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
@@ -301,7 +309,7 @@ protected:
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(ElementGroups, element_groups, const ElementGroups &);
+  //AKANTU_GET_MACRO(ElementGroups, element_groups, const ElementGroups &);
 
   const ElementGroup & getElementGroup(const std::string & name) const;
   const NodeGroup & getNodeGroup(const std::string & name) const;

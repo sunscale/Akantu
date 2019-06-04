@@ -80,8 +80,8 @@ public:
   virtual void applyBC() {
     auto & boundary = this->model->getBlockedDOFs();
 
-    for (auto & eg : mesh->getElementGroups()) {
-      for (const auto & node : eg.second->getNodeGroup()) {
+    for (auto & eg : mesh->iterateElementGroups()) {
+      for (const auto & node : eg.getNodeGroup()) {
         for (UInt s = 0; s < boundary.getNbComponent(); ++s) {
           boundary(node, s) = true;
         }
@@ -91,8 +91,8 @@ public:
 
   virtual void applyBConDOFs(const Array<Real> & dofs) {
     const auto & coordinates = this->mesh->getNodes();
-    for (auto & eg : this->mesh->getElementGroups()) {
-      for (const auto & node : eg.second->getNodeGroup()) {
+    for (auto & eg : this->mesh->iterateElementGroups()) {
+      for (const auto & node : eg.getNodeGroup()) {
         this->setLinearDOF(dofs.begin(dofs.getNbComponent())[node],
                            coordinates.begin(this->dim)[node]);
       }

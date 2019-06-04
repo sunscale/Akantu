@@ -82,10 +82,9 @@ akantu::Mesh::getNbElement(const UInt spatial_dimension = _all_dimensions,
                            const ElementKind& kind = _ek_not_defined) const;
 
 %extend akantu::Mesh {
-
-  PyObject * getElementGroups(){
-    return akantu::PythonFunctor::convertToPython($self->getElementGroups());
-  }
+  // PyObject * getElementGroups(){
+  //   return akantu::PythonFunctor::convertToPython($self->getElementGroups());
+  // }
 
   PyObject * getAllConnectivities(){
     return akantu::PythonFunctor::convertToPython($self->getConnectivities());

@@ -183,7 +183,7 @@ public:
         : ElementTypesIteratorHelper(
               container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
               OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
-              OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
+              OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined)) {}
 
     ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
     ElementTypesIteratorHelper &
@@ -205,7 +205,7 @@ private:
   ElementTypesIteratorHelper
   elementTypesImpl(UInt dim = _all_dimensions,
                    GhostType ghost_type = _not_ghost,
-                   ElementKind kind = _ek_regular) const;
+                   ElementKind kind = _ek_not_defined) const;
 
   template <typename... pack>
   ElementTypesIteratorHelper
