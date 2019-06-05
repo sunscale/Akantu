@@ -379,9 +379,6 @@ DOFManager::registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) {
 
   this->system_size += nb_total_pure_local;
 
-  this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
-  this->global_equation_number.resize(this->local_system_size, -1);
-
   // updating the dofs data after counting is finished
   switch (support_type) {
   case _dst_nodal: {
@@ -708,6 +705,8 @@ void DOFManager::onNodesAdded(const Array<UInt> & nodes_list,
       this->updateNodalDOFs(dof_id, new_nodes_list);
     }
   }
+
+  this->resizeGlobalArrays();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -812,6 +811,9 @@ void DOFManager::updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
   dof_data.associated_nodes.reserve(dof_data.associated_nodes.size() +
                                     nb_local_dofs_added);
 
+  this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
+  this->global_equation_number.resize(this->local_system_size, -1);
+
   std::unordered_map<std::pair<UInt, UInt>, UInt> masters_dofs;
 
   // update per dof info
@@ -893,6 +895,9 @@ void DOFManager::updateDOFsData(DOFData & dof_data, UInt nb_new_local_dofs,
   UInt first_local_dof_id, first_global_dof_id;
   std::tie(first_local_dof_id, first_global_dof_id) =
       computeFirstDOFIDs(nb_new_local_dofs, nb_new_pure_local);
+
+  this->dofs_flag.resize(this->local_system_size, NodeFlag::_normal);
+  this->global_equation_number.resize(this->local_system_size, -1);
 
   // update per dof info
   for (auto _ [[gnu::unused]] : arange(nb_new_local_dofs)) {

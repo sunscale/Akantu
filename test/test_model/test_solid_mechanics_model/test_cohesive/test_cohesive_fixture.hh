@@ -118,11 +118,14 @@ public:
 
     mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
 
-#define debug_ 0
+#define debug_ 1
 
 #if debug_
     this->model->addDumpFieldVector("displacement");
     this->model->addDumpFieldVector("velocity");
+    this->model->addDumpFieldVector("internal_force");
+    this->model->addDumpFieldVector("external_force");
+    this->model->addDumpField("blocked_dofs");
     this->model->addDumpField("stress");
     this->model->addDumpField("strain");
     this->model->assembleInternalForces();
@@ -239,7 +242,7 @@ public:
     auto direction = _y;
     if(dim == 1) direction = _x;
     auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
-    nb_steps = length / 2. / speed / model->getTimeStep();
+    nb_steps = 2 * length / 2. / speed / model->getTimeStep();
 
     SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
                  ":" + std::to_string(type_2));
@@ -307,28 +310,28 @@ using AnalysisMethodTypes =
     std::tuple<analysis_method_t<_explicit_lumped_mass>>;
 
 using coh_types = gtest_list_t<std::tuple<
-    std::tuple<element_type_t<_cohesive_1d_2>, element_type_t<_segment_2>,
-               element_type_t<_segment_2>>,
-    std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_triangle_3>,
-               element_type_t<_triangle_3>>,
-    std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_quadrangle_4>,
-               element_type_t<_quadrangle_4>>,
-    std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_triangle_3>,
-               element_type_t<_quadrangle_4>>,
-    std::tuple<element_type_t<_cohesive_2d_6>, element_type_t<_triangle_6>,
-               element_type_t<_triangle_6>>,
-    std::tuple<element_type_t<_cohesive_2d_6>, element_type_t<_quadrangle_8>,
-               element_type_t<_quadrangle_8>>,
-    std::tuple<element_type_t<_cohesive_2d_6>, element_type_t<_triangle_6>,
-               element_type_t<_quadrangle_8>>,
-    std::tuple<element_type_t<_cohesive_3d_6>, element_type_t<_tetrahedron_4>,
-               element_type_t<_tetrahedron_4>>,
-    std::tuple<element_type_t<_cohesive_3d_12>, element_type_t<_tetrahedron_10>,
-               element_type_t<_tetrahedron_10>> /*,
-    std::tuple<element_type_t<_cohesive_3d_8>, element_type_t<_hexahedron_8>,
-               element_type_t<_hexahedron_8>>,
-    std::tuple<element_type_t<_cohesive_3d_16>, element_type_t<_hexahedron_20>,
-               element_type_t<_hexahedron_20>>*/>>;
+    std::tuple<_element_type_cohesive_1d_2, _element_type_segment_2,
+               _element_type_segment_2>,
+    std::tuple<_element_type_cohesive_2d_4, _element_type_triangle_3,
+               _element_type_triangle_3>,
+    std::tuple<_element_type_cohesive_2d_4, _element_type_quadrangle_4,
+               _element_type_quadrangle_4>,
+    std::tuple<_element_type_cohesive_2d_4, _element_type_triangle_3,
+               _element_type_quadrangle_4>,
+    std::tuple<_element_type_cohesive_2d_6, _element_type_triangle_6,
+               _element_type_triangle_6>,
+    std::tuple<_element_type_cohesive_2d_6, _element_type_quadrangle_8,
+               _element_type_quadrangle_8>,
+    std::tuple<_element_type_cohesive_2d_6, _element_type_triangle_6,
+               _element_type_quadrangle_8>,
+    std::tuple<_element_type_cohesive_3d_6, _element_type_tetrahedron_4,
+               _element_type_tetrahedron_4>,
+    std::tuple<_element_type_cohesive_3d_12, _element_type_tetrahedron_10,
+               _element_type_tetrahedron_10> /*,
+    std::tuple<_element_type_cohesive_3d_8, _element_type_hexahedron_8,
+               _element_type_hexahedron_8>,
+    std::tuple<_element_type_cohesive_3d_16, _element_type_hexahedron_20,
+               _element_type_hexahedron_20>*/>>;
 
 TYPED_TEST_CASE(TestSMMCFixture, coh_types);
 
