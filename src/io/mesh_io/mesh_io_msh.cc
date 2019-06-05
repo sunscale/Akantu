@@ -572,12 +572,13 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
           file.node_tags[tag] = node_id;
           ++node_id;
         }
-
+          
         for (auto _ [[gnu::unused]] : arange(num_nodes_in_block)) {
           file.read_line(pos(_x), pos(_y), pos(_z));
-          for (auto data : zip(real_pos, pos)) {
+          for (auto && data : zip(real_pos, pos)) {
             std::get<0>(data) = std::get<1>(data);
           }
+
           nodes.push_back(real_pos);
         }
       } else {
@@ -592,9 +593,10 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
             file.last_node_number = std::max(file.last_node_number, tag);
           }
 
-          for (auto data : zip(real_pos, pos)) {
+          for (auto && data : zip(real_pos, pos)) {
             std::get<0>(data) = std::get<1>(data);
           }
+
           nodes.push_back(real_pos);
           file.node_tags[tag] = node_id;
           ++node_id;
@@ -667,14 +669,16 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
             std::make_pair(entity_tag, entity_dim));
         bool first = true;
         for (auto it = range.first; it != range.second; ++it) {
-          const auto & str = this->physical_names[it->second];
+          auto phys_it = this->physical_names.find(it->second);
           if (first) {
             data0(elem.element) =
                 it->second; // for compatibility with version 2
-            physical_data(elem.element) = str;
+            if (phys_it != this->physical_names.end())
+              physical_data(elem.element) = phys_it->second;
             first = false;
           }
-          file.mesh.getElementGroup(str).add(elem, true, false);
+          if (phys_it != this->physical_names.end())
+            file.mesh.getElementGroup(phys_it->second).add(elem, true, false);
         }
       }
     }
@@ -768,7 +772,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     read_data(file.node_tags,
               [&](auto && id, auto && size [[gnu::unused]],
                   auto && nb_component [[gnu::unused]]) -> Array<double> & {
-                auto & data = file.mesh.template registerNodalData<double>(
+                auto & data = file.mesh.template getNodalData<double>(
                     id, nb_component);
                 data.resize(size);
                 return data;
@@ -798,7 +802,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         [&](auto && id, auto && size [[gnu::unused]],
             auto && nb_component
             [[gnu::unused]]) -> ElementTypeMapArray<double> & {
-          file.mesh.template registerElementalData<double>(id);
+          file.mesh.template getElementalData<double>(id);
           return file.mesh.template getElementalData<double>(id);
         },
         [&](auto && element, auto && sstr, auto && data, auto && nb_component) {
@@ -830,7 +834,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         [&](auto && id, auto && size [[gnu::unused]],
             auto && nb_component
             [[gnu::unused]]) -> ElementTypeMapArray<double> & {
-          file.mesh.template registerElementalData<double>(id);
+          file.mesh.template getElementalData<double>(id);
           auto & data = file.mesh.template getElementalData<double>(id);
           data.isNodal(true);
           return data;
@@ -1040,8 +1044,15 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
     auto && tags = mesh.getTagNames();
     for (auto && tag : tags) {
       auto && data = mesh.getElementalData<double>(tag);
-      if (mesh.getTypeCode(tag, MeshDataType::_elemental) != _tc_real or
-          not data.isNodal())
+      auto type = mesh.getTypeCode(tag, MeshDataType::_elemental);
+      if (type != MeshDataTypeCode::_real) {
+        AKANTU_DEBUG_WARNING(
+            "The field "
+            << tag << " is ignored by the MSH writer, msh files do not support "
+            << type << " data");
+        continue;
+      }
+      if (data.isNodal())
         continue;
 
       auto size = data.size();
