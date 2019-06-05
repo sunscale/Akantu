@@ -44,8 +44,10 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 TimeStepSolverDefault::TimeStepSolverDefault(
     DOFManager & dof_manager, const TimeStepSolverType & type,
-    NonLinearSolver & non_linear_solver, const ID & id, UInt memory_id)
-    : TimeStepSolver(dof_manager, type, non_linear_solver, id, memory_id) {
+    NonLinearSolver & non_linear_solver, SolverCallback & solver_callback,
+    const ID & id, UInt memory_id)
+    : TimeStepSolver(dof_manager, type, non_linear_solver, solver_callback, id,
+                     memory_id) {
   switch (type) {
   case TimeStepSolverType::_dynamic:
     break;
@@ -61,7 +63,7 @@ TimeStepSolverDefault::TimeStepSolverDefault(
 }
 
 /* -------------------------------------------------------------------------- */
-void TimeStepSolverDefault::setIntegrationScheme(
+void TimeStepSolverDefault::setIntegrationSchemeInternal(
     const ID & dof_id, const IntegrationSchemeType & type,
     IntegrationScheme::SolutionType solution_type) {
   if (this->integration_schemes.find(dof_id) !=
@@ -264,7 +266,8 @@ void TimeStepSolverDefault::assembleMatrix(const ID & matrix_id) {
 
 //     const auto & solution_type = this->solution_types[dof_id];
 
-//     integration_scheme->assembleJacobianLumped(solution_type, this->time_step);
+//     integration_scheme->assembleJacobianLumped(solution_type,
+//     this->time_step);
 //   }
 
 //   this->_dof_manager.applyBoundaryLumped("J");

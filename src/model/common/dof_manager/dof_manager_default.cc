@@ -39,6 +39,7 @@
 #include "solver_vector_distributed.hh"
 #include "sparse_matrix_aij.hh"
 #include "time_step_solver_default.hh"
+
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <memory>
@@ -222,12 +223,11 @@ DOFManagerDefault::getNewNonLinearSolver(const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-TimeStepSolver &
-DOFManagerDefault::getNewTimeStepSolver(const ID & id,
-                                        const TimeStepSolverType & type,
-                                        NonLinearSolver & non_linear_solver) {
-  return this->registerTimeStepSolver<TimeStepSolverDefault>(*this, id, type,
-                                                             non_linear_solver);
+TimeStepSolver & DOFManagerDefault::getNewTimeStepSolver(
+    const ID & id, const TimeStepSolverType & type,
+    NonLinearSolver & non_linear_solver, SolverCallback & solver_callback) {
+  return this->registerTimeStepSolver<TimeStepSolverDefault>(
+      *this, id, type, non_linear_solver, solver_callback);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -256,10 +256,9 @@ void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
 void DOFManagerDefault::getArrayPerDOFs(const ID & dof_id,
                                         const SolverVector & global_array,
                                         Array<Real> & local_array) {
-  getArrayPerDOFs(
-      dof_id,
-      aka::as_type<SolverVectorDefault>(global_array).getVector(),
-      local_array);
+  getArrayPerDOFs(dof_id,
+                  aka::as_type<SolverVectorDefault>(global_array).getVector(),
+                  local_array);
 }
 
 /* -------------------------------------------------------------------------- */

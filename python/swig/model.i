@@ -34,6 +34,7 @@
   #include "boundary_condition_python_functor.hh"
   #include "model_solver.hh"
   #include "non_linear_solver.hh"
+  #include "sparse_matrix_aij.hh"
   %}
 
 
@@ -77,6 +78,10 @@ namespace akantu {
      $self->initFull(options);
   };
 
+  akantu::SparseMatrixAIJ & getMatrix(const std::string & name){
+    return dynamic_cast<akantu::SparseMatrixAIJ&>($self->getDOFManager().getMatrix(name));
+  };
+  
   %insert("python") %{
     def initFull(self, *args, **kwargs):
         if len(args) == 0:

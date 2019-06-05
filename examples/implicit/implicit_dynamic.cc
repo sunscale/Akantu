@@ -84,7 +84,7 @@ int main(int argc, char * argv[]) {
   mat.setParam("E", E);
   mat.setParam("rho", rho);
 
-  Array<Real> & force = model.getForce();
+  Array<Real> & force = model.getExternalForce();
   Array<Real> & displacment = model.getDisplacement();
 
   // boundary conditions
@@ -112,8 +112,8 @@ int main(int argc, char * argv[]) {
   model.addDumpFieldVector("displacement");
   model.addDumpField("velocity");
   model.addDumpField("acceleration");
-  model.addDumpField("force");
-  model.addDumpField("residual");
+  model.addDumpField("external_force");
+  model.addDumpField("internal_force");
   model.dump();
 
   model.setTimeStep(time_step);

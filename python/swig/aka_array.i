@@ -134,8 +134,8 @@ public:
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 
-  void reserve(UInt new_size) override final {
-    if (new_size == this->size_) return;
+  void reserve(UInt size, UInt new_size = UInt(-1)) override final {
+    if (size == this->size_) return;
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 };

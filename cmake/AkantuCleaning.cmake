@@ -56,9 +56,6 @@ macro(register_target_to_tidy target)
     endif()
     get_target_property(_sources ${target} SOURCES)
 
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
-      "Enable/Disable output of compile commands during generation" FORCE)
-
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/clang-tidy)
 
     set(_depends)

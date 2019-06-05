@@ -71,7 +71,6 @@ int main(int argc, char * argv[]) {
   model.initFull();
 
   /// boundary conditions
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
   Vector<Real> traction(2, 0.2);
   model.applyBC(SineBoundary(.2, 10., _x), "Fixed_x");
   model.applyBC(BC::Dirichlet::FixedValue(0., _y), "Fixed_y");
@@ -80,7 +79,7 @@ int main(int argc, char * argv[]) {
   // output a paraview file with the boundary conditions
   model.setBaseName("plate");
   model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("force");
+  model.addDumpFieldVector("external_force");
   model.addDumpField("blocked_dofs");
   model.dump();
 

@@ -151,7 +151,7 @@ void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
   auto & fem = getFEEngineClass<FEEngineType>();
   heat_transfer::details::ComputeRhoFunctor compute_rho(*this);
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     fem.assembleFieldLumped(compute_rho, "M", "temperature",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -337,7 +337,7 @@ void HeatTransferModel::assembleConductivityMatrix(
 
   auto & fem = this->getFEEngine();
 
-  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     auto nb_element = mesh.getNbElement(type, ghost_type);
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
@@ -379,7 +379,7 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
       return;
   }
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     auto & temperature_interpolated = temperature_on_qpoints(type, ghost_type);
 
     // compute the temperature on quadrature points
@@ -411,7 +411,7 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
 void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
   computeConductivityOnQuadPoints(ghost_type);
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     auto & gradient = temperature_gradient(type, ghost_type);
     this->getFEEngine().gradientOnIntegrationPoints(*temperature, gradient, 1,
                                                     type, ghost_type);
@@ -446,7 +446,7 @@ void HeatTransferModel::assembleInternalHeatRate() {
     // compute k \grad T
     computeKgradT(ghost_type);
 
-    for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    for (auto type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
       auto & k_gradt_on_qpoints_vect = k_gradt_on_qpoints(type, ghost_type);
@@ -481,7 +481,7 @@ Real HeatTransferModel::getStableTimeStep() {
     for (UInt j = 0; j < spatial_dimension; j++)
       conductivitymax = std::max(conductivity(i, j), conductivitymax);
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost)) {
+  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
 
     UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
@@ -552,7 +552,7 @@ void HeatTransferModel::assembleCapacity() {
 
   heat_transfer::details::ComputeRhoFunctor rho_functor(*this);
 
-  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     fem.assembleFieldMatrix(rho_functor, "M", "temperature",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -646,7 +646,7 @@ Real HeatTransferModel::getThermalEnergy() {
 
   auto & fem = getFEEngine();
 
-  for (auto && type : mesh.elementTypes(spatial_dimension)) {
+  for (auto && type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
     auto nb_element = mesh.getNbElement(type, _not_ghost);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, _not_ghost);
     Array<Real> Eth_per_quad(nb_element * nb_quadrature_points, 1);

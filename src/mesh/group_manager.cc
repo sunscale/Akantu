@@ -153,24 +153,16 @@ ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
 
   if (it != element_groups.end()) {
     if (replace_group) {
-      it->second->empty();
-      AKANTU_DEBUG_OUT();
-      return *(it->second);
+      destroyElementGroup(group_name, true);
     } else
       AKANTU_EXCEPTION("Trying to create a element group that already exists:"
                        << group_name);
   }
 
-  std::stringstream sstr;
-  sstr << this->id << ":" << group_name << "_element_group";
-
   ElementGroup * element_group = new ElementGroup(
-      group_name, mesh, new_node_group, dimension, sstr.str(), memory_id);
+      group_name, mesh, new_node_group, dimension,
+      this->id + ":" + group_name + "_element_group", memory_id);
 
-  std::stringstream sstr_nodes;
-  sstr_nodes << group_name << "_nodes";
-
-  node_groups[sstr_nodes.str()] = &new_node_group;
   element_groups[group_name] = element_group;
 
   AKANTU_DEBUG_OUT();
@@ -998,6 +990,72 @@ NodeGroup & GroupManager::getNodeGroup(const std::string & name) {
   }
 
   return *(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename GroupsType>
+void GroupManager::renameGroup(GroupsType & groups, const std::string & name,
+                               const std::string & new_name) {
+  auto it = groups.find(name);
+  if (it == groups.end()) {
+    AKANTU_EXCEPTION("There are no group named "
+                     << name << " associated to the group manager: " << id);
+  }
+
+  auto && group_ptr = it->second;
+
+  group_ptr->name = new_name;
+
+  groups.erase(it);
+  groups[new_name] = group_ptr;
+}
+
+/* -------------------------------------------------------------------------- */
+void GroupManager::renameElementGroup(const std::string & name,
+                                      const std::string & new_name) {
+  renameGroup(element_groups, name, new_name);
+}
+
+/* -------------------------------------------------------------------------- */
+void GroupManager::renameNodeGroup(const std::string & name,
+                                   const std::string & new_name) {
+  renameGroup(node_groups, name, new_name);
+}
+
+/* -------------------------------------------------------------------------- */
+// template <typename GroupsType>
+// void GroupManager::renameGroup(GroupsType & groups, const std::string & name,
+//                                const std::string & new_name) {
+//   auto it = groups.find(name);
+//   if (it == groups.end()) {
+//     AKANTU_EXCEPTION("There are no group named "
+//                      << name << " associated to the group manager: " << id);
+//   }
+
+//   auto && group_ptr = it->second;
+
+//   group_ptr->name = new_name;
+
+//   groups.erase(it);
+//   groups[new_name] = group_ptr;
+// }
+
+/* -------------------------------------------------------------------------- */
+void GroupManager::copyElementGroup(const std::string & name,
+                                    const std::string & new_name) {
+  const auto & grp = getElementGroup(name);
+  auto & new_grp = createElementGroup(new_name, grp.getDimension());
+
+  new_grp.getElements().copy(grp.getElements());
+}
+
+/* -------------------------------------------------------------------------- */
+void GroupManager::copyNodeGroup(const std::string & name,
+                                   const std::string & new_name) {
+  const auto & grp = getNodeGroup(name);
+  auto & new_grp = createNodeGroup(new_name);
+
+  new_grp.getNodes().copy(grp.getNodes());
 }
 
 } // namespace akantu

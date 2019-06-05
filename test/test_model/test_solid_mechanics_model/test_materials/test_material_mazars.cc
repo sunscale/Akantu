@@ -277,8 +277,8 @@ int main(int argc, char * argv[]) {
             << "sigma_max = " << sigma_max << ", sigma_min = " << sigma_min
             << std::endl;
   /// Verif the maximal/minimal stress values
-  if ((std::abs(sigma_max) > std::abs(sigma_min)) ||
-      (std::abs(sigma_max - 6.24e6) > 1e5) ||
+  if ((std::abs(sigma_max) > std::abs(sigma_min)) or
+      (std::abs(sigma_max - 6.24e6) > 1e5) or
       (std::abs(sigma_min + 2.943e7) > 1e6))
     return EXIT_FAILURE;
   energy.close();

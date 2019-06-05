@@ -58,6 +58,7 @@ register_test(test_material_mazars
   FILES_TO_COPY material_mazars.dat
   DIRECTORIES_TO_CREATE paraview
   PACKAGE core lapack
+  UNSTABLE
   )
 
 # ==============================================================================
@@ -81,7 +82,8 @@ register_test(test_multi_material_elastic
 
 register_gtest_sources(SOURCES test_elastic_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_finite_def_materials.cc PACKAGE core)
-register_gtest_sources(SOURCES test_damage_materials.cc PACKAGE core)
+register_gtest_sources(SOURCES test_damage_materials.cc PACKAGE core pybind11 DEPENDS aka_test
+  FILES_TO_COPY py_mazars.py)
 register_gtest_sources(SOURCES test_plastic_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_material_thermal.cc PACKAGE core)
 

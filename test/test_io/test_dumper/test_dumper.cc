@@ -92,11 +92,11 @@ int main(int argc, char * argv[]) {
     }
     prvdumper.registerFilteredMesh(mesh,
                                    mesh.getElementGroup("Bottom").getElements(),
-                                   mesh.getElementGroup("Bottom").getNodes());
+                                   mesh.getElementGroup("Bottom").getNodeGroup().getNodes());
     prvdumper.registerField("displacement",
                             new dumper::NodalField<Real, true>(
                                 model.getDisplacement(), 0, 0,
-                                &(mesh.getElementGroup("Bottom").getNodes())));
+                                &(mesh.getElementGroup("Bottom").getNodeGroup().getNodes())));
     prvdumper.dump(0);
   }
 
@@ -106,15 +106,15 @@ int main(int argc, char * argv[]) {
   txtdumper.setTimeStep(time_step);
   txtdumper.registerFilteredMesh(mesh,
                                  mesh.getElementGroup("Bottom").getElements(),
-                                 mesh.getElementGroup("Bottom").getNodes());
+                                 mesh.getElementGroup("Bottom").getNodeGroup().getNodes());
   txtdumper.registerField("displacement",
                           new dumper::NodalField<Real, true>(
                               model.getDisplacement(), 0, 0,
-                              &(mesh.getElementGroup("Bottom").getNodes())));
+                              &(mesh.getElementGroup("Bottom").getNodeGroup().getNodes())));
   txtdumper.registerField("blocked_dofs",
                           new dumper::NodalField<bool, true>(
                               model.getBlockedDOFs(), 0, 0,
-                              &(mesh.getElementGroup("Bottom").getNodes())));
+                              &(mesh.getElementGroup("Bottom").getNodeGroup().getNodes())));
 
   Real pot_energy = 1.2345567891;
   Vector<Real> gforces(2, 1.);

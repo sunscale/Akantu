@@ -35,7 +35,7 @@
 #include "data_accessor.hh"
 #include "fe_engine.hh"
 #include "model.hh"
-#include "non_local_manager.hh"
+#include "non_local_manager_callback.hh"
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -370,7 +370,6 @@ public:
   const Array<Real> & getCurrentPosition();
 
   /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
-  /// SolidMechanicsModel::setIncrementFlagOn has been called before
   AKANTU_GET_MACRO(Increment, *displacement_increment, Array<Real> &);
 
   /// get the lumped SolidMechanicsModel::mass vector
@@ -525,9 +524,6 @@ protected:
 
   /// class defining of to choose a material
   std::shared_ptr<MaterialSelector> material_selector;
-
-  /// flag defining if the increment must be computed or not
-  bool increment_flag;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;

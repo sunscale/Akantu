@@ -183,7 +183,7 @@ public:
         : ElementTypesIteratorHelper(
               container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
               OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
-              OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
+              OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined)) {}
 
     ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
     ElementTypesIteratorHelper &
@@ -205,7 +205,7 @@ private:
   ElementTypesIteratorHelper
   elementTypesImpl(UInt dim = _all_dimensions,
                    GhostType ghost_type = _not_ghost,
-                   ElementKind kind = _ek_regular) const;
+                   ElementKind kind = _ek_not_defined) const;
 
   template <typename... pack>
   ElementTypesIteratorHelper
@@ -298,7 +298,7 @@ public:
 
   /// standard assigment (copy) operator
   void operator=(const ElementTypeMapArray &) = delete;
-  ElementTypeMapArray(const ElementTypeMapArray &) = delete;
+  ElementTypeMapArray(const ElementTypeMapArray &);
 
   /// explicit copy
   void copy(const ElementTypeMapArray & other);
@@ -427,8 +427,29 @@ public:
   /// get the name of the internal field
   AKANTU_GET_MACRO(Name, name, ID);
 
-  /// name of the elment type map: e.g. connectivity, grad_u
+  /**
+   * get the size of the ElementTypeMapArray<T>
+   * @param[in] _spatial_dimension the dimension to consider (default:
+   * _all_dimensions)
+   * @param[in] _ghost_type  (default: _not_ghost)
+   * @param[in] _element_kind (default: _ek_not_defined)
+   * @param[in] _all_ghost_types (default: false)
+   **/
+  template <typename... pack>
+  UInt size(pack &&... _pack) const;
+  
+  bool isNodal() const { return is_nodal; }
+  void isNodal(bool is_nodal) { this->is_nodal = is_nodal; }
+
+private:
+  UInt sizeImpl(UInt spatial_dimension, const GhostType & ghost_type, const ElementKind & kind) const;
+  
+protected:
+  /// name of the element type map: e.g. connectivity, grad_u
   ID name;
+
+  /// Is the data stored by node of the element
+  bool is_nodal{false};
 };
 
 /// to store data Array<Real> by element type

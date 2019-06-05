@@ -171,8 +171,7 @@ int main(int argc, char *argv[]) {
 
     // data output
     output_data << s * time_step << " " << epsilon
-                << " " << epot << " " << edis << " " <<
-        work << std::endl;
+                << " " << epot << " " << edis << " " <<  work << std::endl;
     time += time_step;
 
   }

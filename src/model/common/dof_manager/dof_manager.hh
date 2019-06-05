@@ -46,6 +46,7 @@ class NonLinearSolver;
 class TimeStepSolver;
 class SparseMatrix;
 class SolverVector;
+class SolverCallback;
 } // namespace akantu
 
 namespace akantu {
@@ -384,10 +385,12 @@ protected:
   template <class TSSType, class DMType>
   TimeStepSolver & registerTimeStepSolver(DMType & dm, const ID & id,
                                           const TimeStepSolverType & type,
-                                          NonLinearSolver & non_linear_solver) {
+                                          NonLinearSolver & non_linear_solver,
+                                          SolverCallback & solver_callback) {
     ID time_step_solver_id = this->id + ":tss:" + id;
-    std::unique_ptr<TimeStepSolver> tss = std::make_unique<TSSType>(
-        dm, type, non_linear_solver, time_step_solver_id, this->memory_id);
+    std::unique_ptr<TimeStepSolver> tss =
+        std::make_unique<TSSType>(dm, type, non_linear_solver, solver_callback,
+                                  time_step_solver_id, this->memory_id);
     return this->registerTimeStepSolver(time_step_solver_id, tss);
   }
 
@@ -467,7 +470,8 @@ public:
   virtual TimeStepSolver &
   getNewTimeStepSolver(const ID & time_step_solver_id,
                        const TimeStepSolverType & type,
-                       NonLinearSolver & non_linear_solver) = 0;
+                       NonLinearSolver & non_linear_solver,
+                       SolverCallback & solver_callback) = 0;
 
   /// get instance of a time step solver
   virtual TimeStepSolver & getTimeStepSolver(const ID & time_step_solver_id);

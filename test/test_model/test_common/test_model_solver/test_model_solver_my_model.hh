@@ -40,6 +40,7 @@
 #include "periodic_node_synchronizer.hh"
 #include "solver_vector_default.hh"
 #include "sparse_matrix.hh"
+
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {

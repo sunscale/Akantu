@@ -108,17 +108,12 @@ void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
   }
 
   // Loop over the background types of the mesh
-  Mesh::type_iterator type_it = this->mesh.firstType(dim, _not_ghost),
-                      type_end = this->mesh.lastType(dim, _not_ghost);
-
   std::map<std::string, std::list<K::Segment_3>>::iterator
       name_to_primitives_it,
       name_to_primitives_end = name_to_primitives_map.end();
 
-  for (; type_it != type_end; ++type_it) {
+  for (auto type : this->mesh.elementTypes(dim, _not_ghost)) {
     // Used in AKANTU_BOOST_ELEMENT_SWITCH
-    ElementType type = *type_it;
-
     AKANTU_DEBUG_INFO("Computing intersections with background element type "
                       << type);
 

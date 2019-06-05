@@ -59,7 +59,8 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
   /// for each connectivity types allocate the element filer array of the
   /// material
   element_filter.initialize(model.getMesh(),
-                            _spatial_dimension = spatial_dimension);
+                            _spatial_dimension = spatial_dimension,
+                            _element_kind = _ek_regular);
   // model.getMesh().initElementTypeMapArray(element_filter, 1,
   // spatial_dimension,
   //                                         false, _ek_regular);
@@ -92,7 +93,8 @@ Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                                     fe_engine, this->element_filter) {
 
   AKANTU_DEBUG_IN();
-  element_filter.initialize(mesh, _spatial_dimension = spatial_dimension);
+  element_filter.initialize(mesh, _spatial_dimension = spatial_dimension,
+                            _element_kind = _ek_regular);
   // mesh.initElementTypeMapArray(element_filter, 1, spatial_dimension, false,
   //                              _ek_regular);
 
@@ -663,7 +665,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
   Array<Real> & internal_force = model.getInternalForce();
 
   Mesh & mesh = fem.getMesh();
-  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(_ghost_type = ghost_type)) {
     const Array<Real> & shapes_derivatives =
         fem.getShapesDerivatives(type, ghost_type);
 
@@ -1003,16 +1005,15 @@ Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const InternalField<T> & Material::getInternal([[gnu::unused]]
-                                               const ID & int_id) const {
+const InternalField<T> &
+Material::getInternal([[gnu::unused]] const ID & int_id) const {
   AKANTU_TO_IMPLEMENT();
   return NULL;
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-InternalField<T> & Material::getInternal([[gnu::unused]]
-                                         const ID & int_id) {
+InternalField<T> & Material::getInternal([[gnu::unused]] const ID & int_id) {
   AKANTU_TO_IMPLEMENT();
   return NULL;
 }
@@ -1297,8 +1298,7 @@ void Material::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 /// extrapolate internal values
 void Material::extrapolateInternal(const ID & id, const Element & element,
-                                   [[gnu::unused]]
-                                   const Matrix<Real> & point,
+                                   [[gnu::unused]] const Matrix<Real> & point,
                                    Matrix<Real> & extrapolated) {
   if (this->isInternal<Real>(id, element.kind())) {
     UInt nb_element =

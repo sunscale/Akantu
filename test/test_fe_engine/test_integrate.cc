@@ -39,8 +39,6 @@
 
 using namespace akantu;
 
-namespace {
-
 TYPED_TEST(TestFEMFixture, IntegrateConstant) {
   this->fem->initShapeFunctions();
 
@@ -74,4 +72,3 @@ TYPED_TEST(TestFEMFixture, IntegrateConstant) {
   EXPECT_NEAR(0, diff, 1e-14);
 }
 
-} // namespace

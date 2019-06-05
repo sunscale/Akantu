@@ -1,0 +1,13 @@
+material elastic_anisotropic [
+    name = aluminum
+    rho = 1.6465129043044597 #gramm/mol/Å
+    C11 = 105.092023 #eV/Å^3
+    C12 = 59.4637759
+    
+    C22 = 105.092023
+
+    C33 = 30.6596356
+    
+    n1 = [-1, 1]
+    n2 = [ 1, 1]
+]

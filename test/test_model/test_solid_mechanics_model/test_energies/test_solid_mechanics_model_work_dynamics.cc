@@ -91,7 +91,7 @@ public:
       // TODO: this is a hack to work
       //      around non-implemented
       //      BC::Neumann::FromTraction for 1D
-      auto & force = this->model->getForce();
+      auto & force = this->model->getExternalForce();
 
       for (auto && pair : zip(make_view(pos, this->spatial_dimension),
                               make_view(force, this->spatial_dimension))) {

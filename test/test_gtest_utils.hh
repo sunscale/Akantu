@@ -129,6 +129,8 @@ template <typename... T>
 using cross_product_t = typename cross_product<T...>::type;
 /* -------------------------------------------------------------------------- */
 
+} // namespace
+
 #define OP_CAT(s, data, elem) BOOST_PP_CAT(_element_type, elem)
 
 // creating a type instead of a using helps to debug
@@ -153,7 +155,6 @@ using TestCohesiveElementTypes = std::tuple<BOOST_PP_SEQ_ENUM(
 using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_structural_ELEMENT_TYPE))>;
 #endif
-} // namespace
 
 using TestAllDimensions = std::tuple<std::integral_constant<unsigned int, 1>,
                                      std::integral_constant<unsigned int, 2>,

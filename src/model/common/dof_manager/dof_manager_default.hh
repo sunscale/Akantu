@@ -203,7 +203,8 @@ public:
   /// Get instance of a time step solver
   TimeStepSolver &
   getNewTimeStepSolver(const ID & id, const TimeStepSolverType & type,
-                       NonLinearSolver & non_linear_solver) override;
+                       NonLinearSolver & non_linear_solver,
+                       SolverCallback & solver_callback) override;
 
   /* ------------------------------------------------------------------------ */
 private:

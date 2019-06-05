@@ -93,7 +93,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
   Array<Real> proj_slave_coord(slave_boundary.getNbNodes(), dim - 1, 0.);
   Array<UInt> slave_nodes(slave_boundary.getNbNodes());
   UInt n(0);
-  for (auto && slave_node : slave_boundary.getNodes()) {
+  for (auto && slave_node : slave_boundary.getNodeGroup().getNodes()) {
     for (UInt d = 0; d < dim - 1; ++d) {
       proj_slave_coord(n, d) = coordinates(slave_node, offset[d]);
       slave_nodes(n) = slave_node;
@@ -105,7 +105,7 @@ void NTNContact::pairInterfaceNodes(const ElementGroup & slave_boundary,
   Array<Real> proj_master_coord(master_boundary.getNbNodes(), dim - 1, 0.);
   Array<UInt> master_nodes(master_boundary.getNbNodes());
   n = 0;
-  for (auto && master_node : master_boundary.getNodes()) {
+  for (auto && master_node : master_boundary.getNodeGroup().getNodes()) {
     for (UInt d = 0; d < dim - 1; ++d) {
       proj_master_coord(n, d) = coordinates(master_node, offset[d]);
       master_nodes(n) = master_node;

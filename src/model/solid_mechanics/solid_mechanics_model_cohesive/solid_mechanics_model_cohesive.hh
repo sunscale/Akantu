@@ -33,9 +33,8 @@
 #include "cohesive_element_inserter.hh"
 #include "material_selector_cohesive.hh"
 #include "random_internal_field.hh" // included to have the specialization of
+                                    // ParameterTyped::operator Real()
 #include "solid_mechanics_model.hh"
-#include "solid_mechanics_model_event_handler.hh"
-// ParameterTyped::operator Real()
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
@@ -52,9 +51,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 struct FacetsCohesiveIntegrationOrderFunctor {
-  template <ElementType type,
-            ElementType cohesive_type =
-                CohesiveFacetProperty<type>::cohesive_type>
+  template <ElementType type, ElementType cohesive_type =
+                                  CohesiveFacetProperty<type>::cohesive_type>
   struct _helper {
     static constexpr int get() {
       return ElementClassProperty<cohesive_type>::polynomial_degree;

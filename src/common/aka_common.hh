@@ -547,6 +547,7 @@ template <typename T> using is_tensor = std::is_base_of<akantu::TensorTrait, T>;
 /* ------------------------------------------------------------------------ */
 template <typename T> using is_scalar = std::is_arithmetic<T>;
 /* ------------------------------------------------------------------------ */
+#if not defined(SWIG)
 template <typename R, typename T,
           std::enable_if_t<std::is_reference<T>::value> * = nullptr>
 bool is_of_type(T && t) {
@@ -570,6 +571,7 @@ decltype(auto) as_type(T && t) {
       std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
                          std::add_const_t<R>, R>>>(t);
 }
+#endif
 } // namespace aka
 
 #include "aka_fwd.hh"

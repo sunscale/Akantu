@@ -30,7 +30,6 @@
 #include <dof_manager.hh>
 #include <mesh_partition_scotch.hh>
 #include <mesh_utils.hh>
-#include <solver_vector_petsc.hh>
 /* -------------------------------------------------------------------------- */
 
 #include <gtest/gtest.h>

@@ -30,7 +30,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
 #include "aka_iterators.hh"

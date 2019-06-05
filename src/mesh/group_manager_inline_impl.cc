@@ -155,22 +155,7 @@ dumper::Field * GroupManager::createNodalField(const ftype<type, flag> * field,
                                                const std::string & group_name,
                                                UInt padding_size) {
 
-  if (field == nullptr)
-    return nullptr;
-  if (group_name == "all") {
-    using DumpType = typename dumper::NodalField<type, false>;
-    auto * dumper = new DumpType(*field, 0, 0, nullptr);
-    dumper->setPadding(padding_size);
-    return dumper;
-  } else {
-    ElementGroup & group = this->getElementGroup(group_name);
-    const Array<UInt> * nodal_filter = &(group.getNodes());
-    using DumpType = typename dumper::NodalField<type, true>;
-    auto * dumper = new DumpType(*field, 0, 0, nodal_filter);
-    dumper->setPadding(padding_size);
-    return dumper;
-  }
-  return nullptr;
+  return createStridedNodalField(field, group_name, 0, 0, padding_size);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -189,7 +174,7 @@ GroupManager::createStridedNodalField(const ftype<type, flag> * field,
     return dumper;
   } else {
     ElementGroup & group = this->getElementGroup(group_name);
-    const Array<UInt> * nodal_filter = &(group.getNodes());
+    const Array<UInt> * nodal_filter = &(group.getNodeGroup().getNodes());
     using DumpType = typename dumper::NodalField<type, true>;
     auto * dumper = new DumpType(*field, size, stride, nodal_filter);
     dumper->setPadding(padding_size);

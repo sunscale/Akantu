@@ -52,7 +52,8 @@ class TimeStepSolverDefault : public TimeStepSolver {
 public:
   TimeStepSolverDefault(DOFManager & dof_manager,
                         const TimeStepSolverType & type,
-                        NonLinearSolver & non_linear_solver, const ID & id,
+                        NonLinearSolver & non_linear_solver,
+                        SolverCallback & solver_callback, const ID & id,
                         UInt memory_id);
 
   ~TimeStepSolverDefault() override;
@@ -60,12 +61,15 @@ public:
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-public:
+protected:
   /// registers an integration scheme for a given dof
-  void setIntegrationScheme(const ID & dof_id,
-                            const IntegrationSchemeType & type,
-                            IntegrationScheme::SolutionType solution_type =
-                                IntegrationScheme::_not_defined) override;
+  void
+  setIntegrationSchemeInternal(const ID & dof_id,
+                               const IntegrationSchemeType & type,
+                               IntegrationScheme::SolutionType solution_type =
+                                   IntegrationScheme::_not_defined) override;
+
+public:
   bool hasIntegrationScheme(const ID & dof_id) const override;
 
   /// implementation of the TimeStepSolver::predictor()

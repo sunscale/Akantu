@@ -31,7 +31,7 @@
 #===============================================================================
 package_declare(solid_mechanics DEFAULT ON
   DESCRIPTION "Solid mechanics model"
-  DEPENDS core
+  DEPENDS core lapack
   )
 
 package_declare_sources(solid_mechanics
