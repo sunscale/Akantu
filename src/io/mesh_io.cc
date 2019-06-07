@@ -61,8 +61,6 @@ std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
       t = _miot_gmsh;
     } else if (ext == "diana") {
       t = _miot_diana;
-    } else if (ext == "inp") {
-      t = _miot_abaqus;
     } else
       AKANTU_EXCEPTION("Cannot guess the type of file of "
                        << filename << " (ext " << ext << "). "
@@ -78,8 +76,6 @@ std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
 #endif
   case _miot_diana:
     return std::make_unique<MeshIODiana>();
-  case _miot_abaqus:
-    return std::make_unique<MeshIOAbaqus>();
   default:
     return nullptr;
   }
