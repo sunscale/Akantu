@@ -39,6 +39,7 @@
 #include "aka_bbox.hh"
 #include "mesh_accessor.hh"
 #include "communicator.hh"
+#include "element_group.hh"
 
 using akantu::IntegrationPoint;
 using akantu::Vector;

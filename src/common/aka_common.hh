@@ -446,11 +446,7 @@ inline NodeFlag operator~(const NodeFlag & a) {
   return NodeFlag(~under(a));
 }
 
-inline std::ostream & operator<<(std::ostream & stream, const NodeFlag & flag) {
-  using under = std::underlying_type_t<NodeFlag>;
-  stream << under(flag);
-  return stream;
-}
+std::ostream & operator<<(std::ostream & stream, NodeFlag flag);
 
 } // namespace akantu
 

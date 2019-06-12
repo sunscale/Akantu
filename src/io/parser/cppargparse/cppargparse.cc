@@ -138,7 +138,7 @@ ArgumentParser::_addArgument(const std::string & name, const std::string & help,
     break;
   }
   case _integer: {
-    arg = new ArgumentStorage<int>();
+    arg = new ArgumentStorage<long int>();
     break;
   }
   case _boolean: {
@@ -406,7 +406,7 @@ bool ArgumentParser::checkType(ArgumentType type,
     break;
   }
   case _integer: {
-    int i;
+    long int i;
     sstr >> i;
     break;
   }

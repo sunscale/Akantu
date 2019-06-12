@@ -49,7 +49,7 @@ def main():
     mesh = aka.Mesh(2)
     mesh.read('mesh_dcb_2d.msh')
 
-    model = aka.SolidMechanicsModel(mesh, 2)
+    model = aka.SolidMechanicsModel(mesh)
     model.initFull()
 
     model.applyDirichletBC(FixedValue(0.0, 'x'), "edge")
@@ -58,7 +58,7 @@ def main():
                        [0, 0]])
 
 
-    blocked_nodes = mesh.getElementGroup("edge").getNodes().flatten()
+    blocked_nodes = mesh.getElementGroup("edge").getNodeGroup().getNodes().flatten()
     boundary = model.getBlockedDOFs()
 
     # Testing that nodes are correctly blocked
@@ -69,7 +69,7 @@ def main():
     boundary.fill(False)
 
     model.applyNeumannBC(FromStress(stress), "edge")
-    force = model.getForce()
+    force = model.getExternalForce()
 
     # Checking that nodes have a force in the correct direction
     for n in blocked_nodes:

@@ -92,7 +92,7 @@ bool Parser::permissive_parser = false;
 Real Math::tolerance = 1e2 * std::numeric_limits<Real>::epsilon();
 
 /* -------------------------------------------------------------------------- */
-const UInt _all_dimensions = UInt(-1);
+const UInt _all_dimensions [[gnu::unused]] = UInt(-1);
 
 /* -------------------------------------------------------------------------- */
 const Array<UInt> empty_filter(0, 1, "empty_filter");

@@ -85,14 +85,14 @@ public:
   SolverVector & operator+(const SolverVector & y) override;
   SolverVector & operator=(const SolverVector & y) override;
 
-  void resize() {
+  void resize() override {
     static_assert(not std::is_const<std::remove_reference_t<Array_>>::value,
                   "Cannot resize a const Array");
     this->vector.resize(this->localSize(), 0.);
     ++this->release_;
   }
 
-  void clear() {
+  void clear() override {
     static_assert(not std::is_const<std::remove_reference_t<Array_>>::value,
                   "Cannot clear a const Array");
     this->vector.clear();

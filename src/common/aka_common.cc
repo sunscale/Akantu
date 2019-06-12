@@ -41,6 +41,7 @@
 #include "communication_tag.hh"
 /* -------------------------------------------------------------------------- */
 #include <ctime>
+#include <cmath>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -75,12 +76,15 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
           std::string(" (0: error, 1: exceptions, 4: warnings, 5: info, ..., "
                       "100: dump") +
           std::string(" more info on levels can be foind in aka_error.hh)"),
-      1, cppargparse::_integer, int(dblWarning));
+      1, cppargparse::_integer, (long int)(dblWarning));
 
   static_argparser.addArgument(
       "--aka_print_backtrace",
       "Should Akantu print a backtrace in case of error", 0,
       cppargparse::_boolean, false, true);
+
+  static_argparser.addArgument("--aka_seed", "The seed to use on prank 0", 1,
+                               cppargparse::_integer);
 
   static_argparser.parse(argc, argv, cppargparse::_remove_parsed);
 
@@ -94,16 +98,16 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   }
 
   long int seed;
-  try {
-    seed = static_parser.getParameter("seed", _ppsc_current_scope);
-  } catch (debug::Exception &) {
-    seed = time(nullptr);
+  if(static_argparser.has("aka_seed")) {
+    seed = static_argparser["aka_seed"];
+  } else {
+    seed = static_parser.getParameter("seed", time(nullptr), _ppsc_current_scope);
   }
-
+  
   seed *= (comm.whoAmI() + 1);
   RandomGenerator<UInt>::seed(seed);
 
-  int dbl_level = static_argparser["aka_debug_level"];
+  long int dbl_level = static_argparser["aka_debug_level"];
   debug::setDebugLevel(DebugLevel(dbl_level));
 
   AKANTU_DEBUG_INFO("Random seed set to " << seed);
@@ -149,4 +153,15 @@ const ParserSection & getUserParser() {
 
 std::unique_ptr<Communicator> Communicator::static_communicator;
 
-} // akantu
+std::ostream & operator<<(std::ostream & stream, NodeFlag flag) {
+  using under = std::underlying_type_t<NodeFlag>;
+  int digits = std::log(std::numeric_limits<under>::max() + 1)/std::log(16);
+  std::ios_base::fmtflags ff;
+  ff = stream.flags();
+  auto value = static_cast<std::common_type_t<under, unsigned int>>(flag);
+  stream << "0x" << std::hex << std::setw(digits) << std::setfill('0') << value;
+  stream.flags(ff);
+  return stream;
+}
+
+} // namespace akantu

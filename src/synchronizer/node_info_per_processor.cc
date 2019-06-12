@@ -166,8 +166,9 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
       std::transform(sends.begin(), sends.end(), sends.begin(),
                      [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
       scheme.copy(sends);
-      std::cout << "Proc " << rank << " sends " << sends.size()
-                << " nodes to proc " << send_schemes.first << std::endl;
+      AKANTU_DEBUG_INFO("Proc " << rank << " has " << sends.size()
+                                << " nodes to send to  to proc "
+                                << send_schemes.first);
     }
   }
 
@@ -190,9 +191,8 @@ void NodeInfoPerProc::fillCommunicationScheme(const Array<UInt> & master_info) {
                      [this](UInt g) -> UInt { return mesh.getNodeLocalId(g); });
 
       scheme.copy(recvs);
-      std::cout << "Proc " << rank << " receives " << recvs.size()
-                << " nodes to proc " << recv_schemes.first << std::endl;
-
+      AKANTU_DEBUG_INFO("Proc " << rank << " will receive " << recvs.size()
+                                << " nodes from proc " << recv_schemes.first);
     }
   }
 
@@ -460,24 +460,23 @@ void MasterNodeInfoPerProc::synchronizeTypes() {
   std::vector<CommunicationRequest> requests_send_master_info;
   for (UInt p = 0; p < nb_proc; ++p) {
     if (p != root) {
-      AKANTU_DEBUG_INFO("Sending nodes types to proc "
-                        << p << " "
-                        << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
+      auto tag0 = Tag::genTag(this->rank, 0, Tag::_NODES_TYPE);
+      AKANTU_DEBUG_INFO("Sending nodes types to proc " << p << " " << tag0);
       requests_send_type.push_back(
-          comm.asyncSend(nodes_flags_per_proc[p], p,
-                         Tag::genTag(this->rank, 0, Tag::_NODES_TYPE)));
+          comm.asyncSend(nodes_flags_per_proc[p], p, tag0));
 
+      auto tag2 = Tag::genTag(this->rank, 2, Tag::_NODES_TYPE);
+      AKANTU_DEBUG_INFO("Sending nodes pranks to proc " << p << " " << tag2);
       requests_send_type.push_back(
-          comm.asyncSend(nodes_prank_per_proc[p], p,
-                         Tag::genTag(this->rank, 2, Tag::_NODES_TYPE)));
+          comm.asyncSend(nodes_prank_per_proc[p], p, tag2));
 
       auto & nodes_to_send = nodes_to_send_per_proc[p];
 
-      AKANTU_DEBUG_INFO("Sending nodes master info to proc "
-                        << p << " "
-                        << Tag::genTag(this->rank, 1, Tag::_NODES_TYPE));
-      requests_send_master_info.push_back(comm.asyncSend(
-          nodes_to_send, p, Tag::genTag(this->rank, 1, Tag::_NODES_TYPE)));
+      auto tag1 = Tag::genTag(this->rank, 1, Tag::_NODES_TYPE);
+      AKANTU_DEBUG_INFO("Sending nodes master info to proc " << p << " "
+                                                             << tag1);
+      requests_send_master_info.push_back(
+          comm.asyncSend(nodes_to_send, p, tag1));
     } else {
       this->getNodesFlags().copy(nodes_flags_per_proc[p]);
       for (auto && data : enumerate(nodes_prank_per_proc[p])) {
@@ -739,18 +738,21 @@ void SlaveNodeInfoPerProc::synchronizeNodes() {
 void SlaveNodeInfoPerProc::synchronizeTypes() {
   this->fillNodesType();
 
-  auto & nodes_types = this->getNodesFlags();
+  auto & nodes_flags = this->getNodesFlags();
 
   AKANTU_DEBUG_INFO("Sending first nodes types to proc "
                     << root << ""
                     << Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
-  comm.send(nodes_types, root, Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
+  comm.send(nodes_flags, root, Tag::genTag(this->rank, 0, Tag::_NODES_TYPE));
 
   AKANTU_DEBUG_INFO("Receiving nodes types from proc "
                     << root << " " << Tag::genTag(root, 0, Tag::_NODES_TYPE));
-  comm.receive(nodes_types, root, Tag::genTag(root, 0, Tag::_NODES_TYPE));
+  comm.receive(nodes_flags, root, Tag::genTag(root, 0, Tag::_NODES_TYPE));
 
-  Array<Int> nodes_prank(nodes_types.size());
+  Array<Int> nodes_prank(nodes_flags.size());
+
+  AKANTU_DEBUG_INFO("Receiving nodes pranks from proc "
+                    << root << " " << Tag::genTag(root, 2, Tag::_NODES_TYPE));
   comm.receive(nodes_prank, root, Tag::genTag(root, 2, Tag::_NODES_TYPE));
   for (auto && data : enumerate(nodes_prank)) {
     auto node = std::get<0>(data);
@@ -765,9 +767,7 @@ void SlaveNodeInfoPerProc::synchronizeTypes() {
   comm.probe<UInt>(root, Tag::genTag(root, 1, Tag::_NODES_TYPE), status);
 
   Array<UInt> nodes_master_info(status.size());
-  if (nodes_master_info.size() > 0)
-    comm.receive(nodes_master_info, root,
-                 Tag::genTag(root, 1, Tag::_NODES_TYPE));
+  comm.receive(nodes_master_info, root, Tag::genTag(root, 1, Tag::_NODES_TYPE));
 
   this->fillCommunicationScheme(nodes_master_info);
 }

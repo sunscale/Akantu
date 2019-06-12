@@ -74,12 +74,14 @@ void SparseMatrixAIJ::applyBoundary(Real block_val) {
     UInt nj = std::get<1>(ij_a) - 1;
 
     if (is_blocked(ni) or is_blocked(nj)) {
-      // clang-format off
+
       std::get<2>(ij_a) =
-          std::get<0>(ij_a) != std::get<1>(ij_a)   ? 0.
-        : this->dof_manager.isLocalOrMasterDOF(ni) ? block_val
-        :                                            0.;
-      // clang-format on
+          std::get<0>(ij_a) != std::get<1>(ij_a)
+              ? 0.
+              : this->dof_manager.isLocalOrMasterDOF(
+                    this->dof_manager.globalToLocalEquationNumber(ni))
+                    ? block_val
+                    : 0.;
     }
   }
 
@@ -227,7 +229,7 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixAIJ::copyProfile(const SparseMatrix & other)  {
+void SparseMatrixAIJ::copyProfile(const SparseMatrix & other) {
   auto & A = aka::as_type<SparseMatrixAIJ>(other);
 
   SparseMatrix::clearProfile();
@@ -238,9 +240,9 @@ void SparseMatrixAIJ::copyProfile(const SparseMatrix & other)  {
   this->irn_jcn_k.clear();
 
   UInt i, j, k;
-  for(auto && data : enumerate(irn, jcn)) {
+  for (auto && data : enumerate(irn, jcn)) {
     std::tie(k, i, j) = data;
-    
+
     this->irn_jcn_k[this->key(i - 1, j - 1)] = k;
   }
 
@@ -267,9 +269,10 @@ void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::addMeTo(SparseMatrix & B, Real alpha) const {
-  
+
   if (aka::is_of_type<SparseMatrixAIJ>(B)) {
-    this->addMeToTemplated<SparseMatrixAIJ>(aka::as_type<SparseMatrixAIJ>(B), alpha);
+    this->addMeToTemplated<SparseMatrixAIJ>(aka::as_type<SparseMatrixAIJ>(B),
+                                            alpha);
   } else {
     //    this->addMeToTemplated<SparseMatrix>(*this, alpha);
   }

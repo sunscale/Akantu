@@ -74,6 +74,8 @@ public:
   void fillPartitionInformation(const Mesh & mesh,
                                 const Int * linearized_partitions);
 
+  virtual void printself(std::ostream & stream, int indent = 0) const;
+  
 protected:
   /// build the dual graph of the mesh, for all element of spatial_dimension
   void buildDualGraph(
@@ -134,6 +136,12 @@ protected:
   // vector of pair to ensure the iteration order
   std::vector<std::pair<ElementType, UInt>> linearized_offsets;
 };
+
+/// standard output stream operator
+inline std::ostream & operator<<(std::ostream & stream, const MeshPartition & _this) {
+  _this.printself(stream);
+  return stream;
+}
 
 } // namespace akantu
 

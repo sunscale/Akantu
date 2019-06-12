@@ -187,13 +187,14 @@ private:
   /// The last argv parsed (those are the modified version after parse)
   char *** argv;
 };
-}
 
 inline std::ostream & operator<<(std::ostream & stream,
-                                 const cppargparse::ArgumentParser & argparse) {
+                                 const ArgumentParser & argparse) {
   argparse.printself(stream);
   return stream;
 }
+
+} // namespace cppargparse
 
 #endif /* __CPPARGPARSE_HH__ */
 

@@ -65,7 +65,7 @@ namespace debug {
                           this->_info + "\n Possible parameters are: ",
                           [](auto && str, auto && param) {
                             static auto first = true;
-                            auto && ret = str + (first ? " " : ", ") + param;
+                            auto ret = str + (first ? " " : ", ") + param;
                             first = false;
                             return ret;
                           });

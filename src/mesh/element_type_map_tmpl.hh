@@ -167,7 +167,7 @@ void ElementTypeMapArray<T, SupportType>::copy(
     const ElementTypeMapArray & other) {
   for (auto ghost_type : ghost_types) {
     for (auto type :
-         this->elementTypes(_all_dimensions, ghost_types, _ek_not_defined)) {
+         this->elementTypes(_all_dimensions, ghost_type, _ek_not_defined)) {
       const auto & array_to_copy = other(type, ghost_type);
       auto & array =
           this->alloc(0, array_to_copy.getNbComponent(), type, ghost_type);
@@ -180,7 +180,7 @@ void ElementTypeMapArray<T, SupportType>::copy(
 template <typename T, typename SupportType>
 ElementTypeMapArray<T, SupportType>::ElementTypeMapArray(
     const ElementTypeMapArray & other)
-    : parent(), Memory(other.id + "_copy", memory_id), name(other.name + "_copy") {
+    : parent(), Memory(other.id + "_copy", other.memory_id), name(other.name + "_copy") {
   this->copy(other);
 }
 

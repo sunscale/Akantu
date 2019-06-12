@@ -281,7 +281,8 @@ public:
                         nb_cluster_per_proc.end(), starting_index);
 
     /// create the local to distant cluster pairs with neighbors
-    element_synchronizer.synchronizeOnce(*this, SynchronizationTag::_gm_clusters);
+    element_synchronizer.synchronizeOnce(*this,
+                                         SynchronizationTag::_gm_clusters);
 
     /// count total number of pairs
     Array<int> nb_pairs(nb_proc); // This is potentially a bug for more than
@@ -904,7 +905,7 @@ void GroupManager::fillBufferWithGroupNames(
 /* -------------------------------------------------------------------------- */
 void GroupManager::synchronizeGroupNames() {
   AKANTU_DEBUG_IN();
-
+  
   const Communicator & comm = mesh.getCommunicator();
   Int nb_proc = comm.getNbProc();
   Int my_rank = comm.whoAmI();
@@ -915,9 +916,10 @@ void GroupManager::synchronizeGroupNames() {
   if (my_rank == 0) {
     for (Int p = 1; p < nb_proc; ++p) {
       DynamicCommunicationBuffer recv_buffer;
-      comm.receive(recv_buffer, p, p);
+      auto tag = Tag::genTag(p, 0, Tag::_ELEMENT_GROUP);
+      comm.receive(recv_buffer, p, tag);
       AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(recv_buffer.size())
-                               << " from proc " << p);
+                               << " from proc " << p << " " << tag);
       this->checkAndAddGroups(recv_buffer);
     }
 
@@ -932,9 +934,10 @@ void GroupManager::synchronizeGroupNames() {
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
+    auto tag = Tag::genTag(my_rank, 0, Tag::_ELEMENT_GROUP);
     AKANTU_DEBUG_INFO("Sending " << printMemorySize<char>(comm_buffer.size())
-                                 << " to proc " << 0);
-    comm.send(comm_buffer, 0, my_rank);
+                                 << " to proc " << 0 << " " << tag);
+    comm.send(comm_buffer, 0, tag);
 
     DynamicCommunicationBuffer recv_buffer;
     comm.broadcast(recv_buffer);
@@ -1051,7 +1054,7 @@ void GroupManager::copyElementGroup(const std::string & name,
 
 /* -------------------------------------------------------------------------- */
 void GroupManager::copyNodeGroup(const std::string & name,
-                                   const std::string & new_name) {
+                                 const std::string & new_name) {
   const auto & grp = getNodeGroup(name);
   auto & new_grp = createNodeGroup(new_name);
 

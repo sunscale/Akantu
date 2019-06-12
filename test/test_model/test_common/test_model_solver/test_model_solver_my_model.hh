@@ -193,9 +193,9 @@ public:
     is_mass_assembled = true;
   }
 
-  MatrixType getMatrixType(const ID &) { return _symmetric; }
+  MatrixType getMatrixType(const ID &) override { return _symmetric; }
 
-  void assembleMatrix(const ID & matrix_id) {
+  void assembleMatrix(const ID & matrix_id) override {
     if (matrix_id == "K") {
       if (not is_stiffness_assembled)
         this->assembleStiffness();
@@ -210,7 +210,7 @@ public:
     }
   }
 
-  void assembleLumpedMatrix(const ID & matrix_id) {
+  void assembleLumpedMatrix(const ID & matrix_id) override {
     if (matrix_id == "M") {
       if (not is_lumped_mass_assembled)
         this->assembleLumpedMass();
@@ -255,7 +255,7 @@ public:
     is_stiffness_assembled = true;
   }
 
-  void assembleResidual() {
+  void assembleResidual() override {
     this->getDOFManager().assembleToResidual("disp", forces);
     internal_forces.clear();
 
@@ -377,17 +377,14 @@ public:
     return res;
   }
 
-  void predictor() {}
-  void corrector() {}
-
   /* ------------------------------------------------------------------------ */
   UInt getNbData(const Array<Element> & elements,
-                 const SynchronizationTag &) const {
+                 const SynchronizationTag &) const override {
     return elements.size() * sizeof(Real);
   }
 
   void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
-                const SynchronizationTag & tag) const {
+                const SynchronizationTag & tag) const override {
     if (tag == SynchronizationTag::_user_1) {
       for (const auto & el : elements) {
         buffer << this->stresses(el.element);
@@ -396,7 +393,7 @@ public:
   }
 
   void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
-                  const SynchronizationTag & tag) {
+                  const SynchronizationTag & tag) override {
     if (tag == SynchronizationTag::_user_1) {
       auto cit = this->mesh.getConnectivity(_segment_2, _ghost).begin(2);
 
