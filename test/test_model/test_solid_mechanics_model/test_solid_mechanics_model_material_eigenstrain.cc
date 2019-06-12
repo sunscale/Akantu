@@ -127,10 +127,8 @@ int main(int argc, char * argv[]) {
   mesh.createBoundaryGroupFromGeometry();
 
   // Loop over (Sub)Boundar(ies)
-  for (GroupManager::const_element_group_iterator it(
-           mesh.element_group_begin());
-       it != mesh.element_group_end(); ++it) {
-    for (const auto & n : it->second->getNodeGroup()) {
+  for (auto & group : mesh.iterateElementGroups()) {
+    for (const auto & n : group.getNodeGroup()) {
       std::cout << "Node " << n << std::endl;
       for (UInt i = 0; i < dim; ++i) {
         displacement(n, i) = alpha[i][0];

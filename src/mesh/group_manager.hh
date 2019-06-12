@@ -66,19 +66,16 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-#ifdef SWIGPYTHON
+#ifdef SWIG
 public:
-  using ElementGroups = std::map<std::string, ElementGroup *>;
-  using NodeGroups = std::map<std::string, NodeGroup *>;
+  using ElementGroups = std::map<std::string, std::unique_ptr<ElementGroup>>;
+  using NodeGroups = std::map<std::string, std::unique_ptr<NodeGroup>>;
 
 private:
 #else
-  using ElementGroups = std::map<std::string, ElementGroup *>;
-  using NodeGroups = std::map<std::string, NodeGroup *>;
+  using ElementGroups = std::map<std::string, std::unique_ptr<ElementGroup>>;
+  using NodeGroups = std::map<std::string, std::unique_ptr<NodeGroup>>;
 #endif
-
-public:
-  using GroupManagerTypeSet = std::set<ElementType>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -99,16 +96,22 @@ public:
   using const_element_group_iterator = ElementGroups::const_iterator;
 
 #ifndef SWIG
-#define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,    \
-                                                      param_in, param_out)     \
-  inline BOOST_PP_CAT(BOOST_PP_CAT(const_, group_type), _iterator)             \
-      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) const {    \
-    return BOOST_PP_CAT(group_type, s).function(param_out);                    \
-  };                                                                           \
-                                                                               \
-  inline BOOST_PP_CAT(group_type, _iterator)                                   \
-      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) {          \
-    return BOOST_PP_CAT(group_type, s).function(param_out);                    \
+#define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,        \
+                                                      param_in, param_out)         \
+  [[deprecated(                                                                    \
+      "use iterate(Element|Node)Groups or "                                        \
+      "(element|node)GroupExists")]] inline BOOST_PP_CAT(BOOST_PP_CAT(const_,      \
+                                                                      group_type), \
+                                                         _iterator)                \
+      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) const {        \
+    return BOOST_PP_CAT(group_type, s).function(param_out);                        \
+  };                                                                               \
+                                                                                   \
+  [[deprecated("use iterate(Element|Node)Groups or "                               \
+               "(element|node)GroupExists")]] inline BOOST_PP_CAT(group_type,      \
+                                                                  _iterator)       \
+      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) {              \
+    return BOOST_PP_CAT(group_type, s).function(param_out);                        \
   }
 
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION_NP(group_type, function) \
@@ -140,8 +143,11 @@ public:
     return make_dereference_adaptor(make_values_adaptor(element_groups));
   }
 #endif
+
+#if defined(SWIGPYTHON)
   // just for swig
-  const ElementGroups & getElementGroups() const { return element_groups; }  
+  const ElementGroups & getElementGroups() const { return element_groups; }
+#endif
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
   /* ------------------------------------------------------------------------ */
@@ -185,21 +191,21 @@ public:
   NodeGroup & createFilteredNodeGroup(const std::string & group_name,
                                       const NodeGroup & node_group, T & filter);
 
-  /// destroy a node group
-  void destroyNodeGroup(const std::string & group_name);
-
   /// create an element group from another element group but filtered
   template <typename T>
   ElementGroup &
   createFilteredElementGroup(const std::string & group_name, UInt dimension,
                              const NodeGroup & node_group, T & filter);
 
+  /// destroy a node group
+  void destroyNodeGroup(const std::string & group_name);
+
   /// destroy an element group and the associated node group
   void destroyElementGroup(const std::string & group_name,
                            bool destroy_node_group = false);
 
-  /// destroy all element groups and the associated node groups
-  void destroyAllElementGroups(bool destroy_node_groups = false);
+  // /// destroy all element groups and the associated node groups
+  // void destroyAllElementGroups(bool destroy_node_groups = false);
 
   /// create a element group using an existing node group
   ElementGroup & createElementGroup(const std::string & group_name,

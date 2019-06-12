@@ -393,7 +393,7 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   using ElementToGroup = std::vector<std::vector<std::string>>;
   ElementToGroup element_to_group(nb_element);
 
-  for (auto & eg : ElementGroupsIterable(mesh)) {
+  for (auto & eg : mesh.iterateElementGroups()) {
     const auto & name = eg.getName();
 
     for (const auto & element : eg.getElements(type, _not_ghost)) {
