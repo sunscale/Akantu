@@ -55,7 +55,6 @@ public:
   /// Setup reads mesh corresponding to element type and initializes an FEEngine
   void SetUp() override {
     const auto dim = this->dim;
-    const auto type = this->type;
     mesh = std::make_unique<Mesh>(dim);
 
     std::stringstream meshfilename;
@@ -108,6 +107,6 @@ using TestFEMFixture = TestFEMBaseFixture<type_, ShapeLagrange, _ek_regular>;
 
 using fe_engine_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_CASE(TestFEMFixture, fe_engine_types);
+TYPED_TEST_SUITE(TestFEMFixture, fe_engine_types);
 
 #endif /* __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__ */

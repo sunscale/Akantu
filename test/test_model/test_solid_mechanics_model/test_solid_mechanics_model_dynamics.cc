@@ -287,7 +287,7 @@ template <typename type_>
 using TestSMMFixtureBarExplicit =
     TestSMMFixtureBar<type_, analysis_method_t<_explicit_lumped_mass>>;
 
-TYPED_TEST_CASE(TestSMMFixtureBarExplicit, TestTypes);
+TYPED_TEST_SUITE(TestSMMFixtureBarExplicit, TestTypes);
 
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(TestSMMFixtureBarExplicit, Dynamics) {

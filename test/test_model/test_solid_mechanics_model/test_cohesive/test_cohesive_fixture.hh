@@ -333,6 +333,6 @@ using coh_types = gtest_list_t<std::tuple<
     std::tuple<_element_type_cohesive_3d_16, _element_type_hexahedron_20,
                _element_type_hexahedron_20>*/>>;
 
-TYPED_TEST_CASE(TestSMMCFixture, coh_types);
+TYPED_TEST_SUITE(TestSMMCFixture, coh_types);
 
 #endif /* __AKANTU_TEST_COHESIVE_FIXTURE_HH__ */

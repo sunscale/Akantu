@@ -155,7 +155,7 @@ protected:
 template <class T> constexpr DOFManagerType DOFManagerFixture<T>::type;
 template <class T> constexpr UInt DOFManagerFixture<T>::dim;
 
-TYPED_TEST_CASE(DOFManagerFixture, dof_manager_types);
+TYPED_TEST_SUITE(DOFManagerFixture, dof_manager_types);
 
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(DOFManagerFixture, Construction) {
