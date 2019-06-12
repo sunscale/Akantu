@@ -272,7 +272,7 @@ public:
   /// \todo protected: does not compile with intel  check why
 public:
   template <class R, class it, class IR = R,
-            bool is_tensor_ = aka::is_tensor<R>::value>
+            bool is_tensor_ = aka::is_tensor<std::decay_t<R>>::value>
   class iterator_internal;
 
 public:
