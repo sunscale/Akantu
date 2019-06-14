@@ -315,19 +315,21 @@ public:
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
 
-  dumper::Field * createNodalFieldReal(const std::string & field_name,
-                                       const std::string & group_name,
-                                       bool padding_flag) override;
+  std::shared_ptr<dumper::Field>
+  createNodalFieldReal(const std::string & field_name,
+                       const std::string & group_name,
+                       bool padding_flag) override;
 
-  dumper::Field * createNodalFieldBool(const std::string & field_name,
-                                       const std::string & group_name,
-                                       bool padding_flag) override;
+  std::shared_ptr<dumper::Field>
+  createNodalFieldBool(const std::string & field_name,
+                       const std::string & group_name,
+                       bool padding_flag) override;
 
-  dumper::Field * createElementalField(const std::string & field_name,
-                                       const std::string & group_name,
-                                       bool padding_flag,
-                                       const UInt & spatial_dimension,
-                                       const ElementKind & kind) override;
+  std::shared_ptr<dumper::Field>
+  createElementalField(const std::string & field_name,
+                       const std::string & group_name, bool padding_flag,
+                       const UInt & spatial_dimension,
+                       const ElementKind & kind) override;
 
   virtual void dump(const std::string & dumper_name);
 

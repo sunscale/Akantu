@@ -47,9 +47,9 @@ NodeGroup::NodeGroup(const std::string & name, const Mesh & mesh,
       node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1)) {
 #if defined(AKANTU_USE_IOHELPER)
   this->registerDumper<DumperParaview>("paraview_" + name, name, true);
-  this->getDumper().registerField(
-      "positions", new dumper::NodalField<Real, true>(mesh.getNodes(), 0, 0,
-                                                      &this->getNodes()));
+  auto field = std::make_shared<dumper::NodalField<Real, true>>(
+      mesh.getNodes(), 0, 0, &this->getNodes());
+  this->getDumper().registerField("positions", field);
 #endif
 }
 
@@ -95,4 +95,4 @@ void NodeGroup::printself(std::ostream & stream, int indent) const {
   stream << space << "]" << std::endl;
 }
 
-} // akantu
+} // namespace akantu

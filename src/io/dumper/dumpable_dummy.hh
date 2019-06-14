@@ -106,13 +106,14 @@ public:
   }
 
   virtual void addDumpFieldExternal(const std::string & field_id,
-                                    dumper::Field * field) {
+                                    std::shared_ptr<dumper::Field> field) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
-  virtual void addDumpFieldExternalToDumper(const std::string & dumper_name,
-                                            const std::string & field_id,
-                                            dumper::Field * field) {
+  virtual void
+  addDumpFieldExternalToDumper(const std::string & dumper_name,
+                               const std::string & field_id,
+                               std::shared_ptr<dumper::Field> field) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
@@ -221,7 +222,7 @@ public:
 protected:
   void internalAddDumpFieldToDumper(const std::string & dumper_name,
                                     const std::string & field_id,
-                                    dumper::Field * field) {
+                                    std::shared_ptr<dumper::Field> field) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
@@ -259,6 +260,6 @@ private:
 
 #pragma GCC diagnostic pop
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPABLE_DUMMY_HH__ */

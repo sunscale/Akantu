@@ -50,13 +50,7 @@ namespace akantu {
 DumperIOHelper::DumperIOHelper() = default;
 
 /* -------------------------------------------------------------------------- */
-DumperIOHelper::~DumperIOHelper() {
-  for (auto it = fields.begin(); it != fields.end(); ++it) {
-    delete it->second;
-  }
-
-  delete dumper;
-}
+DumperIOHelper::~DumperIOHelper() {}
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::setParallelContext(bool is_parallel) {
@@ -126,11 +120,12 @@ void DumperIOHelper::registerMesh(const Mesh & mesh, UInt spatial_dimension,
 #endif
 
     registerField("connectivities",
-                  new dumper::ElementalField<UInt>(mesh.getConnectivities(),
-                                                   spatial_dimension,
-                                                   ghost_type, element_kind));
+                  std::make_shared<dumper::ElementalField<UInt>>(
+                      mesh.getConnectivities(), spatial_dimension, ghost_type,
+                      element_kind));
 
-  registerField("positions", new dumper::NodalField<Real>(mesh.getNodes()));
+  registerField("positions",
+                std::make_shared<dumper::NodalField<Real>>(mesh.getNodes()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -142,17 +137,18 @@ void DumperIOHelper::registerFilteredMesh(
       mesh.getConnectivities(), elements_filter);
 
   this->registerField("connectivities",
-                      new dumper::FilteredConnectivityField(
+                      std::make_shared<dumper::FilteredConnectivityField>(
                           *f_connectivities, nodes_filter, spatial_dimension,
                           ghost_type, element_kind));
 
-  this->registerField("positions", new dumper::NodalField<Real, true>(
-                                       mesh.getNodes(), 0, 0, &nodes_filter));
+  this->registerField("positions",
+                      std::make_shared<dumper::NodalField<Real, true>>(
+                          mesh.getNodes(), 0, 0, &nodes_filter));
 }
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerField(const std::string & field_id,
-                                   dumper::Field * field) {
+                                   std::shared_ptr<dumper::Field> field) {
   auto it = fields.find(field_id);
   if (it != fields.end()) {
     AKANTU_DEBUG_WARNING(
@@ -175,13 +171,13 @@ void DumperIOHelper::unRegisterField(const std::string & field_id) {
     return;
   }
 
-  delete it->second;
   fields.erase(it);
 }
 
 /* -------------------------------------------------------------------------- */
-void DumperIOHelper::registerVariable(const std::string & variable_id,
-                                      dumper::VariableBase * variable) {
+void DumperIOHelper::registerVariable(
+    const std::string & variable_id,
+    std::shared_ptr<dumper::VariableBase> variable) {
   auto it = variables.find(variable_id);
 
   if (it != variables.end()) {
@@ -207,7 +203,6 @@ void DumperIOHelper::unRegisterVariable(const std::string & variable_id) {
     return;
   }
 
-  delete it->second;
   variables.erase(it);
 }
 
@@ -310,10 +305,10 @@ UInt getIOHelperType(ElementType type) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 namespace iohelper {
 template <> DataType getDataType<akantu::NodeFlag>() {
   return getDataType<std::underlying_type_t<akantu::NodeFlag>>();
 }
-}
+} // namespace iohelper

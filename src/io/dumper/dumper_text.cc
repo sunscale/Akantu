@@ -43,8 +43,7 @@ DumperText::DumperText(const std::string & basename,
     : DumperIOHelper() {
   AKANTU_DEBUG_IN();
 
-  iohelper::DumperText * dumper_text = new iohelper::DumperText(mode);
-  this->dumper = dumper_text;
+  this->dumper = std::make_unique<iohelper::DumperText>(mode);
   this->setBaseName(basename);
 
   this->setParallelContext(parallel);
@@ -60,13 +59,14 @@ void DumperText::registerMesh(const Mesh & mesh,
                               __attribute__((unused))
                               const ElementKind & element_kind) {
 
-  registerField("position", new dumper::NodalField<Real>(mesh.getNodes()));
+  registerField("position",
+                std::make_shared<dumper::NodalField<Real>>(mesh.getNodes()));
 
   // in parallel we need node type
   UInt nb_proc = mesh.getCommunicator().getNbProc();
   if (nb_proc > 1) {
-    registerField("nodes_type",
-                  new dumper::NodalField<NodeFlag>(mesh.getNodesFlags()));
+    registerField("nodes_type", std::make_shared<dumper::NodalField<NodeFlag>>(
+                                    mesh.getNodesFlags()));
   }
 }
 
@@ -79,14 +79,15 @@ void DumperText::registerFilteredMesh(
     __attribute__((unused)) const GhostType & ghost_type,
     __attribute__((unused)) const ElementKind & element_kind) {
 
-  registerField("position", new dumper::NodalField<Real, true>(
+  registerField("position", std::make_shared<dumper::NodalField<Real, true>>(
                                 mesh.getNodes(), 0, 0, &nodes_filter));
 
   // in parallel we need node type
   UInt nb_proc = mesh.getCommunicator().getNbProc();
   if (nb_proc > 1) {
-    registerField("nodes_type", new dumper::NodalField<NodeFlag, true>(
-                                    mesh.getNodesFlags(), 0, 0, &nodes_filter));
+    registerField("nodes_type",
+                  std::make_shared<dumper::NodalField<NodeFlag, true>>(
+                      mesh.getNodesFlags(), 0, 0, &nodes_filter));
   }
 }
 
@@ -95,7 +96,7 @@ void DumperText::setBaseName(const std::string & basename) {
   AKANTU_DEBUG_IN();
 
   DumperIOHelper::setBaseName(basename);
-  static_cast<iohelper::DumperText *>(this->dumper)
+  static_cast<iohelper::DumperText *>(this->dumper.get())
       ->setDataSubDirectory(this->filename + "-DataFiles");
   AKANTU_DEBUG_OUT();
 }
@@ -104,9 +105,9 @@ void DumperText::setBaseName(const std::string & basename) {
 void DumperText::setPrecision(UInt prec) {
   AKANTU_DEBUG_IN();
 
-  static_cast<iohelper::DumperText *>(this->dumper)->setPrecision(prec);
+  static_cast<iohelper::DumperText *>(this->dumper.get())->setPrecision(prec);
 
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

@@ -132,12 +132,13 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
     stress_components(nb_components, type);
   }
 
-  stress.initialize(getFEEngine(), _spatial_dimension = _all_dimensions,
-                    _element_kind = _ek_structural, _all_ghost_types = true,
-                    _nb_component = [&stress_components](
-                        const ElementType & type, const GhostType &) -> UInt {
-                      return stress_components(type);
-                    });
+  stress.initialize(
+      getFEEngine(), _spatial_dimension = _all_dimensions,
+      _element_kind = _ek_structural, _all_ghost_types = true,
+      _nb_component = [&stress_components](const ElementType & type,
+                                           const GhostType &) -> UInt {
+        return stress_components(type);
+      });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -279,20 +280,18 @@ void StructuralMechanicsModel::computeRotationMatrix(const ElementType & type) {
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * StructuralMechanicsModel::createNodalFieldBool(
+std::shared_ptr<dumper::Field> StructuralMechanicsModel::createNodalFieldBool(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
 
-  dumper::Field * field = NULL;
-  field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
-  return field;
+  return mesh.createNodalField(uint_nodal_fields[field_name], group_name);
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field *
+std::shared_ptr<dumper::Field>
 StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                                const std::string & group_name,
                                                bool padding_flag) {
@@ -339,12 +338,11 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * StructuralMechanicsModel::createElementalField(
+std::shared_ptr<dumper::Field> StructuralMechanicsModel::createElementalField(
     const std::string & field_name, const std::string & group_name, bool,
-    const UInt & spatial_dimension,
-    const ElementKind & kind) {
+    const UInt & spatial_dimension, const ElementKind & kind) {
 
-  dumper::Field * field = NULL;
+  std::shared_ptr<dumper::Field> field;
 
   if (field_name == "element_index_by_material")
     field = mesh.createElementalField<UInt, Vector, dumper::ElementalField>(

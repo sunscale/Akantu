@@ -88,14 +88,14 @@ public:
   };
 
   /// for connection to a FieldCompute
-  inline virtual Field * connect(__attribute__((unused))
-                                 FieldComputeProxy & proxy) {
+  inline virtual std::shared_ptr<Field> connect(__attribute__((unused))
+                                                FieldComputeProxy & proxy) {
     throw;
   };
 
   /// for connection to a FieldCompute
-  inline virtual ComputeFunctorInterface * connect(__attribute__((unused))
-                                                   HomogenizerProxy & proxy) {
+  inline virtual std::shared_ptr<ComputeFunctorInterface>
+  connect(__attribute__((unused)) HomogenizerProxy & proxy) {
     throw;
   };
 
@@ -132,6 +132,6 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_FIELD_HH__ */

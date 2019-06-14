@@ -73,7 +73,7 @@ void Model::initFullImpl(const ModelOptions & options) {
 
   initFEEngineBoundary();
 
-  //if(mesh.isPeriodic()) this->initPBC();
+  // if(mesh.isPeriodic()) this->initPBC();
 
   AKANTU_DEBUG_OUT();
 }
@@ -120,7 +120,8 @@ void Model::initNewSolver(const AnalysisMethod & method) {
 //     UInt slave = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i1) : i1;
 //     UInt master = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i2) : i2;
 
-//     AKANTU_DEBUG_INFO("pairing " << slave << " (" << Vector<Real>(coord_it[i1])
+//     AKANTU_DEBUG_INFO("pairing " << slave << " (" <<
+//     Vector<Real>(coord_it[i1])
 //                                  << ") with " << master << " ("
 //                                  << Vector<Real>(coord_it[i2]) << ")");
 // #endif
@@ -193,7 +194,7 @@ DumperIOHelper & Model::getGroupDumper(const std::string & group_name) {
 // DUMPER stuff
 /* -------------------------------------------------------------------------- */
 void Model::addDumpGroupFieldToDumper(const std::string & field_id,
-                                      dumper::Field * field,
+                                      std::shared_ptr<dumper::Field> field,
                                       DumperIOHelper & dumper) {
 #ifdef AKANTU_USE_IOHELPER
   dumper.registerField(field_id, field);
@@ -314,7 +315,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       bool padding_flag) {
 
 #ifdef AKANTU_USE_IOHELPER
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
 
   if (!field)
     field = this->createNodalFieldReal(field_id, group_name, padding_flag);

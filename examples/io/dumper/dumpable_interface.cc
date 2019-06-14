@@ -124,8 +124,9 @@ int main(int argc, char * argv[]) {
   ElementTypeMapArrayFilter<UInt> filtered_colour(
       colour, wheels_elements.getElements());
 
-  dumper::Field * colour_field_wheel =
-      new dumper::ElementalField<UInt, Vector, true>(filtered_colour);
+  auto colour_field_wheel =
+      std::make_shared<dumper::ElementalField<UInt, Vector, true>>(
+          filtered_colour);
   mesh.addDumpFieldExternal("color", colour_field_wheel);
 
   mesh.addDumpFieldExternalToDumper("wheels", "displacement", displacement);
@@ -133,7 +134,7 @@ int main(int argc, char * argv[]) {
 
   // For some specific cases the Fields should be created, as when you want to
   // pad an array
-  dumper::Field * displacement_vector_field =
+  auto displacement_vector_field =
       mesh.createNodalField(&displacement, "all", 3);
   mesh.addDumpFieldExternal("displacement_as_paraview_vector",
                             displacement_vector_field);
