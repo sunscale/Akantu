@@ -1,4 +1,4 @@
-# import pybind11
+#!/bin/env python
 import pytest
 import os
 import subprocess
@@ -100,70 +100,9 @@ def test_matrix_copy():
     assert(ptr != ptr2)
 
 
-@pytest.fixture
-def dcb_mesh():
-
-    geo_file = 'mesh_dcb_2d.geo'
-    mesh_file = 'mesh_dcb_2d.msh'
-
-    if os.path.exists(mesh_file):
-        return mesh_file
-
-    open(geo_file, 'w').write("""
-//Mesh size
-dx = 57.8e-5;
-
-Point(1) = {0,0,0,dx};
-Point(2) = {0,0.00055,0,dx};
-Point(3) = {0,-0.00055,0,dx};
-Point(4) = {57.8e-3,0,0,dx};
-Point(5) = {57.8e-3,0.00055,0,dx};
-Point(6) = {57.8e-3,-0.00055,0,dx};
-Line(1) = {1, 2};
-Line(2) = {2, 5};
-Line(3) = {5, 4};
-Line(4) = {1, 4};
-Line(5) = {1, 3};
-Line(6) = {6, 4};
-Line(7) = {3, 6};
-Line Loop(8) = {2, 3, -4, 1};
-Plane Surface(9) = {-8};
-Line Loop(10) = {5, 7, 6, -4};
-Plane Surface(11) = {10};
-Physical Surface("bulk") = {9,11};
-Physical Line("coh") = {4};
-Physical Line("edge") = {1};
-Transfinite Surface "*";
-Recombine Surface "*";
-Mesh.SecondOrderIncomplete = 1;
-    """)
-
-    ret = subprocess.call(
-        'gmsh -format msh2 -2 {0} -order 2 -o {1}'.format(
-            geo_file, mesh_file), shell=True)
-    if not ret == 0:
-        raise Exception(
-            'execution of GMSH failed: do you have it installed ?')
-    return mesh_file
-
-
-@pytest.fixture
-def elastic_material():
-    mat_file = 'elastic.dat'
-    open(mat_file, 'w').write("""
-    material elastic [
-         name    = bulk
-         rho     = 2500
-         nu      = 0.22
-         E       = 71e9
-]
-""")
-    return mat_file
-
-
-def test_multiple_init(dcb_mesh):
-
-    aka.parseInput(elastic_material)
+def test_multiple_init():
+    aka.parseInput("elastic.dat")
+    dcb_mesh = 'mesh_dcb_2d.msh'
 
     print('First initialisation')
     mesh = aka.Mesh(2)
@@ -184,7 +123,7 @@ def test_multiple_init(dcb_mesh):
     print('All right')
 
 
-def test_boundary_condition_functors(dcb_mesh, elastic_material):
+def test_boundary_condition_functors():
 
     class FixedValue(aka.DirichletFunctor):
         def __init__(self, value, axis):
@@ -204,10 +143,10 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
         def __call__(self, quad_point, dual, coord, normals):
             dual[:] = np.dot(self.stress, normals)
 
-    aka.parseInput(elastic_material)
+    aka.parseInput("elastic.dat")
 
     mesh = aka.Mesh(2)
-    mesh.read(dcb_mesh)
+    mesh.read("mesh_dcb_2d.msh")
 
     model = aka.SolidMechanicsModel(mesh, 2)
     model.initFull()
@@ -217,7 +156,8 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
     stress = np.array([[1, 0],
                        [0, 0]])
 
-    blocked_nodes = mesh.getElementGroup("edge").getNodes().flatten()
+    blocked_nodes = \
+        mesh.getElementGroup("edge").getNodeGroup().getNodes().flatten()
     boundary = model.getBlockedDOFs()
 
     # Testing that nodes are correctly blocked
@@ -236,10 +176,9 @@ def test_boundary_condition_functors(dcb_mesh, elastic_material):
     return 0
 
 
-def test_mesh_interface(dcb_mesh):
-
+def test_mesh_interface():
     mesh = aka.Mesh(2)
-    mesh.read(dcb_mesh)
+    mesh.read("mesh_dcb_2d.msh")
 
     # Tests the getNbElement() function
     if mesh.getNbElement(aka._quadrangle_8) != mesh.getNbElement(2):
@@ -250,9 +189,12 @@ def test_mesh_interface(dcb_mesh):
 
 
 def test_heat_transfer():
-
     mesh = aka.Mesh(2)
     model = aka.HeatTransferModel(mesh)
     print(aka._explicit_lumped_mass)
     model.initFull(aka._explicit_lumped_mass)
 
+
+if __name__ == '__main__':
+    import sys
+    pytest.main(sys.argv)

@@ -95,7 +95,7 @@ void SolidMechanicsModel::assembleMassLumped() {
                          "elements, beware that they have lumped mass of 0.");
 #endif
 
-  this->synchronize(_gst_smm_mass);
+  this->synchronize(SynchronizationTag::_smm_mass);
 
   need_to_reassemble_lumped_mass = false;
 

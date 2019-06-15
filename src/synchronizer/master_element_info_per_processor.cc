@@ -367,7 +367,7 @@ void MasterElementInfoPerProc::fillTagBuffer(
     std::vector<DynamicCommunicationBuffer> & buffers,
     const std::string & tag_name) {
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, extra_param, elem)          \
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+  case MeshDataTypeCode::BOOST_PP_TUPLE_ELEM(2, 0, elem): {             \
     this->fillTagBufferTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(buffers,     \
                                                                   tag_name);   \
     break;                                                                     \
@@ -393,7 +393,7 @@ void MasterElementInfoPerProc::synchronizeGroups() {
   using ElementToGroup = std::vector<std::vector<std::string>>;
   ElementToGroup element_to_group(nb_element);
 
-  for (auto & eg : ElementGroupsIterable(mesh)) {
+  for (auto & eg : mesh.iterateElementGroups()) {
     const auto & name = eg.getName();
 
     for (const auto & element : eg.getElements(type, _not_ghost)) {

@@ -34,8 +34,6 @@
 
 using namespace akantu;
 
-namespace {
-
 TYPED_TEST(TestFEMFixture, InverseMap) {
   this->fem->initShapeFunctions();
 
@@ -70,5 +68,3 @@ TYPED_TEST(TestFEMFixture, InverseMap) {
     }
   }
 }
-
-} // namespace

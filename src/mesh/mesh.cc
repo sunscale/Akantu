@@ -153,10 +153,6 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
     return *mesh_facets;
   }
 
-  if (not mesh_facets->hasData("physical_names")) {
-    mesh_facets->registerElementalData<std::string>("physical_names");
-  }
-
   auto & mesh_phys_data = this->getData<std::string>("physical_names");
   auto & phys_data = mesh_facets->getData<std::string>("physical_names");
   phys_data.initialize(*mesh_facets, _spatial_dimension = spatial_dimension - 1,
@@ -286,9 +282,7 @@ void Mesh::makeReady() {
 
 /* -------------------------------------------------------------------------- */
 void Mesh::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "Mesh [" << std::endl;
   stream << space << " + id                : " << getID() << std::endl;
@@ -435,8 +429,8 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 /* -------------------------------------------------------------------------- */
 void Mesh::distributeImpl(
     Communicator & communicator,
-    std::function<Int(const Element &, const Element &)> edge_weight_function,
-    std::function<Int(const Element &)> vertex_weight_function) {
+    std::function<Int(const Element &, const Element &)> edge_weight_function [[gnu::unused]],
+    std::function<Int(const Element &)> vertex_weight_function [[gnu::unused]]) {
   AKANTU_DEBUG_ASSERT(is_distributed == false,
                       "This mesh is already distribute");
   this->communicator = &communicator;

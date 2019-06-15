@@ -91,10 +91,22 @@ template <typename T>
 void Communicator::allReduceImpl(T *, int, SynchronizerOperation) const {}
 
 template <typename T>
-void Communicator::scanImpl(T *, int, SynchronizerOperation) const {}
+void Communicator::scanImpl(T * values, T * result, int n,
+                            SynchronizerOperation) const {
+  if (values == result)
+    return;
+
+  std::copy_n(values, n, result);
+}
 
 template <typename T>
-void Communicator::exclusiveScanImpl(T *, int, SynchronizerOperation) const {}
+void Communicator::exclusiveScanImpl(T * values, T * result, int n,
+                                     SynchronizerOperation) const {
+  if (values == result)
+    return;
+
+  std::copy_n(values, n, result);
+}
 
 template <typename T> inline void Communicator::allGatherImpl(T *, int) const {}
 template <typename T>

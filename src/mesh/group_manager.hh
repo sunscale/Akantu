@@ -66,11 +66,8 @@ class GroupManager {
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 private:
-  using ElementGroups = std::map<std::string, ElementGroup *>;
-  using NodeGroups = std::map<std::string, NodeGroup *>;
-
-public:
-  using GroupManagerTypeSet = std::set<ElementType>;
+  using ElementGroups = std::map<std::string, std::unique_ptr<ElementGroup>>;
+  using NodeGroups = std::map<std::string, std::unique_ptr<NodeGroup>>;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -92,12 +89,16 @@ public:
 
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,    \
                                                       param_in, param_out)     \
-  inline BOOST_PP_CAT(BOOST_PP_CAT(const_, group_type), _iterator)             \
+  [[deprecated(                                                                    \
+      "use iterate(Element|Node)Groups or "                                        \
+      "(element|node)GroupExists")]] inline BOOST_PP_CAT(BOOST_PP_CAT(const_, group_type), _iterator)             \
       BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) const {    \
     return BOOST_PP_CAT(group_type, s).function(param_out);                    \
   };                                                                           \
                                                                                \
-  inline BOOST_PP_CAT(group_type, _iterator)                                   \
+  [[deprecated(                                                                    \
+      "use iterate(Element|Node)Groups or "                                        \
+      "(element|node)GroupExists")]] inline BOOST_PP_CAT(group_type, _iterator)                                   \
       BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) {          \
     return BOOST_PP_CAT(group_type, s).function(param_out);                    \
   }
@@ -121,10 +122,17 @@ public:
   decltype(auto) iterateNodeGroups() const {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
   }
+
+  decltype(auto) iterateElementGroups() {
+    return make_dereference_adaptor(make_values_adaptor(element_groups));
+  }
+  decltype(auto) iterateElementGroups() const {
+    return make_dereference_adaptor(make_values_adaptor(element_groups));
+  }
+
   /* ------------------------------------------------------------------------ */
   /* Clustering filter                                                        */
-  /* -------------------------------------------------------------------9+
------ */
+  /* ------------------------------------------------------------------------ */
 public:
   class ClusteringFilter {
   public:
@@ -139,18 +147,31 @@ public:
   NodeGroup & createNodeGroup(const std::string & group_name,
                               bool replace_group = false);
 
-  /// create a node group from another node group but filtered
-  template <typename T>
-  NodeGroup & createFilteredNodeGroup(const std::string & group_name,
-                                      const NodeGroup & node_group, T & filter);
-
-  /// destroy a node group
-  void destroyNodeGroup(const std::string & group_name);
-
   /// create an element group and the associated node group
   ElementGroup & createElementGroup(const std::string & group_name,
                                     UInt dimension = _all_dimensions,
                                     bool replace_group = false);
+
+  /* ------------------------------------------------------------------------ */
+  /// renames an element group
+  void renameElementGroup(const std::string & name,
+                          const std::string & new_name);
+
+  /// renames a node group
+  void renameNodeGroup(const std::string & name, const std::string & new_name);
+
+  /// copy an existing element group
+  void copyElementGroup(const std::string & name, const std::string & new_name);
+
+  /// copy an existing node group
+  void copyNodeGroup(const std::string & name, const std::string & new_name);
+
+  /* ------------------------------------------------------------------------ */
+
+  /// create a node group from another node group but filtered
+  template <typename T>
+  NodeGroup & createFilteredNodeGroup(const std::string & group_name,
+                                      const NodeGroup & node_group, T & filter);
 
   /// create an element group from another element group but filtered
   template <typename T>
@@ -158,12 +179,15 @@ public:
   createFilteredElementGroup(const std::string & group_name, UInt dimension,
                              const NodeGroup & node_group, T & filter);
 
+  /// destroy a node group
+  void destroyNodeGroup(const std::string & group_name);
+
   /// destroy an element group and the associated node group
   void destroyElementGroup(const std::string & group_name,
                            bool destroy_node_group = false);
 
-  /// destroy all element groups and the associated node groups
-  void destroyAllElementGroups(bool destroy_node_groups = false);
+  // /// destroy all element groups and the associated node groups
+  // void destroyAllElementGroups(bool destroy_node_groups = false);
 
   /// create a element group using an existing node group
   ElementGroup & createElementGroup(const std::string & group_name,
@@ -270,7 +294,7 @@ protected:
   /* Accessor                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  AKANTU_GET_MACRO(ElementGroups, element_groups, const ElementGroups &);
+  // AKANTU_GET_MACRO(ElementGroups, element_groups, const ElementGroups &);
 
   const ElementGroup & getElementGroup(const std::string & name) const;
   const NodeGroup & getNodeGroup(const std::string & name) const;
@@ -280,6 +304,19 @@ public:
 
   UInt getNbElementGroups(UInt dimension = _all_dimensions) const;
   UInt getNbNodeGroups() { return node_groups.size(); };
+
+  bool elementGroupExists(const std::string & name) {
+    return element_groups.find(name) != element_groups.end();
+  }
+
+  bool nodeGroupExists(const std::string & name) {
+    return node_groups.find(name) != node_groups.end();
+  }
+
+private:
+  template <typename GroupsType>
+  void renameGroup(GroupsType & groups, const std::string & name,
+                   const std::string & new_name);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

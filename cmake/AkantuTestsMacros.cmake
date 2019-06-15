@@ -123,6 +123,21 @@ macro tries to determine it in a "clever" way
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
+function(_add_file_to_copy target file)
+  get_filename_component(_file_name ${file} NAME_WE)
+  add_custom_target(copy_${_file_name}_${target}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${file})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${CMAKE_CURRENT_SOURCE_DIR}/${file}
+		${CMAKE_CURRENT_BINARY_DIR}/${file}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file}
+    COMMENT "Copying file ${file} for the target ${target}"
+    )
+  add_dependencies(${target} copy_${_file_name}_${target})
+endfunction()
+
 # ==============================================================================
 macro(add_test_tree dir)
   if(AKANTU_TESTS)
@@ -486,7 +501,7 @@ function(register_test test_name)
   # copy the needed files to the build folder
   if(_register_test_FILES_TO_COPY)
     foreach(_file ${_register_test_FILES_TO_COPY})
-      file(COPY "${_file}" DESTINATION .)
+      _add_file_to_copy(${test_name} "${_file}")
     endforeach()
   endif()
 
@@ -504,11 +519,12 @@ function(register_test test_name)
   # register the test for ctest
   set(_arguments -n "${test_name}")
   if(_register_test_SCRIPT)
-    file(COPY ${_register_test_SCRIPT}
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                       GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-      DESTINATION .
-      )
+    _add_file_to_copy(${test_name} ${_register_test_SCRIPT})
+    # file(COPY ${_register_test_SCRIPT}
+    #   FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    #                    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    #   DESTINATION .
+    #   )
  
     if(_register_test_PYTHON)
       if(NOT PYTHONINTERP_FOUND)
@@ -520,7 +536,7 @@ function(register_test test_name)
       list(APPEND _arguments -e "./${_register_test_SCRIPT}")
     endif()
   elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
-    file(COPY ${test_name}.sh DESTINATION .)
+    _add_file_to_copy(${test_name} ${test_name}.sh)
     list(APPEND _arguments -e "./${test_name}.sh")
   else()
     list(APPEND _arguments -e "./${test_name}")

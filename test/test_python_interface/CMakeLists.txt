@@ -20,11 +20,14 @@
 # You should  have received  a copy  of the GNU  Lesser General  Public License along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
-pybind11_add_module(py11_akantu_test_common test_common.cc)
+akantu_pybind11_add_module(py11_akantu_test_common MODULE test_common.cc)
 target_link_libraries(py11_akantu_test_common PRIVATE pyakantu)
-set_property(TARGET py11_akantu_test_common PROPERTY DEBUG_POSTFIX "")
 
-message("@Nico: please help making this better")
-add_test(test_pybind11_common pytest-3 -v)
-file(COPY test_pybind.py DESTINATION .)
+add_mesh(mesh_dcb_2d mesh_dcb_2d.geo 2 1)
+
+register_test(test_python_interface
+  SCRIPT test_pybind.py
+  FILES_TO_COPY elastic.dat
+  DEPENDS mesh_dcb_2d py11_akantu_test_common
+  PACKAGE python_interface
+  )

@@ -156,7 +156,7 @@ int main(int argc, char * argv[]) {
 
   try {
     model.solveStep();
-  } catch (debug::Exception e) {
+  } catch (debug::Exception & e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }

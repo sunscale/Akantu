@@ -62,6 +62,8 @@ public:
                const std::string & id = "element_group",
                const MemoryID & memory_id = 0);
 
+  ElementGroup(const ElementGroup &);
+  
   /* ------------------------------------------------------------------------ */
   /* Type definitions                                                         */
   /* ------------------------------------------------------------------------ */
@@ -133,6 +135,9 @@ public:
   // sort and remove duplicated values
   void optimize();
 
+  /// change the dimension if needed
+  void addDimension(UInt dimension);
+
 private:
   inline void addElement(const ElementType & elem_type, UInt elem_id,
                          const GhostType & ghost_type);
@@ -147,9 +152,13 @@ public:
   getElements(const ElementType & type,
               const GhostType & ghost_type = _not_ghost) const;
   AKANTU_GET_MACRO(Elements, elements, const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
+  AKANTU_GET_MACRO_NOT_CONST(Elements, elements, ElementTypeMapArray<UInt> &);
+  
+//  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
+
   AKANTU_GET_MACRO(NodeGroup, node_group, const NodeGroup &);
   AKANTU_GET_MACRO_NOT_CONST(NodeGroup, node_group, NodeGroup &);
+
   AKANTU_GET_MACRO(Dimension, dimension, UInt);
   AKANTU_GET_MACRO(Name, name, std::string);
   inline UInt getNbNodes() const;

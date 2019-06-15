@@ -148,9 +148,7 @@ void ShapeLagrangeBase::onElementsRemoved(
 
 /* -------------------------------------------------------------------------- */
 void ShapeLagrangeBase::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "Shapes Lagrange [" << std::endl;
   ShapeFunctions::printself(stream, indent + 1);

@@ -188,11 +188,12 @@ public:
 
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
   inline void push_back(const C<T> & new_elem);
 
-  /// changes the allocated size but not the size
-  virtual void reserve(UInt size);
+  /// changes the allocated size but not the size, if new_size = 0, the size is
+  /// set to min(current_size and reserve size)
+  virtual void reserve(UInt size, UInt new_size = UInt(-1));
 
   /// change the size of the Array
   virtual void resize(UInt size);
@@ -234,11 +235,13 @@ public:
 
   ~Array() override;
 
+  Array() : Array(0) {};
+  
   /// Allocation of a new vector
-  Array(UInt size = 0, UInt nb_component = 1, const ID & id = "");
+  explicit Array(UInt size, UInt nb_component = 1, const ID & id = "");
 
   /// Allocation of a new vector with a default value
-  Array(UInt size, UInt nb_component, const_reference value,
+  explicit Array(UInt size, UInt nb_component, const_reference value,
         const ID & id = "");
 
   /// Copy constructor (deep copy if deep=true)
@@ -262,7 +265,7 @@ public:
   /// \todo protected: does not compile with intel  check why
 public:
   template <class R, class it, class IR = R,
-            bool is_tensor_ = is_tensor<R>::value>
+            bool is_tensor_ = aka::is_tensor<std::decay_t<R>>::value>
   class iterator_internal;
 
 public:
@@ -330,7 +333,7 @@ public:
 
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
   inline void push_back(const C<T> & new_elem) {
     parent::push_back(new_elem);
   }
@@ -346,7 +349,7 @@ public:
 
   /// @see Array::find(const_reference elem) const
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
   inline UInt find(const C<T> & elem);
 
   /// set all entries of the array to the value t
@@ -361,7 +364,7 @@ public:
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
   template <template <typename> class C,
-            typename = std::enable_if_t<is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
   inline void set(const C<T> & vm);
 
   /// Append the content of the other array to the current one

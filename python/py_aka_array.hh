@@ -40,16 +40,15 @@ public:
 
   ~Proxy() { this->values = nullptr; }
 
-  void resize(__attribute__((unused)) UInt size,
-              __attribute__((unused)) const T & val) override final {
+  void resize(UInt /*size*/, const T & /*val */) override final {
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 
-  void resize(__attribute__((unused)) UInt new_size) override final {
+  void resize(UInt /*new_size*/) override final {
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 
-  void reserve(__attribute__((unused)) UInt new_size) override final {
+  void reserve(UInt /*size*/, UInt /*new_size*/) override final {
     AKANTU_EXCEPTION("cannot resize a temporary array");
   }
 };

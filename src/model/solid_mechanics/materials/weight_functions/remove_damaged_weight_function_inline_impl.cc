@@ -68,7 +68,7 @@ inline UInt
 RemoveDamagedWeightFunction::getNbData(const Array<Element> & elements,
                                        const SynchronizationTag & tag) const {
 
-  if (tag == _gst_mnl_weight)
+  if (tag == SynchronizationTag::_mnl_weight)
     return this->manager.getModel().getNbIntegrationPoints(elements) *
            sizeof(Real);
 
@@ -80,7 +80,7 @@ inline void
 RemoveDamagedWeightFunction::packData(CommunicationBuffer & buffer,
                                       const Array<Element> & elements,
                                       const SynchronizationTag & tag) const {
-  if (tag == _gst_mnl_weight) {
+  if (tag == SynchronizationTag::_mnl_weight) {
     DataAccessor<Element>::packElementalDataHelper<Real>(
         *damage, buffer, elements, true,
         this->manager.getModel().getFEEngine());
@@ -92,7 +92,7 @@ inline void
 RemoveDamagedWeightFunction::unpackData(CommunicationBuffer & buffer,
                                         const Array<Element> & elements,
                                         const SynchronizationTag & tag) {
-  if (tag == _gst_mnl_weight) {
+  if (tag == SynchronizationTag::_mnl_weight) {
     DataAccessor<Element>::unpackElementalDataHelper<Real>(
         *damage, buffer, elements, true,
         this->manager.getModel().getFEEngine());

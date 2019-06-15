@@ -51,38 +51,38 @@ register_test(test_sparse_solver_mumps
   PARALLEL
   )
 
-register_test(test_petsc_matrix_profile
-  SOURCES test_petsc_matrix_profile.cc
-  DEPENDS test_matrix_mesh
-  PACKAGE petsc
-  )
+# register_test(test_petsc_matrix_profile
+#   SOURCES test_petsc_matrix_profile.cc
+#   DEPENDS test_matrix_mesh
+#   PACKAGE petsc
+#   )
 
-register_test(test_petsc_matrix_profile_parallel
-  SOURCES test_petsc_matrix_profile_parallel.cc
-  DEPENDS test_matrix_mesh
-  PACKAGE petsc
-  )
+# register_test(test_petsc_matrix_profile_parallel
+#   SOURCES test_petsc_matrix_profile_parallel.cc
+#   DEPENDS test_matrix_mesh
+#   PACKAGE petsc
+#   )
 
-register_test(test_petsc_matrix_diagonal
-  SOURCES test_petsc_matrix_diagonal.cc
-  DEPENDS test_solver_mesh
-  PACKAGE petsc
-  )
+# register_test(test_petsc_matrix_diagonal
+#   SOURCES test_petsc_matrix_diagonal.cc
+#   DEPENDS test_solver_mesh
+#   PACKAGE petsc
+#   )
 
-register_test(test_petsc_matrix_apply_boundary
-  SOURCES test_petsc_matrix_apply_boundary.cc
-  DEPENDS test_solver_mesh
-  PACKAGE petsc
-  )
+# register_test(test_petsc_matrix_apply_boundary
+#   SOURCES test_petsc_matrix_apply_boundary.cc
+#   DEPENDS test_solver_mesh
+#   PACKAGE petsc
+#   )
 
-register_test(test_solver_petsc
-  SOURCES test_solver_petsc.cc
-  DEPENDS test_solver_petsc_mesh
-  PACKAGE petsc
-  )
+# register_test(test_solver_petsc
+#   SOURCES test_solver_petsc.cc
+#   DEPENDS test_solver_petsc_mesh
+#   PACKAGE petsc
+#   )
 
-register_test(test_solver_petsc_parallel
-  SOURCES test_solver_petsc.cc
-  DEPENDS test_solver_petsc_mesh
-  PACKAGE petsc
-  )
+# register_test(test_solver_petsc_parallel
+#   SOURCES test_solver_petsc.cc
+#   DEPENDS test_solver_petsc_mesh
+#   PACKAGE petsc
+#   )

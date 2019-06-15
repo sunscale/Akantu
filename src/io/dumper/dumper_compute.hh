@@ -116,7 +116,7 @@ public:
 public:
   FieldCompute(SubFieldCompute & cont, ComputeFunctorInterface & func)
       : sub_field(cont),
-        func(dynamic_cast<ComputeFunctor<sub_return_type, return_type> &>(
+        func(aka::as_type<ComputeFunctor<sub_return_type, return_type>>(
             func)) {
     this->checkHomogeneity();
   };

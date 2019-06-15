@@ -1,0 +1,6 @@
+material elastic [
+         name    = bulk
+         rho     = 2500
+         nu      = 0.22
+         E       = 71e9
+]

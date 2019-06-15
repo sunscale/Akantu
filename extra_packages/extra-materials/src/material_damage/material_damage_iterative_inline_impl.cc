@@ -55,7 +55,7 @@ template <UInt spatial_dimension>
 inline UInt MaterialDamageIterative<spatial_dimension>::getNbData(
     const Array<Element> & elements, const SynchronizationTag & tag) const {
 
-  if (tag == _gst_user_2) {
+  if (tag == SynchronizationTag::_user_2) {
     return sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
   }
 
@@ -67,7 +67,7 @@ template <UInt spatial_dimension>
 inline void MaterialDamageIterative<spatial_dimension>::packData(
     CommunicationBuffer & buffer, const Array<Element> & elements,
     const SynchronizationTag & tag) const {
-  if (tag == _gst_user_2) {
+  if (tag == SynchronizationTag::_user_2) {
     DataAccessor<Element>::packElementalDataHelper(
         this->damage, buffer, elements, true, this->damage.getFEEngine());
   }
@@ -80,7 +80,7 @@ template <UInt spatial_dimension>
 inline void MaterialDamageIterative<spatial_dimension>::unpackData(
     CommunicationBuffer & buffer, const Array<Element> & elements,
     const SynchronizationTag & tag) {
-  if (tag == _gst_user_2) {
+  if (tag == SynchronizationTag::_user_2) {
     DataAccessor<Element>::unpackElementalDataHelper(
         this->damage, buffer, elements, true, this->damage.getFEEngine());
   }

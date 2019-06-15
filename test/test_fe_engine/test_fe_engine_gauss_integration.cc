@@ -133,22 +133,22 @@ template <typename T> constexpr size_t TestGaussIntegrationFixture<T>::degree;
 /* -------------------------------------------------------------------------- */
 /* Tests                                                                      */
 /* -------------------------------------------------------------------------- */
-TYPED_TEST_CASE_P(TestGaussIntegrationFixture);
+TYPED_TEST_SUITE_P(TestGaussIntegrationFixture);
 
 TYPED_TEST_P(TestGaussIntegrationFixture, ArbitraryOrder) {
   this->testIntegrate();
 }
 
-REGISTER_TYPED_TEST_CASE_P(TestGaussIntegrationFixture, ArbitraryOrder);
+REGISTER_TYPED_TEST_SUITE_P(TestGaussIntegrationFixture, ArbitraryOrder);
 
 using TestTypes = gtest_list_t<
     tuple_split_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Split1, TestGaussIntegrationFixture, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Split1, TestGaussIntegrationFixture, TestTypes);
 
 using TestTypesTail = gtest_list_t<
     tuple_split_tail_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Split2, TestGaussIntegrationFixture,
+INSTANTIATE_TYPED_TEST_SUITE_P(Split2, TestGaussIntegrationFixture,
                               TestTypesTail);
 }

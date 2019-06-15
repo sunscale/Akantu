@@ -95,7 +95,7 @@ void NTRFContact::addSurface(const ID & surf) {
     this->contact_surfaces.insert(&boundary);
 
     // find slave nodes
-    for (auto && node : boundary.getNodes()) {
+    for (auto && node : boundary.getNodeGroup().getNodes()) {
       if (not mesh_ref.isPeriodicSlave(node)) {
         this->addSplitNode(node);
       }

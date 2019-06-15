@@ -1,17 +1,7 @@
 /* -------------------------------------------------------------------------- */
-#include "py_aka_common.hh"
-#include "py_aka_boundary_conditions.hh"
-#include "py_aka_error.hh"
-#include "py_aka_fe_engine.hh"
-#include "py_aka_heat_transfer_model.hh"
-#include "py_aka_material.hh"
-#include "py_aka_mesh.hh"
-#include "py_aka_model.hh"
-#include "py_aka_parser.hh"
-#include "py_aka_solid_mechanics_model.hh"
-#include "py_aka_solid_mechanics_model_cohesive.hh"
-/* -------------------------------------------------------------------------- */
 #include <aka_common.hh>
+/* -------------------------------------------------------------------------- */
+#include <boost/preprocessor.hpp>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -22,7 +12,21 @@ namespace py = pybind11;
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+#define PY_AKANTU_PP_VALUE(s, data, elem)                                      \
+  .value(BOOST_PP_STRINGIZE(elem), BOOST_PP_CAT(data, elem))
 
+#define PY_AKANTU_REGISTER_ENUM_(type_name, list, prefix, mod)                 \
+  py::enum_<type_name>(mod, BOOST_PP_STRINGIZE(type_name))                     \
+      BOOST_PP_SEQ_FOR_EACH(PY_AKANTU_PP_VALUE, prefix, list)                  \
+          .export_values()
+
+#define PY_AKANTU_REGISTER_CLASS_ENUM(type_name, list, mod)                    \
+  PY_AKANTU_REGISTER_ENUM_(type_name, list, type_name::_, mod)
+
+#define PY_AKANTU_REGISTER_ENUM(type_name, list, mod)                          \
+  PY_AKANTU_REGISTER_ENUM_(type_name, list, , mod)
+
+/* -------------------------------------------------------------------------- */
 void register_initialize(py::module & mod) {
   mod.def("__initialize", []() {
     int nb_args = 0;
@@ -30,8 +34,6 @@ void register_initialize(py::module & mod) {
     initialize(nb_args, null);
   });
 }
-
-/* -------------------------------------------------------------------------- */
 
 void register_enums(py::module & mod) {
   py::enum_<SpatialDirection>(mod, "SpatialDirection")
@@ -48,39 +50,15 @@ void register_enums(py::module & mod) {
       .value("_explicit_consistent_mass", _explicit_consistent_mass)
       .export_values();
 
-  py::enum_<NonLinearSolverType>(mod, "NonLinearSolverType")
-      .value("_nls_linear", _nls_linear)
-      .value("_nls_newton_raphson", _nls_newton_raphson)
-      .value("_nls_newton_raphson_modified", _nls_newton_raphson_modified)
-      .value("_nls_lumped", _nls_lumped)
-      .value("_nls_auto", _nls_auto)
-      .export_values();
+  PY_AKANTU_REGISTER_CLASS_ENUM(NonLinearSolverType,
+                                AKANTU_NON_LINEAR_SOLVER_TYPES, mod);
+  PY_AKANTU_REGISTER_CLASS_ENUM(TimeStepSolverType,
+                                AKANTU_TIME_STEP_SOLVER_TYPE, mod);
 
-  py::enum_<TimeStepSolverType>(mod, "TimeStepSolverType")
-      .value("_tsst_static", _tsst_static)
-      .value("_tsst_dynamic", _tsst_dynamic)
-      .value("_tsst_dynamic_lumped", _tsst_dynamic_lumped)
-      .value("_tsst_not_defined", _tsst_not_defined)
-      .export_values();
-
-  py::enum_<IntegrationSchemeType>(mod, "IntegrationSchemeType")
-      .value("_ist_pseudo_time", _ist_pseudo_time)
-      .value("_ist_forward_euler", _ist_forward_euler)
-      .value("_ist_trapezoidal_rule_1", _ist_trapezoidal_rule_1)
-      .value("_ist_backward_euler", _ist_backward_euler)
-      .value("_ist_central_difference", _ist_central_difference)
-      .value("_ist_fox_goodwin", _ist_fox_goodwin)
-      .value("_ist_trapezoidal_rule_2", _ist_trapezoidal_rule_2)
-      .value("_ist_linear_acceleration", _ist_linear_acceleration)
-      .value("_ist_newmark_beta", _ist_newmark_beta)
-      .value("_ist_generalized_trapezoidal", _ist_generalized_trapezoidal)
-      .export_values();
-
-  py::enum_<SolveConvergenceCriteria>(mod, "SolveConvergenceCriteria")
-      .value("_scc_residual", _scc_residual)
-      .value("_scc_solution", _scc_solution)
-      .value("_scc_residual_mass_wgh", _scc_residual_mass_wgh)
-      .export_values();
+  PY_AKANTU_REGISTER_CLASS_ENUM(IntegrationSchemeType,
+                                AKANTU_INTEGRATION_SCHEME_TYPE, mod);
+  PY_AKANTU_REGISTER_CLASS_ENUM(SolveConvergenceCriteria,
+                                AKANTU_SOLVE_CONVERGENCE_CRITERIA, mod);
 
   py::enum_<CohesiveMethod>(mod, "CohesiveMethod")
       .value("_intrinsic", _intrinsic)
@@ -101,41 +79,17 @@ void register_enums(py::module & mod) {
       .value("_miot_abaqus", _miot_abaqus)
       .export_values();
 
-  py::enum_<ModelType>(mod, "ModelType")
-      .value("_model", ModelType::_model)
-      .value("_solid_mechanics_model", ModelType::_solid_mechanics_model)
-      .value("_solid_mechanics_model_cohesive",
-             ModelType::_solid_mechanics_model_cohesive)
-      .value("_heat_transfer_model", ModelType::_heat_transfer_model)
-      .value("_structural_mechanics_model",
-             ModelType::_structural_mechanics_model)
-      .value("_embedded_model", ModelType::_embedded_model)
-      .export_values();
-
-  py::enum_<ElementType>(mod, "ElementType")
-      .value("_point_1", _point_1)
-      .value("_segment_2", _segment_2)
-      .value("_segment_3", _segment_3)
-      .value("_triangle_3", _triangle_3)
-      .value("_triangle_6", _triangle_6)
-      .value("_quadrangle_4", _quadrangle_4)
-      .value("_quadrangle_8", _quadrangle_8)
-      .value("_tetrahedron_4", _tetrahedron_4)
-      .value("_tetrahedron_10", _tetrahedron_10)
-      .value("_pentahedron_6", _pentahedron_6)
-      .value("_pentahedron_15", _pentahedron_15)
-      .value("_hexahedron_8", _hexahedron_8)
-      .value("_hexahedron_20", _hexahedron_20)
-      .export_values();
-
-  py::enum_<ElementKind>(mod, "ElementKind")
-      .value("_ek_regular", _ek_regular)
-      .export_values();
-
   py::enum_<MatrixType>(mod, "MatrixType")
       .value("_unsymmetric", _unsymmetric)
       .value("_symmetric", _symmetric)
       .export_values();
+
+  PY_AKANTU_REGISTER_ENUM(ElementType, AKANTU_ALL_ELEMENT_TYPE(_not_defined),
+                          mod);
+  PY_AKANTU_REGISTER_ENUM(ElementKind, AKANTU_ELEMENT_KIND(_ek_not_defined),
+                          mod);
+
+  PY_AKANTU_REGISTER_CLASS_ENUM(ModelType, AKANTU_MODEL_TYPES, mod);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -155,23 +109,5 @@ void register_functions(py::module & mod) {
 }
 
 #undef AKANTU_PP_STR_TO_TYPE2
-
-/* -------------------------------------------------------------------------- */
-
-__attribute__((visibility("default"))) void register_all(py::module & mod) {
-  register_initialize(mod);
-  register_enums(mod);
-  register_error(mod);
-  register_functions(mod);
-  register_parser(mod);
-  register_boundary_conditions(mod);
-  register_fe_engine(mod);
-  register_model(mod);
-  register_heat_transfer_model(mod);
-  register_solid_mechanics_model(mod);
-  register_solid_mechanics_model_cohesive(mod);
-  register_material(mod);
-  register_mesh(mod);
-}
 
 } // namespace akantu

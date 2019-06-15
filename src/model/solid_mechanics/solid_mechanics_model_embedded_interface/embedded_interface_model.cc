@@ -100,7 +100,7 @@ EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
 /* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::initFullImpl(const ModelOptions & options) {
   const auto & eim_options =
-      dynamic_cast<const EmbeddedInterfaceModelOptions &>(options);
+      aka::as_type<EmbeddedInterfaceModelOptions>(options);
 
   // Do no initialize interface_mesh if told so
   if (eim_options.has_intersections)

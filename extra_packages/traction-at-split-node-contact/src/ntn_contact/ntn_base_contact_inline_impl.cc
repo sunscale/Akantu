@@ -45,12 +45,12 @@ inline UInt NTNBaseContact::getNbData(const Array<Element> & elements,
   }
 
   switch (tag) {
-  case _gst_cf_nodal: {
+  case SynchronizationTag::_cf_nodal: {
     size += nb_nodes * spatial_dimension * sizeof(Real) *
             3; // disp, vel and cur_pos
     break;
   }
-  case _gst_cf_incr: {
+  case SynchronizationTag::_cf_incr: {
     size += nb_nodes * spatial_dimension * sizeof(Real) * 1;
     break;
   }
@@ -69,7 +69,7 @@ inline void NTNBaseContact::packData(CommunicationBuffer & buffer,
 
   switch (tag) {
 
-  case _gst_cf_nodal: {
+  case SynchronizationTag::_cf_nodal: {
     DataAccessor::packNodalDataHelper(this->model.getDisplacement(), buffer,
                                       elements, this->model.getMesh());
     DataAccessor::packNodalDataHelper(this->model.getCurrentPosition(), buffer,
@@ -78,7 +78,7 @@ inline void NTNBaseContact::packData(CommunicationBuffer & buffer,
                                       elements, this->model.getMesh());
     break;
   }
-  case _gst_cf_incr: {
+  case SynchronizationTag::_cf_incr: {
     DataAccessor::packNodalDataHelper(this->model.getIncrement(), buffer,
                                       elements, this->model.getMesh());
     break;
@@ -97,7 +97,7 @@ inline void NTNBaseContact::unpackData(CommunicationBuffer & buffer,
 
   switch (tag) {
 
-  case _gst_cf_nodal: {
+  case SynchronizationTag::_cf_nodal: {
     DataAccessor::unpackNodalDataHelper(this->model.getDisplacement(), buffer,
                                         elements, this->model.getMesh());
     DataAccessor::unpackNodalDataHelper(
@@ -107,7 +107,7 @@ inline void NTNBaseContact::unpackData(CommunicationBuffer & buffer,
                                         elements, this->model.getMesh());
     break;
   }
-  case _gst_cf_incr: {
+  case SynchronizationTag::_cf_incr: {
     DataAccessor::unpackNodalDataHelper(this->model.getIncrement(), buffer,
                                         elements, this->model.getMesh());
     break;

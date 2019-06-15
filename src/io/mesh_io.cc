@@ -97,7 +97,7 @@ void MeshIO::write(const std::string & filename, Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
-  if (!phys_name_map.empty()) {
+  if (!physical_names.empty()) {
     for (auto type : mesh.elementTypes()) {
       auto & name_vec =
           mesh.getDataPointer<std::string>("physical_names", type);
@@ -107,9 +107,9 @@ void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
       for (auto pair : zip(tags_vec, name_vec)) {
         auto tag = std::get<0>(pair);
         auto & name = std::get<1>(pair);
-        auto map_it = phys_name_map.find(tag);
+        auto map_it = physical_names.find(tag);
 
-        if (map_it == phys_name_map.end()) {
+        if (map_it == physical_names.end()) {
           std::stringstream sstm;
           sstm << tag;
 
@@ -124,13 +124,11 @@ void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
-
-  if (phys_name_map.size()) {
+  std::string space(AKANTU_INDENT, indent);
+  
+  if (physical_names.size()) {
     stream << space << "Physical map:" << std::endl;
-    for (auto & pair : phys_name_map) {
+    for (auto & pair : physical_names) {
       stream << space << pair.first << ": " << pair.second << std::endl;
     }
   }

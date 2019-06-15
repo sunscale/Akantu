@@ -142,8 +142,8 @@ function(declare_akantu_types)
   # Floating point types
   # ----------------------------------------------------------------------------
   if(AKANTU_TYPE_FLOAT STREQUAL "float (32bit)")
-        set(AKANTU_FLOAT_TYPE "float" CACHE INTERNAL "")
-        set(AKANTU_FLOAT_SIZE 4 CACHE INTERNAL "")
+    set(AKANTU_FLOAT_TYPE "float" CACHE INTERNAL "")
+    set(AKANTU_FLOAT_SIZE 4 CACHE INTERNAL "")
   elseif(AKANTU_TYPE_FLOAT STREQUAL "double (64bit)")
     set(AKANTU_FLOAT_TYPE "double" CACHE INTERNAL "")
     set(AKANTU_FLOAT_SIZE 8 CACHE INTERNAL "")

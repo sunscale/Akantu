@@ -57,7 +57,7 @@ int main(int argc, char * argv[]) {
   connectivity.push_back(Vector<UInt>({0, 1}));
 
   Array<std::string> names_vec(1, 1, "reinforcement", "reinforcement_names");
-  reinforcement_mesh.registerElementalData<std::string>("physical_names")
+  reinforcement_mesh.getElementalData<std::string>("physical_names")
       .alloc(1, 1, type);
   reinforcement_mesh.getData<std::string>("physical_names")(type).copy(
       names_vec);

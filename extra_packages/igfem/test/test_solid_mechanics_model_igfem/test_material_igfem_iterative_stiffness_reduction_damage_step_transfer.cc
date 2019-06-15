@@ -190,7 +190,7 @@ int main(int argc, char * argv[]) {
   UInt regular_steps = 15;
   for (UInt s = 0; s < regular_steps; ++s) {
     converged =
-        model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+        model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_increment>(
             1e-12, error, 2);
 
     if (converged == false) {
@@ -281,7 +281,7 @@ int main(int argc, char * argv[]) {
 
   for (UInt s = 0; s < 1; ++s) {
     converged =
-        model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+        model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_increment>(
             1e-12, error, 2);
 
     if (converged == false) {

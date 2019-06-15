@@ -54,7 +54,7 @@ void ElementInfoPerProc::fillMeshDataTemplated(BufferType & buffer,
                           << " Got " << nb_local_element << " values, expected "
                           << mesh.getNbElement(this->type));
 
-  mesh.registerElementalData<T>(tag_name);
+  mesh.getElementalData<T>(tag_name);
   Array<T> & data = mesh.getElementalDataArrayAlloc<T>(
       tag_name, this->type, _not_ghost, nb_component);
 
@@ -93,7 +93,7 @@ void ElementInfoPerProc::fillMeshData(BufferType & buffer,
                                       const MeshDataTypeCode & type_code,
                                       UInt nb_component) {
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, extra_param, elem)          \
-  case BOOST_PP_TUPLE_ELEM(2, 0, elem): {                                      \
+  case MeshDataTypeCode::BOOST_PP_TUPLE_ELEM(2, 0, elem): {             \
     fillMeshDataTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(buffer, tag_name,   \
                                                            nb_component);      \
     break;                                                                     \

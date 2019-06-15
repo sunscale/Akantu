@@ -44,7 +44,7 @@ namespace akantu {
 inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
   UInt size = 0;
-  if (tag == _gst_giu_global_conn) {
+  if (tag == SynchronizationTag::_giu_global_conn) {
     size +=
         Mesh::getNbNodesPerElementList(elements) * sizeof(UInt) + sizeof(int);
 #ifndef AKANTU_NDEBUG
@@ -58,7 +58,7 @@ inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
 inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
                                        const Array<Element> & elements,
                                        const SynchronizationTag & tag) const {
-  if (tag != _gst_giu_global_conn)
+  if (tag != SynchronizationTag::_giu_global_conn)
     return;
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
@@ -88,7 +88,7 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
 inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
                                          const Array<Element> & elements,
                                          const SynchronizationTag & tag) {
-  if (tag != _gst_giu_global_conn)
+  if (tag != SynchronizationTag::_giu_global_conn)
     return;
 
   MeshAccessor mesh_accessor(mesh);

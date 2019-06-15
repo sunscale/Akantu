@@ -428,5 +428,17 @@ bool MeshPartition::hasPartitions(const ElementType & type,
 }
 
 /* -------------------------------------------------------------------------- */
+void MeshPartition::printself(std::ostream & stream, int indent) const {
+  std::string space(indent, AKANTU_INDENT);
+  stream << space << "MeshPartition [" << "\n";
+  stream << space << " + id           : " << id << "\n";
+  stream << space << " + nb partitions: " << nb_partitions << "\n";
+  stream << space << " + partitions [ " << "\n";
+  partitions.printself(stream, indent + 2);
+  stream << space << " ]" << "\n";
+  stream << space << "]" << "\n";
+}
+
+/* -------------------------------------------------------------------------- */
 
 } // namespace akantu

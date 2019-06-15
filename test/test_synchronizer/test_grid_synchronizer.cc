@@ -291,15 +291,15 @@ int main(int argc, char * argv[]) {
 
   fout.close();
 
-  synch_registry.registerSynchronizer(*dist, _gst_smm_mass);
+  synch_registry.registerSynchronizer(*dist, SynchronizationTag::_smm_mass);
 
-  synch_registry.registerSynchronizer(*grid_communicator, _gst_test);
+  synch_registry.registerSynchronizer(*grid_communicator, SynchronizationTag::_test);
 
   AKANTU_DEBUG_INFO("Synchronizing tag on Dist");
-  synch_registry.synchronize(_gst_smm_mass);
+  synch_registry.synchronize(SynchronizationTag::_smm_mass);
 
   AKANTU_DEBUG_INFO("Synchronizing tag on Grid");
-  synch_registry.synchronize(_gst_test);
+  synch_registry.synchronize(SynchronizationTag::_test);
 
   delete grid_communicator;
   delete dist;

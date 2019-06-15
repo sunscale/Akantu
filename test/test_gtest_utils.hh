@@ -129,7 +129,19 @@ template <typename... T>
 using cross_product_t = typename cross_product<T...>::type;
 /* -------------------------------------------------------------------------- */
 
-#define OP_CAT(s, data, elem) element_type_t<::akantu::elem>
+} // namespace
+
+#define OP_CAT(s, data, elem) BOOST_PP_CAT(_element_type, elem)
+
+// creating a type instead of a using helps to debug
+#define AKANTU_DECLARE_ELEMENT_TYPE_STRUCT(r, data, elem)                      \
+  struct BOOST_PP_CAT(_element_type, elem)                                     \
+      : public element_type_t<::akantu::elem> {};
+
+BOOST_PP_SEQ_FOR_EACH(AKANTU_DECLARE_ELEMENT_TYPE_STRUCT, _,
+                      AKANTU_ALL_ELEMENT_TYPE)
+
+#undef AKANTU_DECLARE_ELEMENT_TYPE_STRUCT
 
 using TestElementTypesAll = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_regular_ELEMENT_TYPE))>;
@@ -143,14 +155,13 @@ using TestCohesiveElementTypes = std::tuple<BOOST_PP_SEQ_ENUM(
 using TestElementTypesStructural = std::tuple<BOOST_PP_SEQ_ENUM(
     BOOST_PP_SEQ_TRANSFORM(OP_CAT, _, AKANTU_ek_structural_ELEMENT_TYPE))>;
 #endif
-} // namespace
 
 using TestAllDimensions = std::tuple<std::integral_constant<unsigned int, 1>,
                                      std::integral_constant<unsigned int, 2>,
                                      std::integral_constant<unsigned int, 3>>;
 
 template <typename T, ::akantu::ElementType type>
-using is_element = std::is_same<T, element_type_t<type>>;
+using is_element = aka::bool_constant<T::value == type>;
 
 template <typename T>
 using not_is_point_1 = aka::negation<is_element<T, ::akantu::_point_1>>;

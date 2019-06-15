@@ -85,7 +85,7 @@ int main(int argc, char * argv[]) {
   auto & solver = model.getNonLinearSolver();
   solver.set("max_iterations", 1);
   solver.set("threshold", 1e-6);
-  solver.set("convergence_type", _scc_residual);
+  solver.set("convergence_type", SolveConvergenceCriteria::_residual);
 
   model.solveStep();
 

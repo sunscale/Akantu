@@ -1287,10 +1287,7 @@ void Material::onDump() {
 
 /* -------------------------------------------------------------------------- */
 void Material::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
-
+  std::string space(indent, AKANTU_INDENT);
   std::string type = getID().substr(getID().find_last_of(':') + 1);
 
   stream << space << "Material " << type << " [" << std::endl;

@@ -1,10 +1,10 @@
-#include "aka_array.hh"
+/* -------------------------------------------------------------------------- */
+#include "py_akantu.hh"
+/* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
+/* -------------------------------------------------------------------------- */
 #include <map>
-
-#warning "change this for full path"
-#include "../../python/py_aka_common.hh"
-#include "../../python/py_aka_array.hh"
+/* -------------------------------------------------------------------------- */
 
 namespace py = pybind11;
 namespace _aka = akantu;

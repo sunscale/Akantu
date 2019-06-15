@@ -859,7 +859,7 @@ namespace {
 template <typename T>
 class TestElasticMaterialFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_CASE(TestElasticMaterialFixture, mat_types);
+TYPED_TEST_SUITE(TestElasticMaterialFixture, mat_types);
 
 TYPED_TEST(TestElasticMaterialFixture, ComputeStress) {
   this->material->testComputeStress();

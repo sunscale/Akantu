@@ -37,7 +37,7 @@
 //   UInt size = 0;
 
 //   switch(tag) {
-//   case _gst_solver_solution: {
+//   case SynchronizationTag::_solver_solution: {
 //     size += dofs.size() * sizeof(Real);
 //     break;
 //   }
@@ -56,7 +56,7 @@
 //   AKANTU_DEBUG_IN();
 
 //   switch(tag) {
-//   case _gst_solver_solution: {
+//   case SynchronizationTag::_solver_solution: {
 //     packDOFDataHelper(*solution, buffer, dofs);
 //     break;
 //   }
@@ -75,7 +75,7 @@
 //   AKANTU_DEBUG_IN();
 
 //   switch(tag) {
-//   case _gst_solver_solution: {
+//   case SynchronizationTag::_solver_solution: {
 //     unpackDOFDataHelper(*solution, buffer, dofs);
 //     break;
 //   }

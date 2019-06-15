@@ -27,6 +27,9 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
+#include <string>
+/* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_AKA_ENUM_MACROS_HH__
 #define __AKANTU_AKA_ENUM_MACROS_HH__
 
@@ -72,10 +75,10 @@
 #define AKANTU_ENUM_OUTPUT_STREAM_(type_name, list, prefix)                    \
   }                                                                            \
   AKANTU_ENUM_HASH(type_name)                                                  \
-  namespace aka {                                                              \
-  inline std::string to_string(const ::akantu::type_name & type) {             \
+  namespace std {                                                              \
+  inline string to_string(const ::akantu::type_name & type) {                  \
     using namespace akantu;                                                    \
-    static std::unordered_map<::akantu::type_name, std::string> convert{       \
+    static unordered_map<::akantu::type_name, string> convert{                 \
         BOOST_PP_SEQ_FOR_EACH_I(                                               \
             AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
             BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR, prefix, list))};     \
@@ -85,7 +88,7 @@
   namespace akantu {                                                           \
   inline std::ostream & operator<<(std::ostream & stream,                      \
                                    const type_name & type) {                   \
-    stream << aka::to_string(type);                                            \
+    stream << std::to_string(type);                                            \
     return stream;                                                             \
   }
 
@@ -97,7 +100,21 @@
         BOOST_PP_SEQ_FOR_EACH_I(                                               \
             AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
             BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE, prefix, list))};     \
-    type = convert.at(str);                                                    \
+    try {                                                                      \
+      type = convert.at(str);                                                  \
+    } catch (std::out_of_range &) {                                            \
+      std::ostringstream values;                                               \
+      std::for_each(convert.begin(), convert.end(), [&values](auto && pair) {  \
+        static bool first = true;                                              \
+        if (not first)                                                         \
+          values << ", ";                                                      \
+        values << "\"" << pair.first << "\"";                                  \
+        first = false;                                                         \
+      });                                                                      \
+      AKANTU_EXCEPTION("The value " << str << " is not a valid "               \
+                                    << BOOST_PP_STRINGIZE(type_name)           \
+                                    << " valid values are " << values.str());  \
+    }                                                                          \
     return stream;                                                             \
   }
 

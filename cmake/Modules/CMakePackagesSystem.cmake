@@ -1078,7 +1078,8 @@ function(package_declare_sources pkg)
     set(${_type})
     foreach(_file ${_tmp${_type}})
       # get the full name
-      list(APPEND ${_type} "${_src_folder}/${_file}")
+      set(_full_path "${_src_folder}/${_file}")
+      list(APPEND ${_type} "${_full_path}")
     endforeach()
   endforeach()
 

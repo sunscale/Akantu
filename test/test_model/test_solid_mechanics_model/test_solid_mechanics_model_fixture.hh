@@ -51,17 +51,17 @@ public:
 
   void SetUp() override {
     this->mesh = std::make_unique<Mesh>(this->spatial_dimension);
-
-    if (Communicator::getStaticCommunicator().whoAmI() == 0) {
+    auto prank = Communicator::getStaticCommunicator().whoAmI();
+    if (prank == 0) {
       this->mesh->read(this->mesh_file);
     }
 
     mesh->distribute();
 
-    SCOPED_TRACE(aka::to_string(this->type).c_str());
+    SCOPED_TRACE(std::to_string(this->type).c_str());
 
     model = std::make_unique<SolidMechanicsModel>(*mesh, _all_dimensions,
-                                                  aka::to_string(this->type));
+                                                  std::to_string(this->type));
   }
 
   void initModel(const ID & input, const AnalysisMethod & analysis_method) {
@@ -100,7 +100,7 @@ public:
   }
 
 protected:
-  std::string mesh_file{aka::to_string(this->type) + ".msh"};
+  std::string mesh_file{std::to_string(this->type) + ".msh"};
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModel> model;
   bool dump_paraview{true};
@@ -121,6 +121,6 @@ using TestElementTypesFiltered =
 // using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
 using gtest_element_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_CASE(TestSMMFixture, gtest_element_types);
+TYPED_TEST_SUITE(TestSMMFixture, gtest_element_types);
 
 #endif /* __AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH__ */

@@ -121,7 +121,7 @@ int main(int argc, char * argv[]) {
   auto & solver = model.getNonLinearSolver();
   solver.set("max_iterations", 100);
   solver.set("threshold", 1e-12);
-  solver.set("convergence_type", _scc_solution);
+  solver.set("convergence_type", SolveConvergenceCriteria::_solution);
 
   /// time loop
   Real time = 0.;

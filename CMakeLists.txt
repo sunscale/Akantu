@@ -83,7 +83,7 @@ include(AkantuCleaning)
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
 set(AKANTU_MAJOR_VERSION 3)
-set(AKANTU_MINOR_VERSION 0)
+set(AKANTU_MINOR_VERSION 1)
 set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 

@@ -28,10 +28,44 @@
 #
 #===============================================================================
 
+set(PYAKANTU_SRCS
+  py_akantu.cc
+  py_aka_common.cc
+  py_aka_error.cc
+  py_boundary_conditions.cc
+  py_fe_engine.cc
+  py_mesh.cc
+  py_parser.cc
+  py_model.cc
+  )
 
-add_library(pyakantu py_aka_model.cc py_aka_error.cc py_aka_solid_mechanics_model.cc py_aka_heat_transfer_model.cc py_aka_solid_mechanics_model_cohesive.cc py_aka_material.cc py_aka_boundary_conditions.cc py_aka_common.cc py_aka_mesh.cc py_aka_parser.cc py_aka_fe_engine.cc)
+package_is_activated(solid_mechanics _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_solid_mechanics_model.cc
+    py_material.cc
+    )
+endif()
+
+package_is_activated(cohesive_element _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_solid_mechanics_model_cohesive.cc
+    )
+endif()
+
+package_is_activated(heat_transfer _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_heat_transfer_model.cc
+    )
+endif()
+
+add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
 target_link_libraries(pyakantu PUBLIC  akantu pybind11)
-pybind11_add_module(py11_akantu py_akantu.cc)
-target_link_libraries(py11_akantu PRIVATE pyakantu)
+target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-set_property(TARGET py11_akantu PROPERTY DEBUG_POSTFIX "")
+pybind11_add_module(py11_akantu $<TARGET_OBJECTS:pyakantu>)
+target_link_libraries(py11_akantu PRIVATE pyakantu)
+set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")

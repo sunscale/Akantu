@@ -134,10 +134,10 @@ void NonLocalManagerIGFEM::computeAllNonLocalStresses() {
     it = neighborhoods.find(*global_neighborhood_it);
     if (it != neighborhoods.end())
       it->second->getSynchronizerRegistry().asynchronousSynchronize(
-          _gst_mnl_for_average);
+          SynchronizationTag::_mnl_for_average);
     else
       dummy_synchronizers[*global_neighborhood_it]->asynchronousSynchronize(
-          dummy_accessor, _gst_mnl_for_average);
+          dummy_accessor, SynchronizationTag::_mnl_for_average);
   }
 
   this->averageInternals(_not_ghost);
@@ -153,10 +153,10 @@ void NonLocalManagerIGFEM::computeAllNonLocalStresses() {
     it = neighborhoods.find(*global_neighborhood_it);
     if (it != neighborhoods.end())
       it->second->getSynchronizerRegistry().waitEndSynchronize(
-          _gst_mnl_for_average);
+          SynchronizationTag::_mnl_for_average);
     else
       dummy_synchronizers[*global_neighborhood_it]->waitEndSynchronize(
-          dummy_accessor, _gst_mnl_for_average);
+          dummy_accessor, SynchronizationTag::_mnl_for_average);
   }
 
   this->averageInternals(_ghost);

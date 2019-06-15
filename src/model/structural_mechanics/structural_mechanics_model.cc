@@ -177,8 +177,8 @@ void StructuralMechanicsModel::initSolver(
     dof_manager.registerBlockedDOFs("displacement", *this->blocked_dofs);
   }
 
-  if (time_step_solver_type == _tsst_dynamic ||
-      time_step_solver_type == _tsst_dynamic_lumped) {
+  if (time_step_solver_type == TimeStepSolverType::_dynamic ||
+      time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
     this->allocNodalField(velocity, spatial_dimension, "velocity");
     this->allocNodalField(acceleration, spatial_dimension, "acceleration");
 
@@ -393,13 +393,13 @@ std::tuple<ID, TimeStepSolverType>
 StructuralMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _static: {
-    return std::make_tuple("static", _tsst_static);
+    return std::make_tuple("static", TimeStepSolverType::_static);
   }
   case _implicit_dynamic: {
-    return std::make_tuple("implicit", _tsst_dynamic);
+    return std::make_tuple("implicit", TimeStepSolverType::_dynamic);
   }
   default:
-    return std::make_tuple("unknown", _tsst_not_defined);
+    return std::make_tuple("unknown", TimeStepSolverType::_not_defined);
   }
 }
 
@@ -409,9 +409,9 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
   ModelSolverOptions options;
 
   switch (type) {
-  case _tsst_static: {
-    options.non_linear_solver_type = _nls_linear;
-    options.integration_scheme_type["displacement"] = _ist_pseudo_time;
+  case TimeStepSolverType::_static: {
+    options.non_linear_solver_type = NonLinearSolverType::_linear;
+    options.integration_scheme_type["displacement"] = IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;
   }

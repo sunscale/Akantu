@@ -40,6 +40,7 @@
 namespace akantu {
 class DOFManager;
 class TermsToAssemble;
+class SolverVector;
 }
 
 namespace akantu {
@@ -89,12 +90,15 @@ public:
   virtual void add(const SparseMatrix & matrix, Real alpha = 1.);
 
   /// Equivalent of *gemv in blas
-  virtual void matVecMul(const Array<Real> & x, Array<Real> & y,
+  virtual void matVecMul(const SolverVector & x, SolverVector & y,
                          Real alpha = 1., Real beta = 0.) const = 0;
 
   /// modify the matrix to "remove" the blocked dof
   virtual void applyBoundary(Real block_val = 1.) = 0;
 
+  /// copy the profile of another matrix
+  virtual void copyProfile(const SparseMatrix & other) = 0;
+  
   /// operator *=
   SparseMatrix & operator*=(Real alpha) {
     this->mul(alpha);
@@ -148,7 +152,7 @@ protected:
   UInt nb_non_zero;
 };
 
-Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
+//Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
 
 } // akantu
 

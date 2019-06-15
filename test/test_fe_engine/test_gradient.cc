@@ -44,8 +44,6 @@
 
 using namespace akantu;
 
-namespace {
-
 TYPED_TEST(TestFEMFixture, GradientPoly) {
   this->fem->initShapeFunctions();
   Real alpha[2][3] = {{13, 23, 31}, {11, 7, 5}};
@@ -102,5 +100,4 @@ TYPED_TEST(TestFEMFixture, GradientPositions) {
 
     EXPECT_NEAR(0., diff, 2e-14);
   }
-}
 }

@@ -36,7 +36,7 @@
 #include "element_synchronizer.hh"
 #include "mesh.hh"
 #include "mesh_partition_scotch.hh"
-#include "sparse_matrix.hh"
+#include "sparse_matrix_aij.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
   if (prank == 0)
     std::cout << "Creating a SparseMatrix" << std::endl;
 
-  auto & A = dof_manager.getNewMatrix("A", _symmetric);
+  auto & A = dynamic_cast<SparseMatrixAIJ &>(dof_manager.getNewMatrix("A", _symmetric));
 
   Array<Real> dof_vector(nb_nodes, nb_dof, "vector");
 
@@ -86,9 +86,12 @@ int main(int argc, char * argv[]) {
     }
   }
 
+  Array<Real> dof_vector_tmp(dof_vector);
+
   if (prank == 0)
     std::cout << "Computing x = A * x" << std::endl;
-  dof_vector *= A;
+  A.matVecMul(dof_vector, dof_vector_tmp);
+  dof_vector.copy(dof_vector_tmp);
 
   auto & sync =
       dynamic_cast<DOFManagerDefault &>(dof_manager).getSynchronizer();

@@ -139,7 +139,7 @@ inline void SolidMechanicsModelRVE::unpackData(CommunicationBuffer & buffer,
                                                const SynchronizationTag & tag) {
   SolidMechanicsModel::unpackData(buffer, index, tag);
 
-  //  if (tag == _gst_smm_uv) {
+  //  if (tag == SynchronizationTag::_smm_uv) {
   //    auto disp_it = displacement->begin(spatial_dimension);
   //
   //    for (auto node : index) {
