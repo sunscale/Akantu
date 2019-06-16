@@ -48,16 +48,6 @@ class TestPatchTestLinear(unittest.TestCase):
         self.mesh.read(str(self.elem_type_str) + ".msh")
         akantu.MeshUtils.buildFacets(self.mesh)
         self.mesh.createBoundaryGroupFromGeometry()
-
-        # mat_factory = akantu.MaterialFactory.getInstance()
-        # 
-        # def allocator(_dim, unused, model, _id):
-        #     return LocalElastic(model, _id)
-        # 
-        # try:
-        #     mat_factory.registerAllocator("local_elastic", allocator)
-        # except Exception:
-        #     pass
         self.model = self.model_type(self.mesh)
 
     def tearDown(self):
@@ -75,15 +65,15 @@ class TestPatchTestLinear(unittest.TestCase):
 
     def applyBC(self):
         boundary = self.model.getBlockedDOFs()
-        for name, eg in self.mesh.getElementGroups().items():
-            nodes = eg.getNodes()
+        for eg in self.mesh.iterateElementGroups():
+            nodes = eg.getNodeGroup().getNodes()
             boundary[nodes, :] = True
 
     def applyBConDOFs(self, dofs):
         coordinates = self.mesh.getNodes()
 
-        for name, eg in self.mesh.getElementGroups().items():
-            nodes = eg.getNodes().flatten()
+        for eg in self.mesh.iterateElementGroups():
+            nodes = eg.getNodeGroup().getNodes().flatten()
             dofs[nodes] = self.setLinearDOF(dofs[nodes],
                                             coordinates[nodes])
 
