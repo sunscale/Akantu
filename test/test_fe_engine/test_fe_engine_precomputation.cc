@@ -29,7 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "pybind11_akantu.hh"
+#include "py_aka_array.hh"
 #include "test_fe_engine_fixture.hh"
 /* -------------------------------------------------------------------------- */
 #include <pybind11/embed.h>
@@ -39,6 +39,11 @@ using namespace akantu;
 
 namespace py = pybind11;
 using namespace py::literals;
+
+template<class T>
+decltype(auto) make_proxy(Array<T> & array) {
+  return Proxy<Array<T>>(array);
+}
 
 template <typename type_>
 class TestFEMPyFixture : public TestFEMFixture<type_> {
@@ -92,9 +97,9 @@ TYPED_TEST(TestFEMPyFixture, Precompute) {
   py::module py_engine = py::module::import("py_engine");
   auto py_shape = py_engine.attr("Shapes")(py::str(std::to_string(this->type)));
   auto kwargs = py::dict(
-      "N"_a = make_proxy(ref_N), "B"_a = make_proxy(ref_B),
-      "j"_a = make_proxy(ref_j), "X"_a = make_proxy(*this->coordinates),
-      "Q"_a = make_proxy(this->fem->getIntegrationPoints(this->type)));
+      "N"_a = ref_N, "B"_a = ref_B,
+      "j"_a = ref_j, "X"_a = *this->coordinates,
+      "Q"_a = this->fem->getIntegrationPoints(this->type));
 
   auto ret = py_shape.attr("precompute")(**kwargs);
   auto check = [&](auto & ref_A, auto & A, const auto & id) {

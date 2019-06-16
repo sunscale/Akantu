@@ -5,9 +5,14 @@
 #include "py_aka_error.hh"
 #include "py_boundary_conditions.hh"
 #include "py_fe_engine.hh"
+#include "py_group_manager.hh"
 #include "py_mesh.hh"
 #include "py_model.hh"
 #include "py_parser.hh"
+
+#if defined(AKANTU_USE_IOHELPER)
+#include "py_dumpable.hh"
+#endif
 
 #if defined(AKANTU_SOLID_MECHANICS)
 #include "py_material.hh"
@@ -36,18 +41,24 @@ void register_all(pybind11::module & mod) {
   register_error(mod);
   register_functions(mod);
   register_parser(mod);
-  register_boundary_conditions(mod);
-  register_fe_engine(mod);
-  register_model(mod);
+
+  register_group_manager(mod);
+#if defined(AKANTU_USE_IOHELPER)
+  register_dumpable(mod);
+#endif
   register_mesh(mod);
-  
+
+  register_fe_engine(mod);
+    
+  register_boundary_conditions(mod);
+  register_model(mod);
+#if defined(AKANTU_HEAT_TRANSFER)
+  register_heat_transfer_model(mod);
+#endif
+
 #if defined(AKANTU_SOLID_MECHANICS)
   register_solid_mechanics_model(mod);
   register_material(mod);
-#endif
-
-#if defined(AKANTU_HEAT_TRANSFER)
-  register_heat_transfer_model(mod);
 #endif
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
@@ -56,6 +67,8 @@ void register_all(pybind11::module & mod) {
 }
 } // namespace akantu
 
+/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 PYBIND11_MODULE(py11_akantu, mod) {
   mod.doc() = "Akantu python interface";
 

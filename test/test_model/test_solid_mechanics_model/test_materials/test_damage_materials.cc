@@ -29,7 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "pybind11_akantu.hh"
+#include "py_aka_array.hh"
 #include "test_material_fixtures.hh"
 
 #include "material_marigo.hh"
@@ -98,7 +98,6 @@ template <> void FriendMaterial<MaterialMazars<3>>::setParams() {
   updateInternalParameters();
 }
 
-
 template <> void FriendMaterial<MaterialMazars<1>>::testComputeStress() {
   Array<Real> epsilons(1001, 1);
   Array<Real> sigmas(1001, 1);
@@ -113,9 +112,8 @@ template <> void FriendMaterial<MaterialMazars<1>>::testComputeStress() {
   auto kwargs_mat_params =
       py::dict("K0"_a = _K0, "At"_a = At, "Bt"_a = Bt, "Ac"_a = Ac, "Bc"_a = Bc,
                "E"_a = E, "nu"_a = nu);
-  auto kwargs = py::dict("epsilons"_a = make_proxy(epsilons),
-                         "sigmas"_a = make_proxy(sigmas),
-                         "damages"_a = make_proxy(damages));
+  auto kwargs = py::dict("epsilons"_a = epsilons, "sigmas"_a = sigmas,
+                         "damages"_a = damages);
 
   auto py_mazars = py_engine.attr("Mazars")(**kwargs_mat_params);
   // auto Gf_py = py_mazars.attr("compute")(**kwargs);
@@ -135,7 +133,7 @@ template <> void FriendMaterial<MaterialMazars<1>>::testComputeStress() {
     auto py_data =
         py_mazars.attr("compute_step")(epsilon, sigma_ref, dam_ref, false);
     std::tie(sigma_ref, dam_ref) = py::cast<std::pair<double, double>>(py_data);
-    
+
     EXPECT_NEAR(sigma(0, 0), sigma_ref, 1e-5);
     EXPECT_NEAR(dam, dam_ref, 1e-10);
   }
@@ -155,9 +153,8 @@ template <> void FriendMaterial<MaterialMazars<2>>::testComputeStress() {
   auto kwargs_mat_params =
       py::dict("K0"_a = _K0, "At"_a = At, "Bt"_a = Bt, "Ac"_a = Ac, "Bc"_a = Bc,
                "E"_a = E, "nu"_a = nu);
-  auto kwargs = py::dict("epsilons"_a = make_proxy(epsilons),
-                         "sigmas"_a = make_proxy(sigmas),
-                         "damages"_a = make_proxy(damages));
+  auto kwargs = py::dict("epsilons"_a = epsilons, "sigmas"_a = sigmas,
+                         "damages"_a = damages);
 
   auto py_mazars = py_engine.attr("Mazars")(**kwargs_mat_params);
   // auto Gf_py = py_mazars.attr("compute")(**kwargs);
@@ -170,7 +167,7 @@ template <> void FriendMaterial<MaterialMazars<2>>::testComputeStress() {
     Matrix<Real> strain(this->spatial_dimension, this->spatial_dimension, 0.);
     Matrix<Real> sigma(this->spatial_dimension, this->spatial_dimension, 0.);
     strain(0, 0) = epsilon;
-    strain(1, 1) = - this->nu * epsilon;
+    strain(1, 1) = -this->nu * epsilon;
 
     computeStressOnQuad(strain, sigma, dam, ehat);
 
@@ -178,7 +175,7 @@ template <> void FriendMaterial<MaterialMazars<2>>::testComputeStress() {
     auto py_data =
         py_mazars.attr("compute_step")(epsilon, sigma_ref, dam_ref, false);
     std::tie(sigma_ref, dam_ref) = py::cast<std::pair<double, double>>(py_data);
-    
+
     EXPECT_NEAR(sigma(0, 0), sigma_ref, 1e-5);
     EXPECT_NEAR(dam, dam_ref, 1e-10);
   }
@@ -198,9 +195,8 @@ template <> void FriendMaterial<MaterialMazars<3>>::testComputeStress() {
   auto kwargs_mat_params =
       py::dict("K0"_a = _K0, "At"_a = At, "Bt"_a = Bt, "Ac"_a = Ac, "Bc"_a = Bc,
                "E"_a = E, "nu"_a = nu);
-  auto kwargs = py::dict("epsilons"_a = make_proxy(epsilons),
-                         "sigmas"_a = make_proxy(sigmas),
-                         "damages"_a = make_proxy(damages));
+  auto kwargs = py::dict("epsilons"_a = epsilons, "sigmas"_a = sigmas,
+                         "damages"_a = damages);
 
   auto py_mazars = py_engine.attr("Mazars")(**kwargs_mat_params);
   // auto Gf_py = py_mazars.attr("compute")(**kwargs);
@@ -221,7 +217,7 @@ template <> void FriendMaterial<MaterialMazars<3>>::testComputeStress() {
     auto py_data =
         py_mazars.attr("compute_step")(epsilon, sigma_ref, dam_ref, false);
     std::tie(sigma_ref, dam_ref) = py::cast<std::pair<double, double>>(py_data);
-    
+
     EXPECT_NEAR(sigma(0, 0), sigma_ref, 1e-5);
     EXPECT_NEAR(dam, dam_ref, 1e-10);
   }

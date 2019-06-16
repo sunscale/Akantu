@@ -29,15 +29,24 @@
 #===============================================================================
 
 set(PYAKANTU_SRCS
-  py_akantu.cc
   py_aka_common.cc
   py_aka_error.cc
+  py_akantu.cc
   py_boundary_conditions.cc
   py_fe_engine.cc
+  py_group_manager.cc
   py_mesh.cc
-  py_parser.cc
   py_model.cc
+  py_parser.cc
   )
+
+package_is_activated(iohelper _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_dumpable.cc
+    )
+endif()
+
 
 package_is_activated(solid_mechanics _is_activated)
 if (_is_activated)

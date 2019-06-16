@@ -15,7 +15,7 @@ __all__ = ['Shapes']
 
 import numpy as np
 import numpy.polynomial.polynomial as poly
-import aka_test
+import akantu as aka
 
 class Shapes(object):
     NATURAL_COORDS = {
@@ -336,9 +336,9 @@ class Shapes(object):
         _j = np.array(kwargs['j'], copy=False).reshape((nb_element, _nb_quads))
         _B = np.array(kwargs['B'], copy=False).reshape((nb_element, _nb_quads, self._nnodes, self._dim))
         _N = np.array(kwargs['N'], copy=False).reshape((nb_element, _nb_quads, self._nnodes))
-        _Q = np.array(kwargs['Q'], copy=False)
+        _Q = kwargs['Q']
         if np.linalg.norm(_Q - self._g.T) > 1e-15:
-            raise Exception('Not using the same quadrature points')
+            raise Exception('Not using the same quadrature points norm({0} - {1}) = {2}'.format(_Q, self._g.T, np.linalg.norm(_Q - self._g.T)))
 
         for e in range(nb_element):
             for q in range(_nb_quads):

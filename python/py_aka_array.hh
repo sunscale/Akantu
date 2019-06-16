@@ -106,11 +106,14 @@ namespace detail {
     return a.release();
   }
 
+  template <typename U>
+  using tensor_type = array_t<U, array::f_style | array::forcecast>;
+
   template <typename T>
   py::handle aka_array_cast(const _aka::Vector<T> & src,
                             py::handle base = handle(), bool writeable = true) {
     array a;
-    a = array_type<T>({src.size()}, src.storage(), base);
+    a = tensor_type<T>({src.size()}, src.storage(), base);
 
     if (not writeable)
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
@@ -122,7 +125,7 @@ namespace detail {
   py::handle aka_array_cast(const _aka::Matrix<T> & src,
                             py::handle base = handle(), bool writeable = true) {
     array a;
-    a = array_type<T>({src.size(0), src.size(1)}, src.storage(), base);
+    a = tensor_type<T>({src.size(0), src.size(1)}, src.storage(), base);
 
     if (not writeable)
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
