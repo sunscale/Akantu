@@ -58,8 +58,8 @@ int main(int argc, char * argv[]) {
 
 #ifdef AKANTU_USE_IOHELPER
   DumperParaview dumper("test-scotch-partition");
-  dumper::Field * field =
-      new dumper::ElementalField<UInt>(partition.getPartitions(), dim);
+  auto field = std::make_shared<dumper::ElementalField<UInt>>(
+      partition.getPartitions(), dim);
   dumper.registerMesh(mesh, dim);
   dumper.registerField("partitions", field);
   dumper.dump();
@@ -67,7 +67,6 @@ int main(int argc, char * argv[]) {
 
   partition.reorder();
   mesh.write("triangle_reorder.msh");
-
 
   finalize();
 

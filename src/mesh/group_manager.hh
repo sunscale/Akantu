@@ -115,6 +115,7 @@ public:
                                                 const std::string & name, name);
   AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(node_group, find,
                                                 const std::string & name, name);
+
 public:
   decltype(auto) iterateNodeGroups() {
     return make_dereference_adaptor(make_values_adaptor(node_groups));
@@ -228,10 +229,10 @@ public:
   /// /!\ it is a SMP call
   void synchronizeGroupNames();
 
-/// register an elemental field to the given group name (overloading for
-/// ElementalPartionField)
+  /// register an elemental field to the given group name (overloading for
+  /// ElementalPartionField)
   template <typename T, template <bool> class dump_type>
-  dumper::Field * createElementalField(
+  std::shared_ptr<dumper::Field> createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
       UInt spatial_dimension, const ElementKind & kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
@@ -240,7 +241,7 @@ public:
   /// ElementalField)
   template <typename T, template <class> class ret_type,
             template <class, template <class> class, bool> class dump_type>
-  dumper::Field * createElementalField(
+  std::shared_ptr<dumper::Field> createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
       UInt spatial_dimension, const ElementKind & kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
@@ -250,22 +251,22 @@ public:
   template <typename T,
             /// type of InternalMaterialField
             template <typename, bool filtered> class dump_type>
-  dumper::Field * createElementalField(const ElementTypeMapArray<T> & field,
-                                       const std::string & group_name,
-                                       UInt spatial_dimension,
-                                       const ElementKind & kind,
-                                       ElementTypeMap<UInt> nb_data_per_elem);
+  std::shared_ptr<dumper::Field>
+  createElementalField(const ElementTypeMapArray<T> & field,
+                       const std::string & group_name, UInt spatial_dimension,
+                       const ElementKind & kind,
+                       ElementTypeMap<UInt> nb_data_per_elem);
 
   template <typename type, bool flag, template <class, bool> class ftype>
-  dumper::Field * createNodalField(const ftype<type, flag> * field,
-                                   const std::string & group_name,
-                                   UInt padding_size = 0);
+  std::shared_ptr<dumper::Field>
+  createNodalField(const ftype<type, flag> * field,
+                   const std::string & group_name, UInt padding_size = 0);
 
   template <typename type, bool flag, template <class, bool> class ftype>
-  dumper::Field * createStridedNodalField(const ftype<type, flag> * field,
-                                          const std::string & group_name,
-                                          UInt size, UInt stride,
-                                          UInt padding_size);
+  std::shared_ptr<dumper::Field>
+  createStridedNodalField(const ftype<type, flag> * field,
+                          const std::string & group_name, UInt size,
+                          UInt stride, UInt padding_size);
 
 protected:
   /// fill a buffer with all the group names
@@ -277,14 +278,14 @@ protected:
 
   /// register an elemental field to the given group name
   template <class dump_type, typename field_type>
-  inline dumper::Field *
+  inline std::shared_ptr<dumper::Field>
   createElementalField(const field_type & field, const std::string & group_name,
                        UInt spatial_dimension, const ElementKind & kind,
                        const ElementTypeMap<UInt> & nb_data_per_elem);
 
   /// register an elemental field to the given group name
   template <class dump_type, typename field_type>
-  inline dumper::Field *
+  inline std::shared_ptr<dumper::Field>
   createElementalFilteredField(const field_type & field,
                                const std::string & group_name,
                                UInt spatial_dimension, const ElementKind & kind,

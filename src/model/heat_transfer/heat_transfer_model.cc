@@ -63,14 +63,14 @@ namespace heat_transfer {
       ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
 
       void operator()(Matrix<Real> & rho, const Element &) const {
-        rho.set(model.getCapacity()*model.getDensity());
+        rho.set(model.getCapacity() * model.getDensity());
       }
 
     private:
       const HeatTransferModel & model;
     };
-  }
-}
+  } // namespace details
+} // namespace heat_transfer
 
 /* -------------------------------------------------------------------------- */
 HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
@@ -119,8 +119,8 @@ void HeatTransferModel::initModel() {
 
   temperature_on_qpoints.initialize(fem, _nb_component = 1);
   temperature_gradient.initialize(fem, _nb_component = spatial_dimension);
-  conductivity_on_qpoints.initialize(
-      fem, _nb_component = spatial_dimension * spatial_dimension);
+  conductivity_on_qpoints.initialize(fem, _nb_component = spatial_dimension *
+                                                          spatial_dimension);
   k_gradt_on_qpoints.initialize(fem, _nb_component = spatial_dimension);
 }
 
@@ -151,7 +151,8 @@ void HeatTransferModel::assembleCapacityLumped(const GhostType & ghost_type) {
   auto & fem = getFEEngineClass<FEEngineType>();
   heat_transfer::details::ComputeRhoFunctor compute_rho(*this);
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     fem.assembleFieldLumped(compute_rho, "M", "temperature",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -337,7 +338,8 @@ void HeatTransferModel::assembleConductivityMatrix(
 
   auto & fem = this->getFEEngine();
 
-  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
+  for (auto && type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     auto nb_element = mesh.getNbElement(type, ghost_type);
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
@@ -379,7 +381,8 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
       return;
   }
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     auto & temperature_interpolated = temperature_on_qpoints(type, ghost_type);
 
     // compute the temperature on quadrature points
@@ -411,7 +414,8 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
 void HeatTransferModel::computeKgradT(const GhostType & ghost_type) {
   computeConductivityOnQuadPoints(ghost_type);
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     auto & gradient = temperature_gradient(type, ghost_type);
     this->getFEEngine().gradientOnIntegrationPoints(*temperature, gradient, 1,
                                                     type, ghost_type);
@@ -446,7 +450,8 @@ void HeatTransferModel::assembleInternalHeatRate() {
     // compute k \grad T
     computeKgradT(ghost_type);
 
-    for (auto type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
+    for (auto type :
+         mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
       auto & k_gradt_on_qpoints_vect = k_gradt_on_qpoints(type, ghost_type);
@@ -481,7 +486,8 @@ Real HeatTransferModel::getStableTimeStep() {
     for (UInt j = 0; j < spatial_dimension; j++)
       conductivitymax = std::max(conductivity(i, j), conductivitymax);
 
-  for (auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
 
     UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
 
@@ -496,15 +502,15 @@ Real HeatTransferModel::getStableTimeStep() {
       el_size = getFEEngine().getElementInradius(*el_coord, type);
       min_el_size = std::min(min_el_size, el_size);
     }
-    
+
     AKANTU_DEBUG_INFO("The minimum element size : "
                       << min_el_size
                       << " and the max conductivity is : " << conductivitymax);
   }
 
-  Real min_dt =
-    2. * min_el_size * min_el_size / 4. * density * capacity / conductivitymax;
-  
+  Real min_dt = 2. * min_el_size * min_el_size / 4. * density * capacity /
+                conductivitymax;
+
   mesh.getCommunicator().allReduce(min_dt, SynchronizerOperation::_min);
 
   AKANTU_DEBUG_OUT();
@@ -520,7 +526,6 @@ void HeatTransferModel::setTimeStep(Real time_step, const ID & solver_id) {
   this->mesh.getDumper("heat_transfer").setTimeStep(time_step);
 #endif
 }
-
 
 /* -------------------------------------------------------------------------- */
 void HeatTransferModel::readMaterials() {
@@ -552,7 +557,8 @@ void HeatTransferModel::assembleCapacity() {
 
   heat_transfer::details::ComputeRhoFunctor rho_functor(*this);
 
-  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
+  for (auto && type :
+       mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
     fem.assembleFieldMatrix(rho_functor, "M", "temperature",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -646,7 +652,8 @@ Real HeatTransferModel::getThermalEnergy() {
 
   auto & fem = getFEEngine();
 
-  for (auto && type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
+  for (auto && type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
     auto nb_element = mesh.getNbElement(type, _not_ghost);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, _not_ghost);
     Array<Real> Eth_per_quad(nb_element * nb_quadrature_points, 1);
@@ -700,26 +707,26 @@ Real HeatTransferModel::getEnergy(const std::string & id,
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 
-dumper::Field * HeatTransferModel::createNodalFieldBool(
+std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldBool(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
 
-  dumper::Field * field = nullptr;
-  field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
+  auto field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createNodalFieldReal(
+std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldReal(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
-  if (field_name == "capacity_lumped"){
-    AKANTU_EXCEPTION("Capacity lumped is a nodal field now stored in the DOF manager."
-                     "Therefore it cannot be used by a dumper anymore");
+  if (field_name == "capacity_lumped") {
+    AKANTU_EXCEPTION(
+        "Capacity lumped is a nodal field now stored in the DOF manager."
+        "Therefore it cannot be used by a dumper anymore");
   }
 
   std::map<std::string, Array<Real> *> real_nodal_fields;
@@ -729,20 +736,20 @@ dumper::Field * HeatTransferModel::createNodalFieldReal(
   real_nodal_fields["internal_heat_rate"] = internal_heat_rate;
   real_nodal_fields["increment"] = increment;
 
-  dumper::Field * field =
+  std::shared_ptr<dumper::Field> field =
       mesh.createNodalField(real_nodal_fields[field_name], group_name);
 
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createElementalField(
+std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag,
     __attribute__((unused)) const UInt & spatial_dimension,
     const ElementKind & element_kind) {
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
 
   if (field_name == "partitions")
     field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(
@@ -770,7 +777,7 @@ dumper::Field * HeatTransferModel::createElementalField(
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createElementalField(
+std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag,
@@ -779,7 +786,7 @@ dumper::Field * HeatTransferModel::createElementalField(
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createNodalFieldBool(
+std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldBool(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
@@ -787,7 +794,7 @@ dumper::Field * HeatTransferModel::createNodalFieldBool(
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * HeatTransferModel::createNodalFieldReal(
+std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldReal(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
@@ -949,4 +956,4 @@ inline void HeatTransferModel::unpackData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-} // akantu
+} // namespace akantu

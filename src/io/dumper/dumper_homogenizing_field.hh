@@ -64,8 +64,7 @@ inline Matrix<type> typeConverter(const Matrix<type> & input,
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
-inline Vector<type> typeConverter(const Vector<type> & ,
-                                  Vector<type> & res,
+inline Vector<type> typeConverter(const Vector<type> &, Vector<type> & res,
                                   UInt) {
 
   return res;
@@ -145,10 +144,11 @@ public:
   HomogenizerProxy() = default;
 
 public:
-  inline static ComputeFunctorInterface * createHomogenizer(Field & field);
+  inline static std::shared_ptr<ComputeFunctorInterface>
+  createHomogenizer(Field & field);
 
   template <typename T>
-  inline ComputeFunctorInterface * connectToField(T * field) {
+  inline std::shared_ptr<ComputeFunctorInterface> connectToField(T * field) {
     ElementTypeMap<UInt> nb_components = field->getNbComponents();
 
     using ret_type = typename T::types::return_type;
@@ -156,23 +156,22 @@ public:
   }
 
   template <typename ret_type>
-  inline ComputeFunctorInterface *
+  inline std::shared_ptr<ComputeFunctorInterface>
   instantiateHomogenizer(ElementTypeMap<UInt> & nb_components);
 };
 
 /* -------------------------------------------------------------------------- */
 
 template <typename ret_type>
-inline ComputeFunctorInterface *
+inline std::shared_ptr<ComputeFunctorInterface>
 HomogenizerProxy::instantiateHomogenizer(ElementTypeMap<UInt> & nb_components) {
 
   using Homogenizer = dumper::AvgHomogenizingFunctor<ret_type>;
-  auto * foo = new Homogenizer(nb_components);
-  return foo;
+  return std::make_shared<Homogenizer>(nb_components);
 }
 
 template <>
-inline ComputeFunctorInterface *
+inline std::shared_ptr<ComputeFunctorInterface>
 HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType>>(
     __attribute__((unused)) ElementTypeMap<UInt> & nb_components) {
   throw;
@@ -183,14 +182,14 @@ HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType>>(
 
 /// for connection to a FieldCompute
 template <typename SubFieldCompute, typename return_type>
-inline ComputeFunctorInterface *
+inline std::shared_ptr<ComputeFunctorInterface>
 FieldCompute<SubFieldCompute, return_type>::connect(HomogenizerProxy & proxy) {
 
   return proxy.connectToField(this);
 }
 /* -------------------------------------------------------------------------- */
 
-inline ComputeFunctorInterface *
+inline std::shared_ptr<ComputeFunctorInterface>
 HomogenizerProxy::createHomogenizer(Field & field) {
 
   HomogenizerProxy homogenizer_proxy;

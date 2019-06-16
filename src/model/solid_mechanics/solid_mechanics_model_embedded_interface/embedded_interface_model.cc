@@ -149,7 +149,7 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(
     const std::string & group_name, const ElementKind & element_kind,
     bool padding_flag) {
 #ifdef AKANTU_USE_IOHELPER
-  dumper::Field * field = NULL;
+  std::shared_ptr<dumper::Field> field;
 
   // If dumper is reinforcement, create a 1D elemental field
   if (dumper_name == "reinforcement")

@@ -392,12 +392,12 @@ Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array,
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 template <typename T>
-dumper::Field *
+std::shared_ptr<dumper::Field>
 Mesh::createFieldFromAttachedData(const std::string & field_id,
                                   const std::string & group_name,
                                   const ElementKind & element_kind) {
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
   ElementTypeMapArray<T> * internal = nullptr;
   try {
     internal = &(this->getData<T>(field_id));
@@ -415,12 +415,12 @@ Mesh::createFieldFromAttachedData(const std::string & field_id,
   return field;
 }
 
-template dumper::Field *
+template std::shared_ptr<dumper::Field>
 Mesh::createFieldFromAttachedData<Real>(const std::string & field_id,
                                         const std::string & group_name,
                                         const ElementKind & element_kind);
 
-template dumper::Field *
+template std::shared_ptr<dumper::Field>
 Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
                                         const std::string & group_name,
                                         const ElementKind & element_kind);

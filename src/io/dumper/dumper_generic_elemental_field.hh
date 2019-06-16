@@ -112,19 +112,20 @@ public:
   };
 
   /// for connection to a FieldCompute
-  inline Field * connect(FieldComputeProxy & proxy) override {
+  inline std::shared_ptr<Field> connect(FieldComputeProxy & proxy) override {
     return proxy.connectToField(this);
   }
 
   /// for connection to a Homogenizer
-  inline ComputeFunctorInterface * connect(HomogenizerProxy & proxy) override {
+  inline std::shared_ptr<ComputeFunctorInterface>
+  connect(HomogenizerProxy & proxy) override {
     return proxy.connectToField(this);
   };
 
   virtual iterator begin() {
     /// type iterators on the elemental field
-    auto types = this->field.elementTypes(this->spatial_dimension, this->ghost_type,
-                                          this->element_kind);
+    auto types = this->field.elementTypes(this->spatial_dimension,
+                                          this->ghost_type, this->element_kind);
     auto tit = types.begin();
     auto end = types.end();
 
@@ -154,8 +155,8 @@ public:
   }
 
   virtual iterator end() {
-    auto types = this->field.elementTypes(this->spatial_dimension, this->ghost_type,
-                                          this->element_kind);
+    auto types = this->field.elementTypes(this->spatial_dimension,
+                                          this->ghost_type, this->element_kind);
     auto tit = types.begin();
     auto end = types.end();
 
@@ -174,8 +175,10 @@ public:
 
   virtual UInt getDim() {
     if (this->homogeneous) {
-      auto tit = this->field.elementTypes(
-          this->spatial_dimension, this->ghost_type, this->element_kind).begin();
+      auto tit = this->field
+                     .elementTypes(this->spatial_dimension, this->ghost_type,
+                                   this->element_kind)
+                     .begin();
       return this->getNbDataPerElem(*tit);
     }
 
@@ -210,6 +213,6 @@ protected:
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__ */

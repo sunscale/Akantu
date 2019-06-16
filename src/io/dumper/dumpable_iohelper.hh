@@ -101,10 +101,11 @@ public:
                                     const std::string & field_id);
   /// add a field
   virtual void addDumpFieldExternal(const std::string & field_id,
-                                    dumper::Field * field);
-  virtual void addDumpFieldExternalToDumper(const std::string & dumper_name,
-                                            const std::string & field_id,
-                                            dumper::Field * field);
+                                    std::shared_ptr<dumper::Field> field);
+  virtual void
+  addDumpFieldExternalToDumper(const std::string & dumper_name,
+                               const std::string & field_id,
+                               std::shared_ptr<dumper::Field> field);
 
   template <typename T>
   inline void addDumpFieldExternal(const std::string & field_id,
@@ -164,7 +165,7 @@ public:
 public:
   void internalAddDumpFieldToDumper(const std::string & dumper_name,
                                     const std::string & field_id,
-                                    dumper::Field * field);
+                                    std::shared_ptr<dumper::Field> field);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -187,6 +188,6 @@ private:
   std::string default_dumper;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPABLE_IOHELPER_HH__ */

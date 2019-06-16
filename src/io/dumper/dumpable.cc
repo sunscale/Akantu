@@ -118,14 +118,14 @@ void Dumpable::addDumpFieldToDumper(__attribute__((unused))
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpFieldExternal(const std::string & field_id,
-                                    dumper::Field * field) {
+                                    std::shared_ptr<dumper::Field> field) {
   this->addDumpFieldExternalToDumper(this->default_dumper, field_id, field);
 }
 
 /* -------------------------------------------------------------------------- */
-void Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_name,
-                                            const std::string & field_id,
-                                            dumper::Field * field) {
+void Dumpable::addDumpFieldExternalToDumper(
+    const std::string & dumper_name, const std::string & field_id,
+    std::shared_ptr<dumper::Field> field) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field);
 }
@@ -249,9 +249,9 @@ void Dumpable::dump(Real time, UInt step) {
 }
 
 /* -------------------------------------------------------------------------- */
-void Dumpable::internalAddDumpFieldToDumper(const std::string & dumper_name,
-                                            const std::string & field_id,
-                                            dumper::Field * field) {
+void Dumpable::internalAddDumpFieldToDumper(
+    const std::string & dumper_name, const std::string & field_id,
+    std::shared_ptr<dumper::Field> field) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field);
 }
@@ -280,6 +280,6 @@ std::string Dumpable::getDefaultDumperName() const {
   return this->default_dumper;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif

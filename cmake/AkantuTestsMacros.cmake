@@ -124,18 +124,24 @@ macro tries to determine it in a "clever" way
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
 function(_add_file_to_copy target file)
-  get_filename_component(_file_name ${file} NAME_WE)
-  add_custom_target(copy_${_file_name}_${target}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${file})
+  get_filename_component(_file_name_we ${file} NAME_WE)
+  get_filename_component(_file_name ${file} NAME)
+  get_filename_component(_file_path ${file}
+    ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+  set(copy_target copy_${_file_name_we}_${target})
+  add_custom_target(${copy_target}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${_file_name})
   add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file}
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_file_name}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${CMAKE_CURRENT_SOURCE_DIR}/${file}
-		${CMAKE_CURRENT_BINARY_DIR}/${file}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file}
-    COMMENT "Copying file ${file} for the target ${target}"
+                ${file}
+		${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${_file_path}
+    COMMENT "Copying file ${_file_name} for the target ${target}"
     )
-  add_dependencies(${target} copy_${_file_name}_${target})
+  add_dependencies(${target} ${copy_target})
 endfunction()
 
 # ==============================================================================

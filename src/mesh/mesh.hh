@@ -433,9 +433,10 @@ public:
                                         const ElementKind & element_kind);
 
   template <typename T>
-  dumper::Field * createFieldFromAttachedData(const std::string & field_id,
-                                              const std::string & group_name,
-                                              const ElementKind & element_kind);
+  std::shared_ptr<dumper::Field>
+  createFieldFromAttachedData(const std::string & field_id,
+                              const std::string & group_name,
+                              const ElementKind & element_kind);
 
   /// templated getter returning the pointer to data in MeshData (modifiable)
   template <typename T>
@@ -547,8 +548,8 @@ public:
                              *periodic_node_synchronizer,
                              PeriodicNodeSynchronizer &);
 
-// AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
-// &);
+  // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
+  // &);
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
   AKANTU_GET_MACRO(PeriodicMasterSlaves, periodic_master_slave, const auto &);

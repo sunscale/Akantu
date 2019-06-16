@@ -42,15 +42,14 @@ namespace akantu {
 DumperParaview::DumperParaview(const std::string & filename,
                                const std::string & directory, bool parallel)
     : DumperIOHelper() {
-  iohelper::DumperParaview * dumper_para = new iohelper::DumperParaview();
-  dumper = dumper_para;
+  dumper = std::make_unique<iohelper::DumperParaview>();
   setBaseName(filename);
 
   this->setParallelContext(parallel);
 
-  dumper_para->setMode(iohelper::BASE64);
-  dumper_para->setPrefix(directory);
-  dumper_para->init();
+  dumper->setMode(iohelper::BASE64);
+  dumper->setPrefix(directory);
+  dumper->init();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -59,8 +58,8 @@ DumperParaview::~DumperParaview() = default;
 /* -------------------------------------------------------------------------- */
 void DumperParaview::setBaseName(const std::string & basename) {
   DumperIOHelper::setBaseName(basename);
-  static_cast<iohelper::DumperParaview *>(dumper)->setVTUSubDirectory(filename +
-                                                                      "-VTU");
+  static_cast<iohelper::DumperParaview *>(dumper.get())
+      ->setVTUSubDirectory(filename + "-VTU");
 }
 
 } // namespace akantu

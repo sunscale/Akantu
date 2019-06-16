@@ -130,12 +130,12 @@ void SolidMechanicsModel::onDump() {
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-dumper::Field * SolidMechanicsModel::createElementalField(
+std::shared_ptr<dumper::Field> SolidMechanicsModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
     bool padding_flag, const UInt & spatial_dimension,
     const ElementKind & kind) {
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
 
   if (field_name == "partitions")
     field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(
@@ -197,8 +197,7 @@ dumper::Field * SolidMechanicsModel::createElementalField(
       }
 
       // homogenize the field
-      dumper::ComputeFunctorInterface * foo =
-          dumper::HomogenizerProxy::createHomogenizer(*field);
+      auto foo = dumper::HomogenizerProxy::createHomogenizer(*field);
 
       field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
     }
@@ -207,7 +206,7 @@ dumper::Field * SolidMechanicsModel::createElementalField(
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field *
+std::shared_ptr<dumper::Field>
 SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                           const std::string & group_name,
                                           bool padding_flag) {
@@ -228,7 +227,7 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
         "The 'residual' field has been replaced by 'internal_force'");
   }
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
   if (padding_flag)
     field = this->mesh.createNodalField(real_nodal_fields[field_name],
                                         group_name, 3);
@@ -240,39 +239,39 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * SolidMechanicsModel::createNodalFieldBool(
+std::shared_ptr<dumper::Field> SolidMechanicsModel::createNodalFieldBool(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
   field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
 }
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-dumper::Field * SolidMechanicsModel::createElementalField(const std::string &,
-                                                          const std::string &,
-                                                          bool, const UInt &,
-                                                          const ElementKind &) {
+std::shared_ptr<dumper::Field>
+SolidMechanicsModel::createElementalField(const std::string &,
+                                          const std::string &, bool,
+                                          const UInt &, const ElementKind &) {
   return nullptr;
 }
 /* --------------------------------------------------------------------------
  */
-dumper::Field * SolidMechanicsModel::createNodalFieldReal(const std::string &,
-                                                          const std::string &,
-                                                          bool) {
+std::shaed_ptr<dumper::Field>
+SolidMechanicsModel::createNodalFieldReal(const std::string &,
+                                          const std::string &, bool) {
   return nullptr;
 }
 
 /* --------------------------------------------------------------------------
  */
-dumper::Field * SolidMechanicsModel::createNodalFieldBool(const std::string &,
-                                                          const std::string &,
-                                                          bool) {
+std::shared_ptr<dumper::Field>
+SolidMechanicsModel::createNodalFieldBool(const std::string &,
+                                          const std::string &, bool) {
   return nullptr;
 }
 

@@ -160,7 +160,7 @@ public:
     const auto & old_nb_components =
         this->sub_field.getNbComponents(dim, ghost_type, kind);
 
-    for(auto type : old_nb_components.elementTypes(dim, ghost_type, kind)) {
+    for (auto type : old_nb_components.elementTypes(dim, ghost_type, kind)) {
       UInt nb_comp = old_nb_components(type, ghost_type);
       nb_components(type, ghost_type) = func.getNbComponent(nb_comp);
     }
@@ -168,10 +168,11 @@ public:
   };
 
   /// for connection to a FieldCompute
-  inline Field * connect(FieldComputeProxy & proxy) override;
+  inline std::shared_ptr<Field> connect(FieldComputeProxy & proxy) override;
 
   /// for connection to a FieldCompute
-  ComputeFunctorInterface * connect(HomogenizerProxy & proxy) override;
+  std::shared_ptr<ComputeFunctorInterface>
+  connect(HomogenizerProxy & proxy) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -192,15 +193,16 @@ class FieldComputeProxy {
 public:
   FieldComputeProxy(ComputeFunctorInterface & func) : func(func){};
 
-  inline static Field * createFieldCompute(Field * field,
-                                           ComputeFunctorInterface & func) {
+  inline static std::shared_ptr<Field>
+  createFieldCompute(std::shared_ptr<Field> field,
+                     ComputeFunctorInterface & func) {
     /// that looks fishy an object passed as a ref and destroyed at their end of
     /// the function
     FieldComputeProxy compute_proxy(func);
     return field->connect(compute_proxy);
   }
 
-  template <typename T> Field * connectToField(T * ptr) {
+  template <typename T> std::shared_ptr<Field> connectToField(T * ptr) {
     if (dynamic_cast<ComputeFunctorOutput<Vector<Real>> *>(&func)) {
       return this->connectToFunctor<Vector<Real>>(ptr);
     } else if (dynamic_cast<ComputeFunctorOutput<Vector<UInt>> *>(&func)) {
@@ -219,14 +221,14 @@ public:
       throw;
   }
 
-  template <typename output, typename T> Field * connectToFunctor(T * ptr) {
-    auto * functor_ptr = new FieldCompute<T, output>(*ptr, func);
-    return functor_ptr;
+  template <typename output, typename T>
+  std::shared_ptr<Field> connectToFunctor(T * ptr) {
+    return std::make_shared<FieldCompute<T, output>>(*ptr, func);
   }
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2>
-  Field *
+  std::shared_ptr<Field>
   connectToFunctor(__attribute__((unused))
                    FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
                                 return_type2> * ptr) {
@@ -236,7 +238,7 @@ public:
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2, typename return_type3, typename return_type4>
-  Field * connectToFunctor(
+  std::shared_ptr<Field> connectToFunctor(
       __attribute__((unused)) FieldCompute<
           FieldCompute<FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
                                     return_type2>,
@@ -256,13 +258,13 @@ public:
 /* -------------------------------------------------------------------------- */
 /// for connection to a FieldCompute
 template <typename SubFieldCompute, typename return_type>
-inline Field *
+inline std::shared_ptr<Field>
 FieldCompute<SubFieldCompute, return_type>::connect(FieldComputeProxy & proxy) {
   return proxy.connectToField(this);
 }
 
 /* -------------------------------------------------------------------------- */
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_COMPUTE_HH__ */
