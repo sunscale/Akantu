@@ -56,6 +56,7 @@
 #include <boost/preprocessor.hpp>
 #include <limits>
 #include <list>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -132,10 +133,10 @@ enum EventHandlerPriority {
   (embedded_model)
 // clang-format on
 
-  /// enum ModelType defines which type of physics is solved
-  AKANTU_CLASS_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
-  AKANTU_CLASS_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
-  AKANTU_CLASS_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
+/// enum ModelType defines which type of physics is solved
+AKANTU_CLASS_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
+AKANTU_CLASS_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
 
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion
@@ -537,6 +538,14 @@ bool is_of_type(T && t) {
                              std::add_const_t<R>, R>>>(&t) != nullptr);
 }
 
+/* -------------------------------------------------------------------------- */
+template <typename R, typename T> bool is_of_type(std::unique_ptr<T> & t) {
+  return (
+      dynamic_cast<std::add_pointer_t<
+          std::conditional_t<std::is_const<T>::value, std::add_const_t<R>, R>>>(
+          t.get()) != nullptr);
+}
+
 /* ------------------------------------------------------------------------ */
 template <typename R, typename T,
           std::enable_if_t<std::is_reference<T>::value> * = nullptr>
@@ -551,6 +560,20 @@ decltype(auto) as_type(T && t) {
       std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
                          std::add_const_t<R>, R>>>(t);
 }
+
+/* -------------------------------------------------------------------------- */
+template <typename R, typename T,
+          std::enable_if_t<std::is_pointer<T>::value> * = nullptr>
+decltype(auto) as_type(T && t) {
+  return &as_type<R>(*t);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename R, typename T>
+decltype(auto) as_type(const std::shared_ptr<T> & t) {
+  return std::dynamic_pointer_cast<R>(t);
+}
+
 } // namespace aka
 
 #include "aka_fwd.hh"

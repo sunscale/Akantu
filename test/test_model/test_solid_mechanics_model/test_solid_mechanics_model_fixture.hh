@@ -103,7 +103,7 @@ protected:
   std::string mesh_file{std::to_string(this->type) + ".msh"};
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModel> model;
-  bool dump_paraview{true};
+  bool dump_paraview{false};
 };
 
 template <typename type_> constexpr ElementType TestSMMFixture<type_>::type;

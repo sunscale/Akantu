@@ -41,11 +41,10 @@ __BEGIN_AKANTU_DUMPER__
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
-inline type typeConverter(const type & input,
-                          __attribute__((unused))
-                          Vector<typename type::value_type> & res,
-                          __attribute__((unused)) UInt nb_data) {
-
+inline type
+typeConverter(const type & input,
+              [[gnu::unused]] Vector<typename type::value_type> & res,
+              [[gnu::unused]] UInt nb_data) {
   throw;
   return input;
 }
@@ -66,7 +65,6 @@ inline Matrix<type> typeConverter(const Matrix<type> & input,
 template <typename type>
 inline Vector<type> typeConverter(const Vector<type> &, Vector<type> & res,
                                   UInt) {
-
   return res;
 }
 
@@ -74,17 +72,14 @@ inline Vector<type> typeConverter(const Vector<type> &, Vector<type> & res,
 
 template <typename type>
 class AvgHomogenizingFunctor : public ComputeFunctor<type, type> {
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
-
   using value_type = typename type::value_type;
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
   AvgHomogenizingFunctor(ElementTypeMap<UInt> & nb_datas) {
 
@@ -135,20 +130,18 @@ public:
 /* -------------------------------------------------------------------------- */
 
 class HomogenizerProxy {
-
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
   HomogenizerProxy() = default;
 
 public:
-  inline static std::shared_ptr<ComputeFunctorInterface>
+  inline static std::unique_ptr<ComputeFunctorInterface>
   createHomogenizer(Field & field);
 
   template <typename T>
-  inline std::shared_ptr<ComputeFunctorInterface> connectToField(T * field) {
+  inline std::unique_ptr<ComputeFunctorInterface> connectToField(T * field) {
     ElementTypeMap<UInt> nb_components = field->getNbComponents();
 
     using ret_type = typename T::types::return_type;
@@ -156,50 +149,44 @@ public:
   }
 
   template <typename ret_type>
-  inline std::shared_ptr<ComputeFunctorInterface>
+  inline std::unique_ptr<ComputeFunctorInterface>
   instantiateHomogenizer(ElementTypeMap<UInt> & nb_components);
 };
 
 /* -------------------------------------------------------------------------- */
 
 template <typename ret_type>
-inline std::shared_ptr<ComputeFunctorInterface>
+inline std::unique_ptr<ComputeFunctorInterface>
 HomogenizerProxy::instantiateHomogenizer(ElementTypeMap<UInt> & nb_components) {
-
   using Homogenizer = dumper::AvgHomogenizingFunctor<ret_type>;
-  return std::make_shared<Homogenizer>(nb_components);
+  return std::make_unique<Homogenizer>(nb_components);
 }
 
 template <>
-inline std::shared_ptr<ComputeFunctorInterface>
-HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType>>(
-    __attribute__((unused)) ElementTypeMap<UInt> & nb_components) {
+inline std::unique_ptr<ComputeFunctorInterface>
+HomogenizerProxy::instantiateHomogenizer<Vector<iohelper::ElemType>>([
+    [gnu::unused]] ElementTypeMap<UInt> & nb_components) {
   throw;
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
-
 /// for connection to a FieldCompute
 template <typename SubFieldCompute, typename return_type>
-inline std::shared_ptr<ComputeFunctorInterface>
+inline std::unique_ptr<ComputeFunctorInterface>
 FieldCompute<SubFieldCompute, return_type>::connect(HomogenizerProxy & proxy) {
-
   return proxy.connectToField(this);
 }
+
 /* -------------------------------------------------------------------------- */
-
-inline std::shared_ptr<ComputeFunctorInterface>
+inline std::unique_ptr<ComputeFunctorInterface>
 HomogenizerProxy::createHomogenizer(Field & field) {
-
   HomogenizerProxy homogenizer_proxy;
   return field.connect(homogenizer_proxy);
 }
 
 /* -------------------------------------------------------------------------- */
-
 // inline ComputeFunctorInterface & createHomogenizer(Field & field){
-
 //   HomogenizerProxy::createHomogenizer(field);
 //   throw;
 //   ComputeFunctorInterface * ptr = NULL;

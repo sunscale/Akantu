@@ -118,7 +118,7 @@ public:
 
     mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
 
-#define debug_ 1
+#define debug_ 0
 
 #if debug_
     this->model->addDumpFieldVector("displacement");

@@ -117,7 +117,7 @@ public:
   }
 
   /// for connection to a Homogenizer
-  inline std::shared_ptr<ComputeFunctorInterface>
+  inline std::unique_ptr<ComputeFunctorInterface>
   connect(HomogenizerProxy & proxy) override {
     return proxy.connectToField(this);
   };

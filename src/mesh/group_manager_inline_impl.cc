@@ -109,7 +109,7 @@ std::shared_ptr<dumper::Field> GroupManager::createElementalField(
   if (group_name != "all")
     throw;
 
-  std::shared_ptr<dumper::Field> dumper =
+  auto dumper =
       std::make_shared<dump_type>(field, spatial_dimension, _not_ghost, kind);
   dumper->setNbDataPerElem(nb_data_per_elem);
   return dumper;

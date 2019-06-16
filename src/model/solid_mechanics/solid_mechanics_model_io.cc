@@ -158,40 +158,43 @@ std::shared_ptr<dumper::Field> SolidMechanicsModel::createElementalField(
     bool is_internal = this->isInternal(field_name_copy, kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem =
+      auto nb_data_per_elem =
           this->getInternalDataPerElem(field_name_copy, kind);
-      ElementTypeMapArray<Real> & internal_flat =
-          this->flattenInternal(field_name_copy, kind);
+      auto & internal_flat = this->flattenInternal(field_name_copy, kind);
+
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
           internal_flat, group_name, spatial_dimension, kind, nb_data_per_elem);
+
+      std::unique_ptr<dumper::ComputeFunctorInterface> func;
       if (field_name == "strain") {
-        auto * foo = new dumper::ComputeStrain<false>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputeStrain<false>>(*this);
       } else if (field_name == "Von Mises stress") {
-        auto * foo = new dumper::ComputeVonMisesStress(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputeVonMisesStress>(*this);
       } else if (field_name == "Green strain") {
-        auto * foo = new dumper::ComputeStrain<true>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputeStrain<true>>(*this);
       } else if (field_name == "principal strain") {
-        auto * foo = new dumper::ComputePrincipalStrain<false>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputePrincipalStrain<false>>(*this);
       } else if (field_name == "principal Green strain") {
-        auto * foo = new dumper::ComputePrincipalStrain<true>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputePrincipalStrain<true>>(*this);
       }
 
+      if (func) {
+        field = dumper::FieldComputeProxy::createFieldCompute(field,
+                                                              std::move(func));
+      }
       // treat the paddings
       if (padding_flag) {
         if (field_name == "stress") {
           if (spatial_dimension == 2) {
-            auto * foo = new dumper::StressPadder<2>(*this);
-            field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+            auto foo = std::make_unique<dumper::StressPadder<2>>(*this);
+            field = dumper::FieldComputeProxy::createFieldCompute(
+                field, std::move(foo));
           }
         } else if (field_name == "strain" || field_name == "Green strain") {
           if (spatial_dimension == 2) {
-            auto * foo = new dumper::StrainPadder<2>(*this);
-            field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+            auto foo = std::make_unique<dumper::StrainPadder<2>>(*this);
+            field = dumper::FieldComputeProxy::createFieldCompute(
+                field, std::move(foo));
           }
         }
       }
@@ -199,7 +202,7 @@ std::shared_ptr<dumper::Field> SolidMechanicsModel::createElementalField(
       // homogenize the field
       auto foo = dumper::HomogenizerProxy::createHomogenizer(*field);
 
-      field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+      field = dumper::FieldComputeProxy::createFieldCompute(field, std::move(foo));
     }
   }
   return field;

@@ -45,7 +45,7 @@ class HomogenizerProxy;
 /* -------------------------------------------------------------------------- */
 
 /// Field interface
-class Field {
+class Field : public std::enable_shared_from_this<Field> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -64,38 +64,38 @@ public:
 #endif
 
   /// set the number of data per item (used for elements fields at the moment)
-  virtual void setNbData(__attribute__((unused)) UInt nb_data) {
+  virtual void setNbData([[gnu::unused]] UInt nb_data) {
     AKANTU_TO_IMPLEMENT();
   };
 
   /// set the number of data per elem (used for elements fields at the moment)
-  virtual void setNbDataPerElem(__attribute__((unused))
-                                const ElementTypeMap<UInt> & nb_data) {
+  virtual void setNbDataPerElem([
+      [gnu::unused]] const ElementTypeMap<UInt> & nb_data) {
     AKANTU_TO_IMPLEMENT();
   };
 
   /// set the number of data per elem (used for elements fields at the moment)
-  virtual void setNbDataPerElem(__attribute__((unused)) UInt nb_data) {
+  virtual void setNbDataPerElem([[gnu::unused]] UInt nb_data) {
     AKANTU_TO_IMPLEMENT();
   };
 
   /// get the number of components of the hosted field
   virtual ElementTypeMap<UInt>
-  getNbComponents(__attribute__((unused)) UInt dim = _all_dimensions,
-                  __attribute__((unused)) GhostType ghost_type = _not_ghost,
-                  __attribute__((unused)) ElementKind kind = _ek_not_defined) {
+  getNbComponents([[gnu::unused]] UInt dim = _all_dimensions,
+                  [[gnu::unused]] GhostType ghost_type = _not_ghost,
+                  [[gnu::unused]] ElementKind kind = _ek_not_defined) {
     throw;
   };
 
   /// for connection to a FieldCompute
-  inline virtual std::shared_ptr<Field> connect(__attribute__((unused))
-                                                FieldComputeProxy & proxy) {
+  inline virtual std::shared_ptr<Field> connect([
+      [gnu::unused]] FieldComputeProxy & proxy) {
     throw;
   };
 
   /// for connection to a FieldCompute
-  inline virtual std::shared_ptr<ComputeFunctorInterface>
-  connect(__attribute__((unused)) HomogenizerProxy & proxy) {
+  inline virtual std::unique_ptr<ComputeFunctorInterface>
+  connect(HomogenizerProxy & /*proxy*/) {
     throw;
   };
 
