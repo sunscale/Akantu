@@ -22,10 +22,9 @@ def foo(self):
     solver = self.model.getNonLinearSolver()
     solver.set("max_iterations", 2)
     solver.set("threshold", 2e-4)
-    solver.set("convergence_type", akantu.SolveConvergenceCriteria__residual)
+    solver.set("convergence_type", akantu.SolveConvergenceCriteria.residual)
 
     self.model.solveStep()
-
     self.checkAll()
 
 

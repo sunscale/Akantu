@@ -35,8 +35,8 @@ register_solid_mechanics_model(py::module & mod) {
       .def(py::init<AnalysisMethod>(),
            py::arg("analysis_method") = _explicit_lumped_mass);
 
-  py::class_<SolidMechanicsModel, Model, ModelSolver>(mod,
-                                                      "SolidMechanicsModel")
+  py::class_<SolidMechanicsModel, Model>(mod, "SolidMechanicsModel",
+                                         py::multiple_inheritance())
       .def(py::init<Mesh &, UInt, const ID &, const MemoryID &,
                     const ModelType>(),
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,

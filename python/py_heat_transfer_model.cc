@@ -31,12 +31,12 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 void register_heat_transfer_model(py::module & mod) {
-
   py::class_<HeatTransferModelOptions>(mod, "HeatTransferModelOptions")
       .def(py::init<AnalysisMethod>(),
            py::arg("analysis_method") = _explicit_lumped_mass);
 
-  py::class_<HeatTransferModel, Model, ModelSolver>(mod, "HeatTransferModel")
+  py::class_<HeatTransferModel, Model>(mod, "HeatTransferModel",
+                                       py::multiple_inheritance())
       .def(py::init<Mesh &, UInt, const ID &, const MemoryID &>(),
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
            py::arg("id") = "heat_transfer_model", py::arg("memory_id") = 0)

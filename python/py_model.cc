@@ -17,7 +17,6 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 void register_model(py::module & mod) {
-
   py::class_<SparseMatrix>(mod, "SparseMatrix")
       .def("getMatrixType", &SparseMatrix::getMatrixType)
       .def("size", &SparseMatrix::size);
@@ -35,7 +34,28 @@ void register_model(py::module & mod) {
            },
            py::return_value_policy::reference);
 
-  py::class_<Model>(mod, "Model")
+  py::class_<NonLinearSolver>(mod, "NonLinearSolver")
+      .def(
+          "set",
+          [](NonLinearSolver & self, const std::string & id, const Real & val) {
+            if (id == "max_iterations")
+              self.set(id, int(val));
+            else
+              self.set(id, val);
+          })
+      .def("set",
+           [](NonLinearSolver & self, const std::string & id,
+              const SolveConvergenceCriteria & val) { self.set(id, val); });
+
+  py::class_<ModelSolver, Parsable>(mod, "ModelSolver",
+                                    py::multiple_inheritance())
+      .def("getNonLinearSolver",
+           (NonLinearSolver & (ModelSolver::*)(const ID &)) &
+               ModelSolver::getNonLinearSolver,
+           py::arg("solver_id") = "", py::return_value_policy::reference)
+      .def("solveStep", &ModelSolver::solveStep, py::arg("solver_id") = "");
+
+  py::class_<Model, ModelSolver>(mod, "Model", py::multiple_inheritance())
       .def("setBaseName", &Model::setBaseName)
       .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
            py::return_value_policy::reference)
@@ -49,25 +69,6 @@ void register_model(py::module & mod) {
       .def("getDOFManager", &Model::getDOFManager,
            py::return_value_policy::reference);
 
-  py::class_<NonLinearSolver>(mod, "NonLinearSolver")
-      .def(
-          "set",
-          [](NonLinearSolver & self, const std::string & id, const Real & val) {
-            if (id == "max_iterations")
-              self.set(id, int(val));
-            else if (id == "convergence_type")
-              self.set(id, akantu::SolveConvergenceCriteria(UInt(val)));
-            else
-              self.set(id, val);
-          });
-
-  py::class_<ModelSolver, Parsable>(mod, "ModelSolver",
-                                    py::multiple_inheritance())
-      .def("getNonLinearSolver",
-           (NonLinearSolver & (ModelSolver::*)(const ID &)) &
-               ModelSolver::getNonLinearSolver,
-           py::arg("solver_id") = "", py::return_value_policy::reference)
-      .def("solveStep", &ModelSolver::solveStep, py::arg("solver_id") = "");
 }
 
 } // namespace akantu
