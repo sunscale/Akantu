@@ -95,7 +95,7 @@ register_test(test_facet_element_mapping
 
 register_gtest_sources(
   SOURCES test_fe_engine_precomputation.cc
-  PACKAGE core pybind11
+  PACKAGE core python_interface
   LINK_LIBRARIES pyakantu
   )
 

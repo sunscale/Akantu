@@ -265,6 +265,10 @@ function(is_test_active is_active)
       " ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
   endif()
 
+  if(_register_test_PYTHON)
+    list(APPEND _register_test_PACKAGE python_interface)
+  endif()
+
   set(_test_act TRUE)
   # Activate the test anly if all packages associated to the test are activated
   foreach(_package ${_register_test_PACKAGE})
@@ -374,10 +378,10 @@ function(register_gtest_test test_name)
 
   set(_link_libraries GTest::GTest GTest::Main)
 
-  list(FIND _gtest_PACKAGE pybind11 _pos)
-  package_is_activated(pybind11 _pybind11_act)
+  list(FIND _gtest_PACKAGE python_interface _pos)
+  package_is_activated(python_interface _python_interface_act)
 
-  if(_pybind11_act AND (NOT _pos EQUAL -1))
+  if(_python_interface_act AND (NOT _pos EQUAL -1))
     list(APPEND _link_libraries pybind11::embed)
     set(_compile_flags COMPILE_OPTIONS "AKANTU_TEST_USE_PYBIND11")
   endif()
@@ -526,12 +530,6 @@ function(register_test test_name)
   set(_arguments -n "${test_name}")
   if(_register_test_SCRIPT)
     _add_file_to_copy(${test_name} ${_register_test_SCRIPT})
-    # file(COPY ${_register_test_SCRIPT}
-    #   FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-    #                    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-    #   DESTINATION .
-    #   )
- 
     if(_register_test_PYTHON)
       if(NOT PYTHONINTERP_FOUND)
         find_package(PythonInterp ${AKANTU_PREFERRED_PYTHON_VERSION} REQUIRED)
@@ -613,6 +611,17 @@ endfunction()
 
 
 function(register_test_files_to_package)
+  cmake_parse_arguments(_register_test
+    "${_test_flags}"
+    "${_test_one_variables}"
+    "${_test_multi_variables}"
+    ${ARGN}
+    )
+
+  if(_register_test_PYTHON)
+    list(APPEND _register_test_PACKAGE python_interface)
+  endif()
+
   set(_test_all_files)
   # add the source files in the list of all files
   foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS}

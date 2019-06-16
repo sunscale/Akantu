@@ -35,6 +35,7 @@ add_mesh(mesh_dcb_2d mesh_dcb_2d.geo 2 2)
 
 register_test(test_python_interface
   SCRIPT test_pybind.py
+  PYTHON
   FILES_TO_COPY elastic.dat
   DEPENDS mesh_dcb_2d py11_akantu_test_common
   PACKAGE python_interface

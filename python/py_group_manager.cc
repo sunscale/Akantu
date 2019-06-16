@@ -5,6 +5,7 @@
 #include <node_group.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
 /* -------------------------------------------------------------------------- */
@@ -34,6 +35,22 @@ void register_group_manager(py::module & mod) {
              return self.getElementGroup(name);
            },
            py::return_value_policy::reference)
+      .def("iterateElementGroups",
+           [](GroupManager & self) -> decltype(auto) {
+             std::vector<std::reference_wrapper<ElementGroup>> groups;
+             for(auto & group: self.iterateElementGroups()) {
+               groups.emplace_back(group);
+             }
+             return groups;
+           })
+      .def("iterateNodeGroups",
+           [](GroupManager & self) -> decltype(auto) {
+             std::vector<std::reference_wrapper<NodeGroup>> groups;
+             for(auto & group: self.iterateNodeGroups()) {
+               groups.emplace_back(group);
+             }
+             return groups;
+           })
       .def("createNodeGroup", &GroupManager::createNodeGroup,
            py::return_value_policy::reference)
       .def("createElementGroup",
