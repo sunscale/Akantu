@@ -44,6 +44,16 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+inline decltype(auto) SolidMechanicsModel::getMaterials() {
+  return make_dereference_adaptor(materials);
+}
+
+/* -------------------------------------------------------------------------- */
+inline decltype(auto) SolidMechanicsModel::getMaterials() const {
+  return make_dereference_adaptor(materials);
+}
+
+/* -------------------------------------------------------------------------- */
 inline Material & SolidMechanicsModel::getMaterial(UInt mat_index) {
   AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(mat_index < materials.size(),

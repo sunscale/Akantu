@@ -75,14 +75,12 @@ int main(int argc, char * argv[]) {
     applied_strain(i, i) = 2.;
 
   /// apply constant grad_u field in all elements
-  for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    auto & mat = model.getMaterial(m);
-    auto & grad_u = const_cast<Array<Real> &>(
-        mat.getInternal<Real>("eigen_grad_u")(element_type, ghost_type));
-    auto grad_u_it = grad_u.begin(spatial_dimension, spatial_dimension);
-    auto grad_u_end = grad_u.end(spatial_dimension, spatial_dimension);
-    for (; grad_u_it != grad_u_end; ++grad_u_it)
-      (*grad_u_it) = -1. * applied_strain;
+  for (auto & mat : model.getMaterials()) {
+    auto & grad_us = mat.getInternal<Real>("eigen_grad_u")(element_type, ghost_type);
+    for (auto & grad_u :
+         make_view(grad_us, spatial_dimension, spatial_dimension)) {
+      grad_u = -1. * applied_strain;
+    }
   }
 
   /// compute the non-local strains
@@ -93,22 +91,19 @@ int main(int argc, char * argv[]) {
   /// yield same constant field
   Real test_result = 0.;
   Matrix<Real> difference(spatial_dimension, spatial_dimension, 0.);
-  for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    auto & mat = model.getMaterial(m);
-    auto & grad_u_nl =
-        mat.getInternal<Real>("grad_u non local")(element_type, ghost_type);
 
-    auto grad_u_nl_it = grad_u_nl.begin(spatial_dimension, spatial_dimension);
-    auto grad_u_nl_end = grad_u_nl.end(spatial_dimension, spatial_dimension);
-    for (; grad_u_nl_it != grad_u_nl_end; ++grad_u_nl_it) {
-      difference = (*grad_u_nl_it) - applied_strain;
+  for (auto & mat : model.getMaterials()) {
+    auto & grad_us_nl =
+        mat.getInternal<Real>("grad_u non local")(element_type, ghost_type);
+    for (auto & grad_u_nl :
+         make_view(grad_us_nl, spatial_dimension, spatial_dimension)) {
+      difference = grad_u_nl - applied_strain;
       test_result += difference.norm<L_2>();
     }
   }
 
   if (test_result > 10.e-13) {
-    std::cout << "the total norm is: " << test_result << std::endl;
-    std::terminate();
+    AKANTU_EXCEPTION("the total norm is: " << test_result);
   }
 
   return 0;

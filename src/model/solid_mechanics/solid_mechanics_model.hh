@@ -398,6 +398,12 @@ public:
   /// get the SolidMechanicsModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
+  /// get an iterable on the materials
+  inline decltype(auto) getMaterials();
+
+  /// get an iterable on the materials
+  inline decltype(auto) getMaterials() const;
+  
   /// get a particular material (by material index)
   inline Material & getMaterial(UInt mat_index);
 
