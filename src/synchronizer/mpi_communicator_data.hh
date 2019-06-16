@@ -67,7 +67,7 @@ class MPICommunicatorData : public CommunicatorInternalData {
 public:
   MPICommunicatorData() {
     MPI_Initialized(&is_externaly_initialized);
-    if (!is_externaly_initialized) {
+    if (not is_externaly_initialized) {
       MPI_Init(nullptr, nullptr); // valid according to the spec
     }
 
@@ -79,6 +79,8 @@ public:
 
   ~MPICommunicatorData() override {
     if (not is_externaly_initialized) {
+      MPI_Comm_set_errhandler(communicator, save_error_handler);
+      MPI_Errhandler_free(&error_handler);
       MPI_Finalize();
     }
   }
