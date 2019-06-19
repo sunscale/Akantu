@@ -47,12 +47,12 @@ inline UInt MaterialCohesive::getNbData(const Array<Element> & elements,
                                         const SynchronizationTag & tag) const {
 
   switch (tag) {
-  case _gst_smm_stress: {
+  case SynchronizationTag::_smm_stress: {
     return 2 * spatial_dimension * sizeof(Real) *
            this->getModel().getNbIntegrationPoints(elements,
                                                    "CohesiveFEEngine");
   }
-  case _gst_smmc_damage: {
+  case SynchronizationTag::_smmc_damage: {
     return sizeof(Real) *
            this->getModel().getNbIntegrationPoints(elements,
                                                    "CohesiveFEEngine");
@@ -68,13 +68,13 @@ inline void MaterialCohesive::packData(CommunicationBuffer & buffer,
                                        const Array<Element> & elements,
                                        const SynchronizationTag & tag) const {
   switch (tag) {
-  case _gst_smm_stress: {
+  case SynchronizationTag::_smm_stress: {
     packElementDataHelper(tractions, buffer, elements, "CohesiveFEEngine");
     packElementDataHelper(contact_tractions, buffer, elements,
                           "CohesiveFEEngine");
     break;
   }
-  case _gst_smmc_damage:
+  case SynchronizationTag::_smmc_damage:
     packElementDataHelper(damage, buffer, elements, "CohesiveFEEngine");
     break;
   default: {}
@@ -86,13 +86,13 @@ inline void MaterialCohesive::unpackData(CommunicationBuffer & buffer,
                                          const Array<Element> & elements,
                                          const SynchronizationTag & tag) {
   switch (tag) {
-  case _gst_smm_stress: {
+  case SynchronizationTag::_smm_stress: {
     unpackElementDataHelper(tractions, buffer, elements, "CohesiveFEEngine");
     unpackElementDataHelper(contact_tractions, buffer, elements,
                             "CohesiveFEEngine");
     break;
   }
-  case _gst_smmc_damage:
+  case SynchronizationTag::_smmc_damage:
     unpackElementDataHelper(damage, buffer, elements, "CohesiveFEEngine");
     break;
   default: {}

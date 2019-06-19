@@ -1,4 +1,3 @@
-
 //Mesh size
 dx = 57.8e-5;
 

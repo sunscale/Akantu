@@ -29,9 +29,17 @@
  */
 
 /* -------------------------------------------------------------------------- */
-// akantu
 #include "aka_common.hh"
-#include "solid_mechanics_model.hh"
+/* -------------------------------------------------------------------------- */
+#include <vector>
+/* -------------------------------------------------------------------------- */
+
+#ifndef __AKANTU_BOUNDARY_FUNCTIONS_HH__
+#define __AKANTU_BOUNDARY_FUNCTIONS_HH__
+
+namespace akantu {
+class SolidMechanicsModel;
+}
 
 namespace akantu {
 
@@ -43,3 +51,5 @@ void boundaryFix(Mesh & mesh,
                  const std::vector<std::string> & sub_boundary_names);
 
 } // namespace akantu
+
+#endif /* __AKANTU_BOUNDARY_FUNCTIONS_HH__ */

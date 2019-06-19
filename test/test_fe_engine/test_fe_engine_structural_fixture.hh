@@ -59,6 +59,6 @@ template <typename type_> const UInt TestFEMStructuralFixture<type_>::ndof;
 
 // using types = gtest_list_t<TestElementTypes>;
 
-// TYPED_TEST_CASE(TestFEMFixture, types);
+// TYPED_TEST_SUITE(TestFEMFixture, types);
 
 #endif /* __AKANTU_TEST_FE_ENGINE_STRUCTURAL_FIXTURE_HH__ */

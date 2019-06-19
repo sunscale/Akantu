@@ -30,7 +30,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "solid_mechanics_model_cohesive.hh"
 #include "aka_iterators.hh"
@@ -81,14 +80,14 @@ public:
 
     if (mesh.isDistributed()) {
       MeshAccessor mesh_accessor(mesh);
-      auto & nodes_type = mesh_accessor.getNodesType();
-      UInt nb_old_nodes = nodes_type.size();
-      nodes_type.resize(nb_old_nodes + local_nb_new_nodes);
+      auto & nodes_flags = mesh_accessor.getNodesFlags();
+      auto nb_old_nodes = nodes_flags.size();
+      nodes_flags.resize(nb_old_nodes + local_nb_new_nodes);
 
       for (auto && data : zip(old_nodes, new_nodes)) {
         UInt old_node, new_node;
         std::tie(old_node, new_node) = data;
-        nodes_type(new_node) = nodes_type(old_node);
+        nodes_flags(new_node) = nodes_flags(old_node);
       }
 
       model.updateCohesiveSynchronizers();
@@ -104,12 +103,12 @@ public:
       MeshUtils::resetFacetToDouble(mesh.getMeshFacets());
     }
 
-    if (nb_new_nodes > 0) {
+    if (nb_new_stuff(0) > 0) {
       mesh.sendEvent(nodes_event);
       // mesh.sendEvent(global_ids_updater.getChangedNodeEvent());
     }
 
-    return std::make_tuple(nb_new_nodes, nb_new_stuff(1));
+    return std::make_tuple(nb_new_stuff(0), nb_new_stuff(1));
   }
 
 private:
@@ -153,9 +152,9 @@ SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
       return Mesh::getKind(el.type) == _ek_cohesive;
     });
 
-    this->registerSynchronizer(*cohesive_synchronizer, _gst_material_id);
-    this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_stress);
-    this->registerSynchronizer(*cohesive_synchronizer, _gst_smm_boundary);
+    this->registerSynchronizer(*cohesive_synchronizer, SynchronizationTag::_material_id);
+    this->registerSynchronizer(*cohesive_synchronizer, SynchronizationTag::_smm_stress);
+    this->registerSynchronizer(*cohesive_synchronizer, SynchronizationTag::_smm_boundary);
   }
 
   this->inserter = std::make_unique<CohesiveElementInserter>(
@@ -185,18 +184,16 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
   const auto & smmc_options =
-      dynamic_cast<const SolidMechanicsModelCohesiveOptions &>(options);
+      aka::as_type<SolidMechanicsModelCohesiveOptions>(options);
 
   this->is_extrinsic = smmc_options.is_extrinsic;
-
-  std::cout << "Extrinsic " << is_extrinsic << std::endl;
 
   inserter->setIsExtrinsic(is_extrinsic);
 
   if (mesh.isDistributed()) {
     auto & mesh_facets = inserter->getMeshFacets();
     auto & synchronizer =
-        dynamic_cast<FacetSynchronizer &>(mesh_facets.getElementSynchronizer());
+        aka::as_type<FacetSynchronizer>(mesh_facets.getElementSynchronizer());
 
     synchronizeGhostFacetsConnectivity();
 
@@ -206,7 +203,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
           synchronizer, id + ":facet_stress_synchronizer");
       facet_stress_synchronizer->swapSendRecv();
       this->registerSynchronizer(*facet_stress_synchronizer,
-                                 _gst_smmc_facets_stress);
+                                 SynchronizationTag::_smmc_facets_stress);
     }
   }
 
@@ -267,7 +264,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
       mesh_facets,
       [&](auto && element) {
         auto mat_index = (*material_selector)(element);
-        auto & mat = dynamic_cast<MaterialCohesive &>(*materials[mat_index]);
+        auto & mat = aka::as_type<MaterialCohesive>(*materials[mat_index]);
         facet_material(element) = mat_index;
         if (is_extrinsic) {
           mat.addFacet(element);
@@ -451,7 +448,7 @@ void SolidMechanicsModelCohesive::assembleInternalForces() {
   // f_int += f_int_cohe
   for (auto & material : this->materials) {
     try {
-      auto & mat = dynamic_cast<MaterialCohesive &>(*material);
+      auto & mat = aka::as_type<MaterialCohesive>(*material);
       mat.computeTraction(_not_ghost);
     } catch (std::bad_cast & bce) {
     }
@@ -508,7 +505,7 @@ void SolidMechanicsModelCohesive::interpolateStress() {
       material->interpolateStressOnFacets(facet_stress, by_elem_result);
   }
 
-  this->synchronize(_gst_smmc_facets_stress);
+  this->synchronize(SynchronizationTag::_smmc_facets_stress);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -531,7 +528,7 @@ UInt SolidMechanicsModelCohesive::checkCohesiveStress() {
   }
 
   /// communicate data among processors
-  // this->synchronize(_gst_smmc_facets);
+  // this->synchronize(SynchronizationTag::_smmc_facets);
 
   /// insert cohesive elements
   UInt nb_new_elements = inserter->insertElements();
@@ -638,12 +635,10 @@ void SolidMechanicsModelCohesive::afterSolveStep() {
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::printself(std::ostream & stream,
                                             int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
-  stream << space << "SolidMechanicsModelCohesive [" << std::endl;
-  SolidMechanicsModel::printself(stream, indent + 1);
+  stream << space << "SolidMechanicsModelCohesive [" << "\n";
+  SolidMechanicsModel::printself(stream, indent + 2);
   stream << space << "]" << std::endl;
 }
 

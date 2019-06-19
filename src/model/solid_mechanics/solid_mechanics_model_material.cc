@@ -142,7 +142,7 @@ void SolidMechanicsModel::assignMaterialToElements(
 
 
   if (non_local_manager)
-    non_local_manager->synchronize(*this, _gst_material_id);
+    non_local_manager->synchronize(*this, SynchronizationTag::_material_id);
 
   for_each_element(mesh,
                    [&](auto && element) {
@@ -153,7 +153,7 @@ void SolidMechanicsModel::assignMaterialToElements(
                    _element_filter = filter, _ghost_type = _not_ghost);
 
   // synchronize the element material arrays
-  this->synchronize(_gst_material_id);
+  this->synchronize(SynchronizationTag::_material_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -170,7 +170,7 @@ void SolidMechanicsModel::initMaterials() {
     material->initMaterial();
   }
 
-  this->synchronize(_gst_smm_init_mat);
+  this->synchronize(SynchronizationTag::_smm_init_mat);
 
   if (this->non_local_manager) {
     this->non_local_manager->initialize();

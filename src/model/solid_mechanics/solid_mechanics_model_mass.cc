@@ -95,7 +95,7 @@ void SolidMechanicsModel::assembleMassLumped() {
                          "elements, beware that they have lumped mass of 0.");
 #endif
 
-  this->synchronize(_gst_smm_mass);
+  this->synchronize(SynchronizationTag::_smm_mass);
 
   need_to_reassemble_lumped_mass = false;
 
@@ -124,7 +124,7 @@ void SolidMechanicsModel::assembleMassLumped(GhostType ghost_type) {
   auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctor compute_rho(*this);
 
-  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type, _ek_regular)) {
     fem.assembleFieldLumped(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }
@@ -139,7 +139,7 @@ void SolidMechanicsModel::assembleMass(GhostType ghost_type) {
   auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctor compute_rho(*this);
 
-  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+  for (auto type : mesh.elementTypes(Model::spatial_dimension, ghost_type, _ek_regular)) {
     fem.assembleFieldMatrix(compute_rho, "M", "displacement",
                             this->getDOFManager(), type, ghost_type);
   }

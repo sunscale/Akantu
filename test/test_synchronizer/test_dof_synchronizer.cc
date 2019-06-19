@@ -69,7 +69,7 @@ int main(int argc, char * argv[]) {
   dof_manager.registerDOFs("test_synchronize", test_synchronize, _dst_nodal);
 
   auto & equation_number =
-      dof_manager.getLocalEquationNumbers("test_synchronize");
+      dof_manager.getLocalEquationsNumbers("test_synchronize");
 
   DOFSynchronizer & dof_synchronizer = dof_manager.getSynchronizer();
 

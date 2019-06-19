@@ -45,15 +45,18 @@ int main(int argc, char * argv[]) {
   const Mesh & cmesh = mesh;
   mesh.read("iterators_mesh.msh");
 
-  for (auto && element_group : ElementGroupsIterable(mesh)) {
-    std::cout << element_group.getName() << std::endl;
+  std::cout << "ElementGroups" << std::endl; 
+  for (auto && element_group : mesh.iterateElementGroups()) {
+    std::cout << element_group.getName() << " " << element_group.getDimension() << std::endl;
   }
 
-  for (auto && node_group : NodeGroupsIterable(cmesh)) {
+  std::cout << "NodeGroups" << std::endl; 
+  for (auto && node_group : cmesh.iterateNodeGroups()) {
     std::cout << node_group.getName() << std::endl;
   }
 
-  for (auto && element_group : enumerate(ElementGroupsIterable(mesh))) {
+  std::cout << "enumerate(ElementGroups)" << std::endl; 
+  for (auto && element_group : enumerate(mesh.iterateElementGroups())) {
     std::cout << std::get<0>(element_group) << " "
               << std::get<1>(element_group).getName() << std::endl;
   }

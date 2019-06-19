@@ -41,7 +41,6 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(2);
   mesh.read("square.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   // model initialization
   SolidMechanicsModel model(mesh);
@@ -55,7 +54,7 @@ int main(int argc, char * argv[]) {
   model.setBaseName("plate");
   model.addDumpFieldVector("displacement");
   model.addDumpField("blocked_dofs");
-  model.addDumpField("force");
+  model.addDumpField("external_force");
   model.dump();
 
   finalize();

@@ -123,6 +123,27 @@ macro tries to determine it in a "clever" way
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
+function(_add_file_to_copy target file)
+  get_filename_component(_file_name_we ${file} NAME_WE)
+  get_filename_component(_file_name ${file} NAME)
+  get_filename_component(_file_path ${file}
+    ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+  set(copy_target copy_${_file_name_we}_${target})
+  add_custom_target(${copy_target}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${_file_name})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_file_name}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${file}
+		${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${_file_path}
+    COMMENT "Copying file ${_file_name} for the target ${target}"
+    )
+  add_dependencies(${target} ${copy_target})
+endfunction()
+
 # ==============================================================================
 macro(add_test_tree dir)
   if(AKANTU_TESTS)
@@ -244,6 +265,10 @@ function(is_test_active is_active)
       " ${test_name} in folder ${CMAKE_CURRENT_SOURCE_DIR}")
   endif()
 
+  if(_register_test_PYTHON)
+    list(APPEND _register_test_PACKAGE python_interface)
+  endif()
+
   set(_test_act TRUE)
   # Activate the test anly if all packages associated to the test are activated
   foreach(_package ${_register_test_PACKAGE})
@@ -353,10 +378,10 @@ function(register_gtest_test test_name)
 
   set(_link_libraries GTest::GTest GTest::Main)
 
-  list(FIND _gtest_PACKAGE pybind11 _pos)
-  package_is_activated(pybind11 _pybind11_act)
+  list(FIND _gtest_PACKAGE python_interface _pos)
+  package_is_activated(python_interface _python_interface_act)
 
-  if(_pybind11_act AND (NOT _pos EQUAL -1))
+  if(_python_interface_act AND (NOT _pos EQUAL -1))
     list(APPEND _link_libraries pybind11::embed)
     set(_compile_flags COMPILE_OPTIONS "AKANTU_TEST_USE_PYBIND11")
   endif()
@@ -486,7 +511,7 @@ function(register_test test_name)
   # copy the needed files to the build folder
   if(_register_test_FILES_TO_COPY)
     foreach(_file ${_register_test_FILES_TO_COPY})
-      file(COPY "${_file}" DESTINATION .)
+      _add_file_to_copy(${test_name} "${_file}")
     endforeach()
   endif()
 
@@ -504,12 +529,7 @@ function(register_test test_name)
   # register the test for ctest
   set(_arguments -n "${test_name}")
   if(_register_test_SCRIPT)
-    file(COPY ${_register_test_SCRIPT}
-      FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                       GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-      DESTINATION .
-      )
- 
+    _add_file_to_copy(${test_name} ${_register_test_SCRIPT})
     if(_register_test_PYTHON)
       if(NOT PYTHONINTERP_FOUND)
         find_package(PythonInterp ${AKANTU_PREFERRED_PYTHON_VERSION} REQUIRED)
@@ -520,7 +540,7 @@ function(register_test test_name)
       list(APPEND _arguments -e "./${_register_test_SCRIPT}")
     endif()
   elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.sh")
-    file(COPY ${test_name}.sh DESTINATION .)
+    _add_file_to_copy(${test_name} ${test_name}.sh)
     list(APPEND _arguments -e "./${test_name}.sh")
   else()
     list(APPEND _arguments -e "./${test_name}")
@@ -591,6 +611,17 @@ endfunction()
 
 
 function(register_test_files_to_package)
+  cmake_parse_arguments(_register_test
+    "${_test_flags}"
+    "${_test_one_variables}"
+    "${_test_multi_variables}"
+    ${ARGN}
+    )
+
+  if(_register_test_PYTHON)
+    list(APPEND _register_test_PACKAGE python_interface)
+  endif()
+
   set(_test_all_files)
   # add the source files in the list of all files
   foreach(_file ${_register_test_SOURCES} ${_register_test_UNPARSED_ARGUMENTS}

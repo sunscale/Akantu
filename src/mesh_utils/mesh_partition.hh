@@ -54,20 +54,6 @@ public:
 
   ~MeshPartition() override;
 
-  class EdgeLoadFunctor {
-  public:
-    virtual Int operator()(const Element & el1, const Element & el2) const
-        noexcept = 0;
-  };
-
-  class ConstEdgeLoadFunctor : public EdgeLoadFunctor {
-  public:
-    inline Int operator()(const Element &, const Element &) const
-        noexcept override {
-      return 1;
-    }
-  };
-
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
@@ -75,7 +61,10 @@ public:
   /// define a partition of the mesh
   virtual void partitionate(
       UInt nb_part,
-      const EdgeLoadFunctor & edge_load_func = ConstEdgeLoadFunctor()) = 0;
+      std::function<Int(const Element &, const Element &)> edge_load_func =
+          [](auto &&, auto &&) { return 1; },
+      std::function<Int(const Element &)> vertex_load_func =
+          [](auto &&) { return 1; }) = 0;
 
   /// reorder the nodes to reduce the filling during the factorization of a
   /// matrix that has a profil based on the connectivity of the mesh
@@ -85,11 +74,15 @@ public:
   void fillPartitionInformation(const Mesh & mesh,
                                 const Int * linearized_partitions);
 
+  virtual void printself(std::ostream & stream, int indent = 0) const;
+  
 protected:
   /// build the dual graph of the mesh, for all element of spatial_dimension
-  void buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
-                      Array<Int> & edge_loads,
-                      const EdgeLoadFunctor & edge_load_func);
+  void buildDualGraph(
+      Array<Int> & dxadj, Array<Int> & dadjncy, Array<Int> & edge_loads,
+      std::function<Int(const Element &, const Element &)> edge_load_func,
+      Array<Int> & vertex_loads,
+      std::function<Int(const Element &)> vertex_load_func);
 
   /// tweak the mesh to handle the PBC pairs
   void tweakConnectivity();
@@ -143,6 +136,12 @@ protected:
   // vector of pair to ensure the iteration order
   std::vector<std::pair<ElementType, UInt>> linearized_offsets;
 };
+
+/// standard output stream operator
+inline std::ostream & operator<<(std::ostream & stream, const MeshPartition & _this) {
+  _this.printself(stream);
+  return stream;
+}
 
 } // namespace akantu
 

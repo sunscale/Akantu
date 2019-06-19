@@ -35,7 +35,7 @@
 #include "data_accessor.hh"
 #include "fe_engine.hh"
 #include "model.hh"
-#include "non_local_manager.hh"
+#include "non_local_manager_callback.hh"
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -303,7 +303,6 @@ public:
   //! decide wether a field is a material internal or not
   bool isInternal(const std::string & field_name,
                   const ElementKind & element_kind);
-#ifndef SWIG
   //! give the amount of data per element
   virtual ElementTypeMap<UInt>
   getInternalDataPerElem(const std::string & field_name,
@@ -315,21 +314,22 @@ public:
                   const GhostType ghost_type = _not_ghost);
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
-#endif
 
-  dumper::Field * createNodalFieldReal(const std::string & field_name,
-                                       const std::string & group_name,
-                                       bool padding_flag) override;
+  std::shared_ptr<dumper::Field>
+  createNodalFieldReal(const std::string & field_name,
+                       const std::string & group_name,
+                       bool padding_flag) override;
 
-  dumper::Field * createNodalFieldBool(const std::string & field_name,
-                                       const std::string & group_name,
-                                       bool padding_flag) override;
+  std::shared_ptr<dumper::Field>
+  createNodalFieldBool(const std::string & field_name,
+                       const std::string & group_name,
+                       bool padding_flag) override;
 
-  dumper::Field * createElementalField(const std::string & field_name,
-                                       const std::string & group_name,
-                                       bool padding_flag,
-                                       const UInt & spatial_dimension,
-                                       const ElementKind & kind) override;
+  std::shared_ptr<dumper::Field>
+  createElementalField(const std::string & field_name,
+                       const std::string & group_name, bool padding_flag,
+                       const UInt & spatial_dimension,
+                       const ElementKind & kind) override;
 
   virtual void dump(const std::string & dumper_name);
 
@@ -370,7 +370,6 @@ public:
   const Array<Real> & getCurrentPosition();
 
   /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
-  /// SolidMechanicsModel::setIncrementFlagOn has been called before
   AKANTU_GET_MACRO(Increment, *displacement_increment, Array<Real> &);
 
   /// get the lumped SolidMechanicsModel::mass vector
@@ -399,9 +398,12 @@ public:
   /// get the SolidMechanicsModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
-  /// get the value of the SolidMechanicsModel::increment_flag
-  AKANTU_GET_MACRO(IncrementFlag, increment_flag, bool);
+  /// get an iterable on the materials
+  inline decltype(auto) getMaterials();
 
+  /// get an iterable on the materials
+  inline decltype(auto) getMaterials() const;
+  
   /// get a particular material (by material index)
   inline Material & getMaterial(UInt mat_index);
 
@@ -528,9 +530,6 @@ protected:
 
   /// class defining of to choose a material
   std::shared_ptr<MaterialSelector> material_selector;
-
-  /// flag defining if the increment must be computed or not
-  bool increment_flag;
 
   /// tells if the material are instantiated
   bool are_materials_instantiated;

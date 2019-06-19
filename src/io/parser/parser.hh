@@ -40,7 +40,6 @@
 
 namespace akantu {
 
-#ifndef SWIG
 // clang-format off
 #define AKANTU_SECTION_TYPES                                            \
   (cohesive_inserter)                                                   \
@@ -68,9 +67,9 @@ namespace akantu {
 // clang-format on
 
 /// Defines the possible section types
-AKANTU_ENUM_DECLARE(ParserType, AKANTU_SECTION_TYPES)
-AKANTU_ENUM_OUTPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
-AKANTU_ENUM_INPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_CLASS_ENUM_DECLARE(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
+AKANTU_CLASS_ENUM_INPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
 
 /// Defines the possible search contexts/scopes (for parameter search)
 enum ParserParameterSearchCxt {
@@ -78,7 +77,6 @@ enum ParserParameterSearchCxt {
   _ppsc_parent_scope = 0x2,
   _ppsc_current_and_parent_scope = 0x3
 };
-#endif
 /* ------------------------------------------------------------------------ */
 /* Parameters Class                                                         */
 /* ------------------------------------------------------------------------ */
@@ -302,7 +300,6 @@ private:
   /* Accessors                                                              */
   /* ---------------------------------------------------------------------- */
 public:
-#ifndef SWIG
   class SubSectionsRange
       : public std::pair<const_section_iterator, const_section_iterator> {
   public:
@@ -339,7 +336,6 @@ public:
     return std::pair<const_parameter_iterator, const_parameter_iterator>(
         parameters.begin(), parameters.end());
   }
-#endif
   /* ---------------------------------------------------------------------- */
   /// Get parameter within specified context
   const ParserParameter & getParameter(
@@ -464,12 +460,10 @@ public:
   /// Parse real matrix
   static Matrix<Real> parseMatrix(const std::string & value,
                                   const ParserSection & section);
-#ifndef SWIG
   /// Parse real random parameter
   static RandomParameter<Real>
   parseRandomParameter(const std::string & value,
                        const ParserSection & section);
-#endif
 protected:
   /// General parse function
   template <class T, class Grammar>
@@ -493,7 +487,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 namespace std {
 template <> struct iterator_traits<::akantu::Parser::const_section_iterator> {
@@ -503,7 +497,7 @@ template <> struct iterator_traits<::akantu::Parser::const_section_iterator> {
   using pointer = const ::akantu::ParserParameter *;
   using reference = const ::akantu::ParserParameter &;
 };
-}
+} // namespace std
 
 #include "parser_tmpl.hh"
 

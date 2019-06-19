@@ -68,19 +68,19 @@ protected:
 /* -------------------------------------------------------------------------- */
 TEST_F(TestElementSynchronizerFixture, SynchroneOnce) {
   auto & synchronizer = this->mesh->getElementSynchronizer();
-  synchronizer.synchronizeOnce(*this->test_accessor, _gst_test);
+  synchronizer.synchronizeOnce(*this->test_accessor, SynchronizationTag::_test);
 }
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestElementSynchronizerFixture, Synchrone) {
   auto & synchronizer = this->mesh->getElementSynchronizer();
-  synchronizer.synchronize(*this->test_accessor, _gst_test);
+  synchronizer.synchronize(*this->test_accessor, SynchronizationTag::_test);
 }
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestElementSynchronizerFixture, Asynchrone) {
   auto & synchronizer = this->mesh->getElementSynchronizer();
-  synchronizer.asynchronousSynchronize(*this->test_accessor, _gst_test);
+  synchronizer.asynchronousSynchronize(*this->test_accessor, SynchronizationTag::_test);
 
   std::random_device r;
   std::default_random_engine engine(r());
@@ -89,5 +89,5 @@ TEST_F(TestElementSynchronizerFixture, Asynchrone) {
 
   std::this_thread::sleep_for(delay);
 
-  synchronizer.waitEndSynchronize(*this->test_accessor, _gst_test);
+  synchronizer.waitEndSynchronize(*this->test_accessor, SynchronizationTag::_test);
 }

@@ -62,15 +62,8 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// create the solver context and set the matrices
-  virtual void initialize();
   virtual void setOperators();
-  virtual void setRHS(Array<Real> & rhs);
   virtual void solve();
-  virtual void solve(Array<Real> & solution);
-
-private:
-  /// clean the petsc data
-  virtual void destroyInternalData();
 
 private:
   /// DOFManager correctly typed

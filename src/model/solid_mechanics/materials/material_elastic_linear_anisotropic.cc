@@ -136,17 +136,20 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
 
   // make sure the vectors form a right-handed base
   Vector<Real> test_axis(3);
-  Vector<Real> v1(3), v2(3), v3(3);
+  Vector<Real> v1(3), v2(3), v3(3, 0.);
 
   if (Dim == 2) {
     for (UInt i = 0; i < Dim; ++i) {
       v1[i] = this->rot_mat(0, i);
       v2[i] = this->rot_mat(1, i);
-      v3[i] = 0.;
     }
-    v3[2] = 1.;
-    v1[2] = 0.;
-    v2[2] = 0.;
+    
+    v3.crossProduct(v1, v2);
+    if (v3.norm() < 8 * std::numeric_limits<Real>::epsilon()) {
+       AKANTU_ERROR("The axis vectors parallel.");
+    }
+    
+    v3.normalize();
   } else if (Dim == 3) {
     v1 = this->rot_mat(0);
     v2 = this->rot_mat(1);
@@ -197,11 +200,9 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
   // http://en.wikipedia.org/wiki/Voigt_notation
   AKANTU_DEBUG_IN();
 
-  Matrix<Real> strain(dim, dim);
-
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 
-  this->computeStressOnQuad(strain, sigma);
+  this->computeStressOnQuad(grad_u, sigma);
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 }
@@ -227,21 +228,17 @@ void MaterialElasticLinearAnisotropic<dim>::computeTangentModuli(
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergy(
-    ElementType el_type, GhostType ghost_type) {
+    ElementType el_type) {
   AKANTU_DEBUG_IN();
-
-  Material::computePotentialEnergy(el_type, ghost_type);
 
   AKANTU_DEBUG_ASSERT(!this->finite_deformation,
                       "finite deformation not possible in material anisotropic "
                       "(TO BE IMPLEMENTED)");
 
-  if (ghost_type != _not_ghost)
-    return;
   Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type, ghost_type).begin();
+      this->potential_energy(el_type, _not_ghost).begin();
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
   computePotentialEnergyOnQuad(grad_u, sigma, *epot);
   ++epot;
@@ -262,4 +259,4 @@ Real MaterialElasticLinearAnisotropic<dim>::getCelerity(
 
 INSTANTIATE_MATERIAL(elastic_anisotropic, MaterialElasticLinearAnisotropic);
 
-} // akantu
+} // namespace akantu

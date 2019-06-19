@@ -58,13 +58,10 @@ public:
       Element e;
       e.ghost_type = ghost_type;
 
-      Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-      Mesh::type_iterator last_type =
-          mesh.lastType(spatial_dimension, ghost_type);
-      for (; it != last_type; ++it) {
-        UInt nb_element = mesh.getNbElement(*it, ghost_type);
-        e.type = *it;
-        Array<Real> & barycenter = barycenters(*it, ghost_type);
+      for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+        UInt nb_element = mesh.getNbElement(type, ghost_type);
+        e.type = type;
+        Array<Real> & barycenter = barycenters(type, ghost_type);
         barycenter.resize(nb_element);
 
         Array<Real>::iterator<Vector<Real>> bary_it =
@@ -100,14 +97,11 @@ public:
     UInt spatial_dimension = mesh.getSpatialDimension();
     GhostType ghost_type = _not_ghost;
 
-    Mesh::type_iterator it = mesh.firstType(spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type =
-        mesh.lastType(spatial_dimension, ghost_type);
-    for (; it != last_type; ++it) {
-      Array<UInt> & mat_indexes = model.getMaterialByElement(*it, ghost_type);
-      UInt nb_element = mesh.getNbElement(*it, ghost_type);
+    for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+      Array<UInt> & mat_indexes = model.getMaterialByElement(type, ghost_type);
+      UInt nb_element = mesh.getNbElement(type, ghost_type);
       Array<Real>::iterator<Vector<Real>> bary =
-          barycenters(*it, ghost_type).begin(spatial_dimension);
+          barycenters(type, ghost_type).begin(spatial_dimension);
       for (UInt elem = 0; elem < nb_element; ++elem, ++bary) {
         /// compare element_index_by material to material index that should be
         /// assigned due to the geometry of the interface

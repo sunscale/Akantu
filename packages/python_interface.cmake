@@ -32,29 +32,10 @@
 
 package_declare(python_interface
   DESCRIPTION "Akantu's python interface"
-  DEPENDS PythonLibs)
-
-package_declare_sources(python_interface
-  python/python_functor.cc
-  python/python_functor.hh
-  python/python_functor_inline_impl.cc
-  model/boundary_condition_python_functor.hh
-  model/boundary_condition_python_functor.cc
-  model/solid_mechanics/materials/material_python/material_python.cc
-  model/solid_mechanics/materials/material_python/material_python.hh
-  )
-
-
-package_set_package_system_dependency(python_interface deb-src swig3.0)
+  DEPENDS PythonLibs pybind11)
 
 package_declare_documentation(python_interface
-  "This package enables the python interface of Akantu. It relies on swig3.0 to generate the code"
-  ""
-  "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"
-  "\\begin{command}"
-  "  > sudo apt-get install swig3.0"
-  "\\end{command}"
-  ""
+  "This package enables the python interface of Akantu. It relies on pybind11"
 )
 
 package_declare_documentation_files(python_interface

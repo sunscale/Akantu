@@ -78,7 +78,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
       blocked_dofs(nullptr), current_position(nullptr),
       material_index("material index", id, memory_id),
       material_local_numbering("material local numbering", id, memory_id),
-      increment_flag(false), are_materials_instantiated(false) {
+      are_materials_instantiated(false) {
   AKANTU_DEBUG_IN();
 
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
@@ -98,10 +98,10 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
 
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();
-    this->registerSynchronizer(synchronizer, _gst_material_id);
-    this->registerSynchronizer(synchronizer, _gst_smm_mass);
-    this->registerSynchronizer(synchronizer, _gst_smm_stress);
-    this->registerSynchronizer(synchronizer, _gst_for_dump);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_material_id);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_smm_mass);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_smm_stress);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_for_dump);
   }
 
   AKANTU_DEBUG_OUT();
@@ -160,7 +160,7 @@ void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolverType SolidMechanicsModel::getDefaultSolverType() const {
-  return _tsst_dynamic_lumped;
+  return TimeStepSolverType::_dynamic_lumped;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -169,26 +169,30 @@ ModelSolverOptions SolidMechanicsModel::getDefaultSolverOptions(
   ModelSolverOptions options;
 
   switch (type) {
-  case _tsst_dynamic_lumped: {
-    options.non_linear_solver_type = _nls_lumped;
-    options.integration_scheme_type["displacement"] = _ist_central_difference;
+  case TimeStepSolverType::_dynamic_lumped: {
+    options.non_linear_solver_type = NonLinearSolverType::_lumped;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_central_difference;
     options.solution_type["displacement"] = IntegrationScheme::_acceleration;
     break;
   }
-  case _tsst_static: {
-    options.non_linear_solver_type = _nls_newton_raphson;
-    options.integration_scheme_type["displacement"] = _ist_pseudo_time;
+  case TimeStepSolverType::_static: {
+    options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;
   }
-  case _tsst_dynamic: {
+  case TimeStepSolverType::_dynamic: {
     if (this->method == _explicit_consistent_mass) {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["displacement"] = _ist_central_difference;
+      options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+      options.integration_scheme_type["displacement"] =
+          IntegrationSchemeType::_central_difference;
       options.solution_type["displacement"] = IntegrationScheme::_acceleration;
     } else {
-      options.non_linear_solver_type = _nls_newton_raphson;
-      options.integration_scheme_type["displacement"] = _ist_trapezoidal_rule_2;
+      options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+      options.integration_scheme_type["displacement"] =
+          IntegrationSchemeType::_trapezoidal_rule_2;
       options.solution_type["displacement"] = IntegrationScheme::_displacement;
     }
     break;
@@ -205,19 +209,20 @@ std::tuple<ID, TimeStepSolverType>
 SolidMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", _tsst_dynamic_lumped);
+    return std::make_tuple("explicit_lumped",
+                           TimeStepSolverType::_dynamic_lumped);
   }
   case _explicit_consistent_mass: {
-    return std::make_tuple("explicit", _tsst_dynamic);
+    return std::make_tuple("explicit", TimeStepSolverType::_dynamic);
   }
   case _static: {
-    return std::make_tuple("static", _tsst_static);
+    return std::make_tuple("static", TimeStepSolverType::_static);
   }
   case _implicit_dynamic: {
-    return std::make_tuple("implicit", _tsst_dynamic);
+    return std::make_tuple("implicit", TimeStepSolverType::_dynamic);
   }
   default:
-    return std::make_tuple("unknown", _tsst_not_defined);
+    return std::make_tuple("unknown", TimeStepSolverType::_not_defined);
   }
 }
 
@@ -256,8 +261,8 @@ void SolidMechanicsModel::initSolver(TimeStepSolverType time_step_solver_type,
 
   /* ------------------------------------------------------------------------ */
   // for dynamic
-  if (time_step_solver_type == _tsst_dynamic ||
-      time_step_solver_type == _tsst_dynamic_lumped) {
+  if (time_step_solver_type == TimeStepSolverType::_dynamic ||
+      time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
     this->allocNodalField(this->velocity, spatial_dimension, "velocity");
     this->allocNodalField(this->acceleration, spatial_dimension,
                           "acceleration");
@@ -391,7 +396,7 @@ void SolidMechanicsModel::assembleInternalForces() {
 
   // communicate the stresses
   AKANTU_DEBUG_INFO("Send data for residual assembly");
-  this->asynchronousSynchronize(_gst_smm_stress);
+  this->asynchronousSynchronize(SynchronizationTag::_smm_stress);
 
   // assemble the forces due to local stresses
   AKANTU_DEBUG_INFO("Assemble residual for local elements");
@@ -401,7 +406,7 @@ void SolidMechanicsModel::assembleInternalForces() {
 
   // finalize communications
   AKANTU_DEBUG_INFO("Wait distant stresses");
-  this->waitEndSynchronize(_gst_smm_stress);
+  this->waitEndSynchronize(SynchronizationTag::_smm_stress);
 
   // assemble the stresses due to ghost elements
   AKANTU_DEBUG_INFO("Assemble residual for ghost elements");
@@ -562,14 +567,13 @@ Real SolidMechanicsModel::getKineticEnergy() {
     }
   } else if (this->getDOFManager().hasMatrix("M")) {
     Array<Real> Mv(nb_nodes, Model::spatial_dimension);
-    this->getDOFManager().getMatrix("M").matVecMul(*this->velocity, Mv);
+    this->getDOFManager().assembleMatMulVectToArray("displacement", "M",
+                                                    *this->velocity, Mv);
 
-    auto mv_it = Mv.begin(Model::spatial_dimension);
-    auto mv_end = Mv.end(Model::spatial_dimension);
-    auto v_it = this->velocity->begin(Model::spatial_dimension);
-
-    for (; mv_it != mv_end; ++mv_it, ++v_it) {
-      ekin += v_it->dot(*mv_it);
+    for (auto && data : zip(arange(nb_nodes), make_view(Mv, spatial_dimension),
+                            make_view(*this->velocity, spatial_dimension))) {
+      ekin += std::get<2>(data).dot(std::get<1>(data)) *
+              mesh.isLocalOrMasterNode(std::get<0>(data));
     }
   } else {
     AKANTU_ERROR("No function called to assemble the mass matrix.");
@@ -810,17 +814,17 @@ void SolidMechanicsModel::onNodesRemoved(const Array<UInt> & /*element_list*/,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "Solid Mechanics Model [" << std::endl;
   stream << space << " + id                : " << id << std::endl;
   stream << space << " + spatial dimension : " << Model::spatial_dimension
          << std::endl;
+
   stream << space << " + fem [" << std::endl;
   getFEEngine().printself(stream, indent + 2);
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " ]" << std::endl;
+
   stream << space << " + nodals information [" << std::endl;
   displacement->printself(stream, indent + 2);
   if (velocity)
@@ -832,24 +836,23 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   external_force->printself(stream, indent + 2);
   internal_force->printself(stream, indent + 2);
   blocked_dofs->printself(stream, indent + 2);
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " ]" << std::endl;
 
   stream << space << " + material information [" << std::endl;
   material_index.printself(stream, indent + 2);
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  stream << space << " ]" << std::endl;
 
   stream << space << " + materials [" << std::endl;
-  for (auto & material : materials) {
-    material->printself(stream, indent + 1);
-  }
-  stream << space << AKANTU_INDENT << "]" << std::endl;
+  for (auto & material : materials)
+    material->printself(stream, indent + 2);
+  stream << space << " ]" << std::endl;
 
   stream << space << "]" << std::endl;
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initializeNonLocal() {
-  this->non_local_manager->synchronize(*this, _gst_material_id);
+  this->non_local_manager->synchronize(*this, SynchronizationTag::_material_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -884,7 +887,7 @@ void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
 void SolidMechanicsModel::computeNonLocalStresses(
     const GhostType & ghost_type) {
   for (auto & mat : materials) {
-    if (dynamic_cast<MaterialNonLocalInterface *>(mat.get()) == nullptr)
+    if (not aka::is_of_type<MaterialNonLocalInterface>(*mat))
       continue;
 
     auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
@@ -911,10 +914,10 @@ void SolidMechanicsModel::updateNonLocalInternal(
   const ID field_name = internal_flat.getName();
 
   for (auto & mat : materials) {
-    if (dynamic_cast<MaterialNonLocalInterface *>(mat.get()) == nullptr)
+    if (not aka::is_of_type<MaterialNonLocalInterface>(*mat))
       continue;
 
-    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
+    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface&>(*mat);
     mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type,
                                           kind);
   }
@@ -922,8 +925,7 @@ void SolidMechanicsModel::updateNonLocalInternal(
 
 /* -------------------------------------------------------------------------- */
 FEEngine & SolidMechanicsModel::getFEEngineBoundary(const ID & name) {
-  return dynamic_cast<FEEngine &>(
-      getFEEngineClassBoundary<MyFEEngineType>(name));
+  return getFEEngineClassBoundary<MyFEEngineType>(name);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -950,27 +952,27 @@ UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
   }
 
   switch (tag) {
-  case _gst_material_id: {
+  case SynchronizationTag::_material_id: {
     size += elements.size() * sizeof(UInt);
     break;
   }
-  case _gst_smm_mass: {
+  case SynchronizationTag::_smm_mass: {
     size += nb_nodes_per_element * sizeof(Real) *
             Model::spatial_dimension; // mass vector
     break;
   }
-  case _gst_smm_for_gradu: {
+  case SynchronizationTag::_smm_for_gradu: {
     size += nb_nodes_per_element * Model::spatial_dimension *
             sizeof(Real); // displacement
     break;
   }
-  case _gst_smm_boundary: {
+  case SynchronizationTag::_smm_boundary: {
     // force, displacement, boundary
     size += nb_nodes_per_element * Model::spatial_dimension *
             (2 * sizeof(Real) + sizeof(bool));
     break;
   }
-  case _gst_for_dump: {
+  case SynchronizationTag::_for_dump: {
     // displacement, velocity, acceleration, residual, force
     size += nb_nodes_per_element * Model::spatial_dimension * sizeof(Real) * 5;
     break;
@@ -978,7 +980,7 @@ UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
   default: {}
   }
 
-  if (tag != _gst_material_id) {
+  if (tag != SynchronizationTag::_material_id) {
     splitByMaterial(elements, [&](auto && mat, auto && elements) {
       size += mat.getNbData(elements, tag);
     });
@@ -995,20 +997,20 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
   AKANTU_DEBUG_IN();
 
   switch (tag) {
-  case _gst_material_id: {
+  case SynchronizationTag::_material_id: {
     this->packElementalDataHelper(material_index, buffer, elements, false,
                                   getFEEngine());
     break;
   }
-  case _gst_smm_mass: {
+  case SynchronizationTag::_smm_mass: {
     packNodalDataHelper(*mass, buffer, elements, mesh);
     break;
   }
-  case _gst_smm_for_gradu: {
+  case SynchronizationTag::_smm_for_gradu: {
     packNodalDataHelper(*displacement, buffer, elements, mesh);
     break;
   }
-  case _gst_for_dump: {
+  case SynchronizationTag::_for_dump: {
     packNodalDataHelper(*displacement, buffer, elements, mesh);
     packNodalDataHelper(*velocity, buffer, elements, mesh);
     packNodalDataHelper(*acceleration, buffer, elements, mesh);
@@ -1016,7 +1018,7 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     packNodalDataHelper(*external_force, buffer, elements, mesh);
     break;
   }
-  case _gst_smm_boundary: {
+  case SynchronizationTag::_smm_boundary: {
     packNodalDataHelper(*external_force, buffer, elements, mesh);
     packNodalDataHelper(*velocity, buffer, elements, mesh);
     packNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
@@ -1025,7 +1027,7 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
   default: {}
   }
 
-  if (tag != _gst_material_id) {
+  if (tag != SynchronizationTag::_material_id) {
     splitByMaterial(elements, [&](auto && mat, auto && elements) {
       mat.packData(buffer, elements, tag);
     });
@@ -1040,7 +1042,7 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
   AKANTU_DEBUG_IN();
 
   switch (tag) {
-  case _gst_material_id: {
+  case SynchronizationTag::_material_id: {
     for (auto && element : elements) {
       UInt recv_mat_index;
       buffer >> recv_mat_index;
@@ -1055,15 +1057,15 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     }
     break;
   }
-  case _gst_smm_mass: {
+  case SynchronizationTag::_smm_mass: {
     unpackNodalDataHelper(*mass, buffer, elements, mesh);
     break;
   }
-  case _gst_smm_for_gradu: {
+  case SynchronizationTag::_smm_for_gradu: {
     unpackNodalDataHelper(*displacement, buffer, elements, mesh);
     break;
   }
-  case _gst_for_dump: {
+  case SynchronizationTag::_for_dump: {
     unpackNodalDataHelper(*displacement, buffer, elements, mesh);
     unpackNodalDataHelper(*velocity, buffer, elements, mesh);
     unpackNodalDataHelper(*acceleration, buffer, elements, mesh);
@@ -1071,7 +1073,7 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     unpackNodalDataHelper(*external_force, buffer, elements, mesh);
     break;
   }
-  case _gst_smm_boundary: {
+  case SynchronizationTag::_smm_boundary: {
     unpackNodalDataHelper(*external_force, buffer, elements, mesh);
     unpackNodalDataHelper(*velocity, buffer, elements, mesh);
     unpackNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
@@ -1080,7 +1082,7 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
   default: {}
   }
 
-  if (tag != _gst_material_id) {
+  if (tag != SynchronizationTag::_material_id) {
     splitByMaterial(elements, [&](auto && mat, auto && elements) {
       mat.unpackData(buffer, elements, tag);
     });
@@ -1098,19 +1100,19 @@ UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
   //  UInt nb_nodes = mesh.getNbNodes();
 
   switch (tag) {
-  case _gst_smm_uv: {
+  case SynchronizationTag::_smm_uv: {
     size += sizeof(Real) * Model::spatial_dimension * 2;
     break;
   }
-  case _gst_smm_res: {
+  case SynchronizationTag::_smm_res: {
     size += sizeof(Real) * Model::spatial_dimension;
     break;
   }
-  case _gst_smm_mass: {
+  case SynchronizationTag::_smm_mass: {
     size += sizeof(Real) * Model::spatial_dimension;
     break;
   }
-  case _gst_for_dump: {
+  case SynchronizationTag::_for_dump: {
     size += sizeof(Real) * Model::spatial_dimension * 5;
     break;
   }
@@ -1128,20 +1130,20 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
   AKANTU_DEBUG_IN();
 
   switch (tag) {
-  case _gst_smm_uv: {
+  case SynchronizationTag::_smm_uv: {
     packDOFDataHelper(*displacement, buffer, dofs);
     packDOFDataHelper(*velocity, buffer, dofs);
     break;
   }
-  case _gst_smm_res: {
+  case SynchronizationTag::_smm_res: {
     packDOFDataHelper(*internal_force, buffer, dofs);
     break;
   }
-  case _gst_smm_mass: {
+  case SynchronizationTag::_smm_mass: {
     packDOFDataHelper(*mass, buffer, dofs);
     break;
   }
-  case _gst_for_dump: {
+  case SynchronizationTag::_for_dump: {
     packDOFDataHelper(*displacement, buffer, dofs);
     packDOFDataHelper(*velocity, buffer, dofs);
     packDOFDataHelper(*acceleration, buffer, dofs);
@@ -1162,20 +1164,20 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
   AKANTU_DEBUG_IN();
 
   switch (tag) {
-  case _gst_smm_uv: {
+  case SynchronizationTag::_smm_uv: {
     unpackDOFDataHelper(*displacement, buffer, dofs);
     unpackDOFDataHelper(*velocity, buffer, dofs);
     break;
   }
-  case _gst_smm_res: {
+  case SynchronizationTag::_smm_res: {
     unpackDOFDataHelper(*internal_force, buffer, dofs);
     break;
   }
-  case _gst_smm_mass: {
+  case SynchronizationTag::_smm_mass: {
     unpackDOFDataHelper(*mass, buffer, dofs);
     break;
   }
-  case _gst_for_dump: {
+  case SynchronizationTag::_for_dump: {
     unpackDOFDataHelper(*displacement, buffer, dofs);
     unpackDOFDataHelper(*velocity, buffer, dofs);
     unpackDOFDataHelper(*acceleration, buffer, dofs);

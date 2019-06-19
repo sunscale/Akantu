@@ -44,16 +44,16 @@
 namespace akantu {
 
 #define AKANTU_MESH_DATA_TYPES                                                 \
-  ((_tc_int, Int))((_tc_uint, UInt))((_tc_real, Real))(                        \
-      (_tc_element, Element))((_tc_std_string, std::string))(                  \
-      (_tc_std_vector_element, std::vector<Element>))
+  ((_int, Int))((_uint, UInt))((_real, Real))((_bool, bool))(                  \
+      (_element, Element))((_std_string, std::string))(                        \
+      (_std_vector_element, std::vector<Element>))
 
 #define AKANTU_MESH_DATA_TUPLE_FIRST_ELEM(s, data, elem)                       \
   BOOST_PP_TUPLE_ELEM(2, 0, elem)
-enum MeshDataTypeCode : int {
+enum class MeshDataTypeCode : int {
   BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(AKANTU_MESH_DATA_TUPLE_FIRST_ELEM, ,
                                            AKANTU_MESH_DATA_TYPES)),
-  _tc_unknown
+  _unknown
 };
 
 enum class MeshDataType {
@@ -62,7 +62,6 @@ enum class MeshDataType {
 };
 
 class MeshData {
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
@@ -84,18 +83,6 @@ public:
   /* Methods and accessors                                                    */
   /* ------------------------------------------------------------------------ */
 public:
-  ///  Register new elemental data (and alloc data) with check if the name is
-  ///  new
-  template <typename T> ElementTypeMapArray<T> & registerElementalData(const ID & name);
-  inline void registerElementalData(const ID & name, TypeCode type);
-
-  ///  Register new nodal data (and alloc data) with check if the name is
-  ///  new
-  template <typename T>
-  Array<T> & registerNodalData(const ID & name, UInt nb_components = 1);
-  inline void registerNodalData(const ID & name, UInt nb_components,
-                                TypeCode type);
-
   /// tells if the given array exists
   template <typename T>
   bool hasData(const ID & data_name, const ElementType & el_type,
@@ -106,6 +93,19 @@ public:
                MeshDataType type = MeshDataType::_elemental) const;
 
   bool hasData(MeshDataType type = MeshDataType::_elemental) const;
+
+  /// get the names of the data stored in elemental_data
+  inline auto getTagNames(const ElementType & type,
+                          const GhostType & ghost_type = _not_ghost) const;
+
+  /// get the names of the data stored in elemental_data
+  inline auto getTagNames() const;
+
+    /// get the type of the data stored in elemental_data
+  template <typename T> TypeCode getTypeCode() const;
+  inline TypeCode
+  getTypeCode(const ID & name,
+              MeshDataType type = MeshDataType::_elemental) const;
 
   /// Get an existing elemental data array
   template <typename T>
@@ -123,19 +123,6 @@ public:
   getElementalDataArrayAlloc(const ID & data_name, const ElementType & el_type,
                              const GhostType & ghost_type = _not_ghost,
                              UInt nb_component = 1);
-
-  /// get the names of the data stored in elemental_data
-  inline auto getTagNames(const ElementType & type,
-                          const GhostType & ghost_type = _not_ghost) const;
-
-  /// get the names of the data stored in elemental_data
-  inline auto getTagNames() const;
-
-  /// get the type of the data stored in elemental_data
-  template <typename T> TypeCode getTypeCode() const;
-  inline TypeCode
-  getTypeCode(const ID & name,
-              MeshDataType type = MeshDataType::_elemental) const;
 
   template <typename T>
   inline UInt getNbComponentTemplated(const ID & name,
@@ -157,6 +144,19 @@ public:
   template <typename T> const Array<T> & getNodalData(const ID & name) const;
 
 private:
+  ///  Register new elemental data (and alloc data) with check if the name is
+  ///  new
+  template <typename T>
+  ElementTypeMapArray<T> & registerElementalData(const ID & name);
+  inline void registerElementalData(const ID & name, TypeCode type);
+
+  ///  Register new nodal data (and alloc data) with check if the name is
+  ///  new
+  template <typename T>
+  Array<T> & registerNodalData(const ID & name, UInt nb_components = 1);
+  inline void registerNodalData(const ID & name, UInt nb_components,
+                                TypeCode type);
+
   ///  Register new elemental data (add alloc data)
   template <typename T>
   ElementTypeMapArray<T> & allocElementalData(const ID & name);
@@ -164,6 +164,8 @@ private:
   ///  Register new nodal data (add alloc data)
   template <typename T>
   Array<T> & allocNodalData(const ID & name, UInt nb_components);
+
+  friend class SlaveNodeInfoPerProc;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

@@ -181,6 +181,8 @@ void Math::compute_tangents(const Array<Real> & normals,
   UInt spatial_dimension = normals.getNbComponent();
   UInt tangent_components = spatial_dimension * (spatial_dimension - 1);
 
+  if (tangent_components == 0) return;
+
   AKANTU_DEBUG_ASSERT(
       tangent_components == tangents.getNbComponent(),
       "Cannot compute the tangents, the storage array for tangents"

@@ -178,6 +178,9 @@ public:
   /// Get value of a parameter
   inline const Parameter & get(const std::string & name) const;
 
+  /// Get value of a parameter
+  inline Parameter & get(const std::string & name);
+
   std::vector<ID> listParameters() const {
     std::vector<ID> params;
     for (auto & pair : this->params)

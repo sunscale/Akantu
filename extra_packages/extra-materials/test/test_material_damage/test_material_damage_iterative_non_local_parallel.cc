@@ -127,7 +127,7 @@ int main(int argc, char * argv[]) {
 
   /// solve the system
   converged =
-      model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+      model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_increment>(
           1e-12, error, 2);
 
   if (converged == false) {
@@ -157,7 +157,7 @@ int main(int argc, char * argv[]) {
 
   /// resolve the system
   converged =
-      model.solveStep<_scm_newton_raphson_tangent_modified, _scc_increment>(
+      model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_increment>(
           1e-12, error, 2);
 
   if (converged == false) {

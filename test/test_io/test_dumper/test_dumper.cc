@@ -92,11 +92,11 @@ int main(int argc, char * argv[]) {
     }
     prvdumper.registerFilteredMesh(mesh,
                                    mesh.getElementGroup("Bottom").getElements(),
-                                   mesh.getElementGroup("Bottom").getNodes());
+                                   mesh.getElementGroup("Bottom").getNodeGroup().getNodes());
     prvdumper.registerField("displacement",
-                            new dumper::NodalField<Real, true>(
+                            std::make_shared<dumper::NodalField<Real, true>>(
                                 model.getDisplacement(), 0, 0,
-                                &(mesh.getElementGroup("Bottom").getNodes())));
+                                &(mesh.getElementGroup("Bottom").getNodeGroup().getNodes())));
     prvdumper.dump(0);
   }
 
@@ -106,22 +106,23 @@ int main(int argc, char * argv[]) {
   txtdumper.setTimeStep(time_step);
   txtdumper.registerFilteredMesh(mesh,
                                  mesh.getElementGroup("Bottom").getElements(),
-                                 mesh.getElementGroup("Bottom").getNodes());
+                                 mesh.getElementGroup("Bottom").getNodeGroup().getNodes());
   txtdumper.registerField("displacement",
-                          new dumper::NodalField<Real, true>(
+                          std::make_shared<dumper::NodalField<Real, true>>(
                               model.getDisplacement(), 0, 0,
-                              &(mesh.getElementGroup("Bottom").getNodes())));
+                              &(mesh.getElementGroup("Bottom").getNodeGroup().getNodes())));
   txtdumper.registerField("blocked_dofs",
-                          new dumper::NodalField<bool, true>(
+                          std::make_shared<dumper::NodalField<bool, true>>(
                               model.getBlockedDOFs(), 0, 0,
-                              &(mesh.getElementGroup("Bottom").getNodes())));
+                              &(mesh.getElementGroup("Bottom").getNodeGroup().getNodes())));
 
   Real pot_energy = 1.2345567891;
   Vector<Real> gforces(2, 1.);
-  txtdumper.registerVariable("potential_energy",
-                             new dumper::Variable<Real>(pot_energy));
-  txtdumper.registerVariable("global_forces",
-                             new dumper::Variable<Vector<Real>>(gforces));
+  txtdumper.registerVariable(
+      "potential_energy", std::make_shared<dumper::Variable<Real>>(pot_energy));
+  txtdumper.registerVariable(
+      "global_forces",
+      std::make_shared<dumper::Variable<Vector<Real>>>(gforces));
 
   // dump a first time before the main loop
   model.dumpGroup("Bottom");

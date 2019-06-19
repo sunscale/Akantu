@@ -1,32 +1,32 @@
 /**
-* @file   node_synchronizer.cc
-*
-* @author Nicolas Richart <nicolas.richart@epfl.ch>
-*
-* @date creation: Fri Jun 18 2010
-* @date last modification: Wed Nov 15 2017
-*
-* @brief  Implementation of the node synchronizer
-*
-* @section LICENSE
-*
-* Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-* Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
-*
-* Akantu is free  software: you can redistribute it and/or  modify it under the
-* terms  of the  GNU Lesser  General Public  License as published by  the Free
-* Software Foundation, either version 3 of the License, or (at your option) any
-* later version.
-*
-* Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
-* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-* A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
-* details.
-*
-* You should  have received  a copy  of the GNU  Lesser General  Public License
-* along with Akantu. If not, see <http://www.gnu.org/licenses/>.
-*
-*/
+ * @file   node_synchronizer.cc
+ *
+ * @author Nicolas Richart <nicolas.richart@epfl.ch>
+ *
+ * @date creation: Fri Jun 18 2010
+ * @date last modification: Wed Nov 15 2017
+ *
+ * @brief  Implementation of the node synchronizer
+ *
+ * @section LICENSE
+ *
+ * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ *
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
+ *
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 /* -------------------------------------------------------------------------- */
 #include "node_synchronizer.hh"
@@ -77,6 +77,9 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
 
     auto global_id = mesh.getNodeGlobalId(local_id);
     auto proc = mesh.getNodePrank(local_id);
+    AKANTU_DEBUG_ASSERT(
+        proc != -1,
+        "The node " << local_id << " does not have a valid associated prank");
     nodes_per_proc[proc].push_back(global_id);
 
     auto & scheme = communications.createScheme(proc, _recv);
@@ -86,6 +89,8 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
   std::vector<CommunicationRequest> send_requests;
   for (auto && pair : communications.iterateSchemes(_recv)) {
     auto proc = pair.first;
+    AKANTU_DEBUG_ASSERT(proc != UInt(-1),
+                        "For real I should send something to proc -1");
 
     // if proc not in nodes_per_proc this should insert an empty array to send
     send_requests.push_back(communicator.asyncSend(
@@ -136,7 +141,7 @@ UInt NodeSynchronizer::sanityCheckDataSize(const Array<UInt> & nodes,
       SynchronizerImpl<UInt>::sanityCheckDataSize(nodes, tag, from_comm_desc);
 
   // global id
-  if (tag != _gst_giu_global_conn) {
+  if (tag != SynchronizationTag::_giu_global_conn) {
     size += sizeof(UInt) * nodes.size();
   }
 
@@ -155,7 +160,7 @@ void NodeSynchronizer::packSanityCheckData(
     const SynchronizationTag & tag) const {
   auto dim = mesh.getSpatialDimension();
   for (auto && node : nodes) {
-    if (tag != _gst_giu_global_conn) {
+    if (tag != SynchronizationTag::_giu_global_conn) {
       buffer << mesh.getNodeGlobalId(node);
     }
     buffer << mesh.getNodeFlag(node);
@@ -169,8 +174,8 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                              const SynchronizationTag & tag,
                                              UInt proc, UInt rank) const {
   auto dim = mesh.getSpatialDimension();
-  // std::set<SynchronizationTag> skip_conn_tags{_gst_smmc_facets_conn,
-  //                                             _gst_giu_global_conn};
+  // std::set<SynchronizationTag> skip_conn_tags{SynchronizationTag::_smmc_facets_conn,
+  //                                             SynchronizationTag::_giu_global_conn};
 
   // bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
 
@@ -178,7 +183,7 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
   auto distrib = [&](auto && flag) { return flag & NodeFlag::_shared_mask; };
 
   for (auto && node : nodes) {
-    if (tag != _gst_giu_global_conn) {
+    if (tag != SynchronizationTag::_giu_global_conn) {
       UInt global_id;
       buffer >> global_id;
       AKANTU_DEBUG_ASSERT(global_id == mesh.getNodeGlobalId(node),
@@ -200,8 +205,8 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
              (distrib(mesh.getNodeFlag(node)) ==
                   NodeFlag::_pure_ghost or // pure ghost nodes
               distrib(flag) == NodeFlag::_pure_ghost)),
-        "The node flags do not make sense: "
-            << std::hex << "0x" << flag << " and 0x" << mesh.getNodeFlag(node));
+        "The node flags: "
+        << flag << " and " << mesh.getNodeFlag(node));
 
     Vector<Real> pos_remote(dim);
     buffer >> pos_remote;

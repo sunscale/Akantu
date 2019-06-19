@@ -22,7 +22,7 @@ Line Loop(1) = {1:4};
 
 Plane Surface(1) = {1};
 
-Physical Surface(1) = {1};
+Physical Surface("steel") = {1};
 Physical Line("Fixed_y")  = {1};
 Physical Line("Fixed_x")  = {4};
 Physical Line("Traction") = {2};

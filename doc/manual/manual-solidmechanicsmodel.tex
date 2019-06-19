@@ -347,7 +347,7 @@ $\vec{f}_{\st{ext}}$ and displacements for some others.  At this point
 of the analysis, the function
 \code{solveStep}\index{SolidMechanicsModel!solveStep} can be called:
 \begin{cpp}
-model.solveStep<_scm_newton_raphson_tangent_modified, _scc_residual>(1e-4, 1);
+model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_residual>(1e-4, 1);
 \end{cpp}
 This function is templated by the solving method and the convergence
 criterion and takes two arguments: the tolerance and the maximum
@@ -368,9 +368,9 @@ first step, the global stiffness matrix $\mat{K}$ from
 Equation~(\ref{eqn:smm:static}) is automatically assembled. A
 Newton-Raphson iteration is subsequently started, $\mat{K}$ is updated
 according to the displacement computed at the previous iteration and
-one loops until the forces are balanced (\code{\_scc\_residual}), \ie
-$||\vec{r}|| < \mbox{\code{\_scc\_residual}}$.  One can also iterate
-until the increment of displacement is zero (\code{\_scc\_increment})
+one loops until the forces are balanced (\code{\SolveConvergenceCriteria::\_residual}), \ie
+$||\vec{r}|| < \mbox{\code{\SolveConvergenceCriteria::\_residual}}$.  One can also iterate
+until the increment of displacement is zero (\code{\SolveConvergenceCriteria::\_increment})
 which also means that the equilibrium is found.  For a linear elastic
 problem, the solution is obtained in one iteration and therefore the
 maximum number of iterations can be set to one. But for a non-linear
@@ -378,7 +378,7 @@ case, one needs to iterate as long as the norm of the residual exceeds
 the tolerance threshold and therefore the maximum number of iterations
 has to be higher, e.g.  $100$:
 \begin{cpp}
-model.solveStep<_scm_newton_raphson_tangent_modified,_scc_residual>(1e-4, 100)
+model.solveStep<_scm_newton_raphson_tangent_modified,SolveConvergenceCriteria::_residual>(1e-4, 100)
 \end{cpp}
 At the end of the analysis, the final solution is stored in the
 \textbf{displacement} vector.  A full example of how to solve a static
@@ -411,7 +411,7 @@ In order to solve problems with the extrinsic cohesive method in the
 static implicit solution scheme, the function \code{solveStepCohesive}
 has to be used:
 \begin{cpp}
-model.solveStepCohesive<_scm_newton_raphson_tangent, _scc_increment>(1e-13, error, 25, false, 1e5, true);
+model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(1e-13, error, 25, false, 1e5, true);
 \end{cpp}
 
 in which the arguments are: tolerance, error, max\_iteration,
@@ -590,7 +590,7 @@ Real time = 0.;
 auto & solver = model.getNonLinearSolver();
 solver.set("max_iterations", 100);
 solver.set("threshold", 1e-12);
-solver.set("convergence_type", _scc_solution);
+solver.set("convergence_type", SolveConvergenceCriteria::_solution);
 
 for (UInt s = 1; time <max_time; ++s, time += time_step) {
   model.solveStep();

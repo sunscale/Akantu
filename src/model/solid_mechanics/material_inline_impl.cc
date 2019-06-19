@@ -238,7 +238,7 @@ Material::convertToGlobalPoint(const IntegrationPoint & local_point) const {
 /* -------------------------------------------------------------------------- */
 inline UInt Material::getNbData(const Array<Element> & elements,
                                 const SynchronizationTag & tag) const {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
            spatial_dimension * sizeof(Real) *
            this->getModel().getNbIntegrationPoints(elements);
@@ -250,7 +250,7 @@ inline UInt Material::getNbData(const Array<Element> & elements,
 inline void Material::packData(CommunicationBuffer & buffer,
                                const Array<Element> & elements,
                                const SynchronizationTag & tag) const {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements);
       packElementDataHelper(gradu, buffer, elements);
@@ -263,7 +263,7 @@ inline void Material::packData(CommunicationBuffer & buffer,
 inline void Material::unpackData(CommunicationBuffer & buffer,
                                  const Array<Element> & elements,
                                  const SynchronizationTag & tag) {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);
       unpackElementDataHelper(gradu, buffer, elements);
@@ -379,18 +379,13 @@ Material::getInternalDataPerElem(const ID & field_id,
   UInt nb_data_per_quad = internal_field.getNbComponent();
 
   ElementTypeMap<UInt> res;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-
-    using type_iterator = typename InternalField<T>::type_iterator;
-    type_iterator tit = internal_field.firstType(*gt);
-    type_iterator tend = internal_field.lastType(*gt);
-
-    for (; tit != tend; ++tit) {
-      UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(*tit, *gt);
-      res(*tit, *gt) = nb_data_per_quad * nb_quadrature_points;
+  for (auto ghost_type : ghost_types) {
+    for (auto & type : internal_field.elementTypes(ghost_type)) {
+      UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(type, ghost_type);
+      res(type, ghost_type) = nb_data_per_quad * nb_quadrature_points;
     }
   }
+
   return res;
 }
 
@@ -411,13 +406,7 @@ void Material::flattenInternal(const std::string & field_id,
   const FEEngine & fe_engine = internal_field.getFEEngine();
   const Mesh & mesh = fe_engine.getMesh();
 
-  using type_iterator = typename InternalField<T>::filter_type_iterator;
-  type_iterator tit = internal_field.filterFirstType(ghost_type);
-  type_iterator tend = internal_field.filterLastType(ghost_type);
-
-  for (; tit != tend; ++tit) {
-    ElementType type = *tit;
-
+  for (auto && type : internal_field.filterTypes(ghost_type)) {
     const Array<Real> & src_vect = internal_field(type, ghost_type);
     const Array<UInt> & filter = internal_field.getFilter(type, ghost_type);
 
@@ -444,18 +433,14 @@ void Material::flattenInternal(const std::string & field_id,
     Array<Real> & dst_vect = internal_flat(type, ghost_type);
     dst_vect.resize(nb_element_dst * nb_quad_per_elem);
 
-    Array<UInt>::const_scalar_iterator it = filter.begin();
-    Array<UInt>::const_scalar_iterator end = filter.end();
+    auto it_dst = make_view(dst_vect, nb_data).begin();
 
-    auto it_src = src_vect.begin_reinterpret(nb_data, nb_element_src);
-    auto it_dst = dst_vect.begin_reinterpret(nb_data, nb_element_dst);
-
-    for (; it != end; ++it, ++it_src) {
-      it_dst[*it] = *it_src;
+    for (auto && data : zip(filter, make_view(src_vect, nb_data))) {
+      it_dst[std::get<0>(data)] = std::get<1>(data);
     }
   }
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_INLINE_IMPL_CC__ */

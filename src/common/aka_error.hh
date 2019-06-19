@@ -32,6 +32,7 @@
 #include <sstream>
 #include <typeinfo>
 #include <utility>
+#include <set>
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -83,9 +84,7 @@ namespace debug {
 
   void initSignalHandler();
   std::string demangle(const char * symbol);
-#ifndef SWIG
   std::string exec(const std::string & cmd);
-#endif
   void printBacktrace(int sig);
 
   void exit(int status) __attribute__((noreturn));
@@ -191,24 +190,41 @@ namespace debug {
     void setLogFile(const std::string & filename);
     std::ostream & getOutputStream();
 
-    inline bool testLevel(const DebugLevel & level) const {
-      return (this->level >= (level));
+    inline bool testLevel(const DebugLevel & level,
+                          const std::string & module = "core") const {
+      auto level_reached = (this->level >= (level));
+      auto correct_module =
+          (level <= dblCritical) or (modules_to_debug.size() == 0) or
+          (modules_to_debug.find(module) != modules_to_debug.end());
+      return level_reached and correct_module;
     }
 
     void printBacktrace(bool on_off) { this->print_backtrace = on_off; }
     bool printBacktrace() { return this->print_backtrace; }
 
+    void addModuleToDebug(const std::string & id) {
+      modules_to_debug.insert(id);
+    }
+    void removeModuleToDebug(const std::string & id) {
+      auto it = modules_to_debug.find(id);
+      if(it != modules_to_debug.end())
+        modules_to_debug.erase(it);
+    }
   private:
     std::string parallel_context;
     std::ostream * cout;
     bool file_open;
     DebugLevel level;
     bool print_backtrace;
+    std::set<std::string> modules_to_debug;
   };
 
   extern Debugger debugger;
 } // namespace debug
 
+/* -------------------------------------------------------------------------- */
+#define AKANTU_STRINGIZE_(str) #str
+#define AKANTU_STRINGIZE(str) AKANTU_STRINGIZE_(str)
 /* -------------------------------------------------------------------------- */
 #define AKANTU_STRINGSTREAM_IN(_str, _sstr)                                    \
   ;                                                                            \
@@ -250,7 +266,7 @@ namespace debug {
 #ifdef AKANTU_NDEBUG
 #define AKANTU_DEBUG_TEST(level) (false)
 #define AKANTU_DEBUG_LEVEL_IS_TEST()                                           \
-  (::akantu::debug::debugger.testLevel(dblTest))
+  (::akantu::debug::debugger.testLevel(dblTest, AKANTU_STRINGIZE(AKANTU_MODULE)))
 #define AKANTU_DEBUG(level, info)
 #define AKANTU_DEBUG_(pref, level, info)
 #define AKANTU_DEBUG_IN()
@@ -272,7 +288,8 @@ namespace debug {
     ::akantu::debug::debugger.printMessage(pref, level, _dbg_str);             \
   } while (false)
 
-#define AKANTU_DEBUG_TEST(level) (::akantu::debug::debugger.testLevel(level))
+#define AKANTU_DEBUG_TEST(level)                                               \
+  (::akantu::debug::debugger.testLevel(level, AKANTU_STRINGIZE(AKANTU_MODULE)))
 
 #define AKANTU_DEBUG_LEVEL_IS_TEST()                                           \
   (::akantu::debug::debugger.testLevel(dblTest))

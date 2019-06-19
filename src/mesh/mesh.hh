@@ -1,4 +1,3 @@
-
 /**
  * @file   mesh.hh
  *
@@ -42,6 +41,7 @@
 #include "aka_bbox.hh"
 #include "aka_event_handler_manager.hh"
 #include "aka_memory.hh"
+#include "communicator.hh"
 #include "dumpable.hh"
 #include "element.hh"
 #include "element_class.hh"
@@ -50,12 +50,12 @@
 #include "mesh_data.hh"
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
+#include <functional>
 #include <set>
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-class Communicator;
 class ElementSynchronizer;
 class NodeSynchronizer;
 class PeriodicNodeSynchronizer;
@@ -63,6 +63,12 @@ class MeshGlobalDataUpdater;
 } // namespace akantu
 
 namespace akantu {
+
+namespace {
+  DECLARE_NAMED_ARGUMENT(communicator);
+  DECLARE_NAMED_ARGUMENT(edge_weight_function);
+  DECLARE_NAMED_ARGUMENT(vertex_weight_function);
+} // namespace
 
 /* -------------------------------------------------------------------------- */
 /* Mesh                                                                       */
@@ -143,9 +149,24 @@ private:
   /* Distributed memory methods and accessors                                 */
   /* ------------------------------------------------------------------------ */
 public:
+protected:
   /// patitionate the mesh among the processors involved in their computation
-  virtual void distribute(Communicator & communicator);
-  virtual void distribute();
+  virtual void distributeImpl(
+      Communicator & communicator,
+      std::function<Int(const Element &, const Element &)> edge_weight_function,
+      std::function<Int(const Element &)> vertex_weight_function);
+
+public:
+  /// with the arguments to pass to the partitionner
+  template <typename... pack>
+  std::enable_if_t<are_named_argument<pack...>::value>
+  distribute(pack &&... _pack) {
+    distributeImpl(
+        OPTIONAL_NAMED_ARG(communicator, Communicator::getStaticCommunicator()),
+        OPTIONAL_NAMED_ARG(edge_weight_function,
+                           [](auto &&, auto &&) { return 1; }),
+        OPTIONAL_NAMED_ARG(vertex_weight_function, [](auto &&) { return 1; }));
+  }
 
   /// defines is the mesh is distributed or not
   inline bool isDistributed() const { return this->is_distributed; }
@@ -187,10 +208,8 @@ public:
   /// get the master node for a given slave nodes, except if node not a slave
   inline UInt getPeriodicMaster(UInt slave) const;
 
-#ifndef SWIG
   /// get an iterable list of slaves for a given master node
   inline decltype(auto) getPeriodicSlaves(UInt master) const;
-#endif
 
   /* ------------------------------------------------------------------------ */
   /* General Methods                                                          */
@@ -281,7 +300,8 @@ public:
 
   /// get the Array of global ids of the nodes (only used in parallel)
   AKANTU_GET_MACRO(GlobalNodesIds, *nodes_global_ids, const Array<UInt> &);
-  AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt> &);
+  // AKANTU_GET_MACRO_NOT_CONST(GlobalNodesIds, *nodes_global_ids, Array<UInt>
+  // &);
 
   /// get the global id of a node
   inline UInt getNodeGlobalId(UInt local_id) const;
@@ -349,7 +369,6 @@ public:
   void getBarycenters(Array<Real> & barycenter, const ElementType & type,
                       const GhostType & ghost_type) const;
 
-#ifndef SWIG
   /// get the element connected to a subelement (element of lower dimension)
   const auto & getElementToSubelement() const;
 
@@ -388,7 +407,6 @@ protected:
   inline auto & getElementToSubelement(const Element & element);
   inline VectorProxy<Element> getSubelementToElement(const Element & element);
   inline VectorProxy<UInt> getConnectivity(const Element & element);
-#endif
 
 public:
   /// get a name field associated to the mesh
@@ -415,9 +433,10 @@ public:
                                         const ElementKind & element_kind);
 
   template <typename T>
-  dumper::Field * createFieldFromAttachedData(const std::string & field_id,
-                                              const std::string & group_name,
-                                              const ElementKind & element_kind);
+  std::shared_ptr<dumper::Field>
+  createFieldFromAttachedData(const std::string & field_id,
+                              const std::string & group_name,
+                              const ElementKind & element_kind);
 
   /// templated getter returning the pointer to data in MeshData (modifiable)
   template <typename T>
@@ -443,11 +462,10 @@ public:
 
   inline bool isMeshFacets() const { return this->is_mesh_facets; }
 
-#ifndef SWIG
   /// return the dumper from a group and and a dumper name
   DumperIOHelper & getGroupDumper(const std::string & dumper_name,
                                   const std::string & group_name);
-#endif
+
   /* ------------------------------------------------------------------------ */
   /* Wrappers on ElementClass functions                                       */
   /* ------------------------------------------------------------------------ */
@@ -471,7 +489,6 @@ public:
   /// get number of facets of a given element type
   static inline UInt getNbFacetsPerElement(const ElementType & type, UInt t);
 
-#ifndef SWIG
   /// get local connectivity of a facet for a given facet type
   static inline auto getFacetLocalConnectivity(const ElementType & type,
                                                UInt t = 0);
@@ -479,13 +496,9 @@ public:
   /// get connectivity of facets for a given element
   inline auto getFacetConnectivity(const Element & element, UInt t = 0) const;
 
-#endif
-
   /// get the number of type of the surface element associated to a given
   /// element type
   static inline UInt getNbFacetTypes(const ElementType & type, UInt t = 0);
-
-#ifndef SWIG
 
   /// get the type of the surface element associated to a given element
   static inline constexpr auto getFacetType(const ElementType & type,
@@ -494,31 +507,31 @@ public:
   /// get all the type of the surface element associated to a given element
   static inline constexpr auto getAllFacetTypes(const ElementType & type);
 
-#endif
-
   /// get the number of nodes in the given element list
   static inline UInt getNbNodesPerElementList(const Array<Element> & elements);
 
   /* ------------------------------------------------------------------------ */
   /* Element type Iterator                                                    */
   /* ------------------------------------------------------------------------ */
-  using type_iterator = ElementTypeMapArray<UInt, ElementType>::type_iterator;
+
+  using type_iterator [[deprecated]] =
+      ElementTypeMapArray<UInt, ElementType>::type_iterator;
   using ElementTypesIteratorHelper =
       ElementTypeMapArray<UInt, ElementType>::ElementTypesIteratorHelper;
 
   template <typename... pack>
   ElementTypesIteratorHelper elementTypes(pack &&... _pack) const;
 
-  inline type_iterator firstType(UInt dim = _all_dimensions,
-                                 GhostType ghost_type = _not_ghost,
-                                 ElementKind kind = _ek_regular) const {
-    return connectivities.firstType(dim, ghost_type, kind);
+  [[deprecated("Use elementTypes instead")]] inline decltype(auto)
+  firstType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+            ElementKind kind = _ek_regular) const {
+    return connectivities.elementTypes(dim, ghost_type, kind).begin();
   }
 
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                GhostType ghost_type = _not_ghost,
-                                ElementKind kind = _ek_regular) const {
-    return connectivities.lastType(dim, ghost_type, kind);
+  [[deprecated("Use elementTypes instead")]] inline decltype(auto)
+  lastType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+           ElementKind kind = _ek_regular) const {
+    return connectivities.elementTypes(dim, ghost_type, kind).end();
   }
 
   AKANTU_GET_MACRO(ElementSynchronizer, *element_synchronizer,
@@ -531,16 +544,15 @@ public:
                              NodeSynchronizer &);
   AKANTU_GET_MACRO(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
                    const PeriodicNodeSynchronizer &);
-  AKANTU_GET_MACRO_NOT_CONST(PeriodicNodeSynchronizer, *periodic_node_synchronizer,
+  AKANTU_GET_MACRO_NOT_CONST(PeriodicNodeSynchronizer,
+                             *periodic_node_synchronizer,
                              PeriodicNodeSynchronizer &);
 
-// AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
-// &);
-#ifndef SWIG
+  // AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, StaticCommunicator
+  // &);
   AKANTU_GET_MACRO(Communicator, *communicator, const auto &);
   AKANTU_GET_MACRO_NOT_CONST(Communicator, *communicator, auto &);
   AKANTU_GET_MACRO(PeriodicMasterSlaves, periodic_master_slave, const auto &);
-#endif
 
   /* ------------------------------------------------------------------------ */
   /* Private methods for friends                                              */
@@ -625,7 +637,7 @@ private:
   BBox bbox_local;
 
   /// Extra data loaded from the mesh file
-  //MeshData mesh_data;
+  // MeshData mesh_data;
 
   /// facets' mesh
   std::unique_ptr<Mesh> mesh_facets;

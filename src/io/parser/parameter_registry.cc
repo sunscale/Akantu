@@ -116,9 +116,7 @@ ParameterRegistry::~ParameterRegistry() {
 
 /* -------------------------------------------------------------------------- */
 void ParameterRegistry::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   Parameters::const_iterator it;
   for (it = params.begin(); it != params.end(); ++it) {

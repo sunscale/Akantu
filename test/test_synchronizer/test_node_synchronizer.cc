@@ -133,21 +133,21 @@ protected:
 /* -------------------------------------------------------------------------- */
 TEST_F(TestNodeSynchronizerFixture, SynchroneOnce) {
   auto & synchronizer = this->mesh->getNodeSynchronizer();
-  synchronizer.synchronizeOnce(*this->data_accessor, _gst_test);
+  synchronizer.synchronizeOnce(*this->data_accessor, SynchronizationTag::_test);
   this->checkData();
 }
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestNodeSynchronizerFixture, Synchrone) {
   auto & node_synchronizer = this->mesh->getNodeSynchronizer();
-  node_synchronizer.synchronize(*this->data_accessor, _gst_test);
+  node_synchronizer.synchronize(*this->data_accessor, SynchronizationTag::_test);
   this->checkData();
 }
 
 /* -------------------------------------------------------------------------- */
 TEST_F(TestNodeSynchronizerFixture, Asynchrone) {
   auto & synchronizer = this->mesh->getNodeSynchronizer();
-  synchronizer.asynchronousSynchronize(*this->data_accessor, _gst_test);
+  synchronizer.asynchronousSynchronize(*this->data_accessor, SynchronizationTag::_test);
 
   std::random_device r;
   std::default_random_engine engine(r());
@@ -156,6 +156,6 @@ TEST_F(TestNodeSynchronizerFixture, Asynchrone) {
 
   std::this_thread::sleep_for(delay);
 
-  synchronizer.waitEndSynchronize(*this->data_accessor, _gst_test);
+  synchronizer.waitEndSynchronize(*this->data_accessor, SynchronizationTag::_test);
   this->checkData();
 }

@@ -104,11 +104,7 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
 }
 
 /* -------------------------------------------------------------------------- */
-MaterialCohesive::~MaterialCohesive() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_OUT();
-}
+MaterialCohesive::~MaterialCohesive() = default;
 
 /* -------------------------------------------------------------------------- */
 void MaterialCohesive::initMaterial() {
@@ -403,7 +399,9 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
   auto & fem_cohesive =
       this->model->getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine");
 
-#define COMPUTE_NORMAL(type)                                                   \
+  normal.clear();
+
+#define COMPUTE_NORMAL(type)                                            \
   fem_cohesive.getShapeFunctions()                                             \
       .computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(    \
           position, normal, ghost_type, element_filter(type, ghost_type));
@@ -436,24 +434,24 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 }
 
 /* -------------------------------------------------------------------------- */
-void MaterialCohesive::updateEnergies(ElementType type, GhostType ghost_type) {
+void MaterialCohesive::updateEnergies(ElementType type) {
   AKANTU_DEBUG_IN();
 
   if (Mesh::getKind(type) != _ek_cohesive)
     return;
-
+  
   Vector<Real> b(spatial_dimension);
   Vector<Real> h(spatial_dimension);
-  auto erev = reversible_energy(type, ghost_type).begin();
-  auto etot = total_energy(type, ghost_type).begin();
-  auto traction_it = tractions(type, ghost_type).begin(spatial_dimension);
+  auto erev = reversible_energy(type).begin();
+  auto etot = total_energy(type).begin();
+  auto traction_it = tractions(type).begin(spatial_dimension);
   auto traction_old_it =
-      tractions.previous(type, ghost_type).begin(spatial_dimension);
-  auto opening_it = opening(type, ghost_type).begin(spatial_dimension);
+      tractions.previous(type).begin(spatial_dimension);
+  auto opening_it = opening(type).begin(spatial_dimension);
   auto opening_old_it =
-      opening.previous(type, ghost_type).begin(spatial_dimension);
+      opening.previous(type).begin(spatial_dimension);
 
-  auto traction_end = tractions(type, ghost_type).end(spatial_dimension);
+  auto traction_end = tractions(type).end(spatial_dimension);
 
   /// loop on each quadrature point
   for (; traction_it != traction_end; ++traction_it, ++traction_old_it,

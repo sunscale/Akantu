@@ -50,26 +50,23 @@ int main(int argc, char * argv[]) {
 
   int dim = 2;
 
-  akantu::Mesh mesh(dim);
+  Mesh mesh(dim);
   mesh.read("triangle.msh");
 
-  akantu::MeshPartition * partition =
-      new akantu::MeshPartitionScotch(mesh, dim);
-  partition->partitionate(8);
+  MeshPartitionScotch partition(mesh, dim);
+  partition.partitionate(8);
 
 #ifdef AKANTU_USE_IOHELPER
   DumperParaview dumper("test-scotch-partition");
-  dumper::Field * field =
-      new dumper::ElementalField<UInt>(partition->getPartitions(), dim);
+  auto field = std::make_shared<dumper::ElementalField<UInt>>(
+      partition.getPartitions(), dim);
   dumper.registerMesh(mesh, dim);
   dumper.registerField("partitions", field);
   dumper.dump();
 #endif // AKANTU_USE_IOHELPER
 
-  partition->reorder();
+  partition.reorder();
   mesh.write("triangle_reorder.msh");
-
-  delete partition;
 
   finalize();
 

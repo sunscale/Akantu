@@ -83,7 +83,7 @@ inline UInt MaterialMarigo<spatial_dimension>::getNbData(
   AKANTU_DEBUG_IN();
 
   UInt size = 0;
-  if (tag == _gst_smm_init_mat) {
+  if (tag == SynchronizationTag::_smm_init_mat) {
     size += sizeof(Real) * this->getModel().getNbIntegrationPoints(elements);
   }
 
@@ -100,7 +100,7 @@ inline void MaterialMarigo<spatial_dimension>::packData(
     const SynchronizationTag & tag) const {
   AKANTU_DEBUG_IN();
 
-  if (tag == _gst_smm_init_mat) {
+  if (tag == SynchronizationTag::_smm_init_mat) {
     this->packElementDataHelper(Yd, buffer, elements);
   }
 
@@ -117,7 +117,7 @@ MaterialMarigo<spatial_dimension>::unpackData(CommunicationBuffer & buffer,
                                               const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  if (tag == _gst_smm_init_mat) {
+  if (tag == SynchronizationTag::_smm_init_mat) {
     this->unpackElementDataHelper(Yd, buffer, elements);
   }
 

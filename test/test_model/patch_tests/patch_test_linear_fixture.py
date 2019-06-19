@@ -14,7 +14,6 @@ __email__ = "guillaume.anciaux@epfl.ch"
 import akantu
 import unittest
 import numpy as np
-import sys
 
 
 class TestPatchTestLinear(unittest.TestCase):
@@ -66,15 +65,15 @@ class TestPatchTestLinear(unittest.TestCase):
 
     def applyBC(self):
         boundary = self.model.getBlockedDOFs()
-        for name, eg in self.mesh.getElementGroups().items():
-            nodes = eg['node_group']
+        for eg in self.mesh.iterateElementGroups():
+            nodes = eg.getNodeGroup().getNodes()
             boundary[nodes, :] = True
 
     def applyBConDOFs(self, dofs):
         coordinates = self.mesh.getNodes()
 
-        for name, eg in self.mesh.getElementGroups().items():
-            nodes = eg['node_group'].flatten()
+        for eg in self.mesh.iterateElementGroups():
+            nodes = eg.getNodeGroup().getNodes().flatten()
             dofs[nodes] = self.setLinearDOF(dofs[nodes],
                                             coordinates[nodes])
 
@@ -126,16 +125,12 @@ class TestPatchTestLinear(unittest.TestCase):
 
     @classmethod
     def TYPED_TEST(cls, functor, label):
-        suite = unittest.TestSuite()
-
         for type_name, _type in akantu.getElementTypes().items():
             if type_name == "_point_1":
                 continue
 
             method_name = type_name + '_' + label
             test_case = cls(method_name, type_name, functor)
-            suite.addTest(test_case)
-
-        result = unittest.TextTestRunner(verbosity=1).run(suite)
-        ret = not result.wasSuccessful()
-        sys.exit(ret)
+            test_case.setUp()
+            functor(test_case)
+            test_case.tearDown()

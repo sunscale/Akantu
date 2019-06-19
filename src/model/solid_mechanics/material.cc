@@ -59,7 +59,8 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
   /// for each connectivity types allocate the element filer array of the
   /// material
   element_filter.initialize(model.getMesh(),
-                            _spatial_dimension = spatial_dimension);
+                            _spatial_dimension = spatial_dimension,
+                            _element_kind = _ek_regular);
   // model.getMesh().initElementTypeMapArray(element_filter, 1,
   // spatial_dimension,
   //                                         false, _ek_regular);
@@ -92,7 +93,8 @@ Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                                     fe_engine, this->element_filter) {
 
   AKANTU_DEBUG_IN();
-  element_filter.initialize(mesh, _spatial_dimension = spatial_dimension);
+  element_filter.initialize(mesh, _spatial_dimension = spatial_dimension,
+                            _element_kind = _ek_regular);
   // mesh.initElementTypeMapArray(element_filter, 1, spatial_dimension, false,
   //                              _ek_regular);
 
@@ -139,17 +141,7 @@ void Material::initMaterial() {
   if (use_previous_gradu)
     this->gradu.initializeHistory();
 
-  for (auto it = internal_vectors_real.begin();
-       it != internal_vectors_real.end(); ++it)
-    it->second->resize();
-
-  for (auto it = internal_vectors_uint.begin();
-       it != internal_vectors_uint.end(); ++it)
-    it->second->resize();
-
-  for (auto it = internal_vectors_bool.begin();
-       it != internal_vectors_bool.end(); ++it)
-    it->second->resize();
+  this->resizeInternals();
 
   is_init = true;
 
@@ -673,7 +665,7 @@ void Material::assembleInternalForces(GhostType ghost_type) {
   Array<Real> & internal_force = model.getInternalForce();
 
   Mesh & mesh = fem.getMesh();
-  for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
+  for (auto type : element_filter.elementTypes(_ghost_type = ghost_type)) {
     const Array<Real> & shapes_derivatives =
         fem.getShapesDerivatives(type, ghost_type);
 
@@ -762,9 +754,9 @@ void Material::computePotentialEnergyByElements() {
 }
 
 /* -------------------------------------------------------------------------- */
-void Material::computePotentialEnergy(ElementType, GhostType) {
+void Material::computePotentialEnergy(ElementType) {
   AKANTU_DEBUG_IN();
-
+  AKANTU_TO_IMPLEMENT();
   AKANTU_DEBUG_OUT();
 }
 
@@ -1013,16 +1005,15 @@ Array<UInt> & Material::getArray(const ID & vect_id, const ElementType & type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const InternalField<T> & Material::getInternal(__attribute__((unused))
-                                               const ID & int_id) const {
+const InternalField<T> &
+Material::getInternal([[gnu::unused]] const ID & int_id) const {
   AKANTU_TO_IMPLEMENT();
   return NULL;
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-InternalField<T> & Material::getInternal(__attribute__((unused))
-                                         const ID & int_id) {
+InternalField<T> & Material::getInternal([[gnu::unused]] const ID & int_id) {
   AKANTU_TO_IMPLEMENT();
   return NULL;
 }
@@ -1115,18 +1106,11 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
       "remove mat filter elem", getID(), getMemoryID());
 
   Element element;
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    GhostType ghost_type = *gt;
+  for (auto ghost_type : ghost_types) {
     element.ghost_type = ghost_type;
 
-    ElementTypeMapArray<UInt>::type_iterator it =
-        element_filter.firstType(_all_dimensions, ghost_type, _ek_not_defined);
-    ElementTypeMapArray<UInt>::type_iterator end =
-        element_filter.lastType(_all_dimensions, ghost_type, _ek_not_defined);
-
-    for (; it != end; ++it) {
-      ElementType type = *it;
+    for (auto & type : element_filter.elementTypes(_ghost_type = ghost_type,
+                       _element_kind = _ek_not_defined)) {
       element.type = type;
 
       Array<UInt> & elem_filter = this->element_filter(type, ghost_type);
@@ -1204,7 +1188,7 @@ void Material::onElementsAdded(const Array<Element> &,
 void Material::onElementsRemoved(
     const Array<Element> & element_list,
     const ElementTypeMapArray<UInt> & new_numbering,
-    __attribute__((unused)) const RemovedElementsEvent & event) {
+    [[gnu::unused]] const RemovedElementsEvent & event) {
   UInt my_num = model.getInternalIndexFromID(getID());
 
   ElementTypeMapArray<UInt> material_local_new_numbering(
@@ -1281,7 +1265,7 @@ void Material::beforeSolveStep() { this->savePreviousState(); }
 void Material::afterSolveStep() {
   for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
                                                  _ek_not_defined)) {
-    this->updateEnergies(type, _not_ghost);
+    this->updateEnergies(type);
   }
 }
 /* -------------------------------------------------------------------------- */
@@ -1289,13 +1273,9 @@ void Material::onDamageIteration() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
 void Material::onDamageUpdate() {
-  ElementTypeMapArray<UInt>::type_iterator it = this->element_filter.firstType(
-      _all_dimensions, _not_ghost, _ek_not_defined);
-  ElementTypeMapArray<UInt>::type_iterator end =
-      element_filter.lastType(_all_dimensions, _not_ghost, _ek_not_defined);
-
-  for (; it != end; ++it) {
-    this->updateEnergiesAfterDamage(*it, _not_ghost);
+  for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
+                                                 _ek_not_defined)) {
+    this->updateEnergiesAfterDamage(type);
   }
 }
 
@@ -1307,10 +1287,7 @@ void Material::onDump() {
 
 /* -------------------------------------------------------------------------- */
 void Material::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
-
+  std::string space(indent, AKANTU_INDENT);
   std::string type = getID().substr(getID().find_last_of(':') + 1);
 
   stream << space << "Material " << type << " [" << std::endl;
@@ -1321,8 +1298,7 @@ void Material::printself(std::ostream & stream, int indent) const {
 /* -------------------------------------------------------------------------- */
 /// extrapolate internal values
 void Material::extrapolateInternal(const ID & id, const Element & element,
-                                   __attribute__((unused))
-                                   const Matrix<Real> & point,
+                                   [[gnu::unused]] const Matrix<Real> & point,
                                    Matrix<Real> & extrapolated) {
   if (this->isInternal<Real>(id, element.kind())) {
     UInt nb_element =
@@ -1381,6 +1357,11 @@ void Material::applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
       current_eigengradu = prescribed_eigen_grad_u;
     }
   }
+}
+
+/* -------------------------------------------------------------------------- */
+MaterialFactory & Material::getFactory() {
+  return MaterialFactory::getInstance();
 }
 
 } // namespace akantu

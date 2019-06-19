@@ -9,13 +9,14 @@ import akantu
 ################################################################
 
 
-class FixedValue:
+class FixedValue(akantu.DirichletFunctor):
 
     def __init__(self, value, axis):
+        super().__init__(axis)
         self.value = value
-        self.axis = axis
+        self.axis = int(axis)
 
-    def operator(self, node, flags, disp, coord):
+    def __call__(self, node, flags, disp, coord):
         # sets the displacement to the desired value in the desired axis
         disp[self.axis] = self.value
         # sets the blocked dofs vector to true in the desired axis
@@ -24,37 +25,31 @@ class FixedValue:
 ################################################################
 
 
-class LocalElastic:
+class LocalElastic(akantu.Material):
 
-    # declares all the internals
-    def initMaterial(self, internals, params):
-        self.E = params['E']
-        self.nu = params['nu']
-        self.rho = params['rho']
-        # First Lame coefficient
-        self.lame_lambda = self.nu * self.E / (
-            (1 + self.nu) * (1 - 2 * self.nu))
+    def __init__(self, model, _id):
+        super().__init__(model, _id)
+        super().registerParamReal('E',
+                                  akantu._pat_readable | akantu._pat_parsable,
+                                  'Youngs modulus')
+        super().registerParamReal('nu',
+                                  akantu._pat_readable | akantu._pat_parsable,
+                                  'Poisson ratio')
+
+    def initMaterial(self):
+        nu = self.getReal('nu')
+        E = self.getReal('E')
+        self.mu = E / (2 * (1 + nu))
+        self.lame_lambda = nu * E / (
+            (1. + nu) * (1. - 2. * nu))
         # Second Lame coefficient (shear modulus)
-        self.lame_mu = self.E / (2 * (1 + self.nu))
-
-    # declares all the internals
-    @staticmethod
-    def registerInternals():
-        return ['potential']
-
-    # declares all the internals
-    @staticmethod
-    def registerInternalSizes():
-        return [1]
-
-    # declares all the parameters that could be parsed
-    @staticmethod
-    def registerParam():
-        return ['E', 'nu']
+        self.lame_mu = E / (2. * (1. + nu))
+        super().initMaterial()
 
     # declares all the parameters that are needed
-    def getPushWaveSpeed(self, params):
-        return np.sqrt((self.lame_lambda + 2 * self.lame_mu) / self.rho)
+    def getPushWaveSpeed(self, element):
+        rho = self.getReal('rho')
+        return np.sqrt((self.lame_lambda + 2 * self.lame_mu) / rho)
 
     # compute small deformation tensor
     @staticmethod
@@ -62,21 +57,25 @@ class LocalElastic:
         return 0.5 * (grad_u + np.einsum('aij->aji', grad_u))
 
     # constitutive law
-    def computeStress(self, grad_u, sigma, internals, params):
-        nquads = grad_u.shape[0]
-        grad_u = grad_u.reshape((nquads, 2, 2))
+    def computeStress(self, el_type, ghost_type):
+        grad_u = self.getGradU(el_type, ghost_type)
+        sigma = self.getStress(el_type, ghost_type)
+
+        n_quads = grad_u.shape[0]
+        grad_u = grad_u.reshape((n_quads, 2, 2))
         epsilon = self.computeEpsilon(grad_u)
-        sigma = sigma.reshape((nquads, 2, 2))
-        trace = np.trace(grad_u, axis1=1, axis2=2)
+        sigma = sigma.reshape((n_quads, 2, 2))
+        trace = np.einsum('aii->a', grad_u)
+
         sigma[:, :, :] = (
             np.einsum('a,ij->aij', trace,
                       self.lame_lambda * np.eye(2))
-            + 2.*self.lame_mu * epsilon)
+            + 2. * self.lame_mu * epsilon)
 
     # constitutive law tangent modulii
-    def computeTangentModuli(self, grad_u, tangent, internals, params):
-        n_quads = tangent.shape[0]
-        tangent = tangent.reshape(n_quads, 3, 3)
+    def computeTangentModuli(self, el_type, tangent_matrix, ghost_type):
+        n_quads = tangent_matrix.shape[0]
+        tangent = tangent_matrix.reshape(n_quads, 3, 3)
 
         Miiii = self.lame_lambda + 2 * self.lame_mu
         Miijj = self.lame_lambda
@@ -89,20 +88,18 @@ class LocalElastic:
         tangent[:, 2, 2] = Mijij
 
     # computes the energy density
-    def getEnergyDensity(self, energy_type, energy_density,
-                         grad_u, stress, internals, params):
+    def computePotentialEnergy(self, el_type):
 
-        nquads = stress.shape[0]
-        stress = stress.reshape(nquads, 2, 2)
+        sigma = self.getStress(el_type)
+        grad_u = self.getGradU(el_type)
+
+        nquads = sigma.shape[0]
+        stress = sigma.reshape(nquads, 2, 2)
         grad_u = grad_u.reshape((nquads, 2, 2))
-
-        if energy_type != 'potential':
-            raise RuntimeError('not known energy')
-
         epsilon = self.computeEpsilon(grad_u)
 
-        energy_density[:, 0] = (
-            0.5 * np.einsum('aij,aij->a', stress, epsilon))
+        energy_density = self.getPotentialEnergy(el_type)
+        energy_density[:, 0] = 0.5 * np.einsum('aij,aij->a', stress, epsilon)
 
 
 ################################################################
@@ -118,7 +115,7 @@ time_step = 1e-3
 
 # if mesh was not created the calls gmsh to generate it
 if not os.path.isfile(mesh_file):
-    ret = subprocess.call('gmsh -2 bar.geo bar.msh', shell=True)
+    ret = subprocess.call('gmsh -format msh2 -2 bar.geo bar.msh', shell=True)
     if ret != 0:
         raise Exception(
             'execution of GMSH failed: do you have it installed ?')
@@ -129,8 +126,17 @@ if not os.path.isfile(mesh_file):
 mesh = akantu.Mesh(spatial_dimension)
 mesh.read(mesh_file)
 
-mat = LocalElastic()
-akantu.registerNewPythonMaterial(mat, "local_elastic")
+mat_factory = akantu.MaterialFactory.getInstance()
+
+
+def allocator(_dim, unused, model, _id):
+    return LocalElastic(model, _id)
+
+
+mat_factory.registerAllocator("local_elastic", allocator)
+
+# parse input file
+akantu.parseInput('material.dat')
 
 model = akantu.SolidMechanicsModel(mesh)
 
@@ -151,8 +157,8 @@ model.addDumpField("blocked_dofs")
 # boundary conditions
 ################################################################
 
-model.applyDirichletBC(FixedValue(0, akantu._x), "XBlocked")
-model.applyDirichletBC(FixedValue(0, akantu._y), "YBlocked")
+model.applyBC(FixedValue(0, akantu._x), "XBlocked")
+model.applyBC(FixedValue(0, akantu._y), "YBlocked")
 
 ################################################################
 # initial conditions

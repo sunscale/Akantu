@@ -178,19 +178,17 @@ Real MaterialElastic<spatial_dimension>::getShearWaveSpeed(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialElastic<spatial_dimension>::computePotentialEnergy(
-    ElementType el_type, GhostType ghost_type) {
+    ElementType el_type) {
   AKANTU_DEBUG_IN();
 
-  MaterialThermal<spatial_dimension>::computePotentialEnergy(el_type,
-                                                             ghost_type);
+  // MaterialThermal<dim>::computePotentialEnergy(ElementType)
+  // needs to be implemented
+  // MaterialThermal<spatial_dimension>::computePotentialEnergy(el_type);
 
-  if (ghost_type != _not_ghost)
-    return;
-
-  auto epot = this->potential_energy(el_type, ghost_type).begin();
+  auto epot = this->potential_energy(el_type, _not_ghost).begin();
 
   if (!this->finite_deformation) {
-    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
     this->computePotentialEnergyOnQuad(grad_u, sigma, *epot);
     ++epot;
@@ -199,7 +197,7 @@ void MaterialElastic<spatial_dimension>::computePotentialEnergy(
   } else {
     Matrix<Real> E(spatial_dimension, spatial_dimension);
 
-    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+    MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
     this->template gradUToGreenStrain<spatial_dimension>(grad_u, E);
 
     this->computePotentialEnergyOnQuad(E, sigma, *epot);

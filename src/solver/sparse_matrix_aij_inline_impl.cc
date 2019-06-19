@@ -75,7 +75,8 @@ inline void SparseMatrixAIJ::clearProfile() {
   this->a.resize(0);
 
   this->size_ = 0;
-
+  this->nb_non_zero = 0;
+  
   this->profile_release++;
   this->value_release++;
 }
@@ -111,6 +112,75 @@ inline Real & SparseMatrixAIJ::operator()(UInt i, UInt j) {
   this->value_release++;
 
   return this->a(irn_jcn_k_it->second);
+}
+
+/* -------------------------------------------------------------------------- */
+inline void
+SparseMatrixAIJ::addSymmetricValuesToSymmetric(const Vector<Int> & is,
+                                                 const Vector<Int> & js,
+                                                 const Matrix<Real> & values) {
+  for (UInt i = 0; i < values.rows(); ++i) {
+    UInt c_irn = is(i);
+    if (c_irn < size_) {
+      for (UInt j = i; j < values.cols(); ++j) {
+        UInt c_jcn = js(j);
+        if (c_jcn < size_) {
+          operator()(c_irn, c_jcn) += values(i, j);
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+inline void SparseMatrixAIJ::addUnsymmetricValuesToSymmetric(
+    const Vector<Int> & is, const Vector<Int> & js,
+    const Matrix<Real> & values) {
+  for (UInt i = 0; i < values.rows(); ++i) {
+    UInt c_irn = is(i);
+    if (c_irn < size_) {
+      for (UInt j = 0; j < values.cols(); ++j) {
+        UInt c_jcn = js(j);
+        if (c_jcn < size_) {
+          if (c_jcn >= c_irn) {
+            operator()(c_irn, c_jcn) += values(i, j);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+inline void
+SparseMatrixAIJ::addValuesToUnsymmetric(const Vector<Int> & is,
+                                          const Vector<Int> & js,
+                                          const Matrix<Real> & values) {
+  for (UInt i = 0; i < values.rows(); ++i) {
+    UInt c_irn = is(i);
+    if (c_irn < size_) {
+      for (UInt j = 0; j < values.cols(); ++j) {
+        UInt c_jcn = js(j);
+        if (c_jcn < size_) {
+          operator()(c_irn, c_jcn) += values(i, j);
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+inline void SparseMatrixAIJ::addValues(const Vector<Int> & is,
+                                       const Vector<Int> & js,
+                                       const Matrix<Real> & values,
+                                       MatrixType values_type) {
+  if (getMatrixType() == _symmetric)
+    if (values_type == _symmetric)
+      this->addSymmetricValuesToSymmetric(is, js, values);
+    else
+      this->addUnsymmetricValuesToSymmetric(is, js, values);
+  else
+    this->addValuesToUnsymmetric(is, js, values);
 }
 
 } // namespace akantu

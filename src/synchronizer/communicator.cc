@@ -56,9 +56,7 @@ InternalCommunicationRequest::~InternalCommunicationRequest() = default;
 /* -------------------------------------------------------------------------- */
 void InternalCommunicationRequest::printself(std::ostream & stream,
                                              int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "CommunicationRequest [" << std::endl;
   stream << space << " + id          : " << id << std::endl;
@@ -137,7 +135,11 @@ namespace akantu {
   template void Communicator::broadcastImpl<T>(T * values, int nb_values,      \
                                                int root) const;                \
   template void Communicator::allReduceImpl<T>(                                \
-      T * values, int nb_values, const SynchronizerOperation & op) const
+      T * values, int nb_values, SynchronizerOperation op) const;              \
+  template void Communicator::scanImpl<T>(T * values, T *, int nb_values,      \
+                                          SynchronizerOperation op) const;     \
+  template void Communicator::exclusiveScanImpl<T>(                            \
+      T * values, T *, int nb_values, SynchronizerOperation op) const
 
 #define MIN_MAX_REAL SCMinMaxLoc<Real, int>
 
@@ -178,4 +180,4 @@ AKANTU_COMM_INSTANTIATE(int);
 // template void Communicator::allReduce<SCMinMaxLoc<Real, int>>(
 //     SCMinMaxLoc<Real, int> * values, int nb_values,
 //     const SynchronizerOperation & op);
-} // akantu
+} // namespace akantu

@@ -25,7 +25,7 @@ __BEGIN_AKANTU__
 /* -------------------------------------------------------------------------- */
 inline UInt MaterialIGFEM::getNbDataForElements(const Array<Element> & elements,
                                                 SynchronizationTag tag) const {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
            spatial_dimension * sizeof(Real) *
            this->getModel().getNbIntegrationPoints(elements, "IGFEMFEEngine");
@@ -37,7 +37,7 @@ inline UInt MaterialIGFEM::getNbDataForElements(const Array<Element> & elements,
 inline void MaterialIGFEM::packElementData(CommunicationBuffer & buffer,
                                            const Array<Element> & elements,
                                            SynchronizationTag tag) const {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements,
                             "IGFEMFEEngine");
@@ -51,7 +51,7 @@ inline void MaterialIGFEM::packElementData(CommunicationBuffer & buffer,
 inline void MaterialIGFEM::unpackElementData(CommunicationBuffer & buffer,
                                              const Array<Element> & elements,
                                              SynchronizationTag tag) {
-  if (tag == _gst_smm_stress) {
+  if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements,
                               "IGFEMFEEngine");

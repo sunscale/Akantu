@@ -1,0 +1,22 @@
+model solid_mechanics_model_cohesive [
+  cohesive_inserter [
+    bounding_box = [[0,10],[-10, 10]]
+  ]
+
+
+  material elastic [
+           name = virtual
+  	 rho = 1     # density
+  	 E   = 1   # young's modulus
+  	 nu  = 0.3      # poisson's ratio
+  	 finite_deformation = true
+  ]
+  
+  material cohesive_linear [
+           name = cohesive
+  	 sigma_c = 0.1
+  	 G_c = 1e-2
+  	 beta = 1.
+  	 penalty = 10.
+  ]
+]

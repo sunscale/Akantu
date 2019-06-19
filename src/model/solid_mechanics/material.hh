@@ -52,9 +52,13 @@
 namespace akantu {
 class Model;
 class SolidMechanicsModel;
+class Material;
 } // namespace akantu
 
 namespace akantu {
+
+using MaterialFactory =
+    Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
 
 /**
  * Interface of all materials
@@ -123,8 +127,7 @@ protected:
   }
 
   /// compute the potential energy
-  virtual void computePotentialEnergy(ElementType el_type,
-                                      GhostType ghost_type = _not_ghost);
+  virtual void computePotentialEnergy(ElementType el_type);
 
   /// compute the potential energy for an element
   virtual void
@@ -135,14 +138,10 @@ protected:
     AKANTU_TO_IMPLEMENT();
   }
 
-  virtual void updateEnergies(__attribute__((unused)) ElementType el_type,
-                              __attribute__((unused))
-                              GhostType ghost_type = _not_ghost) {}
+  virtual void updateEnergies(__attribute__((unused)) ElementType el_type) {}
 
   virtual void updateEnergiesAfterDamage(__attribute__((unused))
-                                         ElementType el_type,
-                                         __attribute__((unused))
-                                         GhostType ghost_type = _not_ghost) {}
+                                         ElementType el_type) {}
 
   /// set the material to steady state (to be implemented for materials that
   /// need it)
@@ -487,6 +486,9 @@ public:
   /// specify if the matrix need to be recomputed for this material
   virtual bool hasStiffnessMatrixChanged() { return true; }
 
+  /// static method to reteive the material factory
+  static MaterialFactory & getFactory();
+
 protected:
   bool isInit() const { return is_init; }
 
@@ -586,30 +588,22 @@ inline std::ostream & operator<<(std::ostream & stream,
 /// functions such as computeStress. This macro in addition to write the loop
 /// provides two tensors (matrices) sigma and grad_u
 #define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type)       \
-  Array<Real>::matrix_iterator gradu_it =                                      \
-      this->gradu(el_type, ghost_type)                                         \
-          .begin(this->spatial_dimension, this->spatial_dimension);            \
-  Array<Real>::matrix_iterator gradu_end =                                     \
-      this->gradu(el_type, ghost_type)                                         \
-          .end(this->spatial_dimension, this->spatial_dimension);              \
+  auto && grad_u_view =                                                        \
+      make_view(this->gradu(el_type, ghost_type), this->spatial_dimension,     \
+                this->spatial_dimension);                                      \
                                                                                \
-  this->stress(el_type, ghost_type)                                            \
-      .resize(this->gradu(el_type, ghost_type).size());                        \
-                                                                               \
-  Array<Real>::iterator<Matrix<Real>> stress_it =                              \
-      this->stress(el_type, ghost_type)                                        \
-          .begin(this->spatial_dimension, this->spatial_dimension);            \
+  auto stress_view =                                                        \
+      make_view(this->stress(el_type, ghost_type), this->spatial_dimension,    \
+                this->spatial_dimension);                                      \
                                                                                \
   if (this->isFiniteDeformation()) {                                           \
-    this->piola_kirchhoff_2(el_type, ghost_type)                               \
-        .resize(this->gradu(el_type, ghost_type).size());                      \
-    stress_it = this->piola_kirchhoff_2(el_type, ghost_type)                   \
-                    .begin(this->spatial_dimension, this->spatial_dimension);  \
+    stress_view = make_view(this->piola_kirchhoff_2(el_type, ghost_type),      \
+                            this->spatial_dimension, this->spatial_dimension); \
   }                                                                            \
                                                                                \
-  for (; gradu_it != gradu_end; ++gradu_it, ++stress_it) {                     \
-    Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;                 \
-    Matrix<Real> & __attribute__((unused)) sigma = *stress_it
+  for (auto && data : zip(grad_u_view, stress_view)) {                         \
+    [[gnu::unused]] Matrix<Real> & grad_u = std::get<0>(data);                 \
+    [[gnu::unused]] Matrix<Real> & sigma = std::get<1>(data)
 
 #define MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END }
 
@@ -618,35 +612,27 @@ inline std::ostream & operator<<(std::ostream & stream,
 /// loop provides two tensors (matrices) sigma_tensor, grad_u, and a matrix
 /// where the elemental tangent moduli should be stored in Voigt Notation
 #define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_BEGIN(tangent_mat)              \
-  Array<Real>::matrix_iterator gradu_it =                                      \
-      this->gradu(el_type, ghost_type)                                         \
-          .begin(this->spatial_dimension, this->spatial_dimension);            \
-  Array<Real>::matrix_iterator gradu_end =                                     \
-      this->gradu(el_type, ghost_type)                                         \
-          .end(this->spatial_dimension, this->spatial_dimension);              \
-  Array<Real>::matrix_iterator sigma_it =                                      \
-      this->stress(el_type, ghost_type)                                        \
-          .begin(this->spatial_dimension, this->spatial_dimension);            \
+  auto && grad_u_view =                                                        \
+      make_view(this->gradu(el_type, ghost_type), this->spatial_dimension,     \
+                this->spatial_dimension);                                      \
                                                                                \
-  tangent_mat.resize(this->gradu(el_type, ghost_type).size());                 \
+  auto && stress_view =                                                        \
+      make_view(this->stress(el_type, ghost_type), this->spatial_dimension,    \
+                this->spatial_dimension);                                      \
                                                                                \
-  UInt tangent_size =                                                          \
+  auto tangent_size =                                                          \
       this->getTangentStiffnessVoigtSize(this->spatial_dimension);             \
-  Array<Real>::matrix_iterator tangent_it =                                    \
-      tangent_mat.begin(tangent_size, tangent_size);                           \
                                                                                \
-  for (; gradu_it != gradu_end; ++gradu_it, ++sigma_it, ++tangent_it) {        \
-    Matrix<Real> & __attribute__((unused)) grad_u = *gradu_it;                 \
-    Matrix<Real> & __attribute__((unused)) sigma_tensor = *sigma_it;           \
-    Matrix<Real> & tangent = *tangent_it
+  auto && tangent_view = make_view(tangent_mat, tangent_size, tangent_size);      \
+                                                                               \
+  for (auto && data : zip(grad_u_view, stress_view, tangent_view)) {           \
+    [[gnu::unused]] Matrix<Real> & grad_u = std::get<0>(data);                 \
+    [[gnu::unused]] Matrix<Real> & sigma = std::get<1>(data);                  \
+    Matrix<Real> & tangent = std::get<2>(data);
 
 #define MATERIAL_TANGENT_QUADRATURE_POINT_LOOP_END }
 
 /* -------------------------------------------------------------------------- */
-namespace akantu {
-using MaterialFactory =
-    Factory<Material, ID, UInt, const ID &, SolidMechanicsModel &, const ID &>;
-} // namespace akantu
 
 #define INSTANTIATE_MATERIAL_ONLY(mat_name)                                    \
   template class mat_name<1>;                                                  \
@@ -672,7 +658,7 @@ using MaterialFactory =
 
 #define INSTANTIATE_MATERIAL(id, mat_name)                                     \
   INSTANTIATE_MATERIAL_ONLY(mat_name);                                         \
-  static bool material_is_alocated_##id[[gnu::unused]] =                       \
+  static bool material_is_alocated_##id [[gnu::unused]] =                      \
       MaterialFactory::getInstance().registerAllocator(                        \
           #id, MATERIAL_DEFAULT_PER_DIM_ALLOCATOR(id, mat_name))
 

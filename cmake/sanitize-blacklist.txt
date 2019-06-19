@@ -1,0 +1,8 @@
+src:/home/richart/dev/lsms/akantu-master/third-party/*
+fun:MPI_*
+fun:_ZN7testing8internal12UnitTestImpl12GetTestSuiteEPKcS3_PFvvES5_
+fun:_ZN7testing8internal20StringStreamToStringEPNSt7__cxx1118basic_stringstreamIcSt11char_traitsIcESaIcEEE
+fun:_ZN7testing8internal16BoolFromGTestEnvEPKcb
+fun:_ZN7testing8internalL12FlagToEnvVarB5cxx11EPKc
+fun:testing::internal::*
+fun:_ZN7testing8internal*

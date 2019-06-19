@@ -30,20 +30,22 @@
 
 /* -------------------------------------------------------------------------- */
 #include "ntn_base_contact.hh"
+#include "dof_manager_default.hh"
 #include "dumpable_inline_impl.hh"
 #include "dumper_nodal_field.hh"
 #include "dumper_text.hh"
 #include "element_synchronizer.hh"
 #include "mesh_utils.hh"
+#include "non_linear_solver_lumped.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 // NTNContactSynchElementFilter::NTNContactSynchElementFilter(
-//     NTNBaseContact * contact)
+//     NTNBaseContact & contact)
 //     : contact(contact),
-//       connectivity(contact->getModel().getMesh().getConnectivities()) {
+//       connectivity(contact.getModel().getMesh().getConnectivities()) {
 //   AKANTU_DEBUG_IN();
 
 //   AKANTU_DEBUG_OUT();
@@ -64,7 +66,7 @@ namespace akantu {
 //     UInt nn = this->connectivity(type, ghost_type)(element, n);
 
 //     // if one nodes is in this contact, we need this element
-//     if (this->contact->getNodeIndex(nn) >= 0) {
+//     if (this->contact.getNodeIndex(nn) >= 0) {
 //       need_element = true;
 //       break;
 //     }
@@ -145,9 +147,9 @@ void NTNBaseContact::initParallel() {
   });
 
   this->synch_registry->registerSynchronizer(*(this->synchronizer),
-                                             _gst_cf_nodal);
+                                             SynchronizationTag::_cf_nodal);
   this->synch_registry->registerSynchronizer(*(this->synchronizer),
-                                             _gst_cf_incr);
+                                             SynchronizationTag::_cf_incr);
 
   AKANTU_DEBUG_OUT();
 }
@@ -259,7 +261,7 @@ UInt NTNBaseContact::getNbNodesInContact() const {
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     bool is_local_node = mesh.isLocalOrMasterNode(this->slaves(n));
-    bool is_pbc_slave_node = this->model.isPBCSlaveNode(this->slaves(n));
+    bool is_pbc_slave_node = mesh.isPeriodicSlave(this->slaves(n));
     if (is_local_node && !is_pbc_slave_node && this->is_in_contact(n)) {
       nb_contact++;
     }
@@ -309,19 +311,16 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
 
   const Mesh & mesh = this->model.getMesh();
 
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    Mesh::type_iterator it = mesh.firstType(dim - 1, *gt);
-    Mesh::type_iterator last = mesh.lastType(dim - 1, *gt);
-    for (; it != last; ++it) {
-      UInt nb_elements = mesh.getNbElement(*it, *gt);
-      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(*it);
-      const Array<UInt> & connectivity = mesh.getConnectivity(*it, *gt);
+  for(auto ghost_type : ghost_types) {
+    for (auto & type : mesh.elementTypes(dim - 1, ghost_type)) {
+      UInt nb_elements = mesh.getNbElement(type, ghost_type);
+      UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+      const Array<UInt> & connectivity = mesh.getConnectivity(type, ghost_type);
 
       // get shapes and compute integral
-      const Array<Real> & shapes = boundary_fem.getShapes(*it, *gt);
+      const Array<Real> & shapes = boundary_fem.getShapes(type, ghost_type);
       Array<Real> area(nb_elements, nb_nodes_per_element);
-      boundary_fem.integrate(shapes, area, nb_nodes_per_element, *it, *gt);
+      boundary_fem.integrate(shapes, area, nb_nodes_per_element, type, ghost_type);
 
       if (this->contact_surfaces.size() == 0) {
         AKANTU_DEBUG_WARNING(
@@ -329,17 +328,17 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
             << " You have to define the lumped boundary by yourself.");
       }
 
-      Array<UInt>::const_iterator<UInt> elem_it = (elements)(*it, *gt).begin();
+      Array<UInt>::const_iterator<UInt> elem_it = (elements)(type, ghost_type).begin();
       Array<UInt>::const_iterator<UInt> elem_it_end =
-          (elements)(*it, *gt).end();
+          (elements)(type, ghost_type).end();
       // loop over contact nodes
       for (; elem_it != elem_it_end; ++elem_it) {
         for (UInt q = 0; q < nb_nodes_per_element; ++q) {
           UInt node = connectivity(*elem_it, q);
           UInt node_index = nodes.find(node);
-          AKANTU_DEBUG_ASSERT(node_index != UInt(-1),
-                              "Could not find node " << node
-                                                     << " in the array!");
+          AKANTU_DEBUG_ASSERT(node_index != UInt(-1), "Could not find node "
+                                                          << node
+                                                          << " in the array!");
           Real area_to_add = area(*elem_it, q);
           boundary(node_index) += area_to_add;
         }
@@ -362,14 +361,19 @@ void NTNBaseContact::computeContactPressure() {
                       "Cannot compute contact pressure if no time step is set");
 
   // synchronize data
-  this->synch_registry->synchronize(_gst_cf_nodal);
+  this->synch_registry->synchronize(SynchronizationTag::_cf_nodal);
+
+  auto && dof_manager =
+      dynamic_cast<DOFManagerDefault &>(model.getDOFManager());
+  const auto & b = dof_manager.getResidual();
+  Array<Real> acceleration(b.size(), dim);
+  const auto & blocked_dofs = dof_manager.getGlobalBlockedDOFs();
+  const auto & A = dof_manager.getLumpedMatrix("M");
 
   // pre-compute the acceleration
   // (not increment acceleration, because residual is still Kf)
-  Array<Real> acceleration(this->model.getMesh().getNbNodes(), dim, 0.);
-  this->model.solveLumped(acceleration, this->model.getMass(),
-                          this->model.getInternalForce(),
-                          this->model.getBlockedDOFs(), this->model.getF_M2A());
+  NonLinearSolverLumped::solveLumped(A, acceleration, b, blocked_dofs,
+                                     this->model.getF_M2A());
 
   // compute relative normal fields of displacement, velocity and acceleration
   Array<Real> r_disp(0, 1);

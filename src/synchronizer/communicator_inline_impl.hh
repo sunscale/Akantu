@@ -58,12 +58,18 @@ inline void Communicator::receiveAnyNumber(
     MsgProcessor && processor, Int tag) const {
   CommunicationRequest barrier_request;
   bool got_all = false, are_send_finished = false;
+
+  AKANTU_DEBUG_INFO("Sending " << send_requests.size()
+                               << " messages and checking for receives TAG["
+                               << tag << "]");
+
   while (not got_all) {
     bool are_receives_ready = true;
     while (are_receives_ready) {
       CommunicationStatus status;
       are_receives_ready = asyncProbe<T>(_any_source, tag, status);
       if (are_receives_ready) {
+        AKANTU_DEBUG_INFO("Receiving message from " << status.getSource());
         Array<T> receive_buffer(status.size(), 1);
         receive(receive_buffer, status.getSource(), tag);
         std::forward<MsgProcessor>(processor)(status.getSource(),
@@ -73,14 +79,17 @@ inline void Communicator::receiveAnyNumber(
 
     if (not are_send_finished) {
       are_send_finished = testAll(send_requests);
-      if (are_send_finished)
+      if (are_send_finished) {
+        AKANTU_DEBUG_INFO("All messages send, checking for more receives");
         barrier_request = asyncBarrier();
+      }
     }
 
     if (are_send_finished) {
       got_all = test(barrier_request);
     }
   }
+  AKANTU_DEBUG_INFO("Finished receiving");
 }
 } // namespace akantu
 

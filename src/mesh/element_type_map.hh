@@ -131,6 +131,8 @@ public:
   /*! iterator allows to iterate over type-data pairs of the map. The interface
    *  expects the SupportType to be ElementType. */
   using DataMap = std::map<SupportType, Stored>;
+
+  /// helper class to use in range for constructions
   class type_iterator
       : private std::iterator<std::forward_iterator_tag, const SupportType> {
   public:
@@ -181,7 +183,7 @@ public:
         : ElementTypesIteratorHelper(
               container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
               OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
-              OPTIONAL_NAMED_ARG(element_kind, _ek_regular)) {}
+              OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined)) {}
 
     ElementTypesIteratorHelper(const ElementTypesIteratorHelper &) = default;
     ElementTypesIteratorHelper &
@@ -189,10 +191,8 @@ public:
     ElementTypesIteratorHelper &
     operator=(ElementTypesIteratorHelper &&) = default;
 
-    iterator begin() {
-      return container.get().firstType(dim, ghost_type, kind);
-    }
-    iterator end() { return container.get().lastType(dim, ghost_type, kind); }
+    iterator begin();
+    iterator end();
 
   private:
     std::reference_wrapper<const Container> container;
@@ -205,7 +205,7 @@ private:
   ElementTypesIteratorHelper
   elementTypesImpl(UInt dim = _all_dimensions,
                    GhostType ghost_type = _not_ghost,
-                   ElementKind kind = _ek_regular) const;
+                   ElementKind kind = _ek_not_defined) const;
 
   template <typename... pack>
   ElementTypesIteratorHelper
@@ -233,7 +233,6 @@ public:
     return elementTypesImpl(std::forward<decltype(_pack)>(_pack)...);
   }
 
-public:
   /*! Get an iterator to the beginning of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when
@@ -245,9 +244,9 @@ public:
    *         aka_common.hh), by default all kinds are considered
    *  @return an iterator to the first stored data matching the filters
    *          or an iterator to the end of the map if none match*/
-  inline type_iterator firstType(UInt dim = _all_dimensions,
-                                 GhostType ghost_type = _not_ghost,
-                                 ElementKind kind = _ek_not_defined) const;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  firstType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+            ElementKind kind = _ek_not_defined) const;
   /*! Get an iterator to the end of a subset datamap. This method expects
    *  the SupportType to be ElementType.
    *  @param dim optional: iterate over data of dimension dim (e.g. when
@@ -259,11 +258,10 @@ public:
    *         aka_common.hh), by default all kinds are considered
    *  @return an iterator to the last stored data matching the filters
    *          or an iterator to the end of the map if none match */
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                GhostType ghost_type = _not_ghost,
-                                ElementKind kind = _ek_not_defined) const;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  lastType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+           ElementKind kind = _ek_not_defined) const;
 
-protected:
   /*! Direct access to the underlying data map. for internal use by daughter
    *  classes only
    *  @param ghost_type whether to return the data map or the ghost_data map
@@ -300,7 +298,7 @@ public:
 
   /// standard assigment (copy) operator
   void operator=(const ElementTypeMapArray &) = delete;
-  ElementTypeMapArray(const ElementTypeMapArray &) = delete;
+  ElementTypeMapArray(const ElementTypeMapArray &);
 
   /// explicit copy
   void copy(const ElementTypeMapArray & other);
@@ -429,8 +427,29 @@ public:
   /// get the name of the internal field
   AKANTU_GET_MACRO(Name, name, ID);
 
-  /// name of the elment type map: e.g. connectivity, grad_u
+  /**
+   * get the size of the ElementTypeMapArray<T>
+   * @param[in] _spatial_dimension the dimension to consider (default:
+   * _all_dimensions)
+   * @param[in] _ghost_type  (default: _not_ghost)
+   * @param[in] _element_kind (default: _ek_not_defined)
+   * @param[in] _all_ghost_types (default: false)
+   **/
+  template <typename... pack>
+  UInt size(pack &&... _pack) const;
+  
+  bool isNodal() const { return is_nodal; }
+  void isNodal(bool is_nodal) { this->is_nodal = is_nodal; }
+
+private:
+  UInt sizeImpl(UInt spatial_dimension, const GhostType & ghost_type, const ElementKind & kind) const;
+  
+protected:
+  /// name of the element type map: e.g. connectivity, grad_u
   ID name;
+
+  /// Is the data stored by node of the element
+  bool is_nodal{false};
 };
 
 /// to store data Array<Real> by element type

@@ -59,9 +59,6 @@ Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
 Model::~Model() = default;
 
 /* -------------------------------------------------------------------------- */
-// void Model::setParser(Parser & parser) { this->parser = &parser; }
-
-/* -------------------------------------------------------------------------- */
 void Model::initFullImpl(const ModelOptions & options) {
   AKANTU_DEBUG_IN();
 
@@ -72,8 +69,6 @@ void Model::initFullImpl(const ModelOptions & options) {
   initModel();
 
   initFEEngineBoundary();
-
-  //if(mesh.isPeriodic()) this->initPBC();
 
   AKANTU_DEBUG_OUT();
 }
@@ -101,34 +96,6 @@ void Model::initNewSolver(const AnalysisMethod & method) {
 }
 
 /* -------------------------------------------------------------------------- */
-// void Model::initPBC() {
-//   auto it = pbc_pair.begin();
-//   auto end = pbc_pair.end();
-
-//  is_pbc_slave_node.resize(mesh.getNbNodes());
-//#ifndef AKANTU_NDEBUG
-//  auto coord_it = mesh.getNodes().begin(this->spatial_dimension);
-//#endif
-
-//   while (it != end) {
-//     UInt i1 = (*it).first;
-
-//     is_pbc_slave_node(i1) = true;
-
-// #ifndef AKANTU_NDEBUG
-//     UInt i2 = (*it).second;
-//     UInt slave = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i1) : i1;
-//     UInt master = mesh.isDistributed() ? mesh.getGlobalNodesIds()(i2) : i2;
-
-//     AKANTU_DEBUG_INFO("pairing " << slave << " (" << Vector<Real>(coord_it[i1])
-//                                  << ") with " << master << " ("
-//                                  << Vector<Real>(coord_it[i2]) << ")");
-// #endif
-//     ++it;
-//   }
-// }
-
-/* -------------------------------------------------------------------------- */
 void Model::initFEEngineBoundary() {
   FEEngine & fem_boundary = getFEEngineBoundary();
   fem_boundary.initShapeFunctions(_not_ghost);
@@ -153,19 +120,15 @@ void Model::dumpGroup(const std::string & group_name,
 
 /* -------------------------------------------------------------------------- */
 void Model::dumpGroup() {
-  auto bit = mesh.element_group_begin();
-  auto bend = mesh.element_group_end();
-  for (; bit != bend; ++bit) {
-    bit->second->dump();
+  for (auto & group : mesh.iterateElementGroups()) {
+    group.dump();
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::setGroupDirectory(const std::string & directory) {
-  auto bit = mesh.element_group_begin();
-  auto bend = mesh.element_group_end();
-  for (; bit != bend; ++bit) {
-    bit->second->setDirectory(directory);
+  for (auto & group : mesh.iterateElementGroups()) {
+    group.setDirectory(directory);
   }
 }
 
@@ -193,7 +156,7 @@ DumperIOHelper & Model::getGroupDumper(const std::string & group_name) {
 // DUMPER stuff
 /* -------------------------------------------------------------------------- */
 void Model::addDumpGroupFieldToDumper(const std::string & field_id,
-                                      dumper::Field * field,
+                                      std::shared_ptr<dumper::Field> field,
                                       DumperIOHelper & dumper) {
 #ifdef AKANTU_USE_IOHELPER
   dumper.registerField(field_id, field);
@@ -314,7 +277,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       bool padding_flag) {
 
 #ifdef AKANTU_USE_IOHELPER
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
 
   if (!field)
     field = this->createNodalFieldReal(field_id, group_name, padding_flag);

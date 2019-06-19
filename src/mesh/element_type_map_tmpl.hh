@@ -136,9 +136,7 @@ ElementTypeMap<Stored, SupportType>::getData(GhostType ghost_type) const {
 template <class Stored, typename SupportType>
 void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream,
                                                     int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "ElementTypeMap<" << debug::demangle(typeid(Stored).name())
          << "> [" << std::endl;
@@ -169,13 +167,21 @@ void ElementTypeMapArray<T, SupportType>::copy(
     const ElementTypeMapArray & other) {
   for (auto ghost_type : ghost_types) {
     for (auto type :
-         this->elementTypes(_all_dimensions, ghost_types, _ek_not_defined)) {
+         this->elementTypes(_all_dimensions, ghost_type, _ek_not_defined)) {
       const auto & array_to_copy = other(type, ghost_type);
       auto & array =
           this->alloc(0, array_to_copy.getNbComponent(), type, ghost_type);
       array.copy(array_to_copy);
     }
   }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T, typename SupportType>
+ElementTypeMapArray<T, SupportType>::ElementTypeMapArray(
+    const ElementTypeMapArray & other)
+    : parent(), Memory(other.id + "_copy", other.memory_id), name(other.name + "_copy") {
+  this->copy(other);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -192,12 +198,9 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
   auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end()) {
-    std::stringstream sstr;
-    sstr << this->id << ":" << type << ghost_id;
-    tmp = &(Memory::alloc<T>(sstr.str(), size, nb_component, default_value));
-    std::stringstream sstrg;
-    sstrg << ghost_type;
-    // tmp->setTag(sstrg.str());
+    auto id = this->id + ":" + std::to_string(type) + ghost_id;
+    tmp = &(Memory::alloc<T>(id, size, nb_component, default_value));
+
     this->getData(ghost_type)[type] = tmp;
   } else {
     AKANTU_DEBUG_INFO(
@@ -347,9 +350,7 @@ inline void ElementTypeMapArray<T, SupportType>::onElementsRemoved(
 template <typename T, typename SupportType>
 void ElementTypeMapArray<T, SupportType>::printself(std::ostream & stream,
                                                     int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "ElementTypeMapArray<" << debug::demangle(typeid(T).name())
          << "> [" << std::endl;
@@ -414,7 +415,7 @@ inline typename ElementTypeMap<Stored, SupportType>::type_iterator::reference
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator &
-    ElementTypeMap<Stored, SupportType>::type_iterator::operator++() {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator++() {
   ++list_begin;
   while ((list_begin != list_end) &&
          (((dim != _all_dimensions) &&
@@ -428,7 +429,7 @@ inline typename ElementTypeMap<Stored, SupportType>::type_iterator &
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 typename ElementTypeMap<Stored, SupportType>::type_iterator
-    ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
   type_iterator tmp(*this);
   operator++();
   return tmp;
@@ -450,30 +451,10 @@ operator!=(const type_iterator & other) const {
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypesImpl(UInt dim,
-                                                      GhostType ghost_type,
-                                                      ElementKind kind) const {
-  return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Stored, typename SupportType>
-template <typename... pack>
-typename ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper
-ElementTypeMap<Stored, SupportType>::elementTypesImpl(
-    const use_named_args_t & unused, pack &&... _pack) const {
-  return ElementTypesIteratorHelper(*this, unused, _pack...);
-}
-
-/* -------------------------------------------------------------------------- */
-template <class Stored, typename SupportType>
-inline typename ElementTypeMap<Stored, SupportType>::type_iterator
-ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
-                                               ElementKind kind) const {
-  typename DataMap::const_iterator b, e;
-  b = getData(ghost_type).begin();
-  e = getData(ghost_type).end();
+auto ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper::begin()
+    -> iterator {
+  auto b = container.get().getData(ghost_type).begin();
+  auto e = container.get().getData(ghost_type).end();
 
   // loop until the first valid type
   while ((b != e) &&
@@ -482,15 +463,44 @@ ElementTypeMap<Stored, SupportType>::firstType(UInt dim, GhostType ghost_type,
           ((kind != _ek_not_defined) && (kind != Mesh::getKind(b->first)))))
     ++b;
 
-  return typename ElementTypeMap<Stored, SupportType>::type_iterator(b, e, dim,
-                                                                     kind);
+  return iterator(b, e, dim, kind);
+}
+
+template <class Stored, typename SupportType>
+auto ElementTypeMap<Stored, SupportType>::ElementTypesIteratorHelper::end()
+    -> iterator {
+  auto e = container.get().getData(ghost_type).end();
+  return iterator(e, e, dim, kind);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline typename ElementTypeMap<Stored, SupportType>::type_iterator
-ElementTypeMap<Stored, SupportType>::lastType(UInt dim, GhostType ghost_type,
-                                              ElementKind kind) const {
+auto ElementTypeMap<Stored, SupportType>::elementTypesImpl(
+    UInt dim, GhostType ghost_type, ElementKind kind) const
+    -> ElementTypesIteratorHelper {
+  return ElementTypesIteratorHelper(*this, dim, ghost_type, kind);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+template <typename... pack>
+auto ElementTypeMap<Stored, SupportType>::elementTypesImpl(
+    const use_named_args_t & unused, pack &&... _pack) const
+    -> ElementTypesIteratorHelper {
+  return ElementTypesIteratorHelper(*this, unused, _pack...);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+inline auto ElementTypeMap<Stored, SupportType>::firstType(
+    UInt dim, GhostType ghost_type, ElementKind kind) const -> type_iterator {
+  return elementTypes(dim, ghost_type, kind).begin();
+}
+
+/* -------------------------------------------------------------------------- */
+template <class Stored, typename SupportType>
+inline auto ElementTypeMap<Stored, SupportType>::lastType(
+    UInt dim, GhostType ghost_type, ElementKind kind) const -> type_iterator {
   typename DataMap::const_iterator e;
   e = getData(ghost_type).end();
   return typename ElementTypeMap<Stored, SupportType>::type_iterator(e, e, dim,
@@ -514,10 +524,10 @@ protected:
   using CompFunc = std::function<UInt(const ElementType &, const GhostType &)>;
 
 public:
-  ElementTypeMapArrayInitializer(const CompFunc & comp_func,
-                                 UInt spatial_dimension = _all_dimensions,
-                                 const GhostType & ghost_type = _not_ghost,
-                                 const ElementKind & element_kind = _ek_regular)
+  ElementTypeMapArrayInitializer(
+      const CompFunc & comp_func, UInt spatial_dimension = _all_dimensions,
+      const GhostType & ghost_type = _not_ghost,
+      const ElementKind & element_kind = _ek_not_defined)
       : comp_func(comp_func), spatial_dimension(spatial_dimension),
         ghost_type(ghost_type), element_kind(element_kind) {}
 
@@ -526,6 +536,8 @@ public:
   virtual UInt nbComponent(const ElementType & type) const {
     return comp_func(type, ghostType());
   }
+
+  virtual bool isNodal() const { return false; }
 
 protected:
   CompFunc comp_func;
@@ -544,7 +556,7 @@ public:
       const Mesh & mesh, UInt nb_component = 1,
       UInt spatial_dimension = _all_dimensions,
       const GhostType & ghost_type = _not_ghost,
-      const ElementKind & element_kind = _ek_regular,
+      const ElementKind & element_kind = _ek_not_defined,
       bool with_nb_element = false, bool with_nb_nodes_per_element = false)
       : MeshElementTypeMapArrayInitializer(
             mesh,
@@ -558,7 +570,7 @@ public:
       const Mesh & mesh, const CompFunc & comp_func,
       UInt spatial_dimension = _all_dimensions,
       const GhostType & ghost_type = _not_ghost,
-      const ElementKind & element_kind = _ek_regular,
+      const ElementKind & element_kind = _ek_not_defined,
       bool with_nb_element = false, bool with_nb_nodes_per_element = false)
       : ElementTypeMapArrayInitializer(comp_func, spatial_dimension, ghost_type,
                                        element_kind),
@@ -585,6 +597,8 @@ public:
     return res;
   }
 
+  bool isNodal() const override { return with_nb_nodes_per_element; }
+
 protected:
   const Mesh & mesh;
   bool with_nb_element;
@@ -599,14 +613,14 @@ public:
       const FEEngine & fe_engine, UInt nb_component = 1,
       UInt spatial_dimension = _all_dimensions,
       const GhostType & ghost_type = _not_ghost,
-      const ElementKind & element_kind = _ek_regular);
+      const ElementKind & element_kind = _ek_not_defined);
 
   FEEngineElementTypeMapArrayInitializer(
       const FEEngine & fe_engine,
       const ElementTypeMapArrayInitializer::CompFunc & nb_component,
       UInt spatial_dimension = _all_dimensions,
       const GhostType & ghost_type = _not_ghost,
-      const ElementKind & element_kind = _ek_regular);
+      const ElementKind & element_kind = _ek_not_defined);
 
   UInt size(const ElementType & type) const override;
 
@@ -625,6 +639,7 @@ template <class Func>
 void ElementTypeMapArray<T, SupportType>::initialize(const Func & f,
                                                      const T & default_value,
                                                      bool do_not_default) {
+  this->is_nodal = f.isNodal();
   auto ghost_type = f.ghostType();
   for (auto & type : f.elementTypes()) {
     if (not this->exists(type, ghost_type))
@@ -678,7 +693,7 @@ void ElementTypeMapArray<T, SupportType>::initialize(const Mesh & mesh,
     auto functor = MeshElementTypeMapArrayInitializer(
         mesh, OPTIONAL_NAMED_ARG(nb_component, 1),
         OPTIONAL_NAMED_ARG(spatial_dimension, mesh.getSpatialDimension()),
-        ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_regular),
+        ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined),
         OPTIONAL_NAMED_ARG(with_nb_element, false),
         OPTIONAL_NAMED_ARG(with_nb_nodes_per_element, false));
 
@@ -716,7 +731,7 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
     auto functor = FEEngineElementTypeMapArrayInitializer(
         fe_engine, OPTIONAL_NAMED_ARG(nb_component, 1),
         OPTIONAL_NAMED_ARG(spatial_dimension, UInt(-2)), ghost_type,
-        OPTIONAL_NAMED_ARG(element_kind, _ek_regular));
+        OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined));
 
     this->initialize(functor, OPTIONAL_NAMED_ARG(default_value, T()),
                      OPTIONAL_NAMED_ARG(do_not_default, false));
@@ -737,6 +752,37 @@ inline const T & ElementTypeMapArray<T, SupportType>::
 operator()(const Element & element, UInt component) const {
   return this->operator()(element.type, element.ghost_type)(element.element,
                                                             component);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+UInt ElementTypeMapArray<T, SupportType>::sizeImpl(
+    UInt spatial_dimension, const GhostType & ghost_type,
+    const ElementKind & kind) const {
+  UInt size = 0;
+  for (auto && type : this->elementTypes(spatial_dimension, ghost_type, kind)) {
+    size += this->operator()(type, ghost_type).size();
+  }
+  return size;
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+template <typename... pack>
+UInt ElementTypeMapArray<T, SupportType>::size(pack &&... _pack) const {
+  UInt size = 0;
+  bool all_ghost_types = OPTIONAL_NAMED_ARG(all_ghost_types, true);
+  GhostType requested_ghost_type = OPTIONAL_NAMED_ARG(ghost_type, _not_ghost);
+
+  for (auto ghost_type : ghost_types) {
+    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+      continue;
+
+    size +=
+        sizeImpl(OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
+                 ghost_type, OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined));
+  }
+  return size;
 }
 
 } // namespace akantu

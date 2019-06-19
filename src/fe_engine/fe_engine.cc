@@ -73,9 +73,7 @@ FEEngine::elementTypes(UInt dim, GhostType ghost_type, ElementKind kind) const {
 
 /* -------------------------------------------------------------------------- */
 void FEEngine::printself(std::ostream & stream, int indent) const {
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "FEEngine [" << std::endl;
   stream << space << " + id                : " << id << std::endl;

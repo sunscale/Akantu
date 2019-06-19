@@ -33,7 +33,8 @@
 /* -------------------------------------------------------------------------- */
 #include "solver_petsc.hh"
 #include "dof_manager_petsc.hh"
-#include "mpi_type_wrapper.hh"
+#include "mpi_communicator_data.hh"
+#include "solver_vector_petsc.hh"
 #include "sparse_matrix_petsc.hh"
 /* -------------------------------------------------------------------------- */
 #include <petscksp.h>
@@ -48,57 +49,48 @@ SolverPETSc::SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
     : SparseSolver(dof_manager, matrix_id, id, memory_id),
       dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)),
       is_petsc_data_initialized(false) {
-  PetscErrorCode ierr;
+  auto mpi_comm = dof_manager.getMPIComm();
 
   /// create a solver context
-  ierr = KSPCreate(PETSC_COMM_WORLD, &this->ksp);
-  CHKERRXX(ierr);
+  PETSc_call(KSPCreate, mpi_comm, &this->ksp);
 }
 
 /* -------------------------------------------------------------------------- */
 SolverPETSc::~SolverPETSc() {
   AKANTU_DEBUG_IN();
 
-  this->destroyInternalData();
+  if (ksp)
+    PETSc_call(KSPDestroy, &ksp);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverPETSc::destroyInternalData() {
-  AKANTU_DEBUG_IN();
+void SolverPETSc::setOperators() {
+  // set the matrix that defines the linear system and the matrix for
+// preconditioning (here they are the same)
+#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
+  PETSc_call(KSPSetOperators, ksp, this->matrix.getMat(),
+             this->matrix.getMat());
+#else
+  PETSc_call(KSPSetOperators, ksp, this->matrix.getMat(), this->matrix.getMat(),
+             SAME_NONZERO_PATTERN);
+#endif
 
-  if (this->is_petsc_data_initialized) {
-    PetscErrorCode ierr;
-    ierr = KSPDestroy(&(this->ksp));
-    CHKERRXX(ierr);
-    this->is_petsc_data_initialized = false;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void SolverPETSc::initialize() {
-  AKANTU_DEBUG_IN();
-
-  this->is_petsc_data_initialized = true;
+  // If this is not called the solution vector is zeroed in the call to
+  // KSPSolve().
+  PETSc_call(KSPSetInitialGuessNonzero, ksp, PETSC_TRUE);
+  PETSc_call(KSPSetFromOptions, ksp);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 void SolverPETSc::solve() {
-  AKANTU_DEBUG_IN();
+  Vec & rhs(this->dof_manager.getResidual());
+  Vec & solution(this->dof_manager.getSolution());
 
-  Vec & rhs = this->dof_manager.getResidual();
-  Vec & solution = this->dof_manager.getGlobalSolution();
-
-  PetscErrorCode ierr;
-  ierr = KSPSolve(this->ksp, rhs, solution);
-  CHKERRXX(ierr);
-
-  AKANTU_DEBUG_OUT();
+  PETSc_call(KSPSolve, ksp, rhs, solution);
 }
 
 // /* --------------------------------------------------------------------------
@@ -136,34 +128,11 @@ void SolverPETSc::solve() {
 //       }
 //     }
 //   }
-//   synch_registry->synchronize(_gst_solver_solution);
+//   synch_registry->synchronize(SynchronizationTag::_solver_solution);
 
 //   AKANTU_DEBUG_OUT();
 // }
 
-/* -------------------------------------------------------------------------- */
-void SolverPETSc::setOperators() {
-  AKANTU_DEBUG_IN();
-  PetscErrorCode ierr;
-/// set the matrix that defines the linear system and the matrix for
-/// preconditioning (here they are the same)
-#if PETSC_VERSION_MAJOR >= 3 && PETSC_VERSION_MINOR >= 5
-  ierr = KSPSetOperators(this->ksp, this->matrix.getPETScMat(),
-                         this->matrix.getPETScMat());
-  CHKERRXX(ierr);
-#else
-  ierr = KSPSetOperators(this->ksp, this->matrix.getPETScMat(),
-                         this->matrix.getPETScMat(), SAME_NONZERO_PATTERN);
-  CHKERRXX(ierr);
-#endif
-
-  /// If this is not called the solution vector is zeroed in the call to
-  /// KSPSolve().
-  ierr = KSPSetInitialGuessNonzero(this->ksp, PETSC_TRUE);
-  KSPSetFromOptions(this->ksp);
-
-  AKANTU_DEBUG_OUT();
-}
 /* -------------------------------------------------------------------------- */
 // void finalize_petsc() {
 
@@ -1103,4 +1072,4 @@ void SolverPETSc::setOperators() {
 // //  AKANTU_DEBUG_OUT();
 // //}
 
-} // akantu
+} // namespace akantu

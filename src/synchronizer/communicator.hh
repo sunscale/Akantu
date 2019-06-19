@@ -121,7 +121,7 @@ public:
   template <typename Tensor>
   inline void
   receive(Tensor & values, Int sender, Int tag,
-          std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+          std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     return this->receiveImpl(values.storage(), values.size(), sender, tag);
   }
 
@@ -165,7 +165,7 @@ public:
   inline void
   send(const Tensor & values, Int receiver, Int tag,
        const CommunicationMode & mode = CommunicationMode::_auto,
-       std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+       std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     return this->sendImpl(values.storage(), values.size(), receiver, tag, mode);
   }
 
@@ -205,7 +205,7 @@ public:
   inline CommunicationRequest
   asyncSend(const Tensor & values, Int receiver, Int tag,
             const CommunicationMode & mode = CommunicationMode::_auto,
-            std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+            std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     return this->asyncSendImpl(values.storage(), values.size(), receiver, tag,
                                mode);
   }
@@ -239,7 +239,7 @@ public:
   }
 
   template <typename Tensor,
-            typename = std::enable_if_t<is_tensor<Tensor>::value>>
+            typename = std::enable_if_t<aka::is_tensor<Tensor>::value>>
   inline CommunicationRequest asyncReceive(Tensor & values, Int sender,
                                            Int tag) const {
     return this->asyncReceiveImpl(values.storage(), values.size(), sender, tag);
@@ -255,24 +255,79 @@ public:
   /* Collectives                                                              */
   /* ------------------------------------------------------------------------ */
   template <typename T>
-  inline void allReduce(Array<T> & values,
-                        const SynchronizerOperation & op) const {
+  inline void
+  allReduce(Array<T> & values,
+            SynchronizerOperation op = SynchronizerOperation::_sum) const {
     this->allReduceImpl(values.storage(),
                         values.size() * values.getNbComponent(), op);
   }
 
   template <typename Tensor>
   inline void
-  allReduce(Tensor & values, const SynchronizerOperation & op,
-            std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+  allReduce(Tensor & values,
+            SynchronizerOperation op = SynchronizerOperation::_sum,
+            std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     this->allReduceImpl(values.storage(), values.size(), op);
   }
 
   template <typename T>
   inline void
-  allReduce(T & values, const SynchronizerOperation & op,
+  allReduce(T & values, SynchronizerOperation op = SynchronizerOperation::_sum,
             std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
     this->allReduceImpl(&values, 1, op);
+  }
+
+  template <typename T>
+  inline void
+  scan(Array<T> & values,
+       SynchronizerOperation op = SynchronizerOperation::_sum) const {
+    this->scanImpl(values.storage(), values.storage(),
+                   values.size() * values.getNbComponent(), op);
+  }
+
+  template <typename Tensor>
+  inline void
+  scan(Tensor & values, SynchronizerOperation op,
+       std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
+    this->scanImpl(values.storage(), values.storage(), values.size(), op);
+  }
+
+  template <typename T>
+  inline void
+  scan(T & values, SynchronizerOperation op = SynchronizerOperation::_sum,
+       std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
+    this->scanImpl(&values, &values, 1, op);
+  }
+
+  template <typename T>
+  inline void
+  exclusiveScan(Array<T> & values,
+                SynchronizerOperation op = SynchronizerOperation::_sum) const {
+    this->exclusiveScanImpl(values.storage(), values.storage(),
+                            values.size() * values.getNbComponent(), op);
+  }
+
+  template <typename Tensor>
+  inline void exclusiveScan(
+      Tensor & values, SynchronizerOperation op = SynchronizerOperation::_sum,
+      std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
+    this->exclusiveScanImpl(values.storage(), values.storage(), values.size(),
+                            op);
+  }
+
+  template <typename T>
+  inline void exclusiveScan(
+      T & values, SynchronizerOperation op = SynchronizerOperation::_sum,
+      std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
+    this->exclusiveScanImpl(&values, &values, 1, op);
+  }
+
+  template <typename T>
+  inline void exclusiveScan(
+      T & values, T & result,
+      SynchronizerOperation op = SynchronizerOperation::_sum,
+      std::enable_if_t<std::is_arithmetic<T>::value> * = nullptr) const {
+    this->exclusiveScanImpl(&values, &result, 1, op);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -283,7 +338,7 @@ public:
   }
 
   template <typename Tensor,
-            typename = std::enable_if_t<is_tensor<Tensor>::value>>
+            typename = std::enable_if_t<aka::is_tensor<Tensor>::value>>
   inline void allGather(Tensor & values) const {
     AKANTU_DEBUG_ASSERT(values.size() / UInt(psize) > 0,
                         "The vector size is not correct");
@@ -298,7 +353,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
-  inline void reduce(Array<T> & values, const SynchronizerOperation & op,
+  inline void reduce(Array<T> & values, SynchronizerOperation op,
                      int root = 0) const {
     this->reduceImpl(values.storage(), values.size() * values.getNbComponent(),
                      op, root);
@@ -308,7 +363,7 @@ public:
   template <typename Tensor>
   inline void
   gather(Tensor & values, int root = 0,
-         std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+         std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     this->gatherImpl(values.storage(), values.getNbComponent(), root);
   }
   template <typename T>
@@ -321,7 +376,7 @@ public:
   template <typename Tensor, typename T>
   inline void
   gather(Tensor & values, Array<T> & gathered,
-         std::enable_if_t<is_tensor<Tensor>::value> * = nullptr) const {
+         std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     AKANTU_DEBUG_ASSERT(values.size() == gathered.getNbComponent(),
                         "The array size is not correct");
     gathered.resize(psize);
@@ -349,11 +404,29 @@ public:
     this->broadcastImpl(values.storage(),
                         values.size() * values.getNbComponent(), root);
   }
-  template <bool is_static>
-  inline void broadcast(CommunicationBufferTemplated<is_static> & values,
-                        int root = 0) const {
-    this->broadcastImpl(values.storage(), values.size(), root);
+
+  template <typename T>
+  inline void broadcast(std::vector<T> & values, int root = 0) const {
+    this->broadcastImpl(values.data(), values.size(), root);
   }
+
+  inline void broadcast(CommunicationBufferTemplated<true> & buffer,
+                        int root = 0) const {
+    this->broadcastImpl(buffer.storage(), buffer.size(), root);
+  }
+
+  inline void broadcast(CommunicationBufferTemplated<false> & buffer,
+                        int root = 0) const {
+    UInt buffer_size = buffer.size();
+    this->broadcastImpl(&buffer_size, 1, root);
+    if (prank != root)
+      buffer.reserve(buffer_size);
+
+    if (buffer_size == 0)
+      return;
+    this->broadcastImpl(buffer.storage(), buffer.size(), root);
+  }
+
   template <typename T> inline void broadcast(T & values, int root = 0) const {
     this->broadcastImpl(&values, 1, root);
   }
@@ -398,14 +471,21 @@ protected:
                                         Int tag) const;
 
   template <typename T>
-  void allReduceImpl(T * values, int nb_values,
-                     const SynchronizerOperation & op) const;
+  void allReduceImpl(T * values, int nb_values, SynchronizerOperation op) const;
+
+  template <typename T>
+  void scanImpl(T * values, T * results, int nb_values,
+                SynchronizerOperation op) const;
+
+  template <typename T>
+  void exclusiveScanImpl(T * values, T * results, int nb_values,
+                         SynchronizerOperation op) const;
 
   template <typename T> void allGatherImpl(T * values, int nb_values) const;
   template <typename T> void allGatherVImpl(T * values, int * nb_values) const;
 
   template <typename T>
-  void reduceImpl(T * values, int nb_values, const SynchronizerOperation & op,
+  void reduceImpl(T * values, int nb_values, SynchronizerOperation op,
                   int root = 0) const;
   template <typename T>
   void gatherImpl(T * values, int nb_values, int root = 0) const;

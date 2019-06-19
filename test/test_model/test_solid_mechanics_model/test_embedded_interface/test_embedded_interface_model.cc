@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
   reinforcement_mesh.getNodes().copy(nodes_vec);
   reinforcement_mesh.addConnectivityType(_segment_2);
   reinforcement_mesh.getConnectivity(_segment_2).copy(conn_vec);
-  reinforcement_mesh.registerElementalData<std::string>("physical_names")
+  reinforcement_mesh.getElementalData<std::string>("physical_names")
       .alloc(1, 1, _segment_2);
   reinforcement_mesh.getData<std::string>("physical_names")(_segment_2)
       .copy(names_vec);
@@ -72,7 +72,7 @@ int main(int argc, char * argv[]) {
   model.initFull(_analysis_method = _static);
 
   Array<Real> & nodes = mesh.getNodes();
-  Array<Real> & forces = model.getForce();
+  Array<Real> & forces = model.getExternalForce();
   Array<bool> & bound = model.getBlockedDOFs();
 
   forces(2, 0) = -250;

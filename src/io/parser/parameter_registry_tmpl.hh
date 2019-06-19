@@ -57,15 +57,15 @@ namespace debug {
   public:
     ParameterUnexistingException(const std::string & name,
                                  const ParameterRegistry & registery)
-        : ParameterException(
-              name, "Parameter " + name + " does not exists in this scope") {
+        : ParameterException(name, "Parameter " + name +
+                                       " does not exists in this scope") {
       auto && params = registery.listParameters();
       this->_info =
           std::accumulate(params.begin(), params.end(),
                           this->_info + "\n Possible parameters are: ",
                           [](auto && str, auto && param) {
                             static auto first = true;
-                            auto && ret = str + (first ? " " : ", ") + param;
+                            auto ret = str + (first ? " " : ", ") + param;
                             first = false;
                             return ret;
                           });
@@ -84,18 +84,17 @@ namespace debug {
     ParameterWrongTypeException(const std::string & name,
                                 const std::type_info & wrong_type,
                                 const std::type_info & type)
-        : ParameterException(name,
-                             "Parameter " + name +
-                                 " type error, cannot convert " +
-                                 debug::demangle(type.name()) + " to " +
-                                 debug::demangle(wrong_type.name())) {}
+        : ParameterException(name, "Parameter " + name +
+                                       " type error, cannot convert " +
+                                       debug::demangle(type.name()) + " to " +
+                                       debug::demangle(wrong_type.name())) {}
   };
 } // namespace debug
 /* -------------------------------------------------------------------------- */
 template <typename T>
 const ParameterTyped<T> & Parameter::getParameterTyped() const {
   try {
-    const auto & tmp = dynamic_cast<const ParameterTyped<T> &>(*this);
+    const auto & tmp = aka::as_type<ParameterTyped<T>>(*this);
     return tmp;
   } catch (std::bad_cast &) {
     AKANTU_CUSTOM_EXCEPTION(
@@ -106,7 +105,7 @@ const ParameterTyped<T> & Parameter::getParameterTyped() const {
 /* -------------------------------------------------------------------------- */
 template <typename T> ParameterTyped<T> & Parameter::getParameterTyped() {
   try {
-    auto & tmp = dynamic_cast<ParameterTyped<T> &>(*this);
+    auto & tmp = aka::as_type<ParameterTyped<T>>(*this);
     return tmp;
   } catch (std::bad_cast &) {
     AKANTU_CUSTOM_EXCEPTION(
@@ -344,6 +343,27 @@ template <typename T> T & ParameterRegistry::get_(const std::string & name) {
 
 /* -------------------------------------------------------------------------- */
 const Parameter & ParameterRegistry::get(const std::string & name) const {
+  auto it = params.find(name);
+  if (it == params.end()) {
+    if (consisder_sub) {
+      for (auto it = sub_registries.begin(); it != sub_registries.end(); ++it) {
+        try {
+          return it->second->get(name);
+        } catch (...) {
+        }
+      }
+    }
+
+    // nothing was found not even in sub registries
+    AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
+  }
+
+  Parameter & param = *(it->second);
+  return param;
+}
+
+/* -------------------------------------------------------------------------- */
+Parameter & ParameterRegistry::get(const std::string & name) {
   auto it = params.find(name);
   if (it == params.end()) {
     if (consisder_sub) {

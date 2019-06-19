@@ -146,9 +146,9 @@ template <typename T> void InternalField<T>::setDefaultValue(const T & value) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void InternalField<T>::reset() {
-  for (auto ghost : ghost_types)
-    for (const auto & type : this->elementTypes(_ghost_type = ghost)) {
-      Array<T> & vect = (*this)(type, ghost);
+  for (auto ghost_type : ghost_types)
+    for (const auto & type : this->elementTypes(ghost_type)) {
+      Array<T> & vect = (*this)(type, ghost_type);
       vect.clear();
       this->setArrayValues(
           vect.storage(), vect.storage() + vect.size() * vect.getNbComponent());
@@ -197,12 +197,12 @@ template <typename T> void InternalField<T>::saveCurrentValues() {
                       "The history of the internal "
                           << this->getID() << " has not been activated");
 
-  if (!this->is_init)
+  if (not this->is_init)
     return;
 
-  for (auto ghost : ghost_types)
-    for (const auto & type : this->elementTypes(_ghost_type = ghost))
-      (*this->previous_values)(type, ghost).copy((*this)(type, ghost));
+  for (auto ghost_type : ghost_types)
+    for (const auto & type : this->elementTypes(ghost_type))
+      (*this->previous_values)(type, ghost_type).copy((*this)(type, ghost_type));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,12 +211,12 @@ template <typename T> void InternalField<T>::restorePreviousValues() {
                       "The history of the internal "
                           << this->getID() << " has not been activated");
 
-  if (!this->is_init)
+  if (not this->is_init)
     return;
 
-  for (auto ghost : ghost_types)
-    for (const auto & type : this->elementTypes(_ghost_type = ghost))
-      (*this)(type, ghost).copy((*this->previous_values)(type, ghost));
+  for (auto ghost_type : ghost_types)
+    for (const auto & type : this->elementTypes(ghost_type))
+      (*this)(type, ghost_type).copy((*this->previous_values)(type, ghost_type));
 }
 
 /* -------------------------------------------------------------------------- */

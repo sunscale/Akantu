@@ -137,13 +137,13 @@ int main(int argc, char * argv[]) {
   model.applyBC(*concrete_stress, "XBlocked");
   auto end_node = *mesh.getElementGroup("EndNode").getNodeGroup().begin();
 
-  Vector<Real> end_node_force = model.getForce().begin(dim)[end_node];
+  Vector<Real> end_node_force = model.getExternalForce().begin(dim)[end_node];
   end_node_force(0) += steel_stress->stress(0.25) * steel_area;
 
   Array<Real> analytical_residual(mesh.getNbNodes(), dim,
                                   "analytical_residual");
-  analytical_residual.copy(model.getForce());
-  model.getForce().clear();
+  analytical_residual.copy(model.getExternalForce());
+  model.getExternalForce().clear();
 
   delete concrete_stress;
   delete steel_stress;
@@ -156,7 +156,7 @@ int main(int argc, char * argv[]) {
 
   try {
     model.solveStep();
-  } catch (debug::Exception e) {
+  } catch (debug::Exception & e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
@@ -174,7 +174,7 @@ int main(int argc, char * argv[]) {
   model.assembleInternalForces();
   Array<Real> residual(mesh.getNbNodes(), dim, "my_residual");
   residual.copy(model.getInternalForce());
-  residual -= model.getForce();
+  residual -= model.getExternalForce();
 
   auto com_res = residual.begin(dim);
   auto position = mesh.getNodes().begin(dim);

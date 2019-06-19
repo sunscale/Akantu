@@ -52,7 +52,6 @@ enum ElementType {
 
 @AKANTU_ELEMENT_KIND_BOOST_SEQ@
 
-#ifndef SWIG
 enum ElementKind {
   BOOST_PP_SEQ_ENUM(AKANTU_ELEMENT_KIND),
   _ek_not_defined
@@ -67,9 +66,6 @@ struct ElementKind_def {
 };
 
 using element_kind_t = safe_enum<ElementKind_def> ;
-#else
-enum ElementKind;
-#endif
 
 /* -------------------------------------------------------------------------- */
 /// @enum GeometricalType type of element potentially contained in a Mesh
@@ -83,15 +79,11 @@ enum GeometricalType {
 /* -------------------------------------------------------------------------- */
 @AKANTU_INTERPOLATION_TYPES_BOOST_SEQ@
 
-#ifndef SWIG
 /// @enum InterpolationType type of elements
 enum InterpolationType {
   BOOST_PP_SEQ_ENUM(AKANTU_INTERPOLATION_TYPES),
   _itp_not_defined
 };
-#else
-enum InterpolationType;
-#endif
 
 /* -------------------------------------------------------------------------- */
 /* Some sub types less probable to change                                     */

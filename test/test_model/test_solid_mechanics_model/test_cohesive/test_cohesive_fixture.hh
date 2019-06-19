@@ -79,7 +79,7 @@ public:
   void SetUp() override {
     mesh = std::make_unique<Mesh>(this->dim);
     if (Communicator::getStaticCommunicator().whoAmI() == 0) {
-      EXPECT_NO_THROW({ mesh->read(this->mesh_name); });
+      ASSERT_NO_THROW({ mesh->read(this->mesh_name); });
     }
     mesh->distribute();
   }
@@ -123,6 +123,9 @@ public:
 #if debug_
     this->model->addDumpFieldVector("displacement");
     this->model->addDumpFieldVector("velocity");
+    this->model->addDumpFieldVector("internal_force");
+    this->model->addDumpFieldVector("external_force");
+    this->model->addDumpField("blocked_dofs");
     this->model->addDumpField("stress");
     this->model->addDumpField("strain");
     this->model->assembleInternalForces();
@@ -191,7 +194,7 @@ public:
   }
 
   void testModeI() {
-    EXPECT_NO_THROW(this->createModel());
+    this->createModel();
 
     auto & mat_el = this->model->getMaterial("body");
 
@@ -201,8 +204,8 @@ public:
     auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
     nb_steps = length / 2. / speed / model->getTimeStep();
 
-    SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
-                 ":" + aka::to_string(type_2));
+    SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
+                 ":" + std::to_string(type_2));
 
     auto & mat_co = this->model->getMaterial("insertion");
     Real sigma_c = mat_co.get("sigma_c");
@@ -227,7 +230,7 @@ public:
   }
 
   void testModeII() {
-    EXPECT_NO_THROW(this->createModel());
+    this->createModel();
     auto & mat_el = this->model->getMaterial("body");
     Real speed;
     try {
@@ -239,10 +242,10 @@ public:
     auto direction = _y;
     if(dim == 1) direction = _x;
     auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
-    nb_steps = length / 2. / speed / model->getTimeStep();
+    nb_steps = 2 * length / 2. / speed / model->getTimeStep();
 
-    SCOPED_TRACE(std::to_string(this->dim) + "D - " + aka::to_string(type_1) +
-                 ":" + aka::to_string(type_2));
+    SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
+                 ":" + std::to_string(type_2));
 
     if (this->dim > 1)
       this->model->applyBC(BC::Dirichlet::FlagOnly(_y), "sides");
@@ -279,8 +282,8 @@ protected:
   std::unique_ptr<Mesh> mesh;
   std::unique_ptr<SolidMechanicsModelCohesive> model;
 
-  std::string mesh_name{aka::to_string(cohesive_type) + aka::to_string(type_1) +
-                        (type_1 == type_2 ? "" : aka::to_string(type_2)) +
+  std::string mesh_name{std::to_string(cohesive_type) + std::to_string(type_1) +
+                        (type_1 == type_2 ? "" : std::to_string(type_2)) +
                         ".msh"};
 
   bool is_extrinsic;
@@ -307,29 +310,29 @@ using AnalysisMethodTypes =
     std::tuple<analysis_method_t<_explicit_lumped_mass>>;
 
 using coh_types = gtest_list_t<std::tuple<
-    std::tuple<element_type_t<_cohesive_1d_2>, element_type_t<_segment_2>,
-               element_type_t<_segment_2>>,
-    std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_triangle_3>,
-               element_type_t<_triangle_3>>,
-    std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_quadrangle_4>,
-               element_type_t<_quadrangle_4>>,
-    std::tuple<element_type_t<_cohesive_2d_4>, element_type_t<_triangle_3>,
-               element_type_t<_quadrangle_4>>,
-    std::tuple<element_type_t<_cohesive_2d_6>, element_type_t<_triangle_6>,
-               element_type_t<_triangle_6>>,
-    std::tuple<element_type_t<_cohesive_2d_6>, element_type_t<_quadrangle_8>,
-               element_type_t<_quadrangle_8>>,
-    std::tuple<element_type_t<_cohesive_2d_6>, element_type_t<_triangle_6>,
-               element_type_t<_quadrangle_8>>,
-    std::tuple<element_type_t<_cohesive_3d_6>, element_type_t<_tetrahedron_4>,
-               element_type_t<_tetrahedron_4>>,
-    std::tuple<element_type_t<_cohesive_3d_12>, element_type_t<_tetrahedron_10>,
-               element_type_t<_tetrahedron_10>> /*,
-    std::tuple<element_type_t<_cohesive_3d_8>, element_type_t<_hexahedron_8>,
-               element_type_t<_hexahedron_8>>,
-    std::tuple<element_type_t<_cohesive_3d_16>, element_type_t<_hexahedron_20>,
-               element_type_t<_hexahedron_20>>*/>>;
+    std::tuple<_element_type_cohesive_1d_2, _element_type_segment_2,
+               _element_type_segment_2>,
+    std::tuple<_element_type_cohesive_2d_4, _element_type_triangle_3,
+               _element_type_triangle_3>,
+    std::tuple<_element_type_cohesive_2d_4, _element_type_quadrangle_4,
+               _element_type_quadrangle_4>,
+    std::tuple<_element_type_cohesive_2d_4, _element_type_triangle_3,
+               _element_type_quadrangle_4>,
+    std::tuple<_element_type_cohesive_2d_6, _element_type_triangle_6,
+               _element_type_triangle_6>,
+    std::tuple<_element_type_cohesive_2d_6, _element_type_quadrangle_8,
+               _element_type_quadrangle_8>,
+    std::tuple<_element_type_cohesive_2d_6, _element_type_triangle_6,
+               _element_type_quadrangle_8>,
+    std::tuple<_element_type_cohesive_3d_6, _element_type_tetrahedron_4,
+               _element_type_tetrahedron_4>,
+    std::tuple<_element_type_cohesive_3d_12, _element_type_tetrahedron_10,
+               _element_type_tetrahedron_10> /*,
+    std::tuple<_element_type_cohesive_3d_8, _element_type_hexahedron_8,
+               _element_type_hexahedron_8>,
+    std::tuple<_element_type_cohesive_3d_16, _element_type_hexahedron_20,
+               _element_type_hexahedron_20>*/>>;
 
-TYPED_TEST_CASE(TestSMMCFixture, coh_types);
+TYPED_TEST_SUITE(TestSMMCFixture, coh_types);
 
 #endif /* __AKANTU_TEST_COHESIVE_FIXTURE_HH__ */

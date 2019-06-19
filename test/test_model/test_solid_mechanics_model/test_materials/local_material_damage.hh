@@ -71,8 +71,7 @@ public:
                                        GhostType ghost_type = _not_ghost){};
 
   /// compute the potential energy for all elements
-  void computePotentialEnergy(ElementType el_type,
-                              GhostType ghost_type = _not_ghost);
+  void computePotentialEnergy(ElementType el_type);
 
   /// compute the potential energy for on element
   inline void computePotentialEnergyOnQuad(Matrix<Real> & grad_u,

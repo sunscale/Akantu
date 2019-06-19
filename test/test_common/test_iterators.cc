@@ -181,6 +181,26 @@ TEST_F(TestZipFixutre, MoveTest) {
   }
 }
 
+TEST_F(TestZipFixutre, RandomAccess) {
+  auto begin = zip(a, b).begin();
+
+  auto && val5 = begin[5];
+  this->check(std::get<0>(val5), std::get<1>(val5), 5, 0, 0);
+
+  auto && val13 = begin[13];
+  this->check(std::get<0>(val13), std::get<1>(val13), 13, 0, 0);
+}
+
+TEST_F(TestZipFixutre, Cat) {
+  size_t i = 0;
+  for (auto && data :
+	   make_zip_cat(zip(a, b), zip(a, b))) {
+    this->check(std::get<0>(data), std::get<1>(data), i, 0, 0);
+    this->check(std::get<2>(data), std::get<3>(data), i, 0, 0);
+    ++i;
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 TEST(TestArangeIterator, Stop) {
   size_t ref_i = 0;
@@ -296,5 +316,13 @@ TEST(TestTransformAdaptor, Functor) {
   for (auto && data :
        zip(container, make_transform_adaptor(container, Plus(1)))) {
     EXPECT_EQ(std::get<0>(data) + 1, std::get<1>(data));
+  }
+}
+
+TEST(TestFilteredIterator, Simple) {
+  std::vector<int> values{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  std::vector<int> filter{0, 2, 4, 10, 8, 6};
+  for (auto && data : zip(filter, make_filtered_adaptor(filter, values))) {
+    EXPECT_EQ(std::get<0>(data), std::get<1>(data));
   }
 }

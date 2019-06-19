@@ -85,12 +85,28 @@ CommunicationRequest Communicator::asyncBarrier() const {
 }
 
 template <typename T>
-void Communicator::reduceImpl(T *, int, const SynchronizerOperation &,
-                              int) const {}
+void Communicator::reduceImpl(T *, int, SynchronizerOperation, int) const {}
 
 template <typename T>
-void Communicator::allReduceImpl(T *, int,
-                                 const SynchronizerOperation &) const {}
+void Communicator::allReduceImpl(T *, int, SynchronizerOperation) const {}
+
+template <typename T>
+void Communicator::scanImpl(T * values, T * result, int n,
+                            SynchronizerOperation) const {
+  if (values == result)
+    return;
+
+  std::copy_n(values, n, result);
+}
+
+template <typename T>
+void Communicator::exclusiveScanImpl(T * values, T * result, int n,
+                                     SynchronizerOperation) const {
+  if (values == result)
+    return;
+
+  std::copy_n(values, n, result);
+}
 
 template <typename T> inline void Communicator::allGatherImpl(T *, int) const {}
 template <typename T>

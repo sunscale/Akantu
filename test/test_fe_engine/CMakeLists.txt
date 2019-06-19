@@ -12,13 +12,21 @@
 #
 # @section LICENSE
 #
-# Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+# Copyright (©) 2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+# Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
 #
-# Akantu is free  software: you can redistribute it and/or  modify it under the terms  of the  GNU Lesser  General Public  License as published by  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+# Akantu is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
 #
-# Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more details.
+# Akantu is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+# details.
 #
-# You should  have received  a copy  of the GNU  Lesser General  Public License along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 # @section DESCRIPTION
 #
@@ -43,7 +51,6 @@ macro(register_mesh_types package)
   foreach(_type ${_types})
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_type}.msh)
       list(APPEND _meshes ${_type}.msh)
-      #register_fem_test(fe_engine_precomputation ${_type })
     else()
       if(NOT ${_type} STREQUAL _point_1)
 	message("The mesh ${_type}.msh is missing, the fe_engine test cannot be activated without it")
@@ -59,9 +66,6 @@ package_is_activated(structural_mechanics has_structural_mechanics)
 if(has_structural_mechanics)
   register_mesh_types(structural_mechanics)
 endif()
-
-#add_mesh(test_fem_circle_1_mesh circle.geo 2 1 OUTPUT circle1.msh)
-#add_mesh(test_fem_circle_2_mesh circle.geo 2 2 OUTPUT circle2.msh)
 
 # Tests for class MeshData
 macro(register_typed_test test_name type value1 value2)
@@ -89,12 +93,10 @@ register_test(test_facet_element_mapping
   DEPENDS test_boundary_msh_physical_names
   PACKAGE core)
 
-akantu_pybind11_add_module(aka_test MODULE pybind11_akantu.cc)
-
 register_gtest_sources(
   SOURCES test_fe_engine_precomputation.cc
-  PACKAGE core pybind11
-  DEPENDS aka_test
+  PACKAGE core python_interface
+  LINK_LIBRARIES pyakantu
   )
 
 register_gtest_sources(

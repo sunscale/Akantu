@@ -77,12 +77,12 @@ private:
 template <template <class> class Op, typename T>
 void PeriodicNodeSynchronizer::reduceSynchronizeWithPBCSlaves(
     Array<T> & array) const {
-  ReduceDataAccessor<UInt, Op, T> data_accessor(array, _gst_whatever);
-  auto size = data_accessor.getNbData(slaves_list, _gst_whatever);
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array, SynchronizationTag::_whatever);
+  auto size = data_accessor.getNbData(slaves_list, SynchronizationTag::_whatever);
   CommunicationBuffer buffer(size);
 
-  data_accessor.packData(buffer, slaves_list, _gst_whatever);
-  data_accessor.unpackData(buffer, masters_list, _gst_whatever);
+  data_accessor.packData(buffer, slaves_list, SynchronizationTag::_whatever);
+  data_accessor.unpackData(buffer, masters_list, SynchronizationTag::_whatever);
 
   this->reduceSynchronize<Op>(array);
 }

@@ -74,7 +74,7 @@ inline void
 Dumpable::addDumpFieldExternalToDumper(const std::string & dumper_name,
                                        const std::string & field_id,
                                        const Array<T> & field) {
-  dumper::Field * field_cont = new dumper::NodalField<T>(field);
+  auto field_cont = std::make_shared<dumper::NodalField<T>>(field);
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field_cont);
 }
@@ -98,15 +98,15 @@ inline void Dumpable::addDumpFieldExternalToDumper(
     const ElementTypeMapArray<T> & field, UInt spatial_dimension,
     const GhostType & ghost_type, const ElementKind & element_kind) {
 
-  dumper::Field * field_cont;
+  std::shared_ptr<dumper::Field> field_cont;
 #if defined(AKANTU_IGFEM)
   if (element_kind == _ek_igfem) {
-    field_cont = new dumper::IGFEMElementalField<T>(field, spatial_dimension,
-                                                    ghost_type, element_kind);
+    field_cont = std::make_shared<dumper::IGFEMElementalField<T>>(
+        field, spatial_dimension, ghost_type, element_kind);
   } else
 #endif
-    field_cont = new dumper::ElementalField<T>(field, spatial_dimension,
-                                               ghost_type, element_kind);
+    field_cont = std::make_shared<dumper::ElementalField<T>>(
+        field, spatial_dimension, ghost_type, element_kind);
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field_cont);
 }
@@ -117,7 +117,7 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
 
   try {
-    auto & templated_dumper = dynamic_cast<T &>(dumper);
+    auto & templated_dumper = aka::as_type<T>(dumper);
     return templated_dumper;
   } catch (std::bad_cast &) {
     AKANTU_EXCEPTION("Dumper " << dumper_name << " is not of type: "
@@ -127,7 +127,7 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif
 

@@ -8,7 +8,7 @@ material elastic [
 material cohesive_linear [
 	 name = cohesive
 	 beta = 1
-	 G_cI = 100
-	 G_cII = 100
+	 G_c = 100
+	 kappa = 1
 	 sigma_c = 100 uniform [0, 0]
 ]

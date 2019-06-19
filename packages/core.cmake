@@ -50,6 +50,7 @@ package_declare_sources(core
   common/aka_common_inline_impl.cc
   common/aka_csr.hh
   common/aka_element_classes_info_inline_impl.cc
+  common/aka_enum_macros.hh
   common/aka_error.cc
   common/aka_error.hh
   common/aka_event_handler_manager.hh
@@ -204,17 +205,17 @@ package_declare_sources(core
   mesh_utils/global_ids_updater.cc
   mesh_utils/global_ids_updater_inline_impl.cc
 
-  model/boundary_condition.hh
-  model/boundary_condition_functor.hh
-  model/boundary_condition_functor_inline_impl.cc
-  model/boundary_condition_tmpl.hh
+  model/common/boundary_condition/boundary_condition.hh
+  model/common/boundary_condition/boundary_condition_functor.hh
+  model/common/boundary_condition/boundary_condition_functor_inline_impl.cc
+  model/common/boundary_condition/boundary_condition_tmpl.hh
 
-  model/common/neighborhood_base.hh
-  model/common/neighborhood_base.cc
-  model/common/neighborhood_base_inline_impl.cc
-  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
-  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
-  model/common/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
+  model/common/non_local_toolbox/neighborhood_base.hh
+  model/common/non_local_toolbox/neighborhood_base.cc
+  model/common/non_local_toolbox/neighborhood_base_inline_impl.cc
+  model/common/non_local_toolbox/neighborhoods_criterion_evaluation/neighborhood_max_criterion.hh
+  model/common/non_local_toolbox/neighborhoods_criterion_evaluation/neighborhood_max_criterion.cc
+  model/common/non_local_toolbox/neighborhoods_criterion_evaluation/neighborhood_max_criterion_inline_impl.cc
   model/common/non_local_toolbox/non_local_manager.hh
   model/common/non_local_toolbox/non_local_manager.cc
   model/common/non_local_toolbox/non_local_manager_inline_impl.cc
@@ -227,55 +228,63 @@ package_declare_sources(core
   model/common/non_local_toolbox/base_weight_function.hh
   model/common/non_local_toolbox/base_weight_function_inline_impl.cc
 
-  model/dof_manager.cc
-  model/dof_manager.hh
-  model/dof_manager_default.cc
-  model/dof_manager_default.hh
-  model/dof_manager_default_inline_impl.cc
-  model/dof_manager_inline_impl.cc
-  model/model_solver.cc
-  model/model_solver.hh
-  model/non_linear_solver.cc
-  model/non_linear_solver.hh
-  model/non_linear_solver_default.hh
-  model/non_linear_solver_lumped.cc
-  model/non_linear_solver_lumped.hh
-  model/solver_callback.hh
-  model/solver_callback.cc
-  model/time_step_solver.hh
-  model/time_step_solvers/time_step_solver.cc
-  model/time_step_solvers/time_step_solver_default.cc
-  model/time_step_solvers/time_step_solver_default.hh
-  model/time_step_solvers/time_step_solver_default_explicit.hh
-  model/non_linear_solver_callback.hh
-  model/time_step_solvers/time_step_solver_default_solver_callback.hh
+  model/common/model_solver.cc
+  model/common/model_solver.hh
+  model/common/solver_callback.hh
+  model/common/solver_callback.cc
 
-  model/integration_scheme/generalized_trapezoidal.cc
-  model/integration_scheme/generalized_trapezoidal.hh
-  model/integration_scheme/integration_scheme.cc
-  model/integration_scheme/integration_scheme.hh
-  model/integration_scheme/integration_scheme_1st_order.cc
-  model/integration_scheme/integration_scheme_1st_order.hh
-  model/integration_scheme/integration_scheme_2nd_order.cc
-  model/integration_scheme/integration_scheme_2nd_order.hh
-  model/integration_scheme/newmark-beta.cc
-  model/integration_scheme/newmark-beta.hh
-  model/integration_scheme/pseudo_time.cc
-  model/integration_scheme/pseudo_time.hh
+  model/common/dof_manager/dof_manager.cc
+  model/common/dof_manager/dof_manager.hh
+  model/common/dof_manager/dof_manager_default.cc
+  model/common/dof_manager/dof_manager_default.hh
+  model/common/dof_manager/dof_manager_default_inline_impl.cc
+  model/common/dof_manager/dof_manager_inline_impl.cc
+
+  model/common/non_linear_solver/non_linear_solver.cc
+  model/common/non_linear_solver/non_linear_solver.hh
+  model/common/non_linear_solver/non_linear_solver_default.hh
+  model/common/non_linear_solver/non_linear_solver_lumped.cc
+  model/common/non_linear_solver/non_linear_solver_lumped.hh
+
+  model/common/time_step_solvers/time_step_solver.hh
+  model/common/time_step_solvers/time_step_solver.cc
+  model/common/time_step_solvers/time_step_solver_default.cc
+  model/common/time_step_solvers/time_step_solver_default.hh
+  model/common/time_step_solvers/time_step_solver_default_explicit.hh
+
+  model/common/integration_scheme/generalized_trapezoidal.cc
+  model/common/integration_scheme/generalized_trapezoidal.hh
+  model/common/integration_scheme/integration_scheme.cc
+  model/common/integration_scheme/integration_scheme.hh
+  model/common/integration_scheme/integration_scheme_1st_order.cc
+  model/common/integration_scheme/integration_scheme_1st_order.hh
+  model/common/integration_scheme/integration_scheme_2nd_order.cc
+  model/common/integration_scheme/integration_scheme_2nd_order.hh
+  model/common/integration_scheme/newmark-beta.cc
+  model/common/integration_scheme/newmark-beta.hh
+  model/common/integration_scheme/pseudo_time.cc
+  model/common/integration_scheme/pseudo_time.hh
+
   model/model.cc
   model/model.hh
   model/model_inline_impl.cc
   model/model_options.hh
 
-  solver/sparse_solver.cc
-  solver/sparse_solver.hh
-  solver/sparse_solver_inline_impl.cc
+  solver/solver_vector.hh
+  solver/solver_vector_default.cc
+  solver/solver_vector_default.hh
+  solver/solver_vector_default_tmpl.hh
+  solver/solver_vector_distributed.cc
+  solver/solver_vector_distributed.hh
   solver/sparse_matrix.cc
   solver/sparse_matrix.hh
-  solver/sparse_matrix_inline_impl.cc
   solver/sparse_matrix_aij.cc
   solver/sparse_matrix_aij.hh
   solver/sparse_matrix_aij_inline_impl.cc
+  solver/sparse_matrix_inline_impl.cc
+  solver/sparse_solver.cc
+  solver/sparse_solver.hh
+  solver/sparse_solver_inline_impl.cc
   solver/terms_to_assemble.hh
 
   synchronizer/communication_buffer_inline_impl.cc

@@ -35,12 +35,14 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTRFContact::NTRFContact(SolidMechanicsModel & model, const ContactID & id,
+NTRFContact::NTRFContact(SolidMechanicsModel & model, const ID & id,
                          const MemoryID & memory_id)
     : NTNBaseContact(model, id, memory_id),
       reference_point(model.getSpatialDimension()),
       normal(model.getSpatialDimension()) {
   AKANTU_DEBUG_IN();
+
+  is_ntn_contact = false;
 
   AKANTU_DEBUG_OUT();
 }
@@ -83,23 +85,22 @@ void NTRFContact::setNormal(Real x, Real y, Real z) {
 }
 
 /* -------------------------------------------------------------------------- */
-void NTRFContact::addSurface(const Surface & surf) {
+void NTRFContact::addSurface(const ID & surf) {
   AKANTU_DEBUG_IN();
 
-  const Mesh & mesh_ref = this->model.getFEEngine().getMesh();
+  const Mesh & mesh_ref = this->model.getMesh();
 
   try {
     const ElementGroup & boundary = mesh_ref.getElementGroup(surf);
     this->contact_surfaces.insert(&boundary);
 
     // find slave nodes
-    for (ElementGroup::const_node_iterator nodes_it(boundary.node_begin());
-         nodes_it != boundary.node_end(); ++nodes_it) {
-      if (!this->model.isPBCSlaveNode(*nodes_it)) {
-        this->addSplitNode(*nodes_it);
+    for (auto && node : boundary.getNodeGroup().getNodes()) {
+      if (not mesh_ref.isPeriodicSlave(node)) {
+        this->addSplitNode(node);
       }
     }
-  } catch (debug::Exception e) {
+  } catch (debug::Exception & e) {
     AKANTU_DEBUG_INFO("NTRFContact addSurface did not found subboundary "
                       << surf
                       << " and ignored it. Other procs might have it :)");

@@ -33,14 +33,14 @@
 /* -------------------------------------------------------------------------- */
 
 TEST_F(TestSynchronizerFixture, DataDistribution) {
-  auto & barycenters = this->mesh->registerElementalData<Real>("barycenters");
+  auto & barycenters = this->mesh->getElementalData<Real>("barycenters");
   auto spatial_dimension = this->mesh->getSpatialDimension();
   barycenters.initialize(*this->mesh, _spatial_dimension = _all_dimensions,
                          _nb_component = spatial_dimension);
 
   this->initBarycenters(barycenters, *this->mesh);
 
-  auto & gids = this->mesh->registerNodalData<UInt>("gid");
+  auto & gids = this->mesh->getNodalData<UInt>("gid");
   gids.resize(this->mesh->getNbNodes());
 
   for(auto && data : enumerate(gids)) {

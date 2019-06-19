@@ -148,7 +148,7 @@ int main(int argc, char * argv[]) {
   Array<Real>::const_matrix_iterator stress_it =
       stress.begin(spatial_dimension, spatial_dimension);
   do {
-    converged = model.solveStep<_scm_newton_raphson_tangent, _scc_increment>(
+    converged = model.solveStep<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
         1e-6, error, 2, factorize);
 
     /// compute damage

@@ -9,13 +9,14 @@ import akantu
 ################################################################
 
 
-class FixedValue:
+class MyFixedValue(akantu.FixedValue):
 
     def __init__(self, value, axis):
+        super().__init__(value, axis)
         self.value = value
-        self.axis = axis
+        self.axis = int(axis)
 
-    def operator(self, node, flags, disp, coord):
+    def __call__(self, node, flags, disp, coord):
         # sets the displacement to the desired value in the desired axis
         disp[self.axis] = self.value
         # sets the blocked dofs vector to true in the desired axis
@@ -36,7 +37,7 @@ def main():
 
     # if mesh was not created the calls gmsh to generate it
     if not os.path.isfile(mesh_file):
-        ret = subprocess.call('gmsh -2 bar.geo bar.msh', shell=True)
+        ret = subprocess.call('gmsh -format msh2 -2 bar.geo bar.msh', shell=True)
         if ret != 0:
             raise Exception(
                 'execution of GMSH failed: do you have it installed ?')
@@ -66,8 +67,8 @@ def main():
     # boundary conditions
     ################################################################
 
-    model.applyDirichletBC(FixedValue(0, akantu._x), "XBlocked")
-    model.applyDirichletBC(FixedValue(0, akantu._y), "YBlocked")
+    model.applyBC(MyFixedValue(0, akantu._x), "XBlocked")
+    model.applyBC(MyFixedValue(0, akantu._y), "YBlocked")
 
     ################################################################
     # initial conditions
@@ -86,6 +87,7 @@ def main():
         k = 0.1 * 2 * np.pi * 3 / L
         displacement[i, 0] = A * \
             np.sin(k * x) * np.exp(-(k * x) * (k * x) / (L * L))
+        displacement[i, 1] = 0
 
     ################################################################
     # timestep value computation

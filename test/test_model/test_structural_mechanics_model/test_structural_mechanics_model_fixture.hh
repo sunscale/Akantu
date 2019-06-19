@@ -100,6 +100,6 @@ template <typename type_> const UInt TestStructuralFixture<type_>::ndof;
 
 // using types = gtest_list_t<StructuralTestElementTypes>;
 
-// TYPED_TEST_CASE(TestStructuralFixture, types);
+// TYPED_TEST_SUITE(TestStructuralFixture, types);
 
 #endif /* __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__ */

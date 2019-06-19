@@ -71,9 +71,8 @@ public:
   /// remove a node
   inline void remove(UInt node);
 
-#ifndef SWIG
   inline decltype(auto) find(UInt node) const { return node_group.find(node); }
-#endif
+
   /// remove duplicated nodes
   void optimize();
 
@@ -97,8 +96,9 @@ public:
   /// give the number of nodes in the current group
   inline UInt size() const;
 
-  UInt * storage() { return node_group.storage(); };
+  //UInt * storage() { return node_group.storage(); };
 
+  friend class GroupManager;
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */

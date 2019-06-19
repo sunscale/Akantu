@@ -126,7 +126,7 @@ namespace akantu {
 // //   UInt iter = 0;
 // //   converged = false;
 // //   error = 0.;
-// //   if (criteria == _scc_residual) {
+// //   if (criteria == SolveConvergenceCriteria::_residual) {
 // //     converged = this->testConvergence<criteria>(tolerance, error);
 // //     if (converged)
 // //       return converged;
@@ -246,7 +246,7 @@ namespace akantu {
 // //     for (UInt m = 0; m < materials.size(); ++m) {
 // //       try {
 // //         MaterialCohesive & mat =
-// //             dynamic_cast<MaterialCohesive &>(*materials[m]);
+// //             aka::as_type<MaterialCohesive>(*materials[m]);
 // //         mat.checkDeltaMax(_not_ghost);
 // //       } catch (std::bad_cast &) {
 // //       }
@@ -265,7 +265,7 @@ namespace akantu {
 // //   for (UInt m = 0; m < materials.size(); ++m) {
 // //     try {
 // //       MaterialCohesive & mat =
-// //           dynamic_cast<MaterialCohesive &>(*materials[m]);
+// //           aka::as_type<MaterialCohesive>(*materials[m]);
 // //       mat.computeEnergies();
 // //     } catch (std::bad_cast & bce) {
 // //     }
@@ -282,7 +282,7 @@ namespace akantu {
 // //   for (UInt m = 0; m < materials.size(); ++m) {
 // //     try {
 // //       MaterialCohesive & mat =
-// //           dynamic_cast<MaterialCohesive &>(*materials[m]);
+// //           aka::as_type<MaterialCohesive>(*materials[m]);
 // //       mat.resetVariables(_not_ghost);
 // //     } catch (std::bad_cast &) {
 // //     }

@@ -1,10 +1,9 @@
 build*
 .dir-locals.el
 TAGS
-third-party/blackdynamite/
-third-party/pybind11
-third-party/google-test
-third-party/cpp-array/
+!third-party/cmake
+!third-party/iohelper
+third-party/*/
 *~
 release
 .*.swp

@@ -89,8 +89,6 @@ void LocalMaterialDamage::computePotentialEnergy(ElementType el_type,
                                                  GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Material::computePotentialEnergy(el_type, ghost_type);
-
   if (ghost_type != _not_ghost)
     return;
   Real * epot = potential_energy(el_type).storage();
@@ -103,6 +101,10 @@ void LocalMaterialDamage::computePotentialEnergy(ElementType el_type,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
+static bool material_is_alocated_local_damage [[gnu::unused]] =
+      MaterialFactory::getInstance().registerAllocator(
+          "local_damage", [](UInt, const ID &, SolidMechanicsModel & model, const ID & id) -> std::unique_ptr<Material> {
+	return std::make_unique<LocalMaterialDamage>(model, id);
+       });
 
 } // akantu

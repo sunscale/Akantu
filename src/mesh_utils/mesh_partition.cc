@@ -94,9 +94,11 @@ Element MeshPartition::unlinearized(UInt lin_element) {
  * conversion in c++ of the GENDUALMETIS (mesh.c) function wrote by George in
  * Metis (University of Minnesota)
  */
-void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
-                                   Array<Int> & edge_loads,
-                                   const EdgeLoadFunctor & edge_load_func) {
+void MeshPartition::buildDualGraph(
+    Array<Int> & dxadj, Array<Int> & dadjncy, Array<Int> & edge_loads,
+    std::function<Int(const Element &, const Element &)> edge_load_func,
+    Array<Int> & vertex_loads,
+    std::function<Int(const Element &)> vertex_load_func) {
   AKANTU_DEBUG_IN();
 
   std::map<ElementType, std::tuple<const Array<UInt> *, UInt, UInt>>
@@ -142,7 +144,6 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
   dxadj(0) = 0;
 
   dadjncy.resize(2 * dxadj(nb_total_element));
-  edge_loads.resize(2 * dxadj(nb_total_element));
 
   /// weight map to determine adjacency
   std::unordered_map<UInt, UInt> weight_map;
@@ -227,13 +228,18 @@ void MeshPartition::buildDualGraph(Array<Int> & dxadj, Array<Int> & dadjncy,
     dxadj(i) = dxadj(i - 1);
   dxadj(0) = 0;
 
+
+  vertex_loads.resize(dxadj.size() - 1);
+  edge_loads.resize(dadjncy.size());
   UInt adj = 0;
   for (UInt i = 0; i < nb_total_element; ++i) {
-    UInt nb_adj = dxadj(i + 1) - dxadj(i);
+    auto el = unlinearized(i);
+    vertex_loads(i) = vertex_load_func(el);
+
+        UInt nb_adj = dxadj(i + 1) - dxadj(i);
     for (UInt j = 0; j < nb_adj; ++j, ++adj) {
-      Int el_adj_id = dadjncy(dxadj(i) + j);
-      Element el = unlinearized(i);
-      Element el_adj = unlinearized(el_adj_id);
+      auto el_adj_id = dadjncy(dxadj(i) + j);
+      auto el_adj = unlinearized(el_adj_id);
 
       Int load = edge_load_func(el, el_adj);
       edge_loads(adj) = load;
@@ -266,7 +272,7 @@ void MeshPartition::fillPartitionInformation(
         ghost_partitions_offset.alloc(nb_element + 1, 1, type, _ghost);
     auto & ghost_partition = ghost_partitions.alloc(0, 1, type, _ghost);
 
-    const auto  & connectivity = mesh.getConnectivity(type, _not_ghost);
+    const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
     auto conn_it = connectivity.begin(connectivity.getNbComponent());
 
     for (UInt el = 0; el < nb_element; ++el, ++linearized_el) {
@@ -301,8 +307,7 @@ void MeshPartition::fillPartitionInformation(
     ghost_part_csr.countToCSR();
 
     /// convert the ghost_partitions_offset array in an offset array
-    auto & ghost_partitions_offset_ptr =
-        ghost_partitions_offset(type, _ghost);
+    auto & ghost_partitions_offset_ptr = ghost_partitions_offset(type, _ghost);
     for (UInt i = 1; i < nb_element; ++i)
       ghost_partitions_offset_ptr(i) += ghost_partitions_offset_ptr(i - 1);
     for (UInt i = nb_element; i > 0; --i)
@@ -382,17 +387,18 @@ void MeshPartition::tweakConnectivity() {
 
   MeshAccessor mesh_accessor(const_cast<Mesh &>(mesh));
 
-  for(auto && type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
-    auto & connectivity =
-        mesh_accessor.getConnectivity(type, _not_ghost);
+  for (auto && type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
+    auto & connectivity = mesh_accessor.getConnectivity(type, _not_ghost);
 
     auto & saved_conn = saved_connectivity.alloc(
         connectivity.size(), connectivity.getNbComponent(), type, _not_ghost);
     saved_conn.copy(connectivity);
 
-    for(auto && conn : make_view(connectivity, connectivity.getNbComponent())) {
-      for(auto && node : conn) {
-        if(mesh.isPeriodicSlave(node)) {
+    for (auto && conn :
+         make_view(connectivity, connectivity.getNbComponent())) {
+      for (auto && node : conn) {
+        if (mesh.isPeriodicSlave(node)) {
           node = mesh.getPeriodicMaster(node);
         }
       }
@@ -419,6 +425,18 @@ void MeshPartition::restoreConnectivity() {
 bool MeshPartition::hasPartitions(const ElementType & type,
                                   const GhostType & ghost_type) {
   return partitions.exists(type, ghost_type);
+}
+
+/* -------------------------------------------------------------------------- */
+void MeshPartition::printself(std::ostream & stream, int indent) const {
+  std::string space(indent, AKANTU_INDENT);
+  stream << space << "MeshPartition [" << "\n";
+  stream << space << " + id           : " << id << "\n";
+  stream << space << " + nb partitions: " << nb_partitions << "\n";
+  stream << space << " + partitions [ " << "\n";
+  partitions.printself(stream, indent + 2);
+  stream << space << " ]" << "\n";
+  stream << space << "]" << "\n";
 }
 
 /* -------------------------------------------------------------------------- */

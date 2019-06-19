@@ -57,7 +57,11 @@ enable_language(CXX)
 set(AKANTU_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules")
+
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries.")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
+  "Enable/Disable output of compile commands during generation" FORCE)
+
 mark_as_advanced(BUILD_SHARED_LIBS)
 
 if(NOT AKANTU_TARGETS_EXPORT)
@@ -79,7 +83,7 @@ include(AkantuCleaning)
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
 set(AKANTU_MAJOR_VERSION 3)
-set(AKANTU_MINOR_VERSION 0)
+set(AKANTU_MINOR_VERSION 1)
 set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 
@@ -93,6 +97,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DAKANTU_NDEBUG"
 #add_flags(cxx "-Wall -Wextra -pedantic -Werror")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_flags(cxx "-Wall -Wextra -pedantic") # -Weffc++
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG_INIT} -ggdb3"
+    CACHE STRING "Flags used by the compiler during debug builds" FORCE)
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT} -ggdb3"
+    CACHE STRING "Flags used by the compiler during debug builds" FORCE)
 else()
   add_flags(cxx "-Wall")
 endif()
@@ -142,29 +150,6 @@ else()
 endif()
 
 #===============================================================================
-# Examples and tests
-#===============================================================================
-include(AkantuTestsMacros)
-include(AkantuExampleMacros)
-
-if(AKANTU_TESTS)
-  option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
-  find_package(GMSH REQUIRED)
-  # package_is_activated(pybind11 _pybind11_act)
-  # if(_pybind11_act)
-  #   find_package(pybind11 CONFIG REQUIRED QUIET) # to get the pybind11_add_module macro
-  # endif()
-endif()
-
-if(AKANTU_EXAMPLES)
-  find_package(GMSH REQUIRED)
-  add_subdirectory(examples)
-endif()
-
-# tests
-add_test_tree(test)
-
-#===============================================================================
 # Python interface
 #===============================================================================
 package_is_activated(python_interface _python_act)
@@ -176,6 +161,25 @@ if(_python_act)
   endif()
   add_subdirectory(python)
 endif()
+
+#===============================================================================
+# Examples and tests
+#===============================================================================
+include(AkantuTestsMacros)
+include(AkantuExampleMacros)
+
+if(AKANTU_TESTS)
+  option(AKANTU_BUILD_ALL_TESTS "Build all tests" ON)
+  find_package(GMSH REQUIRED)
+endif()
+
+if(AKANTU_EXAMPLES)
+  find_package(GMSH REQUIRED)
+  add_subdirectory(examples)
+endif()
+
+# tests
+add_test_tree(test)
 
 #===============================================================================
 # Install and Packaging

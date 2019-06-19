@@ -110,6 +110,9 @@ configure_file(cmake/AkantuConfig.cmake.in "${PROJECT_BINARY_DIR}/AkantuConfig.c
 configure_file(cmake/AkantuConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake" @ONLY)
 configure_file(cmake/AkantuUse.cmake "${PROJECT_BINARY_DIR}/AkantuUse.cmake" COPYONLY)
 
+package_is_activated(pybind11 _is_pybind11_activated)
+package_is_activated(swig _is_swig_activated)
+
 configure_file(cmake/akantu_environement.sh.in
   ${PROJECT_BINARY_DIR}/akantu_environement.sh  @ONLY)
 configure_file(cmake/akantu_environement.csh.in

@@ -1,50 +1,49 @@
-from __future__ import print_function
-# ------------------------------------------------------------- #
 import akantu as aka
 import subprocess
 import numpy as np
 import time
+import os
 # ------------------------------------------------------------- #
 
 
-class LocalElastic:
+class LocalElastic(aka.Material):
 
-    # declares all the internals
-    def initMaterial(self, internals, params):
-        self.E = params['E']
-        self.nu = params['nu']
-        self.rho = params['rho']
-        # print(self.__dict__)
-        # First Lame coefficient
-        self.lame_lambda = self.nu * self.E / (
-            (1. + self.nu) * (1. - 2. * self.nu))
+    def __init__(self, model, _id):
+        super().__init__(model, _id)
+        super().registerParamReal('E',
+                                  aka._pat_readable | aka._pat_parsable,
+                                  'Youngs modulus')
+        super().registerParamReal('nu',
+                                  aka._pat_readable | aka._pat_parsable,
+                                  'Poisson ratio')
+
+        # change it to have the initialize wrapped
+        super().registerInternal('factor', 1)
+        super().registerInternal('quad_coordinates', 2)
+
+    def initMaterial(self):
+        nu = self.getReal('nu')
+        E = self.getReal('E')
+        self.mu = E / (2 * (1 + nu))
+        self.lame_lambda = nu * E / (
+            (1. + nu) * (1. - 2. * nu))
         # Second Lame coefficient (shear modulus)
-        self.lame_mu = self.E / (2. * (1. + self.nu))
+        self.lame_mu = E / (2. * (1. + nu))
+        super().initMaterial()
 
-        all_factor = internals['factor']
-        all_quad_coords = internals['quad_coordinates']
+        quad_coords = self.internals["quad_coordinates"]
+        factor = self.internals["factor"]
+        model = self.getModel()
 
-        for elem_type in all_factor.keys():
-            factor = all_factor[elem_type]
-            quad_coords = all_quad_coords[elem_type]
+        model.getFEEngine().computeIntegrationPointsCoordinates(
+            quad_coords, self.element_filter)
+
+        for elem_type in factor.elementTypes():
+            factor = factor(elem_type)
+            coords = quad_coords(elem_type)
 
             factor[:] = 1.
-            factor[quad_coords[:, 1] < 0.5] = .5
-
-    # declares all the internals
-    @staticmethod
-    def registerInternals():
-        return ['potential', 'factor']
-
-    # declares all the internals
-    @staticmethod
-    def registerInternalSizes():
-        return [1, 1]
-
-    # declares all the parameters that could be parsed
-    @staticmethod
-    def registerParam():
-        return ['E', 'nu']
+            factor[coords[:, 1] < 0.5] = .5
 
     # declares all the parameters that are needed
     def getPushWaveSpeed(self, params):
@@ -56,10 +55,13 @@ class LocalElastic:
         return 0.5 * (grad_u + np.einsum('aij->aji', grad_u))
 
     # constitutive law
-    def computeStress(self, grad_u, sigma, internals, params):
+    def computeStress(self, el_type, ghost_type):
+        grad_u = self.getGradU(el_type, ghost_type)
+        sigma = self.getStress(el_type, ghost_type)
+
         n_quads = grad_u.shape[0]
         grad_u = grad_u.reshape((n_quads, 2, 2))
-        factor = internals['factor'].reshape(n_quads)
+        factor = self.internals['factor'](el_type, ghost_type).reshape(n_quads)
         epsilon = self.computeEpsilon(grad_u)
         sigma = sigma.reshape((n_quads, 2, 2))
         trace = np.einsum('aii->a', grad_u)
@@ -69,15 +71,13 @@ class LocalElastic:
                       self.lame_lambda * np.eye(2))
             + 2. * self.lame_mu * epsilon)
 
-        # print(sigma.reshape((n_quads, 4)))
-        # print(grad_u.reshape((n_quads, 4)))
         sigma[:, :, :] = np.einsum('aij, a->aij', sigma, factor)
 
     # constitutive law tangent modulii
-    def computeTangentModuli(self, grad_u, tangent, internals, params):
-        n_quads = tangent.shape[0]
-        tangent = tangent.reshape(n_quads, 3, 3)
-        factor = internals['factor'].reshape(n_quads)
+    def computeTangentModuli(self, el_type, tangent_matrix, ghost_type):
+        n_quads = tangent_matrix.shape[0]
+        tangent = tangent_matrix.reshape(n_quads, 3, 3)
+        factor = self.internals['factor'](el_type, ghost_type).reshape(n_quads)
 
         Miiii = self.lame_lambda + 2 * self.lame_mu
         Miijj = self.lame_lambda
@@ -91,20 +91,18 @@ class LocalElastic:
         tangent[:, :, :] = np.einsum('aij, a->aij', tangent, factor)
 
     # computes the energy density
-    def getEnergyDensity(self, energy_type, energy_density,
-                         grad_u, stress, internals, params):
+    def computePotentialEnergy(self, el_type):
 
-        nquads = stress.shape[0]
-        stress = stress.reshape(nquads, 2, 2)
+        sigma = self.getStress(el_type)
+        grad_u = self.getGradU(el_type)
+
+        nquads = sigma.shape[0]
+        stress = sigma.reshape(nquads, 2, 2)
         grad_u = grad_u.reshape((nquads, 2, 2))
-
-        if energy_type != 'potential':
-            raise RuntimeError('not known energy')
-
         epsilon = self.computeEpsilon(grad_u)
 
-        energy_density[:, 0] = (
-            0.5 * np.einsum('aij,aij->a', stress, epsilon))
+        energy_density = self.getPotentialEnergy(el_type)
+        energy_density[:, 0] = 0.5 * np.einsum('aij,aij->a', stress, epsilon)
 
 
 # applies manually the boundary conditions
@@ -131,25 +129,33 @@ def applyBC(model):
             blocked_dofs[node, 1] = True
             displacement[node, 1] = 1.
 
+
 # main parameters
 spatial_dimension = 2
 mesh_file = 'square.msh'
 
-# call gmsh to generate the mesh
-ret = subprocess.call(['gmsh', '-2', 'square.geo', '-optimize', 'square.msh'])
-if ret != 0:
-    raise Exception(
-        'execution of GMSH failed: do you have it installed ?')
+if not os.path.isfile(mesh_file):
+    # call gmsh to generate the mesh
+    ret = subprocess.call(
+        'gmsh -format msh2 -2 square.geo -optimize square.msh', shell=True)
+    if ret != 0:
+        raise Exception(
+            'execution of GMSH failed: do you have it installed ?')
 
-time.sleep(1)
+time.sleep(2)
 
 # read mesh
 mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
 
-# create the custom material
-mat = LocalElastic()
-aka.registerNewPythonMaterial(mat, "local_elastic")
+mat_factory = aka.MaterialFactory.getInstance()
+
+
+def allocator(_dim, _unused, model, _id):
+    return LocalElastic(model, _id)
+
+
+mat_factory.registerAllocator("local_elastic", allocator)
 
 # parse input file
 aka.parseInput('material.dat')
@@ -162,7 +168,7 @@ model.initFull(_analysis_method=aka._static)
 solver = model.getNonLinearSolver()
 solver.set("max_iterations", 2)
 solver.set("threshold", 1e-3)
-solver.set("convergence_type", aka._scc_solution)
+solver.set("convergence_type", aka.SolveConvergenceCriteria__solution)
 
 # prepare the dumper
 model.setBaseName("bimaterial")
@@ -171,7 +177,7 @@ model.addDumpFieldVector("internal_force")
 model.addDumpFieldVector("external_force")
 model.addDumpField("strain")
 model.addDumpField("stress")
-model.addDumpField("factor")
+# model.addDumpField("factor")
 model.addDumpField("blocked_dofs")
 
 # Boundary conditions
@@ -182,3 +188,6 @@ model.solveStep()
 
 # dump paraview files
 model.dump()
+
+epot = model.getEnergy('potential')
+print('Potential energy: ' + str(epot))

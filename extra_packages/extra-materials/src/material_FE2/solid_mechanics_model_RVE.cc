@@ -288,7 +288,7 @@ void SolidMechanicsModelRVE::advanceASR(const Matrix<Real> & prestrain) {
   auto & solver = this->getNonLinearSolver();
   solver.set("max_iterations", 2);
   solver.set("threshold", 1e-6);
-  solver.set("convergence_type", _scc_solution);
+  solver.set("convergence_type", SolveConvergenceCriteria::_solution);
 
   do {
     this->solveStep();
@@ -471,7 +471,7 @@ void SolidMechanicsModelRVE::performVirtualTesting(const Matrix<Real> & H,
   auto & solver = this->getNonLinearSolver();
   solver.set("max_iterations", 2);
   solver.set("threshold", 1e-6);
-  solver.set("convergence_type", _scc_solution);
+  solver.set("convergence_type", SolveConvergenceCriteria::_solution);
   this->solveStep();
 
   /// get average stress and strain
@@ -519,7 +519,7 @@ void SolidMechanicsModelRVE::initMaterials() {
 
   this->assignMaterialToElements();
   // synchronize the element material arrays
-  this->synchronize(_gst_material_id);
+  this->synchronize(SynchronizationTag::_material_id);
 
   for (auto & material : materials) {
     /// init internals properties
@@ -529,7 +529,7 @@ void SolidMechanicsModelRVE::initMaterials() {
     material->initMaterial();
   }
 
-  this->synchronize(_gst_smm_init_mat);
+  this->synchronize(SynchronizationTag::_smm_init_mat);
 
   if (this->non_local_manager) {
     this->non_local_manager->initialize();

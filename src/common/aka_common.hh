@@ -56,6 +56,7 @@
 #include <boost/preprocessor.hpp>
 #include <limits>
 #include <list>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -64,105 +65,32 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+/* Constants                                                                  */
+/* -------------------------------------------------------------------------- */
+namespace {
+  __attribute__((unused)) constexpr UInt _all_dimensions{
+      std::numeric_limits<UInt>::max()};
+#ifdef AKANTU_NDEBUG
+  __attribute__((unused)) constexpr Real REAL_INIT_VALUE{0.};
+#else
+  __attribute__((unused)) constexpr Real REAL_INIT_VALUE{
+      std::numeric_limits<Real>::quiet_NaN()};
+#endif
+} // namespace
+
+/* -------------------------------------------------------------------------- */
 /* Common types                                                               */
 /* -------------------------------------------------------------------------- */
 using ID = std::string;
-
-#ifdef AKANTU_NDEBUG
-static const Real REAL_INIT_VALUE = Real(0.);
-#else
-static const Real REAL_INIT_VALUE = std::numeric_limits<Real>::quiet_NaN();
-#endif
-
-/* -------------------------------------------------------------------------- */
-/* Memory types                                                               */
-/* -------------------------------------------------------------------------- */
-
 using MemoryID = UInt;
-
-// using Surface = std::string;
-// using SurfacePair= std::pair<Surface, Surface>;
-// using SurfacePairList = std::list<SurfacePair>;
-
-/* -------------------------------------------------------------------------- */
-extern const UInt _all_dimensions;
-
-#define AKANTU_PP_ENUM(s, data, i, elem)                                       \
-  BOOST_PP_TUPLE_REM()                                                         \
-  elem BOOST_PP_COMMA_IF(BOOST_PP_NOT_EQUAL(i, BOOST_PP_DEC(data)))
 } // namespace akantu
 
-#if (defined(__GNUC__) || defined(__GNUG__))
-#define AKA_GCC_VERSION                                                        \
-  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#if AKA_GCC_VERSION < 60000
-#define AKANTU_ENUM_HASH(type_name)                                            \
-  namespace std {                                                              \
-    template <> struct hash<::akantu::type_name> {                             \
-      using argument_type = ::akantu::type_name;                               \
-      size_t operator()(const argument_type & e) const noexcept {              \
-        auto ue = underlying_type_t<argument_type>(e);                         \
-        return uh(ue);                                                         \
-      }                                                                        \
-                                                                               \
-    private:                                                                   \
-      const hash<underlying_type_t<argument_type>> uh{};                       \
-    };                                                                         \
-  }
-#else
-#define AKANTU_ENUM_HASH(type_name)
-#endif // AKA_GCC_VERSION
-#endif // GNU
-
+/* -------------------------------------------------------------------------- */
+#include "aka_enum_macros.hh"
+/* -------------------------------------------------------------------------- */
 #include "aka_element_classes_info.hh"
 
 namespace akantu {
-
-#define AKANTU_PP_CAT(s, data, elem) BOOST_PP_CAT(data, elem)
-
-#define AKANTU_PP_TYPE_TO_STR(s, data, elem)                                   \
-  ({BOOST_PP_CAT(data::_, elem), BOOST_PP_STRINGIZE(elem)})
-
-#define AKANTU_PP_STR_TO_TYPE(s, data, elem)                                   \
-  ({BOOST_PP_STRINGIZE(elem), BOOST_PP_CAT(data::_, elem)})
-
-#define AKANTU_ENUM_DECLARE(type_name, list)                                   \
-  enum class type_name {                                                       \
-    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_CAT, _, list))          \
-  };
-
-#define AKANTU_ENUM_OUTPUT_STREAM(type_name, list)                             \
-  }                                                                            \
-  AKANTU_ENUM_HASH(type_name)                                                  \
-  namespace aka {                                                              \
-    inline std::string to_string(const ::akantu::type_name & type) {           \
-      static std::unordered_map<::akantu::type_name, std::string> convert{     \
-          BOOST_PP_SEQ_FOR_EACH_I(                                             \
-              AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                         \
-              BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_TYPE_TO_STR,                    \
-                                     ::akantu::type_name, list))};             \
-      return convert.at(type);                                                 \
-    }                                                                          \
-  }                                                                            \
-  namespace akantu {                                                           \
-    inline std::ostream & operator<<(std::ostream & stream,                    \
-                                     const type_name & type) {                 \
-      stream << aka::to_string(type);                                          \
-      return stream;                                                           \
-    }
-
-#define AKANTU_ENUM_INPUT_STREAM(type_name, list)                              \
-  inline std::istream & operator>>(std::istream & stream, type_name & type) {  \
-    std::string str;                                                           \
-    stream >> str;                                                             \
-    static std::unordered_map<std::string, type_name> convert{                 \
-        BOOST_PP_SEQ_FOR_EACH_I(                                               \
-            AKANTU_PP_ENUM, BOOST_PP_SEQ_SIZE(list),                           \
-            BOOST_PP_SEQ_TRANSFORM(AKANTU_PP_STR_TO_TYPE, type_name, list))};  \
-    type = convert.at(str);                                                    \
-    return stream;                                                             \
-  }
-
 /* -------------------------------------------------------------------------- */
 /* Mesh/FEM/Model types                                                       */
 /* -------------------------------------------------------------------------- */
@@ -180,7 +108,8 @@ enum MeshIOType {
   _miot_abaqus       ///< Abaqus mesh format
 };
 
-/// enum MeshEventHandlerPriority defines relative order of execution of events
+/// enum MeshEventHandlerPriority defines relative order of execution of
+/// events
 enum EventHandlerPriority {
   _ehp_highest = 0,
   _ehp_mesh = 5,
@@ -192,7 +121,6 @@ enum EventHandlerPriority {
   _ehp_lowest = 100
 };
 
-#ifndef SWIG
 // clang-format off
 #define AKANTU_MODEL_TYPES                                              \
   (model)                                                               \
@@ -205,20 +133,10 @@ enum EventHandlerPriority {
 // clang-format on
 
 /// enum ModelType defines which type of physics is solved
-AKANTU_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
-AKANTU_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
-AKANTU_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
-#else
-enum class ModelType {
-  _model,
-  _solid_mechanics_model,
-  _solid_mechanics_model_cohesive,
-  _heat_transfer_model,
-  _phase_field_model,
-  _structural_mechanics_model,
-  _embedded_model
-};
-#endif
+AKANTU_CLASS_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
+AKANTU_CLASS_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
+>>>>>>> master
 
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion
@@ -233,46 +151,119 @@ enum AnalysisMethod {
 /// enum DOFSupportType defines which kind of dof that can exists
 enum DOFSupportType { _dst_nodal, _dst_generic };
 
+#if !defined(DOXYGEN)
+// clang-format off
+#define AKANTU_NON_LINEAR_SOLVER_TYPES                                 \
+  (linear)                                                             \
+  (newton_raphson)                                                     \
+  (newton_raphson_modified)                                            \
+  (lumped)                                                             \
+  (gmres)                                                              \
+  (bfgs)                                                               \
+  (cg)                                                                 \
+  (auto)
+// clang-format on
+AKANTU_CLASS_ENUM_DECLARE(NonLinearSolverType, AKANTU_NON_LINEAR_SOLVER_TYPES)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(NonLinearSolverType,
+                                AKANTU_NON_LINEAR_SOLVER_TYPES)
+AKANTU_CLASS_ENUM_INPUT_STREAM(NonLinearSolverType,
+                               AKANTU_NON_LINEAR_SOLVER_TYPES)
+#else
 /// Type of non linear resolution available in akantu
-enum NonLinearSolverType {
-  _nls_linear,                  ///< No non linear convergence loop
-  _nls_newton_raphson,          ///< Regular Newton-Raphson
-  _nls_newton_raphson_modified, ///< Newton-Raphson with initial tangent
-  _nls_lumped,                  ///< Case of lumped mass or equivalent matrix
-  _nls_auto ///< This will take a default value that make sense in case of
-            ///  model::getNewSolver
+enum class NonLinearSolverType {
+  _linear,                  ///< No non linear convergence loop
+  _newton_raphson,          ///< Regular Newton-Raphson
+  _newton_raphson_modified, ///< Newton-Raphson with initial tangent
+  _lumped,                  ///< Case of lumped mass or equivalent matrix
+  _gmres,
+  _bfgs,
+  _cg,
+  _auto ///< This will take a default value that make sense in case of
+        ///  model::getNewSolver
 };
+#endif
 
+#if !defined(DOXYGEN)
+// clang-format off
+#define AKANTU_TIME_STEP_SOLVER_TYPE                                    \
+  (static)                                                             \
+  (dynamic)                                                            \
+  (dynamic_lumped)                                                     \
+  (not_defined)
+// clang-format on
+AKANTU_CLASS_ENUM_DECLARE(TimeStepSolverType, AKANTU_TIME_STEP_SOLVER_TYPE)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(TimeStepSolverType,
+                                AKANTU_TIME_STEP_SOLVER_TYPE)
+AKANTU_CLASS_ENUM_INPUT_STREAM(TimeStepSolverType, AKANTU_TIME_STEP_SOLVER_TYPE)
+#else
 /// Type of time stepping solver
-enum TimeStepSolverType {
-  _tsst_static,         ///< Static solution
-  _tsst_dynamic,        ///< Dynamic solver
-  _tsst_dynamic_lumped, ///< Dynamic solver with lumped mass
-  _tsst_not_defined,    ///< For not defined cases
+enum class TimeStepSolverType {
+  _static,         ///< Static solution
+  _dynamic,        ///< Dynamic solver
+  _dynamic_lumped, ///< Dynamic solver with lumped mass
+  _not_defined,    ///< For not defined cases
 };
+#endif
 
+#if !defined(DOXYGEN)
+// clang-format off
+#define AKANTU_INTEGRATION_SCHEME_TYPE                                  \
+  (pseudo_time)                                                        \
+  (forward_euler)                                                      \
+  (trapezoidal_rule_1)                                                 \
+  (backward_euler)                                                     \
+  (central_difference)                                                 \
+  (fox_goodwin)                                                        \
+  (trapezoidal_rule_2)                                                 \
+  (linear_acceleration)                                                \
+  (newmark_beta)                                                       \
+  (generalized_trapezoidal)
+// clang-format on
+AKANTU_CLASS_ENUM_DECLARE(IntegrationSchemeType, AKANTU_INTEGRATION_SCHEME_TYPE)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(IntegrationSchemeType,
+                                AKANTU_INTEGRATION_SCHEME_TYPE)
+AKANTU_CLASS_ENUM_INPUT_STREAM(IntegrationSchemeType,
+                               AKANTU_INTEGRATION_SCHEME_TYPE)
+#else
 /// Type of integration scheme
-enum IntegrationSchemeType {
-  _ist_pseudo_time,            ///< Pseudo Time
-  _ist_forward_euler,          ///< GeneralizedTrapezoidal(0)
-  _ist_trapezoidal_rule_1,     ///< GeneralizedTrapezoidal(1/2)
-  _ist_backward_euler,         ///< GeneralizedTrapezoidal(1)
-  _ist_central_difference,     ///< NewmarkBeta(0, 1/2)
-  _ist_fox_goodwin,            ///< NewmarkBeta(1/6, 1/2)
-  _ist_trapezoidal_rule_2,     ///< NewmarkBeta(1/2, 1/2)
-  _ist_linear_acceleration,    ///< NewmarkBeta(1/3, 1/2)
-  _ist_newmark_beta,           ///< generic NewmarkBeta with user defined
-                               /// alpha and beta
-  _ist_generalized_trapezoidal ///< generic GeneralizedTrapezoidal with user
-                               ///  defined alpha
+enum class IntegrationSchemeType {
+  _pseudo_time,            ///< Pseudo Time
+  _forward_euler,          ///< GeneralizedTrapezoidal(0)
+  _trapezoidal_rule_1,     ///< GeneralizedTrapezoidal(1/2)
+  _backward_euler,         ///< GeneralizedTrapezoidal(1)
+  _central_difference,     ///< NewmarkBeta(0, 1/2)
+  _fox_goodwin,            ///< NewmarkBeta(1/6, 1/2)
+  _trapezoidal_rule_2,     ///< NewmarkBeta(1/2, 1/2)
+  _linear_acceleration,    ///< NewmarkBeta(1/3, 1/2)
+  _newmark_beta,           ///< generic NewmarkBeta with user defined
+                           /// alpha and beta
+  _generalized_trapezoidal ///< generic GeneralizedTrapezoidal with user
+                           ///  defined alpha
 };
+#endif
 
+#if !defined(DOXYGEN)
+// clang-format off
+#define AKANTU_SOLVE_CONVERGENCE_CRITERIA       \
+  (residual)                                    \
+  (solution)                                    \
+  (residual_mass_wgh)
+// clang-format on
+AKANTU_CLASS_ENUM_DECLARE(SolveConvergenceCriteria,
+                          AKANTU_SOLVE_CONVERGENCE_CRITERIA)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(SolveConvergenceCriteria,
+                                AKANTU_SOLVE_CONVERGENCE_CRITERIA)
+AKANTU_CLASS_ENUM_INPUT_STREAM(SolveConvergenceCriteria,
+                               AKANTU_SOLVE_CONVERGENCE_CRITERIA)
+#else
 /// enum SolveConvergenceCriteria different convergence criteria
-enum SolveConvergenceCriteria {
-  _scc_residual,         ///< Use residual to test the convergence
-  _scc_solution,         ///< Use solution to test the convergence
-  _scc_residual_mass_wgh ///< Use residual weighted by inv. nodal mass to testb
+enum class SolveConvergenceCriteria {
+  _residual,         ///< Use residual to test the convergence
+  _solution,         ///< Use solution to test the convergence
+  _residual_mass_wgh ///< Use residual weighted by inv. nodal mass to
+                     ///< testb
 };
+#endif
 
 /// enum CohesiveMethod type of insertion of cohesive elements
 enum CohesiveMethod { _intrinsic, _extrinsic };
@@ -286,80 +277,121 @@ enum MatrixType { _unsymmetric, _symmetric, _mt_not_defined };
 /// @enum CommunicatorType type of communication method to use
 enum CommunicatorType { _communicator_mpi, _communicator_dummy };
 
+#if !defined(DOXYGEN)
+// clang-format off
+#define AKANTU_SYNCHRONIZATION_TAG              \
+  (whatever)                                    \
+  (update)                                      \
+  (ask_nodes)                                   \
+  (size)                                        \
+  (smm_mass)                                    \
+  (smm_for_gradu)                               \
+  (smm_boundary)                                \
+  (smm_uv)                                      \
+  (smm_res)                                     \
+  (smm_init_mat)                                \
+  (smm_stress)                                  \
+  (smmc_facets)                                 \
+  (smmc_facets_conn)                            \
+  (smmc_facets_stress)                          \
+  (smmc_damage)                                 \
+  (giu_global_conn)                             \
+  (ce_groups)                                   \
+  (gm_clusters)                                 \
+  (htm_temperature)                             \
+  (htm_gradient_temperature)                    \
+  (htm_phi)                                     \
+  (htm_gradient_phi)                            \
+  (mnl_for_average)                             \
+  (mnl_weight)                                  \
+  (nh_criterion)                                \
+  (test)                                        \
+  (user_1)                                      \
+  (user_2)                                      \
+  (material_id)                                 \
+  (for_dump)                                    \
+  (cf_nodal)                                    \
+  (cf_incr)                                     \
+  (solver_solution)
+// clang-format on
+AKANTU_CLASS_ENUM_DECLARE(SynchronizationTag, AKANTU_SYNCHRONIZATION_TAG)
+AKANTU_CLASS_ENUM_OUTPUT_STREAM(SynchronizationTag, AKANTU_SYNCHRONIZATION_TAG)
+#else
 /// @enum SynchronizationTag type of synchronizations
-enum SynchronizationTag {
+enum class SynchronizationTag {
   //--- Generic tags ---
-  _gst_whatever,
-  _gst_update,
-  _gst_ask_nodes,
-  _gst_size,
+  _whatever,
+  _update,
+  _ask_nodes,
+  _size,
 
   //--- SolidMechanicsModel tags ---
-  _gst_smm_mass,      ///< synchronization of the SolidMechanicsModel.mass
-  _gst_smm_for_gradu, ///< synchronization of the
-                      /// SolidMechanicsModel.displacement
-  _gst_smm_boundary,  ///< synchronization of the boundary, forces, velocities
-                      /// and displacement
-  _gst_smm_uv,  ///< synchronization of the nodal velocities and displacement
-  _gst_smm_res, ///< synchronization of the nodal residual
-  _gst_smm_init_mat, ///< synchronization of the data to initialize materials
-  _gst_smm_stress,  ///< synchronization of the stresses to compute the internal
-                    /// forces
-  _gst_smmc_facets, ///< synchronization of facet data to setup facet synch
-  _gst_smmc_facets_conn,   ///< synchronization of facet global connectivity
-  _gst_smmc_facets_stress, ///< synchronization of facets' stress to setup facet
-                           /// synch
-  _gst_smmc_damage,        ///< synchronization of damage
+  _smm_mass,      ///< synchronization of the SolidMechanicsModel.mass
+  _smm_for_gradu, ///< synchronization of the
+                  /// SolidMechanicsModel.displacement
+  _smm_boundary,  ///< synchronization of the boundary, forces, velocities
+                  /// and displacement
+  _smm_uv,        ///< synchronization of the nodal velocities and displacement
+  _smm_res,       ///< synchronization of the nodal residual
+  _smm_init_mat,  ///< synchronization of the data to initialize materials
+  _smm_stress,    ///< synchronization of the stresses to compute the
+                  ///< internal
+                  /// forces
+  _smmc_facets,   ///< synchronization of facet data to setup facet synch
+  _smmc_facets_conn,   ///< synchronization of facet global connectivity
+  _smmc_facets_stress, ///< synchronization of facets' stress to setup
+                       ///< facet
+                       /// synch
+  _smmc_damage,        ///< synchronization of damage
 
   // --- GlobalIdsUpdater tags ---
-  _gst_giu_global_conn, ///< synchronization of global connectivities
+  _giu_global_conn, ///< synchronization of global connectivities
 
   // --- CohesiveElementInserter tags ---
-  _gst_ce_groups, ///< synchronization of cohesive element insertion depending
-                  /// on facet groups
+  _ce_groups, ///< synchronization of cohesive element insertion depending
+              /// on facet groups
 
   // --- GroupManager tags ---
-  _gst_gm_clusters, ///< synchronization of clusters
+  _gm_clusters, ///< synchronization of clusters
 
   // --- HeatTransfer tags ---
-  _gst_htm_temperature,          ///< synchronization of the nodal temperature
-  _gst_htm_gradient_temperature, ///< synchronization of the element gradient
-                                 /// temperature
+  _htm_temperature,          ///< synchronization of the nodal temperature
+  _htm_gradient_temperature, ///< synchronization of the element gradient
+                             /// temperature
+
   // --- PhaseFieldModel tags ---
-  _gst_pfm_damage,               ///< synchronization of the nodal damage
-  _gst_pfm_gradient_damage,      ///< synchronization of the element
+  _pfm_damage,               ///< synchronization of the nodal damage
+  _pfm_gradient_damage,      ///< synchronization of the element
 				 ///  gradient damage
+
   // --- LevelSet tags ---
-  _gst_htm_phi,          ///< synchronization of the nodal level set value phi
-  _gst_htm_gradient_phi, ///< synchronization of the element gradient phi
+  _htm_phi,          ///< synchronization of the nodal level set value phi
+  _htm_gradient_phi, ///< synchronization of the element gradient phi
 
   //--- Material non local ---
-  _gst_mnl_for_average, ///< synchronization of data to average in non local
-                        /// material
-  _gst_mnl_weight,      ///< synchronization of data for the weight computations
+  _mnl_for_average, ///< synchronization of data to average in non local
+                    /// material
+  _mnl_weight,      ///< synchronization of data for the weight computations
 
   // --- NeighborhoodSynchronization tags ---
-  _gst_nh_criterion,
+  _nh_criterion,
 
   // --- General tags ---
-  _gst_test,        ///< Test tag
-  _gst_user_1,      ///< tag for user simulations
-  _gst_user_2,      ///< tag for user simulations
-  _gst_material_id, ///< synchronization of the material ids
-  _gst_for_dump,    ///< everything that needs to be synch before dump
+  _test,        ///< Test tag
+  _user_1,      ///< tag for user simulations
+  _user_2,      ///< tag for user simulations
+  _material_id, ///< synchronization of the material ids
+  _for_dump,    ///< everything that needs to be synch before dump
 
   // --- Contact & Friction ---
-  _gst_cf_nodal, ///< synchronization of disp, velo, and current position
-  _gst_cf_incr,  ///< synchronization of increment
+  _cf_nodal, ///< synchronization of disp, velo, and current position
+  _cf_incr,  ///< synchronization of increment
 
   // --- Solver tags ---
-  _gst_solver_solution ///< synchronization of the solution obained with the
-                       /// PETSc solver
+  _solver_solution ///< synchronization of the solution obained with the
+                   /// PETSc solver
 };
-
-/// standard output stream operator for SynchronizationTag
-inline std::ostream & operator<<(std::ostream & stream,
-                                 SynchronizationTag type);
+#endif
 
 /// @enum GhostType type of ghost
 enum GhostType {
@@ -408,20 +440,13 @@ inline NodeFlag operator~(const NodeFlag & a) {
   return NodeFlag(~under(a));
 }
 
-inline std::ostream & operator<<(std::ostream & stream, const NodeFlag & flag) {
-  using under = std::underlying_type_t<NodeFlag>;
-  stream << under(flag);
-  return stream;
-}
+std::ostream & operator<<(std::ostream & stream, NodeFlag flag);
 
 } // namespace akantu
 
-#ifndef SWIG
 AKANTU_ENUM_HASH(GhostType)
-#endif
 
 namespace akantu {
-
 /* -------------------------------------------------------------------------- */
 struct GhostType_def {
   using type = GhostType;
@@ -440,18 +465,8 @@ inline std::ostream & operator<<(std::ostream & stream, GhostType type);
 /* -------------------------------------------------------------------------- */
 #define AKANTU_MIN_ALLOCATION 2000
 
-#define AKANTU_INDENT " "
+#define AKANTU_INDENT ' '
 #define AKANTU_INCLUDE_INLINE_IMPL
-
-/* -------------------------------------------------------------------------- */
-/* Type traits                                                                */
-/* -------------------------------------------------------------------------- */
-struct TensorTrait {};
-/* -------------------------------------------------------------------------- */
-template <typename T> using is_tensor = std::is_base_of<TensorTrait, T>;
-/* -------------------------------------------------------------------------- */
-template <typename T> using is_scalar = std::is_arithmetic<T>;
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_SET_MACRO(name, variable, type)                                 \
@@ -493,18 +508,8 @@ void finalize();
 void readInputFile(const std::string & input_file);
 /* -------------------------------------------------------------------------- */
 
-/*
- * For intel compiler annoying remark
- */
-// #if defined(__INTEL_COMPILER)
-// /// remark #981: operands are evaluated in unspecified order
-// #pragma warning(disable : 981)
-// /// remark #383: value copied to temporary, reference to temporary used
-// #pragma warning(disable : 383)
-// #endif // defined(__INTEL_COMPILER)
-
 /* -------------------------------------------------------------------------- */
-/* string manipulation                                                        */
+/* string manipulation */
 /* -------------------------------------------------------------------------- */
 inline std::string to_lower(const std::string & str);
 /* -------------------------------------------------------------------------- */
@@ -517,12 +522,69 @@ inline std::string trim(const std::string & to_trim, char c);
 template <typename T> std::string printMemorySize(UInt size);
 /* -------------------------------------------------------------------------- */
 
+struct TensorTrait {};
 } // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+/* Type traits                                                                */
+/* -------------------------------------------------------------------------- */
+namespace aka {
+
+/* ------------------------------------------------------------------------ */
+template <typename T> using is_tensor = std::is_base_of<akantu::TensorTrait, T>;
+/* ------------------------------------------------------------------------ */
+template <typename T> using is_scalar = std::is_arithmetic<T>;
+/* ------------------------------------------------------------------------ */
+template <typename R, typename T,
+          std::enable_if_t<std::is_reference<T>::value> * = nullptr>
+bool is_of_type(T && t) {
+  return (
+      dynamic_cast<std::add_pointer_t<
+          std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
+                             std::add_const_t<R>, R>>>(&t) != nullptr);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename R, typename T> bool is_of_type(std::unique_ptr<T> & t) {
+  return (
+      dynamic_cast<std::add_pointer_t<
+          std::conditional_t<std::is_const<T>::value, std::add_const_t<R>, R>>>(
+          t.get()) != nullptr);
+}
+
+/* ------------------------------------------------------------------------ */
+template <typename R, typename T,
+          std::enable_if_t<std::is_reference<T>::value> * = nullptr>
+decltype(auto) as_type(T && t) {
+  static_assert(
+      disjunction<
+          std::is_base_of<std::decay_t<T>, std::decay_t<R>>, // down-cast
+          std::is_base_of<std::decay_t<R>, std::decay_t<T>>  // up-cast
+          >::value,
+      "Type T and R are not valid for a as_type conversion");
+  return dynamic_cast<std::add_lvalue_reference_t<
+      std::conditional_t<std::is_const<std::remove_reference_t<T>>::value,
+                         std::add_const_t<R>, R>>>(t);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename R, typename T,
+          std::enable_if_t<std::is_pointer<T>::value> * = nullptr>
+decltype(auto) as_type(T && t) {
+  return &as_type<R>(*t);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename R, typename T>
+decltype(auto) as_type(const std::shared_ptr<T> & t) {
+  return std::dynamic_pointer_cast<R>(t);
+}
+
+} // namespace aka
 
 #include "aka_fwd.hh"
 
 namespace akantu {
-
 /// get access to the internal argument parser
 cppargparse::ArgumentParser & getStaticArgumentParser();
 
@@ -537,7 +599,6 @@ const ParserSection & getUserParser();
 #include "aka_common_inline_impl.cc"
 
 /* -------------------------------------------------------------------------- */
-
 #if AKANTU_INTEGER_SIZE == 4
 #define AKANTU_HASH_COMBINE_MAGIC_NUMBER 0x9e3779b9
 #elif AKANTU_INTEGER_SIZE == 8
@@ -546,8 +607,8 @@ const ParserSection & getUserParser();
 
 namespace std {
 /**
- * Hashing function for pairs based on hash_combine from boost The magic number
- * is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
+ * Hashing function for pairs based on hash_combine from boost The magic
+ * number is coming from the golden number @f[\phi = \frac{1 + \sqrt5}{2}@f]
  * @f[\frac{2^32}{\phi} = 0x9e3779b9@f]
  * http://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
  * http://burtleburtle.net/bob/hash/doobs.html

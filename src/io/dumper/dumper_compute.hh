@@ -114,17 +114,13 @@ public:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  FieldCompute(SubFieldCompute & cont, ComputeFunctorInterface & func)
-      : sub_field(cont),
-        func(dynamic_cast<ComputeFunctor<sub_return_type, return_type> &>(
-            func)) {
+  FieldCompute(SubFieldCompute & cont, std::unique_ptr<ComputeFunctorInterface> func)
+      : sub_field(aka::as_type<SubFieldCompute>(cont.shared_from_this())),
+        func(aka::as_type<ComputeFunctor<sub_return_type, return_type>>(func.release())) {
     this->checkHomogeneity();
   };
 
-  ~FieldCompute() override {
-    delete &(this->sub_field);
-    delete &(this->func);
-  }
+  ~FieldCompute() override = default;
 
   void registerToDumper(const std::string & id,
                         iohelper::Dumper & dumper) override {
@@ -135,10 +131,10 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 public:
-  iterator begin() { return iterator(sub_field.begin(), func); }
-  iterator end() { return iterator(sub_field.end(), func); }
+  iterator begin() { return iterator(sub_field->begin(), *func); }
+  iterator end() { return iterator(sub_field->end(), *func); }
 
-  UInt getDim() { return func.getDim(); }
+  UInt getDim() { return func->getDim(); }
 
   UInt size() {
     throw;
@@ -157,34 +153,29 @@ public:
   getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
                   ElementKind kind = _ek_not_defined) override {
     ElementTypeMap<UInt> nb_components;
-    const ElementTypeMap<UInt> & old_nb_components =
-        this->sub_field.getNbComponents(dim, ghost_type, kind);
+    const auto & old_nb_components =
+        this->sub_field->getNbComponents(dim, ghost_type, kind);
 
-    ElementTypeMap<UInt>::type_iterator tit =
-        old_nb_components.firstType(dim, ghost_type, kind);
-    ElementTypeMap<UInt>::type_iterator end =
-        old_nb_components.lastType(dim, ghost_type, kind);
-
-    while (tit != end) {
-      UInt nb_comp = old_nb_components(*tit, ghost_type);
-      nb_components(*tit, ghost_type) = func.getNbComponent(nb_comp);
-      ++tit;
+    for (auto type : old_nb_components.elementTypes(dim, ghost_type, kind)) {
+      UInt nb_comp = old_nb_components(type, ghost_type);
+      nb_components(type, ghost_type) = func->getNbComponent(nb_comp);
     }
     return nb_components;
   };
 
   /// for connection to a FieldCompute
-  inline Field * connect(FieldComputeProxy & proxy) override;
+  inline std::shared_ptr<Field> connect(FieldComputeProxy & proxy) override;
 
   /// for connection to a FieldCompute
-  ComputeFunctorInterface * connect(HomogenizerProxy & proxy) override;
+  std::unique_ptr<ComputeFunctorInterface>
+  connect(HomogenizerProxy & proxy) override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 public:
-  SubFieldCompute & sub_field;
-  ComputeFunctor<sub_return_type, return_type> & func;
+  std::shared_ptr<SubFieldCompute> sub_field;
+  std::unique_ptr<ComputeFunctor<sub_return_type, return_type>> func;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -196,43 +187,38 @@ class FieldComputeProxy {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  FieldComputeProxy(ComputeFunctorInterface & func) : func(func){};
+  FieldComputeProxy(std::unique_ptr<ComputeFunctorInterface> func)
+      : func(std::move(func)){};
 
-  inline static Field * createFieldCompute(Field * field,
-                                           ComputeFunctorInterface & func) {
-    /// that looks fishy an object passed as a ref and destroyed at their end of
-    /// the function
-    FieldComputeProxy compute_proxy(func);
+  inline static std::shared_ptr<Field>
+  createFieldCompute(std::shared_ptr<Field> field,
+                     std::unique_ptr<ComputeFunctorInterface> func) {
+    FieldComputeProxy compute_proxy(std::move(func));
     return field->connect(compute_proxy);
   }
 
-  template <typename T> Field * connectToField(T * ptr) {
-    if (dynamic_cast<ComputeFunctorOutput<Vector<Real>> *>(&func)) {
+  template <typename T> std::shared_ptr<Field> connectToField(T * ptr) {
+    if (aka::is_of_type<ComputeFunctorOutput<Vector<Real>>>(func)) {
       return this->connectToFunctor<Vector<Real>>(ptr);
-    } else if (dynamic_cast<ComputeFunctorOutput<Vector<UInt>> *>(&func)) {
+    } else if (aka::is_of_type<ComputeFunctorOutput<Vector<UInt>>>(func)) {
       return this->connectToFunctor<Vector<UInt>>(ptr);
-    }
-
-    else if (dynamic_cast<ComputeFunctorOutput<Matrix<UInt>> *>(&func)) {
+    } else if (aka::is_of_type<ComputeFunctorOutput<Matrix<UInt>>>(func)) {
       return this->connectToFunctor<Matrix<UInt>>(ptr);
-    }
-
-    else if (dynamic_cast<ComputeFunctorOutput<Matrix<Real>> *>(&func)) {
+    } else if (aka::is_of_type<ComputeFunctorOutput<Matrix<Real>>>(func)) {
       return this->connectToFunctor<Matrix<Real>>(ptr);
-    }
-
-    else
+    } else {
       throw;
+    }
   }
 
-  template <typename output, typename T> Field * connectToFunctor(T * ptr) {
-    auto * functor_ptr = new FieldCompute<T, output>(*ptr, func);
-    return functor_ptr;
+  template <typename output, typename T>
+  std::shared_ptr<Field> connectToFunctor(T * ptr) {
+    return std::make_shared<FieldCompute<T, output>>(*ptr, std::move(func));
   }
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2>
-  Field *
+  std::shared_ptr<Field>
   connectToFunctor(__attribute__((unused))
                    FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
                                 return_type2> * ptr) {
@@ -242,7 +228,7 @@ public:
 
   template <typename output, typename SubFieldCompute, typename return_type1,
             typename return_type2, typename return_type3, typename return_type4>
-  Field * connectToFunctor(
+  std::shared_ptr<Field> connectToFunctor(
       __attribute__((unused)) FieldCompute<
           FieldCompute<FieldCompute<FieldCompute<SubFieldCompute, return_type1>,
                                     return_type2>,
@@ -256,19 +242,19 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 public:
-  ComputeFunctorInterface & func;
+  std::unique_ptr<ComputeFunctorInterface> func;
 };
 
 /* -------------------------------------------------------------------------- */
 /// for connection to a FieldCompute
 template <typename SubFieldCompute, typename return_type>
-inline Field *
+inline std::shared_ptr<Field>
 FieldCompute<SubFieldCompute, return_type>::connect(FieldComputeProxy & proxy) {
   return proxy.connectToField(this);
 }
 
 /* -------------------------------------------------------------------------- */
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_COMPUTE_HH__ */

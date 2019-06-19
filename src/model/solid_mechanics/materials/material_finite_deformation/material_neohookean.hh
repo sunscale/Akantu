@@ -81,8 +81,7 @@ public:
                                    GhostType ghost_type = _not_ghost) override;
 
   /// compute the elastic potential energy
-  void computePotentialEnergy(ElementType el_type,
-                              GhostType ghost_type = _not_ghost) override;
+  void computePotentialEnergy(ElementType el_type) override;
 
   /// compute the tangent stiffness matrix for an element type
   void computeTangentModuli(const ElementType & el_type,
@@ -163,6 +162,6 @@ protected:
 
 #include "material_neohookean_inline_impl.cc"
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_NEOHOOKEAN_HH__ */

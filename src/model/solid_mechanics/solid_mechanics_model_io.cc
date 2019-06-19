@@ -130,12 +130,12 @@ void SolidMechanicsModel::onDump() {
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
-dumper::Field * SolidMechanicsModel::createElementalField(
+std::shared_ptr<dumper::Field> SolidMechanicsModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
     bool padding_flag, const UInt & spatial_dimension,
     const ElementKind & kind) {
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
 
   if (field_name == "partitions")
     field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(
@@ -158,56 +158,58 @@ dumper::Field * SolidMechanicsModel::createElementalField(
     bool is_internal = this->isInternal(field_name_copy, kind);
 
     if (is_internal) {
-      ElementTypeMap<UInt> nb_data_per_elem =
+      auto nb_data_per_elem =
           this->getInternalDataPerElem(field_name_copy, kind);
-      ElementTypeMapArray<Real> & internal_flat =
-          this->flattenInternal(field_name_copy, kind);
+      auto & internal_flat = this->flattenInternal(field_name_copy, kind);
+
       field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
           internal_flat, group_name, spatial_dimension, kind, nb_data_per_elem);
+
+      std::unique_ptr<dumper::ComputeFunctorInterface> func;
       if (field_name == "strain") {
-        auto * foo = new dumper::ComputeStrain<false>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputeStrain<false>>(*this);
       } else if (field_name == "Von Mises stress") {
-        auto * foo = new dumper::ComputeVonMisesStress(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputeVonMisesStress>(*this);
       } else if (field_name == "Green strain") {
-        auto * foo = new dumper::ComputeStrain<true>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputeStrain<true>>(*this);
       } else if (field_name == "principal strain") {
-        auto * foo = new dumper::ComputePrincipalStrain<false>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputePrincipalStrain<false>>(*this);
       } else if (field_name == "principal Green strain") {
-        auto * foo = new dumper::ComputePrincipalStrain<true>(*this);
-        field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+        func = std::make_unique<dumper::ComputePrincipalStrain<true>>(*this);
       }
 
+      if (func) {
+        field = dumper::FieldComputeProxy::createFieldCompute(field,
+                                                              std::move(func));
+      }
       // treat the paddings
       if (padding_flag) {
         if (field_name == "stress") {
           if (spatial_dimension == 2) {
-            auto * foo = new dumper::StressPadder<2>(*this);
-            field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+            auto foo = std::make_unique<dumper::StressPadder<2>>(*this);
+            field = dumper::FieldComputeProxy::createFieldCompute(
+                field, std::move(foo));
           }
         } else if (field_name == "strain" || field_name == "Green strain") {
           if (spatial_dimension == 2) {
-            auto * foo = new dumper::StrainPadder<2>(*this);
-            field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+            auto foo = std::make_unique<dumper::StrainPadder<2>>(*this);
+            field = dumper::FieldComputeProxy::createFieldCompute(
+                field, std::move(foo));
           }
         }
       }
 
       // homogenize the field
-      dumper::ComputeFunctorInterface * foo =
-          dumper::HomogenizerProxy::createHomogenizer(*field);
+      auto foo = dumper::HomogenizerProxy::createHomogenizer(*field);
 
-      field = dumper::FieldComputeProxy::createFieldCompute(field, *foo);
+      field = dumper::FieldComputeProxy::createFieldCompute(field, std::move(foo));
     }
   }
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field *
+std::shared_ptr<dumper::Field>
 SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                           const std::string & group_name,
                                           bool padding_flag) {
@@ -228,7 +230,7 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
         "The 'residual' field has been replaced by 'internal_force'");
   }
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
   if (padding_flag)
     field = this->mesh.createNodalField(real_nodal_fields[field_name],
                                         group_name, 3);
@@ -240,39 +242,39 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
 }
 
 /* -------------------------------------------------------------------------- */
-dumper::Field * SolidMechanicsModel::createNodalFieldBool(
+std::shared_ptr<dumper::Field> SolidMechanicsModel::createNodalFieldBool(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
 
-  dumper::Field * field = nullptr;
+  std::shared_ptr<dumper::Field> field;
   field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);
   return field;
 }
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-dumper::Field * SolidMechanicsModel::createElementalField(const std::string &,
-                                                          const std::string &,
-                                                          bool, const UInt &,
-                                                          const ElementKind &) {
+std::shared_ptr<dumper::Field>
+SolidMechanicsModel::createElementalField(const std::string &,
+                                          const std::string &, bool,
+                                          const UInt &, const ElementKind &) {
   return nullptr;
 }
 /* --------------------------------------------------------------------------
  */
-dumper::Field * SolidMechanicsModel::createNodalFieldReal(const std::string &,
-                                                          const std::string &,
-                                                          bool) {
+std::shaed_ptr<dumper::Field>
+SolidMechanicsModel::createNodalFieldReal(const std::string &,
+                                          const std::string &, bool) {
   return nullptr;
 }
 
 /* --------------------------------------------------------------------------
  */
-dumper::Field * SolidMechanicsModel::createNodalFieldBool(const std::string &,
-                                                          const std::string &,
-                                                          bool) {
+std::shared_ptr<dumper::Field>
+SolidMechanicsModel::createNodalFieldBool(const std::string &,
+                                          const std::string &, bool) {
   return nullptr;
 }
 

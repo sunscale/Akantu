@@ -53,7 +53,8 @@ template <typename type_>
 class TestSMMFixtureWorkDynamic : public TestSMMFixture<type_> {
 public:
   void SetUp() override {
-    this->mesh_file = "../../patch_tests/data/bar" + aka::to_string(this->type) + ".msh";
+    this->mesh_file =
+        "../../patch_tests/data/bar" + std::to_string(this->type) + ".msh";
     TestSMMFixture<type_>::SetUp();
 
     getStaticParser().parse("test_solid_mechanics_model_"
@@ -91,7 +92,7 @@ public:
       // TODO: this is a hack to work
       //      around non-implemented
       //      BC::Neumann::FromTraction for 1D
-      auto & force = this->model->getForce();
+      auto & force = this->model->getExternalForce();
 
       for (auto && pair : zip(make_view(pos, this->spatial_dimension),
                               make_view(force, this->spatial_dimension))) {
@@ -112,7 +113,7 @@ public:
   }
 };
 
-TYPED_TEST_CASE(TestSMMFixtureWorkDynamic, gtest_element_types);
+TYPED_TEST_SUITE(TestSMMFixtureWorkDynamic, gtest_element_types);
 
 /* TODO: this is currently disabled for terrible results and performance
 TYPED_TEST(TestSMMFixtureBar, WorkImplicit) {
@@ -154,4 +155,4 @@ TYPED_TEST(TestSMMFixtureWorkDynamic, WorkExplicit) {
     // Sadly not very exact for such a coarse mesh.
   }
 }
-}
+} // namespace

@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
 #include "aka_types.hh"
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <gtest/gtest.h>
@@ -537,6 +538,36 @@ TEST_F(TensorFixture, MatrixSubstractEqual) {
   for (int i = 0; i < size_; ++i)
     EXPECT_DOUBLE_EQ(0., m[i]);
 }
+
+TEST_F(TensorFixture, MatrixIterator) {
+  Matrix<double> m(mref);
+
+  UInt col_count = 0;
+  for (auto && col : m) {
+    Vector<Real> col_hand(m.storage() + col_count * m.rows(), m.rows());
+    Vector<Real> col_wrap(col);
+
+    auto comp = (col_wrap - col_hand).norm<L_inf>();
+    EXPECT_DOUBLE_EQ(0., comp);
+    ++col_count;
+  }
+}
+
+TEST_F(TensorFixture, MatrixIteratorZip) {
+  Matrix<double> m1(mref);
+  Matrix<double> m2(mref);
+
+  UInt col_count = 0;
+  for (auto && col : zip(m1, m2)) {
+    Vector<Real> col1(std::get<0>(col));
+    Vector<Real> col2(std::get<1>(col));
+
+    auto comp = (col1 - col2).norm<L_inf>();
+    EXPECT_DOUBLE_EQ(0., comp);
+    ++col_count;
+  }
+}
+
 
 #if defined(AKANTU_USE_LAPACK)
 TEST_F(TensorFixture, MatrixEigs) {

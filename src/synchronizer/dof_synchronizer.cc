@@ -82,9 +82,7 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
   if (dof_manager.getSupportType(dof_id) != _dst_nodal)
     return;
 
-  using const_scheme_iterator = Communications<UInt>::const_scheme_iterator;
-
-  const auto equation_numbers = dof_manager.getLocalEquationNumbers(dof_id);
+  const auto & equation_numbers = dof_manager.getLocalEquationsNumbers(dof_id);
 
   const auto & associated_nodes = dof_manager.getDOFsAssociatedNodes(dof_id);
   const auto & node_synchronizer = dof_manager.getMesh().getNodeSynchronizer();
@@ -92,7 +90,7 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
 
   auto transcode_node_to_global_dof_scheme =
       [this, &associated_nodes,
-       &equation_numbers](const_scheme_iterator it, const_scheme_iterator end,
+       &equation_numbers](auto && it, auto && end,
                           const CommunicationSendRecv & sr) -> void {
     for (; it != end; ++it) {
       auto & scheme = communications.createScheme(it->first, sr);

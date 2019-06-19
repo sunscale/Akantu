@@ -43,7 +43,7 @@
 namespace akantu {
 class DOFManagerDefault;
 class TermsToAssemble;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -77,6 +77,10 @@ public:
   /// assemble a local matrix in the sparse one
   inline void add(UInt i, UInt j, Real value) override;
 
+  /// add a block of values
+  inline void addValues(const Vector<Int> & is, const Vector<Int> & js,
+                        const Matrix<Real> & values, MatrixType values_type);
+
   /// set the size of the matrix
   void resize(UInt size) { this->size_ = size; }
 
@@ -99,8 +103,14 @@ public:
   // virtual void add(const SparseMatrix & matrix, Real alpha);
 
   /// Equivalent of *gemv in blas
-  void matVecMul(const Array<Real> & x, Array<Real> & y, Real alpha = 1.,
+  void matVecMul(const SolverVector & x, SolverVector & y, Real alpha = 1.,
                  Real beta = 0.) const override;
+
+  void matVecMul(const Array<Real> & x, Array<Real> & y, Real alpha = 1.,
+                 Real beta = 0.) const;
+
+  /// copy the profile of another matrix
+  void copyProfile(const SparseMatrix & other) override;
 
   /* ------------------------------------------------------------------------ */
   /// accessor to A_{ij} - if (i, j) not present it returns 0
@@ -113,6 +123,16 @@ public:
 protected:
   /// This is the revert of add B += \alpha * *this;
   void addMeTo(SparseMatrix & B, Real alpha) const override;
+
+  inline void addSymmetricValuesToSymmetric(const Vector<Int> & is,
+                                            const Vector<Int> & js,
+                                            const Matrix<Real> & values);
+  inline void addUnsymmetricValuesToSymmetric(const Vector<Int> & is,
+                                              const Vector<Int> & js,
+                                              const Matrix<Real> & values);
+  inline void addValuesToUnsymmetric(const Vector<Int> & is,
+                                     const Vector<Int> & js,
+                                     const Matrix<Real> & values);
 
 private:
   /// This is just to inline the addToMatrix function
@@ -172,7 +192,7 @@ private:
   coordinate_list_map irn_jcn_k;
 };
 
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

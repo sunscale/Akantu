@@ -55,7 +55,6 @@ int main(int argc, char * argv[]) {
   UInt spatial_dimension = 2;
   Mesh mesh(spatial_dimension);
   mesh.read("swiss_train.msh");
-  mesh.createGroupsFromMeshData<std::string>("physical_names");
 
   Array<Real> & nodes = mesh.getNodes();
   UInt nb_nodes = mesh.getNbNodes();
@@ -128,8 +127,8 @@ int main(int argc, char * argv[]) {
   */
 
   // NodalField are constructed with an Array.
-  dumper::Field * displ_field = new dumper::NodalField<Real>(displacement);
-  dumper::Field * colour_field = new dumper::ElementalField<UInt>(colour);
+  auto displ_field = std::make_shared<dumper::NodalField<Real>>(displacement);
+  auto colour_field = std::make_shared<dumper::ElementalField<UInt>>(colour);
 
   // Register the freshly created fields to our dumper.
   dumper.registerField("displacement", displ_field);
@@ -138,7 +137,7 @@ int main(int argc, char * argv[]) {
   // For the dumper wheels, fields have to be filtered at registration.
   // Filtered NodalField can be simply registered by adding an Array<UInt>
   // listing the nodes.
-  dumper::Field * displ_field_wheel = new dumper::NodalField<Real, true>(
+  auto displ_field_wheel = std::make_shared<dumper::NodalField<Real, true>>(
       displacement, 0, 0, &(wheels_elements.getNodes()));
   wheels.registerField("displacement", displ_field_wheel);
 
@@ -146,8 +145,9 @@ int main(int argc, char * argv[]) {
   ElementTypeMapArrayFilter<UInt> filtered_colour(
       colour, wheels_elements.getElements());
 
-  dumper::Field * colour_field_wheel =
-      new dumper::ElementalField<UInt, Vector, true>(filtered_colour);
+  auto colour_field_wheel =
+      std::make_shared<dumper::ElementalField<UInt, Vector, true>>(
+          filtered_colour);
   wheels.registerField("colour", colour_field_wheel);
 
   /* ------------------------------------------------------------------------ */

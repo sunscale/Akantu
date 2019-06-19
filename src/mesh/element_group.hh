@@ -62,6 +62,8 @@ public:
                const std::string & id = "element_group",
                const MemoryID & memory_id = 0);
 
+  ElementGroup(const ElementGroup &);
+  
   /* ------------------------------------------------------------------------ */
   /* Type definitions                                                         */
   /* ------------------------------------------------------------------------ */
@@ -69,26 +71,28 @@ public:
   using ElementList = ElementTypeMapArray<UInt>;
   using NodeList = Array<UInt>;
 
-  /* ------------------------------------------------------------------------ */
-  /* Element iterator                                                         */
-  /* ------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------ */
+/* Element iterator                                                         */
+/* ------------------------------------------------------------------------ */
+
   using type_iterator = ElementList::type_iterator;
-  inline type_iterator firstType(UInt dim = _all_dimensions,
-                                 const GhostType & ghost_type = _not_ghost,
-                                 const ElementKind & kind = _ek_regular) const;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  firstType(UInt dim = _all_dimensions,
+            const GhostType & ghost_type = _not_ghost,
+            const ElementKind & kind = _ek_regular) const;
 
-  inline type_iterator lastType(UInt dim = _all_dimensions,
-                                const GhostType & ghost_type = _not_ghost,
-                                const ElementKind & kind = _ek_regular) const;
+  [[deprecated("Use elementTypes instead")]] inline type_iterator
+  lastType(UInt dim = _all_dimensions,
+           const GhostType & ghost_type = _not_ghost,
+           const ElementKind & kind = _ek_regular) const;
 
-#ifndef SWIG
   template <typename... pack>
   inline decltype(auto) elementTypes(pack &&... _pack) const {
     return elements.elementTypes(_pack...);
   }
-#endif
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
+
   inline const_element_iterator
   begin(const ElementType & type,
         const GhostType & ghost_type = _not_ghost) const;
@@ -131,6 +135,9 @@ public:
   // sort and remove duplicated values
   void optimize();
 
+  /// change the dimension if needed
+  void addDimension(UInt dimension);
+
 private:
   inline void addElement(const ElementType & elem_type, UInt elem_id,
                          const GhostType & ghost_type);
@@ -145,9 +152,13 @@ public:
   getElements(const ElementType & type,
               const GhostType & ghost_type = _not_ghost) const;
   AKANTU_GET_MACRO(Elements, elements, const ElementTypeMapArray<UInt> &);
-  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
+  AKANTU_GET_MACRO_NOT_CONST(Elements, elements, ElementTypeMapArray<UInt> &);
+  
+//  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
+
   AKANTU_GET_MACRO(NodeGroup, node_group, const NodeGroup &);
   AKANTU_GET_MACRO_NOT_CONST(NodeGroup, node_group, NodeGroup &);
+
   AKANTU_GET_MACRO(Dimension, dimension, UInt);
   AKANTU_GET_MACRO(Name, name, std::string);
   inline UInt getNbNodes() const;

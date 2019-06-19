@@ -87,7 +87,7 @@ void CohesiveElementInserter::limitCheckFacets() {
 }
 
 /* -------------------------------------------------------------------------- */
-void CohesiveElementInserter::setLimit(SpacialDirection axis, Real first_limit,
+void CohesiveElementInserter::setLimit(SpatialDirection axis, Real first_limit,
                                        Real second_limit) {
   AKANTU_DEBUG_ASSERT(
       axis < mesh.getSpatialDimension(),
@@ -203,7 +203,7 @@ UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
 
   if (mesh_facets.isDistributed()) {
     mesh_facets.getElementSynchronizer().synchronizeOnce(
-        *this, _gst_ce_groups);
+        *this, SynchronizationTag::_ce_groups);
   }
 
   UInt nb_new_elements = MeshUtils::insertCohesiveElements(

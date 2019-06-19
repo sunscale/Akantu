@@ -73,7 +73,7 @@ private:
 
 namespace {
   template <typename T> inline MPI_Datatype getMPIDatatype();
-  MPI_Op getMPISynchronizerOperation(const SynchronizerOperation & op) {
+  MPI_Op getMPISynchronizerOperation(SynchronizerOperation op) {
     std::unordered_map<SynchronizerOperation, MPI_Op> _operations{
         {SynchronizerOperation::_sum, MPI_SUM},
         {SynchronizerOperation::_min, MPI_MIN},
@@ -114,7 +114,9 @@ namespace {
   SPECIALIZE_MPI_DATATYPE(SCMinMaxLoc<float COMMA int>, MPI_FLOAT_INT)
   SPECIALIZE_MPI_DATATYPE(bool, MPI_CXX_BOOL)
 
-  template <> MPI_Datatype inline getMPIDatatype<NodeFlag>() { return getMPIDatatype<std::underlying_type_t<NodeFlag>>(); }
+  template <> MPI_Datatype inline getMPIDatatype<NodeFlag>() {
+    return getMPIDatatype<std::underlying_type_t<NodeFlag>>();
+  }
 
   inline int getMPISource(int src) {
     if (src == _any_source)
@@ -128,7 +130,7 @@ namespace {
     for (auto && request_pair : zip(requests, mpi_requests)) {
       auto && req = std::get<0>(request_pair);
       auto && mpi_req = std::get<1>(request_pair);
-      mpi_req = dynamic_cast<CommunicationRequestMPI &>(req.getInternal())
+      mpi_req = aka::as_type<CommunicationRequestMPI>(req.getInternal())
                     .getMPIRequest();
     }
     return mpi_requests;
@@ -265,32 +267,32 @@ bool Communicator::test(CommunicationRequest & request) const {
   MPI_Status status;
   int flag;
   auto & req_mpi =
-      dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
+      aka::as_type<CommunicationRequestMPI>(request.getInternal());
+
   MPI_Request & req = req_mpi.getMPIRequest();
+  MPI_Test(&req, &flag, &status);
 
-#if !defined(AKANTU_NDEBUG)
-  int ret =
-#endif
-      MPI_Test(&req, &flag, &status);
-
-  AKANTU_DEBUG_ASSERT(ret == MPI_SUCCESS, "Error in MPI_Test.");
-  return (flag != 0);
+  return flag;
 }
 
 /* -------------------------------------------------------------------------- */
 bool Communicator::testAll(std::vector<CommunicationRequest> & requests) const {
-  int are_finished;
-  auto && mpi_requests = convertRequests(requests);
-  MPI_Testall(mpi_requests.size(), mpi_requests.data(), &are_finished,
-              MPI_STATUSES_IGNORE);
-  return are_finished != 0 ? true : false;
+  //int are_finished;
+  //auto && mpi_requests = convertRequests(requests);
+  //MPI_Testall(mpi_requests.size(), mpi_requests.data(), &are_finished,
+  //            MPI_STATUSES_IGNORE);
+  //return are_finished;
+  for(auto & request : requests) {
+    if(not test(request)) return false;
+  }
+  return true;
 }
 
 /* -------------------------------------------------------------------------- */
 void Communicator::wait(CommunicationRequest & request) const {
   MPI_Status status;
   auto & req_mpi =
-      dynamic_cast<CommunicationRequestMPI &>(request.getInternal());
+      aka::as_type<CommunicationRequestMPI>(request.getInternal());
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Wait(&req, &status);
 }
@@ -336,8 +338,7 @@ CommunicationRequest Communicator::asyncBarrier() const {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void Communicator::reduceImpl(T * values, int nb_values,
-                              const SynchronizerOperation & op,
-                              int root) const {
+                              SynchronizerOperation op, int root) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   MPI_Datatype type = getMPIDatatype<T>();
 
@@ -348,12 +349,42 @@ void Communicator::reduceImpl(T * values, int nb_values,
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void Communicator::allReduceImpl(T * values, int nb_values,
-                                 const SynchronizerOperation & op) const {
+                                 SynchronizerOperation op) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   MPI_Datatype type = getMPIDatatype<T>();
 
   MPI_Allreduce(MPI_IN_PLACE, values, nb_values, type,
                 getMPISynchronizerOperation(op), communicator);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+void Communicator::scanImpl(T * values, T * result, int nb_values,
+                            SynchronizerOperation op) const {
+  MPI_Comm communicator = MPIDATA.getMPICommunicator();
+  MPI_Datatype type = getMPIDatatype<T>();
+
+  if(values == result) {
+    values = reinterpret_cast<T*>(MPI_IN_PLACE);
+  }
+  
+  MPI_Scan(values, result, nb_values, type,
+           getMPISynchronizerOperation(op), communicator);
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+void Communicator::exclusiveScanImpl(T * values, T * result, int nb_values,
+                                     SynchronizerOperation op) const {
+  MPI_Comm communicator = MPIDATA.getMPICommunicator();
+  MPI_Datatype type = getMPIDatatype<T>();
+
+  if(values == result) {
+    values = reinterpret_cast<T*>(MPI_IN_PLACE);
+  }
+  
+  MPI_Exscan(values, result, nb_values, type,
+           getMPISynchronizerOperation(op), communicator);
 }
 
 /* -------------------------------------------------------------------------- */

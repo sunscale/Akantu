@@ -72,6 +72,6 @@ public:
 
 using htm_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_CASE(TestPatchTestHTMLinear, htm_types);
+TYPED_TEST_SUITE(TestPatchTestHTMLinear, htm_types);
 
 #endif /* __AKANTU_PATCH_TEST_LINEAR_HEAT_TRANSFER_FIXTURE_HH__ */

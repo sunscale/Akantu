@@ -73,8 +73,11 @@ public:
   }
 
   void reset() {
-    openings->resize(1, 0.);
-    tractions->resize(1, 0.);
+    openings->resize(1);
+    tractions->resize(1);
+
+    openings->clear();
+    tractions->clear();
   }
 
   /* ------------------------------------------------------------------------ */

@@ -65,7 +65,7 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
   }
 
   AKANTU_DEBUG_OUT();
-  return dynamic_cast<FEEngineClass &>(*fems_boundary[name]);
+  return aka::as_type<FEEngineClass>(*fems_boundary[name]);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -81,7 +81,7 @@ inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
                       "The FEEngine " << name << " is not registered");
 
   AKANTU_DEBUG_OUT();
-  return dynamic_cast<FEEngineClass &>(*(it->second));
+  return aka::as_type<FEEngineClass>(*(it->second));
 }
 
 /* -------------------------------------------------------------------------- */

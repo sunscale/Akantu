@@ -100,7 +100,7 @@ EmbeddedInterfaceModel::~EmbeddedInterfaceModel() {
 /* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::initFullImpl(const ModelOptions & options) {
   const auto & eim_options =
-      dynamic_cast<const EmbeddedInterfaceModelOptions &>(options);
+      aka::as_type<EmbeddedInterfaceModelOptions>(options);
 
   // Do no initialize interface_mesh if told so
   if (eim_options.has_intersections)
@@ -149,7 +149,7 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(
     const std::string & group_name, const ElementKind & element_kind,
     bool padding_flag) {
 #ifdef AKANTU_USE_IOHELPER
-  dumper::Field * field = NULL;
+  std::shared_ptr<dumper::Field> field;
 
   // If dumper is reinforcement, create a 1D elemental field
   if (dumper_name == "reinforcement")
