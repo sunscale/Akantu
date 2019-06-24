@@ -143,10 +143,7 @@ void computeStrainOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
       auto & grad_u = std::get<1>(values);
       gradUToEpsilon(grad_u, strain);
     }
-
-
   }
-
 }
 
 

@@ -47,43 +47,42 @@ int main(int argc, char *argv[])
   Mesh mesh(spatial_dimension);
   mesh.read("square.msh");
  
-  PhaseFieldModel pfm(mesh);
-  pfm.initFull(_analysis_method = _static);
+  PhaseFieldModel phase(mesh);
+  phase.initFull(_analysis_method = _static);
  
   // solid mechanics model initialization
-  SolidMechanicsModel smm(mesh);
-  smm.initFull(_analysis_method  = _static);
+  SolidMechanicsModel solid(mesh);
+  solid.initFull(_analysis_method  = _static);
 
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "right");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "bottom");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "right");
 
-  smm.setBaseName(        "square");
-  smm.addDumpFieldVector( "displacement");
-  smm.addDumpFieldVector( "internal_force");
-  smm.addDumpField(       "stress");
-  smm.addDumpField(       "grad_u");
-  smm.addDumpField(       "damage");
-  smm.addDumpField(       "blocked_dofs");
-  smm.dump();
+  solid.setBaseName(        "square");
+  solid.addDumpFieldVector( "displacement");
+  solid.addDumpFieldVector( "internal_force");
+  solid.addDumpField(       "stress");
+  solid.addDumpField(       "grad_u");
+  solid.addDumpField(       "damage");
+  solid.addDumpField(       "blocked_dofs");
+  solid.dump();
 
-  auto & smm_solver = smm.getNonLinearSolver();
+  auto & smm_solver = solid.getNonLinearSolver();
   smm_solver.set("max_iterations", 1000);
   smm_solver.set("threshold", 1e-8);
-  smm_solver.set("convergence_type", _scc_solution);
+  smm_solver.set("convergence_type", SolveConvergenceCriteria::_solution);
   
   // coupling of models
-  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
+  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(solid, phase);
 
   UInt nbSteps   = 1000;
   Real increment = 1.e-4;
   
   for (UInt s = 1; s < nbSteps; ++s) {
-    smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
+    solid.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
     coupler.solve();
-    smm.dump();
-
+    solid.dump();
     std::cout << "Step " << s << "/" << nbSteps << std::endl;
   }
 

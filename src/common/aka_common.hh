@@ -129,14 +129,14 @@ enum EventHandlerPriority {
   (heat_transfer_model)                                                 \
   (structural_mechanics_model)						\
   (embedded_model)							\
-  (phase_field_model)
+  (phase_field_model)							\
+  (coupler_solid_phasefield)
 // clang-format on
 
 /// enum ModelType defines which type of physics is solved
 AKANTU_CLASS_ENUM_DECLARE(ModelType, AKANTU_MODEL_TYPES)
 AKANTU_CLASS_ENUM_OUTPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
 AKANTU_CLASS_ENUM_INPUT_STREAM(ModelType, AKANTU_MODEL_TYPES)
->>>>>>> master
 
 /// enum AnalysisMethod type of solving method used to solve the equation of
 /// motion
@@ -302,6 +302,8 @@ enum CommunicatorType { _communicator_mpi, _communicator_dummy };
   (htm_gradient_temperature)                    \
   (htm_phi)                                     \
   (htm_gradient_phi)                            \
+  (pfm_damage)					\
+  (pfm_gradient_damage)				\
   (mnl_for_average)                             \
   (mnl_weight)                                  \
   (nh_criterion)                                \
@@ -360,9 +362,9 @@ enum class SynchronizationTag {
                              /// temperature
 
   // --- PhaseFieldModel tags ---
-  _pfm_damage,               ///< synchronization of the nodal damage
-  _pfm_gradient_damage,      ///< synchronization of the element
-				 ///  gradient damage
+  _pfm_damage,          ///< synchronization of the nodal damage
+  _pfm_gradient_damage, ///< synchronization of the element
+                        ///  gradient damage
 
   // --- LevelSet tags ---
   _htm_phi,          ///< synchronization of the nodal level set value phi

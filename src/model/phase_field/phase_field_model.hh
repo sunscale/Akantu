@@ -2,7 +2,7 @@
  * @file   phase_field_model.hh
  *
  * @author Mohit Pundir <mohit.pundir@epfl.ch>
- * 
+ *
  * @date creation: Sun Jul 30 2018
  * @date last modification: Mon Feb 05 2018
  *
@@ -41,17 +41,16 @@
 #define __AKANTU_PHASE_FIELD_MODEL_HH__
 
 namespace akantu {
-template <ElementKind kind, class IntegrationOrderFuntor>
-class IntegratorGauss;
-template <ElementKind kind> class ShapeLagrange;  
+template <ElementKind kind, class IntegrationOrderFuntor> class IntegratorGauss;
+template <ElementKind kind> class ShapeLagrange;
 } // namespace akantu
 
 namespace akantu {
 
 class PhaseFieldModel : public Model,
-			public DataAccessor<Element>,
-			public DataAccessor<UInt>,
-			public BoundaryCondition<PhaseFieldModel> {
+                        public DataAccessor<Element>,
+                        public DataAccessor<UInt>,
+                        public BoundaryCondition<PhaseFieldModel> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -60,10 +59,11 @@ public:
   using FEEngineType = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
 
   PhaseFieldModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-		  const ID & id = "phase_field_model",
-		  const MemoryID & memory_id = 0);
+                  const ID & id = "phase_field_model",
+                  const MemoryID & memory_id = 0,
+		  const ModelType model_type = ModelType::_phase_field_model);
 
-  virtual ~PhaseFieldModel();
+  ~PhaseFieldModel() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -81,7 +81,7 @@ protected:
   /// initialize the model
   void initModel() override;
 
-  /// predictor 
+  /// predictor
   void predictor() override;
 
   /// corrector
@@ -104,20 +104,23 @@ protected:
 
   ModelSolverOptions
   getDefaultSolverOptions(const TimeStepSolverType & type) const;
-  
-  /// compute the internal forces 
-  void assembleInternalForces();
 
   ///
   void updateInternalParameters();
 
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
-  
+
   /* ------------------------------------------------------------------------ */
   /* Methods for static                                                       */
   /* ------------------------------------------------------------------------ */
 public:
+  /// assembles the phasefield stiffness matrix
+  virtual void assembleStiffnessMatrix();
+
+  /// compute the internal forces
+  virtual void assembleInternalForces();
+  
   /// assemble damage matrix
   void assembleDamageMatrix();
 
@@ -126,15 +129,14 @@ public:
 
   /// coupling parameters damage and strains from solid mechanics model
   void setCouplingParameters(ElementTypeMapArray<Real> & strain_on_qpoints,
-			     Array<Real> & damage);
-  
+                             Array<Real> & damage);
+
 private:
   /// assemble the damage matrix (w/ ghost type)
-  template<UInt dim>
-  void assembleDamageMatrix(const GhostType & ghost_type);
+  template <UInt dim> void assembleDamageMatrix(const GhostType & ghost_type);
 
-   /// assemble the damage grad matrix (w/ ghost type)
-  template<UInt dim>
+  /// assemble the damage grad matrix (w/ ghost type)
+  template <UInt dim>
   void assembleDamageGradMatrix(const GhostType & ghost_type);
 
 private:
@@ -143,13 +145,13 @@ private:
 
   /// compute vector strain history field for each quadrature point
   void computeDamageEnergyDensityOnQuadPoints(const GhostType & ghost_type);
-  
+
   /// compute driving force for each quadrature point
   void computeDrivingForce(const GhostType & ghost_type);
-    
+
   /// compute the damage on quadrature points
   void computeDamageOnQuadPoints(const GhostType & ghost_type);
-  
+
   /// compute the fracture energy
   Real computeFractureEnergyByNode();
 
@@ -158,34 +160,33 @@ private:
   /* ------------------------------------------------------------------------ */
 public:
   /// set the stable timestep
-  void setTimeStep(Real time_step, const ID & solver_id="") override;
+  void setTimeStep(Real time_step, const ID & solver_id = "") override;
   /// callback for the solver, this is called at beginning of solve
   void beforeSolveStep() override;
   /// callback for the solver, this is called at end of solve
   void afterSolveStep() override;
-
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 public:
   UInt getNbData(const Array<Element> & elements,
-		 const SynchronizationTag & tag) const override;
+                 const SynchronizationTag & tag) const override;
 
   void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
-		const SynchronizationTag & tag) const override;
+                const SynchronizationTag & tag) const override;
 
   void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
-		  const SynchronizationTag & tag) override;
+                  const SynchronizationTag & tag) override;
 
   UInt getNbData(const Array<UInt> & indexes,
-		 const SynchronizationTag & tag) const override;
+                 const SynchronizationTag & tag) const override;
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
-		const SynchronizationTag & tag) const override;
+                const SynchronizationTag & tag) const override;
 
   void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
-		  const SynchronizationTag & tag) override;
+                  const SynchronizationTag & tag) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -197,8 +198,22 @@ public:
   /// return the damage array
   AKANTU_GET_MACRO(Damage, *damage, Array<Real> &);
 
-  /// 
-  AKANTU_GET_MACRO_NOT_CONST(Strain, strain_on_qpoints, ElementTypeMapArray<Real> &);
+  /// get the ContactMechanics::internal_force vector (internal forces)
+  AKANTU_GET_MACRO(InternalForce, *internal_force, Array<Real> &);
+
+  /// get the ContactMechanicsModel::external_force vector (external forces)
+  AKANTU_GET_MACRO(ExternalForce, *external_force, Array<Real> &);
+
+  /// get the ContactMechanicsModel::force vector (external forces)
+  Array<Real> & getForce() {
+    AKANTU_DEBUG_WARNING("getForce was maintained for backward compatibility, "
+                         "use getExternalForce instead");
+    return *external_force;
+  }
+
+  ///
+  AKANTU_GET_MACRO_NOT_CONST(Strain, strain_on_qpoints,
+                             ElementTypeMapArray<Real> &);
 
   /// get the PhaseFieldModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
@@ -207,19 +222,21 @@ public:
   /* Dumpable Interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  dumper::Field * createNodalFieldReal(const std::string & field_name,
-				       const std::string & group_name,
-				       bool padding_flag) override;
+  std::shared_ptr<dumper::Field>
+  createNodalFieldReal(const std::string & field_name,
+                       const std::string & group_name,
+                       bool padding_flag) override;
 
-  dumper::Field * createNodalFieldBool(const std::string & field_name,
-				       const std::string & group_name,
-				       bool padding_flag) override;
-  
-  dumper::Field * createElementalField(const std::string & field_name,
-				       const std::string & group_name,
-				       bool padding_flag,
-				       const UInt & spatial_dimension,
-				       const ElementKind & kind) override;
+  std::shared_ptr<dumper::Field>
+  createNodalFieldBool(const std::string & field_name,
+                       const std::string & group_name,
+                       bool padding_flag) override;
+
+  std::shared_ptr<dumper::Field>
+  createElementalField(const std::string & field_name,
+                       const std::string & group_name, bool padding_flag,
+                       const UInt & spatial_dimension,
+                       const ElementKind & kind) override;
 
   virtual void dump(const std::string & dumper_name);
 
@@ -236,12 +253,12 @@ public:
 protected:
   /* ------------------------------------------------------------------------ */
   FEEngine & getFEEngineBoundary(const ID & name = "") override;
-  
+
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  ///number of iterations
+  /// number of iterations
   UInt n_iter;
 
   /// damage array
@@ -255,21 +272,21 @@ private:
 
   /// damage field on quadrature points
   ElementTypeMapArray<Real> damage_on_qpoints;
-  
-  /// critical local damage energy on quadrature points for \mathbf{B}^t * \mathbf{W} *
-  /// \mathbf{B}@f$ 
+
+  /// critical local damage energy on quadrature points for \mathbf{B}^t *
+  /// \mathbf{W} * \mathbf{B}@f$
   ElementTypeMapArray<Real> damage_energy_on_qpoints;
-  
+
   /// critical local damage energy density on quadrature points for
   ///  \mathbf{N}^t * \mathbf{w} * \mathbf{N}@f$
   ElementTypeMapArray<Real> damage_energy_density_on_qpoints;
 
   /// the speed of change in damage
   ElementTypeMapArray<Real> damage_gradient;
-  
+
   /// strain on quadrature points
   ElementTypeMapArray<Real> strain_on_qpoints;
-  
+
   /// driving force on quadrature points for internal forces
   ElementTypeMapArray<Real> driving_force_on_qpoints;
 
@@ -302,10 +319,9 @@ private:
 
   /// Lame's second paramter
   Real mu;
-
 };
 
-} // akantu
+} // namespace akantu
 
 /* ------------------------------------------------------------------------ */
 /* inline functions                                                         */

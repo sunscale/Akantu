@@ -56,49 +56,49 @@ int main(int argc, char *argv[])
 
   mesh.distribute();
   
-  PhaseFieldModel pfm(mesh);
-  pfm.initFull(_analysis_method = _static);
+  PhaseFieldModel phase(mesh);
+  phase.initFull(_analysis_method = _static);
 
   if (prank == 0) {
-    std::cout << pfm << std::endl;
+    std::cout << phase << std::endl;
   }
   
-  auto & pfm_solver = pfm.getNonLinearSolver();
+  auto & pfm_solver = phase.getNonLinearSolver();
   pfm_solver.set("max_iterations", 1000);
   pfm_solver.set("threshold", 1e-3);
-  pfm_solver.set("convergence_type", _scc_solution);
+  pfm_solver.set("convergence_type", SolveConvergenceCriteria::_solution);
   
-  SolidMechanicsModel smm(mesh);
-  smm.initFull(_analysis_method  = _static);
+  SolidMechanicsModel solid(mesh);
+  solid.initFull(_analysis_method  = _static);
 
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "bottom");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "right");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _y), "bottom");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "bottom");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "left");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "right");
 
-  smm.setBaseName(        "square");
-  smm.addDumpFieldVector( "displacement");
-  smm.addDumpFieldVector( "internal_force");
-  smm.addDumpField(       "stress");
-  smm.addDumpField(       "grad_u");
-  smm.addDumpField(       "damage");
-  smm.addDumpField(       "blocked_dofs");
-  smm.dump();
+  solid.setBaseName(        "square");
+  solid.addDumpFieldVector( "displacement");
+  solid.addDumpFieldVector( "internal_force");
+  solid.addDumpField(       "stress");
+  solid.addDumpField(       "grad_u");
+  solid.addDumpField(       "damage");
+  solid.addDumpField(       "blocked_dofs");
+  solid.dump();
 
-  auto & smm_solver = smm.getNonLinearSolver();
+  auto & smm_solver = solid.getNonLinearSolver();
   smm_solver.set("max_iterations", 1000);
   smm_solver.set("threshold", 1e-8);
-  smm_solver.set("convergence_type", _scc_solution);
+  smm_solver.set("convergence_type", SolveConvergenceCriteria::_solution);
   
-  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
+  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(solid, phase);
 
   UInt nbSteps   = 100;
   Real increment = 1.e-4;
   
   for (UInt s = 1; s < nbSteps; ++s) {
-    smm.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
+    solid.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
     coupler.solve();
-    smm.dump();  
+    solid.dump();  
     if (prank == 0) {
       std::cout << "Step " << s << "/" << nbSteps << std::endl;
     }

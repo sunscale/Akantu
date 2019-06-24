@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   auto & smm_solver = smm.getNonLinearSolver();
   smm_solver.set("max_iterations", 1000);
   smm_solver.set("threshold", 1e-8);
-  smm_solver.set("convergence_type", _scc_residual);
+  smm_solver.set("convergence_type", SolveConvergenceCriteria::_residual);
   
   // coupling of models
   SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);

@@ -54,33 +54,32 @@ int main(int argc, char *argv[])
   Mesh mesh(spatial_dimension);
   mesh.read("1d_1elem_bar.msh");
  
-  PhaseFieldModel pfm(mesh);
-  pfm.initFull(_analysis_method = _static);
+  PhaseFieldModel phase(mesh);
+  phase.initFull(_analysis_method = _static);
 
   // solid mechanics model initialization
-  SolidMechanicsModel smm(mesh);
-  smm.initFull(_analysis_method  = _static);
+  SolidMechanicsModel solid(mesh);
+  solid.initFull(_analysis_method  = _static);
 
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "Left");
-  smm.applyBC(BC::Dirichlet::FixedValue(0., _x), "Right"); 
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "Left");
+  solid.applyBC(BC::Dirichlet::FixedValue(0., _x), "Right"); 
 
-  smm.setBaseName(        "square");
-  smm.addDumpFieldVector( "displacement");
-  smm.addDumpFieldVector( "internal_force");
-  smm.addDumpField(       "stress");
-  smm.addDumpField(       "grad_u");
-  smm.addDumpField(       "damage");
-  smm.addDumpField(       "blocked_dofs");
-  smm.dump();
+  solid.setBaseName(        "square");
+  solid.addDumpFieldVector( "displacement");
+  solid.addDumpFieldVector( "internal_force");
+  solid.addDumpField(       "stress");
+  solid.addDumpField(       "grad_u");
+  solid.addDumpField(       "damage");
+  solid.addDumpField(       "blocked_dofs");
+  solid.dump();
 
-  auto & smm_solver = smm.getNonLinearSolver();
-  smm_solver.set("max_iterations", 1000);
-  smm_solver.set("threshold", 1e-8);
-  smm_solver.set("convergence_type", _scc_residual);
+  auto & solid_solver = solid.getNonLinearSolver();
+  solid_solver.set("max_iterations", 1000);
+  solid_solver.set("threshold", 1e-8);
+  solid_solver.set("convergence_type", SolveConvergenceCriteria::_residual);
   
   // coupling of models
-  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(smm, pfm);
-
+  SolidPhaseCoupler<SolidMechanicsModel, PhaseFieldModel> coupler(solid, phase);
   
   Real stress_homogeneous;
   Real young_unload;
@@ -91,26 +90,21 @@ int main(int argc, char *argv[])
   for (UInt s = 1; s < nbSteps; ++s) {
     //Increasing loading
     if( s<unload_start || s>(2.1*unload_start)){
-      smm.applyBC(BC::Dirichlet::IncrementValue(-time_step,_x),"Left");
-      smm.applyBC(BC::Dirichlet::IncrementValue(time_step,_x),"Right");
+      solid.applyBC(BC::Dirichlet::IncrementValue(-time_step,_x),"Left");
+      solid.applyBC(BC::Dirichlet::IncrementValue(time_step,_x),"Right");
     }
     else{
-      smm.applyBC(BC::Dirichlet::IncrementValue(time_step,_x),"Left");
-      smm.applyBC(BC::Dirichlet::IncrementValue(-time_step,_x),"Right");
+      solid.applyBC(BC::Dirichlet::IncrementValue(time_step,_x),"Left");
+      solid.applyBC(BC::Dirichlet::IncrementValue(-time_step,_x),"Right");
     }
 
     coupler.solve();
-
-    auto & K = pfm.getDOFManager().getMatrix("K");
-    K.saveMatrix("matrix.mtx");
     
-    Array<Real> & stress = smm.getMaterial("solid").getArray<Real>("stress", _segment_2);
-    Array<Real> & damage = smm.getMaterial("solid").getArray<Real>("damage", _segment_2);
-    Array<Real> & grad_u = smm.getMaterial("solid").getArray<Real>("grad_u", _segment_2);
-
-    
+    Array<Real> & stress = solid.getMaterial("solid").getArray<Real>("stress", _segment_2);
+    Array<Real> & damage = solid.getMaterial("solid").getArray<Real>("damage", _segment_2);
+    Array<Real> & grad_u = solid.getMaterial("solid").getArray<Real>("grad_u", _segment_2);
 	
-    smm.dump();
+    solid.dump();
 
     if(s==(unload_start-1))
       young_unload = stress(0,0)/grad_u(0,0);
@@ -120,8 +114,7 @@ int main(int argc, char *argv[])
       stress_homogeneous = pow(l0/gc*Young*pow(grad_u(0,0),2)+1,-2)*Young*grad_u(0,0);
       std::cout << stress_homogeneous << std::endl;
       std::cout << stress(0,0) << " ---- "  << damage(0,0) << std::endl;
-       
-      
+          
       //if( (std::abs(stress_homogeneous-stress(0,0))/stress_homogeneous) > 1e-9)
       //	return EXIT_FAILURE;
     }
@@ -133,12 +126,8 @@ int main(int argc, char *argv[])
 	std::cout << s << "," <<grad_u(0,0) << "," << stress(0,0) / grad_u(0,0) << "," << Young << "," << std::abs(sig_outof_eps-young_unload)/young_unload << "," << std::abs(sig_outof_eps-Young)/Young << std::endl;
 	return EXIT_FAILURE;
        }
-    }
-   
-
-									      
-									      
-
+    }				      
+								       
     std::cout << "Step " << s << "/" << nbSteps << std::endl;
   }
 

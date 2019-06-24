@@ -32,12 +32,9 @@
 package_declare(model_couplers
   DESCRIPTION "Use Model Couplers package of Akantu")
 
-package_declare_sources(model_couplers
-  model/model_couplers/model_coupler.hh
-  model/model_couplers/staggered_model_coupler.hh
-  
-  model/model_couplers/solid_phase_coupler.hh
-  model/model_couplers/solid_phase_coupler.cc
+package_declare_sources(model_couplers 
+  model/model_couplers/coupler_solid_phasefield.hh
+  model/model_couplers/coupler_solid_phasefield.cc
   )
 
 package_declare_documentation_files(model_couplers

@@ -79,6 +79,8 @@ using UInt = @AKANTU_UNSIGNED_INTEGER_TYPE@;
 #cmakedefine AKANTU_COHESIVE_ELEMENT
 #cmakedefine AKANTU_PARALLEL_COHESIVE_ELEMENT
 
+#cmakedefine MODEL_COUPLERS
+
 #cmakedefine AKANTU_IGFEM
 
 #cmakedefine AKANTU_USE_CGAL
