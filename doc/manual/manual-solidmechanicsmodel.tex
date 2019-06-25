@@ -368,9 +368,9 @@ first step, the global stiffness matrix $\mat{K}$ from
 Equation~(\ref{eqn:smm:static}) is automatically assembled. A
 Newton-Raphson iteration is subsequently started, $\mat{K}$ is updated
 according to the displacement computed at the previous iteration and
-one loops until the forces are balanced (\code{\SolveConvergenceCriteria::\_residual}), \ie
-$||\vec{r}|| < \mbox{\code{\SolveConvergenceCriteria::\_residual}}$.  One can also iterate
-until the increment of displacement is zero (\code{\SolveConvergenceCriteria::\_increment})
+one loops until the forces are balanced (\code{SolveConvergenceCriteria::\_residual}), \ie
+$||\vec{r}|| < \mbox{\code{SolveConvergenceCriteria::\_residual}}$.  One can also iterate
+until the increment of displacement is zero (\code{SolveConvergenceCriteria::\_increment})
 which also means that the equilibrium is found.  For a linear elastic
 problem, the solution is obtained in one iteration and therefore the
 maximum number of iterations can be set to one. But for a non-linear
