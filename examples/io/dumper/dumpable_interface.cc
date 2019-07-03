@@ -86,10 +86,14 @@ int main(int argc, char * argv[]) {
   wheels_elements.append(mesh.getElementGroup("rwheel_1"));
   wheels_elements.append(mesh.getElementGroup("rwheel_2"));
 
-  const Array<UInt> & lnode_1 = (mesh.getElementGroup("lwheel_1")).getNodes();
-  const Array<UInt> & lnode_2 = (mesh.getElementGroup("lwheel_2")).getNodes();
-  const Array<UInt> & rnode_1 = (mesh.getElementGroup("rwheel_1")).getNodes();
-  const Array<UInt> & rnode_2 = (mesh.getElementGroup("rwheel_2")).getNodes();
+  const Array<UInt> & lnode_1 =
+      (mesh.getElementGroup("lwheel_1")).getNodeGroup().getNodes();
+  const Array<UInt> & lnode_2 =
+      (mesh.getElementGroup("lwheel_2")).getNodeGroup().getNodes();
+  const Array<UInt> & rnode_1 =
+      (mesh.getElementGroup("rwheel_1")).getNodeGroup().getNodes();
+  const Array<UInt> & rnode_2 =
+      (mesh.getElementGroup("rwheel_2")).getNodeGroup().getNodes();
 
   Array<Real> & node = mesh.getNodes();
   UInt nb_nodes = mesh.getNbNodes();

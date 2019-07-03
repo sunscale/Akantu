@@ -59,6 +59,7 @@ public:
   void computeTangentModuli(const ElementType & el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
+
   bool hasStiffnessMatrixChanged() override { return true; }
 
 protected:

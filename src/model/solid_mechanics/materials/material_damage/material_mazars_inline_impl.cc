@@ -60,7 +60,7 @@ inline void MaterialMazars<spatial_dimension>::computeStressOnQuad(
     computeDamageOnQuad(Ehat, sigma, Fdiag, dam);
   }
 
-  if (!this->is_non_local) {
+  if (not this->is_non_local) {
     computeDamageAndStressOnQuad(grad_u, sigma, dam, Ehat);
   }
 }
