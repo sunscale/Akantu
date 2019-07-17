@@ -25,7 +25,13 @@ pipeline {
     }
   }
   
-  stages {  
+  stages {
+    stage('Checkout proper commit') {
+      checkout ( [$class: 'GitSCM',
+		  branches: [[name: "${COMMIT_ID}" ]]]
+      )
+    }
+        
     stage('Lint') {
       steps {
 	sh """
@@ -132,14 +138,6 @@ pipeline {
 	    tools: [
 	  [$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
 	]])
-
-      // step([$class: 'XUnitBuilder',
-      //       thresholds: [
-      //     [$class: 'SkippedThreshold', failureThreshold: '100'],
-      //     [$class: 'FailedThreshold', failureThreshold: '0']],
-      //       tools: [
-      // 	  [$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
-      // 	]])
     }
 
     success {
@@ -147,15 +145,6 @@ pipeline {
     }
 
     failure {
-      // emailext(
-      //   body: '''${SCRIPT, template="groovy-html.template"}''',
-      // 	mimeType: 'text/html',
-      //   subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
-      // 	recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-      // 	to: 'akantu-admins@akantu.ch',
-      // 	replyTo: 'akantu-admins@akantu.ch',
-      // 	attachLog: true,
-      //   compressLog: false)
       failed()
     }
   }
