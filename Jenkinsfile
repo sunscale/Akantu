@@ -134,7 +134,7 @@ pipeline {
   post {
     always {
       createArtifact("./CTestResults.xml")
-      
+
       step([$class: 'XUnitBuilder',
 	    thresholds: [
           [$class: 'SkippedThreshold', failureThreshold: '0'],
@@ -162,9 +162,10 @@ def passed() {
   sh "./test/ci/scripts/hbm passed"
 }
 
-def createArtifact(artifact) {
+def createArtifact(filename) {
+  artifact(filename)
   sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
-  sh "./test/ci/scripts/hbm send-ctest-results -f ${artifact}"
+  sh "./test/ci/scripts/hbm send-ctest-results -f ${filename}"
 }
 
 def uploadArtifact(artifact, name) {
