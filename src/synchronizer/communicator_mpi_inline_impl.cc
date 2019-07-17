@@ -388,7 +388,7 @@ void Communicator::exclusiveScanImpl(T * values, T * result, int nb_values,
   MPI_Exscan(values, result, nb_values, type,
            getMPISynchronizerOperation(op), communicator);
 
-  if(in_place and prank == 0) {
+  if(prank == 0) {
     result[0] = T();
   }
 }
