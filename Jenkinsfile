@@ -37,11 +37,12 @@ pipeline {
     stage('Lint') {
       steps {
 	sh """
-           arc lint --output json --rev ${COMMIT_ID} | jq . -srM | tee lint.json
+           arc lint --output json --rev HEAD^ | jq . -srM | tee lint.json
            ./test/ci/scripts/hbm send-arc-lint -f lint.json
            """
       }
     }
+    
     stage('Configure') {
       steps {
         sh """#!/bin/bash
@@ -62,6 +63,7 @@ pipeline {
 	}
       }
     }
+    
     stage('Compile') {
       steps {
 	sh '''#!/bin/bash
