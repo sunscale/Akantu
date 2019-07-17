@@ -239,6 +239,7 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::
     if (filter_elements != empty_filter) {
       jacobians_it = jacobians_begin + filter_elements(elem);
     }
+
     Vector<Real> & J = *jacobians_it;
     computeJacobianOnQuadPointsByElement<type>(x, quad_points, J);
 
@@ -292,6 +293,11 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
 
   //  Matrix<Real> local_coord(spatial_dimension, nb_nodes_per_element);
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
+    if (filter_elements != empty_filter) {
+      jacobians_it = jacobians_begin + filter_elements(elem);
+      extra_normal = extra_normal_begin + filter_elements(elem);
+    }
+
     const Matrix<Real> & X = *x_it;
     Vector<Real> & J = *jacobians_it;
     Matrix<Real> R(nb_dofs, nb_dofs);
@@ -310,9 +316,6 @@ void IntegratorGauss<_ek_structural, DefaultIntegrationOrderFunctor>::
     if (filter_elements == empty_filter) {
       ++jacobians_it;
       ++extra_normal;
-    } else {
-      jacobians_it = jacobians_begin + filter_elements(elem);
-      extra_normal = extra_normal_begin + filter_elements(elem);
     }
   }
 

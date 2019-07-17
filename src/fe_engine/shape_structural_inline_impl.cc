@@ -126,8 +126,10 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
     auto & real_coord = *nodes_it;
     ElementClass<type>::computeShapes(integration_points, real_coord, N);
 
-    if (filter_elements == empty_filter)
+    if (filter_elements == empty_filter) {
       ++shapes_it;
+      ++nodes_it;
+    }
   }
 }
 
