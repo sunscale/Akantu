@@ -20,7 +20,7 @@ def send_ctest_results(ctx, filename):
         _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
         with harbomaster.CTestResults(filename) as tests:
             _hbm.send_unit_tests(tests)
-    except e:
+    except:
         pass
 
 @hbm.command()
@@ -31,7 +31,7 @@ def send_arc_lint(ctx, filename):
         _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
         with harbomaster.ARCLintJson(filename) as tests:
             _hbm.send_lint(tests)
-    except e:
+    except:
         pass
 
 @hbm.command()
