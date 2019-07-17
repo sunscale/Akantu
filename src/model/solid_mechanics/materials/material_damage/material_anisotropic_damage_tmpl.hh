@@ -251,7 +251,7 @@ void MaterialAnisotropicDamage<dim, EquivalentStrain, DamageThreshold,
           this->updateInternalParameters();
 
           computeDamage();
-        } else if (epsilon.trace() < 1e-10) { // deviatoric case
+        } else if (std::abs(epsilon.trace()) < 1e-10) { // deviatoric case
           Matrix<Real> n(dim, dim);
           std::vector<UInt> ns;
           tensorPlusOp<dim>(Dtmp, n,
