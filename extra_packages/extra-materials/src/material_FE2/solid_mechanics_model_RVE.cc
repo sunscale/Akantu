@@ -31,8 +31,10 @@
 #include "material_damage_iterative.hh"
 #include "node_group.hh"
 #include "non_linear_solver.hh"
+#include "non_local_manager.hh"
 #include "parser.hh"
 #include "sparse_matrix.hh"
+/* -------------------------------------------------------------------------- */
 #include <string>
 /* -------------------------------------------------------------------------- */
 
@@ -191,15 +193,13 @@ void SolidMechanicsModelRVE::applyHomogeneousTemperature(
 
     const ElementTypeMapArray<UInt> & filter_map = mat.getElementFilter();
 
-    Mesh::type_iterator type_it = filter_map.firstType(spatial_dimension);
-    Mesh::type_iterator type_end = filter_map.lastType(spatial_dimension);
     // Loop over all element types
-    for (; type_it != type_end; ++type_it) {
-      const Array<UInt> & filter = filter_map(*type_it);
+    for (auto && type : filter_map.elementTypes(spatial_dimension)) {
+      const Array<UInt> & filter = filter_map(type);
       if (filter.size() == 0)
         continue;
 
-      Array<Real> & delta_T = mat.getArray<Real>("delta_T", *type_it);
+      Array<Real> & delta_T = mat.getArray<Real>("delta_T", type);
       Array<Real>::scalar_iterator delta_T_it = delta_T.begin();
       Array<Real>::scalar_iterator delta_T_end = delta_T.end();
 
