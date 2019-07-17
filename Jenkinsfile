@@ -25,11 +25,11 @@ pipeline {
     }
   }
   
-  stages {
+  stages {  
     stage('Lint') {
       steps {
 	sh """
-           arc lint --output json --rev ${GIT_PREVIOUS_COMMIT}^1 | jq . -srM | tee lint.json
+           arc lint --output json --rev ${COMMIT_ID} | jq . -srM | tee lint.json
            ./test/ci/scripts/hbm send-arc-lint -f lint.json
            """
       }
@@ -78,6 +78,7 @@ pipeline {
       steps {
         sh '''#!/bin/bash
            set -o pipefail
+
            make -C build/python | tee compilation_python.txt
            '''
       }
@@ -92,6 +93,7 @@ pipeline {
       steps {
         sh '''#!/bin/bash
            set -o pipefail
+
            make -C build/test | tee compilation_test.txt
            '''
       }
@@ -110,19 +112,11 @@ pipeline {
           #source ./akantu_environement.sh
         
           ctest -T test --no-compress-output || true
+          tag=$(head -n 1 < Testing/TAG)
+          if [ -e Testing/${tag}/Test.xml ]; then
+            cp Testing/${tag}/Test.xml ../CTestResults.xml
+          fi
         '''
-      }
-      post {
-	always {
-	  script {
-	    def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
-	    def TAG_ = TAG.trim()
-
-	    if (fileExists("build/Testing/${TAG}/Test.xml")) {
-	      sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
-	    }
-	  }
-	}
       }
     }
   }
