@@ -365,10 +365,8 @@ UInt MaterialOrthotropicDamageIterative<spatial_dimension>::updateDamage() {
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialOrthotropicDamageIterative<
-    spatial_dimension>::updateEnergiesAfterDamage(ElementType el_type,
-                                                  GhostType ghost_type) {
-  MaterialOrthotropicDamage<spatial_dimension>::updateEnergies(el_type,
-                                                               ghost_type);
+    spatial_dimension>::updateEnergiesAfterDamage(ElementType el_type) {
+  MaterialOrthotropicDamage<spatial_dimension>::updateEnergies(el_type);
 }
 
 /* -------------------------------------------------------------------------- */

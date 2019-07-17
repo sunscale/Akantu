@@ -244,8 +244,8 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialDamageIterative<spatial_dimension>::updateEnergiesAfterDamage(
-    ElementType el_type, GhostType ghost_type) {
-  MaterialDamage<spatial_dimension>::updateEnergies(el_type, ghost_type);
+    ElementType el_type) {
+  MaterialDamage<spatial_dimension>::updateEnergies(el_type);
 }
 
 /* -------------------------------------------------------------------------- */
