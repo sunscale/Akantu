@@ -9,6 +9,7 @@ RUN apt-get -qq update && apt-get -qq -y install \
     python3 python3-dev \
     python3-numpy python3-scipy python3-mpi4py\
     python3-phabricator python3-click python3-yaml \
+    python3-pytest \
     swig3.0 gmsh curl flake8 \
     git clang-format xsltproc jq \
     php-cli php-curl php-xml \
