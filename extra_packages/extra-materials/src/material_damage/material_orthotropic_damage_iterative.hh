@@ -58,8 +58,7 @@ public:
   UInt updateDamage();
 
   /// update energies after damage has been updated
-  virtual void updateEnergiesAfterDamage(ElementType el_type,
-                                         GhostType ghost_typ);
+  virtual void updateEnergiesAfterDamage(ElementType el_type);
 
 protected:
   /// constitutive law for all element of a type
