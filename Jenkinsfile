@@ -3,6 +3,7 @@ pipeline {
               string(defaultValue: '', description: 'buildable phid', name: 'BUILD_TARGET_PHID')
               string(defaultValue: '', description: 'Commit id', name: 'COMMIT_ID')
               string(defaultValue: '', description: 'Diff id', name: 'DIFF_ID')
+	      string(defaultValue: 'PHID-PROJ-5eqyu6ooyjktagbhf473', description: 'ID of the project', name: 'PROJECT_ID')
   }
 
   options {
@@ -25,15 +26,16 @@ pipeline {
     }
   }
   
-  stages {
+  stages {    
     stage('Lint') {
       steps {
 	sh """
-           arc lint --output json --rev ${GIT_PREVIOUS_COMMIT}^1 | jq . -srM | tee lint.json
+           arc lint --output json --rev HEAD^ | jq . -srM | tee lint.json
            ./test/ci/scripts/hbm send-arc-lint -f lint.json
            """
       }
     }
+    
     stage('Configure') {
       steps {
         sh """#!/bin/bash
@@ -54,6 +56,7 @@ pipeline {
 	}
       }
     }
+    
     stage('Compile') {
       steps {
 	sh '''#!/bin/bash
@@ -78,6 +81,7 @@ pipeline {
       steps {
         sh '''#!/bin/bash
            set -o pipefail
+
            make -C build/python | tee compilation_python.txt
            '''
       }
@@ -92,6 +96,7 @@ pipeline {
       steps {
         sh '''#!/bin/bash
            set -o pipefail
+
            make -C build/test | tee compilation_test.txt
            '''
       }
@@ -110,19 +115,16 @@ pipeline {
           #source ./akantu_environement.sh
         
           ctest -T test --no-compress-output || true
+          tag=$(head -n 1 < Testing/TAG)
+          if [ -e Testing/${tag}/Test.xml ]; then
+            cp Testing/${tag}/Test.xml ../CTestResults.xml
+          fi
         '''
       }
-      post {
-	always {
-	  script {
-	    def TAG = sh returnStdout: true, script: 'head -n 1 < build/Testing/TAG'
-	    def TAG_ = TAG.trim()
-
-	    if (fileExists("build/Testing/${TAG}/Test.xml")) {
-	      sh "cp build/Testing/${TAG}/Test.xml CTestResults.xml"
-	    }
-	  }
-	}
+    }
+    post {
+      failure {
+	zip zipFile: 'build.zip',  dir: 'build/', archive: true
       }
     }
   }
@@ -130,7 +132,7 @@ pipeline {
   post {
     always {
       createArtifact("./CTestResults.xml")
-      
+
       step([$class: 'XUnitBuilder',
 	    thresholds: [
           [$class: 'SkippedThreshold', failureThreshold: '0'],
@@ -138,14 +140,6 @@ pipeline {
 	    tools: [
 	  [$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
 	]])
-
-      // step([$class: 'XUnitBuilder',
-      //       thresholds: [
-      //     [$class: 'SkippedThreshold', failureThreshold: '100'],
-      //     [$class: 'FailedThreshold', failureThreshold: '0']],
-      //       tools: [
-      // 	  [$class: 'GoogleTestType', pattern: 'build/gtest_reports/**', skipNoTestFiles: true]
-      // 	]])
     }
 
     success {
@@ -153,15 +147,6 @@ pipeline {
     }
 
     failure {
-      // emailext(
-      //   body: '''${SCRIPT, template="groovy-html.template"}''',
-      // 	mimeType: 'text/html',
-      //   subject: "[Jenkins] ${currentBuild.fullDisplayName} Failed",
-      // 	recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-      // 	to: 'akantu-admins@akantu.ch',
-      // 	replyTo: 'akantu-admins@akantu.ch',
-      // 	attachLog: true,
-      //   compressLog: false)
       failed()
     }
   }
@@ -175,11 +160,11 @@ def passed() {
   sh "./test/ci/scripts/hbm passed"
 }
 
-def createArtifact(artifact) {
+def createArtifact(filename) {
   sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
-  sh "./test/ci/scripts/hbm send-ctest-results -f ${artifact}"
+  sh "./test/ci/scripts/hbm send-ctest-results -f ${filename}"
 }
 
 def uploadArtifact(artifact, name) {
-  sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v PHID-PROJ-5eqyu6ooyjktagbhf473"
+  sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v ${PROJECT_ID}"
 }
