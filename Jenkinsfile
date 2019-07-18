@@ -26,15 +26,7 @@ pipeline {
     }
   }
   
-  stages {
-    stage('Checkout proper commit') {
-      steps {
-	checkout ( [$class: 'GitSCM',
-		    branches: [[name: "${COMMIT_ID}" ]]]	 
-	)
-      }
-    }
-        
+  stages {    
     stage('Lint') {
       steps {
 	sh """
