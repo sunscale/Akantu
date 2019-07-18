@@ -123,9 +123,6 @@ pipeline {
       }
     }
     post {
-      always {
-	archiveArtifacts artifact: 'build/Testing/**', fingerprint: true
-      }
       failure {
 	zip zipFile: 'build.zip',  dir: 'build/', archive: true
       }
