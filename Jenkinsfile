@@ -3,6 +3,7 @@ pipeline {
               string(defaultValue: '', description: 'buildable phid', name: 'BUILD_TARGET_PHID')
               string(defaultValue: '', description: 'Commit id', name: 'COMMIT_ID')
               string(defaultValue: '', description: 'Diff id', name: 'DIFF_ID')
+	      string(defaultValue: 'PHID-PROJ-5eqyu6ooyjktagbhf473', description: 'ID of the project', name: 'PROJECT_ID')
   }
 
   options {
@@ -163,11 +164,11 @@ def passed() {
 }
 
 def createArtifact(filename) {
-  artifact(filename)
   sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
   sh "./test/ci/scripts/hbm send-ctest-results -f ${filename}"
+  archiveArtifacts artifact: filename, fingerprint: true
 }
 
 def uploadArtifact(artifact, name) {
-  sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v PHID-PROJ-5eqyu6ooyjktagbhf473"
+  sh "./test/ci/scripts/hbm upload-file -f ${artifact} -n \"${name}\" -v ${PROJECT_ID}"
 }
