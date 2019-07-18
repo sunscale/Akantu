@@ -130,6 +130,14 @@ pipeline {
         '''
       }
     }
+    post {
+      always {
+	archiveArtifacts artifact: 'build/Testing/**', fingerprint: true
+      }
+      failure {
+	zip zipFile: 'build.zip',  dir: 'build/', archive: true
+      }
+    }
   }
 
   post {
@@ -166,7 +174,6 @@ def passed() {
 def createArtifact(filename) {
   sh "./test/ci/scripts/hbm send-uri -k 'Jenkins URI' -u ${BUILD_URL} -l 'View Jenkins result'"
   sh "./test/ci/scripts/hbm send-ctest-results -f ${filename}"
-  archiveArtifacts artifact: filename, fingerprint: true
 }
 
 def uploadArtifact(artifact, name) {
