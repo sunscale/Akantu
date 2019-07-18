@@ -130,14 +130,13 @@ pipeline {
           fi
         '''
       }
-    }
-    post {
-      failure {
-	zip zipFile: 'build.zip',  dir: 'build/', archive: true
+      post {
+	failure {
+	  zip zipFile: 'build.zip',  dir: 'build/', archive: true
+	}
       }
     }
   }
-
   post {
     always {
       createArtifact("./CTestResults.xml")
