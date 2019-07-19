@@ -56,7 +56,7 @@ function(_add_akantu_simulation simulation_name)
     )
 
   cmake_parse_arguments(_simulation
-    "PYTHON"
+    "PYTHON;PARALLEL"
     "LIST_FILES"
     "${multi_variables}"
     ${ARGN}

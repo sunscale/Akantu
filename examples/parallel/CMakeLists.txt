@@ -36,4 +36,5 @@ add_mesh(parallel_2d_mesh square_2d.geo 2 1)
 register_example(parallel_2d
   SOURCES parallel_2d.cc
   DEPENDS parallel_2d_mesh
-  FILES_TO_COPY material.dat)
+  FILES_TO_COPY material.dat
+  PARALLEL)
