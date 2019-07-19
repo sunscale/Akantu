@@ -89,9 +89,8 @@ void NTNFricLawLinearSlipWeakening<
         this->mu(n) = this->mu_k(n);
       } else {
         // mu = mu_k + (1 - slip / Dc) * (mu_s - mu_k)
-        this->mu(n) =
-            this->mu_k(n) +
-            (1 - (slip(n) / this->d_c(n))) * (this->mu_s(n) - this->mu_k(n));
+        this->mu(n) = this->mu_k(n) + (1 - (slip(n) / this->d_c(n))) *
+                                          (this->mu_s(n) - this->mu_k(n));
       }
     }
   }
@@ -169,15 +168,15 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(
   if (field_id == "mu_s") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->mu_s.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->mu_s.getArray()));
   } else if (field_id == "mu_k") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->mu_k.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->mu_k.getArray()));
   } else if (field_id == "d_c") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->d_c.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->d_c.getArray()));
   } else {
     NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(dumper_name,
                                                             field_id);

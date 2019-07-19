@@ -311,7 +311,7 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
 
   const Mesh & mesh = this->model.getMesh();
 
-  for(auto ghost_type : ghost_types) {
+  for (auto ghost_type : ghost_types) {
     for (auto & type : mesh.elementTypes(dim - 1, ghost_type)) {
       UInt nb_elements = mesh.getNbElement(type, ghost_type);
       UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
@@ -320,7 +320,8 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
       // get shapes and compute integral
       const Array<Real> & shapes = boundary_fem.getShapes(type, ghost_type);
       Array<Real> area(nb_elements, nb_nodes_per_element);
-      boundary_fem.integrate(shapes, area, nb_nodes_per_element, type, ghost_type);
+      boundary_fem.integrate(shapes, area, nb_nodes_per_element, type,
+                             ghost_type);
 
       if (this->contact_surfaces.size() == 0) {
         AKANTU_DEBUG_WARNING(
@@ -328,7 +329,8 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
             << " You have to define the lumped boundary by yourself.");
       }
 
-      Array<UInt>::const_iterator<UInt> elem_it = (elements)(type, ghost_type).begin();
+      Array<UInt>::const_iterator<UInt> elem_it =
+          (elements)(type, ghost_type).begin();
       Array<UInt>::const_iterator<UInt> elem_it_end =
           (elements)(type, ghost_type).end();
       // loop over contact nodes
@@ -350,6 +352,26 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
 }
 
 /* -------------------------------------------------------------------------- */
+void NTNBaseContact::computeAcceleration(Array<Real> & acceleration) const {
+  auto && dof_manager =
+      dynamic_cast<DOFManagerDefault &>(model.getDOFManager());
+  const auto & b = dof_manager.getResidual();
+  acceleration.resize(b.size());
+  const auto & blocked_dofs = dof_manager.getGlobalBlockedDOFs();
+  const auto & A = dof_manager.getLumpedMatrix("M");
+
+  Array<bool> blocked_dofs_bool(blocked_dofs.size());
+  for (auto && data : zip(blocked_dofs, blocked_dofs_bool)) {
+    std::get<1>(data) = std::get<0>(data);
+  }
+
+  // pre-compute the acceleration
+  // (not increment acceleration, because residual is still Kf)
+  NonLinearSolverLumped::solveLumped(A, acceleration, b, this->model.getF_M2A(),
+                                     blocked_dofs_bool);
+}
+
+/* -------------------------------------------------------------------------- */
 void NTNBaseContact::computeContactPressure() {
   AKANTU_DEBUG_IN();
 
@@ -363,17 +385,8 @@ void NTNBaseContact::computeContactPressure() {
   // synchronize data
   this->synch_registry->synchronize(SynchronizationTag::_cf_nodal);
 
-  auto && dof_manager =
-      dynamic_cast<DOFManagerDefault &>(model.getDOFManager());
-  const auto & b = dof_manager.getResidual();
-  Array<Real> acceleration(b.size(), dim);
-  const auto & blocked_dofs = dof_manager.getGlobalBlockedDOFs();
-  const auto & A = dof_manager.getLumpedMatrix("M");
-
-  // pre-compute the acceleration
-  // (not increment acceleration, because residual is still Kf)
-  NonLinearSolverLumped::solveLumped(A, acceleration, b, blocked_dofs,
-                                     this->model.getF_M2A());
+  Array<Real> acceleration(0, dim);
+  this->computeAcceleration(acceleration);
 
   // compute relative normal fields of displacement, velocity and acceleration
   Array<Real> r_disp(0, 1);
@@ -502,7 +515,8 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
 #define ADD_FIELD(field_id, field, type)                                       \
   internalAddDumpFieldToDumper(                                                \
       dumper_name, field_id,                                                   \
-      new dumper::NodalField<type, true, Array<type>, Array<UInt>>(            \
+      std::make_unique<                                                        \
+          dumper::NodalField<type, true, Array<type>, Array<UInt>>>(           \
           field, 0, 0, &nodal_filter))
 
   if (field_id == "displacement") {
@@ -524,23 +538,23 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   } else if (field_id == "normal") {
     internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->normals.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->normals.getArray()));
   } else if (field_id == "contact_pressure") {
-    internalAddDumpFieldToDumper(
-        dumper_name, field_id,
-        new dumper::NodalField<Real>(this->contact_pressure.getArray()));
+    internalAddDumpFieldToDumper(dumper_name, field_id,
+                                 std::make_unique<dumper::NodalField<Real>>(
+                                     this->contact_pressure.getArray()));
   } else if (field_id == "is_in_contact") {
-    internalAddDumpFieldToDumper(
-        dumper_name, field_id,
-        new dumper::NodalField<bool>(this->is_in_contact.getArray()));
+    internalAddDumpFieldToDumper(dumper_name, field_id,
+                                 std::make_unique<dumper::NodalField<bool>>(
+                                     this->is_in_contact.getArray()));
   } else if (field_id == "lumped_boundary_slave") {
-    internalAddDumpFieldToDumper(
-        dumper_name, field_id,
-        new dumper::NodalField<Real>(this->lumped_boundary_slaves.getArray()));
+    internalAddDumpFieldToDumper(dumper_name, field_id,
+                                 std::make_unique<dumper::NodalField<Real>>(
+                                     this->lumped_boundary_slaves.getArray()));
   } else if (field_id == "impedance") {
     internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->impedance.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->impedance.getArray()));
   } else {
     std::cerr << "Could not add field '" << field_id
               << "' to the dumper. Just ignored it." << std::endl;
