@@ -39,6 +39,31 @@ function(register_example example_name)
   if(DEFINED _add_examples_pkg)
     package_add_to_variable(EXAMPLES_FILES ${_add_examples_pkg} ${_example_files})
   endif()
+
+  if(AKANTU_TEST_EXAMPLES)
+    cmake_parse_arguments(_example
+      "PYTHON"
+      ""
+      "SCRIPT"
+      ${ARGN}
+      )
+
+    if(NOT _example_SCRIPT)
+      add_test(NAME ${example_name}-test
+	COMMAND $<TARGET_FILE:${example_name}>
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    elseif(_example_SCRIPT)
+      if(_example_PYTHON)
+	add_test(NAME ${example_name}-test
+	  COMMAND ${PYTHON_EXECUTABLE} ${_example_SCRIPT}
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+      else()
+	add_test(NAME ${example_name}-test
+	  COMMAND ${_example_SCRIPT}
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+      endif()
+    endif()
+  endif()
 endfunction()
 
 # ==============================================================================
