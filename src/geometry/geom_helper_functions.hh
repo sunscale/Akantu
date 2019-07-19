@@ -107,6 +107,6 @@ protected:
   const cgal::Cartesian::Segment_3 segment;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif // _AKANTU_GEOM_HELPER_FUNCTIONS_HH__

@@ -185,8 +185,8 @@ void GroupManager::destroyNodeGroup(const std::string & group_name) {
   AKANTU_DEBUG_OUT();
 }
 
-// /* -------------------------------------------------------------------------- */
-// void GroupManager::destroyAllElementGroups(bool destroy_node_groups) {
+// /* --------------------------------------------------------------------------
+// */ void GroupManager::destroyAllElementGroups(bool destroy_node_groups) {
 //   AKANTU_DEBUG_IN();
 
 //   if (destroy_node_groups)
@@ -786,7 +786,7 @@ void GroupManager::printself(std::ostream & stream, int indent) const {
     node_group_seen.insert(group.getNodeGroup().getName());
   }
 
-  for (auto &group : iterateNodeGroups()) {
+  for (auto & group : iterateNodeGroups()) {
     if (node_group_seen.find(group.getName()) == node_group_seen.end())
       group.printself(stream, indent + 1);
   }

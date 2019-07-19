@@ -101,7 +101,7 @@ public:
       surface = 1;
       group_size = 1;
       return;
-     }
+    }
 
     auto facet_type = mesh->getFacetType(this->cohesive_type);
 
@@ -165,7 +165,7 @@ public:
   void steps(const Matrix<Real> & strain) {
     StrainIncrement functor((1. / 300) * strain, this->dim == 1 ? _x : _y);
 
-    for (auto _[[gnu::unused]] : arange(nb_steps)) {
+    for (auto _ [[gnu::unused]] : arange(nb_steps)) {
       this->model->applyBC(functor, "loading");
       this->model->applyBC(functor, "fixed");
       if (this->is_extrinsic)
@@ -200,8 +200,10 @@ public:
 
     auto speed = mat_el.getPushWaveSpeed(Element());
     auto direction = _y;
-    if(dim == 1) direction = _x;
-    auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
+    if (dim == 1)
+      direction = _x;
+    auto length =
+        mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
     nb_steps = length / 2. / speed / model->getTimeStep();
 
     SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
@@ -234,14 +236,17 @@ public:
     auto & mat_el = this->model->getMaterial("body");
     Real speed;
     try {
-      speed = mat_el.getShearWaveSpeed(Element()); // the slowest speed if exists
-    } catch(...) {
+      speed =
+          mat_el.getShearWaveSpeed(Element()); // the slowest speed if exists
+    } catch (...) {
       speed = mat_el.getPushWaveSpeed(Element());
     }
 
     auto direction = _y;
-    if(dim == 1) direction = _x;
-    auto length = mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
+    if (dim == 1)
+      direction = _x;
+    auto length =
+        mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
     nb_steps = 2 * length / 2. / speed / model->getTimeStep();
 
     SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
@@ -272,7 +277,7 @@ public:
     }
     strain *= 2 * beta * beta * sigma_c / E;
 
-    //nb_steps *= 5;
+    // nb_steps *= 5;
 
     this->setInitialCondition((1. - 1e-5) * strain);
     this->steps(0.005 * strain);

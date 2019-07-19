@@ -60,6 +60,6 @@ protected:
   Mesh & mesh;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_MESH_GEOM_ABSTRACT_HH__

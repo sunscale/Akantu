@@ -84,7 +84,9 @@ protected:
     /// petsc compressed version of local_equation_number
     Array<PetscInt> local_equation_number_petsc;
 
-    virtual Array<Int> & getLocalEquationsNumbers() {return local_equation_number_petsc;}
+    virtual Array<Int> & getLocalEquationsNumbers() {
+      return local_equation_number_petsc;
+    }
   };
 
   /* ------------------------------------------------------------------------ */

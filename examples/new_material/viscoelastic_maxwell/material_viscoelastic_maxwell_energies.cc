@@ -45,7 +45,7 @@ using namespace akantu;
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material_viscoelastic_maxwell.dat", argc, argv);
 
   // sim data
@@ -70,14 +70,14 @@ int main(int argc, char *argv[]) {
   std::ofstream output_data;
   output_data.open(filename_sstr.str().c_str());
 
-  Material &mat = model.getMaterial(0);
+  Material & mat = model.getMaterial(0);
 
   Real time_step = 0.1;
 
   UInt nb_nodes = mesh.getNbNodes();
-  const Array<Real> &coordinate = mesh.getNodes();
-  Array<Real> &displacement = model.getDisplacement();
-  Array<bool> &blocked = model.getBlockedDOFs();
+  const Array<Real> & coordinate = mesh.getNodes();
+  Array<Real> & displacement = model.getDisplacement();
+  Array<bool> & blocked = model.getBlockedDOFs();
 
   /// Setting time step
 
@@ -92,11 +92,10 @@ int main(int argc, char *argv[]) {
   model.addDumpField("stress");
   model.addDumpField("strain");
 
-
   UInt max_steps = sim_time / time_step + 1;
   Real time = 0.;
 
-  auto &solver = model.getNonLinearSolver();
+  auto & solver = model.getNonLinearSolver();
   solver.set("max_iterations", 10);
   solver.set("threshold", 1e-7);
   solver.set("convergence_type", SolveConvergenceCriteria::_residual);
@@ -143,7 +142,7 @@ int main(int argc, char *argv[]) {
 
     try {
       model.solveStep();
-    } catch (debug::Exception &e) {
+    } catch (debug::Exception & e) {
     }
 
     // for debugging
@@ -170,10 +169,9 @@ int main(int argc, char *argv[]) {
     Real work = mat.getEnergy("work");
 
     // data output
-    output_data << s * time_step << " " << epsilon
-                << " " << epot << " " << edis << " " <<  work << std::endl;
+    output_data << s * time_step << " " << epsilon << " " << epot << " " << edis
+                << " " << work << std::endl;
     time += time_step;
-
   }
   output_data.close();
   finalize();

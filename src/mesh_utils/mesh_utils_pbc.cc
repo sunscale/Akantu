@@ -296,4 +296,4 @@ void MeshUtils::matchPBCPairs(const Mesh & mesh, const UInt dir,
                              << dir);
 }
 
-} // akantu
+} // namespace akantu

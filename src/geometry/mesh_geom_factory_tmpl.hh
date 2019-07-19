@@ -266,6 +266,6 @@ MeshGeomFactory<3, _tetrahedron_4, Triangle<cgal::Cartesian>, cgal::Cartesian>::
   list.push_back(t4);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_MESH_GEOM_FACTORY_TMPL_HH__

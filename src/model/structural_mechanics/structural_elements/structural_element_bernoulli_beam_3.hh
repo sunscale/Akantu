@@ -185,6 +185,6 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
   }
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__ */

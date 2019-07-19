@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 99
+per-file-ignores =
+  py_engine.py:E201,E202,E203,E501

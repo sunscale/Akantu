@@ -100,7 +100,7 @@ protected:
   typename TreeTypeHelper<Primitive, Kernel>::container_type primitive_list;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "mesh_geom_factory_tmpl.hh"
 

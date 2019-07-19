@@ -35,84 +35,103 @@ namespace dumper {
 #ifdef AKANTU_IGFEM
 #include "dumper_igfem_element_partition.hh"
 #endif
-/* -------------------------------------------------------------------------- */
-template <class types>
-class element_partition_field_iterator
-    : public element_iterator<types, element_partition_field_iterator> {
+  /* --------------------------------------------------------------------------
+   */
+  template <class types>
+  class element_partition_field_iterator
+      : public element_iterator<types, element_partition_field_iterator> {
 
-  /* ------------------------------------------------------------------------ */
-  /* Typedefs                                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-  using parent =
-      element_iterator<types, dumper::element_partition_field_iterator>;
-  using return_type =
-      typename SingleType<unsigned int, Vector, true>::return_type;
-  using array_iterator = typename types::array_iterator;
-  using field_type = typename types::field_type;
+    /* ------------------------------------------------------------------------
+     */
+    /* Typedefs */
+    /* ------------------------------------------------------------------------
+     */
+  public:
+    using parent =
+        element_iterator<types, dumper::element_partition_field_iterator>;
+    using return_type =
+        typename SingleType<unsigned int, Vector, true>::return_type;
+    using array_iterator = typename types::array_iterator;
+    using field_type = typename types::field_type;
 
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
-public:
-  element_partition_field_iterator(
-      const field_type & field, const typename field_type::type_iterator & t_it,
-      const typename field_type::type_iterator & t_it_end,
-      const array_iterator & array_it, const array_iterator & array_it_end,
-      const GhostType ghost_type = _not_ghost)
-      : parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) {
-    prank = Communicator::getStaticCommunicator().whoAmI();
-  }
+    /* ------------------------------------------------------------------------
+     */
+    /* Constructors/Destructors */
+    /* ------------------------------------------------------------------------
+     */
+  public:
+    element_partition_field_iterator(
+        const field_type & field,
+        const typename field_type::type_iterator & t_it,
+        const typename field_type::type_iterator & t_it_end,
+        const array_iterator & array_it, const array_iterator & array_it_end,
+        const GhostType ghost_type = _not_ghost)
+        : parent(field, t_it, t_it_end, array_it, array_it_end, ghost_type) {
+      prank = Communicator::getStaticCommunicator().whoAmI();
+    }
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
-public:
-  return_type operator*() { return return_type(1, prank); }
+    /* ------------------------------------------------------------------------
+     */
+    /* Methods */
+    /* ------------------------------------------------------------------------
+     */
+  public:
+    return_type operator*() { return return_type(1, prank); }
 
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
-protected:
-  UInt prank;
-};
+    /* ------------------------------------------------------------------------
+     */
+    /* Class Members */
+    /* ------------------------------------------------------------------------
+     */
+  protected:
+    UInt prank;
+  };
 
-/* -------------------------------------------------------------------------- */
-template <bool filtered = false>
-class ElementPartitionField
-    : public GenericElementalField<SingleType<UInt, Vector, filtered>,
-                                   element_partition_field_iterator> {
-public:
-  /* ------------------------------------------------------------------------ */
-  /* Typedefs                                                                 */
-  /* ------------------------------------------------------------------------ */
+  /* --------------------------------------------------------------------------
+   */
+  template <bool filtered = false>
+  class ElementPartitionField
+      : public GenericElementalField<SingleType<UInt, Vector, filtered>,
+                                     element_partition_field_iterator> {
+  public:
+    /* ------------------------------------------------------------------------
+     */
+    /* Typedefs */
+    /* ------------------------------------------------------------------------
+     */
 
-  using types = SingleType<UInt, Vector, filtered>;
-  using iterator = element_partition_field_iterator<types>;
-  using parent = GenericElementalField<types, element_partition_field_iterator>;
-  using field_type = typename types::field_type;
+    using types = SingleType<UInt, Vector, filtered>;
+    using iterator = element_partition_field_iterator<types>;
+    using parent =
+        GenericElementalField<types, element_partition_field_iterator>;
+    using field_type = typename types::field_type;
 
-public:
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+  public:
+    /* ------------------------------------------------------------------------
+     */
+    /* Constructors/Destructors */
+    /* ------------------------------------------------------------------------
+     */
 
-  ElementPartitionField(const field_type & field,
-                        UInt spatial_dimension = _all_dimensions,
-                        GhostType ghost_type = _not_ghost,
-                        ElementKind element_kind = _ek_not_defined)
-      : parent(field, spatial_dimension, ghost_type, element_kind) {
-    this->homogeneous = true;
-  }
+    ElementPartitionField(const field_type & field,
+                          UInt spatial_dimension = _all_dimensions,
+                          GhostType ghost_type = _not_ghost,
+                          ElementKind element_kind = _ek_not_defined)
+        : parent(field, spatial_dimension, ghost_type, element_kind) {
+      this->homogeneous = true;
+    }
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Methods */
+    /* ------------------------------------------------------------------------
+     */
 
-  UInt getDim() override { return 1; }
-};
+    UInt getDim() override { return 1; }
+  };
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
-} // dumper
-} // akantu
+} // namespace dumper
+} // namespace akantu

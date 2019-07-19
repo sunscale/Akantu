@@ -103,6 +103,6 @@ private:
   std::map<Element, UInt> akantu_number_to_diana_number;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_IO_DIANA_HH__ */

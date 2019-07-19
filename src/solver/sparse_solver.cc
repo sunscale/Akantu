@@ -81,4 +81,4 @@ void SparseSolver::createSynchronizerRegistry() {
 
 void SparseSolver::onCommunicatorFinalize() { this->destroyInternalData(); }
 
-} // akantu
+} // namespace akantu

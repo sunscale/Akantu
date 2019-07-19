@@ -934,6 +934,7 @@ public:
   using difference_type = std::ptrdiff_t;
   using iterator_category = std::random_access_iterator_tag;
   using pointer_type = typename Array<T, is_scal>::pointer_type;
+
 public:
   iterator_internal() = default;
 

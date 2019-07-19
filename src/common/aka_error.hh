@@ -29,10 +29,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <set>
 #include <sstream>
 #include <typeinfo>
 #include <utility>
-#include <set>
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -207,9 +207,10 @@ namespace debug {
     }
     void removeModuleToDebug(const std::string & id) {
       auto it = modules_to_debug.find(id);
-      if(it != modules_to_debug.end())
+      if (it != modules_to_debug.end())
         modules_to_debug.erase(it);
     }
+
   private:
     std::string parallel_context;
     std::ostream * cout;
@@ -266,7 +267,8 @@ namespace debug {
 #ifdef AKANTU_NDEBUG
 #define AKANTU_DEBUG_TEST(level) (false)
 #define AKANTU_DEBUG_LEVEL_IS_TEST()                                           \
-  (::akantu::debug::debugger.testLevel(dblTest, AKANTU_STRINGIZE(AKANTU_MODULE)))
+  (::akantu::debug::debugger.testLevel(dblTest,                                \
+                                       AKANTU_STRINGIZE(AKANTU_MODULE)))
 #define AKANTU_DEBUG(level, info)
 #define AKANTU_DEBUG_(pref, level, info)
 #define AKANTU_DEBUG_IN()

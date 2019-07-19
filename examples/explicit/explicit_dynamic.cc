@@ -48,7 +48,7 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  if(Communicator::getStaticCommunicator().whoAmI() == 0)
+  if (Communicator::getStaticCommunicator().whoAmI() == 0)
     mesh.read("bar.msh");
 
   mesh.distribute();

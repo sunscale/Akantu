@@ -87,20 +87,22 @@ public:
   using const_node_group_iterator = NodeGroups::const_iterator;
   using const_element_group_iterator = ElementGroups::const_iterator;
 
-#define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,    \
-                                                      param_in, param_out)     \
+#define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION(group_type, function,        \
+                                                      param_in, param_out)         \
   [[deprecated(                                                                    \
       "use iterate(Element|Node)Groups or "                                        \
-      "(element|node)GroupExists")]] inline BOOST_PP_CAT(BOOST_PP_CAT(const_, group_type), _iterator)             \
-      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) const {    \
-    return BOOST_PP_CAT(group_type, s).function(param_out);                    \
-  };                                                                           \
-                                                                               \
-  [[deprecated(                                                                    \
-      "use iterate(Element|Node)Groups or "                                        \
-      "(element|node)GroupExists")]] inline BOOST_PP_CAT(group_type, _iterator)                                   \
-      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) {          \
-    return BOOST_PP_CAT(group_type, s).function(param_out);                    \
+      "(element|node)GroupExists")]] inline BOOST_PP_CAT(BOOST_PP_CAT(const_,      \
+                                                                      group_type), \
+                                                         _iterator)                \
+      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) const {        \
+    return BOOST_PP_CAT(group_type, s).function(param_out);                        \
+  };                                                                               \
+                                                                                   \
+  [[deprecated("use iterate(Element|Node)Groups or "                               \
+               "(element|node)GroupExists")]] inline BOOST_PP_CAT(group_type,      \
+                                                                  _iterator)       \
+      BOOST_PP_CAT(BOOST_PP_CAT(group_type, _), function)(param_in) {              \
+    return BOOST_PP_CAT(group_type, s).function(param_out);                        \
   }
 
 #define AKANTU_GROUP_MANAGER_DEFINE_ITERATOR_FUNCTION_NP(group_type, function) \

@@ -229,14 +229,15 @@ namespace debug {
         if (eptr)
           std::rethrow_exception(eptr);
         else
-          std::cerr << AKANTU_LOCATION << "!! Execution terminated for unknown reasons !!"
+          std::cerr << AKANTU_LOCATION
+                    << "!! Execution terminated for unknown reasons !!"
                     << std::endl;
       } catch (std::exception & e) {
         std::cerr << AKANTU_LOCATION << "!! Uncaught exception of type " << name
                   << " !!\nwhat(): \"" << e.what() << "\"" << std::endl;
       } catch (...) {
-        std::cerr << AKANTU_LOCATION << "!! Something strange of type \"" << name
-                  << "\" was thrown.... !!" << std::endl;
+        std::cerr << AKANTU_LOCATION << "!! Something strange of type \""
+                  << name << "\" was thrown.... !!" << std::endl;
       }
 
       if (debugger.printBacktrace())

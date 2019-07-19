@@ -93,7 +93,7 @@ void ElementInfoPerProc::fillMeshData(BufferType & buffer,
                                       const MeshDataTypeCode & type_code,
                                       UInt nb_component) {
 #define AKANTU_DISTRIBUTED_SYNHRONIZER_TAG_DATA(r, extra_param, elem)          \
-  case MeshDataTypeCode::BOOST_PP_TUPLE_ELEM(2, 0, elem): {             \
+  case MeshDataTypeCode::BOOST_PP_TUPLE_ELEM(2, 0, elem): {                    \
     fillMeshDataTemplated<BOOST_PP_TUPLE_ELEM(2, 1, elem)>(buffer, tag_name,   \
                                                            nb_component);      \
     break;                                                                     \
@@ -142,6 +142,6 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__ */

@@ -59,7 +59,8 @@ struct AssembleFieldMatrixStructHelper<
   }
 };
 
-// template <template <ElementKind, class> class I, template <ElementKind> class S,
+// template <template <ElementKind, class> class I, template <ElementKind> class
+// S,
 //           ElementKind kind, class IntegrationOrderFunctor>
 // inline void
 // FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
@@ -74,8 +75,9 @@ struct AssembleFieldMatrixStructHelper<
 
 //   AKANTU_DEBUG_OUT();
 // }
-// /* -------------------------------------------------------------------------- */
-// template <template <ElementKind, class> class I, template <ElementKind> class S,
+// /* --------------------------------------------------------------------------
+// */ template <template <ElementKind, class> class I, template <ElementKind>
+// class S,
 //           ElementKind kind, class IntegrationOrderFunctor>
 // inline void
 // FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
@@ -96,4 +98,4 @@ FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
   AKANTU_TO_IMPLEMENT();
 }
 
-} // akantu
+} // namespace akantu

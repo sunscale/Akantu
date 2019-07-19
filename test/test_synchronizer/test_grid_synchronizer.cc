@@ -293,7 +293,8 @@ int main(int argc, char * argv[]) {
 
   synch_registry.registerSynchronizer(*dist, SynchronizationTag::_smm_mass);
 
-  synch_registry.registerSynchronizer(*grid_communicator, SynchronizationTag::_test);
+  synch_registry.registerSynchronizer(*grid_communicator,
+                                      SynchronizationTag::_test);
 
   AKANTU_DEBUG_INFO("Synchronizing tag on Dist");
   synch_registry.synchronize(SynchronizationTag::_smm_mass);

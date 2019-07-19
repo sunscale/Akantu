@@ -80,9 +80,8 @@ namespace {
     trimed.erase(trimed.begin(),
                  std::find_if(trimed.begin(), trimed.end(), not_));
     // right trim
-    trimed.erase(
-        std::find_if(trimed.rbegin(), trimed.rend(), not_).base(),
-        trimed.end());
+    trimed.erase(std::find_if(trimed.rbegin(), trimed.rend(), not_).base(),
+                 trimed.end());
     return trimed;
   }
 

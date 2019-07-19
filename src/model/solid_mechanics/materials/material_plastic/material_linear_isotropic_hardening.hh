@@ -106,7 +106,7 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #include "material_linear_isotropic_hardening_inline_impl.cc"
 

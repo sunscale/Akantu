@@ -174,7 +174,8 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                              const SynchronizationTag & tag,
                                              UInt proc, UInt rank) const {
   auto dim = mesh.getSpatialDimension();
-  // std::set<SynchronizationTag> skip_conn_tags{SynchronizationTag::_smmc_facets_conn,
+  // std::set<SynchronizationTag>
+  // skip_conn_tags{SynchronizationTag::_smmc_facets_conn,
   //                                             SynchronizationTag::_giu_global_conn};
 
   // bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
@@ -205,8 +206,7 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
              (distrib(mesh.getNodeFlag(node)) ==
                   NodeFlag::_pure_ghost or // pure ghost nodes
               distrib(flag) == NodeFlag::_pure_ghost)),
-        "The node flags: "
-        << flag << " and " << mesh.getNodeFlag(node));
+        "The node flags: " << flag << " and " << mesh.getNodeFlag(node));
 
     Vector<Real> pos_remote(dim);
     buffer >> pos_remote;

@@ -37,12 +37,14 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline SolverVectorArray::SolverVectorArray(DOFManagerDefault & dof_manager, const ID & id)
+inline SolverVectorArray::SolverVectorArray(DOFManagerDefault & dof_manager,
+                                            const ID & id)
     : SolverVector(dof_manager, id) {}
 
 /* -------------------------------------------------------------------------- */
-inline SolverVectorArray::SolverVectorArray(const SolverVectorArray & vector, const ID & id)
-      : SolverVector(vector, id) {}
+inline SolverVectorArray::SolverVectorArray(const SolverVectorArray & vector,
+                                            const ID & id)
+    : SolverVector(vector, id) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Array_>
@@ -72,7 +74,8 @@ template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::size() const {
 }
 
 /* -------------------------------------------------------------------------- */
-template <class Array_> inline Int SolverVectorArrayTmpl<Array_>::localSize() const {
+template <class Array_>
+inline Int SolverVectorArrayTmpl<Array_>::localSize() const {
   return dof_manager.getLocalSystemSize();
 }
 

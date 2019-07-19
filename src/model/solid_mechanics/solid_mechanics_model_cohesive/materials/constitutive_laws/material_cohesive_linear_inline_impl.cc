@@ -260,7 +260,7 @@ inline void MaterialCohesiveLinear<dim>::computeTangentTractionOnQuad(
 }
 
 /* -------------------------------------------------------------------------- */
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 #endif //__AKANTU_MATERIAL_COHESIVE_LINEAR_INLINE_IMPL_CC__

@@ -180,7 +180,8 @@ void ElementTypeMapArray<T, SupportType>::copy(
 template <typename T, typename SupportType>
 ElementTypeMapArray<T, SupportType>::ElementTypeMapArray(
     const ElementTypeMapArray & other)
-    : parent(), Memory(other.id + "_copy", other.memory_id), name(other.name + "_copy") {
+    : parent(), Memory(other.id + "_copy", other.memory_id),
+      name(other.name + "_copy") {
   this->copy(other);
 }
 

@@ -429,8 +429,10 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 /* -------------------------------------------------------------------------- */
 void Mesh::distributeImpl(
     Communicator & communicator,
-    std::function<Int(const Element &, const Element &)> edge_weight_function [[gnu::unused]],
-    std::function<Int(const Element &)> vertex_weight_function [[gnu::unused]]) {
+    std::function<Int(const Element &, const Element &)> edge_weight_function
+    [[gnu::unused]],
+    std::function<Int(const Element &)> vertex_weight_function
+    [[gnu::unused]]) {
   AKANTU_DEBUG_ASSERT(is_distributed == false,
                       "This mesh is already distribute");
   this->communicator = &communicator;

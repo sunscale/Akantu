@@ -127,6 +127,6 @@ private:
   Real fatigue_ratio;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_FATIGUE_HH__ */

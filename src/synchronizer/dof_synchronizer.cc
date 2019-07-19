@@ -89,9 +89,8 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
   const auto & node_communications = node_synchronizer.getCommunications();
 
   auto transcode_node_to_global_dof_scheme =
-      [this, &associated_nodes,
-       &equation_numbers](auto && it, auto && end,
-                          const CommunicationSendRecv & sr) -> void {
+      [this, &associated_nodes, &equation_numbers](
+          auto && it, auto && end, const CommunicationSendRecv & sr) -> void {
     for (; it != end; ++it) {
       auto & scheme = communications.createScheme(it->first, sr);
 
@@ -183,9 +182,9 @@ void DOFSynchronizer::initScatterGatherCommunicationScheme() {
     communicator.freeCommunicationRequest(requests);
   } else {
     communicator.gather(dofs_to_send.size(), this->root);
-    AKANTU_DEBUG(dblDebug,
-                 "I have " << nb_dofs << " dofs (" << dofs_to_send.size()
-                           << " to send to master proc");
+    AKANTU_DEBUG(dblDebug, "I have " << nb_dofs << " dofs ("
+                                     << dofs_to_send.size()
+                                     << " to send to master proc");
 
     if (dofs_to_send.size() != 0)
       communicator.send(dofs_to_send, this->root,
@@ -215,12 +214,13 @@ void DOFSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/) {
     }
   }
 
-  for(auto & dof_id : dof_ids) {
+  for (auto & dof_id : dof_ids) {
     registerDOFs(dof_id);
   }
 
-  // const auto & node_synchronizer = dof_manager.getMesh().getNodeSynchronizer();
-  // const auto & node_communications = node_synchronizer.getCommunications();
+  // const auto & node_synchronizer =
+  // dof_manager.getMesh().getNodeSynchronizer(); const auto &
+  // node_communications = node_synchronizer.getCommunications();
 
   // std::map<UInt, std::vector<UInt>> nodes_per_proc[2];
 
@@ -236,8 +236,9 @@ void DOFSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/) {
 
   // std::map<UInt, std::vector<UInt>> dofs_per_proc[2];
   // for (auto & dof_id : dof_ids) {
-  //   const auto & associated_nodes = dof_manager.getDOFsAssociatedNodes(dof_id);
-  //   const auto & local_equation_numbers =
+  //   const auto & associated_nodes =
+  //   dof_manager.getDOFsAssociatedNodes(dof_id); const auto &
+  //   local_equation_numbers =
   //       dof_manager.getEquationsNumbers(dof_id);
 
   //   for (auto tuple : zip(associated_nodes, local_equation_numbers)) {

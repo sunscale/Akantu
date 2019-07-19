@@ -1,7 +1,5 @@
 #!/bin/env python
 import pytest
-import os
-import subprocess
 import numpy as np
 import py11_akantu_test_common as aka
 

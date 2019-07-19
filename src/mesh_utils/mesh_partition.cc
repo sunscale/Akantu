@@ -228,7 +228,6 @@ void MeshPartition::buildDualGraph(
     dxadj(i) = dxadj(i - 1);
   dxadj(0) = 0;
 
-
   vertex_loads.resize(dxadj.size() - 1);
   edge_loads.resize(dadjncy.size());
   UInt adj = 0;
@@ -236,7 +235,7 @@ void MeshPartition::buildDualGraph(
     auto el = unlinearized(i);
     vertex_loads(i) = vertex_load_func(el);
 
-        UInt nb_adj = dxadj(i + 1) - dxadj(i);
+    UInt nb_adj = dxadj(i + 1) - dxadj(i);
     for (UInt j = 0; j < nb_adj; ++j, ++adj) {
       auto el_adj_id = dadjncy(dxadj(i) + j);
       auto el_adj = unlinearized(el_adj_id);
@@ -430,13 +429,17 @@ bool MeshPartition::hasPartitions(const ElementType & type,
 /* -------------------------------------------------------------------------- */
 void MeshPartition::printself(std::ostream & stream, int indent) const {
   std::string space(indent, AKANTU_INDENT);
-  stream << space << "MeshPartition [" << "\n";
+  stream << space << "MeshPartition ["
+         << "\n";
   stream << space << " + id           : " << id << "\n";
   stream << space << " + nb partitions: " << nb_partitions << "\n";
-  stream << space << " + partitions [ " << "\n";
+  stream << space << " + partitions [ "
+         << "\n";
   partitions.printself(stream, indent + 2);
-  stream << space << " ]" << "\n";
-  stream << space << "]" << "\n";
+  stream << space << " ]"
+         << "\n";
+  stream << space << "]"
+         << "\n";
 }
 
 /* -------------------------------------------------------------------------- */

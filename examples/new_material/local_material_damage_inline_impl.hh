@@ -86,6 +86,6 @@ inline Real LocalMaterialDamage::getCelerity(__attribute__((unused))
   return (std::sqrt((2 * mu + lambda) / rho));
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_INLINE_IMPL_HH__ */

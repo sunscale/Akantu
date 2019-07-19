@@ -43,8 +43,8 @@ inline bool MeshUtils::hasElement(const Vector<UInt> & nodes_element,
   // one of the nodes of nodes is not in nodes_element stops
   auto it = std::mismatch(nodes.begin(), nodes.end(), nodes_element.begin(),
                           [&](auto && node, auto && /*node2*/) -> bool {
-                            auto it =
-                                std::find(nodes_element.begin(), nodes_element.end(), node);
+                            auto it = std::find(nodes_element.begin(),
+                                                nodes_element.end(), node);
                             return (it != nodes_element.end());
                           });
 
@@ -82,6 +82,6 @@ MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
   return deletions == 0;
 }
 
-}
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_UTILS_INLINE_IMPL_CC__ */

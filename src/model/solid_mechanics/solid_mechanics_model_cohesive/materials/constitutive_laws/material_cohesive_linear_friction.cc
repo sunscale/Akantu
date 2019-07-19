@@ -274,4 +274,4 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
 
 INSTANTIATE_MATERIAL(cohesive_linear_friction, MaterialCohesiveLinearFriction);
 
-} // akantu
+} // namespace akantu

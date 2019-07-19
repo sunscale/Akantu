@@ -35,8 +35,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-MIIASYMContact::MIIASYMContact(SolidMechanicsModel & model,
-                               const ID & id, const MemoryID & memory_id)
+MIIASYMContact::MIIASYMContact(SolidMechanicsModel & model, const ID & id,
+                               const MemoryID & memory_id)
     : NTRFContact(model, id, memory_id) {
   AKANTU_DEBUG_IN();
 

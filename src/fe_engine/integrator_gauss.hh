@@ -41,7 +41,7 @@ namespace integrator {
   namespace details {
     template <ElementKind> struct GaussIntegratorComputeJacobiansHelper;
   } // namespace details
-} // namespace fe_engine
+} // namespace integrator
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>

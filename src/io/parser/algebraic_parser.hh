@@ -506,7 +506,7 @@ namespace parser {
     AlgebraicGrammar<Iterator, Skipper> number;
     qi::symbols<char, RandomDistributionType> generator_type;
   };
-}
-}
+} // namespace parser
+} // namespace akantu
 
 #endif /* __AKANTU_ALGEBRAIC_PARSER_HH__ */

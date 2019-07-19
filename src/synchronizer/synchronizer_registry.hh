@@ -41,7 +41,7 @@
 namespace akantu {
 class DataAccessorBase;
 class Synchronizer;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -85,6 +85,6 @@ private:
   DataAccessorBase * data_accessor{nullptr};
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SYNCHRONIZER_REGISTRY_HH__ */

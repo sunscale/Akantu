@@ -107,4 +107,4 @@ void Parsable::parseSubSection(const ParserSection & section) {
   }
 }
 
-} // akantu
+} // namespace akantu

@@ -632,7 +632,9 @@ template <> void FriendMaterial<MaterialElasticOrthotropic<3>>::testCelerity() {
 template <>
 void FriendMaterial<MaterialElasticLinearAnisotropic<2>>::setParams() {
   Matrix<Real> C = {
-      {1.0, 0.3, 0.4}, {0.3, 2.0, 0.1}, {0.4, 0.1, 1.5},
+      {1.0, 0.3, 0.4},
+      {0.3, 2.0, 0.1},
+      {0.4, 0.1, 1.5},
   };
 
   for (auto i = 0u; i < C.rows(); ++i)
@@ -657,7 +659,9 @@ void FriendMaterial<MaterialElasticLinearAnisotropic<2>>::setParams() {
 template <>
 void FriendMaterial<MaterialElasticLinearAnisotropic<2>>::testComputeStress() {
   Matrix<Real> C = {
-      {1.0, 0.3, 0.4}, {0.3, 2.0, 0.1}, {0.4, 0.1, 1.5},
+      {1.0, 0.3, 0.4},
+      {0.3, 2.0, 0.1},
+      {0.4, 0.1, 1.5},
   };
 
   Matrix<Real> rotation_matrix(2, 2);

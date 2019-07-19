@@ -102,7 +102,7 @@ namespace debug {
     SolverCallbackResidualPartUnknown(const ID & residual_part)
         : Exception(residual_part + " is not known here.") {}
   };
-}
+} // namespace debug
 
 } // namespace akantu
 

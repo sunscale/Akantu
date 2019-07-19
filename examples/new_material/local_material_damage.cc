@@ -102,9 +102,11 @@ void LocalMaterialDamage::computePotentialEnergy(ElementType el_type,
 }
 
 static bool material_is_alocated_local_damage [[gnu::unused]] =
-      MaterialFactory::getInstance().registerAllocator(
-          "local_damage", [](UInt, const ID &, SolidMechanicsModel & model, const ID & id) -> std::unique_ptr<Material> {
-	return std::make_unique<LocalMaterialDamage>(model, id);
-       });
+    MaterialFactory::getInstance().registerAllocator(
+        "local_damage",
+        [](UInt, const ID &, SolidMechanicsModel & model,
+           const ID & id) -> std::unique_ptr<Material> {
+          return std::make_unique<LocalMaterialDamage>(model, id);
+        });
 
-} // akantu
+} // namespace akantu

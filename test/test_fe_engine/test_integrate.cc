@@ -71,4 +71,3 @@ TYPED_TEST(TestFEMFixture, IntegrateConstant) {
   auto diff = (value - sum).template norm<L_inf>();
   EXPECT_NEAR(0, diff, 1e-14);
 }
-

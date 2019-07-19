@@ -368,9 +368,9 @@ public:
 #include "element_class_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
+#include "element_class_hexahedron_8_inline_impl.cc"
 #include "element_class_pentahedron_6_inline_impl.cc"
 /* keep order */
-#include "element_class_hexahedron_8_inline_impl.cc"
 #include "element_class_hexahedron_20_inline_impl.cc"
 #include "element_class_pentahedron_15_inline_impl.cc"
 #include "element_class_point_1_inline_impl.cc"

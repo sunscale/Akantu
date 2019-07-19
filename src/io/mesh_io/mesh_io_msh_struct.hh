@@ -49,6 +49,6 @@ public:
   void read(const std::string & filename, Mesh & mesh) override;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_IO_MSH_STRUCT_HH__ */

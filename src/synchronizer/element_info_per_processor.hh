@@ -43,7 +43,7 @@ namespace akantu {
 class ElementSynchronizer;
 class Communicator;
 class MeshPartition;
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -103,12 +103,14 @@ public:
   MasterElementInfoPerProc(ElementSynchronizer & synchronizer, UInt message_cnt,
                            UInt root, ElementType type,
                            const MeshPartition & partition);
+
 protected:
   void synchronizeConnectivities() override;
   void synchronizePartitions() override;
   void synchronizeTags() override;
   void synchronizeGroups() override;
   bool needSynchronize() override { return type != _not_defined; }
+
 protected:
   template <typename T>
   void fillTagBufferTemplated(std::vector<DynamicCommunicationBuffer> & buffers,
@@ -142,7 +144,7 @@ private:
   UInt nb_element_to_receive{0};
 };
 
-} // akantu
+} // namespace akantu
 
 #include "element_info_per_processor_tmpl.hh"
 

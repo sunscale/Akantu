@@ -30,8 +30,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "shape_cohesive.hh"
 #include "mesh_iterators.hh"
+#include "shape_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_SHAPE_COHESIVE_INLINE_IMPL_CC__

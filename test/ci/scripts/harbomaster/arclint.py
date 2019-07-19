@@ -2,20 +2,21 @@ import json
 from .results import Results
 from . import export
 
+
 @export
 class ARCLintJson:
     STATUS = {'passed': Results.PASS,
-                'failed': Results.FAIL}
-    
+              'failed': Results.FAIL}
+
     def __init__(self, filename):
         self._file = open(filename, "r")
         self._json = json.load(self._file)
-        
+
     def __iter__(self):
         self._last_path_lints = []
         self._lints = iter(self._json)
         return self
-        
+
     def __next__(self):
         class Lint:
             def __init__(self, path, json):
@@ -25,7 +26,7 @@ class ARCLintJson:
                    json['name'] == json['code']:
                     self.json['name'] = json['description']
                     del self.json['description']
-                
+
             def __getattr__(self, name):
                 if name == 'json':
                     return self.json
@@ -33,7 +34,7 @@ class ARCLintJson:
                     return self.json[name]
                 else:
                     return None
-                
+
             def __str__(self):
                 return f'{self.path} => {self.name}'
 
@@ -43,7 +44,7 @@ class ARCLintJson:
                 lint = Lint(self._last_path,
                             self._last_path_lints.pop(0))
                 break
-            
+
             json = next(self._lints)
             if type(json) != dict:
                     raise RuntimeError("Wrong input type for the linter processor")
@@ -52,7 +53,6 @@ class ARCLintJson:
             self._last_path_lints = json[self._last_path]
 
         return lint
-                
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._file.close()

@@ -45,7 +45,7 @@ using namespace akantu;
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
   akantu::initialize("material_viscoelastic_maxwell.dat", argc, argv);
 
   // sim data
@@ -72,9 +72,9 @@ int main(int argc, char *argv[]) {
   std::ofstream output_data;
   output_data.open(filename_sstr.str().c_str());
 
-  Material &mat = model.getMaterial(0);
+  Material & mat = model.getMaterial(0);
 
-  const Array<Real> &stress = mat.getStress(element_type);
+  const Array<Real> & stress = mat.getStress(element_type);
 
   Vector<Real> Eta = mat.get("Eta");
   Vector<Real> Ev = mat.get("Ev");
@@ -85,9 +85,9 @@ int main(int argc, char *argv[]) {
   Real time_step = 0.1;
 
   UInt nb_nodes = mesh.getNbNodes();
-  const Array<Real> &coordinate = mesh.getNodes();
-  Array<Real> &displacement = model.getDisplacement();
-  Array<bool> &blocked = model.getBlockedDOFs();
+  const Array<Real> & coordinate = mesh.getNodes();
+  Array<Real> & displacement = model.getDisplacement();
+  Array<bool> & blocked = model.getBlockedDOFs();
 
   /// Setting time step
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
   UInt max_steps = sim_time / time_step + 1;
   Real time = 0.;
 
-  auto &solver = model.getNonLinearSolver();
+  auto & solver = model.getNonLinearSolver();
   solver.set("max_iterations", 200);
   solver.set("threshold", 1e-7);
   solver.set("convergence_type", SolveConvergenceCriteria::_residual);
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
 
     try {
       model.solveStep();
-    } catch (debug::Exception &e) {
+    } catch (debug::Exception & e) {
     }
 
     Int nb_iter = solver.get("nb_iterations");
@@ -162,16 +162,16 @@ int main(int argc, char *argv[]) {
     Real solution_11 = 0.;
     if (time < T) {
       solution_11 = pre_mult * eps / T *
-          (Einf * time + lambda * Ev(0) * (1 - exp(-time / lambda)));
+                    (Einf * time + lambda * Ev(0) * (1 - exp(-time / lambda)));
     } else {
-      solution_11 = pre_mult * eps *
-                    (Einf +
-                     lambda * Ev(0) / T *
-                         (exp((T - time) / lambda) - exp(-time / lambda)));
+      solution_11 =
+          pre_mult * eps *
+          (Einf + lambda * Ev(0) / T *
+                      (exp((T - time) / lambda) - exp(-time / lambda)));
     }
 
     // data output
-    output_data << s * time_step << " "  << epsilon << " " << solution_11;
+    output_data << s * time_step << " " << epsilon << " " << solution_11;
     Array<Real>::const_matrix_iterator stress_it = stress.begin(dim, dim);
     Array<Real>::const_matrix_iterator stress_end = stress.end(dim, dim);
     for (; stress_it != stress_end; ++stress_it) {
@@ -186,7 +186,6 @@ int main(int argc, char *argv[]) {
     }
     output_data << std::endl;
     time += time_step;
-
   }
   output_data.close();
   finalize();

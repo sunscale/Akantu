@@ -67,7 +67,7 @@ protected:
   MeshGeomFactory<dim, type, Primitive, Kernel> factory;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "mesh_geom_intersector_tmpl.hh"
 

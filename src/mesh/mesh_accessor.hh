@@ -77,7 +77,9 @@ public:
   inline auto & getNodesFlags() { return this->_mesh.getNodesFlags(); }
 
   /// get a pointer to the nodes_type Array<Int> and create it if necessary
-  inline void setNodePrank(UInt node, Int prank) { this->_mesh.nodes_prank[node] = prank; }
+  inline void setNodePrank(UInt node, Int prank) {
+    this->_mesh.nodes_prank[node] = prank;
+  }
 
   /// get a pointer to the coordinates Array
   inline auto & getNodes() { return this->_mesh.getNodesPointer(); }
@@ -143,9 +145,7 @@ public:
   }
 
   /* ------------------------------------------------------------------------ */
-  void makeReady() {
-    this->_mesh.makeReady();
-  }
+  void makeReady() { this->_mesh.makeReady(); }
 
   /* ------------------------------------------------------------------------ */
   void addPeriodicSlave(UInt slave, UInt master) {
@@ -158,9 +158,7 @@ public:
     }
   }
 
-  void wipePeriodicInfo() {
-    this->_mesh.wipePeriodicInfo();
-  }
+  void wipePeriodicInfo() { this->_mesh.wipePeriodicInfo(); }
 
 private:
   Mesh & _mesh;

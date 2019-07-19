@@ -146,9 +146,10 @@ public:
 
   /// multiply a field by shape functions
   template <ElementType type>
-  void computeNtb(const Array<Real> & /*bs*/, Array<Real> & /*Ntbs*/,
-                  const GhostType & /*ghost_type*/,
-                  const Array<UInt> & /*filter_elements*/ = empty_filter) const {
+  void
+  computeNtb(const Array<Real> & /*bs*/, Array<Real> & /*Ntbs*/,
+             const GhostType & /*ghost_type*/,
+             const Array<UInt> & /*filter_elements*/ = empty_filter) const {
     AKANTU_TO_IMPLEMENT();
   }
 

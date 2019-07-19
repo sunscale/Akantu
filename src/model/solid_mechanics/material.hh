@@ -592,7 +592,7 @@ inline std::ostream & operator<<(std::ostream & stream,
       make_view(this->gradu(el_type, ghost_type), this->spatial_dimension,     \
                 this->spatial_dimension);                                      \
                                                                                \
-  auto stress_view =                                                        \
+  auto stress_view =                                                           \
       make_view(this->stress(el_type, ghost_type), this->spatial_dimension,    \
                 this->spatial_dimension);                                      \
                                                                                \
@@ -623,7 +623,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   auto tangent_size =                                                          \
       this->getTangentStiffnessVoigtSize(this->spatial_dimension);             \
                                                                                \
-  auto && tangent_view = make_view(tangent_mat, tangent_size, tangent_size);      \
+  auto && tangent_view = make_view(tangent_mat, tangent_size, tangent_size);   \
                                                                                \
   for (auto && data : zip(grad_u_view, stress_view, tangent_view)) {           \
     [[gnu::unused]] Matrix<Real> & grad_u = std::get<0>(data);                 \

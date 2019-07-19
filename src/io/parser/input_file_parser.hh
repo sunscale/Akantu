@@ -197,7 +197,7 @@ namespace parser {
       |     "#" >> *(qi::char_ - spirit::eol)
       ;
 
-/* clang-format on */
+      /* clang-format on */
 
 #define AKANTU_SECTION_TYPE_ADD(r, data, elem)                                 \
   (BOOST_PP_STRINGIZE(elem), BOOST_PP_CAT(ParserType::_, elem))
@@ -261,8 +261,8 @@ namespace parser {
 
     ParserSection * parent_section;
   };
-}
+} // namespace parser
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_INPUT_FILE_PARSER_HH__ */

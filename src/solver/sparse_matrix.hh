@@ -41,7 +41,7 @@ namespace akantu {
 class DOFManager;
 class TermsToAssemble;
 class SolverVector;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -98,7 +98,7 @@ public:
 
   /// copy the profile of another matrix
   virtual void copyProfile(const SparseMatrix & other) = 0;
-  
+
   /// operator *=
   SparseMatrix & operator*=(Real alpha) {
     this->mul(alpha);
@@ -152,9 +152,9 @@ protected:
   UInt nb_non_zero;
 };
 
-//Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
+// Array<Real> & operator*=(Array<Real> & vect, const SparseMatrix & mat);
 
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

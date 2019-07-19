@@ -100,6 +100,6 @@ protected:
 
 //#include "material_cohesive_elastic_inline_impl.cc"
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_BILINEAR_HH__ */

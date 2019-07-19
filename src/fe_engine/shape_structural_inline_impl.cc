@@ -55,7 +55,7 @@ namespace {
                                          ghost_type);
     return nodes_per_element;
   }
-}
+} // namespace
 
 template <ElementKind kind>
 inline void ShapeStructural<kind>::initShapeFunctions(

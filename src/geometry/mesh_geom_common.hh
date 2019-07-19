@@ -50,8 +50,8 @@ namespace cgal {
   using Spherical = CGAL::Spherical_kernel_3<
       CGAL::Simple_cartesian<CGAL::Quotient<CGAL::MP_Float>>,
       CGAL::Algebraic_kernel_for_spheres_2_3<CGAL::Quotient<CGAL::MP_Float>>>;
-} // cgal
+} // namespace cgal
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_MESH_GEOM_COMMON_HH__

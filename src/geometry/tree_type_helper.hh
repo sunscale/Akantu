@@ -104,6 +104,6 @@ TREE_TYPE_HELPER_MACRO(Triangle, cgal::Cartesian::Segment_3, cgal::Cartesian);
 
 #undef TREE_TYPE_HELPER_MACRO
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_TREE_TYPE_HELPER_HH__

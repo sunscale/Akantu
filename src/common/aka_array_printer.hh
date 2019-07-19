@@ -51,6 +51,7 @@ public:
     }
     stream << "}" << std::endl;
   }
+
 private:
   const container & cont;
 };

@@ -66,9 +66,9 @@ public:
 
   /// intercept the call to set for options
   template <typename T> void set(const ID & param, T && t) {
-    if(has_internal_set_param) {
+    if (has_internal_set_param) {
       set_param(param, std::to_string(t));
-    } else      {
+    } else {
       ParameterRegistry::set(param, t);
     }
   }

@@ -423,14 +423,14 @@ void FragmentManager::integrateFieldOnFragments(
       Array<Real> integration_array(elements.size() * nb_quad_per_element,
                                     nb_component);
 
-      auto field_array_begin =
-          field_array.begin_reinterpret(nb_quad_per_element, nb_component,
-                                        field_array.size() /
-                                            nb_quad_per_element);
+      auto field_array_begin = field_array.begin_reinterpret(
+          nb_quad_per_element, nb_component,
+          field_array.size() / nb_quad_per_element);
       auto density_array_begin = density_array.begin_reinterpret(
           nb_quad_per_element, density_array.size() / nb_quad_per_element);
 
-      for(auto && data : enumerate(make_view(integration_array, nb_quad_per_element, nb_component))) {
+      for (auto && data : enumerate(make_view(
+               integration_array, nb_quad_per_element, nb_component))) {
         UInt global_el = elements(std::get<0>(data));
         auto & int_array = std::get<1>(data);
         int_array = field_array_begin[global_el];
@@ -511,9 +511,9 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
   auto && spatial_dimension = mesh.getSpatialDimension();
   auto && nb_component = data.getNbComponent();
   auto && data_begin = data.begin(nb_component);
- 
+
   /// loop over fragments
-    for (auto && data : zip(iterateElementGroups(), fragment_index)) {
+  for (auto && data : zip(iterateElementGroups(), fragment_index)) {
     const auto & fragment = std::get<0>(data);
     auto fragment_idx = std::get<1>(data);
 

@@ -126,7 +126,7 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 __END_AKANTU_DUMPER__
 
 #endif /* __AKANTU_DUMPER_PADDING_HELPER_HH__ */

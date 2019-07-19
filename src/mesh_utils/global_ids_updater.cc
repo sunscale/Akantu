@@ -75,7 +75,6 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
     if (mesh.isLocalOrMasterNode(n))
       ++local_master_nodes(1);
 
-
   auto starting_index = local_master_nodes(1);
 
   comm.allReduce(local_master_nodes);
@@ -105,7 +104,8 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
   this->reduce = true;
-  this->synchronizer.slaveReductionOnce(*this, SynchronizationTag::_giu_global_conn);
+  this->synchronizer.slaveReductionOnce(*this,
+                                        SynchronizationTag::_giu_global_conn);
 
 #ifndef AKANTU_NDEBUG
   for (auto node : nodes_flags) {
@@ -127,7 +127,8 @@ void GlobalIdsUpdater::synchronizeGlobalIDs() {
 #endif
 
   this->reduce = false;
-  this->synchronizer.synchronizeOnce(*this, SynchronizationTag::_giu_global_conn);
+  this->synchronizer.synchronizeOnce(*this,
+                                     SynchronizationTag::_giu_global_conn);
 }
 
-} // akantu
+} // namespace akantu

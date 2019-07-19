@@ -511,7 +511,6 @@ void ShapeLagrange<kind>::computeNtb(
   auto N_it = view.begin();
   auto N_end = view.end();
 
-
   if (filter_elements != empty_filter) {
     FEEngine::filterElementalData(this->mesh, shapes(itp_type, ghost_type),
                                   shapes_filtered, type, ghost_type,

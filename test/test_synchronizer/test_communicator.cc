@@ -72,12 +72,12 @@ TEST(Communicator, ReceiveAny) {
         for (auto s : enumerate(sends)) {
           if (std::get<0>(s) != 0)
             msgs += ", ";
-          msgs += std::to_string(std::get<0>(s) + 1) + ": "
-                  + std::to_string(std::get<1>(s));
+          msgs += std::to_string(std::get<0>(s) + 1) + ": " +
+                  std::to_string(std::get<1>(s));
         }
         return msgs;
       }());
-      
+
       int nb_recvs = 0;
       for (auto && data : enumerate(sends)) {
         auto & send = std::get<1>(data);
@@ -110,8 +110,8 @@ TEST(Communicator, ReceiveAny) {
         for (auto s : enumerate(recv)) {
           if (std::get<0>(s) != 0)
             msgs += ", ";
-          msgs += std::to_string(std::get<0>(s) + 1) + ": "
-                  + std::to_string(std::get<1>(s));
+          msgs += std::to_string(std::get<0>(s) + 1) + ": " +
+                  std::to_string(std::get<1>(s));
         }
         return msgs;
       }());

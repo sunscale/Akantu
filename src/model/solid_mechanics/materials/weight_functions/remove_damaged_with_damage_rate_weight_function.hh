@@ -80,6 +80,6 @@ private:
 #include "remove_damaged_with_damage_rate_weight_function_inline_impl.cc"
 #endif
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_REMOVE_DAMAGED_WITH_DAMAGE_WEIGHT_FUNCTION_HH__ */

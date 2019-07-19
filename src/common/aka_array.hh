@@ -235,14 +235,14 @@ public:
 
   ~Array() override;
 
-  Array() : Array(0) {};
-  
+  Array() : Array(0){};
+
   /// Allocation of a new vector
   explicit Array(UInt size, UInt nb_component = 1, const ID & id = "");
 
   /// Allocation of a new vector with a default value
   explicit Array(UInt size, UInt nb_component, const_reference value,
-        const ID & id = "");
+                 const ID & id = "");
 
   /// Copy constructor (deep copy if deep=true)
   Array(const Array & vect, const ID & id = "");

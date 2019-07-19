@@ -32,10 +32,10 @@
 #include "cohesive_element_inserter.hh"
 #include "communicator.hh"
 #include "element_group.hh"
+#include "element_synchronizer.hh"
 #include "global_ids_updater.hh"
 #include "mesh_accessor.hh"
 #include "mesh_iterators.hh"
-#include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <limits>

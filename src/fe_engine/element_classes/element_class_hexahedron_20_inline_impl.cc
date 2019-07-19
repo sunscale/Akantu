@@ -216,5 +216,5 @@ inline void InterpolationElement<_itp_serendip_hexahedron_20>::computeDNDS(
 template <>
 inline Real
 GeometricalElement<_gt_hexahedron_20>::getInradius(const Matrix<Real> & coord) {
-  return GeometricalElement<_gt_hexahedron_8>::getInradius(coord)*0.5;
+  return GeometricalElement<_gt_hexahedron_8>::getInradius(coord) * 0.5;
 }

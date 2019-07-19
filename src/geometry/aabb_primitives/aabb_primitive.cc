@@ -46,4 +46,4 @@ Line_arc_primitive::Point Line_arc_primitive::reference_point() const {
   return cgal::Spherical::Point_3(x, y, z);
 }
 
-} // akantu
+} // namespace akantu

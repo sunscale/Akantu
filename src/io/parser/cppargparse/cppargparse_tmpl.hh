@@ -235,6 +235,6 @@ inline void ArgumentParser::addArgument<unsigned int>(
     ArgumentType type, unsigned int def, unsigned int cons) {
   this->addArgument<int>(name_or_flag, help, nargs, type, def, cons);
 }
-}
+} // namespace cppargparse
 
 #endif /* __AKANTU_CPPARGPARSE_TMPL_HH__ */

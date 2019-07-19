@@ -1,13 +1,9 @@
 import akantu as aka
-import subprocess
 import numpy as np
-import time
-import os
-# ------------------------------------------------------------- #
 
 
+# ------------------------------------------------------------------------------
 class LocalElastic(aka.Material):
-
     def __init__(self, model, _id):
         super().__init__(model, _id)
         super().registerParamReal('E',
@@ -92,7 +88,6 @@ class LocalElastic(aka.Material):
 
     # computes the energy density
     def computePotentialEnergy(self, el_type):
-
         sigma = self.getStress(el_type)
         grad_u = self.getGradU(el_type)
 
@@ -105,6 +100,7 @@ class LocalElastic(aka.Material):
         energy_density[:, 0] = 0.5 * np.einsum('aij,aij->a', stress, epsilon)
 
 
+# ------------------------------------------------------------------------------
 # applies manually the boundary conditions
 def applyBC(model):
 
@@ -130,32 +126,21 @@ def applyBC(model):
             displacement[node, 1] = 1.
 
 
+# register the material to the material factory
+def allocator(dim, option, model, id):
+    return LocalElastic(model, id)
+
+
+mat_factory = aka.MaterialFactory.getInstance()
+mat_factory.registerAllocator("local_elastic", allocator)
+
 # main parameters
 spatial_dimension = 2
 mesh_file = 'square.msh'
 
-if not os.path.isfile(mesh_file):
-    # call gmsh to generate the mesh
-    ret = subprocess.call(
-        'gmsh -format msh2 -2 square.geo -optimize square.msh', shell=True)
-    if ret != 0:
-        raise Exception(
-            'execution of GMSH failed: do you have it installed ?')
-
-time.sleep(2)
-
 # read mesh
 mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
-
-mat_factory = aka.MaterialFactory.getInstance()
-
-
-def allocator(_dim, _unused, model, _id):
-    return LocalElastic(model, _id)
-
-
-mat_factory.registerAllocator("local_elastic", allocator)
 
 # parse input file
 aka.parseInput('material.dat')
@@ -168,7 +153,7 @@ model.initFull(_analysis_method=aka._static)
 solver = model.getNonLinearSolver()
 solver.set("max_iterations", 2)
 solver.set("threshold", 1e-3)
-solver.set("convergence_type", aka.SolveConvergenceCriteria__solution)
+solver.set("convergence_type", aka.SolveConvergenceCriteria._solution)
 
 # prepare the dumper
 model.setBaseName("bimaterial")

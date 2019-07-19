@@ -162,7 +162,7 @@ TYPED_TEST(TestMaterialCohesiveLinearFixture, ModeI) {
 TYPED_TEST(TestMaterialCohesiveLinearFixture, ModeII) {
   this->checkModeII(this->material->delta_c_);
 
-  if(this->dim != 1) {
+  if (this->dim != 1) {
     Real G_c = this->material->get("G_c");
     Real beta = this->material->get("beta");
     Real dis = beta * G_c;

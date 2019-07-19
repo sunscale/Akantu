@@ -190,8 +190,8 @@ int main(int argc, char * argv[]) {
   UInt regular_steps = 15;
   for (UInt s = 0; s < regular_steps; ++s) {
     converged =
-        model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_increment>(
-            1e-12, error, 2);
+        model.solveStep<_scm_newton_raphson_tangent_modified,
+                        SolveConvergenceCriteria::_increment>(1e-12, error, 2);
 
     if (converged == false) {
       std::cout << "The error is: " << error << std::endl;
@@ -281,8 +281,8 @@ int main(int argc, char * argv[]) {
 
   for (UInt s = 0; s < 1; ++s) {
     converged =
-        model.solveStep<_scm_newton_raphson_tangent_modified, SolveConvergenceCriteria::_increment>(
-            1e-12, error, 2);
+        model.solveStep<_scm_newton_raphson_tangent_modified,
+                        SolveConvergenceCriteria::_increment>(1e-12, error, 2);
 
     if (converged == false) {
       std::cout << "The error is: " << error << std::endl;
@@ -332,9 +332,8 @@ int main(int argc, char * argv[]) {
         if (e == 7) {
           if (!Math::are_float_equal(*step_it, reduction_step_el_27 + 1) ||
               !Math::are_float_equal(
-                  *new_dam_it,
-                  1 - (1. / std::pow(reduction_constant,
-                                     reduction_step_el_27 + 1)))) {
+                  *new_dam_it, 1 - (1. / std::pow(reduction_constant,
+                                                  reduction_step_el_27 + 1)))) {
             std::cout << "error in computation of damage step!!" << std::endl;
             finalize();
             return EXIT_FAILURE;

@@ -113,7 +113,8 @@ int main(int argc, char * argv[]) {
   /// model initialization
   model.initFull(_analysis_method = _static);
 
-  //model.getNewSolver("static", TimeStepSolverType::_static, NonLinearSolverType::_newton_raphson_modified);
+  // model.getNewSolver("static", TimeStepSolverType::_static,
+  // NonLinearSolverType::_newton_raphson_modified);
   auto & solver = model.getNonLinearSolver("static");
   solver.set("threshold", 2e-4);
   solver.set("max_iterations", 2);

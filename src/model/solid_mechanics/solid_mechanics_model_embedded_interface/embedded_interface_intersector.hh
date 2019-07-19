@@ -93,6 +93,6 @@ protected:
   const Mesh & primitive_mesh;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__

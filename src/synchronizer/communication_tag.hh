@@ -119,6 +119,6 @@ inline std::ostream & operator<<(std::ostream & stream, const Tag & _this) {
 }
 
 /* -------------------------------------------------------------------------- */
-}
+} // namespace akantu
 
 #endif /* __AKANTU_COMMUNICATION_TAG_HH__ */

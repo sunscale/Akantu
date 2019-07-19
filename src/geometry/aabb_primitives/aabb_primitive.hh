@@ -84,6 +84,6 @@ AKANTU_AABB_CLASS(Line_arc, cgal::Spherical);
 
 #undef AKANTU_AABB_CLASS
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_AABB_PRIMITIVE_HH__

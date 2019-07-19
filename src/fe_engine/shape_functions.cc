@@ -156,7 +156,8 @@ void ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
   for (auto ghost_type : ghost_types) {
     auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
     if (element_filter) {
-      types_iterable = element_filter->elementTypes(spatial_dimension, ghost_type);
+      types_iterable =
+          element_filter->elementTypes(spatial_dimension, ghost_type);
     }
 
     for (auto type : types_iterable) {
@@ -201,7 +202,8 @@ void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 
   auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
   if (element_filter) {
-    types_iterable = element_filter->elementTypes(spatial_dimension, ghost_type);
+    types_iterable =
+        element_filter->elementTypes(spatial_dimension, ghost_type);
   }
 
   for (auto type : types_iterable) {

@@ -35,9 +35,9 @@ void IGFEMEnrichment::update(ID domain) {
 void IGFEMEnrichment::unRegisterGeometryObject(const ID & domain) {
 
   GeometryMap::iterator it = geometries.find(domain);
-  AKANTU_DEBUG_ASSERT(it != geometries.end(),
-                      "Geometry object with domain " << domain
-                                                     << " was not found");
+  AKANTU_DEBUG_ASSERT(it != geometries.end(), "Geometry object with domain "
+                                                  << domain
+                                                  << " was not found");
   geometries.erase(it);
   if (!geometries.empty())
     default_geometry = (*geometries.begin()).first;
@@ -51,9 +51,9 @@ void IGFEMEnrichment::registerGeometryObject(Geometry & geometry,
 
 #ifndef AKANTU_NDEBUG
   GeometryMap::iterator it = geometries.find(domain);
-  AKANTU_DEBUG_ASSERT(it == geometries.end(),
-                      "Geometry object with domain " << domain
-                                                     << " was already created");
+  AKANTU_DEBUG_ASSERT(it == geometries.end(), "Geometry object with domain "
+                                                  << domain
+                                                  << " was already created");
 #endif
 
   std::stringstream sstr;

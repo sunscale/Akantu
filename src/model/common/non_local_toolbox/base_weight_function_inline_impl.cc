@@ -67,5 +67,5 @@ inline Real BaseWeightFunction::operator()(Real r, const IntegrationPoint &,
   return w;
 }
 
-} // akantu
+} // namespace akantu
 #endif /* __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_CC__ */

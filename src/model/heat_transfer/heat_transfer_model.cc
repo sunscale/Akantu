@@ -90,8 +90,10 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
 
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();
-    this->registerSynchronizer(synchronizer, SynchronizationTag::_htm_temperature);
-    this->registerSynchronizer(synchronizer, SynchronizationTag::_htm_gradient_temperature);
+    this->registerSynchronizer(synchronizer,
+                               SynchronizationTag::_htm_temperature);
+    this->registerSynchronizer(synchronizer,
+                               SynchronizationTag::_htm_gradient_temperature);
   }
 
   registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
@@ -251,7 +253,8 @@ std::tuple<ID, TimeStepSolverType>
 HeatTransferModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", TimeStepSolverType::_dynamic_lumped);
+    return std::make_tuple("explicit_lumped",
+                           TimeStepSolverType::_dynamic_lumped);
   }
   case _static: {
     return std::make_tuple("static", TimeStepSolverType::_static);
@@ -272,25 +275,29 @@ ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
   switch (type) {
   case TimeStepSolverType::_dynamic_lumped: {
     options.non_linear_solver_type = NonLinearSolverType::_lumped;
-    options.integration_scheme_type["temperature"] = IntegrationSchemeType::_forward_euler;
+    options.integration_scheme_type["temperature"] =
+        IntegrationSchemeType::_forward_euler;
     options.solution_type["temperature"] = IntegrationScheme::_temperature_rate;
     break;
   }
   case TimeStepSolverType::_static: {
     options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-    options.integration_scheme_type["temperature"] = IntegrationSchemeType::_pseudo_time;
+    options.integration_scheme_type["temperature"] =
+        IntegrationSchemeType::_pseudo_time;
     options.solution_type["temperature"] = IntegrationScheme::_not_defined;
     break;
   }
   case TimeStepSolverType::_dynamic: {
     if (this->method == _explicit_consistent_mass) {
       options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-      options.integration_scheme_type["temperature"] = IntegrationSchemeType::_forward_euler;
+      options.integration_scheme_type["temperature"] =
+          IntegrationSchemeType::_forward_euler;
       options.solution_type["temperature"] =
           IntegrationScheme::_temperature_rate;
     } else {
       options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-      options.integration_scheme_type["temperature"] = IntegrationSchemeType::_backward_euler;
+      options.integration_scheme_type["temperature"] =
+          IntegrationSchemeType::_backward_euler;
       options.solution_type["temperature"] = IntegrationScheme::_temperature;
     }
     break;

@@ -48,7 +48,7 @@ namespace detail {
     }
     return s == 0 ? 1 : s;
   }
-}
+} // namespace detail
 
 template <> struct GeometricalElementProperty<_gt_not_defined> {
   static constexpr UInt spatial_dimension{0};

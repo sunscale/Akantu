@@ -82,7 +82,8 @@ TEST_F(TestFacetSynchronizerFixture, Synchrone) {
 /* -------------------------------------------------------------------------- */
 TEST_F(TestFacetSynchronizerFixture, Asynchrone) {
   auto & synchronizer = this->mesh->getMeshFacets().getElementSynchronizer();
-  synchronizer.asynchronousSynchronize(*this->test_accessor, SynchronizationTag::_test);
+  synchronizer.asynchronousSynchronize(*this->test_accessor,
+                                       SynchronizationTag::_test);
 
   std::random_device r;
   std::default_random_engine engine(r());
@@ -91,5 +92,6 @@ TEST_F(TestFacetSynchronizerFixture, Asynchrone) {
 
   std::this_thread::sleep_for(delay);
 
-  synchronizer.waitEndSynchronize(*this->test_accessor, SynchronizationTag::_test);
+  synchronizer.waitEndSynchronize(*this->test_accessor,
+                                  SynchronizationTag::_test);
 }

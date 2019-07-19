@@ -152,7 +152,8 @@ GeometricalElement<_gt_pentahedron_6>::getInradius(const Matrix<Real> & coord) {
   Real d1 = u3.distance(u0) * 0.5;
   Real d2 = u5.distance(u2) * 0.5;
   Real d3 = u4.distance(u1) * 0.5;
-  Real p = 2.*std::min({inradius_triangle_1, inradius_triangle_2, d1, d2, d3});
+  Real p =
+      2. * std::min({inradius_triangle_1, inradius_triangle_2, d1, d2, d3});
 
   return p;
 }

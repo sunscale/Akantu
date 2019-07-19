@@ -64,7 +64,8 @@ public:
   void updateTotalResidual() {
     this->total_residual = 0.;
     for (auto && subboundary : this->subboundaries) {
-      this->total_residual += integrateResidual(subboundary, this->model, this->axis);
+      this->total_residual +=
+          integrateResidual(subboundary, this->model, this->axis);
     }
   }
 

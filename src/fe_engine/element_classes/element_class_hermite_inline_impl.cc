@@ -127,7 +127,7 @@ namespace {
       //    v1   t1   v2   t2
       N = {{M1 , L1 , M2 , L2},   // displacement interpolation
 	   {M1_, L1_, M2_, L2_}}; // rotation interpolation
-// clang-format on
+      // clang-format on
 
 #else // Version where we only interpolate displacements
       // clang-format off

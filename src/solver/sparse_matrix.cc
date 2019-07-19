@@ -60,8 +60,8 @@ SparseMatrix::SparseMatrix(const SparseMatrix & matrix, const ID & id)
 /* -------------------------------------------------------------------------- */
 SparseMatrix::~SparseMatrix() = default;
 
-// /* -------------------------------------------------------------------------- */
-// Array<Real> & operator*=(SolverVector & vect, const SparseMatrix & mat) {
+// /* --------------------------------------------------------------------------
+// */ Array<Real> & operator*=(SolverVector & vect, const SparseMatrix & mat) {
 //   Array<Real> tmp(vect.size(), vect.getNbComponent(), 0.);
 //   mat.matVecMul(vect, tmp);
 
@@ -76,4 +76,4 @@ void SparseMatrix::add(const SparseMatrix & B, Real alpha) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
