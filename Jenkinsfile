@@ -8,7 +8,7 @@ pipeline {
 
   options {
     disableConcurrentBuilds()
-    skipDefaultCheckout(true)
+    //skipDefaultCheckout(true)
   }
 
   environment {
@@ -30,9 +30,9 @@ pipeline {
   stages {
     stage('Checkout proper commit') {
       steps {
-	checkout ( [$class: 'GitSCM',
-		    branches: [[name: "${COMMIT_ID}" ]]]	 
-	)
+	checkout scm:  [$class: 'GitSCM',
+			branches: [[name: "${COMMIT_ID}" ]]
+	], changelog: true
       }
     }
         
