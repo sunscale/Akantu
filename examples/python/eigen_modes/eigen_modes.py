@@ -169,7 +169,7 @@ mass = model.getDOFManager().getMatrix('M')
 mass = aka.AkantuSparseMatrix(mass).toarray()
 
 # select the non blocked DOFs by index in the mask
-mask = np.equal(blocked_dofs.flatten(), False)
+mask = np.equal(blocked_dofs.flatten(), False)m
 
 Mass_star = mass[mask, :]
 Mass_star = csr_matrix(Mass_star[:, mask].copy())

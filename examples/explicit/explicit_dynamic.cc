@@ -51,12 +51,6 @@ int main(int argc, char * argv[]) {
   if (Communicator::getStaticCommunicator().whoAmI() == 0)
     mesh.read("bar.msh");
 
-  mesh.distribute();
-
-  mesh.makePeriodic(_x);
-  mesh.makePeriodic(_y);
-  mesh.makePeriodic(_z);
-
   SolidMechanicsModel model(mesh);
 
   /// model initialization

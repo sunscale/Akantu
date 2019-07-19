@@ -51,11 +51,13 @@ register_example(dumper_low_level
   SOURCES dumper_low_level.cc
   USE_PACKAGES IOHelper
   DEPENDS swiss_train_mesh locomotive_tools
+  DIRECTORIES_TO_CREATE paraview
   )
 
 register_example(dumpable_interface
   SOURCES dumpable_interface.cc
   USE_PACKAGES IOHelper
   DEPENDS swiss_train_mesh locomotive_tools
+  DIRECTORIES_TO_CREATE paraview
   )
 
