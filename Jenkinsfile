@@ -54,7 +54,12 @@ pipeline {
            cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
                  -DAKANTU_IMPLICIT:BOOL=TRUE \
                  -DAKANTU_PARALLEL:BOOL=TRUE \
+                 -DAKANTU_STRUCTURAL_MECHANICS:BOOL=TRUE \
+                 -DAKANTU_HEAT_TRANSFER:BOOL=TRUE \
+                 -DAKANTU_DAMAGE_NON_LOCAL:BOOL=TRUE \
                  -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
+                 -DAKANTU_EXAMPLES:BOOL=TRUE \
+                 -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE \
                  -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
            """
       }
