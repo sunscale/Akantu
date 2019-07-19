@@ -379,9 +379,7 @@ void Communicator::exclusiveScanImpl(T * values, T * result, int nb_values,
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   MPI_Datatype type = getMPIDatatype<T>();
 
-  bool in_place = false;
   if(values == result) {
-    in_place = true;
     values = reinterpret_cast<T*>(MPI_IN_PLACE);
   }
   
