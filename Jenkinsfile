@@ -60,6 +60,7 @@ pipeline {
                  -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
                  -DAKANTU_EXAMPLES:BOOL=TRUE \
                  -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE \
+                 -DAKANTU_TEST_EXAMPLES:BOOL=FALSE \
                  -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
            """
       }
