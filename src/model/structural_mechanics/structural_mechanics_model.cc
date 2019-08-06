@@ -10,7 +10,7 @@
  * @date creation: Fri Jul 15 2011
  * @date last modification: Wed Feb 21 2018
  *
- * @brief  Model implementation for StucturalMechanics elements
+ * @brief  Model implementation for Structural Mechanics elements
  *
  * @section LICENSE
  *
@@ -76,7 +76,7 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
   }
 
 #ifdef AKANTU_USE_IOHELPER
-  this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
+  this->mesh.registerDumper<DumperParaview>("structural_mechanics_model", id, true);
 #endif
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_structural);
 

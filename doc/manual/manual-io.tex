@@ -218,16 +218,34 @@ container itself if it as the good size.
 \begin{itemize}
 \item For nodal fields :
 \begin{cpp}
+  template<class T>
+  addDumpFieldExternal(const std::string & field_name,
+                       const Array<T> & field);
+\end{cpp}
+
+It is assumed that the array as the same size as the number of nodes in the mesh
+
+\begin{cpp}
   Array<T> nodal_data(nb_nodes, nb_component);
-  ...
-  model.addDumpFieldExternal("my_field", nodal_data);
+  mesh.addDumpFieldExternal("my_field", nodal_data);
 \end{cpp}
 
 \item For elemental fields :
+
 \begin{cpp}
-  ElementTypeMapArray<T> elem_data;
-  ...
-  model.addDumpFieldExternal("my_field", elem_data);
+  template<class T>
+  addDumpFieldExternal(const std::string & field_name,
+                       const ElementTypeMapArray<T> & field);
+\end{cpp}
+
+It is assumed that the arrays in the map have the same sizes as the element numbers in the mesh for element types of dimension \code{spatial\_dimension}.
+
+\begin{cpp}
+  ElementTypeMapArray<Real> elem_data;
+  elem_data.initialize(mesh,
+                       _nb_component = 1,
+                       _with_nb_element = true);
+  mesh.addDumpFieldExternal("my_field", elem_data);
 \end{cpp}
 \end{itemize}
 
@@ -236,9 +254,18 @@ If some changes have to be applied on the data as for example a padding for
 field interface.
 
 \begin{cpp}
-  model.addDumpFieldExternal(const std::string & field_name,
-                             dumper::Field * field);
+  mesh.addDumpFieldExternal(const std::string & field_name,
+                             std::shared<dumper::Field> & field);
 \end{cpp}
+
+All these functions use the default dumper registered in the mesh but  also have the \code{ToDumper} variation with the dumper name specified.
+For example:
+\begin{cpp}
+  mesh.addDumpFieldExternalToDumper("cohesive elements",
+                                    "my_field",
+                                    my_field);
+\end{cpp}
+
 
 An example of code presenting this interface is present in the
 \shellcode{\examplesdir/io/dumper}. This interface is part of the
