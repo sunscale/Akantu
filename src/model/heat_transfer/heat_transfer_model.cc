@@ -379,7 +379,7 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
     const GhostType & ghost_type) {
   // if already computed once check if need to compute
   if (not initial_conductivity[ghost_type]) {
-    // if temperature did not change, condictivity will not vary
+    // if temperature did not change, conductivity will not vary
     if (temperature_release == conductivity_release[ghost_type])
       return;
 
@@ -764,14 +764,14 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
         element_kind);
   else if (field_name == "temperature_gradient") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(temperature_gradient, element_kind);
+        this->mesh.getNbDataPerElem(temperature_gradient);
 
     field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
         temperature_gradient, group_name, this->spatial_dimension, element_kind,
         nb_data_per_elem);
   } else if (field_name == "conductivity") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(conductivity_on_qpoints, element_kind);
+        this->mesh.getNbDataPerElem(conductivity_on_qpoints);
 
     field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
         conductivity_on_qpoints, group_name, this->spatial_dimension,
