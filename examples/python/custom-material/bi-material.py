@@ -153,7 +153,7 @@ model.initFull(_analysis_method=aka._static)
 solver = model.getNonLinearSolver()
 solver.set("max_iterations", 2)
 solver.set("threshold", 1e-3)
-solver.set("convergence_type", aka.SolveConvergenceCriteria._solution)
+solver.set("convergence_type", aka.SolveConvergenceCriteria.solution)
 
 # prepare the dumper
 model.setBaseName("bimaterial")

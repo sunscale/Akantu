@@ -66,6 +66,14 @@ function(ADD_MESH MESH_TARGET GEO_FILE)
     list(GET _add_mesh_UNPARSED_ARGUMENTS 3 _add_mesh_ORDER)
   endif()
 
+  if(NOT _add_mesh_DIM)
+    set(_add_mesh_DIM 3)
+  endif()
+
+  if(NOT _add_mesh_ORDER)
+    set(_add_mesh_ORDER 1)
+  endif()
+  
   set(_geo_file ${CMAKE_CURRENT_SOURCE_DIR}/${GEO_FILE})
 
   set(_r_geo_file "${GEO_FILE}")

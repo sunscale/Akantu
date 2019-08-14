@@ -48,7 +48,7 @@ def solve(material_file, mesh_file, traction):
     solver = model.getNonLinearSolver()
     solver.set("max_iterations", 2)
     solver.set("threshold", 1e-10)
-    solver.set("convergence_type", aka.SolveConvergenceCriteria._residual)
+    solver.set("convergence_type", aka.SolveConvergenceCriteria.residual)
 
     print("Solve for traction ", traction)
     model.solveStep()

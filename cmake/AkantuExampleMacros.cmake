@@ -66,9 +66,14 @@ function(register_example example_name)
 	  COMMAND ${_parallel_runner} ${PYTHON_EXECUTABLE} ${_example_SCRIPT}
 	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
       else()
+	set(_python_path ENV{PYTHON_PATH})
+	if (NOT _python_path MATCHES ${PROJECT_BINARY_DIR}/python)
+	  set(ENV{PYTHON_PATH} "${_python_path}:${PROJECT_BINARY_DIR}/python")
+	endif()
 	add_test(NAME ${example_name}-test
 	  COMMAND ${_parallel_runner} ${_example_SCRIPT}
-	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	  )
       endif()
     endif()
   endif()

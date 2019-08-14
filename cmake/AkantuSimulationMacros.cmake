@@ -134,10 +134,19 @@ function(_add_akantu_simulation simulation_name)
     endif()
 
     if(_simulation_SCRIPT)
-      if (NOT TARGET ${simulation_name})
-	add_custom_target(${simulation_name})
+      add_custom_target(${simulation_name} ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_simulation_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/${_simulation_SCRIPT}
+	DEPENDS ${_simulation_SCRIPT}
+	)
+      
+
+      if(_simulation_DEPENDS)
+        foreach(_deps ${_simulation_DEPENDS})
+          add_dependencies(${simulation_name} ${_deps})	    
+        endforeach()
       endif()
-      _add_file_to_copy(${simulation_name} "${_simulation_SCRIPT}")
     endif()
 
     # copy the needed files to the build folder

@@ -124,8 +124,8 @@ model.addDumpField("blocked_dofs")
 # ------------------------------------------------------------------------------
 # boundary conditions
 # ------------------------------------------------------------------------------
-model.applyBC(aka.ixedValue(0, aka._x), "XBlocked")
-model.applyBC(aka.ixedValue(0, aka._y), "YBlocked")
+model.applyBC(aka.FixedValue(0, aka._x), "XBlocked")
+model.applyBC(aka.FixedValue(0, aka._y), "YBlocked")
 
 # ------------------------------------------------------------------------------
 # initial conditions
