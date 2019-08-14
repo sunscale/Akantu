@@ -76,7 +76,7 @@ else()
   add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
 endif()
 
-target_link_libraries(pyakantu PUBLIC  akantu pybind11)
+target_link_libraries(pyakantu PUBLIC  akantu pybind11::pybind11)
 target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 

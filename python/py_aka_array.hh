@@ -9,88 +9,100 @@ namespace py = pybind11;
 namespace _aka = akantu;
 
 namespace akantu {
+namespace detail {
+  template <class T> struct is_array_type : public std::false_type {};
+  template <class T> struct is_array_type<Vector<T>> : public std::true_type {};
+  template <class T> struct is_array_type<Matrix<T>> : public std::true_type {};
+  template <class T> struct is_array_type<Array<T>> : public std::true_type {};
 
-template <typename VecType> class Proxy : public VecType {
-protected:
-  using T = typename VecType::value_type;
-  // deallocate the memory
-  void deallocate() override final {}
+  /* ------------------------------------------------------------------------ */
+  template <typename T> class ArrayProxy : public Array<T> {
+  protected:
+    // deallocate the memory
+    void deallocate() override final {}
 
-  // allocate the memory
-  void allocate(__attribute__((unused)) UInt size,
-                __attribute__((unused)) UInt nb_component) override final {}
+    // allocate the memory
+    void allocate(UInt /*size*/, UInt /*nb_component*/) override final {}
 
-  // allocate and initialize the memory
-  void allocate(__attribute__((unused)) UInt size,
-                __attribute__((unused)) UInt nb_component,
-                __attribute__((unused)) const T & value) override final {}
+    // allocate and initialize the memory
+    void allocate(UInt /*size*/, UInt /*nb_component*/,
+                  const T & /*value*/) override final {}
 
-public:
-  Proxy(T * data, UInt size, UInt nb_component) {
-    this->values = data;
-    this->size_ = size;
-    this->nb_component = nb_component;
-  }
+  public:
+    ArrayProxy(T * data, UInt size, UInt nb_component) {
+      this->values = data;
+      this->size_ = size;
+      this->nb_component = nb_component;
+    }
 
-  Proxy(const Array<T> & src) {
-    this->values = src.storage();
-    this->size_ = src.size();
-    this->nb_component = src.getNbComponent();
-  }
+    ArrayProxy(const Array<T> & src) {
+      this->values = src.storage();
+      this->size_ = src.size();
+      this->nb_component = src.getNbComponent();
+    }
 
-  ~Proxy() { this->values = nullptr; }
+    ~ArrayProxy() { this->values = nullptr; }
 
-  void resize(UInt /*size*/, const T & /*val */) override final {
-    AKANTU_EXCEPTION("cannot resize a temporary array");
-  }
+    void resize(UInt /*size*/, const T & /*val */) override final {
+      AKANTU_EXCEPTION("cannot resize a temporary array");
+    }
 
-  void resize(UInt /*new_size*/) override final {
-    AKANTU_EXCEPTION("cannot resize a temporary array");
-  }
+    void resize(UInt /*new_size*/) override final {
+      AKANTU_EXCEPTION("cannot resize a temporary array");
+    }
 
-  void reserve(UInt /*size*/, UInt /*new_size*/) override final {
-    AKANTU_EXCEPTION("cannot resize a temporary array");
-  }
-};
+    void reserve(UInt /*size*/, UInt /*new_size*/) override final {
+      AKANTU_EXCEPTION("cannot resize a temporary array");
+    }
+  };
 
-template <typename T> using vec_proxy = Vector<T>;
-template <typename T> using mat_proxy = Matrix<T>;
-template <typename T> using array_proxy = Proxy<Array<T>>;
-
-template <typename array> struct ProxyType { using type = Proxy<array>; };
-
-template <typename T> struct ProxyType<Vector<T>> { using type = Vector<T>; };
-template <typename T> struct ProxyType<Matrix<T>> { using type = Matrix<T>; };
-
-template <typename array> using ProxyType_t = typename ProxyType<array>::type;
-
+  /* ------------------------------------------------------------------------ */
+  template <typename T> struct ProxyType {};
+  template <typename T> struct ProxyType<Vector<T>> { using type = Vector<T>; };
+  template <typename T> struct ProxyType<Matrix<T>> { using type = Matrix<T>; };
+  template <typename T> struct ProxyType<Array<T>> {
+    using type = ArrayProxy<T>;
+  };
+  template <typename array> using ProxyType_t = typename ProxyType<array>::type;
+} // namespace detail
 } // namespace akantu
 
 namespace pybind11 {
 namespace detail {
 
-  template <typename U>
-  using array_type = array_t<U, array::c_style | array::forcecast>;
+  template <typename T> struct AkaArrayType {
+    using type =
+        array_t<typename T::value_type, array::c_style | array::forcecast>;
+  };
+
+  template <typename T> struct AkaArrayType<_aka::Vector<T>> {
+    using type = array_t<T, array::f_style | array::forcecast>;
+  };
+  template <typename T> struct AkaArrayType<_aka::Matrix<T>> {
+    using type = array_t<T, array::f_style | array::forcecast>;
+  };
+
+  template <typename U> using array_type_t = typename AkaArrayType<U>::type;
+
+  /* ------------------------------------------------------------------------ */
+
 
   template <typename T>
-  void create_proxy(std::unique_ptr<_aka::vec_proxy<T>> & proxy,
-                    array_type<T> ref) {
-    proxy =
-        std::make_unique<_aka::vec_proxy<T>>(ref.mutable_data(), ref.shape(0));
+  decltype(auto) create_proxy(array_type_t<_aka::Vector<T>> & ref, const _aka::Vector<T> *) {
+    return std::make_unique<_aka::detail::ProxyType_t<_aka::Vector<T>>>(
+        ref.mutable_data(), ref.shape(0));
   }
 
   template <typename T>
-  void create_proxy(std::unique_ptr<_aka::mat_proxy<T>> & proxy,
-                    array_type<T> ref) {
-    proxy = std::make_unique<_aka::mat_proxy<T>>(ref.mutable_data(),
-                                                 ref.shape(0), ref.shape(1));
+  decltype(auto) create_proxy(array_type_t<_aka::Matrix<T>> & ref, const _aka::Matrix<T> *) {
+    return std::make_unique<_aka::detail::ProxyType_t<_aka::Matrix<T>>>(
+        ref.mutable_data(), ref.shape(0), ref.shape(1));
   }
 
   template <typename T>
-  void create_proxy(std::unique_ptr<_aka::array_proxy<T>> & proxy,
-                    array_type<T> ref) {
-    proxy = std::make_unique<_aka::array_proxy<T>>(ref.mutable_data(),
-                                                   ref.shape(0), ref.shape(1));
+  decltype(auto) create_proxy(array_type_t<_aka::Array<T>> & ref, const _aka::Array<T> *) {
+    return std::make_unique<_aka::detail::ProxyType_t<_aka::Array<T>>>(
+        ref.mutable_data(), ref.shape(0), ref.shape(1));
   }
 
   /* ------------------------------------------------------------------------ */
@@ -98,7 +110,8 @@ namespace detail {
   py::handle aka_array_cast(const _aka::Array<T> & src,
                             py::handle base = handle(), bool writeable = true) {
     array a;
-    a = array_type<T>({src.size(), src.getNbComponent()}, src.storage(), base);
+    a = array_type_t<_aka::Array<T>>({src.size(), src.getNbComponent()},
+                                     src.storage(), base);
 
     if (not writeable)
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
@@ -106,14 +119,11 @@ namespace detail {
     return a.release();
   }
 
-  template <typename U>
-  using tensor_type = array_t<U, array::f_style | array::forcecast>;
-
   template <typename T>
   py::handle aka_array_cast(const _aka::Vector<T> & src,
                             py::handle base = handle(), bool writeable = true) {
     array a;
-    a = tensor_type<T>({src.size()}, src.storage(), base);
+    a = array_type_t<_aka::Vector<T>>({src.size()}, src.storage(), base);
 
     if (not writeable)
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
@@ -125,7 +135,8 @@ namespace detail {
   py::handle aka_array_cast(const _aka::Matrix<T> & src,
                             py::handle base = handle(), bool writeable = true) {
     array a;
-    a = tensor_type<T>({src.size(0), src.size(1)}, src.storage(), base);
+    a = array_type_t<_aka::Matrix<T>>({src.size(0), src.size(1)}, src.storage(),
+                                      base);
 
     if (not writeable)
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
@@ -134,22 +145,38 @@ namespace detail {
   }
 
   /* ------------------------------------------------------------------------ */
-  template <typename VecType>
-  class [[gnu::visibility("default")]] my_type_caster {
+  template <typename AkaArrayType>
+  class [[gnu::visibility("default")]] type_caster<
+      AkaArrayType,
+      std::enable_if_t<_aka::detail::is_array_type<AkaArrayType>::value>> {
   protected:
-    using T = typename VecType::value_type;
-    using type = VecType;
-    using proxy_type = _aka::ProxyType_t<VecType>;
-    type value;
+    using T = typename AkaArrayType::value_type;
+    using type = AkaArrayType;
+    using proxy_type = _aka::detail::ProxyType_t<AkaArrayType>;
+    using array_type = array_type_t<AkaArrayType>;
+
+    std::unique_ptr<proxy_type> array_proxy;
+    array_type_t<AkaArrayType> copy_or_ref;
 
   public:
-    static PYBIND11_DESCR name() { return type_descr(_("Toto")); };
+#if PYBIND11_VERSION_MAJOR >= 2 && PYBIND11_VERSION_MINOR >= 3
+    static constexpr auto name = _("AkaArray");
+    operator type &&() && { return std::move(*array_proxy); }
+    template <typename T_>
+    using cast_op_type = pybind11::detail::movable_cast_op_type<T_>;
+#else
+    static PYBIND11_DESCR name() { return type_descr(_("AkaArray")); };
+    template <typename _T>
+    using cast_op_type = pybind11::detail::cast_op_type<_T>;
+#endif
+    operator type *() { return array_proxy.get(); }
+    operator type &() { return *array_proxy; }
 
     /**
      * Conversion part 1 (Python->C++)
      */
     bool load(handle src, bool convert) {
-      bool need_copy = not isinstance<array_type<T>>(src);
+      bool need_copy = not isinstance<array_type>(src);
 
       auto && fits = [&](auto && aref) {
         auto && dims = aref.ndim();
@@ -162,7 +189,7 @@ namespace detail {
       if (not need_copy) {
         // We don't need a converting copy, but we also need to check whether
         // the strides are compatible with the Ref's stride requirements
-        auto aref = py::cast<array_type<T>>(src);
+        auto aref = py::cast<array_type>(src);
 
         if (not fits(aref)) {
           return false;
@@ -173,7 +200,7 @@ namespace detail {
           return false;
         }
 
-        auto copy = array_type<T>::ensure(src);
+        auto copy = array_type::ensure(src);
         if (not copy) {
           return false;
         }
@@ -181,19 +208,14 @@ namespace detail {
         if (not fits(copy)) {
           return false;
         }
-        copy_or_ref = std::move(array_type<T>::ensure(src));
+        copy_or_ref = std::move(array_type::ensure(src));
         loader_life_support::add_patient(copy_or_ref);
       }
 
-      create_proxy(array_proxy, copy_or_ref);
+      AkaArrayType* dispatch = nullptr; // cannot detect T from the expression
+      array_proxy = create_proxy(copy_or_ref, dispatch);
       return true;
     }
-
-    operator type *() { return array_proxy.get(); }
-    operator type &() { return *array_proxy; }
-
-    template <typename _T>
-    using cast_op_type = pybind11::detail::cast_op_type<_T>;
 
     /**
      * Conversion part 2 (C++ -> Python)
@@ -213,26 +235,6 @@ namespace detail {
         pybind11_fail("Invalid return_value_policy for ArrayProxy type");
       }
     }
-
-  protected:
-    std::unique_ptr<proxy_type> array_proxy;
-    array_type<T> copy_or_ref;
   };
-
-  /* ------------------------------------------------------------------------ */
-  // specializations
-  /* ------------------------------------------------------------------------ */
-
-  template <typename T>
-  struct type_caster<_aka::Array<T>> : public my_type_caster<_aka::Array<T>> {};
-
-  template <typename T>
-  struct type_caster<_aka::Vector<T>> : public my_type_caster<_aka::Vector<T>> {
-  };
-
-  template <typename T>
-  struct type_caster<_aka::Matrix<T>> : public my_type_caster<_aka::Matrix<T>> {
-  };
-
 } // namespace detail
 } // namespace pybind11
