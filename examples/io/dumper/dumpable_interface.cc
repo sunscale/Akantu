@@ -111,15 +111,15 @@ int main(int argc, char * argv[]) {
   /* ------------------------------------------------------------------------ */
 
   // Create dumper for the complete mesh and register it as default dumper.
-  DumperParaview dumper("train", "./paraview/dumpable", false);
+  auto && dumper = std::make_shared<DumperParaview>("train", "./paraview/dumpable", false);
   mesh.registerExternalDumper(dumper, "train", true);
   mesh.addDumpMesh(mesh);
 
   // The dumper for the filtered mesh can be directly taken from the
   // ElementGroup and then registered as "wheels_elements" dumper.
-  DumperIOHelper & wheels = mesh.getGroupDumper("paraview_wheels", "wheels");
+  auto && wheels = mesh.getGroupDumper("paraview_wheels", "wheels");
 
-  mesh.registerExternalDumper(wheels, "wheels");
+  mesh.registerExternalDumper(wheels.shared_from_this(), "wheels");
   mesh.setDirectoryToDumper("wheels", "./paraview/dumpable");
 
   // Arrays and ElementTypeMapArrays can be added as external fields directly

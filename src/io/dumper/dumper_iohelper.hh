@@ -36,7 +36,8 @@
 #include "aka_common.hh"
 #include "aka_types.hh"
 #include "element_type_map.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <memory>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_DUMPER_IOHELPER_HH__
@@ -58,7 +59,7 @@ namespace dumper {
 
 class Mesh;
 
-class DumperIOHelper {
+class DumperIOHelper : public std::enable_shared_from_this<DumperIOHelper> {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */

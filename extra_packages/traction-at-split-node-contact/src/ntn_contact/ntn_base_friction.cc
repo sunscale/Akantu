@@ -61,7 +61,7 @@ NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact, const ID & id,
   this->contact.registerSynchronizedArray(this->cumulative_slip);
   this->contact.registerSynchronizedArray(this->slip_velocity);
 
-  this->registerExternalDumper(contact.getDumper(),
+  this->registerExternalDumper(contact.getDumper().shared_from_this(),
                                contact.getDefaultDumperName(), true);
 
   AKANTU_DEBUG_OUT();

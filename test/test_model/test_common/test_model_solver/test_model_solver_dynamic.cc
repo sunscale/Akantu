@@ -163,8 +163,8 @@ int main(int argc, char * argv[]) {
   solver.set("max_iterations", 20);
 #endif
 
-  auto * dumper = new DumperParaview("dynamic", "./paraview");
-  mesh.registerExternalDumper(*dumper, "dynamic", true);
+  auto && dumper = std::make_shared<DumperParaview>("dynamic", "./paraview");
+  mesh.registerExternalDumper(dumper, "dynamic", true);
   mesh.addDumpMesh(mesh);
 
   mesh.addDumpFieldExternalToDumper("dynamic", "displacement",

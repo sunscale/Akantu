@@ -55,7 +55,7 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
   if (name == "")
     name = dumper_name;
 
-  this->dumpers[dumper_name] = new T(name);
+  this->dumpers[dumper_name] = std::make_shared<T>(name);
 
   if (is_default)
     this->default_dumper = dumper_name;
