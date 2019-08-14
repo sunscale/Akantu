@@ -95,8 +95,9 @@ public:
   static AKANTU_GET_MACRO_NOT_CONST(
       ShapeSize, interpolation_property::nb_nodes_per_element, UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
-      ShapeDerivativesSize, (interpolation_property::nb_nodes_per_element *
-                             interpolation_property::natural_space_dimension),
+      ShapeDerivativesSize,
+      (interpolation_property::nb_nodes_per_element *
+       interpolation_property::natural_space_dimension),
       UInt);
   static AKANTU_GET_MACRO_NOT_CONST(
       NaturalSpaceDimension, interpolation_property::natural_space_dimension,

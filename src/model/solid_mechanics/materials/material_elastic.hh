@@ -148,7 +148,7 @@ protected:
   bool was_stiffness_assembled;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "material_elastic_inline_impl.cc"
 

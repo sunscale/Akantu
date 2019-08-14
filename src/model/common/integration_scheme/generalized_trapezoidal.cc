@@ -177,7 +177,7 @@ void GeneralizedTrapezoidal::assembleJacobian(const SolutionType & type,
   }
 
   J.copyProfile(K);
-  //J.clear();
+  // J.clear();
 
   Real c = this->getTemperatureRateCoefficient(type, delta_t);
   Real e = this->getTemperatureCoefficient(type, delta_t);
@@ -191,4 +191,4 @@ void GeneralizedTrapezoidal::assembleJacobian(const SolutionType & type,
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

@@ -1,39 +1,18 @@
 #!/usr/bin/env python3
-
-from __future__ import print_function
-################################################################
-import os
-import subprocess
 import numpy as np
-import akantu
-################################################################
+import akantu as aka
 
 
-class FixedValue(akantu.DirichletFunctor):
-
-    def __init__(self, value, axis):
-        super().__init__(axis)
-        self.value = value
-        self.axis = int(axis)
-
-    def __call__(self, node, flags, disp, coord):
-        # sets the displacement to the desired value in the desired axis
-        disp[self.axis] = self.value
-        # sets the blocked dofs vector to true in the desired axis
-        flags[self.axis] = True
-
-################################################################
-
-
-class LocalElastic(akantu.Material):
+# ------------------------------------------------------------------------------
+class LocalElastic(aka.Material):
 
     def __init__(self, model, _id):
         super().__init__(model, _id)
         super().registerParamReal('E',
-                                  akantu._pat_readable | akantu._pat_parsable,
+                                  aka._pat_readable | aka._pat_parsable,
                                   'Youngs modulus')
         super().registerParamReal('nu',
-                                  akantu._pat_readable | akantu._pat_parsable,
+                                  aka._pat_readable | aka._pat_parsable,
                                   'Poisson ratio')
 
     def initMaterial(self):
@@ -102,46 +81,35 @@ class LocalElastic(akantu.Material):
         energy_density[:, 0] = 0.5 * np.einsum('aij,aij->a', stress, epsilon)
 
 
-################################################################
-# main
-################################################################
+# register material to the MaterialFactory
+def allocator(_dim, unused, model, _id):
+    return LocalElastic(model, _id)
 
+
+mat_factory = aka.MaterialFactory.getInstance()
+mat_factory.registerAllocator("local_elastic", allocator)
+
+# ------------------------------------------------------------------------------
+# main
+# ------------------------------------------------------------------------------
 spatial_dimension = 2
-akantu.parseInput('material.dat')
+aka.parseInput('material.dat')
 
 mesh_file = 'bar.msh'
 max_steps = 250
 time_step = 1e-3
 
-# if mesh was not created the calls gmsh to generate it
-if not os.path.isfile(mesh_file):
-    ret = subprocess.call('gmsh -format msh2 -2 bar.geo bar.msh', shell=True)
-    if ret != 0:
-        raise Exception(
-            'execution of GMSH failed: do you have it installed ?')
-
-################################################################
+# ------------------------------------------------------------------------------
 # Initialization
-################################################################
-mesh = akantu.Mesh(spatial_dimension)
+# ------------------------------------------------------------------------------
+mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
 
-mat_factory = akantu.MaterialFactory.getInstance()
-
-
-def allocator(_dim, unused, model, _id):
-    return LocalElastic(model, _id)
-
-
-mat_factory.registerAllocator("local_elastic", allocator)
-
 # parse input file
-akantu.parseInput('material.dat')
+aka.parseInput('material.dat')
 
-model = akantu.SolidMechanicsModel(mesh)
-
-model.initFull(_analysis_method=akantu._explicit_lumped_mass)
-# model.initFull(_analysis_method=akantu._implicit_dynamic)
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(_analysis_method=aka._explicit_lumped_mass)
 
 model.setBaseName("waves")
 model.addDumpFieldVector("displacement")
@@ -153,17 +121,15 @@ model.addDumpField("strain")
 model.addDumpField("stress")
 model.addDumpField("blocked_dofs")
 
-################################################################
+# ------------------------------------------------------------------------------
 # boundary conditions
-################################################################
+# ------------------------------------------------------------------------------
+model.applyBC(aka.ixedValue(0, aka._x), "XBlocked")
+model.applyBC(aka.ixedValue(0, aka._y), "YBlocked")
 
-model.applyBC(FixedValue(0, akantu._x), "XBlocked")
-model.applyBC(FixedValue(0, akantu._y), "YBlocked")
-
-################################################################
+# ------------------------------------------------------------------------------
 # initial conditions
-################################################################
-
+# ------------------------------------------------------------------------------
 displacement = model.getDisplacement()
 nb_nodes = mesh.getNbNodes()
 position = mesh.getNodes()
@@ -178,9 +144,9 @@ for i in range(0, nb_nodes):
     displacement[i, 0] = A * \
         np.sin(k * x) * np.exp(-(k * x) * (k * x) / (L * L))
 
-################################################################
+# ------------------------------------------------------------------------------
 # timestep value computation
-################################################################
+# ------------------------------------------------------------------------------
 time_factor = 0.8
 stable_time_step = model.getStableTimeStep() * time_factor
 
@@ -191,11 +157,9 @@ time_step = stable_time_step * time_factor
 
 model.setTimeStep(time_step)
 
-################################################################
+# ------------------------------------------------------------------------------
 # loop for evolution of motion dynamics
-################################################################
-model.assembleInternalForces()
-
+# ------------------------------------------------------------------------------
 print("step,step * time_step,epot,ekin,epot + ekin")
 for step in range(0, max_steps + 1):
 

@@ -317,7 +317,8 @@ int main(int argc, char * argv[]) {
   bool factorize = false;
   bool converged = false;
   Real error;
-  converged = model.solveStep<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+  converged = model.solveStep<_scm_newton_raphson_tangent,
+                              SolveConvergenceCriteria::_increment>(
       1e-12, error, 2, factorize);
   if (!converged) {
     std::cout << "Solving step did not yield a converged solution, error: "

@@ -59,9 +59,8 @@ void NTNFricLawLinearSlipWeakeningNoHealing<
       this->mu(n) = this->mu_k(n);
     } else {
       // mu = mu_k + (1 - slip / Dc) * (mu_s - mu_k)
-      this->mu(n) =
-          this->mu_k(n) +
-          (1 - (slip(n) / this->d_c(n))) * (this->mu_s(n) - this->mu_k(n));
+      this->mu(n) = this->mu_k(n) + (1 - (slip(n) / this->d_c(n))) *
+                                        (this->mu_s(n) - this->mu_k(n));
     }
   }
 

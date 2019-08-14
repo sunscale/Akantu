@@ -170,4 +170,4 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(
 #endif
 }
 
-} // akantu
+} // namespace akantu

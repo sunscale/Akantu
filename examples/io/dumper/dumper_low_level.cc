@@ -84,10 +84,14 @@ int main(int argc, char * argv[]) {
   wheels_elements.append(mesh.getElementGroup("rwheel_1"));
   wheels_elements.append(mesh.getElementGroup("rwheel_2"));
 
-  const Array<UInt> & lnode_1 = (mesh.getElementGroup("lwheel_1")).getNodes();
-  const Array<UInt> & lnode_2 = (mesh.getElementGroup("lwheel_2")).getNodes();
-  const Array<UInt> & rnode_1 = (mesh.getElementGroup("rwheel_1")).getNodes();
-  const Array<UInt> & rnode_2 = (mesh.getElementGroup("rwheel_2")).getNodes();
+  const Array<UInt> & lnode_1 =
+      (mesh.getElementGroup("lwheel_1")).getNodeGroup().getNodes();
+  const Array<UInt> & lnode_2 =
+      (mesh.getElementGroup("lwheel_2")).getNodeGroup().getNodes();
+  const Array<UInt> & rnode_1 =
+      (mesh.getElementGroup("rwheel_1")).getNodeGroup().getNodes();
+  const Array<UInt> & rnode_2 =
+      (mesh.getElementGroup("rwheel_2")).getNodeGroup().getNodes();
 
   /* Note this Array is constructed with three components in order to warp train
      deformation on Paraview. A more appropriate way to do this is to set a
@@ -112,7 +116,7 @@ int main(int argc, char * argv[]) {
 
   // Register a filtered mesh limited to nodes and elements from wheels groups
   wheels.registerFilteredMesh(mesh, wheels_elements.getElements(),
-                              wheels_elements.getNodes());
+                              wheels_elements.getNodeGroup().getNodes());
 
   // Generate an output file of the two mesh registered.
   dumper.dump();
@@ -138,7 +142,7 @@ int main(int argc, char * argv[]) {
   // Filtered NodalField can be simply registered by adding an Array<UInt>
   // listing the nodes.
   auto displ_field_wheel = std::make_shared<dumper::NodalField<Real, true>>(
-      displacement, 0, 0, &(wheels_elements.getNodes()));
+      displacement, 0, 0, &(wheels_elements.getNodeGroup().getNodes()));
   wheels.registerField("displacement", displ_field_wheel);
 
   // For the ElementalField, an ElementTypeMapArrayFilter has to be created.

@@ -107,6 +107,6 @@ template <typename T1, typename T2> struct SCMinMaxLoc {
   T2 loc;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_REAL_STATIC_COMMUNICATOR_HH__ */

@@ -110,8 +110,8 @@ void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
   FacetGlobalConnectivityAccessor data_accessor(mesh_facets);
 
   /// communicate
-  mesh_facets.getElementSynchronizer().synchronizeOnce(data_accessor,
-                                                       SynchronizationTag::_smmc_facets_conn);
+  mesh_facets.getElementSynchronizer().synchronizeOnce(
+      data_accessor, SynchronizationTag::_smmc_facets_conn);
 
   /// flip facets
   MeshUtils::flipFacets(mesh_facets, data_accessor.getGlobalConnectivity(),
@@ -384,7 +384,8 @@ UInt SolidMechanicsModelCohesive::getNbData(
       break;
     }
 
-    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id &&
+        tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         size += mat.getNbData(elements, tag);
       });
@@ -449,7 +450,8 @@ void SolidMechanicsModelCohesive::packData(
     default: {}
     }
 
-    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id &&
+        tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         mat.packData(buffer, elements, tag);
       });
@@ -535,7 +537,8 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
     default: {}
     }
 
-    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id &&
+        tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         mat.unpackData(buffer, elements, tag);
       });

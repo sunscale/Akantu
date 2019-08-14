@@ -38,9 +38,9 @@
 
 using namespace akantu;
 
-using mat_types = ::testing::Types<
-    Traits<MaterialNeohookean, 1>, Traits<MaterialNeohookean, 2>,
-    Traits<MaterialNeohookean, 3>>;
+using mat_types = ::testing::Types<Traits<MaterialNeohookean, 1>,
+                                   Traits<MaterialNeohookean, 2>,
+                                   Traits<MaterialNeohookean, 3>>;
 
 /*****************************************************************/
 
@@ -81,5 +81,5 @@ TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_ComputeTangentModuli) {
 TYPED_TEST(TestFiniteDefMaterialFixture, DISABLED_DefComputeCelerity) {
   this->material->testCelerity();
 }
-}
+} // namespace
 /*****************************************************************/

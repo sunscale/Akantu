@@ -63,7 +63,7 @@ protected:
   int & argc;
   char **& argv;
 };
-}
+} // namespace
 
 int main(int argc, char ** argv) {
 #if defined(AKANTU_TEST_USE_PYBIND11)

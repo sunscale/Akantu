@@ -41,8 +41,8 @@
 #include "mesh.hh"
 #include "mesh_io.hh"
 #include "mesh_utils.hh"
-#include "sparse_matrix_petsc.hh"
 #include "solver_petsc.hh"
+#include "sparse_matrix_petsc.hh"
 
 #include "mesh_partition_scotch.hh"
 

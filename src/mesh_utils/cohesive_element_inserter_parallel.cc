@@ -35,6 +35,4 @@
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-namespace akantu {
-
-} // namespace akantu
+namespace akantu {} // namespace akantu

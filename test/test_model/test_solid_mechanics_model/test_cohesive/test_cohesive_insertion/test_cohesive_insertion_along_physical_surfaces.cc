@@ -69,7 +69,8 @@ int main(int argc, char * argv[]) {
                                             "coh3",      "coh4", "coh5"};
   UInt nb_surf = surfaces_name.size();
 
-  for(auto & type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_cohesive)) {
+  for (auto & type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_cohesive)) {
     for (UInt i = 0; i < nb_surf; ++i) {
 
       UInt expected_insertion = mesh.getElementGroup(surfaces_name[i])
@@ -77,12 +78,11 @@ int main(int argc, char * argv[]) {
                                     .size();
       UInt inserted_elements =
           model.getMaterial(surfaces_name[i]).getElementFilter()(type).size();
-      if(not (expected_insertion == inserted_elements)) {
-        std::cout <<  "!!! Mismatch in insertion of surface named "
-                  << surfaces_name[i] << " --> "
-                  << inserted_elements
-                  << " inserted elements out of "
-                  << expected_insertion << std::endl;
+      if (not(expected_insertion == inserted_elements)) {
+        std::cout << "!!! Mismatch in insertion of surface named "
+                  << surfaces_name[i] << " --> " << inserted_elements
+                  << " inserted elements out of " << expected_insertion
+                  << std::endl;
         return 1;
       }
     }

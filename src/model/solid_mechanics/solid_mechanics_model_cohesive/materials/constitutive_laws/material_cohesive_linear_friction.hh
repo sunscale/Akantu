@@ -100,6 +100,6 @@ protected:
   CohesiveInternalField<Real> friction_force;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_FRICTION_HH__ */

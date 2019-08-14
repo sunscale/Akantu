@@ -38,6 +38,28 @@ function(set_third_party_shared_libirary_name _var _lib)
 endfunction()
 
 # ==============================================================================
+function(_add_file_to_copy target file)
+  get_filename_component(_file_name_we ${file} NAME_WE)
+  get_filename_component(_file_name ${file} NAME)
+  get_filename_component(_file_path ${file}
+    ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+  set(copy_target copy_${_file_name_we}_${target})
+  add_custom_target(${copy_target}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${_file_name})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_file_name}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${file}
+		${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${_file_path}
+    COMMENT "Copying file ${_file_name} for the target ${target}"
+    )
+  add_dependencies(${target} ${copy_target})
+endfunction()
+
+# ==============================================================================
 function(get_target_list_of_associated_files tgt files)
   if(TARGET ${tgt})
     get_target_property(_type ${tgt} TYPE)

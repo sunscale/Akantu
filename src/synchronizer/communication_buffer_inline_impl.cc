@@ -74,7 +74,8 @@ inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
     char * values = buffer.storage();
     auto nb_packed = ptr_pack - values;
 
-    if(buffer.size() > nb_packed + size) return;
+    if (buffer.size() > nb_packed + size)
+      return;
 
     buffer.resize(nb_packed + size);
     ptr_pack = buffer.storage() + nb_packed;

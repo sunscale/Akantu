@@ -401,7 +401,7 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
 
   normal.clear();
 
-#define COMPUTE_NORMAL(type)                                            \
+#define COMPUTE_NORMAL(type)                                                   \
   fem_cohesive.getShapeFunctions()                                             \
       .computeNormalsOnIntegrationPoints<type, CohesiveReduceFunctionMean>(    \
           position, normal, ghost_type, element_filter(type, ghost_type));
@@ -439,17 +439,15 @@ void MaterialCohesive::updateEnergies(ElementType type) {
 
   if (Mesh::getKind(type) != _ek_cohesive)
     return;
-  
+
   Vector<Real> b(spatial_dimension);
   Vector<Real> h(spatial_dimension);
   auto erev = reversible_energy(type).begin();
   auto etot = total_energy(type).begin();
   auto traction_it = tractions(type).begin(spatial_dimension);
-  auto traction_old_it =
-      tractions.previous(type).begin(spatial_dimension);
+  auto traction_old_it = tractions.previous(type).begin(spatial_dimension);
   auto opening_it = opening(type).begin(spatial_dimension);
-  auto opening_old_it =
-      opening.previous(type).begin(spatial_dimension);
+  auto opening_old_it = opening.previous(type).begin(spatial_dimension);
 
   auto traction_end = tractions(type).end(spatial_dimension);
 

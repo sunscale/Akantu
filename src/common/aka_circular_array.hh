@@ -124,6 +124,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_CIRCULAR_ARRAY_HH__ */

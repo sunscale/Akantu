@@ -77,4 +77,4 @@ void MeshIOMSHStruct::read(const std::string & filename, Mesh & mesh) {
   MeshIOMSH::read(filename, mesh);
 }
 
-} // akantu
+} // namespace akantu

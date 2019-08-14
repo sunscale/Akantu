@@ -256,20 +256,22 @@ void NTNContact::updateNormals() {
   UInt dim = this->model.getSpatialDimension();
   UInt nb_contact_nodes = this->getNbContactNodes();
 
-  this->synch_registry->synchronize(SynchronizationTag::_cf_nodal); // synchronize current pos
+  this->synch_registry->synchronize(
+      SynchronizationTag::_cf_nodal); // synchronize current pos
   const Array<Real> & cur_pos = this->model.getCurrentPosition();
 
   FEEngine & boundary_fem = this->model.getFEEngineBoundary();
   const Mesh & mesh = this->model.getMesh();
 
-  for (auto ghost_type: ghost_types) {
+  for (auto ghost_type : ghost_types) {
     for (auto & type : mesh.elementTypes(dim - 1, ghost_type)) {
       // compute the normals
       Array<Real> quad_normals(0, dim);
-      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals, type,
-                                                     ghost_type);
+      boundary_fem.computeNormalsOnIntegrationPoints(cur_pos, quad_normals,
+                                                     type, ghost_type);
 
-      UInt nb_quad_points = boundary_fem.getNbIntegrationPoints(type, ghost_type);
+      UInt nb_quad_points =
+          boundary_fem.getNbIntegrationPoints(type, ghost_type);
 
       // new version: compute normals only based on master elements (and not all
       // boundary elements)
@@ -536,9 +538,9 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
   */
 
   if (field_id == "lumped_boundary_master") {
-    internalAddDumpFieldToDumper(
-        dumper_name, field_id,
-        new dumper::NodalField<Real>(this->lumped_boundary_masters.getArray()));
+    internalAddDumpFieldToDumper(dumper_name, field_id,
+                                 std::make_unique<dumper::NodalField<Real>>(
+                                     this->lumped_boundary_masters.getArray()));
   } else {
     NTNBaseContact::addDumpFieldToDumper(dumper_name, field_id);
   }

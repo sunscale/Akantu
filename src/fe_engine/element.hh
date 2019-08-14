@@ -84,7 +84,7 @@ public:
 namespace {
   const Element ElementNull{_not_defined, UInt(-1), _casper};
   //      Element{_not_defined, 0, _casper, _ek_not_defined};
-}
+} // namespace
 
 /* -------------------------------------------------------------------------- */
 inline bool Element::operator<(const Element & rhs) const {
@@ -103,7 +103,7 @@ inline bool Element::operator<(const Element & rhs) const {
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream, const Element & _this) {
-  if(_this == ElementNull) {
+  if (_this == ElementNull) {
     stream << "ElementNull";
     return stream;
   }

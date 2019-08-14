@@ -202,7 +202,8 @@ template <typename T> void InternalField<T>::saveCurrentValues() {
 
   for (auto ghost_type : ghost_types)
     for (const auto & type : this->elementTypes(ghost_type))
-      (*this->previous_values)(type, ghost_type).copy((*this)(type, ghost_type));
+      (*this->previous_values)(type, ghost_type)
+          .copy((*this)(type, ghost_type));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -216,7 +217,8 @@ template <typename T> void InternalField<T>::restorePreviousValues() {
 
   for (auto ghost_type : ghost_types)
     for (const auto & type : this->elementTypes(ghost_type))
-      (*this)(type, ghost_type).copy((*this->previous_values)(type, ghost_type));
+      (*this)(type, ghost_type)
+          .copy((*this->previous_values)(type, ghost_type));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -270,7 +272,7 @@ void InternalField<T>::removeIntegrationPoints(
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void InternalField<T>::printself(std::ostream & stream,
-                                 int indent[[gnu::unused]]) const {
+                                 int indent [[gnu::unused]]) const {
   stream << "InternalField [ " << this->getID();
 #if !defined(AKANTU_NDEBUG)
   if (AKANTU_DEBUG_TEST(dblDump)) {

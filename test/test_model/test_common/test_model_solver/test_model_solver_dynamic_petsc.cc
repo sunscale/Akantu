@@ -454,7 +454,7 @@ public:
     VecAXPY(rhs, 1., f_int);
 
     for (auto && data : enumerate(blocked)) {
-      if(std::get<1>(data)) {
+      if (std::get<1>(data)) {
         VecSetValueLocal(rhs, std::get<0>(data), 0., INSERT_VALUES);
       }
     }
@@ -681,7 +681,7 @@ int main(int argc, char * argv[]) {
   Mesh mesh(1);
   Real F = -9.81;
   bool _explicit = EXPLICIT;
-  //const Real pulse_width = 0.2;
+  // const Real pulse_width = 0.2;
   const Real A = 0.01;
 
   if (prank == 0)
@@ -809,14 +809,14 @@ void genMesh(Mesh & mesh, UInt nb_nodes) {
 
   nodes.resize(nb_nodes);
 
-  //auto & all = mesh.createNodeGroup("all_nodes");
+  // auto & all = mesh.createNodeGroup("all_nodes");
 
   for (UInt n = 0; n < nb_nodes; ++n) {
     nodes(n, _x) = n * (1. / (nb_nodes - 1));
-    //all.add(n);
+    // all.add(n);
   }
 
-  //mesh.createElementGroupFromNodeGroup("all", "all_nodes");
+  // mesh.createElementGroupFromNodeGroup("all", "all_nodes");
 
   conn.resize(nb_nodes - 1);
   for (UInt n = 0; n < nb_nodes - 1; ++n) {

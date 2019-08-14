@@ -76,4 +76,4 @@ void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

@@ -113,7 +113,8 @@ int main(int argc, char * argv[]) {
         displacement(n, 1) -= increment;
     }
 
-    model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+    model.solveStepCohesive<_scm_newton_raphson_tangent,
+                            SolveConvergenceCriteria::_increment>(
         tolerance, error, 25, load_reduction, tol_increase_factor);
 
     // If convergence has not been reached, the load is reduced and
@@ -135,7 +136,8 @@ int main(int argc, char * argv[]) {
       UInt nb_cohesive_elements =
           mesh.getNbElement(spatial_dimension, _not_ghost, _ek_cohesive);
 
-      model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+      model.solveStepCohesive<_scm_newton_raphson_tangent,
+                              SolveConvergenceCriteria::_increment>(
           tolerance, error, 25, load_reduction, tol_increase_factor);
 
       UInt new_nb_cohesive_elements =

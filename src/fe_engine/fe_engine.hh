@@ -116,9 +116,9 @@ public:
                          UInt index,
                          const GhostType & ghost_type = _not_ghost) const = 0;
 
-/* ------------------------------------------------------------------------ */
-/* compatibility with old FEEngine fashion */
-/* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
+  /* compatibility with old FEEngine fashion */
+  /* ------------------------------------------------------------------------ */
   /// get the number of integration points
   virtual UInt
   getNbIntegrationPoints(const ElementType & type,

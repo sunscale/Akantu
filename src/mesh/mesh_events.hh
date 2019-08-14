@@ -183,6 +183,6 @@ public:
                     const ChangedElementsEvent & /*event*/) {}
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_EVENTS_HH__ */

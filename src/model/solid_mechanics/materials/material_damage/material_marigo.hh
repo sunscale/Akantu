@@ -116,7 +116,7 @@ protected:
   bool yc_limit;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "material_marigo_inline_impl.cc"
 

@@ -263,14 +263,19 @@ void ModelSolver::setDefaultSolver(const ID & solver_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void ModelSolver::solveStep(const ID & solver_id) {
+void ModelSolver::solveStep(SolverCallback & callback, const ID & solver_id) {
   AKANTU_DEBUG_IN();
 
   TimeStepSolver & tss = this->getSolver(solver_id);
   // make one non linear solve
-  tss.solveStep(*this);
+  tss.solveStep(callback);
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void ModelSolver::solveStep(const ID & solver_id) {
+  solveStep(*this, solver_id);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -302,8 +307,8 @@ void ModelSolver::getNewSolver(const ID & solver_id,
   NonLinearSolver & nls = this->dof_manager->getNewNonLinearSolver(
       solver_id, non_linear_solver_type);
 
-  this->dof_manager->getNewTimeStepSolver(solver_id, time_step_solver_type,
-                                          nls, *this);
+  this->dof_manager->getNewTimeStepSolver(solver_id, time_step_solver_type, nls,
+                                          *this);
 }
 
 /* -------------------------------------------------------------------------- */

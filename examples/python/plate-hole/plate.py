@@ -1,58 +1,31 @@
 #!/usr/bin/env python3
+try:
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    prank = comm.Get_rank()
+except ImportError:
+    prank = 0
 
-from __future__ import print_function
-
-import akantu
+import akantu as aka
 import numpy as np
 
-################################################################
-# Dirichlet Boudary condition functor: fix the displacement
-################################################################
 
-
-class FixedValue(akantu.DirichletFunctor):
-
-    def __init__(self, value, axis):
-        super().__init__(axis)
-        self.value = value
-        self.axis = int(axis)
-
-    def __call__(self, node, flags, disp, coord):
-        # sets the displacement to the desired value in the desired axis
-        disp[self.axis] = self.value
-        # sets the blocked dofs vector to true in the desired axis
-        flags[self.axis] = True
-
-################################################################
-# Neumann Boudary condition functor: impose a traction
-################################################################
-
-
-class FromTraction(akantu.NeumannFunctor):
-
-    def __init__(self, traction):
-        super().__init__()
-        self.traction = traction
-
-    def __call__(self, quad_point, force, coord, normals):
-        # sets the force to the desired value in the desired axis
-        force[:] = self.traction
-
-################################################################
-
-
+# -----------------------------------------------------------------------------
 def solve(material_file, mesh_file, traction):
-    akantu.parseInput(material_file)
+    aka.parseInput(material_file)
     spatial_dimension = 2
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # Initialization
-    ################################################################
-    mesh = akantu.Mesh(spatial_dimension)
-    mesh.read(mesh_file)
+    # -------------------------------------------------------------------------
+    mesh = aka.Mesh(spatial_dimension)
+    if prank == 0:
+        mesh.read(mesh_file)
 
-    model = akantu.SolidMechanicsModel(mesh)
-    model.initFull(akantu.SolidMechanicsModelOptions(akantu._static))
+    mesh.distribute()
+
+    model = aka.SolidMechanicsModel(mesh)
+    model.initFull(_analysis_method=aka._static)
 
     model.setBaseName("plate")
     model.addDumpFieldVector("displacement")
@@ -61,54 +34,39 @@ def solve(material_file, mesh_file, traction):
     model.addDumpField("stress")
     model.addDumpField("blocked_dofs")
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # Boundary conditions
-    ################################################################
-
-    model.applyBC(FixedValue(0.0, akantu._x), "XBlocked")
-    model.applyBC(FixedValue(0.0, akantu._y), "YBlocked")
-
-    trac = np.zeros(spatial_dimension)
-    trac[1] = traction
-
-    print("Solve for traction ", traction)
+    # -------------------------------------------------------------------------
+    model.applyBC(aka.FixedValue(0.0, aka._x), "XBlocked")
+    model.applyBC(aka.FixedValue(0.0, aka._y), "YBlocked")
 
     model.getExternalForce()[:] = 0
-    model.applyBC(FromTraction(trac), "Traction")
+    trac = np.zeros(spatial_dimension)
+    trac[1] = traction
+    model.applyBC(aka.FromTraction(trac), "Traction")
 
     solver = model.getNonLinearSolver()
-    solver.set("max_iterations", int(2))
+    solver.set("max_iterations", 2)
     solver.set("threshold", 1e-10)
-    solver.set("convergence_type", akantu.SolveConvergenceCriteria__residual)
+    solver.set("convergence_type", aka.SolveConvergenceCriteria._residual)
 
+    print("Solve for traction ", traction)
     model.solveStep()
 
     model.dump()
 
-################################################################
+
+# -----------------------------------------------------------------------------
 # main
-################################################################
-
-
+# -----------------------------------------------------------------------------
 def main():
-
-    import os
     mesh_file = 'plate.msh'
-    # if mesh was not created the calls gmsh to generate it
-    if not os.path.isfile(mesh_file):
-        import subprocess
-        ret = subprocess.call(
-            'gmsh -format msh2 -2 plate.geo {0}'.format(mesh_file), shell=True)
-        if not ret == 0:
-            raise Exception(
-                'execution of GMSH failed: do you have it installed ?')
-
     material_file = 'material.dat'
-
     traction = 1.
+
     solve(material_file, mesh_file, traction)
 
 
-################################################################
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     main()

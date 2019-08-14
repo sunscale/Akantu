@@ -356,7 +356,7 @@ public:
         // this test is not sufficient for Tensor of order higher than 1
         AKANTU_DEBUG_ASSERT(this->_size == src.size(),
                             "Tensors of different size ("
-                            << this->_size << " != " << src.size() << ")");
+                                << this->_size << " != " << src.size() << ")");
         memcpy((void *)this->values, (void *)src.storage(),
                this->_size * sizeof(T));
       } else {
@@ -836,7 +836,6 @@ namespace types {
       using reference = value_type &;
       using iterator_category = std::input_iterator_tag;
 
-      
       column_iterator(Mat & mat, UInt col) : mat(mat), col(col) {}
       decltype(auto) operator*() { return mat(col); }
       decltype(auto) operator++() {
@@ -1077,7 +1076,8 @@ private:
 
 public:
   /* ---------------------------------------------------------------------- */
-  inline void eig(Vector<T> & eigenvalues, Matrix<T> & eigenvectors) const {
+  inline void eig(Vector<T> & eigenvalues, Matrix<T> & eigenvectors,
+                  bool sort = true) const {
     AKANTU_DEBUG_ASSERT(this->cols() == this->rows(),
                         "eig is not a valid operation on a rectangular matrix");
     AKANTU_DEBUG_ASSERT(eigenvalues.size() == this->cols(),
@@ -1100,6 +1100,12 @@ public:
     else
       Math::matrixEig(tmp.cols(), tmp.storage(), tmp_eigs.storage(),
                       tmp_eig_vects.storage());
+
+    if (not sort) {
+      eigenvalues = tmp_eigs;
+      eigenvectors = tmp_eig_vects;
+      return;
+    }
 
     Vector<UInt> perm(eigenvalues.size());
     for (UInt i = 0; i < perm.size(); ++i)

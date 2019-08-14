@@ -56,7 +56,7 @@ function(_add_akantu_simulation simulation_name)
     )
 
   cmake_parse_arguments(_simulation
-    ""
+    "PYTHON;PARALLEL"
     "LIST_FILES"
     "${multi_variables}"
     ${ARGN}
@@ -64,6 +64,10 @@ function(_add_akantu_simulation simulation_name)
 
   set(_deps_OK TRUE)
 
+  if(_simulation_PYTHON)
+    list(APPEND _simulation_USE_PACKAGES python_interface)
+  endif()
+  
   if(_simulation_USE_PACKAGES)
     foreach(_pkg ${_simulation_USE_PACKAGES})
       package_is_activated(${_pkg} _activated)
@@ -82,12 +86,6 @@ function(_add_akantu_simulation simulation_name)
         set(_deps_OK FALSE)
       endif()
     endforeach()
-  endif()
-
-  package_is_activated(CORE_CXX11 _activated)
-  if(_activated)
-    package_get_compile_flags(CORE_CXX11 CXX _flags)
-    list(APPEND _simulation_COMPILE_FLAGS "${_flags}")
   endif()
 
   package_get_compile_flags(BOOST CXX _flags)
@@ -136,7 +134,10 @@ function(_add_akantu_simulation simulation_name)
     endif()
 
     if(_simulation_SCRIPT)
-      file(COPY ${_simulation_SCRIPT} DESTINATION .)
+      if (NOT TARGET ${simulation_name})
+	add_custom_target(${simulation_name})
+      endif()
+      _add_file_to_copy(${simulation_name} "${_simulation_SCRIPT}")
     endif()
 
     # copy the needed files to the build folder

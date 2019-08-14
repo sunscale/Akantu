@@ -76,7 +76,7 @@ inline void SparseMatrixAIJ::clearProfile() {
 
   this->size_ = 0;
   this->nb_non_zero = 0;
-  
+
   this->profile_release++;
   this->value_release++;
 }
@@ -117,8 +117,8 @@ inline Real & SparseMatrixAIJ::operator()(UInt i, UInt j) {
 /* -------------------------------------------------------------------------- */
 inline void
 SparseMatrixAIJ::addSymmetricValuesToSymmetric(const Vector<Int> & is,
-                                                 const Vector<Int> & js,
-                                                 const Matrix<Real> & values) {
+                                               const Vector<Int> & js,
+                                               const Matrix<Real> & values) {
   for (UInt i = 0; i < values.rows(); ++i) {
     UInt c_irn = is(i);
     if (c_irn < size_) {
@@ -133,9 +133,10 @@ SparseMatrixAIJ::addSymmetricValuesToSymmetric(const Vector<Int> & is,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void SparseMatrixAIJ::addUnsymmetricValuesToSymmetric(
-    const Vector<Int> & is, const Vector<Int> & js,
-    const Matrix<Real> & values) {
+inline void
+SparseMatrixAIJ::addUnsymmetricValuesToSymmetric(const Vector<Int> & is,
+                                                 const Vector<Int> & js,
+                                                 const Matrix<Real> & values) {
   for (UInt i = 0; i < values.rows(); ++i) {
     UInt c_irn = is(i);
     if (c_irn < size_) {
@@ -154,8 +155,8 @@ inline void SparseMatrixAIJ::addUnsymmetricValuesToSymmetric(
 /* -------------------------------------------------------------------------- */
 inline void
 SparseMatrixAIJ::addValuesToUnsymmetric(const Vector<Int> & is,
-                                          const Vector<Int> & js,
-                                          const Matrix<Real> & values) {
+                                        const Vector<Int> & js,
+                                        const Matrix<Real> & values) {
   for (UInt i = 0; i < values.rows(); ++i) {
     UInt c_irn = is(i);
     if (c_irn < size_) {

@@ -15,7 +15,7 @@ def get_phabricator_instance(ctx=None):
             _host = ctx.pop('HOST', None)
             _username = ctx.pop('USERNAME', None)
             _token = ctx.pop('API_TOKEN', None)
-            
+
         _phab = Phabricator(host=_host,
                             username=_username,
                             token=_token)
@@ -42,7 +42,7 @@ class Harbormaster:
               Results.BROKEN: 'broken',
               Results.SKIP: 'skip',
               Results.UNSTABLE: 'unsound'}
-    
+
     def __init__(self, **kwargs):
         ctx = kwargs['ctx']
         self.__phid = ctx['BUILD_TARGET_PHID']
@@ -64,7 +64,7 @@ class Harbormaster:
             _yaml.close()
         except OSError:
             _previously_failed = {}
-        
+
         for _test in tests:
             status = self.STATUS[_test.status]
             if (_test.status != Results.PASS and
@@ -78,23 +78,23 @@ class Harbormaster:
                 'result': status,
                 'format': _format
             }
-            
+
             if _test.duration:
                 _test_dict['duration'] = _test.duration
             if _test.path:
                 _test_dict['path'] = _test.path
             if _test.reason:
                 _test_dict['details'] = _test.reason
-            
+
             if status != 'pass':
                 _list_of_failed[_test.name] = status
             _unit_tests.append(_test_dict)
-            
+
         with open(".tests_previous_state", 'w+') as _cache_file:
             yaml.dump(_list_of_failed,
                       _cache_file,
                       default_flow_style=False)
-    
+
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
                 'unit': _unit_tests}
@@ -109,13 +109,13 @@ class Harbormaster:
                 val = getattr(lint, key)
                 if val:
                     _lint[key] = val
-            
+
             _lints.append(_lint)
-            
+
         _msg = {'buildTargetPHID': self.__phid,
                 'type': 'work',
                 'lint': _lints}
-        
+
         self.__phab.harbormaster.sendmessage(**_msg)
 
     def send_uri(self, key, uri, name):
@@ -127,7 +127,7 @@ class Harbormaster:
                                                     'name': name,
                                                     'ui.external': True
                                                 })
-        
+
     def passed(self):
         self._send_message(Results.PASS)
 
@@ -146,7 +146,7 @@ class Harbormaster:
                 _msg['viewPolicy'] = view_phid
 
             _res = self.__phab.file.upload(**_msg)
-            
+
             print(f"{name} -> {_res}")
             self.__phab.harbormaster.createartifact(
                 buildTargetPHID=self.__phid,

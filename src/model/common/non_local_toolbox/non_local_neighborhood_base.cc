@@ -62,7 +62,8 @@ void NonLocalNeighborhoodBase::createGridSynchronizer() {
 
   this->grid_synchronizer = std::make_unique<GridSynchronizer>(
       this->model.getMesh(), *spatial_grid, *this,
-      std::set<SynchronizationTag>{SynchronizationTag::_mnl_weight, SynchronizationTag::_mnl_for_average},
+      std::set<SynchronizationTag>{SynchronizationTag::_mnl_weight,
+                                   SynchronizationTag::_mnl_for_average},
       std::string(getID() + ":grid_synchronizer"), this->memory_id, false);
 
   this->is_creating_grid = false;

@@ -194,6 +194,6 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_FE_ENGINE_INLINE_IMPL_CC__ */

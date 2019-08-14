@@ -41,7 +41,7 @@ namespace akantu {
 class DOFManagerDefault;
 class SparseSolverMumps;
 class SolverVector;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -102,6 +102,6 @@ private:
   bool force_linear_recompute{true};
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_NEWTON_RAPHSON_HH__ */

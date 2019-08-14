@@ -47,7 +47,7 @@ class DOFManager;
 class TimeStepSolver;
 class NonLinearSolver;
 struct ModelSolverOptions;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -86,6 +86,11 @@ public:
   /// solve a step using a given pre instantiated time step solver and
   /// nondynamic linear solver
   virtual void solveStep(const ID & solver_id = "");
+
+  /// solve a step using a given pre instantiated time step solver and
+  /// non linear solver with a user defined callback instead of the
+  /// model itself /!\ This can mess up everything
+  virtual void solveStep(SolverCallback & callback, const ID & solver_id = "");
 
   /// Initialize a time solver that can be used afterwards with its id
   void getNewSolver(
@@ -189,6 +194,6 @@ struct ModelSolverOptions {
   std::map<ID, IntegrationScheme::SolutionType> solution_type;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MODEL_SOLVER_HH__ */

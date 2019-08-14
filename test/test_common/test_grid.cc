@@ -78,7 +78,6 @@ int main(int argc, char * argv[]) {
   grid.saveAsMesh(mesh);
   mesh.write("grid.msh");
 
-
   akantu::finalize();
 
   return EXIT_SUCCESS;

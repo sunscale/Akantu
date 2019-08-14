@@ -266,8 +266,7 @@ bool Communicator::asyncProbe(Int sender, Int tag,
 bool Communicator::test(CommunicationRequest & request) const {
   MPI_Status status;
   int flag;
-  auto & req_mpi =
-      aka::as_type<CommunicationRequestMPI>(request.getInternal());
+  auto & req_mpi = aka::as_type<CommunicationRequestMPI>(request.getInternal());
 
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Test(&req, &flag, &status);
@@ -277,13 +276,14 @@ bool Communicator::test(CommunicationRequest & request) const {
 
 /* -------------------------------------------------------------------------- */
 bool Communicator::testAll(std::vector<CommunicationRequest> & requests) const {
-  //int are_finished;
-  //auto && mpi_requests = convertRequests(requests);
-  //MPI_Testall(mpi_requests.size(), mpi_requests.data(), &are_finished,
+  // int are_finished;
+  // auto && mpi_requests = convertRequests(requests);
+  // MPI_Testall(mpi_requests.size(), mpi_requests.data(), &are_finished,
   //            MPI_STATUSES_IGNORE);
-  //return are_finished;
-  for(auto & request : requests) {
-    if(not test(request)) return false;
+  // return are_finished;
+  for (auto & request : requests) {
+    if (not test(request))
+      return false;
   }
   return true;
 }
@@ -291,8 +291,7 @@ bool Communicator::testAll(std::vector<CommunicationRequest> & requests) const {
 /* -------------------------------------------------------------------------- */
 void Communicator::wait(CommunicationRequest & request) const {
   MPI_Status status;
-  auto & req_mpi =
-      aka::as_type<CommunicationRequestMPI>(request.getInternal());
+  auto & req_mpi = aka::as_type<CommunicationRequestMPI>(request.getInternal());
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Wait(&req, &status);
 }
@@ -364,12 +363,12 @@ void Communicator::scanImpl(T * values, T * result, int nb_values,
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   MPI_Datatype type = getMPIDatatype<T>();
 
-  if(values == result) {
-    values = reinterpret_cast<T*>(MPI_IN_PLACE);
+  if (values == result) {
+    values = reinterpret_cast<T *>(MPI_IN_PLACE);
   }
-  
-  MPI_Scan(values, result, nb_values, type,
-           getMPISynchronizerOperation(op), communicator);
+
+  MPI_Scan(values, result, nb_values, type, getMPISynchronizerOperation(op),
+           communicator);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -379,12 +378,16 @@ void Communicator::exclusiveScanImpl(T * values, T * result, int nb_values,
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   MPI_Datatype type = getMPIDatatype<T>();
 
-  if(values == result) {
-    values = reinterpret_cast<T*>(MPI_IN_PLACE);
+  if (values == result) {
+    values = reinterpret_cast<T *>(MPI_IN_PLACE);
   }
-  
-  MPI_Exscan(values, result, nb_values, type,
-           getMPISynchronizerOperation(op), communicator);
+
+  MPI_Exscan(values, result, nb_values, type, getMPISynchronizerOperation(op),
+             communicator);
+
+  if (prank == 0) {
+    result[0] = T();
+  }
 }
 
 /* -------------------------------------------------------------------------- */

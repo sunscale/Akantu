@@ -917,7 +917,7 @@ void SolidMechanicsModel::updateNonLocalInternal(
     if (not aka::is_of_type<MaterialNonLocalInterface>(*mat))
       continue;
 
-    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface&>(*mat);
+    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
     mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type,
                                           kind);
   }

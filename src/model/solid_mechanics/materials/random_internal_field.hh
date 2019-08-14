@@ -99,6 +99,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_RANDOM_INTERNAL_FIELD_HH__ */

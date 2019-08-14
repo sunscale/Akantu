@@ -82,6 +82,6 @@ public:
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_TEXT_HH__ */

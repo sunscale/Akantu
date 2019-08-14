@@ -83,9 +83,8 @@ public:
   class iterator {
     struct element_comparator {
       bool operator()(const Element & lhs, const Element & rhs) const {
-        return ((rhs == ElementNull) ||
-                std::tie(lhs.ghost_type, lhs.type) <
-                    std::tie(rhs.ghost_type, rhs.type));
+        return ((rhs == ElementNull) || std::tie(lhs.ghost_type, lhs.type) <
+                                            std::tie(rhs.ghost_type, rhs.type));
       }
     };
 

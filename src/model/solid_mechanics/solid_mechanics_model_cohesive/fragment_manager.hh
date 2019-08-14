@@ -164,6 +164,6 @@ private:
   bool dump_data;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_FRAGMENT_MANAGER_HH__ */

@@ -207,8 +207,7 @@ void MaterialNeohookean<spatial_dimension>::computePotentialEnergy(
 
   Material::computePotentialEnergy(el_type);
 
-  Array<Real>::scalar_iterator epot =
-      this->potential_energy(el_type).begin();
+  Array<Real>::scalar_iterator epot = this->potential_energy(el_type).begin();
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 

@@ -31,6 +31,7 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_compatibilty_with_cpp_standard.hh"
 /* -------------------------------------------------------------------------- */
+#include <iterator>
 #include <tuple>
 #include <utility>
 /* -------------------------------------------------------------------------- */
@@ -397,19 +398,16 @@ namespace iterators {
   template <class Iterator> class EnumerateIterator {
   public:
     using value_type =
-        std::tuple<size_t,
-                   typename std::iterator_traits<Iterator>::value_type>;
+        std::tuple<size_t, typename std::iterator_traits<Iterator>::value_type>;
     using difference_type = size_t;
     using pointer =
         std::tuple<size_t, typename std::iterator_traits<Iterator>::pointer>;
     using reference =
-        std::tuple<size_t,
-                   typename std::iterator_traits<Iterator>::reference>;
+        std::tuple<size_t, typename std::iterator_traits<Iterator>::reference>;
     using iterator_category = std::input_iterator_tag;
 
   public:
-    explicit EnumerateIterator(Iterator && iterator)
-        : iterator(iterator) {}
+    explicit EnumerateIterator(Iterator && iterator) : iterator(iterator) {}
 
     // input iterator ++it
     EnumerateIterator & operator++() {
@@ -465,9 +463,7 @@ namespace containers {
       return iterators::enumerate(zip_container.begin());
     }
 
-    decltype(auto) end() {
-      return iterators::enumerate(zip_container.end());
-    }
+    decltype(auto) end() { return iterators::enumerate(zip_container.end()); }
 
     decltype(auto) end() const {
       return iterators::enumerate(zip_container.end());
@@ -506,9 +502,7 @@ namespace iterators {
       return *this;
     }
 
-    decltype(auto) operator*() {
-      return op(std::forward<decltype(*it)>(*it));
-    }
+    decltype(auto) operator*() { return op(std::forward<decltype(*it)>(*it)); }
 
     bool operator==(const transform_adaptor_iterator & other) const {
       return (it == other.it);
@@ -532,8 +526,7 @@ namespace iterators {
   };
 
   template <class iterator_t, class operator_t>
-  decltype(auto) make_transform_adaptor_iterator(iterator_t it,
-                                                 operator_t op) {
+  decltype(auto) make_transform_adaptor_iterator(iterator_t it, operator_t op) {
     return transform_adaptor_iterator<iterator_t, operator_t>(
         it, std::forward<operator_t>(op));
   }
@@ -580,16 +573,14 @@ decltype(auto) make_transform_adaptor(container_t && cont, operator_t && op) {
 
 template <class container_t>
 decltype(auto) make_keys_adaptor(container_t && cont) {
-  return make_transform_adaptor(
-      std::forward<container_t>(cont),
-      [](auto && pair) -> const auto & { return pair.first; });
+  return make_transform_adaptor(std::forward<container_t>(cont), [
+  ](auto && pair) -> const auto & { return pair.first; });
 }
 
 template <class container_t>
 decltype(auto) make_values_adaptor(container_t && cont) {
-  return make_transform_adaptor(
-      std::forward<container_t>(cont),
-      [](auto && pair) -> auto & { return pair.second; });
+  return make_transform_adaptor(std::forward<container_t>(cont), [
+  ](auto && pair) -> auto & { return pair.second; });
 }
 
 template <class container_t>

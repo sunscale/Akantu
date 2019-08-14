@@ -69,5 +69,5 @@ AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_6,
 AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15,
                                           _itk_lagrangian, 15, 3);
 
-} // akantu
+} // namespace akantu
 #endif /* __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__ */

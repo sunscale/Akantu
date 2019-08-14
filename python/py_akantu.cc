@@ -49,7 +49,7 @@ void register_all(pybind11::module & mod) {
   register_mesh(mod);
 
   register_fe_engine(mod);
-    
+
   register_boundary_conditions(mod);
   register_model(mod);
 #if defined(AKANTU_HEAT_TRANSFER)

@@ -123,13 +123,12 @@ protected:
   void makeConsistentForPeriodicity(const ID & dof_id,
                                     SolverVector & array) override;
 
-
 public:
-   /// update the global dofs vector
+  /// update the global dofs vector
   void updateGlobalBlockedDofs() override;
 
-//   /// apply boundary conditions to jacobian matrix
-//   void applyBoundary(const ID & matrix_id = "J") override;
+  //   /// apply boundary conditions to jacobian matrix
+  //   void applyBoundary(const ID & matrix_id = "J") override;
 
 private:
   /// Add a symmetric matrices to a symmetric sparse matrix
@@ -226,7 +225,7 @@ public:
 
   Array<bool> & getBlockedDOFs();
   const Array<bool> & getBlockedDOFs() const;
-  
+
 protected:
   std::unique_ptr<DOFData> getNewDOFData(const ID & dof_id) override;
 

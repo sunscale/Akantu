@@ -123,27 +123,6 @@ macro tries to determine it in a "clever" way
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
-function(_add_file_to_copy target file)
-  get_filename_component(_file_name_we ${file} NAME_WE)
-  get_filename_component(_file_name ${file} NAME)
-  get_filename_component(_file_path ${file}
-    ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-  set(copy_target copy_${_file_name_we}_${target})
-  add_custom_target(${copy_target}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${_file_name})
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_file_name}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${file}
-		${CMAKE_CURRENT_BINARY_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${_file_path}
-    COMMENT "Copying file ${_file_name} for the target ${target}"
-    )
-  add_dependencies(${target} ${copy_target})
-endfunction()
-
 # ==============================================================================
 macro(add_test_tree dir)
   if(AKANTU_TESTS)
@@ -536,6 +515,7 @@ function(register_test test_name)
       endif()
       list(APPEND _arguments -e "${PYTHON_EXECUTABLE}")
       list(APPEND _extra_args "${_register_test_SCRIPT}")
+      add_dependencies(${test_name} py11_akantu)
     else()
       list(APPEND _arguments -e "./${_register_test_SCRIPT}")
     endif()

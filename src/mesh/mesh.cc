@@ -365,11 +365,10 @@ DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
-                                            const ElementKind & element_kind) {
+ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays) {
   ElementTypeMap<UInt> nb_data_per_elem;
 
-  for (auto type : elementTypes(spatial_dimension, _not_ghost, element_kind)) {
+  for (auto type : arrays.elementTypes()) {
     UInt nb_elements = this->getNbElement(type);
     auto & array = arrays(type);
 
@@ -382,12 +381,10 @@ ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
 
 /* -------------------------------------------------------------------------- */
 template ElementTypeMap<UInt>
-Mesh::getNbDataPerElem(ElementTypeMapArray<Real> & array,
-                       const ElementKind & element_kind);
+Mesh::getNbDataPerElem(ElementTypeMapArray<Real> & array);
 
 template ElementTypeMap<UInt>
-Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array,
-                       const ElementKind & element_kind);
+Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array);
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
@@ -405,8 +402,7 @@ Mesh::createFieldFromAttachedData(const std::string & field_id,
     return nullptr;
   }
 
-  ElementTypeMap<UInt> nb_data_per_elem =
-      this->getNbDataPerElem(*internal, element_kind);
+  ElementTypeMap<UInt> nb_data_per_elem = this->getNbDataPerElem(*internal);
 
   field = this->createElementalField<T, dumper::InternalMaterialField>(
       *internal, group_name, this->spatial_dimension, element_kind,
@@ -429,8 +425,10 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 /* -------------------------------------------------------------------------- */
 void Mesh::distributeImpl(
     Communicator & communicator,
-    std::function<Int(const Element &, const Element &)> edge_weight_function [[gnu::unused]],
-    std::function<Int(const Element &)> vertex_weight_function [[gnu::unused]]) {
+    std::function<Int(const Element &, const Element &)> edge_weight_function
+    [[gnu::unused]],
+    std::function<Int(const Element &)> vertex_weight_function
+    [[gnu::unused]]) {
   AKANTU_DEBUG_ASSERT(is_distributed == false,
                       "This mesh is already distribute");
   this->communicator = &communicator;

@@ -169,5 +169,5 @@ inline void InterpolationElement<_itp_lagrange_pentahedron_15>::computeDNDS(
 template <>
 inline Real GeometricalElement<_gt_pentahedron_15>::getInradius(
     const Matrix<Real> & coord) {
-  return GeometricalElement<_gt_pentahedron_6>::getInradius(coord)*0.5;
+  return GeometricalElement<_gt_pentahedron_6>::getInradius(coord) * 0.5;
 }

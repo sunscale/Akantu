@@ -72,7 +72,7 @@ public:
   static const Real factors[size];
 };
 
-} // akantu
+} // namespace akantu
 
 #include "aka_voigthelper_tmpl.hh"
 

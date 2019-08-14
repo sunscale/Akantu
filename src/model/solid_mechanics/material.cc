@@ -61,11 +61,8 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
   element_filter.initialize(model.getMesh(),
                             _spatial_dimension = spatial_dimension,
                             _element_kind = _ek_regular);
-  // model.getMesh().initElementTypeMapArray(element_filter, 1,
-  // spatial_dimension,
-  //                                         false, _ek_regular);
-
   this->initialize();
+
   AKANTU_DEBUG_OUT();
 }
 

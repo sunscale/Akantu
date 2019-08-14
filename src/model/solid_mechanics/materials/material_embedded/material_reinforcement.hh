@@ -202,7 +202,7 @@ protected:
   CrossMap<UInt> background_filter;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "material_reinforcement_tmpl.hh"
 

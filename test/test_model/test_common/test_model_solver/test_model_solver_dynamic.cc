@@ -91,7 +91,7 @@ int main(int argc, char * argv[]) {
 #if defined(DOF_MANAGER_TYPE)
   dof_manager_type = DOF_MANAGER_TYPE;
 #endif
-  
+
   if (prank == 0)
     genMesh(mesh, global_nb_nodes);
 
@@ -171,7 +171,8 @@ int main(int argc, char * argv[]) {
                                     model.displacement);
   mesh.addDumpFieldExternalToDumper("dynamic", "velocity", model.velocity);
   mesh.addDumpFieldExternalToDumper("dynamic", "forces", model.forces);
-  mesh.addDumpFieldExternalToDumper("dynamic", "internal_forces", model.internal_forces);
+  mesh.addDumpFieldExternalToDumper("dynamic", "internal_forces",
+                                    model.internal_forces);
   mesh.addDumpFieldExternalToDumper("dynamic", "acceleration",
                                     model.acceleration);
 

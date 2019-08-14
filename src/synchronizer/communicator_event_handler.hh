@@ -56,6 +56,6 @@ private:
   template <class EventHandler> friend class EventHandlerManager;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COMMUNICATOR_EVENT_HANDLER_HH__ */

@@ -258,4 +258,4 @@ Real MaterialElastic<1>::getShearWaveSpeed(const Element & /*element*/) const {
 
 INSTANTIATE_MATERIAL(elastic, MaterialElastic);
 
-} // akantu
+} // namespace akantu

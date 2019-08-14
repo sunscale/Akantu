@@ -40,7 +40,7 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 class ElementSynchronizer;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -100,7 +100,7 @@ private:
   std::unordered_map<UInt, std::vector<std::pair<UInt, NodeFlag>>> nodes_flags;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "global_ids_updater_inline_impl.cc"
 

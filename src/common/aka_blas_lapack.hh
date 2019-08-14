@@ -181,7 +181,7 @@ inline void aka_gemm<float>(char * transa, char * transb, int * m, int * n,
 
 #endif
 
-} // akantu
+} // namespace akantu
 
 #ifdef AKANTU_USE_LAPACK
 #include "aka_fortran_mangling.hh"
@@ -338,6 +338,6 @@ inline void aka_getrs<float>(char * trans, int * n, int * nrhs, float * A,
 }
 #endif
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_BLAS_LAPACK_HH__ */

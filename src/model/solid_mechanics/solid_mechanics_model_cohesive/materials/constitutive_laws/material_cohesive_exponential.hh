@@ -117,6 +117,6 @@ protected:
 
 // #include "material_cohesive_exponential_inline_impl.cc"
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_EXPONENTIAL_HH__ */

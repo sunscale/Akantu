@@ -295,4 +295,4 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::computeTraction(
 
 INSTANTIATE_MATERIAL(cohesive_linear_fatigue, MaterialCohesiveLinearFatigue);
 
-} // akantu
+} // namespace akantu

@@ -71,6 +71,6 @@ inline void MaterialPlastic<dim>::computeStressAndInelasticStrainOnQuad(
       previous_inelastic_strain, delta_inelastic_strain);
 }
 
-} // Akantu
+} // namespace akantu
 
 #endif /* MATERIAL_PLASTIC_INLINE_IMPL_H */

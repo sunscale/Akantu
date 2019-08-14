@@ -266,8 +266,8 @@ MeshData::getElementalDataArray(const ID & name, const ElementType & elem_type,
                                    << " not registered for type: " << elem_type
                                    << " - ghost_type:" << ghost_type << "!");
   }
-  return aka::as_type<ElementTypeMapArray<T>>(*(it->second))(
-      elem_type, ghost_type);
+  return aka::as_type<ElementTypeMapArray<T>>(*(it->second))(elem_type,
+                                                             ghost_type);
 }
 
 template <typename T>
@@ -280,8 +280,8 @@ Array<T> & MeshData::getElementalDataArray(const ID & name,
                                    << " not registered for type: " << elem_type
                                    << " - ghost_type:" << ghost_type << "!");
   }
-  return aka::as_type<ElementTypeMapArray<T>>(*(it->second.get()))(
-      elem_type, ghost_type);
+  return aka::as_type<ElementTypeMapArray<T>>(*(it->second.get()))(elem_type,
+                                                                   ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -66,6 +66,6 @@ public:
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_PARAVIEW_HH__ */

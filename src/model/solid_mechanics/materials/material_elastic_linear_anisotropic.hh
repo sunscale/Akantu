@@ -132,7 +132,7 @@ protected:
   /// defines if the stiffness was computed
   bool was_stiffness_assembled;
 };
-} // akantu
+} // namespace akantu
 
 #include "material_elastic_linear_anisotropic_inline_impl.cc"
 

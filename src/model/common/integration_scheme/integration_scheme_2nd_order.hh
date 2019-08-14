@@ -100,7 +100,7 @@ protected:
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 #include "newmark-beta.hh"
 

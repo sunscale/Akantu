@@ -109,6 +109,6 @@ protected:
 #include "aka_memory_inline_impl.cc"
 #endif
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MEMORY_HH__ */

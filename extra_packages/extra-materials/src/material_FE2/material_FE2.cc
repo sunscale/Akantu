@@ -165,8 +165,9 @@ void MaterialFE2<spatial_dimension>::advanceASR(
   AKANTU_DEBUG_IN();
 
   for (auto && data :
-       zip(RVEs, make_view(this->gradu(this->el_type), spatial_dimension,
-                           spatial_dimension),
+       zip(RVEs,
+           make_view(this->gradu(this->el_type), spatial_dimension,
+                     spatial_dimension),
            make_view(this->eigengradu(this->el_type), spatial_dimension,
                      spatial_dimension),
            make_view(this->C(this->el_type), voigt_h::size, voigt_h::size),

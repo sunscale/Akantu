@@ -101,7 +101,7 @@ public:
   }
 
   void assembleJacobian() {
-    //corrector();
+    // corrector();
     callback->assembleMatrix("J");
   }
 
@@ -144,23 +144,23 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   callback.assembleMatrix("J");
   auto & global_x = dof_manager.getSolution();
   global_x.clear();
-  
+
   if (not x) {
     x = std::make_unique<SolverVectorPETSc>(global_x, "temporary_solution");
   }
 
   *x = global_x;
-  
+
   if (not ctx) {
     ctx = std::make_unique<NonLinearSolverPETScCallback>(dof_manager, *x);
   }
-  
+
   ctx->setCallback(callback);
   ctx->setInitialSolution(global_x);
- 
+
   auto & rhs = dof_manager.getResidual();
   auto & J = dof_manager.getMatrix("J");
-  
+
   PETSc_call(SNESSetFunction, snes, rhs, NonLinearSolverPETSc::FormFunction,
              ctx.get());
   PETSc_call(SNESSetJacobian, snes, J, J, NonLinearSolverPETSc::FormJacobian,
@@ -175,7 +175,6 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
 
   PETSc_call(VecAXPY, global_x, -1.0, *x);
 
-  
   dof_manager.splitSolutionPerDOFs();
   callback.corrector();
 }

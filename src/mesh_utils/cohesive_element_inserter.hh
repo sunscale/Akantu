@@ -44,7 +44,7 @@
 namespace akantu {
 class GlobalIdsUpdater;
 class FacetSynchronizer;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -164,7 +164,7 @@ private:
   Array<UInt> old_nodes;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "cohesive_element_inserter_inline_impl.cc"
 

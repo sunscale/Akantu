@@ -1,28 +1,23 @@
 #!/usr/bin/env python3
-
-from __future__ import print_function
-
-import akantu
+import akantu as aka
 import numpy as np
-
-################################################################
 
 
 def solve(material_file, mesh_file, traction):
-    akantu.parseInput(material_file)
+    aka.parseInput(material_file)
     spatial_dimension = 2
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # Initialization
-    ################################################################
-    mesh = akantu.Mesh(spatial_dimension)
+    # -------------------------------------------------------------------------
+    mesh = aka.Mesh(spatial_dimension)
     mesh.read(mesh_file)
 
-    model = akantu.SolidMechanicsModelCohesive(mesh)
-    model.initFull(akantu.SolidMechanicsModelCohesiveOptions(akantu._static,
-                                                             True))
+    model = aka.SolidMechanicsModelCohesive(mesh)
+    model.initFull(_analysis_method=aka._static,
+                   _is_extrinsic=True)
 
-    model.initNewSolver(akantu._explicit_lumped_mass)
+    model.initNewSolver(aka._explicit_lumped_mass)
 
     model.setBaseName('plate')
     model.addDumpFieldVector('displacement')
@@ -37,25 +32,24 @@ def solve(material_file, mesh_file, traction):
     model.addDumpFieldVectorToDumper('cohesive elements', 'traction')
     model.addDumpFieldVectorToDumper('cohesive elements', 'opening')
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # Boundary conditions
-    ################################################################
-
-    model.applyBC(akantu.FixedValue(0.0, akantu._x), 'XBlocked')
-    model.applyBC(akantu.FixedValue(0.0, akantu._y), 'YBlocked')
+    # -------------------------------------------------------------------------
+    model.applyBC(aka.FixedValue(0.0, aka._x), 'XBlocked')
+    model.applyBC(aka.FixedValue(0.0, aka._y), 'YBlocked')
 
     trac = np.zeros(spatial_dimension)
-    trac[int(akantu._y)] = traction
+    trac[int(aka._y)] = traction
 
     print('Solve for traction ', traction)
 
     model.getExternalForce()[:] = 0
-    model.applyBC(akantu.FromTraction(trac), 'Traction')
+    model.applyBC(aka.FromTraction(trac), 'Traction')
 
     solver = model.getNonLinearSolver('static')
     solver.set('max_iterations', 100)
     solver.set('threshold', 1e-10)
-    solver.set('convergence_type', akantu._scc_residual)
+    solver.set('convergence_type', aka._scc_residual)
 
     model.solveStep('static')
     model.dump()
@@ -64,6 +58,7 @@ def solve(material_file, mesh_file, traction):
     model.setTimeStep(model.getStableTimeStep()*0.1)
 
     maxsteps = 100
+
     for i in range(0, maxsteps):
         print('{0}/{1}'.format(i, maxsteps))
         model.checkCohesiveStress()
@@ -71,34 +66,19 @@ def solve(material_file, mesh_file, traction):
         if i % 10 == 0:
             model.dump()
             model.dump('cohesive elements')
-        # if i < 200:
-        #     model.getVelocity()[:] *= .9
 
-################################################################
+
+# -----------------------------------------------------------------------------
 # main
-################################################################
-
-
+# -----------------------------------------------------------------------------
 def main():
-
-    import os
     mesh_file = 'plate.msh'
-
-    if not os.path.isfile(mesh_file):
-        import subprocess
-        ret = subprocess.call(
-            'gmsh -format msh2 -2 plate.geo {0}'.format(mesh_file),
-            shell=True)
-        if not ret == 0:
-            raise Exception(
-                'execution of GMSH failed: do you have it installed ?')
-
     material_file = 'material.dat'
 
     traction = .095
     solve(material_file, mesh_file, traction)
 
 
-################################################################
+# -----------------------------------------------------------------------------
 if __name__ == '__main__':
     main()

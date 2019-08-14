@@ -31,10 +31,10 @@
 /* -------------------------------------------------------------------------- */
 #include "heat_transfer_model.hh"
 /* -------------------------------------------------------------------------- */
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <cmath>
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) {
     Real dx = nodes(i, 0);
     Real dy = nodes(i, 1);
 
-    Vector<Real> dX = {dx , dy};
+    Vector<Real> dX = {dx, dy};
     dX -= length / 4.;
     Real d = dX.norm();
     if (d < 0.1) {
@@ -76,7 +76,7 @@ int main(int argc, char * argv[]) {
 
     if (std::abs(dx) < 1e-4 || std::abs(dy) < 1e-4)
       blocked_dofs(i) = true;
-    if (std::abs(dx-length) < 1e-4 || std::abs(dy-length) < 1e-4) 
+    if (std::abs(dx - length) < 1e-4 || std::abs(dy - length) < 1e-4)
       blocked_dofs(i) = true;
   }
 

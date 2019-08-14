@@ -157,4 +157,4 @@ void StaticMemory::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

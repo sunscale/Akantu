@@ -140,7 +140,6 @@ void SolidMechanicsModel::assignMaterialToElements(
       },
       _element_filter = filter, _ghost_type = _not_ghost);
 
-
   if (non_local_manager)
     non_local_manager->synchronize(*this, SynchronizationTag::_material_id);
 

@@ -87,7 +87,7 @@ protected:
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 #include "generalized_trapezoidal.hh"
 

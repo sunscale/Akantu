@@ -92,8 +92,8 @@
 #include "aka_common.hh"
 #include "dof_manager_default.hh"
 #include "dof_synchronizer.hh"
-#include "sparse_matrix_aij.hh"
 #include "solver_vector_default.hh"
+#include "sparse_matrix_aij.hh"
 #if defined(AKANTU_USE_MPI)
 #include "mpi_communicator_data.hh"
 #endif
@@ -275,8 +275,8 @@ void SparseSolverMumps::initialize() {
     /* [[fallthrough]]; un-comment when compiler will get it */
   case _fully_distributed:
 #ifdef AKANTU_USE_MPI
-    const auto & mpi_data = aka::as_type<MPICommunicatorData>(
-        communicator.getCommunicatorData());
+    const auto & mpi_data =
+        aka::as_type<MPICommunicatorData>(communicator.getCommunicatorData());
     MPI_Comm mpi_comm = mpi_data.getMPICommunicator();
     this->mumps_data.comm_fortran = MPI_Comm_c2f(mpi_comm);
 #else

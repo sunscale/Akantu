@@ -36,10 +36,12 @@
 
 namespace akantu {
 
-std::unique_ptr<NTNBaseFriction> initializeNTNFriction(NTNBaseContact & contact);
+std::unique_ptr<NTNBaseFriction>
+initializeNTNFriction(NTNBaseContact & contact);
 
-std::unique_ptr<NTNBaseFriction> initializeNTNFriction(NTNBaseContact & contact,
-                                        const std::string & friction_law,
-                                        const std::string & friction_reg);
+std::unique_ptr<NTNBaseFriction>
+initializeNTNFriction(NTNBaseContact & contact,
+                      const std::string & friction_law,
+                      const std::string & friction_reg);
 
 } // namespace akantu

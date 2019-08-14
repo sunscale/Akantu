@@ -462,22 +462,22 @@ void MeshUtils::renumberMeshNodes(Mesh & mesh,
   /// copy the renumbered connectivity to the right place
   auto & local_conn = mesh_accessor.getConnectivity(type);
   local_conn.resize(nb_local_element);
-    
-  if(nb_local_element > 0) {
+
+  if (nb_local_element > 0) {
     memcpy(local_conn.storage(), local_connectivities.storage(),
            nb_local_element * nb_nodes_per_element * sizeof(UInt));
   }
 
   auto & ghost_conn = mesh_accessor.getConnectivity(type, _ghost);
   ghost_conn.resize(nb_ghost_element);
-  
-  if(nb_ghost_element > 0) {
+
+  if (nb_ghost_element > 0) {
     std::memcpy(ghost_conn.storage(),
                 local_connectivities.storage() +
-                nb_local_element * nb_nodes_per_element,
+                    nb_local_element * nb_nodes_per_element,
                 nb_ghost_element * nb_nodes_per_element * sizeof(UInt));
   }
-  
+
   auto & ghost_counter = mesh_accessor.getGhostsCounters(type, _ghost);
   ghost_counter.resize(nb_ghost_element, 1);
 

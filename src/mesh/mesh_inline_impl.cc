@@ -345,7 +345,6 @@ inline ElementTypeMapArray<T> & Mesh::getData(const ID & data_name) {
   return this->getElementalData<T>(data_name);
 }
 
-
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbElement(const ElementType & type,
                                const GhostType & ghost_type) const {
@@ -684,7 +683,8 @@ void Mesh::addPeriodicSlave(UInt slave, UInt master) {
                       << getNodeGlobalId(slave) << " [lid: " << slave << "]"
                       << ", master gid:" << getNodeGlobalId(master)
                       << " [lid: " << master << "]");
-    // std::cout << "adding periodic slave, slave gid:" << getNodeGlobalId(slave)
+    // std::cout << "adding periodic slave, slave gid:" <<
+    // getNodeGlobalId(slave)
     //           << " [lid: " << slave << "]"
     //           << ", master gid:" << getNodeGlobalId(master)
     //           << " [lid: " << master << "]" << std::endl;
@@ -729,10 +729,7 @@ public:
       ++it;
       return *this;
     }
-    bool
-    operator!=(const const_iterator & other) {
-      return other.it != it;
-    }
+    bool operator!=(const const_iterator & other) { return other.it != it; }
     auto operator*() { return it->second; }
   };
 

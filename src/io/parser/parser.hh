@@ -463,6 +463,7 @@ public:
   static RandomParameter<Real>
   parseRandomParameter(const std::string & value,
                        const ParserSection & section);
+
 protected:
   /// General parse function
   template <class T, class Grammar>

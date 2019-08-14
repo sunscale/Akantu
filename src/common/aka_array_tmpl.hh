@@ -147,10 +147,10 @@ void ArrayDataLayer<T, allocation_trait>::resize(UInt new_size,
 /* -------------------------------------------------------------------------- */
 template <typename T, ArrayAllocationType allocation_trait>
 void ArrayDataLayer<T, allocation_trait>::reserve(UInt size, UInt new_size) {
-  if(new_size != UInt(-1)) {
+  if (new_size != UInt(-1)) {
     this->data_storage.resize(new_size * this->nb_component);
-  }    
-    
+  }
+
   this->data_storage.reserve(size * this->nb_component);
   this->values = this->data_storage.data();
 }
@@ -304,7 +304,8 @@ public:
   /// changes the allocated size but not the size
   virtual void reserve(UInt size, UInt new_size = UInt(-1)) {
     UInt tmp_size = this->size_;
-    if (new_size != UInt(-1)) tmp_size = new_size;
+    if (new_size != UInt(-1))
+      tmp_size = new_size;
     this->resize(size);
     this->size_ = std::min(this->size_, tmp_size);
   }
@@ -762,23 +763,21 @@ public:
   template <typename T>
   static void print_content(const Array<T> & vect, std::ostream & stream,
                             int indent) {
-    if (AKANTU_DEBUG_TEST(dblDump) || AKANTU_DEBUG_LEVEL_IS_TEST()) {
-      std::string space(indent, AKANTU_INDENT);
+    std::string space(indent, AKANTU_INDENT);
 
-      stream << space << " + values         : {";
-      for (UInt i = 0; i < vect.size(); ++i) {
-        stream << "{";
-        for (UInt j = 0; j < vect.getNbComponent(); ++j) {
-          stream << vect(i, j);
-          if (j != vect.getNbComponent() - 1)
-            stream << ", ";
-        }
-        stream << "}";
-        if (i != vect.size() - 1)
+    stream << space << " + values         : {";
+    for (UInt i = 0; i < vect.size(); ++i) {
+      stream << "{";
+      for (UInt j = 0; j < vect.getNbComponent(); ++j) {
+        stream << vect(i, j);
+        if (j != vect.getNbComponent() - 1)
           stream << ", ";
       }
-      stream << "}" << std::endl;
+      stream << "}";
+      if (i != vect.size() - 1)
+        stream << ", ";
     }
+    stream << "}" << std::endl;
   }
 };
 
@@ -818,7 +817,10 @@ void Array<T, is_scal>::printself(std::ostream & stream, int indent) const {
   stream.precision(prec);
   stream.flags(ff);
 
-  ArrayPrintHelper<is_scal or std::is_enum<T>::value>::print_content(*this, stream, indent);
+  if (AKANTU_DEBUG_TEST(dblDump) || AKANTU_DEBUG_LEVEL_IS_TEST()) {
+    ArrayPrintHelper<is_scal or std::is_enum<T>::value>::print_content(
+        *this, stream, indent);
+  }
 
   stream << space << "]" << std::endl;
 }
@@ -845,6 +847,7 @@ public:
   using difference_type = std::ptrdiff_t;
   using iterator_category = std::random_access_iterator_tag;
   static_assert(not is_tensor, "Cannot handle tensors");
+
 public:
   iterator_internal(pointer data = nullptr) : ret(data), initial(data){};
   iterator_internal(const iterator_internal & it) = default;
@@ -930,6 +933,7 @@ public:
   using internal_pointer = IR *;
   using difference_type = std::ptrdiff_t;
   using iterator_category = std::random_access_iterator_tag;
+  using pointer_type = typename Array<T, is_scal>::pointer_type;
 
 public:
   iterator_internal() = default;
@@ -1082,11 +1086,12 @@ public:
   const_iterator(const const_iterator & it) = default;
   const_iterator(const_iterator && it) = default;
 
-  template <typename P, typename = std::enable_if_t<not aka::is_tensor<P>::value>>
+  template <typename P,
+            typename = std::enable_if_t<not aka::is_tensor<P>::value>>
   const_iterator(P * data) : parent(data) {}
 
-  template <typename UP_P, typename = std::enable_if_t<
-                               aka::is_tensor<typename UP_P::element_type>::value>>
+  template <typename UP_P, typename = std::enable_if_t<aka::is_tensor<
+                               typename UP_P::element_type>::value>>
   const_iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
 
   const_iterator & operator=(const const_iterator & it) = default;
@@ -1115,7 +1120,7 @@ template <class T, class R> struct ConstConverterIteratorHelper<T, R, false> {
 template <class T, bool is_scal>
 template <typename R>
 class Array<T, is_scal>::iterator
-  : public iterator_internal<R, Array<T, is_scal>::iterator<R>> {
+    : public iterator_internal<R, Array<T, is_scal>::iterator<R>> {
 public:
   using parent = iterator_internal<R, iterator>;
   using value_type = typename parent::value_type;
@@ -1129,11 +1134,12 @@ public:
   iterator(const iterator & it) = default;
   iterator(iterator && it) = default;
 
-  template <typename P, typename = std::enable_if_t<not aka::is_tensor<P>::value>>
+  template <typename P,
+            typename = std::enable_if_t<not aka::is_tensor<P>::value>>
   iterator(P * data) : parent(data) {}
 
-  template <typename UP_P, typename = std::enable_if_t<
-                               aka::is_tensor<typename UP_P::element_type>::value>>
+  template <typename UP_P, typename = std::enable_if_t<aka::is_tensor<
+                               typename UP_P::element_type>::value>>
   iterator(UP_P && tensor) : parent(std::forward<UP_P>(tensor)) {}
 
   iterator & operator=(const iterator & it) = default;
@@ -1142,7 +1148,6 @@ public:
     return ConstConverterIteratorHelper<T, R>::convert(*this);
   }
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* Begin/End functions implementation                                         */

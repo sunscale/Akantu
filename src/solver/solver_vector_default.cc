@@ -31,7 +31,4 @@
 #include "dof_manager_default.hh"
 /* -------------------------------------------------------------------------- */
 
-namespace akantu {
-
-
-} // namespace akantu
+namespace akantu {} // namespace akantu

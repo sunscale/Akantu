@@ -77,24 +77,24 @@ void MaterialOrthotropicDamage<spatial_dimension, Parent>::initMaterial() {
  */
 template <UInt spatial_dimension, template <UInt> class Parent>
 void MaterialOrthotropicDamage<spatial_dimension, Parent>::updateEnergies(
-    ElementType el_type, GhostType ghost_type) {
-  Parent<spatial_dimension>::updateEnergies(el_type, ghost_type);
+    ElementType el_type) {
+  Parent<spatial_dimension>::updateEnergies(el_type);
 
-  this->computePotentialEnergy(el_type, ghost_type);
+  this->computePotentialEnergy(el_type);
 
-  auto epsilon_p = this->gradu.previous(el_type, ghost_type)
-                       .begin(spatial_dimension, spatial_dimension);
-  auto sigma_p = this->stress.previous(el_type, ghost_type)
-                     .begin(spatial_dimension, spatial_dimension);
+  auto epsilon_p =
+      this->gradu.previous(el_type).begin(spatial_dimension, spatial_dimension);
+  auto sigma_p = this->stress.previous(el_type).begin(spatial_dimension,
+                                                      spatial_dimension);
 
-  auto epot = this->potential_energy(el_type, ghost_type).begin();
+  auto epot = this->potential_energy(el_type).begin();
 
-  auto ints = this->int_sigma(el_type, ghost_type).begin();
-  auto ed = this->dissipated_energy(el_type, ghost_type).begin();
+  auto ints = this->int_sigma(el_type).begin();
+  auto ed = this->dissipated_energy(el_type).begin();
 
-  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
+  MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, _not_ghost);
 
-  Matrix<Real> delta_gradu_it(*gradu_it);
+  Matrix<Real> delta_gradu_it(grad_u);
   delta_gradu_it -= *epsilon_p;
 
   Matrix<Real> sigma_h(sigma);
