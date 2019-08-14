@@ -515,6 +515,8 @@ template <typename T> std::string printMemorySize(UInt size);
 /* -------------------------------------------------------------------------- */
 
 struct TensorTrait {};
+struct TensorProxyTrait {};
+
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
@@ -524,6 +526,7 @@ namespace aka {
 
 /* ------------------------------------------------------------------------ */
 template <typename T> using is_tensor = std::is_base_of<akantu::TensorTrait, T>;
+template <typename T> using is_tensor_proxy = std::is_base_of<akantu::TensorProxyTrait, T>;
 /* ------------------------------------------------------------------------ */
 template <typename T> using is_scalar = std::is_arithmetic<T>;
 /* ------------------------------------------------------------------------ */

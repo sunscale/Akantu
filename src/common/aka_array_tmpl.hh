@@ -288,7 +288,8 @@ public:
 
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value or
+                                        aka::is_tensor_proxy<C<T>>::value>>
   inline void push_back(const C<T> & new_elem) {
     AKANTU_DEBUG_ASSERT(
         nb_component == new_elem.size(),

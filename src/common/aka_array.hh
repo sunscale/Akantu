@@ -188,7 +188,8 @@ public:
 
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value or
+                                        aka::is_tensor_proxy<C<T>>::value>>
   inline void push_back(const C<T> & new_elem);
 
   /// changes the allocated size but not the size, if new_size = 0, the size is
@@ -333,7 +334,8 @@ public:
 
   /// append a Vector or a Matrix
   template <template <typename> class C,
-            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value or
+                                        aka::is_tensor_proxy<C<T>>::value>>
   inline void push_back(const C<T> & new_elem) {
     parent::push_back(new_elem);
   }
@@ -349,7 +351,8 @@ public:
 
   /// @see Array::find(const_reference elem) const
   template <template <typename> class C,
-            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value or
+                                        aka::is_tensor_proxy<C<T>>::value>>
   inline UInt find(const C<T> & elem);
 
   /// set all entries of the array to the value t
@@ -364,7 +367,8 @@ public:
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
   template <template <typename> class C,
-            typename = std::enable_if_t<aka::is_tensor<C<T>>::value>>
+            typename = std::enable_if_t<aka::is_tensor<C<T>>::value or
+                                        aka::is_tensor_proxy<C<T>>::value>>
   inline void set(const C<T> & vm);
 
   /// Append the content of the other array to the current one
