@@ -121,9 +121,6 @@ public:
   /// calculate the lumped capacity vector for heat transfer problem
   void assembleCapacityLumped();
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods for static                                                       */
-  /* ------------------------------------------------------------------------ */
 public:
   /// assemble the conductivity matrix
   void assembleConductivityMatrix();
@@ -138,10 +135,6 @@ private:
   /// calculate the lumped capacity vector for heat transfer problem (w
   /// ghost type)
   void assembleCapacityLumped(const GhostType & ghost_type);
-
-  /// assemble the conductivity matrix (w/ ghost type)
-  template <UInt dim>
-  void assembleConductivityMatrix(const GhostType & ghost_type);
 
   /// compute the conductivity tensor for each quadrature point in an array
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);
@@ -326,7 +319,7 @@ private:
   bool need_to_reassemble_capacity{true};
   bool need_to_reassemble_capacity_lumped{true};
   UInt temperature_release{0};
-  UInt conductivity_matrix_release{0};
+  UInt conductivity_matrix_release{UInt(-1)};
   std::unordered_map<GhostType, bool> initial_conductivity{{_not_ghost, true},
                                                            {_ghost, true}};
   std::unordered_map<GhostType, UInt> conductivity_release{{_not_ghost, 0},

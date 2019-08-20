@@ -167,20 +167,23 @@ public:
   /// pre multiplies a tensor by the shapes derivaties
   virtual void
   computeBtD(const Array<Real> & Ds, Array<Real> & BtDs,
-             const ElementType & type, const GhostType & ghost_type,
+             const ElementType & type,
+             const GhostType & ghost_type = _not_ghost,
              const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// left and right  multiplies a tensor by the shapes derivaties
   virtual void
   computeBtDB(const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
-              const ElementType & type, const GhostType & ghost_type,
+              const ElementType & type,
+              const GhostType & ghost_type = _not_ghost,
               const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// left multiples a vector by the shape functions
-  virtual void computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
-                          const ElementType & type,
-                          const GhostType & ghost_type,
-                          const Array<UInt> & filter_elements) const = 0;
+  virtual void
+  computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
+             const ElementType & type,
+             const GhostType & ghost_type = _not_ghost,
+             const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// Compute the interpolation point position in the global coordinates for
   /// many element types
