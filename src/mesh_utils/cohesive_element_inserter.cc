@@ -128,6 +128,13 @@ void CohesiveElementInserter::limitCheckFacets(
           check_facets(facet) = false;
           return;
         }
+#ifndef AKANTU_NDEBUG
+        if (left == ElementNull) {
+          AKANTU_DEBUG_WARNING("By convention element should not have "
+                               "ElementNull on there first side: "
+                               << facet);
+        }
+#endif
 
         if (left.kind() == _ek_cohesive or right.kind() == _ek_cohesive) {
           check_facets(facet) = false;
