@@ -40,11 +40,12 @@ endfunction()
 # ==============================================================================
 function(_add_file_to_copy target file)
   get_filename_component(_file_name_we ${file} NAME_WE)
+  get_filename_component(_file_name_ext ${file} EXT)
   get_filename_component(_file_name ${file} NAME)
   get_filename_component(_file_path ${file}
     ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-  set(copy_target copy_${_file_name_we}_${target})
+  set(copy_target copy_${_file_name_we}_${_file_name_ext}_${target})
   add_custom_target(${copy_target}
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${_file_name})
   add_custom_command(
