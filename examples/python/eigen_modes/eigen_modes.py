@@ -12,11 +12,11 @@ from scipy.sparse import csr_matrix
 # -----------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description='Eigen mode exo')
 parser.add_argument('-m', '--mode_number', type=int, required=True,
-                    help='precise the mode to study')
+                    help='precise the mode to study', default=2)
 
 parser.add_argument('-wL', '--wave_width', type=float,
                     help='precise the width of the wave for '
-                    'the initial displacement')
+                    'the initial displacement', default=5)
 
 parser.add_argument('-L', '--Lbar', type=float,
                     help='precise the length of the bar', default=10)
@@ -169,7 +169,7 @@ mass = model.getDOFManager().getMatrix('M')
 mass = aka.AkantuSparseMatrix(mass).toarray()
 
 # select the non blocked DOFs by index in the mask
-mask = np.equal(blocked_dofs.flatten(), False)m
+mask = np.equal(blocked_dofs.flatten(), False)
 
 Mass_star = mass[mask, :]
 Mass_star = csr_matrix(Mass_star[:, mask].copy())
