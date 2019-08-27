@@ -118,11 +118,6 @@ void ShapeLagrangeBase::onElementsAdded(const Array<Element> & new_elements) {
 
     auto itp_type = FEEngine::getInterpolationType(type);
 
-    if (not this->shapes_derivatives.exists(itp_type, ghost_type)) {
-      auto size_of_shapesd = this->getShapeDerivativesSize(type);
-      this->shapes_derivatives.alloc(0, size_of_shapesd, itp_type, ghost_type);
-    }
-
     if (not shapes.exists(itp_type, ghost_type)) {
       auto size_of_shapes = this->getShapeSize(type);
       this->shapes.alloc(0, size_of_shapes, itp_type, ghost_type);
@@ -133,11 +128,18 @@ void ShapeLagrangeBase::onElementsAdded(const Array<Element> & new_elements) {
                                      shapes(itp_type, ghost_type), type,
                                      ghost_type, elements);
 
+    if (_spatial_dimension != mesh.getSpatialDimension())
+      continue;
+    
+    if (not this->shapes_derivatives.exists(itp_type, ghost_type)) {
+      auto size_of_shapesd = this->getShapeDerivativesSize(type);
+      this->shapes_derivatives.alloc(0, size_of_shapesd, itp_type, ghost_type);
+    }
+   
     computeShapeDerivativesOnIntegrationPoints(
         nodes, natural_coords, shapes_derivatives(itp_type, ghost_type), type,
         ghost_type, elements);
   }
-#undef INIT_SHAPE_FUNCTIONS
 
   AKANTU_DEBUG_OUT();
 }
