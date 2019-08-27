@@ -170,8 +170,9 @@ inline void IntegratorGauss<kind, IntegrationOrderFunctor>::
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind, class IntegrationOrderFunctor>
 IntegratorGauss<kind, IntegrationOrderFunctor>::IntegratorGauss(
-    const Mesh & mesh, const ID & id, const MemoryID & memory_id)
-    : Integrator(mesh, id, memory_id) {
+    const Mesh & mesh, UInt spatial_dimension, const ID & id,
+    const MemoryID & memory_id)
+    : Integrator(mesh, spatial_dimension, id, memory_id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -661,6 +662,9 @@ void IntegratorGauss<kind, IntegrationOrderFunctor>::onElementsAdded(
     auto type = elements_range.getType();
     auto ghost_type = elements_range.getGhostType();
 
+    if (mesh.getSpatialDimension(type) != _spatial_dimension)
+      continue;
+    
     if (mesh.getKind(type) != kind)
       continue;
 

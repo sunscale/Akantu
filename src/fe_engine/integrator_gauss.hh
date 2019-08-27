@@ -50,7 +50,8 @@ class IntegratorGauss : public Integrator {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  IntegratorGauss(const Mesh & mesh, const ID & id = "integrator_gauss",
+  IntegratorGauss(const Mesh & mesh, UInt spatial_dimension,
+                  const ID & id = "integrator_gauss",
                   const MemoryID & memory_id = 0);
 
   ~IntegratorGauss() override = default;

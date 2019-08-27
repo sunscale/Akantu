@@ -45,7 +45,7 @@ class ShapeFunctions : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeFunctions(const Mesh & mesh, const ID & id = "shape",
+  ShapeFunctions(const Mesh & mesh, UInt spatial_dimension, const ID & id = "shape",
                  const MemoryID & memory_id = 0);
   ~ShapeFunctions() override = default;
 
@@ -191,6 +191,9 @@ protected:
 
   /// associated mesh
   const Mesh & mesh;
+  
+  // spatial dimension of the elements to consider
+  UInt _spatial_dimension;
 
   /// shape functions for all elements
   ElementTypeMap<Matrix<Real>> integration_points;

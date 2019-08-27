@@ -197,9 +197,9 @@ void ShapeLagrange<kind>::computeShapeDerivatives(
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
-ShapeLagrange<kind>::ShapeLagrange(const Mesh & mesh, const ID & id,
-                                   const MemoryID & memory_id)
-    : ShapeLagrangeBase(mesh, kind, id, memory_id) {}
+ShapeLagrange<kind>::ShapeLagrange(const Mesh & mesh, UInt spatial_dimension,
+                                   const ID & id, const MemoryID & memory_id)
+    : ShapeLagrangeBase(mesh, spatial_dimension, kind, id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>

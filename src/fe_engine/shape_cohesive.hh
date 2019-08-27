@@ -56,7 +56,8 @@ template <> class ShapeLagrange<_ek_cohesive> : public ShapeLagrangeBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrange(const Mesh & mesh, const ID & id = "shape_cohesive",
+  ShapeLagrange(const Mesh & mesh, UInt spatial_dimension,
+                const ID & id = "shape_cohesive",
                 const MemoryID & memory_id = 0);
 
   ~ShapeLagrange() override = default;

@@ -41,9 +41,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline ShapeLagrange<_ek_cohesive>::ShapeLagrange(const Mesh & mesh,
+                                                  UInt spatial_dimension,
                                                   const ID & id,
                                                   const MemoryID & memory_id)
-    : ShapeLagrangeBase(mesh, _ek_cohesive, id, memory_id) {}
+    : ShapeLagrangeBase(mesh, spatial_dimension, _ek_cohesive, id, memory_id) {}
 
 #define INIT_SHAPE_FUNCTIONS(type)                                             \
   setIntegrationPointsByType<type>(integration_points, ghost_type);            \
@@ -326,4 +327,5 @@ void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
 }
 
 } // namespace akantu
+
 #endif /* __AKANTU_SHAPE_COHESIVE_INLINE_IMPL_CC__ */

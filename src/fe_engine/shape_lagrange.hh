@@ -47,7 +47,8 @@ template <ElementKind kind> class ShapeLagrange : public ShapeLagrangeBase {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrange(const Mesh & mesh, const ID & id = "shape_lagrange",
+  ShapeLagrange(const Mesh & mesh, UInt spatial_dimension,
+                const ID & id = "shape_lagrange",
                 const MemoryID & memory_id = 0);
   ~ShapeLagrange() override = default;
 
