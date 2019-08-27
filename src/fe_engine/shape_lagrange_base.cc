@@ -35,8 +35,7 @@
 
 namespace akantu {
 
-ShapeLagrangeBase::ShapeLagrangeBase(const Mesh & mesh,
-                                     UInt spatial_dimension,
+ShapeLagrangeBase::ShapeLagrangeBase(const Mesh & mesh, UInt spatial_dimension,
                                      const ElementKind & kind, const ID & id,
                                      const MemoryID & memory_id)
     : ShapeFunctions(mesh, spatial_dimension, id, memory_id), _kind(kind) {}
@@ -109,9 +108,9 @@ void ShapeLagrangeBase::onElementsAdded(const Array<Element> & new_elements) {
     auto type = elements_range.getType();
     auto ghost_type = elements_range.getGhostType();
 
-    if(mesh.getSpatialDimension(type) != _spatial_dimension)
+    if (mesh.getSpatialDimension(type) != _spatial_dimension)
       continue;
-    
+
     if (mesh.getKind(type) != _kind)
       continue;
 
