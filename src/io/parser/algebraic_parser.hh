@@ -325,7 +325,7 @@ namespace parser {
            *(',' >> number[phx::bind(&cont_add<parsable_vector, Real>, lbs::_a,
                                      lbs::_1)]))[lbs::_val = lbs::_a];
 
-#if !defined(AKANTU_NDEBUG) && defined(AKANTU_CORE_CXX_11)
+#if !defined(AKANTU_NDEBUG)
       phx::function<algebraic_error_handler_> const error_handler =
           algebraic_error_handler_();
       qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
@@ -386,7 +386,7 @@ namespace parser {
             *qi::char_("a-zA-Z_0-9") // coming from the InputFileGrammar
           ;
 
-#if !defined(AKANTU_NDEBUG) && defined(AKANTU_CORE_CXX_11)
+#if !defined(AKANTU_NDEBUG)
       phx::function<algebraic_error_handler_> const error_handler =
           algebraic_error_handler_();
       qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
@@ -475,7 +475,7 @@ namespace parser {
           AKANTU_RANDOM_DISTRIBUTION_TYPES);
 #undef AKANTU_RANDOM_DISTRIBUTION_TYPE_ADD
 
-#if !defined(AKANTU_NDEBUG) && defined(AKANTU_CORE_CXX_11)
+#if !defined(AKANTU_NDEBUG)
       phx::function<algebraic_error_handler_> const error_handler =
           algebraic_error_handler_();
       qi::on_error<qi::fail>(start, error_handler(lbs::_4, lbs::_3, lbs::_2));
