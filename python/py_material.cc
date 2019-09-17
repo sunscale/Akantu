@@ -151,8 +151,8 @@ void define_material(py::module & mod, const std::string & name) {
              self.registerAllocator(
                  id,
                  [func, id](UInt dim, const ID &, SolidMechanicsModel & model,
-                            const ID & id) -> std::unique_ptr<Material> {
-                   py::object obj = func(dim, id, model, id);
+                            const ID & option) -> std::unique_ptr<Material> {
+                   py::object obj = func(dim, id, model, option);
                    auto & ptr = py::cast<Material &>(obj);
 
                    obj.release();
