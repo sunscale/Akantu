@@ -100,12 +100,9 @@ void Communicator::scanImpl(T * values, T * result, int n,
 }
 
 template <typename T>
-void Communicator::exclusiveScanImpl(T * values, T * result, int n,
+void Communicator::exclusiveScanImpl(T * /*values*/, T * result, int n,
                                      SynchronizerOperation) const {
-  if (values == result)
-    return;
-
-  std::copy_n(values, n, result);
+  std::fill_n(result, n, T());
 }
 
 template <typename T> inline void Communicator::allGatherImpl(T *, int) const {}
