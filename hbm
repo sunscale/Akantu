@@ -26,6 +26,17 @@ def send_ctest_results(ctx, filename):
 @hbm.command()
 @click.option('-f', '--filename')
 @click.pass_context
+def send_junit_results(ctx, filename):
+    try:
+        _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+        with harbomaster.JUnitTestResults(filename) as tests:
+            _hbm.send_unit_tests(tests)
+    except:
+        pass
+
+@hbm.command()
+@click.option('-f', '--filename')
+@click.pass_context
 def send_arc_lint(ctx, filename):
     try:
         _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
