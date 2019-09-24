@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+# ------------------------------------------------------------------------------
+__author__ = "Nicolas Richart"
+__copyright__ = "Copyright (C) 2019, EPFL (Ecole Polytechnique Fédérale" \
+                " de Lausanne) Laboratory (LSMS - Laboratoire de Simulation" \
+                " en Mécanique des Solides)"
+__credits__ = ["Nicolas Richart"]
+__license__ = "L-GPLv3"
+__maintainer__ = "Nicolas Richart"
+__email__ = "nicolas.richart@epfl.ch"
+# ------------------------------------------------------------------------------
+import click
+import harbomaster
+
+
+@click.group()
+@click.option('-a', '--api-token', default=None, envvar='API_TOKEN')
+@click.option('-h', '--host', default=None, envvar='PHABRICATOR_HOST')
+@click.option('-b', '--build-target-phid', envvar='BUILD_TARGET_PHID')
+@click.pass_context
+def hbm(ctx, api_token, host, build_target_phid):
+    ctx.obj['API_TOKEN'] = api_token
+    ctx.obj['HOST'] = host
+    ctx.obj['BUILD_TARGET_PHID'] = build_target_phid
+
+
+@hbm.command()
+@click.option('-f', '--filename')
+@click.pass_context
+def send_ctest_results(ctx, filename):
+    try:
+        _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+        with harbomaster.CTestResults(filename) as tests:
+            _hbm.send_unit_tests(tests)
+    except Exception:
+        pass
+
+
+@hbm.command()
+@click.option('-f', '--filename')
+@click.pass_context
+def send_junit_results(ctx, filename):
+    try:
+        _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+        with harbomaster.JUnitTestResults(filename) as tests:
+            _hbm.send_unit_tests(tests)
+    except Exception:
+        pass
+
+
+@hbm.command()
+@click.option('-f', '--filename')
+@click.pass_context
+def send_arc_lint(ctx, filename):
+    try:
+        _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+        with harbomaster.ARCLintJson(filename) as tests:
+            _hbm.send_lint(tests)
+    except Exception:
+        pass
+
+
+@hbm.command()
+@click.option('-k', '--key')
+@click.option('-u', '--uri')
+@click.option('-l', '--label')
+@click.pass_context
+def send_uri(ctx, key, uri, label):
+    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+    _hbm.send_uri(key, uri, label)
+
+
+@hbm.command()
+@click.option('-f', '--filename')
+@click.option('-n', '--name')
+@click.option('-v', '--view_policy', default=None)
+@click.pass_context
+def upload_file(ctx, filename, name, view_policy):
+    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+    _hbm.upload_file(filename, name, view_policy)
+
+
+@hbm.command()
+@click.pass_context
+def passed(ctx):
+    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+    _hbm.passed()
+
+
+@hbm.command()
+@click.pass_context
+def failed(ctx):
+    _hbm = harbomaster.Harbormaster(ctx=ctx.obj)
+    _hbm.failed()
+
+
+if __name__ == '__main__':
+    hbm(obj={})
