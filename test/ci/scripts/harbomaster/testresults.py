@@ -1,3 +1,14 @@
+# ------------------------------------------------------------------------------
+__author__ = "Nicolas Richart"
+__copyright__ = "Copyright (C) 2019, EPFL (Ecole Polytechnique Fédérale" \
+                " de Lausanne) Laboratory (LSMS - Laboratoire de Simulation" \
+                " en Mécanique des Solides)"
+__credits__ = ["Nicolas Richart", "Lucas Frerot"]
+__license__ = "L-GPLv3"
+__maintainer__ = "Nicolas Richart"
+__email__ = "nicolas.richart@epfl.ch"
+# ------------------------------------------------------------------------------
+
 import xml.etree.ElementTree as xml_etree
 from collections import namedtuple
 
