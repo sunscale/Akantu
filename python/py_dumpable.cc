@@ -13,6 +13,8 @@ namespace py = pybind11;
 
 namespace akantu {
 
+std::vector<detail::ArrayProxy<Real>> tmp_array;
+
 void register_dumpable(py::module & mod) {
   /* ------------------------------------------------------------------------ */
   py::class_<Dumpable>(mod, "Dumpable")
@@ -39,11 +41,13 @@ void register_dumpable(py::module & mod) {
       .def(
           "addDumpFieldExternal",
           [](Dumpable & _this, const std::string & field_id,
-             const Array<Real> & field) {
-            std::cout << "TOTO" << std::endl;
-            return _this.addDumpFieldExternal(field_id, field);
+             Array<Real> & field) {
+            auto & tmp = dynamic_cast<detail::ArrayProxy<Real>&>(field);
+            tmp_array.push_back(tmp);
+            std::cout << tmp.storage() << std::endl;
+            return _this.addDumpFieldExternal(field_id, tmp_array.back());
           },
-          py::arg("field_id"), py::arg("field"), py::keep_alive<1,3>())
+          py::arg("field_id"), py::arg("field"))
       .def(
           "addDumpFieldExternalToDumper",
           [](Dumpable & _this, const std::string & dumper_name,

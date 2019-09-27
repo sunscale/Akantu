@@ -30,6 +30,7 @@ namespace detail {
 
   public:
     ArrayProxy(T * data, UInt size, UInt nb_component) {
+      std::cout << "data is " << data << std::endl;
       this->values = data;
       std::cout << "creating ArrayProxy" << this->values << std::endl; 
       this->size_ = size;
@@ -38,7 +39,7 @@ namespace detail {
 
     ArrayProxy(const Array<T> & src) {
       this->values = src.storage();
-      std::cout << "creating ArrayProxy" << this->values << std::endl; 
+      std::cout << "copied data is " << this->values << std::endl;
       this->size_ = src.size();
       this->nb_component = src.getNbComponent();
     }
@@ -196,11 +197,13 @@ namespace detail {
         // the strides are compatible with the Ref's stride requirements
         auto aref = py::cast<array_type>(src);
 
+        std::cout << "yopyop" << aref.data() << std::endl;
         if (not fits(aref)) {
           return false;
         }
         copy_or_ref = std::move(aref);
       } else {
+        std::cout << "need copy" << std::endl;
         if (not convert) {
           return false;
         }
