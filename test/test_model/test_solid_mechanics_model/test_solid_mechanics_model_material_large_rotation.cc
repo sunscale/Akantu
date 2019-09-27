@@ -33,6 +33,7 @@
 #include "mesh_utils.hh"
 #include "non_linear_solver.hh"
 #include "solid_mechanics_model.hh"
+#include "sparse_matrix_aij.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -59,15 +60,61 @@ int main(int argc, char * argv[]) {
   solver.set("max_iterations", 100);
   solver.set("convergence_type", SolveConvergenceCriteria::_residual);
 
-  const Array<Real> & coordinates = mesh.getNodes();
-  Array<Real> & displacement = model.getDisplacement();
-  Array<bool> & boundary = model.getBlockedDOFs();
-  MeshUtils::buildFacets(mesh);
+  auto & positions = mesh.getNodes();
+  auto & velocities = model.getVelocity();
+  // auto & boundary = model.getBlockedDOFs();
+
+  model.setBaseName("waves");
+  model.addDumpFieldVector("displacement");
+  model.addDumpFieldVector("acceleration");
+  model.addDumpFieldVector("velocity");
+  model.addDumpFieldVector("internal_force");
+  model.addDumpFieldVector("external_force");
+  model.addDumpField("strain");
+  model.addDumpField("stress");
+  model.addDumpField("blocked_dofs");
 
   /* ------------------------------------------------------------------------ */
-  /* Dynamic eolution                                                         */
+  // get mass center
   /* ------------------------------------------------------------------------ */
+
+  model.assembleMass();
+  auto & M = model.getDOFManager().getMatrix("M");
+  Array<Real> _mass(M.size(), 1);
+  _mass.clear();
+  std::cout << "AAAA " << M.size() << std::endl;
+  std::cout << "AAAA " << _mass.size() << std::endl;
+
+  for (UInt i = 0; i < M.size(); ++i) {
+    for (UInt j = 0; j < M.size(); ++j) {
+      std::cout << i << ", " << j <<std::endl;
+      _mass[i] += M(i, j);
+    }
+  }
+  std::array<Real, 3> mass_center{0., 0., 0.};
+  std::cout << "AAAA " << _mass.size() << std::endl;
+  Real total_mass = 0.;
+  for (UInt i = 0; i < _mass.size(); ++i) {
+    for (UInt j = 0; j < 3; ++j) {
+      mass_center[j] += _mass(i * 3 + j);
+      total_mass += _mass(i * 3 + j);
+    }
+  }
+  mass_center[0] /= total_mass / 3.;
+  mass_center[1] /= total_mass / 3.;
+  mass_center[2] /= total_mass / 3.;
+  std::cout << "total mass" << total_mass << std::endl;
+  std::cout << mass_center[0] << " " << mass_center[1] << " " << mass_center[2]
+            << std::endl;
+
+  /* ---------------------------------------------------------------------- */
+  /* Dynamic evolution */
+  /* ---------------------------------------------------------------------- */
+  model.dump();
+
   model.solveStep();
+  model.dump();
+
   std::cout << "Converged in " << Int(solver.get("nb_iterations")) << " ("
             << Real(solver.get("error")) << ")" << std::endl;
 

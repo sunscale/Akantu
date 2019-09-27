@@ -40,6 +40,7 @@ void register_dumpable(py::module & mod) {
           "addDumpFieldExternal",
           [](Dumpable & _this, const std::string & field_id,
              const Array<Real> & field) {
+            std::cout << "TOTO" << std::endl;
             return _this.addDumpFieldExternal(field_id, field);
           },
           py::arg("field_id"), py::arg("field"), py::keep_alive<1,3>())

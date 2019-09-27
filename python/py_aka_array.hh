@@ -31,17 +31,22 @@ namespace detail {
   public:
     ArrayProxy(T * data, UInt size, UInt nb_component) {
       this->values = data;
+      std::cout << "creating ArrayProxy" << this->values << std::endl; 
       this->size_ = size;
       this->nb_component = nb_component;
     }
 
     ArrayProxy(const Array<T> & src) {
       this->values = src.storage();
+      std::cout << "creating ArrayProxy" << this->values << std::endl; 
       this->size_ = src.size();
       this->nb_component = src.getNbComponent();
     }
 
-    ~ArrayProxy() { this->values = nullptr; }
+    ~ArrayProxy() {
+      std::cout << "delete ArrayProxy" << this->values << std::endl; 
+      this->values = nullptr;
+    }
 
     void resize(UInt /*size*/, const T & /*val */) override final {
       AKANTU_EXCEPTION("cannot resize a temporary array");
