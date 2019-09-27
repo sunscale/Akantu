@@ -29,20 +29,29 @@ void register_dumpable(py::module & mod) {
       .def("addDumpField", &Dumpable::addDumpField, py::arg("field_id"))
       .def("addDumpFieldToDumper", &Dumpable::addDumpFieldToDumper,
            py::arg("dumper_name"), py::arg("field_id"))
-      .def("addDumpFieldExternal",
-           [](Dumpable & _this, const std::string & field_id,
-              std::shared_ptr<dumper::Field> field) {
-             return _this.addDumpFieldExternal(field_id, field);
-           },
-           py::arg("field_id"), py::arg("field"))
-      .def("addDumpFieldExternalToDumper",
-           [](Dumpable & _this, const std::string & dumper_name,
-              const std::string & field_id,
-              std::shared_ptr<dumper::Field> field) {
-             return _this.addDumpFieldExternalToDumper(dumper_name, field_id,
-                                                       field);
-           },
-           py::arg("dumper_name"), py::arg("field_id"), py::arg("field"))
+      .def(
+          "addDumpFieldExternal",
+          [](Dumpable & _this, const std::string & field_id,
+             std::shared_ptr<dumper::Field> field) {
+            return _this.addDumpFieldExternal(field_id, field);
+          },
+          py::arg("field_id"), py::arg("field"))
+      .def(
+          "addDumpFieldExternal",
+          [](Dumpable & _this, const std::string & field_id,
+             const Array<Real> & field) {
+            return _this.addDumpFieldExternal(field_id, field);
+          },
+          py::arg("field_id"), py::arg("field"), py::keep_alive<1,3>())
+      .def(
+          "addDumpFieldExternalToDumper",
+          [](Dumpable & _this, const std::string & dumper_name,
+             const std::string & field_id,
+             std::shared_ptr<dumper::Field> field) {
+            return _this.addDumpFieldExternalToDumper(dumper_name, field_id,
+                                                      field);
+          },
+          py::arg("dumper_name"), py::arg("field_id"), py::arg("field"))
 
       .def("dump", py::overload_cast<>(&Dumpable::dump))
       .def("dump", py::overload_cast<Real, UInt>(&Dumpable::dump),
