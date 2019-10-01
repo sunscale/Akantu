@@ -58,7 +58,7 @@ class ARCLintJson:
 
             json = next(self._lints)
             if type(json) != dict:
-                    raise RuntimeError("Wrong input type for the linter processor")
+                raise RuntimeError("Wrong input type for the linter processor")
 
             self._last_path = list(json.keys())[0]
             self._last_path_lints = json[self._last_path]
