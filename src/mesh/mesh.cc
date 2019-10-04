@@ -122,6 +122,57 @@ void Mesh::getBarycenters(Array<Real> & barycenter, const ElementType & type,
   }
 }
 
+class FacetGlobalConnectivityAccessor : public DataAccessor<Element> {
+public:
+  FacetGlobalConnectivityAccessor(Mesh & mesh)
+      : global_connectivity("global_connectivity",
+                            "facet_connectivity_synchronizer") {
+    global_connectivity.initialize(
+        mesh, _spatial_dimension = _all_dimensions, _with_nb_element = true,
+        _with_nb_nodes_per_element = true, _element_kind = _ek_regular);
+    mesh.getGlobalConnectivity(global_connectivity);
+  }
+
+  UInt getNbData(const Array<Element> & elements,
+                 const SynchronizationTag & tag) const {
+    UInt size = 0;
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
+      UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
+      size += nb_nodes * sizeof(UInt);
+    }
+    return size;
+  }
+
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                const SynchronizationTag & tag) const {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
+      for (const auto & element : elements) {
+        auto & conns = global_connectivity(element.type, element.ghost_type);
+        for (auto n : arange(conns.getNbComponent())) {
+          buffer << conns(element.element, n);
+        }
+      }
+    }
+  }
+
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                  const SynchronizationTag & tag) {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
+      for (const auto & element : elements) {
+        auto & conns = global_connectivity(element.type, element.ghost_type);
+        for (auto n : arange(conns.getNbComponent())) {
+          buffer >> conns(element.element, n);
+        }
+      }
+    }
+  }
+
+  AKANTU_GET_MACRO(GlobalConnectivity, (global_connectivity), decltype(auto));
+
+protected:
+  ElementTypeMapArray<UInt> global_connectivity;
+};
+
 /* -------------------------------------------------------------------------- */
 Mesh & Mesh::initMeshFacets(const ID & id) {
   AKANTU_DEBUG_IN();
@@ -145,6 +196,15 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
     mesh_facets->is_distributed = true;
     mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(
         *mesh_facets, mesh.getElementSynchronizer());
+
+    FacetGlobalConnectivityAccessor data_accessor(*mesh_facets);
+    /// communicate
+    mesh_facets->element_synchronizer->synchronizeOnce(
+        data_accessor, SynchronizationTag::_smmc_facets_conn);
+
+    /// flip facets
+    MeshUtils::flipFacets(*mesh_facets, data_accessor.getGlobalConnectivity(),
+                          _ghost);
   }
 
   /// transfers the the mesh physical names to the mesh facets

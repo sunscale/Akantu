@@ -1464,7 +1464,7 @@ void MeshUtils::flipFacets(
       /// skip facet if connectivities are the same
       if (local_gconn == remote_gconn)
         continue;
-
+     
       /// re-arrange connectivity
       auto conn_tmp = conn;
       auto begin = local_gconn.begin();
@@ -1474,18 +1474,25 @@ void MeshUtils::flipFacets(
                     "This facets are not just permutation of each other, "
                           << local_gconn << " and " << remote_gconn);
 
-      std::transform(remote_gconn.begin(), remote_gconn.end(), conn.begin(),
-                     [&](auto && gnode) {
-                       auto it = std::find(begin, end, gnode);
-                       AKANTU_DEBUG_ASSERT(it != end, "Node not found");
-                       return conn_tmp(it - begin);
-                     });
+      for (auto && data : enumerate(remote_gconn)) {
+        auto it = std::find(begin, end, std::get<1>(data));
+        AKANTU_DEBUG_ASSERT(it != end, "Node not found");
+        UInt new_position = it - begin;
+        conn(new_position) = conn_tmp(std::get<0>(data));;
+      }
+      // std::transform(remote_gconn.begin(), remote_gconn.end(), conn.begin(),
+      //                [&](auto && gnode) {
+      //                  auto it = std::find(begin, end, gnode);
+      //                  AKANTU_DEBUG_ASSERT(it != end, "Node not found");
+      //                  return conn_tmp(it - begin);
+      //                });     
 
+      
       /// if 3D, check if facets are just rotated
       if (spatial_dimension == 3) {
-        auto begin = remote_gconn.storage();
+        auto begin = remote_gconn.begin();
         /// find first node
-        auto it = std::find(begin, begin + remote_gconn.size(), local_gconn(0));
+        auto it = std::find(begin, remote_gconn.end(), local_gconn(0));
 
         UInt n, start = it - begin;
         /// count how many nodes in the received connectivity follow
@@ -1497,8 +1504,10 @@ void MeshUtils::flipFacets(
           ;
 
         /// skip the facet inversion if facet is just rotated
-        if (n == nb_nodes_per_P1_facet)
+        if (n == nb_nodes_per_P1_facet) {
           continue;
+          
+        }
       }
 
       /// update data to invert facet

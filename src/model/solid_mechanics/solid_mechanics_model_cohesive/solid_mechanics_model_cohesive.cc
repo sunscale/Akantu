@@ -198,7 +198,7 @@ void SolidMechanicsModelCohesive::initFullImpl(const ModelOptions & options) {
     auto & synchronizer =
         aka::as_type<FacetSynchronizer>(mesh_facets.getElementSynchronizer());
 
-    synchronizeGhostFacetsConnectivity();
+    // synchronizeGhostFacetsConnectivity();
 
     /// create the facet synchronizer for extrinsic simulations
     if (is_extrinsic) {
