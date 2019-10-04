@@ -72,11 +72,15 @@ enum RandomDistributionType {
 /* -------------------------------------------------------------------------- */
 template <typename T> class RandomGenerator {
   /* ------------------------------------------------------------------------ */
+private:
+  static long int _seed;
+  static std::default_random_engine generator;
+  /* ------------------------------------------------------------------------ */
 public:
   inline T operator()() { return generator(); }
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int) const {
+  void printself(std::ostream & stream, int) const {
     stream << "RandGenerator [seed=" << _seed << "]";
   }
 
@@ -90,15 +94,7 @@ public:
 
   static constexpr T min() { return generator.min(); }
   static constexpr T max() { return generator.max(); }
-
-  /* ------------------------------------------------------------------------ */
-private:
-  static long int _seed;
-  static std::default_random_engine generator;
 };
-
-// template <typename T>
-// long int RandomGenerator<T>::_seed = 0;
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */

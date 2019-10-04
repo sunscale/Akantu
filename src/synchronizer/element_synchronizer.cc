@@ -47,6 +47,13 @@
 
 namespace akantu {
 
+#if defined(AKANTU_MODULE)
+#define AKANTU_MODULE_SAVE_ AKANTU_MODULE
+#undef AKANTU_MODULE
+#endif
+
+#define AKANTU_MODULE element_synchronizer
+
 /* -------------------------------------------------------------------------- */
 ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
                                          MemoryID memory_id,
@@ -275,3 +282,9 @@ void ElementSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
 
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
+
+#if defined(AKANTU_MODULE_SAVE_)
+#undef AKANTU_MODULE
+#define AKANTU_MODULE AKANTU_MODULE_SAVE_
+#undef AKANTU_MODULE_SAVE_
+#endif
