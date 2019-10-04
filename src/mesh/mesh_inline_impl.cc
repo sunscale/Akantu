@@ -54,13 +54,16 @@ Mesh::ElementTypesIteratorHelper Mesh::elementTypes(pack &&... _pack) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
-    : new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
+inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh,
+                                            const std::string & origin)
+    : MeshEvent<UInt>(origin), new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
 inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
-                                                  const ID & new_numbering_id)
-    : new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
+                                                  const ID & new_numbering_id,
+                                                  const std::string & origin)
+    : MeshEvent<Element>(origin),
+      new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
 
 /* -------------------------------------------------------------------------- */
 template <>

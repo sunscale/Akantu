@@ -530,7 +530,7 @@ void Mesh::registerGlobalDataUpdater(
 void Mesh::eraseElements(const Array<Element> & elements) {
   ElementTypeMap<UInt> last_element;
 
-  RemovedElementsEvent event(*this);
+  RemovedElementsEvent event(*this, "new_numbering", AKANTU_CURRENT_FUNCTION);
   auto & remove_list = event.getList();
   auto & new_numbering = event.getNewNumbering();
 
