@@ -725,11 +725,20 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(),
                                    this->getMemoryID());
 
+  UInt count = 0;
   for (auto & elem : element_list) {
+    if (mesh.getSpatialDimension(elem.type) != spatial_dimension)
+      continue;
+
     if (!filter.exists(elem.type, elem.ghost_type))
       filter.alloc(0, 1, elem.type, elem.ghost_type);
     filter(elem.type, elem.ghost_type).push_back(elem.element);
+
+    ++count;
   }
+
+  if (count == 0)
+    return;
 
   this->assignMaterialToElements(&filter);
 
@@ -984,7 +993,8 @@ UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
     size += nb_nodes_per_element * Model::spatial_dimension * sizeof(Real) * 5;
     break;
   }
-  default: {}
+  default: {
+  }
   }
 
   if (tag != SynchronizationTag::_material_id) {
@@ -1031,7 +1041,8 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     packNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
     break;
   }
-  default: {}
+  default: {
+  }
   }
 
   if (tag != SynchronizationTag::_material_id) {
@@ -1086,7 +1097,8 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     unpackNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
     break;
   }
-  default: {}
+  default: {
+  }
   }
 
   if (tag != SynchronizationTag::_material_id) {
@@ -1123,7 +1135,9 @@ UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
     size += sizeof(Real) * Model::spatial_dimension * 5;
     break;
   }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  default: {
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
   }
 
   AKANTU_DEBUG_OUT();
@@ -1158,7 +1172,9 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     packDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  default: {
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
   }
 
   AKANTU_DEBUG_OUT();
@@ -1192,7 +1208,9 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     unpackDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  default: {
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
   }
 
   AKANTU_DEBUG_OUT();
