@@ -115,9 +115,13 @@ protected:
                                                   Real & epot);
 
   bool hasStiffnessMatrixChanged() override {
-    return (!was_stiffness_assembled);
+    return (not was_stiffness_assembled);
   }
 
+  MatrixType getTangentType() override {
+    return _symmetric;
+  }
+  
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */

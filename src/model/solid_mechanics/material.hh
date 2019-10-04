@@ -483,9 +483,35 @@ public:
   virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
                                const GhostType = _not_ghost);
 
+  bool hasMatrixChanged(const ID & id) {
+    if(id == "K") {
+      return hasStiffnessMatrixChanged() or finite_deformation;
+    }
+
+    return true;
+  }
+
+  MatrixType getMatrixType(const ID & id) {
+    if(id == "K") {
+      return getTangentType();
+    } else if (id == "M") {
+      return _symmetric;
+    }
+
+    return _mt_not_defined;
+  }
+  
+  
   /// specify if the matrix need to be recomputed for this material
   virtual bool hasStiffnessMatrixChanged() { return true; }
 
+  /// specify the type of matrix, if not overloaded the material is not valid
+  /// for static or implicit computations
+  virtual MatrixType getTangentType() {
+    return _mt_not_defined;
+  }
+
+  
   /// static method to reteive the material factory
   static MaterialFactory & getFactory();
 
