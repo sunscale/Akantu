@@ -75,6 +75,6 @@ protected:
   SparseSolverMumps solver;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__ */

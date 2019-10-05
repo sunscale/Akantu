@@ -163,7 +163,8 @@ int main(int argc, char * argv[]) {
   Real error = 0;
   bool converged = false;
   bool factorize = false;
-  converged = model.solveStep<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+  converged = model.solveStep<_scm_newton_raphson_tangent,
+                              SolveConvergenceCriteria::_increment>(
       1e-12, error, 2, factorize);
   if (!converged) {
     std::cout << "The solver did not converge!!! The error is: " << error

@@ -94,4 +94,4 @@ void ParserSection::printself(std::ostream & stream,
   stream << space << "]" << std::endl;
 }
 
-} // akantu
+} // namespace akantu

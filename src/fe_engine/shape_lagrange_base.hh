@@ -42,8 +42,8 @@ class ShapeLagrangeBase : public ShapeFunctions {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  ShapeLagrangeBase(const Mesh & mesh, const ElementKind & kind,
-                    const ID & id = "shape_lagrange",
+  ShapeLagrangeBase(const Mesh & mesh, UInt spatial_dimension,
+                    const ElementKind & kind, const ID & id = "shape_lagrange",
                     const MemoryID & memory_id = 0);
   ~ShapeLagrangeBase() override;
 

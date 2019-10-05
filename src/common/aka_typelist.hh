@@ -150,6 +150,6 @@ public:
   enum { value = (temp == -1 ? -1 : 1 + temp) };
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_TYPELIST_HH__ */

@@ -101,7 +101,7 @@ public:
   /// get the names of the data stored in elemental_data
   inline auto getTagNames() const;
 
-    /// get the type of the data stored in elemental_data
+  /// get the type of the data stored in elemental_data
   template <typename T> TypeCode getTypeCode() const;
   inline TypeCode
   getTypeCode(const ID & name,

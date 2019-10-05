@@ -107,8 +107,9 @@ void MaterialStandardLinearSolidDeviatoric<spatial_dimension>::setToSteadyState(
 
   for (UInt i = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      dev_s(i, j) = 2 * this->mu * (.5 * (grad_u(i, j) + grad_u(j, i)) -
-                                    1. / 3. * Theta * (i == j));
+      dev_s(i, j) =
+          2 * this->mu *
+          (.5 * (grad_u(i, j) + grad_u(j, i)) - 1. / 3. * Theta * (i == j));
       h(i, j) = 0.;
     }
 

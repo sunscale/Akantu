@@ -126,6 +126,9 @@ public:
   /// function to print the contain of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
 
+  /// computes the acceleration
+  void computeAcceleration(Array<Real> & acceleration) const;
+
 protected:
   /// updateLumpedBoundary
   virtual void

@@ -151,4 +151,4 @@ DECLARE_HELPERS(UInt);
 DECLARE_HELPERS(bool);
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

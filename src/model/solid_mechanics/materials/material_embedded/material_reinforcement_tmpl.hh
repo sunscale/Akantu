@@ -620,7 +620,8 @@ Real MaterialReinforcement<Mat, dim>::getEnergy(const std::string & id) {
 
     this->computePotentialEnergyByElements();
 
-    for (auto && type : this->element_filter.elementTypes(this->spatial_dimension)) {
+    for (auto && type :
+         this->element_filter.elementTypes(this->spatial_dimension)) {
       FEEngine & interface_engine =
           emodel.getFEEngine("EmbeddedInterfaceFEEngine");
       epot += interface_engine.integrate(

@@ -72,6 +72,6 @@ protected:
   UInt seg_id;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_LINE_ARC_HH__

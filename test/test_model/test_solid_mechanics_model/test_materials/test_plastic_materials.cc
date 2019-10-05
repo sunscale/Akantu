@@ -39,9 +39,9 @@
 using namespace akantu;
 
 using mat_types = ::testing::Types<
-// Traits<MaterialLinearIsotropicHardening, 1>,
-// Traits<MaterialLinearIsotropicHardening, 2>,
-  Traits<MaterialLinearIsotropicHardening, 3>>;
+    // Traits<MaterialLinearIsotropicHardening, 1>,
+    // Traits<MaterialLinearIsotropicHardening, 2>,
+    Traits<MaterialLinearIsotropicHardening, 3>>;
 
 /* -------------------------------------------------------------------------- */
 
@@ -187,6 +187,6 @@ TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputeTangentModuli) {
 TYPED_TEST(TestPlasticMaterialFixture, DISABLED_ComputeCelerity) {
   this->material->testCelerity();
 }
-}
+} // namespace
 
 /*****************************************************************/

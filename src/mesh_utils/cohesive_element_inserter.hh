@@ -44,7 +44,7 @@
 namespace akantu {
 class GlobalIdsUpdater;
 class FacetSynchronizer;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -154,7 +154,7 @@ private:
 
 class CohesiveNewNodesEvent : public NewNodesEvent {
 public:
-  CohesiveNewNodesEvent() = default;
+  CohesiveNewNodesEvent(const std::string & origin) : NewNodesEvent(origin) {}
   ~CohesiveNewNodesEvent() override = default;
 
   AKANTU_GET_MACRO_NOT_CONST(OldNodesList, old_nodes, Array<UInt> &);
@@ -164,7 +164,7 @@ private:
   Array<UInt> old_nodes;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "cohesive_element_inserter_inline_impl.cc"
 

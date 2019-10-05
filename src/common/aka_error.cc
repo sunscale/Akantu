@@ -42,6 +42,7 @@
 #include <sys/wait.h>
 #endif
 
+#include <chrono>
 #include <cmath>
 #include <cstring>
 #include <cxxabi.h>
@@ -50,14 +51,6 @@
 #include <map>
 #include <sys/types.h>
 #include <unistd.h>
-
-#if defined(AKANTU_CORE_CXX11)
-#include <chrono>
-#elif defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
-#include <sys/time.h>
-#else
-#include <time.h>
-#endif
 
 #ifdef AKANTU_USE_MPI
 #include <mpi.h>
@@ -229,20 +222,22 @@ namespace debug {
         if (eptr)
           std::rethrow_exception(eptr);
         else
-          std::cerr << AKANTU_LOCATION << "!! Execution terminated for unknown reasons !!"
+          std::cerr << AKANTU_LOCATION
+                    << "!! Execution terminated for unknown reasons !!"
                     << std::endl;
       } catch (std::exception & e) {
         std::cerr << AKANTU_LOCATION << "!! Uncaught exception of type " << name
                   << " !!\nwhat(): \"" << e.what() << "\"" << std::endl;
       } catch (...) {
-        std::cerr << AKANTU_LOCATION << "!! Something strange of type \"" << name
-                  << "\" was thrown.... !!" << std::endl;
+        std::cerr << AKANTU_LOCATION << "!! Something strange of type \""
+                  << name << "\" was thrown.... !!" << std::endl;
       }
 
       if (debugger.printBacktrace())
         printBacktrace(15);
     }
   } // namespace
+
   /* ------------------------------------------------------------------------ */
   /* ------------------------------------------------------------------------ */
   Debugger::Debugger() {
@@ -277,38 +272,32 @@ namespace debug {
                                 const std::string & file, unsigned int line,
                                 __attribute__((unused)) bool silent,
                                 __attribute__((unused))
-                                const std::string & location) const
+                                const std::string & location,
+                                const std::string & module) const
       noexcept(false) {
 
 #if !defined(AKANTU_NDEBUG)
-    if (!silent) {
-      printMessage("###", dblWarning, info + " " + location);
+    if (not silent) {
+      printMessage("###", dblWarning, info + " " + location, module);
     }
 #endif
 
     debug::Exception ex(info, file, line);
+    ex.setModule(module);
     throw ex;
   }
 
   /* ------------------------------------------------------------------------ */
   void Debugger::printMessage(const std::string & prefix,
                               const DebugLevel & level,
-                              const std::string & info) const {
-    if (this->level >= level) {
-#if defined(AKANTU_CORE_CXX11)
+                              const std::string & info,
+                              const std::string & module) const {
+    if (testLevel(level, module)) {
       double timestamp =
           std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(
               std::chrono::system_clock::now().time_since_epoch())
               .count();
-#elif defined(AKANTU_USE_OBSOLETE_GETTIMEOFDAY)
-      struct timeval time;
-      gettimeofday(&time, NULL);
-      double timestamp = time.tv_sec * 1e6 + time.tv_usec; /*in us*/
-#else
-      struct timespec time;
-      clock_gettime(CLOCK_REALTIME_COARSE, &time);
-      double timestamp = time.tv_sec * 1e6 + time.tv_nsec * 1e-3; /*in us*/
-#endif
+
       *(cout) << parallel_context << "{" << (size_t)timestamp << "} " << prefix
               << " " << info << std::endl;
     }

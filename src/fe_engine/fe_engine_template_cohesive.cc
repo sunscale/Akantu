@@ -129,4 +129,4 @@ void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_cohesive,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

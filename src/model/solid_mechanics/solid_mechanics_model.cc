@@ -334,6 +334,13 @@ MatrixType SolidMechanicsModel::getMatrixType(const ID & matrix_id) {
   if (matrix_id == "C")
     return _mt_not_defined;
 
+  if (matrix_id == "K") {
+    auto matrix_type = _unsymmetric;
+
+    for (auto & material : materials) {
+      matrix_type = std::max(matrix_type, material->getMatrixType(matrix_id));
+    }
+  }
   return _symmetric;
 }
 
@@ -427,7 +434,7 @@ void SolidMechanicsModel::assembleStiffnessMatrix() {
   bool need_to_reassemble = false;
 
   for (auto & material : materials) {
-    need_to_reassemble |= material->hasStiffnessMatrixChanged();
+    need_to_reassemble |= material->hasMatrixChanged("K");
   }
 
   if (need_to_reassemble) {
@@ -917,7 +924,7 @@ void SolidMechanicsModel::updateNonLocalInternal(
     if (not aka::is_of_type<MaterialNonLocalInterface>(*mat))
       continue;
 
-    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface&>(*mat);
+    auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
     mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type,
                                           kind);
   }

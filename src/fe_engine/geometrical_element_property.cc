@@ -59,4 +59,4 @@ BOOST_PP_SEQ_FOR_EACH(AKANTU_INSTANTIATE_TYPES, _,
                       AKANTU_ek_cohesive_ELEMENT_TYPE)
 #endif
 
-} // akantu
+} // namespace akantu

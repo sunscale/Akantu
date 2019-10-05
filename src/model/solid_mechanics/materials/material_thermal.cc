@@ -114,7 +114,6 @@ void MaterialThermal<dim>::computePotentialEnergy(ElementType) {
 
 /* -------------------------------------------------------------------------- */
 
-
 INSTANTIATE_MATERIAL_ONLY(MaterialThermal);
 
-} // akantu
+} // namespace akantu

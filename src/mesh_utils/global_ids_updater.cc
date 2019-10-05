@@ -66,15 +66,16 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
 
   /// compute the number of global nodes based on the number of old nodes
   Vector<UInt> local_master_nodes(2, 0);
-  for (UInt n = 0; n < old_nb_nodes; ++n)
-    if (mesh.isLocalOrMasterNode(n))
-      ++local_master_nodes(0);
+  auto range_old = arange(old_nb_nodes);
+  local_master_nodes(0) =
+      aka::count_if(range_old.begin(), range_old.end(),
+                    [&](auto && n) { return mesh.isLocalOrMasterNode(n); });
 
   /// compute amount of local or master doubled nodes
-  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n)
-    if (mesh.isLocalOrMasterNode(n))
-      ++local_master_nodes(1);
-
+  auto range_new = arange(old_nb_nodes, mesh.getNbNodes());
+  local_master_nodes(1) =
+      aka::count_if(range_new.begin(), range_new.end(),
+                    [&](auto && n) { return mesh.isLocalOrMasterNode(n); });
 
   auto starting_index = local_master_nodes(1);
 
@@ -90,12 +91,10 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
   comm.exclusiveScan(starting_index);
   starting_index += old_global_nodes;
 
-  for (UInt n = old_nb_nodes; n < mesh.getNbNodes(); ++n) {
+  for (auto n : range_new) {
     if (mesh.isLocalOrMasterNode(n)) {
       nodes_global_ids(n) = starting_index;
       ++starting_index;
-    } else {
-      nodes_global_ids(n) = -1;
     }
   }
 
@@ -105,7 +104,8 @@ UInt GlobalIdsUpdater::updateGlobalIDsLocally(UInt local_nb_new_nodes) {
 
 void GlobalIdsUpdater::synchronizeGlobalIDs() {
   this->reduce = true;
-  this->synchronizer.slaveReductionOnce(*this, SynchronizationTag::_giu_global_conn);
+  this->synchronizer.slaveReductionOnce(*this,
+                                        SynchronizationTag::_giu_global_conn);
 
 #ifndef AKANTU_NDEBUG
   for (auto node : nodes_flags) {
@@ -127,7 +127,8 @@ void GlobalIdsUpdater::synchronizeGlobalIDs() {
 #endif
 
   this->reduce = false;
-  this->synchronizer.synchronizeOnce(*this, SynchronizationTag::_giu_global_conn);
+  this->synchronizer.synchronizeOnce(*this,
+                                     SynchronizationTag::_giu_global_conn);
 }
 
-} // akantu
+} // namespace akantu

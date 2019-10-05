@@ -301,8 +301,8 @@ void NonLocalManager::computeWeights() {
     if (it != neighborhoods.end())
       it->second->updateWeights();
     else {
-      dummy_synchronizers[global_neighborhood]->synchronize(dummy_accessor,
-                                                            SynchronizationTag::_mnl_weight);
+      dummy_synchronizers[global_neighborhood]->synchronize(
+          dummy_accessor, SynchronizationTag::_mnl_weight);
     }
   }
 

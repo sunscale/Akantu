@@ -1,25 +1,22 @@
 import subprocess
 import argparse
-import akantu
+import akantu as aka
 import numpy as np
 from image_saver import ImageSaver
 import matplotlib.pyplot as plt
 from scipy.sparse.linalg import eigsh
 from scipy.sparse import csr_matrix
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # parser
-# ------------------------------------------------------------------------
-
-
+# -----------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description='Eigen mode exo')
-
 parser.add_argument('-m', '--mode_number', type=int, required=True,
-                    help='precise the mode to study')
+                    help='precise the mode to study', default=2)
 
 parser.add_argument('-wL', '--wave_width', type=float,
                     help='precise the width of the wave for '
-                    'the initial displacement')
+                    'the initial displacement', default=5)
 
 parser.add_argument('-L', '--Lbar', type=float,
                     help='precise the length of the bar', default=10)
@@ -36,10 +33,7 @@ parser.add_argument('-mh', '--mesh_h', type=float,
                     help='characteristic mesh size',
                     default=.2)
 
-
 args = parser.parse_args()
-print(args)
-
 mode = args.mode_number
 wave_width = args.wave_width
 time_step = args.time_step
@@ -47,10 +41,9 @@ max_steps = args.max_steps
 mesh_h = args.mesh_h
 Lbar = args.Lbar
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Mesh Generation
-# ------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 geo_content = """
 // Mesh size
 h  = {0};
@@ -105,22 +98,21 @@ mesh_file = 'bar'
 with open(mesh_file + '.geo', 'w') as f:
     f.write(geo_content)
 
-subprocess.call(['gmsh', '-format', 'msh2', '-2', mesh_file + '.geo'])
+subprocess.call(['gmsh', '-2', mesh_file + '.geo'])
 mesh_file = mesh_file + '.msh'
 
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Initialization
-# ------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 spatial_dimension = 2
-akantu.parseInput('material.dat')
+aka.parseInput('material.dat')
 
-mesh = akantu.Mesh(spatial_dimension)
+mesh = aka.Mesh(spatial_dimension)
 mesh.read(mesh_file)
 
-model = akantu.SolidMechanicsModel(mesh)
-model.initFull(akantu._implicit_dynamic)
+model = aka.SolidMechanicsModel(mesh)
+model.initFull(aka._implicit_dynamic)
 
 model.setBaseName("waves-{0}".format(mode))
 model.addDumpFieldVector("displacement")
@@ -128,10 +120,9 @@ model.addDumpFieldVector("acceleration")
 model.addDumpFieldVector("velocity")
 model.addDumpField("blocked_dofs")
 
-
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Boundary conditions
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 internal_force = model.getInternalForce()
 displacement = model.getDisplacement()
 acceleration = model.getAcceleration()
@@ -141,8 +132,8 @@ blocked_dofs = model.getBlockedDOFs()
 nbNodes = mesh.getNbNodes()
 position = mesh.getNodes()
 
-model.applyBC(akantu.FixedValue(0.0, akantu._x), "XBlocked")
-model.applyBC(akantu.FixedValue(0.0, akantu._y), "YBlocked")
+model.applyBC(aka.FixedValue(0.0, aka._x), "XBlocked")
+model.applyBC(aka.FixedValue(0.0, aka._y), "YBlocked")
 
 # ------------------------------------------------------------------------
 # timestep value computation
@@ -170,16 +161,15 @@ velo_sav = ImageSaver(mesh, velocity, 0, Lbar)
 # ------------------------------------------------------------------------
 # compute the eigen modes
 # ------------------------------------------------------------------------
-
 model.assembleStiffnessMatrix()
 model.assembleMass()
 stiff = model.getDOFManager().getMatrix('K')
-stiff = akantu.AkantuSparseMatrix(stiff).toarray()
+stiff = aka.AkantuSparseMatrix(stiff).toarray()
 mass = model.getDOFManager().getMatrix('M')
-mass = akantu.AkantuSparseMatrix(mass).toarray()
+mass = aka.AkantuSparseMatrix(mass).toarray()
 
 # select the non blocked DOFs by index in the mask
-mask = blocked_dofs.flatten() == False
+mask = np.equal(blocked_dofs.flatten(), False)
 
 Mass_star = mass[mask, :]
 Mass_star = csr_matrix(Mass_star[:, mask].copy())
@@ -190,20 +180,18 @@ K_star = csr_matrix(K_star[:, mask].copy())
 print('getting the eigen values')
 vals, vects = eigsh(K_star, M=Mass_star, which='SM', k=20)
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # import the initial conditions in displacement
-# ------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 displacement.reshape(nbNodes*2)[mask] = vects[:, mode]
 with open('modes.txt', 'a') as f:
     f.write('{0} {1}\n'.format(mode, vals[mode]))
 
 model.dump()
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # prepare the storage of the dynamical evolution
-# ------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 e_p = np.zeros(max_steps + 1)
 e_k = np.zeros(max_steps + 1)
 e_t = np.zeros(max_steps + 1)
@@ -218,12 +206,10 @@ e_k[0] = ekin
 e_t[0] = epot + ekin
 time[0] = 0
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # loop for evolution of motion dynamics
-# ------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 for step in range(1, max_steps + 1):
-
     model.solveStep()
     # outputs
     epot = model.getEnergy('potential')
@@ -241,10 +227,9 @@ for step in range(1, max_steps + 1):
     if step % 10 == 0:
         model.dump()
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # plot figures for global evolution
-# ------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 # energy norms
 plt.figure(1)
 plt.plot(time, e_t, 'r', time, e_p, 'b', time, e_k, 'g')

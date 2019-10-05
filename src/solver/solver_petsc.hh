@@ -42,7 +42,7 @@
 namespace akantu {
 class SparseMatrixPETSc;
 class DOFManagerPETSc;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -173,6 +173,6 @@ private:
 //   }
 // };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SOLVER_PETSC_HH__ */

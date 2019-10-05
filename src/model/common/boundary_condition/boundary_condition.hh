@@ -94,7 +94,7 @@ private:
   Array<Real> * primal_increment{nullptr};
 };
 
-} // akantu
+} // namespace akantu
 
 #include "boundary_condition_tmpl.hh"
 

@@ -29,10 +29,10 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include <set>
 #include <sstream>
 #include <typeinfo>
 #include <utility>
-#include <set>
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -84,7 +84,15 @@ namespace debug {
 
   void initSignalHandler();
   std::string demangle(const char * symbol);
-  std::string exec(const std::string & cmd);
+  template <class T> std::string demangle() {
+    return demangle(typeid(T).name());
+  }
+
+  template <class T> std::string demangle(const T & t) {
+    return demangle(typeid(t).name());
+  }
+
+std::string exec(const std::string & cmd);
   void printBacktrace(int sig);
 
   void exit(int status) __attribute__((noreturn));
@@ -123,6 +131,7 @@ namespace debug {
     void setInfo(const std::string & info) { _info = info; }
     void setFile(const std::string & file) { _file = file; }
     void setLine(unsigned int line) { _line = line; }
+    void setModule(const std::string & module) { _module = module; }
     /* ---------------------------------------------------------------------- */
     /* Class Members                                                          */
     /* ---------------------------------------------------------------------- */
@@ -134,8 +143,11 @@ namespace debug {
     /// file it is thrown from
     std::string _file;
 
-    /// ligne it is thrown from
+    /// line it is thrown from
     unsigned int _line{0};
+
+    /// module in which exception was raised
+    std::string _module{"core"};
   };
 
   class CriticalError : public Exception {};
@@ -161,22 +173,26 @@ namespace debug {
     void exit(int status) __attribute__((noreturn));
 
     void throwException(const std::string & info, const std::string & file,
-                        unsigned int line, bool, const std::string &) const
-        noexcept(false) __attribute__((noreturn));
+                        unsigned int line, bool, const std::string &,
+                        const std::string & module) const noexcept(false)
+        __attribute__((noreturn));
 
     /*----------------------------------------------------------------------- */
     template <class Except>
     void throwCustomException(const Except & ex, const std::string & info,
-                              const std::string & file, unsigned int line) const
-        noexcept(false) __attribute__((noreturn));
+                              const std::string & file, unsigned int line,
+                              const std::string & module) const noexcept(false)
+        __attribute__((noreturn));
     /*----------------------------------------------------------------------- */
     template <class Except>
     void throwCustomException(const Except & ex, const std::string & file,
-                              unsigned int line) const noexcept(false)
+                              unsigned int line,
+                              const std::string & module) const noexcept(false)
         __attribute__((noreturn));
 
     void printMessage(const std::string & prefix, const DebugLevel & level,
-                      const std::string & info) const;
+                      const std::string & info,
+                      const std::string & module) const;
 
     void setOutStream(std::ostream & out) { cout = &out; }
     std::ostream & getOutStream() { return *cout; }
@@ -207,9 +223,16 @@ namespace debug {
     }
     void removeModuleToDebug(const std::string & id) {
       auto it = modules_to_debug.find(id);
-      if(it != modules_to_debug.end())
+      if (it != modules_to_debug.end())
         modules_to_debug.erase(it);
     }
+
+    void listModules() {
+      for (auto & module_ : modules_to_debug) {
+        (*cout) << module_ << std::endl;
+      }
+    }
+
   private:
     std::string parallel_context;
     std::ostream * cout;
@@ -225,6 +248,8 @@ namespace debug {
 /* -------------------------------------------------------------------------- */
 #define AKANTU_STRINGIZE_(str) #str
 #define AKANTU_STRINGIZE(str) AKANTU_STRINGIZE_(str)
+/* -------------------------------------------------------------------------- */
+#define AKANTU_DEBUG_MODULE AKANTU_STRINGIZE(AKANTU_MODULE)
 /* -------------------------------------------------------------------------- */
 #define AKANTU_STRINGSTREAM_IN(_str, _sstr)                                    \
   ;                                                                            \
@@ -245,28 +270,30 @@ namespace debug {
     _dbg_str << info;                                                          \
     std::stringstream _dbg_loc;                                                \
     _dbg_loc << AKANTU_LOCATION;                                               \
-    ::akantu::debug::debugger.throwException(                                  \
-        _dbg_str.str(), __FILE__, __LINE__, silent, _dbg_loc.str());           \
+    ::akantu::debug::debugger.throwException(_dbg_str.str(), __FILE__,         \
+                                             __LINE__, silent, _dbg_loc.str(), \
+                                             AKANTU_DEBUG_MODULE);             \
   } while (false)
 
 #define AKANTU_CUSTOM_EXCEPTION_INFO(ex, info)                                 \
   do {                                                                         \
     std::stringstream _dbg_str;                                                \
     _dbg_str << info;                                                          \
-    ::akantu::debug::debugger.throwCustomException(ex, _dbg_str.str(),         \
-                                                   __FILE__, __LINE__);        \
+    ::akantu::debug::debugger.throwCustomException(                            \
+        ex, _dbg_str.str(), __FILE__, __LINE__, AKANTU_DEBUG_MODULE);          \
   } while (false)
 
 #define AKANTU_CUSTOM_EXCEPTION(ex)                                            \
   do {                                                                         \
-    ::akantu::debug::debugger.throwCustomException(ex, __FILE__, __LINE__);    \
+    ::akantu::debug::debugger.throwCustomException(ex, __FILE__, __LINE__,     \
+                                                   AKANTU_DEBUG_MODULE);       \
   } while (false)
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_NDEBUG
 #define AKANTU_DEBUG_TEST(level) (false)
 #define AKANTU_DEBUG_LEVEL_IS_TEST()                                           \
-  (::akantu::debug::debugger.testLevel(dblTest, AKANTU_STRINGIZE(AKANTU_MODULE)))
+  (::akantu::debug::debugger.testLevel(dblTest, AKANTU_DEBUG_MODULE))
 #define AKANTU_DEBUG(level, info)
 #define AKANTU_DEBUG_(pref, level, info)
 #define AKANTU_DEBUG_IN()
@@ -285,11 +312,12 @@ namespace debug {
   do {                                                                         \
     std::string _dbg_str;                                                      \
     AKANTU_STRINGSTREAM_IN(_dbg_str, info << " " << AKANTU_LOCATION);          \
-    ::akantu::debug::debugger.printMessage(pref, level, _dbg_str);             \
+    ::akantu::debug::debugger.printMessage(pref, level, _dbg_str,              \
+                                           AKANTU_DEBUG_MODULE);               \
   } while (false)
 
 #define AKANTU_DEBUG_TEST(level)                                               \
-  (::akantu::debug::debugger.testLevel(level, AKANTU_STRINGIZE(AKANTU_MODULE)))
+  (::akantu::debug::debugger.testLevel(level, AKANTU_DEBUG_MODULE))
 
 #define AKANTU_DEBUG_LEVEL_IS_TEST()                                           \
   (::akantu::debug::debugger.testLevel(dblTest))
@@ -330,24 +358,29 @@ namespace debug {
 namespace debug {
   /* ------------------------------------------------------------------------ */
   template <class Except>
-  void Debugger::throwCustomException(const Except & ex,
-                                      const std::string & info,
-                                      const std::string & file,
-                                      unsigned int line) const noexcept(false) {
+  void
+  Debugger::throwCustomException(const Except & ex, const std::string & info,
+                                 const std::string & file, unsigned int line,
+                                 const std::string & module) const
+      noexcept(false) {
     auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setInfo(info);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
+    nc_ex.setModule(module);
     throw ex;
   }
   /* ------------------------------------------------------------------------ */
   template <class Except>
   void Debugger::throwCustomException(const Except & ex,
                                       const std::string & file,
-                                      unsigned int line) const noexcept(false) {
+                                      unsigned int line,
+                                      const std::string & module) const
+      noexcept(false) {
     auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
+    nc_ex.setModule(module);
     throw ex;
   }
 } // namespace debug

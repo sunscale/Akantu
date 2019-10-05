@@ -114,7 +114,7 @@ protected:
   const UInt nb_seg_by_el;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "mesh_abstract_intersector_tmpl.hh"
 

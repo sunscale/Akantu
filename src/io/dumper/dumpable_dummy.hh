@@ -67,7 +67,7 @@ public:
                              const std::string & file_name = "",
                              const bool is_default = false) {}
 
-  void registerExternalDumper(DumperIOHelper * dumper,
+  void registerExternalDumper(std::shared_ptr<DumperIOHelper> dumper,
                               const std::string & dumper_name,
                               const bool is_default = false) {}
 

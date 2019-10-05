@@ -59,7 +59,7 @@ public:
 protected:
   /// update the dissipated energy, must be called after the stress have been
   /// computed
-  virtual void updateEnergies(ElementType el_type, GhostType ghost_type);
+  void updateEnergies(ElementType el_type) override;
 
   /// compute the tangent stiffness matrix for a given quadrature point
   inline void computeTangentModuliOnQuad(

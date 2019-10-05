@@ -150,7 +150,7 @@ void NTNFricRegSimplifiedPrakashClifton::addDumpFieldToDumper(
   if (field_id == "t_star") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->t_star.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->t_star.getArray()));
   } else {
     NTNFricRegNoRegularisation::addDumpFieldToDumper(dumper_name, field_id);
   }

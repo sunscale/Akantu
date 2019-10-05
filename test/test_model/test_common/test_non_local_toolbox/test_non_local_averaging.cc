@@ -76,7 +76,8 @@ int main(int argc, char * argv[]) {
 
   /// apply constant grad_u field in all elements
   for (auto & mat : model.getMaterials()) {
-    auto & grad_us = mat.getInternal<Real>("eigen_grad_u")(element_type, ghost_type);
+    auto & grad_us =
+        mat.getInternal<Real>("eigen_grad_u")(element_type, ghost_type);
     for (auto & grad_u :
          make_view(grad_us, spatial_dimension, spatial_dimension)) {
       grad_u = -1. * applied_strain;

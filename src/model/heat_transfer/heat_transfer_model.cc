@@ -90,8 +90,10 @@ HeatTransferModel::HeatTransferModel(Mesh & mesh, UInt dim, const ID & id,
 
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();
-    this->registerSynchronizer(synchronizer, SynchronizationTag::_htm_temperature);
-    this->registerSynchronizer(synchronizer, SynchronizationTag::_htm_gradient_temperature);
+    this->registerSynchronizer(synchronizer,
+                               SynchronizationTag::_htm_temperature);
+    this->registerSynchronizer(synchronizer,
+                               SynchronizationTag::_htm_gradient_temperature);
   }
 
   registerFEEngineObject<FEEngineType>(id + ":fem", mesh, spatial_dimension);
@@ -251,7 +253,8 @@ std::tuple<ID, TimeStepSolverType>
 HeatTransferModel::getDefaultSolverID(const AnalysisMethod & method) {
   switch (method) {
   case _explicit_lumped_mass: {
-    return std::make_tuple("explicit_lumped", TimeStepSolverType::_dynamic_lumped);
+    return std::make_tuple("explicit_lumped",
+                           TimeStepSolverType::_dynamic_lumped);
   }
   case _static: {
     return std::make_tuple("static", TimeStepSolverType::_static);
@@ -272,25 +275,29 @@ ModelSolverOptions HeatTransferModel::getDefaultSolverOptions(
   switch (type) {
   case TimeStepSolverType::_dynamic_lumped: {
     options.non_linear_solver_type = NonLinearSolverType::_lumped;
-    options.integration_scheme_type["temperature"] = IntegrationSchemeType::_forward_euler;
+    options.integration_scheme_type["temperature"] =
+        IntegrationSchemeType::_forward_euler;
     options.solution_type["temperature"] = IntegrationScheme::_temperature_rate;
     break;
   }
   case TimeStepSolverType::_static: {
     options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-    options.integration_scheme_type["temperature"] = IntegrationSchemeType::_pseudo_time;
+    options.integration_scheme_type["temperature"] =
+        IntegrationSchemeType::_pseudo_time;
     options.solution_type["temperature"] = IntegrationScheme::_not_defined;
     break;
   }
   case TimeStepSolverType::_dynamic: {
     if (this->method == _explicit_consistent_mass) {
       options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-      options.integration_scheme_type["temperature"] = IntegrationSchemeType::_forward_euler;
+      options.integration_scheme_type["temperature"] =
+          IntegrationSchemeType::_forward_euler;
       options.solution_type["temperature"] =
           IntegrationScheme::_temperature_rate;
     } else {
       options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
-      options.integration_scheme_type["temperature"] = IntegrationSchemeType::_backward_euler;
+      options.integration_scheme_type["temperature"] =
+          IntegrationSchemeType::_backward_euler;
       options.solution_type["temperature"] = IntegrationScheme::_temperature;
     }
     break;
@@ -307,62 +314,40 @@ void HeatTransferModel::assembleConductivityMatrix() {
   AKANTU_DEBUG_IN();
 
   this->computeConductivityOnQuadPoints(_not_ghost);
+  
   if (conductivity_release[_not_ghost] == conductivity_matrix_release)
     return;
 
-  if (!this->getDOFManager().hasMatrix("K")) {
-    this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
-  }
+  AKANTU_DEBUG_ASSERT(this->getDOFManager().hasMatrix("K"),
+                      "The K matrix has not been initialized yet.");
+
   this->getDOFManager().clearMatrix("K");
-
-  switch (mesh.getSpatialDimension()) {
-  case 1:
-    this->assembleConductivityMatrix<1>(_not_ghost);
-    break;
-  case 2:
-    this->assembleConductivityMatrix<2>(_not_ghost);
-    break;
-  case 3:
-    this->assembleConductivityMatrix<3>(_not_ghost);
-    break;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <UInt dim>
-void HeatTransferModel::assembleConductivityMatrix(
-    const GhostType & ghost_type) {
-  AKANTU_DEBUG_IN();
 
   auto & fem = this->getFEEngine();
 
-  for (auto && type :
-       mesh.elementTypes(spatial_dimension, ghost_type, _ek_regular)) {
-    auto nb_element = mesh.getNbElement(type, ghost_type);
+  for (auto && type : mesh.elementTypes(spatial_dimension)) {
+    auto nb_element = mesh.getNbElement(type);
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
+    auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
 
     auto bt_d_b = std::make_unique<Array<Real>>(
         nb_element * nb_quadrature_points,
         nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
 
-    fem.computeBtDB(conductivity_on_qpoints(type, ghost_type), *bt_d_b, 2, type,
-                    ghost_type);
+    fem.computeBtDB(conductivity_on_qpoints(type), *bt_d_b, 2, type);
 
     /// compute @f$ k_e = \int_e \mathbf{B}^t * \mathbf{D} * \mathbf{B}@f$
     auto K_e = std::make_unique<Array<Real>>(
         nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_e");
 
     fem.integrate(*bt_d_b, *K_e, nb_nodes_per_element * nb_nodes_per_element,
-                  type, ghost_type);
+                  type);
 
     this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "temperature", *K_e, type, ghost_type, _symmetric);
+        "K", "temperature", *K_e, type, _not_ghost, _symmetric);
   }
 
-  conductivity_matrix_release = conductivity_release[ghost_type];
+  conductivity_matrix_release = conductivity_release[_not_ghost];
 
   AKANTU_DEBUG_OUT();
 }
@@ -372,7 +357,7 @@ void HeatTransferModel::computeConductivityOnQuadPoints(
     const GhostType & ghost_type) {
   // if already computed once check if need to compute
   if (not initial_conductivity[ghost_type]) {
-    // if temperature did not change, condictivity will not vary
+    // if temperature did not change, conductivity will not vary
     if (temperature_release == conductivity_release[ghost_type])
       return;
 
@@ -757,14 +742,14 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
         element_kind);
   else if (field_name == "temperature_gradient") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(temperature_gradient, element_kind);
+        this->mesh.getNbDataPerElem(temperature_gradient);
 
     field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
         temperature_gradient, group_name, this->spatial_dimension, element_kind,
         nb_data_per_elem);
   } else if (field_name == "conductivity") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(conductivity_on_qpoints, element_kind);
+        this->mesh.getNbDataPerElem(conductivity_on_qpoints);
 
     field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
         conductivity_on_qpoints, group_name, this->spatial_dimension,

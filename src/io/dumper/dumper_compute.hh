@@ -114,9 +114,11 @@ public:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  FieldCompute(SubFieldCompute & cont, std::unique_ptr<ComputeFunctorInterface> func)
+  FieldCompute(SubFieldCompute & cont,
+               std::unique_ptr<ComputeFunctorInterface> func)
       : sub_field(aka::as_type<SubFieldCompute>(cont.shared_from_this())),
-        func(aka::as_type<ComputeFunctor<sub_return_type, return_type>>(func.release())) {
+        func(aka::as_type<ComputeFunctor<sub_return_type, return_type>>(
+            func.release())) {
     this->checkHomogeneity();
   };
 

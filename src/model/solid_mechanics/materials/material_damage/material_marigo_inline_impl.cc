@@ -126,6 +126,6 @@ MaterialMarigo<spatial_dimension>::unpackData(CommunicationBuffer & buffer,
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_MARIGO_INLINE_IMPL_CC__ */

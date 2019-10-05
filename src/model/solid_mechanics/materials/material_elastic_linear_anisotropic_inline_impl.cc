@@ -87,6 +87,6 @@ inline void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergyOnQuad(
   epot = .5 * sigma.doubleDot(grad_u);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_CC__ */

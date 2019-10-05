@@ -75,8 +75,8 @@ namespace parser {
   template <class Iterator> struct Skipper {
     using type = qi::rule<Iterator, void()>;
   };
-}
+} // namespace parser
 
-} // akantu
+} // namespace akantu
 
 #endif // AKANTU_PARSER_GRAMMAR_TMPL_HH

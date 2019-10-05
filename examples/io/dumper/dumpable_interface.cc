@@ -86,10 +86,14 @@ int main(int argc, char * argv[]) {
   wheels_elements.append(mesh.getElementGroup("rwheel_1"));
   wheels_elements.append(mesh.getElementGroup("rwheel_2"));
 
-  const Array<UInt> & lnode_1 = (mesh.getElementGroup("lwheel_1")).getNodes();
-  const Array<UInt> & lnode_2 = (mesh.getElementGroup("lwheel_2")).getNodes();
-  const Array<UInt> & rnode_1 = (mesh.getElementGroup("rwheel_1")).getNodes();
-  const Array<UInt> & rnode_2 = (mesh.getElementGroup("rwheel_2")).getNodes();
+  const Array<UInt> & lnode_1 =
+      (mesh.getElementGroup("lwheel_1")).getNodeGroup().getNodes();
+  const Array<UInt> & lnode_2 =
+      (mesh.getElementGroup("lwheel_2")).getNodeGroup().getNodes();
+  const Array<UInt> & rnode_1 =
+      (mesh.getElementGroup("rwheel_1")).getNodeGroup().getNodes();
+  const Array<UInt> & rnode_2 =
+      (mesh.getElementGroup("rwheel_2")).getNodeGroup().getNodes();
 
   Array<Real> & node = mesh.getNodes();
   UInt nb_nodes = mesh.getNbNodes();
@@ -107,15 +111,15 @@ int main(int argc, char * argv[]) {
   /* ------------------------------------------------------------------------ */
 
   // Create dumper for the complete mesh and register it as default dumper.
-  DumperParaview dumper("train", "./paraview/dumpable", false);
+  auto && dumper = std::make_shared<DumperParaview>("train", "./paraview/dumpable", false);
   mesh.registerExternalDumper(dumper, "train", true);
   mesh.addDumpMesh(mesh);
 
   // The dumper for the filtered mesh can be directly taken from the
   // ElementGroup and then registered as "wheels_elements" dumper.
-  DumperIOHelper & wheels = mesh.getGroupDumper("paraview_wheels", "wheels");
+  auto && wheels = mesh.getGroupDumper("paraview_wheels", "wheels");
 
-  mesh.registerExternalDumper(wheels, "wheels");
+  mesh.registerExternalDumper(wheels.shared_from_this(), "wheels");
   mesh.setDirectoryToDumper("wheels", "./paraview/dumpable");
 
   // Arrays and ElementTypeMapArrays can be added as external fields directly

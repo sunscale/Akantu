@@ -120,9 +120,8 @@ public:
   /// facet is reached
   template <bool third_dim_points>
   static bool findElementsAroundSubfacet(
-      const Mesh & mesh_facets,
-      const Element & starting_element, const Element & end_facet,
-      const Vector<UInt> & subfacet_connectivity,
+      const Mesh & mesh_facets, const Element & starting_element,
+      const Element & end_facet, const Vector<UInt> & subfacet_connectivity,
       std::vector<Element> & elem_list, std::vector<Element> & facet_list,
       std::vector<Element> * subfacet_list = nullptr);
 
@@ -219,7 +218,7 @@ public:
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

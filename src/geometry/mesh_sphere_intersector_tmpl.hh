@@ -210,6 +210,6 @@ void MeshSphereIntersector<dim, type>::computeMeshQueryIntersectionPoint(
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__

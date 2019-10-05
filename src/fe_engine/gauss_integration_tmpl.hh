@@ -228,7 +228,7 @@ namespace _aka_gauss_helpers {
       return quads_weights;
     }
   };
-}
+} // namespace _aka_gauss_helpers
 
 template <ElementType element_type, UInt n>
 const Matrix<Real>
@@ -268,6 +268,6 @@ UInt GaussIntegrationElement<element_type, n>::getNbQuadraturePoints() {
   return data_helper::getNbQuadraturePoints();
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_GAUSS_INTEGRATION_TMPL_HH__ */

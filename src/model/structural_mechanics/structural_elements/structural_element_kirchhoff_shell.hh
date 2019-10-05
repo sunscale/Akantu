@@ -74,7 +74,7 @@ void StructuralMechanicsModel::computeTangentModuli<
   }
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_DISCRETE_KIRCHHOFF_TRIANGLE_18_HH__ \
-          */
+        */

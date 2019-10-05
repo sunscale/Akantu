@@ -92,7 +92,7 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
 
     intersects_proc[p] = intersection;
 
-    if(intersects_proc[p]) {
+    if (intersects_proc[p]) {
       for (UInt s = 0; s < spatial_dimension; ++s) {
         first_cell_p(s) = grid.getCellID(intersection.getLowerBounds()(s), s);
         last_cell_p(s) = grid.getCellID(intersection.getUpperBounds()(s), s);
@@ -408,10 +408,10 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
 
     for (UInt n = 0; n < nb_nodes_to_send; ++n) {
       UInt ln = global_nodes_ids.find(asked_nodes(n));
-      AKANTU_DEBUG_ASSERT(ln != UInt(-1),
-                          "The node [" << asked_nodes(n)
-                                       << "] requested by proc " << p
-                                       << " was not found locally!");
+      AKANTU_DEBUG_ASSERT(ln != UInt(-1), "The node ["
+                                              << asked_nodes(n)
+                                              << "] requested by proc " << p
+                                              << " was not found locally!");
       nodes_to_send.push_back(node_it + ln);
     }
 

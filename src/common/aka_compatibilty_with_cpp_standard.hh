@@ -143,13 +143,30 @@ namespace detail {
   }
 } // namespace detail
 
+/* -------------------------------------------------------------------------- */
 template <class F, class Tuple>
 constexpr decltype(auto) apply(F && f, Tuple && t) {
   return detail::apply_impl(
       std::forward<F>(f), std::forward<Tuple>(t),
       std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
 }
+/* -------------------------------------------------------------------------- */
 
+template <class InputIt, class UnaryPredicate>
+typename std::iterator_traits<InputIt>::difference_type
+count_if(InputIt first, InputIt last, UnaryPredicate p) {
+  typename std::iterator_traits<InputIt>::difference_type ret = 0;
+  for (; first != last; ++first) {
+    if (p(*first)) {
+      ret++;
+    }
+  }
+  return ret;
+}
+
+#else
+using apply = std::apply;
+using count_if = std::count_if;
 #endif
 } // namespace aka
 

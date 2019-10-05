@@ -38,7 +38,7 @@ void register_group_manager(py::module & mod) {
       .def("iterateElementGroups",
            [](GroupManager & self) -> decltype(auto) {
              std::vector<std::reference_wrapper<ElementGroup>> groups;
-             for(auto & group: self.iterateElementGroups()) {
+             for (auto & group : self.iterateElementGroups()) {
                groups.emplace_back(group);
              }
              return groups;
@@ -46,7 +46,7 @@ void register_group_manager(py::module & mod) {
       .def("iterateNodeGroups",
            [](GroupManager & self) -> decltype(auto) {
              std::vector<std::reference_wrapper<NodeGroup>> groups;
-             for(auto & group: self.iterateNodeGroups()) {
+             for (auto & group : self.iterateNodeGroups()) {
                groups.emplace_back(group);
              }
              return groups;

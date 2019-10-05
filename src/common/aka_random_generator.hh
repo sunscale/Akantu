@@ -72,11 +72,15 @@ enum RandomDistributionType {
 /* -------------------------------------------------------------------------- */
 template <typename T> class RandomGenerator {
   /* ------------------------------------------------------------------------ */
+private:
+  static long int _seed;
+  static std::default_random_engine generator;
+  /* ------------------------------------------------------------------------ */
 public:
   inline T operator()() { return generator(); }
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int) const {
+  void printself(std::ostream & stream, int) const {
     stream << "RandGenerator [seed=" << _seed << "]";
   }
 
@@ -90,15 +94,7 @@ public:
 
   static constexpr T min() { return generator.min(); }
   static constexpr T max() { return generator.max(); }
-
-  /* ------------------------------------------------------------------------ */
-private:
-  static long int _seed;
-  static std::default_random_engine generator;
 };
-
-// template <typename T>
-// long int RandomGenerator<T>::_seed = 0;
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
@@ -136,8 +132,8 @@ template <typename T, class Distribution> class RandomDistributionTypeHelper {
 /* -------------------------------------------------------------------------- */
 #define AKANTU_RANDOM_DISTRIBUTION_TYPE_GET_TYPE(r, data, elem)                \
   template <typename T>                                                        \
-      struct RandomDistributionTypeHelper<                                     \
-          T, BOOST_PP_TUPLE_ELEM(2, 1, elem) < T>> {                           \
+      struct RandomDistributionTypeHelper<T, BOOST_PP_TUPLE_ELEM(2, 1, elem) < \
+                                                 T>> {                         \
     enum {                                                                     \
       value = AKANTU_RANDOM_DISTRIBUTION_TYPES_PREFIX(                         \
           BOOST_PP_TUPLE_ELEM(2, 0, elem))                                     \
@@ -266,6 +262,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_RANDOM_GENERATOR_HH__ */

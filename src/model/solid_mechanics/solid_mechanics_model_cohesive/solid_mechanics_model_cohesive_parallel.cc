@@ -41,84 +41,20 @@
 
 namespace akantu {
 
-class FacetGlobalConnectivityAccessor : public DataAccessor<Element> {
-public:
-  FacetGlobalConnectivityAccessor(Mesh & mesh)
-      : global_connectivity("global_connectivity",
-                            "facet_connectivity_synchronizer") {
-    global_connectivity.initialize(
-        mesh, _spatial_dimension = _all_dimensions, _with_nb_element = true,
-        _with_nb_nodes_per_element = true, _element_kind = _ek_regular);
-    mesh.getGlobalConnectivity(global_connectivity);
-  }
-
-  UInt getNbData(const Array<Element> & elements,
-                 const SynchronizationTag & tag) const {
-    UInt size = 0;
-    if (tag == SynchronizationTag::_smmc_facets_conn) {
-      UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
-      size += nb_nodes * sizeof(UInt);
-    }
-    return size;
-  }
-
-  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
-                const SynchronizationTag & tag) const {
-    if (tag == SynchronizationTag::_smmc_facets_conn) {
-      for (const auto & element : elements) {
-        auto & conns = global_connectivity(element.type, element.ghost_type);
-        for (auto n : arange(conns.getNbComponent())) {
-          buffer << conns(element.element, n);
-        }
-      }
-    }
-  }
-
-  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
-                  const SynchronizationTag & tag) {
-    if (tag == SynchronizationTag::_smmc_facets_conn) {
-      for (const auto & element : elements) {
-        auto & conns = global_connectivity(element.type, element.ghost_type);
-        for (auto n : arange(conns.getNbComponent())) {
-          buffer >> conns(element.element, n);
-        }
-      }
-    }
-  }
-
-  AKANTU_GET_MACRO(GlobalConnectivity, (global_connectivity), decltype(auto));
-
-protected:
-  ElementTypeMapArray<UInt> global_connectivity;
-};
-
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
-  AKANTU_DEBUG_IN();
+// void SolidMechanicsModelCohesive::synchronizeGhostFacetsConnectivity() {
+//   AKANTU_DEBUG_IN();
 
-  const Communicator & comm = mesh.getCommunicator();
-  Int psize = comm.getNbProc();
+//   const Communicator & comm = mesh.getCommunicator();
+//   Int psize = comm.getNbProc();
 
-  if (psize == 1) {
-    AKANTU_DEBUG_OUT();
-    return;
-  }
+//   if (psize == 1) {
+//     AKANTU_DEBUG_OUT();
+//     return;
+//   }
 
-  /// get global connectivity for not ghost facets
-  auto & mesh_facets = inserter->getMeshFacets();
-
-  FacetGlobalConnectivityAccessor data_accessor(mesh_facets);
-
-  /// communicate
-  mesh_facets.getElementSynchronizer().synchronizeOnce(data_accessor,
-                                                       SynchronizationTag::_smmc_facets_conn);
-
-  /// flip facets
-  MeshUtils::flipFacets(mesh_facets, data_accessor.getGlobalConnectivity(),
-                        _ghost);
-
-  AKANTU_DEBUG_OUT();
-}
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
@@ -384,7 +320,8 @@ UInt SolidMechanicsModelCohesive::getNbData(
       break;
     }
 
-    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id &&
+        tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         size += mat.getNbData(elements, tag);
       });
@@ -449,7 +386,8 @@ void SolidMechanicsModelCohesive::packData(
     default: {}
     }
 
-    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id &&
+        tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         mat.packData(buffer, elements, tag);
       });
@@ -535,7 +473,8 @@ void SolidMechanicsModelCohesive::unpackData(CommunicationBuffer & buffer,
     default: {}
     }
 
-    if (tag != SynchronizationTag::_material_id && tag != SynchronizationTag::_smmc_facets) {
+    if (tag != SynchronizationTag::_material_id &&
+        tag != SynchronizationTag::_smmc_facets) {
       splitByMaterial(elements, [&](auto && mat, auto && elements) {
         mat.unpackData(buffer, elements, tag);
       });

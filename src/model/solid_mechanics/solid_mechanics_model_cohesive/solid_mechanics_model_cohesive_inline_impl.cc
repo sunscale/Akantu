@@ -301,6 +301,6 @@ namespace akantu {
 // // return insertion_new_element;
 //}
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_INLINE_IMPL_CC__ */

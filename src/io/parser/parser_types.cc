@@ -72,4 +72,4 @@ Matrix<Real> Parser::parseMatrix(const std::string & value,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

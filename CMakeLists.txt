@@ -173,13 +173,16 @@ if(AKANTU_TESTS)
   find_package(GMSH REQUIRED)
 endif()
 
+# tests
+add_test_tree(test)
+
 if(AKANTU_EXAMPLES)
+  if(AKANTU_TESTS)
+    option(AKANTU_TEST_EXAMPLES "Run the examples" ON)
+  endif()
   find_package(GMSH REQUIRED)
   add_subdirectory(examples)
 endif()
-
-# tests
-add_test_tree(test)
 
 #===============================================================================
 # Install and Packaging

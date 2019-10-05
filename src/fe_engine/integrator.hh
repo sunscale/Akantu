@@ -43,9 +43,10 @@ class Integrator : protected Memory {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Integrator(const Mesh & mesh, const ID & id = "integrator",
-             const MemoryID & memory_id = 0)
+  Integrator(const Mesh & mesh, UInt spatial_dimension,
+             const ID & id = "integrator", const MemoryID & memory_id = 0)
       : Memory(id, memory_id), mesh(mesh),
+        _spatial_dimension(spatial_dimension),
         jacobians("jacobians", id, memory_id) {
     AKANTU_DEBUG_IN();
 
@@ -112,6 +113,9 @@ public:
 protected:
   /// mesh associated to the integrator
   const Mesh & mesh;
+
+  // spatial dimension of the elements to consider
+  UInt _spatial_dimension;
 
   /// jacobians for all elements
   ElementTypeMapArray<Real> jacobians;

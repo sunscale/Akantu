@@ -149,6 +149,6 @@ struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
 };
 #endif
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MODEL_OPTIONS_HH__ */

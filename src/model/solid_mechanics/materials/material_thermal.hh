@@ -64,9 +64,10 @@ public:
   inline void computeStressOnQuad(Real & sigma, const Real & deltaT);
 
   /// local computation of thermal stress
-  void computePotentialEnergy(ElementType el_type);
+  void computePotentialEnergy(ElementType el_type) override;
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -107,6 +108,6 @@ inline void MaterialThermal<1>::computeStressOnQuad(Real & sigma,
   sigma = -this->E * this->alpha * deltaT;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_THERMAL_HH__ */

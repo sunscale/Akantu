@@ -35,9 +35,6 @@
 #ifndef __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__
 #define __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC__
 
-namespace akantu {
-
-
-} // akantu
+namespace akantu {} // namespace akantu
 
 #endif /* __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_CC_ */

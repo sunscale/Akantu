@@ -81,6 +81,6 @@ protected:
   inner val;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_SAFE_ENUM_HH__ */

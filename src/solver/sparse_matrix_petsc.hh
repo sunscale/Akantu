@@ -104,10 +104,11 @@ public:
 
   /// copy the profile of a matrix
   void copyProfile(const SparseMatrix & other) override;
-    
+
   void applyModifications();
 
   void resize();
+
 protected:
   /// This is the revert of add B += \alpha * *this;
   void addMeTo(SparseMatrix & B, Real alpha) const override;

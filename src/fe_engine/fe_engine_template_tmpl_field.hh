@@ -229,12 +229,11 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
                      * coeff. are (1./36., 8./36.) for 2x2 gauss points */
   if (type == _hexahedron_20)
     ASSIGN_WEIGHT_TO_NODES(
-        7. / 248.,
-        16. / 248.); /** coeff. derived by scaling
-                      * the diagonal terms of the corresponding
-                      * consistent mass computed with 3x3x3 gauss points;
-                      * coeff. are (1./40.,
-                      * 1./15.) for 2x2x2 gauss points */
+        7. / 248., 16. / 248.); /** coeff. derived by scaling
+                                 * the diagonal terms of the corresponding
+                                 * consistent mass computed with 3x3x3 gauss
+                                 * points; coeff. are (1./40.,
+                                 * 1./15.) for 2x2x2 gauss points */
   if (type == _pentahedron_15) {
     // coefficients derived by scaling the diagonal terms of the corresponding
     // consistent mass computed with 8 gauss points;

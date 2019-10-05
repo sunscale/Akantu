@@ -62,12 +62,12 @@ public:
 
   virtual SolverVector & operator+(const SolverVector & y) = 0;
   virtual SolverVector & operator=(const SolverVector & y) = 0;
-  
+
   UInt & release() { return release_; }
   UInt release() const { return release_; }
 
   virtual void printself(std::ostream & stream, int indent = 0) const = 0;
-  
+
 protected:
   ID id;
 

@@ -173,6 +173,6 @@ inline void VoigtHelper<2>::transferBMatrixToBL2(const Matrix<Real> & B,
   }
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_AKA_VOIGTHELPER_TMPL_HH__ */

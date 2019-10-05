@@ -209,7 +209,9 @@ private:
   }
 
 public:
-  inline decltype(auto) getRow(UInt row) { return make_row(begin(row), end(row)); }
+  inline decltype(auto) getRow(UInt row) {
+    return make_row(begin(row), end(row));
+  }
   inline decltype(auto) getRow(UInt row) const {
     return make_row(begin(row), end(row));
   }

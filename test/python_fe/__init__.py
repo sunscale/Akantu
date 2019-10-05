@@ -1,14 +1,3 @@
-'''
- @package getmystuph
- @file      __init__.py
- @copyright BSD
- @author    Nicolas Richart <nicolas.richart@epfl.ch>
-
- @section COPYRIGHT
- Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
-
- This file is part of Akantu
-'''
 import sys as __aka_sys
 
 
@@ -29,6 +18,7 @@ def export(definition):
     __pkg.__all__.append(definition.__name__)
 
     return definition
+
 
 try:
     from termcolor import colored

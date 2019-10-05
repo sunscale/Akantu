@@ -83,7 +83,7 @@ struct DualType<it_type, data_type, ret, true>
                         ElementTypeMapArrayFilter<it_type>> {};
 /* -------------------------------------------------------------------------- */
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 

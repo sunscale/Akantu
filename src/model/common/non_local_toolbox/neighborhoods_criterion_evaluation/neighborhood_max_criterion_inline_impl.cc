@@ -77,6 +77,6 @@ NeighborhoodMaxCriterion::unpackElementData(CommunicationBuffer & buffer,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_INLINE_IMPL_CC__ */

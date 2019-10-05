@@ -102,7 +102,7 @@ protected:
   std::string current_physical_name;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "mesh_segment_intersector_tmpl.hh"
 

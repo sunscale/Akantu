@@ -40,9 +40,8 @@ using namespace akantu;
 namespace py = pybind11;
 using namespace py::literals;
 
-template<class T>
-decltype(auto) make_proxy(Array<T> & array) {
-  return Proxy<Array<T>>(array);
+template <class T> decltype(auto) make_proxy(Array<T> & array) {
+  return detail::ArrayProxy<T>(array);
 }
 
 template <typename type_>
@@ -96,10 +95,9 @@ TYPED_TEST(TestFEMPyFixture, Precompute) {
   auto ref_B(B);
   py::module py_engine = py::module::import("py_engine");
   auto py_shape = py_engine.attr("Shapes")(py::str(std::to_string(this->type)));
-  auto kwargs = py::dict(
-      "N"_a = ref_N, "B"_a = ref_B,
-      "j"_a = ref_j, "X"_a = *this->coordinates,
-      "Q"_a = this->fem->getIntegrationPoints(this->type));
+  auto kwargs = py::dict("N"_a = ref_N, "B"_a = ref_B, "j"_a = ref_j,
+                         "X"_a = *this->coordinates,
+                         "Q"_a = this->fem->getIntegrationPoints(this->type));
 
   auto ret = py_shape.attr("precompute")(**kwargs);
   auto check = [&](auto & ref_A, auto & A, const auto & id) {

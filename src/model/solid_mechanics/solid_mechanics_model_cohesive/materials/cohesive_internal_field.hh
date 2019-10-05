@@ -62,6 +62,6 @@ public:
   void initialize(UInt nb_component) override;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_HH__ */

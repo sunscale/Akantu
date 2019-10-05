@@ -32,10 +32,10 @@
 #include "cohesive_element_inserter.hh"
 #include "communicator.hh"
 #include "element_group.hh"
+#include "element_synchronizer.hh"
 #include "global_ids_updater.hh"
 #include "mesh_accessor.hh"
 #include "mesh_iterators.hh"
-#include "element_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 #include <limits>
@@ -128,6 +128,13 @@ void CohesiveElementInserter::limitCheckFacets(
           check_facets(facet) = false;
           return;
         }
+#ifndef AKANTU_NDEBUG
+        if (left == ElementNull) {
+          AKANTU_DEBUG_WARNING("By convention element should not have "
+                               "ElementNull on there first side: "
+                               << facet);
+        }
+#endif
 
         if (left.kind() == _ek_cohesive or right.kind() == _ek_cohesive) {
           check_facets(facet) = false;
@@ -196,8 +203,8 @@ void CohesiveElementInserter::limitCheckFacets(
 
 /* -------------------------------------------------------------------------- */
 UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
-  CohesiveNewNodesEvent node_event;
-  NewElementsEvent element_event;
+  CohesiveNewNodesEvent node_event(AKANTU_CURRENT_FUNCTION);
+  NewElementsEvent element_event(AKANTU_CURRENT_FUNCTION);
 
   Array<UInt> new_pairs(0, 2);
 

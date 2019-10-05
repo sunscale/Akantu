@@ -66,7 +66,7 @@ public:
       std::function<Int(const Element &, const Element &)> edge_load_func =
           [](auto &&, auto &&) { return 1; },
       std::function<Int(const Element &)> vertex_load_func =
-      [](auto &&) { return 1; }) override;
+          [](auto &&) { return 1; }) override;
 
   void reorder() override;
 
@@ -90,6 +90,6 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_PARTITION_MESH_DATA_HH__ */

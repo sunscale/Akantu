@@ -99,7 +99,7 @@ namespace {
     Vector<Real> position;
     Real direction_position{0.};
   };
-}
+} // namespace
 
 /* -------------------------------------------------------------------------- */
 // left is for lower values on direction and right for highest values
@@ -143,13 +143,12 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   std::vector<UInt> new_nodes;
   if (is_distributed) {
-    NewNodesEvent event;
+    NewNodesEvent event(AKANTU_CURRENT_FUNCTION);
 
     /* ---------------------------------------------------------------------- */
     // function to send nodes in bboxes intersections
     auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
                                       auto & buffers, auto proc, auto cnt) {
-
       buffers.resize(buffers.size() + 1);
       auto & buffer = buffers.back();
 
@@ -193,7 +192,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       }
 
       auto tag = Tag::genTag(prank, 10 * direction + cnt, Tag::_PERIODIC_NODES);
-      // std::cout << "SBuffer size " << buffer.size() << " " << tag << std::endl;
+      // std::cout << "SBuffer size " << buffer.size() << " " << tag <<
+      // std::endl;
       return communicator->asyncSend(buffer, proc, tag);
     };
 
@@ -204,8 +204,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
       DynamicCommunicationBuffer buffer;
       auto tag = Tag::genTag(proc, 10 * direction + cnt, Tag::_PERIODIC_NODES);
       communicator->receive(buffer, proc, tag);
-      // std::cout << "RBuffer size " << buffer.size() << " " << tag << std::endl;
-      // std::cout << "Receiving from " << proc << std::endl;
+      // std::cout << "RBuffer size " << buffer.size() << " " << tag <<
+      // std::endl; std::cout << "Receiving from " << proc << std::endl;
 
       while (not buffer.empty()) {
         Vector<Real> pos(spatial_dimension);
@@ -233,7 +233,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
           UInt nb_slaves;
           buffer >> nb_slaves;
           // std::cout << " master of " << nb_slaves << " nodes : [";
-          for (auto ns[[gnu::unused]] : arange(nb_slaves)) {
+          for (auto ns [[gnu::unused]] : arange(nb_slaves)) {
             UInt gslave_node;
             buffer >> gslave_node;
             // std::cout << (ns == 0 ? "" : ", ") << gslave_node;
@@ -301,7 +301,6 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         recv_count += 2;
       }
     };
-
 
     send_intersections(intersections_with_left, 0);
     send_intersections(intersections_with_right, 1);
@@ -452,4 +451,4 @@ void Mesh::updatePeriodicSynchronizer() {
   this->periodic_node_synchronizer->update();
 }
 
-} // akantu
+} // namespace akantu

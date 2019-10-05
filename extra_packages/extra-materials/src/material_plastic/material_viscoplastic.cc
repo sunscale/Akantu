@@ -93,7 +93,7 @@ void MaterialViscoPlastic<dim>::computeTangentModuli(
   Matrix<Real> & previous_grad_u = *previous_strain_it;
   Matrix<Real> & previous_sigma_tensor = *previous_sigma_it;
 
-  computeTangentModuliOnQuad(tangent, grad_u, previous_grad_u, sigma_tensor,
+  computeTangentModuliOnQuad(tangent, grad_u, previous_grad_u, sigma,
                              previous_sigma_tensor, *iso_hardening);
   ++previous_sigma_it;
   ++previous_strain_it;

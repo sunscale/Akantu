@@ -95,6 +95,6 @@ private:
   TermsContainer terms;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_TERMS_TO_ASSEMBLE_HH__ */

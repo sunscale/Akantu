@@ -483,9 +483,35 @@ public:
   virtual void applyEigenGradU(const Matrix<Real> & prescribed_eigen_grad_u,
                                const GhostType = _not_ghost);
 
+  bool hasMatrixChanged(const ID & id) {
+    if(id == "K") {
+      return hasStiffnessMatrixChanged() or finite_deformation;
+    }
+
+    return true;
+  }
+
+  MatrixType getMatrixType(const ID & id) {
+    if(id == "K") {
+      return getTangentType();
+    } else if (id == "M") {
+      return _symmetric;
+    }
+
+    return _mt_not_defined;
+  }
+  
+  
   /// specify if the matrix need to be recomputed for this material
   virtual bool hasStiffnessMatrixChanged() { return true; }
 
+  /// specify the type of matrix, if not overloaded the material is not valid
+  /// for static or implicit computations
+  virtual MatrixType getTangentType() {
+    return _mt_not_defined;
+  }
+
+  
   /// static method to reteive the material factory
   static MaterialFactory & getFactory();
 
@@ -592,7 +618,7 @@ inline std::ostream & operator<<(std::ostream & stream,
       make_view(this->gradu(el_type, ghost_type), this->spatial_dimension,     \
                 this->spatial_dimension);                                      \
                                                                                \
-  auto stress_view =                                                        \
+  auto stress_view =                                                           \
       make_view(this->stress(el_type, ghost_type), this->spatial_dimension,    \
                 this->spatial_dimension);                                      \
                                                                                \
@@ -623,7 +649,7 @@ inline std::ostream & operator<<(std::ostream & stream,
   auto tangent_size =                                                          \
       this->getTangentStiffnessVoigtSize(this->spatial_dimension);             \
                                                                                \
-  auto && tangent_view = make_view(tangent_mat, tangent_size, tangent_size);      \
+  auto && tangent_view = make_view(tangent_mat, tangent_size, tangent_size);   \
                                                                                \
   for (auto && data : zip(grad_u_view, stress_view, tangent_view)) {           \
     [[gnu::unused]] Matrix<Real> & grad_u = std::get<0>(data);                 \

@@ -341,6 +341,7 @@ void DOFManagerDefault::addToProfile(const ID & matrix_id, const ID & dof_id,
   const auto & equation_number = this->getLocalEquationsNumbers(dof_id);
 
   auto & A = this->getMatrix(matrix_id);
+  A.resize(system_size);
   auto size = A.size();
 
   auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);

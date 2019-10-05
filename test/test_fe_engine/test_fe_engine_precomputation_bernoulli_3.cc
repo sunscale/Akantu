@@ -72,8 +72,8 @@ int main(int argc, char * argv[]) {
   connectivity.push_back(elem);
 
   // Pushing normals
-  auto & normals =
-      mesh.registerElementalData<Real>("extra_normal").alloc(0, dim, type, _not_ghost);
+  auto & normals = mesh.registerElementalData<Real>("extra_normal")
+                       .alloc(0, dim, type, _not_ghost);
   Vector<Real> normal = {-36. / 65, -48. / 65, 5. / 13};
   normals.push_back(normal);
   normals.push_back(normal);

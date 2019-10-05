@@ -149,4 +149,4 @@ void ParameterRegistry::setParameterAccessType(const std::string & name,
   param.setAccessType(ptype);
 }
 
-} // akantu
+} // namespace akantu

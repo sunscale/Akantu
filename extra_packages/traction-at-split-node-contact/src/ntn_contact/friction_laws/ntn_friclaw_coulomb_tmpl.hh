@@ -146,7 +146,7 @@ void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(
   if (field_id == "mu") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(this->mu.getArray()));
+        std::make_unique<dumper::NodalField<Real>>(this->mu.getArray()));
   }
   /*
   else if (field_id == "frictional_contact_pressure") {

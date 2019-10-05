@@ -39,7 +39,7 @@
 
 namespace akantu {
 class FEEngine;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 
@@ -273,6 +273,6 @@ protected:
 template <class T>
 using SimpleUIntDataAccessor = ReduceDataAccessor<UInt, IdentityOperation, T>;
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DATA_ACCESSOR_HH__ */

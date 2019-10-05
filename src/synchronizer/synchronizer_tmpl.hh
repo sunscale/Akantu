@@ -132,6 +132,6 @@ void Synchronizer::computeBufferSize(const DataAccessorT & data_accessor,
   }
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SYNCHRONIZER_TMPL_HH__ */

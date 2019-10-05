@@ -55,7 +55,7 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-    virtual void partitionate(
+  virtual void partitionate(
       UInt nb_part,
       std::function<Int(const Element &, const Element &)> edge_load_func =
           [](auto &&, auto &&) { return 1; },
@@ -74,6 +74,6 @@ public:
 private:
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_PARTITION_SCOTCH_HH__ */

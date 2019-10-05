@@ -58,6 +58,7 @@ protected:
   virtual void synchronizeGroups() = 0;
   virtual void synchronizePeriodicity() = 0;
   virtual void synchronizeTags() = 0;
+
 protected:
   template <class CommunicationBuffer>
   void fillNodeGroupsFromBuffer(CommunicationBuffer & buffer);
@@ -93,6 +94,7 @@ public:
   void synchronizeGroups() override;
   void synchronizePeriodicity() override;
   void synchronizeTags() override;
+
 private:
   void fillTagBuffers(std::vector<DynamicCommunicationBuffer> & buffers,
                       const std::string & tag_name);
@@ -116,6 +118,7 @@ public:
   void synchronizeGroups() override;
   void synchronizePeriodicity() override;
   void synchronizeTags() override;
+
 private:
 };
 

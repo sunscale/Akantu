@@ -35,11 +35,11 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-ShapeFunctions::ShapeFunctions(const Mesh & mesh, const ID & id,
-                               const MemoryID & memory_id)
+ShapeFunctions::ShapeFunctions(const Mesh & mesh, UInt spatial_dimension,
+                               const ID & id, const MemoryID & memory_id)
     : Memory(id, memory_id), shapes("shapes_generic", id, memory_id),
       shapes_derivatives("shapes_derivatives_generic", id, memory_id),
-      mesh(mesh) {}
+      mesh(mesh), _spatial_dimension(spatial_dimension) {}
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
@@ -156,7 +156,8 @@ void ShapeFunctions::initElementalFieldInterpolationFromIntegrationPoints(
   for (auto ghost_type : ghost_types) {
     auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
     if (element_filter) {
-      types_iterable = element_filter->elementTypes(spatial_dimension, ghost_type);
+      types_iterable =
+          element_filter->elementTypes(spatial_dimension, ghost_type);
     }
 
     for (auto type : types_iterable) {
@@ -201,7 +202,8 @@ void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
 
   auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
   if (element_filter) {
-    types_iterable = element_filter->elementTypes(spatial_dimension, ghost_type);
+    types_iterable =
+        element_filter->elementTypes(spatial_dimension, ghost_type);
   }
 
   for (auto type : types_iterable) {

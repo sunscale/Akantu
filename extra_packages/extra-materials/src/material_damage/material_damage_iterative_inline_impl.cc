@@ -87,6 +87,6 @@ inline void MaterialDamageIterative<spatial_dimension>::unpackData(
   return MaterialDamage<spatial_dimension>::unpackData(buffer, elements, tag);
 }
 
-} // akantu
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */

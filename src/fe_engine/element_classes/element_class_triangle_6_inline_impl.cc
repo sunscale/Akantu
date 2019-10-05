@@ -189,7 +189,7 @@ GeometricalElement<_gt_triangle_6>::getInradius(const Matrix<Real> & coord) {
     inradius = std::min(ir, inradius);
   }
 
-  return 2.*inradius;
+  return 2. * inradius;
 }
 
 /* -------------------------------------------------------------------------- */

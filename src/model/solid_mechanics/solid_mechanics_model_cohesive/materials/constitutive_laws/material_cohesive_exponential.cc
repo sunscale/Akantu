@@ -174,7 +174,8 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCoupledTraction(
     tract += op_n_n;
 
     delta_max_new = std::max(delta_max, delta);
-    tract *= std::exp(1.) * sigma_c * std::exp(-delta_max_new / delta_c) / delta_c;
+    tract *=
+        std::exp(1.) * sigma_c * std::exp(-delta_max_new / delta_c) / delta_c;
   }
   AKANTU_DEBUG_OUT();
 }
@@ -187,10 +188,11 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressiveTraction(
   Vector<Real> temp_tract(normal);
 
   if (exp_penalty) {
-    temp_tract *=
-        delta_n * std::exp(1) * sigma_c * std::exp(-delta_n / delta_c) / delta_c;
+    temp_tract *= delta_n * std::exp(1) * sigma_c *
+                  std::exp(-delta_n / delta_c) / delta_c;
   } else {
-    Real initial_tg = contact_tangent * std::exp(1.) * sigma_c * delta_n / delta_c;
+    Real initial_tg =
+        contact_tangent * std::exp(1.) * sigma_c * delta_n / delta_c;
     temp_tract *= initial_tg;
   }
 
@@ -326,7 +328,8 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(
   n_outer_n.outerProduct(normal, normal);
 
   Real normal_tg = contact_tangent * std::exp(1.) * sigma_c *
-      std::exp(-delta_n / delta_c) * (1. - delta_n / delta_c) / delta_c;
+                   std::exp(-delta_n / delta_c) * (1. - delta_n / delta_c) /
+                   delta_c;
 
   n_outer_n *= normal_tg;
 
@@ -335,4 +338,4 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(
 
 INSTANTIATE_MATERIAL(cohesive_exponential, MaterialCohesiveExponential);
 
-} // akantu
+} // namespace akantu

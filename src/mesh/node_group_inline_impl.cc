@@ -95,4 +95,4 @@ template <typename T> void NodeGroup::applyNodeFilter(T & filter) {
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

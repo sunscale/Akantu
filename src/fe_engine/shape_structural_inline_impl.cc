@@ -55,7 +55,7 @@ namespace {
                                          ghost_type);
     return nodes_per_element;
   }
-}
+} // namespace
 
 template <ElementKind kind>
 inline void ShapeStructural<kind>::initShapeFunctions(
@@ -126,8 +126,10 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
     auto & real_coord = *nodes_it;
     ElementClass<type>::computeShapes(integration_points, real_coord, N);
 
-    if (filter_elements == empty_filter)
+    if (filter_elements == empty_filter) {
       ++shapes_it;
+      ++nodes_it;
+    }
   }
 }
 

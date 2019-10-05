@@ -73,4 +73,5 @@ endif()
 pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
 target_link_libraries(py11_akantu PRIVATE akantu pybind11)
 target_include_directories(py11_akantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
 set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")

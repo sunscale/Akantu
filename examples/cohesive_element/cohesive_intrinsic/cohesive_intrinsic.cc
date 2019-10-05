@@ -29,6 +29,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "element_group.hh"
 #include "mesh_iterators.hh"
 #include "solid_mechanics_model_cohesive.hh"
 /* -------------------------------------------------------------------------- */
@@ -37,8 +38,8 @@
 
 using namespace akantu;
 
-static void updateDisplacement(SolidMechanicsModelCohesive &, Array<UInt> &,
-                               ElementType, Real);
+static void updateDisplacement(SolidMechanicsModelCohesive &,
+                               const ElementGroup &, Real);
 
 /* -------------------------------------------------------------------------- */
 int main(int argc, char * argv[]) {
@@ -47,8 +48,6 @@ int main(int argc, char * argv[]) {
   const UInt spatial_dimension = 2;
   const UInt max_steps = 350;
 
-  const ElementType type = _triangle_6;
-
   Mesh mesh(spatial_dimension);
   mesh.read("triangle.msh");
 
@@ -56,7 +55,8 @@ int main(int argc, char * argv[]) {
   model.getElementInserter().setLimit(_x, -0.26, -0.24);
 
   /// model initialization
-  model.initFull();
+  model.initFull(_analysis_method = _explicit_lumped_mass,
+                 _is_extrinsic = false);
 
   Real time_step = model.getStableTimeStep() * 0.8;
   model.setTimeStep(time_step);
@@ -84,24 +84,26 @@ int main(int argc, char * argv[]) {
   model.dump();
 
   /// update displacement
-  Array<UInt> elements;
+  auto && elements = mesh.createElementGroup("diplacement");
   Vector<Real> barycenter(spatial_dimension);
-  for_each_element(mesh, [&](auto && el) {
-    mesh.getBarycenter(el, barycenter);
-    if (barycenter(_x) > -0.25)
-      elements.push_back(el.element);
-  });
+
+  for_each_element(mesh,
+                   [&](auto && el) {
+                     mesh.getBarycenter(el, barycenter);
+                     if (barycenter(_x) > -0.25)
+                       elements.add(el, true);
+                   },
+                   _element_kind = _ek_regular);
 
   Real increment = 0.01;
 
-  updateDisplacement(model, elements, type, increment);
+  updateDisplacement(model, elements, increment);
 
   /// Main loop
   for (UInt s = 1; s <= max_steps; ++s) {
     model.solveStep();
 
-    updateDisplacement(model, elements, type, increment);
-
+    updateDisplacement(model, elements, increment);
     if (s % 1 == 0) {
       model.dump();
       std::cout << "passing step " << s << "/" << max_steps << std::endl;
@@ -109,7 +111,6 @@ int main(int argc, char * argv[]) {
   }
 
   Real Ed = model.getEnergy("dissipated");
-
   Real Edt = 2 * sqrt(2);
 
   std::cout << Ed << " " << Edt << std::endl;
@@ -126,26 +127,10 @@ int main(int argc, char * argv[]) {
 
 /* -------------------------------------------------------------------------- */
 static void updateDisplacement(SolidMechanicsModelCohesive & model,
-                               Array<UInt> & elements, ElementType type,
-                               Real increment) {
-  Mesh & mesh = model.getMesh();
-  UInt nb_element = elements.size();
-  UInt nb_nodes = mesh.getNbNodes();
-  UInt nb_nodes_per_element = mesh.getNbNodesPerElement(type);
-
-  const Array<UInt> & connectivity = mesh.getConnectivity(type);
+                               const ElementGroup & group, Real increment) {
   Array<Real> & displacement = model.getDisplacement();
-  Array<bool> update(nb_nodes);
-  update.clear();
 
-  for (UInt el = 0; el < nb_element; ++el) {
-    for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-      UInt node = connectivity(elements(el), n);
-      if (!update(node)) {
-        displacement(node, 0) -= increment;
-        //	displacement(node, 1) += increment;
-        update(node) = true;
-      }
-    }
+  for (auto && node : group.getNodeGroup().getNodes()) {
+    displacement(node, 0) += increment;
   }
 }

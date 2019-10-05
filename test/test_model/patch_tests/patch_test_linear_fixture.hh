@@ -124,7 +124,7 @@ public:
     }
   }
 
-  template <typename presult_func_t, typename Result, typename DOFs> 
+  template <typename presult_func_t, typename Result, typename DOFs>
   void checkResults(presult_func_t && presult_func, const Result & results,
                     const DOFs & dofs) {
     auto presult = presult_func(prescribed_gradient(dofs));
