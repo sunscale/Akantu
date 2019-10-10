@@ -30,25 +30,33 @@ void register_mesh(py::module & mod) {
            py::arg("memory_id") = 0)
       .def("read", &Mesh::read, py::arg("filename"),
            py::arg("mesh_io_type") = _miot_auto, "read the mesh from a file")
-      .def("getNodes",
-           [](Mesh & self) -> decltype(auto) { return self.getNodes(); },
-           py::return_value_policy::reference)
+      .def(
+          "getNodes",
+          [](Mesh & self) -> decltype(auto) { return self.getNodes(); },
+          py::return_value_policy::reference)
       .def("getNbNodes", &Mesh::getNbNodes)
+      .def(
+          "getConnectivity",
+          [](Mesh & self, const ElementType & type) -> decltype(auto) {
+            return self.getConnectivity(type);
+          },
+          py::return_value_policy::reference)
       .def("distribute", [](Mesh & self) { self.distribute(); })
-      .def("getNbElement",
-           [](Mesh & self, const UInt spatial_dimension,
-              const GhostType & ghost_type, const ElementKind & kind) {
-             return self.getNbElement(spatial_dimension, ghost_type, kind);
-           },
-           py::arg("spatial_dimension") = _all_dimensions,
-           py::arg("ghost_type") = _not_ghost,
-           py::arg("kind") = _ek_not_defined)
-      .def("getNbElement",
-           [](Mesh & self, const ElementType & type,
-              const GhostType & ghost_type) {
-             return self.getNbElement(type, ghost_type);
-           },
-           py::arg("type"), py::arg("ghost_type") = _not_ghost)
+      .def(
+          "getNbElement",
+          [](Mesh & self, const UInt spatial_dimension,
+             const GhostType & ghost_type, const ElementKind & kind) {
+            return self.getNbElement(spatial_dimension, ghost_type, kind);
+          },
+          py::arg("spatial_dimension") = _all_dimensions,
+          py::arg("ghost_type") = _not_ghost, py::arg("kind") = _ek_not_defined)
+      .def(
+          "getNbElement",
+          [](Mesh & self, const ElementType & type,
+             const GhostType & ghost_type) {
+            return self.getNbElement(type, ghost_type);
+          },
+          py::arg("type"), py::arg("ghost_type") = _not_ghost)
       .def_static("getSpatialDimension", [](ElementType & type) {
         return Mesh::getSpatialDimension(type);
       });
