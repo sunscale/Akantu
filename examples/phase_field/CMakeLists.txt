@@ -30,19 +30,11 @@
 #
 #===============================================================================
 
-add_mesh(1d_1elem_bar 1d_1elem_bar.geo 1 1)
 add_mesh(square_notch square_notch.geo 2 1)
 
-#register_example(phase_field_1d
-#  SOURCES phase_field_1d.cc
-#  DEPENDS 1d_1elem_bar
-#  FILES_TO_COPY material_1d.dat
-# )
-
-
-#register_example(phase_field_notch
-#  SOURCES phase_field_notch.cc
-#  DEPENDS square_notch
-#  FILES_TO_COPY material_notch.dat
-#  )
+register_example(phase_field_notch
+  SOURCES phase_field_notch.cc
+  DEPENDS square_notch
+  FILES_TO_COPY material_notch.dat
+  )
 

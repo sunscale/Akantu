@@ -89,6 +89,8 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
   this->mesh.registerDumper<DumperParaview>("phase_field", id, true);
   this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
 #endif // AKANTU_USE_IOHELPER
+  
+  this->initDOFManager();
 
   this->registerDataAccessor(*this);
 
@@ -784,14 +786,14 @@ std::shared_ptr<dumper::Field> PhaseFieldModel::createElementalField(
         element_kind);
   } else if (field_name == "damage_gradient") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(damage_gradient, element_kind);
+        this->mesh.getNbDataPerElem(damage_gradient);
 
     return mesh.createElementalField<Real, dumper::InternalMaterialField>(
         damage_gradient, group_name, this->spatial_dimension, element_kind,
         nb_data_per_elem);
   } else if (field_name == "damage_energy") {
     ElementTypeMap<UInt> nb_data_per_elem =
-        this->mesh.getNbDataPerElem(damage_energy_on_qpoints, element_kind);
+        this->mesh.getNbDataPerElem(damage_energy_on_qpoints);
 
     return mesh.createElementalField<Real, dumper::InternalMaterialField>(
         damage_energy_on_qpoints, group_name, this->spatial_dimension,
