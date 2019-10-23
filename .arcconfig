@@ -1,0 +1,6 @@
+{
+    "repository.callsign" : "AKAIT",
+    "phabricator.uri" : "https://c4science.ch/",
+    "history.immutable" : true,
+    "projects": "akantu-developers"
+}
