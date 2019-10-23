@@ -47,7 +47,7 @@ pipeline {
            set -o pipefail
            mkdir -p build
            cd build
-           cmake .. | tee configure.txt
+           cmake -DAKANTU_ITERATORS_TESTS:BOOL=ON .. | tee configure.txt
            """
       }
       post {
@@ -62,7 +62,7 @@ pipeline {
       steps {
         sh '''#!/bin/bash
            set -o pipefail
-
+	   
            make -C build | tee compilation_test.txt
            '''
       }
