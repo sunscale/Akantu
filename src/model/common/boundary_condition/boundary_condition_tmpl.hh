@@ -155,7 +155,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
       for (auto el : element_ids) {
         quad_point.element = el;
         normals_iter = normals_begin + el * nb_quad_points;
-        for (auto && q : arange(nb_quad_points)) {
+        for (auto q : arange(nb_quad_points)) {
           quad_point.num_point = q;
           func(quad_point, *dual_iter, *quad_coords_iter, *normals_iter);
           ++dual_iter;

@@ -37,8 +37,12 @@
 #include <string>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
-
+namespace akantu {
 enum DOFManagerType { _dmt_default, _dmt_petsc };
+}
+AKANTU_ENUM_HASH(DOFManagerType)
+
+using namespace akantu;
 
 // defined as struct to get there names in gtest outputs
 struct _dof_manager_default
@@ -120,7 +124,7 @@ public:
 
   decltype(auto) alloc() {
     std::unordered_map<DOFManagerType, std::string> types{
-        {_dmt_default, "default"}, {_dmt_petsc, "petsc"}};
+      {_dmt_default, "default"}, {_dmt_petsc, "petsc"}};
 
     return DOFManagerTester(DOFManagerFactory::getInstance().allocate(
         types[T::value], *mesh, "dof_manager", 0));
