@@ -79,11 +79,12 @@ if(CMAKE_VERSION VERSION_LESS 3.12)
   set(AKANTU_PY11_SRCS ${_srcs} PARENT_SCOPE)
 else()
   add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
+  set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 endif()
 
 target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(pyakantu INTERFACE akantu)
-#set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_link_libraries(pyakantu PUBLIC akantu)
+
 
 if(CMAKE_VERSION VERSION_LESS 3.12)
   pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
