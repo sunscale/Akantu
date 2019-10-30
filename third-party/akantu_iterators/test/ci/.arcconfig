@@ -1,0 +1,5 @@
+{
+    "repository.callsign" : "HBMJCI",
+    "phabricator.uri" : "https://c4science.ch/",
+    "projects": ["akantu", "tamaas"]
+}
