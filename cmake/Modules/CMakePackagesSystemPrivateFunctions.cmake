@@ -153,6 +153,7 @@ function(_package_load_third_party_script pkg_name)
       _package_set_libraries(${pkg_name} ${${_u_name}_LIBRARIES})
       list(APPEND _required_vars ${_u_name}_LIBRARIES)
     endif()
+    
     if(${_u_name}_INCLUDE_DIR)
       _package_set_include_dir(${pkg_name} ${${_u_name}_INCLUDE_DIR})
       list(APPEND _required_vars ${_u_name}_INCLUDE_DIR)
