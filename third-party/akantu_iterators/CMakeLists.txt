@@ -38,8 +38,10 @@ set_target_properties(akantu_iterators
   INTERFACE_CXX_STANDARD 14
   )
 # ------------------------------------------------------------------------------
+if(DEFINED AKANTU_ITERATORS_TESTS)
+  option(AKANTU_ITERATORS_TESTS "Activating tests" ON)
+endif()
 
-option(AKANTU_ITERATORS_TESTS "Activating tests" ON)
 mark_as_advanced(AKANTU_ITERATORS_TESTS)
 if(AKANTU_ITERATORS_TESTS)
   enable_testing()
