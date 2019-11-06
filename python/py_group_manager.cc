@@ -36,6 +36,12 @@ void register_group_manager(py::module & mod) {
           [](ElementGroup & self) -> decltype(auto) {
             return self.getElements();
           },
+          py::return_value_policy::reference)
+      .def(
+          "getNodeGroup",
+          [](ElementGroup & self) -> decltype(auto) {
+            return self.getNodeGroup();
+          },
           py::return_value_policy::reference);
 
   /* ------------------------------------------------------------------------ */
