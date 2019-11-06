@@ -80,6 +80,7 @@ if(CMAKE_VERSION VERSION_LESS 3.12)
 else()
   add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
   set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  target_link_libraries(pyakantu PUBLIC pybind11)
 endif()
 
 target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
