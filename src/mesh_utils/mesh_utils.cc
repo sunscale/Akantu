@@ -216,6 +216,8 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
   Array<UInt> counter;
   std::vector<Element> connected_elements;
 
+  NewElementsEvent event(AKANTU_CURRENT_FUNCTION);
+  
   // init the SubelementToElement data to improve performance
   for (auto && ghost_type : ghost_types) {
     for (auto && type : mesh.elementTypes(dimension, ghost_type)) {
@@ -370,7 +372,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
             /// current facet index
             UInt current_facet = connectivity_facets->size() - 1;
             Element facet_element{facet_type, current_facet, facet_ghost_type};
-
+            event.getList().push_back(facet_element);
             /// loop on every element connected to current facet and
             /// insert current facet in the first free spot of the
             /// subelement_to_element vector
@@ -410,6 +412,8 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
     }
   }
 
+  mesh_facets.sendEvent(event);
+  
   // restore the parent of mesh_facet
   if (mesh_facets_parent)
     mesh_facets.defineMeshParent(*mesh_facets_parent);
@@ -501,7 +505,7 @@ void MeshUtils::purifyMesh(Mesh & mesh) {
 
   std::map<UInt, UInt> renumbering_map;
 
-  RemovedNodesEvent remove_nodes(mesh);
+  RemovedNodesEvent remove_nodes(mesh, AKANTU_CURRENT_FUNCTION);
   Array<UInt> & nodes_removed = remove_nodes.getList();
 
   for (auto ghost_type : ghost_types) {
@@ -610,6 +614,8 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
                             bool facet_mode) {
   AKANTU_DEBUG_IN();
 
+  NewElementsEvent event(AKANTU_CURRENT_FUNCTION);
+  
   for (auto gt_facet : ghost_types) {
     for (auto && type_facet :
          mesh_facets.elementTypes(facet_dimension, gt_facet)) {
@@ -653,6 +659,8 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
       auto subfacet_to_facet_new_it =
           subfacet_to_facet_begin + new_facet.element;
 
+      event.getList().push_back(new_facet);
+      
       for (UInt facet = 0; facet < nb_facet_to_double; ++facet,
                 ++new_facet.element, ++conn_facet_new_it,
                 ++subfacet_to_facet_new_it) {
@@ -688,6 +696,8 @@ void MeshUtils::doubleFacet(Mesh & mesh, Mesh & mesh_facets,
     }
   }
 
+  mesh_facets.sendEvent(event);
+  
   AKANTU_DEBUG_OUT();
 }
 
@@ -1454,24 +1464,35 @@ void MeshUtils::flipFacets(
       /// skip facet if connectivities are the same
       if (local_gconn == remote_gconn)
         continue;
-
+     
       /// re-arrange connectivity
       auto conn_tmp = conn;
       auto begin = local_gconn.begin();
       auto end = local_gconn.end();
 
-      std::transform(remote_gconn.begin(), remote_gconn.end(), conn.begin(),
-                     [&](auto && gnode) {
-                       auto it = std::find(begin, end, gnode);
-                       AKANTU_DEBUG_ASSERT(it != end, "Node not found");
-                       return conn_tmp(it - begin);
-                     });
+      AKANTU_DEBUG_ASSERT(std::is_permutation(begin, end, remote_gconn.begin()),
+                    "This facets are not just permutation of each other, "
+                          << local_gconn << " and " << remote_gconn);
 
+      for (auto && data : enumerate(remote_gconn)) {
+        auto it = std::find(begin, end, std::get<1>(data));
+        AKANTU_DEBUG_ASSERT(it != end, "Node not found");
+        UInt new_position = it - begin;
+        conn(new_position) = conn_tmp(std::get<0>(data));;
+      }
+      // std::transform(remote_gconn.begin(), remote_gconn.end(), conn.begin(),
+      //                [&](auto && gnode) {
+      //                  auto it = std::find(begin, end, gnode);
+      //                  AKANTU_DEBUG_ASSERT(it != end, "Node not found");
+      //                  return conn_tmp(it - begin);
+      //                });     
+
+      
       /// if 3D, check if facets are just rotated
       if (spatial_dimension == 3) {
-        auto begin = remote_gconn.storage();
+        auto begin = remote_gconn.begin();
         /// find first node
-        auto it = std::find(begin, begin + remote_gconn.size(), local_gconn(0));
+        auto it = std::find(begin, remote_gconn.end(), local_gconn(0));
 
         UInt n, start = it - begin;
         /// count how many nodes in the received connectivity follow
@@ -1483,13 +1504,17 @@ void MeshUtils::flipFacets(
           ;
 
         /// skip the facet inversion if facet is just rotated
-        if (n == nb_nodes_per_P1_facet)
+        if (n == nb_nodes_per_P1_facet) {
           continue;
+          
+        }
       }
 
       /// update data to invert facet
       auto & element_per_facet = std::get<4>(data);
-      std::swap(element_per_facet[0], element_per_facet[1]);
+      if (element_per_facet[1] != ElementNull) // by convention the first facet
+                                               // cannot be a ElementNull
+        std::swap(element_per_facet[0], element_per_facet[1]);
 
       auto & subfacets_of_facet = std::get<3>(data);
       std::swap(subfacets_of_facet(0), subfacets_of_facet(1));
@@ -1514,8 +1539,6 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
                                         mesh.getMemoryID());
   barycenters.initialize(mesh, _nb_component = spatial_dimension,
                          _spatial_dimension = _all_dimensions);
-  // mesh.initElementTypeMapArray(barycenters, spatial_dimension,
-  // _all_dimensions);
 
   Element element;
   for (auto ghost_type : ghost_types) {

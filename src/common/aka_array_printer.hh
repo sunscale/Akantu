@@ -49,7 +49,7 @@ public:
       if (i != this->cont.size() - 1)
         stream << ", ";
     }
-    stream << "}" << std::endl;
+    stream << "}";
   }
 
 private:
@@ -76,7 +76,7 @@ public:
       if (i != this->cont.size() - 1)
         stream << ", ";
     }
-    stream << "}" << std::endl;
+    stream << "}";
   }
 
 private:

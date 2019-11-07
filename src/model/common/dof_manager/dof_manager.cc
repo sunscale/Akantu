@@ -402,7 +402,7 @@ DOFManager::registerDOFsInternal(const ID & dof_id, Array<Real> & dofs_array) {
   }
   }
 
-  return {nb_local_dofs, nb_pure_local, nb_total_pure_local};
+  return std::make_tuple(nb_local_dofs, nb_pure_local, nb_total_pure_local);
 }
 
 /* -------------------------------------------------------------------------- */

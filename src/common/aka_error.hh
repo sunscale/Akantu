@@ -87,7 +87,12 @@ namespace debug {
   template <class T> std::string demangle() {
     return demangle(typeid(T).name());
   }
-  std::string exec(const std::string & cmd);
+
+  template <class T> std::string demangle(const T & t) {
+    return demangle(typeid(t).name());
+  }
+
+std::string exec(const std::string & cmd);
   void printBacktrace(int sig);
 
   void exit(int status) __attribute__((noreturn));

@@ -203,8 +203,8 @@ void CohesiveElementInserter::limitCheckFacets(
 
 /* -------------------------------------------------------------------------- */
 UInt CohesiveElementInserter::insertElements(bool only_double_facets) {
-  CohesiveNewNodesEvent node_event;
-  NewElementsEvent element_event;
+  CohesiveNewNodesEvent node_event(AKANTU_CURRENT_FUNCTION);
+  NewElementsEvent element_event(AKANTU_CURRENT_FUNCTION);
 
   Array<UInt> new_pairs(0, 2);
 

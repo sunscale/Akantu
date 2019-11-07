@@ -154,7 +154,7 @@ private:
 
 class CohesiveNewNodesEvent : public NewNodesEvent {
 public:
-  CohesiveNewNodesEvent() = default;
+  CohesiveNewNodesEvent(const std::string & origin) : NewNodesEvent(origin) {}
   ~CohesiveNewNodesEvent() override = default;
 
   AKANTU_GET_MACRO_NOT_CONST(OldNodesList, old_nodes, Array<UInt> &);

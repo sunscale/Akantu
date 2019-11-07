@@ -143,7 +143,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   std::vector<UInt> new_nodes;
   if (is_distributed) {
-    NewNodesEvent event;
+    NewNodesEvent event(AKANTU_CURRENT_FUNCTION);
 
     /* ---------------------------------------------------------------------- */
     // function to send nodes in bboxes intersections

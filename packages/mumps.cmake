@@ -30,7 +30,7 @@
 #===============================================================================
 package_declare(Mumps EXTERNAL
   DESCRIPTION "Add Mumps support in akantu"
-  SYSTEM ON third-party/cmake/mumps.cmake
+  SYSTEM ON
   )
 
 package_declare_sources(Mumps

@@ -30,96 +30,21 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_compatibilty_with_cpp_standard.hh"
+#include "aka_tuple_tools.hh"
 /* -------------------------------------------------------------------------- */
 #include <iterator>
 #include <tuple>
 #include <utility>
+
 /* -------------------------------------------------------------------------- */
+#ifndef AKANTU_AKA_ITERATORS_HH
+#define AKANTU_AKA_ITERATORS_HH
 
-#ifndef __AKANTU_AKA_ITERATORS_HH__
-#define __AKANTU_AKA_ITERATORS_HH__
+#ifndef AKANTU_ITERATOR_NAMESPACE
+#define AKANTU_ITERATOR_NAMESPACE akantu
+#endif
 
-namespace akantu {
-
-namespace tuple {
-  /* ------------------------------------------------------------------------ */
-  namespace details {
-    template <size_t N> struct Foreach {
-      template <class Tuple>
-      static inline bool not_equal(Tuple && a, Tuple && b) {
-        if (std::get<N - 1>(std::forward<Tuple>(a)) ==
-            std::get<N - 1>(std::forward<Tuple>(b)))
-          return false;
-        return Foreach<N - 1>::not_equal(std::forward<Tuple>(a),
-                                         std::forward<Tuple>(b));
-      }
-    };
-
-    /* ---------------------------------------------------------------------- */
-    template <> struct Foreach<0> {
-      template <class Tuple>
-      static inline bool not_equal(Tuple && a, Tuple && b) {
-        return std::get<0>(std::forward<Tuple>(a)) !=
-               std::get<0>(std::forward<Tuple>(b));
-      }
-    };
-
-    template <typename... Ts>
-    decltype(auto) make_tuple_no_decay(Ts &&... args) {
-      return std::tuple<Ts...>(std::forward<Ts>(args)...);
-    }
-
-    template <class F, class Tuple, size_t... Is>
-    void foreach_impl(F && func, Tuple && tuple,
-                      std::index_sequence<Is...> &&) {
-      (void)std::initializer_list<int>{
-          (std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple))),
-           0)...};
-    }
-
-    template <class F, class Tuple, size_t... Is>
-    decltype(auto) transform_impl(F && func, Tuple && tuple,
-                                  std::index_sequence<Is...> &&) {
-      return make_tuple_no_decay(
-          std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple)))...);
-    }
-  } // namespace details
-
-  /* ------------------------------------------------------------------------ */
-  template <class Tuple> bool are_not_equal(Tuple && a, Tuple && b) {
-    return details::Foreach<std::tuple_size<std::decay_t<Tuple>>::value>::
-        not_equal(std::forward<Tuple>(a), std::forward<Tuple>(b));
-  }
-
-  template <class F, class Tuple> void foreach (F && func, Tuple && tuple) {
-    return details::foreach_impl(
-        std::forward<F>(func), std::forward<Tuple>(tuple),
-        std::make_index_sequence<
-            std::tuple_size<std::decay_t<Tuple>>::value>{});
-  }
-
-  template <class F, class Tuple>
-  decltype(auto) transform(F && func, Tuple && tuple) {
-    return details::transform_impl(
-        std::forward<F>(func), std::forward<Tuple>(tuple),
-        std::make_index_sequence<
-            std::tuple_size<std::decay_t<Tuple>>::value>{});
-  }
-
-  namespace details {
-    template <class Tuple, std::size_t... Is>
-    decltype(auto) flatten(Tuple && tuples, std::index_sequence<Is...>) {
-      return std::tuple_cat(std::get<Is>(tuples)...);
-    }
-  } // namespace details
-
-  template <class Tuple> decltype(auto) flatten(Tuple && tuples) {
-    return details::flatten(std::forward<Tuple>(tuples),
-                            std::make_index_sequence<
-                                std::tuple_size<std::decay_t<Tuple>>::value>());
-  }
-
-} // namespace tuple
+namespace AKANTU_ITERATOR_NAMESPACE {
 
 /* -------------------------------------------------------------------------- */
 namespace iterators {
@@ -130,6 +55,9 @@ namespace iterators {
   }
 
   template <class... Iterators> class ZipIterator {
+  private:
+    using tuple_t = std::tuple<Iterators...>;
+
   public:
     using value_type =
         std::tuple<typename std::iterator_traits<Iterators>::value_type...>;
@@ -143,12 +71,18 @@ namespace iterators {
         std::common_type_t<
             typename std::iterator_traits<Iterators>::iterator_category...>;
 
-  private:
-    using tuple_t = std::tuple<Iterators...>;
+    using nb_iterators = std::tuple_size<tuple_t>;
 
   public:
     explicit ZipIterator(tuple_t iterators) : iterators(std::move(iterators)) {}
 
+    ZipIterator(const ZipIterator & other) = default;
+    ZipIterator(ZipIterator && other) noexcept = default;
+
+    ZipIterator & operator=(const ZipIterator & other) = default;
+    ZipIterator & operator=(ZipIterator && other) noexcept = default;
+
+    /* ---------------------------------------------------------------------- */
     template <class iterator_category_ = iterator_category,
               std::enable_if_t<details::is_iterator_category_at_least<
                   iterator_category_,
@@ -164,7 +98,7 @@ namespace iterators {
                   std::bidirectional_iterator_tag>::value> * = nullptr>
     ZipIterator operator--(int a) {
       auto cpy = *this;
-      this->operator--(a);
+      this->operator--();
       return cpy;
     }
 
@@ -183,7 +117,9 @@ namespace iterators {
 
     // input iterator it != other_it
     bool operator!=(const ZipIterator & other) const {
-      return tuple::are_not_equal(iterators, other.iterators);
+      // return tuple::are_not_equal(iterators, other.iterators);
+      return std::get<0>(iterators) !=
+             std::get<0>(other.iterators); // helps the compiler to optimize
     }
 
     // input iterator dereference *it
@@ -197,7 +133,7 @@ namespace iterators {
                   iterator_category_,
                   std::random_access_iterator_tag>::value> * = nullptr>
     difference_type operator-(const ZipIterator & other) {
-      return other - *this;
+      return std::get<0>(this->iterators) - std::get<0>(other.iterators);
     }
 
     // random iterator it[idx]
@@ -208,6 +144,26 @@ namespace iterators {
     decltype(auto) operator[](std::size_t idx) {
       return tuple::transform(
           [idx](auto && it) -> decltype(auto) { return it[idx]; }, iterators);
+    }
+
+    // random iterator it + n
+    template <class iterator_category_ = iterator_category,
+              std::enable_if_t<details::is_iterator_category_at_least<
+                  iterator_category_,
+                  std::random_access_iterator_tag>::value> * = nullptr>
+    decltype(auto) operator+(std::size_t n) {
+      return ZipIterator(std::forward<tuple_t>(tuple::transform(
+          [n](auto && it) -> decltype(auto) { return it + n; }, iterators)));
+    }
+
+    // random iterator it - n
+    template <class iterator_category_ = iterator_category,
+              std::enable_if_t<details::is_iterator_category_at_least<
+                  iterator_category_,
+                  std::random_access_iterator_tag>::value> * = nullptr>
+    decltype(auto) operator-(std::size_t n) {
+      return ZipIterator(std::forward<tuple_t>(tuple::transform(
+          [n](auto && it) -> decltype(auto) { return it - n; }, iterators)));
     }
 
     template <
@@ -573,14 +529,16 @@ decltype(auto) make_transform_adaptor(container_t && cont, operator_t && op) {
 
 template <class container_t>
 decltype(auto) make_keys_adaptor(container_t && cont) {
-  return make_transform_adaptor(std::forward<container_t>(cont), [
-  ](auto && pair) -> const auto & { return pair.first; });
+  return make_transform_adaptor(
+      std::forward<container_t>(cont),
+      [](auto && pair) -> const auto & { return pair.first; });
 }
 
 template <class container_t>
 decltype(auto) make_values_adaptor(container_t && cont) {
-  return make_transform_adaptor(std::forward<container_t>(cont), [
-  ](auto && pair) -> auto & { return pair.second; });
+  return make_transform_adaptor(
+      std::forward<container_t>(cont),
+      [](auto && pair) -> auto & { return pair.second; });
 }
 
 template <class container_t>
@@ -600,7 +558,7 @@ decltype(auto) make_zip_cat(zip_container_t &&... cont) {
 /* -------------------------------------------------------------------------- */
 namespace iterators {
   template <class filter_iterator_t, class container_iterator_t>
-  class RandomAccessFilterIterator {
+  class FilterIterator {
   public:
     using value_type =
         decltype(std::declval<container_iterator_t>().operator[](0));
@@ -609,90 +567,113 @@ namespace iterators {
     using reference = value_type &;
     using iterator_category = typename filter_iterator_t::iterator_category;
 
-    RandomAccessFilterIterator(filter_iterator_t && filter_it,
-                               container_iterator_t && container_begin)
+    FilterIterator(filter_iterator_t && filter_it,
+                   container_iterator_t && container_begin)
         : filter_it(std::forward<filter_iterator_t>(filter_it)),
-          container_begin(std::forward<container_iterator_t>(container_begin)) {
-    }
+          container_begin(std::forward<container_iterator_t>(container_begin)),
+          container_it(container_begin) {}
 
-    RandomAccessFilterIterator(const RandomAccessFilterIterator &) = default;
+    FilterIterator(const FilterIterator &) = default;
 
-    RandomAccessFilterIterator & operator++() {
+    FilterIterator & operator++() {
       ++filter_it;
+      container_it =
+          container_begin + *filter_it; // this might return invalid iterators
       return *this;
     }
 
-    decltype(auto) operator*() { return container_begin[*filter_it]; }
-    decltype(auto) operator*() const { return container_begin[*filter_it]; }
+    template <std::size_t size = container_iterator_t::nb_iterators::value,
+              std::enable_if_t<size == 1> * = nullptr>
+    decltype(auto) operator*() {
+      return std::get<0>(*container_it);
+    }
 
-    bool operator==(const RandomAccessFilterIterator & other) const {
+    template <std::size_t size = container_iterator_t::nb_iterators::value,
+              std::enable_if_t<size != 1> * = nullptr>
+    decltype(auto) operator*() {
+      return *container_it;
+    }
+
+    template <std::size_t size = container_iterator_t::nb_iterators::value,
+              std::enable_if_t<size == 1> * = nullptr>
+    decltype(auto) operator*() const {
+      return std::get<0>(*container_it);
+    }
+
+    template <std::size_t size = container_iterator_t::nb_iterators::value,
+              std::enable_if_t<size != 1> * = nullptr>
+    decltype(auto) operator*() const {
+      return *container_it;
+    }
+
+    bool operator==(const FilterIterator & other) const {
       return (filter_it == other.filter_it) and
              (container_begin == other.container_begin);
     }
 
-    bool operator!=(const RandomAccessFilterIterator & other) const {
-      return not operator==(other);
+    bool operator!=(const FilterIterator & other) const {
+      return filter_it != other.filter_it;
     }
 
   private:
     filter_iterator_t filter_it;
     container_iterator_t container_begin;
+    container_iterator_t container_it;
   };
 
   template <class filter_iterator_t, class container_iterator_t>
-  decltype(auto)
-  make_random_access_filter_iterator(filter_iterator_t && filter_it,
-                                     container_iterator_t && container_begin) {
-    return RandomAccessFilterIterator<filter_iterator_t, container_iterator_t>(
+  decltype(auto) make_filter_iterator(filter_iterator_t && filter_it,
+                                      container_iterator_t && container_begin) {
+    return FilterIterator<filter_iterator_t, container_iterator_t>(
         std::forward<filter_iterator_t>(filter_it),
         std::forward<container_iterator_t>(container_begin));
   }
 } // namespace iterators
 
 namespace containers {
-  template <class filter_t, class container_t> class RandomAccessFilterAdaptor {
+  template <class filter_t, class... Containers> class FilterAdaptor {
   public:
-    RandomAccessFilterAdaptor(filter_t && filter, container_t && container)
+    FilterAdaptor(filter_t && filter, Containers &&... containers)
         : filter(std::forward<filter_t>(filter)),
-          container(std::forward<container_t>(container)) {}
+          zip_container(std::forward<Containers>(containers)...) {
+      static_assert(std::is_same<typename decltype(
+                                     zip_container.begin())::iterator_category,
+                                 std::random_access_iterator_tag>::value,
+                    "Containers must all have random iterators");
+    }
 
     decltype(auto) begin() const {
-      return iterators::make_random_access_filter_iterator(filter.begin(),
-                                                           container.begin());
+      return iterators::make_filter_iterator(filter.begin(),
+                                             zip_container.begin());
     }
     decltype(auto) begin() {
-      return iterators::make_random_access_filter_iterator(filter.begin(),
-                                                           container.begin());
+      return iterators::make_filter_iterator(filter.begin(),
+                                             zip_container.begin());
     }
 
     decltype(auto) end() const {
-      return iterators::make_random_access_filter_iterator(filter.end(),
-                                                           container.begin());
+      return iterators::make_filter_iterator(filter.end(),
+                                             zip_container.begin());
     }
     decltype(auto) end() {
-      return iterators::make_random_access_filter_iterator(filter.end(),
-                                                           container.begin());
+      return iterators::make_filter_iterator(filter.end(),
+                                             zip_container.begin());
     }
 
   private:
     filter_t filter;
-    container_t container;
+    ZipContainer<Containers...> zip_container;
   };
 } // namespace containers
 
-template <
-    class filter_t, class container_t,
-    std::enable_if_t<std::is_same<
-        std::random_access_iterator_tag,
-        typename std::decay_t<decltype(std::declval<container_t>().begin())>::
-            iterator_category>::value> * = nullptr>
+template <class filter_t, class... Containers>
 decltype(auto) make_filtered_adaptor(filter_t && filter,
-                                     container_t && container) {
-  return containers::RandomAccessFilterAdaptor<filter_t, container_t>(
-      std::forward<filter_t>(filter), std::forward<container_t>(container));
+                                     Containers &&... containers) {
+  return containers::FilterAdaptor<filter_t, Containers...>(
+      std::forward<filter_t>(filter), std::forward<Containers>(containers)...);
 }
 
-} // namespace akantu
+} // namespace AKANTU_ITERATOR_NAMESPACE
 
 namespace std {
 template <typename... Its>
@@ -709,4 +690,4 @@ struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
 
 } // namespace std
 
-#endif /* __AKANTU_AKA_ITERATORS_HH__ */
+#endif /* AKANTU_AKA_ITERATORS_HH */

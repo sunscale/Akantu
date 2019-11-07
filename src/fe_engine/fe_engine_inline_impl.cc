@@ -45,8 +45,6 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
                                          const ElementType & type) {
-  AKANTU_DEBUG_IN();
-
   Real inradius = 0;
 
 #define GET_INRADIUS(type) inradius = ElementClass<type>::getInradius(coord);
@@ -54,7 +52,6 @@ inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_INRADIUS);
 #undef GET_INRADIUS
 
-  AKANTU_DEBUG_OUT();
   return inradius;
 }
 
@@ -69,8 +66,6 @@ FEEngine::getInterpolationType(const ElementType & type) {
 /// type directly from the facet
 #if defined(AKANTU_COHESIVE_ELEMENT)
 inline ElementType FEEngine::getCohesiveElementType(const ElementType & type) {
-  AKANTU_DEBUG_IN();
-
   ElementType ctype;
 #define GET_COHESIVE_TYPE(type)                                                \
   ctype = CohesiveFacetProperty<type>::cohesive_type;
@@ -78,7 +73,6 @@ inline ElementType FEEngine::getCohesiveElementType(const ElementType & type) {
   AKANTU_BOOST_ALL_ELEMENT_SWITCH(GET_COHESIVE_TYPE);
 #undef GET_COHESIVE_TYPE
 
-  AKANTU_DEBUG_OUT();
   return ctype;
 }
 #else
