@@ -22,7 +22,7 @@ pipeline {
   agent {
     dockerfile {
       filename 'Dockerfile'
-      dir 'test/ci'
+      dir 'test/ci/debian.testing'
       additionalBuildArgs '--tag akantu-environment'
     }
   }
