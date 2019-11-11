@@ -1,10 +1,8 @@
-permissive_parser = true
-
 material elastic [
 	 name = steel
 	 rho = 7800   # density
 	 E   = 2.1e11 # young's modulus
 	 nu  = 0.3    # poisson's ratio
-   Plane_Stress = false # plane strain
-   finite_deformation = false
+   Plane_Stress = true # plane stress
+   finite_deformation = true
 ]
