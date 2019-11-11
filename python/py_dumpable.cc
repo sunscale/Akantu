@@ -44,7 +44,6 @@ void register_dumpable(py::module & mod) {
              Array<Real> & field) {
             auto & tmp = dynamic_cast<detail::ArrayProxy<Real>&>(field);
             tmp_array.push_back(tmp);
-            std::cout << tmp.storage() << std::endl;
             return _this.addDumpFieldExternal(field_id, tmp_array.back());
           },
           py::arg("field_id"), py::arg("field"))
