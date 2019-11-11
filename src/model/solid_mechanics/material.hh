@@ -87,10 +87,8 @@ class Material : public Memory,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-#if __cplusplus > 199711L
   Material(const Material & mat) = delete;
   Material & operator=(const Material & mat) = delete;
-#endif
 
   /// Initialize material with defaults
   Material(SolidMechanicsModel & model, const ID & id = "");
@@ -110,19 +108,15 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// constitutive law
-  virtual void computeStress(__attribute__((unused)) ElementType el_type,
-                             __attribute__((unused))
-                             GhostType ghost_type = _not_ghost) {
+  virtual void computeStress(ElementType /* el_type */,
+                             GhostType /* ghost_type */ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the tangent stiffness matrix
-  virtual void computeTangentModuli(__attribute__((unused))
-                                    const ElementType & el_type,
-                                    __attribute__((unused))
-                                    Array<Real> & tangent_matrix,
-                                    __attribute__((unused))
-                                    GhostType ghost_type = _not_ghost) {
+  virtual void computeTangentModuli(const ElementType & /*el_type*/,
+                                    Array<Real> & /*tangent_matrix*/,
+                                    GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -131,23 +125,20 @@ protected:
 
   /// compute the potential energy for an element
   virtual void
-  computePotentialEnergyByElement(__attribute__((unused)) ElementType type,
-                                  __attribute__((unused)) UInt index,
-                                  __attribute__((unused))
-                                  Vector<Real> & epot_on_quad_points) {
+  computePotentialEnergyByElement(ElementType /*type*/,
+                                  UInt /*index*/,
+                                  Vector<Real> & /*epot_on_quad_points*/) {
     AKANTU_TO_IMPLEMENT();
   }
 
-  virtual void updateEnergies(__attribute__((unused)) ElementType el_type) {}
+  virtual void updateEnergies(ElementType /*el_type*/) {}
 
-  virtual void updateEnergiesAfterDamage(__attribute__((unused))
-                                         ElementType el_type) {}
+  virtual void updateEnergiesAfterDamage(ElementType /*el_type*/) {}
 
   /// set the material to steady state (to be implemented for materials that
   /// need it)
-  virtual void setToSteadyState(__attribute__((unused)) ElementType el_type,
-                                __attribute__((unused))
-                                GhostType ghost_type = _not_ghost) {}
+  virtual void setToSteadyState(ElementType /*el_type*/,
+                                GhostType /*ghost_type*/ = _not_ghost) {}
 
   /// function called to update the internal parameters when the modifiable
   /// parameters are modified
@@ -160,14 +151,12 @@ public:
                                    Matrix<Real> & extrapolated);
 
   /// compute the p-wave speed in the material
-  virtual Real getPushWaveSpeed(__attribute__((unused))
-                                const Element & element) const {
+  virtual Real getPushWaveSpeed(const Element & /*element*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the s-wave speed in the material
-  virtual Real getShearWaveSpeed(__attribute__((unused))
-                                 const Element & element) const {
+  virtual Real getShearWaveSpeed(const Element & /*element*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -182,12 +171,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   template <typename T>
-  void registerInternal(__attribute__((unused)) InternalField<T> & vect) {
+  void registerInternal(InternalField<T> & /*vect*/) {
     AKANTU_TO_IMPLEMENT();
   }
 
   template <typename T>
-  void unregisterInternal(__attribute__((unused)) InternalField<T> & vect) {
+  void unregisterInternal(InternalField<T> & /*vect*/) {
     AKANTU_TO_IMPLEMENT();
   }
 
