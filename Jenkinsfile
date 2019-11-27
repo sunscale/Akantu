@@ -61,7 +61,7 @@ pipeline {
                  -DAKANTU_EXAMPLES:BOOL=TRUE \
                  -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE \
                  -DAKANTU_TEST_EXAMPLES:BOOL=FALSE \
-                 -DAKANTU_TESTS:BOOL=TRUE .. | tee configure.txt
+                 -DAKANTU_TESTS:BOOL=TRUE .. | tee ../configure.txt
            """
       }
       post {
