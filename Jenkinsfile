@@ -61,14 +61,15 @@ pipeline {
                  -DAKANTU_EXAMPLES:BOOL=TRUE \
                  -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE \
                  -DAKANTU_TEST_EXAMPLES:BOOL=FALSE \
-                 -DAKANTU_TESTS:BOOL=TRUE .. 2>&1 | tee configure.txt
+                 -DAKANTU_TESTS:BOOL=TRUE .. | tee ../configure.txt
            """
       }
       post {
-        failure {
-          uploadArtifact('configure.txt', 'Configure')
-          deleteDir()
-        }
+	      failure {
+	        uploadArtifact('configure.txt', 'Configure')
+          dir('build')
+	        deleteDir()
+	      }
       }
     }
     
