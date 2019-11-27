@@ -43,7 +43,7 @@ public:
   explicit ComputeRhoFunctor(const SolidMechanicsModel & model)
       : model(model){};
 
-  void operator()(Matrix<Real> & rho, const Element & element) const {
+  void operator()(Matrix<Real> & rho, const Element & element) {
     const Array<UInt> & mat_indexes =
         model.getMaterialByElement(element.type, element.ghost_type);
     Real mat_rho =

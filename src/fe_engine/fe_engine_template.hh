@@ -272,19 +272,30 @@ public:
   /// function to print the contain of the class
   void printself(std::ostream & stream, int indent = 0) const override;
 
-  /// assemble a field as a lumped matrix (ex. rho in lumped mass)
-  template <class Functor>
-  void assembleFieldLumped(const Functor & field_funct, const ID & matrix_id,
-                           const ID & dof_id, DOFManager & dof_manager,
-                           ElementType type,
-                           const GhostType & ghost_type) const;
+  void assembleFieldLumped(
+      const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
+      const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
+      ElementType type, const GhostType & ghost_type) const override;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  template <class Functor>
-  void assembleFieldMatrix(const Functor & field_funct, const ID & matrix_id,
-                           const ID & dof_id, DOFManager & dof_manager,
-                           ElementType type,
-                           const GhostType & ghost_type) const;
+  void assembleFieldMatrix(
+      const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
+      const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
+      ElementType type, const GhostType & ghost_type) const override;
+
+  /// assemble a field as a lumped matrix (ex. rho in lumped mass)
+  // template <class Functor>
+  // void assembleFieldLumped(const Functor & field_funct, const ID & matrix_id,
+  //                          const ID & dof_id, DOFManager & dof_manager,
+  //                          ElementType type,
+  //                          const GhostType & ghost_type) const;
+
+  // /// assemble a field as a matrix (ex. rho to mass matrix)
+  // template <class Functor>
+  // void assembleFieldMatrix(const Functor & field_funct, const ID & matrix_id,
+  //                          const ID & dof_id, DOFManager & dof_manager,
+  //                          ElementType type,
+  //                          const GhostType & ghost_type) const;
 
   // #ifdef AKANTU_STRUCTURAL_MECHANICS
   //   /// assemble a field as a matrix (ex. rho to mass matrix)
@@ -312,10 +323,11 @@ private:
   friend struct AssembleFieldMatrixStructHelper<kind, void>;
 
   /// templated function to compute the scaling to assemble a lumped matrix
-  template <class Functor, ElementType type>
-  void assembleFieldLumped(const Functor & field_funct, const ID & matrix_id,
-                           const ID & dof_id, DOFManager & dof_manager,
-                           const GhostType & ghost_type) const;
+  template <ElementType type>
+  void assembleFieldLumped(
+      const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
+      const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
+      const GhostType & ghost_type) const;
 
   /// @f$ \tilde{M}_{i} = \sum_j M_{ij} = \sum_j \int \rho \varphi_i \varphi_j
   /// dV = \int \rho \varphi_i dV @f$
@@ -332,10 +344,11 @@ private:
                                      const GhostType & ghost_type) const;
 
   /// assemble a field as a matrix (ex. rho to mass matrix)
-  template <class Functor, ElementType type>
-  void assembleFieldMatrix(const Functor & field_funct, const ID & matrix_id,
-                           const ID & dof_id, DOFManager & dof_manager,
-                           const GhostType & ghost_type) const;
+  template <ElementType type>
+  void assembleFieldMatrix(
+      const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
+      const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
+      const GhostType & ghost_type) const;
 
 #ifdef AKANTU_STRUCTURAL_MECHANICS
 

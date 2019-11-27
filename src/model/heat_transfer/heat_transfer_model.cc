@@ -62,7 +62,7 @@ namespace heat_transfer {
     public:
       ComputeRhoFunctor(const HeatTransferModel & model) : model(model){};
 
-      void operator()(Matrix<Real> & rho, const Element &) const {
+      void operator()(Matrix<Real> & rho, const Element &) {
         rho.set(model.getCapacity() * model.getDensity());
       }
 
