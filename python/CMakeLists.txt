@@ -92,5 +92,6 @@ if(CMAKE_VERSION VERSION_LESS 3.12)
 else()
   pybind11_add_module(py11_akantu $<TARGET_OBJECTS:pyakantu>)
 endif()
+
 target_link_libraries(py11_akantu PUBLIC pyakantu)
 set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")

@@ -29,7 +29,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
+package_declare(PythonLibsNew EXTERNAL DESCRIPTION "Akantu's python interface"
   DEPENDS numpy
   EXTRA_PACKAGE_OPTIONS ARGS ${AKANTU_PREFERRED_PYTHON_VERSION} PREFIX PYTHON FOUND PYTHONLIBS_FOUND
   )

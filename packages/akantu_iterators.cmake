@@ -29,7 +29,6 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
 package_declare(akantu_iterators EXTERNAL
   DESCRIPTION "Akantu's iterators hearder library"
   SYSTEM OFF third-party/cmake/akantu_iterators.cmake

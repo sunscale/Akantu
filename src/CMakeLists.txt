@@ -204,12 +204,21 @@ package_get_all_export_list(AKANTU_EXPORT_LIST)
 list(APPEND AKANTU_EXPORT_LIST akantu)
 
 # TODO separate public from private headers
+include(GNUInstallDirs)
 install(TARGETS akantu
   EXPORT ${AKANTU_TARGETS_EXPORT}
-  LIBRARY DESTINATION lib COMPONENT lib
-  ARCHIVE DESTINATION lib COMPONENT lib
-  RUNTIME DESTINATION bin COMPONENT bin
-  PUBLIC_HEADER DESTINATION include/akantu/ COMPONENT dev
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          COMPONENT Akantu_runtime
+          NAMELINK_ONLY
+  # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  #         COMPONENT Akantu_development
+  #         NAMELINK_SKIP Akantu_development
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          COMPONENT Akantu_runtime
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          COMPONENT Akantu_runtime
+  PUBLIC_HEADER DESTINATION include/akantu/
+                COMPONENT Akantu_development
   )
 
 if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
