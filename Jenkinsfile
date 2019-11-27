@@ -67,6 +67,7 @@ pipeline {
       post {
 	failure {
 	  uploadArtifact('configure.txt', 'Configure')
+    dir('build')
 	  deleteDir()
 	}
       }
