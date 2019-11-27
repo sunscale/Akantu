@@ -1,5 +1,4 @@
 set(AKANTU_ITERATORS_TARGETS_EXPORT ${AKANTU_TARGETS_EXPORT})
-set(AKANTU_ITERATORS_TESTS OFF)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/third-party/akantu_iterators)
 

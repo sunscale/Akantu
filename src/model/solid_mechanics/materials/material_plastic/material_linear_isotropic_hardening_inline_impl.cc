@@ -133,7 +133,7 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
 
   // compute the cauchy stress to apply the Von-Mises criterion
   Matrix<Real> cauchy_stress(dim, dim);
-  Material::computeCauchyStressOnQuad<dim>(F_tensor, sigma_tr, cauchy_stress);
+  Material::StoCauchy<dim>(F_tensor, sigma_tr, cauchy_stress);
   Matrix<Real> cauchy_stress_dev(cauchy_stress);
   cauchy_stress_dev -= Matrix<Real>::eye(dim, cauchy_stress.trace() / 3.0);
   Real c = cauchy_stress_dev.doubleDot(cauchy_stress_dev);

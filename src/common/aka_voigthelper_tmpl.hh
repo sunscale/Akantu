@@ -28,12 +28,6 @@
  *
  */
 
-/**
- * @file   aka_voigthelper_tmpl.hh
- * @author Nicolas Richart <nicolas.richart@epfl.ch>
- * @date   Wed Nov 16 12:22:58 2016
- */
-
 /* -------------------------------------------------------------------------- */
 #include "aka_voigthelper.hh"
 /* -------------------------------------------------------------------------- */
@@ -44,6 +38,67 @@
 namespace akantu {
 
 template <UInt dim> constexpr UInt VoigtHelper<dim>::size;
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+template <class M, class V>
+inline void VoigtHelper<dim>::matrixToVoigt(M && matrix, V && vector) {
+  for (UInt I = 0; I < size; ++I) {
+    auto i = vec[I][0];
+    auto j = vec[I][1];
+    vector(I) = matrix(i, j);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+template <class M>
+inline decltype(auto) VoigtHelper<dim>::matrixToVoigt(M && matrix) {
+  Vector<Real> vector(size);
+  matrixToVoigt(std::forward<M>(matrix), vector);
+  return vector;
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+template <class M, class V>
+inline void VoigtHelper<dim>::matrixToVoigtWithFactors(M && matrix,
+                                                       V && vector) {
+  for (UInt I = 0; I < size; ++I) {
+    auto i = vec[I][0];
+    auto j = vec[I][1];
+    vector(I) = factors[I] * matrix(i, j);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+template <class M>
+inline decltype(auto) VoigtHelper<dim>::matrixToVoigtWithFactors(M && matrix) {
+  Vector<Real> vector(size);
+  matrixToVoigtWithFactors(std::forward<M>(matrix), vector);
+  return vector;
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+template <class M, class V>
+inline void VoigtHelper<dim>::voigtToMatrix(V && vector, M && matrix) {
+  for (UInt I = 0; I < size; ++I) {
+    auto i = vec[I][0];
+    auto j = vec[I][1];
+    matrix(i, j) = matrix(j, i) = vector(I);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+template <class V>
+inline decltype(auto) VoigtHelper<dim>::voigtToMatrix(V && vector) {
+  Matrix<Real> matrix(dim, dim);
+  voigtToMatrix(std::forward<V>(vector), matrix);
+  return matrix;
+}
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -121,26 +176,26 @@ inline void VoigtHelper<1>::transferBMatrixToBL2(const Matrix<Real> & B,
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void VoigtHelper<3>::transferBMatrixToBL2(const Matrix<Real> & B,
+inline void VoigtHelper<3>::transferBMatrixToBL2(const Matrix<Real> & dNdX,
                                                  const Matrix<Real> & grad_u,
                                                  Matrix<Real> & Bvoigt,
                                                  UInt nb_nodes_per_element) {
   Bvoigt.clear();
 
-  for (UInt i = 0; i < 3; ++i)
-    for (UInt j = 0; j < nb_nodes_per_element; ++j)
-      for (UInt k = 0; k < 3; ++k)
-        Bvoigt(i, j * 3 + k) = grad_u(k, i) * B(i, j);
+  for (UInt I = 0; I < 3; ++I)
+    for (UInt a = 0; a < nb_nodes_per_element; ++a)
+      for (UInt i = 0; i < 3; ++i)
+        Bvoigt(I, a * 3 + i) = grad_u(i, I) * dNdX(I, a);
 
-  for (UInt i = 3; i < 6; ++i) {
-    for (UInt j = 0; j < nb_nodes_per_element; ++j) {
+  for (UInt Iv = 3; Iv < 6; ++Iv) {
+    for (UInt a = 0; a < nb_nodes_per_element; ++a) {
       for (UInt k = 0; k < 3; ++k) {
-        UInt aux = i - 3;
+        UInt aux = Iv - 3;
         for (UInt m = 0; m < 3; ++m) {
           if (m != aux) {
             UInt index1 = m;
             UInt index2 = 3 - m - aux;
-            Bvoigt(i, j * 3 + k) += grad_u(k, index1) * B(index2, j);
+            Bvoigt(Iv, a * 3 + k) += grad_u(k, index1) * dNdX(index2, a);
           }
         }
       }

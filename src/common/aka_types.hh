@@ -1014,7 +1014,7 @@ public:
   inline const T & operator[](UInt idx) const { return *(this->values + idx); };
 
   /* ---------------------------------------------------------------------- */
-  inline Matrix operator*(const Matrix & B) {
+  inline Matrix operator*(const Matrix & B) const {
     Matrix C(this->rows(), B.cols());
     C.mul<false, false>(*this, B);
     return C;

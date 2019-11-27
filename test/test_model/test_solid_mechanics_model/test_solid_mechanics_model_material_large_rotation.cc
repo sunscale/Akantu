@@ -60,10 +60,6 @@ int main(int argc, char * argv[]) {
   solver.set("max_iterations", 100);
   solver.set("convergence_type", SolveConvergenceCriteria::_residual);
 
-  auto & positions = mesh.getNodes();
-  auto & velocities = model.getVelocity();
-  // auto & boundary = model.getBlockedDOFs();
-
   model.setBaseName("waves");
   model.addDumpFieldVector("displacement");
   model.addDumpFieldVector("acceleration");

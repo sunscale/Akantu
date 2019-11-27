@@ -187,12 +187,12 @@ public:
 
       if (spatial_dimension == 2) {
         if (green_strain)
-          Material::gradUToGreenStrain<2>(grad_u, strain);
+          Material::gradUToE<2>(grad_u, strain);
         else
           Material::gradUToEpsilon<2>(grad_u, strain);
       } else if (spatial_dimension == 3) {
         if (green_strain)
-          Material::gradUToGreenStrain<3>(grad_u, strain);
+          Material::gradUToE<3>(grad_u, strain);
         else
           Material::gradUToEpsilon<3>(grad_u, strain);
       }
@@ -229,12 +229,12 @@ public:
 
       if (spatial_dimension == 2) {
         if (green_strain)
-          Material::gradUToGreenStrain<2>(grad_u, strain);
+          Material::gradUToE<2>(grad_u, strain);
         else
           Material::gradUToEpsilon<2>(grad_u, strain);
       } else if (spatial_dimension == 3) {
         if (green_strain)
-          Material::gradUToGreenStrain<3>(grad_u, strain);
+          Material::gradUToE<3>(grad_u, strain);
         else
           Material::gradUToEpsilon<3>(grad_u, strain);
       }

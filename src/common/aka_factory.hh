@@ -69,7 +69,7 @@ public:
   template <typename... AArgs>
   std::unique_ptr<Base> allocate(const T & id, AArgs &&... args) const {
     if (allocators.find(id) == allocators.end())
-      AKANTU_EXCEPTION("The id  " << id << " is not registered in the "
+      AKANTU_EXCEPTION("The id " << id << " is not registered in the "
                                   << debug::demangle(typeid(Base).name())
                                   << " factory.");
     return std::forward<std::unique_ptr<Base>>(

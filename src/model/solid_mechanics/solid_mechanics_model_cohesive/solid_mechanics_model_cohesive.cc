@@ -236,7 +236,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
   AKANTU_DEBUG_IN();
 
   // make sure the material are instantiated
-  if (!are_materials_instantiated)
+  if (not are_materials_instantiated)
     instantiateMaterials();
 
   /// find the first cohesive material

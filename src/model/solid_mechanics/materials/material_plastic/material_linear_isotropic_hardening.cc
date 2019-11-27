@@ -108,9 +108,9 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(
     auto & previous_sigma = *previous_piola_kirchhoff_2_it;
 
     auto & green_strain = *green_strain_it;
-    this->template gradUToGreenStrain<spatial_dimension>(grad_u, green_strain);
+    this->template gradUToE<spatial_dimension>(grad_u, green_strain);
     Matrix<Real> previous_green_strain(spatial_dimension, spatial_dimension);
-    this->template gradUToGreenStrain<spatial_dimension>(previous_grad_u,
+    this->template gradUToE<spatial_dimension>(previous_grad_u,
                                                          previous_green_strain);
     Matrix<Real> F_tensor(spatial_dimension, spatial_dimension);
     this->template gradUToF<spatial_dimension>(grad_u, F_tensor);

@@ -106,30 +106,18 @@ void MaterialNeohookean<2>::computeCauchyStressPlaneStress(
     ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real>::matrix_iterator gradu_it =
-      this->gradu(el_type, ghost_type).begin(2, 2);
-
-  Array<Real>::matrix_iterator gradu_end =
-      this->gradu(el_type, ghost_type).end(2, 2);
-
-  Array<Real>::matrix_iterator piola_it =
-      this->piola_kirchhoff_2(el_type, ghost_type).begin(2, 2);
-
-  Array<Real>::matrix_iterator stress_it =
-      this->stress(el_type, ghost_type).begin(2, 2);
-
-  Array<Real>::const_scalar_iterator c33_it =
-      this->third_axis_deformation(el_type, ghost_type).begin();
-
-  Matrix<Real> F_tensor(2, 2);
+  auto gradu_it = this->gradu(el_type, ghost_type).begin(2, 2);
+  auto gradu_end = this->gradu(el_type, ghost_type).end(2, 2);
+  auto piola_it = this->piola_kirchhoff_2(el_type, ghost_type).begin(2, 2);
+  auto stress_it = this->stress(el_type, ghost_type).begin(2, 2);
+  auto c33_it = this->third_axis_deformation(el_type, ghost_type).begin();
 
   for (; gradu_it != gradu_end; ++gradu_it, ++piola_it, ++stress_it, ++c33_it) {
     Matrix<Real> & grad_u = *gradu_it;
     Matrix<Real> & piola = *piola_it;
     Matrix<Real> & sigma = *stress_it;
 
-    gradUToF<2>(grad_u, F_tensor);
-    computeCauchyStressOnQuad<2>(F_tensor, piola, sigma, *c33_it);
+    StoCauchy<2>(gradUToF<2>(grad_u), piola, sigma, *c33_it);
   }
 
   AKANTU_DEBUG_OUT();
@@ -157,8 +145,7 @@ void MaterialNeohookean<2>::computeStress(ElementType el_type,
   if (this->plane_stress) {
     PlaneStressToolbox<2>::computeStress(el_type, ghost_type);
 
-    Array<Real>::const_scalar_iterator c33_it =
-        this->third_axis_deformation(el_type, ghost_type).begin();
+    auto c33_it = this->third_axis_deformation(el_type, ghost_type).begin();
 
     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
     computeStressOnQuad(grad_u, sigma, *c33_it);

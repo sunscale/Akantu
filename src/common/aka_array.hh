@@ -245,7 +245,7 @@ public:
   explicit Array(UInt size, UInt nb_component, const_reference value,
                  const ID & id = "");
 
-  /// Copy constructor (deep copy if deep=true)
+  /// Copy constructor
   Array(const Array & vect, const ID & id = "");
 
   /// Copy constructor (deep copy)

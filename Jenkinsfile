@@ -30,15 +30,15 @@ pipeline {
   stages {
     stage('Checkout proper commit') {
       steps {
-	checkout scm:  [$class: 'GitSCM',
-			branches: [[name: "${COMMIT_ID}" ]]
-	], changelog: true
+        checkout scm:  [$class: 'GitSCM',
+          branches: [[name: "${COMMIT_ID}" ]]
+        ], changelog: true
       }
     }
         
     stage('Lint') {
       steps {
-	sh """
+        sh """
            arc lint --output json --rev HEAD^ | jq . -srM | tee lint.json
            ./test/ci/scripts/hbm send-arc-lint -f lint.json
            """
@@ -65,24 +65,24 @@ pipeline {
            """
       }
       post {
-	failure {
-	  uploadArtifact('configure.txt', 'Configure')
-	  deleteDir()
-	}
+        failure {
+          uploadArtifact('configure.txt', 'Configure')
+          deleteDir()
+        }
       }
     }
     
     stage('Compile') {
       steps {
-	sh '''#!/bin/bash
+        sh '''#!/bin/bash
            set -o pipefail
            make -C build/src | tee compilation.txt
            '''
       }
       post {
-	failure {
-	  uploadArtifact('compilation.txt', 'Compilation')
-	}
+        failure {
+          uploadArtifact('compilation.txt', 'Compilation')
+        }
       }
     }
 
@@ -101,9 +101,9 @@ pipeline {
            '''
       }
       post {
-	failure {
-	  uploadArtifact('compilation_python.txt', 'Compilation_Python')
-	}
+        failure {
+          uploadArtifact('compilation_python.txt', 'Compilation_Python')
+        }
       }
     }
 
@@ -116,9 +116,9 @@ pipeline {
            '''
       }
       post {
-	failure {
-	  uploadArtifact('compilation_test.txt', 'Compilation_Tests')
-	}
+        failure {
+          uploadArtifact('compilation_test.txt', 'Compilation_Tests')
+        }
       }
     }
 
@@ -137,9 +137,9 @@ pipeline {
         '''
       }
       //post {
-	//failure {
-	  //zip zipFile: 'build.zip',  dir: 'build/', archive: true
-	//}
+      //  failure {
+      //    zip zipFile: 'build.zip',  dir: 'build/', archive: true
+      //  }
       //}
     }
   }
@@ -148,12 +148,12 @@ pipeline {
       createArtifact("./CTestResults.xml")
 
       step([$class: 'XUnitBuilder',
-	    thresholds: [
+      thresholds: [
           [$class: 'SkippedThreshold', failureThreshold: '0'],
           [$class: 'FailedThreshold', failureThreshold: '0']],
-	    tools: [
-	  [$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
-	]])
+      tools: [
+        [$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
+      ]])
     }
 
     success {

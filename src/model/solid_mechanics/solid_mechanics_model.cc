@@ -71,14 +71,8 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                                          const MemoryID & memory_id,
                                          const ModelType model_type)
     : Model(mesh, model_type, dim, id, memory_id),
-      BoundaryCondition<SolidMechanicsModel>(), f_m2a(1.0),
-      displacement(nullptr), previous_displacement(nullptr),
-      displacement_increment(nullptr), mass(nullptr), velocity(nullptr),
-      acceleration(nullptr), external_force(nullptr), internal_force(nullptr),
-      blocked_dofs(nullptr), current_position(nullptr),
       material_index("material index", id, memory_id),
-      material_local_numbering("material local numbering", id, memory_id),
-      are_materials_instantiated(false) {
+      material_local_numbering("material local numbering", id, memory_id) {
   AKANTU_DEBUG_IN();
 
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
@@ -108,15 +102,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-SolidMechanicsModel::~SolidMechanicsModel() {
-  AKANTU_DEBUG_IN();
-
-  for (auto & internal : this->registered_internals) {
-    delete internal.second;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
+SolidMechanicsModel::~SolidMechanicsModel() = default;
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {

@@ -42,166 +42,127 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <typename FEEngineClass>
 inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
-  AKANTU_DEBUG_IN();
-
   if (name == "")
     name = default_fem;
 
-  FEEngineMap::const_iterator it_boun = fems_boundary.find(name);
+  auto it_boun = fems_boundary.find(name);
 
   if (it_boun == fems_boundary.end()) {
     AKANTU_DEBUG_INFO("Creating FEEngine boundary " << name);
 
-    FEEngineMap::const_iterator it = fems.find(name);
-    AKANTU_DEBUG_ASSERT(it != fems.end(),
-                        "The FEEngine " << name << " is not registered");
+    auto it = fems.find(name);
+    if (it == fems.end()) {
+      AKANTU_EXCEPTION("The FEEngine " << name << " is not registered");
+    }
 
-    UInt spatial_dimension = it->second->getElementDimension();
-    std::stringstream sstr;
-    sstr << id << ":fem_boundary:" << name;
-
+    auto spatial_dimension = it->second->getElementDimension();
     fems_boundary[name] = std::make_unique<FEEngineClass>(
-        it->second->getMesh(), spatial_dimension - 1, sstr.str(), memory_id);
+        it->second->getMesh(), spatial_dimension - 1,
+        id + ":fem_boundary:" + name, memory_id);
   }
 
-  AKANTU_DEBUG_OUT();
   return aka::as_type<FEEngineClass>(*fems_boundary[name]);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename FEEngineClass>
 inline FEEngineClass & Model::getFEEngineClass(std::string name) const {
-  AKANTU_DEBUG_IN();
-
   if (name == "")
     name = default_fem;
 
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it != fems.end(),
-                      "The FEEngine " << name << " is not registered");
+  if (it == fems.end()) {
+    AKANTU_EXCEPTION("The FEEngine " << name << " is not registered");
+  }
 
-  AKANTU_DEBUG_OUT();
   return aka::as_type<FEEngineClass>(*(it->second));
 }
 
 /* -------------------------------------------------------------------------- */
-
 inline void Model::unRegisterFEEngineObject(const std::string & name) {
-
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it != fems.end(),
-                      "FEEngine object with name " << name << " was not found");
+  if (it == fems.end()) {
+    AKANTU_EXCEPTION("FEEngine object with name " << name << " was not found");
+  }
 
   fems.erase(it);
-  if (!fems.empty())
+  if (not fems.empty() and default_fem == name)
     default_fem = (*fems.begin()).first;
 }
 
 /* -------------------------------------------------------------------------- */
-
 template <typename FEEngineClass>
 inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
                                           UInt spatial_dimension) {
   if (fems.size() == 0)
     default_fem = name;
 
-#ifndef AKANTU_NDEBUG
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it == fems.end(), "FEEngine object with name "
-                                            << name << " was already created");
-#endif
+  if (it != fems.end()) {
+    AKANTU_EXCEPTION("FEEngine object with name " << name
+                                                  << " was already created");
+  }
 
-  std::stringstream sstr;
-  sstr << id << ":fem:" << name << memory_id;
-  fems[name] = std::make_unique<FEEngineClass>(mesh, spatial_dimension,
-                                               sstr.str(), memory_id);
+  fems[name] = std::make_unique<FEEngineClass>(
+      mesh, spatial_dimension, id + ":fem:" + name + std::to_string(memory_id),
+      memory_id);
 }
 
 /* -------------------------------------------------------------------------- */
 inline FEEngine & Model::getFEEngine(const ID & name) const {
-  AKANTU_DEBUG_IN();
-  ID tmp_name = name;
-  if (name == "")
-    tmp_name = default_fem;
+  ID tmp_name = (name == "") ? default_fem : name;
 
   auto it = fems.find(tmp_name);
 
-  AKANTU_DEBUG_ASSERT(it != fems.end(),
-                      "The FEEngine " << tmp_name << " is not registered");
-
-  AKANTU_DEBUG_OUT();
+  if (it == fems.end()) {
+    AKANTU_EXCEPTION("The FEEngine " << tmp_name << " is not registered");
+  }
   return *(it->second);
 }
 
 /* -------------------------------------------------------------------------- */
 inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
-  AKANTU_DEBUG_IN();
+  ID tmp_name = (name == "") ? default_fem : name;
 
-  ID tmp_name = name;
-  if (name == "")
-    tmp_name = default_fem;
-
-  FEEngineMap::const_iterator it = fems_boundary.find(tmp_name);
-  AKANTU_DEBUG_ASSERT(it != fems_boundary.end(), "The FEEngine boundary  "
-                                                     << tmp_name
-                                                     << " is not registered");
+  auto it = fems_boundary.find(tmp_name);
+  if (it == fems_boundary.end()) {
+    AKANTU_EXCEPTION("The FEEngine boundary  " << tmp_name
+                                               << " is not registered");
+  }
   AKANTU_DEBUG_ASSERT(it->second != nullptr, "The FEEngine boundary "
                                                  << tmp_name
                                                  << " was not created");
-
-  AKANTU_DEBUG_OUT();
   return *(it->second);
 }
 
-// /* --------------------------------------------------------------------------
-// */
-// /// @todo : should merge with a single function which handles local and
-// global
-// inline void Model::changeLocalEquationNumberForPBC(std::map<UInt,UInt> &
-// pbc_pair,
-// 					    UInt dimension){
-//   for (std::map<UInt,UInt>::iterator it = pbc_pair.begin();
-//        it != pbc_pair.end();++it) {
-//     Int node_master = (*it).second;
-//     Int node_slave = (*it).first;
-//     for (UInt i = 0; i < dimension; ++i) {
-//       (*dof_synchronizer->getLocalDOFEquationNumbersPointer())
-// 	(node_slave*dimension+i) = dimension*node_master+i;
-//       (*dof_synchronizer->getGlobalDOFEquationNumbersPointer())
-// 	(node_slave*dimension+i) = dimension*node_master+i;
-//     }
-//   }
-// }
-// /* --------------------------------------------------------------------------
-// */
-// inline bool Model::isPBCSlaveNode(const UInt node) const {
-//   // if no pbc is defined, is_pbc_slave_node is of size zero
-//   if (is_pbc_slave_node.size() == 0)
-//     return false;
-//   else
-//     return is_pbc_slave_node(node);
-// }
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void Model::allocNodalField(Array<T> *& array, UInt nb_component,
                             const ID & name) {
-  if (array == nullptr) {
-    UInt nb_nodes = mesh.getNbNodes();
-    std::stringstream sstr_disp;
-    sstr_disp << id << ":" << name;
+  if (array)
+    return;
 
-    array = &(alloc<T>(sstr_disp.str(), nb_nodes, nb_component, T()));
-  }
+  UInt nb_nodes = mesh.getNbNodes();
+  array = &(alloc<T>(id + ":" + name, nb_nodes, nb_component, T()));
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+void Model::allocNodalField(std::unique_ptr<Array<T>> & array,
+                            UInt nb_component, const ID & name) const {
+  if (array)
+    return;
+
+  UInt nb_nodes = mesh.getNbNodes();
+  array =
+      std::make_unique<Array<T>>(nb_nodes, nb_component, T(), id + ":" + name);
 }
 
 /* -------------------------------------------------------------------------- */
 inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,
                                           const ID & fem_id) const {
   UInt nb_quad = 0;
-  Array<Element>::const_iterator<Element> it = elements.begin();
-  Array<Element>::const_iterator<Element> end = elements.end();
-  for (; it != end; ++it) {
-    const Element & el = *it;
+  for (auto && el : elements) {
     nb_quad +=
         getFEEngine(fem_id).getNbIntegrationPoints(el.type, el.ghost_type);
   }
