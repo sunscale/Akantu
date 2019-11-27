@@ -79,9 +79,14 @@ TYPED_TEST(TestPatchTestSMMLinear, Static) {
 
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(TestPatchTestSMMLinear, ImplicitFiniteDeformation) {
-  std::string filename = "material_check_stress_plane_stress_finite_deformation.dat";
+  std::string filename =
+      "material_check_stress_plane_stress_finite_deformation.dat";
   if (this->plane_strain)
     filename = "material_check_stress_plane_strain_finite_deformation.dat";
+  else {
+    SUCCEED();
+    return;
+  }
 
   this->initModel(_implicit_dynamic, filename);
 
@@ -104,10 +109,14 @@ TYPED_TEST(TestPatchTestSMMLinear, ImplicitFiniteDeformation) {
 
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(TestPatchTestSMMLinear, StaticFiniteDeformation) {
-  std::string filename = "material_check_stress_plane_stress_finite_deformation.dat";
-  if (this->plane_strain)
+  std::string filename =
+      "material_check_stress_plane_stress_finite_deformation.dat";
+  if (this->plane_strain) {
     filename = "material_check_stress_plane_strain_finite_deformation.dat";
-
+  } else {
+    SUCCEED();
+    return;
+  }
   this->initModel(_static, filename);
 
   auto & solver = this->model->getNonLinearSolver();

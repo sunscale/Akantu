@@ -89,9 +89,10 @@ register_test(test_multi_material_elastic
 # Material unit tests
 # ==============================================================================
 add_mesh(test_finite_deformation_mesh cube.geo 3 1)
+
 register_gtest_sources(test_finite_deformation
   SOURCES test_finite_deformation.cc
-  FILES_TO_COPY material_finite_deformation.dat
+  FILES_TO_COPY material_finite_deformation.dat 1_tetrahedron.msh
   DEPENDS test_finite_deformation_mesh
   PACKAGE implicit)
 
