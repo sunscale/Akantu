@@ -20,7 +20,7 @@ becomes
   \begin{cpp}
  for (auto ghost_type : ghost_types) {
    for (auto type : mesh.elementTypes(spatial_dimension,
-                                      ghost_type) {
+                                      ghost_type)) {
      ...
    }
  }

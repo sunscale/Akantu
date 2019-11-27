@@ -33,6 +33,7 @@
 #include "aka_array.hh"
 #include "aka_common.hh"
 #include "aka_types.hh"
+#include "mesh_accessor.hh"
 
 #include <iostream>
 
@@ -425,8 +426,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
-  auto & nodes = const_cast<Array<Real> &>(mesh.getNodes());
-
+  
   ElementType type = _not_defined;
   switch (dimension) {
   case 1:
@@ -440,8 +440,9 @@ template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
     break;
   }
 
-  mesh.addConnectivityType(type);
-  auto & connectivity = const_cast<Array<UInt> &>(mesh.getConnectivity(type));
+  MeshAccessor mesh_accessor(mesh);
+  auto & connectivity = mesh_accessor.getConnectivity(type);
+  auto & nodes = mesh_accessor.getNodes();
   auto & uint_data = mesh.getDataPointer<UInt>("tag_1", type);
 
   Vector<Real> pos(dimension);
