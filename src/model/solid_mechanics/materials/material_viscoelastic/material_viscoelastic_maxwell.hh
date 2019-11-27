@@ -100,7 +100,7 @@ public:
   void updateInternalParameters() override;
 
   /// update internal variable on a converged Newton
-  void afterSolveStep() override;
+  void afterSolveStep(bool converged) override;
 
   /// update internal variable based on previous and current strain values
   void updateIntVariables();

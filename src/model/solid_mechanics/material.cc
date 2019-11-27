@@ -1254,7 +1254,12 @@ void Material::onElementsRemoved(
 void Material::beforeSolveStep() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
-void Material::afterSolveStep() {
+void Material::afterSolveStep(bool converged) {
+  if(not converged) {
+    this->restorePreviousState();
+    return;
+  }
+
   for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
                                                  _ek_not_defined)) {
     this->updateEnergies(type);

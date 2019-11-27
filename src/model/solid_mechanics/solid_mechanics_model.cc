@@ -353,9 +353,9 @@ void SolidMechanicsModel::beforeSolveStep() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::afterSolveStep() {
+void SolidMechanicsModel::afterSolveStep(bool converged) {
   for (auto & material : materials)
-    material->afterSolveStep();
+    material->afterSolveStep(converged);
 }
 
 /* -------------------------------------------------------------------------- */

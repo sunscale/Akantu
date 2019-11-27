@@ -145,7 +145,7 @@ protected:
   /// callback for the solver, this is called at beginning of solve
   void beforeSolveStep() override;
   /// callback for the solver, this is called at end of solve
-  void afterSolveStep() override;
+  void afterSolveStep(bool converted = true) override;
 
   /// Callback for the model to instantiate the matricees when needed
   void initSolver(TimeStepSolverType time_step_solver_type,
@@ -462,58 +462,60 @@ public:
   FEEngine & getFEEngineBoundary(const ID & name = "") override;
 
 protected:
-  friend class Material;
-
-protected:
   /// compute the stable time step
   Real getStableTimeStep(const GhostType & ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
-protected:
-  /// conversion coefficient form force/mass to acceleration
-  Real f_m2a;
-
-  /// displacements array
-  Array<Real> * displacement;
+private:
+  /// release version of the displacement array
   UInt displacement_release{0};
 
-  /// displacements array at the previous time step (used in finite deformation)
-  Array<Real> * previous_displacement{nullptr};
-
-  /// increment of displacement
-  Array<Real> * displacement_increment{nullptr};
-
-  /// lumped mass array
-  Array<Real> * mass{nullptr};
+  /// release version of the current_position array
+  UInt current_position_release{0};
 
   /// Check if materials need to recompute the mass array
   bool need_to_reassemble_lumped_mass{true};
   /// Check if materials need to recompute the mass matrix
   bool need_to_reassemble_mass{true};
 
+  /// mapping between material name and material internal id
+  std::map<std::string, UInt> materials_names_to_id;
+
+protected:
+  /// conversion coefficient form force/mass to acceleration
+  Real f_m2a{1.0};
+
+  /// displacements array
+  std::unique_ptr<Array<Real>> displacement;
+
+  /// displacements array at the previous time step (used in finite deformation)
+  std::unique_ptr<Array<Real>> previous_displacement;
+
+  /// increment of displacement
+  std::unique_ptr<Array<Real>> displacement_increment;
+
+  /// lumped mass array
+  std::unique_ptr<Array<Real>> mass;
+
   /// velocities array
-  Array<Real> * velocity{nullptr};
+  std::unique_ptr<Array<Real>> velocity;
 
   /// accelerations array
-  Array<Real> * acceleration{nullptr};
-
-  /// accelerations array
-  // Array<Real> * increment_acceleration;
+  std::unique_ptr<Array<Real>> acceleration;
 
   /// external forces array
-  Array<Real> * external_force{nullptr};
+  std::unique_ptr<Array<Real>> external_force;
 
   /// internal forces array
-  Array<Real> * internal_force{nullptr};
+  std::unique_ptr<Array<Real>> internal_force;
 
   /// array specifing if a degree of freedom is blocked or not
-  Array<bool> * blocked_dofs{nullptr};
+  std::unique_ptr<Array<bool>> blocked_dofs;
 
   /// array of current position used during update residual
-  Array<Real> * current_position{nullptr};
-  UInt current_position_release{0};
+  std::unique_ptr<Array<Real>> current_position;
 
   /// Arrays containing the material index for each element
   ElementTypeMapArray<UInt> material_index;
@@ -525,23 +527,20 @@ protected:
   /// list of used materials
   std::vector<std::unique_ptr<Material>> materials;
 
-  /// mapping between material name and material internal id
-  std::map<std::string, UInt> materials_names_to_id;
-
   /// class defining of to choose a material
   std::shared_ptr<MaterialSelector> material_selector;
 
-  /// tells if the material are instantiated
-  bool are_materials_instantiated;
-
   using flatten_internal_map = std::map<std::pair<std::string, ElementKind>,
-                                        ElementTypeMapArray<Real> *>;
+                                        std::unique_ptr<ElementTypeMapArray<Real>>>;
 
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;
 
   /// non local manager
   std::unique_ptr<NonLocalManager> non_local_manager;
+
+  /// tells if the material are instantiated
+  bool are_materials_instantiated{false};
 };
 
 /* -------------------------------------------------------------------------- */

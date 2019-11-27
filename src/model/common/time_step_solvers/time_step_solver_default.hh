@@ -84,8 +84,22 @@ public:
   void assembleResidual() override;
   void assembleResidual(const ID & residual_part) override;
 
+  void beforeSolveStep() override;
+  void afterSolveStep(bool converged = true) override;
+
   /// implementation of the generic TimeStepSolver::solveStep()
   void solveStep(SolverCallback & solver_callback) override;
+
+private:
+
+  template<class Func>
+  void for_each_integrator(Func && function) {
+    for (auto & pair : this->integration_schemes) {
+      auto & dof_id = pair.first;
+      auto & integration_scheme = pair.second;
+      function(dof_id, *integration_scheme);
+    }
+  }
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

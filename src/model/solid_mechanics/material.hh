@@ -410,7 +410,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void beforeSolveStep();
-  virtual void afterSolveStep();
+  virtual void afterSolveStep(bool converged = true);
 
   void onDamageIteration() override;
   void onDamageUpdate() override;

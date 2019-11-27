@@ -103,7 +103,7 @@ public:
   void assembleResidual(const ID & residual_part) override;
 
   void beforeSolveStep() override;
-  void afterSolveStep() override;
+  void afterSolveStep(bool converged = true) override;
 
   bool canSplitResidual() override {
     return solver_callback->canSplitResidual();

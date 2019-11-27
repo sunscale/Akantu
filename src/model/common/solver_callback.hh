@@ -89,7 +89,7 @@ public:
   /* management callbacks                                                     */
   /* ------------------------------------------------------------------------ */
   virtual void beforeSolveStep(){};
-  virtual void afterSolveStep(){};
+  virtual void afterSolveStep(bool /*converged*/ = true){};
 
 protected:
   /// DOFManager prefixed to avoid collision in multiple inheritance cases

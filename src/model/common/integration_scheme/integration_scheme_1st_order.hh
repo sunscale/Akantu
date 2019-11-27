@@ -85,6 +85,7 @@ protected:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  std::unique_ptr<Real> u_dot_store;
 };
 
 } // namespace akantu

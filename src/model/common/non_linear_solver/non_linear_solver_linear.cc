@@ -54,6 +54,7 @@ NonLinearSolverLinear::~NonLinearSolverLinear() = default;
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
+  solver_callback.beforeSolveStep();
   this->dof_manager.updateGlobalBlockedDofs();
 
   solver_callback.predictor();
@@ -67,6 +68,7 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
   this->solver.solve();
 
   solver_callback.corrector();
+  solver_callback.afterSolveStep(true);
 }
 
 /* -------------------------------------------------------------------------- */

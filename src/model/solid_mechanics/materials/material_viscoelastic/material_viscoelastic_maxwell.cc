@@ -320,9 +320,11 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
-void MaterialViscoelasticMaxwell<spatial_dimension>::afterSolveStep() {
+void MaterialViscoelasticMaxwell<spatial_dimension>::afterSolveStep(bool converged) {
 
-  Material::afterSolveStep();
+  Material::afterSolveStep(converged);
+
+  if(not converged) return;
 
   for (auto & el_type : this->element_filter.elementTypes(
            _all_dimensions, _not_ghost, _ek_not_defined)) {

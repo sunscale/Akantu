@@ -125,6 +125,11 @@ inline bool DOFManager::hasDOFsIncrement(const ID & dofs_id) const {
 /* -------------------------------------------------------------------------- */
 inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
                                                     UInt order) {
+
+  if (order == 0) {
+    return getDOFs(dofs_id);
+  }
+
   std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
   if ((order > derivatives.size()) || (derivatives[order - 1] == nullptr))
