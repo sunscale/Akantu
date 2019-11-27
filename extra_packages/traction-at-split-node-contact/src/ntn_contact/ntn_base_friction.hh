@@ -42,11 +42,10 @@
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-
 /* -------------------------------------------------------------------------- */
 template <>
-inline void
-ParameterTyped<akantu::SynchronizedArray<Real>>::setAuto(const ParserParameter & in_param) {
+inline void ParameterTyped<akantu::SynchronizedArray<Real>>::setAuto(
+    const ParserParameter & in_param) {
   Parameter::setAuto(in_param);
   Real r = in_param;
   param.setAndChangeDefault(r);

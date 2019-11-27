@@ -60,4 +60,4 @@ Real Parser::parseReal(const std::string & value,
   return Parser::parseType<Real>(value, grammar);
 }
 
-} // akantu
+} // namespace akantu

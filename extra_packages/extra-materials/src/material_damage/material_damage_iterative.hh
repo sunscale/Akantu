@@ -57,8 +57,7 @@ public:
                     const ElementType & el_type, const GhostType & ghost_type);
 
   /// update energies after damage has been updated
-  virtual void updateEnergiesAfterDamage(ElementType el_type,
-                                         GhostType ghost_typ);
+  virtual void updateEnergiesAfterDamage(ElementType el_type);
 
   /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
   /// stress) and normalize it by the tensile strength

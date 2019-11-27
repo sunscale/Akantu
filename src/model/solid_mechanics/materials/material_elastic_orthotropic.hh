@@ -131,6 +131,6 @@ protected:
   Real G23;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_ORTHOTROPIC_HH__ */

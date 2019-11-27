@@ -217,7 +217,7 @@ protected:
   bool consisder_sub{true};
 };
 
-} // akantu
+} // namespace akantu
 
 #include "parameter_registry_tmpl.hh"
 

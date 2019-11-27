@@ -41,7 +41,9 @@ public:
 
   virtual std::tuple<UInt, UInt>
   updateData(NewNodesEvent & /*nodes_event*/,
-             NewElementsEvent & /*elements_event*/) { return std::make_tuple(0,0); }
+             NewElementsEvent & /*elements_event*/) {
+    return std::make_tuple(0, 0);
+  }
 };
 
 } // namespace akantu

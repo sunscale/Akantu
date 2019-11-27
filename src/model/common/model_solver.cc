@@ -307,8 +307,8 @@ void ModelSolver::getNewSolver(const ID & solver_id,
   NonLinearSolver & nls = this->dof_manager->getNewNonLinearSolver(
       solver_id, non_linear_solver_type);
 
-  this->dof_manager->getNewTimeStepSolver(solver_id, time_step_solver_type,
-                                          nls, *this);
+  this->dof_manager->getNewTimeStepSolver(solver_id, time_step_solver_type, nls,
+                                          *this);
 }
 
 /* -------------------------------------------------------------------------- */

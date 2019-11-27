@@ -49,8 +49,9 @@ public:
       if (i != this->cont.size() - 1)
         stream << ", ";
     }
-    stream << "}" << std::endl;
+    stream << "}";
   }
+
 private:
   const container & cont;
 };
@@ -75,7 +76,7 @@ public:
       if (i != this->cont.size() - 1)
         stream << ", ";
     }
-    stream << "}" << std::endl;
+    stream << "}";
   }
 
 private:

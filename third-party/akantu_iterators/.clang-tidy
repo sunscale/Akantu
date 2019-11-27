@@ -1,0 +1,4 @@
+Checks:          'modernize-use-*, performance-*'
+AnalyzeTemporaryDtors: false
+HeaderFilterRegex: 'src/.*'
+FormatStyle:     file

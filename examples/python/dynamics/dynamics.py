@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
-
-from __future__ import print_function
-################################################################
-import os
-import subprocess
 import numpy as np
-import akantu
-################################################################
+import akantu as aka
 
 
-class MyFixedValue(akantu.FixedValue):
-
+# -----------------------------------------------------------------------------
+class MyFixedValue(aka.FixedValue):
     def __init__(self, value, axis):
         super().__init__(value, axis)
         self.value = value
@@ -22,36 +16,26 @@ class MyFixedValue(akantu.FixedValue):
         # sets the blocked dofs vector to true in the desired axis
         flags[self.axis] = True
 
-################################################################
 
-
+# -----------------------------------------------------------------------------
 def main():
-
     spatial_dimension = 2
-
-    akantu.parseInput('material.dat')
-
     mesh_file = 'bar.msh'
     max_steps = 250
     time_step = 1e-3
 
-    # if mesh was not created the calls gmsh to generate it
-    if not os.path.isfile(mesh_file):
-        ret = subprocess.call('gmsh -format msh2 -2 bar.geo bar.msh', shell=True)
-        if ret != 0:
-            raise Exception(
-                'execution of GMSH failed: do you have it installed ?')
+    aka.parseInput('material.dat')
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # Initialization
-    ################################################################
-    mesh = akantu.Mesh(spatial_dimension)
+    # -------------------------------------------------------------------------
+    mesh = aka.Mesh(spatial_dimension)
     mesh.read(mesh_file)
 
-    model = akantu.SolidMechanicsModel(mesh)
+    model = aka.SolidMechanicsModel(mesh)
 
-    model.initFull(_analysis_method=akantu._explicit_lumped_mass)
-    # model.initFull(_analysis_method=akantu._implicit_dynamic)
+    model.initFull(_analysis_method=aka._explicit_lumped_mass)
+    # model.initFull(_analysis_method=aka._implicit_dynamic)
 
     model.setBaseName("waves")
     model.addDumpFieldVector("displacement")
@@ -63,17 +47,15 @@ def main():
     model.addDumpField("stress")
     model.addDumpField("blocked_dofs")
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # boundary conditions
-    ################################################################
+    # -------------------------------------------------------------------------
+    model.applyBC(MyFixedValue(0, aka._x), "XBlocked")
+    model.applyBC(MyFixedValue(0, aka._y), "YBlocked")
 
-    model.applyBC(MyFixedValue(0, akantu._x), "XBlocked")
-    model.applyBC(MyFixedValue(0, akantu._y), "YBlocked")
-
-    ################################################################
+    # -------------------------------------------------------------------------
     # initial conditions
-    ################################################################
-
+    # -------------------------------------------------------------------------
     displacement = model.getDisplacement()
     nb_nodes = mesh.getNbNodes()
     position = mesh.getNodes()
@@ -89,9 +71,9 @@ def main():
             np.sin(k * x) * np.exp(-(k * x) * (k * x) / (L * L))
         displacement[i, 1] = 0
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # timestep value computation
-    ################################################################
+    # -------------------------------------------------------------------------
     time_factor = 0.8
     stable_time_step = model.getStableTimeStep() * time_factor
 
@@ -102,11 +84,9 @@ def main():
 
     model.setTimeStep(time_step)
 
-    ################################################################
+    # -------------------------------------------------------------------------
     # loop for evolution of motion dynamics
-    ################################################################
-    model.assembleInternalForces()
-
+    # -------------------------------------------------------------------------
     print("step,step * time_step,epot,ekin,epot + ekin")
     for step in range(0, max_steps + 1):
 
@@ -126,6 +106,6 @@ def main():
     return
 
 
-################################################################
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     main()

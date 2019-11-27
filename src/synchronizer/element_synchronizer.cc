@@ -47,6 +47,13 @@
 
 namespace akantu {
 
+#if defined(AKANTU_MODULE)
+#define AKANTU_MODULE_SAVE_ AKANTU_MODULE
+#undef AKANTU_MODULE
+#endif
+
+#define AKANTU_MODULE element_synchronizer
+
 /* -------------------------------------------------------------------------- */
 ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
                                          MemoryID memory_id,
@@ -224,8 +231,9 @@ void ElementSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                                 UInt proc, UInt rank) const {
   auto spatial_dimension = mesh.getSpatialDimension();
 
-  std::set<SynchronizationTag> skip_conn_tags{SynchronizationTag::_smmc_facets_conn,
-                                              SynchronizationTag::_giu_global_conn};
+  std::set<SynchronizationTag> skip_conn_tags{
+      SynchronizationTag::_smmc_facets_conn,
+      SynchronizationTag::_giu_global_conn};
 
   bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
 
@@ -274,3 +282,9 @@ void ElementSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
 
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
+
+#if defined(AKANTU_MODULE_SAVE_)
+#undef AKANTU_MODULE
+#define AKANTU_MODULE AKANTU_MODULE_SAVE_
+#undef AKANTU_MODULE_SAVE_
+#endif

@@ -435,15 +435,15 @@ public:
    * @param[in] _element_kind (default: _ek_not_defined)
    * @param[in] _all_ghost_types (default: false)
    **/
-  template <typename... pack>
-  UInt size(pack &&... _pack) const;
-  
+  template <typename... pack> UInt size(pack &&... _pack) const;
+
   bool isNodal() const { return is_nodal; }
   void isNodal(bool is_nodal) { this->is_nodal = is_nodal; }
 
 private:
-  UInt sizeImpl(UInt spatial_dimension, const GhostType & ghost_type, const ElementKind & kind) const;
-  
+  UInt sizeImpl(UInt spatial_dimension, const GhostType & ghost_type,
+                const ElementKind & kind) const;
+
 protected:
   /// name of the element type map: e.g. connectivity, grad_u
   ID name;

@@ -98,7 +98,7 @@ void IntegrationScheme2ndOrder::assembleResidual(bool is_lumped) {
     this->dof_manager.assembleLumpedMatMulVectToResidual(this->dof_id, "M",
                                                          second_derivative, -1);
   }
-  
+
   AKANTU_DEBUG_OUT();
 }
 /* -------------------------------------------------------------------------- */

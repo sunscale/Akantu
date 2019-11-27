@@ -110,7 +110,7 @@ protected:
   ElementTypeMapReal criterion;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "neighborhood_max_criterion_inline_impl.cc"
 

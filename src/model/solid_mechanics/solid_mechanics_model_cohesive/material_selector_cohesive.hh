@@ -96,4 +96,4 @@ private:
 
 #endif /* __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__ */
 
-} // akantu
+} // namespace akantu

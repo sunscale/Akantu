@@ -48,11 +48,11 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
 
   PETSc_call(MatCreate, mpi_comm, &mat);
   detail::PETScSetName(mat, id);
- 
+
   resize();
 
   PETSc_call(MatSetFromOptions, mat);
-  
+
   PETSc_call(MatSetUp, mat);
 
   PETSc_call(MatSetOption, mat, MAT_ROW_ORIENTED, PETSC_TRUE);
@@ -60,7 +60,7 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
 
   if (matrix_type == _symmetric)
     PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_TRUE);
-    
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -128,7 +128,7 @@ void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
   } else {
     PETSc_call(MatMult, mat, x, w);
   }
-  
+
   if (alpha != 1.) {
     // w = alpha w
     PETSc_call(VecScale, w, alpha);
@@ -141,7 +141,7 @@ void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addMeToImpl(SparseMatrixPETSc & B, Real alpha) const {
   PETSc_call(MatAXPY, B.mat, alpha, mat, SAME_NONZERO_PATTERN);
-  
+
   B.release++;
 }
 
@@ -186,13 +186,12 @@ void SparseMatrixPETSc::endAssembly() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixPETSc::copyProfile(const SparseMatrix & other)  {
+void SparseMatrixPETSc::copyProfile(const SparseMatrix & other) {
   auto & A = aka::as_type<SparseMatrixPETSc>(other);
-  
+
   MatDestroy(&mat);
   MatDuplicate(A.mat, MAT_DO_NOT_COPY_VALUES, &mat);
 }
-  
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::applyBoundary(Real block_val) {
@@ -205,18 +204,18 @@ void SparseMatrixPETSc::applyBoundary(Real block_val) {
   //     rows.push_back(std::get<0>(data));
   //   }
   // }
-  //applyModifications();
+  // applyModifications();
 
   static int c = 0;
-  
+
   saveMatrix("before_blocked_" + std::to_string(c) + ".mtx");
-  
+
   PETSc_call(MatZeroRowsColumnsLocal, mat, blocked_dofs.size(),
              blocked_dofs.storage(), block_val, nullptr, nullptr);
 
   saveMatrix("after_blocked_" + std::to_string(c) + ".mtx");
   ++c;
-  
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -237,9 +236,9 @@ void SparseMatrixPETSc::clearProfile() {
   SparseMatrix::clearProfile();
   PETSc_call(MatResetPreallocation, mat);
   PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
-//   PETSc_call(MatSetOption, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);
-//   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
-//   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
+  //   PETSc_call(MatSetOption, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);
+  //   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
+  //   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
 
   clear();
 }

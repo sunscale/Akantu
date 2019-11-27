@@ -102,7 +102,8 @@ register_solid_mechanics_model(py::module & mod) {
            py::overload_cast<const std::string &>(
                &SolidMechanicsModel::getMaterial),
            py::return_value_policy::reference)
-      .def("getMaterialIndex", &SolidMechanicsModel::getMaterialIndex);
+      .def("getMaterialIndex", &SolidMechanicsModel::getMaterialIndex)
+      .def("setMaterialSelector", &SolidMechanicsModel::setMaterialSelector);
 }
 
 } // namespace akantu

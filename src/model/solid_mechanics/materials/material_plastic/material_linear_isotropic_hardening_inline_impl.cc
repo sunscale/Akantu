@@ -170,9 +170,8 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
   // F is written in terms of cauchy stress
   bool initial_yielding =
       ((cauchy_stress_dev_eff - iso_hardening - this->sigma_y) > 0);
-  while (initial_yielding &&
-         std::abs(cauchy_stress_dev_eff - iso_hardening - this->sigma_y) >
-             Math::getTolerance()) {
+  while (initial_yielding && std::abs(cauchy_stress_dev_eff - iso_hardening -
+                                      this->sigma_y) > Math::getTolerance()) {
 
     d_dp = (cauchy_stress_dev_eff - 3. * this->mu * dp - iso_hardening -
             this->sigma_y) /
@@ -295,4 +294,4 @@ inline void MaterialLinearIsotropicHardening<dim>::computeTangentModuliOnQuad(
   //}
   MaterialElastic<dim>::computeTangentModuliOnQuad(tangent);
 }
-} // akantu
+} // namespace akantu

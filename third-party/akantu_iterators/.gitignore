@@ -1,0 +1,13 @@
+build*
+third-party/*/
+TAG
+*~
+.*.swp
+*.tar.gz
+*.tgz
+*.tbz
+*.tar.bz2
+.idea
+__pycache__
+.mailmap
+.dir-locals.el

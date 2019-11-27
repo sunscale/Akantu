@@ -93,4 +93,4 @@ void IntegrationScheme1stOrder::assembleResidual(bool is_lumped) {
 }
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
 
   Vector<Real> bary(2), bary1(2), bary2(2);
 
-  Element test{ _segment_2, 0, _not_ghost};
+  Element test{_segment_2, 0, _not_ghost};
   interface_mesh.getBarycenter(test, bary1);
 
   test.element = 1;

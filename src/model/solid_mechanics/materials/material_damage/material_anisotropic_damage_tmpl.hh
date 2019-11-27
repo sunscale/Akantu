@@ -109,7 +109,8 @@ namespace {
   template <UInt dim, class Op>
   auto tensorPlus(const Matrix<Real> & A, Matrix<Real> & A_directions,
                   bool sorted = false) {
-    return tensorPlusOp<dim>(A, A_directions, [](Real x, Real) { return x; }, sorted);
+    return tensorPlusOp<dim>(A, A_directions, [](Real x, Real) { return x; },
+                             sorted);
   }
 
   template <UInt dim, class Op>
@@ -118,8 +119,7 @@ namespace {
     return tensorPlusOp<dim>(A, A_directions, std::forward<Op>(oper));
   }
 
-  template <UInt dim>
-  auto tensorPlus(const Matrix<Real> & A) {
+  template <UInt dim> auto tensorPlus(const Matrix<Real> & A) {
     return tensorPlusOp<dim>(A, [](Real x, Real) { return x; });
   }
 
@@ -251,19 +251,19 @@ void MaterialAnisotropicDamage<dim, EquivalentStrain, DamageThreshold,
           this->updateInternalParameters();
 
           computeDamage();
-        } else if (epsilon.trace() < 1e-10) { // deviatoric case
+        } else if (std::abs(epsilon.trace()) < 1e-10) { // deviatoric case
           Matrix<Real> n(dim, dim);
           std::vector<UInt> ns;
           tensorPlusOp<dim>(Dtmp, n,
-                                    [&](Real x, UInt i) {
-                                      if (x > this->Dc) {
-                                        ns.push_back(i);
-                                        return this->Dc;
-                                      }
+                            [&](Real x, UInt i) {
+                              if (x > this->Dc) {
+                                ns.push_back(i);
+                                return this->Dc;
+                              }
 
-                                      return x;
-                                    },
-                                    true);
+                              return x;
+                            },
+                            true);
         }
       }
 

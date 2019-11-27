@@ -409,7 +409,8 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
   switch (type) {
   case TimeStepSolverType::_static: {
     options.non_linear_solver_type = NonLinearSolverType::_linear;
-    options.integration_scheme_type["displacement"] = IntegrationSchemeType::_pseudo_time;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;
   }

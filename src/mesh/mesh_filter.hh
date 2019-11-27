@@ -67,6 +67,6 @@ public:
   static const Type type = _element_filter_functor;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_FILTER_HH__ */

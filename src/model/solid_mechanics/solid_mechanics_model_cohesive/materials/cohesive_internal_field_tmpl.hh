@@ -90,6 +90,6 @@ ParameterTyped<RandomInternalField<Real, CohesiveInternalField>>::setAuto(
   param.setRandomDistribution(r);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__ */

@@ -43,21 +43,13 @@ namespace akantu {
 Dumpable::Dumpable() : default_dumper("") {}
 
 /* -------------------------------------------------------------------------- */
-Dumpable::~Dumpable() {
-
-  auto it = dumpers.begin();
-  auto end = dumpers.end();
-
-  for (; it != end; ++it) {
-    delete it->second;
-  }
-}
+Dumpable::~Dumpable() = default;
 
 /* -------------------------------------------------------------------------- */
-void Dumpable::registerExternalDumper(DumperIOHelper & dumper,
+void Dumpable::registerExternalDumper(std::shared_ptr<DumperIOHelper> dumper,
                                       const std::string & dumper_name,
                                       const bool is_default) {
-  this->dumpers[dumper_name] = &dumper;
+  this->dumpers[dumper_name] = dumper;
   if (is_default)
     this->default_dumper = dumper_name;
 }

@@ -59,8 +59,7 @@ Communications<Entity>::Communications(const Communications & other)
 }
 
 /* -------------------------------------------------------------------------- */
-template <class Entity>
-void Communications<Entity>::swapSendRecv() {
+template <class Entity> void Communications<Entity>::swapSendRecv() {
   std::swap(schemes[_send], schemes[_recv]);
 }
 

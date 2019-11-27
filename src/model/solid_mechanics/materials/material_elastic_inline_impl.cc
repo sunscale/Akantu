@@ -115,6 +115,6 @@ MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
   tangent(0, 0) = E;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_CC__ */

@@ -181,7 +181,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #include "material_cohesive_linear_inline_impl.cc"
 

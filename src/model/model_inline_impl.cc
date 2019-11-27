@@ -107,9 +107,8 @@ inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
 
 #ifndef AKANTU_NDEBUG
   auto it = fems.find(name);
-  AKANTU_DEBUG_ASSERT(it == fems.end(),
-                      "FEEngine object with name " << name
-                                                   << " was already created");
+  AKANTU_DEBUG_ASSERT(it == fems.end(), "FEEngine object with name "
+                                            << name << " was already created");
 #endif
 
   std::stringstream sstr;
@@ -143,12 +142,12 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
     tmp_name = default_fem;
 
   FEEngineMap::const_iterator it = fems_boundary.find(tmp_name);
-  AKANTU_DEBUG_ASSERT(it != fems_boundary.end(),
-                      "The FEEngine boundary  " << tmp_name
-                                                << " is not registered");
-  AKANTU_DEBUG_ASSERT(it->second != nullptr,
-                      "The FEEngine boundary " << tmp_name
-                                               << " was not created");
+  AKANTU_DEBUG_ASSERT(it != fems_boundary.end(), "The FEEngine boundary  "
+                                                     << tmp_name
+                                                     << " is not registered");
+  AKANTU_DEBUG_ASSERT(it->second != nullptr, "The FEEngine boundary "
+                                                 << tmp_name
+                                                 << " was not created");
 
   AKANTU_DEBUG_OUT();
   return *(it->second);
@@ -211,6 +210,6 @@ inline UInt Model::getNbIntegrationPoints(const Array<Element> & elements,
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MODEL_INLINE_IMPL_CC__ */

@@ -193,8 +193,7 @@ TEST_F(TestZipFixutre, RandomAccess) {
 
 TEST_F(TestZipFixutre, Cat) {
   size_t i = 0;
-  for (auto && data :
-	   make_zip_cat(zip(a, b), zip(a, b))) {
+  for (auto && data : make_zip_cat(zip(a, b), zip(a, b))) {
     this->check(std::get<0>(data), std::get<1>(data), i, 0, 0);
     this->check(std::get<2>(data), std::get<3>(data), i, 0, 0);
     ++i;

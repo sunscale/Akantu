@@ -46,7 +46,8 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
 FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::FEEngineTemplate(
     Mesh & mesh, UInt spatial_dimension, ID id, MemoryID memory_id)
     : FEEngine(mesh, spatial_dimension, id, memory_id),
-      integrator(mesh, id, memory_id), shape_functions(mesh, id, memory_id) {}
+      integrator(mesh, spatial_dimension, id, memory_id),
+      shape_functions(mesh, spatial_dimension, id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
 template <template <ElementKind, class> class I, template <ElementKind> class S,

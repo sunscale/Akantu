@@ -117,7 +117,7 @@ inline void MaterialMazars<spatial_dimension>::computeDamageOnQuad(
     Vector<Real> sigma_p(3);
     for (UInt i = 0; i < 3; i++)
       sigma_p(i) = std::max(Real(0.), sigma_princ(i));
-    //sigma_p *= 1. - dam;
+    // sigma_p *= 1. - dam;
 
     Real trace_p = this->nu / this->E * (sigma_p(0) + sigma_p(1) + sigma_p(2));
 

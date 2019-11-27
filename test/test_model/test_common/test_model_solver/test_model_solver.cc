@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
 #if defined(DOF_MANAGER_TYPE)
   dof_manager_type = DOF_MANAGER_TYPE;
 #endif
-  
+
   UInt global_nb_nodes = 100;
   Mesh mesh(1);
 
@@ -72,14 +72,16 @@ int main(int argc, char * argv[]) {
   if (prank == 0) {
     genMesh(mesh, global_nb_nodes);
   }
- 
+
   // std::cout << prank << RandGenerator<Real>::seed() << std::endl;
   mesh.distribute();
 
   MyModel model(F, mesh, false, dof_manager_type);
 
-  model.getNewSolver("static", TimeStepSolverType::_static, NonLinearSolverType::_newton_raphson);
-  model.setIntegrationScheme("static", "disp", IntegrationSchemeType::_pseudo_time);
+  model.getNewSolver("static", TimeStepSolverType::_static,
+                     NonLinearSolverType::_newton_raphson);
+  model.setIntegrationScheme("static", "disp",
+                             IntegrationSchemeType::_pseudo_time);
 
   NonLinearSolver & solver = model.getDOFManager().getNonLinearSolver("static");
   solver.set("max_iterations", 2);
@@ -153,23 +155,23 @@ void printResults(MyModel & model, UInt /*nb_nodes*/) {
   //     sync.gather(model.blocked);
   //   }
   // } else {
-    auto force_it = model.forces.begin();
-    auto disp_it = model.displacement.begin();
-    auto blocked_it = model.blocked.begin();
+  auto force_it = model.forces.begin();
+  auto disp_it = model.displacement.begin();
+  auto blocked_it = model.blocked.begin();
 
-    std::cout << "node"
-                << ", " << std::setw(8) << "disp"
-                << ", " << std::setw(8) << "force"
-                << ", " << std::setw(8) << "blocked" << std::endl;
+  std::cout << "node"
+            << ", " << std::setw(8) << "disp"
+            << ", " << std::setw(8) << "force"
+            << ", " << std::setw(8) << "blocked" << std::endl;
 
-    UInt node = 0;
-    for (; disp_it != model.displacement.end();
-           ++disp_it, ++force_it, ++blocked_it, ++node) {
-        std::cout << node << ", " << std::setw(8) << *disp_it << ", "
-                  << std::setw(8) << *force_it << ", " << std::setw(8)
-                  << *blocked_it << std::endl;
+  UInt node = 0;
+  for (; disp_it != model.displacement.end();
+       ++disp_it, ++force_it, ++blocked_it, ++node) {
+    std::cout << node << ", " << std::setw(8) << *disp_it << ", "
+              << std::setw(8) << *force_it << ", " << std::setw(8)
+              << *blocked_it << std::endl;
 
-        std::cout << std::flush;
-      }
-//  }
+    std::cout << std::flush;
+  }
+  //  }
 }

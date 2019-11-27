@@ -71,4 +71,4 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
 
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

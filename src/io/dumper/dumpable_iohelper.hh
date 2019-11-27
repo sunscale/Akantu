@@ -62,7 +62,7 @@ public:
                              const bool is_default = false);
 
   /// register an externally created dumper
-  void registerExternalDumper(DumperIOHelper & dumper,
+  void registerExternalDumper(std::shared_ptr<DumperIOHelper> dumper,
                               const std::string & dumper_name,
                               const bool is_default = false);
 
@@ -181,7 +181,7 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  using DumperMap = std::map<std::string, DumperIOHelper *>;
+  using DumperMap = std::map<std::string, std::shared_ptr<DumperIOHelper>>;
   using DumperSet = std::set<std::string>;
 
   DumperMap dumpers;

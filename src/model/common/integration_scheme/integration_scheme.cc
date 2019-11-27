@@ -64,7 +64,8 @@ std::istream & operator>>(std::istream & stream,
   return stream;
 }
 
-// void IntegrationScheme::assembleJacobian(const SolutionType & /*type*/, Real /*delta_t*/) {
+// void IntegrationScheme::assembleJacobian(const SolutionType & /*type*/, Real
+// /*delta_t*/) {
 //   auto & J = dof_manager.getLumpedMatrix("J");
 //   auto & M = dof_manager.getLumpedMatrix("M");
 
@@ -73,4 +74,4 @@ std::istream & operator>>(std::istream & stream,
 //   J = M;
 // }
 
-} // akantu
+} // namespace akantu

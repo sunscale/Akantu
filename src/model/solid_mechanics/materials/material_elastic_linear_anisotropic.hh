@@ -80,7 +80,11 @@ public:
   void updateInternalParameters() override;
 
   bool hasStiffnessMatrixChanged() override {
-    return (!was_stiffness_assembled);
+    return (not was_stiffness_assembled);
+  }
+
+  MatrixType getTangentType() override {
+    return _symmetric;
   }
 
 protected:
@@ -132,7 +136,7 @@ protected:
   /// defines if the stiffness was computed
   bool was_stiffness_assembled;
 };
-} // akantu
+} // namespace akantu
 
 #include "material_elastic_linear_anisotropic_inline_impl.cc"
 

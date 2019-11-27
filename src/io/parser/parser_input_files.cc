@@ -104,7 +104,7 @@ void Parser::parse(const std::string & filename) {
   input.close();
 }
 
-} // akantu
+} // namespace akantu
 
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )

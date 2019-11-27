@@ -39,7 +39,7 @@
 namespace akantu {
 class SolidMechanicsModel;
 class FEEngine;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 

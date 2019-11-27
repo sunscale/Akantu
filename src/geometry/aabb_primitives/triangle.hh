@@ -65,6 +65,6 @@ protected:
   UInt meshId;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_TRIANGLE_HH__

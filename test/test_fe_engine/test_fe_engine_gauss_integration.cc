@@ -150,5 +150,5 @@ using TestTypesTail = gtest_list_t<
     tuple_split_tail_t<50, cross_product_t<TestElementTypes, TestDegreeTypes>>>;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Split2, TestGaussIntegrationFixture,
-                              TestTypesTail);
-}
+                               TestTypesTail);
+} // namespace

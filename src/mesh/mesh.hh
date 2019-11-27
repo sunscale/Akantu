@@ -429,8 +429,7 @@ public:
   inline ElementTypeMapArray<T> & getData(const ID & data_name);
 
   template <typename T>
-  ElementTypeMap<UInt> getNbDataPerElem(ElementTypeMapArray<T> & array,
-                                        const ElementKind & element_kind);
+  ElementTypeMap<UInt> getNbDataPerElem(ElementTypeMapArray<T> & array);
 
   template <typename T>
   std::shared_ptr<dumper::Field>

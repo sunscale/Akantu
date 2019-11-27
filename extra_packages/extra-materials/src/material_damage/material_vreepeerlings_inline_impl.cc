@@ -68,8 +68,9 @@ MaterialVreePeerlings<spatial_dimension, MatParent>::computeStressOnQuad(
     for (UInt i = 0; i < spatial_dimension; ++i)
       for (UInt j = i; j < spatial_dimension; ++j)
         J2 += 0.5 * ((i == j) * grad_u(i, i) * grad_u(i, i) +
-                     0.5 * (1 - (i == j)) * ((grad_u(i, j) + grad_u(j, i)) *
-                                             (grad_u(i, j) + grad_u(j, i))));
+                     0.5 * (1 - (i == j)) *
+                         ((grad_u(i, j) + grad_u(j, i)) *
+                          (grad_u(i, j) + grad_u(j, i))));
 
     J2 -= I1 * I1 / 6.;
 
@@ -144,9 +145,8 @@ inline void MaterialVreePeerlings<spatial_dimension, MatParent>::
 
   Real Fd1 = Equistrain - Kapaoi;
   if (Fd1 > 0) {
-    Real dam1 =
-        1. -
-        Kapaodyn / Equistrain * ((Kapac - Equistrain) / (Kapac - Kapaodyn));
+    Real dam1 = 1. - Kapaodyn / Equistrain *
+                         ((Kapac - Equistrain) / (Kapac - Kapaodyn));
     if (dam1 > dam) {
       dam = std::min(dam1, 1.);
       Nb_damage = Nb_damage + 1.;

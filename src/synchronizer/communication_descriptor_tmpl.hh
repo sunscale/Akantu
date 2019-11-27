@@ -147,6 +147,6 @@ void CommunicationDescriptor<Entity>::postRecv(int hash_id) {
   communications.incrementPending(tag, communication.type());
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH__ */

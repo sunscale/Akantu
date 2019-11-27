@@ -75,7 +75,8 @@ int main(int argc, char * argv[]) {
     }
     Real strainxx = i * u_increment / 10.;
 
-    const Array<UInt> & edge_nodes = mesh.getElementGroup("right").getNodeGroup().getNodes();
+    const Array<UInt> & edge_nodes =
+        mesh.getElementGroup("right").getNodeGroup().getNodes();
     Array<Real> & residual = model.getInternalForce();
     Real reaction = 0;
 

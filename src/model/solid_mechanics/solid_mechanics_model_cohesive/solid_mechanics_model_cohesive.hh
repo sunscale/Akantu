@@ -204,7 +204,7 @@ public:
   //                bool extrinsic = false);
 
 protected:
-  void synchronizeGhostFacetsConnectivity();
+  //void synchronizeGhostFacetsConnectivity();
 
   void updateCohesiveSynchronizers();
   void updateFacetStressSynchronizer();

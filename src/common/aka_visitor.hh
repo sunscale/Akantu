@@ -159,6 +159,6 @@ public:
   }
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_VISITOR_HH__ */

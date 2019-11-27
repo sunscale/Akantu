@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
 __author__ = "Nicolas Richart"
@@ -15,9 +16,15 @@ __all__ = ['Shapes']
 
 import numpy as np
 import numpy.polynomial.polynomial as poly
-import akantu as aka
 
-class Shapes(object):
+# pylint: disable=missing-docstring, invalid-name, too-many-instance-attributes
+# flake8: noqa
+
+
+class Shapes:
+    """Python version of the shape functions for test purposes"""
+    # pylint: disable=bad-whitespace, line-too-long
+
     NATURAL_COORDS = {
         (1, 'quadrangle'):  np.array([[-1.], [1.], [0.]]),
         (2, 'quadrangle'):  np.array([[-1., -1.], [ 1., -1.], [ 1.,  1.], [-1.,  1.],
@@ -27,7 +34,7 @@ class Shapes(object):
                                       [ 0., -1., -1.], [ 1.,  0., -1.], [ 0.,  1., -1.], [-1.,  0., -1.],
                                       [-1., -1.,  0.], [ 1., -1.,  0.], [ 1.,  1.,  0.], [-1.,  1.,  0.],
                                       [ 0., -1.,  1.], [ 1.,  0.,  1.], [ 0.,  1.,  1.], [-1.,  0.,  1.]]),
-        (2, 'triangle'):    np.array([[0., 0.], [1., 0.], [0., 1,], [.5, 0.], [.5, .5], [0., .5]]),
+        (2, 'triangle'):    np.array([[0., 0.], [1., 0.], [0., 1], [.5, 0.], [.5, .5], [0., .5]]),
         (3, 'triangle'):    np.array([[0., 0., 0.], [1., 0., 0.], [0., 1., 0.], [0., 0., 1.],
                                       [.5, 0., 0.], [.5, .5, 0.], [0., .5, 0.],
                                       [0., 0., .5], [.5, 0., .5], [0., .5, .5]]),
@@ -88,12 +95,6 @@ class Shapes(object):
                                         [ 1., -1.,  1.],
                                         [-1.,  1.,  1.],
                                         [ 1.,  1.,  1.]])/np.sqrt(3.),
- #       (3, 'pentahedron', 1): np.array([[-1./np.sqrt(3.), 0.5, 0.5],
- #                                        [-1./np.sqrt(3.), 0. , 0.5],
- #                                        [-1./np.sqrt(3.), 0.5, 0. ],
- #                                        [ 1./np.sqrt(3.), 0.5, 0.5],
- #                                        [ 1./np.sqrt(3.), 0. , 0.5],
- #                                        [ 1./np.sqrt(3.), 0.5 ,0. ]]),
         (3, 'pentahedron', 1): np.array([[-1./np.sqrt(3.), 1./6., 1./6.],
                                          [-1./np.sqrt(3.), 2./3., 1./6.],
                                          [-1./np.sqrt(3.), 1./6., 2./3.],
@@ -141,8 +142,7 @@ class Shapes(object):
                                             [2, 0, 0], [0, 2, 0], [0, 0, 2],
                                             [2, 1, 0], [2, 0, 1], [2, 1, 1],
                                             [1, 2, 0], [0, 2, 1], [1, 2, 1],
-                                            [1, 0, 2], [0, 1, 2], [1, 1, 2]]),
-    }
+                                            [1, 0, 2], [0, 1, 2], [1, 1, 2]])}
 
     SHAPES = {
         (3, 'pentahedron', 1): np.array([
@@ -229,29 +229,34 @@ class Shapes(object):
              [[ 0. ,  0. ,  0. ], [ 2. , -2. ,  0. ], [-2. ,  0. ,  0. ]],
              [[ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ], [ 0. ,  0. ,  0. ]]],
         ])}
+    # pylint: enable=bad-whitespace, line-too-long
 
-    def __init__(self,  element):
-        self._shape, self._order, self._inter_poly, self._dim, self._nnodes = self.ELEMENT_TYPES[element]
+    def __init__(self, element):
+        self._shape, self._order, self._inter_poly, self._dim, \
+            self._nnodes = self.ELEMENT_TYPES[element]
         self._ksi = self.NATURAL_COORDS[(self._dim, self._shape)][:self._nnodes]
         self._g = self.QUADRATURE_G[(self._dim, self._shape, self._order)]
         self._w = self.QUADRATURE_W[(self._dim, self._shape, self._order)]
+        self._poly_shape = ()
+        self._monome = []
 
     def polyval(self, x, p):
-        if 1 == self._dim:
+        if self._dim == 1:
             return poly.polyval(x[0], p)
-        if 2 == self._dim:
+        if self._dim == 2:
             return poly.polyval2d(x[0], x[1], p)
-        if 3 == self._dim:
+        if self._dim == 3:
             return poly.polyval3d(x[0], x[1], x[2], p)
+        return None
 
     def shape_from_monomes(self):
         momo = self.MONOMES[(self._dim, self._shape)][:self._nnodes]
 
-        _shape = list(momo[0])
+        _shapes = list(momo[0])
 
-        for s in range(len(_shape)):
-            _shape[s] = max(momo[:,s])+1
-        self._poly_shape = tuple(_shape)
+        for s, _ in enumerate(_shapes):
+            _shapes[s] = max(momo[:, s])+1
+        self._poly_shape = tuple(_shapes)
 
         self._monome = []
         for m in momo:
@@ -263,7 +268,7 @@ class Shapes(object):
         _x = self._ksi
         _xe = np.zeros((self._nnodes, self._nnodes))
         for n in range(self._nnodes):
-            _xe[:,n] = [self.polyval(_x[n], m) for m in self._monome]
+            _xe[:, n] = [self.polyval(_x[n], m) for m in self._monome]
 
         _a = np.linalg.inv(_xe)
         _n = np.zeros((self._nnodes,) + self._monome[0].shape)
@@ -277,13 +282,14 @@ class Shapes(object):
     def compute_shapes(self):
         if (self._dim, self._shape) in self.MONOMES:
             return self.shape_from_monomes()
-        else:
-            _n = self.SHAPES[(self._dim, self._shape, self._order)]
-            self._poly_shape = _n[0].shape
-            return _n
 
+        _n = self.SHAPES[(self._dim, self._shape, self._order)]
+        self._poly_shape = _n[0].shape
+        return _n
+
+    # pylint: disable=too-many-locals,too-many-branches
     def precompute(self, **kwargs):
-        X = np.array(kwargs["X"],  copy=False)
+        X = np.array(kwargs["X"], copy=False)
         nb_element = X.shape[0]
         X = X.reshape(nb_element, self._nnodes, self._dim)
 
@@ -309,14 +315,14 @@ class Shapes(object):
                 _mshape = tuple(_mshape)
                 _comp = np.zeros(_mshape)
 
-                if 1 == self._dim:
+                if self._dim == 1:
                     _bt = np.hstack((_der, _comp))
                 else:
-                    if 0 == d:
+                    if d == 0:
                         _bt = np.vstack((_der, _comp))
-                    if 1 == d:
+                    if d == 1:
                         _bt = np.hstack((_der, _comp))
-                    if 2 == d:
+                    if d == 2:
                         _bt = np.dstack((_der, _comp))
 
                 _b[d, n] = _bt
@@ -334,17 +340,20 @@ class Shapes(object):
                     _bq[q, d, n] = self.polyval(_g, _b[d, n])
 
         _j = np.array(kwargs['j'], copy=False).reshape((nb_element, _nb_quads))
-        _B = np.array(kwargs['B'], copy=False).reshape((nb_element, _nb_quads, self._nnodes, self._dim))
+        _B = np.array(kwargs['B'], copy=False).reshape((nb_element, _nb_quads,
+                                                        self._nnodes, self._dim))
         _N = np.array(kwargs['N'], copy=False).reshape((nb_element, _nb_quads, self._nnodes))
         _Q = kwargs['Q']
         if np.linalg.norm(_Q - self._g.T) > 1e-15:
-            raise Exception('Not using the same quadrature points norm({0} - {1}) = {2}'.format(_Q, self._g.T, np.linalg.norm(_Q - self._g.T)))
+            raise Exception('Not using the same quadrature'
+                            ' points norm({0} - {1}) = {2}'.format(_Q, self._g.T,
+                                                                   np.linalg.norm(_Q - self._g.T)))
 
         for e in range(nb_element):
             for q in range(_nb_quads):
                 _J = np.matmul(_bq[q], X[e])
 
-                if(np.linalg.norm(_N[e, q] - _nq[q]) > 1e-10):
+                if np.linalg.norm(_N[e, q] - _nq[q]) > 1e-10:
                     print(f"{e},{q}")
                     print(_N[e, q])
                     print(_nq[q])

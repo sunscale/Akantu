@@ -381,7 +381,8 @@ Material::getInternalDataPerElem(const ID & field_id,
   ElementTypeMap<UInt> res;
   for (auto ghost_type : ghost_types) {
     for (auto & type : internal_field.elementTypes(ghost_type)) {
-      UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(type, ghost_type);
+      UInt nb_quadrature_points =
+          fe_engine.getNbIntegrationPoints(type, ghost_type);
       res(type, ghost_type) = nb_data_per_quad * nb_quadrature_points;
     }
   }

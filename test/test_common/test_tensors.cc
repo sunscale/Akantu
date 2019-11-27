@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
-#include "aka_types.hh"
 #include "aka_iterators.hh"
+#include "aka_types.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <gtest/gtest.h>
@@ -567,7 +567,6 @@ TEST_F(TensorFixture, MatrixIteratorZip) {
     ++col_count;
   }
 }
-
 
 #if defined(AKANTU_USE_LAPACK)
 TEST_F(TensorFixture, MatrixEigs) {

@@ -81,10 +81,10 @@ void MaterialDamage<spatial_dimension, Parent>::updateEnergies(
 
   this->computePotentialEnergy(el_type);
 
-  auto epsilon_p = this->gradu.previous(el_type)
-                       .begin(spatial_dimension, spatial_dimension);
-  auto sigma_p = this->stress.previous(el_type)
-                     .begin(spatial_dimension, spatial_dimension);
+  auto epsilon_p =
+      this->gradu.previous(el_type).begin(spatial_dimension, spatial_dimension);
+  auto sigma_p = this->stress.previous(el_type).begin(spatial_dimension,
+                                                      spatial_dimension);
 
   auto epot = this->potential_energy(el_type).begin();
   auto ints = this->int_sigma(el_type).begin();

@@ -53,9 +53,8 @@ inline UInt MaterialCohesive::getNbData(const Array<Element> & elements,
                                                    "CohesiveFEEngine");
   }
   case SynchronizationTag::_smmc_damage: {
-    return sizeof(Real) *
-           this->getModel().getNbIntegrationPoints(elements,
-                                                   "CohesiveFEEngine");
+    return sizeof(Real) * this->getModel().getNbIntegrationPoints(
+                              elements, "CohesiveFEEngine");
   }
   default: {}
   }

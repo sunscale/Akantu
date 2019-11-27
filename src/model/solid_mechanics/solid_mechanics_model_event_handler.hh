@@ -55,7 +55,7 @@ namespace SolidMechanicsModelEvent {
   struct AfterDamageEvent {
     AfterDamageEvent() = default;
   };
-}
+} // namespace SolidMechanicsModelEvent
 
 /// akantu::SolidMechanicsModelEvent
 class SolidMechanicsModelEventHandler {
@@ -121,6 +121,6 @@ public:
   virtual void onDamageUpdate() {}
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__ */

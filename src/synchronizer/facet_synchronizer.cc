@@ -33,6 +33,14 @@
 #include "facet_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
 
+#if defined(AKANTU_MODULE)
+#define AKANTU_MODULE_SAVE_ AKANTU_MODULE
+#undef AKANTU_MODULE
+#endif
+
+#define AKANTU_MODULE facet_synchronizer
+
+
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
@@ -204,3 +212,9 @@ FacetSynchronizer::FacetSynchronizer(
 }
 
 } // namespace akantu
+
+#if defined(AKANTU_MODULE_SAVE_)
+#undef AKANTU_MODULE
+#define AKANTU_MODULE AKANTU_MODULE_SAVE_
+#undef AKANTU_MODULE_SAVE_
+#endif

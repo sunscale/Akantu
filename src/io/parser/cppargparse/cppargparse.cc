@@ -520,4 +520,4 @@ void ArgumentParser::print_help_argument(std::ostream & stream,
 
   stream << std::endl;
 }
-}
+} // namespace cppargparse

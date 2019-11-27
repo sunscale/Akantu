@@ -34,11 +34,16 @@
 /* -------------------------------------------------------------------------- */
 #include <boost/preprocessor.hpp>
 #include <gtest/gtest.h>
-#include <tuple>
-/* -------------------------------------------------------------------------- */
+// #include <tuple>
+// /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TEST_GTEST_UTILS_HH__
 #define __AKANTU_TEST_GTEST_UTILS_HH__
+
+#if !defined(TYPED_TEST_SUITE)
+#define TYPED_TEST_SUITE(...) TYPED_TEST_CASE(__VA_ARGS__)
+#endif
+
 
 namespace {
 

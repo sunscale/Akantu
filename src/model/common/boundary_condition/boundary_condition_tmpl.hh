@@ -155,7 +155,7 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
       for (auto el : element_ids) {
         quad_point.element = el;
         normals_iter = normals_begin + el * nb_quad_points;
-        for (auto && q : arange(nb_quad_points)) {
+        for (auto q : arange(nb_quad_points)) {
           quad_point.num_point = q;
           func(quad_point, *dual_iter, *quad_coords_iter, *normals_iter);
           ++dual_iter;
@@ -170,8 +170,8 @@ struct BoundaryCondition<ModelType>::TemplateFunctionWrapper<
       fem_boundary.computeNtb(dual_before_integ, dual_by_shapes, type,
                               ghost_type, element_ids);
 
-      Array<Real> dual_by_shapes_integ(
-          nb_elements, nb_degree_of_freedom * nb_nodes_per_element);
+      Array<Real> dual_by_shapes_integ(nb_elements, nb_degree_of_freedom *
+                                                        nb_nodes_per_element);
       fem_boundary.integrate(dual_by_shapes, dual_by_shapes_integ,
                              nb_degree_of_freedom * nb_nodes_per_element, type,
                              ghost_type, element_ids);

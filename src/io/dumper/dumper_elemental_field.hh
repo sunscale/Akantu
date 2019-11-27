@@ -71,6 +71,6 @@ public:
 /* -------------------------------------------------------------------------- */
 
 __END_AKANTU_DUMPER__
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__ */

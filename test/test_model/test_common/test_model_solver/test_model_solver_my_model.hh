@@ -57,7 +57,8 @@ class MyModel : public ModelSolver,
                 public BoundaryCondition<MyModel>,
                 public DataAccessor<Element> {
 public:
-  MyModel(Real F, Mesh & mesh, bool lumped, const ID & dof_manager_type = "default")
+  MyModel(Real F, Mesh & mesh, bool lumped,
+          const ID & dof_manager_type = "default")
       : ModelSolver(mesh, ModelType::_model, "model_solver", 0),
         nb_dofs(mesh.getNbNodes()), nb_elements(mesh.getNbElement(_segment_2)),
         lumped(lumped), E(1.), A(1.), rho(1.), mesh(mesh),

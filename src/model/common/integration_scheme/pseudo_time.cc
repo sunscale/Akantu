@@ -70,7 +70,7 @@ void PseudoTime::assembleJacobian(const SolutionType &, Real) {
     return;
 
   J.copyProfile(K);
-  //J.clear();
+  // J.clear();
   J.add(K);
 
   k_release = K.getRelease();
@@ -80,4 +80,4 @@ void PseudoTime::assembleJacobian(const SolutionType &, Real) {
 void PseudoTime::assembleResidual(bool) {}
 /* -------------------------------------------------------------------------- */
 
-} // akantu
+} // namespace akantu

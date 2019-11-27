@@ -115,9 +115,13 @@ protected:
                                                   Real & epot);
 
   bool hasStiffnessMatrixChanged() override {
-    return (!was_stiffness_assembled);
+    return (not was_stiffness_assembled);
   }
 
+  MatrixType getTangentType() override {
+    return _symmetric;
+  }
+  
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
@@ -148,7 +152,7 @@ protected:
   bool was_stiffness_assembled;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "material_elastic_inline_impl.cc"
 

@@ -61,9 +61,8 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   solver_callback.predictor();
 
   solver_callback.assembleResidual();
-  
-  auto & x =
-      aka::as_type<SolverVectorDefault>(this->dof_manager.getSolution());
+
+  auto & x = aka::as_type<SolverVectorDefault>(this->dof_manager.getSolution());
   const auto & b = this->dof_manager.getResidual();
 
   x.resize();

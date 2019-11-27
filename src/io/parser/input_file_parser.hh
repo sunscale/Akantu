@@ -197,7 +197,7 @@ namespace parser {
       |     "#" >> *(qi::char_ - spirit::eol)
       ;
 
-/* clang-format on */
+      /* clang-format on */
 
 #define AKANTU_SECTION_TYPE_ADD(r, data, elem)                                 \
   (BOOST_PP_STRINGIZE(elem), BOOST_PP_CAT(ParserType::_, elem))
@@ -206,7 +206,7 @@ namespace parser {
                                              AKANTU_SECTION_TYPES);
 #undef AKANTU_SECTION_TYPE_ADD
 
-#if !defined(AKANTU_NDEBUG) && defined(AKANTU_CORE_CXX_11)
+#if !defined(AKANTU_NDEBUG)
       phx::function<error_handler_> const error_handler = error_handler_();
       qi::on_error<qi::fail>(start,
                              error_handler(lbs::_4, lbs::_3, lbs::_1, lbs::_2));
@@ -261,8 +261,8 @@ namespace parser {
 
     ParserSection * parent_section;
   };
-}
+} // namespace parser
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_INPUT_FILE_PARSER_HH__ */

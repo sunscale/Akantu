@@ -22,7 +22,7 @@ class AkantuPrinter(object):
 
     @classmethod
     def supports(cls, typename):
-        #print('{0} ~= {1}'.format(typename, cls.regex), file=sys.stderr)
+        # print('{0} ~= {1}'.format(typename, cls.regex), file=sys.stderr)
         return cls.regex.search(typename)
 
     @classmethod
@@ -38,6 +38,7 @@ class AkantuPrinter(object):
         _type = _type.unqualified().strip_typedefs()
 
         return _type.tag
+
 
 if __use_gdb_pp__:
     __akantu_pretty_printers__ = \
@@ -79,6 +80,7 @@ def register_pretty_printer(pretty_printer):
 
     return pretty_printer
 
+
 @register_pretty_printer
 class AkaArrayPrinter(AkantuPrinter):
     """Pretty printer for akantu::Array<T>"""
@@ -110,11 +112,12 @@ class AkaArrayPrinter(AkantuPrinter):
                    ('{0}' if self.nb_component == 1 else '[{0}]').format(
                        ', '.join(_values)))
 
+
 if sys.version_info[0] > 2:
-    ### Python 3 stuff
+    # Python 3 stuff
     Iterator = object
 else:
-    ### Python 2 stuff
+    # Python 2 stuff
     class Iterator:
         """Compatibility mixin for iterators
 
@@ -144,7 +147,7 @@ class RbtreeIterator(Iterator):
         return self
 
     def __len__(self):
-        return int (self.size)
+        return int(self.size)
 
     def __next__(self):
         if self.count == self.size:
@@ -168,9 +171,11 @@ class RbtreeIterator(Iterator):
                     self.node = node
         return result
 
+
 def get_value_from_aligned_membuf(buf, valtype):
     """Returns the value held in a __gnu_cxx::__aligned_membuf."""
     return buf['_M_storage'].address.cast(valtype.pointer()).dereference()
+
 
 def get_value_from_Rb_tree_node(node):
     """Returns the value held in an _Rb_tree_node<_Val>"""
@@ -183,9 +188,10 @@ def get_value_from_Rb_tree_node(node):
             # C++11 implementation, node stores value in __aligned_membuf
             valtype = node.type.template_argument(0)
             return get_value_from_aligned_membuf(node['_M_storage'], valtype)
-    except:
+    except:  # noqa: E722
         pass
     raise ValueError("Unsupported implementation for %s" % str(node.type))
+
 
 def find_type(orig, name):
     typ = orig.strip_typedefs()
@@ -204,10 +210,11 @@ def find_type(orig, name):
             raise ValueError("Cannot find type %s::%s" % (str(orig), name))
         typ = field.type
 
+
 @register_pretty_printer
 class AkaElementTypeMapArrayPrinter(AkantuPrinter):
     """Pretty printer for akantu::ElementTypeMap<Array<T>>"""
-    regex = re.compile('^akantu::ElementTypeMap<akantu::Array<(.*?), (true|false)>\*, akantu::(.*?)>$')
+    regex = re.compile('^akantu::ElementTypeMap<akantu::Array<(.*?), (true|false)>\*, akantu::(.*?)>$')  # noqa: E501,W605
     name = 'akantu::ElementTypeMapArray'
 
     # Turn an RbtreeIterator into a pretty-print iterator.
@@ -217,6 +224,7 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
             self.count = 0
             self.type = type
             self.ghost_type = ghost_type
+
         def __iter__(self):
             return self
 
@@ -259,8 +267,7 @@ class AkaElementTypeMapArrayPrinter(AkantuPrinter):
                 len(RbtreeIterator(self.ghost_data)))
 
     def children(self):
-        m = self.regex.search(self.typename)
-
+        # m = self.regex.search(self.typename)
         rep_type = find_type(self.data.type, '_Rep_type')
         node = find_type(rep_type, '_Link_type')
         node = node.strip_typedefs()
@@ -310,6 +317,7 @@ class AkaTensorPrinter(AkantuPrinter):
     def children(self):
         yield ('values', self.pretty_print())
         yield ('wrapped', self.value['wrapped'])
+
 
 @register_pretty_printer
 class AkaVectorPrinter(AkaTensorPrinter):

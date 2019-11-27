@@ -51,7 +51,7 @@ public:
   virtual Array<Real> & getVector() = 0;
   virtual const Array<Real> & getVector() const = 0;
 
-  void printself(std::ostream & stream, int indent = 0) const override{
+  void printself(std::ostream & stream, int indent = 0) const override {
     std::string space(indent, AKANTU_INDENT);
     stream << space << "SolverVectorArray [" << std::endl;
     stream << space << " + id: " << id << std::endl;
@@ -77,7 +77,8 @@ public:
 
   SolverVectorArrayTmpl(const SolverVectorArrayTmpl & vector,
                         const ID & id = "solver_vector_default")
-      : SolverVectorArray(vector, id), dof_manager(vector.dof_manager), vector(vector.vector) {}
+      : SolverVectorArray(vector, id), dof_manager(vector.dof_manager),
+        vector(vector.vector) {}
 
   operator const Array<Real> &() const override { return getVector(); };
   virtual operator Array<Real> &() { return getVector(); };

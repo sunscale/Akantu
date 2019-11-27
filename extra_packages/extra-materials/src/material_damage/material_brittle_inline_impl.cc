@@ -30,9 +30,10 @@ inline void MaterialBrittle<spatial_dimension>::computeStressOnQuad(
 
   for (UInt i = 0; i < spatial_dimension; ++i)
     for (UInt j = 0; j < spatial_dimension; ++j)
-      equiv_strain_rate += 2. / 3. * pow(0.5 * (grad_v(i, j) + grad_v(j, i)) -
-                                             (i == j) * volume_change_rate / 3.,
-                                         2.);
+      equiv_strain_rate += 2. / 3. *
+                           pow(0.5 * (grad_v(i, j) + grad_v(j, i)) -
+                                   (i == j) * volume_change_rate / 3.,
+                               2.);
 
   equiv_strain_rate = sqrt(equiv_strain_rate);
 

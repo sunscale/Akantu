@@ -104,7 +104,8 @@ int main(int argc, char * argv[]) {
         disp(n, 1) += increment;
     }
 
-    model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+    model.solveStepCohesive<_scm_newton_raphson_tangent,
+                            SolveConvergenceCriteria::_increment>(
         tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance) {
@@ -124,7 +125,8 @@ int main(int argc, char * argv[]) {
         disp(n, 1) -= increment;
     }
 
-    model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+    model.solveStepCohesive<_scm_newton_raphson_tangent,
+                            SolveConvergenceCriteria::_increment>(
         tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance) {
@@ -146,7 +148,8 @@ int main(int argc, char * argv[]) {
         disp(n, 0) += increment;
     }
 
-    model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+    model.solveStepCohesive<_scm_newton_raphson_tangent,
+                            SolveConvergenceCriteria::_increment>(
         tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance) {
@@ -186,7 +189,8 @@ int main(int argc, char * argv[]) {
         disp(n, 0) -= increment;
     }
 
-    model.solveStepCohesive<_scm_newton_raphson_tangent, SolveConvergenceCriteria::_increment>(
+    model.solveStepCohesive<_scm_newton_raphson_tangent,
+                            SolveConvergenceCriteria::_increment>(
         tolerance, error, 25, load_reduction, tol_increase_factor);
 
     if (error > tolerance) {

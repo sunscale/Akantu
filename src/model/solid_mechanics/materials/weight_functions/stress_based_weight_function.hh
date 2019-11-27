@@ -96,6 +96,6 @@ private:
 #include "stress_based_weight_function_inline_impl.cc"
 #endif
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__ */

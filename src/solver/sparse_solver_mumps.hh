@@ -40,7 +40,7 @@
 namespace akantu {
 class DOFManagerDefault;
 class SparseMatrixAIJ;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -152,6 +152,6 @@ private:
   };
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SOLVER_MUMPS_HH__ */

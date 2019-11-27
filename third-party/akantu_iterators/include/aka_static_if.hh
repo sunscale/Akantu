@@ -2,14 +2,18 @@
 // License: AFL 3.0 | https://opensource.org/licenses/AFL-3.0
 // http://vittorioromeo.info | vittorio.romeo@outlook.com
 
-#ifndef __AKANTU_AKA_STATIC_IF_HH__
-#define __AKANTU_AKA_STATIC_IF_HH__
+#ifndef AKANTU_AKA_STATIC_IF_HH
+#define AKANTU_AKA_STATIC_IF_HH
+
+#ifndef AKANTU_ITERATOR_NAMESPACE
+#define AKANTU_ITERATOR_NAMESPACE akantu
+#endif
 
 #include <utility>
 
 #define FWD(...) ::std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__)
 
-namespace akantu {
+namespace AKANTU_ITERATOR_NAMESPACE {
 
 template <typename TPredicate> auto static_if(TPredicate) noexcept;
 
@@ -89,6 +93,6 @@ template <typename TPredicate> auto static_if(TPredicate) noexcept {
 }
 
 #undef FWD
-} // namespace akantu
+} // namespace AKANTU_ITERATOR_NAMESPACE
 
-#endif /* __AKANTU_AKA_STATIC_IF_HH__ */
+#endif /* AKANTU_AKA_STATIC_IF_HH */

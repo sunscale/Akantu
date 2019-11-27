@@ -1,3 +1,4 @@
+
 #===============================================================================
 # @file   CMakeLists.txt
 #
@@ -70,11 +71,26 @@ if (_is_activated)
     )
 endif()
 
-add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
-target_link_libraries(pyakantu PUBLIC  akantu pybind11)
-target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+if(CMAKE_VERSION VERSION_LESS 3.12)
+  add_library(pyakantu INTERFACE)
+  set(_srcs)
+  foreach(_file ${PYAKANTU_SRCS})
+    list(APPEND _srcs ${CMAKE_CURRENT_SOURCE_DIR}/${_file})
+  endforeach()
+  set(AKANTU_PY11_SRCS ${_srcs} PARENT_SCOPE)
+  target_link_libraries(pyakantu INTERFACE akantu)
+else()
+  add_library(pyakantu OBJECT ${PYAKANTU_SRCS})
+  set_target_properties(pyakantu PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  target_link_libraries(pyakantu PUBLIC pybind11::pybind11 akantu)
+endif()
 
-pybind11_add_module(py11_akantu $<TARGET_OBJECTS:pyakantu>)
-target_link_libraries(py11_akantu PRIVATE pyakantu)
+target_include_directories(pyakantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(CMAKE_VERSION VERSION_LESS 3.12)
+  pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
+else()
+  pybind11_add_module(py11_akantu $<TARGET_OBJECTS:pyakantu>)
+endif()
+target_link_libraries(py11_akantu PUBLIC pyakantu)
 set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")

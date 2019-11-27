@@ -117,4 +117,4 @@ void SynchronizerRegistry::registerSynchronizer(Synchronizer & synchronizer,
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

@@ -78,6 +78,6 @@ void MeshAbstractIntersector<Query>::computeMeshQueryListIntersectionPoint(
   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_MESH_ABSTRACT_INTERSECTOR_TMPL_HH__

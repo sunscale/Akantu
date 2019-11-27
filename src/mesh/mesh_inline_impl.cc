@@ -54,13 +54,16 @@ Mesh::ElementTypesIteratorHelper Mesh::elementTypes(pack &&... _pack) const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh)
-    : new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
+inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh,
+                                            const std::string & origin)
+    : MeshEvent<UInt>(origin), new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
 inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
-                                                  const ID & new_numbering_id)
-    : new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
+                                                  const ID & new_numbering_id,
+                                                  const std::string & origin)
+    : MeshEvent<Element>(origin),
+      new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
 
 /* -------------------------------------------------------------------------- */
 template <>
@@ -344,7 +347,6 @@ template <typename T>
 inline ElementTypeMapArray<T> & Mesh::getData(const ID & data_name) {
   return this->getElementalData<T>(data_name);
 }
-
 
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbElement(const ElementType & type,
@@ -684,7 +686,8 @@ void Mesh::addPeriodicSlave(UInt slave, UInt master) {
                       << getNodeGlobalId(slave) << " [lid: " << slave << "]"
                       << ", master gid:" << getNodeGlobalId(master)
                       << " [lid: " << master << "]");
-    // std::cout << "adding periodic slave, slave gid:" << getNodeGlobalId(slave)
+    // std::cout << "adding periodic slave, slave gid:" <<
+    // getNodeGlobalId(slave)
     //           << " [lid: " << slave << "]"
     //           << ", master gid:" << getNodeGlobalId(master)
     //           << " [lid: " << master << "]" << std::endl;
@@ -729,10 +732,7 @@ public:
       ++it;
       return *this;
     }
-    bool
-    operator!=(const const_iterator & other) {
-      return other.it != it;
-    }
+    bool operator!=(const const_iterator & other) { return other.it != it; }
     auto operator*() { return it->second; }
   };
 

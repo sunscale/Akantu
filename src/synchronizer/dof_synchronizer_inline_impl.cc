@@ -269,21 +269,22 @@ template <typename T> void DOFSynchronizer::scatter(Array<T> & scattered) {
   AKANTU_DEBUG_OUT();
 }
 
-
 /* -------------------------------------------------------------------------- */
 template <template <class> class Op, typename T>
 void DOFSynchronizer::reduceSynchronize(Array<T> & array) const {
-  ReduceDataAccessor<UInt, Op, T> data_accessor(array, SynchronizationTag::_whatever);
+  ReduceDataAccessor<UInt, Op, T> data_accessor(array,
+                                                SynchronizationTag::_whatever);
   this->slaveReductionOnceImpl(data_accessor, SynchronizationTag::_whatever);
   this->synchronize(array);
 }
 
 /* -------------------------------------------------------------------------- */
-template <typename T> void DOFSynchronizer::synchronize(Array<T> & array) const {
+template <typename T>
+void DOFSynchronizer::synchronize(Array<T> & array) const {
   SimpleUIntDataAccessor<T> data_accessor(array, SynchronizationTag::_whatever);
   this->synchronizeOnce(data_accessor, SynchronizationTag::_whatever);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_CC__ */

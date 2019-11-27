@@ -49,9 +49,9 @@ namespace internal {
   public:
     virtual ~PETScVector() = default;
 
-    operator Vec&() { return x; }
-    operator const Vec&() const { return x; }
-    
+    operator Vec &() { return x; }
+    operator const Vec &() const { return x; }
+
     Int size() const {
       PetscInt n;
       PETSc_call(VecGetSize, x, &n);
@@ -92,11 +92,11 @@ public:
   void clear() override;
 
   operator const Array<Real> &() const override;
-  
+
   SolverVector & operator+(const SolverVector & y) override;
   SolverVector & operator=(const SolverVector & y) override;
   SolverVectorPETSc & operator=(const SolverVectorPETSc & y);
-  
+
   /// get values using processors global indexes
   void getValues(const Array<Int> & idx, Array<Real> & values) const;
 
@@ -115,7 +115,7 @@ public:
   Int localSize() const override { return internal::PETScVector::local_size(); }
 
   void printself(std::ostream & stream, int indent = 0) const override;
-  
+
 protected:
   void applyModifications();
   void updateGhost();

@@ -97,6 +97,6 @@ protected:
   CohesiveInternalField<Real> damage_t;
 };
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH__ */

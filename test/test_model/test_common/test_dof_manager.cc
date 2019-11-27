@@ -37,8 +37,12 @@
 #include <string>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
-
+namespace akantu {
 enum DOFManagerType { _dmt_default, _dmt_petsc };
+}
+AKANTU_ENUM_HASH(DOFManagerType)
+
+using namespace akantu;
 
 // defined as struct to get there names in gtest outputs
 struct _dof_manager_default
@@ -120,7 +124,7 @@ public:
 
   decltype(auto) alloc() {
     std::unordered_map<DOFManagerType, std::string> types{
-        {_dmt_default, "default"}, {_dmt_petsc, "petsc"}};
+      {_dmt_default, "default"}, {_dmt_petsc, "petsc"}};
 
     return DOFManagerTester(DOFManagerFactory::getInstance().allocate(
         types[T::value], *mesh, "dof_manager", 0));
@@ -273,8 +277,8 @@ TYPED_TEST(DOFManagerFixture, AssembleMatrixNodal) {
   dof_manager.residual().clear();
 
   for (auto && data :
-           enumerate(zip(make_view(*this->dof1, this->dof1->getNbComponent()),
-                         make_view(*this->dof2, this->dof2->getNbComponent())))) {
+       enumerate(zip(make_view(*this->dof1, this->dof1->getNbComponent()),
+                     make_view(*this->dof2, this->dof2->getNbComponent())))) {
     auto n = std::get<0>(data);
     auto & l1 = std::get<0>(std::get<1>(data));
     auto & l2 = std::get<1>(std::get<1>(data));
@@ -285,11 +289,9 @@ TYPED_TEST(DOFManagerFixture, AssembleMatrixNodal) {
 
   dof_manager->assembleToResidual("dofs1", *this->dof1);
   dof_manager->assembleToResidual("dofs2", *this->dof2);
-  
-  
+
   for (auto && n : arange(this->nb_nodes)) {
     if (not this->mesh->isLocalOrMasterNode(n)) {
-      
     }
   }
 }

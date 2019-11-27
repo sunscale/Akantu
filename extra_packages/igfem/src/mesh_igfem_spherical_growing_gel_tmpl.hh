@@ -276,7 +276,7 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh() {
               break;
             default:
               AKANTU_ERROR("A triangle has only 3 segments not "
-                                 << new_node_per_elem(nel, 2));
+                           << new_node_per_elem(nel, 2));
               break;
             }
             connec_new_elem(3) = new_node_per_elem(nel, 1);
@@ -333,8 +333,8 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh() {
               connec_new_elem(4) = new_node_per_elem(nel, 3);
             } else
               AKANTU_ERROR("A triangle has only 3 segments (0 to 2) not "
-                                 << new_node_per_elem(nel, 2) << "and"
-                                 << new_node_per_elem(nel, 4));
+                           << new_node_per_elem(nel, 2) << "and"
+                           << new_node_per_elem(nel, 4));
 
             UInt nb_igfem_triangles_5 = connec_igfem_tri_5.getSize();
             connec_igfem_tri_5.push_back(connec_new_elem);
@@ -344,7 +344,7 @@ template <UInt dim> void MeshIgfemSphericalGrowingGel<dim>::buildIGFEMMesh() {
           }
           default:
             AKANTU_ERROR("IGFEM cannot add " << new_node_per_elem(nel, 0)
-                                                   << " nodes to triangles");
+                                             << " nodes to triangles");
             break;
           }
           old_element.element = nel;

@@ -197,9 +197,9 @@ void ShapeLagrange<kind>::computeShapeDerivatives(
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
-ShapeLagrange<kind>::ShapeLagrange(const Mesh & mesh, const ID & id,
-                                   const MemoryID & memory_id)
-    : ShapeLagrangeBase(mesh, kind, id, memory_id) {}
+ShapeLagrange<kind>::ShapeLagrange(const Mesh & mesh, UInt spatial_dimension,
+                                   const ID & id, const MemoryID & memory_id)
+    : ShapeLagrangeBase(mesh, spatial_dimension, kind, id, memory_id) {}
 
 /* -------------------------------------------------------------------------- */
 template <ElementKind kind>
@@ -510,7 +510,6 @@ void ShapeLagrange<kind>::computeNtb(
   auto && view = make_view(shapes(itp_type, ghost_type), 1, size_of_shapes);
   auto N_it = view.begin();
   auto N_end = view.end();
-
 
   if (filter_elements != empty_filter) {
     FEEngine::filterElementalData(this->mesh, shapes(itp_type, ghost_type),

@@ -120,4 +120,4 @@ void StressBasedWeightFunction::updatePrincipalStress(__attribute__((unused))
   //   AKANTU_DEBUG_OUT();
 }
 
-} // akantu
+} // namespace akantu

@@ -202,7 +202,8 @@ std::shared_ptr<dumper::Field> SolidMechanicsModel::createElementalField(
       // homogenize the field
       auto foo = dumper::HomogenizerProxy::createHomogenizer(*field);
 
-      field = dumper::FieldComputeProxy::createFieldCompute(field, std::move(foo));
+      field =
+          dumper::FieldComputeProxy::createFieldCompute(field, std::move(foo));
     }
   }
   return field;

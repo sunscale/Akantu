@@ -212,9 +212,8 @@ void SynchronizedArray<T>::readRestartFile(std::string file_name) {
   std::string line;
 
   // get size and nb_component info
-  AKANTU_DEBUG_ASSERT(infile.good(),
-                      "Could not read restart file for "
-                          << "SynchronizedArray " << this->id);
+  AKANTU_DEBUG_ASSERT(infile.good(), "Could not read restart file for "
+                                         << "SynchronizedArray " << this->id);
   getline(infile, line);
   std::stringstream size_comp(line);
   size_comp >> this->size_;

@@ -572,7 +572,7 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
           file.node_tags[tag] = node_id;
           ++node_id;
         }
-          
+
         for (auto _ [[gnu::unused]] : arange(num_nodes_in_block)) {
           file.read_line(pos(_x), pos(_y), pos(_z));
           for (auto && data : zip(real_pos, pos)) {
@@ -772,8 +772,8 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     read_data(file.node_tags,
               [&](auto && id, auto && size [[gnu::unused]],
                   auto && nb_component [[gnu::unused]]) -> Array<double> & {
-                auto & data = file.mesh.template getNodalData<double>(
-                    id, nb_component);
+                auto & data =
+                    file.mesh.template getNodalData<double>(id, nb_component);
                 data.resize(size);
                 return data;
               },

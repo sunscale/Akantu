@@ -62,7 +62,7 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
                             _spatial_dimension = spatial_dimension,
                             _element_kind = _ek_regular);
   this->initialize();
-  
+
   AKANTU_DEBUG_OUT();
 }
 

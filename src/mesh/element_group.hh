@@ -63,7 +63,7 @@ public:
                const MemoryID & memory_id = 0);
 
   ElementGroup(const ElementGroup &);
-  
+
   /* ------------------------------------------------------------------------ */
   /* Type definitions                                                         */
   /* ------------------------------------------------------------------------ */
@@ -71,9 +71,9 @@ public:
   using ElementList = ElementTypeMapArray<UInt>;
   using NodeList = Array<UInt>;
 
-/* ------------------------------------------------------------------------ */
-/* Element iterator                                                         */
-/* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------ */
+  /* Element iterator                                                         */
+  /* ------------------------------------------------------------------------ */
 
   using type_iterator = ElementList::type_iterator;
   [[deprecated("Use elementTypes instead")]] inline type_iterator
@@ -153,8 +153,8 @@ public:
               const GhostType & ghost_type = _not_ghost) const;
   AKANTU_GET_MACRO(Elements, elements, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_NOT_CONST(Elements, elements, ElementTypeMapArray<UInt> &);
-  
-//  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
+
+  //  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
 
   AKANTU_GET_MACRO(NodeGroup, node_group, const NodeGroup &);
   AKANTU_GET_MACRO_NOT_CONST(NodeGroup, node_group, NodeGroup &);

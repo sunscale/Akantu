@@ -48,9 +48,8 @@ int main(int argc, char * argv[]) {
   SolidMechanicsModelCohesive model(mesh);
 
   /// model initialization
-  model.initFull(
-      _analysis_method = _explicit_lumped_mass,
-      _is_extrinsic = true);
+  model.initFull(_analysis_method = _explicit_lumped_mass,
+                 _is_extrinsic = true);
 
   Real time_step = model.getStableTimeStep() * 0.05;
   model.setTimeStep(time_step);

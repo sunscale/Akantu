@@ -154,7 +154,7 @@ void NTNFricRegNoRegularisation::addDumpFieldToDumper(
   if (field_id == "frictional_contact_pressure") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        new dumper::NodalField<Real>(
+        std::make_unique<dumper::NodalField<Real>>(
             this->frictional_contact_pressure.getArray()));
   } else {
     NTNBaseFriction::addDumpFieldToDumper(dumper_name, field_id);

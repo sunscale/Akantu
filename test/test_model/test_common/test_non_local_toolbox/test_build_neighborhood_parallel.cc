@@ -116,7 +116,8 @@ int main(int argc, char * argv[]) {
   Vector<Real> center(spatial_dimension, 0.);
   Real min_distance = 2;
   IntegrationPoint q_min;
-  for (auto type : mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
+  for (auto type :
+       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_regular)) {
     UInt nb_elements = mesh.getNbElement(type, _not_ghost);
     UInt nb_quads = model.getFEEngine().getNbIntegrationPoints(type);
     Array<Real> & coords = quad_coords(type, _not_ghost);

@@ -73,6 +73,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   return stream;
 }
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH__ */

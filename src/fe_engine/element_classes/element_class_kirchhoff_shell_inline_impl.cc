@@ -67,7 +67,7 @@ namespace detail {
     P(2) = e3;
     P = P.transpose();
   }
-}
+} // namespace detail
 
 /* -------------------------------------------------------------------------- */
 template <>

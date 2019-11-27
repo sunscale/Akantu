@@ -122,6 +122,57 @@ void Mesh::getBarycenters(Array<Real> & barycenter, const ElementType & type,
   }
 }
 
+class FacetGlobalConnectivityAccessor : public DataAccessor<Element> {
+public:
+  FacetGlobalConnectivityAccessor(Mesh & mesh)
+      : global_connectivity("global_connectivity",
+                            "facet_connectivity_synchronizer") {
+    global_connectivity.initialize(
+        mesh, _spatial_dimension = _all_dimensions, _with_nb_element = true,
+        _with_nb_nodes_per_element = true, _element_kind = _ek_regular);
+    mesh.getGlobalConnectivity(global_connectivity);
+  }
+
+  UInt getNbData(const Array<Element> & elements,
+                 const SynchronizationTag & tag) const {
+    UInt size = 0;
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
+      UInt nb_nodes = Mesh::getNbNodesPerElementList(elements);
+      size += nb_nodes * sizeof(UInt);
+    }
+    return size;
+  }
+
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                const SynchronizationTag & tag) const {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
+      for (const auto & element : elements) {
+        auto & conns = global_connectivity(element.type, element.ghost_type);
+        for (auto n : arange(conns.getNbComponent())) {
+          buffer << conns(element.element, n);
+        }
+      }
+    }
+  }
+
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                  const SynchronizationTag & tag) {
+    if (tag == SynchronizationTag::_smmc_facets_conn) {
+      for (const auto & element : elements) {
+        auto & conns = global_connectivity(element.type, element.ghost_type);
+        for (auto n : arange(conns.getNbComponent())) {
+          buffer >> conns(element.element, n);
+        }
+      }
+    }
+  }
+
+  AKANTU_GET_MACRO(GlobalConnectivity, (global_connectivity), decltype(auto));
+
+protected:
+  ElementTypeMapArray<UInt> global_connectivity;
+};
+
 /* -------------------------------------------------------------------------- */
 Mesh & Mesh::initMeshFacets(const ID & id) {
   AKANTU_DEBUG_IN();
@@ -145,6 +196,15 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
     mesh_facets->is_distributed = true;
     mesh_facets->element_synchronizer = std::make_unique<FacetSynchronizer>(
         *mesh_facets, mesh.getElementSynchronizer());
+
+    FacetGlobalConnectivityAccessor data_accessor(*mesh_facets);
+    /// communicate
+    mesh_facets->element_synchronizer->synchronizeOnce(
+        data_accessor, SynchronizationTag::_smmc_facets_conn);
+
+    /// flip facets
+    MeshUtils::flipFacets(*mesh_facets, data_accessor.getGlobalConnectivity(),
+                          _ghost);
   }
 
   /// transfers the the mesh physical names to the mesh facets
@@ -365,11 +425,10 @@ DumperIOHelper & Mesh::getGroupDumper(const std::string & dumper_name,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
-                                            const ElementKind & element_kind) {
+ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays) {
   ElementTypeMap<UInt> nb_data_per_elem;
 
-  for (auto type : elementTypes(spatial_dimension, _not_ghost, element_kind)) {
+  for (auto type : arrays.elementTypes()) {
     UInt nb_elements = this->getNbElement(type);
     auto & array = arrays(type);
 
@@ -382,12 +441,10 @@ ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays,
 
 /* -------------------------------------------------------------------------- */
 template ElementTypeMap<UInt>
-Mesh::getNbDataPerElem(ElementTypeMapArray<Real> & array,
-                       const ElementKind & element_kind);
+Mesh::getNbDataPerElem(ElementTypeMapArray<Real> & array);
 
 template ElementTypeMap<UInt>
-Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array,
-                       const ElementKind & element_kind);
+Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array);
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
@@ -405,8 +462,7 @@ Mesh::createFieldFromAttachedData(const std::string & field_id,
     return nullptr;
   }
 
-  ElementTypeMap<UInt> nb_data_per_elem =
-      this->getNbDataPerElem(*internal, element_kind);
+  ElementTypeMap<UInt> nb_data_per_elem = this->getNbDataPerElem(*internal);
 
   field = this->createElementalField<T, dumper::InternalMaterialField>(
       *internal, group_name, this->spatial_dimension, element_kind,
@@ -429,8 +485,10 @@ Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
 /* -------------------------------------------------------------------------- */
 void Mesh::distributeImpl(
     Communicator & communicator,
-    std::function<Int(const Element &, const Element &)> edge_weight_function [[gnu::unused]],
-    std::function<Int(const Element &)> vertex_weight_function [[gnu::unused]]) {
+    std::function<Int(const Element &, const Element &)> edge_weight_function
+    [[gnu::unused]],
+    std::function<Int(const Element &)> vertex_weight_function
+    [[gnu::unused]]) {
   AKANTU_DEBUG_ASSERT(is_distributed == false,
                       "This mesh is already distribute");
   this->communicator = &communicator;
@@ -532,7 +590,7 @@ void Mesh::registerGlobalDataUpdater(
 void Mesh::eraseElements(const Array<Element> & elements) {
   ElementTypeMap<UInt> last_element;
 
-  RemovedElementsEvent event(*this);
+  RemovedElementsEvent event(*this, "new_numbering", AKANTU_CURRENT_FUNCTION);
   auto & remove_list = event.getList();
   auto & new_numbering = event.getNewNumbering();
 

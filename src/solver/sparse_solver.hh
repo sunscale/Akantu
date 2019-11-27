@@ -47,7 +47,7 @@ enum SolverParallelMethod {
 };
 
 class DOFManager;
-}
+} // namespace akantu
 
 namespace akantu {
 
@@ -123,8 +123,8 @@ namespace debug {
         : Exception("Solver encountered singular matrix"), matrix(matrix) {}
     const SparseMatrix & matrix;
   };
-}
+} // namespace debug
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_SOLVER_HH__ */

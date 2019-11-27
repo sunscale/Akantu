@@ -112,7 +112,7 @@ protected:
   Real tol_intersection_on_node;
 };
 
-} // akantu
+} // namespace akantu
 
 #include "mesh_sphere_intersector_tmpl.hh"
 

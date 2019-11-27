@@ -123,27 +123,6 @@ macro tries to determine it in a "clever" way
 
 set(AKANTU_DRIVER_SCRIPT ${AKANTU_CMAKE_DIR}/akantu_test_driver.sh)
 
-function(_add_file_to_copy target file)
-  get_filename_component(_file_name_we ${file} NAME_WE)
-  get_filename_component(_file_name ${file} NAME)
-  get_filename_component(_file_path ${file}
-    ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-  set(copy_target copy_${_file_name_we}_${target})
-  add_custom_target(${copy_target}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${_file_name})
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_file_name}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${file}
-		${CMAKE_CURRENT_BINARY_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${_file_path}
-    COMMENT "Copying file ${_file_name} for the target ${target}"
-    )
-  add_dependencies(${target} ${copy_target})
-endfunction()
-
 # ==============================================================================
 macro(add_test_tree dir)
   if(AKANTU_TESTS)
@@ -362,6 +341,7 @@ function(akantu_pybind11_add_module target)
       )
 
     pybind11_add_module(${target} ${ARGN})
+    target_link_libraries(${target} PRIVATE pyakantu)
     target_include_directories(${target} SYSTEM PRIVATE ${PYBIND11_INCLUDE_DIR}
       ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR})
     set_property(TARGET ${target} PROPERTY DEBUG_POSTFIX "")
@@ -569,8 +549,13 @@ function(register_test test_name)
       set(_procs "${_register_test_PARALLEL_LEVEL}")
     elseif(CMAKE_VERSION VERSION_GREATER "3.0")
       set(_procs)
-      include(ProcessorCount)
-      ProcessorCount(N)
+      if(MPIEXEC_MAX_NUMPROCS)
+	set(N MPIEXEC_MAX_NUMPROCS)
+      else()
+	include(ProcessorCount)
+	ProcessorCount(N)
+      endif()
+      
       while(N GREATER 1)
         list(APPEND _procs ${N})
         math(EXPR N "${N} / 2")

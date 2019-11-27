@@ -35,8 +35,8 @@
 #===============================================================================
 package_is_activated(damage_non_local _act)
 if(_act)
-  add_library(test_material OBJECT test_material.hh test_material.cc)
-  add_library(test_material_damage OBJECT test_material_damage.hh test_material_damage.cc)
+  add_library(test_material test_material.hh test_material.cc)
+  add_library(test_material_damage test_material_damage.hh test_material_damage.cc)
   target_link_libraries(test_material akantu)
   target_link_libraries(test_material_damage akantu)
 endif()

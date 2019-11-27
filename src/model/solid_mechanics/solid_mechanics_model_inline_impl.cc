@@ -55,54 +55,44 @@ inline decltype(auto) SolidMechanicsModel::getMaterials() const {
 
 /* -------------------------------------------------------------------------- */
 inline Material & SolidMechanicsModel::getMaterial(UInt mat_index) {
-  AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
                       "The model " << id << " has no material no "
                                    << mat_index);
-  AKANTU_DEBUG_OUT();
   return *materials[mat_index];
 }
 
 /* -------------------------------------------------------------------------- */
 inline const Material & SolidMechanicsModel::getMaterial(UInt mat_index) const {
-  AKANTU_DEBUG_IN();
   AKANTU_DEBUG_ASSERT(mat_index < materials.size(),
                       "The model " << id << " has no material no "
                                    << mat_index);
-  AKANTU_DEBUG_OUT();
   return *materials[mat_index];
 }
 
 /* -------------------------------------------------------------------------- */
 inline Material & SolidMechanicsModel::getMaterial(const std::string & name) {
-  AKANTU_DEBUG_IN();
   std::map<std::string, UInt>::const_iterator it =
       materials_names_to_id.find(name);
   AKANTU_DEBUG_ASSERT(it != materials_names_to_id.end(),
                       "The model " << id << " has no material named " << name);
-  AKANTU_DEBUG_OUT();
   return *materials[it->second];
 }
 
 /* -------------------------------------------------------------------------- */
 inline UInt
 SolidMechanicsModel::getMaterialIndex(const std::string & name) const {
-  AKANTU_DEBUG_IN();
   auto it = materials_names_to_id.find(name);
   AKANTU_DEBUG_ASSERT(it != materials_names_to_id.end(),
                       "The model " << id << " has no material named " << name);
-  AKANTU_DEBUG_OUT();
   return it->second;
 }
 
 /* -------------------------------------------------------------------------- */
 inline const Material &
 SolidMechanicsModel::getMaterial(const std::string & name) const {
-  AKANTU_DEBUG_IN();
   auto it = materials_names_to_id.find(name);
   AKANTU_DEBUG_ASSERT(it != materials_names_to_id.end(),
                       "The model " << id << " has no material named " << name);
-  AKANTU_DEBUG_OUT();
   return *materials[it->second];
 }
 

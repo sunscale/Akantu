@@ -33,8 +33,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "patch_test_linear_solid_mechanics_fixture.hh"
 #include "non_linear_solver.hh"
+#include "patch_test_linear_solid_mechanics_fixture.hh"
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
@@ -84,7 +84,8 @@ TYPED_TEST(TestPatchTestSMMLinear, AnisotropicExplicit) {
     }
     C[0][0][0][0] = C[1][1][1][1] = 112.93753504999995;
     C[0][0][1][1] = C[1][1][0][0] = 51.618263849999984;
-    C[0][1][0][1] = C[1][0][0][1] = C[0][1][1][0] = C[1][0][1][0] = 22.814123549999987;
+    C[0][1][0][1] = C[1][0][0][1] = C[0][1][1][0] = C[1][0][1][0] =
+        22.814123549999987;
   }
 
   if (this->dim == 1) {
@@ -135,7 +136,6 @@ TYPED_TEST(TestPatchTestSMMLinear, AnisotropicExplicit) {
       mat.getStress(this->type), displacement);
 }
 
-
 TYPED_TEST(TestPatchTestSMMLinear, AnisotropicStatic) {
   Real C[3][3][3][3] = {
       {{{112.93753505, 1.85842452538e-10, -4.47654358027e-10},
@@ -178,16 +178,17 @@ TYPED_TEST(TestPatchTestSMMLinear, AnisotropicStatic) {
     }
     C[0][0][0][0] = C[1][1][1][1] = 112.93753504999995;
     C[0][0][1][1] = C[1][1][0][0] = 51.618263849999984;
-    C[0][1][0][1] = C[1][0][0][1] = C[0][1][1][0] = C[1][0][1][0] = 22.814123549999987;
+    C[0][1][0][1] = C[1][0][0][1] = C[0][1][1][0] = C[1][0][1][0] =
+        22.814123549999987;
   }
 
   if (this->dim == 1) {
     C[0][0][0][0] = 105.092023;
   }
-  
+
   this->initModel(_static,
                   "material_anisotropic_" + std::to_string(this->dim) + ".dat");
-  
+
   auto & solver = this->model->getNonLinearSolver();
   solver.set("max_iterations", 2);
   solver.set("threshold", 2e-4);

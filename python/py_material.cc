@@ -151,8 +151,8 @@ void define_material(py::module & mod, const std::string & name) {
              self.registerAllocator(
                  id,
                  [func, id](UInt dim, const ID &, SolidMechanicsModel & model,
-                            const ID & id) -> std::unique_ptr<Material> {
-                   py::object obj = func(dim, id, model, id);
+                            const ID & option) -> std::unique_ptr<Material> {
+                   py::object obj = func(dim, id, model, option);
                    auto & ptr = py::cast<Material &>(obj);
 
                    obj.release();
@@ -164,6 +164,15 @@ void define_material(py::module & mod, const std::string & name) {
   register_element_type_map_array<UInt>(mod, "UInt");
 
   define_material<Material>(mod, "Material");
+
+  py::class_<MaterialSelector, std::shared_ptr<MaterialSelector>>(
+      mod, "MaterialSelector");
+
+  py::class_<MeshDataMaterialSelector<std::string>, MaterialSelector,
+             std::shared_ptr<MeshDataMaterialSelector<std::string>>>(
+      mod, "MeshDataMaterialSelectorString")
+      .def(py::init<const std::string &, const SolidMechanicsModel &, UInt>(),
+           py::arg("name"), py::arg("model"), py::arg("first_index") = 1);
 }
 
 } // namespace akantu

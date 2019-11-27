@@ -39,6 +39,44 @@ function(register_example example_name)
   if(DEFINED _add_examples_pkg)
     package_add_to_variable(EXAMPLES_FILES ${_add_examples_pkg} ${_example_files})
   endif()
+
+  if(AKANTU_TEST_EXAMPLES)
+    cmake_parse_arguments(_example
+      "PYTHON;PARALLEL"
+      ""
+      "SCRIPT"
+      ${ARGN}
+      )
+
+    if(_example_PARALLEL)
+      set(_exe ${MPIEXEC})
+      if(NOT _exe)
+	set(_exe ${MPIEXEC_EXECUTABLE})
+      endif()
+      set(_parallel_runner ${_exe} ${MPIEXEC_PREFLAGS} ${MPIEXEC_NUMPROC_FLAG} 2)
+    endif()
+    
+    if(NOT _example_SCRIPT)
+      add_test(NAME ${example_name}-test
+	COMMAND ${_parallel_runner} $<TARGET_FILE:${example_name}>
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    elseif(_example_SCRIPT)
+      if(_example_PYTHON)
+	add_test(NAME ${example_name}-test
+	  COMMAND ${_parallel_runner} ${PYTHON_EXECUTABLE} ${_example_SCRIPT}
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+      else()
+	set(_python_path ENV{PYTHON_PATH})
+	if (NOT _python_path MATCHES ${PROJECT_BINARY_DIR}/python)
+	  set(ENV{PYTHON_PATH} "${_python_path}:${PROJECT_BINARY_DIR}/python")
+	endif()
+	add_test(NAME ${example_name}-test
+	  COMMAND ${_parallel_runner} ${_example_SCRIPT}
+	  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	  )
+      endif()
+    endif()
+  endif()
 endfunction()
 
 # ==============================================================================

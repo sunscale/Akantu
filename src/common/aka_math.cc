@@ -181,7 +181,8 @@ void Math::compute_tangents(const Array<Real> & normals,
   UInt spatial_dimension = normals.getNbComponent();
   UInt tangent_components = spatial_dimension * (spatial_dimension - 1);
 
-  if (tangent_components == 0) return;
+  if (tangent_components == 0)
+    return;
 
   AKANTU_DEBUG_ASSERT(
       tangent_components == tangents.getNbComponent(),
@@ -249,4 +250,4 @@ Real Math::reduce(Array<Real> & array) {
   return array(0);
 }
 
-} // akantu
+} // namespace akantu

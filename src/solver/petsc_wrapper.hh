@@ -75,6 +75,6 @@ extern int aka_PETScError(int ierr);
   } while (0)
 #endif
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_PETSC_WRAPPER_HH__ */

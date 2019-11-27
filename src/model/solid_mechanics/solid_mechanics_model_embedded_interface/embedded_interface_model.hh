@@ -148,6 +148,6 @@ public:
             model.getInterfaceMesh().getData<T>(name), model, first_index) {}
 };
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_EMBEDDED_INTERFACE_MODEL_HH__

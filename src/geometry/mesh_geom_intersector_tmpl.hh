@@ -59,6 +59,6 @@ void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData(
   factory.constructData(ghost_type);
 }
 
-} // akantu
+} // namespace akantu
 
 #endif // __AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH__

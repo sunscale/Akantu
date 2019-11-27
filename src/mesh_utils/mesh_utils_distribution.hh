@@ -38,7 +38,7 @@
 namespace akantu {
 class Mesh;
 class MeshPartition;
-} // akantu
+} // namespace akantu
 
 namespace akantu {
 namespace MeshUtilsDistribution {
@@ -48,8 +48,8 @@ namespace MeshUtilsDistribution {
                                  const MeshPartition & partition);
   /// Slave call to distribute a mesh in a centralized manner
   void distributeMeshCentralized(Mesh & mesh, UInt root);
-} // MeshUtilsDistribution
+} // namespace MeshUtilsDistribution
 
-} // akantu
+} // namespace akantu
 
 #endif /* __AKANTU_MESH_UTILS_DISTRIBUTION_HH__ */
