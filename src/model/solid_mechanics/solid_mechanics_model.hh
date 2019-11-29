@@ -360,43 +360,43 @@ public:
   AKANTU_SET_MACRO(F_M2A, f_m2a, Real);
 
   /// get the SolidMechanicsModel::displacement vector
-  AKANTU_GET_MACRO(Displacement, *displacement, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(Displacement, displacement);
 
   /// get the SolidMechanicsModel::previous_displacement vector
-  AKANTU_GET_MACRO(PreviousDisplacement, *previous_displacement, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(PreviousDisplacement, previous_displacement);
 
   /// get the SolidMechanicsModel::current_position vector \warn only consistent
   /// after a call to SolidMechanicsModel::updateCurrentPosition
   const Array<Real> & getCurrentPosition();
 
   /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
-  AKANTU_GET_MACRO(Increment, *displacement_increment, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(Increment, displacement_increment);
 
   /// get the lumped SolidMechanicsModel::mass vector
-  AKANTU_GET_MACRO(Mass, *mass, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(Mass, mass);
 
   /// get the SolidMechanicsModel::velocity vector
-  AKANTU_GET_MACRO(Velocity, *velocity, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(Velocity, velocity);
 
   /// get    the    SolidMechanicsModel::acceleration    vector,   updated    by
   /// SolidMechanicsModel::updateAcceleration
-  AKANTU_GET_MACRO(Acceleration, *acceleration, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(Acceleration, acceleration);
 
   /// get the SolidMechanicsModel::external_force vector (external forces)
-  AKANTU_GET_MACRO(ExternalForce, *external_force, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(ExternalForce, external_force);
 
   /// get the SolidMechanicsModel::force vector (external forces)
   Array<Real> & getForce() {
     AKANTU_DEBUG_WARNING("getForce was maintained for backward compatibility, "
                          "use getExternalForce instead");
-    return *external_force;
+    return getExternalForce();
   }
 
   /// get the SolidMechanicsModel::internal_force vector (internal forces)
-  AKANTU_GET_MACRO(InternalForce, *internal_force, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(InternalForce, internal_force);
 
   /// get the SolidMechanicsModel::blocked_dofs vector
-  AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
+  AKANTU_GET_MACRO_DEREF_PTR(BlockedDOFs, blocked_dofs);
 
   /// get an iterable on the materials
   inline decltype(auto) getMaterials();
