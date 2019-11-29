@@ -74,7 +74,8 @@ add_akantu_test(test_material_viscoelastic "test the visco elastic materials")
 add_akantu_test(test_material_non_local "test the non-local materials")
 add_akantu_test(test_material_elasto_plastic_linear_isotropic_hardening
   "test the elasto plastic with linear isotropic hardening materials")
-add_akantu_test(test_material_viscoelastic_maxwell "test the viscoelastic maxwell material")
+add_akantu_test(test_material_viscoelastic_maxwell
+  "test the viscoelastic maxwell material" UNSTABLE)
 
 # ==============================================================================
 add_mesh(test_multi_material_elastic_mesh test_multi_material_elastic.geo 2 1)
