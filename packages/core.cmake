@@ -407,6 +407,7 @@ package_declare_elements(core
   compute_shapes_derivatives
   get_shapes_derivatives
   lagrange_base
+  assemble_fields
   )
 
 package_declare_documentation_files(core

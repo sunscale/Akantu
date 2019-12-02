@@ -74,6 +74,7 @@ package_declare_elements(structural_mechanics
   compute_shapes
   compute_shapes_derivatives
   get_shapes_derivatives
+  assemble_fields
   )
 
 package_declare_documentation_files(structural_mechanics

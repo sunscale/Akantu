@@ -97,11 +97,8 @@ namespace fe_engine {
     }                                                                          \
   };
 
-#define AKANTU_SPECIALIZE_ASSEMBLE_HELPER_LIST_KIND                            \
-  AKANTU_GENERATE_KIND_LIST((_ek_regular)(_ek_structural))
-
     AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_ASSEMBLE_HELPER,
-                               AKANTU_SPECIALIZE_ASSEMBLE_HELPER_LIST_KIND)
+                               AKANTU_FE_ENGINE_LIST_ASSEMBLE_FIELD)
 
 #undef AKANTU_SPECIALIZE_ASSEMBLE_HELPER
 #undef AKANTU_SPECIALIZE_ASSEMBLE_HELPER_LIST_KIND
@@ -341,14 +338,10 @@ namespace fe_engine {
     }                                                                          \
   };
 
-#define AKANTU_SPECIALIZE_ASSEMBLE_HELPER_LIST_KIND                            \
-  AKANTU_GENERATE_KIND_LIST((_ek_regular)(_ek_structural))
-
     AKANTU_BOOST_ALL_KIND_LIST(AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER,
-                               AKANTU_SPECIALIZE_ASSEMBLE_HELPER_LIST_KIND)
+                               AKANTU_FE_ENGINE_LIST_ASSEMBLE_FIELD)
 
 #undef AKANTU_SPECIALIZE_ASSEMBLE_FIELD_MATRIX_HELPER
-#undef AKANTU_SPECIALIZE_ASSEMBLE_HELPER_LIST_KIND
 #undef ASSEMBLE_MATRIX
   } // namespace details
 } // namespace fe_engine
