@@ -150,7 +150,7 @@ pipeline {
           [$class: 'SkippedThreshold', failureThreshold: '0'],
           [$class: 'FailedThreshold', failureThreshold: '0']],
       tools: [
-        [$class: 'CTestType', pattern: 'CTestResults.xml', skipNoTestFiles: true]
+        [$class: 'CTestType', pattern: 'build/CTestResults.xml', skipNoTestFiles: true]
       ]])
     }
 
