@@ -711,6 +711,7 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(),
                                    this->getMemoryID());
 
+  UInt count = 0;
   for (auto & elem : element_list) {
     if (mesh.getSpatialDimension(elem.type) != spatial_dimension)
       continue;
@@ -718,9 +719,12 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
     if (!filter.exists(elem.type, elem.ghost_type))
       filter.alloc(0, 1, elem.type, elem.ghost_type);
     filter(elem.type, elem.ghost_type).push_back(elem.element);
+
+    ++count;
   }
 
-  this->assignMaterialToElements(&filter);
+  if (count != 0)
+    this->assignMaterialToElements(&filter);
 
   for (auto & material : materials)
     material->onElementsAdded(element_list, event);
