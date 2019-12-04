@@ -62,6 +62,8 @@ void register_model(py::module & mod) {
       .def("setBaseName", &Model::setBaseName)
       .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
            py::return_value_policy::reference)
+      .def("getFEEngineBoundary", &Model::getFEEngine, py::arg("name") = "",
+           py::return_value_policy::reference)
       .def("addDumpFieldVector", &Model::addDumpFieldVector)
       .def("addDumpField", &Model::addDumpField)
       .def("setBaseNameToDumper", &Model::setBaseNameToDumper)
