@@ -4,6 +4,7 @@ package_declare(pybind11 EXTERNAL
   EXTRA_PACKAGE_OPTIONS ARGS "2.4.2;CONFIG" LINK_LIBRARIES pybind11::embed PREFIX pybind11
   DESCRIPTION "Akantu's pybind11 interface"
   SYSTEM AUTO third-party/cmake/pybind11.cmake
+  DEPENDS PythonLibsNew
   EXCLUDE_FROM_ALL
   )
 
