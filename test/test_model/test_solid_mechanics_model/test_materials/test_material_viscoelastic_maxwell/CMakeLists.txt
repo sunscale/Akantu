@@ -28,4 +28,5 @@ register_test(test_material_viscoelasti_maxwell_relaxation
   DEPENDS test_material_viscoelastic_maxwell_mesh
   FILES_TO_COPY material_viscoelastic_maxwell.dat
   PACKAGE core
+  UNSTABLE
   )
