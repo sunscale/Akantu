@@ -61,7 +61,7 @@ stages:
 
 .image_debian_testing_gcc:
   cache:
-    key: debian_testing_gcc_${CI_COMMIT_REF_SLUG}
+    key: debian_testing_gcc_${CI_JOB_NAME}
     paths:
       - build
       - third-party/google-test
