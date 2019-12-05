@@ -11,9 +11,7 @@ stages:
   variables:
     BLA_VENDOR: 'OpenBLAS'
   script:
-    - mkdir build
-    - cd build
-    - cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
+    - cmake -S . -B build -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
             -DAKANTU_IMPLICIT:BOOL=TRUE \
             -DAKANTU_PARALLEL:BOOL=TRUE \
             -DAKANTU_STRUCTURAL_MECHANICS:BOOL=TRUE \
