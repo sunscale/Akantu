@@ -49,12 +49,12 @@ stages:
     - ctest -T test --no-compress-output --timeout 120 || true
     - tag=$(head -n 1 < Testing/TAG)
     - if [ -e Testing/${tag}/Test.xml ]; then
-    -   cp Testing/${tag}/Test.xml ./CTestResults.xml;
+    -   xsltproc -o ./juint.xml ../test/ci/ctest2juint.xsl Testing/${tag}/Test.xml;
     - fi
   artifacts:
     when: always
-    paths:
-      - build/CTestsResults.xml
+    reports:
+      - build/juint.xml
 
 .image_debian_testing_gcc:
   cache:
