@@ -13,19 +13,20 @@ stages:
   script:
     - cmake -E make_directory build
     - cd build
-    - cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
-            -DAKANTU_IMPLICIT:BOOL=TRUE \
-            -DAKANTU_PARALLEL:BOOL=TRUE \
-            -DAKANTU_STRUCTURAL_MECHANICS:BOOL=TRUE \
-            -DAKANTU_HEAT_TRANSFER:BOOL=TRUE \
-            -DAKANTU_DAMAGE_NON_LOCAL:BOOL=TRUE \
-            -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
-            -DAKANTU_EXAMPLES:BOOL=TRUE \
-            -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE \
-            -DAKANTU_TEST_EXAMPLES:BOOL=FALSE \
-            -DAKANTU_TESTS:BOOL=TRUE \
+    - cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE
+            -DAKANTU_IMPLICIT:BOOL=TRUE
+            -DAKANTU_PARALLEL:BOOL=TRUE
+            -DAKANTU_STRUCTURAL_MECHANICS:BOOL=TRUE
+            -DAKANTU_HEAT_TRANSFER:BOOL=TRUE
+            -DAKANTU_DAMAGE_NON_LOCAL:BOOL=TRUE
+            -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE
+            -DAKANTU_EXAMPLES:BOOL=TRUE
+            -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE
+            -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
+            -DAKANTU_TESTS:BOOL=TRUE
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
-
+    - ls build
+    - ls third-party
 .build:
   stage: build
   script:
@@ -34,8 +35,6 @@ stages:
 .build_tests:
   stage: build_tests
   script:
-    - ls third-party/
-    - ls build/
     - cmake --build build/test
     - cmake --build build/python
     - cmake --build build/examples
