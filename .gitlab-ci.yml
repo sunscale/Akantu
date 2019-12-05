@@ -53,8 +53,11 @@ stages:
     - fi
   artifacts:
     when: always
+    paths:
+      - build/juint.xml
     reports:
-      juint: build/juint.xml
+      junit:
+        - build/juint.xml
 
 .image_debian_testing_gcc:
   cache:
