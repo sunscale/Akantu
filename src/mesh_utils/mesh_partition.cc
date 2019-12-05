@@ -444,45 +444,45 @@ void MeshPartition::fillPartitionInformation(
       // Facet loop
       for (UInt i(0); i < mesh.getNbElement(type, _not_ghost); ++i) {
         const auto & adjacent_elems = elem_to_subelem(i);
-        if (not adjacent_elems.empty()) {
-          Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
-                           *ghost_type_t::end()};
-          UInt min_part(std::numeric_limits<UInt>::max());
-          std::set<UInt> adjacent_parts;
-
-          for (UInt j(0); j < adjacent_elems.size(); ++j) {
-            auto adjacent_elem_id = adjacent_elems[j].element;
-            auto adjacent_elem_part =
-                partitions(adjacent_elems[j].type,
-                           adjacent_elems[j].ghost_type)(adjacent_elem_id);
-            if (adjacent_elem_part < min_part) {
-              min_part = adjacent_elem_part;
-              min_elem = adjacent_elems[j];
-            }
-            adjacent_parts.insert(adjacent_elem_part);
-          }
-          partition(i) = min_part;
-
-          auto git = ghost_partitions_csr(min_elem.type, _not_ghost)
-                         .begin(min_elem.element);
-          auto gend = ghost_partitions_csr(min_elem.type, _not_ghost)
-                          .end(min_elem.element);
-          for (; git != gend; ++git) {
-            adjacent_parts.insert(*git);
-          }
-
-          adjacent_parts.erase(min_part);
-          for (auto & part : adjacent_parts) {
-            ghost_part_csr.getRows().push_back(part);
-            ghost_part_csr.rowOffset(i)++;
-            ghost_partition.push_back(part);
-          }
-
-          ghost_partition_offset(i + 1) =
-              ghost_partition_offset(i + 1) + adjacent_elems.size();
-        } else {
+        if (adjacent_elems.empty()) {
           partition(i) = 0;
+          continue;
         }
+        Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
+                         *ghost_type_t::end()};
+        UInt min_part(std::numeric_limits<UInt>::max());
+        std::set<UInt> adjacent_parts;
+
+        for (auto adj_elem : adjacent_elems) {
+          if (adj_elem == ElementNull) // case of boundary elements
+            continue;
+
+          auto adjacent_elem_part = partitions(adj_elem);
+          if (adjacent_elem_part < min_part) {
+            min_part = adjacent_elem_part;
+            min_elem = adj_elem;
+          }
+          adjacent_parts.insert(adjacent_elem_part);
+        }
+        partition(i) = min_part;
+
+        auto git = ghost_partitions_csr(min_elem.type, _not_ghost)
+                       .begin(min_elem.element);
+        auto gend = ghost_partitions_csr(min_elem.type, _not_ghost)
+                        .end(min_elem.element);
+        for (; git != gend; ++git) {
+          adjacent_parts.insert(*git);
+        }
+
+        adjacent_parts.erase(min_part);
+        for (auto & part : adjacent_parts) {
+          ghost_part_csr.getRows().push_back(part);
+          ghost_part_csr.rowOffset(i)++;
+          ghost_partition.push_back(part);
+        }
+
+        ghost_partition_offset(i + 1) =
+            ghost_partition_offset(i + 1) + adjacent_elems.size();
       }
       ghost_part_csr.countToCSR();
     }

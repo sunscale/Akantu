@@ -55,7 +55,6 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
                           "work_material.dat");
 
   /// model initialization
-  MeshUtils::buildFacets(*this->mesh);
   this->model->initFull(_analysis_method = _static);
 
   /// Create a node group for Neumann BCs.
