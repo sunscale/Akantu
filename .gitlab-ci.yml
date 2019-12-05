@@ -25,8 +25,7 @@ stages:
             -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
             -DAKANTU_TESTS:BOOL=TRUE
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
-    - ls build
-    - ls third-party
+
 .build:
   stage: build
   script:
