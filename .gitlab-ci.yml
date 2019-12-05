@@ -1,0 +1,92 @@
+stages:
+  - configure
+  - build
+  - build_tests
+  - test
+
+.configure:
+  stage: configure
+  except:
+    - tags
+  variables:
+    BLA_VENDOR: 'OpenBLAS'
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DAKANTU_COHESIVE_ELEMENT:BOOL=TRUE \
+            -DAKANTU_IMPLICIT:BOOL=TRUE \
+            -DAKANTU_PARALLEL:BOOL=TRUE \
+            -DAKANTU_STRUCTURAL_MECHANICS:BOOL=TRUE \
+            -DAKANTU_HEAT_TRANSFER:BOOL=TRUE \
+            -DAKANTU_DAMAGE_NON_LOCAL:BOOL=TRUE \
+            -DAKANTU_PYTHON_INTERFACE:BOOL=TRUE \
+            -DAKANTU_EXAMPLES:BOOL=TRUE \
+            -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE \
+            -DAKANTU_TEST_EXAMPLES:BOOL=FALSE \
+            -DAKANTU_TESTS:BOOL=TRUE \
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
+
+.build:
+  stage: build
+  script:
+    - cmake --build build/src
+
+.build_tests:
+  stage: build_tests
+  script:
+    - cmake --build build/test
+    - cmake --build build/python
+    - cmake --build build/examples
+
+.tests:
+  stage: test
+  variables:
+    OMPI_MCA_plm: 'isolated'
+    OMPI_MCA_btl: 'tcp,self'
+
+  script:
+    - cd build
+    - ctest -T test --no-compress-output --timeout 120 || true
+    - tag=$(head -n 1 < Testing/TAG)
+    - if [ -e Testing/${tag}/Test.xml ]; then
+    -   cp Testing/${tag}/Test.xml ./CTestResults.xml;
+    - fi
+  artifacts:
+    when: always
+    paths:
+      - build/CTestsResults.xml
+
+.image_debian_testing_gcc:
+  cache:
+    key: debian_testing_gcc_${CI_COMMIT_REF_SLUG}
+    paths:
+      - build
+      - third-party/google-test
+      - third-party/pybind11
+  image: registry.gitlab.com/akantu/akantu:debian-testing
+
+configure:debian_testing_gcc:
+  extends:
+    - .configure
+    - .image_debian_testing_gcc
+
+build:debian_testing_gcc:
+  extends:
+    - .build
+    - .image_debian_testing_gcc
+  dependencies:
+    - configure:debian_testing_gcc
+
+build_tests:debian_testing_gcc:
+  extends:
+    - .build_tests
+    - .image_debian_testing_gcc
+  dependencies:
+    - build:debian_testing_gcc
+
+test:debian_testing_gcc:
+  extends:
+    - .tests
+    - .image_debian_testing_gcc
+  dependencies:
+    - build_tests:debian_testing_gcc
