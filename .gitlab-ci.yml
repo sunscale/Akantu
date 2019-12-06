@@ -29,14 +29,7 @@ stages:
 .build:
   stage: build
   script:
-    - cmake --build build/src
-
-.build_tests:
-  stage: build_tests
-  script:
-    - cmake --build build/test
-    - cmake --build build/python
-    - cmake --build build/examples
+    - cmake --build build/
 
 .tests:
   stage: test
@@ -49,7 +42,7 @@ stages:
     - ctest -T test --no-compress-output --timeout 120 || true
     - tag=$(head -n 1 < Testing/TAG)
     - if [ -e Testing/${tag}/Test.xml ]; then
-    -   xsltproc -o ./juint.xml ../test/ci/ctest2juint.xsl Testing/${tag}/Test.xml;
+    -   xsltproc -o ./juint.xml ${CI_PROJECT_DIR}/test/ci/ctest2junit.xsl Testing/${tag}/Test.xml;
     - fi
   artifacts:
     when: always
@@ -80,16 +73,9 @@ build:debian_testing_gcc:
   dependencies:
     - configure:debian_testing_gcc
 
-build_tests:debian_testing_gcc:
-  extends:
-    - .build_tests
-    - .image_debian_testing_gcc
-  dependencies:
-    - build:debian_testing_gcc
-
 test:debian_testing_gcc:
   extends:
     - .tests
     - .image_debian_testing_gcc
   dependencies:
-    - build_tests:debian_testing_gcc
+    - build:debian_testing_gcc
