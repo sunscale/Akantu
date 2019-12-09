@@ -361,24 +361,11 @@ TEST(TestTransformAdaptor, Functor) {
 /* -------------------------------------------------------------------------- */
 TEST(TestFilteredIterator, Simple) {
   std::vector<int> values{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  std::vector<int> filter{0, 2, 4, 10, 8, 6};
-  for (auto && data : zip(filter, make_filtered_adaptor(filter, values))) {
+  std::vector<int> filter_{0, 2, 4, 10, 8, 6};
+  for (auto && data : zip(filter_, filter(filter_, values))) {
     EXPECT_EQ(std::get<0>(data), std::get<1>(data));
   }
 }
-
-/* -------------------------------------------------------------------------- */
-TEST(TestFilteredIterator, Zip) {
-  std::vector<int> a{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  auto b = a;
-  std::vector<int> filter{0, 2, 4, 10, 8, 6};
-  for (auto && data : zip(filter, make_filtered_adaptor(filter, a, b))) {
-    EXPECT_EQ(std::get<0>(data), std::get<0>(std::get<1>(data)));
-    EXPECT_EQ(std::get<0>(data), std::get<1>(std::get<1>(data)));
-  }
-}
-
-
 
 /* -------------------------------------------------------------------------- */
 int main(int argc, char **argv) {
