@@ -40,7 +40,7 @@ stages:
 
   script:
     - cd build
-    - ctest -T test --no-compress-output --timeout 120 || true
+    - ctest -T test --no-compress-output --timeout 300 && true; exit_code=$?
     - tag=$(head -n 1 < Testing/TAG)
     - if [ -e Testing/${tag}/Test.xml ]; then
     -   xsltproc -o ./juint.xml ${CI_PROJECT_DIR}/test/ci/ctest2junit.xsl Testing/${tag}/Test.xml;
