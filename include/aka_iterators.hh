@@ -569,21 +569,25 @@ namespace iterators {
 
     FilterIterator(filter_iterator_t filter_it,
                    container_iterator_t container_begin)
-        : filter_it(std::move(filter_it)), container_begin(container_begin),
-          container_it(container_begin) {}
+        : filter_it(std::move(filter_it)),
+          container_begin(std::move(container_begin)) {}
 
     FilterIterator(const FilterIterator &) = default;
 
     FilterIterator & operator++() {
       ++filter_it;
-      container_it =
-          container_begin + *filter_it; // this might return invalid iterators
       return *this;
     }
 
-    decltype(auto) operator*() { return *container_it; }
+    decltype(auto) operator*() {
+      auto container_it = this->container_begin + *this->filter_it;
+      return *container_it;
+    }
 
-    decltype(auto) operator*() const { return *container_it; }
+    decltype(auto) operator*() const {
+      auto container_it = this->container_begin + *this->filter_it;
+      return *container_it;
+    }
 
     bool operator==(const FilterIterator & other) const {
       return (filter_it == other.filter_it) and
@@ -597,7 +601,6 @@ namespace iterators {
   private:
     filter_iterator_t filter_it;
     container_iterator_t container_begin;
-    container_iterator_t container_it;
   };
 
   template <class filter_iterator_t, class container_iterator_t>
