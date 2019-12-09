@@ -2,13 +2,15 @@ if(NOT _GTest_version)
   set(_GTest_version "master")
 endif()
 
-download_external_project(google-test
-  URL "https://github.com/google/googletest.git"
-  TAG "${_GTest_version}"
-  BACKEND GIT
-  THIRD_PARTY_SRC_DIR ${_GTest_external_dir}
-  ${_GTest_update}
-  )
+if(NOT EXISTS ${_GTest_external_dir})
+  download_external_project(google-test
+    URL "https://github.com/google/googletest.git"
+    TAG "${_GTest_version}"
+    BACKEND GIT
+    THIRD_PARTY_SRC_DIR ${_GTest_external_dir}
+    ${_GTest_update}
+    )
+endif()
 
 set(gtest_build_tests OFF CACHE INTERNAL "" FORCE)
 set(INSTALL_GTEST OFF CACHE INTERNAL "" FORCE)

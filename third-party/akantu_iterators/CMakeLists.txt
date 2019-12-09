@@ -39,7 +39,6 @@ set_target_properties(akantu_iterators
   )
 # ------------------------------------------------------------------------------
 option(AKANTU_ITERATORS_TESTS "Activating tests" OFF)
-
 mark_as_advanced(AKANTU_ITERATORS_TESTS)
 if(AKANTU_ITERATORS_TESTS)
   enable_testing()
