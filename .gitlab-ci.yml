@@ -24,7 +24,8 @@ stages:
             -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE
             -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
             -DAKANTU_TESTS:BOOL=TRUE
-            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo
+            -DAKANTU_RUN_IN_DOCKER:BOOL=TRUE ..
 
 .build:
   stage: build
