@@ -36,7 +36,6 @@
     paths:
       - build
       - third-party/google-test
-      - third-party/pybind11
   image: registry.gitlab.com/akantu/akantu:debian-testing
 
 configure:debian_testing_gcc:
