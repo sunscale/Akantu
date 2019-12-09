@@ -40,6 +40,12 @@ package_declare_sources(MPI
   synchronizer/communicator_mpi_inline_impl.cc
   )
 
+function(_add_to_mpi_preflags flag)
+  if(NOT MPIEXEC_PREFLAGS MATCHES "${flag}")
+	  string(STRIP "${flag} ${MPIEXEC_PREFLAGS}" _preflags)
+	  set(MPIEXEC_PREFLAGS "${_preflags}" CACHE STRING "" FORCE)
+	endif()
+endfunction()
 
 function(add_extra_mpi_options)
   unset(MPI_ID CACHE)
@@ -67,11 +73,11 @@ function(add_extra_mpi_options)
             endif()
           endforeach()
           set(MPI_ID_VERSION "${MPI_VERSION_MAJOR}.${MPI_VERSION_MINOR}.${MPI_VERSION_RELEASE}"
-	    CACHE INTERNAL "")
-	  if(NOT MPIEXEC_PREFLAGS MATCHES "-oversubscribe")
-	    string(STRIP "-oversubscribe ${MPIEXEC_PREFLAGS}" _preflags)
-	    set(MPIEXEC_PREFLAGS "${_preflags}" CACHE STRING "" FORCE)
-	  endif()
+	          CACHE INTERNAL "")
+          _add_to_mpi_preflags("--oversubscribe")
+          if(AKANTU_RUN_IN_DOCKER)
+	          _add_to_mpi_preflags("--allow-run-as-root")
+	        endif()
         endif()
       endif()
 
@@ -144,13 +150,7 @@ endfunction()
 package_on_enabled_script(MPI
   "
 add_extra_mpi_options()
-
-get_cmake_property(_all_vars VARIABLES)
-foreach(_var \${_all_vars})
-  if(_var MATCHES \"^MPI_.*\")
-    mark_as_advanced(\${_var})
-  endif()
-endforeach()
+mask_package_options(MPI)
 "
 )
 

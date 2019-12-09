@@ -108,8 +108,9 @@ endif()
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
+option(AKANTU_RUN_IN_DOCKER "Set the approriate flage tu run in docker" OFF)
 set(AKANTU_PREFERRED_PYTHON_VERSION 3 CACHE STRING "Preferred version for python related things")
-mark_as_advanced(AKANTU_PREFERRED_PYTHON_VERSION)
+mark_as_advanced(AKANTU_PREFERRED_PYTHON_VERSION AKANTU_RUN_IN_DOCKER)
 
 include(AkantuExtraCompilationProfiles)
 #===============================================================================
