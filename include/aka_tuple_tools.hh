@@ -122,8 +122,143 @@ namespace tuple {
                                 std::tuple_size<std::decay_t<Tuple>>::value>());
   }
 
+  template <template <class> class traits, typename... Ts>
+  struct conjunction {};
+
+  template <template <class> class traits, typename... Ts>
+  struct conjunction<traits, std::tuple<Ts...>>
+      : public aka::conjunction<typename traits<Ts>::value...> {};
+
 } // namespace tuple
 
-} // namespace AKANTU_ITERATOR_NAMESPACE
+namespace tuple {
+  namespace details {
+    /* ---------------------------------------------------------------------- */
+    template <typename tag, typename type> struct named_tag {
+      using _tag = tag;   ///< key
+      using _type = type; ///< value type
+
+      template <typename T>
+      explicit named_tag(T && value) : _value(std::forward<T>(value)) {}
+
+      type _value;
+    };
+
+/* ---------------------------------------------------------------------- */
+#if (defined(__GNUC__) || defined(__GNUG__))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#endif
+    template <typename tag> struct named_tag_proxy {
+      using _tag = tag;
+
+      template <typename T> decltype(auto) operator=(T && value) {
+        return named_tag<tag, T>{std::forward<T>(value)};
+      }
+    };
+#if (defined(__GNUC__) || defined(__GNUG__))
+#pragma GCC diagnostic pop
+#endif
+
+    template <typename T> struct is_named_tag : public std::false_type {};
+    template <typename tag>
+    struct is_named_tag<named_tag_proxy<tag>> : public std::true_type {};
+
+    /* ---------------------------------------------------------------------- */
+    /// Named tuple is just tuple of named params
+    template <typename... Params>
+    struct named_tuple : public std::tuple<Params...> {
+      template <typename... Args>
+      named_tuple(Args &&... args)
+          : std::tuple<Args...>(std::forward<Args>(args)...) {}
+
+    private:
+      template <typename tag, std::size_t Idx,
+                std::enable_if_t<Idx == sizeof...(Params)> * = nullptr>
+      static constexpr std::size_t get_element_index() noexcept {
+        return -1;
+      }
+
+      template <typename tag, std::size_t Idx,
+                std::enable_if_t<(Idx < sizeof...(Params))> * = nullptr>
+      static constexpr std::size_t get_element_index() noexcept {
+        using element_t = std::tuple_element_t<Idx, std::tuple<Params...>>;
+        return (std::is_same<typename element_t::_tag, tag>::value)
+                   ? Idx
+                   : get_element_index<tag, Idx + 1>();
+      }
+
+    public:
+      template <typename NT,
+                std::enable_if_t<is_named_tag<NT>::value> * = nullptr>
+      constexpr decltype(auto) get(NT &&) noexcept {
+        const auto index = get_element_index<typename NT::_tag, 0>();
+        static_assert((index != -1), "wrong named_tag");
+        return (std::get<index>(*this)._value);
+      }
+
+      template <typename NT,
+                std::enable_if_t<is_named_tag<NT>::value> * = nullptr>
+      constexpr decltype(auto) get(NT &&) const noexcept {
+        const auto index = get_element_index<typename NT::_tag, 0>();
+        static_assert((index != -1), "wrong named_tag");
+
+        return std::get<index>(*this)._value;
+      }
+    };
+
+  } // namespace details
+
+  template <typename... Params>
+  constexpr decltype(auto) make_named_tuple(Params &&... params) noexcept {
+    return details::named_tuple<Params...>(std::forward<Params>(params)...);
+  }
+
+  template <typename Param, typename Tuple,
+            std::enable_if<details::is_named_tag<Param>::value> * = nullptr>
+  constexpr decltype(auto) get(Tuple && tuple) noexcept {
+    return tuple.template get<typename Param::hash>();
+  }
+
+  template <size_t HashCode>
+  constexpr details::named_tag_proxy<std::integral_constant<size_t, HashCode>>
+  get() {
+    return {};
+  }
+
+  template <size_t HashCode, class Tuple>
+  constexpr decltype(auto) get(Tuple && tuple) {
+    return tuple.get(get<HashCode>());
+  }
+
+#if defined(__INTEL_COMPILER)
+// intel warnings here
+#elif defined(__clang__)
+// clang warnings here
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-string-literal-operator-template"
+#elif (defined(__GNUC__) || defined(__GNUG__))
+// gcc warnings here
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
+  /// this is a GNU exstension
+  /// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3599.html
+  template <class CharT, CharT... chars>
+  constexpr tuple::details::named_tag_proxy<string_literal<CharT, chars...>>
+  operator"" _n() {
+    return {};
+  }
+
+#if defined(__INTEL_COMPILER)
+#elif defined(__clang__)
+#pragma clang diagnostic pop
+#elif (defined(__GNUC__) || defined(__GNUG__))
+#pragma GCC diagnostic pop
+#endif
+
+} // namespace tuple
+} // namespace AKANTU_ITERATORS_NAMESPACE
 
 #endif /* AKANTU_AKA_TUPLE_TOOLS_HH */
