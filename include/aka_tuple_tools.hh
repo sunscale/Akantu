@@ -29,22 +29,25 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "aka_compatibilty_with_cpp_standard.hh"
+#include "aka_str_hash.hh"
+/* -------------------------------------------------------------------------- */
 #include <tuple>
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_AKA_TUPLE_TOOLS_HH
 #define AKANTU_AKA_TUPLE_TOOLS_HH
 
-#ifndef AKANTU_ITERATOR_NAMESPACE
-#define AKANTU_ITERATOR_NAMESPACE akantu
+#ifndef AKANTU_ITERATORS_NAMESPACE
+#define AKANTU_ITERATORS_NAMESPACE akantu
 #endif
 
-namespace AKANTU_ITERATOR_NAMESPACE {
+namespace AKANTU_ITERATORS_NAMESPACE {
 
 namespace tuple {
   /* ------------------------------------------------------------------------ */
   namespace details {
-    template <size_t N> struct Foreach {
+    template <std::size_t N> struct Foreach {
       template <class Tuple>
       static inline bool not_equal(Tuple && a, Tuple && b) {
         if (std::get<N - 1>(std::forward<Tuple>(a)) ==
@@ -69,7 +72,7 @@ namespace tuple {
       return std::tuple<Ts...>(std::forward<Ts>(args)...);
     }
 
-    template <class F, class Tuple, size_t... Is>
+    template <class F, class Tuple, std::size_t... Is>
     void foreach_impl(F && func, Tuple && tuple,
                       std::index_sequence<Is...> &&) {
       (void)std::initializer_list<int>{
@@ -77,7 +80,7 @@ namespace tuple {
            0)...};
     }
 
-    template <class F, class Tuple, size_t... Is>
+    template <class F, class Tuple, std::size_t... Is>
     decltype(auto) transform_impl(F && func, Tuple && tuple,
                                   std::index_sequence<Is...> &&) {
       return make_tuple_no_decay(

@@ -35,7 +35,7 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-using namespace akantu;
+using namespace aka;
 
 /* -------------------------------------------------------------------------- */
 
@@ -73,7 +73,7 @@ public:
     return *this;
   }
 
-  T a;
+  T a{};
   size_t copy_counter{0};
   size_t move_counter{0};
 };
@@ -131,8 +131,8 @@ protected:
 
 protected:
   size_t size{20};
-  std::vector<A<int>> a;
-  std::vector<A<float>> b;
+  std::vector<A<int>> a{};
+  std::vector<A<float>> b{};
 };
 
 TEST_F(TestZipFixutre, SimpleTest) {
@@ -186,7 +186,6 @@ TEST_F(TestZipFixutre, MoveTest) {
 TEST_F(TestZipFixutre, Bidirectional) {
   auto _zip = zip(a, b);
   auto begin = _zip.begin();
-  auto end = _zip.end();
 
   auto it = begin;
   ++it;
@@ -376,8 +375,3 @@ TEST(TestFilteredIterator, Temporary) {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-int main(int argc, char ** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

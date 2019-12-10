@@ -5,15 +5,15 @@
 #ifndef AKANTU_AKA_STATIC_IF_HH
 #define AKANTU_AKA_STATIC_IF_HH
 
-#ifndef AKANTU_ITERATOR_NAMESPACE
-#define AKANTU_ITERATOR_NAMESPACE akantu
+#ifndef AKANTU_ITERATORS_NAMESPACE
+#define AKANTU_ITERATORS_NAMESPACE akantu
 #endif
 
 #include <utility>
 
 #define FWD(...) ::std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__)
 
-namespace AKANTU_ITERATOR_NAMESPACE {
+namespace AKANTU_ITERATORS_NAMESPACE {
 
 template <typename TPredicate> auto static_if(TPredicate) noexcept;
 
@@ -93,6 +93,6 @@ template <typename TPredicate> auto static_if(TPredicate) noexcept {
 }
 
 #undef FWD
-} // namespace AKANTU_ITERATOR_NAMESPACE
+} // namespace AKANTU_ITERATORS_NAMESPACE
 
 #endif /* AKANTU_AKA_STATIC_IF_HH */

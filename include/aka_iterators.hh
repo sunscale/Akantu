@@ -40,21 +40,48 @@
 #ifndef AKANTU_AKA_ITERATORS_HH
 #define AKANTU_AKA_ITERATORS_HH
 
-#ifndef AKANTU_ITERATOR_NAMESPACE
-#define AKANTU_ITERATOR_NAMESPACE akantu
+#ifndef AKANTU_ITERATORS_NAMESPACE
+#define AKANTU_ITERATORS_NAMESPACE akantu
 #endif
 
-namespace AKANTU_ITERATOR_NAMESPACE {
+namespace AKANTU_ITERATORS_NAMESPACE {
 
 /* -------------------------------------------------------------------------- */
 namespace iterators {
   namespace details {
+
+    template <bool enable> struct CopyAssignmentEnabler {};
+
+    template <> struct CopyAssignmentEnabler<false> {
+      CopyAssignmentEnabler() = default;
+      CopyAssignmentEnabler(const CopyAssignmentEnabler &) = default;
+      CopyAssignmentEnabler(CopyAssignmentEnabler &&) = default;
+      CopyAssignmentEnabler & operator=(const CopyAssignmentEnabler &) = delete;
+      CopyAssignmentEnabler & operator=(CopyAssignmentEnabler &&) = default;
+    };
+
+    template <bool enable> struct MoveAssignmentEnabler {};
+    template <> struct MoveAssignmentEnabler<false> {
+      MoveAssignmentEnabler() = default;
+      MoveAssignmentEnabler(const MoveAssignmentEnabler &) = default;
+      MoveAssignmentEnabler(MoveAssignmentEnabler &&) = default;
+      MoveAssignmentEnabler & operator=(const MoveAssignmentEnabler &) = delete;
+      MoveAssignmentEnabler & operator=(MoveAssignmentEnabler &&) = default;
+    };
+
     template <typename cat1, typename cat2>
     using is_iterator_category_at_least =
         std::is_same<std::common_type_t<cat1, cat2>, cat2>;
-  }
+  } // namespace details
 
-  template <class... Iterators> class ZipIterator {
+  template <class... Iterators>
+  class ZipIterator
+      : public details::CopyAssignmentEnabler<
+            aka::conjunction<std::is_copy_assignable<Iterators>...,
+                             std::is_copy_constructible<Iterators>...>::value>,
+        public details::MoveAssignmentEnabler<
+            aka::conjunction<std::is_move_assignable<Iterators>...,
+                             std::is_move_constructible<Iterators>...>::value> {
   private:
     using tuple_t = std::tuple<Iterators...>;
 
@@ -76,12 +103,6 @@ namespace iterators {
   public:
     explicit ZipIterator(tuple_t iterators) : iterators(std::move(iterators)) {}
 
-    ZipIterator(const ZipIterator & other) = default;
-    ZipIterator(ZipIterator && other) noexcept = default;
-
-    ZipIterator & operator=(const ZipIterator & other) = default;
-    ZipIterator & operator=(ZipIterator && other) noexcept = default;
-
     /* ---------------------------------------------------------------------- */
     template <class iterator_category_ = iterator_category,
               std::enable_if_t<details::is_iterator_category_at_least<
@@ -96,7 +117,7 @@ namespace iterators {
               std::enable_if_t<details::is_iterator_category_at_least<
                   iterator_category_,
                   std::bidirectional_iterator_tag>::value> * = nullptr>
-    ZipIterator operator--(int a) {
+    ZipIterator operator--(int) {
       auto cpy = *this;
       this->operator--();
       return cpy;
@@ -650,19 +671,19 @@ decltype(auto) filter(filter_t && filter, Container && container) {
       std::forward<filter_t>(filter), std::forward<Container>(container));
 }
 
-} // namespace AKANTU_ITERATOR_NAMESPACE
+} // namespace AKANTU_ITERATORS_NAMESPACE
 
 namespace std {
 template <typename... Its>
-struct iterator_traits<::akantu::iterators::ZipIterator<Its...>> {
+struct iterator_traits<::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator<Its...>> {
   using iterator_category = forward_iterator_tag;
   using value_type =
-      typename ::akantu::iterators::ZipIterator<Its...>::value_type;
+      typename ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator<Its...>::value_type;
   using difference_type =
-      typename ::akantu::iterators::ZipIterator<Its...>::difference_type;
-  using pointer = typename ::akantu::iterators::ZipIterator<Its...>::pointer;
+      typename ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator<Its...>::difference_type;
+  using pointer = typename ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator<Its...>::pointer;
   using reference =
-      typename ::akantu::iterators::ZipIterator<Its...>::reference;
+      typename ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator<Its...>::reference;
 };
 
 } // namespace std
