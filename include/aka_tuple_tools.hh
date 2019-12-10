@@ -214,22 +214,25 @@ namespace tuple {
     return details::named_tuple<Params...>(std::forward<Params>(params)...);
   }
 
-  template <typename Param, typename Tuple,
-            std::enable_if<details::is_named_tag<Param>::value> * = nullptr>
-  constexpr decltype(auto) get(Tuple && tuple) noexcept {
-    return tuple.template get<typename Param::hash>();
+  template <typename tag> constexpr decltype(auto) make_named_tag() noexcept {
+    return details::named_tag_proxy<tag>{};
   }
 
-  template <size_t HashCode>
-  constexpr details::named_tag_proxy<std::integral_constant<size_t, HashCode>>
-  get() {
-    return {};
+  template <size_t HashCode> constexpr decltype(auto) get() {
+    return make_named_tag<std::integral_constant<size_t, HashCode>>();
   }
 
   template <size_t HashCode, class Tuple>
   constexpr decltype(auto) get(Tuple && tuple) {
     return tuple.get(get<HashCode>());
   }
+
+  template <typename Param, typename Tuple,
+            std::enable_if_t<details::is_named_tag<Param>::value> * = nullptr>
+  constexpr decltype(auto) get(Tuple && tuple) noexcept {
+    return tuple.template get<typename Param::hash>();
+  }
+
 
 #if defined(__INTEL_COMPILER)
 // intel warnings here
@@ -246,9 +249,8 @@ namespace tuple {
   /// this is a GNU exstension
   /// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3599.html
   template <class CharT, CharT... chars>
-  constexpr tuple::details::named_tag_proxy<string_literal<CharT, chars...>>
-  operator"" _n() {
-    return {};
+  constexpr decltype(auto) operator"" _n() {
+    return make_named_tag<string_literal<CharT, chars...>>();
   }
 
 #if defined(__INTEL_COMPILER)

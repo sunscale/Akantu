@@ -35,7 +35,7 @@
 using namespace aka;
 using namespace aka::tuple;
 
-TEST(NamedTuples, GNUExctension) {
+TEST(NamedTuples, GNUExtension) {
   const auto a = std::vector<int>{1, 10, 3};
   const auto test = make_named_tuple(
       "nom"_n = std::string("Roger"), "age"_n = 47, "taille"_n = 1.92,
@@ -46,4 +46,16 @@ TEST(NamedTuples, GNUExctension) {
   EXPECT_EQ("Roger", nom);
   EXPECT_EQ(1.92, test.get("taille"_n));
   EXPECT_EQ(a.data(), test.get("ref"_n).data());
+}
+
+TEST(NamedTuples, WithHash) {
+  const auto a = std::vector<int>{1, 10, 3};
+  const auto tuple = make_named_tuple(
+      get<"nom"_h>() = std::string("Roger"), get<"age"_h>() = 47, get<"taille"_h>() = 1.92,
+      get<"liste"_h>() = std::vector<int>({1, 2, 3}), get<"ref"_h>() = a);
+
+  EXPECT_EQ(47, tuple::get<"age"_h>(tuple));
+  EXPECT_EQ("Roger", tuple::get<"nom"_h>(tuple));
+  EXPECT_EQ(1.92, tuple::get<"taille"_h>(tuple));
+  EXPECT_EQ(a.data(), tuple::get<"ref"_h>(tuple).data());
 }
