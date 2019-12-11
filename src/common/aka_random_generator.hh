@@ -96,6 +96,9 @@ public:
   static constexpr T max() { return generator.max(); }
 };
 
+template <typename T> long int RandomGenerator<T>::_seed;
+template <typename T> std::default_random_engine RandomGenerator<T>::generator;
+
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
