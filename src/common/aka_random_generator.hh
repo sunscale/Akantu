@@ -96,8 +96,10 @@ public:
   static constexpr T max() { return generator.max(); }
 };
 
+#if defined(__clang__)
 template <typename T> long int RandomGenerator<T>::_seed;
 template <typename T> std::default_random_engine RandomGenerator<T>::generator;
+#endif
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
