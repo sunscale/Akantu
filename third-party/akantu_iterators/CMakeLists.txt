@@ -39,7 +39,6 @@ set_target_properties(akantu_iterators
   )
 # ------------------------------------------------------------------------------
 option(AKANTU_ITERATORS_TESTS "Activating tests" OFF)
-
 mark_as_advanced(AKANTU_ITERATORS_TESTS)
 if(AKANTU_ITERATORS_TESTS)
   enable_testing()
@@ -47,7 +46,7 @@ if(AKANTU_ITERATORS_TESTS)
   add_subdirectory(test)
 endif()
 
-# ------------------------------------------------------------------------------  
+# ------------------------------------------------------------------------------
 if(NOT AKANTU_ITERATORS_TARGETS_EXPORT)
   set(AKANTU_ITERATORS_TARGETS_EXPORT AkantuIteratorsTargets)
 endif()
@@ -66,4 +65,3 @@ if("${AKANTU_ITERATORS_TARGETS_EXPORT}" STREQUAL "AkantuIteratorsTargets")
     FILE "${CMAKE_CURRENT_BINARY_DIR}/AkantuIteratorsTargets.cmake")
   export(PACKAGE AkantuIterators)
 endif()
-

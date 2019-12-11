@@ -35,7 +35,7 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-using namespace akantu;
+using namespace aka;
 
 /* -------------------------------------------------------------------------- */
 
@@ -73,7 +73,7 @@ public:
     return *this;
   }
 
-  T a;
+  T a{};
   size_t copy_counter{0};
   size_t move_counter{0};
 };
@@ -131,8 +131,8 @@ protected:
 
 protected:
   size_t size{20};
-  std::vector<A<int>> a;
-  std::vector<A<float>> b;
+  std::vector<A<int>> a{};
+  std::vector<A<float>> b{};
 };
 
 TEST_F(TestZipFixutre, SimpleTest) {
@@ -186,7 +186,6 @@ TEST_F(TestZipFixutre, MoveTest) {
 TEST_F(TestZipFixutre, Bidirectional) {
   auto _zip = zip(a, b);
   auto begin = _zip.begin();
-  auto end = _zip.end();
 
   auto it = begin;
   ++it;
@@ -197,7 +196,8 @@ TEST_F(TestZipFixutre, Bidirectional) {
   EXPECT_EQ(begin, --it);
 
   auto it2 = it = begin;
-  ++it; ++it2;
+  ++it;
+  ++it2;
   EXPECT_EQ(it2, it--);
   EXPECT_EQ(begin, it);
 }
@@ -265,15 +265,13 @@ TEST(TestArangeIterator, StartStopStepZipped) {
 
 /* -------------------------------------------------------------------------- */
 TEST(TestEnumerateIterator, SimpleTest) {
-  std::vector<int> a {0, 10, 20, 30, 40};
-  std::vector<int> b {0, 2, 4, 6, 8};
+  std::vector<int> a{0, 10, 20, 30, 40};
+  std::vector<int> b{0, 2, 4, 6, 8};
   for (auto && data : enumerate(a, b)) {
     EXPECT_EQ(std::get<0>(data) * 10, std::get<1>(data));
     EXPECT_EQ(std::get<0>(data) * 2, std::get<2>(data));
   }
 }
-
-
 
 /* -------------------------------------------------------------------------- */
 TEST(TestTransformAdaptor, Keys) {
@@ -361,14 +359,19 @@ TEST(TestTransformAdaptor, Functor) {
 /* -------------------------------------------------------------------------- */
 TEST(TestFilteredIterator, Simple) {
   std::vector<int> values{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  std::vector<int> filter_{0, 2, 4, 10, 8, 6};
+  std::vector<int> filter_{1, 3, 4, 10, 8, 6};
   for (auto && data : zip(filter_, filter(filter_, values))) {
     EXPECT_EQ(std::get<0>(data), std::get<1>(data));
   }
 }
 
 /* -------------------------------------------------------------------------- */
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+TEST(TestFilteredIterator, Temporary) {
+  std::vector<int> filter_{1, 3, 4, 10, 8, 6};
+  for (auto && data :
+       zip(filter_, filter(filter_, std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8,
+                                                     9, 10}))) {
+    EXPECT_EQ(std::get<0>(data), std::get<1>(data));
+  }
 }
+
