@@ -642,7 +642,7 @@ namespace containers {
       static_assert(
           std::is_same<typename decltype(container.begin())::iterator_category,
                        std::random_access_iterator_tag>::value,
-          "Containers must all have random iterators");
+          "Containers must have random iterators");
     }
 
     decltype(auto) begin() const {
