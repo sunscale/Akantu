@@ -168,13 +168,13 @@ namespace hash {
 } // namespace hash
 
 template <typename CharT, CharT... chars> struct string_literal {
-  static constexpr uint64_t hash =
-      hash::details::fnv1a<uint64_t, CharT, chars...>();
+  static constexpr std::size_t hash =
+      hash::details::fnv1a<std::size_t, CharT, chars...>();
   using hash_type = std::integral_constant<uint64_t, hash>;
 };
 
 template <typename CharT, CharT... chars>
-constexpr uint64_t string_literal<CharT, chars...>::hash;
+constexpr std::size_t string_literal<CharT, chars...>::hash;
 
 constexpr auto operator"" _h(const char * str, size_t size) {
   return hash::details::fnv1a_64_hash(str, size - 1);

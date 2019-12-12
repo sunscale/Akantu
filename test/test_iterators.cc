@@ -228,6 +228,25 @@ TEST_F(TestZipFixutre, Cat) {
   }
 }
 
+TEST(TestNamedZipFixutre, Simple) {
+  std::vector<int> a{0, 10, 20, 30, 40};
+  std::vector<int> b{0, 1, 2, 3, 4};
+
+  using namespace tuple;
+  for (auto && data : named_zip(get<"a"_h>() = a, get<"b"_h>() = b)) {
+    auto & a = tuple::get<"a"_h>(data);
+    auto & b = tuple::get<"b"_h>(data);
+    b *= 10;
+    EXPECT_EQ(b, a);
+  }
+
+   for (auto && data : named_zip(get<"a"_h>() = a, get<"b"_h>() = b)) {
+    auto & a = tuple::get<"a"_h>(data);
+    auto & b = tuple::get<"b"_h>(data);
+    EXPECT_EQ(b, a);
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 TEST(TestArangeIterator, Stop) {
   size_t ref_i = 0;

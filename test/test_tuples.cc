@@ -46,6 +46,8 @@ TEST(NamedTuples, GNUExtension) {
   EXPECT_EQ("Roger", nom);
   EXPECT_EQ(1.92, test.get("taille"_n));
   EXPECT_EQ(a.data(), test.get("ref"_n).data());
+
+  EXPECT_EQ(47, std::get<1>(test));
 }
 
 TEST(NamedTuples, WithHash) {
@@ -58,4 +60,13 @@ TEST(NamedTuples, WithHash) {
   EXPECT_EQ("Roger", tuple::get<"nom"_h>(tuple));
   EXPECT_EQ(1.92, tuple::get<"taille"_h>(tuple));
   EXPECT_EQ(a.data(), tuple::get<"ref"_h>(tuple).data());
+
+  EXPECT_EQ(47, std::get<1>(tuple));
+}
+
+TEST(NamedTuples, Mix) {
+  const auto tuple = make_named_tuple(
+      get<"nom"_h>() = std::string("Roger"), get<"age"_h>() = 47);
+
+  EXPECT_EQ(47, tuple.get("age"_n));
 }
