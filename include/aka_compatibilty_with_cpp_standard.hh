@@ -36,6 +36,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <iterator>
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH
@@ -174,6 +175,12 @@ using apply = std::apply;
 
 using count_if = std::count_if;
 #endif
+
+
+template <typename cat1, typename cat2>
+using is_iterator_category_at_least =
+                  std::is_same<std::common_type_t<cat1, cat2>, cat2>;
+
 } // namespace aka
 
 #endif /* AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH */
