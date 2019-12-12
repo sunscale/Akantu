@@ -13,18 +13,18 @@
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
- * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as published by  the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * akantu-iterators is free  software: you can redistribute it and/or  modify it
+ * under the terms  of the  GNU Lesser  General Public  License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
- * details.
+ * akantu-iterators is  distributed in the  hope that it  will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public
+ * License  for more details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
- * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ * along with akantu-iterators. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -228,6 +228,25 @@ TEST_F(TestZipFixutre, Cat) {
   }
 }
 
+TEST(TestNamedZipFixutre, Simple) {
+  std::vector<int> a{0, 10, 20, 30, 40};
+  std::vector<int> b{0, 1, 2, 3, 4};
+
+  using namespace tuple;
+  for (auto && data : named_zip(get<"a"_h>() = a, get<"b"_h>() = b)) {
+    auto & a = tuple::get<"a"_h>(data);
+    auto & b = tuple::get<"b"_h>(data);
+    b *= 10;
+    EXPECT_EQ(b, a);
+  }
+
+   for (auto && data : named_zip(get<"a"_h>() = a, get<"b"_h>() = b)) {
+    auto & a = tuple::get<"a"_h>(data);
+    auto & b = tuple::get<"b"_h>(data);
+    EXPECT_EQ(b, a);
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 TEST(TestArangeIterator, Stop) {
   size_t ref_i = 0;
@@ -374,4 +393,3 @@ TEST(TestFilteredIterator, Temporary) {
     EXPECT_EQ(std::get<0>(data), std::get<1>(data));
   }
 }
-

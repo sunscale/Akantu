@@ -18,6 +18,12 @@ set(AKANTU_ITERATORS_PUBLIC_HDRS
   aka_iterators.hh
   aka_static_if.hh
   aka_tuple_tools.hh
+  iterators/aka_arange_iterator.hh
+  iterators/aka_enumerate_iterator.hh
+  iterators/aka_filter_iterator.hh
+  iterators/aka_named_zip_iterator.hh
+  iterators/aka_transform_iterator.hh
+  iterators/aka_zip_iterator.hh
   )
 
 add_library(akantu_iterators INTERFACE)

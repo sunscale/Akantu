@@ -29,8 +29,9 @@
 /* -------------------------------------------------------------------------- */
 #include <cstddef>
 #include <cstdint>
-#include <type_traits>
 #include <initializer_list>
+#include <limits>
+#include <type_traits>
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_AKA_STR_HASH_HH
@@ -39,7 +40,6 @@
 #ifndef AKANTU_ITERATORS_NAMESPACE
 #define AKANTU_ITERATORS_NAMESPACE akantu
 #endif
-
 
 namespace AKANTU_ITERATORS_NAMESPACE {
 
@@ -105,9 +105,12 @@ namespace hash {
      */
     /// CRC32 hashing algorithm
     constexpr uint32_t crc32_hash(const char * str, size_t idx) {
-      auto crc = (idx == 0 ? 0xFFFFFFFF : crc32_hash(str, idx - 1));
+      constexpr uint8_t mask_size = 8;
+      auto crc = (idx == 0 ? std::numeric_limits<uint32_t>::max()
+                           : crc32_hash(str, idx - 1));
 
-      return (crc >> 8) ^ crc_table[(crc ^ str[idx]) & 0x000000FF];
+      return (crc >> mask_size) ^
+             crc_table[(crc ^ str[idx]) & std::numeric_limits<uint8_t>::max()];
     }
 
     namespace {
@@ -150,7 +153,8 @@ namespace hash {
   } // namespace details
 
   constexpr uint32_t operator"" _crc32(const char * str, size_t size) {
-    return details::crc32_hash(str, size - 1) ^ 0xFFFFFFFF;
+    return details::crc32_hash(str, size - 1) ^
+           std::numeric_limits<uint32_t>::max();
   }
 
   constexpr uint32_t operator"" _fnv1a32(const char * str, size_t size) {
@@ -164,18 +168,18 @@ namespace hash {
 } // namespace hash
 
 template <typename CharT, CharT... chars> struct string_literal {
-  static constexpr uint64_t hash =
-      hash::details::fnv1a<uint64_t, CharT, chars...>();
+  static constexpr std::size_t hash =
+      hash::details::fnv1a<std::size_t, CharT, chars...>();
   using hash_type = std::integral_constant<uint64_t, hash>;
 };
 
 template <typename CharT, CharT... chars>
-constexpr uint64_t string_literal<CharT, chars...>::hash;
+constexpr std::size_t string_literal<CharT, chars...>::hash;
 
 constexpr auto operator"" _h(const char * str, size_t size) {
   return hash::details::fnv1a_64_hash(str, size - 1);
 }
 
-} // namespace AKANTU_ITERATOR_NAMESPACE
+} // namespace AKANTU_ITERATORS_NAMESPACE
 
 #endif /* AKANTU_AKA_STR_HASH_HH */
