@@ -145,6 +145,7 @@ private:
   using iterator_type =
       typename ::AKANTU_ITERATORS_NAMESPACE::iterators::FilterIterator<
           filter_iterator_t, container_iterator_t>;
+
 public:
   using iterator_category = typename iterator_type::iterator_category;
   using value_type = typename iterator_type::value_type;
@@ -153,5 +154,5 @@ public:
   using reference = typename iterator_type::reference;
 };
 } // namespace std
- 
+
 #endif // AKA_FILTER_ITERATOR_H

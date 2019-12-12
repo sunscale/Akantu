@@ -133,11 +133,11 @@ decltype(auto) invoke(F &&f, Args &&... args) {
 /* -------------------------------------------------------------------------- */
 // apply
 namespace detail {
-template <class F, class Tuple, std::size_t... Is>
-constexpr decltype(auto) apply_impl(F &&f, Tuple &&t,
-                                    std::index_sequence<Is...>) {
-  return invoke(std::forward<F>(f), std::get<Is>(std::forward<Tuple>(t))...);
-}
+  template <class F, class Tuple, std::size_t... Is>
+  constexpr decltype(auto) apply_impl(F && f, Tuple && t,
+                                      std::index_sequence<Is...> /*unused*/) {
+    return invoke(std::forward<F>(f), std::get<Is>(std::forward<Tuple>(t))...);
+  }
 } // namespace detail
 
 /* -------------------------------------------------------------------------- */

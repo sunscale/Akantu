@@ -51,8 +51,9 @@ namespace tuple {
       template <class Tuple>
       static inline bool not_equal(Tuple && a, Tuple && b) {
         if (std::get<N - 1>(std::forward<Tuple>(a)) ==
-            std::get<N - 1>(std::forward<Tuple>(b)))
+            std::get<N - 1>(std::forward<Tuple>(b))) {
           return false;
+        }
         return Foreach<N - 1>::not_equal(std::forward<Tuple>(a),
                                          std::forward<Tuple>(b));
       }
@@ -74,7 +75,7 @@ namespace tuple {
 
     template <class F, class Tuple, std::size_t... Is>
     void foreach_impl(F && func, Tuple && tuple,
-                      std::index_sequence<Is...> &&) {
+                      std::index_sequence<Is...> && /*unused*/) {
       (void)std::initializer_list<int>{
           (std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple))),
            0)...};
@@ -82,7 +83,7 @@ namespace tuple {
 
     template <class F, class Tuple, std::size_t... Is>
     decltype(auto) transform_impl(F && func, Tuple && tuple,
-                                  std::index_sequence<Is...> &&) {
+                                  std::index_sequence<Is...> && /*unused*/) {
       return make_tuple_no_decay(
           std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple)))...);
     }
@@ -111,7 +112,8 @@ namespace tuple {
 
   namespace details {
     template <class Tuple, std::size_t... Is>
-    decltype(auto) flatten(Tuple && tuples, std::index_sequence<Is...>) {
+    decltype(auto) flatten(Tuple && tuples,
+                           std::index_sequence<Is...> /*unused*/) {
       return std::tuple_cat(std::get<Is>(tuples)...);
     }
   } // namespace details
@@ -138,8 +140,11 @@ namespace tuple {
       using _tag = tag;   ///< key
       using _type = type; ///< value type
 
-      template <typename T>
-      explicit named_tag(T && value) : _value(std::forward<T>(value)) {}
+      template <
+          typename T,
+          std::enable_if_t<not std::is_same<named_tag, T>::value> * = nullptr>
+      explicit named_tag(T && value) // NOLINT
+          : _value(std::forward<T>(value)) {}
 
       type _value;
     };
@@ -191,7 +196,7 @@ namespace tuple {
     public:
       template <typename NT,
                 std::enable_if_t<is_named_tag<NT>::value> * = nullptr>
-      constexpr decltype(auto) get(NT &&) noexcept {
+      constexpr decltype(auto) get(NT && /*unused*/) noexcept {
         const auto index = get_element_index<typename NT::_tag, 0>();
         static_assert((index != -1), "wrong named_tag");
         return (std::get<index>(*this)._value);
@@ -199,7 +204,7 @@ namespace tuple {
 
       template <typename NT,
                 std::enable_if_t<is_named_tag<NT>::value> * = nullptr>
-      constexpr decltype(auto) get(NT &&) const noexcept {
+      constexpr decltype(auto) get(NT && /*unused*/) const noexcept {
         const auto index = get_element_index<typename NT::_tag, 0>();
         static_assert((index != -1), "wrong named_tag");
 
@@ -232,7 +237,6 @@ namespace tuple {
   constexpr decltype(auto) get(Tuple && tuple) noexcept {
     return tuple.template get<typename Param::hash>();
   }
-
 
 #if defined(__INTEL_COMPILER)
 // intel warnings here
