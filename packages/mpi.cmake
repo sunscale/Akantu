@@ -29,7 +29,7 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-
+set(MPI_CXX_SKIP_MPICXX TRUE)
 package_declare(MPI EXTERNAL
   DESCRIPTION "Add MPI support in akantu"
   EXTRA_PACKAGE_OPTIONS PREFIX MPI_C MPI
