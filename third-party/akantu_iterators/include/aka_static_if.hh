@@ -73,10 +73,8 @@ namespace impl {
   struct static_if_result : TFunctionToCall {
     // Perfect-forward the function in the result instance.
     template <typename TFFwd>
-    explicit static_if_result(TFFwd && f) noexcept : TFunctionToCall(FWD(f)) {}
-
-    static_if_result(const static_if_result & /* unused */) = delete;
-    static_if_result(static_if_result && /* unused */) = delete;
+    explicit static_if_result(TFFwd && f) noexcept // NOLINT
+        : TFunctionToCall(FWD(f)) {}
 
     // Ignore everything, we found a result.
     template <typename TF> auto & then(TF && /*unused*/) noexcept {
