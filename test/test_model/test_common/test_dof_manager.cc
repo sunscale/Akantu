@@ -27,6 +27,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
+#include "test_gtest_utils.hh"
+/* -------------------------------------------------------------------------- */
 #include <dof_manager.hh>
 #include <mesh_partition_scotch.hh>
 #include <mesh_utils.hh>

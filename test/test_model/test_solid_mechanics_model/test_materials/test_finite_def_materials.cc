@@ -27,11 +27,13 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "material_neohookean.hh"
-#include "solid_mechanics_model.hh"
+#include "test_gtest_utils.hh"
 #include "test_material_fixtures.hh"
+/* -------------------------------------------------------------------------- */
+#include <material_neohookean.hh>
+#include <solid_mechanics_model.hh>
+/* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */

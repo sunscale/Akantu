@@ -27,13 +27,13 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "element_class.hh"
-#include "fe_engine.hh"
-#include "integrator_gauss.hh"
-#include "shape_lagrange.hh"
 #include "test_gtest_utils.hh"
+/* -------------------------------------------------------------------------- */
+#include <element_class.hh>
+#include <fe_engine.hh>
+#include <integrator_gauss.hh>
+#include <shape_lagrange.hh>
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */

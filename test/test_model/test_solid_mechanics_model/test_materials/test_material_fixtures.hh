@@ -27,10 +27,11 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "material_elastic.hh"
-#include "solid_mechanics_model.hh"
+#include "test_gtest_utils.hh"
+/* -------------------------------------------------------------------------- */
+#include <material_elastic.hh>
+#include <solid_mechanics_model.hh>
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <random>

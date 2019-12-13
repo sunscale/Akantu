@@ -34,8 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include <boost/preprocessor.hpp>
 #include <gtest/gtest.h>
-// #include <tuple>
-// /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TEST_GTEST_UTILS_HH__
 #define __AKANTU_TEST_GTEST_UTILS_HH__
@@ -44,6 +43,18 @@
 #define TYPED_TEST_SUITE(...) TYPED_TEST_CASE(__VA_ARGS__)
 #endif
 
+#if !defined(TYPED_TEST_SUITE_P)
+#define TYPED_TEST_SUITE_P(...) TYPED_TEST_CASE_P(__VA_ARGS__)
+#endif
+
+#if !defined(REGISTER_TYPED_TEST_SUITE_P)
+#define REGISTER_TYPED_TEST_SUITE_P(...) REGISTER_TYPED_TEST_CASE_P(__VA_ARGS__)
+#endif
+
+#if !defined(INSTANTIATE_TYPED_TEST_SUITE_P)
+#define INSTANTIATE_TYPED_TEST_SUITE_P(...)                                    \
+  INSTANTIATE_TYPED_TEST_CASE_P(__VA_ARGS__)
+#endif
 
 namespace {
 

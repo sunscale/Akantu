@@ -27,10 +27,11 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_array.hh"
-#include "aka_types.hh"
+#include "test_gtest_utils.hh"
+/* -------------------------------------------------------------------------- */
+#include <aka_array.hh>
+#include <aka_types.hh>
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <memory>
