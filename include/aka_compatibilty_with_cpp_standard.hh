@@ -15,28 +15,28 @@
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
- * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as published by  the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * akantu-iterators is free  software: you can redistribute it and/or  modify it
+ * under the terms  of the  GNU Lesser  General Public  License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
- * details.
+ * akantu-iterators is  distributed in the  hope that it  will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public
+ * License  for more details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
- * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ * along with akantu-iterators. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 /* -------------------------------------------------------------------------- */
 #include "aka_static_if.hh"
 /* -------------------------------------------------------------------------- */
+#include <iterator>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <iterator>
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH
@@ -61,7 +61,7 @@ template <bool B, class T = void> using enable_if_t = std::enable_if_t<B, T>;
 // bool_constant
 template <bool B> using bool_constant = std::integral_constant<bool, B>;
 namespace {
-template <bool B> constexpr bool bool_constant_v = bool_constant<B>::value;
+  template <bool B> constexpr bool bool_constant_v = bool_constant<B>::value;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -87,46 +87,47 @@ template <class B> struct negation : bool_constant<!bool(B::value)> {};
 /* -------------------------------------------------------------------------- */
 // invoke
 namespace detail {
-template <class T> struct is_reference_wrapper : std::false_type {};
-template <class U>
-struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
+  template <class T> struct is_reference_wrapper : std::false_type {};
+  template <class U>
+  struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
 
-template <class T, class Type, class T1, class... Args>
-decltype(auto) INVOKE(Type T::*f, T1 &&t1, Args &&... args) {
-  static_if(std::is_member_function_pointer<decltype(f)>{})
-      .then_([&](auto &&f) {
-        static_if(std::is_base_of<T, std::decay_t<T1>>{})
-            .then_([&](auto &&f) {
-              return (std::forward<T1>(t1).*f)(std::forward<Args>(args)...);
-            })
-            .elseif(is_reference_wrapper<std::decay_t<T1>>{})([&](auto &&f) {
-              return (t1.get().*f)(std::forward<Args>(args)...);
-            })
-            .else_([&](auto &&f) {
-              return ((*std::forward<T1>(t1)).*f)(std::forward<Args>(args)...);
-            })(std::forward<decltype(f)>(f));
-      })
-      .else_([&](auto &&f) {
-        static_assert(std::is_member_object_pointer<decltype(f)>::value,
-                      "f is not a member object");
-        static_assert(sizeof...(args) == 0, "f takes arguments");
-        static_if(std::is_base_of<T, std::decay_t<T1>>{})
-            .then_([&](auto &&f) { return std::forward<T1>(t1).*f; })
-            .elseif(std::is_base_of<T, std::decay_t<T1>>{})(
-                [&](auto &&f) { return t1.get().*f; })
-            .else_([&](auto &&f) { return (*std::forward<T1>(t1)).*f; })(
-                std::forward<decltype(f)>(f));
-      })(std::forward<decltype(f)>(f));
-}
+  template <class T, class Type, class T1, class... Args>
+  decltype(auto) INVOKE(Type T::*f, T1 && t1, Args &&... args) {
+    static_if(std::is_member_function_pointer<decltype(f)>{})
+        .then_([&](auto && f) {
+          static_if(std::is_base_of<T, std::decay_t<T1>>{})
+              .then_([&](auto && f) {
+                return (std::forward<T1>(t1).*f)(std::forward<Args>(args)...);
+              })
+              .elseif(is_reference_wrapper<std::decay_t<T1>>{})([&](auto && f) {
+                return (t1.get().*f)(std::forward<Args>(args)...);
+              })
+              .else_([&](auto && f) {
+                return ((*std::forward<T1>(t1)).*
+                        f)(std::forward<Args>(args)...);
+              })(std::forward<decltype(f)>(f));
+        })
+        .else_([&](auto && f) {
+          static_assert(std::is_member_object_pointer<decltype(f)>::value,
+                        "f is not a member object");
+          static_assert(sizeof...(args) == 0, "f takes arguments");
+          static_if(std::is_base_of<T, std::decay_t<T1>>{})
+              .then_([&](auto && f) { return std::forward<T1>(t1).*f; })
+              .elseif(std::is_base_of<T, std::decay_t<T1>>{})(
+                  [&](auto && f) { return t1.get().*f; })
+              .else_([&](auto && f) { return (*std::forward<T1>(t1)).*f; })(
+                  std::forward<decltype(f)>(f));
+        })(std::forward<decltype(f)>(f));
+  }
 
-template <class F, class... Args>
-decltype(auto) INVOKE(F &&f, Args &&... args) {
-  return std::forward<F>(f)(std::forward<Args>(args)...);
-}
+  template <class F, class... Args>
+  decltype(auto) INVOKE(F && f, Args &&... args) {
+    return std::forward<F>(f)(std::forward<Args>(args)...);
+  }
 } // namespace detail
 
 template <class F, class... Args>
-decltype(auto) invoke(F &&f, Args &&... args) {
+decltype(auto) invoke(F && f, Args &&... args) {
   return detail::INVOKE(std::forward<F>(f), std::forward<Args>(args)...);
 }
 
@@ -142,7 +143,7 @@ namespace detail {
 
 /* -------------------------------------------------------------------------- */
 template <class F, class Tuple>
-constexpr decltype(auto) apply(F &&f, Tuple &&t) {
+constexpr decltype(auto) apply(F && f, Tuple && t) {
   return detail::apply_impl(
       std::forward<F>(f), std::forward<Tuple>(t),
       std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
@@ -176,10 +177,9 @@ using apply = std::apply;
 using count_if = std::count_if;
 #endif
 
-
 template <typename cat1, typename cat2>
 using is_iterator_category_at_least =
-                  std::is_same<std::common_type_t<cat1, cat2>, cat2>;
+    std::is_same<std::common_type_t<cat1, cat2>, cat2>;
 
 } // namespace aka
 
