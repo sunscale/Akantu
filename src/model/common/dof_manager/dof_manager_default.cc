@@ -199,7 +199,7 @@ NonLinearSolver &
 DOFManagerDefault::getNewNonLinearSolver(const ID & id,
                                          const NonLinearSolverType & type) {
   switch (type) {
-#if defined(AKANTU_IMPLICIT)
+#if defined(AKANTU_USE_MUMPS)
   case NonLinearSolverType::_newton_raphson:
     /* FALLTHRU */
     /* [[fallthrough]]; un-comment when compiler will get it */
