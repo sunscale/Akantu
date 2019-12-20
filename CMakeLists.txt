@@ -51,6 +51,10 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project(Akantu)
 enable_language(CXX)
 
+if(CMAKE_VERSION VERSION_GREATER 3.12)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
 #===============================================================================
 # Misc. config for cmake
 #===============================================================================
