@@ -72,11 +72,11 @@ template <typename... Ts> struct gtest_list<std::tuple<Ts...>> {
 template <typename... T> using gtest_list_t = typename gtest_list<T...>::type;
 
 /* -------------------------------------------------------------------------- */
-template <typename... T> struct tuple_concat {};
+//template <typename... T> struct tuple_concat {};
 
-template <typename... T1s, typename... T2s>
-struct tuple_concat<std::tuple<T1s...>, std::tuple<T2s...>> {
-  using type = std::tuple<T1s..., T2s...>;
+template <typename... Ts>
+struct tuple_concat {
+  using type = decltype(std::tuple_cat(std::declval<Ts>()...));
 };
 
 template <typename... T>
