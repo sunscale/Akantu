@@ -59,16 +59,13 @@ namespace akantu {
 DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
                                  MemoryID memory_id)
     : SynchronizerImpl<UInt>(dof_manager.getCommunicator(), id, memory_id),
-      root(0), dof_manager(dof_manager),
-      root_dofs(0, 1, "dofs-to-receive-from-master"), dof_changed(true) {
+      dof_manager(dof_manager) {
   std::vector<ID> dof_ids = dof_manager.getDOFIDs();
 
   // Transfers nodes to global equation numbers in new schemes
   for (const ID & dof_id : dof_ids) {
     registerDOFs(dof_id);
   }
-
-  this->initScatterGatherCommunicationScheme();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,76 +128,27 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
     transcode_node_to_global_dof_scheme(ncs_it, ncs_end, *sr_it);
   }
 
-  dof_changed = true;
+  entities_changed = true;
 }
 
 /* -------------------------------------------------------------------------- */
-void DOFSynchronizer::initScatterGatherCommunicationScheme() {
-  AKANTU_DEBUG_IN();
-
-  if (this->nb_proc == 1) {
-    dof_changed = false;
-    AKANTU_DEBUG_OUT();
-    return;
-  }
-
+void DOFSynchronizer::fillEntityToSend(Array<UInt> & dofs_to_send) {
   UInt nb_dofs = dof_manager.getLocalSystemSize();
 
-  this->root_dofs.clear();
-  this->master_receive_dofs.clear();
+  this->entities_from_root.clear();
+  dofs_to_send.resize(0);
 
-  Array<UInt> dofs_to_send;
-  for (UInt n = 0; n < nb_dofs; ++n) {
-    if (dof_manager.isLocalOrMasterDOF(n)) {
-      auto & receive_per_proc = master_receive_dofs[this->root];
-      UInt global_dof = dof_manager.localToGlobalEquationNumber(n);
+  for (UInt d : arange(nb_dofs)) {
+    if (not dof_manager.isLocalOrMasterDOF(d))
+      continue;
 
-      root_dofs.push_back(n);
-      receive_per_proc.push_back(global_dof);
-      dofs_to_send.push_back(global_dof);
-    }
+    entities_from_root.push_back(d);
   }
 
-  if (this->rank == UInt(this->root)) {
-    Array<UInt> nb_dof_per_proc(this->nb_proc);
-    communicator.gather(dofs_to_send.size(), nb_dof_per_proc);
-
-    std::vector<CommunicationRequest> requests;
-    for (UInt p = 0; p < nb_proc; ++p) {
-      if (p == UInt(this->root))
-        continue;
-
-      auto & receive_per_proc = master_receive_dofs[p];
-      receive_per_proc.resize(nb_dof_per_proc(p));
-      if (nb_dof_per_proc(p) != 0)
-        requests.push_back(communicator.asyncReceive(
-            receive_per_proc, p,
-            Tag::genTag(p, 0, Tag::_GATHER_INITIALIZATION, this->hash_id)));
-    }
-
-    communicator.waitAll(requests);
-    communicator.freeCommunicationRequest(requests);
-  } else {
-    communicator.gather(dofs_to_send.size(), this->root);
-    AKANTU_DEBUG(dblDebug, "I have " << nb_dofs << " dofs ("
-                                     << dofs_to_send.size()
-                                     << " to send to master proc");
-
-    if (dofs_to_send.size() != 0)
-      communicator.send(dofs_to_send, this->root,
-                        Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION,
-                                    this->hash_id));
+  for (auto d : entities_from_root) {
+    UInt global_dof = dof_manager.localToGlobalEquationNumber(d);
+    dofs_to_send.push_back(global_dof);
   }
-
-  dof_changed = false;
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-bool DOFSynchronizer::hasChanged() {
-  communicator.allReduce(dof_changed, SynchronizerOperation::_lor);
-  return dof_changed;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -275,9 +223,7 @@ void DOFSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/) {
   //     }
   //   }
   // }
-  dof_changed = true;
+  this->entities_changed = true;
 }
-
-/* -------------------------------------------------------------------------- */
 
 } // namespace akantu

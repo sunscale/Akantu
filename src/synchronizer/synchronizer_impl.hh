@@ -114,9 +114,52 @@ public:
   /// copy the schemes of an other communicator.
   SynchronizerImpl & operator=(const SynchronizerImpl & other);
 
+  /// gather data on the predefined root process (master version)
+  template <typename T>
+  void gather(const Array<T> & to_gather, Array<T> & gathered);
+
+  /// gather data on the predefined root process (slave version)
+  template <typename T> void gather(const Array<T> & to_gather);
+
+  /// scatter data from the predefined root process (master version)
+  template <typename T>
+  void scatter(Array<T> & scattered, const Array<T> & to_scatter);
+
+  /// scatter data from the predefined root process (slave version)
+  template <typename T> void scatter(Array<T> & scattered);
+
+  template <typename T>
+  void synchronizeArray(Array<T> & array) const;
+
+    /// Uses the synchronizer to perform a reduction on the vector
+  template <template <class> class Op, typename T>
+  void reduceSynchronizeArray(Array<T> & array) const;
+
 protected:
   /// copy schemes
   void copySchemes(const SynchronizerImpl & other);
+
+  /// check if dof changed set on at least one processor
+  inline bool hasChanged();
+
+  /// init the scheme for scatter and gather operation, need extra memory
+  inline void initScatterGatherCommunicationScheme();
+
+  /// list the entities to send to root process
+  virtual void fillEntityToSend(Array<Entity> & /*entities_to_send*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  virtual Entity localToGlobalEntity(const Entity & /*local*/) {
+    AKANTU_TO_IMPLEMENT();
+  }
+
+  virtual UInt canScatterSize() {
+     AKANTU_TO_IMPLEMENT();
+  }
+  virtual UInt gatheredSize() {
+     AKANTU_TO_IMPLEMENT();
+  }
 
 public:
   /* ------------------------------------------------------------------------ */
@@ -152,6 +195,19 @@ protected:
 protected:
   /// information on the communications
   Communications<Entity> communications;
+
+  /// did the scheme change, this is to recreate the scatter/gather data if
+  /// needed
+  bool entities_changed{true};
+
+  /// Root processor for scatter/gather operations
+  Int root{0};
+
+  /// entities coming/going from/to root
+  Array<Entity> entities_from_root;
+
+  /// entities received from slaves proc (only on master)
+  std::map<UInt, Array<Entity>> master_receive_entities;
 };
 
 } // namespace akantu

@@ -131,6 +131,8 @@ void NodeSynchronizer::onNodesAdded(const Array<UInt> & /*nodes_list*/,
 
   communicator.waitAll(send_requests);
   communicator.freeCommunicationRequest(send_requests);
+
+  this->entities_changed = true;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -174,11 +176,6 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                              const SynchronizationTag & tag,
                                              UInt proc, UInt rank) const {
   auto dim = mesh.getSpatialDimension();
-  // std::set<SynchronizationTag>
-  // skip_conn_tags{SynchronizationTag::_smmc_facets_conn,
-  //                                             SynchronizationTag::_giu_global_conn};
-
-  // bool is_skip_tag_conn = skip_conn_tags.find(tag) != skip_conn_tags.end();
 
   auto periodic = [&](auto && flag) { return flag & NodeFlag::_periodic_mask; };
   auto distrib = [&](auto && flag) { return flag & NodeFlag::_shared_mask; };
@@ -221,6 +218,27 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
     }
   }
 }
+
+/* -------------------------------------------------------------------------- */
+void NodeSynchronizer::fillEntityToSend(Array<UInt> & nodes_to_send) {
+  UInt nb_nodes = mesh.getNbNodes();
+
+  this->entities_from_root.clear();
+  nodes_to_send.resize(0);
+
+  for (UInt n : arange(nb_nodes)) {
+    if (not mesh.isLocalOrMasterNode(n))
+      continue;
+
+    entities_from_root.push_back(n);
+  }
+
+  for (auto n : entities_from_root) {
+    UInt global_node = mesh.getNodeGlobalId(n);
+    nodes_to_send.push_back(global_node);
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 
 } // namespace akantu

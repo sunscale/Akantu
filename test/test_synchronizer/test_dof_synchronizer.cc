@@ -94,7 +94,7 @@ int main(int argc, char * argv[]) {
     data = val;
   }
 
-  dof_synchronizer.synchronize(local_data_array);
+  dof_synchronizer.synchronizeArray(local_data_array);
 
   auto test_data = [&]() -> void {
     auto it_data = local_data_array.begin(2);
