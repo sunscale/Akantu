@@ -128,16 +128,18 @@ if(_is_acticated)
     ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh @ONLY)
 endif()
 
+include(GNUInstallDirs)
+
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.sh
   ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/akantu_environement.csh
-  DESTINATION share/akantu${AKANTU_VERSION})
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/akantu${AKANTU_VERSION})
 
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(cmake/AkantuConfig.cmake.in
   "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION share/cmake/${PROJECT_NAME}
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}
   )
 
 write_basic_package_version_file(${PROJECT_BINARY_DIR}/AkantuConfigVersion.cmake
@@ -159,5 +161,5 @@ install(FILES
   ${PROJECT_SOURCE_DIR}/cmake/AkantuUse.cmake
   ${PROJECT_SOURCE_DIR}/cmake/AkantuSimulationMacros.cmake
   ${PROJECT_SOURCE_DIR}/cmake/Modules/FindGMSH.cmake
-  DESTINATION share/cmake/${PROJECT_NAME}
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}
   COMPONENT dev)

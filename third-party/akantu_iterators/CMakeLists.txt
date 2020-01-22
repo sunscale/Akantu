@@ -57,14 +57,15 @@ if(NOT AKANTU_ITERATORS_TARGETS_EXPORT)
   set(AKANTU_ITERATORS_TARGETS_EXPORT AkantuIteratorsTargets)
 endif()
 
+include(GNUInstallDirs)
 install(TARGETS akantu_iterators
   EXPORT ${AKANTU_ITERATORS_TARGETS_EXPORT}
-  PUBLIC_HEADER DESTINATION include/akantu_iterators/ COMPONENT dev
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/akantu/
   )
 
 if("${AKANTU_ITERATORS_TARGETS_EXPORT}" STREQUAL "AkantuIteratorsTargets")
-  install(EXPORT AkantuIteratorsTargets DESTINATION share/cmake/${PROJECT_NAME}
-    COMPONENT dev)
+  install(EXPORT AkantuIteratorsTargets
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME})
 
   #Export for build tree
   export(EXPORT AkantuIteratorsTargets

@@ -218,12 +218,13 @@ install(TARGETS akantu
           COMPONENT Akantu_runtime
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
           COMPONENT Akantu_runtime
-  PUBLIC_HEADER DESTINATION include/akantu/
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/akantu/
           COMPONENT Akantu_development
   )
 
 if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
-  install(EXPORT AkantuTargets DESTINATION share/cmake/${PROJECT_NAME}
+  install(EXPORT AkantuTargets
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}
     COMPONENT dev)
 
   #Export for build tree
