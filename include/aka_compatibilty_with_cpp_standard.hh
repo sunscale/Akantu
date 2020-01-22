@@ -37,6 +37,9 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#if __cplusplus >= 201703L
+#include <functional>
+#endif
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_AKA_COMPATIBILTY_WITH_CPP_STANDARD_HH
@@ -165,16 +168,21 @@ count_if(InputIt first, InputIt last, UnaryPredicate p) {
 
 #else
 template <bool B> using bool_constant = std::bool_constant<B>;
-template <bool B> using bool_constant_v = std::bool_constant_v<B>;
+template <bool B> constexpr bool bool_constant_v = std::bool_constant<B>::value;
 
 template <class... Args> using conjunction = std::conjunction<Args...>;
 template <class... Args> using disjunction = std::disjunction<Args...>;
 template <class B> using negation = std::negation<B>;
 
-using invoke = std::invoke;
-using apply = std::apply;
+template <class F, class Tuple>
+constexpr decltype(auto) apply(F && f, Tuple && t) {
+  return std::apply(std::forward<F>(f), std::forward<Tuple>(t));
+}
 
-using count_if = std::count_if;
+template <class InputIt, class UnaryPredicate>
+decltype(auto) count_if(InputIt first, InputIt last, UnaryPredicate p) {
+  return std::count_if(first, last, p);
+}
 #endif
 
 template <typename cat1, typename cat2>
