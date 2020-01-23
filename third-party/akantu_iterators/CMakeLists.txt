@@ -60,7 +60,7 @@ install(TARGETS akantu_iterators
   EXPORT ${AKANTU_ITERATORS_TARGETS_EXPORT}
   )
 
-install(DIRECTORY include/ TYPE INCLUDE)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if("${AKANTU_ITERATORS_TARGETS_EXPORT}" STREQUAL "AkantuIteratorsTargets")
   install(EXPORT AkantuIteratorsTargets
