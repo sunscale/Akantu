@@ -205,7 +205,6 @@ list(APPEND AKANTU_EXPORT_LIST akantu)
 
 
 # TODO separate public from private headers
-include(GNUInstallDirs)
 install(TARGETS akantu
   EXPORT ${AKANTU_TARGETS_EXPORT}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
