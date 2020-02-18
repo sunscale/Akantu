@@ -1,20 +1,33 @@
-material elastic [
-	name = steel
-	rho = 1e3   # density
-	E   = 1e3   # young's modulus
-	nu  = 0.0 # poisson's ratio
-]
+model solid_mechanics_model_cohesive [
+   cohesive_inserter [
+     cohesive_zones = [btop, bbottom]
+   ]
 
-material cohesive_linear [
-	name = tg_cohesive
-	beta = 0
-	G_c = 10
-        sigma_c = 100
-]
+   material elastic [
+   	  name = btop
+   	  rho = 1e3   # density
+   	  E   = 1e3   # young's modulus
+   	  nu  = 0.0 # poisson's ratio
+   ]
 
-material cohesive_linear [
-	name = ig_cohesive
-	beta = 0
-	G_c = 10
-        sigma_c = 20
+   material elastic [
+   	  name = bbottom
+   	  rho = 1e3   # density
+   	  E   = 1e3   # young's modulus
+   	  nu  = 0.0 # poisson's ratio
+   ]
+
+   material cohesive_linear [
+   	  name = tg_cohesive
+   	  beta = 0
+   	  G_c = 10
+      sigma_c = 100
+   ]
+
+   material cohesive_linear [
+      name = ig_cohesive
+      beta = 0
+      G_c = 10
+      sigma_c = 20
+   ]
 ]

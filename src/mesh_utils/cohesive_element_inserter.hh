@@ -139,7 +139,10 @@ private:
   Matrix<Real> insertion_limits;
 
   /// list of groups to consider for insertion, ignored if empty
-  std::vector<ID> physical_groups;
+  std::set<ID> physical_surfaces;
+
+  /// list of groups in between which an inside which element are insterted
+  std::set<ID> physical_zones;
 
   /// vector containing facets in which extrinsic cohesive elements can be
   /// inserted

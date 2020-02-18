@@ -50,7 +50,9 @@ CohesiveElementInserter::CohesiveElementInserter(Mesh & mesh, const ID & id)
       insertion_limits(mesh.getSpatialDimension(), 2),
       check_facets("check_facets", id) {
 
-  this->registerParam("cohesive_surfaces", physical_groups, _pat_parsable,
+  this->registerParam("cohesive_surfaces", physical_surfaces, _pat_parsable,
+                      "List of groups to consider for insertion");
+  this->registerParam("cohesive_zones", physical_zones, _pat_parsable,
                       "List of groups to consider for insertion");
   this->registerParam("bounding_box", insertion_limits, _pat_parsable,
                       "Global limit for insertion");
@@ -167,14 +169,39 @@ void CohesiveElementInserter::limitCheckFacets(
       },
       _spatial_dimension = spatial_dimension - 1);
 
-  if (physical_groups.size() == 0) {
+  // remove the physical zones
+  if(mesh.hasData("physical_names") and physical_zones.size() > 0) {
+    auto && physical_names = mesh.getData<std::string>("physical_names");
+    for_each_element(
+        mesh_facets,
+        [&](auto && facet) {
+          const auto & element_to_facet = mesh_facets.getElementToSubelement(
+              facet.type, facet.ghost_type)(facet.element);
+          auto count = 0;
+          for(auto i : arange(2)) {
+            const auto & element = element_to_facet[i];
+            if(element == ElementNull)
+              continue;
+            const auto & name = physical_names(element);
+            count += find(physical_zones.begin(),
+                          physical_zones.end(), name) != physical_zones.end();
+
+          }
+
+          if(count != 2)
+            check_facets(facet) = false;
+        },
+        _spatial_dimension = spatial_dimension - 1);
+  }
+
+  if (physical_surfaces.size() == 0) {
     AKANTU_DEBUG_OUT();
     return;
   }
 
   if (not mesh_facets.hasData("physical_names")) {
     AKANTU_DEBUG_ASSERT(
-        physical_groups.size() == 0,
+        physical_surfaces.size() == 0,
         "No physical names in the mesh but insertion limited to a group");
     AKANTU_DEBUG_OUT();
     return;
@@ -191,10 +218,10 @@ void CohesiveElementInserter::limitCheckFacets(
                        return;
 
                      const auto & physical_id = physical_ids(facet);
-                     auto it = find(physical_groups.begin(),
-                                    physical_groups.end(), physical_id);
+                     auto it = find(physical_surfaces.begin(),
+                                    physical_surfaces.end(), physical_id);
 
-                     need_check = (it != physical_groups.end());
+                     need_check = (it != physical_surfaces.end());
                    },
                    _spatial_dimension = spatial_dimension - 1);
 
