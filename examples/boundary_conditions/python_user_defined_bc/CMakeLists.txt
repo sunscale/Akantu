@@ -7,5 +7,8 @@ register_example(python_user_defined_bc
   FILES_TO_COPY boundary_condition.py material.dat
   )
 
-target_include_directories(python_user_defined_bc PRIVATE
-  ${PROJECT_SOURCE_DIR}/python)
+target_include_directories(python_user_defined_bc
+  PRIVATE ${PROJECT_SOURCE_DIR}/python)
+
+target_link_libraries(python_user_defined_bc
+  PRIVATE pybind11::embed)
