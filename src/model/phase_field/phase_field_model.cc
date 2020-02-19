@@ -82,14 +82,7 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
 
   AKANTU_DEBUG_IN();
 
-  this->registerFEEngineObject<FEEngineType>("PhaseFieldFEEngine", mesh,
-                                             Model::spatial_dimension);
-
-#ifdef AKANTU_USE_IOHELPER
-  this->mesh.registerDumper<DumperParaview>("phase_field", id, true);
-  this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
-#endif // AKANTU_USE_IOHELPER
-  
+    
   this->initDOFManager();
 
   this->registerDataAccessor(*this);
@@ -100,6 +93,15 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
     this->registerSynchronizer(synchronizer,
                                SynchronizationTag::_pfm_gradient_damage);
   }
+
+  this->registerFEEngineObject<FEEngineType>("PhaseFieldFEEngine", mesh,
+                                             Model::spatial_dimension);
+
+#ifdef AKANTU_USE_IOHELPER
+  this->mesh.registerDumper<DumperParaview>("phase_field", id, true);
+  this->mesh.addDumpMesh(mesh, spatial_dimension, _not_ghost, _ek_regular);
+#endif // AKANTU_USE_IOHELPER
+
 
   this->registerParam("l0", l_0, 0., _pat_parsmod, "length scale");
   this->registerParam("gc", g_c, _pat_parsmod,
@@ -305,16 +307,33 @@ void PhaseFieldModel::assembleDamageMatrix() {
 
   AKANTU_DEBUG_INFO("Assemble the new damage matrix");
 
-  switch (mesh.getSpatialDimension()) {
-  case 1:
-    this->assembleDamageMatrix<1>(_not_ghost);
-    break;
-  case 2:
-    this->assembleDamageMatrix<2>(_not_ghost);
-    break;
-  case 3:
-    this->assembleDamageMatrix<3>(_not_ghost);
-    break;
+  auto & fem = this->getFEEngine();
+
+  for (auto && type : mesh.elementTypes(spatial_dimension)) {
+    auto nb_element = mesh.getNbElement(type);
+    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
+
+    auto nt_b_n = std::make_unique<Array<Real>>(
+        nb_element * nb_quadrature_points,
+        nb_nodes_per_element * nb_nodes_per_element, "N^t*b*N");
+
+    auto & damage_energy_density_on_qpoints_vect =
+        damage_energy_density_on_qpoints(type);
+
+    // damage_energy_on_qpoints = gc/l0 + phi = scalar
+    fem.computeNtbN(damage_energy_density_on_qpoints_vect, *nt_b_n, 2, type);
+
+    /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
+    /// \mathbf{N}@f$
+    auto K_n = std::make_unique<Array<Real>>(
+        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
+
+    fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
+                  type);
+
+    this->getDOFManager().assembleElementalMatricesToMatrix(
+        "K", "damage", *K_n, type, _not_ghost, _symmetric);
   }
 
   AKANTU_DEBUG_OUT();
@@ -326,17 +345,35 @@ void PhaseFieldModel::assembleDamageGradMatrix() {
 
   AKANTU_DEBUG_INFO("Assemble the new damage gradient matrix");
 
-  switch (mesh.getSpatialDimension()) {
-  case 1:
-    this->assembleDamageGradMatrix<1>(_not_ghost);
-    break;
-  case 2:
-    this->assembleDamageGradMatrix<2>(_not_ghost);
-    break;
-  case 3:
-    this->assembleDamageGradMatrix<3>(_not_ghost);
-    break;
+  auto & fem = this->getFEEngine();
+
+  for (auto && type : mesh.elementTypes(spatial_dimension)) {
+    auto nb_element = mesh.getNbElement(type);
+    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
+
+    auto bt_d_b = std::make_unique<Array<Real>>(
+        nb_element * nb_quadrature_points,
+        nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
+
+    auto & damage_energy_on_qpoints_vect =
+        damage_energy_on_qpoints(type);
+
+    // damage_energy_on_qpoints = gc*l0 = scalar
+    fem.computeBtDB(damage_energy_on_qpoints_vect, *bt_d_b, 2, type);
+
+    /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
+    /// \mathbf{B}@f$
+    auto K_b = std::make_unique<Array<Real>>(
+        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_b");
+
+    fem.integrate(*bt_d_b, *K_b, nb_nodes_per_element * nb_nodes_per_element,
+                  type);
+
+    this->getDOFManager().assembleElementalMatricesToMatrix(
+        "K", "damage", *K_b, type, _not_ghost, _symmetric);
   }
+
 
   AKANTU_DEBUG_OUT();
 }
@@ -347,7 +384,7 @@ void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
 
   AKANTU_DEBUG_IN();
 
-  auto & fem = getFEEngineClass<FEEngineType>();
+  auto & fem = this->getFEEngine();
 
   for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     auto nb_element = mesh.getNbElement(type, ghost_type);
@@ -559,7 +596,7 @@ void PhaseFieldModel::assembleInternalForces() {
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::assembleLumpedMatrix(const ID & matrix_id) {}
+  void PhaseFieldModel::assembleLumpedMatrix(const ID & /*matrix_id*/) {}
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::setTimeStep(Real time_step, const ID & solver_id) {
@@ -777,7 +814,7 @@ PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumper::Field> PhaseFieldModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
-    bool /*padding_flag*/, const UInt & spatial_dimension,
+    bool /*padding_flag*/, const UInt & /*spatial_dimension*/,
     const ElementKind & element_kind) {
 
   if (field_name == "partitions") {
