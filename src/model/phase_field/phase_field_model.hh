@@ -153,10 +153,12 @@ private:
 public:
   /// set the stable timestep
   void setTimeStep(Real time_step, const ID & solver_id = "") override;
+
+protected:
   /// callback for the solver, this is called at beginning of solve
   void beforeSolveStep() override;
   /// callback for the solver, this is called at end of solve
-  void afterSolveStep() override;
+  void afterSolveStep(bool converged = true) override;
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
