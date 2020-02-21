@@ -359,6 +359,8 @@ void CouplerSolidPhaseField::solve() {
 
   phasefield->solveStep();
   this->computeDamageOnQuadPoints(_not_ghost);
+
+  solid->assembleInternalForces();
 }
 
 /* ------------------------------------------------------------------------- */

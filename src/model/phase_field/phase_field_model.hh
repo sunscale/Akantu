@@ -132,14 +132,6 @@ public:
                              Array<Real> & damage);
 
 private:
-  /// assemble the damage matrix (w/ ghost type)
-  template <UInt dim> void assembleDamageMatrix(const GhostType & ghost_type);
-
-  /// assemble the damage grad matrix (w/ ghost type)
-  template <UInt dim>
-  void assembleDamageGradMatrix(const GhostType & ghost_type);
-
-private:
   /// compute vector strain history field for each quadrature point
   void computePhiHistoryOnQuadPoints(const GhostType & ghost_type);
 
