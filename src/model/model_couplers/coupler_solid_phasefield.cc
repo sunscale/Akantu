@@ -202,17 +202,7 @@ void CouplerSolidPhaseField::assembleResidual(const ID & residual_part) {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::beforeSolveStep() {}
 
-/* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::afterSolveStep() {}
-
-/* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::predictor() {}
-
-/* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::corrector() {}
 
 /* -------------------------------------------------------------------------- */
 MatrixType CouplerSolidPhaseField::getMatrixType(const ID & matrix_id) {

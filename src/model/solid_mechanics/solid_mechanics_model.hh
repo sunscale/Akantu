@@ -145,7 +145,7 @@ protected:
   /// callback for the solver, this is called at beginning of solve
   void beforeSolveStep() override;
   /// callback for the solver, this is called at end of solve
-  void afterSolveStep(bool converted = true) override;
+  void afterSolveStep(bool converged = true) override;
 
   /// Callback for the model to instantiate the matricees when needed
   void initSolver(TimeStepSolverType time_step_solver_type,

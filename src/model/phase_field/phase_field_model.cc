@@ -273,8 +273,11 @@ void PhaseFieldModel::beforeSolveStep() {
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::afterSolveStep() {
+void PhaseFieldModel::afterSolveStep(bool converged) {
 
+  if (not converged) 
+    return ;
+  
   for (auto && values : zip(*damage, *previous_damage)) {
     auto & dam = std::get<0>(values);
     auto & prev_dam = std::get<1>(values);
@@ -377,85 +380,7 @@ void PhaseFieldModel::assembleDamageGradMatrix() {
 
   AKANTU_DEBUG_OUT();
 }
-
-/* -------------------------------------------------------------------------- */
-template <UInt dim>
-void PhaseFieldModel::assembleDamageMatrix(const GhostType & ghost_type) {
-
-  AKANTU_DEBUG_IN();
-
-  auto & fem = this->getFEEngine();
-
-  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-    auto nb_element = mesh.getNbElement(type, ghost_type);
-    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
-
-    auto nt_b_n = std::make_unique<Array<Real>>(
-        nb_element * nb_quadrature_points,
-        nb_nodes_per_element * nb_nodes_per_element, "N^t*b*N");
-
-    auto & damage_energy_density_on_qpoints_vect =
-        damage_energy_density_on_qpoints(type, ghost_type);
-
-    // damage_energy_on_qpoints = gc/l0 + phi = scalar
-    fem.computeNtbN(damage_energy_density_on_qpoints_vect, *nt_b_n, 2, type,
-                    ghost_type);
-
-    /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
-    /// \mathbf{N}@f$
-    auto K_n = std::make_unique<Array<Real>>(
-        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
-
-    fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
-                  type, ghost_type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_n, type, ghost_type, _symmetric);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <UInt dim>
-void PhaseFieldModel::assembleDamageGradMatrix(const GhostType & ghost_type) {
-
-  AKANTU_DEBUG_IN();
-
-  auto & fem = this->getFEEngine();
-
-  for (auto && type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-    auto nb_element = mesh.getNbElement(type, ghost_type);
-    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
-
-    auto bt_d_b = std::make_unique<Array<Real>>(
-        nb_element * nb_quadrature_points,
-        nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
-
-    auto & damage_energy_on_qpoints_vect =
-        damage_energy_on_qpoints(type, ghost_type);
-
-    // damage_energy_on_qpoints = gc*l0 = scalar
-    fem.computeBtDB(damage_energy_on_qpoints_vect, *bt_d_b, 2, type,
-                    ghost_type);
-
-    /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
-    /// \mathbf{B}@f$
-    auto K_b = std::make_unique<Array<Real>>(
-        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_b");
-
-    fem.integrate(*bt_d_b, *K_b, nb_nodes_per_element * nb_nodes_per_element,
-                  type, ghost_type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_b, type, ghost_type, _symmetric);
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
+  
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
     const GhostType & ghost_type) {

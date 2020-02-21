@@ -138,18 +138,6 @@ protected:
   /// callback for the solver, this assembles the stiffness matrix
   void assembleLumpedMatrix(const ID & matrix_id) override;
 
-  /// callback for the solver, this is called at beginning of solve
-  void predictor() override;
-
-  /// callback for the solver, this is called at end of solve
-  void corrector() override;
-
-  /// callback for the solver, this is called at beginning of solve
-  void beforeSolveStep() override;
-
-  /// callback for the solver, this is called at end of solve
-  void afterSolveStep() override;
-
   /// callback for the model to instantiate the matricess when needed
   void initSolver(TimeStepSolverType, NonLinearSolverType) override;
 
