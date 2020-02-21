@@ -114,12 +114,12 @@ void TimeStepSolver::beforeSolveStep() {
 }
 
 /* -------------------------------------------------------------------------- */
-void TimeStepSolver::afterSolveStep() {
+void TimeStepSolver::afterSolveStep(bool converged) {
   AKANTU_DEBUG_ASSERT(
       this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
-  this->solver_callback->afterSolveStep();
+  this->solver_callback->afterSolveStep(converged);
 }
 
 /* -------------------------------------------------------------------------- */

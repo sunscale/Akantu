@@ -45,4 +45,3 @@ set(GTEST_LIBRARIES GTest::Main CACHE INTERNAL "" FORCE)
 
 mark_as_advanced(INSTALL_GTEST)
 mask_package_options(gtest)
-

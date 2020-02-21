@@ -32,6 +32,7 @@
 #include "communicator.hh"
 #include "solid_mechanics_model.hh"
 #include "test_gtest_utils.hh"
+#include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <gtest/gtest.h>
 #include <vector>
@@ -54,6 +55,9 @@ public:
     auto prank = Communicator::getStaticCommunicator().whoAmI();
     if (prank == 0) {
       this->mesh->read(this->mesh_file);
+      if(spatial_dimension > 1 and mesh->getNbElement(spatial_dimension - 1) == 0) {
+        MeshUtils::buildFacets(*this->mesh);
+      }
     }
 
     mesh->distribute();

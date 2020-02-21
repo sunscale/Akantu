@@ -50,16 +50,6 @@ public:
 
   ~NodeSynchronizer() override;
 
-  /* ------------------------------------------------------------------------ */
-  /// Uses the synchronizer to perform a reduction on the vector
-  template <template <class> class Op, typename T>
-  void reduceSynchronize(Array<T> & array) const;
-
-  /* ------------------------------------------------------------------------ */
-  template <typename T> void synchronizeData(Array<T> & array) const;
-
-  friend class NodeInfoPerProc;
-
   UInt sanityCheckDataSize(const Array<UInt> & nodes,
                            const SynchronizationTag & tag,
                            bool from_comm_desc) const override;
@@ -95,34 +85,27 @@ public:
     return *this;
   }
 
+  friend class NodeInfoPerProc;
+protected:
+  void fillEntityToSend(Array<UInt> & entities_to_send) override;
+
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
 
+  inline UInt canScatterSize() override;
+  inline UInt gatheredSize() override;
+
+  inline UInt localToGlobalEntity(const UInt & local) override;
+  
 protected:
   Int getRank(const UInt & node) const final;
 
 protected:
   Mesh & mesh;
-
-  // std::unordered_map<UInt, Int> node_to_prank;
 };
 
-/* -------------------------------------------------------------------------- */
-template <typename T>
-void NodeSynchronizer::synchronizeData(Array<T> & array) const {
-  SimpleUIntDataAccessor<T> data_accessor(array, SynchronizationTag::_whatever);
-  this->synchronizeOnce(data_accessor, SynchronizationTag::_whatever);
-}
-
-/* -------------------------------------------------------------------------- */
-template <template <class> class Op, typename T>
-void NodeSynchronizer::reduceSynchronize(Array<T> & array) const {
-  ReduceDataAccessor<UInt, Op, T> data_accessor(array,
-                                                SynchronizationTag::_whatever);
-  this->slaveReductionOnceImpl(data_accessor, SynchronizationTag::_whatever);
-  this->synchronizeData(array);
-}
-
 } // namespace akantu
+
+#include "node_synchronizer_inline_impl.cc"
 
 #endif /* __AKANTU_NODE_SYNCHRONIZER_HH__ */

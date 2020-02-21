@@ -74,12 +74,12 @@ public:
   virtual void add(UInt i, UInt j, Real value) = 0;
 
   /// save the profil in a file using the MatrixMarket file format
-  virtual void saveProfile(__attribute__((unused)) const std::string &) const {
+  virtual void saveProfile(const std::string & /* filename */) const {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// save the matrix in a file using the MatrixMarket file format
-  virtual void saveMatrix(__attribute__((unused)) const std::string &) const {
+  virtual void saveMatrix(const std::string & /* filename */) const {
     AKANTU_TO_IMPLEMENT();
   };
 
@@ -114,13 +114,11 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// return the values at potition i, j
-  virtual inline Real operator()(__attribute__((unused)) UInt i,
-                                 __attribute__((unused)) UInt j) const {
+  virtual inline Real operator()(UInt /*i*/, UInt /*j*/) const {
     AKANTU_TO_IMPLEMENT();
   }
   /// return the values at potition i, j
-  virtual inline Real & operator()(__attribute__((unused)) UInt i,
-                                   __attribute__((unused)) UInt j) {
+  virtual inline Real & operator()(UInt /*i*/, UInt /*j*/) {
     AKANTU_TO_IMPLEMENT();
   }
 

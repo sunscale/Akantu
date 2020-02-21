@@ -32,10 +32,11 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_error.hh"
 #include "aka_iterators.hh"
-#include "parameter_registry.hh"
+//#include "parameter_registry.hh"
 #include "parser.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 /* -------------------------------------------------------------------------- */
@@ -234,8 +235,12 @@ public:
                  ParameterAccessType param_type, std::vector<T> & param)
       : Parameter(name, description, param_type), param(param) {}
 
-  /* ------------------------------------------------------------------------ */
-  template <typename V> void setTyped(const V & value) { param = value; }
+  /* ------------------------------------------------------------------------
+   */
+  template <typename V>
+  void setTyped(const V & value) {
+    param = value;
+  }
   void setAuto(const ParserParameter & value) override {
     Parameter::setAuto(value);
     param.clear();
@@ -265,8 +270,49 @@ private:
   std::vector<T> & param;
 };
 
-/* ------o--------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
+template <typename T> class ParameterTyped<std::set<T>> : public Parameter {
+public:
+  ParameterTyped(std::string name, std::string description,
+                 ParameterAccessType param_type, std::set<T> & param)
+      : Parameter(name, description, param_type), param(param) {}
+
+  /* ------------------------------------------------------------------------
+   */
+  template <typename V>
+  void setTyped(const V & value) {
+    param = value;
+  }
+  void setAuto(const ParserParameter & value) override {
+    Parameter::setAuto(value);
+    param.clear();
+    const std::set<T> & tmp = value;
+    for (auto && z : tmp) {
+      param.emplace(z);
+    }
+  }
+
+  std::set<T> & getTyped() { return param; }
+  const std::set<T> & getTyped() const { return param; }
+
+  void printself(std::ostream & stream) const override {
+    Parameter::printself(stream);
+    stream << "[ ";
+    for (auto && v : param)
+      stream << v << " ";
+    stream << "]\n";
+  }
+
+  inline const std::type_info & type() const override {
+    return typeid(std::set<T>);
+  }
+
+private:
+  /// Value of parameter
+  std::set<T> & param;
+};
+
+/* -------------------------------------------------------------------------- */
 template <>
 inline void ParameterTyped<bool>::printself(std::ostream & stream) const {
   Parameter::printself(stream);

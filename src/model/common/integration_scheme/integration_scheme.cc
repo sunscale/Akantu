@@ -39,7 +39,7 @@ namespace akantu {
 IntegrationScheme::IntegrationScheme(DOFManager & dof_manager,
                                      const ID & dof_id, UInt order)
     : Parsable(ParserType::_integration_scheme, dof_id),
-      dof_manager(dof_manager), dof_id(dof_id), order(order) {}
+      dof_manager(dof_manager), dof_id(dof_id), order(order), u_store(order + 1) {}
 
 /* -------------------------------------------------------------------------- */
 /// standard input stream operator for SolutionType
@@ -66,14 +66,28 @@ std::istream & operator>>(std::istream & stream,
   return stream;
 }
 
-// void IntegrationScheme::assembleJacobian(const SolutionType & /*type*/, Real
-// /*delta_t*/) {
-//   auto & J = dof_manager.getLumpedMatrix("J");
-//   auto & M = dof_manager.getLumpedMatrix("M");
+/* -------------------------------------------------------------------------- */
+void IntegrationScheme::store() {
+  for (auto data : enumerate(u_store)) {
+    auto o = std::get<0>(data);
+    auto & u_store = std::get<1>(data);
+    auto & u_o = dof_manager.getDOFsDerivatives(dof_id, o);
+    if (not u_store) {
+      u_store = std::make_unique<Array<Real>>(
+          u_o, "integration_scheme_store:" + dof_id + ":" + std::to_string(o));
+    } else {
+      u_store->copy(u_o);
+    }
+  }
+}
 
-//   if (J.release() == M.release()) return;
+/* -------------------------------------------------------------------------- */
+void IntegrationScheme::restore() {
+  for (auto o : arange(order)) {
+    auto & u_o = dof_manager.getDOFsDerivatives(dof_id, o);
+    u_o.copy(*u_store[o]);
+  }
+}
 
-//   J = M;
-// }
 
 } // namespace akantu

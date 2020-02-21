@@ -32,7 +32,7 @@
 
 package_declare(python_interface
   DESCRIPTION "Akantu's python interface"
-  DEPENDS PythonLibs pybind11)
+  DEPENDS pybind11)
 
 package_declare_documentation(python_interface
   "This package enables the python interface of Akantu. It relies on pybind11"

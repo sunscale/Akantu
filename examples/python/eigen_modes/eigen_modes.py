@@ -1,3 +1,4 @@
+import sys
 import subprocess
 import argparse
 import akantu as aka
@@ -11,7 +12,7 @@ from scipy.sparse import csr_matrix
 # parser
 # -----------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description='Eigen mode exo')
-parser.add_argument('-m', '--mode_number', type=int, required=True,
+parser.add_argument('-m', '--mode_number', type=int,
                     help='precise the mode to study', default=2)
 
 parser.add_argument('-wL', '--wave_width', type=float,
@@ -33,6 +34,9 @@ parser.add_argument('-mh', '--mesh_h', type=float,
                     help='characteristic mesh size',
                     default=.2)
 
+parser.add_argument('-p', '--plot', action='store_true',
+                    help='plot the results')
+
 args = parser.parse_args()
 mode = args.mode_number
 wave_width = args.wave_width
@@ -40,6 +44,7 @@ time_step = args.time_step
 max_steps = args.max_steps
 mesh_h = args.mesh_h
 Lbar = args.Lbar
+plot = args.plot
 
 # -----------------------------------------------------------------------------
 # Mesh Generation
@@ -226,6 +231,10 @@ for step in range(1, max_steps + 1):
     velo_sav.storeStep()
     if step % 10 == 0:
         model.dump()
+
+
+if not plot:
+    sys.exit(0)
 
 # -----------------------------------------------------------------------------
 # plot figures for global evolution

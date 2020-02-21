@@ -46,6 +46,15 @@ register_test(test_solid_mechanics_model_material_eigenstrain
   )
 
 #===============================================================================
+register_test(test_solid_mechanics_model_material_large_rotation
+  SOURCES test_solid_mechanics_model_material_large_rotation.cc
+  FILES_TO_COPY cube_3d_tet_4.msh; material_elastic.dat
+  PACKAGE implicit
+  UNSTABLE
+  )
+
+#===============================================================================
+
 register_test(test_material_selector
   SOURCES test_material_selector.cc
   FILES_TO_COPY material_selector.dat material_selector.msh

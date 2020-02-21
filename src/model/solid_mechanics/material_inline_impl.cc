@@ -56,17 +56,18 @@ inline UInt Material::addElement(const Element & element) {
 inline UInt Material::getTangentStiffnessVoigtSize(UInt dim) const {
   return (dim * (dim - 1) / 2 + dim);
 }
+
 /* -------------------------------------------------------------------------- */
 inline UInt Material::getCauchyStressMatrixSize(UInt dim) const {
   return (dim * dim);
 }
+
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 inline void Material::gradUToF(const Matrix<Real> & grad_u, Matrix<Real> & F) {
   AKANTU_DEBUG_ASSERT(F.size() >= grad_u.size() && grad_u.size() == dim * dim,
                       "The dimension of the tensor F should be greater or "
                       "equal to the dimension of the tensor grad_u.");
-
   F.eye();
 
   for (UInt i = 0; i < dim; ++i)
@@ -76,15 +77,20 @@ inline void Material::gradUToF(const Matrix<Real> & grad_u, Matrix<Real> & F) {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-inline void Material::computeCauchyStressOnQuad(const Matrix<Real> & F,
-                                                const Matrix<Real> & piola,
-                                                Matrix<Real> & sigma,
-                                                const Real & C33) const {
+inline decltype(auto) Material::gradUToF(const Matrix<Real> & grad_u) {
+  Matrix<Real> F(dim, dim);
+  gradUToF<dim>(grad_u, F);
+  return F;
+}
 
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+inline void Material::StoCauchy(const Matrix<Real> & F, const Matrix<Real> & S,
+                                Matrix<Real> & sigma, const Real & C33) const {
   Real J = F.det() * sqrt(C33);
 
   Matrix<Real> F_S(dim, dim);
-  F_S.mul<false, false>(F, piola);
+  F_S = F * S;
   Real constant = J ? 1. / J : 0;
   sigma.mul<false, true>(F_S, F, constant);
 }
@@ -110,13 +116,28 @@ inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-inline void Material::gradUToGreenStrain(const Matrix<Real> & grad_u,
-                                         Matrix<Real> & epsilon) {
-  epsilon.mul<true, false>(grad_u, grad_u, .5);
+inline decltype(auto) Material::gradUToEpsilon(const Matrix<Real> & grad_u) {
+  Matrix<Real> epsilon(dim, dim);
+  Material::template gradUToEpsilon<dim>(grad_u, epsilon);
+  return epsilon;
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+inline void Material::gradUToE(const Matrix<Real> & grad_u, Matrix<Real> & E) {
+  E.mul<true, false>(grad_u, grad_u, .5);
 
   for (UInt i = 0; i < dim; ++i)
     for (UInt j = 0; j < dim; ++j)
-      epsilon(i, j) += 0.5 * (grad_u(i, j) + grad_u(j, i));
+      E(i, j) += 0.5 * (grad_u(i, j) + grad_u(j, i));
+}
+
+/* -------------------------------------------------------------------------- */
+template <UInt dim>
+inline decltype(auto) Material::gradUToE(const Matrix<Real> & grad_u) {
+  Matrix<Real> E(dim, dim);
+  gradUToE<dim>(grad_u, E);
+  return E;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -132,32 +153,6 @@ inline Real Material::stressToVonMises(const Matrix<Real> & stress) {
 
   // return Von Mises stress
   return std::sqrt(3. * deviatoric_stress.doubleDot(deviatoric_stress) / 2.);
-}
-
-/* ---------------------------------------------------------------------------*/
-template <UInt dim>
-inline void Material::setCauchyStressArray(const Matrix<Real> & S_t,
-                                           Matrix<Real> & sigma_voight) {
-  AKANTU_DEBUG_IN();
-  sigma_voight.clear();
-  // see Finite element formulations for large deformation dynamic analysis,
-  // Bathe et al. IJNME vol 9, 1975, page 364 ^t\tau
-
-  /*
-   * 1d: [ s11 ]'
-   * 2d: [ s11 s22 s12 ]'
-   * 3d: [ s11 s22 s33 s23 s13 s12 ]
-   */
-  for (UInt i = 0; i < dim; ++i) // diagonal terms
-    sigma_voight(i, 0) = S_t(i, i);
-
-  for (UInt i = 1; i < dim; ++i) // term s12 in 2D and terms s23 s13 in 3D
-    sigma_voight(dim + i - 1, 0) = S_t(dim - i - 1, dim - 1);
-
-  for (UInt i = 2; i < dim; ++i) // term s13 in 3D
-    sigma_voight(dim + i, 0) = S_t(0, 1);
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

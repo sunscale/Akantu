@@ -1,9 +1,10 @@
 build*
 .dir-locals.el
 TAGS
-!third-party/cmake
-!third-party/iohelper
 third-party/*/
+!third-party/cmake/*
+!third-party/akantu-iterators
+!third-party/iohelper
 *~
 release
 .*.swp
@@ -14,3 +15,4 @@ release
 .idea
 __pycache__
 .mailmap
+compile_commands.json

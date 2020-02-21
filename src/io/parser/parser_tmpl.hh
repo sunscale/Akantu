@@ -81,8 +81,20 @@ template <> inline ParserParameter::operator std::vector<std::string>() const {
   return tmp;
 }
 
-/* --------------------------------------------------------- -----------------
- */
+/* -------------------------------------------------------------------------- */
+template <> inline ParserParameter::operator std::set<std::string>() const {
+  std::set<std::string> tmp;
+  auto string =
+      std::regex_replace(value, std::regex("[[:space:]]|\\[|\\]"), "");
+  std::smatch sm;
+  while (std::regex_search(string, sm, std::regex("[^,]+"))) {
+    tmp.emplace(sm.str());
+    string = sm.suffix();
+  }
+  return tmp;
+}
+
+/* -------------------------------------------------------------------------- */
 template <> inline ParserParameter::operator Vector<Real>() const {
   return Parser::parseVector(value, *parent_section);
 }

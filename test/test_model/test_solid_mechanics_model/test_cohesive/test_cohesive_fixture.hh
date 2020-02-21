@@ -204,7 +204,7 @@ public:
       direction = _x;
     auto length =
         mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
-    nb_steps = length / 2. / speed / model->getTimeStep();
+    nb_steps = length / speed / model->getTimeStep();
 
     SCOPED_TRACE(std::to_string(this->dim) + "D - " + std::to_string(type_1) +
                  ":" + std::to_string(type_2));

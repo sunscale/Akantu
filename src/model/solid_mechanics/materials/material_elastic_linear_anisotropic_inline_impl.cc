@@ -43,28 +43,9 @@ namespace akantu {
 template <UInt dim>
 inline void MaterialElasticLinearAnisotropic<dim>::computeStressOnQuad(
     const Matrix<Real> & grad_u, Matrix<Real> & sigma) const {
-  // Wikipedia convention:
-  // 2*eps_ij (i!=j) = voigt_eps_I
-  // http://en.wikipedia.org/wiki/Voigt_notation
-  Vector<Real> voigt_strain(voigt_h::size);
-  Vector<Real> voigt_stress(voigt_h::size);
-
-  for (UInt I = 0; I < voigt_h::size; ++I) {
-    Real voigt_factor = voigt_h::factors[I];
-    UInt i = voigt_h::vec[I][0];
-    UInt j = voigt_h::vec[I][1];
-
-    voigt_strain(I) = voigt_factor * (grad_u(i, j) + grad_u(j, i)) / 2.;
-  }
-
-  voigt_stress = this->C * voigt_strain;
-
-  for (UInt I = 0; I < voigt_h::size; ++I) {
-    UInt i = voigt_h::vec[I][0];
-    UInt j = voigt_h::vec[I][1];
-
-    sigma(i, j) = sigma(j, i) = voigt_stress(I);
-  }
+  auto voigt_strain = strainToVoigt<dim>(gradUToEpsilon<dim>(grad_u));
+  auto voigt_stress = this->C * voigt_strain;
+  voigtToStress<dim>(voigt_stress, sigma);
 }
 
 /* -------------------------------------------------------------------------- */

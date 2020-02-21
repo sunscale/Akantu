@@ -29,10 +29,9 @@
 # @section DESCRIPTION
 #
 #===============================================================================
-
+add_mesh(cohesive_extrinsic_ig_tg_mesh triangle.geo DIM 2 ORDER 1 OUTPUT square.msh)
 register_example(cohesive_extrinsic_ig_tg
   SOURCES cohesive_extrinsic_ig_tg.cc
-  FILES_TO_COPY material.dat square.msh
+  DEPENDS cohesive_extrinsic_ig_tg_mesh
+  FILES_TO_COPY material.dat
   )
-
-

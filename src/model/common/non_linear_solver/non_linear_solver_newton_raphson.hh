@@ -86,6 +86,9 @@ private:
   /// convergence threshold
   Real convergence_criteria;
 
+  /// convergence threshold
+  Real convergence_criteria_normalized;
+
   /// Max number of iterations
   int max_iterations;
 

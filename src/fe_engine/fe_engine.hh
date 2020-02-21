@@ -34,6 +34,8 @@
 #include "element_type_map.hh"
 #include "mesh_events.hh"
 /* -------------------------------------------------------------------------- */
+#include <functional>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_FE_ENGINE_HH__
 #define __AKANTU_FE_ENGINE_HH__
@@ -253,6 +255,18 @@ public:
                           Matrix<Real> & shape_derivatives,
                           const GhostType & ghost_type = _not_ghost) const = 0;
 
+  /// assembles the lumped version of @f[ \int N^t rho N @f]
+  virtual void assembleFieldLumped(
+      const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
+      const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
+      ElementType type, const GhostType & ghost_type = _not_ghost) const = 0;
+
+  /// assembles the matrix @f[ \int N^t rho N @f]
+  virtual void assembleFieldMatrix(
+      const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
+      const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
+      ElementType type, const GhostType & ghost_type = _not_ghost) const = 0;
+
   /* ------------------------------------------------------------------------ */
   /* Other methods                                                            */
   /* ------------------------------------------------------------------------ */
@@ -263,17 +277,16 @@ public:
 
   /// pre-compute normals on integration points
   virtual void computeNormalsOnIntegrationPoints(
-      __attribute__((unused)) const Array<Real> & field,
-      __attribute__((unused)) const GhostType & ghost_type = _not_ghost) {
+      const Array<Real> & /*field*/,
+      const GhostType & /*ghost_type*/ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// pre-compute normals on integration points
   virtual void computeNormalsOnIntegrationPoints(
-      __attribute__((unused)) const Array<Real> & field,
-      __attribute__((unused)) Array<Real> & normal,
-      __attribute__((unused)) const ElementType & type,
-      __attribute__((unused)) const GhostType & ghost_type = _not_ghost) const {
+      const Array<Real> & /*field*/, Array<Real> & /*normal*/,
+      const ElementType & /*type*/,
+      const GhostType & /*ghost_type*/ = _not_ghost) const {
     AKANTU_TO_IMPLEMENT();
   }
 

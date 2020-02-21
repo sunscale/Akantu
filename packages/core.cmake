@@ -35,7 +35,7 @@ package_declare(core NOT_OPTIONAL
                   cxx_deleted_functions cxx_auto_type cxx_decltype_auto
   FEATURES_PRIVATE cxx_lambdas cxx_nullptr cxx_range_for
 		   cxx_delegating_constructors
-  DEPENDS INTERFACE Boost)
+  DEPENDS INTERFACE akantu_iterators Boost)
 
 package_declare_sources(core
   common/aka_array.cc
@@ -80,10 +80,7 @@ package_declare_sources(core
   common/aka_voigthelper.cc
   common/aka_warning.hh
   common/aka_warning_restore.hh
-  common/aka_iterators.hh
-  common/aka_static_if.hh
-  common/aka_compatibilty_with_cpp_standard.hh
-
+  
   fe_engine/element_class.hh
   fe_engine/element_class_tmpl.hh
   fe_engine/element_classes/element_class_hexahedron_8_inline_impl.cc
@@ -321,6 +318,7 @@ package_declare_sources(core
   synchronizer/node_info_per_processor.hh
   synchronizer/node_synchronizer.cc
   synchronizer/node_synchronizer.hh
+  synchronizer/node_synchronizer_inline_impl.cc
   synchronizer/periodic_node_synchronizer.cc
   synchronizer/periodic_node_synchronizer.hh
   synchronizer/slave_element_info_per_processor.cc
@@ -410,6 +408,7 @@ package_declare_elements(core
   compute_shapes_derivatives
   get_shapes_derivatives
   lagrange_base
+  assemble_fields
   )
 
 package_declare_documentation_files(core

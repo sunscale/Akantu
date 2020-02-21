@@ -141,7 +141,7 @@ foreach(_f  ${_manual_files})
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/${_rel_f}" "${_rel_f}")
 endforeach()
 
-set(MANUAL_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/akantu_ug.pdf)
+set(MANUAL_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/akantu_ug-v${AKANTU_VERSION}.pdf)
 
 add_custom_command(
   OUTPUT ${MANUAL_OUTPUT}
@@ -157,7 +157,8 @@ set_directory_properties(latex/$)
 
 add_custom_target(manual ALL DEPENDS ${MANUAL_OUTPUT})
 
-install(FILES ${MANUAL_OUTPUT} DESTINATION share/akantu-${AKANTU_VERSION}/doc)
+install(FILES ${MANUAL_OUTPUT}
+  DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 package_get_all_activated_packages(_package_list)
 foreach (_pkg_name ${_package_list})

@@ -1,0 +1,23 @@
+{
+    "linters": {
+        "format": {
+            "type": "clang-format",
+            "include": [ "(\\.cc$)", "(\\.hh$)" ],
+            "exclude": "(^third-party/)"
+        },
+	"python": {
+            "type": "flake8",
+            "include": [ "(\\.py$)" ],
+            "exclude": "(^third-party/)",
+	    "severity.rules": {
+		"(^E)": "error",
+		"(^W)": "warning",
+		"(^F)": "advice"
+	    }
+        },
+
+        "merges": {
+            "type": "merge-conflict"
+        }
+    }
+}

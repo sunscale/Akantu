@@ -13,6 +13,8 @@ namespace py = pybind11;
 
 namespace akantu {
 
+std::vector<detail::ArrayProxy<Real>> tmp_array;
+
 void register_dumpable(py::module & mod) {
   /* ------------------------------------------------------------------------ */
   py::class_<Dumpable>(mod, "Dumpable")
@@ -29,20 +31,31 @@ void register_dumpable(py::module & mod) {
       .def("addDumpField", &Dumpable::addDumpField, py::arg("field_id"))
       .def("addDumpFieldToDumper", &Dumpable::addDumpFieldToDumper,
            py::arg("dumper_name"), py::arg("field_id"))
-      .def("addDumpFieldExternal",
-           [](Dumpable & _this, const std::string & field_id,
-              std::shared_ptr<dumper::Field> field) {
-             return _this.addDumpFieldExternal(field_id, field);
-           },
-           py::arg("field_id"), py::arg("field"))
-      .def("addDumpFieldExternalToDumper",
-           [](Dumpable & _this, const std::string & dumper_name,
-              const std::string & field_id,
-              std::shared_ptr<dumper::Field> field) {
-             return _this.addDumpFieldExternalToDumper(dumper_name, field_id,
-                                                       field);
-           },
-           py::arg("dumper_name"), py::arg("field_id"), py::arg("field"))
+      .def(
+          "addDumpFieldExternal",
+          [](Dumpable & _this, const std::string & field_id,
+             std::shared_ptr<dumper::Field> field) {
+            return _this.addDumpFieldExternal(field_id, field);
+          },
+          py::arg("field_id"), py::arg("field"))
+      .def(
+          "addDumpFieldExternal",
+          [](Dumpable & _this, const std::string & field_id,
+             Array<Real> & field) {
+            auto & tmp = dynamic_cast<detail::ArrayProxy<Real>&>(field);
+            tmp_array.push_back(tmp);
+            return _this.addDumpFieldExternal(field_id, tmp_array.back());
+          },
+          py::arg("field_id"), py::arg("field"))
+      .def(
+          "addDumpFieldExternalToDumper",
+          [](Dumpable & _this, const std::string & dumper_name,
+             const std::string & field_id,
+             std::shared_ptr<dumper::Field> field) {
+            return _this.addDumpFieldExternalToDumper(dumper_name, field_id,
+                                                      field);
+          },
+          py::arg("dumper_name"), py::arg("field_id"), py::arg("field"))
 
       .def("dump", py::overload_cast<>(&Dumpable::dump))
       .def("dump", py::overload_cast<Real, UInt>(&Dumpable::dump),

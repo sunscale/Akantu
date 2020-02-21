@@ -1,0 +1,36 @@
+.tests:
+  stage: test
+
+  script:
+    - cmake -E make_directory build
+    - cd build
+    - cmake -DAKANTU_ITERATORS_TESTS:BOOL=TRUE ..
+    - cmake --build .
+    - ctest -T test --no-compress-output --timeout 60
+  after_script:
+    - cd build
+    - tag=$(head -n 1 < Testing/TAG)
+    - if [ -e Testing/${tag}/Test.xml ]; then
+    -   xsltproc -o ./juint.xml ${CI_PROJECT_DIR}/test/ci/ctest2junit.xsl Testing/${tag}/Test.xml;
+    - fi
+  artifacts:
+    when: always
+    paths:
+      - build/juint.xml
+    reports:
+      junit:
+        - build/juint.xml
+
+.image_debian_testing_gcc:
+  cache:
+    key: debian_testing_gcc_${CI_COMMIT_REF_SLUG}
+    paths:
+      - build
+      - third-party/google-test
+  image: registry.gitlab.com/akantu/akantu:debian-testing
+
+
+test:debian_testing_gcc:
+  extends:
+    - .tests
+    - .image_debian_testing_gcc

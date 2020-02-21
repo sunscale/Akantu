@@ -87,10 +87,8 @@ class Material : public Memory,
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-#if __cplusplus > 199711L
   Material(const Material & mat) = delete;
   Material & operator=(const Material & mat) = delete;
-#endif
 
   /// Initialize material with defaults
   Material(SolidMechanicsModel & model, const ID & id = "");
@@ -110,19 +108,15 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// constitutive law
-  virtual void computeStress(__attribute__((unused)) ElementType el_type,
-                             __attribute__((unused))
-                             GhostType ghost_type = _not_ghost) {
+  virtual void computeStress(ElementType /* el_type */,
+                             GhostType /* ghost_type */ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the tangent stiffness matrix
-  virtual void computeTangentModuli(__attribute__((unused))
-                                    const ElementType & el_type,
-                                    __attribute__((unused))
-                                    Array<Real> & tangent_matrix,
-                                    __attribute__((unused))
-                                    GhostType ghost_type = _not_ghost) {
+  virtual void computeTangentModuli(const ElementType & /*el_type*/,
+                                    Array<Real> & /*tangent_matrix*/,
+                                    GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -131,23 +125,19 @@ protected:
 
   /// compute the potential energy for an element
   virtual void
-  computePotentialEnergyByElement(__attribute__((unused)) ElementType type,
-                                  __attribute__((unused)) UInt index,
-                                  __attribute__((unused))
-                                  Vector<Real> & epot_on_quad_points) {
+  computePotentialEnergyByElement(ElementType /*type*/, UInt /*index*/,
+                                  Vector<Real> & /*epot_on_quad_points*/) {
     AKANTU_TO_IMPLEMENT();
   }
 
-  virtual void updateEnergies(__attribute__((unused)) ElementType el_type) {}
+  virtual void updateEnergies(ElementType /*el_type*/) {}
 
-  virtual void updateEnergiesAfterDamage(__attribute__((unused))
-                                         ElementType el_type) {}
+  virtual void updateEnergiesAfterDamage(ElementType /*el_type*/) {}
 
   /// set the material to steady state (to be implemented for materials that
   /// need it)
-  virtual void setToSteadyState(__attribute__((unused)) ElementType el_type,
-                                __attribute__((unused))
-                                GhostType ghost_type = _not_ghost) {}
+  virtual void setToSteadyState(ElementType /*el_type*/,
+                                GhostType /*ghost_type*/ = _not_ghost) {}
 
   /// function called to update the internal parameters when the modifiable
   /// parameters are modified
@@ -160,14 +150,12 @@ public:
                                    Matrix<Real> & extrapolated);
 
   /// compute the p-wave speed in the material
-  virtual Real getPushWaveSpeed(__attribute__((unused))
-                                const Element & element) const {
+  virtual Real getPushWaveSpeed(const Element & /*element*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// compute the s-wave speed in the material
-  virtual Real getShearWaveSpeed(__attribute__((unused))
-                                 const Element & element) const {
+  virtual Real getShearWaveSpeed(const Element & /*element*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -181,13 +169,11 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  template <typename T>
-  void registerInternal(__attribute__((unused)) InternalField<T> & vect) {
+  template <typename T> void registerInternal(InternalField<T> & /*vect*/) {
     AKANTU_TO_IMPLEMENT();
   }
 
-  template <typename T>
-  void unregisterInternal(__attribute__((unused)) InternalField<T> & vect) {
+  template <typename T> void unregisterInternal(InternalField<T> & /*vect*/) {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -278,20 +264,6 @@ protected:
   /// assemble the residual
   template <UInt dim> void assembleInternalForces(GhostType ghost_type);
 
-  /// Computation of Cauchy stress tensor in the case of finite deformation from
-  /// the 2nd Piola-Kirchhoff for a given element type
-  template <UInt dim>
-  void computeCauchyStress(ElementType el_type,
-                           GhostType ghost_type = _not_ghost);
-
-  /// Computation the Cauchy stress the 2nd Piola-Kirchhoff and the deformation
-  /// gradient
-  template <UInt dim>
-  inline void computeCauchyStressOnQuad(const Matrix<Real> & F,
-                                        const Matrix<Real> & S,
-                                        Matrix<Real> & cauchy,
-                                        const Real & C33 = 1.0) const;
-
   template <UInt dim>
   void computeAllStressesFromTangentModuli(const ElementType & type,
                                            GhostType ghost_type);
@@ -308,6 +280,10 @@ protected:
   void assembleStiffnessMatrixL2(const ElementType & type,
                                  GhostType ghost_type);
 
+  /* ------------------------------------------------------------------------ */
+  /* Conversion functions                                                     */
+  /* ------------------------------------------------------------------------ */
+public:
   /// Size of the Stress matrix for the case of finite deformation see: Bathe et
   /// al, IJNME, Vol 9, 353-386, 1975
   inline UInt getCauchyStressMatrixSize(UInt spatial_dimension) const;
@@ -315,20 +291,45 @@ protected:
   /// Sets the stress matrix according to Bathe et al, IJNME, Vol 9, 353-386,
   /// 1975
   template <UInt dim>
-  inline void setCauchyStressMatrix(const Matrix<Real> & S_t,
-                                    Matrix<Real> & sigma);
+  static inline void setCauchyStressMatrix(const Matrix<Real> & S_t,
+                                           Matrix<Real> & sigma);
 
   /// write the stress tensor in the Voigt notation.
   template <UInt dim>
-  inline void setCauchyStressArray(const Matrix<Real> & S_t,
-                                   Matrix<Real> & sigma_voight);
+  static inline decltype(auto) stressToVoigt(const Matrix<Real> & stress) {
+    return VoigtHelper<dim>::matrixToVoigt(stress);
+  }
 
-  /* ------------------------------------------------------------------------ */
-  /* Conversion functions                                                     */
-  /* ------------------------------------------------------------------------ */
-public:
+  /// write the strain tensor in the Voigt notation.
+  template <UInt dim>
+  static inline decltype(auto) strainToVoigt(const Matrix<Real> & strain) {
+    return VoigtHelper<dim>::matrixToVoigtWithFactors(strain);
+  }
+
+  /// write a voigt vector to stress
+  template <UInt dim>
+  static inline void voigtToStress(const Vector<Real> & voigt,
+                                   Matrix<Real> & stress) {
+    VoigtHelper<dim>::voigtToMatrix(voigt, stress);
+  }
+
+  /// Computation of Cauchy stress tensor in the case of finite deformation from
+  /// the 2nd Piola-Kirchhoff for a given element type
+  template <UInt dim>
+  void StoCauchy(ElementType el_type, GhostType ghost_type = _not_ghost);
+
+  /// Computation the Cauchy stress the 2nd Piola-Kirchhoff and the deformation
+  /// gradient
+  template <UInt dim>
+  inline void StoCauchy(const Matrix<Real> & F, const Matrix<Real> & S,
+                        Matrix<Real> & sigma, const Real & C33 = 1.0) const;
+
   template <UInt dim>
   static inline void gradUToF(const Matrix<Real> & grad_u, Matrix<Real> & F);
+
+  template <UInt dim>
+  static inline decltype(auto) gradUToF(const Matrix<Real> & grad_u);
+
   static inline void rightCauchy(const Matrix<Real> & F, Matrix<Real> & C);
   static inline void leftCauchy(const Matrix<Real> & F, Matrix<Real> & B);
 
@@ -336,8 +337,14 @@ public:
   static inline void gradUToEpsilon(const Matrix<Real> & grad_u,
                                     Matrix<Real> & epsilon);
   template <UInt dim>
-  static inline void gradUToGreenStrain(const Matrix<Real> & grad_u,
-                                        Matrix<Real> & epsilon);
+  static inline decltype(auto) gradUToEpsilon(const Matrix<Real> & grad_u);
+
+  template <UInt dim>
+  static inline void gradUToE(const Matrix<Real> & grad_u,
+                              Matrix<Real> & epsilon);
+
+  template <UInt dim>
+  static inline decltype(auto) gradUToE(const Matrix<Real> & grad_u);
 
   static inline Real stressToVonMises(const Matrix<Real> & stress);
 
@@ -403,7 +410,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   virtual void beforeSolveStep();
-  virtual void afterSolveStep();
+  virtual void afterSolveStep(bool converged = true);
 
   void onDamageIteration() override;
   void onDamageUpdate() override;
@@ -484,7 +491,7 @@ public:
                                const GhostType = _not_ghost);
 
   bool hasMatrixChanged(const ID & id) {
-    if(id == "K") {
+    if (id == "K") {
       return hasStiffnessMatrixChanged() or finite_deformation;
     }
 
@@ -492,7 +499,7 @@ public:
   }
 
   MatrixType getMatrixType(const ID & id) {
-    if(id == "K") {
+    if (id == "K") {
       return getTangentType();
     } else if (id == "M") {
       return _symmetric;
@@ -500,18 +507,14 @@ public:
 
     return _mt_not_defined;
   }
-  
-  
+
   /// specify if the matrix need to be recomputed for this material
   virtual bool hasStiffnessMatrixChanged() { return true; }
 
   /// specify the type of matrix, if not overloaded the material is not valid
   /// for static or implicit computations
-  virtual MatrixType getTangentType() {
-    return _mt_not_defined;
-  }
+  virtual MatrixType getTangentType() { return _mt_not_defined; }
 
-  
   /// static method to reteive the material factory
   static MaterialFactory & getFactory();
 

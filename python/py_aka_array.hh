@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-#include "aka_array.hh"
+#include <aka_array.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
@@ -41,7 +41,9 @@ namespace detail {
       this->nb_component = src.getNbComponent();
     }
 
-    ~ArrayProxy() { this->values = nullptr; }
+    ~ArrayProxy() {
+      this->values = nullptr;
+    }
 
     void resize(UInt /*size*/, const T & /*val */) override final {
       AKANTU_EXCEPTION("cannot resize a temporary array");
@@ -85,8 +87,6 @@ namespace detail {
   template <typename U> using array_type_t = typename AkaArrayType<U>::type;
 
   /* ------------------------------------------------------------------------ */
-
-
   template <typename T>
   decltype(auto) create_proxy(array_type_t<_aka::Vector<T>> & ref, const _aka::Vector<T> *) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Vector<T>>>(

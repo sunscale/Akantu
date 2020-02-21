@@ -90,10 +90,9 @@ Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                                     fe_engine, this->element_filter) {
 
   AKANTU_DEBUG_IN();
+
   element_filter.initialize(mesh, _spatial_dimension = spatial_dimension,
                             _element_kind = _ek_regular);
-  // mesh.initElementTypeMapArray(element_filter, 1, spatial_dimension, false,
-  //                              _ek_regular);
 
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -302,13 +301,13 @@ void Material::computeAllCauchyStresses(GhostType ghost_type) {
   for (auto type : element_filter.elementTypes(spatial_dimension, ghost_type)) {
     switch (spatial_dimension) {
     case 1:
-      this->computeCauchyStress<1>(type, ghost_type);
+      this->StoCauchy<1>(type, ghost_type);
       break;
     case 2:
-      this->computeCauchyStress<2>(type, ghost_type);
+      this->StoCauchy<2>(type, ghost_type);
       break;
     case 3:
-      this->computeCauchyStress<3>(type, ghost_type);
+      this->StoCauchy<3>(type, ghost_type);
       break;
     }
   }
@@ -318,30 +317,24 @@ void Material::computeAllCauchyStresses(GhostType ghost_type) {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void Material::computeCauchyStress(ElementType el_type, GhostType ghost_type) {
+void Material::StoCauchy(ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real>::matrix_iterator gradu_it =
-      this->gradu(el_type, ghost_type).begin(dim, dim);
+  auto gradu_it = this->gradu(el_type, ghost_type).begin(dim, dim);
 
-  Array<Real>::matrix_iterator gradu_end =
-      this->gradu(el_type, ghost_type).end(dim, dim);
+  auto gradu_end = this->gradu(el_type, ghost_type).end(dim, dim);
 
-  Array<Real>::matrix_iterator piola_it =
-      this->piola_kirchhoff_2(el_type, ghost_type).begin(dim, dim);
+  auto piola_it = this->piola_kirchhoff_2(el_type, ghost_type).begin(dim, dim);
 
-  Array<Real>::matrix_iterator stress_it =
-      this->stress(el_type, ghost_type).begin(dim, dim);
-
-  Matrix<Real> F_tensor(dim, dim);
+  auto stress_it = this->stress(el_type, ghost_type).begin(dim, dim);
 
   for (; gradu_it != gradu_end; ++gradu_it, ++piola_it, ++stress_it) {
     Matrix<Real> & grad_u = *gradu_it;
     Matrix<Real> & piola = *piola_it;
     Matrix<Real> & sigma = *stress_it;
 
-    gradUToF<dim>(grad_u, F_tensor);
-    this->computeCauchyStressOnQuad<dim>(F_tensor, piola, sigma);
+    auto F_tensor = gradUToF<dim>(grad_u);
+    this->StoCauchy<dim>(F_tensor, piola, sigma);
   }
 
   AKANTU_DEBUG_OUT();
@@ -700,7 +693,6 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 
     Array<Real>::matrix_iterator bt_s_it = bt_s->begin(bt_s_size, 1);
 
-    Matrix<Real> S_vect(stress_size, 1);
     Matrix<Real> B_tensor(stress_size, bt_s_size);
     Matrix<Real> B2_tensor(stress_size, bt_s_size);
 
@@ -708,19 +700,22 @@ void Material::assembleInternalForces(GhostType ghost_type) {
                                     ++shapes_derivatives_filtered_it,
                                     ++bt_s_it) {
       auto & grad_u = *grad_u_it;
-      auto & r_it = *bt_s_it;
-      auto & S_it = *stress_it;
+      auto & r = *bt_s_it;
+      auto & S = *stress_it;
 
-      setCauchyStressArray<dim>(S_it, S_vect);
       VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(
           *shapes_derivatives_filtered_it, B_tensor, nb_nodes_per_element);
+
       VoigtHelper<dim>::transferBMatrixToBL2(*shapes_derivatives_filtered_it,
                                              grad_u, B2_tensor,
                                              nb_nodes_per_element);
 
       B_tensor += B2_tensor;
 
-      r_it.template mul<true, false>(B_tensor, S_vect);
+      auto S_vect = Material::stressToVoigt<dim>(S);
+      Matrix<Real> S_voigt(S_vect.storage(), stress_size, 1);
+
+      r.template mul<true, false>(B_tensor, S_voigt);
     }
 
     delete shapesd_filtered;
@@ -1259,7 +1254,12 @@ void Material::onElementsRemoved(
 void Material::beforeSolveStep() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
-void Material::afterSolveStep() {
+void Material::afterSolveStep(bool converged) {
+  if(not converged) {
+    this->restorePreviousState();
+    return;
+  }
+
   for (auto & type : element_filter.elementTypes(_all_dimensions, _not_ghost,
                                                  _ek_not_defined)) {
     this->updateEnergies(type);

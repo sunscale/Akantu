@@ -73,15 +73,17 @@ public:
   /// assemble the jacobian matrix
   virtual void assembleJacobian(const SolutionType & type, Real delta_t) = 0;
 
-  /// assemble the jacobian matrix
-  //  virtual void assembleJacobianLumped(const SolutionType & type, Real
-  //  delta_t);
-
   /// assemble the residual
   virtual void assembleResidual(bool is_lumped) = 0;
 
   /// returns a list of needed matrices
   virtual std::vector<std::string> getNeededMatrixList() = 0;
+
+  /// store dofs info (beginning of steps)
+  virtual void store();
+
+  /// restore dofs (solve failed)
+  virtual void restore();
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -105,6 +107,9 @@ protected:
 
   /// last release of M matrix
   UInt m_release{UInt(-1)};
+
+  /// stores the values at begining of solve
+  std::vector<std::unique_ptr<Array<Real>>> u_store;
 };
 
 /* -------------------------------------------------------------------------- */

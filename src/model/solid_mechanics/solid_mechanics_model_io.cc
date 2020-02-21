@@ -85,19 +85,25 @@ ElementTypeMapArray<Real> &
 SolidMechanicsModel::flattenInternal(const std::string & field_name,
                                      const ElementKind & kind,
                                      const GhostType ghost_type) {
-  std::pair<std::string, ElementKind> key(field_name, kind);
-  if (this->registered_internals.count(key) == 0) {
-    this->registered_internals[key] =
-        new ElementTypeMapArray<Real>(field_name, this->id, this->memory_id);
-  }
+  auto key = std::make_pair(field_name, kind);
 
-  ElementTypeMapArray<Real> * internal_flat = this->registered_internals[key];
+  ElementTypeMapArray<Real> * internal_flat;
+
+  auto it = this->registered_internals.find(key);
+  if (it == this->registered_internals.end()) {
+    auto internal = std::make_unique<ElementTypeMapArray<Real>>(
+        field_name, this->id, this->memory_id);
+
+    internal_flat = internal.get();
+    this->registered_internals[key] = std::move(internal);
+  } else {
+    internal_flat = it->second.get();
+  }
 
   for (auto type :
        mesh.elementTypes(Model::spatial_dimension, ghost_type, kind)) {
     if (internal_flat->exists(type, ghost_type)) {
       auto & internal = (*internal_flat)(type, ghost_type);
-      // internal.clear();
       internal.resize(0);
     }
   }
@@ -216,13 +222,13 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                           bool padding_flag) {
 
   std::map<std::string, Array<Real> *> real_nodal_fields;
-  real_nodal_fields["displacement"] = this->displacement;
-  real_nodal_fields["mass"] = this->mass;
-  real_nodal_fields["velocity"] = this->velocity;
-  real_nodal_fields["acceleration"] = this->acceleration;
-  real_nodal_fields["external_force"] = this->external_force;
-  real_nodal_fields["internal_force"] = this->internal_force;
-  real_nodal_fields["increment"] = this->displacement_increment;
+  real_nodal_fields["displacement"] = this->displacement.get();
+  real_nodal_fields["mass"] = this->mass.get();
+  real_nodal_fields["velocity"] = this->velocity.get();
+  real_nodal_fields["acceleration"] = this->acceleration.get();
+  real_nodal_fields["external_force"] = this->external_force.get();
+  real_nodal_fields["internal_force"] = this->internal_force.get();
+  real_nodal_fields["increment"] = this->displacement_increment.get();
 
   if (field_name == "force") {
     AKANTU_EXCEPTION("The 'force' field has been renamed in 'external_force'");
@@ -248,7 +254,7 @@ std::shared_ptr<dumper::Field> SolidMechanicsModel::createNodalFieldBool(
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
-  uint_nodal_fields["blocked_dofs"] = blocked_dofs;
+  uint_nodal_fields["blocked_dofs"] = blocked_dofs.get();
 
   std::shared_ptr<dumper::Field> field;
   field = mesh.createNodalField(uint_nodal_fields[field_name], group_name);

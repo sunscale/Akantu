@@ -139,6 +139,7 @@ PetscErrorCode NonLinearSolverPETSc::FormJacobian(SNES /*snes*/, Vec /*dx*/,
 
 /* -------------------------------------------------------------------------- */
 void NonLinearSolverPETSc::solve(SolverCallback & callback) {
+  callback.beforeSolveStep();
   this->dof_manager.updateGlobalBlockedDofs();
 
   callback.assembleMatrix("J");
@@ -172,11 +173,25 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   callback.assembleResidual();
 
   PETSc_call(SNESSolve, snes, nullptr, *x);
+  PETSc_call(SNESGetConvergedReason, snes, &reason);
+  PETSc_call(SNESGetIterationNumber, snes, &n_iter);
 
   PETSc_call(VecAXPY, global_x, -1.0, *x);
 
   dof_manager.splitSolutionPerDOFs();
   callback.corrector();
+
+  bool converged = reason >= 0;
+  callback.afterSolveStep(converged);
+
+  if (not converged) {
+    PetscReal atol, rtol, stol;
+    PetscInt maxit, maxf;
+
+    PETSc_call(SNESGetTolerances, snes, &atol, &rtol, &stol, &maxit, &maxf);
+    AKANTU_CUSTOM_EXCEPTION(debug::SNESNotConvergedException(
+        this->reason, this->n_iter, stol, atol, rtol, maxit));
+  }
 }
 
 /* -------------------------------------------------------------------------- */

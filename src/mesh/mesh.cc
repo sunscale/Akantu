@@ -313,11 +313,12 @@ void Mesh::read(const std::string & filename, const MeshIOType & mesh_io_type) {
       this->elementTypes(spatial_dimension, _not_ghost, _ek_not_defined);
   auto it = types.begin();
   auto last = types.end();
-  if (it == last)
+  if (it == last) {
     AKANTU_DEBUG_WARNING(
         "The mesh contained in the file "
         << filename << " does not seem to be of the good dimension."
-        << " No element of dimension " << spatial_dimension << " where read.");
+        << " No element of dimension " << spatial_dimension << " were read.");
+  }
 
   this->makeReady();
 }

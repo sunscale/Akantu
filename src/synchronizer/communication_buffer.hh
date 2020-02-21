@@ -33,6 +33,9 @@
 #include "aka_array.hh"
 #include "aka_common.hh"
 #include "element.hh"
+/* -------------------------------------------------------------------------- */
+#include <array>
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_COMMUNICATION_BUFFER_HH__
 #define __AKANTU_COMMUNICATION_BUFFER_HH__

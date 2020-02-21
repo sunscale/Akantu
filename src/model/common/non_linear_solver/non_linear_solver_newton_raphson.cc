@@ -77,6 +77,8 @@ NonLinearSolverNewtonRaphson::~NonLinearSolverNewtonRaphson() = default;
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
+  solver_callback.beforeSolveStep();
+
   this->dof_manager.updateGlobalBlockedDofs();
 
   solver_callback.predictor();
@@ -98,11 +100,16 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
   this->n_iter = 0;
   this->converged = false;
 
+  this->convergence_criteria_normalized = this->convergence_criteria;
+
   if (this->convergence_criteria_type == SolveConvergenceCriteria::_residual) {
     this->converged = this->testConvergence(this->dof_manager.getResidual());
 
     if (this->converged)
       return;
+
+    this->convergence_criteria_normalized =
+        this->error * this->convergence_criteria;
   }
 
   do {
@@ -136,16 +143,19 @@ void NonLinearSolverNewtonRaphson::solve(SolverCallback & solver_callback) {
             << ": error " << this->error << (this->converged ? " < " : " > ")
             << this->convergence_criteria);
 
-  } while (not this->converged and this->n_iter < this->max_iterations);
+  } while (not this->converged and this->n_iter <= this->max_iterations);
 
   // this makes sure that you have correct strains and stresses after the
   // solveStep function (e.g., for dumping)
   if (this->convergence_criteria_type == SolveConvergenceCriteria::_solution)
     this->assembleResidual(solver_callback);
 
-  if (this->converged) {
-    // this->sendEvent(NonLinearSolver::ConvergedEvent(method));
-  } else if (this->n_iter == this->max_iterations) {
+  this->converged =
+      this->converged  and not (this->n_iter > this->max_iterations);
+
+  solver_callback.afterSolveStep(this->converged);
+
+  if (not this->converged) {
     AKANTU_CUSTOM_EXCEPTION(debug::NLSNotConvergedException(
         this->convergence_criteria, this->n_iter, this->error));
 
@@ -189,7 +199,7 @@ bool NonLinearSolverNewtonRaphson::testConvergence(
 
   this->error = norm;
 
-  return (error < this->convergence_criteria);
+  return (error < this->convergence_criteria_normalized);
 }
 
 /* -------------------------------------------------------------------------- */

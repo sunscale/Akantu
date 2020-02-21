@@ -108,7 +108,7 @@ list(APPEND AKANTU_LIBRARY_PUBLIC_HDRS
 # Debug infos
 #===============================================================================
 set(AKANTU_GDB_DIR ${PROJECT_SOURCE_DIR}/cmake)
-if(UNIX)
+if(UNIX AND NOT APPLE)
   string(TOUPPER "${CMAKE_BUILD_TYPE}" _u_build_type)
   if(_u_build_type STREQUAL "DEBUG" OR _u_build_type STREQUAL "RELWITHDEBINFO")
     configure_file(${PROJECT_SOURCE_DIR}/cmake/libakantu-gdb.py.in
@@ -162,7 +162,7 @@ target_include_directories(akantu SYSTEM
   PRIVATE ${AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR}
   )
 
-target_link_libraries(akantu ${AKANTU_EXTERNAL_LIBRARIES})
+target_link_libraries(akantu PUBLIC ${AKANTU_EXTERNAL_LIBRARIES})
 
 set_target_properties(akantu
   PROPERTIES
@@ -203,17 +203,27 @@ endif()
 package_get_all_export_list(AKANTU_EXPORT_LIST)
 list(APPEND AKANTU_EXPORT_LIST akantu)
 
+
 # TODO separate public from private headers
 install(TARGETS akantu
   EXPORT ${AKANTU_TARGETS_EXPORT}
-  LIBRARY DESTINATION lib COMPONENT lib
-  ARCHIVE DESTINATION lib COMPONENT lib
-  RUNTIME DESTINATION bin COMPONENT bin
-  PUBLIC_HEADER DESTINATION include/akantu/ COMPONENT dev
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          COMPONENT Akantu_runtime
+  #         NAMELINK_ONLY
+  # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  #         COMPONENT Akantu_development
+  #         NAMELINK_SKIP Akantu_development
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          COMPONENT Akantu_runtime
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          COMPONENT Akantu_runtime
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/akantu/
+          COMPONENT Akantu_development
   )
 
 if("${AKANTU_TARGETS_EXPORT}" STREQUAL "AkantuTargets")
-  install(EXPORT AkantuTargets DESTINATION share/cmake/${PROJECT_NAME}
+  install(EXPORT AkantuTargets
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${PROJECT_NAME}
     COMPONENT dev)
 
   #Export for build tree

@@ -42,7 +42,7 @@
 #===============================================================================
 # CMake Project
 #===============================================================================
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.5.1)
 
 # add this options before PROJECT keyword
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -50,6 +50,10 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(Akantu)
 enable_language(CXX)
+
+if(CMAKE_VERSION VERSION_GREATER 3.12)
+  cmake_policy(SET CMP0074 NEW)
+endif()
 
 #===============================================================================
 # Misc. config for cmake
@@ -77,6 +81,12 @@ include(AkantuMacros)
 include(AkantuCleaning)
 
 #cmake_activate_debug_message()
+
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 #===============================================================================
 # Version Number
@@ -108,8 +118,9 @@ endif()
 option(AKANTU_EXAMPLES "Activate examples" OFF)
 option(AKANTU_TESTS "Activate tests" OFF)
 
+option(AKANTU_RUN_IN_DOCKER "Set the approriate flage tu run in docker" OFF)
 set(AKANTU_PREFERRED_PYTHON_VERSION 3 CACHE STRING "Preferred version for python related things")
-mark_as_advanced(AKANTU_PREFERRED_PYTHON_VERSION)
+mark_as_advanced(AKANTU_PREFERRED_PYTHON_VERSION AKANTU_RUN_IN_DOCKER)
 
 include(AkantuExtraCompilationProfiles)
 #===============================================================================

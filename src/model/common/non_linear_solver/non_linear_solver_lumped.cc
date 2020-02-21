@@ -57,6 +57,7 @@ NonLinearSolverLumped::~NonLinearSolverLumped() = default;
 
 /* ------------------------------------------------------------------------ */
 void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
+  solver_callback.beforeSolveStep();
   this->dof_manager.updateGlobalBlockedDofs();
   solver_callback.predictor();
 
@@ -78,6 +79,7 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   this->dof_manager.splitSolutionPerDOFs();
 
   solver_callback.corrector();
+  solver_callback.afterSolveStep(true);
 }
 
 /* -------------------------------------------------------------------------- */

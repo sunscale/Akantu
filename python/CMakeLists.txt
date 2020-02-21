@@ -1,3 +1,4 @@
+
 #===============================================================================
 # @file   CMakeLists.txt
 #
@@ -75,3 +76,13 @@ target_link_libraries(py11_akantu PRIVATE akantu pybind11)
 target_include_directories(py11_akantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")
+
+set(_python_install_dir
+  ${CMAKE_INSTALL_LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+
+install(TARGETS py11_akantu
+  LIBRARY DESTINATION ${_python_install_dir})
+
+install(DIRECTORY akantu
+  DESTINATION ${_python_install_dir}
+  FILES_MATCHING PATTERN "*.py")

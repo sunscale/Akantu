@@ -131,6 +131,9 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
+constexpr int TestNodeSynchronizerFixture::max_int;
+
+/* -------------------------------------------------------------------------- */
 TEST_F(TestNodeSynchronizerFixture, SynchroneOnce) {
   auto & synchronizer = this->mesh->getNodeSynchronizer();
   synchronizer.synchronizeOnce(*this->data_accessor, SynchronizationTag::_test);
@@ -161,4 +164,49 @@ TEST_F(TestNodeSynchronizerFixture, Asynchrone) {
   synchronizer.waitEndSynchronize(*this->data_accessor,
                                   SynchronizationTag::_test);
   this->checkData();
+}
+
+/* -------------------------------------------------------------------------- */
+TEST_F(TestNodeSynchronizerFixture, Gather) {
+  auto & synchronizer = this->mesh->getNodeSynchronizer();
+
+  const auto & comm = akantu::Communicator::getStaticCommunicator();
+  Int prank = comm.whoAmI();
+
+  if (prank == 0) {
+    Array<int> all_data(this->mesh->getNbGlobalNodes());
+    synchronizer.gather(*(this->node_data), all_data);
+    for (auto && data : enumerate(all_data)) {
+      EXPECT_EQ(std::get<0>(data), std::abs(std::get<1>(data)));
+    }
+  } else {
+    synchronizer.gather(*(this->node_data));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+TEST_F(TestNodeSynchronizerFixture, Scatter) {
+  Array<int> local_data(this->mesh->getNbNodes(), 1, this->max_int);
+  auto & synchronizer = this->mesh->getNodeSynchronizer();
+  
+  if (prank == 0) {
+    Array<int> all_data(this->mesh->getNbGlobalNodes());
+    for (auto && data : enumerate(all_data)) {
+      std::get<1>(data) = std::get<0>(data);
+    }
+    synchronizer.scatter(local_data, all_data);
+  } else {
+    synchronizer.scatter(local_data);
+  }
+
+  for (auto && data : enumerate(local_data)) {
+    auto && n = std::get<0>(data);
+    auto && d = std::get<1>(data);
+    UInt gn = this->mesh->getNodeGlobalId(n);
+    if(this->mesh->isPureGhostNode(n)) {
+      EXPECT_EQ(d, this->max_int);
+    } else {
+      EXPECT_EQ(d, gn);
+    }
+  }
 }

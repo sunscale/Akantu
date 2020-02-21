@@ -94,7 +94,7 @@ int main(int argc, char * argv[]) {
       std::cout << s << " " << epot << " " << ekin << " " << epot + ekin
                 << std::endl;
 
-    if (s % 100 == 0)
+    if (s % 1000 == 0)
       model.dump();
   }
 

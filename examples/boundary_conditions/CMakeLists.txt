@@ -28,5 +28,9 @@
 #
 #===============================================================================
 
-add_example(predefined_bc "Example of predefined boundary condition" PACKAGE core)
-add_example(user_defined_bc "Example of user defined boundary condition" PACKAGE core)
+add_example(predefined_bc
+  "Example of predefined boundary condition" PACKAGE core)
+add_example(user_defined_bc
+  "Example of user defined boundary condition" PACKAGE core)
+add_example(python_user_defined_bc
+  "Example of python user defined boundary condition" PACKAGE pybind11)

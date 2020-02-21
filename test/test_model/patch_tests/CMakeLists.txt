@@ -41,7 +41,9 @@ register_gtest_sources(SOURCES patch_test_linear_elastic_explicit.cc
 register_gtest_sources(SOURCES patch_test_linear_elastic_implicit.cc
   PACKAGE solid_mechanics implicit
   FILES_TO_COPY data/material_check_stress_plane_strain.dat
-                data/material_check_stress_plane_stress.dat)
+                data/material_check_stress_plane_stress.dat
+                data/material_check_stress_plane_strain_finite_deformation.dat
+                data/material_check_stress_plane_stress_finite_deformation.dat)
 
 register_gtest_sources(SOURCES patch_test_linear_anisotropic.cc
   PACKAGE solid_mechanics lapack

@@ -71,21 +71,15 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                                          const MemoryID & memory_id,
                                          const ModelType model_type)
     : Model(mesh, model_type, dim, id, memory_id),
-      BoundaryCondition<SolidMechanicsModel>(), f_m2a(1.0),
-      displacement(nullptr), previous_displacement(nullptr),
-      displacement_increment(nullptr), mass(nullptr), velocity(nullptr),
-      acceleration(nullptr), external_force(nullptr), internal_force(nullptr),
-      blocked_dofs(nullptr), current_position(nullptr),
       material_index("material index", id, memory_id),
-      material_local_numbering("material local numbering", id, memory_id),
-      are_materials_instantiated(false) {
+      material_local_numbering("material local numbering", id, memory_id) {
   AKANTU_DEBUG_IN();
 
   this->registerFEEngineObject<MyFEEngineType>("SolidMechanicsFEEngine", mesh,
                                                Model::spatial_dimension);
 
 #if defined(AKANTU_USE_IOHELPER)
-  this->mesh.registerDumper<DumperParaview>("paraview_all", id, true);
+  this->mesh.registerDumper<DumperParaview>("solid_mechanics_model", id, true);
   this->mesh.addDumpMesh(mesh, Model::spatial_dimension, _not_ghost,
                          _ek_regular);
 #endif
@@ -108,15 +102,7 @@ SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-SolidMechanicsModel::~SolidMechanicsModel() {
-  AKANTU_DEBUG_IN();
-
-  for (auto & internal : this->registered_internals) {
-    delete internal.second;
-  }
-
-  AKANTU_DEBUG_OUT();
-}
+SolidMechanicsModel::~SolidMechanicsModel() = default;
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {
@@ -367,9 +353,9 @@ void SolidMechanicsModel::beforeSolveStep() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::afterSolveStep() {
+void SolidMechanicsModel::afterSolveStep(bool converged) {
   for (auto & material : materials)
-    material->afterSolveStep();
+    material->afterSolveStep(converged);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -726,11 +712,16 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
                                    this->getMemoryID());
 
   for (auto & elem : element_list) {
+    if (mesh.getSpatialDimension(elem.type) != spatial_dimension)
+      continue;
+
     if (!filter.exists(elem.type, elem.ghost_type))
       filter.alloc(0, 1, elem.type, elem.ghost_type);
     filter(elem.type, elem.ghost_type).push_back(elem.element);
   }
 
+  // this fails in parallel if the event is sent on facet between constructor
+  // and initFull \todo: to debug...
   this->assignMaterialToElements(&filter);
 
   for (auto & material : materials)
@@ -984,7 +975,8 @@ UInt SolidMechanicsModel::getNbData(const Array<Element> & elements,
     size += nb_nodes_per_element * Model::spatial_dimension * sizeof(Real) * 5;
     break;
   }
-  default: {}
+  default: {
+  }
   }
 
   if (tag != SynchronizationTag::_material_id) {
@@ -1031,7 +1023,8 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     packNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
     break;
   }
-  default: {}
+  default: {
+  }
   }
 
   if (tag != SynchronizationTag::_material_id) {
@@ -1086,7 +1079,8 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     unpackNodalDataHelper(*blocked_dofs, buffer, elements, mesh);
     break;
   }
-  default: {}
+  default: {
+  }
   }
 
   if (tag != SynchronizationTag::_material_id) {
@@ -1123,7 +1117,9 @@ UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
     size += sizeof(Real) * Model::spatial_dimension * 5;
     break;
   }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  default: {
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
   }
 
   AKANTU_DEBUG_OUT();
@@ -1158,7 +1154,9 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
     packDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  default: {
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
   }
 
   AKANTU_DEBUG_OUT();
@@ -1192,7 +1190,9 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
     unpackDOFDataHelper(*external_force, buffer, dofs);
     break;
   }
-  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  default: {
+    AKANTU_ERROR("Unknown ghost synchronization tag : " << tag);
+  }
   }
 
   AKANTU_DEBUG_OUT();

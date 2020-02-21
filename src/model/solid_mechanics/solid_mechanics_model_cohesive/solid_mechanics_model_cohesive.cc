@@ -236,7 +236,7 @@ void SolidMechanicsModelCohesive::initMaterials() {
   AKANTU_DEBUG_IN();
 
   // make sure the material are instantiated
-  if (!are_materials_instantiated)
+  if (not are_materials_instantiated)
     instantiateMaterials();
 
   /// find the first cohesive material
@@ -618,19 +618,21 @@ void SolidMechanicsModelCohesive::onNodesAdded(const Array<UInt> & new_nodes,
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::afterSolveStep() {
+void SolidMechanicsModelCohesive::afterSolveStep(bool converged) {
   AKANTU_DEBUG_IN();
 
   /*
    * This is required because the Cauchy stress is the stress measure that
    * is used to check the insertion of cohesive elements
    */
-  for (auto & mat : materials) {
-    if (mat->isFiniteDeformation())
-      mat->computeAllCauchyStresses(_not_ghost);
+  if (converged) {
+    for (auto & mat : materials) {
+      if (mat->isFiniteDeformation())
+        mat->computeAllCauchyStresses(_not_ghost);
+    }
   }
 
-  SolidMechanicsModel::afterSolveStep();
+  SolidMechanicsModel::afterSolveStep(converged);
 
   AKANTU_DEBUG_OUT();
 }

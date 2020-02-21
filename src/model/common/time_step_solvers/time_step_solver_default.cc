@@ -166,9 +166,7 @@ TimeStepSolverDefault::~TimeStepSolverDefault() = default;
 void TimeStepSolverDefault::solveStep(SolverCallback & solver_callback) {
   this->solver_callback = &solver_callback;
 
-  this->solver_callback->beforeSolveStep();
   this->non_linear_solver.solve(*this);
-  this->solver_callback->afterSolveStep();
 
   this->solver_callback = nullptr;
 }
@@ -237,14 +235,10 @@ void TimeStepSolverDefault::assembleMatrix(const ID & matrix_id) {
   if (matrix_id != "J")
     return;
 
-  for (auto & pair : this->integration_schemes) {
-    auto & dof_id = pair.first;
-    auto & integration_scheme = pair.second;
-
+  for_each_integrator([&](auto && dof_id, auto && integration_scheme) {
     const auto & solution_type = this->solution_types[dof_id];
-
-    integration_scheme->assembleJacobian(solution_type, this->time_step);
-  }
+    integration_scheme.assembleJacobian(solution_type, this->time_step);
+  });
 
   this->_dof_manager.applyBoundary("J");
 
@@ -287,11 +281,9 @@ void TimeStepSolverDefault::assembleResidual() {
 
   TimeStepSolver::assembleResidual();
 
-  for (auto && pair : this->integration_schemes) {
-    auto & integration_scheme = pair.second;
-
-    integration_scheme->assembleResidual(this->is_mass_lumped);
-  }
+  for_each_integrator([&](auto &&, auto && integration_scheme) {
+    integration_scheme.assembleResidual(this->is_mass_lumped);
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -311,14 +303,30 @@ void TimeStepSolverDefault::assembleResidual(const ID & residual_part) {
   }
 
   if (residual_part == "inertial") {
-    for (auto & pair : this->integration_schemes) {
-      auto & integration_scheme = pair.second;
-
-      integration_scheme->assembleResidual(this->is_mass_lumped);
-    }
+    for_each_integrator([&](auto &&, auto && integration_scheme) {
+      integration_scheme.assembleResidual(this->is_mass_lumped);
+    });
   }
 
   AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolverDefault::beforeSolveStep() {
+  TimeStepSolver::beforeSolveStep();
+  for_each_integrator(
+      [&](auto &&, auto && integration_scheme) { integration_scheme.store(); });
+}
+
+/* -------------------------------------------------------------------------- */
+void TimeStepSolverDefault::afterSolveStep(bool converged) {
+  if (not converged) {
+    for_each_integrator([&](auto &&, auto && integration_scheme) {
+      integration_scheme.restore();
+    });
+  }
+
+  TimeStepSolver::afterSolveStep(converged);
 }
 
 /* -------------------------------------------------------------------------- */

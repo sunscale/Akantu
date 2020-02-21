@@ -200,7 +200,7 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
   }
 
   if (this->dof_manager.hasSynchronizer())
-    this->dof_manager.getSynchronizer().reduceSynchronize<AddOperation>(y);
+    this->dof_manager.getSynchronizer().reduceSynchronizeArray<AddOperation>(y);
 
   AKANTU_DEBUG_OUT();
 }

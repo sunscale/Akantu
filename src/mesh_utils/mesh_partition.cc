@@ -33,6 +33,7 @@
 #include "aka_iterators.hh"
 #include "aka_types.hh"
 #include "mesh_accessor.hh"
+#include "mesh_iterators.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
@@ -90,163 +91,272 @@ Element MeshPartition::unlinearized(UInt lin_element) {
 
 /* -------------------------------------------------------------------------- */
 /**
- * TODO this function should most probably be rewritten in a more modern way
- * conversion in c++ of the GENDUALMETIS (mesh.c) function wrote by George in
- * Metis (University of Minnesota)
+ * conversion in c++ of the METIS_MeshToDual (mesh.c) function wrote by George
+ * in Metis (University of Minnesota)
  */
 void MeshPartition::buildDualGraph(
     Array<Int> & dxadj, Array<Int> & dadjncy, Array<Int> & edge_loads,
     std::function<Int(const Element &, const Element &)> edge_load_func,
     Array<Int> & vertex_loads,
     std::function<Int(const Element &)> vertex_load_func) {
-  AKANTU_DEBUG_IN();
 
-  std::map<ElementType, std::tuple<const Array<UInt> *, UInt, UInt>>
-      connectivities;
-  UInt spatial_dimension = mesh.getSpatialDimension();
-  UInt nb_total_element{0};
+  CSR<Element> nodes_to_elements;
+  MeshUtils::buildNode2Elements(mesh, nodes_to_elements);
 
-  for (auto & type :
-       mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
-    auto type_p1 = mesh.getP1ElementType(type);
-    auto nb_nodes_per_element_p1 = mesh.getNbNodesPerElement(type_p1);
-    const auto & conn = mesh.getConnectivity(type, _not_ghost);
+  std::unordered_map<UInt, std::vector<UInt>> adjacent_elements;
 
-    for (auto n : arange(mesh.getNbFacetTypes(type_p1))) {
-      auto magic_number =
-          mesh.getNbNodesPerElement(mesh.getFacetType(type_p1, n));
-      connectivities[type] =
-          std::make_tuple(&conn, nb_nodes_per_element_p1, magic_number);
-    }
+  // for each elements look for its connected elements
+  for_each_element(
+      mesh,
+      [&](auto && element) {
+        const auto & conn = mesh.getConnectivity(element);
+        std::map<Element, UInt> hits;
 
-    nb_total_element += conn.size();
-  }
-
-  CSR<Element> node_to_elem;
-  MeshUtils::buildNode2Elements(mesh, node_to_elem);
-
-  dxadj.resize(nb_total_element + 1);
-  /// initialize the dxadj array
-  auto dxadj_it = dxadj.begin();
-  for (auto & pair : connectivities) {
-    const auto & connectivity = *std::get<0>(pair.second);
-    auto nb_nodes_per_element_p1 = std::get<1>(pair.second);
-
-    std::fill_n(dxadj_it, connectivity.size(), nb_nodes_per_element_p1);
-    dxadj_it += connectivity.size();
-  }
-
-  /// convert the dxadj_val array in a csr one
-  for (UInt i = 1; i < nb_total_element; ++i)
-    dxadj(i) += dxadj(i - 1);
-  for (UInt i = nb_total_element; i > 0; --i)
-    dxadj(i) = dxadj(i - 1);
-  dxadj(0) = 0;
-
-  dadjncy.resize(2 * dxadj(nb_total_element));
-
-  /// weight map to determine adjacency
-  std::unordered_map<UInt, UInt> weight_map;
-
-  for (auto & pair : connectivities) {
-    auto type = pair.first;
-    const auto & connectivity = *std::get<0>(pair.second);
-    auto nb_nodes_per_element = std::get<1>(pair.second);
-    auto magic_number = std::get<2>(pair.second);
-
-    Element element{type, 0, _not_ghost};
-
-    for (const auto & conn :
-         make_view(connectivity, connectivity.getNbComponent())) {
-      auto linearized_el = linearized(element);
-
-      /// fill the weight map
-      for (UInt n : arange(nb_nodes_per_element)) {
-        auto && node = conn(n);
-
-        for (auto k = node_to_elem.rbegin(node); k != node_to_elem.rend(node);
-             --k) {
-          auto & current_element = *k;
-          auto current_el = linearized(current_element);
-          AKANTU_DEBUG_ASSERT(current_el != UInt(-1),
-                              "Linearized element not found");
-          if (current_el <= linearized_el)
-            break;
-
-          auto weight_map_insert =
-              weight_map.insert(std::make_pair(current_el, 1));
-          if (not weight_map_insert.second)
-            (weight_map_insert.first->second)++;
+        // count the number of nodes shared with a given element
+        for (auto && node : conn) {
+          for (auto && connected_element : nodes_to_elements.getRow(node)) {
+            ++hits[connected_element];
+          }
         }
-      }
 
-      /// each element with a weight of the size of a facet are adjacent
-      for (auto & weight_pair : weight_map) {
-        auto & adjacent_el = weight_pair.first;
-        auto magic = weight_pair.second;
-        if (magic != magic_number)
-          continue;
+        // define a minumum number of nodes to share to be considered as a
+        // ajacent element
+        UInt magic_number{conn.size()};
+        for (auto n : arange(mesh.getNbFacetTypes(element.type))) {
+          magic_number = std::min(
+              mesh.getNbNodesPerElement(mesh.getFacetType(element.type, n)),
+              magic_number);
+        }
 
-#if defined(AKANTU_COHESIVE_ELEMENT)
+        // check all neighbors to see which ones are "adjacent"
+        for (auto && data : hits) {
+          const auto & adjacent_element = data.first;
+          // not adjacent to miself
+          if (adjacent_element == element)
+            continue;
+
+          // not enough shared nodes
+          if (data.second < magic_number)
+            continue;
+
         /// Patch in order to prevent neighboring cohesive elements
         /// from detecting each other
-        auto adjacent_element = unlinearized(adjacent_el);
+#if defined(AKANTU_COHESIVE_ELEMENT)
+          auto element_kind = element.kind();
+          auto adjacent_element_kind = adjacent_element.kind();
 
-        auto el_kind = element.kind();
-        auto adjacent_el_kind = adjacent_element.kind();
-
-        if (el_kind == adjacent_el_kind && el_kind == _ek_cohesive)
-          continue;
+          if (element_kind == adjacent_element_kind &&
+              element_kind == _ek_cohesive)
+            continue;
 #endif
-        UInt index_adj = dxadj(adjacent_el)++;
-        UInt index_lin = dxadj(linearized_el)++;
 
-        dadjncy(index_lin) = adjacent_el;
-        dadjncy(index_adj) = linearized_el;
-      }
+          adjacent_elements[linearized(element)].push_back(
+              linearized(adjacent_element));
+        }
+      },
+      _spatial_dimension = mesh.getSpatialDimension(),
+      _element_kind = _ek_not_defined);
 
-      element.element++;
-      weight_map.clear();
-    }
+  // prepare the arrays
+  auto nb_elements{adjacent_elements.size()};
+  dxadj.resize(nb_elements + 1);
+  vertex_loads.resize(nb_elements);
+
+  for (auto && data : adjacent_elements) {
+    const auto & element{data.first};
+    const auto & neighbors{data.second};
+    dxadj[element] = neighbors.size();
   }
 
-  Int k_start = 0, linerized_el = 0, j = 0;
-  for (auto & pair : connectivities) {
-    const auto & connectivity = *std::get<0>(pair.second);
-    auto nb_nodes_per_element_p1 = std::get<1>(pair.second);
-    auto nb_element = connectivity.size();
-
-    for (UInt el = 0; el < nb_element; ++el, ++linerized_el) {
-      for (Int k = k_start; k < dxadj(linerized_el); ++k, ++j)
-        dadjncy(j) = dadjncy(k);
-      dxadj(linerized_el) = j;
-      k_start += nb_nodes_per_element_p1;
-    }
-  }
-
-  for (UInt i = nb_total_element; i > 0; --i)
+  /// convert the dxadj array of sizes in a csr one of offsets
+  for (UInt i = 1; i < nb_elements; ++i)
+    dxadj(i) += dxadj(i - 1);
+  for (UInt i = nb_elements; i > 0; --i)
     dxadj(i) = dxadj(i - 1);
   dxadj(0) = 0;
 
-  vertex_loads.resize(dxadj.size() - 1);
+  dadjncy.resize(dxadj(nb_elements));
   edge_loads.resize(dadjncy.size());
-  UInt adj = 0;
-  for (UInt i = 0; i < nb_total_element; ++i) {
-    auto el = unlinearized(i);
-    vertex_loads(i) = vertex_load_func(el);
 
-    UInt nb_adj = dxadj(i + 1) - dxadj(i);
-    for (UInt j = 0; j < nb_adj; ++j, ++adj) {
-      auto el_adj_id = dadjncy(dxadj(i) + j);
-      auto el_adj = unlinearized(el_adj_id);
+  // fill the different arrays
+  for (auto && data : adjacent_elements) {
+    const auto & element{data.first};
+    const auto & neighbors{data.second};
 
-      Int load = edge_load_func(el, el_adj);
-      edge_loads(adj) = load;
+    auto unlinearized_element = unlinearized(element);
+    vertex_loads(element) = vertex_load_func(unlinearized_element);
+
+    auto pos = dxadj(element);
+
+    for (auto && neighbor : neighbors) {
+      dadjncy(pos) = neighbor;
+      edge_loads(pos) =
+          edge_load_func(unlinearized_element, unlinearized(neighbor));
+      ++pos;
     }
   }
-
-  AKANTU_DEBUG_OUT();
 }
+
+/* -------------------------------------------------------------------------- */
+/**
+ * TODO this function should most probably be rewritten in a more modern way
+ * conversion in c++ of the GENDUALMETIS (mesh.c) function wrote by George in
+ * Metis (University of Minnesota)
+ */
+// void MeshPartition::buildDualGraph(
+//     Array<Int> & dxadj, Array<Int> & dadjncy, Array<Int> & edge_loads,
+//     std::function<Int(const Element &, const Element &)> edge_load_func,
+//     Array<Int> & vertex_loads,
+//     std::function<Int(const Element &)> vertex_load_func) {
+//   AKANTU_DEBUG_IN();
+
+//   std::map<ElementType, std::tuple<const Array<UInt> *, UInt, UInt>>
+//       connectivities;
+//   UInt spatial_dimension = mesh.getSpatialDimension();
+//   UInt nb_total_element{0};
+
+//   for (auto & type :
+//        mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
+//     auto type_p1 = mesh.getP1ElementType(type);
+//     auto nb_nodes_per_element_p1 = mesh.getNbNodesPerElement(type_p1);
+//     const auto & conn = mesh.getConnectivity(type, _not_ghost);
+
+//     for (auto n : arange(mesh.getNbFacetTypes(type_p1))) {
+//       auto magic_number =
+//           mesh.getNbNodesPerElement(mesh.getFacetType(type_p1, n));
+//       connectivities[type] =
+//           std::make_tuple(&conn, nb_nodes_per_element_p1, magic_number);
+//     }
+
+//     nb_total_element += conn.size();
+//   }
+
+//   CSR<Element> node_to_elem;
+//   MeshUtils::buildNode2Elements(mesh, node_to_elem);
+
+//   dxadj.resize(nb_total_element + 1);
+//   /// initialize the dxadj array
+//   auto dxadj_it = dxadj.begin();
+//   for (auto & pair : connectivities) {
+//     const auto & connectivity = *std::get<0>(pair.second);
+//     auto nb_nodes_per_element_p1 = std::get<1>(pair.second);
+
+//     std::fill_n(dxadj_it, connectivity.size(), nb_nodes_per_element_p1);
+//     dxadj_it += connectivity.size();
+//   }
+
+//   /// convert the dxadj_val array in a csr one
+//   for (UInt i = 1; i < nb_total_element; ++i)
+//     dxadj(i) += dxadj(i - 1);
+//   for (UInt i = nb_total_element; i > 0; --i)
+//     dxadj(i) = dxadj(i - 1);
+//   dxadj(0) = 0;
+
+//   dadjncy.resize(2 * dxadj(nb_total_element));
+
+//   /// weight map to determine adjacency
+//   std::unordered_map<UInt, UInt> weight_map;
+
+//   for (auto & pair : connectivities) {
+//     auto type = pair.first;
+//     const auto & connectivity = *std::get<0>(pair.second);
+//     auto nb_nodes_per_element = std::get<1>(pair.second);
+//     auto magic_number = std::get<2>(pair.second);
+
+//     Element element{type, 0, _not_ghost};
+
+//     for (const auto & conn :
+//          make_view(connectivity, connectivity.getNbComponent())) {
+//       auto linearized_el = linearized(element);
+
+//       /// fill the weight map
+//       for (UInt n : arange(nb_nodes_per_element)) {
+//         auto && node = conn(n);
+
+//         for (auto k = node_to_elem.rbegin(node); k !=
+//         node_to_elem.rend(node);
+//              --k) {
+//           auto & current_element = *k;
+//           auto current_el = linearized(current_element);
+//           AKANTU_DEBUG_ASSERT(current_el != UInt(-1),
+//                               "Linearized element not found");
+//           if (current_el <= linearized_el)
+//             break;
+
+//           auto weight_map_insert =
+//               weight_map.insert(std::make_pair(current_el, 1));
+//           if (not weight_map_insert.second)
+//             (weight_map_insert.first->second)++;
+//         }
+//       }
+
+//       /// each element with a weight of the size of a facet are adjacent
+//       for (auto & weight_pair : weight_map) {
+//         auto & adjacent_el = weight_pair.first;
+//         auto magic = weight_pair.second;
+//         if (magic != magic_number)
+//           continue;
+
+// #if defined(AKANTU_COHESIVE_ELEMENT)
+//         /// Patch in order to prevent neighboring cohesive elements
+//         /// from detecting each other
+//         auto adjacent_element = unlinearized(adjacent_el);
+
+//         auto el_kind = element.kind();
+//         auto adjacent_el_kind = adjacent_element.kind();
+
+//         if (el_kind == adjacent_el_kind && el_kind == _ek_cohesive)
+//           continue;
+// #endif
+//         UInt index_adj = dxadj(adjacent_el)++;
+//         UInt index_lin = dxadj(linearized_el)++;
+
+//         dadjncy(index_lin) = adjacent_el;
+//         dadjncy(index_adj) = linearized_el;
+//       }
+
+//       element.element++;
+//       weight_map.clear();
+//     }
+//   }
+
+//   Int k_start = 0, linerized_el = 0, j = 0;
+//   for (auto & pair : connectivities) {
+//     const auto & connectivity = *std::get<0>(pair.second);
+//     auto nb_nodes_per_element_p1 = std::get<1>(pair.second);
+//     auto nb_element = connectivity.size();
+
+//     for (UInt el = 0; el < nb_element; ++el, ++linerized_el) {
+//       for (Int k = k_start; k < dxadj(linerized_el); ++k, ++j)
+//         dadjncy(j) = dadjncy(k);
+//       dxadj(linerized_el) = j;
+//       k_start += nb_nodes_per_element_p1;
+//     }
+//   }
+
+//   for (UInt i = nb_total_element; i > 0; --i)
+//     dxadj(i) = dxadj(i - 1);
+//   dxadj(0) = 0;
+
+//   vertex_loads.resize(dxadj.size() - 1);
+//   edge_loads.resize(dadjncy.size());
+//   UInt adj = 0;
+//   for (UInt i = 0; i < nb_total_element; ++i) {
+//     auto el = unlinearized(i);
+//     vertex_loads(i) = vertex_load_func(el);
+
+//     UInt nb_adj = dxadj(i + 1) - dxadj(i);
+//     for (UInt j = 0; j < nb_adj; ++j, ++adj) {
+//       auto el_adj_id = dadjncy(dxadj(i) + j);
+//       auto el_adj = unlinearized(el_adj_id);
+
+//       Int load = edge_load_func(el, el_adj);
+//       edge_loads(adj) = load;
+//     }
+//   }
+
+//   AKANTU_DEBUG_OUT();
+// }
 
 /* -------------------------------------------------------------------------- */
 void MeshPartition::fillPartitionInformation(
@@ -334,45 +444,45 @@ void MeshPartition::fillPartitionInformation(
       // Facet loop
       for (UInt i(0); i < mesh.getNbElement(type, _not_ghost); ++i) {
         const auto & adjacent_elems = elem_to_subelem(i);
-        if (not adjacent_elems.empty()) {
-          Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
-                           *ghost_type_t::end()};
-          UInt min_part(std::numeric_limits<UInt>::max());
-          std::set<UInt> adjacent_parts;
-
-          for (UInt j(0); j < adjacent_elems.size(); ++j) {
-            auto adjacent_elem_id = adjacent_elems[j].element;
-            auto adjacent_elem_part =
-                partitions(adjacent_elems[j].type,
-                           adjacent_elems[j].ghost_type)(adjacent_elem_id);
-            if (adjacent_elem_part < min_part) {
-              min_part = adjacent_elem_part;
-              min_elem = adjacent_elems[j];
-            }
-            adjacent_parts.insert(adjacent_elem_part);
-          }
-          partition(i) = min_part;
-
-          auto git = ghost_partitions_csr(min_elem.type, _not_ghost)
-                         .begin(min_elem.element);
-          auto gend = ghost_partitions_csr(min_elem.type, _not_ghost)
-                          .end(min_elem.element);
-          for (; git != gend; ++git) {
-            adjacent_parts.insert(*git);
-          }
-
-          adjacent_parts.erase(min_part);
-          for (auto & part : adjacent_parts) {
-            ghost_part_csr.getRows().push_back(part);
-            ghost_part_csr.rowOffset(i)++;
-            ghost_partition.push_back(part);
-          }
-
-          ghost_partition_offset(i + 1) =
-              ghost_partition_offset(i + 1) + adjacent_elems.size();
-        } else {
+        if (adjacent_elems.empty()) {
           partition(i) = 0;
+          continue;
         }
+        Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
+                         *ghost_type_t::end()};
+        UInt min_part(std::numeric_limits<UInt>::max());
+        std::set<UInt> adjacent_parts;
+
+        for (auto adj_elem : adjacent_elems) {
+          if (adj_elem == ElementNull) // case of boundary elements
+            continue;
+
+          auto adjacent_elem_part = partitions(adj_elem);
+          if (adjacent_elem_part < min_part) {
+            min_part = adjacent_elem_part;
+            min_elem = adj_elem;
+          }
+          adjacent_parts.insert(adjacent_elem_part);
+        }
+        partition(i) = min_part;
+
+        auto git = ghost_partitions_csr(min_elem.type, _not_ghost)
+                       .begin(min_elem.element);
+        auto gend = ghost_partitions_csr(min_elem.type, _not_ghost)
+                        .end(min_elem.element);
+        for (; git != gend; ++git) {
+          adjacent_parts.insert(*git);
+        }
+
+        adjacent_parts.erase(min_part);
+        for (auto & part : adjacent_parts) {
+          ghost_part_csr.getRows().push_back(part);
+          ghost_part_csr.rowOffset(i)++;
+          ghost_partition.push_back(part);
+        }
+
+        ghost_partition_offset(i + 1) =
+            ghost_partition_offset(i + 1) + adjacent_elems.size();
       }
       ghost_part_csr.countToCSR();
     }

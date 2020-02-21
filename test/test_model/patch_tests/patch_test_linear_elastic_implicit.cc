@@ -33,11 +33,90 @@
 #include "non_linear_solver.hh"
 /* -------------------------------------------------------------------------- */
 
+using namespace akantu;
+
 TYPED_TEST(TestPatchTestSMMLinear, Implicit) {
   std::string filename = "material_check_stress_plane_stress.dat";
   if (this->plane_strain)
     filename = "material_check_stress_plane_strain.dat";
 
+  this->initModel(_implicit_dynamic, filename);
+
+  const auto & coordinates = this->mesh->getNodes();
+  auto & displacement = this->model->getDisplacement();
+  // set the position of all nodes to the static solution
+  for (auto && tuple : zip(make_view(coordinates, this->dim),
+                           make_view(displacement, this->dim))) {
+    this->setLinearDOF(std::get<1>(tuple), std::get<0>(tuple));
+  }
+  for (UInt s = 0; s < 100; ++s) {
+    this->model->solveStep();
+  }
+
+  auto ekin = this->model->getEnergy("kinetic");
+  EXPECT_NEAR(0, ekin, 1e-16);
+
+  this->checkAll();
+}
+
+/* -------------------------------------------------------------------------- */
+TYPED_TEST(TestPatchTestSMMLinear, Static) {
+  std::string filename = "material_check_stress_plane_stress.dat";
+  if (this->plane_strain)
+    filename = "material_check_stress_plane_strain.dat";
+
+  this->initModel(_static, filename);
+
+  auto & solver = this->model->getNonLinearSolver();
+  solver.set("max_iterations", 2);
+  solver.set("threshold", 2e-4);
+  solver.set("convergence_type", SolveConvergenceCriteria::_residual);
+
+  this->model->solveStep();
+
+  this->checkAll();
+}
+
+/* -------------------------------------------------------------------------- */
+TYPED_TEST(TestPatchTestSMMLinear, ImplicitFiniteDeformation) {
+  std::string filename =
+      "material_check_stress_plane_stress_finite_deformation.dat";
+  if (this->plane_strain)
+    filename = "material_check_stress_plane_strain_finite_deformation.dat";
+  else {
+    SUCCEED();
+    return;
+  }
+
+  this->initModel(_implicit_dynamic, filename);
+
+  const auto & coordinates = this->mesh->getNodes();
+  auto & displacement = this->model->getDisplacement();
+  // set the position of all nodes to the static solution
+  for (auto && tuple : zip(make_view(coordinates, this->dim),
+                           make_view(displacement, this->dim))) {
+    this->setLinearDOF(std::get<1>(tuple), std::get<0>(tuple));
+  }
+  for (UInt s = 0; s < 100; ++s) {
+    this->model->solveStep();
+  }
+
+  auto ekin = this->model->getEnergy("kinetic");
+  EXPECT_NEAR(0, ekin, 1e-16);
+
+  this->checkAll();
+}
+
+/* -------------------------------------------------------------------------- */
+TYPED_TEST(TestPatchTestSMMLinear, StaticFiniteDeformation) {
+  std::string filename =
+      "material_check_stress_plane_stress_finite_deformation.dat";
+  if (this->plane_strain) {
+    filename = "material_check_stress_plane_strain_finite_deformation.dat";
+  } else {
+    SUCCEED();
+    return;
+  }
   this->initModel(_static, filename);
 
   auto & solver = this->model->getNonLinearSolver();

@@ -981,7 +981,7 @@ function(package_declare pkg)
 
   # set the dependecies
   if(_opt_pkg_DEPENDS)
-    set(_deps_types PRIVATE INTERFACE)
+    set(_deps_types PRIVATE PUBLIC INTERFACE)
     cmake_parse_arguments(_pkg_deps
       ""
       ""

@@ -131,6 +131,19 @@ function(mumps_add_dependency _pdep _libs)
     else()
       set(${_libs} ${${_u_pdep}_LIBRARIES} PARENT_SCOPE)
     endif()
+  elseif(_pdep MATCHES "MPI")
+    if(MUMPS_PLAT STREQUAL "_seq")
+      find_library(MUMPS_LIBRARY_MPISEQ mpiseq${MUMPS_PREFIX}
+        PATHS "${MUMPS_DIR}"
+        ENV MUMPS_DIR
+        PATH_SUFFIXES lib
+        )
+      set(${_libs} ${MUMPS_LIBRARY_MPISEQ} PARENT_SCOPE)
+      mark_as_advanced(MUMPS_LIBRARY_MPISEQ)
+    else()
+      find_package(MPI REQUIRED C Fortran QUIET)
+      set(${_libs} ${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES} PARENT_SCOPE)
+    endif()
   else()
     find_package(${_pdep} REQUIRED QUIET)
     set(${_libs} ${${_u_pdep}_LIBRARIES} ${${_u_pdep}_LIBRARY} PARENT_SCOPE)
@@ -241,8 +254,8 @@ ${_u_first_precision}MUMPS_STRUC_C id;
 
   if(APPLE)
     # in doubt add some stuff because mumps was perhaps badly compiled
-    mumps_add_dependency(pord)
-    list(APPEND _libraries_all ${${_mumps_dep_link_pord}})
+    mumps_add_dependency(pord _libs)
+    list(APPEND _libraries_all ${_libs})
   endif()
 
   set(MUMPS_LIBRARIES_ALL ${_libraries_all} PARENT_SCOPE)

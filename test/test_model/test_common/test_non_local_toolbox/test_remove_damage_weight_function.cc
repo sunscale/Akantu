@@ -34,7 +34,7 @@
 #include "non_local_manager.hh"
 #include "non_local_neighborhood.hh"
 #include "solid_mechanics_model.hh"
-#include "test_material_damage.hh"
+#include "test_material.hh"
 /* -------------------------------------------------------------------------- */
 using namespace akantu;
 /* -------------------------------------------------------------------------- */

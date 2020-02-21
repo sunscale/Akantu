@@ -29,15 +29,26 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_declare(PythonLibs EXTERNAL DESCRIPTION "Akantu's python interface"
+package_declare(PythonLibsNew EXTERNAL DESCRIPTION "Akantu's python interface"
   DEPENDS numpy
   EXTRA_PACKAGE_OPTIONS ARGS ${AKANTU_PREFERRED_PYTHON_VERSION} PREFIX PYTHON FOUND PYTHONLIBS_FOUND
   )
 
-package_set_package_system_dependency(PythonLibs deb libpython3)
-package_set_package_system_dependency(PythonLibs deb-src libpython3-dev)
+package_on_enabled_script(PythonLibsNew
+  "set(PYTHON_MODULE_PREFIX \${PYTHON_MODULE_PREFIX} CACHE INTERNAL \"\")
+set(PYTHON_MODULE_EXTENSION \${PYTHON_MODULE_EXTENSION} CACHE INTERNAL \"\")
+set(PYTHON_VERSION_MAJOR \${PYTHON_VERSION_MAJOR} CACHE INTERNAL \"\")
+set(PYTHON_VERSION_MINOR \${PYTHON_VERSION_MINOR} CACHE INTERNAL \"\")
+set(PYTHON_SITE_PACKAGES \${PYTHON_SITE_PACKAGES} CACHE INTERNAL \"\")
+")
 
-package_declare_documentation(PythonLibs
+
+if(AKANTU_PREFERRED_PYTHON_VERSION VERSION_GREATER_EQUAL 3.0)
+  package_set_package_system_dependency(PythonLibsNew deb libpython3)
+  package_set_package_system_dependency(PythonLibsNew deb-src libpython3-dev)
+endif()
+
+package_declare_documentation(PythonLibsNew
   "This package is a dependency of the python interface"
   ""
   "Under Ubuntu (14.04 LTS) the installation can be performed using the commands:"

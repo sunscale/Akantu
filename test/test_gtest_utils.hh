@@ -34,8 +34,7 @@
 /* -------------------------------------------------------------------------- */
 #include <boost/preprocessor.hpp>
 #include <gtest/gtest.h>
-// #include <tuple>
-// /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_TEST_GTEST_UTILS_HH__
 #define __AKANTU_TEST_GTEST_UTILS_HH__
@@ -44,6 +43,18 @@
 #define TYPED_TEST_SUITE(...) TYPED_TEST_CASE(__VA_ARGS__)
 #endif
 
+#if !defined(TYPED_TEST_SUITE_P)
+#define TYPED_TEST_SUITE_P(...) TYPED_TEST_CASE_P(__VA_ARGS__)
+#endif
+
+#if !defined(REGISTER_TYPED_TEST_SUITE_P)
+#define REGISTER_TYPED_TEST_SUITE_P(...) REGISTER_TYPED_TEST_CASE_P(__VA_ARGS__)
+#endif
+
+#if !defined(INSTANTIATE_TYPED_TEST_SUITE_P)
+#define INSTANTIATE_TYPED_TEST_SUITE_P(...)                                    \
+  INSTANTIATE_TYPED_TEST_CASE_P(__VA_ARGS__)
+#endif
 
 namespace {
 
@@ -61,11 +72,11 @@ template <typename... Ts> struct gtest_list<std::tuple<Ts...>> {
 template <typename... T> using gtest_list_t = typename gtest_list<T...>::type;
 
 /* -------------------------------------------------------------------------- */
-template <typename... T> struct tuple_concat {};
+//template <typename... T> struct tuple_concat {};
 
-template <typename... T1s, typename... T2s>
-struct tuple_concat<std::tuple<T1s...>, std::tuple<T2s...>> {
-  using type = std::tuple<T1s..., T2s...>;
+template <typename... Ts>
+struct tuple_concat {
+  using type = decltype(std::tuple_cat(std::declval<Ts>()...));
 };
 
 template <typename... T>

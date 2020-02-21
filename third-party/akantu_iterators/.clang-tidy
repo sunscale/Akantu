@@ -1,0 +1,3 @@
+Checks:            'modernize-use-*, performance-*, bugprone-*, readability-*'
+HeaderFilterRegex: 'include/.*'
+FormatStyle:       file

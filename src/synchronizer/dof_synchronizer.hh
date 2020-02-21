@@ -59,52 +59,24 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  template <typename T>
-  /// Gather the DOF value on the root proccessor
-  void gather(const Array<T> & to_gather, Array<T> & gathered);
-
-  /// Gather the DOF value on the root proccessor
-  template <typename T> void gather(const Array<T> & to_gather);
-
-  /// Scatter a DOF Array form root to all processors
-  template <typename T>
-  void scatter(Array<T> & scattered, const Array<T> & to_scatter);
-
-  /// Scatter a DOF Array form root to all processors
-  template <typename T> void scatter(Array<T> & scattered);
-
-  /// Uses the synchronizer to perform a reduction on the vector
-  template <template <class> class Op, typename T>
-  void reduceSynchronize(Array<T> & array) const;
-
-  template <typename T> void synchronize(Array<T> & vector) const;
-
   void onNodesAdded(const Array<UInt> & nodes);
 
 protected:
-  /// check if dof changed set on at least one processor
-  bool hasChanged();
-
-  /// init the scheme for scatter and gather operation, need extra memory
-  void initScatterGatherCommunicationScheme();
-
   Int getRank(const UInt & /*node*/) const final { AKANTU_TO_IMPLEMENT(); }
 
-private:
-  /// Root processor for scatter/gather operations
-  Int root;
+  /// list the entities to send to root process
+  void fillEntityToSend(Array<UInt> & dofs_to_send) override;
 
+  inline UInt canScatterSize() override;
+  inline UInt gatheredSize() override;
+
+  inline UInt localToGlobalEntity(const UInt & local) override;
+
+private:
   /// information on the dofs
   DOFManagerDefault & dof_manager;
-
-  /// dofs from root
-  Array<UInt> root_dofs;
-
-  /// Dofs received from slaves proc (only on master)
-  std::map<UInt, Array<UInt>> master_receive_dofs;
-
-  bool dof_changed;
 };
+
 } // namespace akantu
 
 #include "dof_synchronizer_inline_impl.cc"
