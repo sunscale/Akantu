@@ -33,6 +33,7 @@
 #include "dumpable_inline_impl.hh"
 #include "integrator_gauss.hh"
 #include "shape_lagrange.hh"
+#include "element_synchronizer.hh"
 
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_iohelper_paraview.hh"
@@ -66,6 +67,13 @@ CouplerSolidPhaseField::CouplerSolidPhaseField(Mesh & mesh, UInt dim,
                                   "solid_mechanics_model", 0);
   phasefield = new PhaseFieldModel(mesh, Model::spatial_dimension,
                                    "phase_field_model", 0);
+
+  if (this->mesh.isDistributed()) {
+    auto & synchronizer = this->mesh.getElementSynchronizer();
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_csp_damage);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_csp_strain);
+     
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -407,6 +415,76 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
   return false;
 }
 
+
+/* -------------------------------------------------------------------------- */
+UInt CouplerSolidPhaseField::getNbData(const Array<Element> & elements,
+				       const SynchronizationTag & tag) const {
+
+  AKANTU_DEBUG_IN();
+
+  UInt size = 0;
+
+  switch (tag) {
+  case SynchronizationTag::_csp_damage: {
+    size += getNbIntegrationPoints(elements) * sizeof(Real);
+    break;
+  }
+  case SynchronizationTag::_csp_strain: {
+    size += getNbIntegrationPoints(elements) * spatial_dimension * spatial_dimension * sizeof(Real);
+    break;
+  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
+
+  AKANTU_DEBUG_OUT();
+  return size;
+}
+
+
+/* -------------------------------------------------------------------------- */
+void CouplerSolidPhaseField::packData(CommunicationBuffer & buffer,
+				      const Array<Element> & elements,
+				      const SynchronizationTag & tag) const {
+
+  auto & mat = static_cast<MaterialPhaseField<2> &>(solid->getMaterial(0));
+  
+  switch (tag) {
+  case SynchronizationTag::_csp_damage: {
+    packElementalDataHelper(mat.getDamage(), buffer, elements,
+			    true, getFEEngine());
+    break;
+  }
+  case SynchronizationTag::_csp_strain: {
+    packElementalDataHelper(phasefield->getStrain(), buffer, elements,
+			    true, getFEEngine());
+    break;
+  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+void CouplerSolidPhaseField::unpackData(CommunicationBuffer & buffer,
+					const Array<Element> & elements,
+					const SynchronizationTag & tag) {
+
+  auto & mat = static_cast<MaterialPhaseField<2> &>(solid->getMaterial(0));
+      
+  switch (tag) {
+  case SynchronizationTag::_csp_damage: {
+    unpackElementalDataHelper(mat.getDamage(), buffer, elements, true, getFEEngine());
+    break;
+  }
+  case SynchronizationTag::_csp_strain: {
+    unpackElementalDataHelper(phasefield->getStrain(), buffer, elements,
+			      true, getFEEngine());
+    break;
+  }
+  default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
+  }
+}
+
+  
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 

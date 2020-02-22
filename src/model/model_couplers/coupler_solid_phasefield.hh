@@ -182,23 +182,21 @@ public:
 public:
   // DataAccessor<Element>
   UInt getNbData(const Array<Element> &,
-                 const SynchronizationTag &) const override {
-    return 0;
-  }
+                 const SynchronizationTag &) const override;
   void packData(CommunicationBuffer &, const Array<Element> &,
-                const SynchronizationTag &) const override {}
+                const SynchronizationTag &) const override;
   void unpackData(CommunicationBuffer &, const Array<Element> &,
-                  const SynchronizationTag &) override {}
+                  const SynchronizationTag &) override;
 
-  // DataAccessor<UInt> nodes
-  UInt getNbData(const Array<UInt> &,
-                 const SynchronizationTag &) const override {
-    return 0;
-  }
-  void packData(CommunicationBuffer &, const Array<UInt> &,
-                const SynchronizationTag &) const override {}
-  void unpackData(CommunicationBuffer &, const Array<UInt> &,
-                  const SynchronizationTag &) override {}
+  UInt getNbData(const Array<UInt> & indexes,
+                 const SynchronizationTag & tag) const override {}
+
+  void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+                const SynchronizationTag & tag) const override{}
+
+  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
+                  const SynchronizationTag & tag) override {}
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

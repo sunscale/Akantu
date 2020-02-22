@@ -120,6 +120,9 @@ public:
 
   /// compute the internal forces
   virtual void assembleInternalForces();
+
+  // compute the internal forces
+  void assembleInternalForces(const GhostType & ghost_type);
   
   /// assemble damage matrix
   void assembleDamageMatrix();
@@ -320,6 +323,6 @@ private:
 /* ------------------------------------------------------------------------ */
 /* inline functions                                                         */
 /* ------------------------------------------------------------------------ */
-#include "phase_field_model_inline_impl.cc"
+//#include "phase_field_model_inline_impl.cc"
 
 #endif

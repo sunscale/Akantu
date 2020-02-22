@@ -303,7 +303,11 @@ enum CommunicatorType { _communicator_mpi, _communicator_dummy };
   (htm_phi)                                     \
   (htm_gradient_phi)                            \
   (pfm_damage)					\
-  (pfm_gradient_damage)				\
+  (pfm_driving)					\
+  (pfm_history)					\
+  (pfm_energy)					\
+  (csp_damage)					\
+  (csp_strain)					\
   (mnl_for_average)                             \
   (mnl_weight)                                  \
   (nh_criterion)                                \
@@ -363,9 +367,19 @@ enum class SynchronizationTag {
 
   // --- PhaseFieldModel tags ---
   _pfm_damage,          ///< synchronization of the nodal damage
-  _pfm_gradient_damage, ///< synchronization of the element
-                        ///  gradient damage
+  _pfm_driving,         ///< synchronization of the driving forces to
+			/// compute the internal
+  _pfm_history,         ///< synchronization of the damage history to
+			///  compute the internal
+  _pfm_energy,          ///< synchronization of the damage energy
+			/// density to compute the internal
 
+  // --- CouplerSolidPhaseField tags ---
+  _csp_damage,        ///< synchronization of the damage from phase
+		      /// model to solid model
+  _csp_strain,        ///< synchronization of the strain from solid
+		      /// model to phase model  
+  
   // --- LevelSet tags ---
   _htm_phi,          ///< synchronization of the nodal level set value phi
   _htm_gradient_phi, ///< synchronization of the element gradient phi

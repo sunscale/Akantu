@@ -81,8 +81,7 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
       phi_history_on_qpoints("phi_history_on_qpoints", id) {
 
   AKANTU_DEBUG_IN();
-
-    
+   
   this->initDOFManager();
 
   this->registerDataAccessor(*this);
@@ -90,8 +89,9 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
   if (this->mesh.isDistributed()) {
     auto & synchronizer = this->mesh.getElementSynchronizer();
     this->registerSynchronizer(synchronizer, SynchronizationTag::_pfm_damage);
-    this->registerSynchronizer(synchronizer,
-                               SynchronizationTag::_pfm_gradient_damage);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_pfm_driving);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_pfm_history);
+    this->registerSynchronizer(synchronizer, SynchronizationTag::_pfm_energy);
   }
 
   this->registerFEEngineObject<FEEngineType>("PhaseFieldFEEngine", mesh,
@@ -268,8 +268,28 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::beforeSolveStep() {
 
+  // compute the history of local elements
+  AKANTU_DEBUG_INFO("Compute phi history");
   this->computePhiHistoryOnQuadPoints(_not_ghost);
+
+  // communicate the history
+  AKANTU_DEBUG_INFO("Send data for synchronization");
+  this->asynchronousSynchronize(SynchronizationTag::_pfm_history);
+
+  // finalize communications
+  AKANTU_DEBUG_INFO("Wait distant history");
+  this->waitEndSynchronize(SynchronizationTag::_pfm_history);
+
   this->computeDamageEnergyDensityOnQuadPoints(_not_ghost);
+
+  // communicate the energy density
+  AKANTU_DEBUG_INFO("Send data for synchronization");
+  this->asynchronousSynchronize(SynchronizationTag::_pfm_energy);
+
+  // finalize communications
+  AKANTU_DEBUG_INFO("Wait distant energy density");
+  this->waitEndSynchronize(SynchronizationTag::_pfm_energy);
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -382,6 +402,113 @@ void PhaseFieldModel::assembleDamageGradMatrix() {
 }
   
 /* -------------------------------------------------------------------------- */
+void PhaseFieldModel::assembleResidual() {
+
+  AKANTU_DEBUG_IN();
+
+  this->assembleInternalForces();
+
+  this->getDOFManager().assembleToResidual("damage", *this->external_force, 1);
+  this->getDOFManager().assembleToResidual("damage", *this->internal_force, 1);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::assembleInternalForces() {
+  AKANTU_DEBUG_IN();
+
+  AKANTU_DEBUG_INFO("Assemble the internal forces");
+  
+  this->internal_force->clear();
+  
+  // compute the driving force of local elements
+  AKANTU_DEBUG_INFO("Compute local driving forces");
+  this->computeDrivingForce(_not_ghost);
+
+  // communicate the driving forces
+  AKANTU_DEBUG_INFO("Send data for residual assembly");
+  this->asynchronousSynchronize(SynchronizationTag::_pfm_driving);
+
+  // assemble the forces due to local driving forces
+  AKANTU_DEBUG_INFO("Assemble residual for local elements");
+  this->assembleInternalForces(_not_ghost);
+
+  // finalize communications
+  AKANTU_DEBUG_INFO("Wait distant driving forces");
+  this->waitEndSynchronize(SynchronizationTag::_pfm_driving);
+
+  // assemble the residual due to ghost elements
+  AKANTU_DEBUG_INFO("Assemble residual for ghost elements");
+  this->assembleInternalForces(_ghost);
+
+  AKANTU_DEBUG_OUT();
+}
+
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::assembleInternalForces(const GhostType & ghost_type) {
+  AKANTU_DEBUG_IN();
+
+  this->synchronize(SynchronizationTag::_pfm_damage);
+  auto & fem = this->getFEEngine();
+
+  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+
+    auto & driving_force_on_qpoints_vect =
+      driving_force_on_qpoints(type, ghost_type);
+
+    UInt nb_quad_points = driving_force_on_qpoints_vect.size();
+    Array<Real> nt_driving_force(nb_quad_points, nb_nodes_per_element);
+    fem.computeNtb(driving_force_on_qpoints_vect, nt_driving_force, type,
+		   ghost_type);
+
+    UInt nb_elements = mesh.getNbElement(type, ghost_type);
+    Array<Real> int_nt_driving_force(nb_elements, nb_nodes_per_element);
+
+    fem.integrate(nt_driving_force, int_nt_driving_force,
+		  nb_nodes_per_element, type, ghost_type);
+    
+    this->getDOFManager().assembleElementalArrayLocalArray(
+	  int_nt_driving_force, *this->internal_force, type, ghost_type, 1);
+  }
+  AKANTU_DEBUG_OUT();
+}
+
+
+  
+/* -------------------------------------------------------------------------- */
+  void PhaseFieldModel::assembleLumpedMatrix(const ID & /*matrix_id*/) {}
+
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::setTimeStep(Real time_step, const ID & solver_id) {
+  Model::setTimeStep(time_step, solver_id);
+
+#if defined(AKANTU_USE_IOHELPER)
+  this->mesh.getDumper("phase_field").setTimeStep(time_step);
+#endif
+}
+/* -------------------------------------------------------------------------- */
+void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
+
+  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
+
+    for (auto && values :
+         zip(make_view(phi_history_on_qpoints(type, ghost_type)),
+             make_view(driving_force_on_qpoints(type, ghost_type)))) {
+      auto & phi_history = std::get<0>(values);
+      auto & driving_force = std::get<1>(values);
+
+      driving_force = 2.0 * phi_history;
+    }
+  }
+
+  AKANTU_DEBUG_OUT();
+}
+
+
+/* -------------------------------------------------------------------------- */
 void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
     const GhostType & ghost_type) {
 
@@ -468,87 +595,7 @@ void PhaseFieldModel::computePhiHistoryOnQuadPoints(
     }
   }
 }
-
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::assembleResidual() {
-
-  AKANTU_DEBUG_IN();
-
-  this->assembleInternalForces();
-
-  this->getDOFManager().assembleToResidual("damage", *this->external_force, 1);
-  this->getDOFManager().assembleToResidual("damage", *this->internal_force, 1);
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::assembleInternalForces() {
-  AKANTU_DEBUG_IN();
-
-  this->internal_force->clear();
-
-  this->synchronize(SynchronizationTag::_pfm_damage);
-  auto & fem = this->getFEEngine();
-
-  for (auto ghost_type : ghost_types) {
-
-    computeDrivingForce(ghost_type);
-
-    for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-
-      auto & driving_force_on_qpoints_vect =
-          driving_force_on_qpoints(type, ghost_type);
-
-      UInt nb_quad_points = driving_force_on_qpoints_vect.size();
-      Array<Real> nt_driving_force(nb_quad_points, nb_nodes_per_element);
-      fem.computeNtb(driving_force_on_qpoints_vect, nt_driving_force, type,
-                     ghost_type);
-
-      UInt nb_elements = mesh.getNbElement(type, ghost_type);
-      Array<Real> int_nt_driving_force(nb_elements, nb_nodes_per_element);
-
-      fem.integrate(nt_driving_force, int_nt_driving_force,
-                    nb_nodes_per_element, type, ghost_type);
-
-      this->getDOFManager().assembleElementalArrayLocalArray(
-          int_nt_driving_force, *this->internal_force, type, ghost_type, 1);
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-  void PhaseFieldModel::assembleLumpedMatrix(const ID & /*matrix_id*/) {}
-
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::setTimeStep(Real time_step, const ID & solver_id) {
-  Model::setTimeStep(time_step, solver_id);
-
-#if defined(AKANTU_USE_IOHELPER)
-  this->mesh.getDumper("phase_field").setTimeStep(time_step);
-#endif
-}
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
-
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-
-    for (auto && values :
-         zip(make_view(phi_history_on_qpoints(type, ghost_type)),
-             make_view(driving_force_on_qpoints(type, ghost_type)))) {
-      auto & phi_history = std::get<0>(values);
-      auto & driving_force = std::get<1>(values);
-
-      driving_force = 2.0 * phi_history;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-}
-
+  
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::computeDamageOnQuadPoints(const GhostType & ghost_type) {
 
@@ -583,11 +630,18 @@ UInt PhaseFieldModel::getNbData(const Array<Element> & elements,
     size += nb_nodes_per_element * sizeof(Real); // damage
     break;
   }
-  case SynchronizationTag::_pfm_gradient_damage: {
-    size += getNbIntegrationPoints(elements) * spatial_dimension * sizeof(Real);
-    size += nb_nodes_per_element * sizeof(Real);
+  case SynchronizationTag::_pfm_driving: {
+    size += getNbIntegrationPoints(elements) * sizeof(Real);
     break;
   }
+  case SynchronizationTag::_pfm_history: {
+    size += getNbIntegrationPoints(elements) * sizeof(Real);
+    break;
+  }
+  case SynchronizationTag::_pfm_energy: {
+    size += getNbIntegrationPoints(elements) * sizeof(Real);
+    break;
+  }  
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
 
@@ -605,10 +659,16 @@ void PhaseFieldModel::packData(CommunicationBuffer & buffer,
     packNodalDataHelper(*damage, buffer, elements, mesh);
     break;
   }
-  case SynchronizationTag::_pfm_gradient_damage: {
-    packElementalDataHelper(damage_gradient, buffer, elements, true,
-                            getFEEngine());
-    packNodalDataHelper(*damage, buffer, elements, mesh);
+  case SynchronizationTag::_pfm_driving: {
+    packElementalDataHelper(driving_force_on_qpoints, buffer, elements, true, getFEEngine());
+    break;
+  }
+  case SynchronizationTag::_pfm_history: {
+    packElementalDataHelper(phi_history_on_qpoints, buffer, elements, true, getFEEngine());
+    break;
+  }
+  case SynchronizationTag::_pfm_energy: {
+    packElementalDataHelper(damage_energy_density_on_qpoints, buffer, elements, true, getFEEngine());
     break;
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
@@ -625,10 +685,16 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
     unpackNodalDataHelper(*damage, buffer, elements, mesh);
     break;
   }
-  case SynchronizationTag::_pfm_gradient_damage: {
-    unpackElementalDataHelper(damage_gradient, buffer, elements, true,
-                              getFEEngine());
-    unpackNodalDataHelper(*damage, buffer, elements, mesh);
+  case SynchronizationTag::_pfm_driving: {
+    unpackElementalDataHelper(driving_force_on_qpoints, buffer, elements, true, getFEEngine());
+    break;
+  }
+  case SynchronizationTag::_pfm_history: {
+    unpackElementalDataHelper(phi_history_on_qpoints, buffer, elements, true, getFEEngine());
+    break;
+  }
+  case SynchronizationTag::_pfm_energy: {
+    unpackElementalDataHelper(damage_energy_density_on_qpoints, buffer, elements, true, getFEEngine());
     break;
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
@@ -695,7 +761,6 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 
