@@ -148,7 +148,11 @@ namespace {
 
 /* -------------------------------------------------------------------------- */
 Communicator::Communicator(int & /*argc*/, char **& /*argv*/,
-                           const private_member & /*unused*/)
+                           const private_member & m)
+    : Communicator(m) {}
+
+/* -------------------------------------------------------------------------- */
+Communicator::Communicator(const private_member &)
     : communicator_data(std::make_unique<MPICommunicatorData>()) {
   prank = MPIDATA.rank();
   psize = MPIDATA.size();

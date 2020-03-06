@@ -41,6 +41,8 @@ namespace akantu {
 Communicator::Communicator(int & /*argc*/, char **& /*argv*/,
                            const private_member & /*unused*/) {}
 
+Communicator::Communicator(const private_member & /*unused*/) {}
+
 template <typename T>
 void Communicator::sendImpl(const T *, Int, Int, Int,
                             const CommunicationMode &) const {}
