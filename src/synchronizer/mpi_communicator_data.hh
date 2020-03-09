@@ -108,7 +108,8 @@ public:
   inline int getMaxTag() const {
     int flag;
     int * value;
-    MPI_Comm_get_attr(communicator, MPI_TAG_UB, &value, &flag);
+    // not defined on derived intra-communicator
+    MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &value, &flag);
     AKANTU_DEBUG_ASSERT(flag, "No attribute MPI_TAG_UB.");
     return *value;
   }
