@@ -149,8 +149,9 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     // function to send nodes in bboxes intersections
     auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
                                       auto & buffers, auto proc, auto cnt) {
-      buffers.resize(buffers.size() + 1);
-      auto & buffer = buffers.back();
+      // buffers.resize(buffers.size() + 1);
+      buffers.push_back(std::make_unique<DynamicCommunicationBuffer>());
+      auto & buffer = *buffers.back();
 
       // std::cout << "Sending to " << proc << std::endl;
       for (auto & info : node_list) {
@@ -269,7 +270,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         bbox_right.intersection(bbox_left, *communicator);
 
     std::vector<CommunicationRequest> send_requests;
-    std::vector<DynamicCommunicationBuffer> send_buffers;
+    std::vector<std::unique_ptr<DynamicCommunicationBuffer>> send_buffers;
 
     // sending nodes in the common zones
     auto send_intersections = [&](auto & intersections, auto send_count) {
