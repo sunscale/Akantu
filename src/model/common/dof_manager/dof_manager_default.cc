@@ -121,10 +121,17 @@ void DOFManagerDefault::assembleToGlobalArray(
          zip(dof_data.local_equation_number, dof_data.associated_nodes,
              make_view(array_to_assemble))) {
       auto && equ_num = std::get<0>(data);
-      auto && node = std::get<1>(data);
+      // auto && node = std::get<1>(data);
       auto && arr = std::get<2>(data);
-      global_array(equ_num) +=
-          scale_factor * (arr) * (not this->mesh->isPeriodicSlave(node));
+
+      // Guillaume to Nico:
+      // This filter of periodic slave should not be.
+      // Indeed you want to get the contribution even
+      // from periodic slaves and cumulate to the right
+      // equation number.
+
+      global_array(equ_num) += scale_factor * (arr);
+      // scale_factor * (arr) * (not this->mesh->isPeriodicSlave(node));
     }
   } else {
     for (auto && data :

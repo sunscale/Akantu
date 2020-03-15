@@ -397,23 +397,29 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   // matching the nodes from 2 lists
   auto match_pairs = [&](auto & nodes_1, auto & nodes_2) {
-    auto it = nodes_2.begin();
+    // Guillaume to Nico: It seems that the list of nodes is not sorted
+    // as it was: therefore the loop cannot be truncated anymore.
+    // Otherwise many pairs are missing.
+    // I replaced (temporarily?) for the N^2 loop so as not to miss
+    // any pbc pair.
+    //
 
+    // auto it = nodes_2.begin();
     // for every nodes in 1st list
     for (auto && info1 : nodes_1) {
       auto & pos1 = info1.position;
-      auto it_cur = it;
+      // auto it_cur = it;
 
       // try to find a match in 2nd list
-      for (; it_cur != nodes_2.end(); ++it_cur) {
-        auto & info2 = *it_cur;
+      for (auto && info2 : nodes_2) {
+        // auto & info2 = *it_cur;
         auto & pos2 = info2.position;
 
         auto dist = pos1.distance(pos2) / length;
         if (dist < tolerance) {
           // handles the found matches
           match_found(info1, info2);
-          it = it_cur;
+          // it = it_cur;
           break;
         }
       }

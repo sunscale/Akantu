@@ -429,10 +429,12 @@ protected:
                                      const Array<Real> & array_to_assemble,
                                      SolverVector & global_array,
                                      Real scale_factor) = 0;
+
+public:
+  /// extract degrees of freedom (identified by ID) from a global solver array
   virtual void getArrayPerDOFs(const ID & dof_id, const SolverVector & global,
                                Array<Real> & local) = 0;
 
-public:
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
 
