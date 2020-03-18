@@ -85,6 +85,10 @@ template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template <UInt Dim>
 void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
+
+  this->C.clear();
+  this->Cprime.clear();
+
   /* 1) construction of temporary material frame stiffness tensor------------ */
   // http://solidmechanics.org/Text/Chapter3_2/Chapter3_2.php#Sect3_2_13
   Real nu21 = nu12 * E2 / E1;

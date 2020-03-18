@@ -98,6 +98,9 @@ template <UInt dim> void MaterialElasticLinearAnisotropic<dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::updateInternalParameters() {
+  this->C.clear();
+  this->Cprime.clear();
+
   Material::updateInternalParameters();
   if (this->symmetric) {
     for (UInt i = 0; i < voigt_h::size; ++i) {
