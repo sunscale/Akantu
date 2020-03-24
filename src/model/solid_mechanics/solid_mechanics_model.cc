@@ -137,9 +137,8 @@ void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
   // initialize the materials
   if (this->parser.getLastParsedFile() != "") {
     this->instantiateMaterials();
+    this->initMaterials();
   }
-
-  this->initMaterials();
 
   this->initBC(*this, *displacement, *displacement_increment, *external_force);
 }

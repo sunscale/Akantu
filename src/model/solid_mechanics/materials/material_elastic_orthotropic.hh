@@ -104,31 +104,31 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// the n1 young modulus
-  Real E1;
+  Real E1{0.};
 
   /// the n2 young modulus
-  Real E2;
+  Real E2{0.};
 
   /// the n3 young modulus
-  Real E3;
+  Real E3{0.};
 
   /// 12 Poisson coefficient
-  Real nu12;
+  Real nu12{0.};
 
   /// 13 Poisson coefficient
-  Real nu13;
+  Real nu13{0.};
 
   /// 23 Poisson coefficient
-  Real nu23;
+  Real nu23{0.};
 
   /// 12 shear modulus
-  Real G12;
+  Real G12{0.};
 
   /// 13 shear modulus
-  Real G13;
+  Real G13{0.};
 
   /// 23 shear modulus
-  Real G23;
+  Real G23{0.};
 };
 
 } // namespace akantu

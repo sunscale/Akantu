@@ -98,9 +98,11 @@ protected:
   void initFullImpl(
       const ModelOptions & options = SolidMechanicsModelOptions()) override;
 
+public:
   /// initialize all internal arrays for materials
   virtual void initMaterials();
 
+protected:
   /// initialize the model
   void initModel() override;
 
@@ -530,8 +532,9 @@ protected:
   /// class defining of to choose a material
   std::shared_ptr<MaterialSelector> material_selector;
 
-  using flatten_internal_map = std::map<std::pair<std::string, ElementKind>,
-                                        std::unique_ptr<ElementTypeMapArray<Real>>>;
+  using flatten_internal_map =
+      std::map<std::pair<std::string, ElementKind>,
+               std::unique_ptr<ElementTypeMapArray<Real>>>;
 
   /// map a registered internals to be flattened for dump purposes
   flatten_internal_map registered_internals;
