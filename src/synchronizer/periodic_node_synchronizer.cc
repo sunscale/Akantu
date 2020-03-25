@@ -65,7 +65,7 @@ void PeriodicNodeSynchronizer::update() {
     }
   }
 
-  if (not mesh.isDistributed())
+  if (not mesh.isDistributed() or nb_proc == 1)
     return;
 
   std::map<Int, Array<UInt>> buffers;
