@@ -41,6 +41,8 @@ void register_model(py::module & mod) {
       .def("getJCN", &SparseMatrixAIJ::getJCN)
       .def("getA", &SparseMatrixAIJ::getA);
 
+  py::class_<SolverVector>(mod, "SolverVector");
+
   py::class_<DOFManager>(mod, "DOFManager")
       .def("getMatrix", &DOFManager::getMatrix,
            py::return_value_policy::reference)
@@ -50,7 +52,15 @@ void register_model(py::module & mod) {
              const std::string & matrix_to_copy_id) -> decltype(auto) {
             return self.getNewMatrix(name, matrix_to_copy_id);
           },
-          py::return_value_policy::reference);
+          py::return_value_policy::reference)
+      .def(
+          "getResidual",
+          [](DOFManager & self) -> decltype(auto) {
+            return self.getResidual();
+          },
+          py::return_value_policy::reference)
+      .def("getArrayPerDOFs", &DOFManager::getArrayPerDOFs)
+      .def("assembleToResidual", &DOFManager::assembleToResidual);
 
   py::class_<NonLinearSolver>(mod, "NonLinearSolver")
       .def(

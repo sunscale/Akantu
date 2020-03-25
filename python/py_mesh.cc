@@ -42,6 +42,10 @@ void register_mesh(py::module & mod) {
           },
           py::return_value_policy::reference)
       .def("distribute", [](Mesh & self) { self.distribute(); })
+      .def("makePeriodic",
+           [](Mesh & self, const SpatialDirection & direction) {
+             self.makePeriodic(direction);
+           })
       .def(
           "getNbElement",
           [](Mesh & self, const UInt spatial_dimension,

@@ -41,16 +41,17 @@ namespace detail {
       this->nb_component = src.getNbComponent();
     }
 
-    ~ArrayProxy() {
-      this->values = nullptr;
+    ~ArrayProxy() { this->values = nullptr; }
+
+    void resize(UInt size, const T & val) override final {
+      if (size != this->size())
+        AKANTU_EXCEPTION("cannot resize a temporary array");
+      std::fill(this->begin(), this->end(), val);
     }
 
-    void resize(UInt /*size*/, const T & /*val */) override final {
-      AKANTU_EXCEPTION("cannot resize a temporary array");
-    }
-
-    void resize(UInt /*new_size*/) override final {
-      AKANTU_EXCEPTION("cannot resize a temporary array");
+    void resize(UInt new_size) override final {
+      if (new_size != this->size())
+        AKANTU_EXCEPTION("cannot resize a temporary array");
     }
 
     void reserve(UInt /*size*/, UInt /*new_size*/) override final {
@@ -88,19 +89,22 @@ namespace detail {
 
   /* ------------------------------------------------------------------------ */
   template <typename T>
-  decltype(auto) create_proxy(array_type_t<_aka::Vector<T>> & ref, const _aka::Vector<T> *) {
+  decltype(auto) create_proxy(array_type_t<_aka::Vector<T>> & ref,
+                              const _aka::Vector<T> *) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Vector<T>>>(
         ref.mutable_data(), ref.shape(0));
   }
 
   template <typename T>
-  decltype(auto) create_proxy(array_type_t<_aka::Matrix<T>> & ref, const _aka::Matrix<T> *) {
+  decltype(auto) create_proxy(array_type_t<_aka::Matrix<T>> & ref,
+                              const _aka::Matrix<T> *) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Matrix<T>>>(
         ref.mutable_data(), ref.shape(0), ref.shape(1));
   }
 
   template <typename T>
-  decltype(auto) create_proxy(array_type_t<_aka::Array<T>> & ref, const _aka::Array<T> *) {
+  decltype(auto) create_proxy(array_type_t<_aka::Array<T>> & ref,
+                              const _aka::Array<T> *) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Array<T>>>(
         ref.mutable_data(), ref.shape(0), ref.shape(1));
   }
@@ -212,7 +216,7 @@ namespace detail {
         loader_life_support::add_patient(copy_or_ref);
       }
 
-      AkaArrayType* dispatch = nullptr; // cannot detect T from the expression
+      AkaArrayType * dispatch = nullptr; // cannot detect T from the expression
       array_proxy = create_proxy(copy_or_ref, dispatch);
       return true;
     }
