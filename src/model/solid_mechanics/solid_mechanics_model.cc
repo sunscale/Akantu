@@ -301,6 +301,7 @@ void SolidMechanicsModel::assembleResidual(const ID & residual_part) {
   }
 
   if ("internal" == residual_part) {
+    this->assembleInternalForces();
     this->getDOFManager().assembleToResidual("displacement",
                                              *this->internal_force, 1);
     AKANTU_DEBUG_OUT();

@@ -57,6 +57,19 @@ TYPED_TEST(TestPatchTestSMMLinear, Implicit) {
   EXPECT_NEAR(0, ekin, 1e-16);
 
   this->checkAll();
+
+#define debug 0
+#if debug
+  this->model->setBaseName(std::to_string(this->type) + "_implicit");
+  this->model->addDumpField("stress");
+  this->model->addDumpField("grad_u");
+  this->model->addDumpFieldVector("internal_force");
+  this->model->addDumpFieldVector("external_force");
+  this->model->addDumpField("blocked_dofs");
+  this->model->addDumpFieldVector("displacement");
+  this->model->dump();
+#endif
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -75,6 +88,19 @@ TYPED_TEST(TestPatchTestSMMLinear, Static) {
   this->model->solveStep();
 
   this->checkAll();
+
+#define debug 0
+#if debug
+  this->model->setBaseName(std::to_string(this->type) + "_static");
+  this->model->addDumpField("stress");
+  this->model->addDumpField("grad_u");
+  this->model->addDumpFieldVector("internal_force");
+  this->model->addDumpFieldVector("external_force");
+  this->model->addDumpField("blocked_dofs");
+  this->model->addDumpFieldVector("displacement");
+  this->model->dump();
+#endif
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -105,6 +131,20 @@ TYPED_TEST(TestPatchTestSMMLinear, ImplicitFiniteDeformation) {
   EXPECT_NEAR(0, ekin, 1e-16);
 
   this->checkAll();
+
+
+#define debug 0
+#if debug
+  this->model->setBaseName(std::to_string(this->type) + "_implicit_finit_def");
+  this->model->addDumpField("stress");
+  this->model->addDumpField("grad_u");
+  this->model->addDumpFieldVector("internal_force");
+  this->model->addDumpFieldVector("external_force");
+  this->model->addDumpField("blocked_dofs");
+  this->model->addDumpFieldVector("displacement");
+  this->model->dump();
+#endif
+
 }
 
 /* -------------------------------------------------------------------------- */
