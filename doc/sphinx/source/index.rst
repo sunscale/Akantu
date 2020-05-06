@@ -13,6 +13,7 @@ Welcome to Akantu's documentation!
    :caption: Contents:
 
    ./getting_started
+   ./fe_engine
 
 
 
