@@ -8,7 +8,6 @@
  *
  * @brief  description of the "simple" types
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -29,8 +28,7 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_error.hh"
-#include "aka_fwd.hh"
+#include "aka_common.hh"
 #include "aka_math.hh"
 /* -------------------------------------------------------------------------- */
 #include <initializer_list>
@@ -106,7 +104,6 @@ namespace tensors {
 
 } // namespace tensors
 
-
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 namespace types {
@@ -167,17 +164,17 @@ namespace types {
 
 /**
  * @class TensorProxy aka_types.hh
- * @desc The TensorProxy class is a proxy class to the TensorStorage it handles
- * the
- * wrapped case. That is to say if an accessor should give access to a Tensor
- * wrapped on some data, like the Array<T>::iterator they can return a
- * TensorProxy that will be automatically transformed as a TensorStorage wrapped
- * on the same data
+ * The TensorProxy class is a proxy class to the
+ * TensorStorage it handles the wrapped case. That is to say if an accessor
+ * should give access to a Tensor wrapped on some data, like the
+ * Array<T>::iterator they can return a TensorProxy that will be automatically
+ * transformed as a TensorStorage wrapped on the same data
  * @tparam T stored type
  * @tparam ndim order of the tensor
- * @tparam RetType real derived type
+ * @tparam _RetType real derived type
  */
-template <typename T, UInt ndim, class _RetType> class TensorProxy : public TensorProxyTrait {
+template <typename T, UInt ndim, class _RetType>
+class TensorProxy : public TensorProxyTrait {
 protected:
   using RetTypeProxy = typename _RetType::proxy;
 
@@ -493,7 +490,7 @@ public:
     return *(static_cast<RetType *>(this));
   }
 
-  /// Y = \alpha X + Y
+  /// \f[Y = \alpha X + Y\f]
   inline RetType & aXplusY(const TensorStorage & other, const T & alpha = 1.) {
     AKANTU_DEBUG_ASSERT(
         _size == other.size(),
@@ -719,7 +716,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <bool tr_A>
-  inline void mul(const Matrix<T> & A, const Vector<T> & x, Real alpha = 1.0);
+  inline void mul(const Matrix<T> & A, const Vector<T> & x, T alpha = T(1));
   /* ------------------------------------------------------------------------ */
   inline Real norm() const { return parent::template norm<L_2>(); }
 
@@ -1263,8 +1260,7 @@ public:
 /* ------------------------------------------------------------------------ */
 template <typename T>
 template <bool tr_A>
-inline void Vector<T>::mul(const Matrix<T> & A, const Vector<T> & x,
-                           Real alpha) {
+inline void Vector<T>::mul(const Matrix<T> & A, const Vector<T> & x, T alpha) {
 #ifndef AKANTU_NDEBUG
   UInt n = x.size();
   if (tr_A) {

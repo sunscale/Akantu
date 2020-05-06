@@ -1,4 +1,4 @@
-Checks:          'modernize-use-*, performance-*'
+Checks:          '-modernize-use-trailing-return-type, modernize-use-*, performance-*'
 AnalyzeTemporaryDtors: false
 HeaderFilterRegex: 'src/.*'
 FormatStyle:     file

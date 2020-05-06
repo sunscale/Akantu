@@ -9,7 +9,6 @@
  *
  * @brief  Material padders for plane stress/ plane strain
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -35,7 +34,7 @@
 #include "dumper_padding_helper.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 class MaterialFunctor {
   /* ------------------------------------------------------------------------ */
@@ -283,7 +282,7 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPER_MATERIAL_PADDERS_HH__ */

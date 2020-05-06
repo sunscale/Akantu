@@ -5,7 +5,6 @@
  *
  * @brief  Material for iterative stiffness reduction by contant factor
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -32,7 +31,7 @@
 #ifndef __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
 #define __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /**
  * Material damage iterative
@@ -109,6 +108,6 @@ protected:
   Real reduction_constant;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__ */

@@ -48,12 +48,17 @@ cmake_minimum_required(VERSION 3.5.1)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-project(Akantu)
-enable_language(CXX)
-
 if(CMAKE_VERSION VERSION_GREATER 3.12)
   cmake_policy(SET CMP0074 NEW)
 endif()
+
+set(AKANTU_MAJOR_VERSION 3)
+set(AKANTU_MINOR_VERSION 1)
+set(AKANTU_PATCH_VERSION 0)
+
+project(Akantu
+  HOMEPAGE_URL "htpps://akantu.ch")
+enable_language(CXX)
 
 #===============================================================================
 # Misc. config for cmake
@@ -92,9 +97,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # Version Number
 #===============================================================================
 # AKANTU version number.  An even minor number corresponds to releases.
-set(AKANTU_MAJOR_VERSION 3)
-set(AKANTU_MINOR_VERSION 1)
-set(AKANTU_PATCH_VERSION 0)
 define_project_version()
 
 #===============================================================================
@@ -154,7 +156,7 @@ add_subdirectory(src)
 #===============================================================================
 # Documentation
 #===============================================================================
-if(AKANTU_DOCUMENTATION_DOXYGEN OR AKANTU_DOCUMENTATION_MANUAL)
+if(AKANTU_DOCUMENTATION_DEVELOPER_MANUAL OR AKANTU_DOCUMENTATION_USER_MANUAL)
   add_subdirectory(doc)
 else()
   set(AKANTU_DOC_EXCLUDE_FILES "${PROJECT_SOURCE_DIR}/doc/manual" CACHE INTERNAL "")

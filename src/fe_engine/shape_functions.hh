@@ -9,7 +9,6 @@
  *
  * @brief  shape function class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -210,6 +209,6 @@ inline std::ostream & operator<<(std::ostream & stream,
 }
 
 } // namespace akantu
-#include "shape_functions_inline_impl.cc"
+#include "shape_functions_inline_impl.hh"
 
 #endif /* __AKANTU_SHAPE_FUNCTIONS_HH__ */

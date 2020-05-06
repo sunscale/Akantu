@@ -30,17 +30,8 @@
 #
 #===============================================================================
 
-find_package(Doxygen REQUIRED)
-
-if(DOXYGEN_FOUND AND AKANTU_DOCUMENTATION_DOXYGEN)
-  set(DOXYGEN_WARNINGS NO)
-  set(DOXYGEN_QUIET YES)
-  if(CMAKE_VERBOSE_MAKEFILE)
-    set(DOXYGEN_WARNINGS YES)
-    set(DOXYGEN_QUIET NO)
-  endif(CMAKE_VERBOSE_MAKEFILE)
-
-  add_subdirectory(doxygen)
+if(AKANTU_DOCUMENTATION_DEVELOPER_MANUAL)
+  add_subdirectory(dev-doc)
 endif()
 
 

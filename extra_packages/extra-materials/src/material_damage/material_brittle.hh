@@ -7,7 +7,6 @@
  *
  * @brief  Brittle damage law
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -104,7 +103,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_brittle_inline_impl.cc"
+#include "material_brittle_inline_impl.hh"
 
 } // namespace akantu
 

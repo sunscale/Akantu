@@ -14,7 +14,6 @@
  * Wikipedia convention: @f[2*\epsilon_{ij} (i!=j) = voigt_\epsilon_{I}@f]
  * http://en.wikipedia.org/wiki/Voigt_notation
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

@@ -12,7 +12,6 @@
  *
  * @brief  Model of Heat Transfer
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -100,7 +99,7 @@ protected:
   getDefaultSolverID(const AnalysisMethod & method) override;
 
   ModelSolverOptions
-  getDefaultSolverOptions(const TimeStepSolverType & type) const;
+  getDefaultSolverOptions(const TimeStepSolverType & type) const override;
   /* ------------------------------------------------------------------------ */
   /* Methods for explicit                                                     */
   /* ------------------------------------------------------------------------ */
@@ -139,7 +138,7 @@ private:
   /// compute the conductivity tensor for each quadrature point in an array
   void computeConductivityOnQuadPoints(const GhostType & ghost_type);
 
-  /// compute vector k \grad T for each quadrature point
+  /// compute vector \f[k \grad T\f] for each quadrature point
   void computeKgradT(const GhostType & ghost_type);
 
   /// compute the thermal energy
@@ -171,17 +170,17 @@ public:
   /* Dumpable interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalFieldReal(const std::string & field_name,
                        const std::string & group_name,
                        bool padding_flag) override;
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalFieldBool(const std::string & field_name,
                        const std::string & group_name,
                        bool padding_flag) override;
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
                        const UInt & spatial_dimension,
@@ -259,7 +258,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 private:
   /// number of iterations
-  UInt n_iter;
+  //UInt n_iter;
 
   /// time step
   Real time_step;
@@ -285,7 +284,7 @@ private:
   /// conductivity tensor on quadrature points
   ElementTypeMapArray<Real> conductivity_on_qpoints;
 
-  /// vector k \grad T on quad points
+  /// vector \f[k \grad T\f] on quad points
   ElementTypeMapArray<Real> k_gradt_on_qpoints;
 
   /// external flux vector
@@ -298,7 +297,7 @@ private:
   Array<bool> * blocked_dofs{nullptr};
 
   // realtime
-  Real time;
+  //Real time;
 
   /// capacity
   Real capacity;
@@ -314,7 +313,7 @@ private:
   Real T_ref;
 
   // the biggest parameter of conductivity matrix
-  Real conductivitymax;
+  //Real conductivitymax;
 
   bool need_to_reassemble_capacity{true};
   bool need_to_reassemble_capacity_lumped{true};
@@ -331,6 +330,6 @@ private:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "heat_transfer_model_inline_impl.cc"
+#include "heat_transfer_model_inline_impl.hh"
 
 #endif /* __AKANTU_HEAT_TRANSFER_MODEL_HH__ */

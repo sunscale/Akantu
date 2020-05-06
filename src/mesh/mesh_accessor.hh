@@ -9,7 +9,6 @@
  * @brief  this class allow to access some private member of mesh it is used for
  * IO for examples
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

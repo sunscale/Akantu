@@ -9,7 +9,6 @@
  *
  * @brief  Parallel functions for the cohesive element inserter
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -35,4 +34,3 @@
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-namespace akantu {} // namespace akantu

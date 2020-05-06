@@ -16,7 +16,6 @@
  *
  * @brief  mathematical operations
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -35,21 +34,18 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
+/* -------------------------------------------------------------------------- */
+#include <utility>
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_MATH_H__
 #define __AKANTU_AKA_MATH_H__
 
-/* -------------------------------------------------------------------------- */
-#include <utility>
-
-#include "aka_common.hh"
-/* -------------------------------------------------------------------------- */
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 
-template <typename T, bool is_scal> class Array;
 
 class Math {
   /* ------------------------------------------------------------------------ */
@@ -60,8 +56,8 @@ public:
   /* Matrix algebra                                                           */
   /* ------------------------------------------------------------------------ */
   /// @f$ y = A*x @f$
-  static void matrix_vector(UInt m, UInt n, const Array<Real, true> & A,
-                            const Array<Real, true> & x, Array<Real, true> & y,
+  static void matrix_vector(UInt m, UInt n, const Array<Real> & A,
+                            const Array<Real> & x, Array<Real> & y,
                             Real alpha = 1.);
 
   /// @f$ y = A*x @f$
@@ -73,14 +69,14 @@ public:
                                     Real * y, Real alpha = 1.);
 
   /// @f$ C = A*B @f$
-  static void matrix_matrix(UInt m, UInt n, UInt k, const Array<Real, true> & A,
-                            const Array<Real, true> & B, Array<Real, true> & C,
+  static void matrix_matrix(UInt m, UInt n, UInt k, const Array<Real> & A,
+                            const Array<Real> & B, Array<Real> & C,
                             Real alpha = 1.);
 
   /// @f$ C = A*B^t @f$
   static void matrix_matrixt(UInt m, UInt n, UInt k,
-                             const Array<Real, true> & A,
-                             const Array<Real, true> & B, Array<Real, true> & C,
+                             const Array<Real> & A,
+                             const Array<Real> & B, Array<Real> & C,
                              Real alpha = 1.);
 
   /// @f$ C = A*B @f$
@@ -280,12 +276,11 @@ private:
   static Real tolerance;
 };
 
+} // namespace akantu
+
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
 #include "aka_math_tmpl.hh"
-
-} // namespace akantu
 
 #endif /* __AKANTU_AKA_MATH_H__ */

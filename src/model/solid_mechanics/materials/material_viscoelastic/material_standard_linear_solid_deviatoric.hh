@@ -13,7 +13,6 @@
  * [] J.C.  Simo, T.J.R. Hughes, "Computational  Inelasticity", Springer (1998),
  * see Sections 10.2 and 10.3
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

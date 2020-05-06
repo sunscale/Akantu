@@ -21,17 +21,17 @@ package_declare(IGFEM
 package_declare_sources(igfem
   element_class_igfem.cc
   element_class_igfem.hh
-  element_classes_igfem/element_class_igfem_segment_3_inline_impl.cc
-  element_classes_igfem/element_class_igfem_triangle_4_inline_impl.cc
-  element_classes_igfem/element_class_igfem_triangle_5_inline_impl.cc
+  element_classes_igfem/element_class_igfem_segment_3_inline_impl.hh
+  element_classes_igfem/element_class_igfem_triangle_4_inline_impl.hh
+  element_classes_igfem/element_class_igfem_triangle_5_inline_impl.hh
   integrator_gauss_igfem.hh
-  integrator_gauss_igfem_inline_impl.cc
+  integrator_gauss_igfem_inline_impl.hh
   interpolation_element_igfem.cc
   interpolation_element_igfem_tmpl.hh
-  geometrical_element_igfem.cc
+  geometrical_element_igfem.hh
   shape_igfem.hh
   shape_igfem.cc
-  shape_igfem_inline_impl.cc
+  shape_igfem_inline_impl.hh
   fe_engine_template_tmpl_igfem.hh
   dumper_igfem_connectivity.hh
   dumper_igfem_elemental_field.hh
@@ -45,23 +45,23 @@ package_declare_sources(igfem
   igfem_helper.cc
   igfem_enrichment.hh
   igfem_enrichment.cc
-  igfem_enrichment_inline_impl.cc
+  igfem_enrichment_inline_impl.hh
   solid_mechanics_model_igfem.hh
   solid_mechanics_model_igfem.cc
-  solid_mechanics_model_igfem_inline_impl.cc
+  solid_mechanics_model_igfem_inline_impl.hh
   mesh_igfem_spherical_growing_gel.hh
   mesh_igfem_spherical_growing_gel_tmpl.hh
 
   material_igfem/material_igfem_includes.hh
   material_igfem/material_igfem.hh
   material_igfem/material_igfem.cc
-  material_igfem/material_igfem_inline_impl.cc
+  material_igfem/material_igfem_inline_impl.hh
   material_igfem/material_igfem_elastic.hh
   material_igfem/material_igfem_elastic.cc
-  material_igfem/material_igfem_elastic_inline_impl.cc
+  material_igfem/material_igfem_elastic_inline_impl.hh
   material_igfem/material_igfem_saw_tooth_damage.hh
   material_igfem/material_igfem_saw_tooth_damage.cc
-  material_igfem/material_igfem_saw_tooth_damage_inline_impl.cc
+  material_igfem/material_igfem_saw_tooth_damage_inline_impl.hh
   material_igfem/material_igfem_iterative_stiffness_reduction.hh
   material_igfem/material_igfem_iterative_stiffness_reduction.cc
 

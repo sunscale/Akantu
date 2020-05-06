@@ -1,11 +1,10 @@
 /**
- * @file   shape_igfem_inline_impl.cc
+ * @file   shape_igfem_inline_impl.hh
  *
  * @author Aurelia Isabel Cuba Ramos <aurelia.cubaramos@epfl.ch>
  *
  * @brief  ShapeIGFEM inline implementation
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -20,7 +19,7 @@
 #ifndef __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__
 #define __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* compatibility functions */
@@ -113,5 +112,6 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem,
                                  filter_elements);
 }
 
-__END_AKANTU__
+} // namespace akantu
+
 #endif /* __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__ */

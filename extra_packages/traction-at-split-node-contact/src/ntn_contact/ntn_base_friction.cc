@@ -8,7 +8,6 @@
  *
  * @brief  implementation of ntn base friction
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -343,31 +342,31 @@ void NTNBaseFriction::addDumpFieldToDumper(const std::string & dumper_name,
   if (field_id == "is_sticking") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<bool>>(
+        std::make_unique<dumpers::NodalField<bool>>(
             this->is_sticking.getArray()));
   } else if (field_id == "frictional_strength") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(
+        std::make_unique<dumpers::NodalField<Real>>(
             this->frictional_strength.getArray()));
   } else if (field_id == "friction_traction") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(
+        std::make_unique<dumpers::NodalField<Real>>(
             this->friction_traction.getArray()));
   } else if (field_id == "slip") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->slip.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->slip.getArray()));
   } else if (field_id == "cumulative_slip") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(
+        std::make_unique<dumpers::NodalField<Real>>(
             this->cumulative_slip.getArray()));
   } else if (field_id == "slip_velocity") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(
+        std::make_unique<dumpers::NodalField<Real>>(
             this->slip_velocity.getArray()));
   } else {
     this->contact.addDumpFieldToDumper(dumper_name, field_id);

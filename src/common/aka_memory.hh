@@ -9,7 +9,6 @@
  * @brief  wrapper for the static_memory, all object which wants
  * to access the static_memory as to inherit from the class memory
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -28,20 +27,16 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "aka_array.hh"
+#include "aka_static_memory.hh"
+/* -------------------------------------------------------------------------- */
+#include <list>
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 #ifndef __AKANTU_MEMORY_HH__
 #define __AKANTU_MEMORY_HH__
-
-/* -------------------------------------------------------------------------- */
-#include "aka_array.hh"
-#include "aka_common.hh"
-#include "aka_static_memory.hh"
-
-/* -------------------------------------------------------------------------- */
-#include <list>
-
-/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
@@ -104,11 +99,8 @@ protected:
 /* -------------------------------------------------------------------------- */
 /* Inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "aka_memory_inline_impl.cc"
-#endif
-
 } // namespace akantu
+
+#include "aka_memory_inline_impl.hh"
 
 #endif /* __AKANTU_MEMORY_HH__ */

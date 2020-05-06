@@ -7,9 +7,8 @@
  * @date creation: Mon Aug 17 2015
  * @date last modification: Mon Aug 31 2015
  *
- * @brief  Example of dumper::Dumpable interface.
+ * @brief  Example of dumpers::Dumpable interface.
  *
- * @section LICENSE
  *
  * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
  * (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -31,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 #include "element_group.hh"
-#include "group_manager_inline_impl.cc"
+#include "group_manager_inline_impl.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include "dumpable_inline_impl.hh"
@@ -44,7 +43,7 @@ using namespace akantu;
 int main(int argc, char * argv[]) {
 
   /*
-    In this example, we present dumper::Dumpable which is an interface
+    In this example, we present dumpers::Dumpable which is an interface
     for other classes who want to dump themselves.
     Several classes of Akantu inheritate from Dumpable (Model, Mesh, ...).
     In this example we reproduce the same tasks as example_dumper_low_level.cc
@@ -129,7 +128,7 @@ int main(int argc, char * argv[]) {
       colour, wheels_elements.getElements());
 
   auto colour_field_wheel =
-      std::make_shared<dumper::ElementalField<UInt, Vector, true>>(
+      std::make_shared<dumpers::ElementalField<UInt, Vector, true>>(
           filtered_colour);
   mesh.addDumpFieldExternal("color", colour_field_wheel);
 

@@ -8,7 +8,6 @@
  *
  * @brief  contact for node to node discretization
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -68,56 +67,57 @@ public:
   void addNodePairs(const Array<UInt> & pairs);
 
   /// add node pair
-  virtual void addSplitNode(UInt slave, UInt master);
+  void addSplitNode(UInt slave, UInt master) override;
 
   /// update (compute the normals on the master nodes)
-  virtual void updateNormals();
+  void updateNormals() override;
 
   /// update the lumped boundary B matrix
-  virtual void updateLumpedBoundary();
+  void updateLumpedBoundary() override;
 
   /// update the impedance matrix
-  virtual void updateImpedance();
+  void updateImpedance() override;
 
   /// impose the normal contact force
-  virtual void applyContactPressure();
+  void applyContactPressure() override;
 
   /// dump restart file
-  virtual void dumpRestart(const std::string & file_name) const;
+  void dumpRestart(const std::string & file_name) const override;
 
   /// read restart file
-  virtual void readRestart(const std::string & file_name);
+  void readRestart(const std::string & file_name) override;
 
   /// compute the normal gap
-  virtual void computeNormalGap(Array<Real> & gap) const {
+  void computeNormalGap(Array<Real> & gap) const override {
     this->computeRelativeNormalField(this->model.getCurrentPosition(), gap);
   };
 
   /// compute relative normal field (only value that has to be multiplied with
   /// the normal)
   /// relative to master nodes
-  virtual void computeRelativeNormalField(const Array<Real> & field,
-                                          Array<Real> & rel_normal_field) const;
+  void
+  computeRelativeNormalField(const Array<Real> & field,
+                             Array<Real> & rel_normal_field) const override;
 
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  virtual void
+  void
   computeRelativeTangentialField(const Array<Real> & field,
-                                 Array<Real> & rel_tang_field) const;
+                                 Array<Real> & rel_tang_field) const override;
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
 protected:
   /// synchronize arrays
-  virtual void syncArrays(SyncChoice sync_choice);
+  void syncArrays(SyncChoice sync_choice) override;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void addDumpFieldToDumper(const std::string & dumper_name,
-                                    const std::string & field_id);
+  void addDumpFieldToDumper(const std::string & dumper_name,
+                            const std::string & field_id) override;
   //  virtual void addDumpFieldVector(const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */
@@ -133,7 +133,7 @@ public:
 
   /// get index of node in either slaves or masters array
   /// if node is in neither of them, return -1
-  Int getNodeIndex(UInt node) const;
+  Int getNodeIndex(UInt node) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -152,7 +152,7 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_contact_inline_impl.cc"
+//#include "ntn_contact_inline_impl.hh"
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,

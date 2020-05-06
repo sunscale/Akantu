@@ -11,7 +11,6 @@
  *
  * @brief  Define the akantu dumper interface for IOhelper dumpers
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -52,7 +51,7 @@ namespace akantu {
 
 UInt getIOHelperType(ElementType type);
 
-namespace dumper {
+namespace dumpers {
   class Field;
   class VariableBase;
 } // namespace dumper
@@ -88,12 +87,12 @@ public:
 
   /// register a Field object identified by name and provided by pointer
   void registerField(const std::string & field_id,
-                     std::shared_ptr<dumper::Field> field);
+                     std::shared_ptr<dumpers::Field> field);
   /// remove the Field identified by name from managed fields
   void unRegisterField(const std::string & field_id);
   /// register a VariableBase object identified by name and provided by pointer
   void registerVariable(const std::string & variable_id,
-                        std::shared_ptr<dumper::VariableBase> variable);
+                        std::shared_ptr<dumpers::VariableBase> variable);
   /// remove a VariableBase identified by name from managed fields
   void unRegisterVariable(const std::string & variable_id);
 
@@ -135,9 +134,9 @@ protected:
   /// internal iohelper::Dumper
   std::unique_ptr<iohelper::Dumper> dumper;
 
-  using Fields = std::map<std::string, std::shared_ptr<dumper::Field>>;
+  using Fields = std::map<std::string, std::shared_ptr<dumpers::Field>>;
   using Variables =
-      std::map<std::string, std::shared_ptr<dumper::VariableBase>>;
+      std::map<std::string, std::shared_ptr<dumpers::VariableBase>>;
 
   /// list of registered fields to dump
   Fields fields;

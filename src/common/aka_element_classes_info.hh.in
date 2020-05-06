@@ -9,7 +9,6 @@
  *
  * @brief  Declaration of the enums for the element classes
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
@@ -199,4 +198,4 @@ enum InterpolationKind {
 
 #endif /* __AKANTU_AKA_ELEMENT_CLASSES_INFO_HH__ */
 
-#include "aka_element_classes_info_inline_impl.cc"
+#include "aka_element_classes_info_inline_impl.hh"

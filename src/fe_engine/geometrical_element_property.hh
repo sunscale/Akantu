@@ -9,7 +9,6 @@
  *
  * @brief  Specialization of the geometrical types
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -28,15 +27,11 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 #include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 #include <array>
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_GEOMETRICAL_ELEMENT_PROPERTY_HH__
-#define __AKANTU_GEOMETRICAL_ELEMENT_PROPERTY_HH__
 
 namespace akantu {
 
@@ -50,6 +45,7 @@ namespace detail {
   }
 } // namespace detail
 
+#if !defined(DOXYGEN)
 template <> struct GeometricalElementProperty<_gt_not_defined> {
   static constexpr UInt spatial_dimension{0};
   static constexpr UInt nb_nodes_per_element{0};
@@ -255,8 +251,7 @@ template <> struct GeometricalElementProperty<_gt_pentahedron_15> {
 };
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_2d_4> {
   static constexpr UInt spatial_dimension{2};
   static constexpr UInt nb_nodes_per_element{4};
@@ -270,8 +265,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_2d_4> {
   // clang-format on
 };
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_2d_6> {
   static constexpr UInt spatial_dimension{2};
   static constexpr UInt nb_nodes_per_element{6};
@@ -286,8 +280,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_2d_6> {
   // clang-format on
 };
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_1d_2> {
   static constexpr UInt spatial_dimension{1};
   static constexpr UInt nb_nodes_per_element{2};
@@ -299,8 +292,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_1d_2> {
   // clang-format on
 };
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_3d_6> {
   static constexpr UInt spatial_dimension{3};
   static constexpr UInt nb_nodes_per_element{6};
@@ -315,8 +307,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_3d_6> {
   // clang-format on
 };
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_3d_12> {
   static constexpr UInt spatial_dimension{3};
   static constexpr UInt nb_nodes_per_element{12};
@@ -334,8 +325,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_3d_12> {
   // clang-format on
 };
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_3d_8> {
   static constexpr UInt spatial_dimension{3};
   static constexpr UInt nb_nodes_per_element{8};
@@ -351,8 +341,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_3d_8> {
   // clang-format on
 };
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 template <> struct GeometricalElementProperty<_gt_cohesive_3d_16> {
   static constexpr UInt spatial_dimension{3};
   static constexpr UInt nb_nodes_per_element{16};
@@ -373,7 +362,7 @@ template <> struct GeometricalElementProperty<_gt_cohesive_3d_16> {
 };
 #endif // AKANTU_COHESIVE_ELEMENT
 
-/* ------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 template <> struct ElementClassExtraGeometryProperties<_not_defined> {
   static constexpr ElementType p1_type{_not_defined};
   static constexpr std::array<ElementType, 1> facet_type{{_not_defined}};
@@ -483,6 +472,6 @@ template <> struct ElementClassExtraGeometryProperties<_cohesive_3d_16> {
 };
 #endif // AKANTU_COHESIVE_ELEMENT
 
-} // namespace akantu
+#endif // !defined(DOXYGEN)
 
-#endif /* __AKANTU_GEOMETRICAL_ELEMENT_PROPERTY_HH__ */
+} // namespace akantu

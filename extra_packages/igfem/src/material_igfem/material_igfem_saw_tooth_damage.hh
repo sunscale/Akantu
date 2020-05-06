@@ -6,7 +6,6 @@
  *
  * @brief  Linear saw-tooth softening material model for IGFEM elements
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -21,7 +20,7 @@
 #ifndef __AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH__
 #define __AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <UInt spatial_dimension>
 class MaterialIGFEMSawToothDamage
@@ -132,8 +131,8 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_igfem_saw_tooth_damage_inline_impl.cc"
+#include "material_igfem_saw_tooth_damage_inline_impl.hh"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* __AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH__ */

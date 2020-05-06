@@ -5,7 +5,6 @@
  *
  * @brief
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -29,7 +28,7 @@
 #include "igfem_helper.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <>
 ElementType ElementTypeIGFEMData<_not_defined>::igfem_element_types[] = {
@@ -102,4 +101,4 @@ ElementType ElementTypeIGFEMData<_pentahedron_15>::igfem_element_types[] = {
 template <> UInt ElementTypeIGFEMData<_pentahedron_15>::nb_igfem_types = 0;
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU__
+} // namespace akantu

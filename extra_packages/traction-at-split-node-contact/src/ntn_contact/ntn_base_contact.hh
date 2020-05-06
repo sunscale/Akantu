@@ -8,7 +8,6 @@
  *
  * @brief  base contact for ntn and ntrf contact
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -78,7 +77,7 @@ public:
   virtual void initParallel();
 
   /// add split node
-  virtual void addSplitNode(UInt node);
+  virtual void addSplitNode(UInt node, UInt = 0);
 
   /// update normals, lumped boundary, and impedance
   virtual void updateInternalData();
@@ -96,7 +95,7 @@ public:
   virtual void computeContactPressure();
 
   /// impose the normal contact force
-  virtual void applyContactPressure();
+  virtual void applyContactPressure() ;
 
   /// register synchronizedarrays for sync
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
@@ -162,8 +161,8 @@ public:
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void addDumpFieldToDumper(const std::string & dumper_name,
-                                    const std::string & field_id);
+  void addDumpFieldToDumper(const std::string & dumper_name,
+                                    const std::string & field_id) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -235,12 +234,6 @@ protected:
   bool is_ntn_contact{true};
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "ntn_base_contact_inline_impl.cc"
-
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,
                                  const NTNBaseContact & _this) {
@@ -249,5 +242,10 @@ inline std::ostream & operator<<(std::ostream & stream,
 }
 
 } // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "ntn_base_contact_inline_impl.hh"
 
 #endif /* __AST_NTN_BASE_CONTACT_HH__ */

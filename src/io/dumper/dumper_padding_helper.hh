@@ -9,7 +9,6 @@
  *
  * @brief  Padding helper for field iterators
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -35,7 +34,7 @@
 #include "dumper_compute.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 class PadderInterface {
@@ -127,6 +126,6 @@ public:
 /* -------------------------------------------------------------------------- */
 
 } // namespace akantu
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 
 #endif /* __AKANTU_DUMPER_PADDING_HELPER_HH__ */

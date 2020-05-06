@@ -7,7 +7,6 @@
  *
  * @brief  Specialization for interface-enriched finite elements
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -18,7 +17,7 @@
 
 // #include "element_class.hh"
 
-// __BEGIN_AKANTU__
+// namespace akantu {
 
 // /* --------------------------------------------------------------------------
 // */
@@ -66,4 +65,4 @@
 // /* --------------------------------------------------------------------------
 // */
 
-// __END_AKANTU__
+// } // namespace akantu

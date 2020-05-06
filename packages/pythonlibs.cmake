@@ -43,7 +43,7 @@ set(PYTHON_SITE_PACKAGES \${PYTHON_SITE_PACKAGES} CACHE INTERNAL \"\")
 ")
 
 
-if(AKANTU_PREFERRED_PYTHON_VERSION VERSION_GREATER_EQUAL 3.0)
+if(AKANTU_PREFERRED_PYTHON_VERSION VERSION_GREATER 2.9)
   package_set_package_system_dependency(PythonLibsNew deb libpython3)
   package_set_package_system_dependency(PythonLibsNew deb-src libpython3-dev)
 endif()

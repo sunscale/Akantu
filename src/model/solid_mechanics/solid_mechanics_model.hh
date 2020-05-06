@@ -10,7 +10,6 @@
  *
  * @brief  Model of Solid Mechanics
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -317,17 +316,17 @@ public:
   //! flatten all the registered material internals
   void flattenAllRegisteredInternals(const ElementKind & kind);
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalFieldReal(const std::string & field_name,
                        const std::string & group_name,
                        bool padding_flag) override;
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalFieldBool(const std::string & field_name,
                        const std::string & group_name,
                        bool padding_flag) override;
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
                        const UInt & spatial_dimension,
@@ -361,43 +360,40 @@ public:
   /// set the value of the conversion from forces/ mass to acceleration
   AKANTU_SET_MACRO(F_M2A, f_m2a, Real);
 
-  /// get the SolidMechanicsModel::displacement vector
+  /// get the SolidMechanicsModel::displacement array
   AKANTU_GET_MACRO_DEREF_PTR(Displacement, displacement);
 
-  /// get the SolidMechanicsModel::previous_displacement vector
+  /// get the SolidMechanicsModel::previous_displacement array
   AKANTU_GET_MACRO_DEREF_PTR(PreviousDisplacement, previous_displacement);
 
-  /// get the SolidMechanicsModel::current_position vector \warn only consistent
-  /// after a call to SolidMechanicsModel::updateCurrentPosition
+  /// get the SolidMechanicsModel::current_position array
   const Array<Real> & getCurrentPosition();
 
-  /// get  the SolidMechanicsModel::increment  vector \warn  only  consistent if
+  /// get  the SolidMechanicsModel::displacement_increment  array
   AKANTU_GET_MACRO_DEREF_PTR(Increment, displacement_increment);
 
-  /// get the lumped SolidMechanicsModel::mass vector
+  /// get the lumped SolidMechanicsModel::mass array
   AKANTU_GET_MACRO_DEREF_PTR(Mass, mass);
 
-  /// get the SolidMechanicsModel::velocity vector
+  /// get the SolidMechanicsModel::velocity array
   AKANTU_GET_MACRO_DEREF_PTR(Velocity, velocity);
 
-  /// get    the    SolidMechanicsModel::acceleration    vector,   updated    by
-  /// SolidMechanicsModel::updateAcceleration
+  /// get    the    SolidMechanicsModel::acceleration   array
   AKANTU_GET_MACRO_DEREF_PTR(Acceleration, acceleration);
 
-  /// get the SolidMechanicsModel::external_force vector (external forces)
+  /// get the SolidMechanicsModel::external_force array
   AKANTU_GET_MACRO_DEREF_PTR(ExternalForce, external_force);
 
-  /// get the SolidMechanicsModel::force vector (external forces)
-  Array<Real> & getForce() {
-    AKANTU_DEBUG_WARNING("getForce was maintained for backward compatibility, "
-                         "use getExternalForce instead");
+  /// get the SolidMechanicsModel::force array (external forces)
+  [[deprecated("Use getExternalForce instead of this function")]] Array<Real> &
+  getForce() {
     return getExternalForce();
   }
 
-  /// get the SolidMechanicsModel::internal_force vector (internal forces)
+  /// get the SolidMechanicsModel::internal_force array (internal forces)
   AKANTU_GET_MACRO_DEREF_PTR(InternalForce, internal_force);
 
-  /// get the SolidMechanicsModel::blocked_dofs vector
+  /// get the SolidMechanicsModel::blocked_dofs array
   AKANTU_GET_MACRO_DEREF_PTR(BlockedDOFs, blocked_dofs);
 
   /// get an iterable on the materials
@@ -406,10 +402,10 @@ public:
   /// get an iterable on the materials
   inline decltype(auto) getMaterials() const;
 
-  /// get a particular material (by material index)
+  /// get a particular material (by numerical material index)
   inline Material & getMaterial(UInt mat_index);
 
-  /// get a particular material (by material index)
+  /// get a particular material (by numerical material index)
   inline const Material & getMaterial(UInt mat_index) const;
 
   /// get a particular material (by material name)
@@ -562,7 +558,7 @@ namespace BC {
 #include "material.hh"
 #include "parser.hh"
 
-#include "solid_mechanics_model_inline_impl.cc"
+#include "solid_mechanics_model_inline_impl.hh"
 #include "solid_mechanics_model_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 

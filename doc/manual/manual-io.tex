@@ -255,7 +255,7 @@ field interface.
 
 \begin{cpp}
   mesh.addDumpFieldExternal(const std::string & field_name,
-                             std::shared<dumper::Field> & field);
+                             std::shared<dumpers::Field> & field);
 \end{cpp}
 
 All these functions use the default dumper registered in the mesh but  also have the \code{ToDumper} variation with the dumper name specified.

@@ -8,7 +8,6 @@
  *
  * @brief  Description of nodal fields
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -36,7 +35,7 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 
 // This represents a iohelper compatible field
 template <typename T, bool filtered = false, class Container = Array<T>,
@@ -45,7 +44,7 @@ class NodalField;
 
 /* -------------------------------------------------------------------------- */
 template <typename T, class Container, class Filter>
-class NodalField<T, false, Container, Filter> : public dumper::Field {
+class NodalField<T, false, Container, Filter> : public dumpers::Field {
 public:
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
@@ -134,7 +133,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 template <typename T, class Container, class Filter>
-class NodalField<T, true, Container, Filter> : public dumper::Field {
+class NodalField<T, true, Container, Filter> : public dumpers::Field {
 
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
@@ -236,7 +235,7 @@ private:
   UInt padding;
 };
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 /* -------------------------------------------------------------------------- */
 #endif /* __AKANTU_DUMPER_NODAL_FIELD_HH__ */

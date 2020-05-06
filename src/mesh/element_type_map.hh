@@ -9,7 +9,6 @@
  *
  * @brief  storage class by element type
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -118,7 +117,7 @@ public:
    *         elements is searched
    *  @return stored data corresponding to type. */
   template <typename U>
-  inline Stored & operator()(U && insertee, const SupportType & type,
+  inline Stored & operator()(U && data, const SupportType & type,
                              const GhostType & ghost_type = _not_ghost);
 
 public:
@@ -213,10 +212,14 @@ private:
 
 public:
   /*!
-   * \param _spatial_dimension optional: filter for elements of given spatial
+   * \param _pack
+   * \parblock
+   *  represent optional parameters:
+   * \li \c _spatial_dimension filter for elements of given spatial
    * dimension
-   * \param _ghost_type optional: filter for a certain ghost_type
-   * \param _element_kind optional: filter for elements of given kind
+   * \li \c _ghost_type filter for a certain ghost_type
+   * \li \c _element_kind filter for elements of given kind
+   * \endparblock
    */
   template <typename... pack>
   std::enable_if_t<are_named_argument<pack...>::value,
@@ -320,6 +323,7 @@ public:
    *  @param type the type under which the array is indexed in the map
    *  @param ghost_type whether to add the field to the data map or the
    *         ghost_data map
+   *  @param default_value the default value to use to fill the array
    *  @return a reference to the allocated array */
   inline Array<T> & alloc(UInt size, UInt nb_component,
                           const SupportType & type,
@@ -329,7 +333,9 @@ public:
   /*! allocate memory for a new array in both the data and the ghost_data map
    *  @param size number of tuples of the new array
    *  @param nb_component tuple size
-   *  @param type the type under which the array is indexed in the map*/
+   *  @param type the type under which the array is indexed in the map
+   *  @param default_value the default value to use to fill the array
+   */
   inline void alloc(UInt size, UInt nb_component, const SupportType & type,
                     const T & default_value = T());
 
@@ -429,11 +435,15 @@ public:
 
   /**
    * get the size of the ElementTypeMapArray<T>
-   * @param[in] _spatial_dimension the dimension to consider (default:
+   * @param[in] _pack
+   * \parblock
+   * optional arguments can be any of:
+   * \li \c _spatial_dimension the dimension to consider (default:
    * _all_dimensions)
-   * @param[in] _ghost_type  (default: _not_ghost)
-   * @param[in] _element_kind (default: _ek_not_defined)
-   * @param[in] _all_ghost_types (default: false)
+   * \li \c _ghost_type  (default: _not_ghost)
+   * \li \c _element_kind (default: _ek_not_defined)
+   * \li \c _all_ghost_types (default: false)
+   * \endparblock
    **/
   template <typename... pack> UInt size(pack &&... _pack) const;
 

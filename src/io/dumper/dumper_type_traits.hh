@@ -8,7 +8,6 @@
  *
  * @brief  Type traits for field properties
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -34,55 +33,55 @@
 #include "element_type_map.hh"
 #include "element_type_map_filter.hh"
 /* -------------------------------------------------------------------------- */
+
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
-/* -------------------------------------------------------------------------- */
+namespace dumpers {
+  /* ------------------------------------------------------------------------ */
+  template <class data, class ret, class field> struct TypeTraits {
 
-template <class data, class ret, class field> struct TypeTraits {
+    //! the stored data (real, int, uint, ...)
+    using data_type = data;
+    //! the type returned by the operator *
+    using return_type = ret;
+    //! the field type (ElementTypeMap or ElementTypeMapFilter)
+    using field_type = field;
+    //! the type over which we iterate
+    using it_type = typename field_type::type;
+    //! the type of array (Array<T> or ArrayFilter<T>)
+    using array_type = typename field_type::array_type;
+    //! the iterator over the array
+    using array_iterator = typename array_type::const_vector_iterator;
+  };
 
-  //! the stored data (real, int, uint, ...)
-  using data_type = data;
-  //! the type returned by the operator *
-  using return_type = ret;
-  //! the field type (ElementTypeMap or ElementTypeMapFilter)
-  using field_type = field;
-  //! the type over which we iterate
-  using it_type = typename field_type::type;
-  //! the type of array (Array<T> or ArrayFilter<T>)
-  using array_type = typename field_type::array_type;
-  //! the iterator over the array
-  using array_iterator = typename array_type::const_vector_iterator;
-};
+  /* ------------------------------------------------------------------------ */
 
-/* -------------------------------------------------------------------------- */
+  // specialization for the case in which input and output types are the same
+  template <class T, template <class> class ret, bool filtered>
+  struct SingleType : public TypeTraits<T, ret<T>, ElementTypeMapArray<T>> {};
 
-// specialization for the case in which input and output types are the same
-template <class T, template <class> class ret, bool filtered>
-struct SingleType : public TypeTraits<T, ret<T>, ElementTypeMapArray<T>> {};
+  /* ------------------------------------------------------------------------ */
 
-/* -------------------------------------------------------------------------- */
+  // same as before but for filtered data
+  template <class T, template <class> class ret>
+  struct SingleType<T, ret, true>
+      : public TypeTraits<T, ret<T>, ElementTypeMapArrayFilter<T>> {};
+  /* ------------------------------------------------------------------------ */
 
-// same as before but for filtered data
-template <class T, template <class> class ret>
-struct SingleType<T, ret, true>
-    : public TypeTraits<T, ret<T>, ElementTypeMapArrayFilter<T>> {};
-/* -------------------------------------------------------------------------- */
+  // specialization for the case in which input and output types are different
+  template <class it_type, class data_type, template <class> class ret,
+            bool filtered>
+  struct DualType : public TypeTraits<data_type, ret<data_type>,
+                                      ElementTypeMapArray<it_type>> {};
 
-// specialization for the case in which input and output types are different
-template <class it_type, class data_type, template <class> class ret,
-          bool filtered>
-struct DualType : public TypeTraits<data_type, ret<data_type>,
-                                    ElementTypeMapArray<it_type>> {};
+  /* ------------------------------------------------------------------------ */
 
-/* -------------------------------------------------------------------------- */
-
-// same as before but for filtered data
-template <class it_type, class data_type, template <class> class ret>
-struct DualType<it_type, data_type, ret, true>
-    : public TypeTraits<data_type, ret<data_type>,
-                        ElementTypeMapArrayFilter<it_type>> {};
-/* -------------------------------------------------------------------------- */
-__END_AKANTU_DUMPER__
+  // same as before but for filtered data
+  template <class it_type, class data_type, template <class> class ret>
+  struct DualType<it_type, data_type, ret, true>
+      : public TypeTraits<data_type, ret<data_type>,
+                          ElementTypeMapArrayFilter<it_type>> {};
+  /* ------------------------------------------------------------------------ */
+} // namespace dumpers
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */

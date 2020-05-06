@@ -10,7 +10,6 @@
  *
  * @brief  shape class for element with different set of shapes functions
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -173,6 +172,6 @@ protected:
 
 } // namespace akantu
 
-#include "shape_structural_inline_impl.cc"
+#include "shape_structural_inline_impl.hh"
 
 #endif /* __AKANTU_SHAPE_STRUCTURAL_HH__ */

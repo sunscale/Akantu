@@ -11,7 +11,6 @@
  *
  * @brief  Computation of mesh intersection with sphere(s)
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -77,19 +76,19 @@ public:
 
   /**
    * @brief Computes the intersection of the mesh with a sphere
-   *
-   * @param query (sphere) to compute the intersections with the mesh
    */
-  virtual void computeIntersectionQuery(const SK::Sphere_3 & /*query*/) {
+  virtual void computeIntersectionQuery(const SK::Sphere_3 & /* query */) {
     AKANTU_ERROR("This function is not implemented for spheres (It was "
                  "to generic and has been replaced by "
                  "computeMeshQueryIntersectionPoint");
   }
 
-  /// Compute intersection points between the mesh primitives (segments) and a
-  /// query (surface in 3D or a curve in 2D), double intersection points for the
-  /// same primitives are not considered. A maximum is set to the number of
-  /// intersection nodes per element: 2 in 2D and 4 in 3D
+  /**
+   * Compute intersection points between the mesh primitives (segments) and a
+   * query (surface in 3D or a curve in 2D), double intersection points for the
+   * same primitives are not considered. A maximum is set to the number of
+   * intersection nodes per element: 2 in 2D and 4 in 3D
+   */
   virtual void computeMeshQueryIntersectionPoint(const SK::Sphere_3 & query,
                                                  UInt nb_old_nodes);
 

@@ -34,7 +34,7 @@ void register_dumpable(py::module & mod) {
       .def(
           "addDumpFieldExternal",
           [](Dumpable & _this, const std::string & field_id,
-             std::shared_ptr<dumper::Field> field) {
+             std::shared_ptr<dumpers::Field> field) {
             return _this.addDumpFieldExternal(field_id, field);
           },
           py::arg("field_id"), py::arg("field"))
@@ -51,7 +51,7 @@ void register_dumpable(py::module & mod) {
           "addDumpFieldExternalToDumper",
           [](Dumpable & _this, const std::string & dumper_name,
              const std::string & field_id,
-             std::shared_ptr<dumper::Field> field) {
+             std::shared_ptr<dumpers::Field> field) {
             return _this.addDumpFieldExternalToDumper(dumper_name, field_id,
                                                       field);
           },
@@ -75,14 +75,14 @@ void register_dumpable(py::module & mod) {
   mod.attr("dumper") = dumper_module;
 
   /* ------------------------------------------------------------------------ */
-  py::class_<dumper::Field, std::shared_ptr<dumper::Field>>(dumper_module,
+  py::class_<dumpers::Field, std::shared_ptr<dumpers::Field>>(dumper_module,
                                                             "Field");
 
   /* ------------------------------------------------------------------------ */
-  py::class_<dumper::ElementalField<UInt>, dumper::Field,
-             std::shared_ptr<dumper::ElementalField<UInt>>>(
+  py::class_<dumpers::ElementalField<UInt>, dumpers::Field,
+             std::shared_ptr<dumpers::ElementalField<UInt>>>(
       dumper_module, "ElementalFieldUInt", py::multiple_inheritance())
-      .def(py::init<dumper::ElementalField<UInt>::field_type &, UInt, GhostType,
+      .def(py::init<dumpers::ElementalField<UInt>::field_type &, UInt, GhostType,
                     ElementKind>(),
            py::arg("field"), py::arg("spatial_dimension") = _all_dimensions,
            py::arg("ghost_type") = _not_ghost,

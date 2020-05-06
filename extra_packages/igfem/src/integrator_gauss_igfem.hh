@@ -6,7 +6,6 @@
  *
  * @brief  Gauss integration facilities for IGFEM
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -21,7 +20,7 @@
 /* -------------------------------------------------------------------------- */
 #include "integrator.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 template <class IOF> class IntegratorGauss<_ek_igfem, IOF> : public Integrator {
   /* ------------------------------------------------------------------------ */
@@ -115,9 +114,9 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "integrator_gauss_igfem_inline_impl.cc"
+#include "integrator_gauss_igfem_inline_impl.hh"
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /*__AKANTU_INTEGRATOR_IGFEM_HH__ */
 /* -------------------------------------------------------------------------- */

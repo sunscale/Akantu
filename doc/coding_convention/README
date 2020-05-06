@@ -22,7 +22,7 @@ Coding conventions
  - File names : lower case, separator , extension .hh .cc, same name as the class
       → my_class.hh
  - Inline function : outside the class definition in headers
-     in a file called filename_inline_impl.cc and included in the header file
+     in a file called filename_inline_impl.hh and included in the header file
  - Documentation comment : Doxygen
 
 

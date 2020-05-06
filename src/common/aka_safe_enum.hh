@@ -9,7 +9,6 @@
  * @brief  Safe enums type (see More C++ Idioms/Type Safe Enum on Wikibooks
  * http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Type_Safe_Enum)
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

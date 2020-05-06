@@ -37,7 +37,7 @@ package_declare(MPI EXTERNAL
 
 package_declare_sources(MPI
   synchronizer/mpi_communicator_data.hh
-  synchronizer/communicator_mpi_inline_impl.cc
+  synchronizer/communicator_mpi_inline_impl.hh
   )
 
 function(_add_to_mpi_preflags flag)

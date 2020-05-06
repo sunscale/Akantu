@@ -9,7 +9,6 @@
  * @brief  Test to check the correct matrix assembling for cohesive elements
  * with degenerated nodes
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

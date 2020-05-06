@@ -7,7 +7,6 @@
  *
  * @brief  Implementation parent material for IGFEM
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -17,7 +16,7 @@
 #include "material_igfem.hh"
 #include "aka_math.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 MaterialIGFEM::MaterialIGFEM(SolidMechanicsModel & model, const ID & id)
@@ -365,4 +364,4 @@ void MaterialIGFEM::applyEigenGradU(
   }
 }
 
-__END_AKANTU__
+} // namespace akantu

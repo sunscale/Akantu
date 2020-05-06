@@ -8,7 +8,6 @@
  *
  * @brief  Synchronizer for nodal information
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -106,6 +105,6 @@ protected:
 
 } // namespace akantu
 
-#include "node_synchronizer_inline_impl.cc"
+#include "node_synchronizer_inline_impl.hh"
 
 #endif /* __AKANTU_NODE_SYNCHRONIZER_HH__ */

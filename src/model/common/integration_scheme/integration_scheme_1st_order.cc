@@ -9,7 +9,6 @@
  * @brief  Implementation of the common functions for 1st order time
  * integrations
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

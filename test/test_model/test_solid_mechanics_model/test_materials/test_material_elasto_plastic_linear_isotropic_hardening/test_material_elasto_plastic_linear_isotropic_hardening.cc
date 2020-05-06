@@ -10,7 +10,6 @@
  * @brief  test for material type elasto plastic linear isotropic hardening
  * using tension-compression test
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

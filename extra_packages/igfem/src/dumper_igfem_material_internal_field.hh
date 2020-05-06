@@ -6,7 +6,6 @@
  *
  * @brief  description of  IGFEM material internal field
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -18,8 +17,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_igfem_quadrature_points_field.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
-__BEGIN_AKANTU_DUMPER__
+namespace akantu {
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 template <typename T, bool filtered = false>
@@ -48,7 +47,7 @@ public:
       : parent(field, spatial_dimension, ghost_type, kind) {}
 };
 
-__END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace dumpers
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__ */

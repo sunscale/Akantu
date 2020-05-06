@@ -8,7 +8,6 @@
  *
  * @brief  A Documented file.
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -70,4 +69,5 @@ FEEngineElementTypeMapArrayInitializer::elementTypes() const {
   return this->fe_engine.elementTypes(spatial_dimension, ghost_type,
                                       element_kind);
 }
+
 } // namespace akantu

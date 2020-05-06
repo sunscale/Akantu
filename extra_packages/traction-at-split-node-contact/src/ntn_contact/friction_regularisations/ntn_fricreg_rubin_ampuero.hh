@@ -8,7 +8,6 @@
  *
  * @brief  regularisation that regularizes the contact pressure
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -88,7 +87,7 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "ntn_fricreg_rubin_ampuero_inline_impl.cc"
+//#include "ntn_fricreg_rubin_ampuero_inline_impl.hh"
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,

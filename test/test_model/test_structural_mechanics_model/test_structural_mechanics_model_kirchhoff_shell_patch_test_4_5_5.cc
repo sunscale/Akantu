@@ -9,7 +9,6 @@
  * @brief  patch test exemple 4.5.5 c.f. modelisation des structures par
  * éléments finis J.-L. Batoz/G Dhatt
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

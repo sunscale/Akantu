@@ -14,7 +14,6 @@
  *
  * @brief  Implementation of HeatTransferModel class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -40,7 +39,7 @@
 #include "element_synchronizer.hh"
 #include "fe_engine_template.hh"
 #include "generalized_trapezoidal.hh"
-#include "group_manager_inline_impl.cc"
+#include "group_manager_inline_impl.hh"
 #include "integrator_gauss.hh"
 #include "mesh.hh"
 #include "parser.hh"
@@ -692,7 +691,7 @@ Real HeatTransferModel::getEnergy(const std::string & id,
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 
-std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldBool(
+std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldBool(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
@@ -704,7 +703,7 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldBool(
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldReal(
+std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldReal(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
@@ -721,37 +720,37 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldReal(
   real_nodal_fields["internal_heat_rate"] = internal_heat_rate;
   real_nodal_fields["increment"] = increment;
 
-  std::shared_ptr<dumper::Field> field =
+  std::shared_ptr<dumpers::Field> field =
       mesh.createNodalField(real_nodal_fields[field_name], group_name);
 
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
+std::shared_ptr<dumpers::Field> HeatTransferModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag,
     __attribute__((unused)) const UInt & spatial_dimension,
     const ElementKind & element_kind) {
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
 
   if (field_name == "partitions")
-    field = mesh.createElementalField<UInt, dumper::ElementPartitionField>(
+    field = mesh.createElementalField<UInt, dumpers::ElementPartitionField>(
         mesh.getConnectivities(), group_name, this->spatial_dimension,
         element_kind);
   else if (field_name == "temperature_gradient") {
     ElementTypeMap<UInt> nb_data_per_elem =
         this->mesh.getNbDataPerElem(temperature_gradient);
 
-    field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
+    field = mesh.createElementalField<Real, dumpers::InternalMaterialField>(
         temperature_gradient, group_name, this->spatial_dimension, element_kind,
         nb_data_per_elem);
   } else if (field_name == "conductivity") {
     ElementTypeMap<UInt> nb_data_per_elem =
         this->mesh.getNbDataPerElem(conductivity_on_qpoints);
 
-    field = mesh.createElementalField<Real, dumper::InternalMaterialField>(
+    field = mesh.createElementalField<Real, dumpers::InternalMaterialField>(
         conductivity_on_qpoints, group_name, this->spatial_dimension,
         element_kind, nb_data_per_elem);
   }
@@ -762,7 +761,7 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
+std::shared_ptr<dumpers::Field> HeatTransferModel::createElementalField(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag,
@@ -771,7 +770,7 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createElementalField(
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldBool(
+std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldBool(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
@@ -779,7 +778,7 @@ std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldBool(
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> HeatTransferModel::createNodalFieldReal(
+std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldReal(
     __attribute__((unused)) const std::string & field_name,
     __attribute__((unused)) const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {

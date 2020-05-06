@@ -7,7 +7,6 @@
  * @brief Material for multi-scale simulations. It stores an
  * underlying RVE on each integration point of the material.
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -105,7 +104,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_FE2_inline_impl.cc"
+#include "material_FE2_inline_impl.hh"
 
 } // namespace akantu
 

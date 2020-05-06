@@ -5,7 +5,6 @@
  *
  * @brief  Implementation of the functions of MeshIgfemSphericalGrowingGel
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -29,7 +28,7 @@
 #include "mesh_utils.hh"
 #include <algorithm>
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -529,4 +528,4 @@ void MeshIgfemSphericalGrowingGel<dim>::updateNodeType(
                       "Not all new nodes were assigned a node type");
 }
 
-__END_AKANTU__
+} // namespace akantu

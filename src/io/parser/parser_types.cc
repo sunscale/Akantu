@@ -8,7 +8,6 @@
  *
  * @brief  implementation of the parser
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -27,7 +26,7 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
 #elif defined(__clang__) // test clang to be sure that when we test for gnu it

@@ -1,5 +1,5 @@
 /**
- * @file   local_material_damage_inline_impl.cc
+ * @file   local_material_damage_inline_impl.hh
  *
  * @author Guillaume Anciaux <guillaume.anciaux@epfl.ch>
  * @author Marion Estelle Chambart <marion.chambart@epfl.ch>
@@ -10,7 +10,6 @@
  *
  * @brief  Implementation of the inline functions of the material damage
  *
- * @section LICENSE
  *
  * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
  * (LSMS - Laboratoire de Simulation en Mécanique des Solides)

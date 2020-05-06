@@ -8,7 +8,6 @@
  *
  * @brief  test of internal facet extraction
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -58,7 +57,7 @@ int main(int argc, char * argv[]) {
 
 #ifdef AKANTU_USE_IOHELPER
   DumperParaview dumper("test-scotch-partition");
-  auto field = std::make_shared<dumper::ElementalField<UInt>>(
+  auto field = std::make_shared<dumpers::ElementalField<UInt>>(
       partition.getPartitions(), dim);
   dumper.registerMesh(mesh, dim);
   dumper.registerField("partitions", field);

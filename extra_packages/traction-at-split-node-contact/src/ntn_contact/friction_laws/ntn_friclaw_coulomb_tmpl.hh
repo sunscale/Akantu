@@ -8,7 +8,6 @@
  *
  * @brief  implementation of coulomb friction
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -146,7 +145,7 @@ void NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(
   if (field_id == "mu") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->mu.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->mu.getArray()));
   }
   /*
   else if (field_id == "frictional_contact_pressure") {

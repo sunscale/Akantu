@@ -10,7 +10,6 @@
  *
  * @brief  Specialization of the material class for cohesive elements
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -224,14 +223,12 @@ protected:
   Array<Real> normal;
 };
 
+} // namespace akantu
+
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#include "material_cohesive_inline_impl.cc"
-
-} // namespace akantu
-
+#include "material_cohesive_inline_impl.hh"
 #include "cohesive_internal_field_tmpl.hh"
 
 #endif /* __AKANTU_MATERIAL_COHESIVE_HH__ */

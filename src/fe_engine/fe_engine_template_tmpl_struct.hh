@@ -11,7 +11,6 @@
  * @brief  Template implementation of FEEngineTemplate for Structural Element
  * Kinds
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

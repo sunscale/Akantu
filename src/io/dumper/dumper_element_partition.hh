@@ -9,7 +9,6 @@
  *
  * @brief  ElementPartition field
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -31,7 +30,7 @@
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-namespace dumper {
+namespace dumpers {
 #ifdef AKANTU_IGFEM
 #include "dumper_igfem_element_partition.hh"
 #endif
@@ -48,7 +47,7 @@ namespace dumper {
      */
   public:
     using parent =
-        element_iterator<types, dumper::element_partition_field_iterator>;
+        element_iterator<types, dumpers::element_partition_field_iterator>;
     using return_type =
         typename SingleType<unsigned int, Vector, true>::return_type;
     using array_iterator = typename types::array_iterator;

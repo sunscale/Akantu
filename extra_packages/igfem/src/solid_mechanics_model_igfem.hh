@@ -6,7 +6,6 @@
  *
  * @brief  solid mechanics model for IGFEM analysis
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -22,7 +21,7 @@
 #include "solid_mechanics_model_event_handler.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 struct SolidMechanicsModelIGFEMOptions : public SolidMechanicsModelOptions {
@@ -128,13 +127,13 @@ public:
                                          const ElementKind & element_kind,
                                          bool padding_flag);
 
-  virtual dumper::Field * createElementalField(const std::string & field_name,
+  virtual dumpers::Field * createElementalField(const std::string & field_name,
                                                const std::string & group_name,
                                                bool padding_flag,
                                                const UInt & spatial_dimension,
                                                const ElementKind & kind);
 
-  virtual dumper::Field * createNodalFieldReal(const std::string & field_name,
+  virtual dumpers::Field * createNodalFieldReal(const std::string & field_name,
                                                const std::string & group_name,
                                                bool padding_flag);
 
@@ -189,10 +188,10 @@ protected:
   UInt fallback_value_igfem;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "solid_mechanics_model_igfem_inline_impl.cc"
+#include "solid_mechanics_model_igfem_inline_impl.hh"
 #endif
 
 #endif /* __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_HH__ */

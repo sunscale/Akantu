@@ -8,7 +8,6 @@
  *
  * @brief  implementation of the common part of the static communicator
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -98,9 +97,9 @@ Communicator & Communicator::getStaticCommunicator(int & argc, char **& argv) {
 } // namespace akantu
 
 #ifdef AKANTU_USE_MPI
-#include "communicator_mpi_inline_impl.cc"
+#include "communicator_mpi_inline_impl.hh"
 #else
-#include "communicator_dummy_inline_impl.cc"
+#include "communicator_dummy_inline_impl.hh"
 #endif
 
 namespace akantu {
@@ -143,6 +142,8 @@ namespace akantu {
 
 #define MIN_MAX_REAL SCMinMaxLoc<Real, int>
 
+#if !defined(DOXYGEN)
+
 AKANTU_COMM_INSTANTIATE(bool);
 AKANTU_COMM_INSTANTIATE(Real);
 AKANTU_COMM_INSTANTIATE(UInt);
@@ -153,6 +154,8 @@ AKANTU_COMM_INSTANTIATE(MIN_MAX_REAL);
 
 #if AKANTU_INTEGER_SIZE > 4
 AKANTU_COMM_INSTANTIATE(int);
+#endif
+
 #endif
 
 // template void Communicator::send<SCMinMaxLoc<Real, int>>(

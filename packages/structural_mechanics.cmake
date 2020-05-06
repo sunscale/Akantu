@@ -35,13 +35,13 @@ package_declare(structural_mechanics
 
 package_declare_sources(structural_mechanics
   fe_engine/element_class_structural.hh
-  fe_engine/element_classes/element_class_bernoulli_beam_inline_impl.cc
-  fe_engine/element_classes/element_class_kirchhoff_shell_inline_impl.cc
-  fe_engine/element_classes/element_class_hermite_inline_impl.cc
+  fe_engine/element_classes/element_class_bernoulli_beam_inline_impl.hh
+  fe_engine/element_classes/element_class_kirchhoff_shell_inline_impl.hh
+  fe_engine/element_classes/element_class_hermite_inline_impl.hh
   fe_engine/fe_engine_template_tmpl_struct.hh
   fe_engine/shape_structural.cc
   fe_engine/shape_structural.hh
-  fe_engine/shape_structural_inline_impl.cc
+  fe_engine/shape_structural_inline_impl.hh
   io/mesh_io/mesh_io_msh_struct.cc
   io/mesh_io/mesh_io_msh_struct.hh
   model/structural_mechanics/structural_elements/structural_element_bernoulli_beam_2.hh
@@ -50,7 +50,7 @@ package_declare_sources(structural_mechanics
   model/structural_mechanics/structural_mechanics_model.cc
   model/structural_mechanics/structural_mechanics_model.hh
   model/structural_mechanics/structural_mechanics_model_boundary.cc
-  model/structural_mechanics/structural_mechanics_model_inline_impl.cc
+  model/structural_mechanics/structural_mechanics_model_inline_impl.hh
   model/structural_mechanics/structural_mechanics_model_mass.cc
   )
 

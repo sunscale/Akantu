@@ -6,7 +6,6 @@
  * @brief Class that manages all the non-local neighborhoods for IGFEM
  * simulations
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -34,7 +33,7 @@
 #include "solid_mechanics_model_igfem.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 class NonLocalManagerIGFEM : public NonLocalManager {
   /* ------------------------------------------------------------------------ */
@@ -88,7 +87,7 @@ public:
 private:
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */

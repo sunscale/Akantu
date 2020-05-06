@@ -10,7 +10,6 @@
  * @brief  Stores information relevent to the notion of domain boundary and
  * surfaces.
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -196,6 +195,6 @@ inline std::ostream & operator<<(std::ostream & stream,
 } // namespace akantu
 
 #include "element.hh"
-#include "element_group_inline_impl.cc"
+#include "element_group_inline_impl.hh"
 
 #endif /* __AKANTU_ELEMENT_GROUP_HH__ */

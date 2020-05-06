@@ -8,7 +8,6 @@
  *
  * @brief  Class handling the different types of dofs
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -713,6 +712,6 @@ using DOFManagerFactory =
 
 } // namespace akantu
 
-#include "dof_manager_inline_impl.cc"
+#include "dof_manager_inline_impl.hh"
 
 #endif /* __AKANTU_DOF_MANAGER_HH__ */

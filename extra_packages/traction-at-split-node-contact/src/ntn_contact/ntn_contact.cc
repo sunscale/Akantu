@@ -8,7 +8,6 @@
  *
  * @brief  implementation of ntn_contact
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -539,7 +538,7 @@ void NTNContact::addDumpFieldToDumper(const std::string & dumper_name,
 
   if (field_id == "lumped_boundary_master") {
     internalAddDumpFieldToDumper(dumper_name, field_id,
-                                 std::make_unique<dumper::NodalField<Real>>(
+                                 std::make_unique<dumpers::NodalField<Real>>(
                                      this->lumped_boundary_masters.getArray()));
   } else {
     NTNBaseContact::addDumpFieldToDumper(dumper_name, field_id);

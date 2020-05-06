@@ -11,7 +11,6 @@
  *
  * @brief  class handling meshes
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -35,7 +34,7 @@
 #include "aka_config.hh"
 /* -------------------------------------------------------------------------- */
 #include "element_class.hh"
-#include "group_manager_inline_impl.cc"
+#include "group_manager_inline_impl.hh"
 #include "mesh.hh"
 #include "mesh_global_data_updater.hh"
 #include "mesh_io.hh"
@@ -450,12 +449,12 @@ Mesh::getNbDataPerElem(ElementTypeMapArray<UInt> & array);
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 template <typename T>
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 Mesh::createFieldFromAttachedData(const std::string & field_id,
                                   const std::string & group_name,
                                   const ElementKind & element_kind) {
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   ElementTypeMapArray<T> * internal = nullptr;
   try {
     internal = &(this->getData<T>(field_id));
@@ -465,19 +464,19 @@ Mesh::createFieldFromAttachedData(const std::string & field_id,
 
   ElementTypeMap<UInt> nb_data_per_elem = this->getNbDataPerElem(*internal);
 
-  field = this->createElementalField<T, dumper::InternalMaterialField>(
+  field = this->createElementalField<T, dumpers::InternalMaterialField>(
       *internal, group_name, this->spatial_dimension, element_kind,
       nb_data_per_elem);
 
   return field;
 }
 
-template std::shared_ptr<dumper::Field>
+template std::shared_ptr<dumpers::Field>
 Mesh::createFieldFromAttachedData<Real>(const std::string & field_id,
                                         const std::string & group_name,
                                         const ElementKind & element_kind);
 
-template std::shared_ptr<dumper::Field>
+template std::shared_ptr<dumpers::Field>
 Mesh::createFieldFromAttachedData<UInt>(const std::string & field_id,
                                         const std::string & group_name,
                                         const ElementKind & element_kind);

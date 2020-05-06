@@ -6,7 +6,6 @@
  *
  * @brief  generic interface IGFEM elemental fields
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -20,8 +19,8 @@
 #include "dumper_generic_elemental_field.hh"
 #include "dumper_igfem_element_iterator.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
-__BEGIN_AKANTU_DUMPER__
+namespace akantu {
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 template <class _types, template <class> class iterator_type>
 class IGFEMGenericElementalField
@@ -138,7 +137,7 @@ public:
 protected:
 };
 
-__END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace dumpers
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH__ */

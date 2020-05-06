@@ -10,7 +10,6 @@
  *
  * @brief  Interface of a model
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -220,7 +219,7 @@ public:
   void setTextModeToDumper();
 
   virtual void addDumpGroupFieldToDumper(const std::string & field_id,
-                                         std::shared_ptr<dumper::Field> field,
+                                         std::shared_ptr<dumpers::Field> field,
                                          DumperIOHelper & dumper);
 
   virtual void addDumpField(const std::string & field_id);
@@ -272,28 +271,28 @@ public:
                                                const std::string & field_id,
                                                const std::string & group_name);
 
-  virtual std::shared_ptr<dumper::Field>
+  virtual std::shared_ptr<dumpers::Field>
   createNodalFieldReal(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
     return nullptr;
   }
 
-  virtual std::shared_ptr<dumper::Field>
+  virtual std::shared_ptr<dumpers::Field>
   createNodalFieldUInt(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
     return nullptr;
   }
 
-  virtual std::shared_ptr<dumper::Field>
+  virtual std::shared_ptr<dumpers::Field>
   createNodalFieldBool(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag) {
     return nullptr;
   }
 
-  virtual std::shared_ptr<dumper::Field>
+  virtual std::shared_ptr<dumpers::Field>
   createElementalField(__attribute__((unused)) const std::string & field_name,
                        __attribute__((unused)) const std::string & group_name,
                        __attribute__((unused)) bool padding_flag,
@@ -344,6 +343,6 @@ inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
 
 } // namespace akantu
 
-#include "model_inline_impl.cc"
+#include "model_inline_impl.hh"
 
 #endif /* __AKANTU_MODEL_HH__ */

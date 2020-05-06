@@ -11,7 +11,6 @@
  * This container differs from the std::vector from the fact it as 2 dimensions
  * a main dimension and the size stored per entries
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -30,18 +29,18 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_VECTOR_HH__
-#define __AKANTU_VECTOR_HH__
-
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
+#include "aka_types.hh"
 /* -------------------------------------------------------------------------- */
 #include <typeinfo>
 #include <vector>
 /* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_ARRAY_HH__
+#define __AKANTU_ARRAY_HH__
+
 
 namespace akantu {
 
@@ -431,6 +430,5 @@ inline std::ostream & operator<<(std::ostream & stream,
 } // namespace akantu
 
 #include "aka_array_tmpl.hh"
-#include "aka_types.hh"
 
-#endif /* __AKANTU_VECTOR_HH__ */
+#endif /* __AKANTU_ARRAY_HH__ */

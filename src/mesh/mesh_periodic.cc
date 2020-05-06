@@ -1,5 +1,5 @@
 /**
- * @file   mesh_pbc.cc
+ * @file   mesh_periodic.cc
  *
  * @author Nicolas Richart
  *
@@ -7,7 +7,6 @@
  *
  * @brief Implementation of the perdiodicity capabilities in the mesh
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -91,10 +90,11 @@ namespace {
       this->position(direction) = 0.;
     }
 
-    NodeInfo(const NodeInfo & other)
-        : node(other.node), position(other.position),
-          direction_position(other.direction_position) {}
-
+    NodeInfo(const NodeInfo & other) = default;
+    NodeInfo( NodeInfo && other) noexcept = default;
+    NodeInfo & operator=(const NodeInfo & other) = default;
+    NodeInfo & operator=(NodeInfo && other) noexcept = default;
+    
     UInt node{0};
     Vector<Real> position;
     Real direction_position{0.};
@@ -129,7 +129,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     }
     auto && info = NodeInfo(node, pos, direction);
     bbox += info.position;
-    return info;
+    return std::move(info);
   };
 
   std::transform(list_left.begin(), list_left.end(), nodes_left.begin(),

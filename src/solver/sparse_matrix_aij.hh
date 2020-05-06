@@ -9,7 +9,6 @@
  * @brief  AIJ implementation of the SparseMatrix (this the format used by
  * Mumps)
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -99,9 +98,6 @@ public:
   /// multiply the matrix by a scalar
   void mul(Real alpha) override;
 
-  /// add matrix *this += B
-  // virtual void add(const SparseMatrix & matrix, Real alpha);
-
   /// Equivalent of *gemv in blas
   void matVecMul(const SolverVector & x, SolverVector & y, Real alpha = 1.,
                  Real beta = 0.) const override;
@@ -121,7 +117,6 @@ public:
   inline Real & operator()(UInt i, UInt j) override;
 
 protected:
-  /// This is the revert of add B += \alpha * *this;
   void addMeTo(SparseMatrix & B, Real alpha) const override;
 
   inline void addSymmetricValuesToSymmetric(const Vector<Int> & is,
@@ -197,6 +192,6 @@ private:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "sparse_matrix_aij_inline_impl.cc"
+#include "sparse_matrix_aij_inline_impl.hh"
 
 #endif /* __AKANTU_SPARSE_MATRIX_AIJ_HH__ */

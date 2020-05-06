@@ -9,7 +9,6 @@
  *
  * @brief  Generic neighborhood of quadrature points
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -146,6 +145,6 @@ protected:
 
 } // namespace akantu
 
-#include "neighborhood_base_inline_impl.cc"
+#include "neighborhood_base_inline_impl.hh"
 
 #endif /* __AKANTU_NEIGHBORHOOD_BASE_HH__ */

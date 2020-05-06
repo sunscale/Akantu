@@ -8,7 +8,6 @@
  *
  * @brief  File parser interface
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -40,6 +39,7 @@
 
 namespace akantu {
 
+#if !defined(DOXYGEN)
 // clang-format off
 #define AKANTU_SECTION_TYPES                                            \
   (cohesive_inserter)                                                   \
@@ -69,6 +69,7 @@ namespace akantu {
 AKANTU_CLASS_ENUM_DECLARE(ParserType, AKANTU_SECTION_TYPES)
 AKANTU_CLASS_ENUM_OUTPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
 AKANTU_CLASS_ENUM_INPUT_STREAM(ParserType, AKANTU_SECTION_TYPES)
+#endif
 
 /// Defines the possible search contexts/scopes (for parameter search)
 enum ParserParameterSearchCxt {

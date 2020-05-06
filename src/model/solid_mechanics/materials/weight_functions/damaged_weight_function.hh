@@ -10,7 +10,6 @@
  *
  * @brief  Damaged weight function for non local materials
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -73,10 +72,8 @@ private:
   ElementTypeMapReal * damage;
 };
 
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "damaged_weight_function_inline_impl.cc"
-#endif
-
 } // namespace akantu
+
+#include "damaged_weight_function_inline_impl.hh"
 
 #endif /* __AKANTU_DAMAGED_WEIGHT_FUNCTION_HH__ */

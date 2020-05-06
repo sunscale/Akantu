@@ -10,7 +10,6 @@
  * @brief  dirichlet boundary condition that tries
  * to keep the force at a given value
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

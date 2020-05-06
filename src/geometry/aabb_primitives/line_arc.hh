@@ -8,7 +8,6 @@
  *
  * @brief  Segment classe (geometry) for AABB CGAL algos
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -27,15 +26,12 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "mesh_geom_common.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_LINE_ARC_HH__
 #define __AKANTU_LINE_ARC_HH__
-
-#include "aka_common.hh"
-
-#include "mesh_geom_common.hh"
 
 namespace akantu {
 

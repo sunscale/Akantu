@@ -9,7 +9,6 @@
  *
  * @brief  description of field homogenizing field
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -36,7 +35,7 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 
 /* -------------------------------------------------------------------------- */
 
@@ -158,7 +157,7 @@ public:
 template <typename ret_type>
 inline std::unique_ptr<ComputeFunctorInterface>
 HomogenizerProxy::instantiateHomogenizer(ElementTypeMap<UInt> & nb_components) {
-  using Homogenizer = dumper::AvgHomogenizingFunctor<ret_type>;
+  using Homogenizer = dumpers::AvgHomogenizingFunctor<ret_type>;
   return std::make_unique<Homogenizer>(nb_components);
 }
 
@@ -196,7 +195,7 @@ HomogenizerProxy::createHomogenizer(Field & field) {
 // /* --------------------------------------------------------------------------
 // */
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__ */

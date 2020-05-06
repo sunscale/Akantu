@@ -10,7 +10,6 @@
  *
  * @brief  Material isotropic elastic
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -119,7 +118,7 @@ private:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "local_material_damage_inline_impl.cc"
+#include "local_material_damage_inline_impl.hh"
 
 } // namespace akantu
 

@@ -9,7 +9,6 @@
  * @brief  implementation of the templated part of ParameterRegistry class and
  * the derivated ones
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

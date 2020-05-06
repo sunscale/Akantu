@@ -9,7 +9,6 @@
  *
  * @brief  Generic interface for elemental fields
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -38,7 +37,7 @@
 #include "element_type_map_filter.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 template <class _types, template <class> class iterator_type>
@@ -208,11 +207,11 @@ protected:
   ElementTypeMap<UInt> nb_data_per_elem;
 };
 
+} // namespace dumpers
+} // namespace akantu
+
 /* -------------------------------------------------------------------------- */
 #include "dumper_generic_elemental_field_tmpl.hh"
 /* -------------------------------------------------------------------------- */
-
-__END_AKANTU_DUMPER__
-} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_GENERIC_ELEMENTAL_FIELD_HH__ */

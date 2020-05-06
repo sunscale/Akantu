@@ -8,7 +8,6 @@
  *
  * @brief  implem of SparseSolverMumps class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -26,7 +25,6 @@
  * You should  have received  a copy  of the GNU  Lesser General  Public License
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
- * @section DESCRIPTION
  *
  * @subsection Ctrl_param Control parameters
  *

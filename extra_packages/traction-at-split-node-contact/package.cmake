@@ -87,6 +87,6 @@ package_declare_sources(traction_at_split_node_contact
   ntn_contact/ntn_initiation_function.hh
 
   # inlines
-  common/synchronized_array_inline_impl.cc
-  ntn_contact/ntn_base_contact_inline_impl.cc
+  common/synchronized_array_inline_impl.hh
+  ntn_contact/ntn_base_contact_inline_impl.hh
   )

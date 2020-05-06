@@ -9,7 +9,6 @@
  *
  * @brief  interface for integrator classes
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -125,7 +124,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "integrator_inline_impl.cc"
+//#include "integrator_inline_impl.hh"
 
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,

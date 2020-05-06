@@ -9,7 +9,6 @@
  *
  * @brief  lagrangian shape functions class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -168,6 +167,6 @@ protected:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "shape_lagrange_inline_impl.cc"
+#include "shape_lagrange_inline_impl.hh"
 
 #endif /* __AKANTU_SHAPE_LAGRANGE_HH__ */

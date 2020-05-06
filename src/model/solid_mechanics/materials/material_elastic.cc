@@ -11,7 +11,6 @@
  *
  * @brief  Specialization of the material class for the elastic material
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -51,7 +50,7 @@ MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 MaterialElastic<dim>::MaterialElastic(SolidMechanicsModel & model,
-                                      __attribute__((unused)) UInt a_dim,
+                                      UInt /*a_dim*/,
                                       const Mesh & mesh, FEEngine & fe_engine,
                                       const ID & id)
     : Parent(model, dim, mesh, fe_engine, id), was_stiffness_assembled(false) {

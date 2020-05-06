@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 MAINTAINER Nicolas Richart <nicolas.richart@epfl.ch>
 
 ENV TZ=Europe/Zurich
@@ -16,6 +16,7 @@ RUN apt-get -qq update && apt-get -qq -y install \
     swig3.0 gmsh curl flake8 \
     git clang-format xsltproc jq \
     php-cli php-curl php-xml \
+    libcgal-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # apt-get on one line due to https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run

@@ -10,7 +10,6 @@
  * @brief  test for non-local damage materials on a 2D plate with a section gap
  * the sample should break at the notch
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

@@ -1,5 +1,5 @@
 /**
- * @file   solver_vector.cc
+ * @file   solver_vector_default.cc
  *
  * @author Nicolas Richart
  *
@@ -7,7 +7,6 @@
  *
  * @brief A Documented file.
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

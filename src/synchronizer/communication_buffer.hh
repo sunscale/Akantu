@@ -9,7 +9,6 @@
  *
  * @brief  Buffer for packing and unpacking data
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -168,17 +167,14 @@ private:
   Array<char> buffer;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "communication_buffer_inline_impl.cc"
-#endif
-
 using CommunicationBuffer = CommunicationBufferTemplated<true>;
 using DynamicCommunicationBuffer = CommunicationBufferTemplated<false>;
 
 } // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "communication_buffer_inline_impl.hh"
 
 #endif /* __AKANTU_COMMUNICATION_BUFFER_HH__ */

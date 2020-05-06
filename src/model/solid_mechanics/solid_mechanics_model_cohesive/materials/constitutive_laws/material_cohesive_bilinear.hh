@@ -8,7 +8,6 @@
  *
  * @brief  Bilinear cohesive constitutive law
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -98,7 +97,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "material_cohesive_elastic_inline_impl.cc"
+//#include "material_cohesive_elastic_inline_impl.hh"
 
 } // namespace akantu
 

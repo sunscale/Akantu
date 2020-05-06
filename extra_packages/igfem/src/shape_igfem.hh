@@ -6,7 +6,6 @@
  *
  * @brief  shape functions for interface-enriched generalized FEM
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -20,7 +19,7 @@
 #ifndef __AKANTU_SHAPE_IGFEM_HH__
 #define __AKANTU_SHAPE_IGFEM_HH__
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <> class ShapeLagrange<_ek_igfem> : public ShapeFunctions {
@@ -183,12 +182,12 @@ protected:
   ElementTypeMapArray<Real, InterpolationType> shapes_at_enrichments;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "shape_igfem_inline_impl.cc"
+#include "shape_igfem_inline_impl.hh"
 /// standard output stream operator
 // template <class ShapeFunction>
 // inline std::ostream & operator <<(std::ostream & stream, const

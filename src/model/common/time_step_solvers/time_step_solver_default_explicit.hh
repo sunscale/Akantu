@@ -8,7 +8,6 @@
  *
  * @brief  Default solver for explicit resolution
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -63,9 +62,6 @@ private:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#include "time_step_solver_default_explicit_inline_impl.cc"
-
 /// standard output stream operator
 inline std::ostream & operator<<(std::ostream & stream,
                                  const TimeStepSolverDefaultExplicit & _this) {
@@ -74,5 +70,8 @@ inline std::ostream & operator<<(std::ostream & stream,
 }
 
 } // namespace akantu
+
+
+//#include "time_step_solver_default_explicit_inline_impl.hh"
 
 #endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH__ */

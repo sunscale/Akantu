@@ -13,7 +13,6 @@
  * as well as
  * [] Manual of DIANA FEA Theory manual v.10.2 Section 37.6
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

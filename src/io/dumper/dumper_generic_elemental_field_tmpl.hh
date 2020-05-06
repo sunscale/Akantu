@@ -9,7 +9,6 @@
  *
  * @brief  Implementation of the template functions of the ElementalField
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -28,37 +27,45 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "dumper_generic_elemental_field.hh"
 /* -------------------------------------------------------------------------- */
 
-template <class types, template <class> class iterator>
-void GenericElementalField<types, iterator>::checkHomogeneity() {
-  auto types = field.elementTypes(spatial_dimension, ghost_type, element_kind);
-  auto tit = types.begin();
-  auto end = types.end();
+namespace akantu {
+namespace dumpers {
+  /* ------------------------------------------------------------------------ */
+  template <class types, template <class> class iterator>
+  void GenericElementalField<types, iterator>::checkHomogeneity() {
+    auto types =
+        field.elementTypes(spatial_dimension, ghost_type, element_kind);
+    auto tit = types.begin();
+    auto end = types.end();
 
-  this->nb_total_element = 0;
-  UInt nb_comp = 0;
+    this->nb_total_element = 0;
+    UInt nb_comp = 0;
 
-  bool homogen = true;
-  if (tit != end) {
-    nb_comp = this->field(*tit, ghost_type).getNbComponent();
-    for (; tit != end; ++tit) {
-      const auto & vect = this->field(*tit, ghost_type);
-      auto nb_element = vect.size();
-      auto nb_comp_cur = vect.getNbComponent();
-      if (homogen && nb_comp != nb_comp_cur)
-        homogen = false;
-      this->nb_total_element += nb_element;
+    bool homogen = true;
+    if (tit != end) {
+      nb_comp = this->field(*tit, ghost_type).getNbComponent();
+      for (; tit != end; ++tit) {
+        const auto & vect = this->field(*tit, ghost_type);
+        auto nb_element = vect.size();
+        auto nb_comp_cur = vect.getNbComponent();
+        if (homogen && nb_comp != nb_comp_cur)
+          homogen = false;
+        this->nb_total_element += nb_element;
 
-      //      this->nb_data_per_elem(*tit,this->ghost_type) = nb_comp_cur;
+        //      this->nb_data_per_elem(*tit,this->ghost_type) = nb_comp_cur;
+      }
+
+      if (!homogen)
+        nb_comp = 0;
     }
 
-    if (!homogen)
-      nb_comp = 0;
+    this->homogeneous = homogen;
   }
 
-  this->homogeneous = homogen;
-}
-
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
+} // namespace dumpers
+} // namespace akantu

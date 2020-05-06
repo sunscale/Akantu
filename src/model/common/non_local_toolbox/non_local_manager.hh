@@ -9,7 +9,6 @@
  *
  * @brief  Classes that manages all the non-local neighborhoods
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -280,6 +279,6 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "non_local_manager_inline_impl.cc"
+#include "non_local_manager_inline_impl.hh"
 
 #endif /* __AKANTU_NON_LOCAL_MANAGER_HH__ */

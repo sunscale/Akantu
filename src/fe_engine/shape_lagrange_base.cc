@@ -8,7 +8,6 @@
  *
  * @brief  common par for the shape lagrange
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -59,6 +58,7 @@ namespace shape_lagrange {
       }
     };
 
+#if !defined(DOXYGEN)
 #define AKANTU_COMPUTE_SHAPES_KIND(kind)                                       \
   template <> struct Helper<kind> {                                            \
     template <class S>                                                         \
@@ -76,6 +76,7 @@ namespace shape_lagrange {
 
   } // namespace details
 } // namespace shape_lagrange
+#endif
 
 /* -------------------------------------------------------------------------- */
 void ShapeLagrangeBase::computeShapesOnIntegrationPoints(

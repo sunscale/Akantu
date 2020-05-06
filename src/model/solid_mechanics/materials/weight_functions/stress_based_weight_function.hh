@@ -9,7 +9,6 @@
  *
  * @brief  Removed damaged weight function for non local materials
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -92,10 +91,8 @@ private:
   ElementTypeMapReal * characteristic_size;
 };
 
-#if defined(AKANTU_INCLUDE_INLINE_IMPL)
-#include "stress_based_weight_function_inline_impl.cc"
-#endif
-
 } // namespace akantu
+
+#include "stress_based_weight_function_inline_impl.hh"
 
 #endif /* __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__ */

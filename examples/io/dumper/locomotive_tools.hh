@@ -8,7 +8,6 @@
  *
  * @brief  interface for the common tools
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2012, 2014,  2015 EPFL  (Ecole Polytechnique  Fédérale de
  * Lausanne)  Laboratory (LSMS  -  Laboratoire de  Simulation  en Mécanique  des

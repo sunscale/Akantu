@@ -6,7 +6,6 @@
  *
  * @brief  Specializaton of material class for the igfem elastic material
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -16,7 +15,7 @@
 #include "material_igfem_elastic.hh"
 #include "material_elastic.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -239,4 +238,4 @@ void MaterialIGFEMElastic<spatial_dimension>::onElementsAdded(
 
 INSTANTIATE_MATERIAL(MaterialIGFEMElastic);
 
-__END_AKANTU__
+} // namespace akantu

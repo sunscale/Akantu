@@ -6,7 +6,6 @@
  *
  * @brief  Implementation of IGFEM enrichment
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -15,7 +14,7 @@
 /* -------------------------------------------------------------------------- */
 #include "igfem_enrichment.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 IGFEMEnrichment::IGFEMEnrichment(Mesh & mesh) : intersector_sphere(mesh) {}
@@ -98,4 +97,4 @@ void IGFEMEnrichment::moveInterface(Real new_position, ID domain) {
   this->update(domain);
 }
 
-__END_AKANTU__
+} // namespace akantu

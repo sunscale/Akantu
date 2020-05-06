@@ -5,7 +5,6 @@
  *
  * @brief  Implementation of igfem material iterative stiffness reduction
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -29,7 +28,7 @@
 #include "material_igfem_iterative_stiffness_reduction.hh"
 #include <math.h>
 
-__BEGIN_AKANTU__
+namespace akantu {
 template <UInt spatial_dimension>
 
 /* -------------------------------------------------------------------------- */
@@ -286,4 +285,4 @@ void MaterialIGFEMIterativeStiffnessReduction<
 
 INSTANTIATE_MATERIAL(MaterialIGFEMIterativeStiffnessReduction);
 
-__END_AKANTU__
+} // namespace akantu

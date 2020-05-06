@@ -15,7 +15,6 @@
  *
  * @brief  Implementation of the SolidMechanicsModel class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -66,6 +65,8 @@ namespace akantu {
  * @param dim spatial  dimension of the problem, if dim =  0 (default value) the
  * dimension of the problem is assumed to be the on of the mesh
  * @param id an id to identify the model
+ * @param memory_id the id of the memory
+ * @param model_type this is an internal parameter for inheritance purposes
  */
 SolidMechanicsModel::SolidMechanicsModel(Mesh & mesh, UInt dim, const ID & id,
                                          const MemoryID & memory_id,
@@ -122,9 +123,11 @@ void SolidMechanicsModel::setTimeStep(Real time_step, const ID & solver_id) {
  * model, the internal  vectors, set them to 0, and  depending on the parameters
  * it also initialize the explicit or implicit solver.
  *
- * @param material_file the  file containing the materials to  use
- * @param method the analysis method wanted.  See the akantu::AnalysisMethod for
- * the different possibilities
+ * @param options
+ * \parblock
+ * contains the different options to initialize the model
+ * \li \c analysis_method specify the type of solver to use
+ * \endparblock
  */
 void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
   material_index.initialize(mesh, _element_kind = _ek_not_defined,
@@ -366,8 +369,8 @@ void SolidMechanicsModel::corrector() { ++displacement_release; }
 
 /* -------------------------------------------------------------------------- */
 /**
- * This function computes the internal forces as F_{int} = \int_{\Omega} N
- * \sigma d\Omega@f$
+ * This function computes the internal forces as \f$F_{int} = \int_{\Omega} N
+ * \sigma d\Omega@\f$
  */
 void SolidMechanicsModel::assembleInternalForces() {
   AKANTU_DEBUG_IN();

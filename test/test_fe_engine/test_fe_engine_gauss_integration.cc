@@ -8,7 +8,6 @@
  *
  * @brief  test integration on elements, this test consider that mesh is a cube
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
