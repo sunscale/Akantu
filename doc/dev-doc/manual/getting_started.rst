@@ -28,12 +28,12 @@ All the Akantu options are documented in Appendix app:package-dependencies.
 Writing a ``main`` function
 ---------------------------
 
-Akantu first needs to be initialized.  The memory management
-included in the core library handles the correct allocation and
-de-allocation of vectors, structures and/or objects. Moreover, in
-parallel computations, the initialization procedure performs the
-communication setup. This is achieved by a pair of functions
-(``initialize`` and ``finalize``) that are used as follows::
+Akantu first needs to be initialized. The memory management included in the core
+library handles the correct allocation and de-allocation of vectors, structures
+and/or objects. Moreover, in parallel computations, the initialization procedure
+performs the communication setup. This is achieved by a pair of functions
+(:cpp:func:`initialize <akantu::initialize>` and :cpp:func:`finalize
+<akantu::finalize>`) that are used as follows::
 
     #include "aka_common.hh"
     #include "..."
@@ -48,20 +48,21 @@ communication setup. This is achieved by a pair of functions
 	finalize();
     }
 
-The ``initialize`` function takes the text inpute file and the program
-parameters which can be parsed by Akantu in due form (see sect:parser). 
-Obviously it is necessary to include all files needed in main. In this manual
-all provided code implies the usage of ``akantu`` as namespace.
+The :cpp:func:`initialize <akantu::initialize>` function takes the text inpute
+file and the program parameters which can be parsed by Akantu in due form (see
+sect:parser). Obviously it is necessary to include all files needed in main. In
+this manual all provided code implies the usage of ``akantu`` as
+namespace.
 
 Creating and Loading a Mesh
 ---------------------------
 
-In its current state, Akantu supports three types of meshes: Gmsh,
-Abaqus and Diana. Once a ``Mesh`` object is created with a given
-spatial dimension, it can be filled by reading a mesh input file. The
-method ``read`` of the class ``Mesh`` infers the mesh type from the
-file extension. If a non-standard file extension is used, the mesh
-type has to be specified. ::
+In its current state, Akantu supports three types of meshes: Gmsh, Abaqus and
+Diana. Once a :cpp:class:`akantu::Mesh` object is created with a given spatial
+dimension, it can be filled by reading a mesh input file. The method
+:cpp:func:`read <akantu::Mesh::read>` of the class :cpp:class:`Mesh
+<akantu::Mesh>` infers the mesh type from the file extension. If a non-standard
+file extension is used, the mesh type has to be specified. ::
 
     UInt spatial_dimension = 2;
     Mesh mesh(spatial_dimension);
@@ -78,11 +79,11 @@ type has to be specified. ::
     mesh.read("my_diana_mesh.dat");
     mesh.read("my_diana_mesh", _miot_diana);
 
-The Gmsh reader adds the geometrical and physical tags as mesh data.
-The physical values are stored as a ``UInt`` data called ``tag_0``, if
-a string name is provided it is stored as a ``std::string`` data named
-``physical_names``. The geometrical tag is stored as a ``UInt`` data
-named ``tag_1``.
+The Gmsh reader adds the geometrical and physical tags as mesh data. The
+physical values are stored as a :cpp:type:`UInt <akantu::UInt>` data called
+``tag_0``, if a string name is provided it is stored as a ``std::string`` data
+named ``physical_names``. The geometrical tag is stored as a :cpp:type:`UInt
+<akantu::UInt>` data named ``tag_1``.
 
 The Abaqus reader stores the ``ELSET`` in ElementGroups and the ``NSET``
 in NodeGroups. The material assignment can be retrieved from the
@@ -92,11 +93,11 @@ Using Arrays
 ------------
 
 Data in Akantu can be stored in data containers implemented by the
-``Array`` class. In its most basic usage, the ``Array`` class
-implemented in \akantu is similar to the ``vector`` class of the
-Standard Template Library (STL) for C++. A simple ``Array`` containing
-a sequence of ``nb_element`` values (of a given type) can be generated
-with::
+:cpp:class:`akantu::Array` class. In its most basic usage, the :cpp:class:`Array
+<akantu::Array>` class implemented in \akantu is similar to the ``std::vector``
+class of the Standard Template Library (STL) for C++. A simple :cpp:class:`Array
+<akantu::Array>` containing a sequence of ``nb_element`` values (of a given
+type) can be generated with::
 
   Array<type> example_array(nb_element);
 
@@ -106,11 +107,11 @@ typing::
 
   auto & val = example_array(index);
 
-``Arrays`` can also contain tuples of values for each index. In that
-case, the number of components per tuple must be specified at the
-``Array`` creation. For example, if we want to create an ``Array`` to
-store the coordinates (sequences of three values) of ten nodes, the
-appropriate code is the following::
+``Arrays`` can also contain tuples of values for each index. In that case, the
+number of components per tuple must be specified at the :cpp:class:`Array
+<akantu::Array>` creation. For example, if we want to create an
+:cpp:class:`Array <akantu::Array>` to store the coordinates (sequences of three
+values) of ten nodes, the appropriate code is the following::
 
   UInt nb_nodes = 10;
   UInt spatial_dimension = 3;
@@ -121,95 +122,76 @@ In this case the :math:`x` position of the eighth node number will be given
 by ``position(7, 0)`` (in C++, numbering starts at 0 and not 1). If
 the number of components for the sequences is not specified, the
 default value of 1 is used. Here is a list of some basic operations
-that can be performed on ``Array``:
+that can be performed on :cpp:class:`Array <akantu::Array>`:
 
-  - ``resize(size)`` change the size of the ``Array``.
-  - ``clear()`` set all entries of the ``Array`` to zero.
-  - ``set(t)`` set all entries of the ``Array`` to ``t``.
-  - ``copy(const Array<T> & other)`` copy another ``Array`` into the
-    current one. The two ``Array`` should have the same number of
-    components.
-  - ``push_back(tuple)`` append a tuple with the correct number of
-    components at the end of the ``Array``.
+  - ``resize(size)`` change the size of the :cpp:class:`Array <akantu::Array>`.
+  - ``clear()`` set all entries of the :cpp:class:`Array <akantu::Array>` to
+    zero.
+  - ``set(t)`` set all entries of the :cpp:class:`Array <akantu::Array>` to
+    ``t``.
+  - ``copy(const Array<T> & other)`` copy another :cpp:class:`Array
+    <akantu::Array>` into the current one. The two :cpp:class:`Array
+    <akantu::Array>` should have the same number of components.
+  - ``push_back(tuple)`` append a tuple with the correct number of components at
+    the end of the :cpp:class:`Array <akantu::Array>`.
   - ``erase(i)`` erase the value at the i-th position.
-  - ``find(value)`` search ``value`` in the current ``Array``. Return
-    position index of the first occurence or -1 if not found.
+  - ``find(value)`` search ``value`` in the current :cpp:class:`Array
+    <akantu::Array>`. Return position index of the first occurence or -1 if not
+    found.
   - ``storage()`` Return the address of the allocated memory of the
-    ``Array``.
+    :cpp:class:`Array <akantu::Array>`.
 
-``Array`` iterators
+Array iterators
 -------------------
 
-It is very common in \akantu to loop over arrays to perform a specific
-treatment. This ranges from geometric calculation on nodal quantities
-to tensor algebra (in constitutive laws for example).
-The ``Array`` object has the possibility to request iterators
-in order to make the writing of loops easier and enhance readability.
-For instance, a loop over the nodal coordinates can be performed like::
+It is very common in Akantu to loop over arrays to perform a specific treatment.
+This ranges from geometric calculation on nodal quantities to tensor algebra (in
+constitutive laws for example). The :cpp:class:`Array <akantu::Array>` object
+has the possibility to request iterators in order to make the writing of loops
+easier and enhance readability. For instance, a loop over the nodal coordinates
+can be performed like::
 
   // accessing the nodal coordinates Array
   // with spatial_dimension components
   const auto & nodes = mesh.getNodes();
 
-  //creating the iterators
-  auto it  = nodes.begin(spatial_dimension);
-  auto end = nodes.end(spatial_dimension);
-
-  for (; it != end; ++it){
-    const auto & coords = (*it);
+  for (const auto & coords : make_view(nodes, spatial_dimension)) {
     // do what you need ....
   }
 
 In that example, each ``coords`` is a ``Vector<Real>`` containing
 geometrical array of size ``spatial_dimension`` and the iteration is
-conveniently performed by the ``Array`` iterator.
+conveniently performed by the :cpp:class:`Array <akantu::Array>` iterator.
 
-With the switch to ``c++14`` this can be also written as::
+The :cpp:class:`Array <akantu::Array>` object is intensively used to store
+second order tensor values. In that case, it should be specified that the
+returned object type is a matrix when constructing the iterator. This is done
+when calling the :cpp:func:`make_view <akantu::make_view>`. For instance,
+assuming that we have a :cpp:class:`Array <akantu::Array>` storing stresses, we
+can loop over the stored tensors by::
 
-  // accessing the nodal coordinates Array
-  // with spatial_dimension components
-  const auto & nodes = mesh.getNodes();
-
-  for (const auto & coords : make_view(nodes, spatial_dimension) {
-    // do what you need ....
-  }
-
-
-The ``Array`` object is intensively used to store second order
-tensor values.  In that case, it should be specified that the returned
-object type is a matrix when constructing the iterator. This is done
-when calling the ``begin`` function. For instance, assuming that we
-have a ``Array`` storing stresses, we can loop over the stored
-tensors by::
-
-   // creating the iterators
-   auto it = stresses.begin(spatial_dimension, spatial_dimension);
-   auto end = stresses.end(spatial_dimension, spatial_dimension);
-   
-   for (; it != end; ++it){
-     Matrix<Real> & stress = (*it);
-     // do what you need ....
+   for (const auto & stress :
+     make_view(stresses, spatial_dimension, spatial_dimension)) {
+     // stress is of type `const Matrix<Real>&`
    }
 
-In that last example, the ``Matrix`` objects are
-``spatial_dimension`` :math:`\times` ``spatial_dimension`` matrices.
-The light objects ``Matrix`` and ``Vector`` can be used and
-combined to do most common linear algebra. If the number of component
-is 1, it is possible to use a ``scalar_iterator`` rather than the
-vector/matrix one.
+In that last example, the :cpp:class:`Matrix <akantu::Matrix>` objects are
+``spatial_dimension`` :math:`\times` ``spatial_dimension`` matrices. The light
+objects :cpp:class:`Matrix <akantu::Matrix>` and :cpp:class:`Vector
+<akantu::Vector>` can be used and combined to do most common linear algebra. If
+the number of component is 1, it is possible to use :cpp:func:`make_view
+<akantu::make_view>` to this effect.
 
 
-In general, a mesh consists of several kinds of elements.
-Consequently, the amount of data to be stored can differ for each
-element type.  The straightforward example is the connectivity array,
-namely the sequences of nodes belonging to each element (linear
-triangular elements have fewer nodes than, say, rectangular quadratic
-elements etc.).  A particular data structure called
-``ElementTypeMapArray`` is provided to easily manage this kind of
-data.  It consists of a group of ``Arrays``, each associated to an
-element type.  The following code can retrieve the
-``ElementTypeMapArray`` which stores the connectivity arrays for a
-mesh::
+In general, a mesh consists of several kinds of elements. Consequently, the
+amount of data to be stored can differ for each element type. The
+straightforward example is the connectivity array, namely the sequences of nodes
+belonging to each element (linear triangular elements have fewer nodes than,
+say, rectangular quadratic elements etc.). A particular data structure called
+:cpp:class:`ElementTypeMapArray <akantu::ElementTypeMapArray>` is provided to
+easily manage this kind of data. It consists of a group of ``Arrays``, each
+associated to an element type. The following code can retrieve the
+``ElementTypeMapArray`` which stores the connectivity arrays for a mesh::
 
   const ElementTypeMapArray<UInt> & connectivities =
     mesh.getConnectivities();
@@ -225,10 +207,11 @@ of code.
 Vector & Matrix
 ```````````````
 
-The ``Array`` iterators as presented in the previous section can be
-shaped as ``Vector`` or ``Matrix``. This objects represent 1st and 2nd
-order tensors. As such they come with some functionalities that we
-will present a bit more into detail in this here.
+The :cpp:class:`Array <akantu::Array>` iterators as presented in the previous
+section can be shaped as :cpp:class:`Vector <akantu::Vector>` or
+:cpp:class:`Matrix <akantu::Matrix>`. This objects represent 1st and 2nd order
+tensors. As such they come with some functionalities that we will present a bit
+more into detail in this here.
 
 
 ``Vector<T>``
@@ -256,14 +239,13 @@ will present a bit more into detail in this here.
   - ``v += s``, ``v -= s``, ``v *= s``, ``v /= s`` those are
     element-wise operators that sum, substract, multiply or divide all the
     component of ``v`` by the scalar ``s``
-  - ``v += x``, ``v -= x`` sums or substracts the vector ``x``
-    to/from ``v``
-  - ``v.mul(A, x, alpha)`` stores the result of :math:`\alpha \boldsymbol{A} \vec{x}` in ``v``,
-    :math:`\alpha` is equal to 1 by default
-  - ``v.solve(A, b)`` stores the result of the resolution of the system :math:`\boldsymbol{A} \vec{x} =
-    \vec{b}` in ``v``
-  - ``v.crossProduct(v1, v2)`` computes the cross product of ``v1`` and ``v2`` and
-    stores the result in ``v``
+  - ``v += x``, ``v -= x`` sums or substracts the vector ``x`` to/from ``v``
+  - ``v.mul(A, x, alpha)`` stores the result of :math:`\alpha \boldsymbol{A}
+  \vec{x}` in ``v``, :math:`\alpha` is equal to 1 by default
+  - ``v.solve(A, b)`` stores the result of the resolution of the system
+    :math:`\boldsymbol{A} \vec{x} = \vec{b}` in ``v``
+  - ``v.crossProduct(v1, v2)`` computes the cross product of ``v1`` and ``v2``
+    and stores the result in ``v``
 
 ``Matrix<T>``
 '''''''''''''
@@ -273,11 +255,12 @@ will present a bit more into detail in this here.
   - ``A(i, j)`` gives the component :math:`A_{ij}` of the matrix ``A``
   - ``A(i)`` gives the :math:`i^{th}` column of the matrix as a ``Vector``
   - ``A[k]`` gives the :math:`k^{th}` component of the matrix, matrices are
-    stored in a column major way, which means that to access :math:`A_{ij}`, :math:`k = i +
-    j M`
+    stored in a column major way, which means that to access :math:`A_{ij}`,
+    :math:`k = i + j M`
   - ``A.rows()`` gives the number of rows of ``A`` (:math:`M`)
   - ``A.cols()`` gives the number of columns of ``A`` (:math:`N`)
-  - ``A.size()`` gives the number of component in the matrix (:math:`M \times N`)
+  - ``A.size()`` gives the number of component in the matrix (:math:`M \times
+    N`)
 
 - Level 1: (results are scalars)
 
@@ -334,8 +317,8 @@ will present a bit more into detail in this here.
     |          |          |\mat{B}^t`    |
     +----------+----------+--------------+
 
-  - ``A.eigs(d, V)`` this method computes the eigenvalues and
-    eigenvectors of ``A`` and store the results in ``d`` and ``V`` such
-    that :math:`d(i) = \lambda_i` and :math:`V(i) = \vec{v_i}` with
-    :math:`\mat{A}\vec{v_i} = \lambda_i\vec{v_i}` and :math:`\lambda_1 > ... > \lambda_i >
-    ... > \lambda_N`
+  - ``A.eigs(d, V)`` this method computes the eigenvalues and eigenvectors of
+    ``A`` and store the results in ``d`` and ``V`` such that :math:`d(i) =
+    \lambda_i` and :math:`V(i) = \vec{v_i}` with :math:`\mat{A}\vec{v_i} =
+    \lambda_i\vec{v_i}` and :math:`\lambda_1 > ... > \lambda_i > ... >
+    \lambda_N`

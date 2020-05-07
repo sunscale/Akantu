@@ -3,12 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Akantu's documentation!
-==================================
+Akantu: a meh FEM software ¯\\_(ツ)_/¯
+======================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Manual
+
+   ./manual/getting_started.rst
+   ./manual/fe_engine.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   ./doxygen/api.rst
 
 
 Indices and tables
