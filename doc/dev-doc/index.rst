@@ -17,7 +17,7 @@ Akantu: a meh FEM software ¯\\_(ツ)_/¯
    :maxdepth: 2
    :caption: API Reference
 
-   ./doxygen/api.rst
+   ./reference.rst
 
 
 Indices and tables

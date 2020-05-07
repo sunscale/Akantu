@@ -1,4 +1,0 @@
-Doxygen API Reference
-=====================
-
-.. doxygenindex::
