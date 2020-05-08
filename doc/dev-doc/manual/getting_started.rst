@@ -50,7 +50,7 @@ Creating and Loading a Mesh
 In its current state, Akantu supports three types of meshes: Gmsh, Abaqus and
 Diana. Once a :cpp:class:`akantu::Mesh` object is created with a given spatial
 dimension, it can be filled by reading a mesh input file. The method
-:cpp:func:`read <akantu::Mesh::read>` of the class :cpp:class:`Mesh
+:cpp:member:`read <akantu::Mesh::read>` of the class :cpp:class:`Mesh
 <akantu::Mesh>` infers the mesh type from the file extension. If a non-standard
 file extension is used, the mesh type has to be specified. ::
 
