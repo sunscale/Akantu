@@ -50,8 +50,9 @@ package_set_package_system_dependency(documentation_developer_manual deb-src
   python3-sphinx python3-breathe doxygen graphviz)
 
 package_declare_extra_files_to_package(documentation_developer_manual
-  PROJECT doc/dev-doc/doxygen/akantu.dox.in
-          doc/dev-doc/sphinx/conf.py.in
-          doc/dev-doc/sphinx/index.rst
+  PROJECT doc/dev-doc/akantu.dox.in
+          doc/dev-doc/conf.py.in
+          doc/dev-doc/index.rst
+          doc/dev-doc/reference.rst
           cmake/Modules/FindSphinx.cmake
   )
