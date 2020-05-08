@@ -164,10 +164,13 @@ set(_sphinx_command ${SPHINX_BUILD_EXECUTABLE}
   "${SPHINX_HTML_DIR}"
   )
 
+file(GLOB_RECURSE _SPHINX_SRCS
+  "*.rst")
+
 add_custom_command(
   OUTPUT ${SPHINX_OUTPUT}
   COMMAND ${_sphinx_command}
-  DEPENDS doxygen-doc ${SPHINX_INPUT}
+  DEPENDS doxygen-doc ${SPHINX_INPUT} ${_SPHINX_SRCS}
   COMMENT "Building HTML documentation with Sphinx in ${SPHINX_HTML_DIR}"
   )
 
