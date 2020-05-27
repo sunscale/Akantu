@@ -11,7 +11,7 @@ using namespace akantu;
 TEST(TestFiniteDeformation, NotUnit) {
   getStaticParser().parse("material_finite_deformation.dat");
 
-  constexpr double pi = std::atan(1) * 4;
+  const double pi = std::atan(1) * 4;
   constexpr int dim = 3;
 
   Mesh mesh(dim);

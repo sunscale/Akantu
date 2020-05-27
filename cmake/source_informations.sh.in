@@ -6,12 +6,16 @@ SOURCE_DIR=@PROJECT_SOURCE_DIR@
 OUTPUT_FILE=@OUTPUT_FILE@
 UUENCODE=@UUENCODE_EXECUTABLE@
 
+set -x
+
 GIT_VERSION=$(${GIT} describe --always --dirty)
 GIT_BRANCH=$(${GIT} rev-parse --abbrev-ref --symbolic-full-name @)
 GIT_REMOTE_BRANCH=$(${GIT} rev-parse --abbrev-ref --symbolic-full-name @{upstream})
 GIT_REMOTE=$(git config branch.$GIT_BRANCH.remote)
 GIT_REMOTE_URL=$(${GIT} config remote.$GIT_REMOTE.url)
-GIT_DIFF=$(${GIT} diff HEAD | sed '1h;1!H;$!d;x;s/\n/\\n/g; s/'\''/\'\''/g; s/"/\\"/g')
+GIT_DIFF=$(${GIT} diff @ | sed '1h;1!H;$!d;x;s/\n/\\n/g; s/'\''/\'\''/g; s/"/\\"/g')
+
+set +x
 
 cat <<EOF > ${OUTPUT_FILE}
 #include <string>

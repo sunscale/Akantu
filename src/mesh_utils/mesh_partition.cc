@@ -149,8 +149,8 @@ void MeshPartition::buildDualGraph(
             continue;
 #endif
 
-          adjacent_elements[linearized(element)].push_back(
-              linearized(adjacent_element));
+          adjacent_elements[this->linearized(element)].push_back(
+              this->linearized(adjacent_element));
         }
       },
       _spatial_dimension = mesh.getSpatialDimension(),

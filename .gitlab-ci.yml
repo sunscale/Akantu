@@ -1,15 +1,48 @@
 stages:
   - configure
   - build
-  - build_tests
+  - check-warnings
   - test
+  - deploy
+
+.docker_build:
+  image: 'docker:19.03.11'
+  stage: .pre
+  services:
+    - docker:19.03.11-dind
+  variables:
+    # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - cd test/ci/${IMAGE_NAME}/
+    - docker build -t registry.gitlab.com/akantu/akantu:${IMAGE_NAME} .
+    - docker push registry.gitlab.com/akantu/akantu:${IMAGE_NAME}
+
+docker build:debian-testing:
+  variables:
+    IMAGE_NAME: debian-testing
+  extends: .docker_build
+  rules:
+    - changes:
+        - test/ci/debian-testing/Dockerfile
+
+docker build:ubuntu-lts:
+  variables:
+    IMAGE_NAME: ubuntu-lts
+  extends: .docker_build
+  rules:
+    - changes:
+        - test/ci/ubuntu-lts/Dockerfile
 
 .configure:
   stage: configure
   except:
     - tags
   variables:
-    BLA_VENDOR: 'OpenBLAS'
+    BLA_VENDOR: 'Generic'
   script:
     - cmake -E make_directory build
     - cd build
@@ -24,20 +57,38 @@ stages:
             -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE
             -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
             -DAKANTU_TESTS:BOOL=TRUE
-            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo
-            -DAKANTU_RUN_IN_DOCKER:BOOL=TRUE ..
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
+  artifacts:
+    when: on_success
+    paths:
+      - build
+    expire_in: 2h
 
 .build:
   stage: build
+  before_script:
+    - ccache --zero-stats || true
   script:
-    - cmake --build build/
+    - cmake --build build/src > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
+    - cmake --build build/python > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
+    - cmake --build build/test/ > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
+    - cmake --build build/examples > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
+  after_script:
+    - ccache --show-stats
+  artifacts:
+    when: on_success
+    paths:
+      - build
+    expire_in: 2h
 
 .tests:
   stage: test
   variables:
     OMPI_MCA_plm: 'isolated'
     OMPI_MCA_btl: 'tcp,self'
-
+    OMPI_MCA_rmaps_base_oversubscribe: 1
+    OMPI_ALLOW_RUN_AS_ROOT: 1
+    OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   script:
     - cd build
     - ctest -T test --no-compress-output --timeout 300
@@ -55,30 +106,183 @@ stages:
       junit:
         - build/juint.xml
 
-.image_debian_testing_gcc:
-  cache:
-    key: debian_testing_gcc_${CI_COMMIT_SHORT_SHA}
+.analyse_build:
+  stage: check-warnings
+  script:
+    - if [[ $(cat ${output}-err.log | grep warning -i) ]]; then
+    -    cat ${output}-err.log;
+    -    exit 1;
+    - fi
+  allow_failure: true
+  artifacts:
+    when: on_failure
     paths:
-      - build
+      - "$output-err.log"
+
+# ------------------------------------------------------------------------------
+.cache_build:
+  variables:
+    CCACHE_BASEDIRE: ${CI_PROJECT_DIR}/build
+    CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
+  cache:
+    key: ${IMAGE_NAME}_${CC}_${CI_COMMIT_REF_SLUG}
+    policy: pull-push
+    paths:
+      - .ccache/
       - third-party/google-test
       - third-party/pybind11
+
+# ------------------------------------------------------------------------------
+.image_debian_testing:
+  variables:
+    IMAGE_NAME: debian_testing
   image: registry.gitlab.com/akantu/akantu:debian-testing
 
+.image_ubuntu_lts:
+  variables:
+    IMAGE_NAME: ubuntu_lts
+  image: registry.gitlab.com/akantu/akantu:ubuntu-lts
+
+# ------------------------------------------------------------------------------
+.compiler_gcc:
+  variables:
+    CC: /usr/lib/ccache/gcc
+    CXX: /usr/lib/ccache/g++
+    FC: gfortran
+
+.compiler_clang:
+  variables:
+    CC: /usr/lib/ccache/clang
+    CXX: /usr/lib/ccache/clang++
+    FC: gfortran
+
+# ------------------------------------------------------------------------------
+.debian_testing_gcc:
+  variables:
+    output: debian_testing_gcc
+  extends:
+    - .compiler_gcc
+    - .image_debian_testing
+    - .cache_build
+
+.debian_testing_clang:
+  variables:
+    output: debian_testing_clang
+  extends:
+    - .compiler_clang
+    - .image_debian_testing
+    - .cache_build
+
+.ubuntu_lts_gcc:
+  variables:
+    output: ubuntu_lts_gcc
+  extends:
+    - .compiler_gcc
+    - .image_ubuntu_lts
+    - .cache_build
+
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 configure:debian_testing_gcc:
   extends:
+    - .debian_testing_gcc
     - .configure
-    - .image_debian_testing_gcc
+  cache:
+    policy: pull-push
 
 build:debian_testing_gcc:
   extends:
+    - .debian_testing_gcc
     - .build
-    - .image_debian_testing_gcc
   dependencies:
     - configure:debian_testing_gcc
 
 test:debian_testing_gcc:
   extends:
+    - .debian_testing_gcc
     - .tests
-    - .image_debian_testing_gcc
   dependencies:
     - build:debian_testing_gcc
+
+analyse_build:debian_testing_gcc:
+  extends:
+    - .debian_testing_gcc
+    - .analyse_build
+  dependencies:
+    - build:debian_testing_gcc
+
+# ------------------------------------------------------------------------------
+configure:debian_testing_clang:
+  extends:
+    - .debian_testing_clang
+    - .configure
+  cache:
+    policy: pull-push
+
+build:debian_testing_clang:
+  extends:
+    - .debian_testing_clang
+    - .build
+  dependencies:
+    - configure:debian_testing_clang
+
+test:debian_testing_clang:
+  extends:
+    - .debian_testing_clang
+    - .tests
+  dependencies:
+    - build:debian_testing_clang
+
+analyse_build:debian_testing_clang:
+  extends:
+    - .debian_testing_clang
+    - .analyse_build
+  dependencies:
+    - build:debian_testing_clang
+
+# ------------------------------------------------------------------------------
+configure:ubuntu_lts_gcc:
+  extends:
+    - .ubuntu_lts_gcc
+    - .configure
+  cache:
+    policy: pull-push
+
+build:ubuntu_lts_gcc:
+  extends:
+    - .ubuntu_lts_gcc
+    - .build
+  dependencies:
+    - configure:ubuntu_lts_gcc
+
+analyse_build:ubuntu_lts_gcc:
+  extends:
+    - .ubuntu_lts_gcc
+    - .analyse_build
+  dependencies:
+    - build:ubuntu_lts_gcc
+
+test:ubuntu_lts_gcc:
+  extends:
+    - .ubuntu_lts_gcc
+    - .tests
+  dependencies:
+    - build:ubuntu_lts_gcc
+
+# ------------------------------------------------------------------------------
+pages:
+  stage: deploy
+  extends:
+    - .debian_testing_gcc
+  script:
+    - cd build
+    - cmake -DAKANTU_DOCUMENTATION_DEVELOPER_MANUAL=ON ..
+    - cmake --build . -t sphinx-doc
+    - mv doc/dev-doc/html ../public
+  dependencies:
+    - build:debian_testing_gcc
+  artifacts:
+    paths:
+      - public
+  only:
+    - features/doc
