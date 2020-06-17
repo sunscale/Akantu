@@ -227,7 +227,7 @@ public:
     strain *= sigma_c / E;
 
     this->setInitialCondition((1 - 1e-5) * strain);
-    this->steps(1e-2 * strain);
+    this->steps(2e-2 * strain);
   }
 
   void testModeII() {
