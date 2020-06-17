@@ -33,14 +33,14 @@
      |
      x (0,0,1,0)
      |`
-     |  `  °             \xi
+     |  `  °             \zeta
      |    `    °       -
      |      `       x (0,0,0,1)
      |      q.`   -  '
      |         -`     '
      |     -       `   '
      | -             `  '
-     x------------------x-----> \zeta
+     x------------------x-----> \xi
  (1,0,0,0)           (0,1,0,0)
  @endverbatim
  *
@@ -72,10 +72,10 @@ inline void InterpolationElement<_itp_lagrange_tetrahedron_4>::computeShapes(
     const vector_type & natural_coords, vector_type & N) {
 
   Real c0 = 1 - natural_coords(0) - natural_coords(1) -
-            natural_coords(2); /// @f$ c2 = 1 - \xi - \eta - \zeta @f$
-  Real c1 = natural_coords(1); /// @f$ c0 = \xi @f$
-  Real c2 = natural_coords(2); /// @f$ c1 = \eta @f$
-  Real c3 = natural_coords(0); /// @f$ c2 = \zeta @f$
+            natural_coords(2); /// @f$ c0 = 1 - \xi - \eta - \zeta @f$
+  Real c1 = natural_coords(1); /// @f$ c1 = \xi @f$
+  Real c2 = natural_coords(2); /// @f$ c2 = \eta @f$
+  Real c3 = natural_coords(0); /// @f$ c3 = \zeta @f$
 
   N(0) = c0;
   N(1) = c1;
@@ -111,17 +111,20 @@ inline void InterpolationElement<_itp_lagrange_tetrahedron_4>::computeDNDS(
    */
 
   dnds(0, 0) = -1.;
-  dnds(0, 1) = 1.;
-  dnds(0, 2) = 0.;
-  dnds(0, 3) = 0.;
   dnds(1, 0) = -1.;
-  dnds(1, 1) = 0.;
-  dnds(1, 2) = 1.;
-  dnds(1, 3) = 0.;
   dnds(2, 0) = -1.;
+
+  dnds(0, 1) = 0.;
+  dnds(1, 1) = 1.;
   dnds(2, 1) = 0.;
-  dnds(2, 2) = 0.;
-  dnds(2, 3) = 1.;
+
+  dnds(0, 2) = 0.;
+  dnds(1, 2) = 0.;
+  dnds(2, 2) = 1.;
+
+  dnds(0, 3) = 1.;
+  dnds(1, 3) = 0.;
+  dnds(2, 3) = 0.;
 }
 
 /* -------------------------------------------------------------------------- */
