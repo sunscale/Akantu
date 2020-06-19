@@ -20,24 +20,8 @@
 #
 #===============================================================================
 
-add_mesh(test_one_element test_one_element.geo 2 1)
-register_test(test_phase_field_model_2d
-  SOURCES test_phase_field_model_2d.cc
-  DEPENDS test_one_element
-  FILES_TO_COPY material.dat
-  PACKAGE phase_field
-  )
-
-register_test(test_solid_one_element
-  SOURCES test_solid_one_element.cc
-  DEPENDS test_one_element
-  FILES_TO_COPY material_solid.dat
+register_test(test_phasefield_selector
+  SOURCES test_phasefield_selector.cc
+  FILES_TO_COPY phasefield_selector.dat phasefield_selector.msh
   PACKAGE core
-  )
-
-register_test(test_phase_solid_coupling
-  SOURCES test_phase_solid_coupling.cc
-  DEPENDS test_one_element
-  FILES_TO_COPY material_coupling.dat
-  PACKAGE phase_field core
   )
