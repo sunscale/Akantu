@@ -9,7 +9,6 @@
  *
  * @brief  instatiation of materials
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -143,13 +142,14 @@ void SolidMechanicsModel::assignMaterialToElements(
   if (non_local_manager)
     non_local_manager->synchronize(*this, SynchronizationTag::_material_id);
 
-  for_each_element(mesh,
-                   [&](auto && element) {
-                     auto mat_index = material_index(element);
-                     auto index = materials[mat_index]->addElement(element);
-                     material_local_numbering(element) = index;
-                   },
-                   _element_filter = filter, _ghost_type = _not_ghost);
+  for_each_element(
+      mesh,
+      [&](auto && element) {
+        auto mat_index = material_index(element);
+        auto index = materials[mat_index]->addElement(element);
+        material_local_numbering(element) = index;
+      },
+      _element_filter = filter, _ghost_type = _not_ghost);
 
   // synchronize the element material arrays
   this->synchronize(SynchronizationTag::_material_id);
@@ -159,8 +159,8 @@ void SolidMechanicsModel::assignMaterialToElements(
 void SolidMechanicsModel::initMaterials() {
   AKANTU_DEBUG_ASSERT(materials.size() != 0, "No material to initialize !");
 
-  if (!are_materials_instantiated)
-    instantiateMaterials();
+  // if (!are_materials_instantiated)
+  //   instantiateMaterials();
 
   this->assignMaterialToElements();
 

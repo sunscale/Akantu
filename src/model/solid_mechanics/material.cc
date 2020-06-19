@@ -12,7 +12,6 @@
  *
  * @brief  Implementation of the common part of the material class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -170,22 +169,12 @@ void Material::restorePreviousState() {
 
 /* -------------------------------------------------------------------------- */
 /**
- * Compute  the  residual  by  assembling  @f$\int_{e}  \sigma_e  \frac{\partial
+ * Compute the internal forces by assembling @f$\int_{e} \sigma_e \frac{\partial
  * \varphi}{\partial X} dX @f$
  *
- * @param[in] displacements nodes displacements
- * @param[in] ghost_type compute the residual for _ghost or _not_ghost element
+ * @param[in] ghost_type compute the internal forces for _ghost or _not_ghost
+ * element
  */
-// void Material::updateResidual(GhostType ghost_type) {
-//   AKANTU_DEBUG_IN();
-
-//   computeAllStresses(ghost_type);
-//   assembleResidual(ghost_type);
-
-//   AKANTU_DEBUG_OUT();
-// }
-
-/* -------------------------------------------------------------------------- */
 void Material::assembleInternalForces(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -260,7 +249,6 @@ void Material::assembleInternalForces(GhostType ghost_type) {
 /**
  * Compute  the  stress from the gradu
  *
- * @param[in] current_position nodes postition + displacements
  * @param[in] ghost_type compute the residual for _ghost or _not_ghost element
  */
 void Material::computeAllStresses(GhostType ghost_type) {
@@ -369,7 +357,6 @@ void Material::setToSteadyState(GhostType ghost_type) {
  * Compute  the stiffness  matrix by  assembling @f$\int_{\omega}  B^t  \times D
  * \times B d\omega @f$
  *
- * @param[in] current_position nodes postition + displacements
  * @param[in] ghost_type compute the residual for _ghost or _not_ghost element
  */
 void Material::assembleStiffnessMatrix(GhostType ghost_type) {

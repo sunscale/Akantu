@@ -11,7 +11,6 @@
  *
  * @brief  handles diana meshes
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -136,7 +135,7 @@ MeshIODiana::~MeshIODiana() = default;
 /* -------------------------------------------------------------------------- */
 inline void my_getline(std::ifstream & infile, std::string & line) {
   std::getline(infile, line);   // read the line
-  size_t pos = line.find('\r'); /// remove the extra \r if needed
+  size_t pos = line.find('\r'); /// remove the extra \\r if needed
   line = line.substr(0, pos);
 }
 

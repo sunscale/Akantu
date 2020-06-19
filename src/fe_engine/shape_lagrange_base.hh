@@ -8,7 +8,6 @@
  *
  * @brief  Base class for the shape lagrange
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -87,6 +86,6 @@ protected:
 
 } // namespace akantu
 
-#include "shape_lagrange_base_inline_impl.cc"
+#include "shape_lagrange_base_inline_impl.hh"
 
 #endif /* __AKANTU_SHAPE_LAGRANGE_BASE_HH__ */

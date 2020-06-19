@@ -34,7 +34,7 @@
 add_mesh(test_local_material_barre_trou_mesh mesh_section_gap.geo 2 2)
 register_test(test_local_material
   SOURCES  test_local_material.cc local_material_damage.cc
-  EXTRA_FILES local_material_damage.hh local_material_damage_inline_impl.cc
+  EXTRA_FILES local_material_damage.hh local_material_damage_inline_impl.hh
   DEPENDS test_local_material_barre_trou_mesh
   FILES_TO_COPY material.dat
   DIRECTORIES_TO_CREATE paraview

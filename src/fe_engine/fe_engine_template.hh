@@ -9,7 +9,6 @@
  *
  * @brief  templated class that calls integration and shape objects
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -29,17 +28,17 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_FE_ENGINE_TEMPLATE_HH__
-#define __AKANTU_FE_ENGINE_TEMPLATE_HH__
-
-/* -------------------------------------------------------------------------- */
 #include "fe_engine.hh"
 #include "integrator.hh"
 #include "shape_functions.hh"
 /* -------------------------------------------------------------------------- */
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
+
+
+/* -------------------------------------------------------------------------- */
+#ifndef __AKANTU_FE_ENGINE_TEMPLATE_HH__
+#define __AKANTU_FE_ENGINE_TEMPLATE_HH__
 
 namespace akantu {
 class DOFManager;

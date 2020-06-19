@@ -8,7 +8,6 @@
  *
  * @brief  Example for extrinsic cohesive elements in implicit
  *
- * @section LICENSE
  *
  * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
  * (LSMS - Laboratoire de Simulation en Mécanique des Solides)

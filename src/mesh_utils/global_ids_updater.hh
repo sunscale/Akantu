@@ -11,7 +11,6 @@
  * inserted in the mesh. The functions in this class must be called
  * after updating the node types
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -102,6 +101,6 @@ private:
 
 } // namespace akantu
 
-#include "global_ids_updater_inline_impl.cc"
+#include "global_ids_updater_inline_impl.hh"
 
 #endif /* __AKANTU_GLOBAL_IDS_UPDATER_HH__ */

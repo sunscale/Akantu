@@ -8,7 +8,6 @@
  *
  * @brief  iterator interfaces
  *
- * @section LICENSE
  *
  * Copyright 2019 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -214,7 +213,8 @@ namespace tuple {
     }
 
     template <typename... Names, typename... Ts>
-    decltype(auto) make_named_tuple_no_decay(std::tuple<Names...> /*unused*/, Ts &&... args) {
+    decltype(auto) make_named_tuple_no_decay(std::tuple<Names...> /*unused*/,
+                                             Ts &&... args) {
       return named_tuple<named_tag<Names, Ts>...>(std::forward<Ts>(args)...);
     }
 
@@ -237,7 +237,8 @@ namespace tuple {
     decltype(auto)
     transform_named_impl(F && func, Tuple && tuple,
                          std::index_sequence<Is...> && /*unused*/) {
-      return make_named_tuple_no_decay(typename std::decay_t<Tuple>::Names_t{},
+      return make_named_tuple_no_decay(
+          typename std::decay_t<Tuple>::Names_t{},
           std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple)))...);
     }
 

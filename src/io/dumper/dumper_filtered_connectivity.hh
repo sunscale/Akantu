@@ -9,7 +9,6 @@
  *
  * @brief  FilteredConnectivities field
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -32,7 +31,7 @@
 #include "dumper_generic_elemental_field.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 template <class types>
@@ -42,7 +41,7 @@ class filtered_connectivity_field_iterator
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef element_iterator<types, dumper::filtered_connectivity_field_iterator>
+  typedef element_iterator<types, dumpers::filtered_connectivity_field_iterator>
       parent;
   using return_type = typename types::return_type;
   using field_type = typename types::field_type;
@@ -146,7 +145,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */

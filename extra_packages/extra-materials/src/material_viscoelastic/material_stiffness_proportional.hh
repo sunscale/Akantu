@@ -8,7 +8,6 @@
  * @brief  Material isotropic visco-elastic with viscosity proportional to the
  * stiffness
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -93,7 +92,7 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "material_elastic_caughey_inline_impl.cc"
+//#include "material_elastic_caughey_inline_impl.hh"
 
 } // namespace akantu
 

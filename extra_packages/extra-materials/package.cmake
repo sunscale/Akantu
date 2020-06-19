@@ -22,26 +22,26 @@ package_declare_sources(extra_materials
 
   material_damage/material_brittle.cc
   material_damage/material_brittle.hh
-  material_damage/material_brittle_inline_impl.cc
+  material_damage/material_brittle_inline_impl.hh
 
   material_damage/material_damage_iterative.cc
   material_damage/material_damage_iterative.hh
-  material_damage/material_damage_iterative_inline_impl.cc
+  material_damage/material_damage_iterative_inline_impl.hh
 
   material_damage/material_iterative_stiffness_reduction.cc
   material_damage/material_iterative_stiffness_reduction.hh
 
   material_damage/material_damage_linear.cc
   material_damage/material_damage_linear.hh
-  material_damage/material_damage_linear_inline_impl.cc
+  material_damage/material_damage_linear_inline_impl.hh
 
   material_damage/material_vreepeerlings.hh
-  material_damage/material_vreepeerlings_inline_impl.cc
+  material_damage/material_vreepeerlings_inline_impl.hh
   material_damage/material_vreepeerlings_tmpl.hh
 
   material_plastic/material_viscoplastic.cc
   material_plastic/material_viscoplastic.hh
-  material_plastic/material_viscoplastic_inline_impl.cc
+  material_plastic/material_viscoplastic_inline_impl.hh
 
   material_viscoelastic/material_stiffness_proportional.cc
   material_viscoelastic/material_stiffness_proportional.hh
@@ -51,11 +51,11 @@ package_declare_sources(extra_materials
 
   material_damage/material_orthotropic_damage_iterative.cc
   material_damage/material_orthotropic_damage_iterative.hh
-  material_damage/material_orthotropic_damage_iterative_inline_impl.cc
+  material_damage/material_orthotropic_damage_iterative_inline_impl.hh
 
   material_FE2/material_FE2.hh
   material_FE2/material_FE2.cc
-  material_FE2/material_FE2_inline_impl.cc
+  material_FE2/material_FE2_inline_impl.hh
   material_FE2/solid_mechanics_model_RVE.hh
   material_FE2/solid_mechanics_model_RVE.cc
   )
@@ -95,10 +95,10 @@ package_declare_sources(extra_materials_non_local
   material_damage/material_damage_iterative_non_local.cc
   material_damage/material_orthotropic_damage_iterative_non_local.hh
 
-  material_damage/material_vreepeerlings_non_local_inline_impl.cc
-  material_damage/material_brittle_non_local_inline_impl.cc
-  material_damage/material_damage_iterative_non_local_inline_impl.cc
-  material_damage/material_orthotropic_damage_iterative_non_local_inline_impl.cc
+  material_damage/material_vreepeerlings_non_local_inline_impl.hh
+  material_damage/material_brittle_non_local_inline_impl.hh
+  material_damage/material_damage_iterative_non_local_inline_impl.hh
+  material_damage/material_orthotropic_damage_iterative_non_local_inline_impl.hh
 
   material_non_local_extra_includes.hh
   )

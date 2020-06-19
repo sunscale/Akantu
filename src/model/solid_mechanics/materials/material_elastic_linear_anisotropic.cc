@@ -11,7 +11,6 @@
  *
  * @brief  Anisotropic elastic material
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -98,6 +97,7 @@ template <UInt dim> void MaterialElasticLinearAnisotropic<dim>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::updateInternalParameters() {
+
   Material::updateInternalParameters();
   if (this->symmetric) {
     for (UInt i = 0; i < voigt_h::size; ++i) {

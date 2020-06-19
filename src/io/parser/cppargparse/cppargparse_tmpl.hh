@@ -9,7 +9,6 @@
  * @brief  Implementation of the templated part of the commandline argument
  * parser
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -176,13 +175,15 @@ template <class T> ArgumentParser::Argument::operator T() const {
   return cast_helper<T>::cast(*this);
 }
 
-template <> inline ArgumentParser::Argument::operator const char *() const {
-  return cast_helper<std::string>::cast(*this).c_str();
+#if !defined(DOXYGEN)
+template <> inline ArgumentParser::Argument::operator const std::string() const {
+  return cast_helper<std::string>::cast(*this);
 }
 
 template <> inline ArgumentParser::Argument::operator unsigned int() const {
   return cast_helper<int>::cast(*this);
 }
+#endif
 
 template <class T>
 void ArgumentParser::addArgument(const std::string & name_or_flag,

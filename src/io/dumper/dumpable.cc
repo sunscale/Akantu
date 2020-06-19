@@ -9,7 +9,6 @@
  *
  * @brief  Implementation of the dumpable interface
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -110,14 +109,14 @@ void Dumpable::addDumpFieldToDumper(__attribute__((unused))
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpFieldExternal(const std::string & field_id,
-                                    std::shared_ptr<dumper::Field> field) {
+                                    std::shared_ptr<dumpers::Field> field) {
   this->addDumpFieldExternalToDumper(this->default_dumper, field_id, field);
 }
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpFieldExternalToDumper(
     const std::string & dumper_name, const std::string & field_id,
-    std::shared_ptr<dumper::Field> field) {
+    std::shared_ptr<dumpers::Field> field) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field);
 }
@@ -243,7 +242,7 @@ void Dumpable::dump(Real time, UInt step) {
 /* -------------------------------------------------------------------------- */
 void Dumpable::internalAddDumpFieldToDumper(
     const std::string & dumper_name, const std::string & field_id,
-    std::shared_ptr<dumper::Field> field) {
+    std::shared_ptr<dumpers::Field> field) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerField(field_id, field);
 }

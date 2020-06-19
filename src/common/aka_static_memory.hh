@@ -8,7 +8,6 @@
  *
  * @brief  Memory management
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -98,9 +97,8 @@ public:
    * @param name name of the array (for example connectivity)
    * @param size number of size (for example number of nodes)
    * @param nb_component number of component (for example spatial dimension)
-   * @param type the type code of the array to be allocated
    *
-   * @return pointer to an array of size nb_tupes * nb_component * sizeof(T)
+   * @return pointer an array of memory actual size: size * nb_component * sizeof(T)
    */
   template <typename T>
   Array<T> & smalloc(const MemoryID & memory_id, const ID & name, UInt size,
@@ -137,9 +135,6 @@ private:
   static UInt nb_reference;
 };
 
-#include "aka_static_memory_inline_impl.cc"
-#include "aka_static_memory_tmpl.hh"
-
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
@@ -152,5 +147,8 @@ inline std::ostream & operator<<(std::ostream & stream,
 }
 
 } // namespace akantu
+
+#include "aka_static_memory_inline_impl.hh"
+#include "aka_static_memory_tmpl.hh"
 
 #endif /* __AKANTU_STATIC_MEMORY_HH__ */

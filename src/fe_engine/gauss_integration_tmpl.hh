@@ -8,7 +8,6 @@
  *
  * @brief  implementation of the gauss integration helpers
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -40,8 +39,11 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 namespace _aka_gauss_helpers {
   template <GaussIntegrationType type, UInt n>
-  struct GaussIntegrationNbPoints {};
+  struct GaussIntegrationNbPoints {
+    static const UInt nb_points = 0;
+  };
 
+#if !defined(DOXYGEN)
   template <UInt n> struct GaussIntegrationNbPoints<_git_not_defined, n> {
     static const UInt nb_points = 0;
   };
@@ -99,6 +101,7 @@ namespace _aka_gauss_helpers {
   struct GaussIntegrationNbPointsHelper<type, n, on, true> {
     static const UInt nb_points = 0;
   };
+#endif
 
   /* ------------------------------------------------------------------------ */
   /* Generic helper                                                           */
@@ -120,6 +123,7 @@ namespace _aka_gauss_helpers {
     }
   };
 
+#if !defined(DOXYGEN)
   /* ------------------------------------------------------------------------ */
   /* helper for _segment _quadrangle _hexahedron                              */
   /* ------------------------------------------------------------------------ */
@@ -228,6 +232,7 @@ namespace _aka_gauss_helpers {
       return quads_weights;
     }
   };
+#endif
 } // namespace _aka_gauss_helpers
 
 template <ElementType element_type, UInt n>

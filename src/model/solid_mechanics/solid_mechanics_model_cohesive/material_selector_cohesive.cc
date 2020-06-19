@@ -10,7 +10,6 @@
  *
  * @brief  Material selector for cohesive elements
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -88,17 +87,25 @@ MeshDataMaterialCohesiveSelector::MeshDataMaterialCohesiveSelector(
 
 /* -------------------------------------------------------------------------- */
 UInt MeshDataMaterialCohesiveSelector::operator()(const Element & element) {
-  if (Mesh::getKind(element.type) == _ek_cohesive) {
-    const auto & facet = mesh_facets.getSubelementToElement(
-        element.type, element.ghost_type)(element.element, third_dimension);
+  if (Mesh::getKind(element.type) == _ek_cohesive or
+      Mesh::getSpatialDimension(element.type) == mesh_facets.getSpatialDimension() - 1) {
+    Element facet;
+    if (Mesh::getKind(element.type) == _ek_cohesive) {
+      facet = mesh_facets.getSubelementToElement(element.type,
+						 element.ghost_type)(element.element,
+								     third_dimension);
+    } else {
+      facet = element;
+    }
+  
     try {
       std::string material_name = this->material_index(facet);
       return this->model.getMaterialIndex(material_name);
     } catch (...) {
       return fallback_value;
     }
-  } else
-    return MaterialSelector::operator()(element);
+  }
+  return MaterialSelector::operator()(element);
 }
 
 /* -------------------------------------------------------------------------- */

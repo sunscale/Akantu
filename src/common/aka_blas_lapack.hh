@@ -8,7 +8,6 @@
  *
  * @brief  Interface of the Fortran BLAS/LAPACK libraries
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -27,7 +26,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_error.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef __AKANTU_AKA_BLAS_LAPACK_HH__

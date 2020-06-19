@@ -6,7 +6,6 @@
  *
  * @brief  Facet synchronizer for parallel simulations with cohesive elments
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -92,6 +91,6 @@ private:
 
 } // namespace akantu
 
-#include "facet_synchronizer_inline_impl.cc"
+#include "facet_synchronizer_inline_impl.hh"
 
 #endif /* __AKANTU_FACET_SYNCHRONIZER_HH__ */

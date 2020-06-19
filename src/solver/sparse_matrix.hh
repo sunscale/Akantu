@@ -9,7 +9,6 @@
  * @brief  sparse matrix storage class (distributed assembled matrix)
  * This is a COO format (Coordinate List)
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -106,7 +105,7 @@ public:
   }
 
 protected:
-  /// This is the revert of add B += \alpha * *this;
+  /// This is the revert of add \f[B += \alpha * *this\f];
   virtual void addMeTo(SparseMatrix & B, Real alpha) const = 0;
 
   /* ------------------------------------------------------------------------ */
@@ -157,6 +156,6 @@ protected:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "sparse_matrix_inline_impl.cc"
+#include "sparse_matrix_inline_impl.hh"
 
 #endif /* __AKANTU_SPARSE_MATRIX_HH__ */

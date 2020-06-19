@@ -10,7 +10,6 @@
  *
  * @brief  Mother class for all materials
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -605,7 +604,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#include "material_inline_impl.cc"
+#include "material_inline_impl.hh"
 
 #include "internal_field_tmpl.hh"
 #include "random_internal_field_tmpl.hh"

@@ -9,7 +9,6 @@
  *
  * @brief  description of elemental fields
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -40,7 +39,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 template <typename T, template <class> class ret = Vector,
@@ -70,7 +69,7 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPER_ELEMENTAL_FIELD_HH__ */

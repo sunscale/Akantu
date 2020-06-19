@@ -14,7 +14,6 @@
  * @brief  Specialization of the material class for isotropic finite deformation
  * linear hardening plasticity
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -108,6 +107,6 @@ private:
 
 } // namespace akantu
 
-#include "material_linear_isotropic_hardening_inline_impl.cc"
+#include "material_linear_isotropic_hardening_inline_impl.hh"
 
 #endif /* __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__ */

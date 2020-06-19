@@ -8,7 +8,6 @@
  *
  * @brief  Implementation of Communications
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -76,15 +75,10 @@ public:
       : scheme_it(scheme_it), comm_it(comm_it), communications(&communications),
         tag(tag) {}
 
-  iterator & operator=(const iterator & other) {
-    if (this != &other) {
-      this->scheme_it = other.scheme_it;
-      this->comm_it = other.comm_it;
-      this->communications = other.communications;
-      this->tag = other.tag;
-    }
-    return *this;
-  }
+  iterator(const iterator & other) = default;
+  iterator(iterator && other) noexcept = default;
+  iterator & operator=(const iterator & other) = default;
+  iterator & operator=(iterator && other) noexcept = default;
 
   iterator & operator++() {
     ++scheme_it;

@@ -6,7 +6,6 @@
  *
  * @brief  Iterators for IGFEM elemental fields
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -19,8 +18,8 @@
 #include "element.hh"
 #include "igfem_helper.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
-__BEGIN_AKANTU_DUMPER__
+namespace akantu {
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 template <class types, template <class> class final_iterator>
@@ -145,7 +144,7 @@ public:
   /* ------------------------------------------------------------------------ */
 
   typedef igfem_element_iterator<
-      types, ::akantu::dumper::igfem_elemental_field_iterator>
+      types, ::akantu::dumpers::igfem_elemental_field_iterator>
       parent;
   typedef typename types::it_type it_type;
   typedef typename types::return_type return_type;
@@ -175,8 +174,8 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace dumpers
+} // namespace akantu
 /* -------------------------------------------------------------------------- */
 
 #endif /* __AKANTU_DUMPER_IGFEM_ELEMENT_ITERATOR_HH__ */

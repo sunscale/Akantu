@@ -8,7 +8,6 @@
  *
  * @brief  2D specialization of the akantu::PlaneStressToolbox class
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -119,7 +118,7 @@ protected:
   /// Plane stress or plane strain
   bool plane_stress;
 
-  /// For non linear materials, the \epsilon_{zz} might be required
+  /// For non linear materials, the \f[\epsilon_{zz}\f] might be required
   bool initialize_third_axis_deformation;
 };
 

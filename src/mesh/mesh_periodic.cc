@@ -1,5 +1,5 @@
 /**
- * @file   mesh_pbc.cc
+ * @file   mesh_periodic.cc
  *
  * @author Nicolas Richart
  *
@@ -7,7 +7,6 @@
  *
  * @brief Implementation of the perdiodicity capabilities in the mesh
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -91,10 +90,11 @@ namespace {
       this->position(direction) = 0.;
     }
 
-    NodeInfo(const NodeInfo & other)
-        : node(other.node), position(other.position),
-          direction_position(other.direction_position) {}
-
+    NodeInfo(const NodeInfo & other) = default;
+    NodeInfo( NodeInfo && other) noexcept = default;
+    NodeInfo & operator=(const NodeInfo & other) = default;
+    NodeInfo & operator=(NodeInfo && other) noexcept = default;
+    
     UInt node{0};
     Vector<Real> position;
     Real direction_position{0.};
@@ -129,7 +129,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     }
     auto && info = NodeInfo(node, pos, direction);
     bbox += info.position;
-    return info;
+    return std::move(info);
   };
 
   std::transform(list_left.begin(), list_left.end(), nodes_left.begin(),
@@ -149,8 +149,9 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     // function to send nodes in bboxes intersections
     auto extract_and_send_nodes = [&](const auto & bbox, const auto & node_list,
                                       auto & buffers, auto proc, auto cnt) {
-      buffers.resize(buffers.size() + 1);
-      auto & buffer = buffers.back();
+      // buffers.resize(buffers.size() + 1);
+      buffers.push_back(std::make_unique<DynamicCommunicationBuffer>());
+      auto & buffer = *buffers.back();
 
       // std::cout << "Sending to " << proc << std::endl;
       for (auto & info : node_list) {
@@ -269,7 +270,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         bbox_right.intersection(bbox_left, *communicator);
 
     std::vector<CommunicationRequest> send_requests;
-    std::vector<DynamicCommunicationBuffer> send_buffers;
+    std::vector<std::unique_ptr<DynamicCommunicationBuffer>> send_buffers;
 
     // sending nodes in the common zones
     auto send_intersections = [&](auto & intersections, auto send_count) {
@@ -396,23 +397,29 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   // matching the nodes from 2 lists
   auto match_pairs = [&](auto & nodes_1, auto & nodes_2) {
-    auto it = nodes_2.begin();
+    // Guillaume to Nico: It seems that the list of nodes is not sorted
+    // as it was: therefore the loop cannot be truncated anymore.
+    // Otherwise many pairs are missing.
+    // I replaced (temporarily?) for the N^2 loop so as not to miss
+    // any pbc pair.
+    //
 
+    // auto it = nodes_2.begin();
     // for every nodes in 1st list
     for (auto && info1 : nodes_1) {
       auto & pos1 = info1.position;
-      auto it_cur = it;
+      // auto it_cur = it;
 
       // try to find a match in 2nd list
-      for (; it_cur != nodes_2.end(); ++it_cur) {
-        auto & info2 = *it_cur;
+      for (auto && info2 : nodes_2) {
+        // auto & info2 = *it_cur;
         auto & pos2 = info2.position;
 
         auto dist = pos1.distance(pos2) / length;
         if (dist < tolerance) {
           // handles the found matches
           match_found(info1, info2);
-          it = it_cur;
+          // it = it_cur;
           break;
         }
       }

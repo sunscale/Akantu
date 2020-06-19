@@ -8,7 +8,6 @@
  *
  * @brief  Class regrouping the common solve interface to the different models
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

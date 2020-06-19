@@ -8,7 +8,6 @@
  *
  * @brief  Implementation of PETSc matrix class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -146,11 +145,6 @@ void SparseMatrixPETSc::addMeToImpl(SparseMatrixPETSc & B, Real alpha) const {
 }
 
 /* -------------------------------------------------------------------------- */
-/**
- * Method to add another PETSc matrix to this PETSc matrix
- * @param matrix PETSc matrix to be added
- * @param alpha the factor specifying how many times the matrix should be added
- */
 void SparseMatrixPETSc::addMeTo(SparseMatrix & B, Real alpha) const {
   if (aka::is_of_type<SparseMatrixPETSc>(B)) {
     auto & B_petsc = aka::as_type<SparseMatrixPETSc>(B);

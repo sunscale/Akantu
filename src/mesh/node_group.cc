@@ -8,7 +8,6 @@
  *
  * @brief  Implementation of the node group
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -47,7 +46,7 @@ NodeGroup::NodeGroup(const std::string & name, const Mesh & mesh,
       node_group(alloc<UInt>(std::string(this->id + ":nodes"), 0, 1)) {
 #if defined(AKANTU_USE_IOHELPER)
   this->registerDumper<DumperParaview>("paraview_" + name, name, true);
-  auto field = std::make_shared<dumper::NodalField<Real, true>>(
+  auto field = std::make_shared<dumpers::NodalField<Real, true>>(
       mesh.getNodes(), 0, 0, &this->getNodes());
   this->getDumper().registerField("positions", field);
 #endif

@@ -8,7 +8,6 @@
  *
  * @brief  implementation of no regularisation
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -154,7 +153,7 @@ void NTNFricRegNoRegularisation::addDumpFieldToDumper(
   if (field_id == "frictional_contact_pressure") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(
+        std::make_unique<dumpers::NodalField<Real>>(
             this->frictional_contact_pressure.getArray()));
   } else {
     NTNBaseFriction::addDumpFieldToDumper(dumper_name, field_id);

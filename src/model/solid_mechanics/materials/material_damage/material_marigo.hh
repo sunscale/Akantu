@@ -10,7 +10,6 @@
  *
  * @brief  Marigo damage law
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -118,6 +117,6 @@ protected:
 
 } // namespace akantu
 
-#include "material_marigo_inline_impl.cc"
+#include "material_marigo_inline_impl.hh"
 
 #endif /* __AKANTU_MATERIAL_MARIGO_HH__ */

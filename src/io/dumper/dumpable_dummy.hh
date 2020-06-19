@@ -10,7 +10,6 @@
  *
  * @brief  Interface for object who wants to dump themselves
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -29,9 +28,11 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+/* -------------------------------------------------------------------------- */
+#include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
+#if !defined(DOXYGEN)
 #ifndef __AKANTU_DUMPABLE_DUMMY_HH__
 #define __AKANTU_DUMPABLE_DUMMY_HH__
 /* -------------------------------------------------------------------------- */
@@ -42,7 +43,7 @@ namespace akantu {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused"
 
-namespace dumper {
+namespace dumpers {
   class Field;
 }
 
@@ -106,14 +107,14 @@ public:
   }
 
   virtual void addDumpFieldExternal(const std::string & field_id,
-                                    std::shared_ptr<dumper::Field> field) {
+                                    std::shared_ptr<dumpers::Field> field) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
   virtual void
   addDumpFieldExternalToDumper(const std::string & dumper_name,
                                const std::string & field_id,
-                               std::shared_ptr<dumper::Field> field) {
+                               std::shared_ptr<dumpers::Field> field) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
@@ -222,7 +223,7 @@ public:
 protected:
   void internalAddDumpFieldToDumper(const std::string & dumper_name,
                                     const std::string & field_id,
-                                    std::shared_ptr<dumper::Field> field) {
+                                    std::shared_ptr<dumpers::Field> field) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
@@ -263,3 +264,4 @@ private:
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPABLE_DUMMY_HH__ */
+#endif // DOXYGEN

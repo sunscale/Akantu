@@ -10,7 +10,6 @@
  *
  * @brief  implementation of main dumper
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -34,8 +33,8 @@
 #include <cmath>
 
 #include "dumper.hh"
-#include "field_inline_impl.cc"
-#include "variable_inline_impl.cc"
+#include "field_inline_impl.hh"
+#include "variable_inline_impl.hh"
 /* -------------------------------------------------------------------------- */
 #if defined(__INTEL_COMPILER)
 /// remark #981: operands are evaluated in unspecified order

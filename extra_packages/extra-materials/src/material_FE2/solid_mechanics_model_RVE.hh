@@ -5,7 +5,6 @@
  *
  * @brief  SMM for RVE computations in FE2 simulations
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

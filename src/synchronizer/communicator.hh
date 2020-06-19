@@ -8,7 +8,6 @@
  *
  * @brief  Class handling the parallel communications
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -91,6 +90,7 @@ class Communicator : public EventHandlerManager<CommunicatorEventHandler> {
   /* ------------------------------------------------------------------------ */
 public:
   Communicator(int & argc, char **& argv, const private_member &);
+  Communicator(const private_member & = private_member{});
   ~Communicator() override;
 
   /* ------------------------------------------------------------------------ */

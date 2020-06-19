@@ -6,7 +6,6 @@
  *
  * @brief  description of IGFEM quadrature points field
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -19,8 +18,8 @@
 /* -------------------------------------------------------------------------- */
 #include "dumper_igfem_elemental_field.hh"
 
-__BEGIN_AKANTU__
-__BEGIN_AKANTU_DUMPER__
+namespace akantu {
+namespace dumpers {
 
 /* -------------------------------------------------------------------------- */
 template <typename types>
@@ -30,7 +29,7 @@ class igfem_quadrature_point_iterator
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef igfem_element_iterator<types, dumper::igfem_quadrature_point_iterator>
+  typedef igfem_element_iterator<types, dumpers::igfem_quadrature_point_iterator>
       parent;
   typedef typename types::data_type data_type;
   typedef typename types::return_type return_type;
@@ -135,7 +134,7 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace dumpers
+} // namespace akantu
 
 #endif /* __AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH__ */

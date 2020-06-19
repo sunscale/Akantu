@@ -8,7 +8,6 @@
  *
  * @brief  Test for _bernouilli_beam in dynamic
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

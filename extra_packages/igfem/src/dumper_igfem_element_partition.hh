@@ -6,7 +6,6 @@
  *
  * @brief  Element partition field for IGFEM sub-elements
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -14,8 +13,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
-__BEGIN_AKANTU_DUMPER__
+namespace akantu {
+namespace dumpers {
 
 /* -------------------------------------------------------------------------- */
 template <class types>
@@ -28,7 +27,7 @@ class igfem_element_partition_field_iterator
   /* ------------------------------------------------------------------------ */
 public:
   typedef igfem_element_iterator<types,
-                                 dumper::igfem_element_partition_field_iterator>
+                                 dumpers::igfem_element_partition_field_iterator>
       parent;
   typedef typename types::return_type return_type;
   typedef typename types::array_iterator array_iterator;
@@ -100,5 +99,5 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
-__END_AKANTU__
+} // namespace dumpers
+} // namespace akantu

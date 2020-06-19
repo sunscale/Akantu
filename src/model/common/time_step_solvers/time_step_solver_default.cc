@@ -8,7 +8,6 @@
  *
  * @brief  Default implementation of the time step solver
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -165,9 +164,7 @@ TimeStepSolverDefault::~TimeStepSolverDefault() = default;
 /* -------------------------------------------------------------------------- */
 void TimeStepSolverDefault::solveStep(SolverCallback & solver_callback) {
   this->solver_callback = &solver_callback;
-
   this->non_linear_solver.solve(*this);
-
   this->solver_callback = nullptr;
 }
 

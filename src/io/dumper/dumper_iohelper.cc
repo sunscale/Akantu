@@ -11,7 +11,6 @@
  *
  * @brief  implementation of DumperIOHelper
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -114,18 +113,18 @@ void DumperIOHelper::registerMesh(const Mesh & mesh, UInt spatial_dimension,
 #if defined(AKANTU_IGFEM)
   if (element_kind == _ek_igfem) {
     registerField("connectivities",
-                  new dumper::IGFEMConnectivityField(
+                  new dumpers::IGFEMConnectivityField(
                       mesh.getConnectivities(), spatial_dimension, ghost_type));
   } else
 #endif
 
     registerField("connectivities",
-                  std::make_shared<dumper::ElementalField<UInt>>(
+                  std::make_shared<dumpers::ElementalField<UInt>>(
                       mesh.getConnectivities(), spatial_dimension, ghost_type,
                       element_kind));
 
   registerField("positions",
-                std::make_shared<dumper::NodalField<Real>>(mesh.getNodes()));
+                std::make_shared<dumpers::NodalField<Real>>(mesh.getNodes()));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -137,18 +136,18 @@ void DumperIOHelper::registerFilteredMesh(
       mesh.getConnectivities(), elements_filter);
 
   this->registerField("connectivities",
-                      std::make_shared<dumper::FilteredConnectivityField>(
+                      std::make_shared<dumpers::FilteredConnectivityField>(
                           *f_connectivities, nodes_filter, spatial_dimension,
                           ghost_type, element_kind));
 
   this->registerField("positions",
-                      std::make_shared<dumper::NodalField<Real, true>>(
+                      std::make_shared<dumpers::NodalField<Real, true>>(
                           mesh.getNodes(), 0, 0, &nodes_filter));
 }
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerField(const std::string & field_id,
-                                   std::shared_ptr<dumper::Field> field) {
+                                   std::shared_ptr<dumpers::Field> field) {
   auto it = fields.find(field_id);
   if (it != fields.end()) {
     AKANTU_DEBUG_WARNING(
@@ -177,7 +176,7 @@ void DumperIOHelper::unRegisterField(const std::string & field_id) {
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerVariable(
     const std::string & variable_id,
-    std::shared_ptr<dumper::VariableBase> variable) {
+    std::shared_ptr<dumpers::VariableBase> variable) {
   auto it = variables.find(variable_id);
 
   if (it != variables.end()) {

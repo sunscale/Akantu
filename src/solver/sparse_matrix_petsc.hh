@@ -8,7 +8,6 @@
  *
  * @brief  Interface for PETSc matrices
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -110,7 +109,6 @@ public:
   void resize();
 
 protected:
-  /// This is the revert of add B += \alpha * *this;
   void addMeTo(SparseMatrix & B, Real alpha) const override;
 
   /// This is the specific implementation

@@ -8,7 +8,6 @@
  *
  * @brief  This code gives an example of a simulation using the embedded model
  *
- * @section LICENSE
  *
  * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
  * (LSMS - Laboratoire de Simulation en Mécanique des Solides)

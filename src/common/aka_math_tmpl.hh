@@ -17,7 +17,6 @@
  *
  * @brief  Implementation of the inline functions of the math toolkit
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -36,17 +35,16 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-} // akantu
-
+/* -------------------------------------------------------------------------- */
+#include "aka_blas_lapack.hh"
+#include "aka_math.hh"
+/* -------------------------------------------------------------------------- */
 #include <cmath>
 #include <cstring>
 #include <typeinfo>
-
-#include "aka_blas_lapack.hh"
+/* -------------------------------------------------------------------------- */
 
 namespace akantu {
-
 /* -------------------------------------------------------------------------- */
 inline void Math::matrix_vector(UInt im, UInt in, Real * A, Real * x, Real * y,
                                 Real alpha) {
@@ -781,3 +779,4 @@ Real Math::NewtonRaphson::solve(const Functor & funct, Real x_0) {
 
   return x;
 }
+} // namespace akantu

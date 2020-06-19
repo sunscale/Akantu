@@ -8,7 +8,6 @@
  *
  * @brief  Description of quadrature point iterator
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -35,7 +34,7 @@
 #include "dumper_elemental_field.hh"
 
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 
 /* -------------------------------------------------------------------------- */
 template <typename types>
@@ -45,7 +44,7 @@ class quadrature_point_iterator
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  using parent = element_iterator<types, dumper::quadrature_point_iterator>;
+  using parent = element_iterator<types, dumpers::quadrature_point_iterator>;
   using data_type = typename types::data_type;
   using return_type = typename types::return_type;
   using field_type = typename types::field_type;
@@ -68,7 +67,7 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__ */

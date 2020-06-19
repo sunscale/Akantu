@@ -11,7 +11,6 @@
  * the registered array removes or adds at the same position an element. The two
  * arrays stay therefore synchronized.
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -185,12 +184,6 @@ private:
   std::vector<SynchronizedArrayBase *> depending_arrays;
 };
 
-/* -------------------------------------------------------------------------- */
-/* inline functions                                                           */
-/* -------------------------------------------------------------------------- */
-
-#include "synchronized_array_inline_impl.cc"
-
 /// standard output stream operator
 template <typename T>
 inline std::ostream & operator<<(std::ostream & stream,
@@ -200,5 +193,10 @@ inline std::ostream & operator<<(std::ostream & stream,
 }
 
 } // namespace akantu
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "synchronized_array_inline_impl.hh"
 
 #endif /* __AST_SYNCHRONIZED_ARRAY_HH__ */

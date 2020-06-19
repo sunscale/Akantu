@@ -8,7 +8,6 @@
  *
  * @brief  Class handling the different types of dofs
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -429,10 +428,12 @@ protected:
                                      const Array<Real> & array_to_assemble,
                                      SolverVector & global_array,
                                      Real scale_factor) = 0;
+
+public:
+  /// extract degrees of freedom (identified by ID) from a global solver array
   virtual void getArrayPerDOFs(const ID & dof_id, const SolverVector & global,
                                Array<Real> & local) = 0;
 
-public:
   /// Get the reference of an existing matrix
   SparseMatrix & getMatrix(const ID & matrix_id);
 
@@ -711,6 +712,6 @@ using DOFManagerFactory =
 
 } // namespace akantu
 
-#include "dof_manager_inline_impl.cc"
+#include "dof_manager_inline_impl.hh"
 
 #endif /* __AKANTU_DOF_MANAGER_HH__ */

@@ -12,7 +12,6 @@
  *
  * @brief  the class representing the meshes
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -75,8 +74,10 @@ namespace {
 /* -------------------------------------------------------------------------- */
 
 /**
- * @class  Mesh this  contain the  coordinates of  the nodes  in  the Mesh.nodes
- * Array,  and the  connectivity. The  connectivity  are stored  in by  element
+ * @class  Mesh mesh.hh
+ *
+ * This class contaisn the coordinates of the nodes in the Mesh.nodes
+ * akant::Array, and the connectivity. The connectivity are stored in by element
  * types.
  *
  * In order to loop on all element you have to loop on all types like this :
@@ -230,7 +231,7 @@ public:
   //                                                   UInt * connectivity,
   //                                                   UInt n_nodes);
 
-  /// add a Array of connectivity for the type <type>.
+  /// add a Array of connectivity for the given ElementType and GhostType .
   inline void addConnectivityType(const ElementType & type,
                                   const GhostType & ghost_type = _not_ghost);
 
@@ -432,7 +433,7 @@ public:
   ElementTypeMap<UInt> getNbDataPerElem(ElementTypeMapArray<T> & array);
 
   template <typename T>
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createFieldFromAttachedData(const std::string & field_id,
                               const std::string & group_name,
                               const ElementKind & element_kind);
@@ -690,6 +691,6 @@ inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {
 /* Inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 #include "element_type_map_tmpl.hh"
-#include "mesh_inline_impl.cc"
+#include "mesh_inline_impl.hh"
 
 #endif /* __AKANTU_MESH_HH__ */

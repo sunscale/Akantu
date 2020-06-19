@@ -7,7 +7,6 @@
  * @brief  MaterialOrthotropicDamageIterativeNonLocal header for non-local
  * damage
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -78,7 +77,7 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_orthotropic_damage_iterative_non_local_inline_impl.cc"
+#include "material_orthotropic_damage_iterative_non_local_inline_impl.hh"
 
 } // namespace akantu
 

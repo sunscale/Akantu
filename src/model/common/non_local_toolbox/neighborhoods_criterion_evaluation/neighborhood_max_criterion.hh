@@ -8,7 +8,6 @@
  *
  * @brief  Neighborhood to find a maximum value in a neighborhood
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -112,6 +111,6 @@ protected:
 
 } // namespace akantu
 
-#include "neighborhood_max_criterion_inline_impl.cc"
+#include "neighborhood_max_criterion_inline_impl.hh"
 
 #endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__ */

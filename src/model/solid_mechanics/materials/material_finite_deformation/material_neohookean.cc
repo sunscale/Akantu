@@ -9,7 +9,6 @@
  * @brief  Specialization of the material class for finite deformation
  * neo-hookean material
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

@@ -8,7 +8,6 @@
  *
  * @brief  handling of errors
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -37,7 +36,7 @@
 #include <iostream>
 
 #if (defined(READLINK_COMMAND) || defined(ADDR2LINE_COMMAND)) &&               \
-    (not defined(_WIN32))
+    (!defined(_WIN32))
 #include <execinfo.h>
 #include <sys/wait.h>
 #endif
@@ -85,7 +84,7 @@ namespace debug {
 
 /* ------------------------------------------------------------------------ */
 #if (defined(READLINK_COMMAND) || defined(ADDR2LINK_COMMAND)) &&               \
-    (not defined(_WIN32))
+    (!defined(_WIN32))
   std::string exec(const std::string & cmd) {
     FILE * pipe = popen(cmd.c_str(), "r");
     if (!pipe)

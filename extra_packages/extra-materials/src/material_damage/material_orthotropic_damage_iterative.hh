@@ -10,7 +10,6 @@
  * linear way. Max principal stress criterion is used as a failure
  * criterion.
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -121,7 +120,7 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_orthotropic_damage_iterative_inline_impl.cc"
+#include "material_orthotropic_damage_iterative_inline_impl.hh"
 
 } // namespace akantu
 

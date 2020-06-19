@@ -11,7 +11,6 @@
  * @brief  Stores information relevent to the notion of domain boundary and
  * surfaces.
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -36,7 +35,7 @@
 #include "dumpable.hh"
 #include "dumpable_inline_impl.hh"
 #include "group_manager.hh"
-#include "group_manager_inline_impl.cc"
+#include "group_manager_inline_impl.hh"
 #include "mesh.hh"
 #include "mesh_utils.hh"
 #include <algorithm>

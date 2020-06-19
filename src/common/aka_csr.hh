@@ -8,7 +8,6 @@
  *
  * @brief  A compresed sparse row structure based on akantu Arrays
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -269,7 +268,7 @@ private:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-//#include "aka_csr_inline_impl.cc"
+//#include "aka_csr_inline_impl.hh"
 
 /// standard output stream operator
 // inline std::ostream & operator <<(std::ostream & stream, const CSR & _this)

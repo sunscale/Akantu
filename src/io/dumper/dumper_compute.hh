@@ -8,7 +8,6 @@
  *
  * @brief  Field that map a function to another field
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -40,7 +39,7 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 
 class ComputeFunctorInterface {
 public:
@@ -256,7 +255,7 @@ FieldCompute<SubFieldCompute, return_type>::connect(FieldComputeProxy & proxy) {
 }
 
 /* -------------------------------------------------------------------------- */
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPER_COMPUTE_HH__ */

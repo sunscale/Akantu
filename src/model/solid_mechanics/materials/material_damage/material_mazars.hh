@@ -11,7 +11,6 @@
  *
  * @brief  Material Following the Mazars law for damage evolution
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -118,8 +117,8 @@ protected:
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "material_mazars_inline_impl.cc"
-
 } // namespace akantu
+
+#include "material_mazars_inline_impl.hh"
 
 #endif /* __AKANTU_MATERIAL_MAZARS_HH__ */

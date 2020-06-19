@@ -8,7 +8,6 @@
  *
  * @brief  Model of Solid Mechanics with embedded interfaces
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -149,7 +148,7 @@ void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(
     const std::string & group_name, const ElementKind & element_kind,
     bool padding_flag) {
 #ifdef AKANTU_USE_IOHELPER
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
 
   // If dumper is reinforcement, create a 1D elemental field
   if (dumper_name == "reinforcement")

@@ -7,7 +7,6 @@
  * @brief  Implementation of the squentially linear saw-tooth damage model for
  * IGFEM elements
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -16,7 +15,7 @@
 /* -------------------------------------------------------------------------- */
 #include "material_igfem_saw_tooth_damage.hh"
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
@@ -427,7 +426,7 @@ void MaterialIGFEMSawToothDamage<spatial_dimension>::onElementsAdded(
 
 INSTANTIATE_MATERIAL(MaterialIGFEMSawToothDamage);
 
-__END_AKANTU__
+} // namespace akantu
 
 /*     /// get the material index in the model from this current material
     UInt this_mat_idx =  this->model->getMaterialIndex(this->name);

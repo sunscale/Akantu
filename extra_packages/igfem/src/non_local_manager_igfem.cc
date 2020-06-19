@@ -5,7 +5,6 @@
  *
  * @brief  Implementation of non-local manager igfem
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -30,7 +29,7 @@
 #include "non_local_manager_igfem.hh"
 #include "material_non_local.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLocalManagerIGFEM::NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model,
@@ -303,6 +302,6 @@ void NonLocalManagerIGFEM::onElementsRemoved(
   NonLocalManager::onElementsRemoved(element_list, new_numbering, event);
 }
 
-__END_AKANTU__
+} // namespace akantu
 
 #endif /* AKANTU_DAMAGE_NON_LOCAL */

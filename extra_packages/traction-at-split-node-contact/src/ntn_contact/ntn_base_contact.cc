@@ -8,7 +8,6 @@
  *
  * @brief  implementation of ntn base contact
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -189,7 +188,7 @@ void NTNBaseContact::findBoundaryElements(
 }
 
 /* -------------------------------------------------------------------------- */
-void NTNBaseContact::addSplitNode(UInt node) {
+void NTNBaseContact::addSplitNode(UInt node, UInt) {
   AKANTU_DEBUG_IN();
 
   UInt dim = this->model.getSpatialDimension();
@@ -516,7 +515,7 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   internalAddDumpFieldToDumper(                                                \
       dumper_name, field_id,                                                   \
       std::make_unique<                                                        \
-          dumper::NodalField<type, true, Array<type>, Array<UInt>>>(           \
+          dumpers::NodalField<type, true, Array<type>, Array<UInt>>>(           \
           field, 0, 0, &nodal_filter))
 
   if (field_id == "displacement") {
@@ -528,7 +527,7 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   } else if (field_id == "acceleration") {
     ADD_FIELD(field_id, this->model.getAcceleration(), Real);
   } else if (field_id == "external_force") {
-    ADD_FIELD(field_id, this->model.getForce(), Real);
+    ADD_FIELD(field_id, this->model.getExternalForce(), Real);
   } else if (field_id == "internal_force") {
     ADD_FIELD(field_id, this->model.getInternalForce(), Real);
   } else if (field_id == "blocked_dofs") {
@@ -538,23 +537,23 @@ void NTNBaseContact::addDumpFieldToDumper(const std::string & dumper_name,
   } else if (field_id == "normal") {
     internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->normals.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->normals.getArray()));
   } else if (field_id == "contact_pressure") {
     internalAddDumpFieldToDumper(dumper_name, field_id,
-                                 std::make_unique<dumper::NodalField<Real>>(
+                                 std::make_unique<dumpers::NodalField<Real>>(
                                      this->contact_pressure.getArray()));
   } else if (field_id == "is_in_contact") {
     internalAddDumpFieldToDumper(dumper_name, field_id,
-                                 std::make_unique<dumper::NodalField<bool>>(
+                                 std::make_unique<dumpers::NodalField<bool>>(
                                      this->is_in_contact.getArray()));
   } else if (field_id == "lumped_boundary_slave") {
     internalAddDumpFieldToDumper(dumper_name, field_id,
-                                 std::make_unique<dumper::NodalField<Real>>(
+                                 std::make_unique<dumpers::NodalField<Real>>(
                                      this->lumped_boundary_slaves.getArray()));
   } else if (field_id == "impedance") {
     internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->impedance.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->impedance.getArray()));
   } else {
     std::cerr << "Could not add field '" << field_id
               << "' to the dumper. Just ignored it." << std::endl;

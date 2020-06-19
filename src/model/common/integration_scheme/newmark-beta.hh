@@ -11,7 +11,6 @@
  * implementation is taken from Méthodes  numériques en mécanique des solides by
  * Alain Curnier \note{ISBN: 2-88074-247-1}
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -30,6 +29,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "integration_scheme_2nd_order.hh"
 
 /* -------------------------------------------------------------------------- */
 
@@ -37,49 +38,46 @@
 #define __AKANTU_NEWMARK_BETA_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "integration_scheme_2nd_order.hh"
-
-/* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /**
  * The three differentiate equations (dynamic and cinematic) are :
- *  @f{eqnarray*}{
+ *  \f{eqnarray*}{
  *   M \ddot{u}_{n+1} + C \dot{u}_{n+1} + K u_{n+1} &=& q_{n+1} \\
  *   u_{n+1} &=& u_{n} + (1 - \alpha) \Delta t \dot{u}_{n} + \alpha \Delta t
  *\dot{u}_{n+1} + (1/2 - \alpha) \Delta t^2 \ddot{u}_n \\
  *   \dot{u}_{n+1} &=& \dot{u}_{n} + (1 - \beta) \Delta t \ddot{u}_{n} + \beta
  *\Delta t \ddot{u}_{n+1}
- *  @f}
+ *  \f}
  *
  * Predictor:
- *  @f{eqnarray*}{
+ *  \f{eqnarray*}{
  *  u^{0}_{n+1}        &=& u_{n} +  \Delta t \dot{u}_n + \frac{\Delta t^2}{2}
  *\ddot{u}_n \\
  *  \dot{u}^{0}_{n+1}  &=& \dot{u}_{n} +  \Delta t \ddot{u}_{n} \\
  *  \ddot{u}^{0}_{n+1} &=& \ddot{u}_{n}
- *  @f}
+ *  \f}
  *
  * Solve :
- *  @f[ (c M + d C + e K^i_{n+1}) w = = q_{n+1} - f^i_{n+1} - C \dot{u}^i_{n+1}
- *- M \ddot{u}^i_{n+1} @f]
+ *  \f[ (c M + d C + e K^i_{n+1}) w = = q_{n+1} - f^i_{n+1} - C \dot{u}^i_{n+1}
+ *- M \ddot{u}^i_{n+1} \f]
  *
  * Corrector :
- *  @f{eqnarray*}{
+ *  \f{eqnarray*}{
  *  \ddot{u}^{i+1}_{n+1} &=& \ddot{u}^{i}_{n+1} + c w \\
  *  \dot{u}^{i+1}_{n+1} &=& \dot{u}^{i}_{n+1} + d w \\
  *  u^{i+1}_{n+1} &=& u^{i}_{n+1} + e w
- *  @f}
+ *  \f}
  *
  * c, d and e are parameters depending on the method used to solve the equations
- *@n
- * For acceleration : @f$ w = \delta \ddot{u}, e = \alpha \beta \Delta t^2, d =
- *\beta \Delta t,    c = 1 @f$ @n
- * For velocity :     @f$ w = \delta \dot{u},  e = 1/\beta \Delta t,        d =
- *1,                 c = \alpha \Delta t @f$ @n
- * For displacement : @f$ w = \delta u,        e = 1,                       d =
- *1/\alpha \Delta t, c = 1/\alpha \beta \Delta t^2 @f$
+ *\n
+ * For acceleration : \f$ w = \delta \ddot{u}, e = \alpha \beta \Delta t^2, d =
+ *\beta \Delta t,    c = 1 \f$ \n
+ * For velocity :     \f$ w = \delta \dot{u},  e = 1/\beta \Delta t,        d =
+ *1,                 c = \alpha \Delta t \f$ \n
+ * For displacement : \f$ w = \delta u,        e = 1,                       d =
+ *1/\alpha \Delta t, c = 1/\alpha \beta \Delta t^2 \f$
  */
 
 class NewmarkBeta : public IntegrationScheme2ndOrder {
@@ -132,10 +130,10 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  /// the @f$\beta@f$ parameter
+  /// the \f$\beta\f$ parameter
   Real beta;
 
-  /// the @f$\alpha@f$ parameter
+  /// the \f$\alpha\f$ parameter
   Real alpha;
 
   Real k;
@@ -154,8 +152,8 @@ protected:
 /**
  * central difference method (explicit)
  * undamped stability condition :
- * @f$ \Delta t = \alpha \Delta t_{crit} = \frac{2}{\omega_{max}} \leq \min_{e}
- *\frac{l_e}{c_e}
+ * \f$ \Delta t = \alpha \Delta t_{crit} = \frac{2}{\omega_{max}} \leq \min_{e}
+ *\frac{l_e}{c_e}\f$
  *
  */
 class CentralDifference : public NewmarkBeta {
@@ -165,6 +163,7 @@ public:
 
   std::vector<std::string> getNeededMatrixList() override { return {"M", "C"}; }
 };
+
 //#include "integration_scheme/central_difference.hh"
 
 /// undamped trapezoidal rule (implicit)

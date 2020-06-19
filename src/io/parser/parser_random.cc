@@ -8,7 +8,6 @@
  *
  * @brief  implementation of the parser
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -27,6 +26,7 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
 
 #if defined(__INTEL_COMPILER)
 //#pragma warning ( disable : 383 )
@@ -43,9 +43,11 @@
 
 /* -------------------------------------------------------------------------- */
 #include "parser.hh"
+#if !defined(DOXYGEN)
 #include "parser_grammar_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 #include "algebraic_parser.hh"
+#endif
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -54,6 +56,7 @@ namespace akantu {
 RandomParameter<Real>
 Parser::parseRandomParameter(const std::string & value,
                              const ParserSection & section) {
+#if !defined(DOXYGEN)
   using boost::spirit::ascii::space_type;
   parser::RandomGeneratorGrammar<std::string::const_iterator, space_type>
       grammar(section);
@@ -102,6 +105,7 @@ Parser::parseRandomParameter(const std::string & value,
   default:
     AKANTU_EXCEPTION("This is an unknown random distribution in the parser");
   }
+#endif
 }
 
 /* -------------------------------------------------------------------------- */

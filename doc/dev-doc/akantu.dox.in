@@ -1,0 +1,51 @@
+PROJECT_NAME           = @CMAKE_PROJECT_NAME@
+PROJECT_NUMBER         = @AKANTU_VERSION@
+STRIP_FROM_PATH        = @CMAKE_SOURCE_DIR@
+STRIP_FROM_INC_PATH    = @CMAKE_SOURCE_DIR@
+TAB_SIZE               = @AKANTU_TAB_SIZE@
+ALIASES                = "rst=\verbatim embed:rst" \
+                         "endrst=\endverbatim"
+#QUIET                  = @DOXYGEN_QUIET@
+QUIET                  = NO
+WARNINGS               = @DOXYGEN_WARNINGS@
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+WARN_AS_ERROR          = YES
+INPUT                  = @CMAKE_SOURCE_DIR@/src
+FILE_PATTERNS          = *.c *.cc *.hh *.py
+EXCLUDE                = @CMAKE_SOURCE_DIR@/src/common/aka_fwd.hh
+RECURSIVE              = YES
+EXAMPLE_PATH           = @CMAKE_SOURCE_DIR@/examples
+EXAMPLE_RECURSIVE      = YES
+SOURCE_BROWSER         = NO
+CLANG_ASSISTED_PARSING = NO
+CLANG_OPTIONS          =
+CLANG_DATABASE_PATH    = @CMAKE_BINARY_DIR@
+GENERATE_HTML          = NO
+GENERATE_HTMLHELP      = NO
+USE_MATHJAX            = YES
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+INCLUDE_PATH           = @AKANTU_DOXYGEN_INCLUDE_DIRS@
+PREDEFINED             = @AKANTU_DOXYGEN_DEFINTIONS@
+EXPAND_AS_DEFINED      = __BEGIN_AKANTU__ \
+                         __END_AKANTU__ \
+                         __BEGIN_AKANTU_DUMPER__ \
+                         __END_AKANTU_DUMPER__ \
+                         AKANTU_SET_MACRO \
+                         AKANTU_GET_MACRO \
+                         AKANTU_GET_MACRO_NOT_CONST \
+                         AKANTU_GET_MACRO_DEREF_PTR \
+                         AKANTU_GET_MACRO_BY_ELEMENT_TYPE \
+                         AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST
+COLLABORATION_GRAPH    = NO
+UML_LOOK               = YES
+TEMPLATE_RELATIONS     = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+DOT_GRAPH_MAX_NODES    = 500
+DOT_PATH               = @DOXYGEN_DOT_PATH@
+LOOKUP_CACHE_SIZE      = 0

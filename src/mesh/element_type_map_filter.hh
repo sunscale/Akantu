@@ -10,7 +10,6 @@
  * @brief  Filtered version based on a an akantu::ElementGroup of a
  * akantu::ElementTypeMap
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

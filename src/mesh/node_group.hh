@@ -8,7 +8,6 @@
  *
  * @brief  Node group definition
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -126,6 +125,6 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
 
-#include "node_group_inline_impl.cc"
+#include "node_group_inline_impl.hh"
 
 #endif /* __AKANTU_NODE_GROUP_HH__ */

@@ -12,7 +12,6 @@
  * @brief  Definition of the integration constants, some of the value are taken
  * from r3.01.01 doc from Code Aster
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

@@ -8,7 +8,6 @@
  * point at a time and propagate damage in a linear way. Max principal stress
  * criterion is used as a failure criterion.
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -193,17 +192,9 @@ UInt MaterialDamageIterative<spatial_dimension>::updateDamage() {
     /// update the damage only on non-ghosts elements! Doesn't make sense to
     /// update on ghost.
     GhostType ghost_type = _not_ghost;
-    ;
 
-    Mesh::type_iterator it = this->model.getFEEngine().getMesh().firstType(
-        spatial_dimension, ghost_type);
-    Mesh::type_iterator last_type =
-        this->model.getFEEngine().getMesh().lastType(spatial_dimension,
-                                                     ghost_type);
-
-    for (; it != last_type; ++it) {
-      ElementType el_type = *it;
-
+    for (auto && el_type : this->model.getFEEngine().getMesh().elementTypes(
+             spatial_dimension, ghost_type)) {
       const Array<Real> & e_stress = equivalent_stress(el_type);
       auto equivalent_stress_it = e_stress.begin();
       auto equivalent_stress_end = e_stress.end();

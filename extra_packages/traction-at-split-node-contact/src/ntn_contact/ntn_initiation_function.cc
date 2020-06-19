@@ -8,7 +8,6 @@
  *
  * @brief  implementation of initializing ntn and ntrf friction
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -77,13 +76,13 @@ namespace {
   using NTNFactory =
       Factory<NTNBaseFriction, std::tuple<bool, ID, ID>, NTNBaseContact &>;
 
-  std::ostream & operator<<(std::ostream & stream,
-                            const std::tuple<bool, ID, ID> & tuple) {
-    stream << "[" << std::get<0>(tuple) << ", " << std::get<1>(tuple) << ", "
-           << std::get<2>(tuple) << ", "
-           << "]" << std::endl;
-    return stream;
-  }
+  // std::ostream & operator<<(std::ostream & stream,
+  //                           const std::tuple<bool, ID, ID> & tuple) {
+  //   stream << "[" << std::get<0>(tuple) << ", " << std::get<1>(tuple) << ", "
+  //          << std::get<2>(tuple) << ", "
+  //          << "]" << std::endl;
+  //   return stream;
+  // }
 
   template <bool is_ntn, template <class> class FrictionLaw, class FrictionReg>
   bool registerFriction(const ID & friction_law, const ID & friction_reg) {

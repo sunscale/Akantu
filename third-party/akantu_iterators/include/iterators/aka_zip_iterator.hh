@@ -7,23 +7,22 @@
  *
  * @brief A Documented file.
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2011 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
- * Akantu is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * akantu-iterators is free  software: you can redistribute it and/or  modify it
+ * under the terms  of the  GNU Lesser  General Public  License as  published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
- * details.
+ * akantu-iterators is  distributed in the  hope that it  will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public
+ * License  for more details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
- * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ * along with akantu-iterators. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 /* -------------------------------------------------------------------------- */
@@ -84,15 +83,14 @@ namespace iterators {
         Tuple<typename std::iterator_traits<Iterators>::value_type...>;
     using difference_type = std::common_type_t<
         typename std::iterator_traits<Iterators>::difference_type...>;
-    using pointer =
-        Tuple<typename std::iterator_traits<Iterators>::pointer...>;
+    using pointer = Tuple<typename std::iterator_traits<Iterators>::pointer...>;
     using reference =
         Tuple<typename std::iterator_traits<Iterators>::reference...>;
     using iterator_category = // std::input_iterator_tag;
         std::common_type_t<
             typename std::iterator_traits<Iterators>::iterator_category...>;
 
-//    using nb_iterators = sizeof...(Iterators);
+    //    using nb_iterators = sizeof...(Iterators);
 
   public:
     explicit ZipIterator_(tuple_t iterators)
@@ -285,12 +283,13 @@ decltype(auto) make_zip_cat(zip_container_t &&... cont) {
 } // namespace AKANTU_ITERATORS_NAMESPACE
 
 namespace std {
-template <template <class ...> class Tuple, typename... Its>
+template <template <class...> class Tuple, typename... Its>
 struct iterator_traits<
     ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator_<Tuple, Its...>> {
 private:
   using iterator_type =
-      typename ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator_<Tuple, Its...>;
+      typename ::AKANTU_ITERATORS_NAMESPACE::iterators::ZipIterator_<Tuple,
+                                                                     Its...>;
 
 public:
   using iterator_category = typename iterator_type::iterator_category;

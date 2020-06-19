@@ -41,12 +41,12 @@ set(IOHELPER_COMMON_SRC
 )
 
 set(IOHELPER_COMMON_HEADERS
-  field_inline_impl.cc
+  field_inline_impl.hh
   dumper_restart.hh
   field_interface.hh
   visitor.hh
   field.hh
-  variable_inline_impl.cc
+  variable_inline_impl.hh
   variable_interface.hh
   variable.hh
   container_array.hh

@@ -8,7 +8,6 @@
  *
  * @brief  implementation of linear slip weakening
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -168,15 +167,15 @@ void NTNFricLawLinearSlipWeakening<Regularisation>::addDumpFieldToDumper(
   if (field_id == "mu_s") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->mu_s.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->mu_s.getArray()));
   } else if (field_id == "mu_k") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->mu_k.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->mu_k.getArray()));
   } else if (field_id == "d_c") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->d_c.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->d_c.getArray()));
   } else {
     NTNFricLawCoulomb<Regularisation>::addDumpFieldToDumper(dumper_name,
                                                             field_id);

@@ -13,7 +13,6 @@
  * @brief  Stores information relevent to the notion of element and nodes
  * groups.
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -53,7 +52,7 @@ class Mesh;
 class Element;
 class ElementSynchronizer;
 template <bool> class CommunicationBufferTemplated;
-namespace dumper {
+namespace dumpers {
   class Field;
 }
 } // namespace akantu
@@ -234,7 +233,7 @@ public:
   /// register an elemental field to the given group name (overloading for
   /// ElementalPartionField)
   template <typename T, template <bool> class dump_type>
-  std::shared_ptr<dumper::Field> createElementalField(
+  std::shared_ptr<dumpers::Field> createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
       UInt spatial_dimension, const ElementKind & kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
@@ -243,7 +242,7 @@ public:
   /// ElementalField)
   template <typename T, template <class> class ret_type,
             template <class, template <class> class, bool> class dump_type>
-  std::shared_ptr<dumper::Field> createElementalField(
+  std::shared_ptr<dumpers::Field> createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
       UInt spatial_dimension, const ElementKind & kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
@@ -253,19 +252,19 @@ public:
   template <typename T,
             /// type of InternalMaterialField
             template <typename, bool filtered> class dump_type>
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createElementalField(const ElementTypeMapArray<T> & field,
                        const std::string & group_name, UInt spatial_dimension,
                        const ElementKind & kind,
                        ElementTypeMap<UInt> nb_data_per_elem);
 
   template <typename type, bool flag, template <class, bool> class ftype>
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalField(const ftype<type, flag> * field,
                    const std::string & group_name, UInt padding_size = 0);
 
   template <typename type, bool flag, template <class, bool> class ftype>
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createStridedNodalField(const ftype<type, flag> * field,
                           const std::string & group_name, UInt size,
                           UInt stride, UInt padding_size);
@@ -280,14 +279,14 @@ protected:
 
   /// register an elemental field to the given group name
   template <class dump_type, typename field_type>
-  inline std::shared_ptr<dumper::Field>
+  inline std::shared_ptr<dumpers::Field>
   createElementalField(const field_type & field, const std::string & group_name,
                        UInt spatial_dimension, const ElementKind & kind,
                        const ElementTypeMap<UInt> & nb_data_per_elem);
 
   /// register an elemental field to the given group name
   template <class dump_type, typename field_type>
-  inline std::shared_ptr<dumper::Field>
+  inline std::shared_ptr<dumpers::Field>
   createElementalFilteredField(const field_type & field,
                                const std::string & group_name,
                                UInt spatial_dimension, const ElementKind & kind,

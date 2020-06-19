@@ -10,7 +10,6 @@
  * element
  *        types.
  *
- * @section LICENSE
  *
  * Copyright (©) 2010-2015 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -41,7 +40,7 @@
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_AKANTU__
+namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 /* classes for new igfem elements mesh events */
@@ -212,7 +211,7 @@ protected:
   DistributedSynchronizer * synchronizer;
 };
 
-__END_AKANTU__
+} // namespace akantu
 
 #include "mesh_igfem_spherical_growing_gel_tmpl.hh"
 

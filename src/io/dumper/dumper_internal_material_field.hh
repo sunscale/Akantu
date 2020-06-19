@@ -9,7 +9,6 @@
  *
  * @brief  description of material internal field
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -38,7 +37,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 namespace akantu {
-__BEGIN_AKANTU_DUMPER__
+namespace dumpers {
 /* -------------------------------------------------------------------------- */
 
 template <typename T, bool filtered = false>
@@ -66,7 +65,7 @@ public:
       : parent(field, spatial_dimension, ghost_type, element_kind) {}
 };
 
-__END_AKANTU_DUMPER__
+} // namespace dumpers
 } // namespace akantu
 
 #endif /* __AKANTU_DUMPER_INTERNAL_MATERIAL_FIELD_HH__ */

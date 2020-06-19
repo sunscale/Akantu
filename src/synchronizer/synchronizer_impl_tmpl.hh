@@ -8,7 +8,6 @@
  *
  * @brief  Implementation of the SynchronizerImpl
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -31,9 +30,6 @@
 /* -------------------------------------------------------------------------- */
 #include "synchronizer_impl.hh"
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_SYNCHRONIZER_IMPL_TMPL_HH__
-#define __AKANTU_SYNCHRONIZER_IMPL_TMPL_HH__
 
 namespace akantu {
 
@@ -853,5 +849,3 @@ void SynchronizerImpl<Entity>::reduceSynchronizeArray(Array<T> & array) const {
 
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
-
-#endif /* __AKANTU_SYNCHRONIZER_IMPL_TMPL_HH__ */

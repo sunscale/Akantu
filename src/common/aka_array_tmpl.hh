@@ -9,7 +9,6 @@
  *
  * @brief  Inline functions of the classes Array<T> and ArrayBase
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -525,14 +524,14 @@ template <class T, bool is_scal> inline void Array<T, is_scal>::erase(UInt i) {
  * @return reference to modified this
  */
 template <class T, bool is_scal>
-Array<T, is_scal> & Array<T, is_scal>::
-operator-=(const Array<T, is_scal> & vect) {
-  AKANTU_DEBUG_ASSERT((this->size_ == vect.size_) &&
-                          (this->nb_component == vect.nb_component),
+Array<T, is_scal> &
+Array<T, is_scal>::operator-=(const Array<T, is_scal> &other) {
+  AKANTU_DEBUG_ASSERT((this->size_ == other.size_) &&
+                          (this->nb_component == other.nb_component),
                       "The too array don't have the same sizes");
 
   T * a = this->values;
-  T * b = vect.storage();
+  T *b = other.storage();
   for (UInt i = 0; i < this->size_ * this->nb_component; ++i) {
     *a -= *b;
     ++a;
@@ -552,14 +551,14 @@ operator-=(const Array<T, is_scal> & vect) {
  * @return reference to modified this
  */
 template <class T, bool is_scal>
-Array<T, is_scal> & Array<T, is_scal>::
-operator+=(const Array<T, is_scal> & vect) {
-  AKANTU_DEBUG_ASSERT((this->size_ == vect.size()) &&
-                          (this->nb_component == vect.nb_component),
+Array<T, is_scal> &
+Array<T, is_scal>::operator+=(const Array<T, is_scal> & other) {
+  AKANTU_DEBUG_ASSERT((this->size_ == other.size()) &&
+                          (this->nb_component == other.nb_component),
                       "The too array don't have the same sizes");
 
   T * a = this->values;
-  T * b = vect.storage();
+  T *b = other.storage();
   for (UInt i = 0; i < this->size_ * this->nb_component; ++i) {
     *a++ += *b++;
   }
@@ -592,18 +591,18 @@ Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
  * false
  */
 template <class T, bool is_scal>
-bool Array<T, is_scal>::operator==(const Array<T, is_scal> & array) const {
-  bool equal = this->nb_component == array.nb_component &&
-               this->size_ == array.size_ && this->id == array.id;
+bool Array<T, is_scal>::operator==(const Array<T, is_scal> &other) const {
+  bool equal = this->nb_component == other.nb_component &&
+               this->size_ == other.size_ && this->id == other.id;
   if (!equal)
     return false;
 
-  if (this->values == array.storage())
+  if (this->values == other.storage())
     return true;
   else
     return std::equal(this->values,
                       this->values + this->size_ * this->nb_component,
-                      array.storage());
+                      other.storage());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -744,19 +743,20 @@ inline UInt Array<T, is_scal>::find(const C<T> & elem) {
  * nb_component as this. If compiled in debug mode, an incorrect other will
  * result in an exception being thrown. Optimised code may result in
  * unpredicted behaviour.
+ * @param no_sanity_check turns off all checkes
  */
 template <class T, bool is_scal>
-void Array<T, is_scal>::copy(const Array<T, is_scal> & vect,
+void Array<T, is_scal>::copy(const Array<T, is_scal> &other,
                              bool no_sanity_check) {
   AKANTU_DEBUG_IN();
 
-  if (!no_sanity_check)
-    if (vect.nb_component != this->nb_component)
+  if (not no_sanity_check)
+    if (other.nb_component != this->nb_component)
       AKANTU_ERROR("The two arrays do not have the same number of components");
 
-  this->resize((vect.size_ * vect.nb_component) / this->nb_component);
+  this->resize((other.size_ * other.nb_component) / this->nb_component);
 
-  std::copy_n(vect.storage(), this->size_ * this->nb_component, this->values);
+  std::copy_n(other.storage(), this->size_ * this->nb_component, this->values);
 
   AKANTU_DEBUG_OUT();
 }

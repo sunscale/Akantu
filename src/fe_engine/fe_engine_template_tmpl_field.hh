@@ -8,7 +8,6 @@
  *
  * @brief  implementation of the assemble field s functions
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -397,7 +396,7 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
       mesh.getNodes(), integration_points, shapes, ghost_type);
 
   // Extending the shape functions
-  /// \TODO move this in the shape functions as Voigt format shapes to have the
+  /// \todo move this in the shape functions as Voigt format shapes to have the
   /// code in common with the structural elements
   Array<Real> modified_shapes(vect_size, lmat_size * nb_degree_of_freedom, 0.);
   Array<Real> local_mat(vect_size, lmat_size * lmat_size);

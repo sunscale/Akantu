@@ -10,7 +10,6 @@
  *
  * @brief  Cohesive element inserter
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -44,6 +43,7 @@
 namespace akantu {
 class GlobalIdsUpdater;
 class FacetSynchronizer;
+class SolidMechanicsModeslCohesivel;
 } // namespace akantu
 
 namespace akantu {
@@ -118,7 +118,6 @@ public:
 
 public:
   friend class SolidMechanicsModelCohesive;
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
@@ -169,6 +168,6 @@ private:
 
 } // namespace akantu
 
-#include "cohesive_element_inserter_inline_impl.cc"
+#include "cohesive_element_inserter_inline_impl.hh"
 
 #endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__ */

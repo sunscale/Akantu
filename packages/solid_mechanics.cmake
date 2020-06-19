@@ -37,7 +37,7 @@ package_declare(solid_mechanics DEFAULT ON
 package_declare_sources(solid_mechanics
   model/solid_mechanics/material.cc
   model/solid_mechanics/material.hh
-  model/solid_mechanics/material_inline_impl.cc
+  model/solid_mechanics/material_inline_impl.hh
   model/solid_mechanics/material_selector.hh
   model/solid_mechanics/material_selector_tmpl.hh
   model/solid_mechanics/materials/internal_field.hh
@@ -46,7 +46,7 @@ package_declare_sources(solid_mechanics
   model/solid_mechanics/materials/random_internal_field_tmpl.hh
   model/solid_mechanics/solid_mechanics_model.cc
   model/solid_mechanics/solid_mechanics_model.hh
-  model/solid_mechanics/solid_mechanics_model_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_inline_impl.hh
   model/solid_mechanics/solid_mechanics_model_io.cc
   model/solid_mechanics/solid_mechanics_model_mass.cc
   model/solid_mechanics/solid_mechanics_model_material.cc
@@ -58,12 +58,12 @@ package_declare_sources(solid_mechanics
   model/solid_mechanics/materials/material_core_includes.hh
   model/solid_mechanics/materials/material_elastic.cc
   model/solid_mechanics/materials/material_elastic.hh
-  model/solid_mechanics/materials/material_elastic_inline_impl.cc
+  model/solid_mechanics/materials/material_elastic_inline_impl.hh
   model/solid_mechanics/materials/material_thermal.cc
   model/solid_mechanics/materials/material_thermal.hh
   model/solid_mechanics/materials/material_elastic_linear_anisotropic.cc
   model/solid_mechanics/materials/material_elastic_linear_anisotropic.hh
-  model/solid_mechanics/materials/material_elastic_linear_anisotropic_inline_impl.cc
+  model/solid_mechanics/materials/material_elastic_linear_anisotropic_inline_impl.hh
   model/solid_mechanics/materials/material_elastic_orthotropic.cc
   model/solid_mechanics/materials/material_elastic_orthotropic.hh
   model/solid_mechanics/materials/material_damage/material_anisotropic_damage.hh
@@ -73,22 +73,23 @@ package_declare_sources(solid_mechanics
   model/solid_mechanics/materials/material_damage/material_damage_tmpl.hh
   model/solid_mechanics/materials/material_damage/material_marigo.cc
   model/solid_mechanics/materials/material_damage/material_marigo.hh
-  model/solid_mechanics/materials/material_damage/material_marigo_inline_impl.cc
+  model/solid_mechanics/materials/material_damage/material_marigo_inline_impl.hh
   model/solid_mechanics/materials/material_damage/material_mazars.cc
   model/solid_mechanics/materials/material_damage/material_mazars.hh
   model/solid_mechanics/materials/material_damage/material_mazars_inline_impl.cc
   model/solid_mechanics/materials/material_damage/material_phasefield.cc
   model/solid_mechanics/materials/material_damage/material_phasefield.hh
   model/solid_mechanics/materials/material_damage/material_phasefield_inline_impl.cc
+  model/solid_mechanics/materials/material_damage/material_mazars_inline_impl.hh
   model/solid_mechanics/materials/material_finite_deformation/material_neohookean.cc
   model/solid_mechanics/materials/material_finite_deformation/material_neohookean.hh
-  model/solid_mechanics/materials/material_finite_deformation/material_neohookean_inline_impl.cc
+  model/solid_mechanics/materials/material_finite_deformation/material_neohookean_inline_impl.hh
   model/solid_mechanics/materials/material_plastic/material_plastic.cc
   model/solid_mechanics/materials/material_plastic/material_plastic.hh
-  model/solid_mechanics/materials/material_plastic/material_plastic_inline_impl.cc
+  model/solid_mechanics/materials/material_plastic/material_plastic_inline_impl.hh
   model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening.cc
   model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening.hh
-  model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening_inline_impl.cc
+  model/solid_mechanics/materials/material_plastic/material_linear_isotropic_hardening_inline_impl.hh
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.cc
   model/solid_mechanics/materials/material_viscoelastic/material_standard_linear_solid_deviatoric.hh
   model/solid_mechanics/materials/material_viscoelastic/material_viscoelastic_maxwell.cc

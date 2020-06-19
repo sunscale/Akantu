@@ -10,7 +10,6 @@
  * @brief  Non-local neighborhood for non-local averaging based on
  * weight function
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -130,6 +129,6 @@ private:
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-#include "non_local_neighborhood_inline_impl.cc"
+#include "non_local_neighborhood_inline_impl.hh"
 
 #endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_HH__ */

@@ -39,11 +39,11 @@ package_declare_sources(cohesive_element
   fe_engine/cohesive_element.hh
   fe_engine/fe_engine_template_cohesive.cc
   fe_engine/shape_cohesive.hh
-  fe_engine/shape_cohesive_inline_impl.cc
+  fe_engine/shape_cohesive_inline_impl.hh
 
   mesh_utils/cohesive_element_inserter.cc
   mesh_utils/cohesive_element_inserter.hh
-  mesh_utils/cohesive_element_inserter_inline_impl.cc
+  mesh_utils/cohesive_element_inserter_inline_impl.hh
   mesh_utils/cohesive_element_inserter_parallel.cc
 
   model/solid_mechanics/solid_mechanics_model_cohesive/fragment_manager.cc
@@ -63,18 +63,18 @@ package_declare_sources(cohesive_element
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_fatigue.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_friction.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_friction.hh
-  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_inline_impl.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_uncoupled.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/constitutive_laws/material_cohesive_linear_uncoupled.hh
 
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive_includes.hh
-  model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/materials/material_cohesive_inline_impl.hh
 
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.cc
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive.hh
-  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_inline_impl.cc
+  model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_inline_impl.hh
   model/solid_mechanics/solid_mechanics_model_cohesive/solid_mechanics_model_cohesive_parallel.cc
   )
 

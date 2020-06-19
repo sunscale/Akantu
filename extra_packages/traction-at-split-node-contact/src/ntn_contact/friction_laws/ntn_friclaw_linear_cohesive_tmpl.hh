@@ -8,7 +8,6 @@
  *
  * @brief  implementation of linear cohesive law
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -168,15 +167,15 @@ void NTNFricLawLinearCohesive<Regularisation>::addDumpFieldToDumper(
   if (field_id == "G_c") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->G_c.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->G_c.getArray()));
   } else if (field_id == "tau_c") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->tau_c.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->tau_c.getArray()));
   } else if (field_id == "tau_r") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->tau_r.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->tau_r.getArray()));
   } else {
     Regularisation::addDumpFieldToDumper(dumper_name, field_id);
   }

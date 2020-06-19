@@ -9,7 +9,6 @@
  *
  * @brief  FEM class
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -370,7 +369,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#include "fe_engine_inline_impl.cc"
+#include "fe_engine_inline_impl.hh"
 #include "fe_engine_template.hh"
 
 #endif /* __AKANTU_FE_ENGINE_HH__ */

@@ -12,7 +12,6 @@
  *
  * @brief  Model implementation for Structural Mechanics elements
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -45,10 +44,10 @@
 #include "dumpable_inline_impl.hh"
 #include "dumper_elemental_field.hh"
 #include "dumper_iohelper_paraview.hh"
-#include "group_manager_inline_impl.cc"
+#include "group_manager_inline_impl.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-#include "structural_mechanics_model_inline_impl.cc"
+#include "structural_mechanics_model_inline_impl.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -280,7 +279,7 @@ void StructuralMechanicsModel::computeRotationMatrix(const ElementType & type) {
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> StructuralMechanicsModel::createNodalFieldBool(
+std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createNodalFieldBool(
     const std::string & field_name, const std::string & group_name,
     __attribute__((unused)) bool padding_flag) {
 
@@ -291,7 +290,7 @@ std::shared_ptr<dumper::Field> StructuralMechanicsModel::createNodalFieldBool(
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                                const std::string & group_name,
                                                bool padding_flag) {
@@ -338,14 +337,14 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> StructuralMechanicsModel::createElementalField(
+std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createElementalField(
     const std::string & field_name, const std::string & group_name, bool,
     const UInt & spatial_dimension, const ElementKind & kind) {
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
 
   if (field_name == "element_index_by_material")
-    field = mesh.createElementalField<UInt, Vector, dumper::ElementalField>(
+    field = mesh.createElementalField<UInt, Vector, dumpers::ElementalField>(
         field_name, group_name, spatial_dimension, kind);
 
   return field;

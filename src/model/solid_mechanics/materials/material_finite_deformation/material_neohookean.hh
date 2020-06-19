@@ -8,7 +8,6 @@
  *
  * @brief  Material isotropic elastic
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -160,12 +159,11 @@ protected:
   Real kpa;
 };
 
+} // namespace akantu
+
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */
-
-#include "material_neohookean_inline_impl.cc"
-
-} // namespace akantu
+#include "material_neohookean_inline_impl.hh"
 
 #endif /* __AKANTU_MATERIAL_NEOHOOKEAN_HH__ */

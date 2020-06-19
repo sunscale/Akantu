@@ -8,7 +8,6 @@
  *
  * @brief  test of manual partitioner
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -98,9 +97,9 @@ int main(int argc, char * argv[]) {
 
 #ifdef DEBUG_TEST
   DumperParaview dumper("test-mesh-data-partition");
-  dumper::Field * field1 =
-      new dumper::ElementalField<UInt>(partitioner->getPartitions(), dim);
-  dumper::Field * field2 = new dumper::ElementalField<UInt>(partition, dim);
+  dumpers::Field * field1 =
+      new dumpers::ElementalField<UInt>(partitioner->getPartitions(), dim);
+  dumpers::Field * field2 = new dumpers::ElementalField<UInt>(partition, dim);
   dumper.registerMesh(mesh, dim);
   dumper.registerField("partitions", field1);
   dumper.registerField("partitions_ref", field2);

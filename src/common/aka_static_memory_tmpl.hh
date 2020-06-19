@@ -8,7 +8,6 @@
  *
  * @brief  template part of the StaticMemory
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -27,7 +26,11 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/* -------------------------------------------------------------------------- */
+#include "aka_static_memory.hh"
+/* -------------------------------------------------------------------------- */
 
+namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 Array<T> & StaticMemory::smalloc(const MemoryID & memory_id, const ID & name,
@@ -84,3 +87,4 @@ Array<T> & StaticMemory::smalloc(const MemoryID & memory_id, const ID & name,
 }
 
 /* -------------------------------------------------------------------------- */
+} // namespace akantu

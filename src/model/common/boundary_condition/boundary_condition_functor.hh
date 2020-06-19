@@ -10,7 +10,6 @@
  *
  * @brief  Definitions of the functors to apply boundary conditions
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -208,6 +207,6 @@ namespace BC {
 } // namespace BC
 } // namespace akantu
 
-#include "boundary_condition_functor_inline_impl.cc"
+#include "boundary_condition_functor_inline_impl.hh"
 
 #endif /* __AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH__ */

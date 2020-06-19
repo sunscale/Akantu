@@ -8,7 +8,6 @@
  *
  * @brief  Test the generation of neighbors list based on a akaentu::Grid
  *
- * @section LICENSE
  *
  * Copyright (©) 2014-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)

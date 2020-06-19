@@ -8,7 +8,6 @@
  *
  * @brief  This is a generic factory
  *
- * @section LICENSE
  *
  * Copyright (©) 2016-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -59,9 +58,9 @@ public:
   /* ------------------------------------------------------------------------ */
   bool registerAllocator(const T & id, const allocator_t & allocator) {
     if (allocators.find(id) != allocators.end())
-      AKANTU_EXCEPTION("The id " << id << " is already registered in the "
-                                 << debug::demangle(typeid(Base).name())
-                                 << " factory");
+      AKANTU_EXCEPTION("The id "
+                       << " is already registered in the "
+                       << debug::demangle(typeid(Base).name()) << " factory");
     allocators[id] = allocator;
     return true;
   }
@@ -69,9 +68,9 @@ public:
   template <typename... AArgs>
   std::unique_ptr<Base> allocate(const T & id, AArgs &&... args) const {
     if (allocators.find(id) == allocators.end())
-      AKANTU_EXCEPTION("The id " << id << " is not registered in the "
-                                  << debug::demangle(typeid(Base).name())
-                                  << " factory.");
+      AKANTU_EXCEPTION("The id "
+                       << " is not registered in the "
+                       << debug::demangle(typeid(Base).name()) << " factory.");
     return std::forward<std::unique_ptr<Base>>(
         allocators.at(id)(std::forward<AArgs>(args)...));
   }

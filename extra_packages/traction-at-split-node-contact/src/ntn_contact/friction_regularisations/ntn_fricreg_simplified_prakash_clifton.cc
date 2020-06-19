@@ -8,7 +8,6 @@
  *
  * @brief  implementation of simplified prakash clifton with one parameter
  *
- * @section LICENSE
  *
  * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -150,7 +149,7 @@ void NTNFricRegSimplifiedPrakashClifton::addDumpFieldToDumper(
   if (field_id == "t_star") {
     this->internalAddDumpFieldToDumper(
         dumper_name, field_id,
-        std::make_unique<dumper::NodalField<Real>>(this->t_star.getArray()));
+        std::make_unique<dumpers::NodalField<Real>>(this->t_star.getArray()));
   } else {
     NTNFricRegNoRegularisation::addDumpFieldToDumper(dumper_name, field_id);
   }

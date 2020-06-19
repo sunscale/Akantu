@@ -7,7 +7,6 @@
  *
  * @brief  Computation of the analytical exemple 1.1 in the TGC vol 6
  *
- * @section LICENSE
  *
  * Copyright (©) 2015 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory
  * (LSMS - Laboratoire de Simulation en Mécanique des Solides)

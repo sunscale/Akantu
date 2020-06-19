@@ -9,7 +9,6 @@
  *
  * @brief  Orthotropic elastic material
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -138,6 +137,6 @@ protected:
 };
 } // namespace akantu
 
-#include "material_elastic_linear_anisotropic_inline_impl.cc"
+#include "material_elastic_linear_anisotropic_inline_impl.hh"
 
 #endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_HH__ */

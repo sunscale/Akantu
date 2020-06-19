@@ -49,7 +49,7 @@ register_test(test_dof_synchronizer
 
 register_gtest_sources(
   SOURCES test_communicator.cc
-  PACKAGE core
+  PACKAGE parallel
   )
 
 

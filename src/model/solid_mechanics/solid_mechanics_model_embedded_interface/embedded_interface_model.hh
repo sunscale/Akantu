@@ -8,7 +8,6 @@
  *
  * @brief  Model of Solid Mechanics with embedded interfaces
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -72,6 +71,9 @@ public:
    *
    * @param mesh main mesh (concrete)
    * @param primitive_mesh mesh of the embedded reinforcement
+   * @param spatial_dimension the spatial dimension to be considered by this model
+   * @param id the id of the model
+   * @param memory_id the id of the memory manager to use
    */
   EmbeddedInterfaceModel(Mesh & mesh, Mesh & primitive_mesh,
                          UInt spatial_dimension = _all_dimensions,

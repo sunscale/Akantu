@@ -9,7 +9,6 @@
  *
  * @brief  Gauss integration facilities
  *
- * @section LICENSE
  *
  * Copyright (©)  2010-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
@@ -201,6 +200,6 @@ private:
 
 } // namespace akantu
 
-#include "integrator_gauss_inline_impl.cc"
+#include "integrator_gauss_inline_impl.hh"
 
 #endif /* __AKANTU_INTEGRATOR_GAUSS_HH__ */
