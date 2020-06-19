@@ -41,16 +41,22 @@
 #define __AKANTU_PHASE_FIELD_MODEL_HH__
 
 namespace akantu {
-template <ElementKind kind, class IntegrationOrderFuntor> class IntegratorGauss;
+class PhaseField;
+class PhaseFieldSelector;
+template <ElementKind kind, class IntegrationOrderFuntor>
+class IntegratorGauss;
 template <ElementKind kind> class ShapeLagrange;
 } // namespace akantu
 
+/* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class PhaseFieldModel : public Model,
-                        public DataAccessor<Element>,
-                        public DataAccessor<UInt>,
-                        public BoundaryCondition<PhaseFieldModel> {
+/* -------------------------------------------------------------------------- */
+class PhaseFieldModel
+  : public Model,
+    public DataAccessor<Element>,
+    public DataAccessor<UInt>,
+    public BoundaryCondition<PhaseFieldModel> {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -72,8 +78,8 @@ protected:
   /// generic function to initialize everything ready for explicit dynamics
   void initFullImpl(const ModelOptions & options) override;
 
-  /// read one material file to instantiate all the materials
-  void readMaterials();
+  /// initialize all internal array for phasefields
+  void initPhaseFields();
 
   /// allocate all vectors
   void initSolver(TimeStepSolverType, NonLinearSolverType) override;
@@ -105,12 +111,32 @@ protected:
   ModelSolverOptions
   getDefaultSolverOptions(const TimeStepSolverType & type) const;
 
-  ///
-  void updateInternalParameters();
-
   /// function to print the containt of the class
   void printself(std::ostream & stream, int indent = 0) const override;
 
+ /* ------------------------------------------------------------------------ */
+  /* Materials (phase_field_model.cc)                            */
+  /* ------------------------------------------------------------------------ */
+public:
+  /// register an empty phasefield of a given type
+  PhaseField & registerNewPhaseField(const ID & mat_name, const ID & mat_type,
+				   const ID & opt_param);
+
+  /// reassigns phasefields depending on the phasefield selector
+  void reassignPhaseField();
+
+protected:
+  /// register a phasefield in the dynamic database
+  PhaseField & registerNewPhaseField(const ParserSection & phase_section);
+
+  /// read the phasefield files to instantiate all the phasefields
+  void instantiatePhaseFields();
+
+  /// set the element_id_by_phasefield and add the elements to the good phasefields
+  void
+  assignPhaseFieldToElements(const ElementTypeMapArray<UInt> * filter = nullptr);
+
+ 
   /* ------------------------------------------------------------------------ */
   /* Methods for static                                                       */
   /* ------------------------------------------------------------------------ */
@@ -124,12 +150,6 @@ public:
   // compute the internal forces
   void assembleInternalForces(const GhostType & ghost_type);
   
-  /// assemble damage matrix
-  void assembleDamageMatrix();
-
-  /// assemble damage gradient matrix
-  void assembleDamageGradMatrix();
-
   /// coupling parameters damage and strains from solid mechanics model
   void setCouplingParameters(ElementTypeMapArray<Real> & strain_on_qpoints,
                              Array<Real> & damage);
@@ -215,6 +235,58 @@ public:
   /// get the PhaseFieldModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
 
+  
+  /// get an iterable on the phasefields
+  inline decltype(auto) getPhaseFields();
+
+  /// get an iterable on the phasefields
+  inline decltype(auto) getPhaseFields() const;
+
+  /// get a particular phasefield (by phasefield index)
+  inline PhaseField & getPhaseField(UInt mat_index);
+
+  /// get a particular phasefield (by phasefield index)
+  inline const PhaseField & getPhaseField(UInt mat_index) const;
+
+  /// get a particular phasefield (by phasefield name)
+  inline PhaseField & getPhaseField(const std::string & name);
+
+  /// get a particular phasefield (by phasefield name)
+  inline const PhaseField & getPhaseField(const std::string & name) const;
+
+  /// get a particular phasefield id from is name
+  inline UInt getPhaseFieldIndex(const std::string & name) const;
+
+  /// give the number of phasefields
+  inline UInt getNbPhaseFields() const { return phasefields.size(); }
+
+  /// give the phasefield internal index from its id
+  Int getInternalIndexFromID(const ID & id) const;
+
+  AKANTU_GET_MACRO(PhaseFieldByElement, phasefield_index,
+                   const ElementTypeMapArray<UInt> &);
+  AKANTU_GET_MACRO(PhaseFieldLocalNumbering, phasefield_local_numbering,
+                   const ElementTypeMapArray<UInt> &);
+
+  /// vectors containing local material element index for each global element
+  /// index
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(PhaseFieldByElement, phasefield_index,
+                                         UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(PhaseFieldByElement, phasefield_index, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(PhaseFieldLocalNumbering,
+                                         phasefield_local_numbering, UInt);
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(PhaseFieldLocalNumbering,
+                                   phasefield_local_numbering, UInt);
+
+  AKANTU_GET_MACRO_NOT_CONST(PhaseFieldSelector, *phasefield_selector,
+                             PhaseFieldSelector &);
+
+  AKANTU_SET_MACRO(PhaseFieldSelector, phasefield_selector,
+                   std::shared_ptr<PhaseFieldSelector>);
+
+  FEEngine & getFEEngineBoundary(const ID & name = "") override;
+
+
   /* ------------------------------------------------------------------------ */
   /* Dumpable Interface                                                       */
   /* ------------------------------------------------------------------------ */
@@ -246,10 +318,6 @@ public:
   virtual void dump(UInt step);
 
   virtual void dump(Real time, UInt step);
-
-protected:
-  /* ------------------------------------------------------------------------ */
-  FEEngine & getFEEngineBoundary(const ID & name = "") override;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -299,30 +367,36 @@ private:
   /// residuals array
   Array<Real> * internal_force{nullptr};
 
-  /// lengthscale parameter
-  Real l_0;
+  /// Arrays containing the phasefield index for each element
+  ElementTypeMapArray<UInt> phasefield_index;
 
-  /// critical energy release rate
-  Real g_c;
+  /// Arrays containing the position in the element filter of the phasefield
+  /// (phasefield's local numbering)
+  ElementTypeMapArray<UInt> phasefield_local_numbering;
 
-  /// Young's modulus
-  Real E;
+  /// class defining of to choose a phasefield
+  std::shared_ptr<PhaseFieldSelector> phasefield_selector;
+  
+  /// mapping between phasefield name and phasefield internal id
+  std::map<std::string, UInt> phasefields_names_to_id;
+  
+  /// list of used phasefields
+  std::vector<std::unique_ptr<PhaseField>> phasefields;
 
-  /// Poisson ratio
-  Real nu;
-
-  /// Lame's first parameter
-  Real lambda;
-
-  /// Lame's second paramter
-  Real mu;
+  /// tells if the phasefield are instantiated
+  bool are_phasefields_instantiated{false};
 };
 
 } // namespace akantu
 
-/* ------------------------------------------------------------------------ */
-/* inline functions                                                         */
-/* ------------------------------------------------------------------------ */
-//#include "phase_field_model_inline_impl.cc"
+
+/* -------------------------------------------------------------------------- */
+/* inline functions                                                           */
+/* -------------------------------------------------------------------------- */
+#include "phasefield.hh"
+#include "parser.hh"
+
+#include "phase_field_model_inline_impl.cc"
+/* -------------------------------------------------------------------------- */
 
 #endif

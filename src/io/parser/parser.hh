@@ -51,6 +51,7 @@ namespace akantu {
   (phase)								\
   (integration_scheme)                                                  \
   (material)                                                            \
+  (phasefield)								\
   (mesh)                                                                \
   (model)                                                               \
   (model_solver)                                                        \

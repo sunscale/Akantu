@@ -33,6 +33,15 @@ package_declare(phase_field
   DESCRIPTION "Use Phase Field package of Akantu")
 
 package_declare_sources(phase_field
+  model/phase_field/phasefield.cc
+  model/phase_field/phasefield.hh
+  model/phase_field/phasefield_inline_impl.cc
+  model/phase_field/phasefield_selector.hh
+  model/phase_field/phasefield_selector_tmpl.hh
+
+  model/phase_field/phasefields/phasefield_exponential.hh
+  model/phase_field/phasefields/phasefield_exponential.cc
+  
   model/phase_field/phase_field_model.cc
   model/phase_field/phase_field_model.hh
   model/phase_field/phase_field_model_inline_impl.cc
