@@ -153,8 +153,6 @@ Communicator::Communicator(int & /*argc*/, char **& /*argv*/,
 /* -------------------------------------------------------------------------- */
 Communicator::Communicator(const private_member &)
     : communicator_data(std::make_unique<MPICommunicatorData>()) {
-  prank = MPIDATA.rank();
-  psize = MPIDATA.size();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -194,7 +192,7 @@ CommunicationRequest
 Communicator::asyncSendImpl(const T * buffer, Int size, Int receiver, Int tag,
                             const CommunicationMode & mode) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  auto * request = new CommunicationRequestMPI(prank, receiver);
+  auto * request = new CommunicationRequestMPI(whoAmI(), receiver);
   MPI_Request & req = request->getMPIRequest();
 
   MPI_Datatype type = getMPIDatatype<T>();
@@ -218,7 +216,7 @@ template <typename T>
 CommunicationRequest Communicator::asyncReceiveImpl(T * buffer, Int size,
                                                     Int sender, Int tag) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  auto * request = new CommunicationRequestMPI(sender, prank);
+  auto * request = new CommunicationRequestMPI(sender, whoAmI());
   MPI_Datatype type = getMPIDatatype<T>();
 
   MPI_Request & req = request->getMPIRequest();
@@ -388,7 +386,7 @@ void Communicator::exclusiveScanImpl(T * values, T * result, int nb_values,
   MPI_Exscan(values, result, nb_values, type, getMPISynchronizerOperation(op),
              communicator);
 
-  if (prank == 0) {
+  if (whoAmI() == 0) {
     result[0] = T();
   }
 }
@@ -407,9 +405,9 @@ void Communicator::allGatherImpl(T * values, int nb_values) const {
 template <typename T>
 void Communicator::allGatherVImpl(T * values, int * nb_values) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  std::vector<int> displs(psize);
+  std::vector<int> displs(getNbProc());
   displs[0] = 0;
-  for (int i = 1; i < psize; ++i) {
+  for (int i = 1; i < getNbProc(); ++i) {
     displs[i] = displs[i - 1] + nb_values[i - 1];
   }
 
@@ -423,7 +421,7 @@ template <typename T>
 void Communicator::gatherImpl(T * values, int nb_values, int root) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   T *send_buf = nullptr, *recv_buf = nullptr;
-  if (prank == root) {
+  if (whoAmI() == root) {
     send_buf = (T *)MPI_IN_PLACE;
     recv_buf = values;
   } else {
@@ -448,7 +446,7 @@ void Communicator::gatherImpl(T * values, int nb_values, T * gathered,
 
   MPI_Datatype type = getMPIDatatype<T>();
   MPI_Gather(send_buf, nb_values, type, recv_buf, nb_gathered, type,
-             this->prank, communicator);
+             whoAmI(), communicator);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -456,6 +454,8 @@ template <typename T>
 void Communicator::gatherVImpl(T * values, int * nb_values, int root) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
   int * displs = nullptr;
+  auto psize = getNbProc();
+    auto prank = whoAmI();
   if (prank == root) {
     displs = new int[psize];
     displs[0] = 0;
@@ -494,5 +494,7 @@ int Communicator::getMaxTag() const { return MPIDATA.getMaxTag(); }
 int Communicator::getMinTag() const { return 0; }
 
 /* -------------------------------------------------------------------------- */
+Int Communicator::getNbProc() const { return MPIDATA.size(); }
+Int Communicator::whoAmI() const { return MPIDATA.rank(); }
 
 } // namespace akantu

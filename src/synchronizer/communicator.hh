@@ -332,7 +332,7 @@ public:
 
   /* ------------------------------------------------------------------------ */
   template <typename T> inline void allGather(Array<T> & values) const {
-    AKANTU_DEBUG_ASSERT(UInt(psize) == values.size(),
+    AKANTU_DEBUG_ASSERT(UInt(getNbProc()) == values.size(),
                         "The array size is not correct");
     this->allGatherImpl(values.storage(), values.getNbComponent());
   }
@@ -340,9 +340,9 @@ public:
   template <typename Tensor,
             typename = std::enable_if_t<aka::is_tensor<Tensor>::value>>
   inline void allGather(Tensor & values) const {
-    AKANTU_DEBUG_ASSERT(values.size() / UInt(psize) > 0,
+    AKANTU_DEBUG_ASSERT(values.size() / getNbProc() > 0,
                         "The vector size is not correct");
-    this->allGatherImpl(values.storage(), values.size() / UInt(psize));
+    this->allGatherImpl(values.storage(), values.size() / getNbProc());
   }
 
   /* ------------------------------------------------------------------------ */
@@ -379,7 +379,7 @@ public:
          std::enable_if_t<aka::is_tensor<Tensor>::value> * = nullptr) const {
     AKANTU_DEBUG_ASSERT(values.size() == gathered.getNbComponent(),
                         "The array size is not correct");
-    gathered.resize(psize);
+    gathered.resize(getNbProc());
     this->gatherImpl(values.data(), values.size(), gathered.storage(),
                      gathered.getNbComponent());
   }
@@ -419,7 +419,7 @@ public:
                         int root = 0) const {
     UInt buffer_size = buffer.size();
     this->broadcastImpl(&buffer_size, 1, root);
-    if (prank != root)
+    if (whoAmI() != root)
       buffer.reserve(buffer_size);
 
     if (buffer_size == 0)
@@ -504,8 +504,9 @@ protected:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  Int getNbProc() const { return psize; };
-  Int whoAmI() const { return prank; };
+  
+  Int getNbProc() const;
+  Int whoAmI() const;
 
   static Communicator & getStaticCommunicator();
   static Communicator & getStaticCommunicator(int & argc, char **& argv);
@@ -522,8 +523,6 @@ private:
   static std::unique_ptr<Communicator> static_communicator;
 
 protected:
-  Int prank{0};
-  Int psize{1};
   std::unique_ptr<CommunicatorInternalData> communicator_data;
 };
 
