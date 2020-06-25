@@ -682,7 +682,7 @@ Figure :numref:`fig:smm:implicit:dynamic_solution` presents the deformed
 beam at 3 different times during the simulation: time steps 0, 1000 and
 2000.
 
-.. _fig:smm:implicity:dynamic_solution:
+.. _fig:smm:implicit:dynamic_solution:
 .. figure:: figures/dynamic_analysis.png
             :align: center
             :width: 60%
@@ -1050,17 +1050,20 @@ functions of the parent material::
    Real getStableTimeStep(Real h, const Element & element);
 
 In the following a detailed description of these functions is provided:
+
 - ``initMaterial``: This method is called after the material file is fully read
-     and the elements corresponding to each material are assigned. Some of the
-     frequently used constant parameters are calculated in this method. For
-     example, the Lam\'{e} constants of elastic materials can be considered as
-     such parameters.
+  and the elements corresponding to each material are assigned. Some of the
+  frequently used constant parameters are calculated in this method. For
+  example, the Lam\'{e} constants of elastic materials can be considered as such
+  parameters.
 
 - ``computeStress``: In this method, the stresses are computed based on the
      constitutive law as a function of the strains of the quadrature points. For
      example, the stresses for the elastic material are calculated based on the
      following formula:
+
      .. math::
+
         \mat{\sigma }  =\lambda\mathrm{tr}(\mat{\varepsilon})\mat{I}+2 \mu \mat{\varepsilon}
 
      Therefore, this method contains a loop on all quadrature points assigned to
