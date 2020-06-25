@@ -58,8 +58,7 @@ set(AKANTU_PATCH_VERSION 0)
 set(AKANTU_COPYRING "2010-2020, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
 set(AKANTU_MAINTAINER "Nicolas Richart")
 
-project(Akantu
-  HOMEPAGE_URL "htpps://akantu.ch")
+project(Akantu)
 enable_language(CXX)
 
 #===============================================================================
