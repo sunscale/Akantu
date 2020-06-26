@@ -56,7 +56,7 @@ protected:
   void registerNonLocalVariables() override;
 
   /* ------------------------------------------------------------------------ */
-  void computeNonLocalStresses(GhostType ghost_type) {
+  void computeNonLocalStresses(GhostType ghost_type) override {
     AKANTU_DEBUG_IN();
 
     for (auto & type : this->element_filter.elementTypes(dim, ghost_type)) {

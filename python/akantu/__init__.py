@@ -1,10 +1,17 @@
 import scipy.sparse as _aka_sparse
 import numpy as _aka_np
 import py11_akantu
+
 private_keys = set(dir(py11_akantu)) - set(dir())
 
 for k in private_keys:
     globals()[k] = getattr(py11_akantu, k)
+
+if py11_akantu.has_mpi():
+    try:
+        from mpi4py import MPI  # noqa: F401
+    except Exception:
+        pass
 
 
 def initialize(*args, **kwargs):

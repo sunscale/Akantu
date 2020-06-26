@@ -15,15 +15,16 @@ stages:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - cd test/ci/${IMAGE_NAME}/
-    - docker build -t registry.gitlab.com/akantu/akantu:${IMAGE_NAME} .
-    - docker push registry.gitlab.com/akantu/akantu:${IMAGE_NAME}
+    - cd test/ci/${IMAGE_DIR}/
+    - docker build -t registry.gitlab.com/akantu/akantu/${IMAGE_NAME} .
+    - docker push registry.gitlab.com/akantu/akantu/${IMAGE_NAME}
 
 docker build:debian-testing:
   variables:
-    IMAGE_NAME: debian-testing
+    IMAGE_NAME: debian:testing
+    IMAGE_DIR: debian-testing
   extends: .docker_build
   rules:
     - changes:
@@ -31,7 +32,8 @@ docker build:debian-testing:
 
 docker build:ubuntu-lts:
   variables:
-    IMAGE_NAME: ubuntu-lts
+    IMAGE_NAME: ubuntu:lts
+    IMAGE_DIR: ubuntu/lts
   extends: .docker_build
   rules:
     - changes:
@@ -57,6 +59,7 @@ docker build:ubuntu-lts:
             -DAKANTU_BUILD_ALL_EXAMPLES:BOOL=TRUE
             -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
             -DAKANTU_TESTS:BOOL=TRUE
+            -DAKANTU_RUN_IN_DOCKER:BOOL=TRUE
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
   artifacts:
     when: on_success
@@ -78,17 +81,13 @@ docker build:ubuntu-lts:
   artifacts:
     when: on_success
     paths:
-      - build
+      - build/
+      - ${output}-out.log
+      - ${output}-err.log
     expire_in: 2h
 
 .tests:
   stage: test
-  variables:
-    OMPI_MCA_plm: 'isolated'
-    OMPI_MCA_btl: 'tcp,self'
-    OMPI_MCA_rmaps_base_oversubscribe: 1
-    OMPI_ALLOW_RUN_AS_ROOT: 1
-    OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   script:
     - cd build
     - ctest -T test --no-compress-output --timeout 300
@@ -125,7 +124,7 @@ docker build:ubuntu-lts:
     CCACHE_BASEDIRE: ${CI_PROJECT_DIR}/build
     CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
   cache:
-    key: ${IMAGE_NAME}_${CC}_${CI_COMMIT_REF_SLUG}
+    key: ${output}_${CI_COMMIT_REF_SLUG}
     policy: pull-push
     paths:
       - .ccache/
@@ -134,14 +133,10 @@ docker build:ubuntu-lts:
 
 # ------------------------------------------------------------------------------
 .image_debian_testing:
-  variables:
-    IMAGE_NAME: debian_testing
-  image: registry.gitlab.com/akantu/akantu:debian-testing
+  image: registry.gitlab.com/akantu/akantu/debian:testing
 
 .image_ubuntu_lts:
-  variables:
-    IMAGE_NAME: ubuntu_lts
-  image: registry.gitlab.com/akantu/akantu:ubuntu-lts
+  image: registry.gitlab.com/akantu/akantu/ubuntu:lts
 
 # ------------------------------------------------------------------------------
 .compiler_gcc:

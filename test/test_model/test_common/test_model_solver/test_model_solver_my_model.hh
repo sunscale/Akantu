@@ -259,14 +259,14 @@ public:
     this->getDOFManager().assembleToResidual("disp", forces);
     internal_forces.clear();
 
-    this->assembleResidual(_not_ghost);
+    this->assembleResidualInternal(_not_ghost);
 
     this->synchronize(SynchronizationTag::_user_1);
 
     this->getDOFManager().assembleToResidual("disp", internal_forces, -1.);
   }
 
-  void assembleResidual(const GhostType & ghost_type) {
+  void assembleResidualInternal(const GhostType & ghost_type) {
     Array<Real> forces_internal_el(
         this->mesh.getNbElement(_segment_2, ghost_type), 2);
 

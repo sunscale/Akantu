@@ -69,7 +69,7 @@ ElementGroup::ElementGroup(const std::string & group_name, const Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
-ElementGroup::ElementGroup(const ElementGroup & other) = default;
+ElementGroup::ElementGroup(const ElementGroup & /*other*/) = default;
 
 /* -------------------------------------------------------------------------- */
 void ElementGroup::empty() { elements.free(); }

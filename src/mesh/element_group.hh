@@ -179,7 +179,7 @@ private:
   NodeGroup & node_group;
 
   /// group dimension
-  UInt dimension;
+    UInt dimension{_all_dimensions};
 
   /// empty arry for the iterator to work when an element type not present
   Array<UInt> empty_elements;

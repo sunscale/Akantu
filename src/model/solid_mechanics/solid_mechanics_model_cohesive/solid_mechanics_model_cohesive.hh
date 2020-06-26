@@ -272,8 +272,8 @@ public:
   AKANTU_GET_MACRO(IsExtrinsic, is_extrinsic, bool);
 
   /// get cohesive elements synchronizer
-  AKANTU_GET_MACRO(CohesiveSynchronizer, *cohesive_synchronizer,
-                   const ElementSynchronizer &);
+  AKANTU_GET_MACRO_NOT_CONST(CohesiveSynchronizer, *cohesive_synchronizer,
+                   ElementSynchronizer &);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

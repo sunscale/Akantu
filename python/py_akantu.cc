@@ -82,9 +82,20 @@ PYBIND11_MODULE(py11_akantu, mod) {
       if (ptr)
         std::rethrow_exception(ptr);
     } catch (akantu::debug::Exception & e) {
-      akantu_exception(e.what());
+      if (akantu::debug::debugger.printBacktrace())
+        akantu::debug::printBacktrace(15);
+      throw;
     }
   });
 
   akantu::register_all(mod);
+
+  mod.def("has_mpi", []() {
+#if defined(AKANTU_USE_MPI)
+    return true;
+#else
+    return false;
+#endif
+  });
+
 } // Module akantu

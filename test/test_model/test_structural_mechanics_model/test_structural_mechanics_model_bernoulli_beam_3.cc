@@ -61,7 +61,7 @@ public:
     this->model->addMaterial(mat);
   }
 
-  void setDirichlets() {
+  void setDirichlets() override {
     // Boundary conditions (blocking all DOFs of nodes 2 & 3)
     auto boundary = ++this->model->getBlockedDOFs().begin(parent::ndof);
     // clang-format off

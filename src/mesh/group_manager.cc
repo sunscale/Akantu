@@ -54,8 +54,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-GroupManager::GroupManager(const Mesh & mesh, const ID & id,
-                           const MemoryID & mem_id)
+GroupManager::GroupManager(Mesh & mesh, const ID & id, const MemoryID & mem_id)
     : id(id), memory_id(mem_id), mesh(mesh) {
 
   AKANTU_DEBUG_OUT();
@@ -478,18 +477,15 @@ UInt GroupManager::createClusters(
 UInt GroupManager::createClusters(
     UInt element_dimension, std::string cluster_name_prefix,
     const GroupManager::ClusteringFilter & filter) {
-  std::unique_ptr<Mesh> mesh_facets;
-  if (!mesh_facets && element_dimension > 0) {
-    MeshAccessor mesh_accessor(const_cast<Mesh &>(mesh));
-    mesh_facets = std::make_unique<Mesh>(mesh.getSpatialDimension(),
-                                         mesh_accessor.getNodesSharedPtr(),
-                                         "mesh_facets_for_clusters");
 
-    mesh_facets->defineMeshParent(mesh);
+  MeshAccessor mesh_accessor(mesh);
+  auto mesh_facets = std::make_unique<Mesh>(mesh.getSpatialDimension(),
+                                            mesh_accessor.getNodesSharedPtr(),
+                                            "mesh_facets_for_clusters");
 
-    MeshUtils::buildAllFacets(mesh, *mesh_facets, element_dimension,
-                              element_dimension - 1);
-  }
+  mesh_facets->defineMeshParent(mesh);
+  MeshUtils::buildAllFacets(mesh, *mesh_facets, element_dimension,
+                            element_dimension - 1);
 
   return createClusters(element_dimension, std::move(cluster_name_prefix),
                         filter, *mesh_facets);

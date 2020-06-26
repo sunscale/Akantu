@@ -10,7 +10,7 @@ __license__ = "L-GPLv3"
 __maintainer__ = "Guillaume Anciaux"
 __email__ = "guillaume.anciaux@epfl.ch"
 # ------------------------------------------------------------------------------
-
+from mpi4py import MPI
 import akantu
 import unittest
 import numpy as np

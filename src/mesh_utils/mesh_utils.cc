@@ -171,6 +171,8 @@ void MeshUtils::buildAllFacets(const Mesh & mesh, Mesh & mesh_facets,
                                UInt from_dimension, UInt to_dimension) {
   AKANTU_DEBUG_IN();
 
+  to_dimension = std::max(to_dimension, UInt(0));
+  
   AKANTU_DEBUG_ASSERT(
       mesh_facets.isMeshFacets(),
       "The mesh_facets should be initialized with initMeshFacets");

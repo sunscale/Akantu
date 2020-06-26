@@ -140,14 +140,12 @@ private:
 void FragmentManager::buildFragments(Real damage_limit) {
   AKANTU_DEBUG_IN();
 
-  ElementSynchronizer * cohesive_synchronizer =
-      const_cast<ElementSynchronizer *>(&model.getCohesiveSynchronizer());
-
-  if (cohesive_synchronizer) {
-    cohesive_synchronizer->synchronize(model, SynchronizationTag::_smmc_damage);
+  if (mesh.isDistributed()) {
+    auto & cohesive_synchronizer = model.getCohesiveSynchronizer();
+    cohesive_synchronizer.synchronize(model, SynchronizationTag::_smmc_damage);
   }
 
-  auto & mesh_facets = const_cast<Mesh &>(mesh.getMeshFacets());
+  auto & mesh_facets = mesh.getMeshFacets();
 
   UInt spatial_dimension = model.getSpatialDimension();
   std::string fragment_prefix("fragment");

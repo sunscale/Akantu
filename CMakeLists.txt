@@ -55,7 +55,7 @@ endif()
 set(AKANTU_MAJOR_VERSION 3)
 set(AKANTU_MINOR_VERSION 1)
 set(AKANTU_PATCH_VERSION 0)
-set(AKANTU_COPYRING "2010-2020, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
+set(AKANTU_COPYRIGHT "2010-2020, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
 set(AKANTU_MAINTAINER "Nicolas Richart")
 set(AKANTU_HOMEPAGE_URL "htpps://akantu.ch")
 
@@ -121,6 +121,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
     CACHE STRING "Flags used by the compiler during debug builds" FORCE)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT} -ggdb3"
     CACHE STRING "Flags used by the compiler during debug builds" FORCE)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_flags(cxx "-Wno-gnu-zero-variadic-macro-arguments")
+  endif()
 else()
   add_flags(cxx "-Wall")
 endif()

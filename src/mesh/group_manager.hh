@@ -72,7 +72,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  GroupManager(const Mesh & mesh, const ID & id = "group_manager",
+  GroupManager(Mesh & mesh, const ID & id = "group_manager",
                const MemoryID & memory_id = 0);
   virtual ~GroupManager();
 
@@ -336,7 +336,7 @@ protected:
   ElementGroups element_groups;
 
   /// Mesh to which the element belongs
-  const Mesh & mesh;
+  Mesh & mesh;
 };
 
 /// standard output stream operator

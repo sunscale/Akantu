@@ -10,7 +10,6 @@ __license__ = "L-GPLv3"
 __maintainer__ = "Guillaume Anciaux"
 __email__ = "guillaume.anciaux@epfl.ch"
 # ------------------------------------------------------------------------------
-
 from patch_test_linear_solid_mechanics_fixture import TestPatchTestSMMLinear
 import akantu
 import sys
@@ -30,7 +29,7 @@ def foo(self):
     self.setLinearDOF(displacement, coordinates)
 
     for s in range(0, 100):
-            self.model.solveStep()
+        self.model.solveStep()
 
     ekin = self.model.getEnergy("kinetic")
     self.assertAlmostEqual(0, ekin, delta=1e-16)
