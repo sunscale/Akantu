@@ -16,8 +16,6 @@ std::map<long, std::shared_ptr<_aka::Matrix<_aka::Real>>> matrices;
 PYBIND11_MODULE(py11_akantu_test_common, mod) {
   mod.doc() = "Akantu Test function for common ";
 
-  _aka::register_all(mod);
-
   mod.def("createArray",
           [&](_aka::UInt size, _aka::UInt nb_components) {
             auto ptr =

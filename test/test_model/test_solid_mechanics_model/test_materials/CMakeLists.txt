@@ -99,7 +99,7 @@ register_gtest_sources(SOURCES test_finite_deformation.cc
 register_gtest_sources(SOURCES test_elastic_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_finite_def_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_damage_materials.cc PACKAGE core python_interface
-  LINK_LIBRARIES pyakantu
+  INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/python
   FILES_TO_COPY py_mazars.py)
 register_gtest_sources(SOURCES test_plastic_materials.cc PACKAGE core)
 register_gtest_sources(SOURCES test_material_thermal.cc PACKAGE core)
