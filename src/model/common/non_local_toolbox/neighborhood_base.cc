@@ -265,24 +265,30 @@ void NeighborhoodBase::onElementsRemoved(
 
   FEEngine & fem = this->model.getFEEngine();
   UInt nb_quad = 0;
-  // Change the pairs in new global numbering
-  for (auto ghost_type2 : ghost_types) {
-    for (auto && pair : pair_list[ghost_type2]) {
-      auto cleanPoint = [&](auto && q) {
-        if (new_numbering.exists(q.type, q.ghost_type)) {
-          UInt q_new_el = new_numbering(q.type, q.ghost_type)(q.element);
-          AKANTU_DEBUG_ASSERT(q_new_el != UInt(-1),
-                              "A local quadrature_point "
-                              "as been removed instead of "
-                              "just being renumbered");
-          q.element = q_new_el;
-          nb_quad = fem.getNbIntegrationPoints(q.type, q.ghost_type);
-          q.global_num = nb_quad * q.element + q.num_point;
-        }
-      };
+  auto cleanPoint = [&](auto && q) {
+    if (new_numbering.exists(q.type, q.ghost_type)) {
+      UInt q_new_el = new_numbering(q.type, q.ghost_type)(q.element);
+      AKANTU_DEBUG_ASSERT(q_new_el != UInt(-1),
+                          "A local quadrature_point "
+                              << q
+                              << " as been removed instead of "
+                          "just being renumbered: " << id);
+      q.element = q_new_el;
+      nb_quad = fem.getNbIntegrationPoints(q.type, q.ghost_type);
+      q.global_num = nb_quad * q.element + q.num_point;
+    }
+  };
 
-      cleanPoint(pair.first);
-      cleanPoint(pair.second);
+  // Change the pairs in new global numbering
+  for (auto ghost_type : ghost_types) {
+    auto & pair_list = this->pair_list.at(ghost_type);
+    for (auto && pair : pair_list) {
+      if (pair.first.ghost_type == _ghost) {
+        cleanPoint(pair.first);
+      }
+      if (pair.second.ghost_type == _ghost) {
+        cleanPoint(pair.second);
+      }
     }
   }
 

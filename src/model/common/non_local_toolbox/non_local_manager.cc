@@ -439,9 +439,13 @@ void NonLocalManager::cleanupExtraGhostElements() {
     auto & neighborhood = *pair.second;
     ElementSet to_keep_per_neighborhood;
 
-    neighborhood.cleanupExtraGhostElements(to_keep_per_neighborhood);
-    for (auto & element : to_keep_per_neighborhood)
-      relevant_ghost_elements.insert(element);
+    neighborhood.getRelevantGhostElements(to_keep_per_neighborhood);
+    relevant_ghost_elements.insert(to_keep_per_neighborhood.begin(), to_keep_per_neighborhood.end());
+  }
+
+    for (auto & pair : neighborhoods) {
+    auto & neighborhood = *pair.second;
+    neighborhood.cleanupExtraGhostElements(relevant_ghost_elements);
   }
 
   // /// remove all unneccessary ghosts from the mesh

@@ -85,6 +85,9 @@ public:
   /// clean up the unneccessary ghosts
   void cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements);
 
+  /// list releveant ghosts
+  void getRelevantGhostElements(std::set<Element> & relevant_ghost_elements);
+
 protected:
   /// create the grid
   void createGrid();
