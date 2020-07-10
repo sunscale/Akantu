@@ -41,7 +41,7 @@
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for GhostType
-inline std::ostream & operator<<(std::ostream & stream, GhostType type) {
+inline std::ostream & operator<<(std::ostream & stream, const GhostType & type) {
   switch (type) {
   case _not_ghost:
     stream << "not_ghost";

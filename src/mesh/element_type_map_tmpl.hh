@@ -139,7 +139,7 @@ void ElementTypeMap<Stored, SupportType>::printself(std::ostream & stream,
 
   stream << space << "ElementTypeMap<" << debug::demangle(typeid(Stored).name())
          << "> [" << std::endl;
-  for (auto gt : ghost_types) {
+  for (auto && gt : ghost_types) {
     const DataMap & data = getData(gt);
     for (auto & pair : data) {
       stream << space << space << ElementTypeMap::printType(pair.first, gt)

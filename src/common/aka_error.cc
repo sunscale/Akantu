@@ -32,6 +32,7 @@
 #include "aka_common.hh"
 #include "aka_config.hh"
 #include "aka_iterators.hh"
+#include "aka_random_generator.hh"
 /* -------------------------------------------------------------------------- */
 #include <csignal>
 #include <iostream>
@@ -242,6 +243,12 @@ std::string demangle(const char * symbol) {
       } catch (...) {
         std::cerr << "!! Something strange of type \"" << name
                   << "\" was thrown.... !!" << std::endl;
+      }
+
+      if (debugger.printBacktrace()) {
+        std::cerr << "Random generator seed: " << RandomGenerator<UInt>::seed()
+                  << std::endl;
+        printBacktrace();
       }
     }
   } // namespace

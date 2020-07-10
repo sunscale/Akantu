@@ -291,18 +291,18 @@ template <class Entity>
 void Communications<Entity>::initializeCommunications(
     const SynchronizationTag & tag) {
 
-  for (auto t = send_recv_t::begin(); t != send_recv_t::end(); ++t) {
-    pending_communications[*t].insert(std::make_pair(tag, 0));
+  for (auto t : send_recv_t{}) {
+    pending_communications[t].insert(std::make_pair(tag, 0));
 
-    auto & comms = this->communications[*t];
+    auto & comms = this->communications[t];
     auto & comms_per_tag =
         comms.insert(std::make_pair(tag, CommunicationPerProcs()))
             .first->second;
 
-    for (auto pair : this->schemes[*t]) {
+    for (auto pair : this->schemes[t]) {
       comms_per_tag.emplace(std::piecewise_construct,
                             std::forward_as_tuple(pair.first),
-                            std::forward_as_tuple(*t));
+                            std::forward_as_tuple(t));
     }
   }
 

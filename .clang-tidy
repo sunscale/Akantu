@@ -1,4 +1,4 @@
-Checks:          '-modernize-use-trailing-return-type, modernize-use-*, performance-*, mpi-*, openmp-*, readability-*, cppcoreguidelines-*'
+Checks:          'modernize-use-*, -modernize-use-trailing-return-type*, performance-*, mpi-*, openmp-*, readability-*, cppcoreguidelines-*, -cppcoreguidelines-pro-bounds-array-to-pointer-decay*, -cppcoreguidelines-macro-usage*'
 AnalyzeTemporaryDtors: false
 HeaderFilterRegex: 'src/.*'
 FormatStyle:     file

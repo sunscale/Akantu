@@ -75,7 +75,9 @@ enum DebugLevel {
 
 /* -------------------------------------------------------------------------- */
 #define AKANTU_LOCATION                                                        \
-  "(" << __func__ << "(): " << __FILE__ << ":" << __LINE__ << ")"
+  "(" << std::string(__func__) << "(): " << std::string(__FILE__) << ":"       \
+      << std::to_string(__LINE__)                                              \
+      << ")" // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
 /* -------------------------------------------------------------------------- */
 namespace debug {
@@ -333,10 +335,16 @@ namespace debug {
   (::akantu::debug::debugger.testLevel(dblTest))
 
 #define AKANTU_DEBUG_IN()                                                      \
-  AKANTU_DEBUG_("==>", ::akantu::dblIn, __func__ << "()")
+  AKANTU_DEBUG_(                                                               \
+      "==>", ::akantu::dblIn,                                                  \
+      __func__                                                                 \
+          << "()") // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
 #define AKANTU_DEBUG_OUT()                                                     \
-  AKANTU_DEBUG_("<==", ::akantu::dblOut, __func__ << "()")
+  AKANTU_DEBUG_(                                                               \
+      "<==", ::akantu::dblOut,                                                 \
+      __func__                                                                 \
+          << "()") // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
 #define AKANTU_DEBUG_INFO(info) AKANTU_DEBUG_("---", ::akantu::dblInfo, info)
 
@@ -360,8 +368,10 @@ namespace debug {
 #endif // AKANTU_NDEBUG
 
 #define AKANTU_TO_IMPLEMENT()                                                  \
-  AKANTU_CUSTOM_EXCEPTION_INFO(::akantu::debug::NotImplementedException(),     \
-                               __func__ << " : not implemented yet !")
+  AKANTU_CUSTOM_EXCEPTION_INFO(                                                \
+      ::akantu::debug::NotImplementedException(),                              \
+      __func__                                                                 \
+          << " : not implemented yet !") // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
 /* -------------------------------------------------------------------------- */
 

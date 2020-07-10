@@ -75,10 +75,6 @@ namespace debug {
 } // namespace debug
 
 /* -------------------------------------------------------------------------- */
-/// list of ghost iterable types
-ghost_type_t ghost_types(_casper);
-
-/* -------------------------------------------------------------------------- */
 /// Paser for commandline arguments
 ::cppargparse::ArgumentParser static_argparser;
 

@@ -448,13 +448,14 @@ void MeshPartition::fillPartitionInformation(
           continue;
         }
         Element min_elem{_max_element_type, std::numeric_limits<UInt>::max(),
-                         *ghost_type_t::end()};
+              *(ghost_type_t{}.end())};
         UInt min_part(std::numeric_limits<UInt>::max());
         std::set<UInt> adjacent_parts;
 
         for (auto adj_elem : adjacent_elems) {
-          if (adj_elem == ElementNull) // case of boundary elements
+          if (adj_elem == ElementNull) { // case of boundary elements
             continue;
+          }
 
           auto adjacent_elem_part = partitions(adj_elem);
           if (adjacent_elem_part < min_part) {

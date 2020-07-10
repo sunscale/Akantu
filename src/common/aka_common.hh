@@ -450,10 +450,12 @@ struct GhostType_def {
 };
 
 using ghost_type_t = safe_enum<GhostType_def>;
-extern ghost_type_t ghost_types;
+namespace {
+  constexpr ghost_type_t ghost_types{_casper};
+}
 
 /// standard output stream operator for GhostType
-inline std::ostream & operator<<(std::ostream & stream, GhostType type);
+// inline std::ostream & operator<<(std::ostream & stream, GhostType type);
 
 /* -------------------------------------------------------------------------- */
 /* Global defines                                                             */
@@ -637,6 +639,5 @@ private:
 };
 
 } // namespace std
-
 
 #endif /* __AKANTU_COMMON_HH__ */

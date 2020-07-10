@@ -255,7 +255,7 @@ inline void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
       interpolation_points_coordinates_matrices.getNbComponent() /
       nb_quad_per_element;
 
-  if (!result.exists(type, ghost_type))
+  if (not result.exists(type, ghost_type))
     result.alloc(nb_element * nb_interpolation_points_per_elem,
                  field.getNbComponent(), type, ghost_type);
 

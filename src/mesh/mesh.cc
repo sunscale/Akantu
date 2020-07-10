@@ -48,6 +48,9 @@
 #include "node_synchronizer.hh"
 #include "periodic_node_synchronizer.hh"
 /* -------------------------------------------------------------------------- */
+#include <algorithm>
+/* -------------------------------------------------------------------------- */
+
 #ifdef AKANTU_USE_IOHELPER
 #include "dumper_field.hh"
 #include "dumper_internal_material_field.hh"
@@ -598,14 +601,14 @@ void Mesh::eraseElements(const Array<Element> & elements) {
     if (el.ghost_type != _not_ghost) {
       auto & count = ghosts_counters(el);
       --count;
-      if (count > 0)
+      if (count > 0) {
         continue;
+      }
     }
 
     remove_list.push_back(el);
-    if (not last_element.exists(el.type, el.ghost_type)) {
-      UInt nb_element = mesh.getNbElement(el.type, el.ghost_type);
-      last_element(nb_element - 1, el.type, el.ghost_type);
+    if (not new_numbering.exists(el.type, el.ghost_type)) {
+      auto nb_element = mesh.getNbElement(el.type, el.ghost_type);
       auto & numbering =
           new_numbering.alloc(nb_element, 1, el.type, el.ghost_type);
       for (auto && pair : enumerate(numbering)) {
@@ -613,14 +616,43 @@ void Mesh::eraseElements(const Array<Element> & elements) {
       }
     }
 
-    UInt & pos = last_element(el.type, el.ghost_type);
-    auto & numbering = new_numbering(el.type, el.ghost_type);
-
-    numbering(el.element) = UInt(-1);
-    numbering(pos) = el.element;
-    --pos;
+    new_numbering(el) = UInt(-1);
   }
 
+  auto find_last_not_deleted = [](auto && array, Int start) -> Int {
+    do {
+      --start;
+    } while (start >= 0 and array[start] == UInt(-1));
+
+    return start;
+  };
+
+  auto find_first_deleted = [](auto && array, Int start) -> Int {
+    auto begin = array.begin();
+    auto it = std::find_if(begin + start, array.end(),
+                           [](auto & el) { return el == UInt(-1); });
+    return Int(it - begin);
+  };
+
+  for (auto ghost_type : ghost_types) {
+    for (auto type : new_numbering.elementTypes(_ghost_type = ghost_type)) {
+      auto & numbering = new_numbering(type, ghost_type);
+      auto last_not_delete =
+          find_last_not_deleted(numbering, numbering.size());
+
+      if (last_not_delete < 0) {
+        continue;
+      }
+
+      auto pos = find_first_deleted(numbering, 0);
+
+      while (pos < last_not_delete) {
+        std::swap(numbering[pos], numbering[last_not_delete]);
+        last_not_delete = find_last_not_deleted(numbering, last_not_delete);
+        pos = find_first_deleted(numbering, pos + 1);
+      }
+    }
+  }
   this->sendEvent(event);
 }
 

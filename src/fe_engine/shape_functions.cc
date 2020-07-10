@@ -200,21 +200,23 @@ void ShapeFunctions::interpolateElementalFieldFromIntegrationPoints(
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
   auto types_iterable = mesh.elementTypes(spatial_dimension, ghost_type);
-  if (element_filter) {
+  if (element_filter != nullptr) {
     types_iterable =
         element_filter->elementTypes(spatial_dimension, ghost_type);
   }
 
   for (auto type : types_iterable) {
     UInt nb_element = mesh.getNbElement(type, ghost_type);
-    if (nb_element == 0)
+    if (nb_element == 0) {
       continue;
-
+    }
+    
     const Array<UInt> * elem_filter;
-    if (element_filter)
+    if (element_filter != nullptr) {
       elem_filter = &((*element_filter)(type, ghost_type));
-    else
+    } else {
       elem_filter = &(empty_filter);
+    }
 
 #define AKANTU_INTERPOLATE_ELEMENTAL_FIELD_FROM_C_POINTS(type)                 \
   interpolateElementalFieldFromIntegrationPoints<type>(                        \
