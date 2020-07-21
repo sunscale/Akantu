@@ -15,7 +15,6 @@ namespace py = pybind11;
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-
 void register_model(py::module & mod) {
   py::class_<SparseMatrix>(mod, "SparseMatrix")
       .def("getMatrixType", &SparseMatrix::getMatrixType)

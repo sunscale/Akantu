@@ -38,12 +38,13 @@
 #define __AKANTU_STATIC_MEMORY_HH__
 
 /* -------------------------------------------------------------------------- */
-#include "aka_array.hh"
 #include "aka_common.hh"
-
 /* -------------------------------------------------------------------------- */
 #include <map>
 
+namespace akantu {
+class ArrayBase;
+}
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
@@ -98,7 +99,8 @@ public:
    * @param size number of size (for example number of nodes)
    * @param nb_component number of component (for example spatial dimension)
    *
-   * @return pointer an array of memory actual size: size * nb_component * sizeof(T)
+   * @return pointer an array of memory actual size: size * nb_component *
+   * sizeof(T)
    */
   template <typename T>
   Array<T> & smalloc(const MemoryID & memory_id, const ID & name, UInt size,

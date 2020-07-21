@@ -32,6 +32,7 @@
 /* Inline Functions Array<T>                                                  */
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
+#include "aka_static_memory.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
 /* -------------------------------------------------------------------------- */
@@ -332,6 +333,8 @@ public:
       auto * tmp_ptr = reinterpret_cast<T *>(realloc(
           this->values, size_to_allocate * this->nb_component * sizeof(T)));
       if (tmp_ptr == nullptr) {
+        StaticMemory::getStaticMemory().printself(std::cerr);
+        
         throw std::bad_alloc();
       }
 

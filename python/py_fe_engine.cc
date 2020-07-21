@@ -21,29 +21,48 @@ register_fe_engine(py::module & mod) {
 
   py::class_<FEEngine>(mod, "FEEngine")
       .def(
+          "getNbIntegrationPoints",
+          [](FEEngine & fem, const ElementType & type,
+             const GhostType & ghost_type) {
+            return fem.getNbIntegrationPoints(type, ghost_type);
+          },
+          py::arg("type"), py::arg("ghost_type") = _not_ghost)
+      .def(
           "gradientOnIntegrationPoints",
           [](FEEngine & fem, const Array<Real> & u, Array<Real> & nablauq,
              const UInt nb_degree_of_freedom, const ElementType & type,
              const GhostType & ghost_type,
-             const Array<UInt> & filter_elements) {
+             const Array<UInt> * filter_elements) {
+            if (filter_elements == nullptr) {
+              // This is due to the ArrayProxy that looses the
+              // empty_filter information
+              filter_elements = &empty_filter;
+            }
             fem.gradientOnIntegrationPoints(u, nablauq, nb_degree_of_freedom,
-                                            type, ghost_type, filter_elements);
+                                            type, ghost_type, *filter_elements);
           },
           py::arg("u"), py::arg("nablauq"), py::arg("nb_degree_of_freedom"),
           py::arg("type"), py::arg("ghost_type") = _not_ghost,
-          py::arg("filter_elements") = empty_filter)
+          py::arg("filter_elements") = nullptr)
       .def(
           "interpolateOnIntegrationPoints",
           [](FEEngine & self, const Array<Real> & u, Array<Real> & uq,
              UInt nb_degree_of_freedom, const ElementType & type,
              const GhostType & ghost_type,
-             const Array<UInt> & filter_elements) {
-            self.interpolateOnIntegrationPoints(
-                u, uq, nb_degree_of_freedom, type, ghost_type, filter_elements);
+             const Array<UInt> * filter_elements) {
+            if (filter_elements == nullptr) {
+              // This is due to the ArrayProxy that looses the
+              // empty_filter information
+              filter_elements = &empty_filter;
+            }
+
+            self.interpolateOnIntegrationPoints(u, uq, nb_degree_of_freedom,
+                                                type, ghost_type,
+                                                *filter_elements);
           },
           py::arg("u"), py::arg("uq"), py::arg("nb_degree_of_freedom"),
           py::arg("type"), py::arg("ghost_type") = _not_ghost,
-          py::arg("filter_elements") = empty_filter)
+          py::arg("filter_elements") = nullptr)
       .def(
           "interpolateOnIntegrationPoints",
           [](FEEngine & self, const Array<Real> & u,

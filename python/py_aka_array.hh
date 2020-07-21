@@ -43,18 +43,20 @@ namespace detail {
 
     ~ArrayProxy() { this->values = nullptr; }
 
-    void resize(UInt size, const T & val) override final {
+    void resize(UInt size, const T & /*val*/) final {
       if (size != this->size())
-        AKANTU_EXCEPTION("cannot resize a temporary array");
-      std::fill(this->begin(), this->end(), val);
+        AKANTU_EXCEPTION("Cannot resize a temporary array, from "
+                         << this->size() << " to " << size);
+      // std::fill(this->begin(), this->end(), val);
     }
 
-    void resize(UInt new_size) override final {
+    void resize(UInt new_size) final {
       if (new_size != this->size())
-        AKANTU_EXCEPTION("cannot resize a temporary array");
+        AKANTU_EXCEPTION("Cannot resize a temporary array, from "
+                         << this->size() << " to " << new_size);
     }
 
-    void reserve(UInt /*size*/, UInt /*new_size*/) override final {
+    void reserve(UInt /*size*/, UInt /*new_size*/) final {
       AKANTU_EXCEPTION("cannot resize a temporary array");
     }
   };

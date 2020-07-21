@@ -117,7 +117,7 @@ MaterialCohesiveRulesSelector::MaterialCohesiveRulesSelector(
 
   // non cohesive fallback
   this->fallback_selector->setFallback(
-      std::make_shared<MeshDataMaterialSelector<std::string>>("physical_names",
+      std::make_shared<MeshDataMaterialSelector<std::string>>(mesh_data_id,
                                                               model));
 }
 

@@ -66,7 +66,7 @@ public:
   void setLimit(SpatialDirection axis, Real first_limit, Real second_limit);
 
   /// insert intrinsic cohesive elements in a predefined range
-  UInt insertIntrinsicElements();
+  auto insertIntrinsicElements() -> UInt;
 
   /// insert extrinsic cohesive elements (returns the number of new
   /// cohesive elements)

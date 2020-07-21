@@ -32,6 +32,7 @@
 #include <sstream>
 #include <typeinfo>
 #include <utility>
+#include <vector>
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -91,8 +92,10 @@ namespace debug {
     return demangle(typeid(t).name());
   }
 
-std::string exec(const std::string & cmd);
-  void printBacktrace(int sig);
+  auto exec(const std::string & cmd) -> std::string;
+  auto getBacktrace() -> std::vector<std::string>;
+  void
+  printBacktrace(const std::vector<std::string> & backtrace = getBacktrace());
 
   void exit(int status) __attribute__((noreturn));
   /* ------------------------------------------------------------------------ */
@@ -131,6 +134,12 @@ std::string exec(const std::string & cmd);
     void setFile(const std::string & file) { _file = file; }
     void setLine(unsigned int line) { _line = line; }
     void setModule(const std::string & module) { _module = module; }
+
+    void setBacktrace(const std::vector<std::string> & backtrace) {
+      backtrace_ = backtrace;
+    }
+
+    decltype(auto) backtrace() const { return backtrace_; }
     /* ---------------------------------------------------------------------- */
     /* Class Members                                                          */
     /* ---------------------------------------------------------------------- */
@@ -147,6 +156,8 @@ std::string exec(const std::string & cmd);
 
     /// module in which exception was raised
     std::string _module{"core"};
+
+    std::vector<std::string> backtrace_;
   };
 
   class CriticalError : public Exception {};
@@ -186,12 +197,12 @@ std::string exec(const std::string & cmd);
     template <class Except>
     void throwCustomException(const Except & ex, const std::string & file,
                               unsigned int line,
-                              const std::string & module) const noexcept(false)
+                              const std::string & module_) const noexcept(false)
         __attribute__((noreturn));
 
     void printMessage(const std::string & prefix, const DebugLevel & level,
                       const std::string & info,
-                      const std::string & module) const;
+                      const std::string & module_) const;
 
     void setOutStream(std::ostream & out) { cout = &out; }
     std::ostream & getOutStream() { return *cout; }
@@ -360,13 +371,16 @@ namespace debug {
   void
   Debugger::throwCustomException(const Except & ex, const std::string & info,
                                  const std::string & file, unsigned int line,
-                                 const std::string & module) const
+                                 const std::string & module_) const
       noexcept(false) {
     auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setInfo(info);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
-    nc_ex.setModule(module);
+    nc_ex.setModule(module_);
+    if (::akantu::debug::debugger.printBacktrace())
+      nc_ex.setBacktrace(::akantu::debug::getBacktrace());
+
     throw ex;
   }
   /* ------------------------------------------------------------------------ */
@@ -374,12 +388,15 @@ namespace debug {
   void Debugger::throwCustomException(const Except & ex,
                                       const std::string & file,
                                       unsigned int line,
-                                      const std::string & module) const
+                                      const std::string & module_) const
       noexcept(false) {
     auto & nc_ex = const_cast<Except &>(ex);
     nc_ex.setFile(file);
     nc_ex.setLine(line);
-    nc_ex.setModule(module);
+    nc_ex.setModule(module_);
+    if (::akantu::debug::debugger.printBacktrace())
+      nc_ex.setBacktrace(::akantu::debug::getBacktrace());
+
     throw ex;
   }
 } // namespace debug
