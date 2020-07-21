@@ -82,7 +82,7 @@ PYBIND11_MODULE(py11_akantu, mod) {
       if (ptr)
         std::rethrow_exception(ptr);
     } catch (akantu::debug::Exception & e) {
-      akantu_exception(sstr.str().c_str());
+      akantu_exception(e.what());
     }
   });
 
