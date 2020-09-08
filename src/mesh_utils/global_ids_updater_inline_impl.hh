@@ -61,8 +61,10 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
     return;
   }
 
-  const auto & global_nodes_ids = mesh.getGlobalNodesIds();
-  buffer << int(mesh.getCommunicator().whoAmI());
+  int prank = mesh.getCommunicator().whoAmI();
+
+  auto & global_nodes_ids = mesh.getGlobalNodesIds();
+  buffer << prank;
 
   for (const auto & element : elements) {
     /// get element connectivity
@@ -120,7 +122,12 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
       }
 
       if (mesh.isSlaveNode(node)) {
-        global_nodes_ids(node) = index;
+        auto & gid = global_nodes_ids(node);
+        AKANTU_DEBUG_ASSERT(gid == UInt(-1) or gid == index,
+                            "The node already has a global id, from proc "
+                                << proc << ", different from the one received "
+                                << gid << " " << index);
+        gid = index;
         mesh_accessor.setNodePrank(node, proc);
       }
     }

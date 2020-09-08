@@ -354,6 +354,10 @@ public:
   /// access the data of an element, this combine the map and array accessor
   inline T & operator()(const Element & element, UInt component = 0);
 
+  /// access the data of an element, this combine the map and array accessor
+  inline decltype(auto) get(const Element & element);
+  inline decltype(auto) get(const Element & element) const;
+
   /* get a reference to the array of certain type
    * @param type data filed under type is returned
    * @param ghost_type optional: by default the non-ghost map is searched
@@ -401,16 +405,19 @@ public:
   inline void setID(const ID & id) { this->id = id; }
 
   ElementTypeMap<UInt>
-  getNbComponents(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
+  getNbComponents(UInt dim = _all_dimensions, GhostType requested_ghost_type = _not_ghost,
                   ElementKind kind = _ek_not_defined) const {
-
     ElementTypeMap<UInt> nb_components;
+    bool all_ghost_types = requested_ghost_type == _casper;
+    for (auto ghost_type : ghost_types) {
+      if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+        continue;
 
-    for (auto & type : this->elementTypes(dim, ghost_type, kind)) {
-      UInt nb_comp = (*this)(type, ghost_type).getNbComponent();
-      nb_components(type, ghost_type) = nb_comp;
+      for (auto & type : this->elementTypes(dim, ghost_type, kind)) {
+        UInt nb_comp = (*this)(type, ghost_type).getNbComponent();
+        nb_components(type, ghost_type) = nb_comp;
+      }
     }
-
     return nb_components;
   }
 

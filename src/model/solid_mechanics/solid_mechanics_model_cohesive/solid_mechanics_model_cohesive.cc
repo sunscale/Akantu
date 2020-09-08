@@ -91,7 +91,7 @@ public:
         nodes_flags(new_node) = nodes_flags(old_node);
       }
 
-      model.updateCohesiveSynchronizers();
+      model.updateCohesiveSynchronizers(elements_event);
       nb_new_nodes = global_ids_updater.updateGlobalIDs(new_nodes.size());
     }
 
@@ -101,7 +101,6 @@ public:
 
     if (nb_new_stuff(1) > 0) {
       mesh.sendEvent(elements_event);
-      MeshUtils::resetFacetToDouble(mesh.getMeshFacets());
     }
 
     if (nb_new_stuff(0) > 0) {

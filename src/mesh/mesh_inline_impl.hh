@@ -55,7 +55,8 @@ Mesh::ElementTypesIteratorHelper Mesh::elementTypes(pack &&... _pack) const {
 /* -------------------------------------------------------------------------- */
 inline RemovedNodesEvent::RemovedNodesEvent(const Mesh & mesh,
                                             const std::string & origin)
-    : MeshEvent<UInt>(origin), new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
+    : MeshEvent<UInt>(origin),
+      new_numbering(mesh.getNbNodes(), 1, "new_numbering") {}
 
 /* -------------------------------------------------------------------------- */
 inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
@@ -176,9 +177,8 @@ inline Array<UInt> & Mesh::getNodesGlobalIdsPointer() {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Array<UInt> &
-Mesh::getConnectivityPointer(ElementType type,
-                             GhostType ghost_type) {
+inline Array<UInt> & Mesh::getConnectivityPointer(ElementType type,
+                                                  GhostType ghost_type) {
   if (connectivities.exists(type, ghost_type)) {
     return connectivities(type, ghost_type);
   }
@@ -196,19 +196,17 @@ Mesh::getConnectivityPointer(ElementType type,
 
 /* -------------------------------------------------------------------------- */
 inline Array<std::vector<Element>> &
-Mesh::getElementToSubelementPointer(ElementType type,
-                                    GhostType ghost_type) {
+Mesh::getElementToSubelementPointer(ElementType type, GhostType ghost_type) {
   return getDataPointer<std::vector<Element>>("element_to_subelement", type,
                                               ghost_type, 1, true);
 }
 
 /* -------------------------------------------------------------------------- */
 inline Array<Element> &
-Mesh::getSubelementToElementPointer(ElementType type,
-                                    GhostType ghost_type) {
+Mesh::getSubelementToElementPointer(ElementType type, GhostType ghost_type) {
   auto & array = getDataPointer<Element>(
       "subelement_to_element", type, ghost_type, getNbFacetsPerElement(type),
-      true, is_mesh_facets, ElementNull);
+      false, is_mesh_facets, ElementNull);
   return array;
 }
 
@@ -218,16 +216,20 @@ inline const auto & Mesh::getElementToSubelement() const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline const auto &
-Mesh::getElementToSubelement(ElementType type,
-                             GhostType ghost_type) const {
+inline auto & Mesh::getElementToSubelementNC() {
+  return getData<std::vector<Element>>("element_to_subelement");
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto & Mesh::getElementToSubelement(ElementType type,
+                                                 GhostType ghost_type) const {
   return getData<std::vector<Element>>("element_to_subelement", type,
                                        ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto & Mesh::getElementToSubelement(ElementType type,
-                                           GhostType ghost_type) {
+inline auto & Mesh::getElementToSubelementNC(ElementType type,
+                                             GhostType ghost_type) {
   return getData<std::vector<Element>>("element_to_subelement", type,
                                        ghost_type);
 }
@@ -235,12 +237,12 @@ inline auto & Mesh::getElementToSubelement(ElementType type,
 /* -------------------------------------------------------------------------- */
 inline const auto &
 Mesh::getElementToSubelement(const Element & element) const {
-  return getData<std::vector<Element>>("element_to_subelement")(element);
+  return getData<std::vector<Element>>("element_to_subelement")(element, 0);
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto & Mesh::getElementToSubelement(const Element & element) {
-  return getData<std::vector<Element>>("element_to_subelement")(element);
+inline auto & Mesh::getElementToSubelementNC(const Element & element) {
+  return getData<std::vector<Element>>("element_to_subelement")(element, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -249,34 +251,32 @@ inline const auto & Mesh::getSubelementToElement() const {
 }
 
 /* -------------------------------------------------------------------------- */
-inline const auto &
-Mesh::getSubelementToElement(ElementType type,
-                             GhostType ghost_type) const {
+inline auto & Mesh::getSubelementToElementNC() {
+  return getData<Element>("subelement_to_element");
+}
+
+/* -------------------------------------------------------------------------- */
+inline const auto & Mesh::getSubelementToElement(ElementType type,
+                                                 GhostType ghost_type) const {
   return getData<Element>("subelement_to_element", type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
-inline auto & Mesh::getSubelementToElement(ElementType type,
-                                           GhostType ghost_type) {
+inline auto & Mesh::getSubelementToElementNC(ElementType type,
+                                             GhostType ghost_type) {
   return getData<Element>("subelement_to_element", type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 inline VectorProxy<Element>
 Mesh::getSubelementToElement(const Element & element) const {
-  const auto & sub_to_element =
-      this->getSubelementToElement(element.type, element.ghost_type);
-  auto it = sub_to_element.begin(sub_to_element.getNbComponent());
-  return it[element.element];
+  return this->getSubelementToElement().get(element);
 }
 
 /* -------------------------------------------------------------------------- */
 inline VectorProxy<Element>
-Mesh::getSubelementToElement(const Element & element) {
-  auto & sub_to_element =
-      this->getSubelementToElement(element.type, element.ghost_type);
-  auto it = sub_to_element.begin(sub_to_element.getNbComponent());
-  return it[element.element];
+Mesh::getSubelementToElementNC(const Element & element) {
+  return this->getSubelementToElement().get(element);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -294,8 +294,6 @@ Mesh::getDataPointer(const ID & data_name, ElementType el_type,
     } else {
       tmp.resize(this->getNbElement(el_type, ghost_type));
     }
-  } else {
-    tmp.resize(0);
   }
 
   return tmp;
@@ -317,8 +315,6 @@ Mesh::getDataPointer(const ID & data_name, ElementType el_type,
     } else {
       tmp.resize(this->getNbElement(el_type, ghost_type), defaul_);
     }
-  } else {
-    tmp.resize(0);
   }
 
   return tmp;
@@ -326,16 +322,14 @@ Mesh::getDataPointer(const ID & data_name, ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline const Array<T> & Mesh::getData(const ID & data_name,
-                                      ElementType el_type,
+inline const Array<T> & Mesh::getData(const ID & data_name, ElementType el_type,
                                       GhostType ghost_type) const {
   return this->getElementalDataArray<T>(data_name, el_type, ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline Array<T> & Mesh::getData(const ID & data_name,
-                                ElementType el_type,
+inline Array<T> & Mesh::getData(const ID & data_name, ElementType el_type,
                                 GhostType ghost_type) {
   return this->getElementalDataArray<T>(data_name, el_type, ghost_type);
 }
@@ -354,8 +348,7 @@ inline ElementTypeMapArray<T> & Mesh::getData(const ID & data_name) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Mesh::getNbElement(ElementType type,
-                               GhostType ghost_type) const {
+inline UInt Mesh::getNbElement(ElementType type, GhostType ghost_type) const {
   try {
 
     const Array<UInt> & conn = connectivities(type, ghost_type);
@@ -367,8 +360,7 @@ inline UInt Mesh::getNbElement(ElementType type,
 
 /* -------------------------------------------------------------------------- */
 inline UInt Mesh::getNbElement(const UInt spatial_dimension,
-                               GhostType ghost_type,
-                               ElementKind kind) const {
+                               GhostType ghost_type, ElementKind kind) const {
   AKANTU_DEBUG_ASSERT(spatial_dimension <= 3 || spatial_dimension == UInt(-1),
                       "spatial_dimension is " << spatial_dimension
                                               << " and is greater than 3 !");
@@ -536,16 +528,12 @@ inline auto Mesh::getFacetConnectivity(const Element & element, UInt t) const {
 
 /* -------------------------------------------------------------------------- */
 inline VectorProxy<UInt> Mesh::getConnectivity(const Element & element) const {
-  const auto & conn = connectivities(element.type, element.ghost_type);
-  auto it = conn.begin(conn.getNbComponent());
-  return it[element.element];
+  return connectivities.get(element);
 }
 
 /* -------------------------------------------------------------------------- */
-inline VectorProxy<UInt> Mesh::getConnectivity(const Element & element) {
-  auto & conn = connectivities(element.type, element.ghost_type);
-  auto it = conn.begin(conn.getNbComponent());
-  return it[element.element];
+inline VectorProxy<UInt> Mesh::getConnectivityNC(const Element & element) {
+  return connectivities.get(element);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -561,8 +549,7 @@ inline void Mesh::extractNodalValuesFromElement(
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Mesh::addConnectivityType(ElementType type,
-                                      GhostType ghost_type) {
+inline void Mesh::addConnectivityType(ElementType type, GhostType ghost_type) {
   getConnectivityPointer(type, ghost_type);
 }
 

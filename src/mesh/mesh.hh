@@ -379,10 +379,6 @@ public:
   const auto & getElementToSubelement(ElementType el_type,
                                       GhostType ghost_type = _not_ghost) const;
 
-  /// get the element connected to a subelement
-  auto & getElementToSubelement(ElementType el_type,
-                                GhostType ghost_type = _not_ghost);
-
   /// get the elements connected to a subelement
   const auto & getElementToSubelement(const Element & element) const;
 
@@ -390,11 +386,9 @@ public:
   const auto & getSubelementToElement() const;
 
   /// get the subelement connected to an element
-  const auto & getSubelementToElement(ElementType el_type,
-                                      GhostType ghost_type = _not_ghost) const;
-  /// get the subelement connected to an element
-  auto & getSubelementToElement(ElementType el_type,
-                                GhostType ghost_type = _not_ghost);
+  const auto &
+  getSubelementToElement(ElementType el_type,
+                         GhostType ghost_type = _not_ghost) const;
 
   /// get the subelement (element of lower dimension) connected to a element
   VectorProxy<Element> getSubelementToElement(const Element & element) const;
@@ -405,9 +399,19 @@ public:
   getConnectivityWithPeriodicity(const Element & element) const;
 
 protected:
-  inline auto & getElementToSubelement(const Element & element);
-  inline VectorProxy<Element> getSubelementToElement(const Element & element);
-  inline VectorProxy<UInt> getConnectivity(const Element & element);
+  /// get the element connected to a subelement (element of lower dimension)
+  auto & getElementToSubelementNC();
+  auto & getSubelementToElementNC();
+  inline auto & getElementToSubelementNC(const Element & element);
+  inline VectorProxy<Element> getSubelementToElementNC(const Element & element);
+  /// get the element connected to a subelement
+  auto & getElementToSubelementNC(ElementType el_type,
+                                  GhostType ghost_type = _not_ghost);
+  /// get the subelement connected to an element
+  auto & getSubelementToElementNC(ElementType el_type,
+                                  GhostType ghost_type = _not_ghost);
+
+  inline VectorProxy<UInt> getConnectivityNC(const Element & element);
 
 public:
   /// get a name field associated to the mesh

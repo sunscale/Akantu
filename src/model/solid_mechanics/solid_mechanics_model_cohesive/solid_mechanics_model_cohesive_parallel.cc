@@ -52,15 +52,25 @@ namespace akantu {
 //     return;
 //   }
 
-//   AKANTU_DEBUG_OUT();
-// }
-
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
+void SolidMechanicsModelCohesive::updateCohesiveSynchronizers(
+    NewElementsEvent & elements_event) {
   /// update synchronizers if needed
 
   if (not mesh.isDistributed()) {
     return;
+  }
+
+  ElementTypeMap<Int> nb_new_cohesive_elements;
+  for (auto ghost_type : ghost_types) {
+    for(auto cohesive_type : mesh.elementTypes(spatial_dimension, ghost_type, _ek_cohesive)){
+      nb_new_cohesive_elements(cohesive_type, ghost_type) = 0;
+    }
+  }
+
+  for(auto & el : elements_event.getList()) {
+    if(el.kind() != _ek_cohesive) continue;
+    ++nb_new_cohesive_elements(el.type, el.ghost_type);
   }
 
   auto & mesh_facets = inserter->getMeshFacets();
@@ -86,9 +96,7 @@ void SolidMechanicsModelCohesive::updateCohesiveSynchronizers() {
       auto old_nb_cohesive_elements =
           mesh.getNbElement(cohesive_type, facet.ghost_type);
       old_nb_cohesive_elements -=
-          mesh_facets
-              .getData<UInt>("facet_to_double", facet.type, facet.ghost_type)
-              .size();
+          nb_new_cohesive_elements(cohesive_type, facet.ghost_type);
 
       if (cohesive_element.element >= old_nb_cohesive_elements) {
         scheme.push_back(cohesive_element);
@@ -198,7 +206,7 @@ void SolidMechanicsModelCohesive::packUnpackFacetStressDataHelper(
   Mesh & mesh_facets = inserter->getMeshFacets();
 
   Array<T> * vect = nullptr;
-  Array<std::vector<Element>> * element_to_facet = nullptr;
+  const Array<std::vector<Element>> * element_to_facet = nullptr;
 
   auto & fe_engine = this->getFEEngine("FacetsFEEngine");
   for (auto && el : elements) {

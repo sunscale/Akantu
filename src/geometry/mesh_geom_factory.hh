@@ -27,12 +27,6 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-/* -------------------------------------------------------------------------- */
-
-#ifndef AKANTU_MESH_GEOM_FACTORY_HH_
-#define AKANTU_MESH_GEOM_FACTORY_HH_
-
 /* -------------------------------------------------------------------------- */
 #include <algorithm>
 /* -------------------------------------------------------------------------- */
@@ -41,6 +35,10 @@
 #include "mesh_geom_abstract.hh"
 #include "tree_type_helper.hh"
 /* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+#ifndef AKANTU_MESH_GEOM_FACTORY_HH_
+#define AKANTU_MESH_GEOM_FACTORY_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -54,7 +52,6 @@ namespace akantu {
  */
 template <UInt dim, ElementType el_type, class Primitive, class Kernel>
 class MeshGeomFactory : public MeshGeomAbstract {
-
 public:
   /// Construct from mesh
   explicit MeshGeomFactory(Mesh & mesh);
@@ -62,9 +59,9 @@ public:
   /// Desctructor
   ~MeshGeomFactory() override;
 
-  using TreeTypeHelper = TreeTypeHelper<Primitive, Kernel>;
-  using TreeType = typename TreeTypeHelper::tree;
-  using ContainerType = typename TreeTypeHelper::container_type;
+  using TreeTypeHelper_ = TreeTypeHelper<Primitive, Kernel>;
+  using TreeType = typename TreeTypeHelper_::tree;
+  using ContainerType = typename TreeTypeHelper_::container_type;
 
 public:
   /// Construct AABB tree for fast intersection computing

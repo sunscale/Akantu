@@ -36,51 +36,6 @@
 
 namespace akantu {
 
-/* -------------------------------------------------------------------------- */
-inline bool MeshUtils::hasElement(const Vector<UInt> & nodes_element,
-                                  const Vector<UInt> & nodes) {
-  // one of the nodes of nodes is not in nodes_element stops
-  auto it = std::mismatch(nodes.begin(), nodes.end(), nodes_element.begin(),
-                          [&](auto && node, auto && /*node2*/) -> bool {
-                            auto it = std::find(nodes_element.begin(),
-                                                nodes_element.end(), node);
-                            return (it != nodes_element.end());
-                          });
-
-  // true if all nodes where found in nodes_element
-  return (it.first == nodes.end());
-}
-
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-inline bool
-MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
-                                  std::vector<Element> & elem_list) {
-  if (elem_list.size() <= elem_to_remove.size()) {
-    return true;
-  }
-
-  auto el_it = elem_to_remove.begin();
-  auto el_last = elem_to_remove.end();
-  std::vector<Element>::iterator el_del;
-
-  UInt deletions = 0;
-
-  for (; el_it != el_last; ++el_it) {
-    el_del = std::find(elem_list.begin(), elem_list.end(), *el_it);
-
-    if (el_del != elem_list.end()) {
-      elem_list.erase(el_del);
-      ++deletions;
-    }
-  }
-
-  AKANTU_DEBUG_ASSERT(deletions == 0 || deletions == elem_to_remove.size(),
-                      "Not all elements have been erased");
-
-  return deletions == 0;
-}
 
 } // namespace akantu
 

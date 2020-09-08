@@ -204,7 +204,7 @@ public:
 protected:
   //void synchronizeGhostFacetsConnectivity();
 
-  void updateCohesiveSynchronizers();
+  void updateCohesiveSynchronizers(NewElementsEvent & elements_event);
   void updateFacetStressSynchronizer();
 
   friend class CohesiveElementInserter;

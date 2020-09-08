@@ -298,6 +298,7 @@ enum CommunicatorType { _communicator_mpi, _communicator_dummy };
   (smmc_damage)                                 \
   (giu_global_conn)                             \
   (ce_groups)                                   \
+  (ce_insertion_order)                          \
   (gm_clusters)                                 \
   (htm_temperature)                             \
   (htm_gradient_temperature)                    \
@@ -351,6 +352,8 @@ enum class SynchronizationTag {
   // --- CohesiveElementInserter tags ---
   _ce_groups, ///< synchronization of cohesive element insertion depending
               /// on facet groups
+  _ce_insertion_order, ///< synchronization of the order of insertion of
+                       ///cohesive elements
 
   // --- GroupManager tags ---
   _gm_clusters, ///< synchronization of clusters

@@ -412,8 +412,8 @@ ElementTypeMap<Stored, SupportType>::type_iterator::type_iterator(
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 typename ElementTypeMap<Stored, SupportType>::type_iterator &
-ElementTypeMap<Stored, SupportType>::type_iterator::
-operator=(const type_iterator & it) {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator=(
+    const type_iterator & it) {
   if (this != &it) {
     list_begin = it.list_begin;
     list_end = it.list_end;
@@ -425,14 +425,14 @@ operator=(const type_iterator & it) {
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator::reference
-    ElementTypeMap<Stored, SupportType>::type_iterator::operator*() {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator*() {
   return list_begin->first;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
 inline typename ElementTypeMap<Stored, SupportType>::type_iterator::reference
-    ElementTypeMap<Stored, SupportType>::type_iterator::operator*() const {
+ElementTypeMap<Stored, SupportType>::type_iterator::operator*() const {
   return list_begin->first;
 }
 
@@ -462,15 +462,15 @@ ElementTypeMap<Stored, SupportType>::type_iterator::operator++(int) {
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline bool ElementTypeMap<Stored, SupportType>::type_iterator::
-operator==(const type_iterator & other) const {
+inline bool ElementTypeMap<Stored, SupportType>::type_iterator::operator==(
+    const type_iterator & other) const {
   return this->list_begin == other.list_begin;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Stored, typename SupportType>
-inline bool ElementTypeMap<Stored, SupportType>::type_iterator::
-operator!=(const type_iterator & other) const {
+inline bool ElementTypeMap<Stored, SupportType>::type_iterator::operator!=(
+    const type_iterator & other) const {
   return this->list_begin != other.list_begin;
 }
 
@@ -772,18 +772,38 @@ void ElementTypeMapArray<T, SupportType>::initialize(const FEEngine & fe_engine,
 
 /* -------------------------------------------------------------------------- */
 template <class T, typename SupportType>
-inline T & ElementTypeMapArray<T, SupportType>::
-operator()(const Element & element, UInt component) {
+inline T &
+ElementTypeMapArray<T, SupportType>::operator()(const Element & element,
+                                                UInt component) {
   return this->operator()(element.type, element.ghost_type)(element.element,
                                                             component);
 }
 
 /* -------------------------------------------------------------------------- */
 template <class T, typename SupportType>
-inline const T & ElementTypeMapArray<T, SupportType>::
-operator()(const Element & element, UInt component) const {
+inline const T &
+ElementTypeMapArray<T, SupportType>::operator()(const Element & element,
+                                                UInt component) const {
   return this->operator()(element.type, element.ghost_type)(element.element,
                                                             component);
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+inline decltype(auto)
+ElementTypeMapArray<T, SupportType>::get(const Element & element) {
+  auto & array = operator()(element.type, element.ghost_type);
+  auto it = array.begin(array.getNbComponent());
+  return it[element.element];
+}
+
+/* -------------------------------------------------------------------------- */
+template <class T, typename SupportType>
+inline decltype(auto)
+ElementTypeMapArray<T, SupportType>::get(const Element & element) const {
+  auto & array = operator()(element.type, element.ghost_type);
+  auto it = array.begin(array.getNbComponent());
+  return it[element.element];
 }
 
 /* -------------------------------------------------------------------------- */

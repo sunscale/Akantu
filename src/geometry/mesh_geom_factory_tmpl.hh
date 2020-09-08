@@ -90,7 +90,7 @@ void MeshGeomFactory<dim, type, Primitive, Kernel>::constructData(
 
   // This condition allows the use of the mesh geom module
   // even if types are not compatible with AABB tree algorithm
-  if (TreeTypeHelper::is_valid) {
+  if (TreeTypeHelper_::is_valid) {
     data_tree = new TreeType(primitive_list.begin(), primitive_list.end());
   }
 
@@ -135,11 +135,11 @@ namespace {
     template <class Primitive>
     struct AddPrimitiveHelper<GeometricalType::_triangle, Primitive,
                               cgal::Cartesian> {
-      using TreeTypeHelper = TreeTypeHelper<Primitive, cgal::Cartesian>;
-      using ContainerType = typename TreeTypeHelper::container_type;
+      using TreeTypeHelper_ = TreeTypeHelper<Primitive, cgal::Cartesian>;
+      using ContainerType = typename TreeTypeHelper_::container_type;
       static void addPrimitive(const Matrix<Real> & node_coordinates, UInt id,
                                ContainerType & list) {
-        using Point = typename TreeTypeHelper::point_type;
+        using Point = typename TreeTypeHelper_::point_type;
         Point a(node_coordinates(0, 0), node_coordinates(1, 0), 0.);
         Point b(node_coordinates(0, 1), node_coordinates(1, 1), 0.);
         Point c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
@@ -153,11 +153,11 @@ namespace {
     template <class Primitive>
     struct AddPrimitiveHelper<GeometricalType::_triangle, Primitive,
                               cgal::Spherical> {
-      using TreeTypeHelper = TreeTypeHelper<Primitive, cgal::Spherical>;
-      using ContainerType = typename TreeTypeHelper::container_type;
+      using TreeTypeHelper_ = TreeTypeHelper<Primitive, cgal::Spherical>;
+      using ContainerType = typename TreeTypeHelper_::container_type;
       static void addPrimitive(const Matrix<Real> & node_coordinates, UInt id,
                                ContainerType & list) {
-        using Point = typename TreeTypeHelper::point_type;
+        using Point = typename TreeTypeHelper_::point_type;
         Point a(node_coordinates(0, 0), node_coordinates(1, 0), 0.);
         Point b(node_coordinates(0, 1), node_coordinates(1, 1), 0.);
         Point c(node_coordinates(0, 2), node_coordinates(1, 2), 0.);
@@ -188,11 +188,11 @@ namespace {
     template <class Primitive>
     struct AddPrimitiveHelper<GeometricalType::_tetrahedron, Primitive,
                               cgal::Cartesian> {
-      using TreeTypeHelper = TreeTypeHelper<Primitive, cgal::Cartesian>;
-      using ContainerType = typename TreeTypeHelper::container_type;
+      using TreeTypeHelper_ = TreeTypeHelper<Primitive, cgal::Cartesian>;
+      using ContainerType = typename TreeTypeHelper_::container_type;
       static void addPrimitive(const Matrix<Real> & node_coordinates, UInt id,
                                ContainerType & list) {
-        using Point = typename TreeTypeHelper::point_type;
+        using Point = typename TreeTypeHelper_::point_type;
         Point a(node_coordinates(0, 0), node_coordinates(1, 0),
                 node_coordinates(2, 0));
         Point b(node_coordinates(0, 1), node_coordinates(1, 1),

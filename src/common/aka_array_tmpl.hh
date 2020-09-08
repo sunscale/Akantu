@@ -323,9 +323,17 @@ public:
                                   : (diff > 0)
                                         ? allocated_size + AKANTU_MIN_ALLOCATION
                                         : allocated_size;
+
+      if (size_to_allocate ==
+          allocated_size) { // otherwhy the reserve + push_back might fail...
+        this->size_ = size;
+        return;
+      }
+
       auto * tmp_ptr = reinterpret_cast<T *>( // NOLINT
           realloc(this->values,
-                  size_to_allocate * this->nb_component * sizeof(T))); // NOLINT
+                  size_to_allocate * this->nb_component * sizeof(T)));
+
       if (tmp_ptr == nullptr) {
         StaticMemory::getStaticMemory().printself(std::cerr);
         
@@ -473,12 +481,14 @@ Array<T, is_scal>::operator-=(const Array<T, is_scal> & other) {
   return *this;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
- * Add another array entry by entry to this array in place. Both arrays must
- * have the same size and nb_component. If the arrays have different shapes,
- * code compiled in debug mode will throw an expeption and optimised code
- * will behave in an unpredicted manner
+ * Add another array entry by entry to this array in
+ * place. Both arrays must have the same size and
+ * nb_component. If the arrays have different shapes, code
+ * compiled in debug mode will throw an expeption and
+ * optimised code will behave in an unpredicted manner
  * @param other array to add to this
  * @return reference to modified this
  */
@@ -498,7 +508,8 @@ Array<T, is_scal>::operator+=(const Array<T, is_scal> & other) {
   return *this;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
  * Multiply all entries of this array by a scalar in place
  * @param alpha scalar multiplicant
@@ -515,12 +526,13 @@ Array<T, is_scal> & Array<T, is_scal>::operator*=(const T & alpha) {
   return *this;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
  * Compare this array element by element to another.
  * @param other array to compare to
- * @return true it all element are equal and arrays have the same shape, else
- * false
+ * @return true it all element are equal and arrays have
+ * the same shape, else false
  */
 template <class T, bool is_scal>
 bool Array<T, is_scal>::operator==(const Array<T, is_scal> & other) const {
@@ -539,13 +551,15 @@ bool Array<T, is_scal>::operator==(const Array<T, is_scal> & other) const {
                     other.storage());
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 bool Array<T, is_scal>::operator!=(const Array<T, is_scal> & other) const {
   return !operator==(other);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
  * set all tuples of the array to a given vector or matrix
  * @param vm Matrix or Vector to fill the array with
@@ -553,21 +567,22 @@ bool Array<T, is_scal>::operator!=(const Array<T, is_scal> & other) const {
 template <class T, bool is_scal>
 template <template <typename> class C, typename>
 inline void Array<T, is_scal>::set(const C<T> & vm) {
-  AKANTU_DEBUG_ASSERT(
-      this->nb_component == vm.size(),
-      "The size of the object does not match the number of components");
+  AKANTU_DEBUG_ASSERT(this->nb_component == vm.size(),
+                      "The size of the object does not "
+                      "match the number of components");
   for (T * it = this->values;
        it < this->values + this->nb_component * this->size_;
        it += this->nb_component) {
     std::copy_n(vm.storage(), this->nb_component, it);
   }
 }
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 void Array<T, is_scal>::append(const Array<T> & other) {
-  AKANTU_DEBUG_ASSERT(
-      this->nb_component == other.nb_component,
-      "Cannot append an array with a different number of component");
+  AKANTU_DEBUG_ASSERT(this->nb_component == other.nb_component,
+                      "Cannot append an array with a "
+                      "different number of component");
   UInt old_size = this->size_;
   this->resize(this->size_ + other.size());
 
@@ -575,9 +590,11 @@ void Array<T, is_scal>::append(const Array<T> & other) {
   std::copy_n(other.storage(), other.size() * this->nb_component, tmp);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Functions Array<T, is_scal>                                                */
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
+/* Functions Array<T, is_scal> */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(UInt size, UInt nb_component, const ID & id)
     : parent(size, nb_component, id) {}
@@ -587,18 +604,21 @@ inline Array<std::string, false>::Array(UInt size, UInt nb_component,
                                         const ID & id)
     : parent(size, nb_component, "", id) {}
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(UInt size, UInt nb_component, const_reference value,
                          const ID & id)
     : parent(size, nb_component, value, id) {}
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(const Array & vect, const ID & id)
     : parent(vect, id) {}
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 Array<T, is_scal> &
 Array<T, is_scal>::operator=(const Array<T, is_scal> & other) {
@@ -613,19 +633,23 @@ Array<T, is_scal>::operator=(const Array<T, is_scal> & other) {
   return *this;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 Array<T, is_scal>::Array(const std::vector<T> & vect) : parent(vect) {}
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal> Array<T, is_scal>::~Array() = default;
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
- * search elem in the array, return  the position of the first occurrence or
- * -1 if not found
+ * search elem in the array, return  the position of the
+ * first occurrence or -1 if not found
  *  @param elem the element to look for
- *  @return index of the first occurrence of elem or -1 if elem is not present
+ *  @return index of the first occurrence of elem or -1 if
+ * elem is not present
  */
 template <class T, bool is_scal>
 UInt Array<T, is_scal>::find(const_reference elem) const {
@@ -639,8 +663,10 @@ UInt Array<T, is_scal>::find(const_reference elem) const {
   return (it != end) ? it - begin : UInt(-1);
 }
 
-/* -------------------------------------------------------------------------- */
-// template <class T, bool is_scal> UInt Array<T, is_scal>::find(T elem[]) const
+/* --------------------------------------------------------------------------
+ */
+// template <class T, bool is_scal> UInt Array<T,
+// is_scal>::find(T elem[]) const
 // {
 //   AKANTU_DEBUG_IN();
 //   T * it = this->values;
@@ -649,7 +675,8 @@ UInt Array<T, is_scal>::find(const_reference elem) const {
 //     if (*it == elem[0]) {
 //       T * cit = it;
 //       UInt c = 0;
-//       for (; (c < this->nb_component) && (*cit == elem[c]); ++c, ++cit)
+//       for (; (c < this->nb_component) && (*cit ==
+//       elem[c]); ++c, ++cit)
 //         ;
 //       if (c == this->nb_component) {
 //         AKANTU_DEBUG_OUT();
@@ -661,7 +688,8 @@ UInt Array<T, is_scal>::find(const_reference elem) const {
 //   return UInt(-1);
 // }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 template <template <typename> class C, typename>
 inline UInt Array<T, is_scal>::find(const C<T> & elem) {
@@ -671,12 +699,15 @@ inline UInt Array<T, is_scal>::find(const C<T> & elem) {
   return this->find(*elem.storage());
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
- * copy the content of another array. This overwrites the current content.
- * @param other Array to copy into this array. It has to have the same
- * nb_component as this. If compiled in debug mode, an incorrect other will
- * result in an exception being thrown. Optimised code may result in
+ * copy the content of another array. This overwrites the
+ * current content.
+ * @param other Array to copy into this array. It has to
+ * have the same nb_component as this. If compiled in
+ * debug mode, an incorrect other will result in an
+ * exception being thrown. Optimised code may result in
  * unpredicted behaviour.
  * @param no_sanity_check turns off all checkes
  */
@@ -686,7 +717,8 @@ void Array<T, is_scal>::copy(const Array<T, is_scal> & other,
   AKANTU_DEBUG_IN();
 
   if (not no_sanity_check and (other.nb_component != this->nb_component)) {
-    AKANTU_ERROR("The two arrays do not have the same number of components");
+    AKANTU_ERROR("The two arrays do not have the same "
+                 "number of components");
   }
 
   this->resize((other.size_ * other.nb_component) / this->nb_component);
@@ -696,7 +728,8 @@ void Array<T, is_scal>::copy(const Array<T, is_scal> & other,
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <bool is_scal> class ArrayPrintHelper {
 public:
   template <typename T>
@@ -730,7 +763,8 @@ public:
                             __attribute__((unused)) int indent) {}
 };
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 void Array<T, is_scal>::printself(std::ostream & stream, int indent) const {
   std::string space(indent, AKANTU_INDENT);
@@ -767,15 +801,20 @@ void Array<T, is_scal>::printself(std::ostream & stream, int indent) const {
   stream << space << "]" << std::endl;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Inline Functions ArrayBase                                                */
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
+/* Inline Functions ArrayBase */
+/* --------------------------------------------------------------------------
+ */
 
-//inline bool ArrayBase::empty() { return (this->size_ == 0); }
+// inline bool ArrayBase::empty() { return (this->size_ ==
+// 0); }
 
-/* -------------------------------------------------------------------------- */
-/* Iterators                                                                  */
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
+/* Iterators */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 template <class R, class daughter, class IR, bool is_tensor>
 class Array<T, is_scal>::iterator_internal {
@@ -859,7 +898,8 @@ protected:
   pointer initial{nullptr};
 };
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 /**
  * Specialization for scalar types
  */
@@ -884,8 +924,8 @@ public:
 
   iterator_internal(pointer_type data, UInt _offset)
       : _offset(_offset), initial(data), ret(nullptr), ret_ptr(data) {
-    AKANTU_ERROR(
-        "The constructor should never be called it is just an ugly trick...");
+    AKANTU_ERROR("The constructor should never be called "
+                 "it is just an ugly trick...");
   }
 
   iterator_internal(std::unique_ptr<internal_value_type> && wrapped)
@@ -1010,7 +1050,7 @@ protected:
 };
 
 /* -------------------------------------------------------------------------- */
-/* Iterators                                                                  */
+/* Iterators */
 /* -------------------------------------------------------------------------- */
 template <class T, bool is_scal>
 template <typename R>
@@ -1098,7 +1138,7 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
-/* Begin/End functions implementation                                         */
+/* Begin/End functions implementation */
 /* -------------------------------------------------------------------------- */
 namespace detail {
   template <class Tuple, size_t... Is>
@@ -1237,7 +1277,7 @@ inline decltype(auto) Array<T, is_scal>::end_reinterpret(Ns &&... ns) const {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Views                                                                      */
+/* Views */
 /* -------------------------------------------------------------------------- */
 namespace detail {
   template <typename Array, typename... Ns> class ArrayView {
@@ -1306,7 +1346,8 @@ decltype(auto) make_view(Array && array, const Ns... ns) {
       std::forward<Array>(array), std::move(ns)..., size);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+ */
 template <class T, bool is_scal>
 template <typename R>
 inline typename Array<T, is_scal>::template iterator<R>

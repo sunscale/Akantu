@@ -203,6 +203,7 @@ public:
 };
 /* -------------------------------------------------------------------------- */
 
+
 /* -------------------------------------------------------------------------- */
 template <class Entity, template <class> class Op, class T>
 class ReduceDataAccessor : public virtual DataAccessor<Entity> {
@@ -255,7 +256,6 @@ public:
       Vector<T> unpacked(data.getNbComponent());
       Vector<T> vect(data_it[el]);
       buffer >> unpacked;
-
       vect = oper(vect, unpacked);
     }
   }
@@ -271,9 +271,81 @@ protected:
   Op<Vector<T>> oper;
 };
 
+
 /* -------------------------------------------------------------------------- */
 template <class T>
 using SimpleUIntDataAccessor = ReduceDataAccessor<UInt, IdentityOperation, T>;
+
+/* -------------------------------------------------------------------------- */
+template <class T>
+class SimpleElementDataAccessor : public virtual DataAccessor<Element> {
+  /* ------------------------------------------------------------------------ */
+  /* Constructors/Destructors                                                 */
+  /* ------------------------------------------------------------------------ */
+public:
+  SimpleElementDataAccessor(ElementTypeMapArray<T> & data,
+                          const SynchronizationTag & tag)
+      : data(data), tag(tag) {}
+
+  ~SimpleElementDataAccessor() override = default;
+
+  /* ------------------------------------------------------------------------ */
+  /* Methods                                                                  */
+  /* ------------------------------------------------------------------------ */
+public:
+  /* ------------------------------------------------------------------------ */
+  UInt getNbData(const Array<Element> & elements,
+                 const SynchronizationTag & tag) const override {
+    if (tag != this->tag)
+      return 0;
+
+    Int size = 0;
+
+    for (auto & el : elements) {
+      auto && data_type = data(el.type, el.ghost_type);
+      size += sizeof(T) * data_type.getNbComponent();
+    }
+
+    return size;
+  }
+
+  /* ------------------------------------------------------------------------ */
+  void packData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                const SynchronizationTag & tag) const override {
+    if (tag != this->tag)
+      return;
+
+    for (auto & el : elements) {
+      auto && data_type = data(el.type, el.ghost_type);
+      for (auto c : arange(data_type.getNbComponent())) {
+        const auto & data_per_element = data_type(el.element, c);
+        buffer << data_per_element;
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------------ */
+  void unpackData(CommunicationBuffer & buffer, const Array<Element> & elements,
+                  const SynchronizationTag & tag) override {
+    if (tag != this->tag)
+      return;
+
+    for (auto & el : elements) {
+      auto && data_type = data(el.type, el.ghost_type);
+      for (auto c : arange(data_type.getNbComponent())) {
+        auto & data_per_element = data_type(el.element, c);
+        buffer >> data_per_element;
+      }
+    }
+  }
+
+protected:
+  /// data to (un)pack
+  ElementTypeMapArray<T> & data;
+
+  /// Tag to consider
+  SynchronizationTag tag;
+};
 
 } // namespace akantu
 

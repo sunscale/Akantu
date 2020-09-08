@@ -96,16 +96,6 @@ public:
   /// remove not connected nodes /!\ this functions renumbers the nodes.
   static void purifyMesh(Mesh & mesh);
 
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  /// function to insert cohesive elements on the selected facets
-  /// @return number of facets that have been doubled
-  static UInt
-  insertCohesiveElements(Mesh & mesh, Mesh & mesh_facets,
-                         const ElementTypeMapArray<bool> & facet_insertion,
-                         Array<UInt> & doubled_nodes,
-                         Array<Element> & new_elements,
-                         bool only_double_facets);
-#endif
 
   /// fill the subelement to element and the elements to subelements data
   static void fillElementToSubElementsData(Mesh & mesh);
@@ -115,22 +105,6 @@ public:
   flipFacets(Mesh & mesh_facets,
              const ElementTypeMapArray<UInt> & remote_global_connectivities,
              GhostType gt_facet);
-
-  /// provide list of elements around a node and check if a given
-  /// facet is reached
-  template <bool third_dim_points>
-  static bool findElementsAroundSubfacet(
-      const Mesh & mesh_facets, const Element & starting_element,
-      const Element & end_facet, const Vector<UInt> & subfacet_connectivity,
-      std::vector<Element> & element_list, std::vector<Element> & facet_list,
-      std::vector<Element> * subfacet_list = nullptr);
-
-  /// function to check if a node belongs to a given element
-  static inline bool hasElement(const Vector<UInt> & nodes_element,
-                                const Vector<UInt> & nodes);
-
-  /// reset facet_to_double arrays in the Mesh
-  static void resetFacetToDouble(Mesh & mesh_facets);
 
 private:
   /// match pairs that are on the associated pbc's
@@ -143,70 +117,6 @@ private:
   static void
   renumberNodesInConnectivity(Array<UInt> & list_nodes, UInt nb_nodes,
                               std::map<UInt, UInt> & renumbering_map);
-
-  /// update facet_to_subfacet
-  static void updateFacetToSubfacet(Mesh & mesh_facets,
-                                    ElementType type_subfacet,
-                                    GhostType gt_subfacet, bool facet_mode);
-
-  /// update subfacet_to_facet
-  static void updateSubfacetToFacet(Mesh & mesh_facets,
-                                    ElementType type_subfacet,
-                                    GhostType gt_subfacet, bool facet_mode);
-
-  /// function to double a given facet and update the list of doubled
-  /// nodes
-  static void doubleFacet(Mesh & mesh, Mesh & mesh_facets, UInt facet_dimension,
-                          Array<UInt> & doubled_nodes, bool facet_mode);
-
-  /// function to double a subfacet given start and end index for
-  /// local facet_to_subfacet vector, and update the list of doubled
-  /// nodes
-  template <UInt spatial_dimension>
-  static void doubleSubfacet(Mesh & mesh, Mesh & mesh_facets,
-                             Array<UInt> & doubled_nodes);
-
-  /// double a node
-  static void doubleNodes(Mesh & mesh, const std::vector<UInt> & old_nodes,
-                          Array<UInt> & doubled_nodes);
-
-  /// fill facet_to_double array in the mesh
-  /// returns the number of facets to be doubled
-  static UInt
-  updateFacetToDouble(Mesh & mesh_facets,
-                      const ElementTypeMapArray<bool> & facet_insertion);
-
-  /// find subfacets to be doubled
-  template <bool subsubfacet_mode>
-  static void findSubfacetToDouble(Mesh & mesh_facets);
-
-  /// double facets (points) in 1D
-  static void doublePointFacet(Mesh & mesh, Mesh & mesh_facets,
-                               Array<UInt> & doubled_nodes);
-
-#if defined(AKANTU_COHESIVE_ELEMENT)
-  /// update cohesive element data
-  static void updateCohesiveData(Mesh & mesh, Mesh & mesh_facets,
-                                 Array<Element> & new_elements);
-#endif
-
-  /// update elemental connectivity after doubling a node
-  inline static void updateElementalConnectivity(
-      Mesh & mesh, UInt old_node, UInt new_node,
-      const std::vector<Element> & element_list,
-      const std::vector<Element> * facet_list = nullptr);
-
-  /// double middle nodes if facets are _segment_3
-  template <bool third_dim_segments>
-  static void updateQuadraticSegments(Mesh & mesh, Mesh & mesh_facets,
-                                      ElementType type_facet,
-                                      GhostType gt_facet,
-                                      Array<UInt> & doubled_nodes);
-
-  /// remove elements on a vector
-  inline static bool
-  removeElementsInVector(const std::vector<Element> & elem_to_remove,
-                         std::vector<Element> & elem_list);
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
