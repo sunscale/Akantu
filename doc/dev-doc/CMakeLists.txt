@@ -162,8 +162,13 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
   @ONLY)
 
+set(SPHINX_PARALLEL_FLAG)
+if (SPHINX_VERSION VERSION_GREATER_EQUAL 1.7.0)
+  set(SPHINX_PARALLEL_FLAG -j auto)
+endif()
+
 set(_sphinx_command ${SPHINX_BUILD_EXECUTABLE}
-  -j auto
+  ${SPHINX_PARALLEL_FLAG}
   ${SPHINX_VERBOSE_FLAG} -b html
   -c "${CMAKE_CURRENT_BINARY_DIR}"
   -d "${SPHINX_CACHE_DIR}"
