@@ -41,8 +41,8 @@
 #include <typeindex>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_HH__
-#define __AKANTU_MODEL_HH__
+#ifndef AKANTU_MODEL_HH_
+#define AKANTU_MODEL_HH_
 
 namespace akantu {
 class SynchronizerRegistry;
@@ -58,9 +58,8 @@ class Model : public Memory, public ModelSolver, public MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Model(Mesh & mesh, const ModelType & type,
-        UInt spatial_dimension = _all_dimensions, const ID & id = "model",
-        const MemoryID & memory_id = 0);
+  Model(Mesh & mesh, const ModelType & type, UInt dim = _all_dimensions,
+        const ID & id = "model", const MemoryID & memory_id = 0);
 
   ~Model() override;
 
@@ -126,7 +125,8 @@ protected:
   virtual void initFEEngineBoundary();
 
   /// function to print the containt of the class
-  void printself(std::ostream &, int = 0) const override{};
+  void printself(std::ostream & /*stream*/,
+                 int /*indent*/ = 0) const override{};
 
 public:
   /* ------------------------------------------------------------------------ */
@@ -171,7 +171,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// get id of model
-  AKANTU_GET_MACRO(ID, id, const ID)
+  AKANTU_GET_MACRO(ID, id, const ID &)
 
   /// get the number of surfaces
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &)
@@ -237,7 +237,7 @@ public:
 
   virtual void addDumpFieldTensor(const std::string & field_id);
 
-  virtual void setBaseName(const std::string & basename);
+  virtual void setBaseName(const std::string & field_id);
 
   virtual void setBaseNameToDumper(const std::string & dumper_name,
                                    const std::string & basename);
@@ -248,14 +248,14 @@ public:
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
                                          const std::string & field_id,
                                          const std::string & group_name,
-                                         const ElementKind & element_kind,
+                                         ElementKind element_kind,
                                          bool padding_flag);
 
   virtual void addDumpGroupFieldToDumper(const std::string & dumper_name,
                                          const std::string & field_id,
                                          const std::string & group_name,
                                          UInt spatial_dimension,
-                                         const ElementKind & element_kind,
+                                         ElementKind element_kind,
                                          bool padding_flag);
 
   virtual void removeDumpGroupField(const std::string & field_id,
@@ -272,32 +272,32 @@ public:
                                                const std::string & group_name);
 
   virtual std::shared_ptr<dumpers::Field>
-  createNodalFieldReal(__attribute__((unused)) const std::string & field_name,
-                       __attribute__((unused)) const std::string & group_name,
-                       __attribute__((unused)) bool padding_flag) {
+  createNodalFieldReal(const std::string & /*field_name*/,
+                       const std::string & /*group_name*/,
+                       bool /*padding_flag*/) {
     return nullptr;
   }
 
   virtual std::shared_ptr<dumpers::Field>
-  createNodalFieldUInt(__attribute__((unused)) const std::string & field_name,
-                       __attribute__((unused)) const std::string & group_name,
-                       __attribute__((unused)) bool padding_flag) {
+  createNodalFieldUInt(const std::string & /*field_name*/,
+                       const std::string & /*group_name*/,
+                       bool /*padding_flag*/) {
     return nullptr;
   }
 
   virtual std::shared_ptr<dumpers::Field>
-  createNodalFieldBool(__attribute__((unused)) const std::string & field_name,
-                       __attribute__((unused)) const std::string & group_name,
-                       __attribute__((unused)) bool padding_flag) {
+  createNodalFieldBool(const std::string & /*field_name*/,
+                       const std::string & /*group_name*/,
+                       bool /*padding_flag*/) {
     return nullptr;
   }
 
   virtual std::shared_ptr<dumpers::Field>
-  createElementalField(__attribute__((unused)) const std::string & field_name,
-                       __attribute__((unused)) const std::string & group_name,
-                       __attribute__((unused)) bool padding_flag,
-                       __attribute__((unused)) const UInt & spatial_dimension,
-                       __attribute__((unused)) const ElementKind & kind) {
+  createElementalField(const std::string & /*field_name*/,
+                       const std::string & /*group_name*/,
+                       bool /*padding_flag*/,
+                       UInt /*spatial_dimension*/,
+                       ElementKind /*kind*/) {
     return nullptr;
   }
 
@@ -311,7 +311,8 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  friend std::ostream & operator<<(std::ostream &, const Model &);
+  friend std::ostream & operator<<(std::ostream & /*stream*/,
+                                   const Model & /*_this*/);
 
   /// analysis method check the list in akantu::AnalysisMethod
   AnalysisMethod method;
@@ -345,4 +346,4 @@ inline std::ostream & operator<<(std::ostream & stream, const Model & _this) {
 
 #include "model_inline_impl.hh"
 
-#endif /* __AKANTU_MODEL_HH__ */
+#endif /* AKANTU_MODEL_HH_ */

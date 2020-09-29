@@ -73,7 +73,7 @@ void NonLinearSolverLumped::solve(SolverCallback & solver_callback) {
   // alpha is the conversion factor from from force/mass to acceleration needed
   // in model coupled with atomistic \todo find a way to define alpha per dof
   // type
-  this->solveLumped(A, x, b, alpha, blocked_dofs);
+  NonLinearSolverLumped::solveLumped(A, x, b, alpha, blocked_dofs);
 
   this->dof_manager.splitSolutionPerDOFs();
 

@@ -163,8 +163,9 @@ void GroupManager::destroyElementGroup(const std::string & group_name,
 
   auto eit = element_groups.find(group_name);
   if (eit != element_groups.end()) {
-    if (destroy_node_group)
+    if (destroy_node_group) {
       destroyNodeGroup(eit->second->getNodeGroup().getName());
+    }
     element_groups.erase(eit);
   }
 
@@ -183,29 +184,16 @@ void GroupManager::destroyNodeGroup(const std::string & group_name) {
   AKANTU_DEBUG_OUT();
 }
 
-// /* --------------------------------------------------------------------------
-// */ void GroupManager::destroyAllElementGroups(bool destroy_node_groups) {
-//   AKANTU_DEBUG_IN();
-
-//   if (destroy_node_groups)
-//     for (auto && data : element_groups) {
-//       destroyNodeGroup(std::get<1>(data)->getNodeGroup().getName());
-//     }
-
-//   element_groups.clear();
-
-//   AKANTU_DEBUG_OUT();
-// }
-
 /* -------------------------------------------------------------------------- */
 ElementGroup & GroupManager::createElementGroup(const std::string & group_name,
                                                 UInt dimension,
                                                 NodeGroup & node_group) {
   AKANTU_DEBUG_IN();
 
-  if (element_groups.find(group_name) != element_groups.end())
+  if (element_groups.find(group_name) != element_groups.end()) {
     AKANTU_EXCEPTION(
         "Trying to create a element group that already exists:" << group_name);
+  }
 
   auto && ptr = std::make_unique<ElementGroup>(
       group_name, mesh, node_group, dimension,
@@ -232,7 +220,8 @@ ElementGroup & GroupManager::createFilteredElementGroup(
 
     AKANTU_DEBUG_OUT();
     return this->createElementGroup(group_name, dimension, filtered_node_group);
-  } else if (T::type == FilterFunctor::_element_filter_functor) {
+  }
+  if (T::type == FilterFunctor::_element_filter_functor) {
     AKANTU_ERROR(
         "Cannot handle an ElementFilter yet. Needs to be implemented.");
   }
@@ -266,7 +255,7 @@ public:
     comm.allGather(nb_cluster_per_proc);
 
     starting_index = std::accumulate(nb_cluster_per_proc.begin(),
-                                     nb_cluster_per_proc.begin() + rank, 0);
+                                     nb_cluster_per_proc.begin() + rank, 0U);
 
     UInt global_nb_fragment =
         std::accumulate(nb_cluster_per_proc.begin() + rank,
@@ -291,7 +280,7 @@ public:
 
     Array<UInt> total_pairs(total_nb_pairs, 2);
 
-    for (auto & ids : distant_ids) {
+    for (const auto & ids : distant_ids) {
       total_pairs(local_pair_index, 0) = ids.first;
       total_pairs(local_pair_index, 1) = ids.second;
       ++local_pair_index;
@@ -310,7 +299,7 @@ public:
     Array<bool> is_fragment_in_cluster(global_nb_fragment, 1, false);
     std::queue<UInt> fragment_check_list;
 
-    while (total_pairs.size() != 0) {
+    while (not total_pairs.empty()) {
       /// create a new cluster
       ++total_nb_cluster;
       global_clusters.resize(total_nb_cluster);
@@ -374,8 +363,9 @@ public:
       for (; it != end; ++it) {
         Int local_index = *it - starting_index;
 
-        if (local_index < 0 || local_index >= Int(nb_cluster))
+        if (local_index < 0 || local_index >= Int(nb_cluster)) {
           continue;
+        }
 
         std::stringstream tmp_sstr;
         tmp_sstr << "tmp_" << cluster_name_prefix << "_" << local_index;
@@ -396,8 +386,9 @@ private:
   /// functions for parallel communications
   inline UInt getNbData(const Array<Element> & elements,
                         const SynchronizationTag & tag) const override {
-    if (tag == SynchronizationTag::_gm_clusters)
+    if (tag == SynchronizationTag::_gm_clusters) {
       return elements.size() * sizeof(UInt);
+    }
 
     return 0;
   }
@@ -405,8 +396,9 @@ private:
   inline void packData(CommunicationBuffer & buffer,
                        const Array<Element> & elements,
                        const SynchronizationTag & tag) const override {
-    if (tag != SynchronizationTag::_gm_clusters)
+    if (tag != SynchronizationTag::_gm_clusters) {
       return;
+    }
 
     Array<Element>::const_iterator<> el_it = elements.begin();
     Array<Element>::const_iterator<> el_end = elements.end();
@@ -424,8 +416,9 @@ private:
   inline void unpackData(CommunicationBuffer & buffer,
                          const Array<Element> & elements,
                          const SynchronizationTag & tag) override {
-    if (tag != SynchronizationTag::_gm_clusters)
+    if (tag != SynchronizationTag::_gm_clusters) {
       return;
+    }
 
     Array<Element>::const_iterator<> el_it = elements.begin();
     Array<Element>::const_iterator<> el_end = elements.end();
@@ -467,15 +460,16 @@ UInt GroupManager::createBoundaryGroupFromGeometry() {
 
 /* -------------------------------------------------------------------------- */
 UInt GroupManager::createClusters(
-    UInt element_dimension, Mesh & mesh_facets, std::string cluster_name_prefix,
+    UInt element_dimension, Mesh & mesh_facets,
+    const std::string & cluster_name_prefix,
     const GroupManager::ClusteringFilter & filter) {
-  return createClusters(element_dimension, std::move(cluster_name_prefix),
-                        filter, mesh_facets);
+  return createClusters(element_dimension, cluster_name_prefix, filter,
+                        mesh_facets);
 }
 
 /* -------------------------------------------------------------------------- */
 UInt GroupManager::createClusters(
-    UInt element_dimension, std::string cluster_name_prefix,
+    UInt element_dimension, const std::string & cluster_name_prefix,
     const GroupManager::ClusteringFilter & filter) {
 
   MeshAccessor mesh_accessor(mesh);
@@ -487,8 +481,8 @@ UInt GroupManager::createClusters(
   MeshUtils::buildAllFacets(mesh, *mesh_facets, element_dimension,
                             element_dimension - 1);
 
-  return createClusters(element_dimension, std::move(cluster_name_prefix),
-                        filter, *mesh_facets);
+  return createClusters(element_dimension, cluster_name_prefix, filter,
+                        *mesh_facets);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -536,8 +530,9 @@ UInt GroupManager::createClusters(UInt element_dimension,
 
       for (UInt e = 0; e < nb_element; ++e) {
         el.element = e;
-        if (!filter(el))
+        if (!filter(el)) {
           seen_elements_array(e) = true;
+        }
       }
     }
   }
@@ -558,8 +553,9 @@ UInt GroupManager::createClusters(UInt element_dimension,
 
       for (UInt e = 0; e < seen_elements_vec.size(); ++e) {
         // skip elements that have been already seen
-        if (seen_elements_vec(e) == true)
+        if (seen_elements_vec(e)) {
           continue;
+        }
 
         // set current element
         uns_el.element = e;
@@ -604,9 +600,10 @@ UInt GroupManager::createClusters(UInt element_dimension,
           element_to_add.pop();
 
           /// if parallel, store cluster index per element
-          if (nb_proc > 1 && mesh.isDistributed())
+          if (nb_proc > 1 && mesh.isDistributed()) {
             (*element_to_fragment)(el.type, el.ghost_type)(el.element) =
                 nb_cluster - 1;
+          }
 
           /// add current element to the cluster
           cluster.add(el);
@@ -619,8 +616,9 @@ UInt GroupManager::createClusters(UInt element_dimension,
           for (UInt f = 0; f < nb_facet_per_element; ++f) {
             const Element & facet = element_to_facet(el.element, f);
 
-            if (facet == ElementNull)
+            if (facet == ElementNull) {
               continue;
+            }
 
             const std::vector<Element> & connected_elements =
                 mesh_facets.getElementToSubelement(
@@ -630,13 +628,14 @@ UInt GroupManager::createClusters(UInt element_dimension,
               const Element & check_el = connected_elements[elem];
 
               // check if this element has to be skipped
-              if (check_el == ElementNull || check_el == el)
+              if (check_el == ElementNull || check_el == el) {
                 continue;
+              }
 
               Array<bool> & seen_elements_vec_current =
                   seen_elements(check_el.type, check_el.ghost_type);
 
-              if (seen_elements_vec_current(check_el.element) == false) {
+              if (not seen_elements_vec_current(check_el.element)) {
                 seen_elements_vec_current(check_el.element) = true;
                 element_to_add.push(check_el);
               }
@@ -667,8 +666,9 @@ UInt GroupManager::createClusters(UInt element_dimension,
     delete element_to_fragment;
   }
 
-  if (mesh.isDistributed())
+  if (mesh.isDistributed()) {
     this->synchronizeGroupNames();
+  }
 
   AKANTU_DEBUG_OUT();
   return nb_cluster;
@@ -710,11 +710,13 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
 
   auto git = group_names.begin();
   auto gend = group_names.end();
-  for (; git != gend; ++git)
+  for (; git != gend; ++git) {
     createElementGroup(*git, group_dim[*git]);
+  }
 
-  if (mesh.isDistributed())
+  if (mesh.isDistributed()) {
     this->synchronizeGroupNames();
+  }
 
   Element el;
   for (auto ghost_type : ghost_types) {
@@ -782,8 +784,9 @@ void GroupManager::printself(std::ostream & stream, int indent) const {
   }
 
   for (auto & group : iterateNodeGroups()) {
-    if (node_group_seen.find(group.getName()) == node_group_seen.end())
+    if (node_group_seen.find(group.getName()) == node_group_seen.end()) {
       group.printself(stream, indent + 1);
+    }
   }
 
   stream << space << "]" << std::endl;
@@ -791,15 +794,13 @@ void GroupManager::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 UInt GroupManager::getNbElementGroups(UInt dimension) const {
-  if (dimension == _all_dimensions)
+  if (dimension == _all_dimensions) {
     return element_groups.size();
+  }
 
-  auto it = element_groups.begin();
-  auto end = element_groups.end();
-  UInt count = 0;
-  for (; it != end; ++it)
-    count += (it->second->getDimension() == dimension);
-  return count;
+  return std::count_if(
+      element_groups.begin(), element_groups.end(),
+      [dimension](auto && eg) { return eg.second->getDimension() == dimension; });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -898,13 +899,14 @@ void GroupManager::synchronizeGroupNames() {
   Int nb_proc = comm.getNbProc();
   Int my_rank = comm.whoAmI();
 
-  if (nb_proc == 1)
+  if (nb_proc == 1) {
     return;
+  }
 
   if (my_rank == 0) {
     for (Int p = 1; p < nb_proc; ++p) {
       DynamicCommunicationBuffer recv_buffer;
-      auto tag = Tag::genTag(p, 0, Tag::_ELEMENT_GROUP);
+      auto tag = Tag::genTag(p, 0, Tag::_element_group);
       comm.receive(recv_buffer, p, tag);
       AKANTU_DEBUG_INFO("Got " << printMemorySize<char>(recv_buffer.size())
                                << " from proc " << p << " " << tag);
@@ -922,7 +924,7 @@ void GroupManager::synchronizeGroupNames() {
     DynamicCommunicationBuffer comm_buffer;
     this->fillBufferWithGroupNames(comm_buffer);
 
-    auto tag = Tag::genTag(my_rank, 0, Tag::_ELEMENT_GROUP);
+    auto tag = Tag::genTag(my_rank, 0, Tag::_element_group);
     AKANTU_DEBUG_INFO("Sending " << printMemorySize<char>(comm_buffer.size())
                                  << " to proc " << 0 << " " << tag);
     comm.send(comm_buffer, 0, tag);

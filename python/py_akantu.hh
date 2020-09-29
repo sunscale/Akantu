@@ -4,11 +4,11 @@
 #include <pybind11/pybind11.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __PY_AKANTU_HH__
-#define __PY_AKANTU_HH__
+#ifndef PY_AKANTU_HH_
+#define PY_AKANTU_HH_
 
 namespace akantu {
 void register_all(pybind11::module & mod);
 }
 
-#endif /* __PY_AKANTU_HH__ */
+#endif /* PY_AKANTU_HH_ */

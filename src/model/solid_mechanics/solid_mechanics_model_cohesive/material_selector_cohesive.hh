@@ -41,8 +41,8 @@ class SolidMechanicsModelCohesive;
 
 namespace akantu {
 
-#ifndef __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__
-#define __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__
+#ifndef AKANTU_MATERIAL_SELECTOR_COHESIVE_HH_
+#define AKANTU_MATERIAL_SELECTOR_COHESIVE_HH_
 
 /* -------------------------------------------------------------------------- */
 /**
@@ -82,7 +82,7 @@ public:
   MaterialCohesiveRulesSelector(const SolidMechanicsModelCohesive & model,
                                 const MaterialCohesiveRules & rules,
                                 ID mesh_data_id = "physical_names");
-  UInt operator()(const Element & element);
+  UInt operator()(const Element & element) override;
 
 private:
   const SolidMechanicsModelCohesive & model;
@@ -93,6 +93,6 @@ private:
   MaterialCohesiveRules rules;
 };
 
-#endif /* __AKANTU_MATERIAL_SELECTOR_COHESIVE_HH__ */
+#endif /* AKANTU_MATERIAL_SELECTOR_COHESIVE_HH_ */
 
 } // namespace akantu

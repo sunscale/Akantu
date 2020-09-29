@@ -81,7 +81,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction, const ID & list_1,
 
 namespace {
   struct NodeInfo {
-    NodeInfo() {}
+    NodeInfo() = default;
     NodeInfo(UInt spatial_dimension) : position(spatial_dimension) {}
     NodeInfo(UInt node, const Vector<Real> & position,
              const SpatialDirection & direction)
@@ -91,10 +91,10 @@ namespace {
     }
 
     NodeInfo(const NodeInfo & other) = default;
-    NodeInfo( NodeInfo && other) noexcept = default;
+    NodeInfo(NodeInfo && other) noexcept = default;
     NodeInfo & operator=(const NodeInfo & other) = default;
-    NodeInfo & operator=(NodeInfo && other) noexcept = default;
-    
+    NodeInfo & operator=(NodeInfo && other)  = default;
+
     UInt node{0};
     Vector<Real> position;
     Real direction_position{0.};
@@ -192,7 +192,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
         }
       }
 
-      auto tag = Tag::genTag(prank, 10 * direction + cnt, Tag::_PERIODIC_NODES);
+      auto tag = Tag::genTag(prank, 10 * direction + cnt, Tag::_periodic_nodes);
       // std::cout << "SBuffer size " << buffer.size() << " " << tag <<
       // std::endl;
       return communicator->asyncSend(buffer, proc, tag);
@@ -203,7 +203,7 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     auto recv_and_extract_nodes = [&](auto & node_list, const auto proc,
                                       auto cnt) {
       DynamicCommunicationBuffer buffer;
-      auto tag = Tag::genTag(proc, 10 * direction + cnt, Tag::_PERIODIC_NODES);
+      auto tag = Tag::genTag(proc, 10 * direction + cnt, Tag::_periodic_nodes);
       communicator->receive(buffer, proc, tag);
       // std::cout << "RBuffer size " << buffer.size() << " " << tag <<
       // std::endl; std::cout << "Receiving from " << proc << std::endl;
@@ -246,8 +246,9 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
           // std::cout << "]";
         }
         // std::cout << std::endl;
-        if (local_node != UInt(-1))
+        if (local_node != UInt(-1)) {
           continue;
+        }
 
         local_node = nodes->size();
 
@@ -309,8 +310,8 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
     recv_intersections(intersections_with_right, 0);
     recv_intersections(intersections_with_right, 1);
 
-    communicator->waitAll(send_requests);
-    communicator->freeCommunicationRequest(send_requests);
+    Communicator::waitAll(send_requests);
+    Communicator::freeCommunicationRequest(send_requests);
 
     this->sendEvent(event);
   } // end distributed work
@@ -325,8 +326,9 @@ void Mesh::makePeriodic(const SpatialDirection & direction,
 
   // function to change the master of nodes
   auto updating_master = [&](auto & old_master, auto & new_master) {
-    if (old_master == new_master)
+    if (old_master == new_master) {
       return;
+    }
 
     auto slaves = periodic_master_slave.equal_range(old_master);
     AKANTU_DEBUG_ASSERT(

@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_TYPE_TRAITS_HH__
-#define __AKANTU_DUMPER_TYPE_TRAITS_HH__
+#ifndef AKANTU_DUMPER_TYPE_TRAITS_HH_
+#define AKANTU_DUMPER_TYPE_TRAITS_HH_
 /* -------------------------------------------------------------------------- */
 #include "element_type_map.hh"
 #include "element_type_map_filter.hh"
@@ -86,4 +86,4 @@ namespace dumpers {
 
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_DUMPER_TYPE_TRAITS_HH__ */
+#endif /* AKANTU_DUMPER_TYPE_TRAITS_HH_ */

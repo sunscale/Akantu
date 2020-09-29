@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_PARAMETER_READER_HH__
-#define __AST_PARAMETER_READER_HH__
+#ifndef AST_PARAMETER_READER_HH_
+#define AST_PARAMETER_READER_HH_
 
 /* -------------------------------------------------------------------------- */
 // std
@@ -106,4 +106,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_PARAMETER_READER_HH__ */
+#endif /* AST_PARAMETER_READER_HH_ */

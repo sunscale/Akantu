@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH__
-#define __AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH__
+#ifndef AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH_
+#define AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "dumper_igfem_elemental_field.hh"
@@ -137,4 +137,4 @@ public:
 } // namespace dumpers
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH__ */
+#endif /* AKANTU_DUMPER_IGFEM_QUADRATURE_POINTS_FIELD_HH_ */

@@ -79,11 +79,13 @@ PYBIND11_MODULE(py11_akantu, mod) {
 
   py::register_exception_translator([](std::exception_ptr ptr) {
     try {
-      if (ptr)
+      if (ptr) {
         std::rethrow_exception(ptr);
+      }
     } catch (akantu::debug::Exception & e) {
-      if (akantu::debug::debugger.printBacktrace())
+      if (akantu::debug::debugger.printBacktrace()) {
         akantu::debug::printBacktrace(15);
+      }
       akantu_exception(e.info().c_str());
     }
   });

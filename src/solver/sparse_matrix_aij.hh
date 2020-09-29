@@ -36,8 +36,8 @@
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SPARSE_MATRIX_AIJ_HH__
-#define __AKANTU_SPARSE_MATRIX_AIJ_HH__
+#ifndef AKANTU_SPARSE_MATRIX_AIJ_HH_
+#define AKANTU_SPARSE_MATRIX_AIJ_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -71,7 +71,7 @@ public:
   inline UInt add(UInt i, UInt j) override;
 
   /// set the matrix to 0
-  void clear() override;
+  void set(Real val) override;
 
   /// assemble a local matrix in the sparse one
   inline void add(UInt i, UInt j, Real value) override;
@@ -157,8 +157,9 @@ protected:
 
   /// get the pair corresponding to (i, j)
   inline KeyCOO key(UInt i, UInt j) const {
-    if (this->matrix_type == _symmetric && (i > j))
+    if (this->matrix_type == _symmetric && (i > j)) {
       return std::make_pair(j, i);
+    }
     return std::make_pair(i, j);
   }
 
@@ -194,4 +195,4 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_aij_inline_impl.hh"
 
-#endif /* __AKANTU_SPARSE_MATRIX_AIJ_HH__ */
+#endif /* AKANTU_SPARSE_MATRIX_AIJ_HH_ */

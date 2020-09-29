@@ -55,12 +55,12 @@ UInt DefaultMaterialCohesiveSelector::operator()(const Element & element) {
                                                       element.ghost_type);
       bool third_dimension = (mesh.getSpatialDimension() == 3);
       const Element & facet =
-          cohesive_el_to_facet(element.element, third_dimension);
+          cohesive_el_to_facet(element.element, UInt(third_dimension));
       if (facet_material.exists(facet.type, facet.ghost_type)) {
         return facet_material(facet.type, facet.ghost_type)(facet.element);
-      } else {
-        return fallback_value;
       }
+      return fallback_value;
+
     } catch (...) {
       return fallback_value;
     }
@@ -93,7 +93,7 @@ UInt MeshDataMaterialCohesiveSelector::operator()(const Element & element) {
     if (Mesh::getKind(element.type) == _ek_cohesive) {
       facet = mesh_facets.getSubelementToElement(element.type,
 						 element.ghost_type)(element.element,
-								     third_dimension);
+                                             UInt(third_dimension));
     } else {
       facet = element;
     }

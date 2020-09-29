@@ -103,8 +103,8 @@ void NonLocalNeighborhoodBase::cleanupExtraGhostElements(
   auto & mesh = this->model.getMesh();
 
   auto end = relevant_ghost_elements.end();
-  for (auto & type : mesh.elementTypes(_spatial_dimension = spatial_dimension,
-                     _ghost_type = _ghost)) {
+  for (const auto & type : mesh.elementTypes(
+           _spatial_dimension = spatial_dimension, _ghost_type = _ghost)) {
     auto nb_ghost_elem = mesh.getNbElement(type, _ghost);
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
       Element element{type, g, _ghost};

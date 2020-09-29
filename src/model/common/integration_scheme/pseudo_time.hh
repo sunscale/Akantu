@@ -31,8 +31,8 @@
 #include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PSEUDO_TIME_HH__
-#define __AKANTU_PSEUDO_TIME_HH__
+#ifndef AKANTU_PSEUDO_TIME_HH_
+#define AKANTU_PSEUDO_TIME_HH_
 
 namespace akantu {
 
@@ -69,4 +69,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_PSEUDO_TIME_HH__ */
+#endif /* AKANTU_PSEUDO_TIME_HH_ */

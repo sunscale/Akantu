@@ -175,7 +175,7 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt i = 0; i < nb_steps; ++i) {
-    displacement.clear();
+    displacement.zero();
 
     Real angle = (Real)i / (Real)nb_steps * theta;
     applyRotation(l_center, angle, nodes, displacement, lnode_1);

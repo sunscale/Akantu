@@ -32,8 +32,8 @@
 #include "remove_damaged_weight_function.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_INLINE_IMPL_HH__
-#define __AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_INLINE_IMPL_HH__
+#ifndef AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_INLINE_IMPL_HH_
+#define AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -44,8 +44,9 @@ operator()(Real r, const __attribute__((unused)) IntegrationPoint & q1,
   /// compute the weight
   UInt quad = q2.global_num;
 
-  if (q1 == q2)
+  if (q1 == q2) {
     return 1.;
+  }
 
   Array<Real> & dam_array = (*this->damage)(q2.type, q2.ghost_type);
   Real D = dam_array(quad);
@@ -67,9 +68,10 @@ inline UInt
 RemoveDamagedWeightFunction::getNbData(const Array<Element> & elements,
                                        const SynchronizationTag & tag) const {
 
-  if (tag == SynchronizationTag::_mnl_weight)
+  if (tag == SynchronizationTag::_mnl_weight) {
     return this->manager.getModel().getNbIntegrationPoints(elements) *
            sizeof(Real);
+  }
 
   return 0;
 }
@@ -100,4 +102,4 @@ RemoveDamagedWeightFunction::unpackData(CommunicationBuffer & buffer,
 
 } // namespace akantu
 
-#endif /* __AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_INLINE_IMPL_HH__ */
+#endif /* AKANTU_REMOVE_DAMAGED_WEIGHT_FUNCTION_INLINE_IMPL_HH_ */

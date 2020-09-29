@@ -38,7 +38,7 @@
 #pragma warning ( disable : 981 )
 #endif //defined(__INTEL_COMPILER)
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 /* -------------------------------------------------------------------------- */
 DumperText::DumperText(TextDumpMode md, const std::string & prefix, 
@@ -49,10 +49,11 @@ DumperText::DumperText(TextDumpMode md, const std::string & prefix,
   precision(6), file_per_time_step(file_per_time_step), is_first_dump(true) {
 
   // fields and variables dump options
-  if (file_per_time_step)
+  if (file_per_time_step) {
     this->registerDumpOptions("data_fields", "", ".out", _df_counter | _df_proc_id);
-  else 
+  } else {
     this->registerDumpOptions("data_fields", "", ".out", _df_proc_id);
+  }
 
   this->registerDumpOptions("data_variables", "", ".out");
 
@@ -70,9 +71,9 @@ DumperText::~DumperText() {
   
   // only root rank has this files
   //  if (this->my_rank == this->root_rank) {
-  FileMap::iterator it  = this->file_map.begin();
-  FileMap::iterator end = this->file_map.end();
-  
+  auto it = this->file_map.begin();
+  auto end = this->file_map.end();
+
   for (; it != end; ++it) {
     it->second->close();
     delete it->second;
@@ -114,12 +115,13 @@ void DumperText::dump(const std::string & name, UInt count) {
   iohelper_mkdir(std::string(this->getAbsoluteFolderPath("data_variables")).c_str(), 0755);
   
   /* dump description file */
-  if (this->is_first_dump)
+  if (this->is_first_dump) {
     this->dumpDescription(this->description_sep);
+  }
 
   /* nodal data */
-  std::map<std::string,FieldInterface *>::iterator it  = per_node_data.begin();
-  std::map<std::string,FieldInterface *>::iterator end = per_node_data.end();
+  auto it = per_node_data.begin();
+  auto end = per_node_data.end();
   for (; it != end ; ++it) {
     (*it).second->accept(*this);
   }
@@ -132,8 +134,8 @@ void DumperText::dump(const std::string & name, UInt count) {
   }
 
   /* global data */
-  std::map<std::string,VariableInterface *>::iterator git  = global_data.begin();
-  std::map<std::string,VariableInterface *>::iterator gend = global_data.end();
+  auto git = global_data.begin();
+  auto gend = global_data.end();
   for (; git != gend; ++git) {
     (*git).second->accept(*this);
   }
@@ -206,11 +208,12 @@ void DumperText::dumpDescription(const char descr_sep) {
 void DumperText::dumpTimeDescription(const char descr_sep) {
 
   // only root rank dumps variables
-  if (this->my_rank != this->root_rank)
+  if (this->my_rank != this->root_rank) {
     return;
+  }
 
-  FileMap::iterator it  = this->file_map.find(this->time_name);
-  FileMap::iterator end = this->file_map.end();
+  auto it = this->file_map.find(this->time_name);
+  auto end = this->file_map.end();
 
   File * file;
   if (it == end) {
@@ -244,8 +247,8 @@ void DumperText::dumpFieldDescription(const char descr_sep) {
        << " [3]-dump_mode [4]-nb_components [5]-rel_file_path" << std::endl;
 
   /* nodal data */
-  field_map::iterator it  = per_node_data.begin();
-  field_map::iterator end = per_node_data.end();
+  auto it = per_node_data.begin();
+  auto end = per_node_data.end();
   for (; it != end ; ++it) {
     FieldInterface * fld = (*it).second;
     file << fld->getName();
@@ -272,8 +275,8 @@ void DumperText::dumpFieldDescription(const char descr_sep) {
   }
 
   /* global data */
-  std::map<std::string,VariableInterface *>::iterator git  = global_data.begin();
-  std::map<std::string,VariableInterface *>::iterator gend = global_data.end();
+  auto git = global_data.begin();
+  auto gend = global_data.end();
   for (; git != gend; ++git) {
     VariableInterface * var = (*git).second;
     file << var->getName();
@@ -289,7 +292,7 @@ void DumperText::dumpFieldDescription(const char descr_sep) {
 
 }
 
-__END_IOHELPER__
+}
 
 /* -------------------------------------------------------------------------- */
 

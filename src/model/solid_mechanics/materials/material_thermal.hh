@@ -32,8 +32,8 @@
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_THERMAL_HH__
-#define __AKANTU_MATERIAL_THERMAL_HH__
+#ifndef AKANTU_MATERIAL_THERMAL_HH_
+#define AKANTU_MATERIAL_THERMAL_HH_
 
 namespace akantu {
 template <UInt spatial_dimension> class MaterialThermal : public Material {
@@ -109,4 +109,4 @@ inline void MaterialThermal<1>::computeStressOnQuad(Real & sigma,
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_THERMAL_HH__ */
+#endif /* AKANTU_MATERIAL_THERMAL_HH_ */

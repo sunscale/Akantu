@@ -33,8 +33,8 @@
 #include <string>
 #include <vector>
 
-#ifndef __CPPARGPARSE_HH__
-#define __CPPARGPARSE_HH__
+#ifndef CPPARGPARSE_HH_
+#define CPPARGPARSE_HH_
 
 /* -------------------------------------------------------------------------- */
 namespace cppargparse {
@@ -124,7 +124,7 @@ public:
   const Argument & operator[](const std::string & name) const;
 
   /// is the argument present
-  bool has(const std::string &) const;
+  bool has(const std::string & /*name*/) const;
 
   /// set the parallel context to avoid multiple help messages in
   /// multiproc/thread cases
@@ -132,38 +132,38 @@ public:
 
 public:
   /// Internal class describing the arguments
-  struct _Argument;
+  struct Argument_;
   /// Stores that value of an argument
   template <class T> class ArgumentStorage;
 
 private:
   /// Internal function to be used by the public addArgument
-  _Argument & _addArgument(const std::string & name_or_flag,
-                           const std::string & description, int nargs,
+  Argument_ & _addArgument(const std::string & name_or_flag,
+                           const std::string & help, int nargs,
                            ArgumentType type);
 
   void _exit(const std::string & msg = "", int status = 0);
-  bool checkType(ArgumentType type, const std::string & value) const;
+  static bool checkType(ArgumentType type, const std::string & value);
 
   /// function to help to print help
-  void print_usage_nargs(std::ostream & stream,
-                         const _Argument & argument) const;
+  static void print_usage_nargs(std::ostream & stream,
+                                const Argument_ & argument);
   /// function to help to print help
   void print_help_argument(std::ostream & stream,
-                           const _Argument & argument) const;
+                           const Argument_ & argument) const;
 
 private:
   /// public arguments storage
   using Arguments = std::map<std::string, Argument *>;
   /// internal arguments storage
-  using _Arguments = std::map<std::string, _Argument *>;
+  using Arguments_ = std::map<std::string, Argument_ *>;
   /// association key argument
-  using ArgumentKeyMap = std::map<std::string, _Argument *>;
+  using ArgumentKeyMap = std::map<std::string, Argument_ *>;
   /// position arguments
-  using PositionalArgument = std::vector<_Argument *>;
+  using PositionalArgument = std::vector<Argument_ *>;
 
   /// internal storage of arguments declared by the user
-  _Arguments arguments;
+  Arguments_ arguments;
   /// list of arguments successfully parsed
   Arguments success_parsed;
   /// keys associated to arguments
@@ -195,6 +195,6 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace cppargparse
 
-#endif /* __CPPARGPARSE_HH__ */
+#endif /* CPPARGPARSE_HH_ */
 
 #include "cppargparse_tmpl.hh"

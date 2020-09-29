@@ -59,9 +59,11 @@ inline void MaterialNeohookean<dim>::computeStressOnQuad(Matrix<Real> & grad_u,
   //  std::cout<<"det(F) -> "<<J<<std::endl;
   Cminus.inverse(C);
 
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
-      S(i, j) = (i == j) * mu + (lambda * log(J) - mu) * Cminus(i, j);
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
+      S(i, j) = Math::kronecker(i, j) * mu + (lambda * log(J) - mu) * Cminus(i, j);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -118,9 +120,11 @@ MaterialNeohookean<dim>::computePiolaKirchhoffOnQuad(const Matrix<Real> & E,
 
   /// \f$ \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla
   /// u_{ij} + \nabla u_{ji}) \f$
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
-      S(i, j) = (i == j) * lambda * trace + 2.0 * mu * E(i, j);
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
+      S(i, j) = Math::kronecker(i, j) * lambda * trace + 2.0 * mu * E(i, j);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */

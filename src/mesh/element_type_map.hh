@@ -35,8 +35,8 @@
 #include "element.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_TYPE_MAP_HH__
-#define __AKANTU_ELEMENT_TYPE_MAP_HH__
+#ifndef AKANTU_ELEMENT_TYPE_MAP_HH_
+#define AKANTU_ELEMENT_TYPE_MAP_HH_
 
 namespace akantu {
 class FEEngine;
@@ -81,7 +81,7 @@ public:
   ~ElementTypeMap() override;
 
   inline static std::string printType(const SupportType & type,
-                                      const GhostType & ghost_type);
+                                      GhostType ghost_type);
 
   /*! Tests whether a type is present in the object
    *  @param type the type to check for
@@ -89,7 +89,7 @@ public:
    *         elements is searched
    *  @return true if the type is present. */
   inline bool exists(const SupportType & type,
-                     const GhostType & ghost_type = _not_ghost) const;
+                     GhostType ghost_type = _not_ghost) const;
 
   /*! get the stored data corresponding to a type
    *  @param type the type to check for
@@ -98,7 +98,7 @@ public:
    *  @return stored data corresponding to type. */
   inline const Stored &
   operator()(const SupportType & type,
-             const GhostType & ghost_type = _not_ghost) const;
+             GhostType ghost_type = _not_ghost) const;
 
   /*! get the stored data corresponding to a type
    *  @param type the type to check for
@@ -106,7 +106,7 @@ public:
    *         elements is searched
    *  @return stored data corresponding to type. */
   inline Stored & operator()(const SupportType & type,
-                             const GhostType & ghost_type = _not_ghost);
+                             GhostType ghost_type = _not_ghost);
 
   /*! insert data of a new type (not yet present) into the map. THIS METHOD IS
    *  NOT ARRAY SAFE, when using ElementTypeMapArray, use setArray instead
@@ -117,8 +117,8 @@ public:
    *         elements is searched
    *  @return stored data corresponding to type. */
   template <typename U>
-  inline Stored & operator()(U && data, const SupportType & type,
-                             const GhostType & ghost_type = _not_ghost);
+  inline Stored & operator()(U && insertee, const SupportType & type,
+                             GhostType ghost_type = _not_ghost);
 
 public:
   /// print helper
@@ -156,7 +156,7 @@ public:
     type_iterator operator++(int);
     inline bool operator==(const type_iterator & other) const;
     inline bool operator!=(const type_iterator & other) const;
-    type_iterator & operator=(const type_iterator & other);
+    type_iterator & operator=(const type_iterator & it);
 
   private:
     DataMapIterator list_begin;
@@ -177,8 +177,8 @@ public:
           kind(kind) {}
 
     template <typename... pack>
-    ElementTypesIteratorHelper(const Container & container, use_named_args_t,
-                               pack &&... _pack)
+    ElementTypesIteratorHelper(const Container & container,
+                               use_named_args_t /*unused*/, pack &&... _pack)
         : ElementTypesIteratorHelper(
               container, OPTIONAL_NAMED_ARG(spatial_dimension, _all_dimensions),
               OPTIONAL_NAMED_ARG(ghost_type, _not_ghost),
@@ -188,7 +188,7 @@ public:
     ElementTypesIteratorHelper &
     operator=(const ElementTypesIteratorHelper &) = default;
     ElementTypesIteratorHelper &
-    operator=(ElementTypesIteratorHelper &&) = default;
+    operator=(ElementTypesIteratorHelper &&) noexcept = default;
 
     iterator begin();
     iterator end();
@@ -301,7 +301,7 @@ public:
 
   /// standard assigment (copy) operator
   void operator=(const ElementTypeMapArray &) = delete;
-  ElementTypeMapArray(const ElementTypeMapArray &);
+  ElementTypeMapArray(const ElementTypeMapArray & /*other*/);
 
   /// explicit copy
   void copy(const ElementTypeMapArray & other);
@@ -327,7 +327,7 @@ public:
    *  @return a reference to the allocated array */
   inline Array<T> & alloc(UInt size, UInt nb_component,
                           const SupportType & type,
-                          const GhostType & ghost_type,
+                          GhostType ghost_type,
                           const T & default_value = T());
 
   /*! allocate memory for a new array in both the data and the ghost_data map
@@ -345,7 +345,7 @@ public:
    * @return a reference to the array */
   inline const Array<T> &
   operator()(const SupportType & type,
-             const GhostType & ghost_type = _not_ghost) const;
+             GhostType ghost_type = _not_ghost) const;
 
   /// access the data of an element, this combine the map and array accessor
   inline const T & operator()(const Element & element,
@@ -359,7 +359,7 @@ public:
    * @param ghost_type optional: by default the non-ghost map is searched
    * @return a const reference to the array */
   inline Array<T> & operator()(const SupportType & type,
-                               const GhostType & ghost_type = _not_ghost);
+                               GhostType ghost_type = _not_ghost);
 
   /*! insert data of a new type (not yet present) into the map.
    *  @param type type of data (if this type is already present in the map,
@@ -368,16 +368,22 @@ public:
    *         elements is searched
    *  @param vect the vector to include into the map
    *  @return stored data corresponding to type. */
-  inline void setArray(const SupportType & type, const GhostType & ghost_type,
+  inline void setArray(const SupportType & type, GhostType ghost_type,
                        const Array<T> & vect);
   /*! frees all memory related to the data*/
   inline void free();
 
-  /*! set all values in the ElementTypeMap to zero*/
   inline void clear();
 
+  inline bool empty() const __attribute__((warn_unused_result));
+
+  /*! set all values in the ElementTypeMap to zero*/
+  inline void zero() { this->set(T()); }
+
   /*! set all values in the ElementTypeMap to value */
-  template <typename ST> inline void set(const ST & value);
+  template<typename ST>
+  inline void set(const ST & value);
+
 
   /*! deletes and reorders entries in the stored arrays
    *  @param new_numbering a ElementTypeMapArray of new indices. UInt(-1)
@@ -451,8 +457,8 @@ public:
   void isNodal(bool is_nodal) { this->is_nodal = is_nodal; }
 
 private:
-  UInt sizeImpl(UInt spatial_dimension, const GhostType & ghost_type,
-                const ElementKind & kind) const;
+  UInt sizeImpl(UInt spatial_dimension, GhostType ghost_type,
+                ElementKind kind) const;
 
 protected:
   /// name of the element type map: e.g. connectivity, grad_u
@@ -475,4 +481,4 @@ using ElementTypeMapUIntDataMap = ElementTypeMap<UIntDataMap, ElementType>;
 
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_TYPE_MAP_HH__ */
+#endif /* AKANTU_ELEMENT_TYPE_MAP_HH_ */

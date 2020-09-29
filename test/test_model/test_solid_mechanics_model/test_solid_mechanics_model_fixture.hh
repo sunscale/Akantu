@@ -37,8 +37,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH__
-#define __AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH__
+#ifndef AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH_
+#define AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH_
 
 using namespace akantu;
 
@@ -126,4 +126,4 @@ using gtest_element_types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_SUITE(TestSMMFixture, gtest_element_types);
 
-#endif /* __AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH__ */
+#endif /* AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH_ */

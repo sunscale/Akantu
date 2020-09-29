@@ -35,8 +35,8 @@
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH__
-#define __AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH__
+#ifndef AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH_
+#define AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH_
 
 namespace akantu {
 class ElementSynchronizer;
@@ -147,4 +147,4 @@ private:
 
 #include "element_info_per_processor_tmpl.hh"
 
-#endif /* __AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH__ */
+#endif /* AKANTU_ELEMENT_INFO_PER_PROCESSOR_HH_ */

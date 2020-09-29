@@ -13,8 +13,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH__
-#define __AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH__
+#ifndef AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH_
+#define AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH_
 /* -------------------------------------------------------------------------- */
 #include "dumper_generic_elemental_field.hh"
 #include "dumper_igfem_element_iterator.hh"
@@ -140,4 +140,4 @@ protected:
 } // namespace dumpers
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH__ */
+#endif /* AKANTU_DUMPER_IGFEM_GENERIC_ELEMENTAL_FIELD_HH_ */

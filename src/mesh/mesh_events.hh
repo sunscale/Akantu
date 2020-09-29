@@ -35,8 +35,8 @@
 #include "element_type_map.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_EVENTS_HH__
-#define __AKANTU_MESH_EVENTS_HH__
+#ifndef AKANTU_MESH_EVENTS_HH_
+#define AKANTU_MESH_EVENTS_HH_
 
 namespace akantu {
 
@@ -124,9 +124,9 @@ protected:
 class ChangedElementsEvent : public RemovedElementsEvent {
 public:
   inline ChangedElementsEvent(
-      const Mesh & mesh, ID new_numbering_id = "changed_event:new_numbering",
+      const Mesh & mesh, const ID & new_numbering_id = "changed_event:new_numbering",
       const std::string & origin = "")
-      : RemovedElementsEvent(mesh, std::move(new_numbering_id), origin) {}
+      : RemovedElementsEvent(mesh, new_numbering_id, origin) {}
 
   ~ChangedElementsEvent() override = default;
   AKANTU_GET_MACRO(ListOld, list, const Array<Element> &);
@@ -199,4 +199,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_EVENTS_HH__ */
+#endif /* AKANTU_MESH_EVENTS_HH_ */

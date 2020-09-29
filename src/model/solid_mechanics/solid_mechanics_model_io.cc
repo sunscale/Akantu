@@ -52,12 +52,13 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 bool SolidMechanicsModel::isInternal(const std::string & field_name,
-                                     const ElementKind & element_kind) {
+                                     ElementKind element_kind) {
   /// check if at least one material contains field_id as an internal
   for (auto & material : materials) {
     bool is_internal = material->isInternal<Real>(field_name, element_kind);
-    if (is_internal)
+    if (is_internal) {
       return true;
+    }
   }
 
   return false;
@@ -66,14 +67,16 @@ bool SolidMechanicsModel::isInternal(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 ElementTypeMap<UInt>
 SolidMechanicsModel::getInternalDataPerElem(const std::string & field_name,
-                                            const ElementKind & element_kind) {
+                                            ElementKind element_kind) {
 
-  if (!(this->isInternal(field_name, element_kind)))
+  if (!(this->isInternal(field_name, element_kind))) {
     AKANTU_EXCEPTION("unknown internal " << field_name);
+  }
 
   for (auto & material : materials) {
-    if (material->isInternal<Real>(field_name, element_kind))
+    if (material->isInternal<Real>(field_name, element_kind)) {
       return material->getInternalDataPerElem<Real>(field_name, element_kind);
+    }
   }
 
   return ElementTypeMap<UInt>();
@@ -82,7 +85,7 @@ SolidMechanicsModel::getInternalDataPerElem(const std::string & field_name,
 /* -------------------------------------------------------------------------- */
 ElementTypeMapArray<Real> &
 SolidMechanicsModel::flattenInternal(const std::string & field_name,
-                                     const ElementKind & kind,
+                                     ElementKind kind,
                                      const GhostType ghost_type) {
   auto key = std::make_pair(field_name, kind);
 
@@ -108,8 +111,9 @@ SolidMechanicsModel::flattenInternal(const std::string & field_name,
   }
 
   for (auto & material : materials) {
-    if (material->isInternal<Real>(field_name, kind))
+    if (material->isInternal<Real>(field_name, kind)) {
       material->flattenInternal(field_name, *internal_flat, ghost_type, kind);
+    }
   }
 
   return *internal_flat;
@@ -117,14 +121,15 @@ SolidMechanicsModel::flattenInternal(const std::string & field_name,
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::flattenAllRegisteredInternals(
-    const ElementKind & kind) {
+    ElementKind kind) {
   ElementKind _kind;
   ID _id;
 
   for (auto & internal : this->registered_internals) {
     std::tie(_id, _kind) = internal.first;
-    if (kind == _kind)
+    if (kind == _kind) {
       this->flattenInternal(_id, kind);
+    }
   }
 }
 
@@ -137,28 +142,29 @@ void SolidMechanicsModel::onDump() {
 #ifdef AKANTU_USE_IOHELPER
 std::shared_ptr<dumpers::Field> SolidMechanicsModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
-    bool padding_flag, const UInt & spatial_dimension,
-    const ElementKind & kind) {
+    bool padding_flag, UInt spatial_dimension,
+    ElementKind kind) {
 
   std::shared_ptr<dumpers::Field> field;
 
-  if (field_name == "partitions")
+  if (field_name == "partitions") {
     field = mesh.createElementalField<UInt, dumpers::ElementPartitionField>(
         mesh.getConnectivities(), group_name, spatial_dimension, kind);
-  else if (field_name == "material_index")
+  } else if (field_name == "material_index") {
     field = mesh.createElementalField<UInt, Vector, dumpers::ElementalField>(
         material_index, group_name, spatial_dimension, kind);
-  else {
+  } else {
     // this copy of field_name is used to compute derivated data such as
     // strain and von mises stress that are based on grad_u and stress
     std::string field_name_copy(field_name);
 
     if (field_name == "strain" || field_name == "Green strain" ||
         field_name == "principal strain" ||
-        field_name == "principal Green strain")
+        field_name == "principal Green strain") {
       field_name_copy = "grad_u";
-    else if (field_name == "Von Mises stress")
+    } else if (field_name == "Von Mises stress") {
       field_name_copy = "stress";
+    }
 
     bool is_internal = this->isInternal(field_name_copy, kind);
 
@@ -237,12 +243,13 @@ SolidMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   std::shared_ptr<dumpers::Field> field;
-  if (padding_flag)
+  if (padding_flag) {
     field = this->mesh.createNodalField(real_nodal_fields[field_name],
                                         group_name, 3);
-  else
+  } else {
     field =
         this->mesh.createNodalField(real_nodal_fields[field_name], group_name);
+  }
 
   return field;
 }
@@ -265,7 +272,7 @@ std::shared_ptr<dumpers::Field> SolidMechanicsModel::createNodalFieldBool(
 std::shared_ptr<dumpers::Field>
 SolidMechanicsModel::createElementalField(const std::string &,
                                           const std::string &, bool,
-                                          const UInt &, const ElementKind &) {
+                                          const UInt &, ElementKind) {
   return nullptr;
 }
 /* --------------------------------------------------------------------------

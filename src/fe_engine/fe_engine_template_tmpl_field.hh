@@ -31,8 +31,8 @@
 #include "fe_engine_template.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FE_ENGINE_TEMPLATE_TMPL_FIELD_HH__
-#define __AKANTU_FE_ENGINE_TEMPLATE_TMPL_FIELD_HH__
+#ifndef AKANTU_FE_ENGINE_TEMPLATE_TMPL_FIELD_HH_
+#define AKANTU_FE_ENGINE_TEMPLATE_TMPL_FIELD_HH_
 
 namespace akantu {
 
@@ -45,7 +45,7 @@ namespace fe_engine {
       template <class Functor>
       void fillField(const Functor & field_funct, Array<Real> & field,
                      UInt nb_element, UInt nb_integration_points,
-                     const ElementType & type, const GhostType & ghost_type) {
+                     ElementType type, GhostType ghost_type) {
         UInt nb_degree_of_freedom = field.getNbComponent();
         field.resize(nb_integration_points * nb_element);
 
@@ -69,11 +69,12 @@ namespace fe_engine {
     template <ElementKind kind> struct AssembleLumpedTemplateHelper {
       template <template <ElementKind, class> class I,
                 template <ElementKind> class S, ElementKind k, class IOF>
-      static void
-      call(const FEEngineTemplate<I, S, k, IOF> &,
-           const std::function<void(Matrix<Real> &, const Element &)> &,
-           const ID &, const ID &, DOFManager &, ElementType,
-           const GhostType &) {
+      static void call(const FEEngineTemplate<I, S, k, IOF> & /*unused*/,
+                       const std::function<void(Matrix<Real> &,
+                                                const Element &)> & /*unused*/,
+                       const ID & /*unused*/, const ID & /*unused*/,
+                       DOFManager & /*unused*/, ElementType /*unused*/,
+                       GhostType /*unused*/) {
         AKANTU_TO_IMPLEMENT();
       }
     };
@@ -91,7 +92,7 @@ namespace fe_engine {
          const std::function<void(Matrix<Real> &, const Element &)> &          \
              field_funct,                                                      \
          const ID & lumped, const ID & dof_id, DOFManager & dof_manager,       \
-         ElementType type, const GhostType & ghost_type) {                     \
+         ElementType type, GhostType ghost_type) {                     \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_LUMPED, kind);                 \
     }                                                                          \
   };
@@ -111,7 +112,7 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
 void FEEngineTemplate<I, S, kind, IOF>::assembleFieldLumped(
     const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
     const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-    ElementType type, const GhostType & ghost_type) const {
+    ElementType type, GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
   fe_engine::details::AssembleLumpedTemplateHelper<kind>::call(
@@ -129,7 +130,7 @@ template <ElementType type>
 void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldLumped(
     const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
     const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_degree_of_freedom = dof_manager.getDOFs(dof_id).getNbComponent();
@@ -168,20 +169,20 @@ template <ElementType type>
 void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
     assembleLumpedRowSum(const Array<Real> & field, const ID & matrix_id,
                          const ID & dof_id, DOFManager & dof_manager,
-                         const GhostType & ghost_type) const {
+                         GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt shapes_size = ElementClass<type>::getShapeSize();
   UInt nb_degree_of_freedom = field.getNbComponent();
 
-  Array<Real> * field_times_shapes =
+  auto * field_times_shapes =
       new Array<Real>(0, shapes_size * nb_degree_of_freedom);
 
   shape_functions.template computeNtb<type>(field, *field_times_shapes,
                                             ghost_type);
 
   UInt nb_element = mesh.getNbElement(type, ghost_type);
-  Array<Real> * int_field_times_shapes = new Array<Real>(
+  auto * int_field_times_shapes = new Array<Real>(
       nb_element, shapes_size * nb_degree_of_freedom, "inte_rho_x_shapes");
 
   integrator.template integrate<type>(
@@ -209,10 +210,10 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
     assembleLumpedDiagonalScaling(const Array<Real> & field,
                                   const ID & matrix_id, const ID & dof_id,
                                   DOFManager & dof_manager,
-                                  const GhostType & ghost_type) const {
+                                  GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
-  const ElementType & type_p1 = ElementClass<type>::getP1ElementType();
+  ElementType type_p1 = ElementClass<type>::getP1ElementType();
   UInt nb_nodes_per_element_p1 = Mesh::getNbNodesPerElement(type_p1);
   UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
   UInt nb_degree_of_freedom = field.getNbComponent();
@@ -249,8 +250,9 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::
   if (type == _pentahedron_15) {
     // coefficients derived by scaling the diagonal terms of the corresponding
     // consistent mass computed with 8 gauss points;
-    for (UInt n = 0; n < nb_nodes_per_element_p1; n++)
+    for (UInt n = 0; n < nb_nodes_per_element_p1; n++) {
       nodal_factor(n) = 51. / 2358.;
+    }
 
     Real mid_triangle = 192. / 2358.;
     Real mid_quadrangle = 300. / 2358.;
@@ -310,11 +312,12 @@ namespace fe_engine {
     template <ElementKind kind> struct AssembleFieldMatrixHelper {
       template <template <ElementKind, class> class I,
                 template <ElementKind> class S, ElementKind k, class IOF>
-      static void
-      call(const FEEngineTemplate<I, S, k, IOF> &,
-           const std::function<void(Matrix<Real> &, const Element &)> &,
-           const ID &, const ID &, DOFManager &, ElementType,
-           const GhostType &) {
+      static void call(const FEEngineTemplate<I, S, k, IOF> & /*unused*/,
+                       const std::function<void(Matrix<Real> &,
+                                                const Element &)> & /*unused*/,
+                       const ID & /*unused*/, const ID & /*unused*/,
+                       DOFManager & /*unused*/, ElementType /*unused*/,
+                       GhostType /*unused*/) {
         AKANTU_TO_IMPLEMENT();
       }
     };
@@ -332,7 +335,7 @@ namespace fe_engine {
          const std::function<void(Matrix<Real> &, const Element &)> &          \
              field_funct,                                                      \
          const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,    \
-         ElementType type, const GhostType & ghost_type) {                     \
+         ElementType type, GhostType ghost_type) {                     \
       AKANTU_BOOST_KIND_ELEMENT_SWITCH(ASSEMBLE_MATRIX, kind);                 \
     }                                                                          \
   };
@@ -351,7 +354,7 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
 void FEEngineTemplate<I, S, kind, IOF>::assembleFieldMatrix(
     const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
     const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-    ElementType type, const GhostType & ghost_type) const {
+    ElementType type, GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
   fe_engine::details::AssembleFieldMatrixHelper<kind>::template call(
@@ -371,7 +374,7 @@ template <ElementType type>
 void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
     const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
     const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
   UInt shapes_size = ElementClass<type>::getShapeSize();
@@ -449,4 +452,4 @@ void FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
 
 } // namespace akantu
 
-#endif /* __AKANTU_FE_ENGINE_TEMPLATE_TMPL_FIELD_HH__ */
+#endif /* AKANTU_FE_ENGINE_TEMPLATE_TMPL_FIELD_HH_ */

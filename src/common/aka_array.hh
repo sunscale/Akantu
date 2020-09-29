@@ -38,21 +38,22 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_ARRAY_HH__
-#define __AKANTU_ARRAY_HH__
+#ifndef AKANTU_ARRAY_HH_
+#define AKANTU_ARRAY_HH_
 
 
 namespace akantu {
 
 /// class that afford to store vectors in static memory
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 class ArrayBase {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  explicit ArrayBase(ID id = "") : id(std::move(id)) {}
+  explicit ArrayBase(const ID &id = "") : id(id) {}
   ArrayBase(const ArrayBase & other, const ID & id = "") {
-    this->id = (id == "") ? other.id : id;
+    this->id = (id.empty()) ? other.id : id;
   }
 
   ArrayBase(ArrayBase && other) = default;
@@ -68,8 +69,10 @@ public:
   /// get the amount of space allocated in bytes
   virtual UInt getMemorySize() const = 0;
 
-  /// set the size to zero without freeing the allocated space
-  inline void empty();
+  // changed empty to match std::vector empty
+  inline bool empty() const __attribute__((warn_unused_result)) {
+    return size_ == 0;
+  }
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const = 0;
@@ -92,7 +95,7 @@ public:
   /* ------------------------------------------------------------------------ */
 protected:
   /// id of the vector
-  ID id{""};
+  ID id;
 
   /// the size used
   UInt size_{0};
@@ -144,7 +147,7 @@ public:
   using const_reference = const value_type &;
 
 public:
-  virtual ~ArrayDataLayer() = default;
+   ~ArrayDataLayer() override = default;
 
   /// Allocation of a new vector
   explicit ArrayDataLayer(UInt size = 0, UInt nb_component = 1,
@@ -164,10 +167,10 @@ public:
   ArrayDataLayer & operator=(const ArrayDataLayer & other);
 
   // move constructor
-  ArrayDataLayer(ArrayDataLayer && other);
+  ArrayDataLayer(ArrayDataLayer && other) noexcept;
 
   // move assign
-  ArrayDataLayer & operator=(ArrayDataLayer && other);
+  ArrayDataLayer & operator=(ArrayDataLayer && other) noexcept;
 
 protected:
   // deallocate the memory
@@ -254,10 +257,10 @@ public:
   Array & operator=(const Array & other);
 
   // move constructor
-  Array(Array && other) = default;
+  Array(Array && other) noexcept = default;
 
   // move assign
-  Array & operator=(Array && other) = default;
+  Array & operator=(Array && other)  noexcept = default;
 
   /* ------------------------------------------------------------------------ */
   /* Iterator                                                                 */
@@ -327,7 +330,7 @@ public:
   UInt find(const_reference elem) const;
 
   /// @see Array::find(const_reference elem) const
-  UInt find(T elem[]) const;
+//  UInt find(T elem[]) const;
 
   inline void push_back(const_reference value) { parent::push_back(value); }
 
@@ -360,8 +363,10 @@ public:
     std::fill_n(this->values, this->size_ * this->nb_component, t);
   }
 
-  /// set all entries of the array to 0
-  inline void clear() { set(T()); }
+  inline void zero() { this->set({}); }
+
+  /// resize the array to 0
+  inline void clear() { this->resize(0); }
 
   /// set all tuples of the array to a given vector or matrix
   /// @param vm Matrix or Vector to fill the array with
@@ -431,4 +436,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 #include "aka_array_tmpl.hh"
 
-#endif /* __AKANTU_ARRAY_HH__ */
+#endif /* AKANTU_ARRAY_HH_ */

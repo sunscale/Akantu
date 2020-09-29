@@ -16,8 +16,8 @@
 #include "shape_igfem.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__
-#define __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__
+#ifndef AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH_
+#define AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH_
 
 namespace akantu {
 
@@ -29,7 +29,7 @@ template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem,
                              DefaultIntegrationOrderFunctor>::
     initShapeFunctions(const Array<Real> & nodes,
-                       const GhostType & ghost_type) {
+                       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Mesh::type_iterator it =
@@ -64,8 +64,8 @@ template <>
 inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem,
                              DefaultIntegrationOrderFunctor>::
     computeIntegrationPointsCoordinates(
-        Array<Real> & quadrature_points_coordinates, const ElementType & type,
-        const GhostType & ghost_type,
+        Array<Real> & quadrature_points_coordinates, ElementType type,
+        GhostType ghost_type,
         const Array<UInt> & filter_elements) const {
 
   const Array<Real> & nodes_coordinates = mesh.getNodes();
@@ -114,4 +114,4 @@ inline void FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_igfem,
 
 } // namespace akantu
 
-#endif /* __AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH__ */
+#endif /* AKANTU_FE_ENGINE_TEMPLATE_TMPL_IGFEM_HH_ */

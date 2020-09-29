@@ -78,8 +78,9 @@ CohesiveElementInserter::~CohesiveElementInserter() = default;
 void CohesiveElementInserter::parseSection(const ParserSection & section) {
   Parsable::parseSection(section);
 
-  if (is_extrinsic)
+  if (is_extrinsic) {
     limitCheckFacets(this->check_facets);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -150,8 +151,9 @@ void CohesiveElementInserter::limitCheckFacets(
       mesh_facets,
       [&](auto && facet) {
         auto & need_check = check_facets(facet);
-        if (not need_check)
+        if (not need_check) {
           return;
+        }
 
         mesh_facets.getBarycenter(facet, bary_facet);
         UInt coord_in_limit = 0;
@@ -160,16 +162,18 @@ void CohesiveElementInserter::limitCheckFacets(
                bary_facet(coord_in_limit) >
                    (insertion_limits(coord_in_limit, 0) - tolerance) and
                bary_facet(coord_in_limit) <
-                   (insertion_limits(coord_in_limit, 1) + tolerance))
+                   (insertion_limits(coord_in_limit, 1) + tolerance)) {
           ++coord_in_limit;
+        }
 
-        if (coord_in_limit != spatial_dimension)
+        if (coord_in_limit != spatial_dimension) {
           need_check = false;
+        }
       },
       _spatial_dimension = spatial_dimension - 1);
 
   // remove the physical zones
-  if(mesh.hasData("physical_names") and physical_zones.size() > 0) {
+  if(mesh.hasData("physical_names") and not physical_zones.empty()) {
     auto && physical_names = mesh.getData<std::string>("physical_names");
     for_each_element(
         mesh_facets,
@@ -179,28 +183,30 @@ void CohesiveElementInserter::limitCheckFacets(
           auto count = 0;
           for(auto i : arange(2)) {
             const auto & element = element_to_facet[i];
-            if(element == ElementNull)
+            if (element == ElementNull) {
               continue;
+            }
             const auto & name = physical_names(element);
             count += find(physical_zones.begin(),
                           physical_zones.end(), name) != physical_zones.end();
 
           }
 
-          if(count != 2)
+          if (count != 2) {
             check_facets(facet) = false;
+          }
         },
         _spatial_dimension = spatial_dimension - 1);
   }
 
-  if (physical_surfaces.size() == 0) {
+  if (physical_surfaces.empty()) {
     AKANTU_DEBUG_OUT();
     return;
   }
 
   if (not mesh_facets.hasData("physical_names")) {
     AKANTU_DEBUG_ASSERT(
-        physical_surfaces.size() == 0,
+        physical_surfaces.empty(),
         "No physical names in the mesh but insertion limited to a group");
     AKANTU_DEBUG_OUT();
     return;
@@ -213,8 +219,9 @@ void CohesiveElementInserter::limitCheckFacets(
   for_each_element(mesh_facets,
                    [&](auto && facet) {
                      auto & need_check = check_facets(facet);
-                     if (not need_check)
+                     if (not need_check) {
                        return;
+                     }
 
                      const auto & physical_id = physical_ids(facet);
                      auto it = find(physical_surfaces.begin(),
@@ -274,15 +281,17 @@ void CohesiveElementInserter::updateInsertionFacets() {
       auto & ins_facets = insertion_facets(facet_type, facet_gt);
 
       // this is the intrinsic case
-      if (not is_extrinsic)
+      if (not is_extrinsic) {
         continue;
+      }
 
       auto & f_check = check_facets(facet_type, facet_gt);
       for (auto && pair : zip(ins_facets, f_check)) {
         bool & ins = std::get<0>(pair);
         bool & check = std::get<1>(pair);
-        if (ins)
+        if (ins) {
           ins = check = false;
+        }
       }
     }
   }

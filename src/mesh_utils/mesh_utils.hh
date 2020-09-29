@@ -40,8 +40,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_UTILS_HH__
-#define __AKANTU_MESH_UTILS_HH__
+#ifndef AKANTU_MESH_UTILS_HH_
+#define AKANTU_MESH_UTILS_HH_
 
 namespace akantu {
 
@@ -59,8 +59,8 @@ public:
   /// the connected elements of a given ElementType
   static void
   buildNode2ElementsElementTypeMap(const Mesh & mesh, CSR<UInt> & node_to_elem,
-                                   const ElementType & type,
-                                   const GhostType & ghost_type = _not_ghost);
+                                   ElementType type,
+                                   GhostType ghost_type = _not_ghost);
 
   /// build the facets elements on the boundaries of a mesh
   static void buildFacets(Mesh & mesh);
@@ -86,7 +86,7 @@ public:
                                 ElementType type, Array<UInt> & old_nodes);
 
   /// compute pbc pair for a given direction
-  static void computePBCMap(const Mesh & mymesh, const UInt dir,
+  static void computePBCMap(const Mesh & mymesh, UInt dir,
                             std::map<UInt, UInt> & pbc_pair);
   /// compute pbc pair for a surface pair
   static void computePBCMap(const Mesh & mymesh,
@@ -111,9 +111,10 @@ public:
   static void fillElementToSubElementsData(Mesh & mesh);
 
   /// flip facets based on global connectivity
-  static void flipFacets(Mesh & mesh_facets,
-                         const ElementTypeMapArray<UInt> & global_connectivity,
-                         GhostType gt_facet);
+  static void
+  flipFacets(Mesh & mesh_facets,
+             const ElementTypeMapArray<UInt> & remote_global_connectivities,
+             GhostType gt_facet);
 
   /// provide list of elements around a node and check if a given
   /// facet is reached
@@ -121,7 +122,7 @@ public:
   static bool findElementsAroundSubfacet(
       const Mesh & mesh_facets, const Element & starting_element,
       const Element & end_facet, const Vector<UInt> & subfacet_connectivity,
-      std::vector<Element> & elem_list, std::vector<Element> & facet_list,
+      std::vector<Element> & element_list, std::vector<Element> & facet_list,
       std::vector<Element> * subfacet_list = nullptr);
 
   /// function to check if a node belongs to a given element
@@ -133,7 +134,7 @@ public:
 
 private:
   /// match pairs that are on the associated pbc's
-  static void matchPBCPairs(const Mesh & mymesh, const UInt dir,
+  static void matchPBCPairs(const Mesh & mymesh, UInt dir,
                             Array<UInt> & selected_left,
                             Array<UInt> & selected_right,
                             std::map<UInt, UInt> & pbc_pair);
@@ -224,4 +225,4 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "mesh_utils_inline_impl.hh"
 
-#endif /* __AKANTU_MESH_UTILS_HH__ */
+#endif /* AKANTU_MESH_UTILS_HH_ */

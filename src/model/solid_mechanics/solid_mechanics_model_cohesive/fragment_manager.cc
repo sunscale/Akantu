@@ -93,8 +93,9 @@ public:
       : model(model), is_unbroken(max_damage) {}
 
   bool operator()(const Element & el) const override {
-    if (Mesh::getKind(el.type) == _ek_regular)
+    if (Mesh::getKind(el.type) == _ek_regular) {
       return true;
+    }
 
     const Array<UInt> & mat_indexes =
         model.getMaterialByElement(el.type, el.ghost_type);
@@ -120,15 +121,13 @@ public:
     UInt unbroken_quads = std::count_if(
         element_damage, element_damage + nb_quad_per_element, is_unbroken);
 
-    if (unbroken_quads > 0)
-      return true;
-    return false;
+    return (unbroken_quads > 0);
   }
 
 private:
   struct IsUnbrokenFunctor {
     IsUnbrokenFunctor(const Real & max_damage) : max_damage(max_damage) {}
-    bool operator()(const Real & x) { return x < max_damage; }
+    bool operator()(const Real & x) const  { return x < max_damage; }
     const Real max_damage;
   };
 
@@ -208,8 +207,9 @@ void FragmentManager::computeCenterOfMass() {
 
   UInt total_components = mass_center.size() * mass_center.getNbComponent();
 
-  for (UInt i = 0; i < total_components; ++i)
+  for (UInt i = 0; i < total_components; ++i) {
     mass_center_storage[i] /= mass_storage[i];
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -238,8 +238,9 @@ void FragmentManager::computeVelocity() {
 
   UInt total_components = velocity.size() * velocity.getNbComponent();
 
-  for (UInt i = 0; i < total_components; ++i)
+  for (UInt i = 0; i < total_components; ++i) {
     velocity_storage[i] /= mass_storage[i];
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -339,8 +340,9 @@ void FragmentManager::computeInertiaMoments() {
     integrated_moments_it->eig(*inertia_moments_it, *principal_directions_it);
   }
 
-  if (dump_data)
+  if (dump_data) {
     createDumpDataArray(inertia_moments, "moments of inertia");
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -378,8 +380,9 @@ void FragmentManager::storeMassDensityPerIntegrationPoint() {
     for (UInt el = 0; el < nb_element; ++el) {
       Material & mat = model.getMaterial(mat_indexes(el));
 
-      for (UInt q = 0; q < nb_quad_per_element; ++q, ++mass_density_it)
+      for (UInt q = 0; q < nb_quad_per_element; ++q, ++mass_density_it) {
         *mass_density_it = mat.getRho();
+      }
     }
   }
 
@@ -396,7 +399,7 @@ void FragmentManager::integrateFieldOnFragments(
 
   /// integration part
   output.resize(global_nb_fragment);
-  output.clear();
+  output.zero();
 
   auto output_begin = output.begin(nb_component);
 
@@ -468,7 +471,7 @@ void FragmentManager::computeNbElementsPerFragment() {
 
   UInt spatial_dimension = model.getSpatialDimension();
   nb_elements_per_fragment.resize(global_nb_fragment);
-  nb_elements_per_fragment.clear();
+  nb_elements_per_fragment.zero();
 
   /// loop over fragments
   for (auto && data : zip(iterateElementGroups(), fragment_index)) {
@@ -488,8 +491,9 @@ void FragmentManager::computeNbElementsPerFragment() {
   const auto & comm = mesh.getCommunicator();
   comm.allReduce(nb_elements_per_fragment, SynchronizerOperation::_sum);
 
-  if (dump_data)
+  if (dump_data) {
     createDumpDataArray(nb_elements_per_fragment, "elements per fragment");
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -500,8 +504,9 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
                                           bool fragment_index_output) {
   AKANTU_DEBUG_IN();
 
-  if (data.size() == 0)
+  if (data.empty()) {
     return;
+  }
 
   auto & mesh_not_const = const_cast<Mesh &>(mesh);
 
@@ -515,7 +520,7 @@ void FragmentManager::createDumpDataArray(Array<T> & data, std::string name,
     auto fragment_idx = std::get<1>(data);
 
     /// loop over cluster types
-    for (auto & type : fragment.elementTypes(spatial_dimension)) {
+    for (auto && type : fragment.elementTypes(spatial_dimension)) {
       /// init mesh data
       auto & mesh_data = mesh_not_const.getDataPointer<T>(
           name, type, _not_ghost, nb_component);

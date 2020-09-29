@@ -31,8 +31,8 @@
 
 #include "material_cohesive_linear.hh"
 
-#ifndef __AKANTU_MATERIAL_COHESIVE_BILINEAR_HH__
-#define __AKANTU_MATERIAL_COHESIVE_BILINEAR_HH__
+#ifndef AKANTU_MATERIAL_COHESIVE_BILINEAR_HH_
+#define AKANTU_MATERIAL_COHESIVE_BILINEAR_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -101,4 +101,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_COHESIVE_BILINEAR_HH__ */
+#endif /* AKANTU_MATERIAL_COHESIVE_BILINEAR_HH_ */

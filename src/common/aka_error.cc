@@ -90,13 +90,15 @@ std::string demangle(const char * symbol) {
     (!defined(_WIN32))
   std::string exec(const std::string & cmd) {
     FILE * pipe = popen(cmd.c_str(), "r");
-    if (!pipe)
+    if (pipe == nullptr) {
       return "";
+    }
     char buffer[1024];
-    std::string result = "";
-    while (!feof(pipe)) {
-      if (fgets(buffer, 128, pipe) != nullptr)
+    std::string result;
+    while (feof(pipe) == 0) {
+      if (fgets(buffer, 128, pipe) != nullptr) {
         result += buffer;
+      }
     }
 
     result = result.substr(0, result.size() - 1);
@@ -109,14 +111,14 @@ std::string demangle(const char * symbol) {
     std::vector<std::string> backtrace_lines;
 #if not defined(_WIN32)
 #if defined(READLINK_COMMAND) && defined(ADDR2LINE_COMMAND)
-
-    std::string me = "";
+    std::string me;
     char buf[1024];
     /* The manpage says it won't null terminate.  Let's zero the buffer. */
     memset(buf, 0, sizeof(buf));
     /* Note we use sizeof(buf)-1 since we may need an extra char for NUL. */
-    if (readlink("/proc/self/exe", buf, sizeof(buf) - 1))
+    if (readlink("/proc/self/exe", buf, sizeof(buf) - 1) != 0) {
       me = std::string(buf);
+    }
 
     std::ifstream inmaps;
     inmaps.open("/proc/self/maps");
@@ -138,13 +140,14 @@ std::string demangle(const char * symbol) {
       sstr >> lib;
       sstr >> lib;
       sstr >> lib;
-      if (lib != "" && addr_map.find(lib) == addr_map.end()) {
+      if (not lib.empty() and (addr_map.find(lib) == addr_map.end())) {
         addr_map[lib] = addr;
       }
     }
 
-    if (me != "")
+    if (not me.empty()) {
       addr_map[me] = 0;
+    }
 #endif
 
     /// \todo for windows this part could be coded using CaptureStackBackTrace
@@ -161,7 +164,8 @@ std::string demangle(const char * symbol) {
     /// -1 to remove the call to the printBacktrace function
     for (i = 1; i < stack_depth; i++) {
       std::string bt_line(stack_strings[i]);
-      size_t first, second;
+      size_t first;
+      size_t second;
 
       if ((first = bt_line.find('(')) != std::string::npos &&
           (second = bt_line.find('+')) != std::string::npos) {
@@ -222,12 +226,12 @@ std::string demangle(const char * symbol) {
   namespace {
     void terminate_handler() {
       auto eptr = std::current_exception();
-      auto t = abi::__cxa_current_exception_type();
-      auto name = t ? demangle(t->name()) : std::string("unknown");
+      auto *t = abi::__cxa_current_exception_type();
+      auto name = (t != nullptr) ? demangle(t->name()) : std::string("unknown");
       try {
-        if (eptr)
+        if (eptr) {
           std::rethrow_exception(eptr);
-        else {
+        } else {
           printBacktrace();
           std::cerr << AKANTU_LOCATION
                     << "!! Execution terminated for unknown reasons !!"
@@ -255,7 +259,7 @@ std::string demangle(const char * symbol) {
 
   /* ------------------------------------------------------------------------ */
   /* ------------------------------------------------------------------------ */
-  Debugger::Debugger() {
+  Debugger::Debugger() noexcept {
     cout = &std::cerr;
     level = dblWarning;
     parallel_context = "";
@@ -276,8 +280,9 @@ std::string demangle(const char * symbol) {
 
   /* ------------------------------------------------------------------------ */
   void Debugger::exit(int status) {
-    if (status != 0)
+    if (status != 0) {
       std::terminate();
+    }
 
     std::exit(0);
   }
@@ -355,9 +360,8 @@ std::string demangle(const char * symbol) {
 
   const DebugLevel & getDebugLevel() { return debugger.getDebugLevel(); }
 
-  /* --------------------------------------------------------------------------
-   */
-  void exit(int status) { debugger.exit(status); }
+  /* ------------------------------------------------------------------------ */
+  void exit(int status) { Debugger::exit(status); }
 
 } // namespace debug
 } // namespace akantu

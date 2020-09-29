@@ -74,7 +74,7 @@ public:
     // Forces
     Real P = 1; // N
     auto & forces = this->model->getExternalForce();
-    forces.clear();
+    forces.zero();
     forces(0, 2) = -P; // vertical force on first node
   }
 

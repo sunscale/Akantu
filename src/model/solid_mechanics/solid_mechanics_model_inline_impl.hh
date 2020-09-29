@@ -37,8 +37,8 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -98,4 +98,4 @@ SolidMechanicsModel::getMaterial(const std::string & name) const {
 /* -------------------------------------------------------------------------- */
 } // namespace akantu
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_INLINE_IMPL_HH_ */

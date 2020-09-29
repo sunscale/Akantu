@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TETRAHEDRON_HH__
-#define __AKANTU_TETRAHEDRON_HH__
+#ifndef AKANTU_TETRAHEDRON_HH_
+#define AKANTU_TETRAHEDRON_HH_
 
 #include "aka_common.hh"
 
@@ -44,7 +44,7 @@ namespace akantu {
 template <typename K> class Tetrahedron : public CGAL::Tetrahedron_3<K> {
 public:
   /// Default constructor
-  Tetrahedron() : CGAL::Tetrahedron_3<K>(), meshId(0) {}
+  Tetrahedron() : CGAL::Tetrahedron_3<K>() {}
 
   /// Copy constructor
   Tetrahedron(const Tetrahedron & other)
@@ -53,7 +53,7 @@ public:
   /// Construct from 4 points
   Tetrahedron(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b,
               const CGAL::Point_3<K> & c, const CGAL::Point_3<K> & d)
-      : CGAL::Tetrahedron_3<K>(a, b, c, d), meshId(0) {}
+      : CGAL::Tetrahedron_3<K>(a, b, c, d) {}
 
 public:
   UInt id() const { return meshId; }
@@ -61,7 +61,7 @@ public:
 
 protected:
   /// Id of the element represented by the primitive
-  UInt meshId;
+  UInt meshId{0};
 };
 
 } // namespace akantu

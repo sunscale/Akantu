@@ -38,8 +38,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 DumperText::DumperText(const std::string & basename,
-                       iohelper::TextDumpMode mode, bool parallel)
-    : DumperIOHelper() {
+                       iohelper::TextDumpMode mode, bool parallel) {
   AKANTU_DEBUG_IN();
 
   this->dumper = std::make_unique<iohelper::DumperText>(mode);
@@ -53,10 +52,9 @@ DumperText::DumperText(const std::string & basename,
 /* -------------------------------------------------------------------------- */
 void DumperText::registerMesh(const Mesh & mesh,
                               __attribute__((unused)) UInt spatial_dimension,
+                              __attribute__((unused)) GhostType ghost_type,
                               __attribute__((unused))
-                              const GhostType & ghost_type,
-                              __attribute__((unused))
-                              const ElementKind & element_kind) {
+                              ElementKind element_kind) {
 
   registerField("position",
                 std::make_shared<dumpers::NodalField<Real>>(mesh.getNodes()));
@@ -75,8 +73,8 @@ void DumperText::registerFilteredMesh(
     __attribute__((unused)) const ElementTypeMapArray<UInt> & elements_filter,
     const Array<UInt> & nodes_filter,
     __attribute__((unused)) UInt spatial_dimension,
-    __attribute__((unused)) const GhostType & ghost_type,
-    __attribute__((unused)) const ElementKind & element_kind) {
+    __attribute__((unused)) GhostType ghost_type,
+    __attribute__((unused)) ElementKind element_kind) {
 
   registerField("position", std::make_shared<dumpers::NodalField<Real, true>>(
                                 mesh.getNodes(), 0, 0, &nodes_filter));

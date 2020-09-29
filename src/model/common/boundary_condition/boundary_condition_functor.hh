@@ -35,8 +35,8 @@
 #include "integration_point.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH__
-#define __AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH__
+#ifndef AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH_
+#define AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -83,7 +83,7 @@ namespace BC {
     public:
       inline void operator()(UInt node, Vector<bool> & flags,
                              Vector<Real> & primal,
-                             const Vector<Real> & coord) const;
+                             const Vector<Real> & coord) const override;
     };
 
     /* ---------------------------------------------------------------------- */
@@ -105,7 +105,7 @@ namespace BC {
     public:
       inline void operator()(UInt node, Vector<bool> & flags,
                              Vector<Real> & primal,
-                             const Vector<Real> & coord) const;
+                             const Vector<Real> & coord) const override;
 
     protected:
       Real value;
@@ -120,7 +120,7 @@ namespace BC {
     public:
       inline void operator()(UInt node, Vector<bool> & flags,
                              Vector<Real> & primal,
-                             const Vector<Real> & coord) const;
+                             const Vector<Real> & coord) const override;
 
       inline void setIncrement(Real val) { this->value = val; }
 
@@ -137,7 +137,7 @@ namespace BC {
     public:
       inline void operator()(UInt node, Vector<bool> & flags,
                              Vector<Real> & primal,
-                             const Vector<Real> & coord) const;
+                             const Vector<Real> & coord) const override;
 
       inline void setIncrement(const Vector<Real> & val) { this->value = val; }
 
@@ -161,7 +161,7 @@ namespace BC {
                               Vector<Real> & dual, const Vector<Real> & coord,
                               const Vector<Real> & normals) const = 0;
 
-      virtual ~NeumannFunctor() = default;
+      ~NeumannFunctor() override = default;
 
     public:
       static const Type type = _neumann;
@@ -210,4 +210,4 @@ namespace BC {
 
 #include "boundary_condition_functor_inline_impl.hh"
 
-#endif /* __AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH__ */
+#endif /* AKANTU_BOUNDARY_CONDITION_FUNCTOR_HH_ */

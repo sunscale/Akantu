@@ -32,8 +32,8 @@
 #include "material_selector.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_SELECTOR_TMPL_HH__
-#define __AKANTU_MATERIAL_SELECTOR_TMPL_HH__
+#ifndef AKANTU_MATERIAL_SELECTOR_TMPL_HH_
+#define AKANTU_MATERIAL_SELECTOR_TMPL_HH_
 
 namespace akantu {
 
@@ -70,4 +70,4 @@ MeshDataMaterialSelector<T>::MeshDataMaterialSelector(
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_SELECTOR_TMPL_HH__ */
+#endif /* AKANTU_MATERIAL_SELECTOR_TMPL_HH_ */

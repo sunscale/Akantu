@@ -33,8 +33,8 @@
 #include "element.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DATA_ACCESSOR_HH__
-#define __AKANTU_DATA_ACCESSOR_HH__
+#ifndef AKANTU_DATA_ACCESSOR_HH_
+#define AKANTU_DATA_ACCESSOR_HH_
 
 namespace akantu {
 class FEEngine;
@@ -199,7 +199,7 @@ public:
 
 template <typename T> class IdentityOperation {
 public:
-  inline T & operator()(T &, T & b) { return b; };
+  inline T & operator()(T & /*unused*/, T & b) { return b; };
 };
 /* -------------------------------------------------------------------------- */
 
@@ -222,8 +222,9 @@ public:
   /* ------------------------------------------------------------------------ */
   UInt getNbData(const Array<Entity> & entities,
                  const SynchronizationTag & tag) const override {
-    if (tag != this->tag)
+    if (tag != this->tag) {
       return 0;
+    }
 
     Vector<T> tmp(data.getNbComponent());
     return entities.size() * CommunicationBuffer::sizeInBuffer(tmp);
@@ -232,8 +233,9 @@ public:
   /* ------------------------------------------------------------------------ */
   void packData(CommunicationBuffer & buffer, const Array<Entity> & entities,
                 const SynchronizationTag & tag) const override {
-    if (tag != this->tag)
+    if (tag != this->tag) {
       return;
+    }
 
     auto data_it = data.begin(data.getNbComponent());
     for (auto el : entities) {
@@ -244,8 +246,9 @@ public:
   /* ------------------------------------------------------------------------ */
   void unpackData(CommunicationBuffer & buffer, const Array<Entity> & entities,
                   const SynchronizationTag & tag) override {
-    if (tag != this->tag)
+    if (tag != this->tag) {
       return;
+    }
 
     auto data_it = data.begin(data.getNbComponent());
     for (auto el : entities) {
@@ -274,4 +277,4 @@ using SimpleUIntDataAccessor = ReduceDataAccessor<UInt, IdentityOperation, T>;
 
 } // namespace akantu
 
-#endif /* __AKANTU_DATA_ACCESSOR_HH__ */
+#endif /* AKANTU_DATA_ACCESSOR_HH_ */

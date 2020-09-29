@@ -21,7 +21,7 @@ public:
   /* Inherit the constructors */
   using _Material::_Material;
 
-  virtual ~PyMaterial(){};
+  ~PyMaterial() override{};
   void initMaterial() override {
     PYBIND11_OVERLOAD(void, _Material, initMaterial);
   };
@@ -29,7 +29,7 @@ public:
                      GhostType ghost_type = _not_ghost) override {
     PYBIND11_OVERLOAD_PURE(void, _Material, computeStress, el_type, ghost_type);
   }
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override {
     PYBIND11_OVERLOAD(void, _Material, computeTangentModuli, el_type,
@@ -70,8 +70,8 @@ void register_element_type_map_array(py::module & mod,
       mod, ("ElementTypeMapArray" + name).c_str())
       .def(
           "__call__",
-          [](ElementTypeMapArray<T> & self, ElementType & type,
-             const GhostType & ghost_type) -> decltype(auto) {
+          [](ElementTypeMapArray<T> & self, ElementType type,
+             GhostType ghost_type) -> decltype(auto) {
             return self(type, ghost_type);
           },
           py::arg("type"), py::arg("ghost_type") = _not_ghost,
@@ -164,7 +164,8 @@ void register_material(py::module & mod) {
            [](MaterialFactory & self, const std::string id, py::function func) {
              self.registerAllocator(
                  id,
-                 [func, id](UInt dim, const ID &, SolidMechanicsModel & model,
+                 [func, id](UInt dim, const ID & /*unused*/,
+                            SolidMechanicsModel & model,
                             const ID & option) -> std::unique_ptr<Material> {
                    py::object obj = func(dim, id, model, option);
                    auto & ptr = py::cast<Material &>(obj);

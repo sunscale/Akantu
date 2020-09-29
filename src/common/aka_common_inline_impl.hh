@@ -41,7 +41,7 @@
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 /// standard output stream operator for GhostType
-inline std::ostream & operator<<(std::ostream & stream, const GhostType & type) {
+inline std::ostream & operator<<(std::ostream & stream, GhostType type) {
   switch (type) {
   case _not_ghost:
     stream << "not_ghost";
@@ -94,8 +94,9 @@ template <typename T> std::string printMemorySize(UInt size) {
   Real real_size = size * sizeof(T);
 
   UInt mult = 0;
-  if (real_size != 0)
+  if (real_size != 0) {
     mult = (std::log(real_size) / std::log(2)) / 10;
+  }
 
   std::stringstream sstr;
 

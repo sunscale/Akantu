@@ -34,8 +34,8 @@
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
-#define __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
+#ifndef AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH_
+#define AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH_
 
 namespace akantu {
 
@@ -143,4 +143,4 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
 
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__ */
+#endif /* AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH_ */

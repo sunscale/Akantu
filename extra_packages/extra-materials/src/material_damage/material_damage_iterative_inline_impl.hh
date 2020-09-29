@@ -28,8 +28,8 @@ MaterialDamageIterative<spatial_dimension>::computeDamageAndStressOnQuad(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 UInt MaterialDamageIterative<spatial_dimension>::updateDamage(
-    UInt quad_index, const Real /*eq_stress*/, const ElementType & el_type,
-    const GhostType & ghost_type) {
+    UInt quad_index, const Real /*eq_stress*/, ElementType el_type,
+    GhostType ghost_type) {
   AKANTU_DEBUG_ASSERT(prescribed_dam > 0.,
                       "Your prescribed damage must be greater than zero");
 

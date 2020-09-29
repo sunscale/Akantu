@@ -64,10 +64,11 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::initMaterial() {
   MaterialCohesiveLinear<spatial_dimension>::initMaterial();
 
   // check that delta_f has a proper value or assign a defaul value
-  if (delta_f < 0)
+  if (delta_f < 0) {
     delta_f = this->delta_c_eff;
-  else if (delta_f < this->delta_c_eff)
+  } else if (delta_f < this->delta_c_eff) {
     AKANTU_ERROR("Delta_f must be greater or equal to delta_c");
+  }
 
   delta_prec.initialize(1);
   K_plus.initialize(1);
@@ -157,9 +158,10 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::computeTraction(
         tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
     bool penetration = normal_opening_norm < -tolerance;
-    if (this->contact_after_breaking == false &&
-        Math::are_float_equal(damage_array(q), 1.))
+    if (not this->contact_after_breaking and
+        Math::are_float_equal(damage_array(q), 1.)) {
       penetration = false;
+    }
 
     if (penetration) {
       /// use penalty coefficient in case of penetration
@@ -168,11 +170,11 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::computeTraction(
       *contact_opening_it = normal_opening;
       /// don't consider penetration contribution for delta
       *opening_it = tangential_opening;
-      normal_opening.clear();
+      normal_opening.zero();
     } else {
       delta += normal_opening_norm * normal_opening_norm;
-      contact_traction_it->clear();
-      contact_opening_it->clear();
+      contact_traction_it->zero();
+      contact_opening_it->zero();
     }
 
     delta = std::sqrt(delta);
@@ -193,36 +195,39 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::computeTraction(
     // count switches if asked
     if (count_switches) {
       if ((delta_dot > 0. && (*delta_dot_prec_array)(q) <= 0.) ||
-          (delta_dot < 0. && (*delta_dot_prec_array)(q) >= 0.))
+          (delta_dot < 0. && (*delta_dot_prec_array)(q) >= 0.)) {
         ++((*switches_array)(q));
+      }
 
       (*delta_dot_prec_array)(q) = delta_dot;
     }
 
     // set delta_f equal to delta_max if desired
-    if (progressive_delta_f)
+    if (progressive_delta_f) {
       delta_f = delta_max_array(q);
+    }
 
     // broken element case
-    if (Math::are_float_equal(damage_array(q), 1.))
-      traction_it->clear();
-    // just inserted element case
-    else if (Math::are_float_equal(damage_array(q), 0.)) {
-      if (penetration)
-        traction_it->clear();
-      else
+    if (Math::are_float_equal(damage_array(q), 1.)) {
+      traction_it->zero();
+      // just inserted element case
+    } else if (Math::are_float_equal(damage_array(q), 0.)) {
+      if (penetration) {
+        traction_it->zero();
+      } else {
         *traction_it = *insertion_stress_it;
+      }
       // initialize the 1d traction to sigma_c
       T_1d_array(q) = sigma_c_array(q);
     }
     // normal case
     else {
       // if element is closed then there are zero tractions
-      if (delta <= tolerance)
-        traction_it->clear();
-      // otherwise compute new tractions if the new delta is different
-      // than the previous one
-      else if (std::abs(delta_dot) > tolerance) {
+      if (delta <= tolerance) {
+        traction_it->zero();
+        // otherwise compute new tractions if the new delta is different
+        // than the previous one
+      } else if (std::abs(delta_dot) > tolerance) {
         // loading case
         if (delta_dot > 0.) {
           if (!normal_regime_array(q)) {
@@ -236,8 +241,9 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::computeTraction(
             Real max_traction =
                 sigma_c_array(q) * (1 - delta / delta_c_array(q));
             bool max_traction_exceeded = T_1d_array(q) > max_traction;
-            if (max_traction_exceeded)
+            if (max_traction_exceeded) {
               T_1d_array(q) = max_traction;
+            }
 
             // switch to standard linear cohesive law
             if (delta_max_array(q) > fatigue_ratio * delta_c_array(q)) {
@@ -256,8 +262,9 @@ void MaterialCohesiveLinearFatigue<spatial_dimension>::computeTraction(
 
               // if the traction is following the cohesive envelop, then
               // K_plus has to be reset
-              if (max_traction_exceeded)
+              if (max_traction_exceeded) {
                 K_plus_array(q) = K_minus_array(q);
+              }
             }
           } else {
             // compute stiffness according to the standard law

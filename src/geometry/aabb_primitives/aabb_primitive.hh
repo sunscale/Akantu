@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AABB_PRIMITIVE_HH__
-#define __AKANTU_AABB_PRIMITIVE_HH__
+#ifndef AKANTU_AABB_PRIMITIVE_HH_
+#define AKANTU_AABB_PRIMITIVE_HH_
 
 #include "aka_common.hh"
 #include "line_arc.hh"
@@ -55,15 +55,15 @@ namespace akantu {
  */
 #define AKANTU_AABB_CLASS(name, kernel)                                        \
   class name##_primitive {                                                     \
-    typedef std::list<name<kernel>>::iterator Iterator;                        \
+    using Iterator = std::list<name<kernel>>::iterator; /* NOLINT */           \
                                                                                \
   public:                                                                      \
-    typedef UInt Id;                                                           \
-    typedef kernel::Point_3 Point;                                             \
-    typedef kernel::name##_3 Datum;                                            \
+    using Id = UInt;                                                           \
+    using Point = kernel::Point_3;                                             \
+    using Datum = kernel::name##_3;                                            \
                                                                                \
   public:                                                                      \
-    name##_primitive() : meshId(0), primitive() {}                             \
+    name##_primitive() = default;                                              \
     name##_primitive(Iterator it) : meshId(it->id()), primitive(*it) {}        \
                                                                                \
   public:                                                                      \
@@ -72,8 +72,8 @@ namespace akantu {
     const Id & id() const { return meshId; }                                   \
                                                                                \
   protected:                                                                   \
-    Id meshId;                                                                 \
-    name<kernel> primitive;                                                    \
+    Id meshId{0};                                                              \
+    name<kernel> primitive; /* NOLINT */                                       \
   }
 
 // If the primitive is supported by CGAL::intersection() then the
@@ -85,4 +85,4 @@ AKANTU_AABB_CLASS(Line_arc, cgal::Spherical);
 
 } // namespace akantu
 
-#endif // __AKANTU_AABB_PRIMITIVE_HH__
+#endif // AKANTU_AABB_PRIMITIVE_HH_

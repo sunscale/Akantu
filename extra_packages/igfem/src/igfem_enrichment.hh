@@ -14,8 +14,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_IGFEM_ENRICHMENT_HH__
-#define __AKANTU_IGFEM_ENRICHMENT_HH__
+#ifndef AKANTU_IGFEM_ENRICHMENT_HH_
+#define AKANTU_IGFEM_ENRICHMENT_HH_
 
 #include "mesh_igfem_spherical_growing_gel.hh"
 #include "mesh_sphere_intersector.hh"
@@ -98,4 +98,4 @@ protected:
 } // namespace akantu
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_IGFEM_ENRICHMENT_HH__ */
+#endif /* AKANTU_IGFEM_ENRICHMENT_HH_ */

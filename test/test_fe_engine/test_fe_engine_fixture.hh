@@ -37,8 +37,8 @@
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__
-#define __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__
+#ifndef AKANTU_TEST_FE_ENGINE_FIXTURE_HH_
+#define AKANTU_TEST_FE_ENGINE_FIXTURE_HH_
 
 using namespace akantu;
 
@@ -108,4 +108,4 @@ using fe_engine_types = gtest_list_t<TestElementTypes>;
 
 TYPED_TEST_SUITE(TestFEMFixture, fe_engine_types);
 
-#endif /* __AKANTU_TEST_FE_ENGINE_FIXTURE_HH__ */
+#endif /* AKANTU_TEST_FE_ENGINE_FIXTURE_HH_ */

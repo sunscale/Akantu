@@ -34,8 +34,8 @@
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NODE_SYNCHRONIZER_HH__
-#define __AKANTU_NODE_SYNCHRONIZER_HH__
+#ifndef AKANTU_NODE_SYNCHRONIZER_HH_
+#define AKANTU_NODE_SYNCHRONIZER_HH_
 
 namespace akantu {
 
@@ -44,7 +44,7 @@ class NodeSynchronizer : public MeshEventHandler,
 public:
   NodeSynchronizer(Mesh & mesh, const ID & id = "element_synchronizer",
                    MemoryID memory_id = 0,
-                   const bool register_to_event_manager = true,
+                   bool register_to_event_manager = true,
                    EventHandlerPriority event_priority = _ehp_synchronizer);
 
   ~NodeSynchronizer() override;
@@ -61,22 +61,25 @@ public:
                              UInt rank) const override;
 
   /// function to implement to react on  akantu::NewNodesEvent
-  void onNodesAdded(const Array<UInt> &, const NewNodesEvent &) override;
+  void onNodesAdded(const Array<UInt> & /*unused*/,
+                    const NewNodesEvent & /*unused*/) override;
 
   /// function to implement to react on  akantu::RemovedNodesEvent
-  void onNodesRemoved(const Array<UInt> &, const Array<UInt> &,
-                      const RemovedNodesEvent &) override {}
+  void onNodesRemoved(const Array<UInt> & /*unused*/,
+                      const Array<UInt> & /*unused*/,
+                      const RemovedNodesEvent & /*unused*/) override {}
   /// function to implement to react on  akantu::NewElementsEvent
-  void onElementsAdded(const Array<Element> &,
-                       const NewElementsEvent &) override {}
+  void onElementsAdded(const Array<Element> & /*unused*/,
+                       const NewElementsEvent & /*unused*/) override {}
   /// function to implement to react on  akantu::RemovedElementsEvent
-  void onElementsRemoved(const Array<Element> &,
-                         const ElementTypeMapArray<UInt> &,
-                         const RemovedElementsEvent &) override {}
+  void onElementsRemoved(const Array<Element> & /*unused*/,
+                         const ElementTypeMapArray<UInt> & /*unused*/,
+                         const RemovedElementsEvent & /*unused*/) override {}
   /// function to implement to react on  akantu::ChangedElementsEvent
-  void onElementsChanged(const Array<Element> &, const Array<Element> &,
-                         const ElementTypeMapArray<UInt> &,
-                         const ChangedElementsEvent &) override {}
+  void onElementsChanged(const Array<Element> & /*unused*/,
+                         const Array<Element> & /*unused*/,
+                         const ElementTypeMapArray<UInt> & /*unused*/,
+                         const ChangedElementsEvent & /*unused*/) override {}
 
   /* ------------------------------------------------------------------------ */
   NodeSynchronizer & operator=(const NodeSynchronizer & other) {
@@ -86,7 +89,7 @@ public:
 
   friend class NodeInfoPerProc;
 protected:
-  void fillEntityToSend(Array<UInt> & entities_to_send) override;
+  void fillEntityToSend(Array<UInt> & nodes_to_send) override;
 
 public:
   AKANTU_GET_MACRO(Mesh, mesh, Mesh &);
@@ -107,4 +110,4 @@ protected:
 
 #include "node_synchronizer_inline_impl.hh"
 
-#endif /* __AKANTU_NODE_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_NODE_SYNCHRONIZER_HH_ */

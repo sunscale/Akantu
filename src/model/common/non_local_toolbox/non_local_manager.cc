@@ -108,7 +108,7 @@ void NonLocalManager::initialize() {
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::setJacobians(const FEEngine & fe_engine,
-                                   const ElementKind & kind) {
+                                   ElementKind kind) {
   Mesh & mesh = this->model.getMesh();
   for (auto ghost_type : ghost_types) {
     for (auto type : mesh.elementTypes(spatial_dimension, ghost_type, kind)) {
@@ -136,26 +136,27 @@ void NonLocalManager::createNeighborhood(const ID & weight_func,
   std::stringstream sstr;
   sstr << id << ":neighborhood:" << neighborhood_id;
 
-  if (weight_func_type == "base_wf")
+  if (weight_func_type == "base_wf") {
     neighborhoods[neighborhood_id] =
         std::make_unique<NonLocalNeighborhood<BaseWeightFunction>>(
             *this, this->integration_points_positions, sstr.str());
 #if defined(AKANTU_DAMAGE_NON_LOCAL)
-  else if (weight_func_type == "remove_wf")
+  } else if (weight_func_type == "remove_wf") {
     neighborhoods[neighborhood_id] =
         std::make_unique<NonLocalNeighborhood<RemoveDamagedWeightFunction>>(
             *this, this->integration_points_positions, sstr.str());
-  else if (weight_func_type == "stress_wf")
+  } else if (weight_func_type == "stress_wf") {
     neighborhoods[neighborhood_id] =
         std::make_unique<NonLocalNeighborhood<StressBasedWeightFunction>>(
             *this, this->integration_points_positions, sstr.str());
-  else if (weight_func_type == "damage_wf")
+  } else if (weight_func_type == "damage_wf") {
     neighborhoods[neighborhood_id] =
         std::make_unique<NonLocalNeighborhood<DamagedWeightFunction>>(
             *this, this->integration_points_positions, sstr.str());
 #endif
-  else
+  } else {
     AKANTU_EXCEPTION("error in weight function type provided in material file");
+  }
 
   neighborhoods[neighborhood_id]->parseSection(section);
   neighborhoods[neighborhood_id]->initNeighborhood();
@@ -173,8 +174,9 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   NeighborhoodMap::const_iterator it;
   for (it = neighborhoods.begin(); it != neighborhoods.end(); ++it) {
     current_size = it->first.size();
-    if (current_size > max_id_size)
+    if (current_size > max_id_size) {
       max_id_size = current_size;
+    }
   }
 
   /// get the global maximum ID size on each proc
@@ -206,11 +208,13 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   /// store the names of local neighborhoods in the buffer
   for (UInt i = 0; i < neighborhoods.size(); ++i, ++it) {
     UInt c = 0;
-    for (; c < it->first.size(); ++c)
+    for (; c < it->first.size(); ++c) {
       buffer(i + starting_index, c) = it->first[c];
+    }
 
-    for (; c < max_id_size; ++c)
+    for (; c < max_id_size; ++c) {
       buffer(i + starting_index, c) = char(0);
+    }
   }
 
   /// store the nb of data to send in the all gather
@@ -222,8 +226,9 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   for (UInt i = 0; i < nb_neighborhoods_global; ++i) {
     std::stringstream neighborhood_id;
     for (UInt c = 0; c < max_id_size; ++c) {
-      if (buffer(i, c) == char(0))
+      if (buffer(i, c) == char(0)) {
         break;
+      }
       neighborhood_id << buffer(i, c);
     }
     global_neighborhoods.insert(neighborhood_id.str());
@@ -239,7 +244,7 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
   dummy_grid = std::make_unique<SpatialGrid<IntegrationPoint>>(
       this->spatial_dimension, spacing, grid_center);
 
-  for (auto & neighborhood_id : global_neighborhoods) {
+  for (const auto & neighborhood_id : global_neighborhoods) {
     it = neighborhoods.find(neighborhood_id);
     if (it != neighborhoods.end()) {
       it->second->createGridSynchronizer();
@@ -255,14 +260,15 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
 /* -------------------------------------------------------------------------- */
 void NonLocalManager::synchronize(DataAccessor<Element> & data_accessor,
                                   const SynchronizationTag & tag) {
-  for (auto & neighborhood_id : global_neighborhoods) {
+  for (const auto & neighborhood_id : global_neighborhoods) {
     auto it = neighborhoods.find(neighborhood_id);
     if (it != neighborhoods.end()) {
       it->second->synchronize(data_accessor, tag);
     } else {
       auto synchronizer_it = dummy_synchronizers.find(neighborhood_id);
-      if (synchronizer_it == dummy_synchronizers.end())
+      if (synchronizer_it == dummy_synchronizers.end()) {
         continue;
+      }
 
       synchronizer_it->second->synchronizeOnce(data_accessor, tag);
     }
@@ -270,10 +276,11 @@ void NonLocalManager::synchronize(DataAccessor<Element> & data_accessor,
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::averageInternals(const GhostType & ghost_type) {
+void NonLocalManager::averageInternals(GhostType ghost_type) {
   /// update the weights of the weight function
-  if (ghost_type == _not_ghost)
+  if (ghost_type == _not_ghost) {
     this->computeWeights();
+  }
 
   /// loop over all neighborhoods and compute the non-local variables
   for (auto & neighborhood : neighborhoods) {
@@ -292,14 +299,14 @@ void NonLocalManager::computeWeights() {
   AKANTU_DEBUG_IN();
 
   this->updateWeightFunctionInternals();
-  this->volumes.clear();
+  this->volumes.zero();
 
   for (const auto & global_neighborhood : global_neighborhoods) {
     auto it = neighborhoods.find(global_neighborhood);
 
-    if (it != neighborhoods.end())
+    if (it != neighborhoods.end()) {
       it->second->updateWeights();
-    else {
+    } else {
       dummy_synchronizers[global_neighborhood]->synchronize(
           dummy_accessor, SynchronizationTag::_mnl_weight);
     }
@@ -320,8 +327,9 @@ void NonLocalManager::updatePairLists() {
   this->model.getFEEngine().computeIntegrationPointsCoordinates(
       integration_points_positions);
 
-  for (auto & pair : neighborhoods)
+  for (auto & pair : neighborhoods) {
     pair.second->updatePairList();
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -335,9 +343,10 @@ void NonLocalManager::registerNonLocalVariable(const ID & variable_name,
 
   auto non_local_variable_it = non_local_variables.find(variable_name);
 
-  if (non_local_variable_it == non_local_variables.end())
+  if (non_local_variable_it == non_local_variables.end()) {
     non_local_variables[nl_variable_name] = std::make_unique<NonLocalVariable>(
         variable_name, nl_variable_name, this->id, nb_component);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -364,9 +373,10 @@ NonLocalManager::registerWeightFunctionInternal(const ID & field_name) {
 void NonLocalManager::updateWeightFunctionInternals() {
   for (auto & pair : this->weight_function_internals) {
     auto & internals = *pair.second;
-    internals.clear();
-    for (auto ghost_type : ghost_types)
+    internals.zero();
+    for (auto ghost_type : ghost_types) {
       this->callback->updateLocalInternal(internals, ghost_type, _ek_regular);
+    }
   }
 }
 
@@ -387,15 +397,15 @@ void NonLocalManager::computeAllNonLocalStresses() {
   /// update the flattened version of the internals
   for (auto & pair : non_local_variables) {
     auto & variable = *pair.second;
-    variable.local.clear();
-    variable.non_local.clear();
+    variable.local.zero();
+    variable.non_local.zero();
     for (auto ghost_type : ghost_types) {
       this->callback->updateLocalInternal(variable.local, ghost_type,
                                           _ek_regular);
     }
   }
 
-  this->volumes.clear();
+  this->volumes.zero();
 
   for (auto & pair : neighborhoods) {
     auto & neighborhood = *pair.second;
@@ -440,10 +450,11 @@ void NonLocalManager::cleanupExtraGhostElements() {
     ElementSet to_keep_per_neighborhood;
 
     neighborhood.getRelevantGhostElements(to_keep_per_neighborhood);
-    relevant_ghost_elements.insert(to_keep_per_neighborhood.begin(), to_keep_per_neighborhood.end());
+    relevant_ghost_elements.insert(to_keep_per_neighborhood.begin(),
+                                   to_keep_per_neighborhood.end());
   }
 
-    for (auto & pair : neighborhoods) {
+  for (auto & pair : neighborhoods) {
     auto & neighborhood = *pair.second;
     neighborhood.cleanupExtraGhostElements(relevant_ghost_elements);
   }
@@ -511,11 +522,11 @@ void NonLocalManager::onElementsRemoved(
     __attribute__((unused)) const RemovedElementsEvent & event) {
 
   FEEngine & fee = this->model.getFEEngine();
-  this->removeIntegrationPointsFromMap(
+  NonLocalManager::removeIntegrationPointsFromMap(
       event.getNewNumbering(), spatial_dimension, integration_points_positions,
       fee, _ek_regular);
-  this->removeIntegrationPointsFromMap(event.getNewNumbering(), 1, volumes, fee,
-                                       _ek_regular);
+  NonLocalManager::removeIntegrationPointsFromMap(event.getNewNumbering(), 1,
+                                                  volumes, fee, _ek_regular);
 
   /// loop over all the neighborhoods and call onElementsRemoved
   auto global_neighborhood_it = global_neighborhoods.begin();
@@ -523,17 +534,18 @@ void NonLocalManager::onElementsRemoved(
   for (; global_neighborhood_it != global_neighborhoods.end();
        ++global_neighborhood_it) {
     it = neighborhoods.find(*global_neighborhood_it);
-    if (it != neighborhoods.end())
+    if (it != neighborhoods.end()) {
       it->second->onElementsRemoved(element_list, new_numbering, event);
-    else
+    } else {
       dummy_synchronizers[*global_neighborhood_it]->onElementsRemoved(
           element_list, new_numbering, event);
+    }
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void NonLocalManager::onElementsAdded(const Array<Element> &,
-                                      const NewElementsEvent &) {
+void NonLocalManager::onElementsAdded(const Array<Element> & /*unused*/,
+                                      const NewElementsEvent & /*unused*/) {
   this->resizeElementTypeMap(1, volumes, model.getFEEngine());
   this->resizeElementTypeMap(spatial_dimension, integration_points_positions,
                              model.getFEEngine());
@@ -550,10 +562,11 @@ void NonLocalManager::resizeElementTypeMap(UInt nb_component,
     for (auto type : mesh.elementTypes(spatial_dimension, gt, el_kind)) {
       UInt nb_element = mesh.getNbElement(type, gt);
       UInt nb_quads = fee.getNbIntegrationPoints(type, gt);
-      if (!element_map.exists(type, gt))
+      if (!element_map.exists(type, gt)) {
         element_map.alloc(nb_element * nb_quads, nb_component, type, gt);
-      else
+      } else {
         element_map(type, gt).resize(nb_element * nb_quads);
+      }
     }
   }
 }

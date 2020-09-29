@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__
-#define __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__
+#ifndef AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH_
+#define AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH_
 /* -------------------------------------------------------------------------- */
 #include "neighborhood_base.hh"
 #include "parsable.hh"
@@ -69,10 +69,10 @@ protected:
   cleanupExtraGhostElements(const ElementTypeMap<UInt> & nb_ghost_protected);
 
   /// insert the quadrature points in the grid
-  void insertAllQuads(const GhostType & ghost_type);
+  void insertAllQuads(GhostType ghost_type);
 
   /// compare criterion with neighbors
-  void checkNeighbors(const GhostType & ghost_type);
+  void checkNeighbors(GhostType ghost_type);
 
   /* --------------------------------------------------------------------------
    */
@@ -113,4 +113,4 @@ protected:
 
 #include "neighborhood_max_criterion_inline_impl.hh"
 
-#endif /* __AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH__ */
+#endif /* AKANTU_NEIGHBORHOOD_MAX_CRITERION_BASE_HH_ */

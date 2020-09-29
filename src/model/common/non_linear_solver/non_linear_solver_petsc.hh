@@ -31,8 +31,8 @@
 #include <petscsnes.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_PETSC_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_PETSC_HH__
+#ifndef AKANTU_NON_LINEAR_SOLVER_PETSC_HH_
+#define AKANTU_NON_LINEAR_SOLVER_PETSC_HH_
 
 namespace akantu {
 class DOFManagerPETSc;
@@ -105,4 +105,4 @@ namespace debug {
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_PETSC_HH__ */
+#endif /* AKANTU_NON_LINEAR_SOLVER_PETSC_HH_ */

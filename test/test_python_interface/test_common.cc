@@ -20,7 +20,7 @@ PYBIND11_MODULE(py11_akantu_test_common, mod) {
           [&](_aka::UInt size, _aka::UInt nb_components) {
             auto ptr =
                 std::make_shared<_aka::Array<_aka::Real>>(size, nb_components);
-            ptr->clear();
+            ptr->zero();
             long addr = (long)ptr->storage();
             py::print("initial pointer: " + std::to_string(addr));
             arrays[addr] = ptr;
@@ -54,7 +54,7 @@ PYBIND11_MODULE(py11_akantu_test_common, mod) {
   mod.def("createVector",
           [&](_aka::UInt size) {
             auto ptr = std::make_shared<_aka::Vector<_aka::Real>>(size);
-            ptr->clear();
+            ptr->zero();
             long addr = (long)ptr->storage();
             py::print("initial pointer: " + std::to_string(addr));
             vectors[addr] = ptr;
@@ -88,7 +88,7 @@ PYBIND11_MODULE(py11_akantu_test_common, mod) {
   mod.def("createMatrix",
           [&](_aka::UInt size1, _aka::UInt size2) {
             auto ptr = std::make_shared<_aka::Matrix<_aka::Real>>(size1, size2);
-            ptr->clear();
+            ptr->zero();
             long addr = (long)ptr->storage();
             py::print("initial pointer: " + std::to_string(addr));
             matrices[addr] = ptr;

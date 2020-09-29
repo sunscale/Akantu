@@ -43,7 +43,7 @@ namespace akantu {
 
 namespace MeshUtilsDistribution {
   /* ------------------------------------------------------------------------ */
-  void distributeMeshCentralized(Mesh & mesh, UInt,
+  void distributeMeshCentralized(Mesh & mesh, UInt /*unused*/,
                                  const MeshPartition & partition) {
     MeshAccessor mesh_accessor(mesh);
     ElementSynchronizer & element_synchronizer =
@@ -58,8 +58,9 @@ namespace MeshUtilsDistribution {
     mesh_accessor.setNbGlobalNodes(mesh.getNbNodes());
     auto & gids = mesh_accessor.getNodesGlobalIds();
 
-    if (nb_proc == 1)
+    if (nb_proc == 1) {
       return;
+    }
 
     gids.resize(0);
 
@@ -124,8 +125,9 @@ namespace MeshUtilsDistribution {
 
     mesh_accessor.getNodesGlobalIds().resize(0);
 
-    if (nb_proc == 1)
+    if (nb_proc == 1) {
       return;
+    }
 
     mesh.synchronizeGroupNames();
 

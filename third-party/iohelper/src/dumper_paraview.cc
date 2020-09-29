@@ -36,7 +36,7 @@
 #include "dumper_paraview.hh"
 #include "file_manager.hh"
 /* -------------------------------------------------------------------------- */
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 /* -------------------------------------------------------------------------- */
 
@@ -69,8 +69,11 @@ void DumperParaview::setConnectivity(int * connectivity,
 				     UInt nb_elem,
 				     int mode) {
   Dumper::setConnectivity(connectivity,element_type,nb_elem,mode);
-  if (connectivity_mode == FORTRAN_MODE) mode_offset = -1;
-  else mode_offset = 0;
+  if (connectivity_mode == FORTRAN_MODE) {
+    mode_offset = -1;
+  } else {
+    mode_offset = 0;
+  }
 }
 
 
@@ -113,7 +116,7 @@ void DumperParaview::dump(const std::string & current_name, UInt count) {
 				      _et_file_error);
   ParaviewHelper paraHelper(file, this->mode);
 
-  field_map::iterator pos_it = per_node_data.find("positions");
+  auto pos_it = per_node_data.find("positions");
   if (pos_it == per_node_data.end())
     IOHELPER_THROW("positions field was not specified",
 		   _et_missing_field);
@@ -122,10 +125,11 @@ void DumperParaview::dump(const std::string & current_name, UInt count) {
 
   //connectivity dump
   bool point_set_flag = false;
-  
-  field_map::iterator conn_it = per_element_data.find("connectivities");
-  if (conn_it == per_element_data.end())
+
+  auto conn_it = per_element_data.find("connectivities");
+  if (conn_it == per_element_data.end()) {
     point_set_flag = true;
+  }
     // IOHELPER_THROW("connectivities were not specified",
     // 		   _et_missing_field);
   
@@ -135,8 +139,9 @@ void DumperParaview::dump(const std::string & current_name, UInt count) {
     UInt nb_elems = connectivities_ptr->size();
     
     paraHelper.writeHeader(nb_nodes, nb_elems);
+  } else {
+    paraHelper.writeHeader(nb_nodes, 1);
   }
-  else paraHelper.writeHeader(nb_nodes, 1);
 
   FieldInterface & connectivities = *connectivities_ptr;
   
@@ -151,30 +156,37 @@ void DumperParaview::dump(const std::string & current_name, UInt count) {
 
   // push connectivities
   paraHelper.startCellsConnectivityList();
-  if (point_set_flag)
-    for (UInt i = 0 ;  i < positions.size() ; ++i)
+  if (point_set_flag) {
+    for (UInt i = 0; i < positions.size(); ++i) {
       paraHelper.pushDatum(i);
-  else
+    }
+  } else {
     paraHelper.pushConnectivity(connectivities);
-  
+  }
+
   paraHelper.endCellsConnectivityList();
 
   // build offsets
   paraHelper.startCellsoffsetsList();
-  if (point_set_flag) paraHelper.pushDatum(positions.size());
-  else paraHelper.buildOffsets(connectivities);
+  if (point_set_flag) {
+    paraHelper.pushDatum(positions.size());
+  } else {
+    paraHelper.buildOffsets(connectivities);
+  }
 
   paraHelper.endCellsoffsetsList();
 
   // push cell types
   paraHelper.startCellstypesList();
-  if (point_set_flag) paraHelper.pushDatum(POINT_SET);
-  else {
-    field_map::iterator elty_it = per_element_data.find("element_type");
-    if (elty_it != per_element_data.end())
+  if (point_set_flag) {
+    paraHelper.pushDatum(POINT_SET);
+  } else {
+    auto elty_it = per_element_data.find("element_type");
+    if (elty_it != per_element_data.end()) {
       paraHelper.pushField(*(elty_it->second));
-    else
+    } else {
       paraHelper.pushElemType(connectivities);
+    }
   }
 
   paraHelper.endCellstypesList();
@@ -210,4 +222,4 @@ void DumperParaview::setVTUSubDirectory(const std::string & sub){
 
 /* -------------------------------------------------------------------------- */
 
-__END_IOHELPER__
+}

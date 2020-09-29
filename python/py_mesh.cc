@@ -37,7 +37,7 @@ void register_mesh(py::module & mod) {
       .def("getNbNodes", &Mesh::getNbNodes)
       .def(
           "getConnectivity",
-          [](Mesh & self, const ElementType & type) -> decltype(auto) {
+          [](Mesh & self, ElementType type) -> decltype(auto) {
             return self.getConnectivity(type);
           },
           py::return_value_policy::reference)
@@ -49,15 +49,15 @@ void register_mesh(py::module & mod) {
       .def(
           "getNbElement",
           [](Mesh & self, const UInt spatial_dimension,
-             const GhostType & ghost_type, const ElementKind & kind) {
+             GhostType ghost_type, ElementKind kind) {
             return self.getNbElement(spatial_dimension, ghost_type, kind);
           },
           py::arg("spatial_dimension") = _all_dimensions,
           py::arg("ghost_type") = _not_ghost, py::arg("kind") = _ek_not_defined)
       .def(
           "getNbElement",
-          [](Mesh & self, const ElementType & type,
-             const GhostType & ghost_type) {
+          [](Mesh & self, ElementType type,
+             GhostType ghost_type) {
             return self.getNbElement(type, ghost_type);
           },
           py::arg("type"), py::arg("ghost_type") = _not_ghost)

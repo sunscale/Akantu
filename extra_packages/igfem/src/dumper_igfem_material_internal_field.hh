@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__
-#define __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__
+#ifndef AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH_
+#define AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH_
 /* -------------------------------------------------------------------------- */
 #include "dumper_igfem_quadrature_points_field.hh"
 /* -------------------------------------------------------------------------- */
@@ -50,4 +50,4 @@ public:
 } // namespace dumpers
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH__ */
+#endif /* AKANTU_DUMPER_IGFEM_MATERIAL_INTERNAL_FIELD_HH_ */

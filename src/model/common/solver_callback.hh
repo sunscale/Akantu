@@ -31,8 +31,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_CALLBACK_HH__
-#define __AKANTU_SOLVER_CALLBACK_HH__
+#ifndef AKANTU_SOLVER_CALLBACK_HH_
+#define AKANTU_SOLVER_CALLBACK_HH_
 
 namespace akantu {
 class DOFManager;
@@ -105,4 +105,4 @@ namespace debug {
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_CALLBACK_HH__ */
+#endif /* AKANTU_SOLVER_CALLBACK_HH_ */

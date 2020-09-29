@@ -65,7 +65,7 @@ namespace debug {
   std::ostream & _akantu_cout = std::cout;
 
   /// parallel context used in debug messages
-  std::string _parallel_context = "";
+  std::string _parallel_context;
 
   Debugger debugger;
 
@@ -93,8 +93,8 @@ const UInt _all_dimensions [[gnu::unused]] = UInt(-1);
 const Array<UInt> empty_filter(0, 1, "empty_filter");
 
 /* -------------------------------------------------------------------------- */
-template <> long int RandomGenerator<UInt>::_seed = 5489u;
-template <> std::default_random_engine RandomGenerator<UInt>::generator(5489u);
+template <> long int RandomGenerator<UInt>::_seed = 5489U;
+template <> std::default_random_engine RandomGenerator<UInt>::generator(5489U);
 /* -------------------------------------------------------------------------- */
 int Tag::max_tag = 0;
 

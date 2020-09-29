@@ -61,7 +61,7 @@ public:
     auto center_node = this->model->getBlockedDOFs().end(parent::ndof) - 1;
     *center_node = {false, false, false, false, false, true};
 
-    this->model->getDisplacement().clear();
+    this->model->getDisplacement().zero();
     auto disp = ++this->model->getDisplacement().begin(parent::ndof);
 
     // Displacement field from Batoz Vol. 2 p. 392

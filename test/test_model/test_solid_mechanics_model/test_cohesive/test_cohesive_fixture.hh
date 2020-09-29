@@ -35,8 +35,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TEST_COHESIVE_FIXTURE_HH__
-#define __AKANTU_TEST_COHESIVE_FIXTURE_HH__
+#ifndef AKANTU_TEST_COHESIVE_FIXTURE_HH_
+#define AKANTU_TEST_COHESIVE_FIXTURE_HH_
 
 using namespace akantu;
 
@@ -339,4 +339,4 @@ using coh_types = gtest_list_t<std::tuple<
 
 TYPED_TEST_SUITE(TestSMMCFixture, coh_types);
 
-#endif /* __AKANTU_TEST_COHESIVE_FIXTURE_HH__ */
+#endif /* AKANTU_TEST_COHESIVE_FIXTURE_HH_ */

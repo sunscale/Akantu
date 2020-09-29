@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_HH__
-#define __AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_HH__
+#ifndef AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_HH_
+#define AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -38,4 +38,4 @@ namespace akantu {
 
 } // namespace akantu
 
-#endif /* __AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_HEAT_TRANSFER_MODEL_INLINE_IMPL_HH_ */

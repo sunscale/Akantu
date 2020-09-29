@@ -37,7 +37,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-MeshIOMSHStruct::MeshIOMSHStruct() : MeshIOMSH() {
+MeshIOMSHStruct::MeshIOMSHStruct() {
   canReadSurface = true;
   canReadExtendedData = true;
 

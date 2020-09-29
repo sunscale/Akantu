@@ -114,8 +114,7 @@ void MaterialDamage<spatial_dimension, Parent>::updateEnergies(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension, template <UInt> class Parent>
 void MaterialDamage<spatial_dimension, Parent>::computeTangentModuli(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
-    GhostType ghost_type) {
+    ElementType el_type, Array<Real> & tangent_matrix, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Parent<spatial_dimension>::computeTangentModuli(el_type, tangent_matrix,
@@ -163,10 +162,10 @@ Real MaterialDamage<spatial_dimension, Parent>::getDissipatedEnergy() const {
 template <UInt spatial_dimension, template <UInt> class Parent>
 Real MaterialDamage<spatial_dimension, Parent>::getEnergy(
     const std::string & type) {
-  if (type == "dissipated")
+  if (type == "dissipated") {
     return getDissipatedEnergy();
-  else
-    return Parent<spatial_dimension>::getEnergy(type);
+  }
+  return Parent<spatial_dimension>::getEnergy(type);
 }
 
 /* -------------------------------------------------------------------------- */

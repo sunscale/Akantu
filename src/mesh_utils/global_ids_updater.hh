@@ -31,8 +31,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_GLOBAL_IDS_UPDATER_HH__
-#define __AKANTU_GLOBAL_IDS_UPDATER_HH__
+#ifndef AKANTU_GLOBAL_IDS_UPDATER_HH_
+#define AKANTU_GLOBAL_IDS_UPDATER_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "data_accessor.hh"
@@ -103,4 +103,4 @@ private:
 
 #include "global_ids_updater_inline_impl.hh"
 
-#endif /* __AKANTU_GLOBAL_IDS_UPDATER_HH__ */
+#endif /* AKANTU_GLOBAL_IDS_UPDATER_HH_ */

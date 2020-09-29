@@ -32,8 +32,8 @@
 #include "neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_HH__
-#define __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_HH__
+#ifndef AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_HH_
+#define AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -64,4 +64,4 @@ NonLocalManager::getNeighborhood(const ID & name) const {
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_HH__ */
+#endif /* AKANTU_NON_LOCAL_MANAGER_INLINE_IMPL_HH_ */

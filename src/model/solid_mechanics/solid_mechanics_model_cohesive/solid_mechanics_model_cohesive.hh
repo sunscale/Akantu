@@ -36,8 +36,8 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH_
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -93,8 +93,7 @@ public:
       FEEngineTemplate<IntegratorGauss, ShapeLagrange, _ek_regular,
                        FacetsCohesiveIntegrationOrderFunctor>;
 
-  SolidMechanicsModelCohesive(Mesh & mesh,
-                              UInt spatial_dimension = _all_dimensions,
+  SolidMechanicsModelCohesive(Mesh & mesh, UInt dim = _all_dimensions,
                               const ID & id = "solid_mechanics_model_cohesive",
                               const MemoryID & memory_id = 0);
 
@@ -172,9 +171,9 @@ private:
   /* ------------------------------------------------------------------------ */
 
 protected:
-  void onNodesAdded(const Array<UInt> & nodes_list,
+  void onNodesAdded(const Array<UInt> & new_nodes,
                     const NewNodesEvent & event) override;
-  void onElementsAdded(const Array<Element> & nodes_list,
+  void onElementsAdded(const Array<Element> & element_list,
                        const NewElementsEvent & event) override;
 
   /* ------------------------------------------------------------------------ */
@@ -192,7 +191,7 @@ public:
   void addDumpGroupFieldToDumper(const std::string & dumper_name,
                                  const std::string & field_id,
                                  const std::string & group_name,
-                                 const ElementKind & element_kind,
+                                 ElementKind element_kind,
                                  bool padding_flag) override;
 
 public:
@@ -306,4 +305,4 @@ private:
 
 #include "solid_mechanics_model_cohesive_inline_impl.hh"
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_COHESIVE_HH_ */

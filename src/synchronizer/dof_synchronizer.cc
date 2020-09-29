@@ -135,7 +135,7 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
 void DOFSynchronizer::fillEntityToSend(Array<UInt> & dofs_to_send) {
   UInt nb_dofs = dof_manager.getLocalSystemSize();
 
-  this->entities_from_root.clear();
+  this->entities_from_root.zero();
   dofs_to_send.resize(0);
 
   for (UInt d : arange(nb_dofs)) {

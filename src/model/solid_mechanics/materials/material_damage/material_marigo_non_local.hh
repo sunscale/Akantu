@@ -34,8 +34,8 @@
 #include "material_marigo.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__
-#define __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__
+#ifndef AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH_
+#define AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH_
 
 namespace akantu {
 
@@ -54,9 +54,8 @@ class MaterialMarigoNonLocal
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef MaterialDamageNonLocal<spatial_dimension,
-                                 MaterialMarigo<spatial_dimension>>
-      MaterialMarigoNonLocalParent;
+  using MaterialMarigoNonLocalParent = MaterialDamageNonLocal<spatial_dimension,
+                                 MaterialMarigo<spatial_dimension>>;
   MaterialMarigoNonLocal(SolidMechanicsModel & model, const ID & id = "");
 
   /* ------------------------------------------------------------------------ */
@@ -89,4 +88,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH__ */
+#endif /* AKANTU_MATERIAL_MARIGO_NON_LOCAL_HH_ */

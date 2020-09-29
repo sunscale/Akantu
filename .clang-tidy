@@ -1,4 +1,12 @@
-Checks:          'modernize-use-*, -modernize-use-trailing-return-type*, performance-*, mpi-*, openmp-*, readability-*, cppcoreguidelines-*, -cppcoreguidelines-pro-bounds-array-to-pointer-decay*, -cppcoreguidelines-macro-usage*'
+Checks: "
+        modernize-use-*, -modernize-use-trailing-return-type*,
+        performance-*,
+        mpi-*,
+        openmp-*,
+        bugprone-*,
+        readability-*, -readability-magic-numbers, -readability-redundant-access-specifiers,
+        -clang-analyzer-*
+        "
 AnalyzeTemporaryDtors: false
-HeaderFilterRegex: 'src/.*'
-FormatStyle:     file
+HeaderFilterRegex:     'src/.*'
+FormatStyle:           file

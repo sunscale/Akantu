@@ -49,17 +49,18 @@ namespace akantu {
 DumperIOHelper::DumperIOHelper() = default;
 
 /* -------------------------------------------------------------------------- */
-DumperIOHelper::~DumperIOHelper() {}
+DumperIOHelper::~DumperIOHelper() = default;
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::setParallelContext(bool is_parallel) {
   UInt whoami = Communicator::getStaticCommunicator().whoAmI();
   UInt nb_proc = Communicator::getStaticCommunicator().getNbProc();
 
-  if (is_parallel)
+  if (is_parallel) {
     dumper->setParallelContext(whoami, nb_proc);
-  else
+  } else {
     dumper->setParallelContext(0, 1);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -75,10 +76,11 @@ void DumperIOHelper::setBaseName(const std::string & basename) {
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::setTimeStep(Real time_step) {
-  if (!time_activated)
+  if (!time_activated) {
     this->dumper->activateTimeDescFiles(time_step);
-  else
+  } else {
     this->dumper->setTimeStep(time_step);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -107,8 +109,8 @@ void DumperIOHelper::dump(Real current_time, UInt step) {
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerMesh(const Mesh & mesh, UInt spatial_dimension,
-                                  const GhostType & ghost_type,
-                                  const ElementKind & element_kind) {
+                                  GhostType ghost_type,
+                                  ElementKind element_kind) {
 
 #if defined(AKANTU_IGFEM)
   if (element_kind == _ek_igfem) {
@@ -131,7 +133,7 @@ void DumperIOHelper::registerMesh(const Mesh & mesh, UInt spatial_dimension,
 void DumperIOHelper::registerFilteredMesh(
     const Mesh & mesh, const ElementTypeMapArray<UInt> & elements_filter,
     const Array<UInt> & nodes_filter, UInt spatial_dimension,
-    const GhostType & ghost_type, const ElementKind & element_kind) {
+    GhostType ghost_type, ElementKind element_kind) {
   auto * f_connectivities = new ElementTypeMapArrayFilter<UInt>(
       mesh.getConnectivities(), elements_filter);
 
@@ -146,8 +148,11 @@ void DumperIOHelper::registerFilteredMesh(
 }
 
 /* -------------------------------------------------------------------------- */
-void DumperIOHelper::registerField(const std::string & field_id,
-                                   std::shared_ptr<dumpers::Field> field) {
+void DumperIOHelper::registerField(
+    const std::string & field_id,
+    std::shared_ptr<dumpers::Field>
+        field) // NOLINT(performance-unnecessary-value-param)
+{
   auto it = fields.find(field_id);
   if (it != fields.end()) {
     AKANTU_DEBUG_WARNING(
@@ -176,7 +181,9 @@ void DumperIOHelper::unRegisterField(const std::string & field_id) {
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::registerVariable(
     const std::string & variable_id,
-    std::shared_ptr<dumpers::VariableBase> variable) {
+    std::shared_ptr<dumpers::VariableBase>
+        variable) // NOLINT(performance-unnecessary-value-param)
+{
   auto it = variables.find(variable_id);
 
   if (it != variables.end()) {
@@ -189,7 +196,7 @@ void DumperIOHelper::registerVariable(
 
   variables[variable_id] = variable;
   variable->registerToDumper(variable_id, *dumper);
-}
+} // namespace akantu
 
 /* -------------------------------------------------------------------------- */
 void DumperIOHelper::unRegisterVariable(const std::string & variable_id) {

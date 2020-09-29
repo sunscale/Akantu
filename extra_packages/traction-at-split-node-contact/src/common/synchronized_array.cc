@@ -39,10 +39,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <class T>
-SynchronizedArray<T>::SynchronizedArray(
-    UInt size, UInt nb_component, SynchronizedArray<T>::const_reference value,
-    const ID & id, SynchronizedArray<T>::const_reference default_value,
-    const std::string restart_name)
+SynchronizedArray<T>::SynchronizedArray(UInt size, UInt nb_component,
+                                        const_reference value, const ID & id,
+                                        const_reference default_value,
+                                        const std::string & restart_name)
     : SynchronizedArrayBase(), Array<T>(size, nb_component, value, id),
       default_value(default_value), restart_name(restart_name),
       deleted_elements(0), nb_added_elements(size), depending_arrays(0) {
@@ -88,7 +88,7 @@ UInt SynchronizedArray<T>::syncDeletedElements(
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(
-      nb_added_elements == 0 && deleted_elements.size() == 0,
+      nb_added_elements == 0 and deleted_elements.empty(),
       "Cannot sync with a SynchronizedArray if it has already been modified");
 
   std::vector<UInt>::const_iterator it;
@@ -107,7 +107,7 @@ UInt SynchronizedArray<T>::syncAddedElements(UInt nb_add_elements) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(
-      nb_added_elements == 0 && deleted_elements.size() == 0,
+      nb_added_elements == 0 and deleted_elements.empty(),
       "Cannot sync with a SynchronizedArray if it has already been modified");
 
   for (UInt i = 0; i < nb_add_elements; ++i) {
@@ -136,9 +136,7 @@ template <typename T>
 void SynchronizedArray<T>::printself(std::ostream & stream, int indent) const {
   AKANTU_DEBUG_IN();
 
-  std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   stream << space << "SynchronizedArray<" << debug::demangle(typeid(T).name())
          << "> [" << std::endl;
@@ -147,16 +145,15 @@ void SynchronizedArray<T>::printself(std::ostream & stream, int indent) const {
   stream << space << " + nb_added_elements : " << this->nb_added_elements
          << std::endl;
   stream << space << " + deleted_elements  : ";
-  for (std::vector<UInt>::const_iterator it = this->deleted_elements.begin();
-       it != this->deleted_elements.end(); ++it)
-    stream << *it << " ";
+  for (auto && deleted_element : deleted_elements) {
+    stream << deleted_element << " ";
+  }
   stream << std::endl;
 
   stream << space << " + depending_arrays : ";
-  for (std::vector<SynchronizedArrayBase *>::const_iterator it =
-           this->depending_arrays.begin();
-       it != this->depending_arrays.end(); ++it)
-    stream << (*it)->getID() << " ";
+  for (auto && depending_array : this->depending_arrays) {
+    stream << depending_array->getID() << " ";
+  }
   stream << std::endl;
 
   Array<T>::printself(stream, indent + 1);
@@ -168,11 +165,11 @@ void SynchronizedArray<T>::printself(std::ostream & stream, int indent) const {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void SynchronizedArray<T>::dumpRestartFile(std::string file_name) const {
+void SynchronizedArray<T>::dumpRestartFile(const std::string & file_name) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(
-      nb_added_elements == 0 && deleted_elements.size() == 0,
+      nb_added_elements == 0 and deleted_elements.empty(),
       "Restart File for SynchronizedArray "
           << this->id << " should not be dumped as it is not synchronized yet");
 
@@ -184,8 +181,9 @@ void SynchronizedArray<T>::dumpRestartFile(std::string file_name) const {
 
   out_restart << this->size_ << " " << this->nb_component << std::endl;
   Real size_comp = this->size_ * this->nb_component;
-  for (UInt i = 0; i < size_comp; ++i)
+  for (UInt i = 0; i < size_comp; ++i) {
     out_restart << std::setprecision(12) << this->values[i] << " ";
+  }
   //    out_restart << std::hex << std::setprecision(12) << this->values[i] << "
   //    ";
   out_restart << std::endl;
@@ -195,11 +193,11 @@ void SynchronizedArray<T>::dumpRestartFile(std::string file_name) const {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void SynchronizedArray<T>::readRestartFile(std::string file_name) {
+void SynchronizedArray<T>::readRestartFile(const std::string & file_name) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(
-      nb_added_elements == 0 && deleted_elements.size() == 0,
+      nb_added_elements == 0 and deleted_elements.empty(),
       "Restart File for SynchronizedArray "
           << this->id << " should not be read as it is not synchronized yet");
 

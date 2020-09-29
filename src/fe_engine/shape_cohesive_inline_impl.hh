@@ -33,8 +33,8 @@
 #include "shape_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_COHESIVE_INLINE_IMPL_HH__
-#define __AKANTU_SHAPE_COHESIVE_INLINE_IMPL_HH__
+#ifndef AKANTU_SHAPE_COHESIVE_INLINE_IMPL_HH_
+#define AKANTU_SHAPE_COHESIVE_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -53,7 +53,7 @@ inline ShapeLagrange<_ek_cohesive>::ShapeLagrange(const Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 inline void ShapeLagrange<_ek_cohesive>::initShapeFunctions(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    const ElementType & type, const GhostType & ghost_type) {
+    ElementType type, GhostType ghost_type) {
   AKANTU_BOOST_COHESIVE_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
 }
 
@@ -62,8 +62,8 @@ inline void ShapeLagrange<_ek_cohesive>::initShapeFunctions(
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
-    const Array<Real> &, const Matrix<Real> & integration_points,
-    Array<Real> & shape_derivatives, const GhostType & ghost_type,
+    const Array<Real> & /*unused*/, const Matrix<Real> & integration_points,
+    Array<Real> & shape_derivatives, GhostType ghost_type,
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
@@ -97,8 +97,8 @@ void ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
 inline void
 ShapeLagrange<_ek_cohesive>::computeShapeDerivativesOnIntegrationPoints(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    Array<Real> & shape_derivatives, const ElementType & type,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    Array<Real> & shape_derivatives, ElementType type,
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
 #define AKANTU_COMPUTE_SHAPES(type)                                            \
   computeShapeDerivativesOnIntegrationPoints<type>(                            \
       nodes, integration_points, shape_derivatives, ghost_type,                \
@@ -151,7 +151,7 @@ void ShapeLagrange<_ek_cohesive>::precomputeShapeDerivativesOnIntegrationPoints(
 template <ElementType type, class ReduceFunction>
 void ShapeLagrange<_ek_cohesive>::extractNodalToElementField(
     const Array<Real> & nodal_f, Array<Real> & elemental_f,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_nodes_per_itp_element =
@@ -252,16 +252,17 @@ void ShapeLagrange<_ek_cohesive>::variationOnIntegrationPoints(
 /* -------------------------------------------------------------------------- */
 template <ElementType type, class ReduceFunction>
 void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
-    const Array<Real> & u, Array<Real> & normals_u, GhostType ghost_type,
-    const Array<UInt> & filter_elements) const {
+    const Array<Real> & u, Array<Real> & normals_u,
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   UInt nb_element = this->mesh.getNbElement(type, ghost_type);
   UInt nb_points = this->integration_points(type, ghost_type).cols();
   UInt spatial_dimension = this->mesh.getSpatialDimension();
 
-  if (filter_elements != empty_filter)
+  if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
+  }
 
   normals_u.resize(nb_points * nb_element);
 
@@ -303,8 +304,9 @@ void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
     Real values[2];
 
     for (auto el : arange(nb_element)) {
-      if (filter_elements != empty_filter)
+      if (filter_elements != empty_filter) {
         el = filter_elements(el);
+      }
 
       for (UInt p = 0; p < 2; ++p) {
         Element facet = facets(el, p);
@@ -327,4 +329,4 @@ void ShapeLagrange<_ek_cohesive>::computeNormalsOnIntegrationPoints(
 
 } // namespace akantu
 
-#endif /* __AKANTU_SHAPE_COHESIVE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SHAPE_COHESIVE_INLINE_IMPL_HH_ */

@@ -101,8 +101,9 @@ void NeighborhoodBase::updatePairList() {
     AKANTU_DEBUG_INFO("Looping on next cell");
 
     for (auto && q1 : spatial_grid->getCell(cell_id)) {
-      if (q1.ghost_type == _ghost)
+      if (q1.ghost_type == _ghost) {
         break;
+      }
       auto coords_type_1_it = this->quad_coordinates(q1.type, q1.ghost_type)
                                   .begin(spatial_dimension);
       auto q1_coords = Vector<Real>(coords_type_1_it[q1.global_num]);
@@ -155,8 +156,9 @@ void NeighborhoodBase::savePairs(const std::string & filename) const {
 
   pout.close();
 
-  if (comm.getNbProc() != 1)
+  if (comm.getNbProc() != 1) {
     return;
+  }
 
   Mesh mesh_out(spatial_dimension);
   MeshAccessor mesh_accessor(mesh_out);
@@ -167,7 +169,8 @@ void NeighborhoodBase::savePairs(const std::string & filename) const {
   std::map<IntegrationPoint, UInt> quad_to_nodes;
   UInt node = 0;
 
-  IntegrationPoint q1, q2;
+  IntegrationPoint q1;
+  IntegrationPoint q2;
   bool inserted;
   for (auto && ghost_type : ghost_types) {
     for (const auto & pair : pair_list[ghost_type]) {
@@ -177,8 +180,9 @@ void NeighborhoodBase::savePairs(const std::string & filename) const {
         std::tie(std::ignore, inserted) =
             quad_to_nodes.insert(std::make_pair(q, node));
 
-        if (not inserted)
+        if (not inserted) {
           return;
+        }
 
         auto coords_it = this->quad_coordinates(q.type, q.ghost_type)
                              .begin(spatial_dimension);

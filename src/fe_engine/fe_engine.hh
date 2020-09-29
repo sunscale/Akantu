@@ -36,8 +36,8 @@
 #include <functional>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FE_ENGINE_HH__
-#define __AKANTU_FE_ENGINE_HH__
+#ifndef AKANTU_FE_ENGINE_HH_
+#define AKANTU_FE_ENGINE_HH_
 
 namespace akantu {
 class Mesh;
@@ -61,7 +61,7 @@ class FEEngine : protected Memory, public MeshEventHandler {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  FEEngine(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+  FEEngine(Mesh & mesh, UInt element_dimension = _all_dimensions,
            const ID & id = "fem", MemoryID memory_id = 0);
 
   ~FEEngine() override;
@@ -72,21 +72,21 @@ public:
 public:
   /// pre-compute all the shape functions, their derivatives and the jacobians
   virtual void
-  initShapeFunctions(const GhostType & ghost_type = _not_ghost) = 0;
+  initShapeFunctions(GhostType ghost_type = _not_ghost) = 0;
 
   /// extract the nodal values and store them per element
   template <typename T>
   static void extractNodalToElementField(
       const Mesh & mesh, const Array<T> & nodal_f, Array<T> & elemental_f,
-      const ElementType & type, const GhostType & ghost_type = _not_ghost,
+      ElementType type, GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter);
 
   /// filter a field
   template <typename T>
   static void
-  filterElementalData(const Mesh & mesh, const Array<T> & quad_f,
-                      Array<T> & filtered_f, const ElementType & type,
-                      const GhostType & ghost_type = _not_ghost,
+  filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
+                      Array<T> & filtered_f, ElementType type,
+                      GhostType ghost_type = _not_ghost,
                       const Array<UInt> & filter_elements = empty_filter);
 
   /* ------------------------------------------------------------------------ */
@@ -95,51 +95,51 @@ public:
   /// integrate f for all elements of type "type"
   virtual void
   integrate(const Array<Real> & f, Array<Real> & intf,
-            UInt nb_degree_of_freedom, const ElementType & type,
-            const GhostType & ghost_type = _not_ghost,
+            UInt nb_degree_of_freedom, ElementType type,
+            GhostType ghost_type = _not_ghost,
             const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate a scalar value f on all elements of type "type"
   virtual Real
-  integrate(const Array<Real> & f, const ElementType & type,
-            const GhostType & ghost_type = _not_ghost,
+  integrate(const Array<Real> & f, ElementType type,
+            GhostType ghost_type = _not_ghost,
             const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate f for all integration points of type "type" but don't sum over
   /// all integration points
   virtual void integrateOnIntegrationPoints(
       const Array<Real> & f, Array<Real> & intf, UInt nb_degree_of_freedom,
-      const ElementType & type, const GhostType & ghost_type = _not_ghost,
+      ElementType type, GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// integrate one element scalar value on all elements of type "type"
-  virtual Real integrate(const Vector<Real> & f, const ElementType & type,
+  virtual Real integrate(const Vector<Real> & f, ElementType type,
                          UInt index,
-                         const GhostType & ghost_type = _not_ghost) const = 0;
+                         GhostType ghost_type = _not_ghost) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* compatibility with old FEEngine fashion */
   /* ------------------------------------------------------------------------ */
   /// get the number of integration points
   virtual UInt
-  getNbIntegrationPoints(const ElementType & type,
-                         const GhostType & ghost_type = _not_ghost) const = 0;
+  getNbIntegrationPoints(ElementType type,
+                         GhostType ghost_type = _not_ghost) const = 0;
 
   /// get the precomputed shapes
   const virtual Array<Real> &
-  getShapes(const ElementType & type, const GhostType & ghost_type = _not_ghost,
+  getShapes(ElementType type, GhostType ghost_type = _not_ghost,
             UInt id = 0) const = 0;
 
   /// get the derivatives of shapes
   const virtual Array<Real> &
-  getShapesDerivatives(const ElementType & type,
-                       const GhostType & ghost_type = _not_ghost,
+  getShapesDerivatives(ElementType type,
+                       GhostType ghost_type = _not_ghost,
                        UInt id = 0) const = 0;
 
   /// get integration points
   const virtual Matrix<Real> &
-  getIntegrationPoints(const ElementType & type,
-                       const GhostType & ghost_type = _not_ghost) const = 0;
+  getIntegrationPoints(ElementType type,
+                       GhostType ghost_type = _not_ghost) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Shape method bridges                                                     */
@@ -148,15 +148,15 @@ public:
   /// from nodal values u
   virtual void gradientOnIntegrationPoints(
       const Array<Real> & u, Array<Real> & nablauq,
-      const UInt nb_degree_of_freedom, const ElementType & type,
-      const GhostType & ghost_type = _not_ghost,
+      UInt nb_degree_of_freedom, ElementType type,
+      GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// Interpolate a nodal field u at the integration points of an element type
   /// -> uq
   virtual void interpolateOnIntegrationPoints(
       const Array<Real> & u, Array<Real> & uq, UInt nb_degree_of_freedom,
-      const ElementType & type, const GhostType & ghost_type = _not_ghost,
+      ElementType type, GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// Interpolate a nodal field u at the integration points of many element
@@ -168,22 +168,22 @@ public:
   /// pre multiplies a tensor by the shapes derivaties
   virtual void
   computeBtD(const Array<Real> & Ds, Array<Real> & BtDs,
-             const ElementType & type,
-             const GhostType & ghost_type = _not_ghost,
+             ElementType type,
+             GhostType ghost_type = _not_ghost,
              const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// left and right  multiplies a tensor by the shapes derivaties
   virtual void
   computeBtDB(const Array<Real> & Ds, Array<Real> & BtDBs, UInt order_d,
-              const ElementType & type,
-              const GhostType & ghost_type = _not_ghost,
+              ElementType type,
+              GhostType ghost_type = _not_ghost,
               const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// left multiples a vector by the shape functions
   virtual void
   computeNtb(const Array<Real> & bs, Array<Real> & Ntbs,
-             const ElementType & type,
-             const GhostType & ghost_type = _not_ghost,
+             ElementType type,
+             GhostType ghost_type = _not_ghost,
              const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// Compute the interpolation point position in the global coordinates for
@@ -195,8 +195,8 @@ public:
   /// Compute the interpolation point position in the global coordinates for an
   /// element type
   virtual void computeIntegrationPointsCoordinates(
-      Array<Real> & integration_points_coordinates, const ElementType & type,
-      const GhostType & ghost_type = _not_ghost,
+      Array<Real> & integration_points_coordinates, ElementType type,
+      GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// Build pre-computed matrices for interpolation of field form integration
@@ -212,7 +212,7 @@ public:
   virtual void interpolateElementalFieldFromIntegrationPoints(
       const ElementTypeMapArray<Real> & field,
       const ElementTypeMapArray<Real> & interpolation_points_coordinates,
-      ElementTypeMapArray<Real> & result, const GhostType ghost_type,
+      ElementTypeMapArray<Real> & result, GhostType ghost_type,
       const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
   /// Interpolate field at given position from given values of this field at
@@ -225,7 +225,7 @@ public:
           interpolation_points_coordinates_matrices,
       const ElementTypeMapArray<Real> &
           integration_points_coordinates_inv_matrices,
-      ElementTypeMapArray<Real> & result, const GhostType ghost_type,
+      ElementTypeMapArray<Real> & result, GhostType ghost_type,
       const ElementTypeMapArray<UInt> * element_filter) const = 0;
 
   /// interpolate on a phyiscal point inside an element
@@ -237,27 +237,27 @@ public:
   /// compute the shape on a provided point
   virtual void
   computeShapes(const Vector<Real> & real_coords, UInt elem,
-                const ElementType & type, Vector<Real> & shapes,
-                const GhostType & ghost_type = _not_ghost) const = 0;
+                ElementType type, Vector<Real> & shapes,
+                GhostType ghost_type = _not_ghost) const = 0;
 
   /// compute the shape derivatives on a provided point
   virtual void
-  computeShapeDerivatives(const Vector<Real> & real__coords, UInt element,
-                          const ElementType & type,
+  computeShapeDerivatives(const Vector<Real> & real_coords, UInt element,
+                          ElementType type,
                           Matrix<Real> & shape_derivatives,
-                          const GhostType & ghost_type = _not_ghost) const = 0;
+                          GhostType ghost_type = _not_ghost) const = 0;
 
   /// assembles the lumped version of @f[ \int N^t rho N @f]
   virtual void assembleFieldLumped(
       const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
       const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-      ElementType type, const GhostType & ghost_type = _not_ghost) const = 0;
+      ElementType type, GhostType ghost_type = _not_ghost) const = 0;
 
   /// assembles the matrix @f[ \int N^t rho N @f]
   virtual void assembleFieldMatrix(
       const std::function<void(Matrix<Real> &, const Element &)> & field_funct,
       const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-      ElementType type, const GhostType & ghost_type = _not_ghost) const = 0;
+      ElementType type, GhostType ghost_type = _not_ghost) const = 0;
 
   /* ------------------------------------------------------------------------ */
   /* Other methods                                                            */
@@ -265,20 +265,20 @@ public:
 
   /// pre-compute normals on integration points
   virtual void computeNormalsOnIntegrationPoints(
-      const GhostType & ghost_type = _not_ghost) = 0;
+      GhostType ghost_type = _not_ghost) = 0;
 
   /// pre-compute normals on integration points
   virtual void computeNormalsOnIntegrationPoints(
       const Array<Real> & /*field*/,
-      const GhostType & /*ghost_type*/ = _not_ghost) {
+      GhostType /*ghost_type*/ = _not_ghost) {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// pre-compute normals on integration points
   virtual void computeNormalsOnIntegrationPoints(
       const Array<Real> & /*field*/, Array<Real> & /*normal*/,
-      const ElementType & /*type*/,
-      const GhostType & /*ghost_type*/ = _not_ghost) const {
+      ElementType /*type*/,
+      GhostType /*ghost_type*/ = _not_ghost) const {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -310,7 +310,7 @@ public:
 
   /// get the in-radius of an element
   static inline Real getElementInradius(const Matrix<Real> & coord,
-                                        const ElementType & type);
+                                        ElementType type);
 
   /// get the normals on integration points
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(NormalsOnIntegrationPoints,
@@ -318,15 +318,15 @@ public:
 
   /// get cohesive element type for a given facet type
   static inline ElementType
-  getCohesiveElementType(const ElementType & type_facet);
+  getCohesiveElementType(ElementType type_facet);
 
   /// get igfem element type for a given regular type
   static inline Vector<ElementType>
-  getIGFEMElementTypes(const ElementType & type);
+  getIGFEMElementTypes(ElementType type);
 
   /// get the interpolation element associated to an element type
   static inline InterpolationType
-  getInterpolationType(const ElementType & el_type);
+  getInterpolationType(ElementType el_type);
 
   /// get the shape function class (probably useless: see getShapeFunction in
   /// fe_engine_template.hh)
@@ -365,4 +365,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 #include "fe_engine_inline_impl.hh"
 #include "fe_engine_template.hh"
 
-#endif /* __AKANTU_FE_ENGINE_HH__ */
+#endif /* AKANTU_FE_ENGINE_HH_ */

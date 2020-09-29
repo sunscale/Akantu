@@ -32,8 +32,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MESH_HH__
-#define __AKANTU_MESH_HH__
+#ifndef AKANTU_MESH_HH_
+#define AKANTU_MESH_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
@@ -154,8 +154,9 @@ protected:
   /// patitionate the mesh among the processors involved in their computation
   virtual void distributeImpl(
       Communicator & communicator,
-      std::function<Int(const Element &, const Element &)> edge_weight_function,
-      std::function<Int(const Element &)> vertex_weight_function);
+      const std::function<Int(const Element &, const Element &)> &
+          edge_weight_function,
+      const std::function<Int(const Element &)> & vertex_weight_function);
 
 public:
   /// with the arguments to pass to the partitionner
@@ -183,7 +184,8 @@ public:
 
 protected:
   void makePeriodic(const SpatialDirection & direction,
-                    const Array<UInt> & list_1, const Array<UInt> & list_2);
+                    const Array<UInt> & list_left,
+                    const Array<UInt> & list_right);
 
   /// Removes the face that the mesh is periodic
   void wipePeriodicInfo();
@@ -198,10 +200,10 @@ protected:
 
 public:
   /// defines if the mesh is periodic or not
-  inline bool isPeriodic() const { return (this->is_periodic != 0); }
+  inline bool isPeriodic() const { return this->is_periodic; }
 
-  inline bool isPeriodic(const SpatialDirection & direction) const {
-    return ((this->is_periodic & (1 << direction)) != 0);
+  inline bool isPeriodic(const SpatialDirection & /*direction*/) const {
+    return this->is_periodic;
   }
 
   class PeriodicSlaves;
@@ -221,10 +223,10 @@ public:
 
   /// extract coordinates of nodes from an element
   template <typename T>
-  inline void extractNodalValuesFromElement(const Array<T> & nodal_values,
-                                            T * elemental_values,
-                                            UInt * connectivity, UInt n_nodes,
-                                            UInt nb_degree_of_freedom) const;
+  inline void
+  extractNodalValuesFromElement(const Array<T> & nodal_values, T * local_coord,
+                                const UInt * connectivity, UInt n_nodes,
+                                UInt nb_degree_of_freedom) const;
 
   // /// extract coordinates of nodes from a reversed element
   // inline void extractNodalCoordinatesFromPBCElement(Real * local_coords,
@@ -232,8 +234,8 @@ public:
   //                                                   UInt n_nodes);
 
   /// add a Array of connectivity for the given ElementType and GhostType .
-  inline void addConnectivityType(const ElementType & type,
-                                  const GhostType & ghost_type = _not_ghost);
+  inline void addConnectivityType(ElementType type,
+                                  GhostType ghost_type = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   template <class Event> inline void sendEvent(Event & event) {
@@ -355,32 +357,31 @@ public:
                    const ElementTypeMapArray<UInt> &);
 
   /// get the number of element of a type in the mesh
-  inline UInt getNbElement(const ElementType & type,
-                           const GhostType & ghost_type = _not_ghost) const;
+  inline UInt getNbElement(ElementType type,
+                           GhostType ghost_type = _not_ghost) const;
 
   /// get the number of element for a given ghost_type and a given dimension
-  inline UInt getNbElement(const UInt spatial_dimension = _all_dimensions,
-                           const GhostType & ghost_type = _not_ghost,
-                           const ElementKind & kind = _ek_not_defined) const;
+  inline UInt getNbElement(UInt spatial_dimension = _all_dimensions,
+                           GhostType ghost_type = _not_ghost,
+                           ElementKind kind = _ek_not_defined) const;
 
   /// compute the barycenter of a given element
   inline void getBarycenter(const Element & element,
                             Vector<Real> & barycenter) const;
 
-  void getBarycenters(Array<Real> & barycenter, const ElementType & type,
-                      const GhostType & ghost_type) const;
+  void getBarycenters(Array<Real> & barycenter, ElementType type,
+                      GhostType ghost_type) const;
 
   /// get the element connected to a subelement (element of lower dimension)
   const auto & getElementToSubelement() const;
 
   /// get the element connected to a subelement
-  const auto &
-  getElementToSubelement(const ElementType & el_type,
-                         const GhostType & ghost_type = _not_ghost) const;
+  const auto & getElementToSubelement(ElementType el_type,
+                                      GhostType ghost_type = _not_ghost) const;
 
   /// get the element connected to a subelement
-  auto & getElementToSubelement(const ElementType & el_type,
-                                const GhostType & ghost_type = _not_ghost);
+  auto & getElementToSubelement(ElementType el_type,
+                                GhostType ghost_type = _not_ghost);
 
   /// get the elements connected to a subelement
   const auto & getElementToSubelement(const Element & element) const;
@@ -389,12 +390,11 @@ public:
   const auto & getSubelementToElement() const;
 
   /// get the subelement connected to an element
-  const auto &
-  getSubelementToElement(const ElementType & el_type,
-                         const GhostType & ghost_type = _not_ghost) const;
+  const auto & getSubelementToElement(ElementType el_type,
+                                      GhostType ghost_type = _not_ghost) const;
   /// get the subelement connected to an element
-  auto & getSubelementToElement(const ElementType & el_type,
-                                const GhostType & ghost_type = _not_ghost);
+  auto & getSubelementToElement(ElementType el_type,
+                                GhostType ghost_type = _not_ghost);
 
   /// get the subelement (element of lower dimension) connected to a element
   VectorProxy<Element> getSubelementToElement(const Element & element) const;
@@ -412,14 +412,13 @@ protected:
 public:
   /// get a name field associated to the mesh
   template <typename T>
-  inline const Array<T> &
-  getData(const ID & data_name, const ElementType & el_type,
-          const GhostType & ghost_type = _not_ghost) const;
+  inline const Array<T> & getData(const ID & data_name, ElementType el_type,
+                                  GhostType ghost_type = _not_ghost) const;
 
   /// get a name field associated to the mesh
   template <typename T>
-  inline Array<T> & getData(const ID & data_name, const ElementType & el_type,
-                            const GhostType & ghost_type = _not_ghost);
+  inline Array<T> & getData(const ID & data_name, ElementType el_type,
+                            GhostType ghost_type = _not_ghost);
 
   /// get a name field associated to the mesh
   template <typename T>
@@ -436,21 +435,20 @@ public:
   std::shared_ptr<dumpers::Field>
   createFieldFromAttachedData(const std::string & field_id,
                               const std::string & group_name,
-                              const ElementKind & element_kind);
+                              ElementKind element_kind);
 
   /// templated getter returning the pointer to data in MeshData (modifiable)
   template <typename T>
   inline Array<T> &
-  getDataPointer(const std::string & data_name, const ElementType & el_type,
-                 const GhostType & ghost_type = _not_ghost,
-                 UInt nb_component = 1, bool size_to_nb_element = true,
+  getDataPointer(const std::string & data_name, ElementType el_type,
+                 GhostType ghost_type = _not_ghost, UInt nb_component = 1,
+                 bool size_to_nb_element = true,
                  bool resize_with_parent = false);
 
   template <typename T>
-  inline Array<T> & getDataPointer(const ID & data_name,
-                                   const ElementType & el_type,
-                                   const GhostType & ghost_type,
-                                   UInt nb_component, bool size_to_nb_element,
+  inline Array<T> & getDataPointer(const ID & data_name, ElementType el_type,
+                                   GhostType ghost_type, UInt nb_component,
+                                   bool size_to_nb_element,
                                    bool resize_with_parent, const T & defaul_);
 
   /// Facets mesh accessor
@@ -471,41 +469,39 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the number of nodes per element for a given element type
-  static inline UInt getNbNodesPerElement(const ElementType & type);
+  static inline UInt getNbNodesPerElement(ElementType type);
 
   /// get the number of nodes per element for a given element type considered as
   /// a first order element
-  static inline ElementType getP1ElementType(const ElementType & type);
+  static inline ElementType getP1ElementType(ElementType type);
 
   /// get the kind of the element type
-  static inline ElementKind getKind(const ElementType & type);
+  static inline ElementKind getKind(ElementType type);
 
   /// get spatial dimension of a type of element
-  static inline UInt getSpatialDimension(const ElementType & type);
+  static inline UInt getSpatialDimension(ElementType type);
 
   /// get number of facets of a given element type
-  static inline UInt getNbFacetsPerElement(const ElementType & type);
+  static inline UInt getNbFacetsPerElement(ElementType type);
 
   /// get number of facets of a given element type
-  static inline UInt getNbFacetsPerElement(const ElementType & type, UInt t);
+  static inline UInt getNbFacetsPerElement(ElementType type, UInt t);
 
   /// get local connectivity of a facet for a given facet type
-  static inline auto getFacetLocalConnectivity(const ElementType & type,
-                                               UInt t = 0);
+  static inline auto getFacetLocalConnectivity(ElementType type, UInt t = 0);
 
   /// get connectivity of facets for a given element
   inline auto getFacetConnectivity(const Element & element, UInt t = 0) const;
 
   /// get the number of type of the surface element associated to a given
   /// element type
-  static inline UInt getNbFacetTypes(const ElementType & type, UInt t = 0);
+  static inline UInt getNbFacetTypes(ElementType type, UInt t = 0);
 
   /// get the type of the surface element associated to a given element
-  static inline constexpr auto getFacetType(const ElementType & type,
-                                            UInt t = 0);
+  static inline constexpr auto getFacetType(ElementType type, UInt t = 0);
 
   /// get all the type of the surface element associated to a given element
-  static inline constexpr auto getAllFacetTypes(const ElementType & type);
+  static inline constexpr auto getAllFacetTypes(ElementType type);
 
   /// get the number of nodes in the given element list
   static inline UInt getNbNodesPerElementList(const Array<Element> & elements);
@@ -573,13 +569,11 @@ private:
   /// get a pointer to the connectivity Array for the given type and create it
   /// if necessary
   inline Array<UInt> &
-  getConnectivityPointer(const ElementType & type,
-                         const GhostType & ghost_type = _not_ghost);
+  getConnectivityPointer(ElementType type, GhostType ghost_type = _not_ghost);
 
   /// get the ghost element counter
-  inline Array<UInt> &
-  getGhostsCounters(const ElementType & type,
-                    const GhostType & ghost_type = _ghost) {
+  inline Array<UInt> & getGhostsCounters(ElementType type,
+                                         GhostType ghost_type = _ghost) {
     AKANTU_DEBUG_ASSERT(ghost_type != _not_ghost,
                         "No ghost counter for _not_ghost elements");
     return ghosts_counters(type, ghost_type);
@@ -588,14 +582,14 @@ private:
   /// get a pointer to the element_to_subelement Array for the given type and
   /// create it if necessary
   inline Array<std::vector<Element>> &
-  getElementToSubelementPointer(const ElementType & type,
-                                const GhostType & ghost_type = _not_ghost);
+  getElementToSubelementPointer(ElementType type,
+                                GhostType ghost_type = _not_ghost);
 
   /// get a pointer to the subelement_to_element Array for the given type and
   /// create it if necessary
   inline Array<Element> &
-  getSubelementToElementPointer(const ElementType & type,
-                                const GhostType & ghost_type = _not_ghost);
+  getSubelementToElementPointer(ElementType type,
+                                GhostType ghost_type = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -693,4 +687,4 @@ inline std::ostream & operator<<(std::ostream & stream, const Mesh & _this) {
 #include "element_type_map_tmpl.hh"
 #include "mesh_inline_impl.hh"
 
-#endif /* __AKANTU_MESH_HH__ */
+#endif /* AKANTU_MESH_HH_ */

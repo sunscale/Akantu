@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MESH_FILTER_HH__
-#define __AKANTU_MESH_FILTER_HH__
+#ifndef AKANTU_MESH_FILTER_HH_
+#define AKANTU_MESH_FILTER_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "element.hh"
@@ -68,4 +68,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_FILTER_HH__ */
+#endif /* AKANTU_MESH_FILTER_HH_ */

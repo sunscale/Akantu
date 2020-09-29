@@ -31,8 +31,8 @@
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_UTILS_INLINE_IMPL_HH__
-#define __AKANTU_MESH_UTILS_INLINE_IMPL_HH__
+#ifndef AKANTU_MESH_UTILS_INLINE_IMPL_HH_
+#define AKANTU_MESH_UTILS_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -57,8 +57,9 @@ inline bool MeshUtils::hasElement(const Vector<UInt> & nodes_element,
 inline bool
 MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
                                   std::vector<Element> & elem_list) {
-  if (elem_list.size() <= elem_to_remove.size())
+  if (elem_list.size() <= elem_to_remove.size()) {
     return true;
+  }
 
   auto el_it = elem_to_remove.begin();
   auto el_last = elem_to_remove.end();
@@ -83,4 +84,4 @@ MeshUtils::removeElementsInVector(const std::vector<Element> & elem_to_remove,
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_UTILS_INLINE_IMPL_HH__ */
+#endif /* AKANTU_MESH_UTILS_INLINE_IMPL_HH_ */

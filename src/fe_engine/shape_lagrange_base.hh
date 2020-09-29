@@ -31,8 +31,8 @@
 #include "shape_functions.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_LAGRANGE_BASE_HH__
-#define __AKANTU_SHAPE_LAGRANGE_BASE_HH__
+#ifndef AKANTU_SHAPE_LAGRANGE_BASE_HH_
+#define AKANTU_SHAPE_LAGRANGE_BASE_HH_
 
 namespace akantu {
 
@@ -42,7 +42,7 @@ class ShapeLagrangeBase : public ShapeFunctions {
   /* ------------------------------------------------------------------------ */
 public:
   ShapeLagrangeBase(const Mesh & mesh, UInt spatial_dimension,
-                    const ElementKind & kind, const ID & id = "shape_lagrange",
+                    ElementKind kind, const ID & id = "shape_lagrange",
                     const MemoryID & memory_id = 0);
   ~ShapeLagrangeBase() override;
 
@@ -53,15 +53,15 @@ public:
   /// computes the shape functions for given interpolation points
   virtual void computeShapesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shapes, const ElementType & type,
-      const GhostType & ghost_type,
+      Array<Real> & shapes, ElementType type,
+      GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const;
 
   /// computes the shape functions derivatives for given interpolation points
   virtual void computeShapeDerivativesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shape_derivatives, const ElementType & type,
-      const GhostType & ghost_type,
+      Array<Real> & shape_derivatives, ElementType type,
+      GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const = 0;
 
   /// function to print the containt of the class
@@ -70,7 +70,7 @@ public:
   template <ElementType type>
   void computeShapesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shapes, const GhostType & ghost_type,
+      Array<Real> & shapes, GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const;
 
 public:
@@ -88,4 +88,4 @@ protected:
 
 #include "shape_lagrange_base_inline_impl.hh"
 
-#endif /* __AKANTU_SHAPE_LAGRANGE_BASE_HH__ */
+#endif /* AKANTU_SHAPE_LAGRANGE_BASE_HH_ */

@@ -33,8 +33,8 @@
 #include "material_non_local.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __CUSTOM_NON_LOCAL_TEST_MATERIAL_HH__
-#define __CUSTOM_NON_LOCAL_TEST_MATERIAL_HH__
+#ifndef CUSTOM_NON_LOCAL_TEST_MATERIAL_HH_
+#define CUSTOM_NON_LOCAL_TEST_MATERIAL_HH_
 
 namespace akantu {
 
@@ -76,4 +76,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __CUSTOM_NON_LOCAL_TEST_MATERIAL_HH__ */
+#endif /* CUSTOM_NON_LOCAL_TEST_MATERIAL_HH_ */

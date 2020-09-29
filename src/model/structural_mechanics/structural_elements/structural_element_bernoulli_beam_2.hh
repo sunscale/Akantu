@@ -35,8 +35,8 @@
 #include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH__
-#define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH__
+#ifndef AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH_
+#define AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH_
 
 namespace akantu {
 
@@ -56,9 +56,8 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
   Array<Real> n(nb_element * nb_quadrature_points,
                 nb_fields_to_interpolate * nt_n_field_size, "N");
 
-  Array<Real> * rho_field =
-      new Array<Real>(nb_element * nb_quadrature_points, 1, "Rho");
-  rho_field->clear();
+  auto * rho_field =
+      new Array<Real>(nb_element * nb_quadrature_points, 1, 0., "Rho");
   computeRho(*rho_field, type, _not_ghost);
 
 #if 0
@@ -115,7 +114,7 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_2);
   auto tangent_size = 2;
 
-  tangent_moduli.clear();
+  tangent_moduli.zero();
   auto D_it = tangent_moduli.begin(tangent_size, tangent_size);
   auto el_mat = element_material(_bernoulli_beam_2, _not_ghost).begin();
 
@@ -133,4 +132,4 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_2>(
 
 } // namespace akantu
 
-#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH__ */
+#endif /* AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_2_HH_ */

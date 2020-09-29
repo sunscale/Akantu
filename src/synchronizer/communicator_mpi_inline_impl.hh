@@ -118,8 +118,9 @@ namespace {
   }
 
   inline int getMPISource(int src) {
-    if (src == _any_source)
+    if (src == _any_source) {
       return MPI_ANY_SOURCE;
+    }
     return src;
   }
 
@@ -151,7 +152,7 @@ Communicator::Communicator(int & /*argc*/, char **& /*argv*/,
     : Communicator(m) {}
 
 /* -------------------------------------------------------------------------- */
-Communicator::Communicator(const private_member &)
+Communicator::Communicator(const private_member & /*unused*/)
     : communicator_data(std::make_unique<MPICommunicatorData>()) {
 }
 
@@ -250,8 +251,9 @@ bool Communicator::asyncProbe(Int sender, Int tag,
   int test;
   MPI_Iprobe(getMPISource(sender), tag, communicator, &test, &mpi_status);
 
-  if (not test)
+  if (not test) {
     return false;
+  }
 
   MPI_Datatype type = getMPIDatatype<T>();
   int count;
@@ -264,7 +266,7 @@ bool Communicator::asyncProbe(Int sender, Int tag,
 }
 
 /* -------------------------------------------------------------------------- */
-bool Communicator::test(CommunicationRequest & request) const {
+bool Communicator::test(CommunicationRequest & request) {
   MPI_Status status;
   int flag;
   auto & req_mpi = aka::as_type<CommunicationRequestMPI>(request.getInternal());
@@ -272,25 +274,26 @@ bool Communicator::test(CommunicationRequest & request) const {
   MPI_Request & req = req_mpi.getMPIRequest();
   MPI_Test(&req, &flag, &status);
 
-  return flag;
+  return flag != 0;
 }
 
 /* -------------------------------------------------------------------------- */
-bool Communicator::testAll(std::vector<CommunicationRequest> & requests) const {
+bool Communicator::testAll(std::vector<CommunicationRequest> & requests) {
   // int are_finished;
   // auto && mpi_requests = convertRequests(requests);
   // MPI_Testall(mpi_requests.size(), mpi_requests.data(), &are_finished,
   //            MPI_STATUSES_IGNORE);
   // return are_finished;
   for (auto & request : requests) {
-    if (not test(request))
+    if (not test(request)) {
       return false;
+    }
   }
   return true;
 }
 
 /* -------------------------------------------------------------------------- */
-void Communicator::wait(CommunicationRequest & request) const {
+void Communicator::wait(CommunicationRequest & request) {
   MPI_Status status;
   auto & req_mpi = aka::as_type<CommunicationRequestMPI>(request.getInternal());
   MPI_Request & req = req_mpi.getMPIRequest();
@@ -298,13 +301,13 @@ void Communicator::wait(CommunicationRequest & request) const {
 }
 
 /* -------------------------------------------------------------------------- */
-void Communicator::waitAll(std::vector<CommunicationRequest> & requests) const {
+void Communicator::waitAll(std::vector<CommunicationRequest> & requests) {
   auto && mpi_requests = convertRequests(requests);
   MPI_Waitall(mpi_requests.size(), mpi_requests.data(), MPI_STATUSES_IGNORE);
 }
 
 /* -------------------------------------------------------------------------- */
-UInt Communicator::waitAny(std::vector<CommunicationRequest> & requests) const {
+UInt Communicator::waitAny(std::vector<CommunicationRequest> & requests) {
   auto && mpi_requests = convertRequests(requests);
 
   int pos;
@@ -313,9 +316,8 @@ UInt Communicator::waitAny(std::vector<CommunicationRequest> & requests) const {
 
   if (pos != MPI_UNDEFINED) {
     return pos;
-  } else {
-    return UInt(-1);
   }
+  return UInt(-1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -420,7 +422,8 @@ void Communicator::allGatherVImpl(T * values, int * nb_values) const {
 template <typename T>
 void Communicator::gatherImpl(T * values, int nb_values, int root) const {
   MPI_Comm communicator = MPIDATA.getMPICommunicator();
-  T *send_buf = nullptr, *recv_buf = nullptr;
+  T * send_buf = nullptr;
+  T * recv_buf = nullptr;
   if (whoAmI() == root) {
     send_buf = (T *)MPI_IN_PLACE;
     recv_buf = values;
@@ -441,8 +444,9 @@ void Communicator::gatherImpl(T * values, int nb_values, T * gathered,
   T * send_buf = values;
   T * recv_buf = gathered;
 
-  if (nb_gathered == 0)
+  if (nb_gathered == 0) {
     nb_gathered = nb_values;
+  }
 
   MPI_Datatype type = getMPIDatatype<T>();
   MPI_Gather(send_buf, nb_values, type, recv_buf, nb_gathered, type,
@@ -464,12 +468,14 @@ void Communicator::gatherVImpl(T * values, int * nb_values, int root) const {
     }
   }
 
-  T *send_buf = nullptr, *recv_buf = nullptr;
+  T * send_buf = nullptr;
+  T * recv_buf = nullptr;
   if (prank == root) {
     send_buf = (T *)MPI_IN_PLACE;
     recv_buf = values;
-  } else
+  } else {
     send_buf = values;
+  }
 
   MPI_Datatype type = getMPIDatatype<T>();
 
@@ -491,8 +497,11 @@ void Communicator::broadcastImpl(T * values, int nb_values, int root) const {
 
 /* -------------------------------------------------------------------------- */
 int Communicator::getMaxTag() const { return MPIDATA.getMaxTag(); }
-int Communicator::getMinTag() const { return 0; }
-
+int Communicator::
+    getMinTag() // NOLINT(readability-convert-member-functions-to-static)
+    const {
+  return 0;
+}
 /* -------------------------------------------------------------------------- */
 Int Communicator::getNbProc() const { return MPIDATA.size(); }
 Int Communicator::whoAmI() const { return MPIDATA.rank(); }

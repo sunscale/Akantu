@@ -36,7 +36,7 @@ namespace akantu {
 
 FEEngineElementTypeMapArrayInitializer::FEEngineElementTypeMapArrayInitializer(
     const FEEngine & fe_engine, UInt nb_component, UInt spatial_dimension,
-    const GhostType & ghost_type, const ElementKind & element_kind)
+    GhostType ghost_type, ElementKind element_kind)
     : MeshElementTypeMapArrayInitializer(
           fe_engine.getMesh(), nb_component,
           spatial_dimension == UInt(-2)
@@ -48,8 +48,8 @@ FEEngineElementTypeMapArrayInitializer::FEEngineElementTypeMapArrayInitializer(
 FEEngineElementTypeMapArrayInitializer::FEEngineElementTypeMapArrayInitializer(
     const FEEngine & fe_engine,
     const ElementTypeMapArrayInitializer::CompFunc & nb_component,
-    UInt spatial_dimension, const GhostType & ghost_type,
-    const ElementKind & element_kind)
+    UInt spatial_dimension, GhostType ghost_type,
+    ElementKind element_kind)
     : MeshElementTypeMapArrayInitializer(
           fe_engine.getMesh(), nb_component,
           spatial_dimension == UInt(-2)
@@ -59,7 +59,7 @@ FEEngineElementTypeMapArrayInitializer::FEEngineElementTypeMapArrayInitializer(
       fe_engine(fe_engine) {}
 
 UInt FEEngineElementTypeMapArrayInitializer::size(
-    const ElementType & type) const {
+    ElementType type) const {
   return MeshElementTypeMapArrayInitializer::size(type) *
          fe_engine.getNbIntegrationPoints(type, this->ghost_type);
 }

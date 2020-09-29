@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 
-#ifndef __AKANTU_PY_AKA_MODEL_HH__
-#define __AKANTU_PY_AKA_MODEL_HH__
+#ifndef AKANTU_PY_AKA_MODEL_HH_
+#define AKANTU_PY_AKA_MODEL_HH_
 
 namespace akantu {
 

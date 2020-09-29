@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__
-#define __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__
+#ifndef AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH_
+#define AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH_
 
 #include "aka_common.hh"
 #include "mesh_geom_abstract.hh"
@@ -72,11 +72,11 @@ public:
                                         const Mesh & primitive_mesh);
 
   /// Destructor
-  virtual ~EmbeddedInterfaceIntersector();
+  ~EmbeddedInterfaceIntersector() override = default;
 
 public:
   /// Generate the interface mesh
-  virtual void constructData(GhostType ghost_type = _not_ghost);
+  void constructData(GhostType ghost_type = _not_ghost) override;
 
   /// Create a segment with an element connectivity
   K::Segment_3 createSegment(const Vector<UInt> & connectivity);
@@ -94,4 +94,4 @@ protected:
 
 } // namespace akantu
 
-#endif // __AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH__
+#endif // AKANTU_EMBEDDED_INTERFACE_INTERSECTOR_HH_

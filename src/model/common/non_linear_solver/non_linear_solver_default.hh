@@ -31,8 +31,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__
+#ifndef AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH_
+#define AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH_
 
 #if defined(AKANTU_USE_MUMPS)
 #include "non_linear_solver_linear.hh"
@@ -41,4 +41,4 @@
 
 #include "non_linear_solver_lumped.hh"
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH__ */
+#endif /* AKANTU_NON_LINEAR_SOLVER_DEFAULT_HH_ */

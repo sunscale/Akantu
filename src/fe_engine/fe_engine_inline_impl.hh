@@ -36,14 +36,14 @@
 #include "element_type_conversion.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FE_ENGINE_INLINE_IMPL_HH__
-#define __AKANTU_FE_ENGINE_INLINE_IMPL_HH__
+#ifndef AKANTU_FE_ENGINE_INLINE_IMPL_HH_
+#define AKANTU_FE_ENGINE_INLINE_IMPL_HH_
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
-                                         const ElementType & type) {
+                                         ElementType type) {
   Real inradius = 0;
 
 #define GET_INRADIUS(type) inradius = ElementClass<type>::getInradius(coord);
@@ -56,7 +56,7 @@ inline Real FEEngine::getElementInradius(const Matrix<Real> & coord,
 
 /* -------------------------------------------------------------------------- */
 inline InterpolationType
-FEEngine::getInterpolationType(const ElementType & type) {
+FEEngine::getInterpolationType(ElementType type) {
   return convertType<ElementType, InterpolationType>(type);
 }
 
@@ -64,7 +64,7 @@ FEEngine::getInterpolationType(const ElementType & type) {
 /// @todo rewrite this function in order to get the cohesive element
 /// type directly from the facet
 #if defined(AKANTU_COHESIVE_ELEMENT)
-inline ElementType FEEngine::getCohesiveElementType(const ElementType & type) {
+inline ElementType FEEngine::getCohesiveElementType(ElementType type) {
   ElementType ctype;
 #define GET_COHESIVE_TYPE(type)                                                \
   ctype = CohesiveFacetProperty<type>::cohesive_type;
@@ -77,7 +77,7 @@ inline ElementType FEEngine::getCohesiveElementType(const ElementType & type) {
 #else
 inline ElementType
 FEEngine::getCohesiveElementType(__attribute__((unused))
-                                 const ElementType & type_facet) {
+                                 ElementType type_facet) {
   return _not_defined;
 }
 #endif
@@ -89,7 +89,7 @@ FEEngine::getCohesiveElementType(__attribute__((unused))
 namespace akantu {
 
 inline Vector<ElementType>
-FEEngine::getIGFEMElementTypes(const ElementType & type) {
+FEEngine::getIGFEMElementTypes(ElementType type) {
 
 #define GET_IGFEM_ELEMENT_TYPES(type)                                          \
   return IGFEMHelper::getIGFEMElementTypes<type>();
@@ -105,8 +105,8 @@ template <typename T>
 void FEEngine::extractNodalToElementField(const Mesh & mesh,
                                           const Array<T> & nodal_f,
                                           Array<T> & elemental_f,
-                                          const ElementType & type,
-                                          const GhostType & ghost_type,
+                                          ElementType type,
+                                          GhostType ghost_type,
                                           const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
 
@@ -126,10 +126,11 @@ void FEEngine::extractNodalToElementField(const Mesh & mesh,
 
   UInt * el_conn;
   for (UInt el = 0; el < nb_element; ++el) {
-    if (filter_elements != empty_filter)
+    if (filter_elements != empty_filter) {
       el_conn = conn_val + filter_elements(el) * nb_nodes_per_element;
-    else
+    } else {
       el_conn = conn_val + el * nb_nodes_per_element;
+    }
 
     for (UInt n = 0; n < nb_nodes_per_element; ++n) {
       UInt node = *(el_conn + n);
@@ -146,8 +147,8 @@ void FEEngine::extractNodalToElementField(const Mesh & mesh,
 template <typename T>
 void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
                                    Array<T> & filtered_f,
-                                   const ElementType & type,
-                                   const GhostType & ghost_type,
+                                   ElementType type,
+                                   GhostType ghost_type,
                                    const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
 
@@ -171,10 +172,11 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
 
   UInt el_offset;
   for (UInt el = 0; el < nb_element; ++el) {
-    if (filter_elements != empty_filter)
+    if (filter_elements != empty_filter) {
       el_offset = filter_elements(el);
-    else
+    } else {
       el_offset = el;
+    }
 
     std::copy(elem_f_val +
                   el_offset * nb_data_per_element * nb_degree_of_freedom,
@@ -189,4 +191,4 @@ void FEEngine::filterElementalData(const Mesh & mesh, const Array<T> & elem_f,
 
 } // namespace akantu
 
-#endif /* __AKANTU_FE_ENGINE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_FE_ENGINE_INLINE_IMPL_HH_ */

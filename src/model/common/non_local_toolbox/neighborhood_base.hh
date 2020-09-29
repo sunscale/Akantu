@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NEIGHBORHOOD_BASE_HH__
-#define __AKANTU_NEIGHBORHOOD_BASE_HH__
+#ifndef AKANTU_NEIGHBORHOOD_BASE_HH_
+#define AKANTU_NEIGHBORHOOD_BASE_HH_
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
 #include "aka_memory.hh"
@@ -108,7 +108,7 @@ public:
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
   AKANTU_GET_MACRO(Model, model, const Model &);
   /// return the object handling synchronizers
-  const PairList & getPairLists(const GhostType & type) {
+  const PairList & getPairLists(GhostType type) {
     return pair_list[type == _not_ghost ? 0 : 1];
   }
 
@@ -149,4 +149,4 @@ protected:
 
 #include "neighborhood_base_inline_impl.hh"
 
-#endif /* __AKANTU_NEIGHBORHOOD_BASE_HH__ */
+#endif /* AKANTU_NEIGHBORHOOD_BASE_HH_ */

@@ -34,8 +34,8 @@
 #include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__
-#define __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__
+#ifndef AKANTU_ELEMENT_CLASS_STRUCTURAL_HH_
+#define AKANTU_ELEMENT_CLASS_STRUCTURAL_HH_
 
 namespace akantu {
 
@@ -250,4 +250,4 @@ public:
 #include "element_class_kirchhoff_shell_inline_impl.hh"
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_ELEMENT_CLASS_STRUCTURAL_HH__ */
+#endif /* AKANTU_ELEMENT_CLASS_STRUCTURAL_HH_ */

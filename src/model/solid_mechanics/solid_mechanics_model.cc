@@ -138,7 +138,7 @@ void SolidMechanicsModel::initFullImpl(const ModelOptions & options) {
   Model::initFullImpl(options);
 
   // initialize the materials
-  if (this->parser.getLastParsedFile() != "") {
+  if (not this->parser.getLastParsedFile().empty()) {
     this->instantiateMaterials();
     this->initMaterials();
   }
@@ -216,7 +216,7 @@ SolidMechanicsModel::getDefaultSolverID(const AnalysisMethod & method) {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initSolver(TimeStepSolverType time_step_solver_type,
-                                     NonLinearSolverType) {
+                                     NonLinearSolverType /*unused*/) {
   auto & dof_manager = this->getDOFManager();
 
   /* ------------------------------------------------------------------------ */
@@ -320,8 +320,9 @@ void SolidMechanicsModel::assembleResidual(const ID & residual_part) {
 /* -------------------------------------------------------------------------- */
 MatrixType SolidMechanicsModel::getMatrixType(const ID & matrix_id) {
   // \TODO check the materials to know what is the correct answer
-  if (matrix_id == "C")
+  if (matrix_id == "C") {
     return _mt_not_defined;
+  }
 
   if (matrix_id == "K") {
     auto matrix_type = _unsymmetric;
@@ -351,14 +352,16 @@ void SolidMechanicsModel::assembleLumpedMatrix(const ID & matrix_id) {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::beforeSolveStep() {
-  for (auto & material : materials)
+  for (auto & material : materials) {
     material->beforeSolveStep();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::afterSolveStep(bool converged) {
-  for (auto & material : materials)
+  for (auto & material : materials) {
     material->afterSolveStep(converged);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -377,7 +380,7 @@ void SolidMechanicsModel::assembleInternalForces() {
 
   AKANTU_DEBUG_INFO("Assemble the internal forces");
 
-  this->internal_force->clear();
+  this->internal_force->zero();
 
   // compute the stresses of local elements
   AKANTU_DEBUG_INFO("Compute local stresses");
@@ -387,8 +390,9 @@ void SolidMechanicsModel::assembleInternalForces() {
 
   /* ------------------------------------------------------------------------ */
   /* Computation of the non local part */
-  if (this->non_local_manager)
+  if (this->non_local_manager) {
     this->non_local_manager->computeAllNonLocalStresses();
+  }
 
   // communicate the stresses
   AKANTU_DEBUG_INFO("Send data for residual assembly");
@@ -427,7 +431,7 @@ void SolidMechanicsModel::assembleStiffnessMatrix() {
   }
 
   if (need_to_reassemble) {
-    this->getDOFManager().getMatrix("K").clear();
+    this->getDOFManager().getMatrix("K").zero();
 
     // call compute stiffness matrix on each local elements
     for (auto & material : materials) {
@@ -440,8 +444,9 @@ void SolidMechanicsModel::assembleStiffnessMatrix() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::updateCurrentPosition() {
-  if (this->current_position_release == this->displacement_release)
+  if (this->current_position_release == this->displacement_release) {
     return;
+  }
 
   this->current_position->copy(this->mesh.getNodes());
 
@@ -467,8 +472,9 @@ void SolidMechanicsModel::updateDataForNonLocalCriterion(
     ElementTypeMapReal & criterion) {
   const ID field_name = criterion.getName();
   for (auto & material : materials) {
-    if (!material->isInternal<Real>(field_name, _ek_regular))
+    if (!material->isInternal<Real>(field_name, _ek_regular)) {
       continue;
+    }
 
     for (auto ghost_type : ghost_types) {
       material->flattenInternal(field_name, criterion, ghost_type, _ek_regular);
@@ -492,7 +498,7 @@ Real SolidMechanicsModel::getStableTimeStep() {
 }
 
 /* -------------------------------------------------------------------------- */
-Real SolidMechanicsModel::getStableTimeStep(const GhostType & ghost_type) {
+Real SolidMechanicsModel::getStableTimeStep(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real min_dt = std::numeric_limits<Real>::max();
@@ -554,8 +560,9 @@ Real SolidMechanicsModel::getKineticEnergy() {
       auto count_node = is_local_node; // && is_not_pbc_slave_node;
       if (count_node) {
         for (UInt i = 0; i < Model::spatial_dimension; ++i) {
-          if (m(i) > std::numeric_limits<Real>::epsilon())
+          if (m(i) > std::numeric_limits<Real>::epsilon()) {
             mv2 += v(i) * v(i) * m(i);
+          }
         }
       }
 
@@ -569,7 +576,7 @@ Real SolidMechanicsModel::getKineticEnergy() {
     for (auto && data : zip(arange(nb_nodes), make_view(Mv, spatial_dimension),
                             make_view(*this->velocity, spatial_dimension))) {
       ekin += std::get<2>(data).dot(std::get<1>(data)) *
-              mesh.isLocalOrMasterNode(std::get<0>(data));
+              static_cast<Real>(mesh.isLocalOrMasterNode(std::get<0>(data)));
     }
   } else {
     AKANTU_ERROR("No function called to assemble the mass matrix.");
@@ -582,8 +589,7 @@ Real SolidMechanicsModel::getKineticEnergy() {
 }
 
 /* -------------------------------------------------------------------------- */
-Real SolidMechanicsModel::getKineticEnergy(const ElementType & type,
-                                           UInt index) {
+Real SolidMechanicsModel::getKineticEnergy(ElementType type, UInt index) {
   AKANTU_DEBUG_IN();
 
   UInt nb_quadrature_points = getFEEngine().getNbIntegrationPoints(type);
@@ -644,18 +650,20 @@ Real SolidMechanicsModel::getExternalWork() {
 
     if (count_node) {
       for (UInt i = 0; i < Model::spatial_dimension; ++i) {
-        if (boun(i))
+        if (boun(i)) {
           work -= int_force(i) * incr_or_velo(i);
-        else
+        } else {
           work += ext_force(i) * incr_or_velo(i);
+        }
       }
     }
   }
 
   mesh.getCommunicator().allReduce(work, SynchronizerOperation::_sum);
 
-  if (this->method != _static)
+  if (this->method != _static) {
     work *= this->getTimeStep();
+  }
 
   AKANTU_DEBUG_OUT();
   return work;
@@ -667,13 +675,16 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
 
   if (energy_id == "kinetic") {
     return getKineticEnergy();
-  } else if (energy_id == "external work") {
+  }
+
+  if (energy_id == "external work") {
     return getExternalWork();
   }
 
   Real energy = 0.;
-  for (auto & material : materials)
+  for (auto & material : materials) {
     energy += material->getEnergy(energy_id);
+  }
 
   /// reduction sum over all processors
   mesh.getCommunicator().allReduce(energy, SynchronizerOperation::_sum);
@@ -683,7 +694,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
 }
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
-                                    const ElementType & type, UInt index) {
+                                    ElementType type, UInt index) {
   AKANTU_DEBUG_IN();
 
   if (energy_id == "kinetic") {
@@ -714,12 +725,14 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   ElementTypeMapArray<UInt> filter("new_element_filter", this->getID(),
                                    this->getMemoryID());
 
-  for (auto & elem : element_list) {
-    if (mesh.getSpatialDimension(elem.type) != spatial_dimension)
+  for (const auto & elem : element_list) {
+    if (mesh.getSpatialDimension(elem.type) != spatial_dimension) {
       continue;
+    }
 
-    if (!filter.exists(elem.type, elem.ghost_type))
+    if (!filter.exists(elem.type, elem.ghost_type)) {
       filter.alloc(0, 1, elem.type, elem.ghost_type);
+    }
     filter(elem.type, elem.ghost_type).push_back(elem.element);
   }
 
@@ -727,8 +740,9 @@ void SolidMechanicsModel::onElementsAdded(const Array<Element> & element_list,
   // and initFull \todo: to debug...
   this->assignMaterialToElements(&filter);
 
-  for (auto & material : materials)
+  for (auto & material : materials) {
     material->onElementsAdded(element_list, event);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -753,25 +767,34 @@ void SolidMechanicsModel::onNodesAdded(const Array<UInt> & nodes_list,
     displacement->resize(nb_nodes, 0.);
     ++displacement_release;
   }
-  if (mass)
+  if (mass) {
     mass->resize(nb_nodes, 0.);
-  if (velocity)
+  }
+  if (velocity) {
     velocity->resize(nb_nodes, 0.);
-  if (acceleration)
+  }
+  if (acceleration) {
     acceleration->resize(nb_nodes, 0.);
-  if (external_force)
+  }
+  if (external_force) {
     external_force->resize(nb_nodes, 0.);
-  if (internal_force)
+  }
+  if (internal_force) {
     internal_force->resize(nb_nodes, 0.);
-  if (blocked_dofs)
-    blocked_dofs->resize(nb_nodes, 0.);
-  if (current_position)
+  }
+  if (blocked_dofs) {
+    blocked_dofs->resize(nb_nodes, false);
+  }
+  if (current_position) {
     current_position->resize(nb_nodes, 0.);
+  }
 
-  if (previous_displacement)
+  if (previous_displacement) {
     previous_displacement->resize(nb_nodes, 0.);
-  if (displacement_increment)
+  }
+  if (displacement_increment) {
     displacement_increment->resize(nb_nodes, 0.);
+  }
 
   for (auto & material : materials) {
     material->onNodesAdded(nodes_list, event);
@@ -791,26 +814,34 @@ void SolidMechanicsModel::onNodesRemoved(const Array<UInt> & /*element_list*/,
     mesh.removeNodesFromArray(*displacement, new_numbering);
     ++displacement_release;
   }
-  if (mass)
+  if (mass) {
     mesh.removeNodesFromArray(*mass, new_numbering);
-  if (velocity)
+  }
+  if (velocity) {
     mesh.removeNodesFromArray(*velocity, new_numbering);
-  if (acceleration)
+  }
+  if (acceleration) {
     mesh.removeNodesFromArray(*acceleration, new_numbering);
-  if (internal_force)
+  }
+  if (internal_force) {
     mesh.removeNodesFromArray(*internal_force, new_numbering);
-  if (external_force)
+  }
+  if (external_force) {
     mesh.removeNodesFromArray(*external_force, new_numbering);
-  if (blocked_dofs)
+  }
+  if (blocked_dofs) {
     mesh.removeNodesFromArray(*blocked_dofs, new_numbering);
+  }
 
   // if (increment_acceleration)
   //   mesh.removeNodesFromArray(*increment_acceleration, new_numbering);
-  if (displacement_increment)
+  if (displacement_increment) {
     mesh.removeNodesFromArray(*displacement_increment, new_numbering);
+  }
 
-  if (previous_displacement)
+  if (previous_displacement) {
     mesh.removeNodesFromArray(*previous_displacement, new_numbering);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -828,12 +859,15 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
 
   stream << space << " + nodals information [" << std::endl;
   displacement->printself(stream, indent + 2);
-  if (velocity)
+  if (velocity) {
     velocity->printself(stream, indent + 2);
-  if (acceleration)
+  }
+  if (acceleration) {
     acceleration->printself(stream, indent + 2);
-  if (mass)
+  }
+  if (mass) {
     mass->printself(stream, indent + 2);
+  }
   external_force->printself(stream, indent + 2);
   internal_force->printself(stream, indent + 2);
   blocked_dofs->printself(stream, indent + 2);
@@ -844,8 +878,9 @@ void SolidMechanicsModel::printself(std::ostream & stream, int indent) const {
   stream << space << " ]" << std::endl;
 
   stream << space << " + materials [" << std::endl;
-  for (auto & material : materials)
+  for (const auto & material : materials) {
     material->printself(stream, indent + 2);
+  }
   stream << space << " ]" << std::endl;
 
   stream << space << "]" << std::endl;
@@ -858,12 +893,13 @@ void SolidMechanicsModel::initializeNonLocal() {
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
-    const GhostType & ghost_type) {
+    GhostType ghost_type) {
   for (auto & mat : materials) {
     MaterialNonLocalInterface * mat_non_local;
     if ((mat_non_local =
-             dynamic_cast<MaterialNonLocalInterface *>(mat.get())) == nullptr)
+             dynamic_cast<MaterialNonLocalInterface *>(mat.get())) == nullptr) {
       continue;
+    }
 
     ElementTypeMapArray<Real> quadrature_points_coordinates(
         "quadrature_points_coordinates_tmp_nl", this->id, this->memory_id);
@@ -871,7 +907,7 @@ void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
                                              _nb_component = spatial_dimension,
                                              _ghost_type = ghost_type);
 
-    for (auto & type : quadrature_points_coordinates.elementTypes(
+    for (const auto & type : quadrature_points_coordinates.elementTypes(
              Model::spatial_dimension, ghost_type)) {
       this->getFEEngine().computeIntegrationPointsCoordinates(
           quadrature_points_coordinates(type, ghost_type), type, ghost_type);
@@ -885,11 +921,11 @@ void SolidMechanicsModel::insertIntegrationPointsInNeighborhoods(
 }
 
 /* -------------------------------------------------------------------------- */
-void SolidMechanicsModel::computeNonLocalStresses(
-    const GhostType & ghost_type) {
+void SolidMechanicsModel::computeNonLocalStresses(GhostType ghost_type) {
   for (auto & mat : materials) {
-    if (not aka::is_of_type<MaterialNonLocalInterface>(*mat))
+    if (not aka::is_of_type<MaterialNonLocalInterface>(*mat)) {
       continue;
+    }
 
     auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
     mat_non_local.computeNonLocalStresses(ghost_type);
@@ -898,25 +934,27 @@ void SolidMechanicsModel::computeNonLocalStresses(
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::updateLocalInternal(
-    ElementTypeMapReal & internal_flat, const GhostType & ghost_type,
-    const ElementKind & kind) {
+    ElementTypeMapReal & internal_flat, GhostType ghost_type,
+    ElementKind kind) {
   const ID field_name = internal_flat.getName();
   for (auto & material : materials) {
-    if (material->isInternal<Real>(field_name, kind))
+    if (material->isInternal<Real>(field_name, kind)) {
       material->flattenInternal(field_name, internal_flat, ghost_type, kind);
+    }
   }
 }
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::updateNonLocalInternal(
-    ElementTypeMapReal & internal_flat, const GhostType & ghost_type,
-    const ElementKind & kind) {
+    ElementTypeMapReal & internal_flat, GhostType ghost_type,
+    ElementKind kind) {
 
   const ID field_name = internal_flat.getName();
 
   for (auto & mat : materials) {
-    if (not aka::is_of_type<MaterialNonLocalInterface>(*mat))
+    if (not aka::is_of_type<MaterialNonLocalInterface>(*mat)) {
       continue;
+    }
 
     auto & mat_non_local = dynamic_cast<MaterialNonLocalInterface &>(*mat);
     mat_non_local.updateNonLocalInternals(internal_flat, field_name, ghost_type,
@@ -1000,8 +1038,8 @@ void SolidMechanicsModel::packData(CommunicationBuffer & buffer,
 
   switch (tag) {
   case SynchronizationTag::_material_id: {
-    this->packElementalDataHelper(material_index, buffer, elements, false,
-                                  getFEEngine());
+    packElementalDataHelper(
+        material_index, buffer, elements, false, getFEEngine());
     break;
   }
   case SynchronizationTag::_smm_mass: {
@@ -1050,8 +1088,9 @@ void SolidMechanicsModel::unpackData(CommunicationBuffer & buffer,
       UInt recv_mat_index;
       buffer >> recv_mat_index;
       UInt & mat_index = material_index(element);
-      if (mat_index != UInt(-1))
+      if (mat_index != UInt(-1)) {
         continue;
+      }
 
       // add ghosts element to the correct material
       mat_index = recv_mat_index;
@@ -1108,10 +1147,7 @@ UInt SolidMechanicsModel::getNbData(const Array<UInt> & dofs,
     size += sizeof(Real) * Model::spatial_dimension * 2;
     break;
   }
-  case SynchronizationTag::_smm_res: {
-    size += sizeof(Real) * Model::spatial_dimension;
-    break;
-  }
+  case SynchronizationTag::_smm_res: /* FALLTHRU */
   case SynchronizationTag::_smm_mass: {
     size += sizeof(Real) * Model::spatial_dimension;
     break;

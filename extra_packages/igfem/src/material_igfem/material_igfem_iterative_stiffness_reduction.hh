@@ -28,8 +28,8 @@
 #include "material_igfem_saw_tooth_damage.hh"
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
-#define __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__
+#ifndef AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH_
+#define AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH_
 
 namespace akantu {
 
@@ -110,4 +110,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH__ */
+#endif /* AKANTU_MATERIAL_IGFEM_ITERATIVE_STIFFNESS_REDUCTION_HH_ */

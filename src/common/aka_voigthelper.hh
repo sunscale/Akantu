@@ -37,8 +37,8 @@
 #include "aka_types.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKA_VOIGTHELPER_HH__
-#define __AKA_VOIGTHELPER_HH__
+#ifndef AKA_VOIGTHELPER_HH_
+#define AKA_VOIGTHELPER_HH_
 
 namespace akantu {
 

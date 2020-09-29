@@ -34,8 +34,8 @@
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
-#define __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__
+#ifndef AKANTU_LOCAL_MATERIAL_DAMAGE_HH_
+#define AKANTU_LOCAL_MATERIAL_DAMAGE_HH_
 namespace akantu {
 
 class LocalMaterialDamage : public Material {
@@ -114,4 +114,4 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "local_material_damage_inline_impl.hh"
 
-#endif /* __AKANTU_LOCAL_MATERIAL_DAMAGE_HH__ */
+#endif /* AKANTU_LOCAL_MATERIAL_DAMAGE_HH_ */

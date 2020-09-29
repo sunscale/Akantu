@@ -61,9 +61,11 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
 
   // We need a full stress tensor, otherwise the VM stress is messed up
   Matrix<Real> sigma_tr_dev(3, 3, 0);
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       sigma_tr_dev(i, j) = sigma_tr(i, j);
+    }
+  }
 
   sigma_tr_dev -= Matrix<Real>::eye(3, sigma_tr.trace() / 3.0);
 
@@ -85,9 +87,11 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
   Matrix<Real> delta_inelastic_strain(dim, dim, 0.);
   if (std::abs(sigma_tr_dev_eff) >
       sigma_tr_dev.norm<L_inf>() * Math::getTolerance()) {
-    for (UInt i = 0; i < dim; ++i)
-      for (UInt j = 0; j < dim; ++j)
+    for (UInt i = 0; i < dim; ++i) {
+      for (UInt j = 0; j < dim; ++j) {
         delta_inelastic_strain(i, j) = sigma_tr_dev(i, j);
+      }
+    }
     delta_inelastic_strain *= 3. / 2. * dp / sigma_tr_dev_eff;
   }
 
@@ -199,7 +203,7 @@ inline void MaterialLinearIsotropicHardening<dim>::computeStressOnQuad(
     Matrix<Real> cauchy_dev_F(dim, dim);
     cauchy_dev_F.mul<false, false>(F_tensor, cauchy_stress_dev);
     Real J = F_tensor.det();
-    Real constant = J ? 1. / J : 0;
+    Real constant = not Math::are_float_equal(J, 0.) ? 1. / J : 0;
     constant *= 3. * dp / (2. * cauchy_stress_dev_eff);
     delta_inelastic_strain.mul<true, false>(F_tensor, cauchy_dev_F, constant);
 

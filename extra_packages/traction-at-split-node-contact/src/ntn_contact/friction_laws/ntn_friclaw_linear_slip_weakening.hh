@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH__
-#define __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH__
+#ifndef AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH_
+#define AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -113,4 +113,4 @@ operator<<(std::ostream & stream,
 
 #include "ntn_friclaw_linear_slip_weakening_tmpl.hh"
 
-#endif /* __AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH__ */
+#endif /* AST_NTN_FRICLAW_LINEAR_SLIP_WEAKENING_HH_ */

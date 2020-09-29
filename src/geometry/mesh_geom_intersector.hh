@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_INTERSECTOR_HH__
-#define __AKANTU_MESH_GEOM_INTERSECTOR_HH__
+#ifndef AKANTU_MESH_GEOM_INTERSECTOR_HH_
+#define AKANTU_MESH_GEOM_INTERSECTOR_HH_
 
 #include "aka_common.hh"
 #include "mesh_abstract_intersector.hh"
@@ -55,11 +55,11 @@ public:
   explicit MeshGeomIntersector(Mesh & mesh);
 
   /// Destructor
-  virtual ~MeshGeomIntersector();
+  ~MeshGeomIntersector() override = default;
 
 public:
   /// Construct the primitive tree object
-  virtual void constructData(GhostType ghost_type = _not_ghost);
+  void constructData(GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// Factory object containing the primitive tree
@@ -70,4 +70,4 @@ protected:
 
 #include "mesh_geom_intersector_tmpl.hh"
 
-#endif // __AKANTU_MESH_GEOM_INTERSECTOR_HH__
+#endif // AKANTU_MESH_GEOM_INTERSECTOR_HH_

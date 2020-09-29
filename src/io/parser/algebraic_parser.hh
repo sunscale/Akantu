@@ -36,8 +36,8 @@
 #include <boost/spirit/include/qi.hpp>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ALGEBRAIC_PARSER_HH__
-#define __AKANTU_ALGEBRAIC_PARSER_HH__
+#ifndef AKANTU_ALGEBRAIC_PARSER_HH_
+#define AKANTU_ALGEBRAIC_PARSER_HH_
 
 namespace spirit = boost::spirit;
 namespace qi = boost::spirit::qi;
@@ -247,8 +247,9 @@ namespace parser {
     operator Vector<Real>() {
       Vector<Real> tmp(_cells.size());
       auto it = _cells.begin();
-      for (UInt i = 0; it != _cells.end(); ++it, ++i)
+      for (UInt i = 0; it != _cells.end(); ++it, ++i) {
         tmp(i) = *it;
+      }
       return tmp;
     }
 
@@ -261,8 +262,9 @@ namespace parser {
     auto it = pv._cells.begin();
     if (it != pv._cells.end()) {
       stream << *it;
-      for (++it; it != pv._cells.end(); ++it)
+      for (++it; it != pv._cells.end(); ++it) {
         stream << ", " << *it;
+      }
     }
     stream << "]";
     return stream;
@@ -272,8 +274,9 @@ namespace parser {
     operator Matrix<Real>() {
       size_t cols = 0;
       auto it_rows = _cells.begin();
-      for (; it_rows != _cells.end(); ++it_rows)
+      for (; it_rows != _cells.end(); ++it_rows) {
         cols = std::max(cols, it_rows->_cells.size());
+      }
 
       Matrix<Real> tmp(_cells.size(), _cells[0]._cells.size(), 0.);
 
@@ -296,8 +299,9 @@ namespace parser {
     auto it = pm._cells.begin();
     if (it != pm._cells.end()) {
       stream << *it;
-      for (++it; it != pm._cells.end(); ++it)
+      for (++it; it != pm._cells.end(); ++it) {
         stream << ", " << *it;
+      }
     }
     stream << "]";
     return stream;
@@ -508,4 +512,4 @@ namespace parser {
 } // namespace parser
 } // namespace akantu
 
-#endif /* __AKANTU_ALGEBRAIC_PARSER_HH__ */
+#endif /* AKANTU_ALGEBRAIC_PARSER_HH_ */

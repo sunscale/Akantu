@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __AKANTU_IGFEM_INTERNAL_FIELD_TMPL_HH__
-#define __AKANTU_IGFEM_INTERNAL_FIELD_TMPL_HH__
+#ifndef AKANTU_IGFEM_INTERNAL_FIELD_TMPL_HH_
+#define AKANTU_IGFEM_INTERNAL_FIELD_TMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
@@ -30,4 +30,4 @@ template <typename T> IGFEMInternalField<T>::~IGFEMInternalField(){};
 
 } // namespace akantu
 
-#endif /* __AKANTU_IGFEM_INTERNAL_FIELD_TMPL_HH__ */
+#endif /* AKANTU_IGFEM_INTERNAL_FIELD_TMPL_HH_ */

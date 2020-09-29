@@ -53,7 +53,8 @@ SolverVectorPETSc::SolverVectorPETSc(DOFManagerPETSc & dof_manager,
   VecType vec_type;
   PETSc_call(VecGetType, x, &vec_type);
   if (std::string(vec_type) == std::string(VECMPI)) {
-    PetscInt lowest_gidx, highest_gidx;
+    PetscInt lowest_gidx;
+    PetscInt highest_gidx;
     PETSc_call(VecGetOwnershipRange, x, &lowest_gidx, &highest_gidx);
 
     std::vector<PetscInt> ghost_idx;
@@ -79,10 +80,10 @@ SolverVectorPETSc::SolverVectorPETSc(DOFManagerPETSc & dof_manager,
 }
 
 /* -------------------------------------------------------------------------- */
-SolverVectorPETSc::SolverVectorPETSc(const SolverVectorPETSc & vector,
-                                     const ID & id)
+SolverVectorPETSc::SolverVectorPETSc( // NOLINT(bugprone-copy-constructor-init)
+    const SolverVectorPETSc & vector, const ID & id)
     : SolverVector(vector, id), dof_manager(vector.dof_manager) {
-  if (vector.x) {
+  if (vector.x != nullptr) {
     PETSc_call(VecDuplicate, vector.x, &x);
     PETSc_call(VecCopy, vector.x, x);
     detail::PETScSetName(x, id);
@@ -113,7 +114,7 @@ SolverVectorPETSc::SolverVectorPETSc(Vec x, DOFManagerPETSc & dof_manager,
 
 /* -------------------------------------------------------------------------- */
 SolverVectorPETSc::~SolverVectorPETSc() {
-  if (x) {
+  if (x != nullptr) {
     PETSc_call(VecDestroy, &x);
   }
 }
@@ -125,8 +126,8 @@ void SolverVectorPETSc::resize() {
 }
 
 /* -------------------------------------------------------------------------- */
-void SolverVectorPETSc::clear() {
-  PETSc_call(VecSet, x, 0.);
+void SolverVectorPETSc::set(Real val) {
+  PETSc_call(VecSet, x, val);
   applyModifications();
 }
 
@@ -141,7 +142,7 @@ void SolverVectorPETSc::applyModifications() {
 void SolverVectorPETSc::updateGhost() {
   Vec x_ghosted{nullptr};
   PETSc_call(VecGhostGetLocalForm, x, &x_ghosted);
-  if (x_ghosted) {
+  if (x_ghosted != nullptr) {
     PETSc_call(VecGhostUpdateBegin, x, INSERT_VALUES, SCATTER_FORWARD);
     PETSc_call(VecGhostUpdateEnd, x, INSERT_VALUES, SCATTER_FORWARD);
   }
@@ -151,8 +152,9 @@ void SolverVectorPETSc::updateGhost() {
 /* -------------------------------------------------------------------------- */
 void SolverVectorPETSc::getValues(const Array<Int> & idx,
                                   Array<Real> & values) const {
-  if (idx.size() == 0)
+  if (idx.empty()) {
     return;
+  }
 
   ISLocalToGlobalMapping is_ltog_map;
   PETSc_call(VecGetLocalToGlobalMapping, x, &is_ltog_map);
@@ -167,15 +169,16 @@ void SolverVectorPETSc::getValues(const Array<Int> & idx,
 /* -------------------------------------------------------------------------- */
 void SolverVectorPETSc::getValuesLocal(const Array<Int> & idx,
                                        Array<Real> & values) const {
-  if (idx.size() == 0)
+  if (idx.empty()) {
     return;
+  }
 
   Vec x_ghosted{nullptr};
   PETSc_call(VecGhostGetLocalForm, x, &x_ghosted);
   // VecScatterBegin(scatter, x, x_local, INSERT_VALUES, SCATTER_FORWARD);
   // VecScatterEnd(scatter, x, x_local, INSERT_VALUES, SCATTER_FORWARD);
 
-  if (not x_ghosted) {
+  if (x_ghosted == nullptr) {
     const PetscScalar * array;
     PETSc_call(VecGetArrayRead, x, &array);
 
@@ -221,7 +224,7 @@ void SolverVectorPETSc::addValuesLocal(const Array<Int> & lidx,
   Vec x_ghosted{nullptr};
   PETSc_call(VecGhostGetLocalForm, x, &x_ghosted);
 
-  if (not x_ghosted) {
+  if (x_ghosted == nullptr) {
     Real * to_add = values.storage();
     Array<Real> scaled_array;
     if (scale_factor != 1.) {
@@ -277,7 +280,7 @@ SolverVector & SolverVectorPETSc::operator=(const SolverVector & y) {
 
 /* -------------------------------------------------------------------------- */
 SolverVector & SolverVectorPETSc::operator+(const SolverVector & y) {
-  auto & y_ = aka::as_type<SolverVectorPETSc>(y);
+  const auto & y_ = aka::as_type<SolverVectorPETSc>(y);
   PETSc_call(VecAXPY, x, 1., y_.x);
   release_ = y_.release_;
   return *this;
