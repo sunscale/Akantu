@@ -154,7 +154,7 @@ void define_material(py::module & mod, const std::string & name) {
 }
 
 /* -------------------------------------------------------------------------- */
-[[gnu::visibility("default")]] void register_material(py::module & mod) {
+void register_material(py::module & mod) {
   py::class_<MaterialFactory>(mod, "MaterialFactory")
       .def_static(
           "getInstance",

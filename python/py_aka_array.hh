@@ -152,7 +152,7 @@ namespace detail {
 
   /* ------------------------------------------------------------------------ */
   template <typename AkaArrayType>
-  class [[gnu::visibility("default")]] type_caster<
+  class  type_caster<
       AkaArrayType,
       std::enable_if_t<_aka::detail::is_array_type<AkaArrayType>::value>> {
   protected:
