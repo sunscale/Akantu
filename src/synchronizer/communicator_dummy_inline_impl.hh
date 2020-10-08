@@ -128,7 +128,7 @@ inline void Communicator::broadcastImpl(T *, int, int) const {}
 int Communicator::getMaxTag() const { return std::numeric_limits<int>::max(); }
 int Communicator::getMinTag() const { return 0; }
 
-Int Communicator::getNbProc() const { return 1; };
-Int Communicator::whoAmI() const { return 0; };
+Int Communicator::getNbProc() const { return 1; }
+Int Communicator::whoAmI() const { return 0; }
 
 } // namespace akantu

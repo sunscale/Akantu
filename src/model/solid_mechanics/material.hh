@@ -593,6 +593,9 @@ protected:
   /// vector that contains the names of all the internals that need to
   /// be transferred when material interfaces move
   std::vector<ID> internals_to_transfer;
+private:
+  /// eigen_grad_u for the parser
+  Matrix<Real> eigen_grad_u;
 };
 
 /// standard output stream operator

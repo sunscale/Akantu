@@ -52,10 +52,12 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
       use_previous_stress(false), use_previous_gradu(false),
       interpolation_inverse_coordinates("interpolation inverse coordinates",
                                         *this),
-      interpolation_points_matrices("interpolation points matrices", *this) {
+      interpolation_points_matrices("interpolation points matrices", *this),
+      eigen_grad_u(model.getSpatialDimension(), model.getSpatialDimension(),
+                   0.) {
   AKANTU_DEBUG_IN();
 
-  this->registerParam("eigen_grad_u", eigengradu, _pat_parsable | _pat_readable,
+  this->registerParam("eigen_grad_u", eigen_grad_u, _pat_parsable,
                       "EigenGradU");
 
   /// for each connectivity types allocate the element filer array of the
@@ -140,6 +142,13 @@ void Material::initMaterial() {
     this->gradu.initializeHistory();
 
   this->resizeInternals();
+
+  auto dim = model.getSpatialDimension();
+  for(const auto & type : element_filter.elementTypes()) {
+    for(auto eigen_gradu : make_view(eigengradu(type), dim, dim)) {
+      eigen_gradu = eigen_grad_u;
+    }
+  }
 
   is_init = true;
 
@@ -1245,7 +1254,7 @@ void Material::beforeSolveStep() { this->savePreviousState(); }
 
 /* -------------------------------------------------------------------------- */
 void Material::afterSolveStep(bool converged) {
-  if(not converged) {
+  if (not converged) {
     this->restorePreviousState();
     return;
   }
