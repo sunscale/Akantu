@@ -55,6 +55,9 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
       interpolation_points_matrices("interpolation points matrices", *this) {
   AKANTU_DEBUG_IN();
 
+  this->registerParam("eigen_grad_u", eigengradu, _pat_parsable | _pat_readable,
+                      "EigenGradU");
+
   /// for each connectivity types allocate the element filer array of the
   /// material
   element_filter.initialize(model.getMesh(),
