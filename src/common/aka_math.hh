@@ -229,8 +229,8 @@ namespace Math {
   /// test if a is in the range [x_min, x_max]
   inline bool is_in_range(Real a, Real x_min, Real x_max);
 
-  inline Real getTolerance() { return Math::tolerance; };
-  inline void setTolerance(Real tol) { Math::tolerance = tol; };
+  inline Real getTolerance() { return Math::tolerance; }
+  inline void setTolerance(Real tol) { Math::tolerance = tol; }
 
   template <UInt p, typename T> inline T pow(T x);
 
