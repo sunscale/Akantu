@@ -44,10 +44,6 @@
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <limits>
-/* -------------------------------------------------------------------------- */
-#if defined(AKANTU_DEBUG_TOOLS)
-#include "aka_debug_tools.hh"
-#endif
 
 namespace akantu {
 
@@ -69,9 +65,6 @@ namespace debug {
 
   Debugger debugger;
 
-#if defined(AKANTU_DEBUG_TOOLS)
-  DebugElementManager element_manager;
-#endif
 } // namespace debug
 
 /* -------------------------------------------------------------------------- */

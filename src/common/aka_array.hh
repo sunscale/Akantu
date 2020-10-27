@@ -58,7 +58,7 @@ public:
 
   ArrayBase(ArrayBase && other) = default;
   ArrayBase & operator=(const ArrayBase & other) = default;
-  // ArrayBase & operator=(ArrayBase && other) = default;
+  ArrayBase & operator=(ArrayBase && other) noexcept = default;
 
   virtual ~ArrayBase() = default;
 
@@ -167,10 +167,10 @@ public:
   ArrayDataLayer & operator=(const ArrayDataLayer & other);
 
   // move constructor
-  ArrayDataLayer(ArrayDataLayer && other) noexcept;
+  ArrayDataLayer(ArrayDataLayer && other) noexcept = default;
 
   // move assign
-  ArrayDataLayer & operator=(ArrayDataLayer && other) noexcept;
+  ArrayDataLayer & operator=(ArrayDataLayer && other) noexcept = default;
 
 protected:
   // deallocate the memory

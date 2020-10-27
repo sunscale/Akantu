@@ -27,11 +27,10 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
 /* Inline Functions Array<T>                                                  */
 /* -------------------------------------------------------------------------- */
-#include "aka_array.hh"
+#include "aka_array.hh" // NOLINT
 #include "aka_static_memory.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
@@ -99,17 +98,6 @@ ArrayDataLayer<T, allocation_trait>::operator=(const ArrayDataLayer & other) {
   }
   return *this;
 }
-
-/* -------------------------------------------------------------------------- */
-template <typename T, ArrayAllocationType allocation_trait>
-ArrayDataLayer<T, allocation_trait>::ArrayDataLayer(
-    ArrayDataLayer && other) noexcept = default;
-
-/* -------------------------------------------------------------------------- */
-template <typename T, ArrayAllocationType allocation_trait>
-ArrayDataLayer<T, allocation_trait> &
-ArrayDataLayer<T, allocation_trait>::operator=(
-    ArrayDataLayer && other) noexcept = default;
 
 /* -------------------------------------------------------------------------- */
 template <typename T, ArrayAllocationType allocation_trait>

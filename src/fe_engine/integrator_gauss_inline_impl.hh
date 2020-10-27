@@ -31,9 +31,6 @@
 /* -------------------------------------------------------------------------- */
 #include "fe_engine.hh"
 #include "mesh_iterators.hh"
-#if defined(AKANTU_DEBUG_TOOLS)
-#include "aka_debug_tools.hh"
-#endif
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
