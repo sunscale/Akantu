@@ -297,6 +297,7 @@ TYPED_TEST(TestSMMFixtureBarExplicit, Dynamics) {
 }
 
 /* -------------------------------------------------------------------------- */
+#if defined(AKANTU_IMPLICIT)
 template <typename type_>
 using TestSMMFixtureBarImplicit =
     TestSMMFixtureBar<type_, analysis_method_t<_implicit_dynamic>>;
@@ -314,5 +315,6 @@ TYPED_TEST(TestSMMFixtureBarImplicit, Dynamics) {
   this->solveStep();
   EXPECT_NEAR(this->max_error, 0., 2e-3);
 }
+#endif
 
 } // namespace

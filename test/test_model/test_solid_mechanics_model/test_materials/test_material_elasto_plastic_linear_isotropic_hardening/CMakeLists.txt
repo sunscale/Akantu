@@ -31,7 +31,7 @@ register_test(test_material_standard_linear_isotropic_hardening
   SOURCES test_material_elasto_plastic_linear_isotropic_hardening.cc
   DEPENDS test_material_standard_linear_isotropic_hardening_mesh
   FILES_TO_COPY test_material_elasto_plastic_linear_isotropic_hardening.dat
-  PACKAGE core
+  PACKAGE core implicit
   )
 
 
