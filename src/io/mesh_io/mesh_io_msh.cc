@@ -981,7 +981,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   std::map<Element, size_t> element_to_msh_element;
 
   UInt element_idx = 1;
-  Element element;
+  auto element = ElementNull;
   for (auto && type :
        mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
     const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
@@ -1002,7 +1002,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
          enumerate(make_view(connectivity, connectivity.getNbComponent()))) {
       element.element = std::get<0>(data);
       const auto & conn = std::get<1>(data);
-      element_to_msh_element[element] = element_idx;
+      element_to_msh_element.insert(std::make_pair(element, element_idx));
 
       outfile << element_idx << " " << _akantu_to_msh_element_types[type]
               << " 2";

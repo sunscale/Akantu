@@ -51,13 +51,13 @@ enum NormType { L_1 = 1, L_2 = 2, L_inf = UInt(-1) };
  */
 template <UInt dim> struct DimHelper {
   static inline void setDims(UInt m, UInt n, UInt p,
-                             std::array<UInt, dim> dims);
+                             std::array<UInt, dim> & dims);
 };
 
 /* -------------------------------------------------------------------------- */
 template <> struct DimHelper<1> {
   static inline void setDims(UInt m, UInt /*n*/, UInt /*p*/,
-                             std::array<UInt, 1> dims) {
+                             std::array<UInt, 1> & dims) {
     dims[0] = m;
   }
 };
@@ -65,7 +65,7 @@ template <> struct DimHelper<1> {
 /* -------------------------------------------------------------------------- */
 template <> struct DimHelper<2> {
   static inline void setDims(UInt m, UInt n, UInt /*p*/,
-                             std::array<UInt, 2> dims) {
+                             std::array<UInt, 2> & dims) {
     dims[0] = m;
     dims[1] = n;
   }
@@ -73,7 +73,8 @@ template <> struct DimHelper<2> {
 
 /* -------------------------------------------------------------------------- */
 template <> struct DimHelper<3> {
-  static inline void setDims(UInt m, UInt n, UInt p, std::array<UInt, 3> dims) {
+  static inline void setDims(UInt m, UInt n, UInt p,
+                             std::array<UInt, 3> & dims) {
     dims[0] = m;
     dims[1] = n;
     dims[2] = p;
@@ -412,14 +413,20 @@ public:
 
   /* ------------------------------------------------------------------------ */
   inline TensorStorage & operator=(const TensorStorage & other) {
-    if(this == &other) {
+    if (this == &other) {
       return *this;
     }
     this->operator=(aka::as_type<RetType>(other));
     return *this;
   }
 
-  inline TensorStorage & operator=(TensorStorage && other) noexcept = default;
+  // inline TensorStorage & operator=(TensorStorage && other) noexcept {
+  //   std::swap(n, other.n);
+  //   std::swap(_size, other._size);
+  //   std::swap(values, other.values);
+  //   std::swap(wrapped, other.wrapped);
+  //   return *this;
+  // }
 
   /* ------------------------------------------------------------------------ */
   inline TensorStorage & operator=(const RetType & src) {
@@ -525,7 +532,7 @@ public:
   /* ------------------------------------------------------------------------ */
   inline void set(const T & t) { std::fill_n(values, _size, t); };
   inline void zero() { this->set(0.); };
-  
+
   template <class TensorType> inline void copy(const TensorType & other) {
     AKANTU_DEBUG_ASSERT(
         _size == other.size(),
@@ -554,7 +561,7 @@ protected:
       }
       return std::pow(_norm, 1. / norm_type);
     }
-  };
+  }; // namespace akantu
 
   template <typename R> struct NormHelper<R, L_1> {
     template <class Ten> static R norm(const Ten & ten) {
@@ -950,6 +957,7 @@ public:
   }
 
   inline Matrix & operator=(Matrix && src) noexcept = default;
+
 public:
   /* ---------------------------------------------------------------------- */
   UInt rows() const { return this->n[0]; }
