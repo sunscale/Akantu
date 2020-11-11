@@ -59,9 +59,9 @@ private:
       std::vector<Element> & element_list, std::vector<Element> & facet_list,
       std::vector<Element> * subfacet_list = nullptr);
 
-  inline bool hasElement(const Vector<UInt> & nodes_element,
-                         const Vector<UInt> & nodes);
-  inline bool
+  static inline bool hasElement(const Vector<UInt> & nodes_element,
+                                const Vector<UInt> & nodes);
+  static inline bool
   removeElementsInVector(const std::vector<Element> & elem_to_remove,
                          std::vector<Element> & elem_list);
 
@@ -86,19 +86,20 @@ private:
                         "dimension of source element out of range");
 
     auto & array = dimelements_to_dimelements[dim1][dim2];
-    if (not array)
+    if (not array) {
       array = std::make_unique<Array<std::vector<Element>>>();
+    }
 
     return (*array);
   }
 
 public:
-    decltype(auto) getNewElements() const { return (new_elements); }
-    decltype(auto) getDoubledNodes() const { return (doubled_nodes); }
+  decltype(auto) getNewElements() const { return (new_elements); }
+  decltype(auto) getDoubledNodes() const { return (doubled_nodes); }
 
 private:
   std::array<std::unique_ptr<Array<Element>>, 3> facets_to_double_by_dim;
-  std::array<std::array<std::unique_ptr<Array<std::vector<Element>>>, 2>, 3>
+  std::array<std::array<std::unique_ptr<Array<std::vector<Element>>>, 2>, 4>
       dimelements_to_dimelements;
 
   Array<UInt> doubled_nodes;

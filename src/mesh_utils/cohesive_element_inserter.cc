@@ -149,7 +149,7 @@ void CohesiveElementInserter::limitCheckFacets(
   for_each_element(
       mesh_facets,
       [&](auto && facet) {
-        auto & need_check = check_facets(facet, 0);
+        auto & need_check = check_facets(facet);
         if (not need_check) {
           return;
         }

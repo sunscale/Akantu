@@ -76,13 +76,11 @@ public:
 
   using type_iterator = ElementList::type_iterator;
   [[deprecated("Use elementTypes instead")]] inline type_iterator
-  firstType(UInt dim = _all_dimensions,
-            GhostType ghost_type = _not_ghost,
+  firstType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
             ElementKind kind = _ek_regular) const;
 
   [[deprecated("Use elementTypes instead")]] inline type_iterator
-  lastType(UInt dim = _all_dimensions,
-           GhostType ghost_type = _not_ghost,
+  lastType(UInt dim = _all_dimensions, GhostType ghost_type = _not_ghost,
            ElementKind kind = _ek_regular) const;
 
   template <typename... pack>
@@ -92,12 +90,10 @@ public:
 
   using const_element_iterator = Array<UInt>::const_iterator<UInt>;
 
-  inline const_element_iterator
-  begin(ElementType type,
-        GhostType ghost_type = _not_ghost) const;
-  inline const_element_iterator
-  end(ElementType type,
-      GhostType ghost_type = _not_ghost) const;
+  inline const_element_iterator begin(ElementType type,
+                                      GhostType ghost_type = _not_ghost) const;
+  inline const_element_iterator end(ElementType type,
+                                    GhostType ghost_type = _not_ghost) const;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -120,8 +116,8 @@ public:
   /// \todo fix the default for add_nodes : make it coherent with the other
   /// method
   inline void add(ElementType type, UInt element,
-                  GhostType ghost_type = _not_ghost,
-                  bool add_nodes = true, bool check_for_duplicate = true);
+                  GhostType ghost_type = _not_ghost, bool add_nodes = true,
+                  bool check_for_duplicate = true);
 
   inline void addNode(UInt node_id, bool check_for_duplicate = true);
 
@@ -149,11 +145,14 @@ private:
   /* Accessors                                                                */
   /* ------------------------------------------------------------------------ */
 public:
-  const Array<UInt> &
-  getElements(ElementType type,
-              GhostType ghost_type = _not_ghost) const;
+  const Array<UInt> & getElements(ElementType type,
+                                  GhostType ghost_type = _not_ghost) const;
   AKANTU_GET_MACRO(Elements, elements, const ElementTypeMapArray<UInt> &);
   AKANTU_GET_MACRO_NOT_CONST(Elements, elements, ElementTypeMapArray<UInt> &);
+
+  template <class... Args> auto size(Args &&... pack) const {
+    return elements.size(std::forward<Args>(pack)...);
+  }
 
   //  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
 

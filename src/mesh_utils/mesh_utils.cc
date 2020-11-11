@@ -739,9 +739,10 @@ void MeshUtils::fillElementToSubElementsData(Mesh & mesh) {
         facet_element.type = type;
 
         auto & element_to_subelement =
-            mesh_accessor.getElementToSubelementNC(type, ghost_type);
+            mesh_accessor.getElementToSubelement(type, ghost_type);
 
         const auto & connectivity = mesh.getConnectivity(type, ghost_type);
+        //element_to_subelement.resize(connectivity.size());
 
         for (auto && data : enumerate(
                  make_view(connectivity, mesh.getNbNodesPerElement(type)))) {
