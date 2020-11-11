@@ -101,6 +101,7 @@ public:
 public:
   /// empty the element group
   void clear();
+  void clear(ElementType type, GhostType ghost_type = _not_ghost);
 
   bool empty() const __attribute__((warn_unused_result));
 

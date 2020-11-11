@@ -403,10 +403,7 @@ void MasterElementInfoPerProc::synchronizeGroups() {
       element_to_group[element].push_back(name);
     }
 
-    auto eit = eg.begin(type, _not_ghost);
-    if (eit != eg.end(type, _not_ghost)) {
-      const_cast<Array<UInt> &>(eg.getElements(type)).zero();
-    }
+    eg.clear(type, _not_ghost);
   }
 
   const auto & partition_num =

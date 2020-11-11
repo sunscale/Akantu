@@ -134,7 +134,7 @@ void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
 
   stress.initialize(
       getFEEngine(), _spatial_dimension = _all_dimensions,
-      _element_kind = _ek_structural, _all_ghost_types = true,
+      _element_kind = _ek_structural,
       _nb_component = [&stress_components](ElementType type,
                                            GhostType /*unused*/) -> UInt {
         return stress_components(type);

@@ -72,7 +72,16 @@ ElementGroup::ElementGroup(const std::string & group_name, const Mesh & mesh,
 ElementGroup::ElementGroup(const ElementGroup & /*other*/) = default;
 
 /* -------------------------------------------------------------------------- */
-void ElementGroup::clear() { elements.free(); }
+void ElementGroup::clear() {
+  elements.free();
+}
+
+/* -------------------------------------------------------------------------- */
+void ElementGroup::clear(ElementType type, GhostType ghost_type) {
+  if (elements.exists(type, ghost_type)) {
+    elements(type, ghost_type).clear();
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 bool ElementGroup::empty() const { return elements.empty(); }

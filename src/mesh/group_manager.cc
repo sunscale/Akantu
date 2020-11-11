@@ -708,10 +708,8 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
     }
   }
 
-  auto git = group_names.begin();
-  auto gend = group_names.end();
-  for (; git != gend; ++git) {
-    createElementGroup(*git, group_dim[*git]);
+  for (auto && name : group_names) {
+    createElementGroup(name, group_dim[name]);
   }
 
   if (mesh.isDistributed()) {
@@ -750,9 +748,8 @@ void GroupManager::createGroupsFromMeshData(const std::string & dataset_name) {
     }
   }
 
-  git = group_names.begin();
-  for (; git != gend; ++git) {
-    getElementGroup(*git).optimize();
+  for (auto && name : group_names) {
+    getElementGroup(name).optimize();
   }
 }
 
