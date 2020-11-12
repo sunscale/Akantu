@@ -13,6 +13,10 @@
 namespace py = pybind11;
 /* -------------------------------------------------------------------------- */
 
+#if not defined(PYBIND11_OVERRIDE)
+#define PYBIND11_OVERRIDE PYBIND11_OVERLOAD
+#endif
+
 namespace akantu {
 
 template <typename _Material> class PyMaterial : public _Material {
@@ -21,31 +25,32 @@ public:
   /* Inherit the constructors */
   using _Material::_Material;
 
-  ~PyMaterial() override{};
+  ~PyMaterial() override = default;
+
   void initMaterial() override {
-    PYBIND11_OVERLOAD(void, _Material, initMaterial);
+    PYBIND11_OVERRIDE(void, _Material, initMaterial); // NOLINT
   };
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override {
-    PYBIND11_OVERLOAD_PURE(void, _Material, computeStress, el_type, ghost_type);
+    PYBIND11_OVERRIDE_PURE(void, _Material, computeStress, el_type, ghost_type);
   }
   void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override {
-    PYBIND11_OVERLOAD(void, _Material, computeTangentModuli, el_type,
+    PYBIND11_OVERRIDE(void, _Material, computeTangentModuli, el_type,
                       tangent_matrix, ghost_type);
   }
 
   void computePotentialEnergy(ElementType el_type) override {
-    PYBIND11_OVERLOAD(void, _Material, computePotentialEnergy, el_type);
+    PYBIND11_OVERRIDE(void, _Material, computePotentialEnergy, el_type);
   }
 
   Real getPushWaveSpeed(const Element & element) const override {
-    PYBIND11_OVERLOAD(Real, _Material, getPushWaveSpeed, element);
+    PYBIND11_OVERRIDE(Real, _Material, getPushWaveSpeed, element);
   }
 
   Real getShearWaveSpeed(const Element & element) const override {
-    PYBIND11_OVERLOAD(Real, _Material, getShearWaveSpeed, element);
+    PYBIND11_OVERRIDE(Real, _Material, getShearWaveSpeed, element);
   }
 
   void registerInternal(const std::string & name, UInt nb_component) {
