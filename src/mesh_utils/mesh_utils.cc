@@ -318,7 +318,7 @@ void MeshUtils::buildFacetsDimension(const Mesh & mesh, Mesh & mesh_facets,
             bool full_ghost_facet = false;
 
             UInt n = 0;
-            while (n < nb_nodes_per_facet && mesh.isPureGhostNode(facet(n))) {
+            while (n < nb_nodes_per_facet and mesh.isPureGhostNode(facet(n))) {
               ++n;
             }
             if (n == nb_nodes_per_facet) {

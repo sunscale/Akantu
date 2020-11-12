@@ -280,8 +280,9 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
         }
 
         // set physical name
-        phys_data(Element{element.type, UInt(std::get<0>(*facet)),
-                          element.ghost_type}) = mesh_phys_data(element);
+        auto && facet_element = Element{element.type, UInt(std::get<0>(*facet)),
+              element.ghost_type};
+        phys_data(facet_element) = mesh_phys_data(element);
       },
       _spatial_dimension = spatial_dimension - 1);
 

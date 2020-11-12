@@ -459,6 +459,8 @@ public:
   inline const Mesh & getMeshFacets() const;
   inline Mesh & getMeshFacets();
 
+  inline auto hasMeshFacets() const { return mesh_facets != nullptr; }
+
   /// Parent mesh accessor
   inline const Mesh & getMeshParent() const;
 
