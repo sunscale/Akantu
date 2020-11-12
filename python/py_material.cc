@@ -15,6 +15,7 @@ namespace py = pybind11;
 
 #if not defined(PYBIND11_OVERRIDE)
 #define PYBIND11_OVERRIDE PYBIND11_OVERLOAD
+#define PYBIND11_OVERRIDE_PURE PYBIND11_OVERLOAD_PURE
 #endif
 
 namespace akantu {
