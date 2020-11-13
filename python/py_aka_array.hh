@@ -43,7 +43,7 @@ namespace detail {
 
     ~ArrayProxy() override { this->values = nullptr; }
 
-    void resize(UInt size, const T & val) final {
+    void resize(UInt size, const T & /*val*/) final {
       if (size != this->size()) {
         AKANTU_EXCEPTION("cannot resize a temporary array");
       }

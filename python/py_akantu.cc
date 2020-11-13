@@ -84,7 +84,7 @@ PYBIND11_MODULE(py11_akantu, mod) {
       }
     } catch (akantu::debug::Exception & e) {
       if (akantu::debug::debugger.printBacktrace()) {
-        akantu::debug::printBacktrace(15);
+        akantu::debug::printBacktrace();
       }
       akantu_exception(e.info().c_str());
     }
