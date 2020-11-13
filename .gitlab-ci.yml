@@ -67,15 +67,11 @@ docker build:ubuntu-lts:
 
 .build:
   stage: build
-  before_script:
-    - ccache --zero-stats || true
   script:
     - cmake --build build/src > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
     - cmake --build build/python > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
     - cmake --build build/test/ > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
     - cmake --build build/examples > >(tee -a ${output}-out.log) 2> >(tee -a ${output}-err.log >&2)
-  after_script:
-    - ccache --show-stats
   artifacts:
     when: on_success
     paths:
@@ -121,6 +117,8 @@ docker build:ubuntu-lts:
   variables:
     CCACHE_BASEDIRE: ${CI_PROJECT_DIR}/build
     CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
+    CCACHE_NOHASHDIR: 1
+    CCACHE_COMPILERCHECK: content
   cache:
     key: ${output}
     policy: pull-push
@@ -128,6 +126,10 @@ docker build:ubuntu-lts:
       - .ccache/
       - third-party/google-test
       - third-party/pybind11
+  before_script:
+    - ccache --zero-stats || true
+  after_script:
+    - ccache --show-stats || true
 
 # ------------------------------------------------------------------------------
 .image_debian_testing:
