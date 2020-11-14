@@ -63,7 +63,7 @@ docker build:ubuntu-lts:
     when: on_success
     paths:
       - build
-    expire_in: 2h
+    expire_in: 10h
 
 .build:
   stage: build
@@ -78,7 +78,7 @@ docker build:ubuntu-lts:
       - build/
       - ${output}-out.log
       - ${output}-err.log
-    expire_in: 2h
+    expire_in: 10h
 
 .tests:
   stage: test
