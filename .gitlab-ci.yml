@@ -76,7 +76,7 @@ docker build:ubuntu-lts:
     when: on_success
     paths:
       - build/
-      - ${output}-out.log
+      #- ${output}-out.log
       - ${output}-err.log
     expire_in: 10h
 
