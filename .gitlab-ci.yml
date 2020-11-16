@@ -58,7 +58,7 @@ docker build:ubuntu-lts:
             -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
             -DAKANTU_TESTS:BOOL=TRUE
             -DAKANTU_RUN_IN_DOCKER:BOOL=TRUE
-            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo ..
+            -DCMAKE_BUILD_TYPE:STRING=Debug ..
   artifacts:
     when: on_success
     paths:
