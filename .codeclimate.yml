@@ -1,6 +1,6 @@
 plugins:
   editorconfig:
-    enabled: true
+    enabled: false
   pylint:
     enabled: true
   cppcheck:
