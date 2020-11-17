@@ -6,6 +6,9 @@
 #include <solid_mechanics_model_cohesive.hh>
 #endif
 /* -------------------------------------------------------------------------- */
+#define AKANTU_WARNING_IGNORE_VARIADIC_MACRO_ARGUMENTS
+#include "aka_warning.hh"
+/* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -228,3 +231,5 @@ void register_material(py::module & mod) {
 }
 
 } // namespace akantu
+
+#include "aka_warning_restore.hh"
