@@ -18,6 +18,7 @@ RUN pip3 install mpi4py
 RUN apt-get -qq update && apt-get -qq -y install \
     python3-yaml python3-pytest ccache \
     gmsh curl git xsltproc \
+    gcovr binutils \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .openmpi /root/.openmpi

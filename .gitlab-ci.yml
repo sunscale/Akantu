@@ -58,7 +58,7 @@ docker build:ubuntu-lts:
             -DAKANTU_TEST_EXAMPLES:BOOL=FALSE
             -DAKANTU_TESTS:BOOL=TRUE
             -DAKANTU_RUN_IN_DOCKER:BOOL=TRUE
-            -DCMAKE_BUILD_TYPE:STRING=Debug ..
+            -DCMAKE_BUILD_TYPE:STRING=Coverage ..
   artifacts:
     when: on_success
     paths:
@@ -91,13 +91,17 @@ docker build:ubuntu-lts:
     - if [ -e Testing/${tag}/Test.xml ]; then
     -   xsltproc -o ./juint.xml ${CI_PROJECT_DIR}/test/ci/ctest2junit.xsl Testing/${tag}/Test.xml;
     - fi
+    - gcovr --xml -o coverage.xml --object-directory ./ --root ../  -s || true
   artifacts:
     when: always
     paths:
       - build/juint.xml
+      - build/coverage.xml
     reports:
       junit:
         - build/juint.xml
+      cobertura:
+        - build/coverage.xml
 
 .analyse_build:
   stage: check-warnings
