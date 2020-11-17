@@ -6,9 +6,6 @@
 #include <solid_mechanics_model_cohesive.hh>
 #endif
 /* -------------------------------------------------------------------------- */
-#define AKANTU_WARNING_IGNORE_VARIADIC_MACRO_ARGUMENTS
-#include "aka_warning.hh"
-/* -------------------------------------------------------------------------- */
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -32,7 +29,7 @@ public:
   ~PyMaterial() override = default;
 
   void initMaterial() override {
-    PYBIND11_OVERRIDE(void, _Material, initMaterial); // NOLINT
+      PYBIND11_OVERRIDE(void, _Material, initMaterial, ); // NOLINT
   };
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override {
@@ -232,4 +229,3 @@ void register_material(py::module & mod) {
 
 } // namespace akantu
 
-#include "aka_warning_restore.hh"

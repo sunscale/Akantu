@@ -61,6 +61,7 @@
 #    pragma GCC diagnostic ignored "-Wunused-parameter"
 #  endif
 #  if defined(AKANTU_WARNING_IGNORE_VARIADIC_MACRO_ARGUMENTS)
+#    pragma GCC diagnostic ignored "-Wvariadic-macros"
 #    pragma GCC diagnostic ignored "-Wpedantic"
 #  endif
 #endif
