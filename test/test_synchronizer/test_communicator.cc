@@ -55,7 +55,7 @@ TEST(Communicator, ReceiveAny) {
   auto && rank = c.whoAmI();
   auto && size = c.getNbProc();
 
-  for (auto n : arange(100)) {
+  for (auto n [[gnu::unused]] : arange(100)) {
     AKANTU_DEBUG_INFO("ROUND " << n);
     auto tag = Tag::genTag(0, 1, 0);
 
