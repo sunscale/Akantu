@@ -1,0 +1,11 @@
+plugins:
+  editorconfig:
+    enabled: true
+  pylint:
+    enabled: true
+  cppcheck:
+    enabled: true
+    project: compile_commands.json
+    language: c++
+    check: warning, style, performance
+    stds: [c++14]
