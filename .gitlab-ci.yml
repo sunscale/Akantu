@@ -84,7 +84,7 @@ docker build:ubuntu-lts:
   stage: test
   script:
     - cd build
-    - ctest -T test --no-compress-output --timeout 600
+    - ctest -T test --no-compress-output --timeout 1800
   after_script:
     - cd build
     - tag=$(head -n 1 < Testing/TAG)
