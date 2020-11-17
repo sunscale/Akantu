@@ -177,8 +177,10 @@ void NodeSynchronizer::unpackSanityCheckData(CommunicationBuffer & buffer,
                                              UInt proc, UInt rank) const {
   auto dim = mesh.getSpatialDimension();
 
+#ifndef AKANTU_NDEBUG
   auto periodic = [&](auto && flag) { return flag & NodeFlag::_periodic_mask; };
   auto distrib = [&](auto && flag) { return flag & NodeFlag::_shared_mask; };
+#endif
 
   for (auto && node : nodes) {
     if (tag != SynchronizationTag::_giu_global_conn) {
