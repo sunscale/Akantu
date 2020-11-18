@@ -90,7 +90,7 @@ using spatial_dimension_t = std::integral_constant<UInt, dim>;
 using TestTypes =
     ::testing::Types<spatial_dimension_t<1>, spatial_dimension_t<2>,
                      spatial_dimension_t<3>>;
-TYPED_TEST_SUITE(VoigtHelperFixture, TestTypes);
+TYPED_TEST_SUITE(VoigtHelperFixture, TestTypes, );
 
 TYPED_TEST(VoigtHelperFixture, Size) {
   using voigt_h = typename TestFixture::voigt_h;

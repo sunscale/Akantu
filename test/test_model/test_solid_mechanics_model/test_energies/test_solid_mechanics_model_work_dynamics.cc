@@ -112,7 +112,7 @@ public:
   }
 };
 
-TYPED_TEST_SUITE(TestSMMFixtureWorkDynamic, gtest_element_types);
+TYPED_TEST_SUITE(TestSMMFixtureWorkDynamic, gtest_element_types, );
 
 /* TODO: this is currently disabled for terrible results and performance
 TYPED_TEST(TestSMMFixtureBar, WorkImplicit) {

@@ -106,6 +106,6 @@ using TestFEMFixture = TestFEMBaseFixture<type_, ShapeLagrange, _ek_regular>;
 
 using fe_engine_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_SUITE(TestFEMFixture, fe_engine_types);
+TYPED_TEST_SUITE(TestFEMFixture, fe_engine_types, );
 
 #endif /* AKANTU_TEST_FE_ENGINE_FIXTURE_HH_ */

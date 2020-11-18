@@ -124,6 +124,6 @@ using TestElementTypesFiltered =
 // using gtest_element_types = gtest_list_t<TestElementTypesFiltered>;
 using gtest_element_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_SUITE(TestSMMFixture, gtest_element_types);
+TYPED_TEST_SUITE(TestSMMFixture, gtest_element_types, );
 
 #endif /* AKANTU_TEST_SOLID_MECHANICS_MODEL_FIXTURE_HH_ */

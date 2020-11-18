@@ -148,6 +148,6 @@ template <typename T> using valid_types = aka::negation<invalid_plan_stress<T>>;
 using model_types = gtest_list_t<
     tuple_filter_t<valid_types, cross_product_t<TestElementTypes, true_false>>>;
 
-TYPED_TEST_SUITE(TestPatchTestSMMLinear, model_types);
+TYPED_TEST_SUITE(TestPatchTestSMMLinear, model_types, );
 
 #endif /* AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH_ */
