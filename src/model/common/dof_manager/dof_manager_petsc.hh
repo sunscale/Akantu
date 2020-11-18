@@ -32,8 +32,8 @@
 #include <petscis.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_MANAGER_PETSC_HH__
-#define __AKANTU_DOF_MANAGER_PETSC_HH__
+#ifndef AKANTU_DOF_MANAGER_PETSC_HH_
+#define AKANTU_DOF_MANAGER_PETSC_HH_
 
 #define PETSc_call(func, ...)                                                  \
   do {                                                                         \
@@ -72,7 +72,7 @@ public:
   DOFManagerPETSc(Mesh & mesh, const ID & id = "dof_manager_petsc",
                   const MemoryID & memory_id = 0);
 
-  virtual ~DOFManagerPETSc();
+  ~DOFManagerPETSc() override = default;
 
 protected:
   void init();
@@ -83,7 +83,7 @@ protected:
     /// petsc compressed version of local_equation_number
     Array<PetscInt> local_equation_number_petsc;
 
-    virtual Array<Int> & getLocalEquationsNumbers() {
+    Array<Int> & getLocalEquationsNumbers() override {
       return local_equation_number_petsc;
     }
   };
@@ -95,14 +95,14 @@ public:
   void assembleToLumpedMatrix(const ID & /*dof_id*/,
                               Array<Real> & /*array_to_assemble*/,
                               const ID & /*lumped_mtx*/,
-                              Real /*scale_factor*/ = 1.) {
+                              Real /*scale_factor*/ = 1.) override {
     AKANTU_TO_IMPLEMENT();
   }
 
   void assembleElementalMatricesToMatrix(
       const ID & /*matrix_id*/, const ID & /*dof_id*/,
-      const Array<Real> & /*elementary_mat*/, const ElementType & /*type*/,
-      const GhostType & /*ghost_type*/,
+      const Array<Real> & /*elementary_mat*/, ElementType /*type*/,
+      GhostType /*ghost_type*/,
       const MatrixType & /*elemental_matrix_type*/,
       const Array<UInt> & /*filter_elements*/) override;
 
@@ -215,4 +215,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_DOF_MANAGER_PETSC_HH__ */
+#endif /* AKANTU_DOF_MANAGER_PETSC_HH_ */

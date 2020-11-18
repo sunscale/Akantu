@@ -35,8 +35,8 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_HH__
-#define __AKANTU_SOLVER_HH__
+#ifndef AKANTU_SOLVER_HH_
+#define AKANTU_SOLVER_HH_
 
 namespace akantu {
 enum SolverParallelMethod {
@@ -126,4 +126,4 @@ namespace debug {
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_HH__ */
+#endif /* AKANTU_SOLVER_HH_ */

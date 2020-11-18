@@ -1,4 +1,4 @@
-h = 0.5;
+h = .5;
 length = 2;
 
 Point(1) = {-length/2, -length/2, 0, h};

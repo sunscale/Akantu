@@ -36,8 +36,8 @@
 #include <array>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMUNICATION_BUFFER_HH__
-#define __AKANTU_COMMUNICATION_BUFFER_HH__
+#ifndef AKANTU_COMMUNICATION_BUFFER_HH_
+#define AKANTU_COMMUNICATION_BUFFER_HH_
 
 namespace akantu {
 
@@ -58,7 +58,8 @@ public:
   CommunicationBufferTemplated &
   operator=(const CommunicationBufferTemplated & other) = delete;
 
-  CommunicationBufferTemplated(CommunicationBufferTemplated && other) = default;
+  CommunicationBufferTemplated(CommunicationBufferTemplated && other) noexcept =
+      default;
 
   virtual ~CommunicationBufferTemplated() = default;
 
@@ -76,7 +77,7 @@ public:
   inline void reserve(UInt size);
 
   /// clear buffer context
-  inline void clear();
+  inline void zero();
 
 private:
   inline void packResize(UInt size);
@@ -92,7 +93,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// printing tool
-  template <typename T> inline std::string extractStream(UInt packet_size);
+  template <typename T> inline std::string extractStream(UInt block_size);
 
   /// packing data
   template <typename T>
@@ -126,7 +127,7 @@ public:
 
 private:
   template <typename T> inline void packIterable(T & to_pack);
-  template <typename T> inline void unpackIterable(T & to_pack);
+  template <typename T> inline void unpackIterable(T & to_unpack);
 
   /* ------------------------------------------------------------------------ */
   /* Accessor                                                                 */
@@ -177,4 +178,4 @@ using DynamicCommunicationBuffer = CommunicationBufferTemplated<false>;
 /* -------------------------------------------------------------------------- */
 #include "communication_buffer_inline_impl.hh"
 
-#endif /* __AKANTU_COMMUNICATION_BUFFER_HH__ */
+#endif /* AKANTU_COMMUNICATION_BUFFER_HH_ */

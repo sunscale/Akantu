@@ -75,7 +75,7 @@ void MaterialDamageIterative<spatial_dimension>::
   Real * dam = this->damage(el_type, ghost_type).storage();
   Matrix<Real> sigma(spatial_dimension, spatial_dimension);
   for (; grad_u_it != grad_u_end; ++grad_u_it) {
-    sigma.clear();
+    sigma.zero();
     MaterialElastic<spatial_dimension>::computeStressOnQuad(*grad_u_it, sigma,
                                                             0.);
     computeDamageAndStressOnQuad(sigma, *dam);

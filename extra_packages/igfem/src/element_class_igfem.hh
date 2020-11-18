@@ -16,8 +16,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_CLASS_IGFEM_HH__
-#define __AKANTU_ELEMENT_CLASS_IGFEM_HH__
+#ifndef AKANTU_ELEMENT_CLASS_IGFEM_HH_
+#define AKANTU_ELEMENT_CLASS_IGFEM_HH_
 
 namespace akantu {
 
@@ -294,4 +294,4 @@ private:
 #include "element_class_igfem_triangle_5_inline_impl.hh"
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_ELEMENT_CLASS_IGFEM_HH__ */
+#endif /* AKANTU_ELEMENT_CLASS_IGFEM_HH_ */

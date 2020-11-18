@@ -68,13 +68,13 @@ int main(int argc, char * argv[]) {
 
   /// apply constant strain field in all elements except element 3 and 15
   Matrix<Real> applied_strain(spatial_dimension, spatial_dimension);
-  applied_strain.clear();
+  applied_strain.zero();
   for (UInt i = 0; i < spatial_dimension; ++i)
     applied_strain(i, i) = 2.;
 
   /// apply different strain in element 3 and 15
   Matrix<Real> modified_strain(spatial_dimension, spatial_dimension);
-  modified_strain.clear();
+  modified_strain.zero();
   for (UInt i = 0; i < spatial_dimension; ++i)
     modified_strain(i, i) = 1.;
 
@@ -158,7 +158,7 @@ int main(int argc, char * argv[]) {
   Matrix<Real> difference_in_damaged_elements(spatial_dimension,
                                               spatial_dimension, 0.);
   for (UInt m = 0; m < model.getNbMaterials(); ++m) {
-    difference_in_damaged_elements.clear();
+    difference_in_damaged_elements.zero();
     auto & mat = model.getMaterial(m);
     auto & grad_u_nl = const_cast<Array<Real> &>(
         mat.getInternal<Real>("grad_u non local")(element_type, ghost_type));

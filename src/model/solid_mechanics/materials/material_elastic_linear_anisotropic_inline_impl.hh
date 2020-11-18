@@ -33,8 +33,8 @@
 #include "material_elastic_linear_anisotropic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_HH__
-#define __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_HH__
+#ifndef AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_HH_
+#define AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -69,4 +69,4 @@ inline void MaterialElasticLinearAnisotropic<dim>::computePotentialEnergyOnQuad(
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_HH__ */
+#endif /* AKANTU_MATERIAL_ELASTIC_LINEAR_ANISOTROPIC_INLINE_IMPL_HH_ */

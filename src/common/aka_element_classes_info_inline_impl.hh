@@ -32,8 +32,8 @@
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_HH__
-#define __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_HH__
+#ifndef AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_HH_
+#define AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -49,4 +49,4 @@ AKANTU_ENUM_INPUT_STREAM(ElementKind, AKANTU_ELEMENT_KIND)
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_HH__ */
+#endif /* AKANTU_AKA_ELEMENT_CLASSES_INFO_INLINE_IMPL_HH_ */

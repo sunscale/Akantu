@@ -104,10 +104,11 @@ void SparseMatrixAIJ::saveProfile(const std::string & filename) const {
   if (comm.whoAmI() == 0) {
 
     outfile << "%%MatrixMarket matrix coordinate pattern";
-    if (this->matrix_type == _symmetric)
+    if (this->matrix_type == _symmetric) {
       outfile << " symmetric";
-    else
+    } else {
       outfile << " general";
+    }
     outfile << std::endl;
     outfile << m << " " << m << " " << this->nb_non_zero << std::endl;
   }
@@ -149,10 +150,11 @@ void SparseMatrixAIJ::saveMatrix(const std::string & filename) const {
 
   if (comm.whoAmI() == 0) {
     outfile << "%%MatrixMarket matrix coordinate real";
-    if (this->matrix_type == _symmetric)
+    if (this->matrix_type == _symmetric) {
       outfile << " symmetric";
-    else
+    } else {
       outfile << " general";
+    }
     outfile << std::endl;
     outfile << this->size_ << " " << this->size_ << " " << nnz << std::endl;
   }
@@ -194,12 +196,14 @@ void SparseMatrixAIJ::matVecMul(const Array<Real> & x, Array<Real> & y,
 
     y_it[i] += alpha * A * x_it[j];
 
-    if ((this->matrix_type == _symmetric) && (i != j))
+    if ((this->matrix_type == _symmetric) && (i != j)) {
       y_it[j] += alpha * A * x_it[i];
+    }
   }
 
-  if (this->dof_manager.hasSynchronizer())
+  if (this->dof_manager.hasSynchronizer()) {
     this->dof_manager.getSynchronizer().reduceSynchronizeArray<AddOperation>(y);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -229,7 +233,7 @@ void SparseMatrixAIJ::copyContent(const SparseMatrix & matrix) {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixAIJ::copyProfile(const SparseMatrix & other) {
-  auto & A = aka::as_type<SparseMatrixAIJ>(other);
+  const auto & A = aka::as_type<SparseMatrixAIJ>(other);
 
   SparseMatrix::clearProfile();
 
@@ -238,7 +242,9 @@ void SparseMatrixAIJ::copyProfile(const SparseMatrix & other) {
 
   this->irn_jcn_k.clear();
 
-  UInt i, j, k;
+  UInt i;
+  UInt j;
+  UInt k;
   for (auto && data : enumerate(irn, jcn)) {
     std::tie(k, i, j) = data;
 
@@ -258,7 +264,8 @@ void SparseMatrixAIJ::copyProfile(const SparseMatrix & other) {
 /* -------------------------------------------------------------------------- */
 template <class MatrixType>
 void SparseMatrixAIJ::addMeToTemplated(MatrixType & B, Real alpha) const {
-  UInt i, j;
+  UInt i;
+  UInt j;
   Real A_ij;
   for (auto && tuple : zip(irn, jcn, a)) {
     std::tie(i, j, A_ij) = tuple;
@@ -284,8 +291,8 @@ void SparseMatrixAIJ::mul(Real alpha) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixAIJ::clear() {
-  a.set(0.);
+void SparseMatrixAIJ::set(Real val) {
+  a.set(val);
 
   this->value_release++;
 }

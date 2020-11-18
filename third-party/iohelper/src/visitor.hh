@@ -28,11 +28,11 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __IOHELPER_VISITOR_HH__
-#define __IOHELPER_VISITOR_HH__
+#ifndef IOHELPER_VISITOR_HH_
+#define IOHELPER_VISITOR_HH_
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 class Visitor {
   /* ------------------------------------------------------------------------ */
@@ -61,6 +61,6 @@ private:
 
 /* -------------------------------------------------------------------------- */
 
-__END_IOHELPER__
+}
 
-#endif /* __IOHELPER_VISITOR_HH__ */
+#endif /* IOHELPER_VISITOR_HH_ */

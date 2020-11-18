@@ -43,7 +43,7 @@ UInt StaticMemory::nb_reference = 0;
 
 /* -------------------------------------------------------------------------- */
 StaticMemory & StaticMemory::getStaticMemory() {
-  if (!single_static_memory) {
+  if (single_static_memory == nullptr) {
     single_static_memory = new StaticMemory();
     is_instantiated = true;
   }
@@ -111,9 +111,7 @@ void StaticMemory::sfree(const MemoryID & memory_id, const ID & name) {
 
 /* -------------------------------------------------------------------------- */
 void StaticMemory::printself(std::ostream & stream, int indent) const {
-  std::string space = "";
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-    ;
+  std::string space(indent, AKANTU_INDENT);
 
   std::streamsize prec = stream.precision();
   stream.precision(2);

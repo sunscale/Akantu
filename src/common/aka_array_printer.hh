@@ -29,8 +29,8 @@
 #include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_ARRAY_PRINTER_HH__
-#define __AKANTU_AKA_ARRAY_PRINTER_HH__
+#ifndef AKANTU_AKA_ARRAY_PRINTER_HH_
+#define AKANTU_AKA_ARRAY_PRINTER_HH_
 
 namespace akantu {
 
@@ -97,4 +97,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_ARRAY_PRINTER_HH__ */
+#endif /* AKANTU_AKA_ARRAY_PRINTER_HH_ */

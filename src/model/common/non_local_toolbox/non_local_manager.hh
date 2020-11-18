@@ -40,8 +40,8 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_NON_LOCAL_MANAGER_HH__
-#define __AKANTU_NON_LOCAL_MANAGER_HH__
+#ifndef AKANTU_NON_LOCAL_MANAGER_HH_
+#define AKANTU_NON_LOCAL_MANAGER_HH_
 
 namespace akantu {
 class Model;
@@ -95,7 +95,7 @@ public:
 
   /// synchronize once on a given tag using the neighborhoods synchronizer
   void synchronize(DataAccessor<Element> & data_accessor,
-                   const SynchronizationTag &);
+                   const SynchronizationTag & /*tag*/);
 
 protected:
   /// create the grid synchronizers for each neighborhood
@@ -108,7 +108,7 @@ protected:
   void updatePairLists();
 
   /// average the non-local variables
-  void averageInternals(const GhostType & ghost_type = _not_ghost);
+  void averageInternals(GhostType ghost_type = _not_ghost);
 
   /// update the flattened version of the weight function internals
   void updateWeightFunctionInternals();
@@ -118,7 +118,7 @@ protected:
   void createNeighborhood(const ID & weight_func, const ID & neighborhood);
 
   /// set the values of the jacobians
-  void setJacobians(const FEEngine & fe_engine, const ElementKind & kind);
+  void setJacobians(const FEEngine & fe_engine, ElementKind kind);
 
   /// allocation of eelment type maps
   // void initElementTypeMap(UInt nb_component,
@@ -129,13 +129,13 @@ protected:
   /// resizing of element type maps
   void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
                             const FEEngine & fee,
-                            const ElementKind el_kind = _ek_regular);
+                             ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps
-  void removeIntegrationPointsFromMap(
+  static void removeIntegrationPointsFromMap(
       const ElementTypeMapArray<UInt> & new_numbering, UInt nb_component,
       ElementTypeMapReal & element_map, const FEEngine & fee,
-      const ElementKind el_kind = _ek_regular);
+      ElementKind el_kind = _ek_regular);
 
   /// allocate the non-local variables
   void initNonLocalVariables();
@@ -182,8 +182,8 @@ public:
   /// return the fem object associated with a provided name
   inline NonLocalNeighborhoodBase & getNeighborhood(const ID & name) const;
 
-  inline const Array<Real> & getJacobians(const ElementType & type,
-                                          const GhostType & ghost_type) {
+  inline const Array<Real> & getJacobians(ElementType type,
+                                          GhostType ghost_type) {
     return *jacobians(type, ghost_type);
   }
 
@@ -255,16 +255,18 @@ protected:
 
   class DummyDataAccessor : public DataAccessor<Element> {
   public:
-    inline UInt getNbData(const Array<Element> &,
-                          const SynchronizationTag &) const override {
+    inline UInt getNbData(const Array<Element> & /*elements*/,
+                          const SynchronizationTag & /*tag*/) const override {
       return 0;
     };
 
-    inline void packData(CommunicationBuffer &, const Array<Element> &,
-                         const SynchronizationTag &) const override{};
+    inline void packData(CommunicationBuffer & /*buffer*/,
+                         const Array<Element> & /*element*/,
+                         const SynchronizationTag & /*tag*/) const override{};
 
-    inline void unpackData(CommunicationBuffer &, const Array<Element> &,
-                           const SynchronizationTag &) override{};
+    inline void unpackData(CommunicationBuffer & /*buffer*/,
+                           const Array<Element> & /*element*/,
+                           const SynchronizationTag & /*tag*/) override{};
   };
 
   DummyDataAccessor dummy_accessor;
@@ -281,4 +283,4 @@ protected:
 
 #include "non_local_manager_inline_impl.hh"
 
-#endif /* __AKANTU_NON_LOCAL_MANAGER_HH__ */
+#endif /* AKANTU_NON_LOCAL_MANAGER_HH_ */

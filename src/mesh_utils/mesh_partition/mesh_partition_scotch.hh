@@ -27,15 +27,12 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_MESH_PARTITION_SCOTCH_HH__
-#define __AKANTU_MESH_PARTITION_SCOTCH_HH__
-
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
 #include "mesh_partition.hh"
+/* -------------------------------------------------------------------------- */
+
+#ifndef AKANTU_MESH_PARTITION_SCOTCH_HH_
+#define AKANTU_MESH_PARTITION_SCOTCH_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -46,7 +43,7 @@ class MeshPartitionScotch : public MeshPartition {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MeshPartitionScotch(const Mesh & mesh, UInt spatial_dimension,
+  MeshPartitionScotch(Mesh & mesh, UInt spatial_dimension,
                       const ID & id = "mesh_partition_scotch",
                       const MemoryID & memory_id = 0);
 
@@ -54,12 +51,13 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void partitionate(
+  void partitionate(
       UInt nb_part,
-      std::function<Int(const Element &, const Element &)> edge_load_func =
-          [](auto &&, auto &&) { return 1; },
-      std::function<Int(const Element &)> vertex_load_func =
-          [](auto &&) { return 1; }) override;
+      const std::function<Int(const Element &, const Element &)> &
+          edge_load_func =
+              [](auto && /*unused*/, auto && /*unused*/) { return 1; },
+      const std::function<Int(const Element &)> & vertex_load_func =
+          [](auto && /*unused*/) { return 1; }) override;
 
   void reorder() override;
 
@@ -75,4 +73,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_PARTITION_SCOTCH_HH__ */
+#endif /* AKANTU_MESH_PARTITION_SCOTCH_HH_ */

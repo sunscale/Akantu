@@ -19,14 +19,14 @@ namespace detail {
   template <typename T> class ArrayProxy : public Array<T> {
   protected:
     // deallocate the memory
-    void deallocate() override final {}
+    void deallocate() final {}
 
     // allocate the memory
-    void allocate(UInt /*size*/, UInt /*nb_component*/) override final {}
+    void allocate(UInt /*size*/, UInt /*nb_component*/) final {}
 
     // allocate and initialize the memory
     void allocate(UInt /*size*/, UInt /*nb_component*/,
-                  const T & /*value*/) override final {}
+                  const T & /*value*/) final {}
 
   public:
     ArrayProxy(T * data, UInt size, UInt nb_component) {
@@ -41,19 +41,19 @@ namespace detail {
       this->nb_component = src.getNbComponent();
     }
 
-    ~ArrayProxy() { this->values = nullptr; }
+    ~ArrayProxy() override { this->values = nullptr; }
 
     void resize(UInt size, const T & /*val*/) final {
-      if (size != this->size())
-        AKANTU_EXCEPTION("Cannot resize a temporary array, from "
-                         << this->size() << " to " << size);
-      // std::fill(this->begin(), this->end(), val);
+      if (size != this->size()) {
+        AKANTU_EXCEPTION("cannot resize a temporary array");
+      }
+      //std::fill(this->begin(), this->end(), val);
     }
 
     void resize(UInt new_size) final {
-      if (new_size != this->size())
-        AKANTU_EXCEPTION("Cannot resize a temporary array, from "
-                         << this->size() << " to " << new_size);
+      if (new_size != this->size()) {
+        AKANTU_EXCEPTION("cannot resize a temporary array");
+      }
     }
 
     void reserve(UInt /*size*/, UInt /*new_size*/) final {
@@ -92,21 +92,21 @@ namespace detail {
   /* ------------------------------------------------------------------------ */
   template <typename T>
   decltype(auto) create_proxy(array_type_t<_aka::Vector<T>> & ref,
-                              const _aka::Vector<T> *) {
+                              const _aka::Vector<T> * /*unused*/) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Vector<T>>>(
         ref.mutable_data(), ref.shape(0));
   }
 
   template <typename T>
   decltype(auto) create_proxy(array_type_t<_aka::Matrix<T>> & ref,
-                              const _aka::Matrix<T> *) {
+                              const _aka::Matrix<T> * /*unused*/) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Matrix<T>>>(
         ref.mutable_data(), ref.shape(0), ref.shape(1));
   }
 
   template <typename T>
   decltype(auto) create_proxy(array_type_t<_aka::Array<T>> & ref,
-                              const _aka::Array<T> *) {
+                              const _aka::Array<T> * /*unused*/) {
     return std::make_unique<_aka::detail::ProxyType_t<_aka::Array<T>>>(
         ref.mutable_data(), ref.shape(0), ref.shape(1));
   }
@@ -119,8 +119,9 @@ namespace detail {
     a = array_type_t<_aka::Array<T>>({src.size(), src.getNbComponent()},
                                      src.storage(), base);
 
-    if (not writeable)
+    if (not writeable) {
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+    }
 
     return a.release();
   }
@@ -131,8 +132,9 @@ namespace detail {
     array a;
     a = array_type_t<_aka::Vector<T>>({src.size()}, src.storage(), base);
 
-    if (not writeable)
+    if (not writeable) {
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+    }
 
     return a.release();
   }
@@ -144,15 +146,16 @@ namespace detail {
     a = array_type_t<_aka::Matrix<T>>({src.size(0), src.size(1)}, src.storage(),
                                       base);
 
-    if (not writeable)
+    if (not writeable) {
       array_proxy(a.ptr())->flags &= ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+    }
 
     return a.release();
   }
 
   /* ------------------------------------------------------------------------ */
   template <typename AkaArrayType>
-  class [[gnu::visibility("default")]] type_caster<
+  class  type_caster<
       AkaArrayType,
       std::enable_if_t<_aka::detail::is_array_type<AkaArrayType>::value>> {
   protected:
@@ -186,8 +189,9 @@ namespace detail {
 
       auto && fits = [&](auto && aref) {
         auto && dims = aref.ndim();
-        if (dims < 1 || dims > 2)
+        if (dims < 1 || dims > 2) {
           return false;
+        }
 
         return true;
       };

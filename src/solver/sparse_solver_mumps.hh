@@ -33,8 +33,8 @@
 #include <dmumps_c.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_MUMPS_HH__
-#define __AKANTU_SOLVER_MUMPS_HH__
+#ifndef AKANTU_SOLVER_MUMPS_HH_
+#define AKANTU_SOLVER_MUMPS_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -153,4 +153,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_MUMPS_HH__ */
+#endif /* AKANTU_SOLVER_MUMPS_HH_ */

@@ -33,8 +33,8 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
-#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__
+#ifndef AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH_
+#define AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH_
 
 namespace akantu {
 class Model;
@@ -71,19 +71,24 @@ public:
   weightedAverageOnNeighbours(const ElementTypeMapReal & to_accumulate,
                               ElementTypeMapReal & accumulated,
                               UInt nb_degree_of_freedom,
-                              const GhostType & ghost_type2) const = 0;
+                              GhostType ghost_type2) const = 0;
 
   /// update the weights for the non-local averaging
   virtual void updateWeights() = 0;
 
   /// update the weights for the non-local averaging
-  virtual void saveWeights(const std::string &) const { AKANTU_TO_IMPLEMENT(); }
+  virtual void saveWeights(const std::string & /*unused*/) const {
+    AKANTU_TO_IMPLEMENT();
+  }
 
   /// register a new non-local variable in the neighborhood
   virtual void registerNonLocalVariable(const ID & id);
 
   /// clean up the unneccessary ghosts
   void cleanupExtraGhostElements(std::set<Element> & relevant_ghost_elements);
+
+  /// list releveant ghosts
+  void getRelevantGhostElements(std::set<Element> & relevant_ghost_elements);
 
 protected:
   /// create the grid
@@ -95,16 +100,18 @@ protected:
   /* --------------------------------------------------------------------------
    */
 public:
-  inline UInt getNbData(const Array<Element> &,
-                        const SynchronizationTag &) const override {
+  inline UInt getNbData(const Array<Element> & /*elements*/,
+                        const SynchronizationTag & /*tag*/) const override {
     return 0;
   }
 
-  inline void packData(CommunicationBuffer &, const Array<Element> &,
-                       const SynchronizationTag &) const override {}
+  inline void packData(CommunicationBuffer & /*buffer*/,
+                       const Array<Element> & /*element*/,
+                       const SynchronizationTag & /*tag*/) const override {}
 
-  inline void unpackData(CommunicationBuffer &, const Array<Element> &,
-                         const SynchronizationTag &) override {}
+  inline void unpackData(CommunicationBuffer & /*buffer*/,
+                         const Array<Element> & /*element*/,
+                         const SynchronizationTag & /*tag*/) override {}
 
   /* --------------------------------------------------------------------------
    */
@@ -125,4 +132,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH__ */
+#endif /* AKANTU_NON_LOCAL_NEIGHBORHOOD_BASE_HH_ */

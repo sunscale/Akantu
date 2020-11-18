@@ -39,8 +39,8 @@
 #include <array>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_HEAT_TRANSFER_MODEL_HH__
-#define __AKANTU_HEAT_TRANSFER_MODEL_HH__
+#ifndef AKANTU_HEAT_TRANSFER_MODEL_HH_
+#define AKANTU_HEAT_TRANSFER_MODEL_HH_
 
 namespace akantu {
 template <ElementKind kind, class IntegrationOrderFunctor>
@@ -59,11 +59,11 @@ class HeatTransferModel : public Model,
 public:
   using FEEngineType = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
 
-  HeatTransferModel(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
+  HeatTransferModel(Mesh & mesh, UInt dim = _all_dimensions,
                     const ID & id = "heat_transfer_model",
                     const MemoryID & memory_id = 0);
 
-  virtual ~HeatTransferModel();
+  ~HeatTransferModel() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -76,7 +76,8 @@ protected:
   void readMaterials();
 
   /// allocate all vectors
-  void initSolver(TimeStepSolverType, NonLinearSolverType) override;
+  void initSolver(TimeStepSolverType time_step_solver_type,
+                  NonLinearSolverType non_linear_solver_type) override;
 
   /// initialize the model
   void initModel() override;
@@ -87,13 +88,13 @@ protected:
   void assembleResidual() override;
 
   /// get the type of matrix needed
-  MatrixType getMatrixType(const ID &) override;
+  MatrixType getMatrixType(const ID & matrix_id) override;
 
   /// callback to assemble a Matrix
-  void assembleMatrix(const ID &) override;
+  void assembleMatrix(const ID & matrix_id) override;
 
   /// callback to assemble a lumped Matrix
-  void assembleLumpedMatrix(const ID &) override;
+  void assembleLumpedMatrix(const ID & matrix_id) override;
 
   std::tuple<ID, TimeStepSolverType>
   getDefaultSolverID(const AnalysisMethod & method) override;
@@ -133,13 +134,13 @@ public:
 private:
   /// calculate the lumped capacity vector for heat transfer problem (w
   /// ghost type)
-  void assembleCapacityLumped(const GhostType & ghost_type);
+  void assembleCapacityLumped(GhostType ghost_type);
 
   /// compute the conductivity tensor for each quadrature point in an array
-  void computeConductivityOnQuadPoints(const GhostType & ghost_type);
+  void computeConductivityOnQuadPoints(GhostType ghost_type);
 
   /// compute vector \f[k \grad T\f] for each quadrature point
-  void computeKgradT(const GhostType & ghost_type);
+  void computeKgradT(GhostType ghost_type);
 
   /// compute the thermal energy
   Real computeThermalEnergyByNode();
@@ -183,8 +184,7 @@ public:
   std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
-                       const UInt & spatial_dimension,
-                       const ElementKind & kind) override;
+                       UInt spatial_dimension, ElementKind kind) override;
 
   virtual void dump(const std::string & dumper_name);
 
@@ -231,13 +231,12 @@ public:
   AKANTU_GET_MACRO(TemperatureRate, *temperature_rate, Array<Real> &);
 
   /// get the energy denominated by thermal
-  Real getEnergy(const std::string & energy_id, const ElementType & type,
-                 UInt index);
+  Real getEnergy(const std::string & energy_id, ElementType type, UInt index);
   /// get the energy denominated by thermal
   Real getEnergy(const std::string & energy_id);
 
   /// get the thermal energy for a given element
-  Real getThermalEnergy(const ElementType & type, UInt index);
+  Real getThermalEnergy(ElementType type, UInt index);
   /// get the thermal energy for a given element
   Real getThermalEnergy();
 
@@ -248,7 +247,7 @@ protected:
   /* ----------------------------------------------------------------------- */
   template <class iterator>
   void getThermalEnergy(iterator Eth, Array<Real>::const_iterator<Real> T_it,
-                        Array<Real>::const_iterator<Real> T_end) const;
+                        const Array<Real>::const_iterator<Real> & T_end) const;
 
   template <typename T>
   void allocNodalField(Array<T> *& array, const ID & name);
@@ -258,7 +257,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 private:
   /// number of iterations
-  //UInt n_iter;
+  // UInt n_iter;
 
   /// time step
   Real time_step;
@@ -297,7 +296,7 @@ private:
   Array<bool> * blocked_dofs{nullptr};
 
   // realtime
-  //Real time;
+  // Real time;
 
   /// capacity
   Real capacity;
@@ -313,7 +312,7 @@ private:
   Real T_ref;
 
   // the biggest parameter of conductivity matrix
-  //Real conductivitymax;
+  // Real conductivitymax;
 
   bool need_to_reassemble_capacity{true};
   bool need_to_reassemble_capacity_lumped{true};
@@ -332,4 +331,4 @@ private:
 /* -------------------------------------------------------------------------- */
 #include "heat_transfer_model_inline_impl.hh"
 
-#endif /* __AKANTU_HEAT_TRANSFER_MODEL_HH__ */
+#endif /* AKANTU_HEAT_TRANSFER_MODEL_HH_ */

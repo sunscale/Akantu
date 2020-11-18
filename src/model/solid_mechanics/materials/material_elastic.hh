@@ -35,8 +35,8 @@
 #include "plane_stress_toolbox.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ELASTIC_HH__
-#define __AKANTU_MATERIAL_ELASTIC_HH__
+#ifndef AKANTU_MATERIAL_ELASTIC_HH_
+#define AKANTU_MATERIAL_ELASTIC_HH_
 
 namespace akantu {
 
@@ -80,7 +80,7 @@ public:
                      GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
 
@@ -101,7 +101,7 @@ protected:
   /// constitutive law for a given quadrature point
   inline void computeStressOnQuad(const Matrix<Real> & grad_u,
                                   Matrix<Real> & sigma,
-                                  const Real sigma_th = 0) const;
+                                  Real sigma_th = 0) const;
 
   /// compute the tangent stiffness matrix for an element
   inline void computeTangentModuliOnQuad(Matrix<Real> & tangent) const;
@@ -155,4 +155,4 @@ protected:
 
 #include "material_elastic_inline_impl.hh"
 
-#endif /* __AKANTU_MATERIAL_ELASTIC_HH__ */
+#endif /* AKANTU_MATERIAL_ELASTIC_HH_ */

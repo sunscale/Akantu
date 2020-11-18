@@ -36,8 +36,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__
-#define __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__
+#ifndef AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH_
+#define AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH_
 
 using namespace akantu;
 
@@ -101,4 +101,4 @@ template <typename type_> const UInt TestStructuralFixture<type_>::ndof;
 
 // TYPED_TEST_SUITE(TestStructuralFixture, types);
 
-#endif /* __AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH__ */
+#endif /* AKANTU_TEST_STRUCTURAL_MECHANICS_MODEL_FIXTURE_HH_ */

@@ -43,7 +43,7 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
     : SparseMatrix(dof_manager, matrix_type, id), dof_manager(dof_manager) {
   AKANTU_DEBUG_IN();
 
-  auto mpi_comm = dof_manager.getMPIComm();
+  auto && mpi_comm = dof_manager.getMPIComm();
 
   PETSc_call(MatCreate, mpi_comm, &mat);
   detail::PETScSetName(mat, id);
@@ -57,8 +57,9 @@ SparseMatrixPETSc::SparseMatrixPETSc(DOFManagerPETSc & dof_manager,
   PETSc_call(MatSetOption, mat, MAT_ROW_ORIENTED, PETSC_TRUE);
   PETSc_call(MatSetOption, mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
 
-  if (matrix_type == _symmetric)
+  if (matrix_type == _symmetric) {
     PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_TRUE);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -75,8 +76,9 @@ SparseMatrixPETSc::SparseMatrixPETSc(const SparseMatrixPETSc & matrix,
 SparseMatrixPETSc::~SparseMatrixPETSc() {
   AKANTU_DEBUG_IN();
 
-  if (mat)
+  if (mat != nullptr) {
     PETSc_call(MatDestroy, &mat);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -98,7 +100,7 @@ void SparseMatrixPETSc::resize() {
 void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
   AKANTU_DEBUG_IN();
 
-  auto mpi_comm = dof_manager.getMPIComm();
+  auto && mpi_comm = dof_manager.getMPIComm();
 
   /// create Petsc viewer
   PetscViewer viewer;
@@ -115,7 +117,7 @@ void SparseMatrixPETSc::saveMatrix(const std::string & filename) const {
 /// Equivalent of *gemv in blas
 void SparseMatrixPETSc::matVecMul(const SolverVector & _x, SolverVector & _y,
                                   Real alpha, Real beta) const {
-  auto & x = aka::as_type<SolverVectorPETSc>(_x);
+  const auto & x = aka::as_type<SolverVectorPETSc>(_x);
   auto & y = aka::as_type<SolverVectorPETSc>(_y);
 
   // y = alpha A x + beta y
@@ -181,7 +183,7 @@ void SparseMatrixPETSc::endAssembly() {
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::copyProfile(const SparseMatrix & other) {
-  auto & A = aka::as_type<SparseMatrixPETSc>(other);
+  const auto & A = aka::as_type<SparseMatrixPETSc>(other);
 
   MatDestroy(&mat);
   MatDuplicate(A.mat, MAT_DO_NOT_COPY_VALUES, &mat);
@@ -220,7 +222,7 @@ void SparseMatrixPETSc::mul(Real alpha) {
 }
 
 /* -------------------------------------------------------------------------- */
-void SparseMatrixPETSc::clear() {
+void SparseMatrixPETSc::zero() {
   PETSc_call(MatZeroEntries, mat);
   this->release++;
 }
@@ -234,7 +236,7 @@ void SparseMatrixPETSc::clearProfile() {
   //   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATIONS, PETSC_TRUE);
   //   PETSc_call(MatSetOption, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);
 
-  clear();
+  this->zero();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -261,22 +263,22 @@ void SparseMatrixPETSc::addLocal(UInt i, UInt j, Real val) {
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addLocal(const Vector<Int> & rows,
                                  const Vector<Int> & cols,
-                                 const Matrix<Real> & vals) {
+                                 const Matrix<Real> & values) {
   PETSc_call(MatSetValuesLocal, mat, rows.size(), rows.storage(), cols.size(),
-             cols.storage(), vals.storage(), ADD_VALUES);
+             cols.storage(), values.storage(), ADD_VALUES);
 }
 
 /* -------------------------------------------------------------------------- */
 void SparseMatrixPETSc::addValues(const Vector<Int> & rows,
                                   const Vector<Int> & cols,
-                                  const Matrix<Real> & vals, MatrixType type) {
-  if (type == _unsymmetric and matrix_type == _symmetric) {
+                                  const Matrix<Real> & values, MatrixType values_type) {
+  if (values_type == _unsymmetric and matrix_type == _symmetric) {
     PETSc_call(MatSetOption, mat, MAT_SYMMETRIC, PETSC_FALSE);
     PETSc_call(MatSetOption, mat, MAT_STRUCTURALLY_SYMMETRIC, PETSC_FALSE);
   }
 
   PETSc_call(MatSetValues, mat, rows.size(), rows.storage(), cols.size(),
-             cols.storage(), vals.storage(), ADD_VALUES);
+             cols.storage(), values.storage(), ADD_VALUES);
 }
 
 /* -------------------------------------------------------------------------- */

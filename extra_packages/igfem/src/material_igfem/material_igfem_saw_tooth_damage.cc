@@ -78,7 +78,6 @@ void MaterialIGFEMSawToothDamage<spatial_dimension>::
   Real * dam = this->damage(el_type, ghost_type).storage();
   Matrix<Real> sigma(spatial_dimension, spatial_dimension);
   for (; grad_u_it != grad_u_end; ++grad_u_it) {
-    sigma.clear();
     MaterialIGFEMElastic<spatial_dimension>::computeStressOnQuad(
         *grad_u_it, sigma, *lambda_ptr, *mu_ptr);
     computeDamageAndStressOnQuad(sigma, *dam);

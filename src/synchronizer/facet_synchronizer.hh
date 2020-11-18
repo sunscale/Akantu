@@ -16,8 +16,8 @@
 #include "fe_engine.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FACET_SYNCHRONIZER_HH__
-#define __AKANTU_FACET_SYNCHRONIZER_HH__
+#ifndef AKANTU_FACET_SYNCHRONIZER_HH_
+#define AKANTU_FACET_SYNCHRONIZER_HH_
 
 namespace akantu {
 
@@ -93,4 +93,4 @@ private:
 
 #include "facet_synchronizer_inline_impl.hh"
 
-#endif /* __AKANTU_FACET_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_FACET_SYNCHRONIZER_HH_ */

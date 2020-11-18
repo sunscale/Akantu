@@ -192,8 +192,8 @@ void applyBoundaryConditions(SolidMechanicsModelIGFEM & model) {
   Array<Real> & disp = model.getDisplacement();
   Array<bool> & boun = model.getBlockedDOFs();
 
-  disp.clear();
-  boun.clear();
+  disp.zero();
+  boun.zero();
   /// free expansion
   for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
 

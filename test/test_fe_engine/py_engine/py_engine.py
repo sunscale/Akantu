@@ -354,7 +354,7 @@ class Shapes:
                 _J = np.matmul(_bq[q], X[e])
 
                 if np.linalg.norm(_N[e, q] - _nq[q]) > 1e-10:
-                    print(f"{e},{q}")
+                    print("{0},{1}".format(e, q))
                     print(_N[e, q])
                     print(_nq[q])
                 _N[e, q] = _nq[q]

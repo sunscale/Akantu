@@ -39,8 +39,8 @@
 #include "material_plastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__
-#define __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__
+#ifndef AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH_
+#define AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH_
 
 namespace akantu {
 
@@ -69,26 +69,28 @@ public:
                      GhostType ghost_type = _not_ghost) override;
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
 
 protected:
   /// Infinitesimal deformations
-  inline void computeStressOnQuad(
-      const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
-      Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
-      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
-      Real & iso_hardening, const Real & previous_iso_hardening,
-      const Real & sigma_th, const Real & previous_sigma_th);
+  inline void
+  computeStressOnQuad(const Matrix<Real> & grad_u,
+                      const Matrix<Real> & previous_grad_u,
+                      Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
+                      Matrix<Real> & inelastic_strain,
+                      const Matrix<Real> & previous_inelastic_strain,
+                      Real & iso_hardening, const Real & previous_iso_hardening,
+                      const Real & sigma_th, const Real & previous_sigma_th);
   /// Finite deformations
   inline void computeStressOnQuad(
       const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
       Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
-      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
-      Real & iso_hardening, const Real & previous_iso_hardening,
-      const Real & sigma_th, const Real & previous_sigma_th,
-      const Matrix<Real> & F_tensor);
+      Matrix<Real> & inelastic_strain,
+      const Matrix<Real> & previous_inelastic_strain, Real & iso_hardening,
+      const Real & previous_iso_hardening, const Real & sigma_th,
+      const Real & previous_sigma_th, const Matrix<Real> & F_tensor);
 
   inline void computeTangentModuliOnQuad(
       Matrix<Real> & tangent, const Matrix<Real> & grad_u,
@@ -109,4 +111,4 @@ private:
 
 #include "material_linear_isotropic_hardening_inline_impl.hh"
 
-#endif /* __AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH__ */
+#endif /* AKANTU_MATERIAL_LINEAR_ISOTROPIC_HARDENING_HH_ */

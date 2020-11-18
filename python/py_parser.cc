@@ -15,8 +15,7 @@ namespace py = pybind11;
 namespace akantu {
 std::map<void *, std::map<std::string, void *>> map_params;
 
-__attribute__((visibility("default"))) void register_parser(py::module & mod) {
-
+void register_parser(py::module & mod) {
   py::enum_<ParameterAccessType>(mod, "ParameterAccessType", py::arithmetic())
       .value("_pat_internal", _pat_internal)
       .value("_pat_writable", _pat_writable)

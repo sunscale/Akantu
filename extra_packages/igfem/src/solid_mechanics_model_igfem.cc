@@ -198,7 +198,7 @@ void SolidMechanicsModelIGFEM::onElementsAdded(const Array<Element> & elements,
       dynamic_cast<const NewIGFEMElementsEvent *>(&event);
   /// insert the new and old elements in the map
   if (igfem_event != NULL) {
-    this->element_map.clear();
+    this->element_map.zero();
     const Array<Element> & old_elements = igfem_event->getOldElementsList();
     for (UInt e = 0; e < elements.getSize(); ++e) {
       this->element_map[elements(e)] = old_elements(e);
@@ -309,7 +309,7 @@ void SolidMechanicsModelIGFEM::onNodesRemoved(const Array<UInt> & nodes_list,
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModelIGFEM::addDumpGroupFieldToDumper(
     const std::string & dumper_name, const std::string & field_id,
-    const std::string & group_name, const ElementKind & element_kind,
+    const std::string & group_name, ElementKind element_kind,
     bool padding_flag) {
   AKANTU_DEBUG_IN();
 
@@ -337,7 +337,7 @@ void SolidMechanicsModelIGFEM::onDump() {
 dumpers::Field * SolidMechanicsModelIGFEM::createElementalField(
     const std::string & field_name, const std::string & group_name,
     bool padding_flag, const UInt & spatial_dimension,
-    const ElementKind & kind) {
+    ElementKind kind) {
 
   dumpers::Field * field = NULL;
 
@@ -458,7 +458,7 @@ SolidMechanicsModelIGFEM::createNodalFieldReal(const std::string & field_name,
 dumpers::Field * SolidMechanicsModelIGFEM::createElementalField(
     const std::string & field_name, const std::string & group_name,
     bool padding_flag, const UInt & spatial_dimension,
-    const ElementKind & kind) {
+    ElementKind kind) {
   return NULL;
 }
 

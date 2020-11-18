@@ -96,7 +96,7 @@ namespace {
 template <typename T>
 class TestMaterialThermalFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_SUITE(TestMaterialThermalFixture, mat_types);
+TYPED_TEST_SUITE(TestMaterialThermalFixture, mat_types, );
 
 TYPED_TEST(TestMaterialThermalFixture, ThermalComputeStress) {
   this->material->testComputeStress();

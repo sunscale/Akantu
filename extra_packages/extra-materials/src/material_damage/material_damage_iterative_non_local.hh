@@ -18,8 +18,8 @@
 #include "material_damage_non_local.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_DAMAGE_ITERATIVE_NON_LOCAL_HH__
-#define __AKANTU_MATERIAL_DAMAGE_ITERATIVE_NON_LOCAL_HH__
+#ifndef AKANTU_MATERIAL_DAMAGE_ITERATIVE_NON_LOCAL_HH_
+#define AKANTU_MATERIAL_DAMAGE_ITERATIVE_NON_LOCAL_HH_
 
 namespace akantu {
 
@@ -77,4 +77,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_DAMAGE_ITERATIVE_NON_LOCAL_HH__ */
+#endif /* AKANTU_MATERIAL_DAMAGE_ITERATIVE_NON_LOCAL_HH_ */

@@ -16,3 +16,5 @@ release
 __pycache__
 .mailmap
 compile_commands.json
+.clangd
+.iwyu.imp

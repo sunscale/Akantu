@@ -33,8 +33,8 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_AKA_CIRCULAR_ARRAY_HH__
-#define __AKANTU_AKA_CIRCULAR_ARRAY_HH__
+#ifndef AKANTU_AKA_CIRCULAR_ARRAY_HH_
+#define AKANTU_AKA_CIRCULAR_ARRAY_HH_
 
 namespace akantu {
 
@@ -117,4 +117,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 #include "aka_circular_array_inline_impl.hh"
 
-#endif /* __AKANTU_AKA_CIRCULAR_ARRAY_HH__ */
+#endif /* AKANTU_AKA_CIRCULAR_ARRAY_HH_ */

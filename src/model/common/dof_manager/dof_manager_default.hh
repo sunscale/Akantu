@@ -34,8 +34,8 @@
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_MANAGER_DEFAULT_HH__
-#define __AKANTU_DOF_MANAGER_DEFAULT_HH__
+#ifndef AKANTU_DOF_MANAGER_DEFAULT_HH_
+#define AKANTU_DOF_MANAGER_DEFAULT_HH_
 
 namespace akantu {
 class SparseMatrixAIJ;
@@ -83,8 +83,8 @@ public:
    **/
   void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
-      const Array<Real> & elementary_mat, const ElementType & type,
-      const GhostType & ghost_type, const MatrixType & elemental_matrix_type,
+      const Array<Real> & elementary_mat, ElementType type,
+      GhostType ghost_type, const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements) override;
 
   void assembleMatMulVectToArray(const ID & dof_id, const ID & A_id,
@@ -148,7 +148,7 @@ private:
                                        UInt max_size);
 
   void addToProfile(const ID & matrix_id, const ID & dof_id,
-                    const ElementType & type, const GhostType & ghost_type);
+                    ElementType type, GhostType ghost_type);
 
   /* ------------------------------------------------------------------------ */
   /* MeshEventHandler interface                                               */
@@ -252,4 +252,4 @@ protected:
 
 #include "dof_manager_default_inline_impl.hh"
 
-#endif /* __AKANTU_DOF_MANAGER_DEFAULT_HH__ */
+#endif /* AKANTU_DOF_MANAGER_DEFAULT_HH_ */

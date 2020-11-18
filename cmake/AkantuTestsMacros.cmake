@@ -341,9 +341,8 @@ function(akantu_pybind11_add_module target)
       )
 
     pybind11_add_module(${target} ${ARGN})
-    target_link_libraries(${target} PRIVATE pyakantu)
-    target_include_directories(${target} SYSTEM PRIVATE ${PYBIND11_INCLUDE_DIR}
-      ${AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR})
+    target_link_libraries(${target} PRIVATE akantu)
+    target_include_directories(${target} SYSTEM PRIVATE ${PYBIND11_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/python)
     set_property(TARGET ${target} PROPERTY DEBUG_POSTFIX "")
   endif()
 endfunction()

@@ -96,7 +96,7 @@ register_test(test_facet_element_mapping
 register_gtest_sources(
   SOURCES test_fe_engine_precomputation.cc
   PACKAGE core python_interface
-  LINK_LIBRARIES pyakantu
+  INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/python
   )
 
 register_gtest_sources(

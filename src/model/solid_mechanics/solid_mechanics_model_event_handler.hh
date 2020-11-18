@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH_
 
 namespace akantu {
 
@@ -122,4 +122,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_EVENT_HANDLER_HH_ */

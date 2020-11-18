@@ -136,9 +136,10 @@ void MaterialCohesiveExponential<spatial_dimension>::computeTraction(
       computeCompressiveTraction(*traction_it, *normal_it, normal_opening_norm,
                                  *opening_it);
 
-    } else
+    } else {
       computeCoupledTraction(*traction_it, *normal_it, delta, *opening_it,
                              *delta_max_it, *delta_max_prev_it);
+    }
   }
   AKANTU_DEBUG_OUT();
 }
@@ -153,7 +154,7 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCoupledTraction(
   /// full damage case
   if (std::abs(delta) < Math::getTolerance()) {
     /// set traction to zero
-    tract.clear();
+    tract.zero();
   } else { /// element not fully damaged
     /**
      * Compute traction loading @f$ \mathbf{T} =
@@ -201,7 +202,7 @@ void MaterialCohesiveExponential<spatial_dimension>::computeCompressiveTraction(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialCohesiveExponential<spatial_dimension>::computeTangentTraction(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
+    ElementType el_type, Array<Real> & tangent_matrix,
     const Array<Real> & normal, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -264,9 +265,10 @@ void MaterialCohesiveExponential<spatial_dimension>::computeTangentTraction(
 
       computeCompressivePenalty(*tangent_it, *normal_it, normal_opening_norm);
 
-    } else
+    } else {
       computeCoupledTangent(*tangent_it, *normal_it, delta, *opening_it,
                             *delta_max_it);
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -275,7 +277,7 @@ void MaterialCohesiveExponential<spatial_dimension>::computeTangentTraction(
 template <UInt spatial_dimension>
 void MaterialCohesiveExponential<spatial_dimension>::computeCoupledTangent(
     Matrix<Real> & tangent, const Vector<Real> & normal, Real delta,
-    const Vector<Real> & opening, Real) {
+    const Vector<Real> & opening, Real /*unused*/) {
   AKANTU_DEBUG_IN();
 
   Real beta2 = beta * beta;
@@ -320,8 +322,9 @@ template <UInt spatial_dimension>
 void MaterialCohesiveExponential<spatial_dimension>::computeCompressivePenalty(
     Matrix<Real> & tangent, const Vector<Real> & normal, Real delta_n) {
 
-  if (!exp_penalty)
+  if (!exp_penalty) {
     delta_n = 0.;
+  }
 
   Matrix<Real> n_outer_n(spatial_dimension, spatial_dimension);
   n_outer_n.outerProduct(normal, normal);

@@ -35,8 +35,8 @@
 #include "terms_to_assemble.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_MANAGER_INLINE_IMPL_HH__
-#define __AKANTU_DOF_MANAGER_INLINE_IMPL_HH__
+#ifndef AKANTU_DOF_MANAGER_INLINE_IMPL_HH_
+#define AKANTU_DOF_MANAGER_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -80,15 +80,15 @@ inline void DOFManager::extractElementEquationNumber(
 }
 
 /* -------------------------------------------------------------------------- */
-template <class _DOFData>
-inline _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) {
-  return aka::as_type<_DOFData>(this->getDOFData(dof_id));
+template <class DOFData_>
+inline DOFData_ & DOFManager::getDOFDataTyped(const ID & dof_id) {
+  return aka::as_type<DOFData_>(this->getDOFData(dof_id));
 }
 
 /* -------------------------------------------------------------------------- */
-template <class _DOFData>
-inline const _DOFData & DOFManager::getDOFDataTyped(const ID & dof_id) const {
-  return aka::as_type<_DOFData>(this->getDOFData(dof_id));
+template <class DOFData_>
+inline const DOFData_ & DOFManager::getDOFDataTyped(const ID & dof_id) const {
+  return aka::as_type<DOFData_>(this->getDOFData(dof_id));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,10 +131,11 @@ inline Array<Real> & DOFManager::getDOFsDerivatives(const ID & dofs_id,
 
   std::vector<Array<Real> *> & derivatives =
       this->getDOFData(dofs_id).dof_derivatives;
-  if ((order > derivatives.size()) || (derivatives[order - 1] == nullptr))
+  if ((order > derivatives.size()) || (derivatives[order - 1] == nullptr)) {
     AKANTU_EXCEPTION("No derivatives of order " << order << " present in "
                                                 << this->id << " for dof "
                                                 << dofs_id);
+  }
 
   return *derivatives[order - 1];
 }
@@ -232,7 +233,7 @@ void DOFManager::assembleMatMulVectToArray_(const ID & dof_id, const ID & A_id,
                                             Array<Real> & array,
                                             Real scale_factor) {
   Vec tmp_array(aka::as_type<Vec>(*data_cache), this->id + ":tmp_array");
-  tmp_array.clear();
+  tmp_array.zero();
   assembleMatMulVectToGlobalArray(dof_id, A_id, x, tmp_array, scale_factor);
   getArrayPerDOFs(dof_id, tmp_array, array);
 }
@@ -241,7 +242,7 @@ void DOFManager::assembleMatMulVectToArray_(const ID & dof_id, const ID & A_id,
 template <typename Mat>
 void DOFManager::assembleElementalMatricesToMatrix_(
     Mat & A, const ID & dof_id, const Array<Real> & elementary_mat,
-    const ElementType & type, const GhostType & ghost_type,
+    ElementType type, GhostType ghost_type,
     const MatrixType & elemental_matrix_type,
     const Array<UInt> & filter_elements) {
   AKANTU_DEBUG_IN();
@@ -289,8 +290,9 @@ void DOFManager::assembleElementalMatricesToMatrix_(
   auto el_mat_it = elementary_mat.begin(size_mat, size_mat);
 
   for (UInt e = 0; e < nb_element; ++e, ++el_mat_it) {
-    if (filter_it)
+    if (filter_it) {
       conn_it = conn_begin + *filter_it;
+    }
 
     this->extractElementEquationNumber(equation_number, *conn_it,
                                        nb_degree_of_freedom, element_eq_nb);
@@ -299,10 +301,11 @@ void DOFManager::assembleElementalMatricesToMatrix_(
                      return this->localToGlobalEquationNumber(local);
                    });
 
-    if (filter_it)
+    if (filter_it) {
       ++filter_it;
-    else
+    } else {
       ++conn_it;
+    }
 
     A.addValues(element_eq_nb, element_eq_nb, *el_mat_it,
                 elemental_matrix_type);
@@ -329,4 +332,4 @@ void DOFManager::assemblePreassembledMatrix_(Mat & A, const ID & dof_id_m,
 
 } // namespace akantu
 
-#endif /* __AKANTU_DOF_MANAGER_INLINE_IMPL_HH__ */
+#endif /* AKANTU_DOF_MANAGER_INLINE_IMPL_HH_ */

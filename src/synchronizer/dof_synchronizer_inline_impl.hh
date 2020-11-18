@@ -37,8 +37,8 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_HH__
-#define __AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_HH__
+#ifndef AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_HH_
+#define AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -57,4 +57,4 @@ inline UInt DOFSynchronizer::localToGlobalEntity(const UInt & local) {
 }
 } // namespace akantu
 
-#endif /* __AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_HH__ */
+#endif /* AKANTU_DOF_SYNCHRONIZER_INLINE_IMPL_HH_ */

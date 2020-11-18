@@ -38,7 +38,7 @@
 #pragma warning ( disable : 981 )
 #endif //defined(__INTEL_COMPILER)
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 /* -------------------------------------------------------------------------- */
 
@@ -68,7 +68,7 @@ void DumperRestart::dump(__attribute__((unused)) const std::string & basename){
 
 
 
-__END_IOHELPER__
+}
 
 
 /* -------------------------------------------------------------------------- */

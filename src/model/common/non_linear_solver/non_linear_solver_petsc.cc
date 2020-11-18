@@ -60,7 +60,7 @@ NonLinearSolverPETSc::NonLinearSolverPETSc(
 
   this->checkIfTypeIsSupported();
 
-  auto mpi_comm = dof_manager.getMPIComm();
+  auto && mpi_comm = dof_manager.getMPIComm();
 
   PETSc_call(SNESCreate, mpi_comm, &snes);
 
@@ -143,7 +143,7 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
 
   callback.assembleMatrix("J");
   auto & global_x = dof_manager.getSolution();
-  global_x.clear();
+  global_x.zero();
 
   if (not x) {
     x = std::make_unique<SolverVectorPETSc>(global_x, "temporary_solution");
@@ -166,7 +166,7 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   PETSc_call(SNESSetJacobian, snes, J, J, NonLinearSolverPETSc::FormJacobian,
              ctx.get());
 
-  rhs.clear();
+  rhs.zero();
 
   callback.predictor();
   callback.assembleResidual();
@@ -184,8 +184,11 @@ void NonLinearSolverPETSc::solve(SolverCallback & callback) {
   callback.afterSolveStep(converged);
 
   if (not converged) {
-    PetscReal atol, rtol, stol;
-    PetscInt maxit, maxf;
+    PetscReal atol;
+    PetscReal rtol;
+    PetscReal stol;
+    PetscInt maxit;
+    PetscInt maxf;
 
     PETSc_call(SNESGetTolerances, snes, &atol, &rtol, &stol, &maxit, &maxf);
     AKANTU_CUSTOM_EXCEPTION(debug::SNESNotConvergedException(
@@ -202,20 +205,20 @@ void NonLinearSolverPETSc::set_param(const ID & param,
   auto it = akantu_to_petsc_option.find(param);
   auto p = it == akantu_to_petsc_option.end() ? param : it->second;
 
-  PetscOptionsSetValue(NULL, p.c_str(), value.c_str());
+  PetscOptionsSetValue(nullptr, p.c_str(), value.c_str());
   SNESSetFromOptions(snes);
-  PetscOptionsClear(NULL);
+  PetscOptionsClear(nullptr);
 }
 
 /* -------------------------------------------------------------------------- */
 void NonLinearSolverPETSc::parseSection(const ParserSection & section) {
   auto parameters = section.getParameters();
   for (auto && param : range(parameters.first, parameters.second)) {
-    PetscOptionsSetValue(NULL, param.getName().c_str(),
+    PetscOptionsSetValue(nullptr, param.getName().c_str(),
                          param.getValue().c_str());
   }
   SNESSetFromOptions(snes);
-  PetscOptionsClear(NULL);
+  PetscOptionsClear(nullptr);
 }
 
 } // namespace akantu

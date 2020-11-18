@@ -16,8 +16,8 @@
 #include "aka_array.hh"
 #include "shape_functions.hh"
 
-#ifndef __AKANTU_SHAPE_IGFEM_HH__
-#define __AKANTU_SHAPE_IGFEM_HH__
+#ifndef AKANTU_SHAPE_IGFEM_HH_
+#define AKANTU_SHAPE_IGFEM_HH_
 
 namespace akantu {
 
@@ -38,21 +38,21 @@ public:
                                  const Matrix<Real> & integration_points,
                                  const Matrix<Real> & integration_points_1,
                                  const Matrix<Real> & integration_points_2,
-                                 const ElementType & type,
-                                 const GhostType & ghost_type);
+                                 ElementType type,
+                                 GhostType ghost_type);
 
   inline void
   interpolateEnrichmentsAllTypes(const Array<Real> & src, Array<Real> & dst,
-                                 const ElementType & type,
-                                 const GhostType & ghost_type) const;
+                                 ElementType type,
+                                 GhostType ghost_type) const;
 
   template <ElementType type>
   inline void precomputeShapesOnEnrichedNodes(const Array<Real> & nodes,
-                                              const GhostType & ghost_type);
+                                              GhostType ghost_type);
 
   template <ElementType type>
   void interpolateAtEnrichedNodes(const Array<Real> & src, Array<Real> & dst,
-                                  const GhostType & ghost_type) const;
+                                  GhostType ghost_type) const;
 
   /// pre compute all shapes on the element integration points from natural
   /// coordinates
@@ -78,7 +78,7 @@ public:
   void interpolate(const Vector<Real> & real_coords, UInt elem,
                    const Matrix<Real> & nodal_values,
                    Vector<Real> & interpolated,
-                   const GhostType & ghost_type) const;
+                   GhostType ghost_type) const;
 
   /// compute the gradient of u on the integration points
   template <ElementType type>
@@ -97,43 +97,43 @@ public:
   template <ElementType type>
   void inverseMap(const Vector<Real> & real_coords, UInt element,
                   Vector<Real> & natural_coords,
-                  const GhostType & ghost_type = _not_ghost) const;
+                  GhostType ghost_type = _not_ghost) const;
 
   /// find natural coords in sub-element from real coords provided an element
   template <ElementType type>
   void inverseMap(const Vector<Real> & real_coords, UInt element,
                   Vector<Real> & natural_coords, UInt sub_element,
-                  const GhostType & ghost_type = _not_ghost) const;
+                  GhostType ghost_type = _not_ghost) const;
 
   /// return true if the coordinates provided are inside the element, false
   /// otherwise
   template <ElementType type>
   bool contains(const Vector<Real> & real_coords, UInt elem,
-                const GhostType & ghost_type) const;
+                GhostType ghost_type) const;
 
   /// compute the shape on a provided point
   template <ElementType type>
   void computeShapes(const Vector<Real> & real_coords, UInt elem,
-                     Vector<Real> & shapes, const GhostType & ghost_type) const;
+                     Vector<Real> & shapes, GhostType ghost_type) const;
 
   /// compute the shape derivatives on a provided point
   template <ElementType type>
   void computeShapeDerivatives(const Matrix<Real> & real_coords, UInt elem,
                                Tensor3<Real> & shapes,
-                               const GhostType & ghost_type) const;
+                               GhostType ghost_type) const;
 
   /// interpolate a field on a given physical point
   template <ElementType type>
   void interpolateOnPhysicalPoint(const Vector<Real> & real_coords, UInt elem,
                                   const Array<Real> & field,
                                   Vector<Real> & interpolated,
-                                  const GhostType & ghost_type) const;
+                                  GhostType ghost_type) const;
 
   /// function to extract values at standard nodes and zero-out enriched values
   /// of a nodal field
   void extractValuesAtStandardNodes(const Array<Real> & nodal_values,
                                     Array<Real> & extracted_values,
-                                    const GhostType & ghost_type) const;
+                                    GhostType ghost_type) const;
 
   /// function to print the containt of the class
   virtual void printself(std::ostream & stream, int indent = 0) const;
@@ -152,18 +152,18 @@ protected:
 public:
   /// get a the shapes vector
   inline const Array<Real> &
-  getShapes(const ElementType & el_type,
-            const GhostType & ghost_type = _not_ghost) const;
+  getShapes(ElementType el_type,
+            GhostType ghost_type = _not_ghost) const;
 
   /// get a the shapes derivatives vector
   inline const Array<Real> &
-  getShapesDerivatives(const ElementType & el_type,
-                       const GhostType & ghost_type = _not_ghost) const;
+  getShapesDerivatives(ElementType el_type,
+                       GhostType ghost_type = _not_ghost) const;
 
   /// get a the shapes vector
   inline const Array<Real> &
-  getShapesAtEnrichedNodes(const ElementType & el_type,
-                           const GhostType & ghost_type = _not_ghost) const;
+  getShapesAtEnrichedNodes(ElementType el_type,
+                           GhostType ghost_type = _not_ghost) const;
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -197,4 +197,4 @@ protected:
 //   return stream;
 // }
 
-#endif /* __AKANTU_SHAPE_IGFEM_HH__ */
+#endif /* AKANTU_SHAPE_IGFEM_HH_ */

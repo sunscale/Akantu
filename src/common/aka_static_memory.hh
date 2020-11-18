@@ -34,8 +34,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_STATIC_MEMORY_HH__
-#define __AKANTU_STATIC_MEMORY_HH__
+#ifndef AKANTU_STATIC_MEMORY_HH_
+#define AKANTU_STATIC_MEMORY_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -78,7 +78,7 @@ public:
   static bool isInstantiated() { return is_instantiated; };
 
   /// remove a reference on the static memory
-  void destroy();
+  static void destroy();
 
   /// access to an Array
   inline const ArrayBase & getArray(const MemoryID & memory_id,
@@ -153,4 +153,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 #include "aka_static_memory_inline_impl.hh"
 #include "aka_static_memory_tmpl.hh"
 
-#endif /* __AKANTU_STATIC_MEMORY_HH__ */
+#endif /* AKANTU_STATIC_MEMORY_HH_ */

@@ -35,11 +35,11 @@
 #include "dumper_lammps.hh"
 #include "dumper_text.hh"
 
-#ifndef __IOHELPER_FIELD_INLINE_IMPL_HH__
-#define __IOHELPER_FIELD_INLINE_IMPL_HH__
+#ifndef IOHELPER_FIELD_INLINE_IMPL_HH_
+#define IOHELPER_FIELD_INLINE_IMPL_HH_
 
 /* -------------------------------------------------------------------------- */
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 template <class Cont>
 inline void Field<Cont>::accept(Visitor & v){
@@ -54,7 +54,7 @@ inline void Field<Cont>::accept(Visitor & v){
   }
 }
 
-__END_IOHELPER__
+}
 /* -------------------------------------------------------------------------- */
 
-#endif /* __IOHELPER_FIELD_INLINE_IMPL_HH__ */
+#endif /* IOHELPER_FIELD_INLINE_IMPL_HH_ */

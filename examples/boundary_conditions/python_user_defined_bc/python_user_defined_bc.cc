@@ -23,8 +23,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "solid_mechanics_model.hh"
 #include "py_aka_array.hh"
+#include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 #include <cmath>
 #include <iostream>
@@ -35,7 +35,7 @@ namespace py = pybind11;
 
 using namespace akantu;
 
-class SineBoundary : public BC::Dirichlet::DirichletFunctor {
+class PYBIND11_EXPORT SineBoundary : public BC::Dirichlet::DirichletFunctor {
 public:
   SineBoundary(Real amplitude, Real phase) {
     py_module = py::module::import("boundary_condition");
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]) {
   /// boundary conditions
   Vector<Real> traction(2, 0.2);
   SineBoundary sin_boundary(.2, 10.);
-  
+
   model.applyBC(sin_boundary, "Fixed_x");
   model.applyBC(BC::Dirichlet::FixedValue(0., _y), "Fixed_y");
   model.applyBC(BC::Neumann::FromTraction(traction), "Traction");

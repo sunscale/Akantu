@@ -56,7 +56,7 @@ public:
 
   MatrixType getMatrixType(const ID &) override { return _mt_not_defined; }
   std::tuple<ID, TimeStepSolverType>
-  getDefaultSolverID(const AnalysisMethod & /*method*/) {
+  getDefaultSolverID(const AnalysisMethod & /*method*/) override {
     return std::make_tuple("test", TimeStepSolverType::_static);
   }
 
@@ -78,7 +78,7 @@ public:
                          const ChangedElementsEvent &) override {}
 
   void insertIntegrationPointsInNeighborhoods(
-      const GhostType & ghost_type) override {
+      GhostType ghost_type) override {
     ElementTypeMapArray<Real> quadrature_points_coordinates(
         "quadrature_points_coordinates_tmp_nl", this->id, this->memory_id);
     quadrature_points_coordinates.initialize(this->getFEEngine(),
@@ -108,13 +108,13 @@ public:
     }
   }
 
-  void computeNonLocalStresses(const GhostType &) override {}
+  void computeNonLocalStresses(GhostType) override {}
 
-  void updateLocalInternal(ElementTypeMapReal &, const GhostType &,
-                           const ElementKind &) override {}
+  void updateLocalInternal(ElementTypeMapReal &, GhostType,
+                           ElementKind) override {}
 
-  void updateNonLocalInternal(ElementTypeMapReal &, const GhostType &,
-                              const ElementKind &) override {}
+  void updateNonLocalInternal(ElementTypeMapReal &, GhostType,
+                              ElementKind) override {}
 
   const auto & getNonLocalManager() const { return manager; }
 

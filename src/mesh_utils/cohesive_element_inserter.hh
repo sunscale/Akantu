@@ -37,8 +37,8 @@
 #include <numeric>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
-#define __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__
+#ifndef AKANTU_COHESIVE_ELEMENT_INSERTER_HH_
+#define AKANTU_COHESIVE_ELEMENT_INSERTER_HH_
 
 namespace akantu {
 class GlobalIdsUpdater;
@@ -170,4 +170,4 @@ private:
 
 #include "cohesive_element_inserter_inline_impl.hh"
 
-#endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_HH__ */
+#endif /* AKANTU_COHESIVE_ELEMENT_INSERTER_HH_ */

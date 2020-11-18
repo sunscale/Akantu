@@ -51,7 +51,7 @@ MaterialReinforcement<Mat, dim>::MaterialReinforcement(
       pre_stress("pre_stress", *this, 1,
                  model.getFEEngine("EmbeddedInterfaceFEEngine"),
                  this->element_filter),
-      area(1.0), shape_derivatives() {
+      area(1.0) {
   AKANTU_DEBUG_IN();
   this->initialize();
   AKANTU_DEBUG_OUT();
@@ -110,9 +110,9 @@ void MaterialReinforcement<Mat, dim>::initFilters() {
   for (auto gt : ghost_types) {
     for (auto && type : emodel.getInterfaceMesh().elementTypes(1, gt)) {
       std::string shaped_id = "filter";
-      if (gt == _ghost)
+      if (gt == _ghost) {
         shaped_id += ":ghost";
-
+      }
       auto & background =
           background_filter(std::make_unique<ElementTypeMapArray<UInt>>(
                                 "bg_" + shaped_id, this->name),
@@ -138,9 +138,8 @@ void MaterialReinforcement<Mat, dim>::initFilters() {
 /// Construct a filter for a (interface_type, background_type) pair
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::filterInterfaceBackgroundElements(
-    Array<UInt> & foreground, Array<UInt> & background,
-    const ElementType & type, const ElementType & interface_type,
-    GhostType ghost_type) {
+    Array<UInt> & foreground, Array<UInt> & background, ElementType type,
+    ElementType interface_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   foreground.resize(0);
@@ -167,11 +166,11 @@ namespace detail {
   class BackgroundShapeDInitializer : public ElementTypeMapArrayInitializer {
   public:
     BackgroundShapeDInitializer(UInt spatial_dimension, FEEngine & engine,
-                                const ElementType & foreground_type,
+                                ElementType foreground_type,
                                 const ElementTypeMapArray<UInt> & filter,
-                                const GhostType & ghost_type)
+                                GhostType ghost_type)
         : ElementTypeMapArrayInitializer(
-              [](const ElementType & bgtype, const GhostType &) {
+              [](ElementType bgtype, GhostType /*unused*/) {
                 return ShapeFunctions::getShapeDerivativesSize(bgtype);
               },
               spatial_dimension, ghost_type, _ek_regular) {
@@ -189,7 +188,7 @@ namespace detail {
       return array_size_per_bg_type.elementTypes();
     }
 
-    UInt size(const ElementType & bgtype) const {
+    UInt size(ElementType bgtype) const {
       return array_size_per_bg_type(bgtype, this->ghost_type);
     }
 
@@ -211,8 +210,9 @@ void MaterialReinforcement<Mat, dim>::allocBackgroundShapeDerivatives() {
   for (auto gt : ghost_types) {
     for (auto && type : emodel.getInterfaceMesh().elementTypes(1, gt)) {
       std::string shaped_id = "embedded_shape_derivatives";
-      if (gt == _ghost)
+      if (gt == _ghost) {
         shaped_id += ":ghost";
+      }
 
       auto & shaped_etma = shape_derivatives(
           std::make_unique<ElementTypeMapArray<Real>>(shaped_id, this->name),
@@ -249,8 +249,8 @@ void MaterialReinforcement<Mat, dim>::initBackgroundShapeDerivatives() {
 /* -------------------------------------------------------------------------- */
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
-    const ElementType & interface_type, const ElementType & bg_type,
-    GhostType ghost_type, const Array<UInt> & filter) {
+    ElementType interface_type, ElementType bg_type, GhostType ghost_type,
+    const Array<UInt> & filter) {
   auto & interface_engine = emodel.getFEEngine("EmbeddedInterfaceFEEngine");
   auto & engine = emodel.getFEEngine();
   auto & interface_mesh = emodel.getInterfaceMesh();
@@ -276,7 +276,8 @@ void MaterialReinforcement<Mat, dim>::computeBackgroundShapeDerivatives(
   auto quad_begin = quad_pos.begin(dim, nb_quads_per_elem);
 
   for (auto && tuple : zip(background_elements, foreground_elements)) {
-    UInt bg = std::get<0>(tuple), fg = std::get<1>(tuple);
+    auto bg = std::get<0>(tuple);
+    auto fg = std::get<1>(tuple);
     for (UInt i = 0; i < nb_quads_per_elem; ++i) {
       Matrix<Real> shapesd = Tensor3<Real>(shapesd_begin[fg])(i);
       Vector<Real> quads = Matrix<Real>(quad_begin[fg])(i);
@@ -354,7 +355,7 @@ void MaterialReinforcement<Mat, dim>::computeAllStresses(GhostType ghost_type) {
 
 /* -------------------------------------------------------------------------- */
 template <class Mat, UInt dim>
-void MaterialReinforcement<Mat, dim>::addPrestress(const ElementType & type,
+void MaterialReinforcement<Mat, dim>::addPrestress(ElementType type,
                                                    GhostType ghost_type) {
   auto & stress = this->stress(type, ghost_type);
   auto & sigma_p = this->pre_stress(type, ghost_type);
@@ -367,7 +368,7 @@ void MaterialReinforcement<Mat, dim>::addPrestress(const ElementType & type,
 /* -------------------------------------------------------------------------- */
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::assembleInternalForces(
-    const ElementType & type, GhostType ghost_type) {
+    ElementType type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Mesh & mesh = emodel.getMesh();
@@ -390,7 +391,7 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForces(
  */
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::assembleInternalForcesInterface(
-    const ElementType & interface_type, const ElementType & background_type,
+    ElementType interface_type, ElementType background_type,
     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -456,7 +457,7 @@ void MaterialReinforcement<Mat, dim>::assembleInternalForcesInterface(
 
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::computeDirectingCosines(
-    const ElementType & type, GhostType ghost_type) {
+    ElementType type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Mesh & interface_mesh = emodel.getInterfaceMesh();
@@ -501,7 +502,7 @@ void MaterialReinforcement<Mat, dim>::computeDirectingCosines(
 
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrix(
-    const ElementType & type, GhostType ghost_type) {
+    ElementType type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Mesh & mesh = emodel.getMesh();
@@ -523,7 +524,7 @@ void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrix(
  */
 template <class Mat, UInt dim>
 void MaterialReinforcement<Mat, dim>::assembleStiffnessMatrixInterface(
-    const ElementType & interface_type, const ElementType & background_type,
+    ElementType interface_type, ElementType background_type,
     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -639,8 +640,8 @@ Real MaterialReinforcement<Mat, dim>::getEnergy(const std::string & id) {
 /* -------------------------------------------------------------------------- */
 
 template <class Mat, UInt dim>
-void MaterialReinforcement<Mat, dim>::computeGradU(
-    const ElementType & interface_type, GhostType ghost_type) {
+void MaterialReinforcement<Mat, dim>::computeGradU(ElementType interface_type,
+                                                   GhostType ghost_type) {
   // Looping over background types
   for (auto && bg_type :
        background_filter(interface_type, ghost_type)->elementTypes(dim)) {
@@ -701,11 +702,11 @@ template <class Mat, UInt dim>
 inline void MaterialReinforcement<Mat, dim>::computeDirectingCosinesOnQuad(
     const Matrix<Real> & nodes, Matrix<Real> & cosines) {
   AKANTU_DEBUG_IN();
-
   AKANTU_DEBUG_ASSERT(nodes.cols() == 2,
                       "Higher order reinforcement elements not implemented");
 
-  const Vector<Real> a = nodes(0), b = nodes(1);
+  const Vector<Real> a = nodes(0);
+  const Vector<Real> b = nodes(1);
   Vector<Real> delta = b - a;
 
   Real sq_length = 0.;

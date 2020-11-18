@@ -99,7 +99,7 @@ TYPED_TEST(TestSMMFixture, WorkQuasistatic) {
     Real Epot;
     static const UInt N = 100;
     for (UInt i = 0; i <= N; ++i) {
-      this->model->getExternalForce().clear(); // reset external forces to zero
+      this->model->getExternalForce().zero(); // reset external forces to zero
 
       surface_traction(_x) = (1.0 * i) / N;
 

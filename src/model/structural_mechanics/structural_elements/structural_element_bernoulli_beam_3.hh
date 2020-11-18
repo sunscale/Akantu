@@ -32,8 +32,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__
-#define __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__
+#ifndef AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH_
+#define AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH_
 
 #include "structural_mechanics_model.hh"
 
@@ -163,7 +163,7 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
       getFEEngine().getNbIntegrationPoints(_bernoulli_beam_3);
   UInt tangent_size = 4;
 
-  tangent_moduli.clear();
+  tangent_moduli.zero();
   Array<Real>::matrix_iterator D_it =
       tangent_moduli.begin(tangent_size, tangent_size);
 
@@ -186,4 +186,4 @@ void StructuralMechanicsModel::computeTangentModuli<_bernoulli_beam_3>(
 
 } // namespace akantu
 
-#endif /* __AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH__ */
+#endif /* AKANTU_STRUCTURAL_ELEMENT_BERNOULLI_BEAM_3_HH_ */

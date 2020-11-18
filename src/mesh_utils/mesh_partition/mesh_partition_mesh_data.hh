@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_PARTITION_MESH_DATA_HH__
-#define __AKANTU_MESH_PARTITION_MESH_DATA_HH__
+#ifndef AKANTU_MESH_PARTITION_MESH_DATA_HH_
+#define AKANTU_MESH_PARTITION_MESH_DATA_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -46,11 +46,11 @@ class MeshPartitionMeshData : public MeshPartition {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MeshPartitionMeshData(const Mesh & mesh, UInt spatial_dimension,
+  MeshPartitionMeshData(Mesh & mesh, UInt spatial_dimension,
                         const ID & id = "MeshPartitionerMeshData",
                         const MemoryID & memory_id = 0);
 
-  MeshPartitionMeshData(const Mesh & mesh,
+  MeshPartitionMeshData(Mesh & mesh,
                         const ElementTypeMapArray<UInt> & mapping,
                         UInt spatial_dimension,
                         const ID & id = "MeshPartitionerMeshData",
@@ -62,10 +62,10 @@ public:
 public:
   void partitionate(
       UInt nb_part,
-      std::function<Int(const Element &, const Element &)> edge_load_func =
-          [](auto &&, auto &&) { return 1; },
-      std::function<Int(const Element &)> vertex_load_func =
-          [](auto &&) { return 1; }) override;
+      const std::function<Int(const Element &, const Element &)> &edge_load_func =
+          [](auto && /*unused*/, auto && /*unused*/) { return 1; },
+      const std::function<Int(const Element &)> &vertex_load_func =
+          [](auto && /*unused*/) { return 1; }) override;
 
   void reorder() override;
 
@@ -91,4 +91,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_PARTITION_MESH_DATA_HH__ */
+#endif /* AKANTU_MESH_PARTITION_MESH_DATA_HH_ */

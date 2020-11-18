@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "internal_field.hh"
 
-#ifndef __AKANTU_COHESIVE_INTERNAL_FIELD_HH__
-#define __AKANTU_COHESIVE_INTERNAL_FIELD_HH__
+#ifndef AKANTU_COHESIVE_INTERNAL_FIELD_HH_
+#define AKANTU_COHESIVE_INTERNAL_FIELD_HH_
 
 namespace akantu {
 
@@ -63,4 +63,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_HH__ */
+#endif /* AKANTU_COHESIVE_INTERNAL_FIELD_HH_ */

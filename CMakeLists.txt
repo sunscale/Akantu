@@ -52,11 +52,12 @@ if(CMAKE_VERSION VERSION_GREATER 3.12)
   cmake_policy(SET CMP0074 NEW)
 endif()
 
-set(AKANTU_MAJOR_VERSION 3)
-set(AKANTU_MINOR_VERSION 1)
+set(AKANTU_MAJOR_VERSION 4)
+set(AKANTU_MINOR_VERSION 0)
 set(AKANTU_PATCH_VERSION 0)
-set(AKANTU_COPYRING "2010-2020, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
+set(AKANTU_COPYRIGHT "2010-2020, EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)")
 set(AKANTU_MAINTAINER "Nicolas Richart")
+set(AKANTU_HOMEPAGE_URL "htpps://akantu.ch")
 
 if(CMAKE_VERSION VERSION_GREATER 3.12)
   project(Akantu
@@ -120,6 +121,16 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clan
     CACHE STRING "Flags used by the compiler during debug builds" FORCE)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT} -ggdb3"
     CACHE STRING "Flags used by the compiler during debug builds" FORCE)
+
+  option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." FALSE)
+  mark_as_advanced(FORCE_COLORED_OUTPUT)
+  if(FORCE_COLORED_OUTPUT)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      add_flags(cxx "-fcolor-diagnostics")
+    else()
+      add_flags(cxx "-fdiagnostics-color=always")
+    endif()
+  endif()
 else()
   add_flags(cxx "-Wall")
 endif()

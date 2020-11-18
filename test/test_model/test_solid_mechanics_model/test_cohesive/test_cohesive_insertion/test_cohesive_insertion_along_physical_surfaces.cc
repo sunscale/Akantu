@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
   material_selector->setFallback(model.getMaterialSelector());
   model.setMaterialSelector(material_selector);
 
-  model.initFull(_analysis_method = _static);
+  model.initFull();
 
   std::vector<std::string> surfaces_name = {"interface", "coh1", "coh2",
                                             "coh3",      "coh4", "coh5"};

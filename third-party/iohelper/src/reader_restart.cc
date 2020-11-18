@@ -34,7 +34,7 @@
 #include "file_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 void ReaderRestart::Read(){
 
@@ -128,7 +128,4 @@ void ReaderRestart::Read(){
 
 
 
-__END_IOHELPER__
-
-
-
+}

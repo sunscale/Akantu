@@ -56,43 +56,39 @@ template <> UInt Array<Real>::find(const Real & elem) const {
 
 /* -------------------------------------------------------------------------- */
 template <>
-Array<ElementType> & Array<ElementType>::operator*=(__attribute__((unused))
-                                                    const ElementType & alpha) {
+Array<ElementType> &
+Array<ElementType>::operator*=(const ElementType &/*alpha*/) {
   AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<ElementType> & Array<ElementType>::
-operator-=(__attribute__((unused)) const Array<ElementType> & vect) {
+Array<ElementType> &
+Array<ElementType>::operator-=(const Array<ElementType> & /*vect*/) {
   AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<ElementType> & Array<ElementType>::
-operator+=(__attribute__((unused)) const Array<ElementType> & vect) {
+Array<ElementType> &
+Array<ElementType>::operator+=(const Array<ElementType> & /*vect*/) {
+  AKANTU_TO_IMPLEMENT();
+  return *this;
+}
+
+template <> Array<char> & Array<char>::operator*=(const char & /*alpha*/) {
   AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<char> & Array<char>::operator*=(__attribute__((unused))
-                                      const char & alpha) {
+Array<char> & Array<char>::operator-=(const Array<char> & /*vect*/) {
   AKANTU_TO_IMPLEMENT();
   return *this;
 }
 
 template <>
-Array<char> & Array<char>::operator-=(__attribute__((unused))
-                                      const Array<char> & vect) {
-  AKANTU_TO_IMPLEMENT();
-  return *this;
-}
-
-template <>
-Array<char> & Array<char>::operator+=(__attribute__((unused))
-                                      const Array<char> & vect) {
+Array<char> & Array<char>::operator+=(const Array<char> & /*vect*/) {
   AKANTU_TO_IMPLEMENT();
   return *this;
 }

@@ -249,7 +249,7 @@ void NTNContact::updateNormals() {
   AKANTU_DEBUG_IN();
 
   // set normals to zero
-  this->normals.clear();
+  this->normals.zero();
 
   // contact information
   UInt dim = this->model.getSpatialDimension();

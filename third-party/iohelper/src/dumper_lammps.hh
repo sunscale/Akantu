@@ -28,15 +28,15 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __IOHELPER_DUMPER_LAMMPS_H__
-#define __IOHELPER_DUMPER_LAMMPS_H__
+#ifndef IOHELPER_DUMPER_LAMMPS_H_
+#define IOHELPER_DUMPER_LAMMPS_H_
 /* -------------------------------------------------------------------------- */
 #include "dumper.hh"
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 enum LammpsAtomStyle {atomic, bond}; //please extend ad libidum
 
@@ -55,11 +55,11 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   //! dump to file
-  void dump(const std::string & basename = std::string(),
+  void dump(const std::string & current_name = std::string(),
             UInt count = UInt(-1)) override;
   void dumpHead(Real * bounds = nullptr);
   template<typename T>
-  void visitField(T & cont);
+  void visitField(T & visited);
 
   void dumpFinalize();
   //! set mode for file creation : TEXT, BASE64, COMPRESSED
@@ -132,7 +132,7 @@ void DumperLammps<atomic>::visitField(T & visited) {
 }
 
 /* -------------------------------------------------------------------------- */
-__END_IOHELPER__
+}
 
 /* -------------------------------------------------------------------------- */
 #include "field_inline_impl.hh"
@@ -140,4 +140,4 @@ __END_IOHELPER__
 
 
 
-#endif /* __IOHELPER_DUMPER_LAMMPS_H__ */
+#endif /* IOHELPER_DUMPER_LAMMPS_H_ */

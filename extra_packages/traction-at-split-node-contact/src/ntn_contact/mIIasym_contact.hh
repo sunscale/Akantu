@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_MIIASYM_CONTACT_HH__
-#define __AST_MIIASYM_CONTACT_HH__
+#ifndef AST_MIIASYM_CONTACT_HH_
+#define AST_MIIASYM_CONTACT_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -87,4 +87,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_MIIASYM_CONTACT_HH__ */
+#endif /* AST_MIIASYM_CONTACT_HH_ */

@@ -32,8 +32,8 @@
 /* -------------------------------------------------------------------------- */
 #include "material_marigo.hh"
 
-#ifndef __AKANTU_MATERIAL_MARIGO_INLINE_IMPL_HH__
-#define __AKANTU_MATERIAL_MARIGO_INLINE_IMPL_HH__
+#ifndef AKANTU_MATERIAL_MARIGO_INLINE_IMPL_HH_
+#define AKANTU_MATERIAL_MARIGO_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -51,11 +51,13 @@ inline void MaterialMarigo<spatial_dimension>::computeStressOnQuad(
   }
   Y *= 0.5;
 
-  if (damage_in_y)
+  if (damage_in_y) {
     Y *= (1 - dam);
+  }
 
-  if (yc_limit)
+  if (yc_limit) {
     Y = std::min(Y, Yc);
+  }
 
   if (!this->is_non_local) {
     computeDamageAndStressOnQuad(sigma, dam, Y, Ydq);
@@ -68,8 +70,9 @@ inline void MaterialMarigo<spatial_dimension>::computeDamageAndStressOnQuad(
     Matrix<Real> & sigma, Real & dam, Real & Y, Real & Ydq) {
   Real Fd = Y - Ydq - Sd * dam;
 
-  if (Fd > 0)
+  if (Fd > 0) {
     dam = (Y - Ydq) / Sd;
+  }
   dam = std::min(dam, Real(1.));
 
   sigma *= 1 - dam;
@@ -127,4 +130,4 @@ MaterialMarigo<spatial_dimension>::unpackData(CommunicationBuffer & buffer,
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_MARIGO_INLINE_IMPL_HH__ */
+#endif /* AKANTU_MATERIAL_MARIGO_INLINE_IMPL_HH_ */

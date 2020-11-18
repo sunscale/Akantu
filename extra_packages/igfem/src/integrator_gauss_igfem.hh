@@ -14,8 +14,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTEGRATOR_IGFEM_HH__
-#define __AKANTU_INTEGRATOR_IGFEM_HH__
+#ifndef AKANTU_INTEGRATOR_IGFEM_HH_
+#define AKANTU_INTEGRATOR_IGFEM_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "integrator.hh"
@@ -37,34 +37,34 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   inline void initIntegrator(const Array<Real> & nodes,
-                             const ElementType & type,
-                             const GhostType & ghost_type);
+                             ElementType type,
+                             GhostType ghost_type);
 
   /// precompute jacobians on elements of type "type"
   template <ElementType type>
   void precomputeJacobiansOnQuadraturePoints(const Array<Real> & nodes,
-                                             const GhostType & ghost_type);
+                                             GhostType ghost_type);
 
   /// integrate f on the element "elem" of type "type"
   template <ElementType type>
   inline void integrateOnElement(const Array<Real> & f, Real * intf,
                                  UInt nb_degree_of_freedom, const UInt elem,
-                                 const GhostType & ghost_type) const;
+                                 GhostType ghost_type) const;
 
   /// integrate f for all elements of type "type"
   template <ElementType type>
   void integrate(const Array<Real> & in_f, Array<Real> & intf,
-                 UInt nb_degree_of_freedom, const GhostType & ghost_type,
+                 UInt nb_degree_of_freedom, GhostType ghost_type,
                  const Array<UInt> & filter_elements) const;
 
   /// integrate one element scalar value on all elements of type "type"
   template <ElementType type>
   Real integrate(const Vector<Real> & in_f, UInt index,
-                 const GhostType & ghost_type) const;
+                 GhostType ghost_type) const;
 
   /// integrate scalar field in_f
   template <ElementType type>
-  Real integrate(const Array<Real> & in_f, const GhostType & ghost_type,
+  Real integrate(const Array<Real> & in_f, GhostType ghost_type,
                  const Array<UInt> & filter_elements) const;
 
   /// integrate partially around a quadrature point (@f$ intf_q = f_q * J_q *
@@ -73,24 +73,24 @@ public:
   void integrateOnIntegrationPoints(const Array<Real> & in_f,
                                     Array<Real> & intf,
                                     UInt nb_degree_of_freedom,
-                                    const GhostType & ghost_type,
+                                    GhostType ghost_type,
                                     const Array<UInt> & filter_elements) const;
   /// return a vector with quadrature points natural coordinates
   template <ElementType type>
-  const Matrix<Real> & getIntegrationPoints(const GhostType & ghost_type) const;
+  const Matrix<Real> & getIntegrationPoints(GhostType ghost_type) const;
 
   /// return the number of quadrature points for a given element type
   template <ElementType type>
   inline UInt
-  getNbIntegrationPoints(const GhostType & ghost_type = _not_ghost) const;
+  getNbIntegrationPoints(GhostType ghost_type = _not_ghost) const;
 
   /// compute the vector of quadrature points natural coordinates
   template <ElementType type>
-  void computeQuadraturePoints(const GhostType & ghost_type);
+  void computeQuadraturePoints(GhostType ghost_type);
 
   /// check that the jacobians are not negative
   template <ElementType type>
-  void checkJacobians(const GhostType & ghost_type) const;
+  void checkJacobians(GhostType ghost_type) const;
 
 public:
   /// compute the jacobians on quad points for a given element
@@ -118,7 +118,7 @@ private:
 
 } // namespace akantu
 
-#endif /*__AKANTU_INTEGRATOR_IGFEM_HH__ */
+#endif /*AKANTU_INTEGRATOR_IGFEM_HH_ */
 /* -------------------------------------------------------------------------- */
 /* inline functions                                                           */
 /* -------------------------------------------------------------------------- */

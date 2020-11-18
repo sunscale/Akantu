@@ -99,13 +99,15 @@ void MaterialCohesiveLinear<spatial_dimension>::initMaterial() {
   delta_c_eff.initialize(1);
   insertion_stress.initialize(spatial_dimension);
 
-  if (not Math::are_float_equal(delta_c, 0.))
+  if (not Math::are_float_equal(delta_c, 0.)) {
     delta_c_eff.setDefaultValue(delta_c);
-  else
+  } else {
     delta_c_eff.setDefaultValue(2 * G_c / sigma_c);
+  }
 
-  if (model->getIsExtrinsic())
+  if (model->getIsExtrinsic()) {
     scaleInsertionTraction();
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -117,10 +119,11 @@ void MaterialCohesiveLinear<spatial_dimension>::updateInternalParameters() {
   beta2_kappa2 = beta * beta / kappa / kappa;
   beta2_kappa = beta * beta / kappa;
 
-  if (Math::are_float_equal(beta, 0))
+  if (Math::are_float_equal(beta, 0)) {
     beta2_inv = 0;
-  else
+  } else {
     beta2_inv = 1. / beta / beta;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -129,8 +132,9 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
   AKANTU_DEBUG_IN();
 
   // do nothing if volume_s hasn't been specified by the user
-  if (Math::are_float_equal(volume_s, 0.))
+  if (Math::are_float_equal(volume_s, 0.)) {
     return;
+  }
 
   const Mesh & mesh_facets = model->getMeshFacets();
   const auto & fe_engine = model->getFEEngine();
@@ -160,8 +164,9 @@ void MaterialCohesiveLinear<spatial_dimension>::scaleInsertionTraction() {
       auto elem_end = element_list.end();
 
       for (; elem != elem_end; ++elem) {
-        if (*elem == ElementNull)
+        if (*elem == ElementNull) {
           continue;
+        }
 
         // unit vector for integration in order to obtain the volume
         UInt nb_quadrature_points =
@@ -241,8 +246,9 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
     for (UInt f = 0; f < nb_facet; ++f, ++sigma_lim_it) {
       UInt facet = f_filter(f);
       // skip facets where check shouldn't be realized
-      if (!facets_check(facet))
+      if (!facets_check(facet)) {
         continue;
+      }
 
       // compute the effective norm on each quadrature point of the facet
       for (UInt q = 0; q < nb_quad_facet; ++q) {
@@ -271,15 +277,17 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
 
       // verify if the effective stress overcomes the threshold
       Real final_stress = stress_check.mean();
-      if (max_quad_stress_insertion)
+      if (max_quad_stress_insertion) {
         final_stress = *std::max_element(
             stress_check.storage(), stress_check.storage() + nb_quad_facet);
+      }
 
       if (final_stress > *sigma_lim_it) {
         f_insertion(facet) = true;
 
-        if (check_only)
+        if (check_only) {
           continue;
+        }
 
         // store the new cohesive material parameters for each quadrature
         // point
@@ -287,8 +295,9 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
           Real new_sigma = stress_check(q);
           Vector<Real> normal_traction_vec(normal_traction(q));
 
-          if (spatial_dimension != 3)
+          if (spatial_dimension != 3) {
             normal_traction_vec *= -1.;
+          }
 
           new_sigmas.push_back(new_sigma);
           new_normal_traction.push_back(normal_traction_vec);
@@ -296,10 +305,11 @@ void MaterialCohesiveLinear<spatial_dimension>::checkInsertion(
           Real new_delta;
 
           // set delta_c in function of G_c or a given delta_c value
-          if (Math::are_float_equal(delta_c, 0.))
+          if (Math::are_float_equal(delta_c, 0.)) {
             new_delta = 2 * G_c / new_sigma;
-          else
+          } else {
             new_delta = (*sigma_lim_it) / new_sigma * delta_c;
+          }
 
           new_delta_c.push_back(new_delta);
         }
@@ -358,9 +368,9 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(
        ++traction_it, ++opening_it, ++normal_it, ++sigma_c_it, ++delta_max_it,
        ++delta_c_it, ++damage_it, ++contact_traction_it, ++insertion_stress_it,
        ++contact_opening_it) {
-
-    Real normal_opening_norm, tangential_opening_norm;
-    bool penetration;
+    Real normal_opening_norm{0};
+    Real tangential_opening_norm{0};
+    bool penetration{false};
     this->computeTractionOnQuad(
         *traction_it, *opening_it, *normal_it, *delta_max_it, *delta_c_it,
         *insertion_stress_it, *sigma_c_it, normal_opening, tangential_opening,
@@ -374,7 +384,7 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTraction(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
+    ElementType el_type, Array<Real> & tangent_matrix,
     const Array<Real> & normal, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -403,9 +413,9 @@ void MaterialCohesiveLinear<spatial_dimension>::computeTangentTraction(
   for (; tangent_it != tangent_end; ++tangent_it, ++normal_it, ++opening_it,
                                     ++delta_max_it, ++sigma_c_it, ++delta_c_it,
                                     ++damage_it, ++contact_opening_it) {
-
-    Real normal_opening_norm, tangential_opening_norm;
-    bool penetration;
+    Real normal_opening_norm{0};
+    Real tangential_opening_norm{0};
+    bool penetration{false};
     this->computeTangentTractionOnQuad(
         *tangent_it, *delta_max_it, *delta_c_it, *sigma_c_it, *opening_it,
         *normal_it, normal_opening, tangential_opening, normal_opening_norm,

@@ -63,11 +63,13 @@ void TimeStepSolver::setIntegrationScheme(
       mat_type = this->solver_callback->getMatrixType(name);
     }
 
-    if (mat_type == _mt_not_defined)
+    if (mat_type == _mt_not_defined) {
       continue;
+    }
 
-    if (not _dof_manager.hasMatrix(name))
+    if (not _dof_manager.hasMatrix(name)) {
       _dof_manager.getNewMatrix(name, mat_type);
+    }
   }
 }
 
@@ -127,8 +129,9 @@ void TimeStepSolver::assembleLumpedMatrix(const ID & matrix_id) {
       this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
-  if (not _dof_manager.hasLumpedMatrix(matrix_id))
+  if (not _dof_manager.hasLumpedMatrix(matrix_id)) {
     _dof_manager.getNewLumpedMatrix(matrix_id);
+  }
 
   this->solver_callback->assembleLumpedMatrix(matrix_id);
 }
@@ -143,8 +146,9 @@ void TimeStepSolver::assembleMatrix(const ID & matrix_id) {
 
   if (matrix_id != "J") {
     auto type = needed_matrices[matrix_id];
-    if (type == _mt_not_defined)
+    if (type == _mt_not_defined) {
       return;
+    }
 
     if (not _dof_manager.hasMatrix(matrix_id)) {
       _dof_manager.getNewMatrix(matrix_id, type);
@@ -154,15 +158,17 @@ void TimeStepSolver::assembleMatrix(const ID & matrix_id) {
     return;
   }
 
-  if (not _dof_manager.hasMatrix("J"))
+  if (not _dof_manager.hasMatrix("J")) {
     _dof_manager.getNewMatrix("J", common_type);
+  }
 
   MatrixType type;
   ID name;
   for (auto & pair : needed_matrices) {
     std::tie(name, type) = pair;
-    if (type == _mt_not_defined)
+    if (type == _mt_not_defined) {
       continue;
+    }
 
     this->solver_callback->assembleMatrix(name);
   }
@@ -174,7 +180,7 @@ void TimeStepSolver::assembleResidual() {
       this->solver_callback != nullptr,
       "This function cannot be called if the solver_callback is not set");
 
-  this->_dof_manager.clearResidual();
+  this->_dof_manager.zeroResidual();
   this->solver_callback->assembleResidual();
 }
 

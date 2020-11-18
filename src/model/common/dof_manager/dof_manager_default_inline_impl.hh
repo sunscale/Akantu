@@ -31,8 +31,8 @@
 #include "dof_manager_default.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_HH__
-#define __AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_HH__
+#ifndef AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_HH_
+#define AKANTU_DOF_MANAGER_DEFAULT_INLINE_IMPL_HH_
 
 namespace akantu {} // namespace akantu
 

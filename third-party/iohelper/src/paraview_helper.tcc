@@ -45,7 +45,7 @@ inline void ParaviewHelper::visitField(T & visited){
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline void ParaviewHelper::writeFieldProperty(T & data){
-  if (data.isHomogeneous() == false)
+  if (not static_cast<bool>(data.isHomogeneous()))
     IOHELPER_THROW(std::string("try to write field property of a non homogeneous field"),
 		   IOHelperException::_et_non_homogeneous_data);
 
@@ -65,14 +65,17 @@ inline void ParaviewHelper::writeField(T & data){
   UInt dim;
   if(data.isHomogeneous()) {
     dim = data.getDim();
-    if(position_flag)
+    if (position_flag) {
       dim = 3;
-    for (; it != end; ++it)
+    }
+    for (; it != end; ++it) {
       pushData((*it), dim);
+    }
   }
   else {
-    for (; it != end; ++it)
+    for (; it != end; ++it) {
       pushData((*it));
+    }
   }
 }
 
@@ -160,34 +163,41 @@ inline void ParaviewHelper::writePVTU(T & per_node_data, T & per_elem_data,
 
   file << "  <PPoints>" << std::endl;
   file << "   <PDataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"";
-  if (bflag == BASE64) file << "binary";
-  else file << "ascii";
+  if (bflag == BASE64) {
+    file << "binary";
+  } else {
+    file << "ascii";
+  }
   file << "\" />" << std::endl;
   file << "  </PPoints>" << std::endl;
 
   file << "  <PPointData>" << std::endl;
-  typename T::iterator itNodeField = per_node_data.begin();
-  typename T::iterator endNodeField = per_node_data.end();
-  for ( ; itNodeField != endNodeField ; ++itNodeField)
-    if ((*itNodeField).first != "positions")
+  auto itNodeField = per_node_data.begin();
+  auto endNodeField = per_node_data.end();
+  for (; itNodeField != endNodeField; ++itNodeField) {
+    if ((*itNodeField).first != "positions") {
       (*itNodeField).second->accept(*this);
+    }
+  }
 
   file << "  </PPointData>" << std::endl;
 
   file << "  <PCellData>" << std::endl;
-  typename T::iterator itElemField = per_elem_data.begin();
-  typename T::iterator endElemField = per_elem_data.end();
+  auto itElemField = per_elem_data.begin();
+  auto endElemField = per_elem_data.end();
   for (; itElemField != endElemField ; ++itElemField) {
     std::string name = (*itElemField).first;
-    if (name == "connectivities" ||
-	name == "element_type") continue;
+    if (name == "connectivities" || name == "element_type") {
+      continue;
+    }
 
     (*itElemField).second->accept(*this);
   }
   file << "  </PCellData>" << std::endl;
 
-  for (UInt l = 0 ; l < vtus.size() ; ++l)
+  for (UInt l = 0; l < vtus.size(); ++l) {
     file << "  <Piece Source=\"" << vtus[l] << "\" />" << std::endl;
+  }
 
   file << " </PUnstructuredGrid>" << std::endl;
   file << "</VTKFile>" << std::endl;
@@ -200,32 +210,35 @@ void ParaviewHelper::pushDataFields(T & per_node_data, T & per_elem_data){
 
   startPointDataList();
   {
-  typename T::iterator itNodeField = per_node_data.begin();
-  typename T::iterator endNodeField = per_node_data.end();
-  for ( ; itNodeField != endNodeField ; ++itNodeField) {
-    std::string name = (*itNodeField).first;
-    if (name == "positions") continue;
-    FieldInterface & f = *(*itNodeField).second;
-    startData(f.getName(), f.getDim(), dataTypeToStr(f.getDataType()));
-    pushField(f);
-    endData();
+    auto itNodeField = per_node_data.begin();
+    auto endNodeField = per_node_data.end();
+    for (; itNodeField != endNodeField; ++itNodeField) {
+      std::string name = (*itNodeField).first;
+      if (name == "positions") {
+        continue;
+      }
+      FieldInterface & f = *(*itNodeField).second;
+      startData(f.getName(), f.getDim(), dataTypeToStr(f.getDataType()));
+      pushField(f);
+      endData();
   }
   }
   endPointDataList();
 
   startCellDataList();
   {
-  typename T::iterator itElemField = per_elem_data.begin();
-  typename T::iterator endElemField = per_elem_data.end();
-  for ( ; itElemField != endElemField ; ++itElemField) {
-    std::string name = (*itElemField).first;
-    if (name == "connectivities" ||
-	name == "element_type") continue;
+    auto itElemField = per_elem_data.begin();
+    auto endElemField = per_elem_data.end();
+    for (; itElemField != endElemField; ++itElemField) {
+      std::string name = (*itElemField).first;
+      if (name == "connectivities" || name == "element_type") {
+        continue;
+      }
 
-    FieldInterface & f = *(*itElemField).second;
-    startData(f.getName(),f.getDim(), dataTypeToStr(f.getDataType()));
-    pushField(f);
-    endData();
+      FieldInterface & f = *(*itElemField).second;
+      startData(f.getName(), f.getDim(), dataTypeToStr(f.getDataType()));
+      pushField(f);
+      endData();
   }
   }
   endCellDataList();
@@ -235,11 +248,12 @@ void ParaviewHelper::pushDataFields(T & per_node_data, T & per_elem_data){
 template <typename T>
 inline  void ParaviewHelper::pushDatum(const T & n,
 				       __attribute__((unused)) UInt size){
-  if (bflag == BASE64)
+  if (bflag == BASE64) {
     b64.push<T>(n);
-  else{
-    if (compteur == 0)
+  } else {
+    if (compteur == 0) {
       file << "      ";
+    }
     ++compteur;
     file << n << " ";
   }
@@ -249,28 +263,30 @@ inline  void ParaviewHelper::pushDatum(const T & n,
 template <>
 inline  void ParaviewHelper::pushDatum<double>(const double & n,
 					       UInt size){
-  if (bflag == BASE64)
+  if (bflag == BASE64) {
     b64.push<double>(n);
-  else {
-    if (compteur % size == 0)
+  } else {
+    if (compteur % size == 0) {
       file << "     ";
+    }
     file << std::setw(22);
     file << std::setprecision(15);
     file << std::scientific;
     file << n;
     file << " ";
     ++compteur;
-    if (compteur % size == 0)
+    if (compteur % size == 0) {
       file << std::endl;
+    }
   }
 }
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline  void ParaviewHelper::pushDatum<ElemType>(const ElemType & type,
+inline  void ParaviewHelper::pushDatum<ElemType>(const ElemType & n,
 						 __attribute__((unused)) UInt size){
-  UInt n = this->paraview_code_type[type];
-  pushDatum<UInt>(n);
+  UInt n_ = this->paraview_code_type[n];
+  pushDatum<UInt>(n_);
 }
 
 /* -------------------------------------------------------------------------- */

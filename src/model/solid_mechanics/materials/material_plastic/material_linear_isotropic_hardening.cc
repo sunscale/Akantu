@@ -63,7 +63,9 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(
     ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
+  // NOLINTNEXTLINE(bugprone-parent-virtual-call)
   MaterialThermal<spatial_dimension>::computeStress(el_type, ghost_type);
+
   // infinitesimal and finite deformation
   auto sigma_th_it = this->sigma_th(el_type, ghost_type).begin();
 
@@ -165,7 +167,7 @@ void MaterialLinearIsotropicHardening<spatial_dimension>::computeStress(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialLinearIsotropicHardening<spatial_dimension>::computeTangentModuli(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
+    ElementType el_type, Array<Real> & tangent_matrix,
     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 

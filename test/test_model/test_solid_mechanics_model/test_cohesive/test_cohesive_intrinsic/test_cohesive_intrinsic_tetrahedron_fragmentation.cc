@@ -91,7 +91,7 @@ int main(int argc, char * argv[]) {
 
   for (UInt s = 0; s < max_steps; ++s) {
     Real increment = s / 10.;
-    update.clear();
+    update.zero();
 
     for (UInt el = 0; el < nb_element; ++el) {
       mesh.getBarycenter({type, el, _not_ghost}, bary);

@@ -51,7 +51,7 @@ Memory::~Memory() {
       AKANTU_DEBUG(dblAccessory, "Deleting the vector " << *it);
       static_memory.sfree(memory_id, *it);
     }
-    static_memory.destroy();
+    StaticMemory::destroy();
   }
 
   handeld_vectors_id.clear();

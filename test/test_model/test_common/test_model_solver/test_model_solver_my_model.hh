@@ -44,8 +44,8 @@
 
 namespace akantu {
 
-#ifndef __AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH__
-#define __AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH__
+#ifndef AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH_
+#define AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH_
 
 /**
  *   =\o-----o-----o-> F
@@ -113,7 +113,7 @@ public:
 
   void assembleLumpedMass() {
     auto & M = this->getDOFManager().getLumpedMatrix("M");
-    M.clear();
+    M.zero();
 
     this->assembleLumpedMass(_not_ghost);
     if (this->mesh.getNbElement(_segment_2, _ghost) > 0)
@@ -122,7 +122,7 @@ public:
     is_lumped_mass_assembled = true;
   }
 
-  void assembleLumpedMass(const GhostType & ghost_type) {
+  void assembleLumpedMass(GhostType ghost_type) {
     Array<Real> M(nb_dofs, 1, 0.);
 
     Array<Real> m_all_el(this->mesh.getNbElement(_segment_2, ghost_type), 2);
@@ -153,7 +153,7 @@ public:
 
   void assembleMass() {
     SparseMatrix & M = this->getDOFManager().getMatrix("M");
-    M.clear();
+    M.zero();
 
     Array<Real> m_all_el(this->nb_elements, 4);
 
@@ -222,7 +222,7 @@ public:
 
   void assembleStiffness() {
     SparseMatrix & K = this->getDOFManager().getMatrix("K");
-    K.clear();
+    K.zero();
 
     Matrix<Real> k(2, 2);
     k(0, 0) = k(1, 1) = 1;
@@ -257,16 +257,16 @@ public:
 
   void assembleResidual() override {
     this->getDOFManager().assembleToResidual("disp", forces);
-    internal_forces.clear();
+    internal_forces.zero();
 
-    this->assembleResidual(_not_ghost);
+    this->assembleResidualInternal(_not_ghost);
 
     this->synchronize(SynchronizationTag::_user_1);
 
     this->getDOFManager().assembleToResidual("disp", internal_forces, -1.);
   }
 
-  void assembleResidual(const GhostType & ghost_type) {
+  void assembleResidualInternal(GhostType ghost_type) {
     Array<Real> forces_internal_el(
         this->mesh.getNbElement(_segment_2, ghost_type), 2);
 
@@ -443,6 +443,6 @@ public:
   Array<Real> initial_lengths;
 };
 
-#endif /* __AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH__ */
+#endif /* AKANTU_TEST_MODEL_SOLVER_MY_MODEL_HH_ */
 
 } // namespace akantu

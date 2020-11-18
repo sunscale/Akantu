@@ -70,7 +70,7 @@ MaterialElasticOrthotropic<Dim>::MaterialElasticOrthotropic(
 /* -------------------------------------------------------------------------- */
 template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
   AKANTU_DEBUG_IN();
-  Material::initMaterial();
+  MaterialElasticLinearAnisotropic<Dim>::initMaterial();
 
   AKANTU_DEBUG_ASSERT(not this->finite_deformation,
                       "finite deformation not possible in material orthotropic "
@@ -85,8 +85,8 @@ template <UInt Dim> void MaterialElasticOrthotropic<Dim>::initMaterial() {
 template <UInt Dim>
 void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
 
-  this->C.clear();
-  this->Cprime.clear();
+  this->C.zero();
+  this->Cprime.zero();
 
   /* 1) construction of temporary material frame stiffness tensor------------ */
   // http://solidmechanics.org/Text/Chapter3_2/Chapter3_2.php#Sect3_2_13
@@ -102,18 +102,21 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
 
   Real Gamma;
 
-  if (Dim == 3)
+  if (Dim == 3) {
     Gamma = 1 / (1 - nu12 * nu21 - nu23 * nu32 - nu31 * nu13 -
                  2 * nu21 * nu32 * nu13);
+  }
 
-  if (Dim == 2)
+  if (Dim == 2) {
     Gamma = 1 / (1 - nu12 * nu21);
+  }
 
   // Lamé's first parameters
   this->Cprime(0, 0) = E1 * (1 - nu23 * nu32) * Gamma;
   this->Cprime(1, 1) = E2 * (1 - nu13 * nu31) * Gamma;
-  if (Dim == 3)
+  if (Dim == 3) {
     this->Cprime(2, 2) = E3 * (1 - nu12 * nu21) * Gamma;
+  }
 
   // normalised poisson's ratio's
   this->Cprime(1, 0) = this->Cprime(0, 1) = E1 * (nu21 + nu31 * nu23) * Gamma;
@@ -127,8 +130,9 @@ void MaterialElasticOrthotropic<Dim>::updateInternalParameters() {
     this->Cprime(3, 3) = G23;
     this->Cprime(4, 4) = G13;
     this->Cprime(5, 5) = G12;
-  } else
+  } else {
     this->Cprime(2, 2) = G12;
+  }
 
   /* 1) rotation of C into the global frame */
   this->rotateCprime();

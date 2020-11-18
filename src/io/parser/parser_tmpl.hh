@@ -38,9 +38,10 @@ template <typename T> inline ParserParameter::operator T() const {
   T t;
   std::stringstream sstr(value);
   sstr >> t;
-  if (sstr.bad())
+  if (sstr.bad()) {
     AKANTU_EXCEPTION("No known conversion of a ParserParameter \""
                      << name << "\" to the type " << typeid(T).name());
+  }
   return t;
 }
 

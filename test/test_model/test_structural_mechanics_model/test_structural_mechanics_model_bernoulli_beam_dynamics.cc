@@ -127,9 +127,9 @@ int main(int argc, char * argv[]) {
 
   UInt node_to_print = -1;
 
-  forces.clear();
-  displacement.clear();
-  //  boundary.clear();
+  forces.zero();
+  displacement.zero();
+  //  boundary.zero();
   // model.getElementMaterial(type)(i,0) = 0;
   // model.getElementMaterial(type)(i,0) = 1;
   for (UInt i = 0; i < nb_element; ++i) {

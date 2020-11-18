@@ -73,10 +73,11 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
   // this->model->getMesh().initElementTypeMapArray(
   //     this->element_filter, 1, spatial_dimension, false, _ek_cohesive);
 
-  if (this->model->getIsExtrinsic())
+  if (this->model->getIsExtrinsic()) {
     this->facet_filter.initialize(this->model->getMeshFacets(),
                                   _spatial_dimension = spatial_dimension - 1,
                                   _element_kind = _ek_regular);
+  }
   // this->model->getMeshFacets().initElementTypeMapArray(facet_filter, 1,
   //                                                      spatial_dimension -
   //                                                      1);
@@ -96,8 +97,9 @@ MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
   this->delta_max.initialize(1);
   this->damage.initialize(1);
 
-  if (this->model->getIsExtrinsic())
+  if (this->model->getIsExtrinsic()) {
     this->sigma_c.initialize(1);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -109,10 +111,12 @@ MaterialCohesive::~MaterialCohesive() = default;
 void MaterialCohesive::initMaterial() {
   AKANTU_DEBUG_IN();
   Material::initMaterial();
-  if (this->use_previous_delta_max)
+  if (this->use_previous_delta_max) {
     this->delta_max.initializeHistory();
-  if (this->use_previous_opening)
+  }
+  if (this->use_previous_opening) {
     this->opening.initializeHistory();
+  }
   AKANTU_DEBUG_OUT();
 }
 
@@ -131,8 +135,9 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
                                                _ek_cohesive)) {
     auto & elem_filter = element_filter(type, ghost_type);
     UInt nb_element = elem_filter.size();
-    if (nb_element == 0)
+    if (nb_element == 0) {
       continue;
+    }
 
     const auto & shapes = fem_cohesive.getShapes(type, ghost_type);
     auto & traction = tractions(type, ghost_type);
@@ -145,8 +150,8 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
 
     /// compute @f$t_i N_a@f$
 
-    Array<Real> * traction_cpy = new Array<Real>(
-        nb_element * nb_quadrature_points, spatial_dimension * size_of_shapes);
+    auto * traction_cpy = new Array<Real>(nb_element * nb_quadrature_points,
+                                          spatial_dimension * size_of_shapes);
 
     auto traction_it = traction.begin(spatial_dimension, 1);
     auto contact_traction_it = contact_traction.begin(spatial_dimension, 1);
@@ -177,7 +182,7 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
      * compute @f$\int t \cdot N\, dS@f$ by  @f$ \sum_q \mathbf{N}^t
      * \mathbf{t}_q \overline w_q J_q@f$
      */
-    Array<Real> * partial_int_t_N = new Array<Real>(
+    auto * partial_int_t_N = new Array<Real>(
         nb_element, spatial_dimension * size_of_shapes, "int_t_N");
 
     fem_cohesive.integrate(*traction_cpy, *partial_int_t_N,
@@ -186,7 +191,7 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
 
     delete traction_cpy;
 
-    Array<Real> * int_t_N = new Array<Real>(
+    auto * int_t_N = new Array<Real>(
         nb_element, 2 * spatial_dimension * size_of_shapes, "int_t_N");
 
     Real * int_t_N_val = int_t_N->storage();
@@ -197,8 +202,9 @@ void MaterialCohesive::assembleInternalForces(GhostType ghost_type) {
       std::copy_n(partial_int_t_N_val, size_of_shapes * spatial_dimension,
                   int_t_N_val + size_of_shapes * spatial_dimension);
 
-      for (UInt n = 0; n < size_of_shapes * spatial_dimension; ++n)
+      for (UInt n = 0; n < size_of_shapes * spatial_dimension; ++n) {
         int_t_N_val[n] *= -1.;
+      }
 
       int_t_N_val += nb_nodes_per_element * spatial_dimension;
       partial_int_t_N_val += size_of_shapes * spatial_dimension;
@@ -232,21 +238,22 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 
     UInt nb_element = elem_filter.size();
 
-    if (!nb_element)
+    if (nb_element == 0U) {
       continue;
+    }
 
     UInt size_of_shapes = shapes.getNbComponent();
 
-    Array<Real> * shapes_filtered = new Array<Real>(
-        nb_element * nb_quadrature_points, size_of_shapes, "filtered shapes");
+    auto * shapes_filtered = new Array<Real>(nb_element * nb_quadrature_points,
+                                             size_of_shapes, "filtered shapes");
 
     Real * shapes_filtered_val = shapes_filtered->storage();
     UInt * elem_filter_val = elem_filter.storage();
 
     for (UInt el = 0; el < nb_element; ++el) {
-      auto shapes_val = shapes.storage() + elem_filter_val[el] *
-                                               size_of_shapes *
-                                               nb_quadrature_points;
+      auto * shapes_val = shapes.storage() + elem_filter_val[el] *
+                                                 size_of_shapes *
+                                                 nb_quadrature_points;
       memcpy(shapes_filtered_val, shapes_val,
              size_of_shapes * nb_quadrature_points * sizeof(Real));
       shapes_filtered_val += size_of_shapes * nb_quadrature_points;
@@ -262,7 +269,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 
     /// get the tangent matrix @f$\frac{\partial{(t/\delta)}}{\partial{\delta}}
     /// @f$
-    Array<Real> * tangent_stiffness_matrix = new Array<Real>(
+    auto * tangent_stiffness_matrix = new Array<Real>(
         nb_element * nb_quadrature_points,
         spatial_dimension * spatial_dimension, "tangent_stiffness_matrix");
 
@@ -276,7 +283,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     // computeOpening(model->getDisplacement(), opening(type, ghost_type), type,
     // ghost_type);
 
-    tangent_stiffness_matrix->clear();
+    tangent_stiffness_matrix->zero();
 
     computeTangentTraction(type, *tangent_stiffness_matrix, normal, ghost_type);
 
@@ -284,8 +291,8 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 
     UInt size_at_nt_d_n_a = spatial_dimension * nb_nodes_per_element *
                             spatial_dimension * nb_nodes_per_element;
-    Array<Real> * at_nt_d_n_a = new Array<Real>(
-        nb_element * nb_quadrature_points, size_at_nt_d_n_a, "A^t*N^t*D*N*A");
+    auto * at_nt_d_n_a = new Array<Real>(nb_element * nb_quadrature_points,
+                                         size_at_nt_d_n_a, "A^t*N^t*D*N*A");
 
     Array<Real>::iterator<Vector<Real>> shapes_filt_it =
         shapes_filtered->begin(size_of_shapes);
@@ -309,15 +316,17 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
 
     for (; At_Nt_D_N_A_it != At_Nt_D_N_A_end;
          ++At_Nt_D_N_A_it, ++D_it, ++shapes_filt_it) {
-      N.clear();
+      N.zero();
       /**
        * store  the   shapes  in  voigt   notations  matrix  @f$\mathbf{N}  =
        * \begin{array}{cccccc} N_0(\xi) & 0 & N_1(\xi)  &0 & N_2(\xi) & 0 \\
        * 0 & * N_0(\xi)& 0 &N_1(\xi)& 0 & N_2(\xi) \end{array} @f$
        **/
-      for (UInt i = 0; i < spatial_dimension; ++i)
-        for (UInt n = 0; n < size_of_shapes; ++n)
+      for (UInt i = 0; i < spatial_dimension; ++i) {
+        for (UInt n = 0; n < size_of_shapes; ++n) {
           N(i, i + spatial_dimension * n) = (*shapes_filt_it)(n);
+        }
+      }
 
       /**
        * compute stiffness matrix  @f$   \mathbf{K}    =    \delta \mathbf{U}^T
@@ -333,7 +342,7 @@ void MaterialCohesive::assembleStiffnessMatrix(GhostType ghost_type) {
     delete tangent_stiffness_matrix;
     delete shapes_filtered;
 
-    Array<Real> * K_e = new Array<Real>(nb_element, size_at_nt_d_n_a, "K_e");
+    auto * K_e = new Array<Real>(nb_element, size_at_nt_d_n_a, "K_e");
 
     fem_cohesive.integrate(*at_nt_d_n_a, *K_e, size_at_nt_d_n_a, type,
                            ghost_type, elem_filter);
@@ -362,13 +371,14 @@ void MaterialCohesive::computeTraction(GhostType ghost_type) {
                                    "Cohesive Openings", opening);
 #endif
 
-  for (auto & type : element_filter.elementTypes(spatial_dimension, ghost_type,
-                                                 _ek_cohesive)) {
+  for (const auto & type : element_filter.elementTypes(
+           spatial_dimension, ghost_type, _ek_cohesive)) {
     Array<UInt> & elem_filter = element_filter(type, ghost_type);
 
     UInt nb_element = elem_filter.size();
-    if (nb_element == 0)
+    if (nb_element == 0) {
       continue;
+    }
 
     UInt nb_quadrature_points =
         nb_element * fem_cohesive.getNbIntegrationPoints(type, ghost_type);
@@ -398,7 +408,7 @@ void MaterialCohesive::computeNormal(const Array<Real> & position,
   auto & fem_cohesive =
       this->model->getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine");
 
-  normal.clear();
+  normal.zero();
 
 #define COMPUTE_NORMAL(type)                                                   \
   fem_cohesive.getShapeFunctions()                                             \
@@ -436,8 +446,9 @@ void MaterialCohesive::computeOpening(const Array<Real> & displacement,
 void MaterialCohesive::updateEnergies(ElementType type) {
   AKANTU_DEBUG_IN();
 
-  if (Mesh::getKind(type) != _ek_cohesive)
+  if (Mesh::getKind(type) != _ek_cohesive) {
     return;
+  }
 
   Vector<Real> b(spatial_dimension);
   Vector<Real> h(spatial_dimension);
@@ -476,8 +487,8 @@ Real MaterialCohesive::getReversibleEnergy() {
   Real erev = 0.;
 
   /// integrate reversible energy for each type of elements
-  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
-                                                 _ek_cohesive)) {
+  for (const auto & type : element_filter.elementTypes(
+           spatial_dimension, _not_ghost, _ek_cohesive)) {
     erev +=
         fem_cohesive.integrate(reversible_energy(type, _not_ghost), type,
                                _not_ghost, element_filter(type, _not_ghost));
@@ -493,8 +504,8 @@ Real MaterialCohesive::getDissipatedEnergy() {
   Real edis = 0.;
 
   /// integrate dissipated energy for each type of elements
-  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
-                                                 _ek_cohesive)) {
+  for (const auto & type : element_filter.elementTypes(
+           spatial_dimension, _not_ghost, _ek_cohesive)) {
     Array<Real> dissipated_energy(total_energy(type, _not_ghost));
     dissipated_energy -= reversible_energy(type, _not_ghost);
     edis += fem_cohesive.integrate(dissipated_energy, type, _not_ghost,
@@ -511,8 +522,8 @@ Real MaterialCohesive::getContactEnergy() {
   Real econ = 0.;
 
   /// integrate contact energy for each type of elements
-  for (auto & type : element_filter.elementTypes(spatial_dimension, _not_ghost,
-                                                 _ek_cohesive)) {
+  for (const auto & type : element_filter.elementTypes(
+           spatial_dimension, _not_ghost, _ek_cohesive)) {
 
     auto & el_filter = element_filter(type, _not_ghost);
     UInt nb_quad_per_el = fem_cohesive.getNbIntegrationPoints(type, _not_ghost);
@@ -540,16 +551,16 @@ Real MaterialCohesive::getContactEnergy() {
 
 /* -------------------------------------------------------------------------- */
 Real MaterialCohesive::getEnergy(const std::string & type) {
-  AKANTU_DEBUG_IN();
-
-  if (type == "reversible")
+  if (type == "reversible") {
     return getReversibleEnergy();
-  else if (type == "dissipated")
+  }
+  if (type == "dissipated") {
     return getDissipatedEnergy();
-  else if (type == "cohesive contact")
+  }
+  if (type == "cohesive contact") {
     return getContactEnergy();
+  }
 
-  AKANTU_DEBUG_OUT();
   return 0.;
 }
 

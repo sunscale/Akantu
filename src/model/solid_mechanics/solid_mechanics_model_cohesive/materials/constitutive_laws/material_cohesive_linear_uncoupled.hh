@@ -33,8 +33,8 @@
 #include "material_cohesive_linear.hh"
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH__
-#define __AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH__
+#ifndef AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH_
+#define AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH_
 
 /* -------------------------------------------------------------------------- */
 
@@ -71,7 +71,7 @@ protected:
                        GhostType ghost_type = _not_ghost) override;
 
   /// compute tangent stiffness matrix
-  void computeTangentTraction(const ElementType & el_type,
+  void computeTangentTraction(ElementType el_type,
                               Array<Real> & tangent_matrix,
                               const Array<Real> & normal,
                               GhostType ghost_type) override;
@@ -98,4 +98,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH__ */
+#endif /* AKANTU_MATERIAL_COHESIVE_LINEAR_UNCOUPLED_HH_ */

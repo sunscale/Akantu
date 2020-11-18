@@ -4,9 +4,7 @@
 #include <non_linear_solver.hh>
 #include <solid_mechanics_model_cohesive.hh>
 /* -------------------------------------------------------------------------- */
-//#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
-//#include <pybind11/stl.h>
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
 /* -------------------------------------------------------------------------- */
@@ -29,10 +27,8 @@ namespace akantu {
   def(#func_name, [](SolidMechanicsModel & self) -> decltype(auto) {           \
     return self.func_name();                                                   \
   })
-/* -------------------------------------------------------------------------- */
 
-[[gnu::visibility("default")]] void
-register_solid_mechanics_model_cohesive(py::module & mod) {
+void register_solid_mechanics_model_cohesive(py::module & mod) {
   py::class_<CohesiveElementInserter>(mod, "CohesiveElementInserter")
       .def("setLimit", &CohesiveElementInserter::setLimit);
 
@@ -63,7 +59,6 @@ register_solid_mechanics_model_cohesive(py::module & mod) {
            py::return_value_policy::reference)
       .def("updateAutomaticInsertion",
        &SolidMechanicsModelCohesive::updateAutomaticInsertion);
-
 }
 
 } // namespace akantu

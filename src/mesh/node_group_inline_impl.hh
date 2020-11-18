@@ -51,10 +51,10 @@ inline NodeGroup::const_node_iterator NodeGroup::add(UInt node,
       return (node_group.end() - 1);
     }
     return it;
-  } else {
-    node_group.push_back(node);
-    return (node_group.end() - 1);
   }
+
+  node_group.push_back(node);
+  return (node_group.end() - 1);
 }
 
 /* -------------------------------------------------------------------------- */

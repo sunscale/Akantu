@@ -39,8 +39,8 @@
 #include <memory>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DUMPER_IOHELPER_HH__
-#define __AKANTU_DUMPER_IOHELPER_HH__
+#ifndef AKANTU_DUMPER_IOHELPER_HH_
+#define AKANTU_DUMPER_IOHELPER_HH_
 /* -------------------------------------------------------------------------- */
 
 namespace iohelper {
@@ -73,8 +73,8 @@ public:
   /// register a given Mesh for the current dumper
   virtual void registerMesh(const Mesh & mesh,
                             UInt spatial_dimension = _all_dimensions,
-                            const GhostType & ghost_type = _not_ghost,
-                            const ElementKind & element_kind = _ek_not_defined);
+                            GhostType ghost_type = _not_ghost,
+                            ElementKind element_kind = _ek_not_defined);
 
   /// register a filtered Mesh (provided filter lists) for the current dumper
   virtual void
@@ -82,8 +82,8 @@ public:
                        const ElementTypeMapArray<UInt> & elements_filter,
                        const Array<UInt> & nodes_filter,
                        UInt spatial_dimension = _all_dimensions,
-                       const GhostType & ghost_type = _not_ghost,
-                       const ElementKind & element_kind = _ek_not_defined);
+                       GhostType ghost_type = _not_ghost,
+                       ElementKind element_kind = _ek_not_defined);
 
   /// register a Field object identified by name and provided by pointer
   void registerField(const std::string & field_id,
@@ -157,4 +157,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_IOHELPER_HH__ */
+#endif /* AKANTU_DUMPER_IOHELPER_HH_ */

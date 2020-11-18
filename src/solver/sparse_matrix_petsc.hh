@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PETSC_MATRIX_HH__
-#define __AKANTU_PETSC_MATRIX_HH__
+#ifndef AKANTU_PETSC_MATRIX_HH_
+#define AKANTU_PETSC_MATRIX_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix.hh"
@@ -56,14 +56,17 @@ public:
   SparseMatrixPETSc(const SparseMatrixPETSc & matrix,
                     const ID & id = "sparse_matrix_petsc");
 
-  virtual ~SparseMatrixPETSc();
+  ~SparseMatrixPETSc() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
   /// set the matrix to 0
-  void clear() override;
+  void zero() override;
+  void set(Real /*val*/) override {
+    AKANTU_TO_IMPLEMENT();
+  }
   void clearProfile() override;
 
   /// add a non-zero element to the profile
@@ -76,10 +79,10 @@ public:
   void addLocal(UInt i, UInt j, Real val);
 
   void addLocal(const Vector<Int> & rows, const Vector<Int> & cols,
-                const Matrix<Real> & vals);
+                const Matrix<Real> & values);
 
   /// add a block of values
-  void addValues(const Vector<Int> & is, const Vector<Int> & js,
+  void addValues(const Vector<Int> & rows, const Vector<Int> & cols,
                  const Matrix<Real> & values, MatrixType values_type);
 
   /// save the profil in a file using the MatrixMarket file format
@@ -122,17 +125,15 @@ protected:
   /* ------------------------------------------------------------------------ */
 public:
   /// return the values at potition i, j
-  virtual inline Real operator()(__attribute__((unused)) UInt i,
-                                 __attribute__((unused)) UInt j) const {
+  inline Real operator()(UInt /*i*/, UInt /*j*/) const override {
     AKANTU_TO_IMPLEMENT();
   }
   /// return the values at potition i, j
-  virtual inline Real & operator()(__attribute__((unused)) UInt i,
-                                   __attribute__((unused)) UInt j) {
+  inline Real & operator()(UInt /*i*/, UInt /*j*/) override {
     AKANTU_TO_IMPLEMENT();
   }
 
-  virtual UInt getRelease() const override { return release; };
+  UInt getRelease() const override { return release; };
 
   operator Mat &() { return mat; }
   operator const Mat &() const { return mat; }
@@ -155,4 +156,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_PETSC_MATRIX_HH__ */
+#endif /* AKANTU_PETSC_MATRIX_HH_ */

@@ -14,15 +14,15 @@
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
- * IOHelper is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * IOHelper is free  software: you can redistribute it and/or  modify it under
+ * the terms  of the  GNU Lesser  General Public  License as  published by  the
+ * Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- * IOHelper is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
- * details.
+ * IOHelper is  distributed in the  hope that it  will be useful, but  WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for
+ * more details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
  * along with IOHelper. If not, see <http://www.gnu.org/licenses/>.
@@ -38,32 +38,26 @@
 /* -------------------------------------------------------------------------- */
 #if defined(__INTEL_COMPILER)
 /// remark #981: operands are evaluated in unspecified order
-#pragma warning ( disable : 981 )
-#endif //defined(__INTEL_COMPILER)
+#pragma warning(disable : 981)
+#endif // defined(__INTEL_COMPILER)
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 /* -------------------------------------------------------------------------- */
-Dumper::Dumper(std::string prefix) : dump_step(0), dump_step_width(4),
-				     time_step(0), current_time(0),
-				     write_time_desc_file(false),
-				     mode(0),
-				     world_size(-1), my_rank(-1),
-				     root_rank(0), my_rank_width(3),
-				     time_description_file_name("") {
+Dumper::Dumper(const std::string & prefix)
+    : dump_step(0), dump_step_width(4), time_step(0), current_time(0),
+      write_time_desc_file(false), mode(0), world_size(-1), my_rank(-1),
+      root_rank(0), my_rank_width(3), time_description_file_name("") {
 
   // needs to be after the definition of the directory separator
   this->setPrefix(prefix);
 }
 
 /* -------------------------------------------------------------------------- */
-Dumper::Dumper(std::string prefix, const std::string & base_name)  : dump_step(0), dump_step_width(4),
-								     time_step(0), current_time(0),
-								     write_time_desc_file(false),
-								     mode(0),
-								     world_size(-1), my_rank(-1),
-								     root_rank(0), my_rank_width(3),
-								     time_description_file_name("") {
+Dumper::Dumper(const std::string & prefix, const std::string & base_name)
+    : dump_step(0), dump_step_width(4), time_step(0), current_time(0),
+      write_time_desc_file(false), mode(0), world_size(-1), my_rank(-1),
+      root_rank(0), my_rank_width(3), time_description_file_name("") {
   // needs to be after the definition of the directory separator
   this->setPrefix(prefix);
 
@@ -71,27 +65,27 @@ Dumper::Dumper(std::string prefix, const std::string & base_name)  : dump_step(0
 }
 
 /* -------------------------------------------------------------------------- */
-Dumper::~Dumper(){
+Dumper::~Dumper() {
   {
-    std::map<std::string,FieldInterface *>::iterator it = per_node_data.begin();
-    std::map<std::string,FieldInterface *>::iterator end = per_node_data.end();
-    while (it != end){
+    auto it = per_node_data.begin();
+    auto end = per_node_data.end();
+    while (it != end) {
       delete (*it).second;
       ++it;
     }
   }
   {
-    std::map<std::string,FieldInterface *>::iterator it = per_element_data.begin();
-    std::map<std::string,FieldInterface *>::iterator end = per_element_data.end();
-    while (it != end){
+    auto it = per_element_data.begin();
+    auto end = per_element_data.end();
+    while (it != end) {
       delete (*it).second;
       ++it;
     }
   }
   {
-    std::map<std::string,VariableInterface *>::iterator it  = global_data.begin();
-    std::map<std::string,VariableInterface *>::iterator end = global_data.end();
-    while (it != end){
+    auto it = global_data.begin();
+    auto end = global_data.end();
+    while (it != end) {
       delete (*it).second;
       ++it;
     }
@@ -100,19 +94,24 @@ Dumper::~Dumper(){
 
 /* -------------------------------------------------------------------------- */
 void Dumper::dump(const std::string & name, UInt count) {
-  if(count != UInt(-1))
+  if (count != UInt(-1)) {
     dump_step = count;
+  }
 
-  if(name != "") base_name = name;
+  if (name != "") {
+    base_name = name;
+  }
 
-  if(time_description_file_name == "") time_description_file_name = base_name;
+  if (time_description_file_name == "") {
+    time_description_file_name = base_name;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void Dumper::registerDumpOptions(const std::string & key,
-				 const std::string & folder,
-				 const std::string & extension,
-				 DumpFlag dump_flag) {
+                                 const std::string & folder,
+                                 const std::string & extension,
+                                 DumpFlag dump_flag) {
   DumpOptions & dos = dump_options[key];
   dos.setFolder(folder);
   dos.extension = extension;
@@ -120,35 +119,30 @@ void Dumper::registerDumpOptions(const std::string & key,
 }
 
 /* -------------------------------------------------------------------------- */
-void Dumper::init(){
-  if (world_size == -1 || my_rank == -1){
-    //    DUMP("world_size and my_rank variables are not well set: going to sequential dump");
+void Dumper::init() {
+  if (world_size == -1 || my_rank == -1) {
+    //    DUMP("world_size and my_rank variables are not well set: going to
+    //    sequential dump");
     world_size = 1;
     my_rank = 0;
   }
 }
 
 /* -------------------------------------------------------------------------- */
-void Dumper::setPoints(Real * points, int dimension, int nb, const std::string & name) {
+void Dumper::setPoints(Real * points, int dimension, int nb,
+                       const std::string & name) {
   addNodeDataField(std::string("positions"), points, dimension, nb);
   setBaseName(name);
 }
 
 /* -------------------------------------------------------------------------- */
-void Dumper::setBaseName(const std::string & name) {
-  this->base_name = name;
-}
+void Dumper::setBaseName(const std::string & name) { this->base_name = name; }
 
 /* -------------------------------------------------------------------------- */
-void Dumper::setConnectivity(int * connectivity,
-			     ElemType elem_type,
-			     UInt nb_elem,
-			     int mode) {
-  addElemDataField(std::string("connectivities"),
-		   connectivity,
-		   elem_type,
-		   nb_node_per_elem[elem_type],
-		   nb_elem);
+void Dumper::setConnectivity(int * connectivity, ElemType elem_type,
+                             UInt nb_elem, int mode) {
+  addElemDataField(std::string("connectivities"), connectivity, elem_type,
+                   nb_node_per_elem[elem_type], nb_elem);
   // ElemType * types = new ElemType[nb_elem];
   // for (UInt i = 0; i < nb_elem; ++i) {
   //   types[i] = elem_type;
@@ -159,7 +153,8 @@ void Dumper::setConnectivity(int * connectivity,
 
 /* -------------------------------------------------------------------------- */
 void Dumper::DumpOptions::setFolder(const std::string & fld) {
-  this->folder = Dumper::checkDirectoryName(fld);;
+  this->folder = Dumper::checkDirectoryName(fld);
+  ;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -170,7 +165,7 @@ const std::string & Dumper::DumpOptions::getFolder() const {
 /* -------------------------------------------------------------------------- */
 std::string Dumper::checkDirectoryName(std::string fname) {
   if (fname.size() > 0 &&
-      fname[fname.size()-1] != IOHELPER_DIRECTORY_SEPARATOR) {
+      fname[fname.size() - 1] != IOHELPER_DIRECTORY_SEPARATOR) {
     fname += IOHELPER_DIRECTORY_SEPARATOR;
   }
   return fname;
@@ -178,38 +173,35 @@ std::string Dumper::checkDirectoryName(std::string fname) {
 
 /* -------------------------------------------------------------------------- */
 Dumper::DumpOptions & Dumper::getDumpOptions(const std::string & key) {
-  DumpOptionsMap::iterator it = this->dump_options.find(key);
-  if(it == this->dump_options.end())
+  auto it = this->dump_options.find(key);
+  if (it == this->dump_options.end())
     IOHELPER_THROW("No dump options registered under the name " << key,
-		   _et_options_error);
+                   _et_options_error);
 
   return it->second;
 }
 
 /* -------------------------------------------------------------------------- */
 std::string Dumper::getRelativeFilePath(const std::string & name,
-					const std::string & key,
-					UInt proc) {
+                                        const std::string & key, UInt proc) {
   return this->getRelativeFolderPath(key) + this->getFileName(name, key, proc);
 }
 
 /* -------------------------------------------------------------------------- */
 std::string Dumper::getRelativeFilePath(const std::string & name,
-					const std::string & key) {
+                                        const std::string & key) {
   return this->getRelativeFolderPath(key) + this->getFileName(name, key);
 }
 
-
 /* -------------------------------------------------------------------------- */
 std::string Dumper::getAbsoluteFilePath(const std::string & name,
-					const std::string & key,
-					UInt proc) {
+                                        const std::string & key, UInt proc) {
   return prefix + this->getRelativeFilePath(name, key, proc);
 }
 
 /* -------------------------------------------------------------------------- */
 std::string Dumper::getAbsoluteFilePath(const std::string & name,
-					const std::string & key) {
+                                        const std::string & key) {
   return prefix + this->getRelativeFilePath(name, key);
 }
 
@@ -221,8 +213,7 @@ std::string Dumper::getFileName(const std::string & name,
 
 /* -------------------------------------------------------------------------- */
 std::string Dumper::getFileName(const std::string & name,
-				const std::string & key,
-				UInt proc) {
+                                const std::string & key, UInt proc) {
   std::stringstream sstr;
   sstr << name;
 
@@ -258,9 +249,7 @@ std::string Dumper::getAbsoluteFolderPath(const std::string & key) {
 }
 
 /* -------------------------------------------------------------------------- */
-std::string Dumper::getBaseName() {
-  return this->base_name;
-}
+std::string Dumper::getBaseName() { return this->base_name; }
 
 /* -------------------------------------------------------------------------- */
 void Dumper::setParallelContext(int me, int wld_size, int root) {
@@ -272,11 +261,12 @@ void Dumper::setParallelContext(int me, int wld_size, int root) {
 
 /* -------------------------------------------------------------------------- */
 void Dumper::printNodeDataFields() {
-  std::map<std::string,FieldInterface *>::iterator it = per_node_data.begin();
-  std::map<std::string,FieldInterface *>::iterator end = per_node_data.end();
+  auto it = per_node_data.begin();
+  auto end = per_node_data.end();
   int count = 0;
-  while (it != end){
-    std::cout << "Field " << ++count << " : " << it->second->getName() << std::endl;
+  while (it != end) {
+    std::cout << "Field " << ++count << " : " << it->second->getName()
+              << std::endl;
     ++it;
   }
 }
@@ -290,4 +280,4 @@ void Dumper::activateTimeDescFiles(Real delta_t, Real initial_time) {
 
 /* -------------------------------------------------------------------------- */
 
-__END_IOHELPER__
+}

@@ -33,8 +33,8 @@
 #include "material_damage_non_local.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __TEST_MATERIAL_DAMAGE_HH__
-#define __TEST_MATERIAL_DAMAGE_HH__
+#ifndef TEST_MATERIAL_DAMAGE_HH_
+#define TEST_MATERIAL_DAMAGE_HH_
 
 using namespace akantu;
 
@@ -70,4 +70,4 @@ private:
   InternalField<Real> grad_u_nl;
 };
 
-#endif /* __TEST_MATERIAL_DAMAGE_HH__ */
+#endif /* TEST_MATERIAL_DAMAGE_HH_ */

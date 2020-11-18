@@ -13,8 +13,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MATERIAL_EXTRA_INCLUDES_HH__
-#define __AKANTU_MATERIAL_EXTRA_INCLUDES_HH__
+#ifndef AKANTU_MATERIAL_EXTRA_INCLUDES_HH_
+#define AKANTU_MATERIAL_EXTRA_INCLUDES_HH_
 
 #ifndef AKANTU_CMAKE_LIST_MATERIALS
 
@@ -66,4 +66,4 @@
       (2, (visco_plastic, MaterialViscoPlastic)))(                             \
       (2, (orthotropic_damage_iterative, MaterialOrthotropicDamageIterative)))
 
-#endif /* __AKANTU_MATERIAL_EXTRA_INCLUDES_HH__ */
+#endif /* AKANTU_MATERIAL_EXTRA_INCLUDES_HH_ */

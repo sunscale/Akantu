@@ -121,7 +121,7 @@ int main(int argc, char * argv[]) {
     comm.broadcast(&total_nb_nodes, 1, 0);
 
     Array<Int> nb_local_nodes(psize);
-    nb_local_nodes.clear();
+    nb_local_nodes.zero();
 
     for (UInt n = 0; n < mesh.getNbNodes(); ++n) {
       if (mesh.isLocalOrMasterNode(n))
@@ -263,7 +263,7 @@ int main(int argc, char * argv[]) {
   Real angle = 1.;
 
   Matrix<Real> rotation(spatial_dimension, spatial_dimension);
-  rotation.clear();
+  rotation.zero();
   rotation(0, 0) = std::cos(angle);
   rotation(0, 1) = std::sin(angle) * -1.;
   rotation(1, 0) = std::sin(angle);
@@ -303,10 +303,10 @@ int main(int argc, char * argv[]) {
   Vector<Real> opening_old(spatial_dimension);
   Vector<Real> traction_old(spatial_dimension);
 
-  opening.clear();
-  traction.clear();
-  opening_old.clear();
-  traction_old.clear();
+  opening.zero();
+  traction.zero();
+  opening_old.zero();
+  traction_old.zero();
 
   Vector<Real> Dt(spatial_dimension);
   Vector<Real> Do(spatial_dimension);
@@ -386,7 +386,7 @@ void updateDisplacement(SolidMechanicsModelCohesive & model,
 
   Array<Real> & displacement = model.getDisplacement();
   Array<bool> update(nb_nodes);
-  update.clear();
+  update.zero();
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();
        gt != ghost_type_t::end(); ++gt) {
@@ -441,12 +441,12 @@ bool checkTractions(SolidMechanicsModelCohesive & model, Vector<Real> & opening,
   sigma_c *= delta_c / (delta_c - delta_0);
 
   Vector<Real> normal_opening(spatial_dimension);
-  normal_opening.clear();
+  normal_opening.zero();
   normal_opening(0) = opening(0);
   Real normal_opening_norm = normal_opening.norm();
 
   Vector<Real> tangential_opening(spatial_dimension);
-  tangential_opening.clear();
+  tangential_opening.zero();
   for (UInt dim = 1; dim < spatial_dimension; ++dim)
     tangential_opening(dim) = opening(dim);
 
@@ -464,7 +464,7 @@ bool checkTractions(SolidMechanicsModelCohesive & model, Vector<Real> & opening,
   Real theoretical_damage = std::min(delta / delta_c, 1.);
 
   if (Math::are_float_equal(theoretical_damage, 1.))
-    theoretical_traction.clear();
+    theoretical_traction.zero();
   else {
     theoretical_traction = tangential_opening;
     theoretical_traction *= beta2_kappa;
@@ -540,7 +540,7 @@ void findNodesToCheck(const Mesh & mesh,
   UInt nb_nodes = position.getSize();
 
   Array<bool> checked_nodes(nb_nodes);
-  checked_nodes.clear();
+  checked_nodes.zero();
 
   Mesh::type_iterator it = mesh.firstType(spatial_dimension);
   Mesh::type_iterator last = mesh.lastType(spatial_dimension);
@@ -613,7 +613,7 @@ bool checkEquilibrium(const Mesh & mesh, const Array<Real> & residual) {
   UInt spatial_dimension = residual.getNbComponent();
 
   Vector<Real> residual_sum(spatial_dimension);
-  residual_sum.clear();
+  residual_sum.zero();
 
   Array<Real>::const_iterator<Vector<Real>> res_it =
       residual.begin(spatial_dimension);
@@ -648,7 +648,7 @@ bool checkResidual(const Array<Real> & residual, const Vector<Real> & traction,
   UInt spatial_dimension = residual.getNbComponent();
 
   Vector<Real> total_force(spatial_dimension);
-  total_force.clear();
+  total_force.zero();
 
   for (UInt n = 0; n < nodes_to_check.getSize(); ++n) {
     UInt node = nodes_to_check(n);

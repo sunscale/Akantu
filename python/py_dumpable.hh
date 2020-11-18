@@ -1,9 +1,7 @@
-#ifndef __AKANTU_PY_DUMPABLE_HH__
-#define __AKANTU_PY_DUMPABLE_HH__
+#include <pybind11/pybind11.h>
 
-namespace pybind11 {
-struct module;
-} // namespace pybind11
+#ifndef AKANTU_PY_DUMPABLE_HH_
+#define AKANTU_PY_DUMPABLE_HH_
 
 namespace akantu {
 
@@ -11,4 +9,4 @@ void register_dumpable(pybind11::module & mod);
 
 } // namespace akantu
 
-#endif /* __AKANTU_PY_DUMPABLE_HH__ */
+#endif /* AKANTU_PY_DUMPABLE_HH_ */

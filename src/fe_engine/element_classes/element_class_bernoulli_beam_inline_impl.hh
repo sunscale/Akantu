@@ -41,8 +41,8 @@
 //#include "aka_element_classes_info.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_HH__
-#define __AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_HH__
+#ifndef AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_HH_
+#define AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
@@ -172,7 +172,7 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::arrangeInVoigt(
 /* -------------------------------------------------------------------------- */
 template <>
 inline void ElementClass<_bernoulli_beam_2>::computeRotationMatrix(
-    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> &) {
+    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> & /*n*/) {
   Vector<Real> x2 = X(1); // X2
   Vector<Real> x1 = X(0); // X1
 
@@ -210,12 +210,14 @@ inline void ElementClass<_bernoulli_beam_3>::computeRotationMatrix(
 
   Pe *= Pg.inverse();
 
-  R.clear();
+  R.zero();
   /// Definition of the rotation matrix
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       R(i + dim, j + dim) = R(i, j) = Pe(i, j);
+    }
+  }
 }
 
 } // namespace akantu
-#endif /* __AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_HH__ */
+#endif /* AKANTU_ELEMENT_CLASS_BERNOULLI_BEAM_INLINE_IMPL_HH_ */

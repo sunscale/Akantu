@@ -25,13 +25,13 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_INLINE_IMPL_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_INLINE_IMPL_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_IGFEM_INLINE_IMPL_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_IGFEM_INLINE_IMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 inline void SolidMechanicsModelIGFEM::getSubElementBarycenter(
-    UInt element, UInt sub_element, const ElementType & type,
+    UInt element, UInt sub_element, ElementType type,
     Vector<Real> & barycenter, GhostType ghost_type) const {
   UInt * conn_val = this->mesh.getConnectivity(type, ghost_type).storage();
   UInt nb_sub_element_nodes =
@@ -56,4 +56,4 @@ inline void SolidMechanicsModelIGFEM::getSubElementBarycenter(
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_IGFEM_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_IGFEM_INLINE_IMPL_HH_ */

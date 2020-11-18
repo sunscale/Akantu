@@ -106,9 +106,10 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
   Vector<Real> normal_opening(spatial_dimension);
   Vector<Real> tangential_opening(spatial_dimension);
 
-  if (not this->model->isDefaultSolverExplicit())
+  if (not this->model->isDefaultSolverExplicit()) {
     this->delta_max(el_type, ghost_type)
         .copy(this->delta_max.previous(el_type, ghost_type));
+  }
 
   /// loop on each quadrature point
   for (; traction_it != traction_end;
@@ -117,7 +118,8 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
        ++contact_opening_it, ++delta_max_prev_it, ++res_sliding_it,
        ++res_sliding_prev_it, ++friction_force_it, ++previous_opening_it) {
 
-    Real normal_opening_norm, tangential_opening_norm;
+    Real normal_opening_norm;
+    Real tangential_opening_norm;
     bool penetration;
     this->computeTractionOnQuad(
         *traction_it, *opening_it, *normal_it, *delta_max_it, *delta_c_it,
@@ -147,8 +149,9 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
       /// surface
       Real tau = std::min(friction_penalty * delta_sliding_norm, tau_max);
 
-      if ((tangential_opening_norm - *res_sliding_prev_it) < 0.0)
+      if ((tangential_opening_norm - *res_sliding_prev_it) < 0.0) {
         tau = -tau;
+      }
 
       /// from tau get the x and y components of friction, to be added in the
       /// force vector
@@ -160,7 +163,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
       *res_sliding_it =
           tangential_opening_norm - (std::abs(tau) / friction_penalty);
     } else {
-      friction_force_it->clear();
+      friction_force_it->zero();
     }
 
     *traction_it += *friction_force_it;
@@ -172,7 +175,7 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTraction(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
+    ElementType el_type, Array<Real> & tangent_matrix,
     __attribute__((unused)) const Array<Real> & normal, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
@@ -210,7 +213,8 @@ void MaterialCohesiveLinearFriction<spatial_dimension>::computeTangentTraction(
        ++delta_max_it, ++sigma_c_it, ++delta_c_it, ++damage_it,
        ++contact_opening_it, ++res_sliding_prev_it) {
 
-    Real normal_opening_norm, tangential_opening_norm;
+    Real normal_opening_norm;
+    Real tangential_opening_norm;
     bool penetration;
     this->computeTangentTractionOnQuad(
         *tangent_it, *delta_max_it, *delta_c_it, *sigma_c_it, *opening_it,

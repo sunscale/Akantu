@@ -33,8 +33,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TERMS_TO_ASSEMBLE_HH__
-#define __AKANTU_TERMS_TO_ASSEMBLE_HH__
+#ifndef AKANTU_TERMS_TO_ASSEMBLE_HH_
+#define AKANTU_TERMS_TO_ASSEMBLE_HH_
 
 namespace akantu {
 
@@ -96,4 +96,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_TERMS_TO_ASSEMBLE_HH__ */
+#endif /* AKANTU_TERMS_TO_ASSEMBLE_HH_ */

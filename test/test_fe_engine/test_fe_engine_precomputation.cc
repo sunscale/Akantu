@@ -77,7 +77,7 @@ protected:
   std::unique_ptr<Array<Real>> coordinates;
 };
 
-TYPED_TEST_SUITE(TestFEMPyFixture, fe_engine_types);
+TYPED_TEST_SUITE(TestFEMPyFixture, fe_engine_types, );
 
 TYPED_TEST(TestFEMPyFixture, Precompute) {
   SCOPED_TRACE(std::to_string(this->type));

@@ -29,7 +29,7 @@ namespace akantu {
   })
 /* -------------------------------------------------------------------------- */
 
-[[gnu::visibility("default")]] void
+void
 register_solid_mechanics_model(py::module & mod) {
 
   py::class_<SolidMechanicsModelOptions>(mod, "SolidMechanicsModelOptions")

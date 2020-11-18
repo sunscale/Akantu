@@ -32,8 +32,8 @@ namespace akantu {
 template <class IOF>
 inline void
 IntegratorGauss<_ek_igfem, IOF>::initIntegrator(const Array<Real> & nodes,
-                                                const ElementType & type,
-                                                const GhostType & ghost_type) {
+                                                ElementType type,
+                                                GhostType ghost_type) {
   AKANTU_BOOST_IGFEM_ELEMENT_SWITCH(INIT_INTEGRATOR);
 }
 
@@ -43,7 +43,7 @@ IntegratorGauss<_ek_igfem, IOF>::initIntegrator(const Array<Real> & nodes,
 template <class IOF>
 template <ElementType type>
 inline UInt IntegratorGauss<_ek_igfem, IOF>::getNbIntegrationPoints(
-    const GhostType &) const {
+    GhostType) const {
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
   const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
   UInt nb_quad_points_sub_1 =
@@ -58,7 +58,7 @@ template <class IOF>
 template <ElementType type>
 inline void IntegratorGauss<_ek_igfem, IOF>::integrateOnElement(
     const Array<Real> & f, Real * intf, UInt nb_degree_of_freedom,
-    const UInt elem, const GhostType & ghost_type) const {
+    const UInt elem, GhostType ghost_type) const {
 
   Array<Real> & jac_loc = jacobians(type, ghost_type);
 
@@ -76,7 +76,7 @@ inline void IntegratorGauss<_ek_igfem, IOF>::integrateOnElement(
 template <class IOF>
 template <ElementType type>
 inline Real IntegratorGauss<_ek_igfem, IOF>::integrate(
-    const Vector<Real> & in_f, UInt index, const GhostType & ghost_type) const {
+    const Vector<Real> & in_f, UInt index, GhostType ghost_type) const {
   const Array<Real> & jac_loc = jacobians(type, ghost_type);
 
   UInt nb_quadrature_points = getNbIntegrationPoints<type>();
@@ -115,7 +115,7 @@ template <class IOF>
 template <ElementType type>
 inline const Matrix<Real> &
 IntegratorGauss<_ek_igfem, IOF>::getIntegrationPoints(
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
   AKANTU_DEBUG_ASSERT(
       quadrature_points.exists(type, ghost_type),
       "Quadrature points for type "
@@ -129,7 +129,7 @@ IntegratorGauss<_ek_igfem, IOF>::getIntegrationPoints(
 template <class IOF>
 template <ElementType type>
 inline void IntegratorGauss<_ek_igfem, IOF>::computeQuadraturePoints(
-    const GhostType & ghost_type) {
+    GhostType ghost_type) {
   /// typedef for the two subelement_types and the parent element type
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
   const ElementType sub_type_2 = ElementClassProperty<type>::sub_element_type_2;
@@ -188,7 +188,7 @@ inline IntegratorGauss<_ek_igfem, IOF>::IntegratorGauss(
 template <class IOF>
 template <ElementType type>
 inline void IntegratorGauss<_ek_igfem, IOF>::checkJacobians(
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
   /// typedef for the two subelement_types and the parent element type
   const ElementType sub_type_1 = ElementClassProperty<type>::sub_element_type_1;
@@ -222,7 +222,7 @@ template <class IOF>
 template <ElementType type>
 inline void
 IntegratorGauss<_ek_igfem, IOF>::precomputeJacobiansOnQuadraturePoints(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
+    const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   /// typedef for the two subelement_types and the parent element type
@@ -305,7 +305,7 @@ template <class IOF>
 template <ElementType type>
 inline void IntegratorGauss<_ek_igfem, IOF>::integrate(
     const Array<Real> & in_f, Array<Real> & intf, UInt nb_degree_of_freedom,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),
@@ -358,7 +358,7 @@ inline void IntegratorGauss<_ek_igfem, IOF>::integrate(
 template <class IOF>
 template <ElementType type>
 inline Real IntegratorGauss<_ek_igfem, IOF>::integrate(
-    const Array<Real> & in_f, const GhostType & ghost_type,
+    const Array<Real> & in_f, GhostType ghost_type,
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
@@ -401,7 +401,7 @@ template <class IOF>
 template <ElementType type>
 inline void IntegratorGauss<_ek_igfem, IOF>::integrateOnIntegrationPoints(
     const Array<Real> & in_f, Array<Real> & intf, UInt nb_degree_of_freedom,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(jacobians.exists(type, ghost_type),

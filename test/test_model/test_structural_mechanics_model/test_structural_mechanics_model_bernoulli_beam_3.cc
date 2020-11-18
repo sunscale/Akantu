@@ -61,7 +61,7 @@ public:
     this->model->addMaterial(mat);
   }
 
-  void setDirichlets() {
+  void setDirichlets() override {
     // Boundary conditions (blocking all DOFs of nodes 2 & 3)
     auto boundary = ++this->model->getBlockedDOFs().begin(parent::ndof);
     // clang-format off
@@ -74,7 +74,7 @@ public:
     // Forces
     Real P = 1; // N
     auto & forces = this->model->getExternalForce();
-    forces.clear();
+    forces.zero();
     forces(0, 2) = -P; // vertical force on first node
   }
 

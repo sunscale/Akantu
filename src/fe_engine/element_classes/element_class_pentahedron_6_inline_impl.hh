@@ -89,9 +89,9 @@ inline void InterpolationElement<_itp_lagrange_pentahedron_6>::computeDNDS(
   dnds(0, 0) = -0.5 * c(1);
   dnds(0, 1) = -0.5 * c(2);
   dnds(0, 2) = -0.5 * (1 - c(1) - c(2));
-  dnds(0, 3) = 0.5 * c(1);
-  dnds(0, 4) = 0.5 * c(2);
-  dnds(0, 5) = 0.5 * (1 - c(1) - c(2));
+  dnds(0, 3) =  0.5 * c(1);
+  dnds(0, 4) =  0.5 * c(2);
+  dnds(0, 5) =  0.5 * (1 - c(1) - c(2));
 
   dnds(1, 0) = 0.5 * (1 - c(0));
   dnds(1, 1) = 0.0;
@@ -125,15 +125,13 @@ inline Real triangle_inradius(const Real * coord1, const Real * coord2,
    * @f}
    */
 
-  Real a, b, c;
-  a = Math::distance_3d(coord1, coord2);
-  b = Math::distance_3d(coord2, coord3);
-  c = Math::distance_3d(coord1, coord3);
+  auto a = Math::distance_3d(coord1, coord2);
+  auto b = Math::distance_3d(coord2, coord3);
+  auto c = Math::distance_3d(coord1, coord3);
 
-  Real s;
-  s = (a + b + c) * 0.5;
+  auto s = (a + b + c) * 0.5;
 
-  return sqrt((s - a) * (s - b) * (s - c) / s);
+  return std::sqrt((s - a) * (s - b) * (s - c) / s);
 }
 /* -------------------------------------------------------------------------- */
 template <>
@@ -146,16 +144,16 @@ GeometricalElement<_gt_pentahedron_6>::getInradius(const Matrix<Real> & coord) {
   Vector<Real> u4 = coord(4);
   Vector<Real> u5 = coord(5);
 
-  Real inradius_triangle_1 =
+  auto inradius_triangle_1 =
       triangle_inradius(u0.storage(), u1.storage(), u2.storage());
 
-  Real inradius_triangle_2 =
+  auto inradius_triangle_2 =
       triangle_inradius(u3.storage(), u4.storage(), u5.storage());
 
-  Real d1 = u3.distance(u0) * 0.5;
-  Real d2 = u5.distance(u2) * 0.5;
-  Real d3 = u4.distance(u1) * 0.5;
-  Real p =
+  auto d1 = u3.distance(u0) * 0.5;
+  auto d2 = u5.distance(u2) * 0.5;
+  auto d3 = u4.distance(u1) * 0.5;
+  auto p =
       2. * std::min({inradius_triangle_1, inradius_triangle_2, d1, d2, d3});
 
   return p;

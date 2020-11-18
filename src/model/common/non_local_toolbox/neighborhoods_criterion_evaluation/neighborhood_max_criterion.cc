@@ -54,14 +54,14 @@ NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
   for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     UInt new_size = this->quad_coordinates(type, ghost_type).size();
     this->is_highest.alloc(new_size, 1, type, ghost_type, true);
-    this->criterion.alloc(new_size, 1, type, ghost_type, true);
+    this->criterion.alloc(new_size, 1, type, ghost_type, 1.);
   }
 
   /// criterion needs allocation also for ghost
   ghost_type = _ghost;
   for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     UInt new_size = this->quad_coordinates(type, ghost_type).size();
-    this->criterion.alloc(new_size, 1, type, ghost_type, true);
+    this->criterion.alloc(new_size, 1, type, ghost_type, 1.);
   }
 
   AKANTU_DEBUG_OUT();
@@ -126,7 +126,7 @@ void NeighborhoodMaxCriterion::createGridSynchronizer() {
 }
 
 /* -------------------------------------------------------------------------- */
-void NeighborhoodMaxCriterion::insertAllQuads(const GhostType & ghost_type) {
+void NeighborhoodMaxCriterion::insertAllQuads(GhostType ghost_type) {
   IntegrationPoint q;
   q.ghost_type = ghost_type;
   Mesh & mesh = this->model.getMesh();
@@ -159,8 +159,8 @@ void NeighborhoodMaxCriterion::findMaxQuads(
   AKANTU_DEBUG_IN();
 
   /// clear the element type maps
-  this->is_highest.clear();
-  this->criterion.clear();
+  this->is_highest.zero();
+  this->criterion.zero();
 
   /// update the values of the criterion
   this->model.updateDataForNonLocalCriterion(criterion);
@@ -205,7 +205,7 @@ void NeighborhoodMaxCriterion::findMaxQuads(
 }
 
 /* -------------------------------------------------------------------------- */
-void NeighborhoodMaxCriterion::checkNeighbors(const GhostType & ghost_type2) {
+void NeighborhoodMaxCriterion::checkNeighbors(GhostType ghost_type2) {
   AKANTU_DEBUG_IN();
 
   // Compute the weights
@@ -219,9 +219,9 @@ void NeighborhoodMaxCriterion::checkNeighbors(const GhostType & ghost_type2) {
     const Array<Real> & criterion_1 = this->criterion(lq1.type, lq1.ghost_type);
     const Array<Real> & criterion_2 = this->criterion(lq2.type, lq2.ghost_type);
 
-    if (criterion_1(lq1.global_num) < criterion_2(lq2.global_num))
+    if (criterion_1(lq1.global_num) < criterion_2(lq2.global_num)) {
       has_highest_eq_stress_1(lq1.global_num) = false;
-    else if (ghost_type2 != _ghost) {
+    } else if (ghost_type2 != _ghost) {
       Array<bool> & has_highest_eq_stress_2 =
           is_highest(lq2.type, lq2.ghost_type);
       has_highest_eq_stress_2(lq2.global_num) = false;
@@ -249,7 +249,7 @@ void NeighborhoodMaxCriterion::cleanupExtraGhostElements(
   Element element;
   element.ghost_type = _ghost;
   auto end = relevant_ghost_elements.end();
-  for (auto & type : mesh.elementTypes(spatial_dimension, _ghost)) {
+  for (const auto & type : mesh.elementTypes(spatial_dimension, _ghost)) {
     element.type = type;
     UInt nb_ghost_elem = mesh.getNbElement(type, _ghost);
     UInt nb_ghost_elem_protected = 0;
@@ -258,10 +258,11 @@ void NeighborhoodMaxCriterion::cleanupExtraGhostElements(
     } catch (...) {
     }
 
-    if (!remove_elem.getNewNumbering().exists(type, _ghost))
+    if (!remove_elem.getNewNumbering().exists(type, _ghost)) {
       remove_elem.getNewNumbering().alloc(nb_ghost_elem, 1, type, _ghost);
-    else
+    } else {
       remove_elem.getNewNumbering(type, _ghost).resize(nb_ghost_elem);
+    }
     Array<UInt> & new_numbering = remove_elem.getNewNumbering(type, _ghost);
     for (UInt g = 0; g < nb_ghost_elem; ++g) {
       element.element = g;

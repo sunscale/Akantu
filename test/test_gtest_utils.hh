@@ -35,8 +35,8 @@
 #include <gtest/gtest.h>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TEST_GTEST_UTILS_HH__
-#define __AKANTU_TEST_GTEST_UTILS_HH__
+#ifndef AKANTU_TEST_GTEST_UTILS_HH_
+#define AKANTU_TEST_GTEST_UTILS_HH_
 
 #if !defined(TYPED_TEST_SUITE)
 #define TYPED_TEST_SUITE(...) TYPED_TEST_CASE(__VA_ARGS__)
@@ -255,4 +255,4 @@ std::ostream & operator<<(std::ostream & stream, const Polynomial<degree> & p) {
 
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_TEST_GTEST_UTILS_HH__ */
+#endif /* AKANTU_TEST_GTEST_UTILS_HH_ */

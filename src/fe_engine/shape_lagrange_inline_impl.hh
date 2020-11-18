@@ -35,8 +35,8 @@
 #include "shape_lagrange.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_LAGRANGE_INLINE_IMPL_HH__
-#define __AKANTU_SHAPE_LAGRANGE_INLINE_IMPL_HH__
+#ifndef AKANTU_SHAPE_LAGRANGE_INLINE_IMPL_HH_
+#define AKANTU_SHAPE_LAGRANGE_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -52,7 +52,7 @@ namespace akantu {
 template <ElementKind kind>
 inline void ShapeLagrange<kind>::initShapeFunctions(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    const ElementType & type, const GhostType & ghost_type) {
+    ElementType type, GhostType ghost_type) {
   AKANTU_BOOST_REGULAR_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
 }
 
@@ -86,7 +86,7 @@ template <ElementKind kind>
 template <ElementType type>
 void ShapeLagrange<kind>::inverseMap(const Vector<Real> & real_coords,
                                      UInt elem, Vector<Real> & natural_coords,
-                                     const GhostType & ghost_type) const {
+                                     GhostType ghost_type) const {
 
   AKANTU_DEBUG_IN();
 
@@ -110,7 +110,7 @@ void ShapeLagrange<kind>::inverseMap(const Vector<Real> & real_coords,
 template <ElementKind kind>
 template <ElementType type>
 bool ShapeLagrange<kind>::contains(const Vector<Real> & real_coords, UInt elem,
-                                   const GhostType & ghost_type) const {
+                                   GhostType ghost_type) const {
 
   UInt spatial_dimension = mesh.getSpatialDimension();
   Vector<Real> natural_coords(spatial_dimension);
@@ -126,7 +126,7 @@ void ShapeLagrange<kind>::interpolate(const Vector<Real> & real_coords,
                                       UInt elem,
                                       const Matrix<Real> & nodal_values,
                                       Vector<Real> & interpolated,
-                                      const GhostType & ghost_type) const {
+                                      GhostType ghost_type) const {
   UInt nb_shapes = ElementClass<type>::getShapeSize();
   Vector<Real> shapes(nb_shapes);
   computeShapes<type>(real_coords, elem, shapes, ghost_type);
@@ -138,7 +138,7 @@ template <ElementKind kind>
 template <ElementType type>
 void ShapeLagrange<kind>::computeShapes(const Vector<Real> & real_coords,
                                         UInt elem, Vector<Real> & shapes,
-                                        const GhostType & ghost_type) const {
+                                        GhostType ghost_type) const {
 
   AKANTU_DEBUG_IN();
 
@@ -156,7 +156,7 @@ template <ElementKind kind>
 template <ElementType type>
 void ShapeLagrange<kind>::computeShapeDerivatives(
     const Matrix<Real> & real_coords, UInt elem, Tensor3<Real> & shapesd,
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
 
   AKANTU_DEBUG_IN();
 
@@ -205,7 +205,7 @@ template <ElementKind kind>
 template <ElementType type>
 void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    Array<Real> & shape_derivatives, const GhostType & ghost_type,
+    Array<Real> & shape_derivatives, GhostType ghost_type,
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
@@ -231,21 +231,24 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
   Array<Real>::matrix_iterator x_it =
       x_el.begin(spatial_dimension, nb_nodes_per_element);
 
-  if (filter_elements != empty_filter)
+  if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
+  }
 
   for (UInt elem = 0; elem < nb_element; ++elem, ++x_it) {
-    if (filter_elements != empty_filter)
+    if (filter_elements != empty_filter) {
       shapesd_val = shape_derivatives.storage() +
                     filter_elements(elem) * size_of_shapesd * nb_points;
+    }
 
     Matrix<Real> & X = *x_it;
     Tensor3<Real> B(shapesd_val, spatial_dimension, nb_nodes_per_element,
                     nb_points);
     computeShapeDerivativesOnCPointsByElement<type>(X, integration_points, B);
 
-    if (filter_elements == empty_filter)
+    if (filter_elements == empty_filter) {
       shapesd_val += size_of_shapesd * nb_points;
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -255,8 +258,8 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
 template <ElementKind kind>
 void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    Array<Real> & shape_derivatives, const ElementType & type,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    Array<Real> & shape_derivatives, ElementType type,
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
 #define AKANTU_COMPUTE_SHAPES(type)                                            \
   computeShapeDerivativesOnIntegrationPoints<type>(                            \
       nodes, integration_points, shape_derivatives, ghost_type,                \
@@ -271,7 +274,7 @@ void ShapeLagrange<kind>::computeShapeDerivativesOnIntegrationPoints(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeLagrange<kind>::precomputeShapesOnIntegrationPoints(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
+    const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
@@ -290,7 +293,7 @@ void ShapeLagrange<kind>::precomputeShapesOnIntegrationPoints(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeLagrange<kind>::precomputeShapeDerivativesOnIntegrationPoints(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
+    const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   InterpolationType itp_type = ElementClassProperty<type>::interpolation_type;
@@ -534,4 +537,4 @@ void ShapeLagrange<kind>::computeNtb(
 
 } // namespace akantu
 
-#endif /* __AKANTU_SHAPE_LAGRANGE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SHAPE_LAGRANGE_INLINE_IMPL_HH_ */

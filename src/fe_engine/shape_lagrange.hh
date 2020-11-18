@@ -32,8 +32,8 @@
 #include "shape_lagrange_base.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_LAGRANGE_HH__
-#define __AKANTU_SHAPE_LAGRANGE_HH__
+#ifndef AKANTU_SHAPE_LAGRANGE_HH_
+#define AKANTU_SHAPE_LAGRANGE_HH_
 
 namespace akantu {
 
@@ -58,34 +58,34 @@ public:
   /// initialization function for structural elements not yet implemented
   inline void initShapeFunctions(const Array<Real> & nodes,
                                  const Matrix<Real> & integration_points,
-                                 const ElementType & type,
-                                 const GhostType & ghost_type);
+                                 ElementType type,
+                                 GhostType ghost_type);
 
   /// computes the shape functions derivatives for given interpolation points
   template <ElementType type>
   void computeShapeDerivativesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shape_derivatives, const GhostType & ghost_type,
+      Array<Real> & shape_derivatives, GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const;
 
   void computeShapeDerivativesOnIntegrationPoints(
       const Array<Real> & nodes, const Matrix<Real> & integration_points,
-      Array<Real> & shape_derivatives, const ElementType & type,
-      const GhostType & ghost_type,
+      Array<Real> & shape_derivatives, ElementType type,
+      GhostType ghost_type,
       const Array<UInt> & filter_elements) const override;
 
   /// pre compute all shapes on the element integration points from natural
   /// coordinates
   template <ElementType type>
   void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
-                                           const GhostType & ghost_type);
+                                           GhostType ghost_type);
 
   /// pre compute all shape derivatives on the element integration points from
   /// natural coordinates
   template <ElementType type>
   void
   precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
-                                                const GhostType & ghost_type);
+                                                GhostType ghost_type);
 
   /// interpolate nodal values on the integration points
   template <ElementType type>
@@ -105,7 +105,7 @@ public:
   void interpolate(const Vector<Real> & real_coords, UInt elem,
                    const Matrix<Real> & nodal_values,
                    Vector<Real> & interpolated,
-                   const GhostType & ghost_type) const;
+                   GhostType ghost_type) const;
 
   /// compute the gradient of u on the integration points
   template <ElementType type>
@@ -134,24 +134,24 @@ public:
   template <ElementType type>
   void inverseMap(const Vector<Real> & real_coords, UInt element,
                   Vector<Real> & natural_coords,
-                  const GhostType & ghost_type = _not_ghost) const;
+                  GhostType ghost_type = _not_ghost) const;
 
   /// return true if the coordinates provided are inside the element, false
   /// otherwise
   template <ElementType type>
   bool contains(const Vector<Real> & real_coords, UInt elem,
-                const GhostType & ghost_type) const;
+                GhostType ghost_type) const;
 
   /// compute the shape on a provided point
   template <ElementType type>
   void computeShapes(const Vector<Real> & real_coords, UInt elem,
-                     Vector<Real> & shapes, const GhostType & ghost_type) const;
+                     Vector<Real> & shapes, GhostType ghost_type) const;
 
   /// compute the shape derivatives on a provided point
   template <ElementType type>
   void computeShapeDerivatives(const Matrix<Real> & real_coords, UInt elem,
                                Tensor3<Real> & shapes,
-                               const GhostType & ghost_type) const;
+                               GhostType ghost_type) const;
 
 protected:
   /// compute the shape derivatives on integration points for a given element
@@ -169,4 +169,4 @@ protected:
 /* -------------------------------------------------------------------------- */
 #include "shape_lagrange_inline_impl.hh"
 
-#endif /* __AKANTU_SHAPE_LAGRANGE_HH__ */
+#endif /* AKANTU_SHAPE_LAGRANGE_HH_ */

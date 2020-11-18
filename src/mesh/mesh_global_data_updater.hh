@@ -26,8 +26,8 @@
  *
  */
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MESH_GLOBAL_DATA_UPDATER_HH__
-#define __AKANTU_MESH_GLOBAL_DATA_UPDATER_HH__
+#ifndef AKANTU_MESH_GLOBAL_DATA_UPDATER_HH_
+#define AKANTU_MESH_GLOBAL_DATA_UPDATER_HH_
 
 namespace akantu {
 
@@ -47,4 +47,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_GLOBAL_DATA_UPDATER_HH__ */
+#endif /* AKANTU_MESH_GLOBAL_DATA_UPDATER_HH_ */

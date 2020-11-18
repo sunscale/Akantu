@@ -31,8 +31,8 @@
 #include "communication_descriptor.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH__
-#define __AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH__
+#ifndef AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH_
+#define AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH_
 
 namespace akantu {
 
@@ -148,4 +148,4 @@ void CommunicationDescriptor<Entity>::postRecv(int hash_id) {
 
 } // namespace akantu
 
-#endif /* __AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH__ */
+#endif /* AKANTU_COMMUNICATION_DESCRIPTOR_TMPL_HH_ */

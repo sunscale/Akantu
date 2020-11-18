@@ -19,8 +19,8 @@
 #include "material_orthotropic_damage_iterative.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__
-#define __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__
+#ifndef AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH_
+#define AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH_
 
 namespace akantu {
 
@@ -81,4 +81,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH__ */
+#endif /* AKANTU_MATERIAL_ORTHOTROPIC_DAMAGE_ITERATIVE_NON_LOCAL_HH_ */

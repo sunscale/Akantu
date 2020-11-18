@@ -34,8 +34,8 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH_
 
 namespace akantu {
 
@@ -58,4 +58,4 @@ void SolidMechanicsModel::splitByMaterial(const Array<Element> & elements,
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_TMPL_HH_ */

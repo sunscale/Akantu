@@ -31,16 +31,16 @@
 #include "shape_lagrange_base.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_LAGRANGE_BASE_INLINE_IMPL_HH__
-#define __AKANTU_SHAPE_LAGRANGE_BASE_INLINE_IMPL_HH__
+#ifndef AKANTU_SHAPE_LAGRANGE_BASE_INLINE_IMPL_HH_
+#define AKANTU_SHAPE_LAGRANGE_BASE_INLINE_IMPL_HH_
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
-    const Array<Real> &, const Matrix<Real> & integration_points,
-    Array<Real> & shapes, const GhostType & ghost_type,
+    const Array<Real> & /*unused*/, const Matrix<Real> & integration_points,
+    Array<Real> & shapes, GhostType ghost_type,
     const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
@@ -65,14 +65,16 @@ void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
   }
 
   for (UInt elem = 0; elem < nb_element; ++elem) {
-    if (filter_elements != empty_filter)
+    if (filter_elements != empty_filter) {
       shapes_it = shapes_begin + filter_elements(elem);
+    }
 
     Matrix<Real> & N = *shapes_it;
     ElementClass<type>::computeShapes(integration_points, N);
 
-    if (filter_elements == empty_filter)
+    if (filter_elements == empty_filter) {
       ++shapes_it;
+    }
   }
 
   AKANTU_DEBUG_OUT();
@@ -80,4 +82,4 @@ void ShapeLagrangeBase::computeShapesOnIntegrationPoints(
 
 } // namespace akantu
 
-#endif /* __AKANTU_SHAPE_LAGRANGE_BASE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SHAPE_LAGRANGE_BASE_INLINE_IMPL_HH_ */

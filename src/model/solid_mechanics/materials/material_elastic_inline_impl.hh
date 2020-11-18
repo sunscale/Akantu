@@ -32,8 +32,8 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_HH__
-#define __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_HH__
+#ifndef AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_HH_
+#define AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -41,15 +41,15 @@ namespace akantu {
 template <UInt spatial_dimension>
 inline void MaterialElastic<spatial_dimension>::computeStressOnQuad(
     const Matrix<Real> & grad_u, Matrix<Real> & sigma,
-    const Real sigma_th) const {
+    Real sigma_th) const {
   Real trace = grad_u.trace(); // trace = (\nabla u)_{kk}
 
   // \sigma_{ij} = \lambda * (\nabla u)_{kk} * \delta_{ij} + \mu * (\nabla
   // u_{ij} + \nabla u_{ji})
   for (UInt i = 0; i < spatial_dimension; ++i) {
     for (UInt j = 0; j < spatial_dimension; ++j) {
-      sigma(i, j) = (i == j) * lambda * trace +
-                    mu * (grad_u(i, j) + grad_u(j, i)) + (i == j) * sigma_th;
+      sigma(i, j) = Math::kronecker(i, j) * lambda * trace +
+          mu * (grad_u(i, j) + grad_u(j, i)) + Math::kronecker(i, j) * sigma_th;
     }
   }
 }
@@ -73,10 +73,11 @@ inline void MaterialElastic<spatial_dimension>::computeTangentModuliOnQuad(
   Real Miijj = lambda;
   Real Mijij = mu;
 
-  if (spatial_dimension == 1)
+  if (spatial_dimension == 1) {
     tangent(0, 0) = this->E;
-  else
+  } else {
     tangent(0, 0) = Miiii;
+  }
 
   // test of dimension should by optimized out by the compiler due to the
   // template
@@ -116,4 +117,4 @@ MaterialElastic<1>::computeTangentModuliOnQuad(Matrix<Real> & tangent) const {
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_HH__ */
+#endif /* AKANTU_MATERIAL_ELASTIC_INLINE_IMPL_HH_ */

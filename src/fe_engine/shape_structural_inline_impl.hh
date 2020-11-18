@@ -34,17 +34,17 @@
 #include "shape_structural.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH__
-#define __AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH__
+#ifndef AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH_
+#define AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH_
 
 namespace akantu {
 
 namespace {
   /// Extract nodal coordinates per elements
   template <ElementType type>
-  std::unique_ptr<Array<Real>>
-  getNodesPerElement(const Mesh & mesh, const Array<Real> & nodes,
-                     const GhostType & ghost_type) {
+  std::unique_ptr<Array<Real>> getNodesPerElement(const Mesh & mesh,
+                                                  const Array<Real> & nodes,
+                                                  GhostType ghost_type) {
     const auto dim = ElementClass<type>::getSpatialDimension();
     const auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
@@ -59,7 +59,7 @@ namespace {
 template <ElementKind kind>
 inline void ShapeStructural<kind>::initShapeFunctions(
     const Array<Real> & /* unused */, const Matrix<Real> & /* unused */,
-    const ElementType & /* unused */, const GhostType & /* unused */) {
+    ElementType /* unused */, GhostType /* unused */) {
   AKANTU_TO_IMPLEMENT();
 }
 
@@ -73,7 +73,7 @@ inline void ShapeStructural<kind>::initShapeFunctions(
 template <>
 inline void ShapeStructural<_ek_structural>::initShapeFunctions(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    const ElementType & type, const GhostType & ghost_type) {
+    ElementType type, GhostType ghost_type) {
   AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(INIT_SHAPE_FUNCTIONS);
 }
 
@@ -84,7 +84,7 @@ template <>
 template <ElementType type>
 void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
-    Array<Real> & shapes, const GhostType & ghost_type,
+    Array<Real> & shapes, GhostType ghost_type,
     const Array<UInt> & filter_elements) const {
 
   UInt nb_points = integration_points.cols();
@@ -136,7 +136,7 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::precomputeRotationMatrices(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
+    const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   const auto spatial_dimension = mesh.getSpatialDimension();
@@ -156,9 +156,10 @@ void ShapeStructural<kind>::precomputeRotationMatrices(
 
   bool has_extra_normal = mesh.hasData<Real>("extra_normal", type, ghost_type);
   Array<Real>::const_vector_iterator extra_normal;
-  if (has_extra_normal)
+  if (has_extra_normal) {
     extra_normal = mesh.getData<Real>("extra_normal", type, ghost_type)
                        .begin(spatial_dimension);
+  }
 
   for (auto && tuple :
        zip(make_view(x_el, spatial_dimension, nb_nodes_per_element),
@@ -184,7 +185,7 @@ void ShapeStructural<kind>::precomputeRotationMatrices(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
+    const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   const auto & natural_coords = integration_points(type, ghost_type);
@@ -220,7 +221,7 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
 template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::precomputeShapeDerivativesOnIntegrationPoints(
-    const Array<Real> & nodes, const GhostType & ghost_type) {
+    const Array<Real> & nodes, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   const auto & natural_coords = integration_points(type, ghost_type);
@@ -289,7 +290,7 @@ template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::interpolateOnIntegrationPoints(
     const Array<Real> & in_u, Array<Real> & out_uq, UInt nb_dof,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_ASSERT(out_uq.getNbComponent() == nb_dof,
@@ -341,7 +342,7 @@ template <ElementKind kind>
 template <ElementType type>
 void ShapeStructural<kind>::gradientOnIntegrationPoints(
     const Array<Real> & in_u, Array<Real> & out_nablauq, UInt nb_dof,
-    const GhostType & ghost_type, const Array<UInt> & filter_elements) const {
+    GhostType ghost_type, const Array<UInt> & filter_elements) const {
   AKANTU_DEBUG_IN();
 
   auto itp_type = FEEngine::getInterpolationType(type);
@@ -429,4 +430,4 @@ void ShapeStructural<_ek_structural>::computeBtD(
 
 } // namespace akantu
 
-#endif /* __AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH_ */

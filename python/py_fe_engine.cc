@@ -30,9 +30,8 @@ register_fe_engine(py::module & mod) {
       .def(
           "gradientOnIntegrationPoints",
           [](FEEngine & fem, const Array<Real> & u, Array<Real> & nablauq,
-             const UInt nb_degree_of_freedom, const ElementType & type,
-             const GhostType & ghost_type,
-             const Array<UInt> * filter_elements) {
+             UInt nb_degree_of_freedom, ElementType type,
+             GhostType ghost_type, const Array<UInt> * filter_elements) {
             if (filter_elements == nullptr) {
               // This is due to the ArrayProxy that looses the
               // empty_filter information
@@ -47,9 +46,8 @@ register_fe_engine(py::module & mod) {
       .def(
           "interpolateOnIntegrationPoints",
           [](FEEngine & self, const Array<Real> & u, Array<Real> & uq,
-             UInt nb_degree_of_freedom, const ElementType & type,
-             const GhostType & ghost_type,
-             const Array<UInt> * filter_elements) {
+             UInt nb_degree_of_freedom, ElementType type,
+             GhostType ghost_type, const Array<UInt> * filter_elements) {
             if (filter_elements == nullptr) {
               // This is due to the ArrayProxy that looses the
               // empty_filter information
@@ -86,7 +84,7 @@ register_fe_engine(py::module & mod) {
              const std::function<void(Matrix<Real> &, const Element &)> &
                  field_funct,
              const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-             ElementType type, const GhostType & ghost_type) {
+             ElementType type, GhostType ghost_type) {
             fem.assembleFieldLumped(field_funct, matrix_id, dof_id, dof_manager,
                                     type, ghost_type);
           },
@@ -99,7 +97,7 @@ register_fe_engine(py::module & mod) {
              const std::function<void(Matrix<Real> &, const Element &)> &
                  field_funct,
              const ID & matrix_id, const ID & dof_id, DOFManager & dof_manager,
-             ElementType type, const GhostType & ghost_type = _not_ghost) {
+             ElementType type, GhostType ghost_type = _not_ghost) {
             fem.assembleFieldMatrix(field_funct, matrix_id, dof_id, dof_manager,
                                     type, ghost_type);
           },

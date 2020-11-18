@@ -31,8 +31,8 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH__
-#define __AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH__
+#ifndef AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH_
+#define AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH_
 
 /* -------------------------------------------------------------------------- */
 template <typename tuple_>
@@ -60,7 +60,7 @@ public:
     Matrix<Real> sigma =
         make_view(mat.getStress(this->type), dim, dim).begin()[0];
 
-    external_forces.clear();
+    external_forces.zero();
     if (dim > 1) {
       for (auto & eg : this->mesh->iterateElementGroups()) {
         this->model->applyBC(BC::Neumann::FromHigherDim(sigma), eg.getName());
@@ -73,7 +73,7 @@ public:
     Real force_norm_inf = -std::numeric_limits<Real>::max();
 
     Vector<Real> total_force(dim);
-    total_force.clear();
+    total_force.zero();
 
     for (auto && f : make_view(internal_forces, dim)) {
       total_force += f;
@@ -148,6 +148,6 @@ template <typename T> using valid_types = aka::negation<invalid_plan_stress<T>>;
 using model_types = gtest_list_t<
     tuple_filter_t<valid_types, cross_product_t<TestElementTypes, true_false>>>;
 
-TYPED_TEST_SUITE(TestPatchTestSMMLinear, model_types);
+TYPED_TEST_SUITE(TestPatchTestSMMLinear, model_types, );
 
-#endif /* __AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH__ */
+#endif /* AKANTU_PATCH_TEST_LINEAR_SOLID_MECHANICS_FIXTURE_HH_ */

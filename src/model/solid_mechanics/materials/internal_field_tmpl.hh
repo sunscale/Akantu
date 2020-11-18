@@ -31,8 +31,8 @@
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTERNAL_FIELD_TMPL_HH__
-#define __AKANTU_INTERNAL_FIELD_TMPL_HH__
+#ifndef AKANTU_INTERNAL_FIELD_TMPL_HH_
+#define AKANTU_INTERNAL_FIELD_TMPL_HH_
 
 namespace akantu {
 
@@ -102,17 +102,19 @@ template <typename T> void InternalField<T>::initialize(UInt nb_component) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void InternalField<T>::initializeHistory() {
-  if (!previous_values)
+  if (!previous_values) {
     previous_values =
         std::make_unique<InternalField<T>>("previous_" + this->getID(), *this);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void InternalField<T>::resize() {
-  if (!this->is_init)
+  if (!this->is_init) {
     return;
+  }
 
-  for (auto ghost : ghost_types)
+  for (auto ghost : ghost_types) {
     for (const auto & type : this->filterTypes(ghost)) {
       UInt nb_element = this->element_filter(type, ghost).size();
 
@@ -135,6 +137,7 @@ template <typename T> void InternalField<T>::resize() {
       this->setArrayValues(vect->storage() + old_size * vect->getNbComponent(),
                            vect->storage() + new_size * vect->getNbComponent());
     }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -145,13 +148,14 @@ template <typename T> void InternalField<T>::setDefaultValue(const T & value) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void InternalField<T>::reset() {
-  for (auto ghost_type : ghost_types)
+  for (auto ghost_type : ghost_types) {
     for (const auto & type : this->elementTypes(ghost_type)) {
       Array<T> & vect = (*this)(type, ghost_type);
-      vect.clear();
+      //vect.zero();
       this->setArrayValues(
           vect.storage(), vect.storage() + vect.size() * vect.getNbComponent());
     }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -165,12 +169,13 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
         UInt nb_element = this->element_filter(type, ghost).size();
         UInt nb_quadrature_points =
             this->fem->getNbIntegrationPoints(type, ghost);
-        if (this->exists(type, ghost))
+        if (this->exists(type, ghost)) {
           this->operator()(type, ghost)
               .resize(nb_element * nb_quadrature_points);
-        else
+        } else {
           this->alloc(nb_element * nb_quadrature_points, nb_component, type,
                       ghost);
+        }
       }
     }
 
@@ -179,15 +184,17 @@ void InternalField<T>::internalInitialize(UInt nb_component) {
   }
   this->reset();
 
-  if (this->previous_values)
+  if (this->previous_values) {
     this->previous_values->internalInitialize(nb_component);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 void InternalField<T>::setArrayValues(T * begin, T * end) {
-  for (; begin < end; ++begin)
+  for (; begin < end; ++begin) {
     *begin = this->default_value;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -196,13 +203,16 @@ template <typename T> void InternalField<T>::saveCurrentValues() {
                       "The history of the internal "
                           << this->getID() << " has not been activated");
 
-  if (not this->is_init)
+  if (not this->is_init) {
     return;
+  }
 
-  for (auto ghost_type : ghost_types)
-    for (const auto & type : this->elementTypes(ghost_type))
+  for (auto ghost_type : ghost_types) {
+    for (const auto & type : this->elementTypes(ghost_type)) {
       (*this->previous_values)(type, ghost_type)
           .copy((*this)(type, ghost_type));
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,13 +221,16 @@ template <typename T> void InternalField<T>::restorePreviousValues() {
                       "The history of the internal "
                           << this->getID() << " has not been activated");
 
-  if (not this->is_init)
+  if (not this->is_init) {
     return;
+  }
 
-  for (auto ghost_type : ghost_types)
-    for (const auto & type : this->elementTypes(ghost_type))
+  for (auto ghost_type : ghost_types) {
+    for (const auto & type : this->elementTypes(ghost_type)) {
       (*this)(type, ghost_type)
           .copy((*this->previous_values)(type, ghost_type));
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -227,12 +240,14 @@ void InternalField<T>::removeIntegrationPoints(
   for (auto ghost_type : ghost_types) {
     for (auto type : new_numbering.elementTypes(_all_dimensions, ghost_type,
                                                 _ek_not_defined)) {
-      if (not this->exists(type, ghost_type))
+      if (not this->exists(type, ghost_type)) {
         continue;
+      }
 
       Array<T> & vect = (*this)(type, ghost_type);
-      if (vect.size() == 0)
+      if (vect.empty()) {
         continue;
+      }
 
       const Array<UInt> & renumbering = new_numbering(type, ghost_type);
 
@@ -304,4 +319,4 @@ template <typename T> inline InternalField<T>::operator T() const {
 
 } // namespace akantu
 
-#endif /* __AKANTU_INTERNAL_FIELD_TMPL_HH__ */
+#endif /* AKANTU_INTERNAL_FIELD_TMPL_HH_ */

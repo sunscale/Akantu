@@ -32,8 +32,8 @@
 #include "element_type_map.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LOCAL_MANAGER_CALLBACK_HH__
-#define __AKANTU_NON_LOCAL_MANAGER_CALLBACK_HH__
+#ifndef AKANTU_NON_LOCAL_MANAGER_CALLBACK_HH_
+#define AKANTU_NON_LOCAL_MANAGER_CALLBACK_HH_
 
 namespace akantu {
 class NonLocalManager;
@@ -47,21 +47,21 @@ public:
 
   /* ------------------------------------------------------------------------ */
   virtual void
-  insertIntegrationPointsInNeighborhoods(const GhostType & ghost_type) = 0;
+  insertIntegrationPointsInNeighborhoods(GhostType ghost_type) = 0;
 
-  virtual void computeNonLocalStresses(const GhostType & ghost_type) = 0;
+  virtual void computeNonLocalStresses(GhostType ghost_type) = 0;
 
   /// update the values of the non local internal
   virtual void updateLocalInternal(ElementTypeMapReal & internal_flat,
-                                   const GhostType & ghost_type,
-                                   const ElementKind & kind) = 0;
+                                   GhostType ghost_type,
+                                   ElementKind kind) = 0;
 
   /// copy the results of the averaging in the materials
   virtual void updateNonLocalInternal(ElementTypeMapReal & internal_flat,
-                                      const GhostType & ghost_type,
-                                      const ElementKind & kind) = 0;
+                                      GhostType ghost_type,
+                                      ElementKind kind) = 0;
 };
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LOCAL_MANAGER_CALLBACK_HH__ */
+#endif /* AKANTU_NON_LOCAL_MANAGER_CALLBACK_HH_ */

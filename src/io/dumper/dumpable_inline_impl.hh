@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPABLE_INLINE_IMPL_HH__
-#define __AKANTU_DUMPABLE_INLINE_IMPL_HH__
+#ifndef AKANTU_DUMPABLE_INLINE_IMPL_HH_
+#define AKANTU_DUMPABLE_INLINE_IMPL_HH_
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
@@ -51,13 +51,15 @@ inline void Dumpable::registerDumper(const std::string & dumper_name,
   }
 
   std::string name = file_name;
-  if (name == "")
+  if (name.empty()) {
     name = dumper_name;
+  }
 
   this->dumpers[dumper_name] = std::make_shared<T>(name);
 
-  if (is_default)
+  if (is_default) {
     this->default_dumper = dumper_name;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,8 +85,8 @@ template <typename T>
 inline void Dumpable::addDumpFieldExternal(const std::string & field_id,
                                            const ElementTypeMapArray<T> & field,
                                            UInt spatial_dimension,
-                                           const GhostType & ghost_type,
-                                           const ElementKind & element_kind) {
+                                           GhostType ghost_type,
+                                           ElementKind element_kind) {
   this->addDumpFieldExternalToDumper(this->default_dumper, field_id, field,
                                      spatial_dimension, ghost_type,
                                      element_kind);
@@ -95,7 +97,7 @@ template <typename T>
 inline void Dumpable::addDumpFieldExternalToDumper(
     const std::string & dumper_name, const std::string & field_id,
     const ElementTypeMapArray<T> & field, UInt spatial_dimension,
-    const GhostType & ghost_type, const ElementKind & element_kind) {
+    GhostType ghost_type, ElementKind element_kind) {
 
   std::shared_ptr<dumpers::Field> field_cont;
 #if defined(AKANTU_IGFEM)
@@ -130,4 +132,4 @@ inline T & Dumpable::getDumper(const std::string & dumper_name) {
 
 #endif
 
-#endif /* __AKANTU_DUMPABLE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_DUMPABLE_INLINE_IMPL_HH_ */

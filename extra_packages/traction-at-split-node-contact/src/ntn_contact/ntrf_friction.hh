@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_NTRF_FRICTION_HH__
-#define __AST_NTRF_FRICTION_HH__
+#ifndef AST_NTRF_FRICTION_HH_
+#define AST_NTRF_FRICTION_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -88,4 +88,4 @@ operator<<(std::ostream & stream,
 
 #include "ntrf_friction_tmpl.hh"
 
-#endif /* __AST_NTRF_FRICTION_HH__ */
+#endif /* AST_NTRF_FRICTION_HH_ */

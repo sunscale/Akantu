@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_EVENT_HANDLER_MANAGER_HH__
-#define __AKANTU_AKA_EVENT_HANDLER_MANAGER_HH__
+#ifndef AKANTU_AKA_EVENT_HANDLER_MANAGER_HH_
+#define AKANTU_AKA_EVENT_HANDLER_MANAGER_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -96,8 +96,9 @@ public:
 
   /// Notify all the registered EventHandlers about the event that just occured.
   template <class Event> void sendEvent(const Event & event) {
-    for (auto & pair : this->event_handlers)
+    for (auto & pair : this->event_handlers) {
       pair.second->sendEvent(event);
+    }
   }
 
 private:
@@ -105,8 +106,9 @@ private:
     auto it = this->event_handlers.begin();
     auto end = this->event_handlers.end();
 
-    for (; it != end && it->second != &handler; ++it)
+    for (; it != end && it->second != &handler; ++it) {
       ;
+    }
 
     return it;
   }
@@ -121,4 +123,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_EVENT_HANDLER_MANAGER_HH__ */
+#endif /* AKANTU_AKA_EVENT_HANDLER_MANAGER_HH_ */

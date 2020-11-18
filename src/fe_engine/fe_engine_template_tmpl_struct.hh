@@ -47,8 +47,8 @@ struct AssembleFieldMatrixStructHelper<
   static void call(const FEEngineTemplate<I, S, k, IOF> & fem,
                    const Array<Real> & field_1, UInt nb_degree_of_freedom,
                    SparseMatrix & M, Array<Real> * n,
-                   ElementTypeMapArray<Real> & rotation_mat,
-                   const ElementType & type, const GhostType & ghost_type) {
+                   ElementTypeMapArray<Real> & rotation_mat, ElementType type,
+                   GhostType ghost_type) {
 #define ASSEMBLE_MATRIX(type)                                                  \
   fem.template assembleFieldMatrix<type>(field_1, nb_degree_of_freedom, M, n,  \
                                          rotation_mat, ghost_type)
@@ -65,7 +65,7 @@ struct AssembleFieldMatrixStructHelper<
 // FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
 //     const Array<Real> & field_1, UInt nb_degree_of_freedom, SparseMatrix & M,
 //     Array<Real> * n, ElementTypeMapArray<Real> & rotation_mat,
-//     const ElementType & type, const GhostType & ghost_type) const {
+//     ElementType type, GhostType ghost_type) const {
 //   AKANTU_DEBUG_IN();
 
 //   AssembleFieldMatrixStructHelper<kind>::template call(
@@ -80,8 +80,8 @@ struct AssembleFieldMatrixStructHelper<
 //           ElementKind kind, class IntegrationOrderFunctor>
 // inline void
 // FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::computeShapesMatrix(
-//     const ElementType &, UInt, UInt, Array<Real> *, UInt, UInt, UInt,
-//     const bool, const GhostType &) const {
+//     ElementType, UInt, UInt, Array<Real> *, UInt, UInt, UInt,
+//     const bool, GhostType) const {
 
 //   AKANTU_TO_IMPLEMENT();
 // }
@@ -92,8 +92,9 @@ template <template <ElementKind, class> class I, template <ElementKind> class S,
 template <ElementType type>
 inline void
 FEEngineTemplate<I, S, kind, IntegrationOrderFunctor>::assembleFieldMatrix(
-    const Array<Real> &, UInt, SparseMatrix &, Array<Real> *,
-    ElementTypeMapArray<Real> &, const GhostType &) const {
+    const Array<Real> & /*unused*/, UInt /*unused*/, SparseMatrix & /*unused*/,
+    Array<Real> * /*unused*/, ElementTypeMapArray<Real> & /*unused*/,
+    GhostType /*unused*/) const {
   AKANTU_TO_IMPLEMENT();
 }
 
