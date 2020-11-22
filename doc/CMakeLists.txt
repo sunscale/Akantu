@@ -85,7 +85,8 @@ endforeach()
 
 list(REMOVE_ITEM _akantu_doc_exclude_files /doc/manual/CMakeLists.txt)
 
-set(AKANTU_DOC_EXCLUDE_FILES ${_akantu_doc_exclude_files} CACHE INTERNAL "Documentation files to excluse from Akantu Package" FORCE)
+set(AKANTU_DOC_EXCLUDE_FILES ${_akantu_doc_exclude_files}
+  CACHE INTERNAL "Documentation files to excluse from Akantu Package" FORCE)
 
 if (AKANTU_DOCUMENTATION_MANUAL)
   add_subdirectory(manual)

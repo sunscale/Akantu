@@ -20,6 +20,11 @@ Akantu: a FEM library
 
    ./reference.rst
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Bibliography
+
+   ./manual/bibliography.rst
 
 Indices and tables
 ==================

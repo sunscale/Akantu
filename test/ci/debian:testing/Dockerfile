@@ -11,7 +11,9 @@ RUN apt-get -qq update && apt-get -qq -y install \
 
 # for documentation
 RUN apt-get -qq update && apt-get -qq -y install \
-    python3-sphinx python3-sphinx-rtd-theme python3-breathe doxygen graphviz \
+    python3-sphinx python3-sphinx-rtd-theme \
+    python3-sphinxcontrib.bibtex \
+    python3-breathe doxygen graphviz \
     && rm -rf /var/lib/apt/lists/*
 
 # for ci

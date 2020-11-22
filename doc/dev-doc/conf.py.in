@@ -47,6 +47,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.bibtex',
     'breathe',
 ]
 
@@ -118,13 +119,20 @@ html_sidebars = {
         'searchbox.html',
     ]}
 
+math_eqref_format = "Eq. {number}"
+
 # MathJax configuration
 mathjax_config = {
+    'extensions': [
+        "tex2jax.js",
+        "siunitx.js"
+    ],
     'TeX': {
         'Macros': {
             'st': [r'\mathrm{#1}', 1],
             'mat': [r'\mathbf{#1}', 1],
         },
+        'extensions': ["AMSmath.js", "AMSsymbols.js", "sinuitx.js"],
     },
 }
 
@@ -216,6 +224,9 @@ else:
 # print("akantu_path = '{}'".format(akantu_path))
 breathe_projects = {"Akantu": os.path.join(akantu_path, "xml")}
 breathe_default_project = "Akantu"
+breathe_default_members = ('members', 'undoc-members')
+breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
+breathe_show_enumvalue_initializer = True
 
 # -- Options for intersphinx extension ---------------------------------------
 
