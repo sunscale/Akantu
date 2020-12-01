@@ -22,6 +22,12 @@ Akantu: a FEM library
 
 .. toctree::
    :maxdepth: 2
+   :caption: Appendix
+
+   ./manual/appendix.rst
+
+.. toctree::
+   :maxdepth: 2
    :caption: Bibliography
 
    ./manual/bibliography.rst

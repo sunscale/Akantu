@@ -1,5 +1,5 @@
-``FEEngine``
-============
+FEEngine
+========
 
 The :cpp:class:`FEEngine<akantu::FEEngine>` interface is dedicated to handle the
 finite-element approximations and the numerical integration of the weak form. As
@@ -71,6 +71,8 @@ Another example below shows how to integrate stress and strain fields over
    model.getFEEngine().integrate(stress_vec, int_stress_vec, sp_dim * sp_dim, type,
                 _not_ghost, elem_filter);
 
+
+.. _sec-elements:
 
 Elements
 --------

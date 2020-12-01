@@ -131,6 +131,7 @@ mathjax_config = {
         'Macros': {
             'st': [r'\mathrm{#1}', 1],
             'mat': [r'\mathbf{#1}', 1],
+            'half': [r'\frac{1}{2}', 0],
         },
         'extensions': ["AMSmath.js", "AMSsymbols.js", "sinuitx.js"],
     },
