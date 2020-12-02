@@ -114,7 +114,7 @@ solution at the boundary :math:`\Gamma_t` of the problem domain
     \vec{t} = \mat{\sigma} \vec{n} = \bar{\vec t} \quad
     \forall \vec{x}\in \Gamma_{t}
 
-.. _fig:smm:boundaries:
+.. _fig-smm-boundaries:
 .. figure:: figures/problem_domain.svg
             :align: center
 
@@ -129,7 +129,7 @@ boundary of the mesh. In the following both ways are presented.
 
 Starting with the basic approach, as mentioned, the Dirichlet boundary
 conditions can be applied by looping over the nodes and assigning the
-required values. :numref:`fig:smm:dirichlet_bc` shows a beam with a
+required values. :numref:`fig-smm-dirichlet_bc` shows a beam with a
 fixed support on the left side. On the right end of the beam, a load
 is applied. At the fixed support, the displacement has a given
 value. For this example, the displacements in both the :math:`x` and the
@@ -161,7 +161,7 @@ The detail codes are shown as follows
    }
 
 
-.. _fig:smm:dirichlet_bc:
+.. _fig-smm-dirichlet_bc:
 .. figure:: figures/dirichlet.svg
             :align: center
 
@@ -239,14 +239,14 @@ boundary conditions from the desired boundary
 User specified functors can also be implemented.  A full example for
 setting both initial and boundary conditions can be found in
 ``examples/boundary_conditions.cc``.  The problem solved
-in this example is shown in Fig.~\ref{fig:smm:bc_and_ic}. It consists
+in this example is shown in :numref:`fig-smm-bc_and_id`. It consists
 of a plate that is fixed with movable supports on the left and bottom
 side. On the right side, a traction, which increases linearly with the
 number of time steps, is applied. The initial displacement and
 velocity in :math:`x`-direction at all free nodes is zero and two
 respectively.
 
-.. _fig:smm:bc_and_ic:
+.. _fig-smm-bc_and_ic:
 .. figure:: figures/bc_and_ic_example.svg
             :align: center
             :width: 75%
@@ -257,7 +257,7 @@ respectively.
    \begin{figure}[!htb]
      \centering
      \includegraphics[scale=0.8]{figures/bc_and_ic_example}
-     \caption{Plate on movable supports.\label{fig:smm:bc_and_ic}}
+     \caption{Plate on movable supports.\label{fig-smm-bc_and_ic}}
    \end{figure}
 
 As it is mentioned in Section \ref{sect:common:groups}, node and
@@ -420,11 +420,11 @@ At the end of the analysis, the final solution is stored in the
 **displacement** vector.  A full example of how to solve a static
 problem is presented in the code ``examples/static/static.cc``.
 This example is composed of a 2D plate of steel, blocked with rollers
-on the left and bottom sides as shown in :numref:`fig:smm:static`.
+on the left and bottom sides as shown in :numref:`fig-smm-static`.
 The nodes from the right side of the sample are displaced by :math:`0.01\%`
 of the length of the plate.
 
-.. _fig:smm:static:
+.. _fig-smm-static:
 .. figure:: figures/static.svg
             :align: center
             :width: 75%
@@ -432,7 +432,7 @@ of the length of the plate.
             Numerical setup.
 
 The results of this analysis is depicted in
-:numref:`fig:smm:implicit:static_solution`.
+:numref:`fig-smm-implicit:static_solution`.
 
 ..
    \begin{figure}[!htb]
@@ -440,10 +440,10 @@ The results of this analysis is depicted in
      \includegraphics[width=.7\linewidth]{figures/static_analysis}
      \caption{Solution of the static analysis. Left: the initial
    condition, right: the solution (deformation magnified 50 times)}
-     \label{fig:smm:implicit:static_solution}
+     \label{fig-smm-implicit:static_solution}
    \end{figure}
 
-.. _fig:smm:implicit:static_solution:
+.. _fig-smm-implicit:static_solution:
 .. figure:: figures/static_analysis.png
             :align: center
             :width: 75%
@@ -668,7 +668,7 @@ beam is given by:
      \centering
      \includegraphics[scale=.6]{figures/implicit_dynamic}
      \caption{Numerical setup}
-     \label{fig:smm:implicit:dynamic}
+     \label{fig-smm-implicit:dynamic}
    \end{figure}
 
 Figure :numref:`fig-smm-implicit-dynamic_solution` presents the deformed
@@ -695,7 +695,7 @@ beam at 3 different times during the simulation: time steps 0, 1000 and
 
      \caption{Deformed beam at 3 different times (displacement are
        magnified by a factor 10).}
-     \label{fig:smm:implicit:dynamic_solution}
+     \label{fig-smm-implicit:dynamic_solution}
    \end{figure}
 
 Explicit Time Integration
@@ -801,10 +801,10 @@ The method ``solveStep`` wraps the four following functions:
 The use of an explicit time integration scheme is illustrated by the example:
 ``examples/explicit/explicit_dynamic.cc``. This example models the propagation
 of a wave in a steel beam. The beam and the applied displacement in the
-:math:`x` direction are shown in :numref:`fig:smm:explicit`.
+:math:`x` direction are shown in :numref:`fig-smm-explicit`.
 
 
-.. _fig:smm:explicit:
+.. _fig-smm-explicit:
 .. figure:: figures/explicit.svg
             :align: center
             :width: 90%
@@ -832,7 +832,7 @@ of a wave in a steel beam. The beam and the applied displacement in the
        \draw[shift={(h)}] (-0.2,0)-- (0.2,0);
      \end{tikzpicture}
 
-     \caption{Numerical setup \label{fig:smm:explicit}}
+     \caption{Numerical setup \label{fig-smm-explicit}}
    \end{figure}
 
 The length and height of the beam are :math:`L={10}\textrm{m}` and :math:`h =

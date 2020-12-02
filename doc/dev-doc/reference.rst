@@ -65,6 +65,7 @@ Solid Mechanics Model
 .. doxygenclass:: akantu::MaterialSelector
 .. doxygenclass:: akantu::MeshDataMaterialSelector
 .. doxygenclass:: akantu::Material
+.. doxygenclass:: akantu::InternalField
 
 Synchronizers
 `````````````

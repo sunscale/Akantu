@@ -12,15 +12,17 @@ applied to every quadrature point of each element. When the implicit
 formulation is used, the tangent matrix has to be computed.
 
 | The chosen materials for the simulation have to be specified in the
-  mesh file or, as an alternative, they can be assigned using the
-  vector. For every material assigned to the problem one has to specify
-  the material characteristics (constitutive behavior and material
-  properties) using the text input file (see
-  `[sect:io:material] <#sect:io:material>`__).
-| In order to conveniently store values at each quadrature in a material
-  point provides a special data structure, the . The internal fields are
-  inheriting from the . Furthermore, it provides several functions for
-  initialization, auto-resizing and auto removal of quadrature points.
+  mesh file or, as an alternative, they can be assigned using the at
+  ``element_material`` vector. For
+  every material assigned to the problem one has to specify the material
+  characteristics (constitutive behavior and material properties) using
+  the text input file (see `[sect:io:material] <#sect:io:material>`__).
+| In order to conveniently store values at each quadrature in a material point
+  ``Akantu`` provides a special data structure, the at :cpp:class:`InternalField
+  <akantu::InternalField>`. The internal fields are inheriting from the at
+  :cpp:class:`ElementTypeMapArray <akantu::ElementTypeMapArray>`. Furthermore,
+  it provides several functions for initialization, auto-resizing and auto
+  removal of quadrature points.
 
 Sometimes it is also desired to generate random distributions of
 internal parameters. An example might be the critical stress at which
@@ -49,67 +51,77 @@ which these pseudo-random distributions are created. This can be done by
 adding the following line to the input file *outside* the material
 parameters environments:
 
-seed = 1.0
+.. code-block::
 
-where the value 1.0 can be substituted with any number. Currently can
-reproduce always the same distribution when the seed is specified *only*
-in serial. The value of the *seed* can be also specified directly in the
-code (for instance in the main file) with the command:
+   seed = 1.0
 
-RandGenerator<Real>:: seed(1.0)
+where the value 1.0 can be substituted with any number. Currently
+``Akantu`` can reproduce always the same distribution when the seed is
+specified *only* in serial. The value of the *seed* can be also
+specified directly in the code (for instance in the main file) with the
+command:
+
+.. code-block::
+
+   RandGenerator<Real>::seed(1.0)
 
 The same command, with empty brackets, can be used to check the value of
 the *seed* used in the simulation.
 
-The following sections describe the constitutive models implemented in .
-In Appendix `[app:material-parameters] <#app:material-parameters>`__ a
-summary of the parameters for all materials of is provided.
+The following sections describe the constitutive models implemented in
+``Akantu``. In Appendix `7 <#app:material-parameters>`__ a summary of
+the parameters for all materials of ``Akantu`` is provided.
 
 Elasticity
 ``````````
 
 The elastic law is a commonly used constitutive relationship that can be
-used for a wide range of engineering materials (metals, concrete, rock,
-wood, glass, rubber, etc.) provided that the strains remain small (small
-deformation and stress lower than yield strength).
+used for a wide range of engineering materials (*e.g.*, metals,
+concrete, rock, wood, glass, rubber, etc.) provided that the strains
+remain small (*i.e.*, small deformation and stress lower than yield
+strength).
 
-The elastic laws are often expressed as :math:`\mat{\sigma} =
-\mat{C}:\mat{\varepsilon}` with where :math:`\mat{\sigma}` is the Cauchy
-stress tensor, :math:`\mat{\varepsilon}` represents the infinitesimal
-strain tensor and :math:`\mat{C}` is the elastic modulus tensor.
+The elastic laws are often expressed as
+:math:`\boldsymbol{\sigma} =
+\boldsymbol{C}:\boldsymbol{\varepsilon}` with
+where :math:`\boldsymbol{\sigma}` is the Cauchy stress
+tensor, :math:`\boldsymbol{\varepsilon}` represents the
+infinitesimal strain tensor and :math:`\boldsymbol{C}` is
+the elastic modulus tensor.
+
+.. _sect-smm-linear-elastic-isotropic:
 
 Linear isotropic
 ''''''''''''''''
 
-.. figure:: figures/cl/stress_strain_el.svg
-            :align: center
-            :name: fig-smm-cl-elastic
-
-            Stress-strain curve for elastic material and (b) schematic
-            representation of Hooke’slaw, denoted as a spring.
-
 The linear isotropic elastic behavior is described by Hooke’s law, which
 states that the stress is linearly proportional to the applied strain
 (material behaves like an ideal spring), as illustrated in
-:numref:`fig-smm-cl-elastic`.
+Figure `[fig:smm:cl:elastic] <#fig:smm:cl:elastic>`__.
 
 The equation that relates the strains to the displacements is: point)
 from the displacements as follows:
 
-.. math:: \mat{\varepsilon} =
-     \frac{1}{2} \left[ \nabla_0 \vec{u}+\nabla_0 \vec{u}^T \right]
-     :label: eqn-smm-strain_inf
+.. math::
 
-where :math:`\mat{\varepsilon}` represents the infinitesimal strain
-tensor, :math:`\nabla_{0}\vec{u}` the displacement gradient tensor
-according to the initial configuration. The constitutive equation for
-isotropic homogeneous media can be expressed as:
+   \label{eqn:smm:strain_inf}
+     \boldsymbol{\varepsilon} =
+     \frac{1}{2} \left[ \nabla_0 \boldsymbol{u}+\nabla_0 \boldsymbol{u}^T \right]
 
-.. math:: \mat{\sigma } = \lambda\mathrm{tr}(\mat{\varepsilon})\mat{I}+2 \mu\mat{\varepsilon}
-   :label: eqn-smm-material-constitutive_elastic
+where :math:`\boldsymbol{\varepsilon}` represents the
+infinitesimal strain tensor,
+:math:`\nabla_{0}\boldsymbol{u}` the displacement gradient
+tensor according to the initial configuration. The constitutive equation
+for isotropic homogeneous media can be expressed as:
 
-where :math:`\mat{\sigma}` is the Cauchy stress tensor (:math:`\lambda`
-and :math:`\mu` are the the first and second Lame’s coefficients).
+.. math::
+
+   \label{eqn:smm:material:constitutive_elastic}
+     \boldsymbol{\sigma } =\lambda\mathrm{tr}(\boldsymbol{\varepsilon})\boldsymbol{I}+2 \mu\boldsymbol{\varepsilon}
+
+where :math:`\boldsymbol{\sigma}` is the Cauchy stress
+tensor (:math:`\lambda` and :math:`\mu` are the the first and second
+Lame’s coefficients).
 
 In Voigt notation this correspond to
 
@@ -141,6 +153,8 @@ In Voigt notation this correspond to
          2\varepsilon_{13}\\
          2\varepsilon_{12}\\
        \end{array}\right]\end{aligned}
+
+.. _sect-smm-linear-elastic-anisotropic:
 
 Linear anisotropic
 ''''''''''''''''''
@@ -180,17 +194,22 @@ tensor as follow:
          2\varepsilon_{12}\\
        \end{array}\right]\end{aligned}
 
-To simplify the writing of input files the tensor is expressed in the
-material basis. And this basis as to be given too. This basis
-:math:`\Omega_{\st{mat}} = \{\vec{n_1}, \vec{n_2}, \vec{n_3}\}` is used to define the rotation
-:math:`R_{ij} = \vec{n_j} . \vec{e_i}`. And :math:`\mat{C}` can be rotated in the global
-basis :math:`\Omega = \{\vec{e_1}, \vec{e_2}, \vec{e_3}\}` as follow:
+To simplify the writing of input files the :math:`\boldsymbol{C}` tensor
+is expressed in the material basis. And this basis as to be given too.
+This basis :math:`\Omega_{{\mathrm{mat}}}
+= \{\boldsymbol{n_1}, \boldsymbol{n_2}, \boldsymbol{n_3}\}`
+is used to define the rotation :math:`R_{ij} =
+\boldsymbol{n_j} . \boldsymbol{e_i}`. And
+:math:`\boldsymbol{C}` can be rotated in the global basis
+:math:`\Omega
+= \{\boldsymbol{e_1}, \boldsymbol{e_2}, \boldsymbol{e_3}\}`
+as follow:
 
 .. math::
 
    \begin{aligned}
-   \mat{C}_{\Omega} &= \mat{R}_1 \mat{C}_{\Omega_{\st{mat}}} \mat{R}_2\\
-   \mat{R}_1  &= \left[
+   \boldsymbol{C}_{\Omega} &= \boldsymbol{R}_1 \boldsymbol{C}_{\Omega_{{\mathrm{mat}}}} \boldsymbol{R}_2\\
+   \boldsymbol{R}_1  &= \left[
      \begin{array}{cccccc}
        R_{11} R_{11} & R_{12} R_{12} & R_{13} R_{13} & R_{12} R_{13} & R_{11} R_{13} & R_{11} R_{12}\\
        R_{21} R_{21} & R_{22} R_{22} & R_{23} R_{23} & R_{22} R_{23} & R_{21} R_{23} & R_{21} R_{22}\\
@@ -199,7 +218,7 @@ basis :math:`\Omega = \{\vec{e_1}, \vec{e_2}, \vec{e_3}\}` as follow:
        R_{11} R_{31} & R_{12} R_{32} & R_{13} R_{33} & R_{12} R_{33} & R_{11} R_{33} & R_{11} R_{32}\\
        R_{11} R_{21} & R_{12} R_{22} & R_{13} R_{23} & R_{12} R_{23} & R_{11} R_{23} & R_{11} R_{22}\\
      \end{array}\right]\\
-   \mat{R}_2  &= \left[
+   \boldsymbol{R}_2  &= \left[
      \begin{array}{cccccc}
        R_{11} R_{11} & R_{21} R_{21} & R_{31} R_{31} & R_{21} R_{31} & R_{11} R_{31} & R_{11} R_{21}\\
        R_{12} R_{12} & R_{22} R_{22} & R_{32} R_{32} & R_{22} R_{32} & R_{12} R_{32} & R_{12} R_{22}\\
@@ -207,9 +226,9 @@ basis :math:`\Omega = \{\vec{e_1}, \vec{e_2}, \vec{e_3}\}` as follow:
        R_{12} R_{13} & R_{22} R_{23} & R_{32} R_{33} & R_{22} R_{33} & R_{12} R_{33} & R_{12} R_{23}\\
        R_{11} R_{13} & R_{21} R_{23} & R_{31} R_{33} & R_{21} R_{33} & R_{11} R_{33} & R_{11} R_{23}\\
        R_{11} R_{12} & R_{21} R_{22} & R_{31} R_{32} & R_{21} R_{32} & R_{11} R_{32} & R_{11} R_{22}\\
-     \end{array}\right]\\
-   \end{aligned}
+     \end{array}\right]\\\end{aligned}
 
+.. _sect-smm-linear-elastic-orthotropic:
 
 Linear orthotropic
 ''''''''''''''''''
@@ -231,12 +250,12 @@ in terms of 9 independents material parameters.
        \end{array}\right]
      &= \left[
        \begin{array}{cccccc}
-         c_{11} & c_{12} & c_{13} &   0    &   0   &   0  \\
-                & c_{22} & c_{23} &   0    &   0   &   0  \\
-                &        & c_{33} &   0    &   0   &   0  \\
-                &        &        & c_{44} &   0   &   0  \\
-                &  \multicolumn{2}{l}{\text{sym.}}       &       & c_{55} &   0  \\
-                &        &        &        &       & c_{66}\\
+         c_{11} & c_{12} & c_{13} &   0   &   0   &   0  \\
+               & c_{22} & c_{23} &   0   &   0   &   0  \\
+               &       & c_{33} &   0   &   0   &   0  \\
+               &       &       & c_{44} &   0   &   0  \\
+               &  \multicolumn{2}{l}{\text{sym.}}       &       & c_{55} &   0  \\
+               &       &       &       &       & c_{66}\\
        \end{array}\right]
      \left[\begin{array}{c}
          \varepsilon_{11}\\
@@ -260,60 +279,67 @@ in terms of 9 independents material parameters.
 The Poisson ratios follow the rule
 :math:`\nu_{ij} = \nu_{ji} E_i / E_j`.
 
+.. _sect-smm-cl-neohookean:
+
 Neo-Hookean
-```````````
+'''''''''''
 
 The hyperelastic Neo-Hookean constitutive law results from an extension
 of the linear elastic relationship (Hooke’s Law) for large deformation.
 Thus, the model predicts nonlinear stress-strain behavior for bodies
 undergoing large deformations.
 
-..
-   .. figure:: figures/cl/stress_strain_neo.svg
-               :align: center
-               :name: fig-smm-sl-neo-hookean
+.. figure:: figures/stress_strain_neo.pdf
+   :alt: Neo-hookean Stress-strain curve.
+   :name: fig:smm:cl:neo_hookean
+   :width: 40.0%
 
-               Neo-hookean Stress-strain curve.
+   Neo-hookean Stress-strain curve.
 
-The behavior is initially linear and the mechanical behavior is very close to
-the corresponding linear elastic material. This constitutive relationship, which
-accounts for compressibility, is a modified version of the one proposed by
-Ronald Rivlin :cite:`Belytschko:2000`.
+As illustrated in Figure `4.6 <#fig:smm:cl:neo_hookean>`__, the behavior
+is initially linear and the mechanical behavior is very close to the
+corresponding linear elastic material. This constitutive relationship,
+which accounts for compressibility, is a modified version of the one
+proposed by Ronald Rivlin :cite:`Belytschko:2000`.
 
 The strain energy stored in the material is given by:
 
 .. math::
 
    \label{eqn:smm:constitutive:neohookean_potential}
-     \Psi(\mat{C}) = \frac{1}{2}\lambda_0\left(\ln J\right)^2-\mu_0\ln J+\frac{1}{2}
-     \mu_0\left(\mathrm{tr}(\mat{C})-3\right)
+     \Psi(\boldsymbol{C}) = \frac{1}{2}\lambda_0\left(\ln J\right)^2-\mu_0\ln J+\frac{1}{2}
+     \mu_0\left(\mathrm{tr}(\boldsymbol{C})-3\right)
 
 where :math:`\lambda_0` and :math:`\mu_0` are, respectively, Lamé’s
 first parameter and the shear modulus at the initial configuration.
 :math:`J` is the jacobian of the deformation gradient
-(:math:`\mat{F}=\nabla_{\!\!\vec{X}}\vec{x}`):
-:math:`J=\text{det}(\mat{F})`. Finally :math:`\mat{C}` is the right
-Cauchy-Green deformation tensor.
+(:math:`\boldsymbol{F}=\nabla_{\!\!\boldsymbol{X}}\boldsymbol{x}`):
+:math:`J=\text{det}(\boldsymbol{F})`. Finally
+:math:`\boldsymbol{C}` is the right Cauchy-Green
+deformation tensor.
 
 Since this kind of material is used for large deformation problems, a
 finite deformation framework should be used. Therefore, the Cauchy
-stress (:math:`\mat{\sigma}`) should be computed through the second
-Piola-Kirchhoff stress tensor :math:`\mat{S}`:
+stress (:math:`\boldsymbol{\sigma}`) should be computed
+through the second Piola-Kirchhoff stress tensor
+:math:`\boldsymbol{S}`:
 
-.. math:: \mat{\sigma } = \frac{1}{J}\mat{F}\mat{S}\mat{F}^T
+.. math:: \boldsymbol{\sigma } = \frac{1}{J}\boldsymbol{F}\boldsymbol{S}\boldsymbol{F}^T
 
 Finally the second Piola-Kirchhoff stress tensor is given by:
 
 .. math::
 
-   \mat{S}  = 2\frac{\partial\Psi}{\partial\mat{C}} = \lambda_0\ln J
-     \mat{C}^{-1}+\mu_0\left(\mat{I}-\mat{C}^{-1}\right)
+   \boldsymbol{S}  = 2\frac{\partial\Psi}{\partial\boldsymbol{C}} = \lambda_0\ln J
+     \boldsymbol{C}^{-1}+\mu_0\left(\boldsymbol{I}-\boldsymbol{C}^{-1}\right)
 
 The parameters to indicate in the material file are the same as those
-for the elastic case: (Young’s modulus), (Poisson’s ratio).
+for the elastic case: ``E`` (Young’s modulus), ``nu`` (Poisson’s ratio).
+
+.. _sect-smm-cl-sls:
 
 Visco-Elasticity
-````````````````
+''''''''''''''''
 
 Visco-elasticity is characterized by strain rate dependent behavior.
 Moreover, when such a material undergoes a deformation it dissipates
@@ -325,9 +351,9 @@ exhibit a visco-elastic behavior if subjected to particular conditions
 (such as high temperatures).
 
 The standard rheological linear solid model (see Sections 10.2 and 10.3
-of :cite:`simo92`) has been implemented in . This model
-results from the combination of a spring mounted in parallel with a
-spring and a dashpot connected in series, as illustrated in
+of :cite:`simo92`) has been implemented in ``Akantu``. This
+model results from the combination of a spring mounted in parallel with
+a spring and a dashpot connected in series, as illustrated in
 Figure `[fig:smm:cl:visco-elastic:model] <#fig:smm:cl:visco-elastic:model>`__.
 The advantage of this model is that it allows to account for creep or
 stress relaxation. The equation that relates the stress to the strain is
@@ -335,20 +361,22 @@ stress relaxation. The equation that relates the stress to the strain is
 
 .. math:: \frac{d\varepsilon(t)}{dt} = \left ( E + E_V \right ) ^ {-1} \cdot \left [ \frac{d\sigma(t)}{dt} + \frac{E_V}{\eta}\sigma(t) - \frac{EE_V}{\eta}\varepsilon(t) \right ]
 
-where :math:`\eta` is the viscosity. The equilibrium condition is unique
-and is attained in the limit, as :math:`t \to \infty`. At this stage,
-the response is elastic and depends on the Young’s modulus :math:`E`.
-The mandatory parameters for the material file are the following:
-(density), (Young’s modulus), (Poisson’s ratio), (if set to zero plane
-strain, otherwise plane stress), (dashpot viscosity) and (stiffness of
-the viscous element).
+where :math:`\eta` is the viscosity. The equilibrium condition is unique and is
+attained in the limit, as :math:`t \to \infty`. At this stage, the response is
+elastic and depends on the Young’s modulus :math:`E`. The mandatory parameters
+for the material file are the following: ``rho`` (density), ``E`` (Young’s
+modulus), ``nu`` (Poisson’s ratio), ``Plane_Stress`` (if set to zero plane
+strain, otherwise plane stress), ``eta`` (dashpot viscosity) and ``Ev``
+(stiffness of the viscous element).
 
 Note that the current standard linear solid model is applied only on the
 deviatoric part of the strain tensor. The spheric part of the strain
 tensor affects the stress tensor like an linear elastic material.
 
+.. _sect-smm-cl-plastic:
+
 Small-Deformation Plasticity
-````````````````````````````
+''''''''''''''''''''''''''''
 
 The small-deformation plasticity is a simple plasticity material
 formulation which accounts for the additive decomposition of strain into
@@ -357,22 +385,16 @@ infinitesimal deformation where the additive decomposition of the strain
 is a valid approximation. In this formulation, plastic strain is a
 shearing process where hydrostatic stress has no contribution to
 plasticity and consequently plasticity does not lead to volume change.
-:numref:`fig:smm:cl:Lin-strain-hard` shows the linear strain
+Figure `4.7 <#fig:smm:cl:Lin-strain-hard>`__ shows the linear strain
 hardening elasto-plastic behavior according to the additive
 decomposition of strain into the elastic and plastic parts in
 infinitesimal deformation as
 
 .. math::
 
-   \begin{aligned}
-     \mat{\varepsilon} &= \mat{\varepsilon}^e +\mat{\varepsilon}^p\\
-     {\mat{\sigma}} &= 2G(\mat{\varepsilon}^e) + \lambda  \mathrm{tr}(\mat{\varepsilon}^e)\mat{I}
-   \end{aligned}
+   \boldsymbol{\varepsilon} &= \boldsymbol{\varepsilon}^e +\boldsymbol{\varepsilon}^p\\
+   \boldsymbol{\sigma} &= 2G(\boldsymbol{\varepsilon}^e) + \lambda  \mathrm{tr}(\boldsymbol{\varepsilon}^e)\boldsymbol{I}
 
-.. figure:: figures/cl/isotropic_hardening_plasticity.svg
-   :name: fig:smm:cl:Lin-strain-hard
-
-   Stress-strain curve for the small-deformation plasticity with linear isotropic hardening.
 
 In this class, the von Mises yield criterion is used. In the von Mises
 yield criterion, the yield is independent of the hydrostatic stress.
@@ -383,21 +405,25 @@ In the von Mises yield criterion, the hydrostatic stresses have no
 effect on the plasticity and consequently the yielding occurs when a
 critical elastic shear energy is achieved.
 
-.. math:: f = \sigma_{\st{eff}} - \sigma_y = \left(\frac{3}{2} {\mat{\sigma}}^{\st{tr}} : {\mat{\sigma}}^{\st{tr}}\right)^\frac{1}{2}-\sigma_y (\mat{\varepsilon}^p)
-   :label: eqn-smm-constitutive-von_Mises
+.. math::
 
-.. math:: f < 0 \quad \textrm{Elastic deformation,} \qquad f = 0 \quad  \textrm{Plastic deformation}
-   :label: eqn-smm-constitutive-yielding
+   \label{eqn:smm:constitutive:von Mises}
+     f = \sigma_{{\mathrm{eff}}} - \sigma_y = \left(\frac{3}{2} {\boldsymbol{\sigma}}^{{\mathrm{tr}}} : {\boldsymbol{\sigma}}^{{\mathrm{tr}}}\right)^\frac{1}{2}-\sigma_y (\boldsymbol{\varepsilon}^p)
+
+.. math::
+
+   \label{eqn:smm:constitutive:yielding}
+     f < 0 \quad \textrm{Elastic deformation,} \qquad f = 0 \quad  \textrm{Plastic deformation}
 
 where :math:`\sigma_y` is the yield strength of the material which can
 be function of plastic strain in case of hardening type of materials and
-:math:`{\mat{\sigma}}^{\st{tr}}` is the deviatoric part of stress given
-by
+:math:`{\boldsymbol{\sigma}}^{{\mathrm{tr}}}` is the
+deviatoric part of stress given by
 
 .. math::
 
    \label{eqn:smm:constitutive:deviatoric stress}
-     {\mat{\sigma}}^{\st{tr}}=\mat{\sigma} - \frac{1}{3} \mathrm{tr}(\mat{\sigma}) \mat {I}
+     {\boldsymbol{\sigma}}^{{\mathrm{tr}}}=\boldsymbol{\sigma} - \frac{1}{3} \mathrm{tr}(\boldsymbol{\sigma}) \boldsymbol{I}
 
 After yielding :math:`(f = 0)`, the normality hypothesis of plasticity
 determines the direction of plastic flow which is normal to the tangent
@@ -405,58 +431,64 @@ to the yielding surface at the load point. Then, the tensorial form of
 the plastic constitutive equation using the von Mises yielding criterion
 (see equation 4.34) may be written as
 
-.. math:: \Delta {\mat{\varepsilon}}^p = \Delta p \frac {\partial{f}}{\partial{\mat \sigma}}=\frac{3}{2} \Delta p \frac{{\mat{\sigma}}^{\st{tr}}}{\sigma_{\st{eff}}}
-   :label: eqn-smm-constitutive-plastic_contitutive_equation
+.. math::
+
+   \label{eqn:smm:constitutive:plastic contitutive equation}
+     \Delta {\boldsymbol{\varepsilon}}^p = \Delta p \frac {\partial{f}}{\partial{\boldsymbol{\sigma}}}=\frac{3}{2} \Delta p \frac{{\boldsymbol{\sigma}}^{{\mathrm{tr}}}}{\sigma_{{\mathrm{eff}}}}
 
 In these expressions, the direction of the plastic strain increment (or
 equivalently, plastic strain rate) is given by
-:math:`\frac{{\mat{\sigma}}^{\st{tr}}}{\sigma_{\st{eff}}}` while the
-magnitude is defined by the plastic multiplier :math:`\Delta p`. This
-can be obtained using the *consistency condition* which impose the
-requirement for the load point to remain on the yielding surface in the
-plastic regime.
+:math:`\frac{{\boldsymbol{\sigma}}^{{\mathrm{tr}}}}{\sigma_{{\mathrm{eff}}}}`
+while the magnitude is defined by the plastic multiplier
+:math:`\Delta p`. This can be obtained using the *consistency condition*
+which impose the requirement for the load point to remain on the
+yielding surface in the plastic regime.
 
 Here, we summarize the implementation procedures for the
 small-deformation plasticity with linear isotropic hardening:
 
 #. Compute the trial stress:
 
-   .. math:: {\mat{\sigma}}^{\st{tr}} = {\mat{\sigma}}_t + 2G\Delta \mat{\varepsilon} + \lambda \mathrm{tr}(\Delta \mat{\varepsilon})\mat{I}
+   .. math:: {\boldsymbol{\sigma}}^{{\mathrm{tr}}} = {\boldsymbol{\sigma}}_t + 2G\Delta \boldsymbol{\varepsilon} + \lambda \mathrm{tr}(\Delta \boldsymbol{\varepsilon})\boldsymbol{I}
 
 #. Check the Yielding criteria:
 
-   .. math:: f = (\frac{3}{2} {\mat{\sigma}}^{\st{tr}} : {\mat{\sigma}}^{\st{tr}})^{1/2}-\sigma_y (\mat{\varepsilon}^p)
+   .. math:: f = (\frac{3}{2} {\boldsymbol{\sigma}}^{{\mathrm{tr}}} : {\boldsymbol{\sigma}}^{{\mathrm{tr}}})^{1/2}-\sigma_y (\boldsymbol{\varepsilon}^p)
 
 #. Compute the Plastic multiplier:
 
-   .. math:: \begin{aligned}
-      d \Delta p &= \frac{\sigma^{tr}_{eff} - 3G \Delta P^{(k)}- \sigma_y^{(k)}}{3G + h}\\
-      \Delta p^{(k+1)} &= \Delta p^{(k)}+ d\Delta p\\
-      \sigma_y^{(k+1)} &= (\sigma_y)_t+ h\Delta p
-      \end{aligned}
+   .. math::
+
+      \begin{aligned}
+          d \Delta p &= \frac{\sigma^{tr}_{eff} - 3G \Delta P^{(k)}- \sigma_y^{(k)}}{3G + h}\\
+          \Delta p^{(k+1)} &= \Delta p^{(k)}+ d\Delta p\\
+          \sigma_y^{(k+1)} &= (\sigma_y)_t+ h\Delta p
+        \end{aligned}
 
 #. Compute the plastic strain increment:
 
-   .. math:: \Delta {\mat{\varepsilon}}^p = \frac{3}{2} \Delta p \frac{{\mat{\sigma}}^{\st{tr}}}{\sigma_{\st{eff}}}
+   .. math:: \Delta {\boldsymbol{\varepsilon}}^p = \frac{3}{2} \Delta p \frac{{\boldsymbol{\sigma}}^{{\mathrm{tr}}}}{\sigma_{{\mathrm{eff}}}}
 
 #. Compute the stress increment:
 
-   .. math:: {\Delta \mat{\sigma}} = 2G(\Delta \mat{\varepsilon}-\Delta \mat{\varepsilon}^p) + \lambda  \mathrm{tr}(\Delta \mat{\varepsilon}-\Delta \mat{\varepsilon}^p)\mat{I}
+   .. math:: {\Delta \boldsymbol{\sigma}} = 2G(\Delta \boldsymbol{\varepsilon}-\Delta \boldsymbol{\varepsilon}^p) + \lambda  \mathrm{tr}(\Delta \boldsymbol{\varepsilon}-\Delta \boldsymbol{\varepsilon}^p)\boldsymbol{I}
 
 #. Update the variables:
 
-   .. math:: \begin{aligned}
-             {\mat{\varepsilon^p}} &= {\mat{\varepsilon}}^p_t+{\Delta {\mat{\varepsilon}}^p}\\
-             {\mat{\sigma}} &= {\mat{\sigma}}_t+{\Delta \mat{\sigma}}
-             \end{aligned}
+   .. math::
 
-We use an implicit integration technique called *the radial return
-method* to obtain the plastic multiplier. This method has the advantage
-of being unconditionally stable, however, the accuracy remains dependent
-on the step size. The plastic parameters to indicate in the material
-file are: (Yield stress) and (Hardening modulus). In addition, the
-elastic parameters need to be defined as previously mentioned: (Young’s
-modulus), (Poisson’s ratio).
+      \begin{aligned}
+          {\boldsymbol{\varepsilon^p}} &= {\boldsymbol{\varepsilon}}^p_t+{\Delta {\boldsymbol{\varepsilon}}^p}\\
+          {\boldsymbol{\sigma}} &= {\boldsymbol{\sigma}}_t+{\Delta \boldsymbol{\sigma}}
+        \end{aligned}
+
+We use an implicit integration technique called *the radial return method* to
+obtain the plastic multiplier. This method has the advantage of being
+unconditionally stable, however, the accuracy remains dependent on the step
+size. The plastic parameters to indicate in the material file are:
+:math:`\sigma_y` (Yield stress) and ``h`` (Hardening modulus). In addition, the
+elastic parameters need to be defined as previously mentioned: ``E`` (Young’s
+modulus), ``nu`` (Poisson’s ratio).
 
 Damage
 ``````
@@ -466,24 +498,27 @@ isotropic damage can be represented by a scalar variable :math:`d`,
 which varies from :math:`0` to :math:`1` for no damage to fully broken
 material respectively. The stress-strain relationship then becomes:
 
-.. math:: \mat{\sigma} = (1-d)\, \mat{C}:\mat{\varepsilon}
+.. math:: \boldsymbol{\sigma} = (1-d)\, \boldsymbol{C}:\boldsymbol{\varepsilon}
 
-where :math:`\mat{\sigma}`, :math:`\mat{\varepsilon}` are the Cauchy
-stress and strain tensors, and :math:`\mat{C}` is the elastic stiffness
-tensor. This formulation relies on the definition of an evolution law
-for the damage variable. In , many possibilities exist and they are
-listed below.
+where :math:`\boldsymbol{\sigma}`,
+:math:`\boldsymbol{\varepsilon}` are the Cauchy stress and
+strain tensors, and :math:`\boldsymbol{C}` is the elastic
+stiffness tensor. This formulation relies on the definition of an
+evolution law for the damage variable. In ``Akantu``, many possibilities
+exist and they are listed below.
+
+.. _sect-smm-cl-damage:
 
 Marigo
 ''''''
 
 This damage evolution law is energy based as defined by Marigo
-:cite:`marigo81a,lemaitre96a`. It is an isotropic damage law.
+:cite:`marigo81a, lemaitre96a`. It is an isotropic damage law.
 
 .. math::
 
    \begin{aligned}
-     Y &= \frac{1}{2}\mat{\varepsilon}:\mat{C}:\mat{\varepsilon}\\
+     Y &= \frac{1}{2}\boldsymbol{\varepsilon}:\boldsymbol{C}:\boldsymbol{\varepsilon}\\
      F &= Y - Y_d - S d\\
      d &= \left\{
        \begin{array}{l l}
@@ -497,6 +532,8 @@ In this formulation, :math:`Y` is the strain energy release rate,
 non-local version of this damage evolution law is constructed by
 averaging the energy :math:`Y`.
 
+.. _sect-smm-cl-damage-mazars:
+
 Mazars
 ''''''
 
@@ -506,29 +543,30 @@ does not rely on the computation of the tangent stiffness, the damage is
 directly evaluated from the strain.
 
 The governing variable in this damage law is the equivalent strain
-:math:`\varepsilon_{\st{eq}} =
-\sqrt{<\mat{\varepsilon}>_+:<\mat{\varepsilon}>_+}`, with :math:`<.>_+`
-the positive part of the tensor. This part is defined in the principal
-coordinates (I, II, III) as :math:`\varepsilon_{\st{eq}} =
-\sqrt{<\mat{\varepsilon_I}>_+^2 + <\mat{\varepsilon_{II}}>_+^2 + <\mat{\varepsilon_{III}}>_+^2}`.
+:math:`\varepsilon_{{\mathrm{eq}}} =
+\sqrt{<\boldsymbol{\varepsilon}>_+:<\boldsymbol{\varepsilon}>_+}`,
+with :math:`<.>_+` the positive part of the tensor. This part is defined
+in the principal coordinates (I, II, III) as
+:math:`\varepsilon_{{\mathrm{eq}}} =
+\sqrt{<\boldsymbol{\varepsilon_I}>_+^2 + <\boldsymbol{\varepsilon_{II}}>_+^2 + <\boldsymbol{\varepsilon_{III}}>_+^2}`.
 The damage is defined as:
 
 .. math::
 
    \begin{aligned}
      D &= \alpha_t^\beta D_t + (1-\alpha_t)^\beta D_c\\
-     D_t &= 1 - \frac{\kappa_0 (1- A_t)}{\varepsilon_{\st{eq}}} - A_t \exp^{-B_t(\varepsilon_{\st{eq}}-\kappa_0)}\\
-     D_c &= 1 - \frac{\kappa_0 (1- A_c)}{\varepsilon_{\st{eq}}} - A_c
-     \exp^{-B_c(\varepsilon_{\st{eq}}-\kappa_0)}\\
-     \alpha_t &= \frac{\sum_{i=1}^3<\varepsilon_i>_+\varepsilon_{\st{nd}\;i}}{\varepsilon_{\st{eq}}^2}\end{aligned}
+     D_t &= 1 - \frac{\kappa_0 (1- A_t)}{\varepsilon_{{\mathrm{eq}}}} - A_t \exp^{-B_t(\varepsilon_{{\mathrm{eq}}}-\kappa_0)}\\
+     D_c &= 1 - \frac{\kappa_0 (1- A_c)}{\varepsilon_{{\mathrm{eq}}}} - A_c
+     \exp^{-B_c(\varepsilon_{{\mathrm{eq}}}-\kappa_0)}\\
+     \alpha_t &= \frac{\sum_{i=1}^3<\varepsilon_i>_+\varepsilon_{{\mathrm{nd}}\;i}}{\varepsilon_{{\mathrm{eq}}}^2}\end{aligned}
 
 With :math:`\kappa_0` the damage threshold, :math:`A_t` and :math:`B_t`
 the damage parameter in traction, :math:`A_c` and :math:`B_c` the damage
 parameter in compression, :math:`\beta` is the shear parameter.
 :math:`\alpha_t` is the coupling parameter between traction and
 compression, the :math:`\varepsilon_i` are the eigenstrain and the
-:math:`\varepsilon_{\st{nd}\;i}` are the eigenvalues of the strain if
-the material were undamaged.
+:math:`\varepsilon_{{\mathrm{nd}}\;i}` are the eigenvalues of the strain
+if the material were undamaged.
 
 The coefficients :math:`A` and :math:`B` are the post-peak asymptotic
 value and the decay shape parameters.
