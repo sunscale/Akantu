@@ -204,7 +204,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_comp_Scotch_esmumps COMPONENTS esmumps)
 
   set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
-    Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
+    Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS Threads)
   #===============================================================================
 
   set(_retry_try_run TRUE)
