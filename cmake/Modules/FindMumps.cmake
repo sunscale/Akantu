@@ -189,6 +189,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_symbol_mumps_common mumps_abort)
   set(_mumps_dep_symbol_pord SPACE_ordering)
   set(_mumps_dep_symbol_METIS metis_nodend)
+  set(_mumps_dep_symbol_Threads pthread_create)
   set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
 
   # added for fucking macosx that cannot fail at link
