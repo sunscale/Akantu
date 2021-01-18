@@ -30,8 +30,11 @@ pybind_extension = Extension(
      "@PROJECT_SOURCE_DIR@/python/py_mesh.cc",
      "@PROJECT_SOURCE_DIR@/python/py_model.cc",
      "@PROJECT_SOURCE_DIR@/python/py_parser.cc"],
-    extra_compile_args=['-std=c++17'],  # , '-g',
-    # '-fno-omit-frame-pointer'],  # , '-O0'],
+    version=version,
+    extra_compile_args=['-std=c++17'],
+    libraries=['akantu'],
+    library_dirs=["@PROJECT_BINARY_DIR@/src/"],
+    # '-g', '-fno-omit-frame-pointer'],  # , '-O0'],
     include_dirs=aka_inc_dirs
 )
 
@@ -41,12 +44,9 @@ setup(name=name,
       version="0.0.0",
       author="Guillaume Anciaux",
       author_email="guillaume.anciaux@epfl.ch",
-      description=("Nonlinear Geometrically Exact Structural Elements"),
+      description=("Akantu: Swiss-Made Open-Source Finite-Element Library"),
       license="GPL",
       tests_require=["pytest"],
-      install_requires=['sphinx', 'pyvista',
-                        'vtk', 'meshio', 'sphinx-rtd-theme', 'scipy',
-                        'numpy', 'sympy'],
-      setup_requires=["pytest-runner"],
+      install_requires=['numpy'],
       ext_modules=[pybind_extension],
       )
