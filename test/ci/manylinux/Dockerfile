@@ -6,5 +6,10 @@ RUN yum install -y xz
 RUN mkdir -p /root/.spack/linux/
 COPY compilers.yaml /root/.spack/linux/
 RUN spack/bin/spack install perl
-# RUN /spack/bin/spack install akantu@master external_solvers=mumps ~mpi ^mumps~mpi
+RUN /spack/bin/spack install boost
+RUN /spack/bin/spack install cmake
+RUN /spack/bin/spack install openblas
+RUN /spack/bin/spack install mumps@5.2.0 ~mpi
+RUN /spack/bin/spack install akantu@master external_solvers=mumps ~mpi ^mumps@5.2.0~mpi
+
 

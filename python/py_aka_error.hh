@@ -2,7 +2,7 @@
 #define __AKANTU_PY_AKA_ERROR_HH__
 
 namespace pybind11 {
-struct module;
+class module;
 }
 
 namespace akantu {

@@ -29,6 +29,17 @@
 #
 #===============================================================================
 
+package_get_all_include_directories(
+  AKANTU_LIBRARY_INCLUDE_DIRS
+  )
+
+package_get_all_external_informations(
+  PRIVATE_INCLUDE AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR
+  INTERFACE_INCLUDE AKANTU_INTERFACE_EXTERNAL_INCLUDE_DIR
+  LIBRARIES AKANTU_EXTERNAL_LIBRARIES
+  )
+
+
 set(PYAKANTU_SRCS
   py_aka_common.cc
   py_aka_error.cc
@@ -105,3 +116,8 @@ install(TARGETS py11_akantu
 install(DIRECTORY akantu
   DESTINATION ${_python_install_dir}
   FILES_MATCHING PATTERN "*.py")
+
+
+configure_file(setup.py.in
+  "${CMAKE_CURRENT_BINARY_DIR}/setup.py" @ONLY)
+
