@@ -10,3 +10,4 @@ Checks: "
 AnalyzeTemporaryDtors: false
 HeaderFilterRegex:     'src/.*'
 FormatStyle:           file
+UseColor:              true
