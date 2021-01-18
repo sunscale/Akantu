@@ -83,6 +83,13 @@ if (_is_activated)
 endif()
 
 pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
+# to avoid compilation warnings from pybind11
+target_include_directories(${target_name}
+  SYSTEM BEFORE
+  PRIVATE ${PYBIND11_INCLUDE_DIR}
+  PRIVATE ${pybind11_INCLUDE_DIR}
+  PRIVATE ${PYTHON_INCLUDE_DIRS})
+
 target_link_libraries(py11_akantu PUBLIC akantu)
 set_target_properties(py11_akantu PROPERTIES DEBUG_POSTFIX "")
 
