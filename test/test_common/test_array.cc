@@ -90,7 +90,7 @@ protected:
   std::string type_str;
 };
 
-TYPED_TEST_SUITE(ArrayConstructor, TestTypes);
+TYPED_TEST_SUITE(ArrayConstructor, TestTypes, );
 
 TYPED_TEST(ArrayConstructor, ConstructDefault1) {
   auto array = this->construct();
@@ -153,7 +153,7 @@ protected:
   std::unique_ptr<Array<T>> array;
 };
 
-TYPED_TEST_SUITE(ArrayFixture, TestTypes);
+TYPED_TEST_SUITE(ArrayFixture, TestTypes, );
 
 TYPED_TEST(ArrayFixture, Copy) {
   Array<typename TestFixture::type> copy(*this->array);

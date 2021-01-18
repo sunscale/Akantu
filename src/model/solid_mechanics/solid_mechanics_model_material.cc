@@ -109,8 +109,9 @@ void SolidMechanicsModel::instantiateMaterials() {
 
 #ifdef AKANTU_DAMAGE_NON_LOCAL
   for (auto & material : materials) {
-    if (dynamic_cast<MaterialNonLocalInterface *>(material.get()) == nullptr)
+    if (dynamic_cast<MaterialNonLocalInterface *>(material.get()) == nullptr) {
       continue;
+    }
 
     this->non_local_manager = std::make_unique<NonLocalManager>(
         *this, *this, id + ":non_local_manager", memory_id);
@@ -118,9 +119,10 @@ void SolidMechanicsModel::instantiateMaterials() {
   }
 #endif
 
-  if (materials.empty())
+  if (materials.empty()) {
     AKANTU_EXCEPTION("No materials where instantiated for the model"
                      << getID());
+  }
   are_materials_instantiated = true;
 }
 
@@ -139,8 +141,9 @@ void SolidMechanicsModel::assignMaterialToElements(
       },
       _element_filter = filter, _ghost_type = _not_ghost);
 
-  if (non_local_manager)
+  if (non_local_manager) {
     non_local_manager->synchronize(*this, SynchronizationTag::_material_id);
+  }
 
   for_each_element(
       mesh,
@@ -157,7 +160,7 @@ void SolidMechanicsModel::assignMaterialToElements(
 
 /* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::initMaterials() {
-  AKANTU_DEBUG_ASSERT(materials.size() != 0, "No material to initialize !");
+  AKANTU_DEBUG_ASSERT(not materials.empty(), "No material to initialize !");
 
   // if (!are_materials_instantiated)
   //   instantiateMaterials();
@@ -183,11 +186,12 @@ Int SolidMechanicsModel::getInternalIndexFromID(const ID & id) const {
   auto it = materials.begin();
   auto end = materials.end();
 
-  for (; it != end; ++it)
+  for (; it != end; ++it) {
     if ((*it)->getID() == id) {
       AKANTU_DEBUG_OUT();
       return (it - materials.begin());
     }
+  }
 
   AKANTU_DEBUG_OUT();
   return -1;
@@ -244,8 +248,9 @@ void SolidMechanicsModel::applyEigenGradU(
                           spatial_dimension * spatial_dimension,
                       "The prescribed grad_u is not of the good size");
   for (auto & material : materials) {
-    if (material->getName() == material_name)
+    if (material->getName() == material_name) {
       material->applyEigenGradU(prescribed_eigen_grad_u, ghost_type);
+    }
   }
 }
 

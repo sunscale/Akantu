@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__
-#define __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__
+#ifndef AKANTU_BY_ELEMENT_TYPE_FILTER_HH_
+#define AKANTU_BY_ELEMENT_TYPE_FILTER_HH_
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -40,11 +40,9 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 
 template <typename T> class ArrayFilter {
-
   /* ------------------------------------------------------------------------ */
   /* Typedefs                                                                 */
   /* ------------------------------------------------------------------------ */
-
 public:
   /// standard iterator
   template <typename R = T> class iterator {
@@ -153,10 +151,11 @@ public:
             << this->size() << "," << this->getNbComponent() << ")");
     UInt new_full_array_size = this->array.size() * array.getNbComponent() / n;
     UInt new_nb_item_per_elem = this->nb_item_per_elem;
-    if (new_size != 0 && n != 0)
+    if (new_size != 0 && n != 0) {
       new_nb_item_per_elem = this->array.getNbComponent() *
                              this->filter.size() * this->nb_item_per_elem /
                              (n * new_size);
+    }
 
     return const_vector_iterator(
         this->array.begin_reinterpret(n, new_full_array_size),
@@ -173,24 +172,29 @@ public:
     UInt new_full_array_size =
         this->array.size() * this->array.getNbComponent() / n;
     UInt new_nb_item_per_elem = this->nb_item_per_elem;
-    if (new_size != 0 && n != 0)
+    if (new_size != 0 && n != 0) {
       new_nb_item_per_elem = this->array.getNbComponent() *
                              this->filter.size() * this->nb_item_per_elem /
                              (n * new_size);
+    }
 
     return const_vector_iterator(
         this->array.begin_reinterpret(n, new_full_array_size),
         this->filter.end(), new_nb_item_per_elem);
   };
 
-  vector_iterator begin_reinterpret(UInt, UInt) { throw; };
+  vector_iterator begin_reinterpret(UInt /*unused*/, UInt /*unused*/) {
+    throw;
+  };
 
-  vector_iterator end_reinterpret(UInt, UInt) { throw; };
+  vector_iterator end_reinterpret(UInt /*unused*/, UInt /*unused*/) { throw; };
 
   /// return the size of the filtered array which is the filter size
   UInt size() const { return this->filter.size() * this->nb_item_per_elem; };
   /// the number of components of the filtered array
   UInt getNbComponent() const { return this->array.getNbComponent(); };
+
+  bool empty() const __attribute__((warn_unused_result)) { return (size() == 0);}
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -245,20 +249,18 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  inline const ArrayFilter<T>
-  operator()(const SupportType & type,
-             const GhostType & ghost_type = _not_ghost) const {
+  inline ArrayFilter<T> operator()(const SupportType & type,
+                                   GhostType ghost_type = _not_ghost) const {
     if (filter.exists(type, ghost_type)) {
-      if (nb_data_per_elem.exists(type, ghost_type))
+      if (nb_data_per_elem.exists(type, ghost_type)) {
         return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
                               nb_data_per_elem(type, ghost_type) /
                                   array(type, ghost_type).getNbComponent());
-      else
-        return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
-                              1);
-    } else {
-      return ArrayFilter<T>(empty_array, empty_filter, 1);
+      }
+      return ArrayFilter<T>(array(type, ghost_type), filter(type, ghost_type),
+                            1);
     }
+    return ArrayFilter<T>(empty_array, empty_filter, 1);
   };
 
   template <typename... Args>
@@ -296,4 +298,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_BY_ELEMENT_TYPE_FILTER_HH__ */
+#endif /* AKANTU_BY_ELEMENT_TYPE_FILTER_HH_ */

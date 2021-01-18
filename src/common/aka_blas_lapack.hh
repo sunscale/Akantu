@@ -30,8 +30,8 @@
 #include "aka_error.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_BLAS_LAPACK_HH__
-#define __AKANTU_AKA_BLAS_LAPACK_HH__
+#ifndef AKANTU_AKA_BLAS_LAPACK_HH_
+#define AKANTU_AKA_BLAS_LAPACK_HH_
 
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_BLAS
@@ -340,4 +340,4 @@ inline void aka_getrs<float>(char * trans, int * n, int * nrhs, float * A,
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_BLAS_LAPACK_HH__ */
+#endif /* AKANTU_AKA_BLAS_LAPACK_HH_ */

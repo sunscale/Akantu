@@ -177,6 +177,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computeStress(
     ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
+  // NOLINTNEXTLINE(bugprone-parent-virtual-call)
   MaterialThermal<spatial_dimension>::computeStress(el_type, ghost_type);
 
   auto sigma_th_it = this->sigma_th(el_type, ghost_type).begin();
@@ -258,7 +259,8 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computeStressOnQuad(
     UInt i = voigt_h::vec[I][0];
     UInt j = voigt_h::vec[I][1];
 
-    sigma(i, j) = sigma(j, i) = voigt_stress(I) + (i == j) * sigma_th;
+    sigma(i, j) = sigma(j, i) =
+        voigt_stress(I) + Math::kronecker(i, j) * sigma_th;
   }
 }
 
@@ -268,6 +270,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::computePotentialEnergy(
     ElementType el_type) {
   AKANTU_DEBUG_IN();
 
+  // NOLINTNEXTLINE(bugprone-parent-virtual-call)
   MaterialThermal<spatial_dimension>::computePotentialEnergy(el_type);
 
   auto epot = this->potential_energy(el_type).begin();
@@ -319,11 +322,14 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
-void MaterialViscoelasticMaxwell<spatial_dimension>::afterSolveStep(bool converged) {
+void MaterialViscoelasticMaxwell<spatial_dimension>::afterSolveStep(
+    bool converged) {
 
   Material::afterSolveStep(converged);
 
-  if(not converged) return;
+  if (not converged) {
+    return;
+  }
 
   for (auto & el_type : this->element_filter.elementTypes(
            _all_dimensions, _not_ghost, _ek_not_defined)) {
@@ -410,8 +416,7 @@ void MaterialViscoelasticMaxwell<spatial_dimension>::updateIntVarOnQuad(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialViscoelasticMaxwell<spatial_dimension>::computeTangentModuli(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
-    GhostType ghost_type) {
+    ElementType el_type, Array<Real> & tangent_matrix, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   Real dt = this->model.getTimeStep();
@@ -685,29 +690,32 @@ Real MaterialViscoelasticMaxwell<spatial_dimension>::getPotentialEnergy(
 template <UInt spatial_dimension>
 Real MaterialViscoelasticMaxwell<spatial_dimension>::getEnergy(
     const std::string & type) {
-  if (type == "dissipated")
+  if (type == "dissipated") {
     return getDissipatedEnergy();
-  else if (type == "potential")
+  }
+  if (type == "potential") {
     return getPotentialEnergy();
-  else if (type == "work")
+  }
+  if (type == "work") {
     return getMechanicalWork();
-  else
-    return MaterialElastic<spatial_dimension>::getEnergy(type);
+  }
+  return MaterialElastic<spatial_dimension>::getEnergy(type);
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 Real MaterialViscoelasticMaxwell<spatial_dimension>::getEnergy(
     const std::string & energy_id, ElementType type, UInt index) {
-  if (energy_id == "dissipated")
+  if (energy_id == "dissipated") {
     return getDissipatedEnergy(type, index);
-  else if (energy_id == "potential")
+  }
+  if (energy_id == "potential") {
     return getPotentialEnergy(type, index);
-  else if (energy_id == "work")
+  }
+  if (energy_id == "work") {
     return getMechanicalWork(type, index);
-  else
-    return MaterialElastic<spatial_dimension>::getEnergy(energy_id, type,
-                                                         index);
+  }
+  return MaterialElastic<spatial_dimension>::getEnergy(energy_id, type, index);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -1,14 +1,14 @@
+/* -------------------------------------------------------------------------- */
 #include "py_aka_array.hh"
+/* -------------------------------------------------------------------------- */
+#include <pybind11/pybind11.h>
+/* -------------------------------------------------------------------------- */
 
-#ifndef __PY_AKANTU_HH__
-#define __PY_AKANTU_HH__
-
-namespace pybind11 {
-struct module;
-} // namespace pybind11
+#ifndef PY_AKANTU_HH_
+#define PY_AKANTU_HH_
 
 namespace akantu {
-[[gnu::visibility("default")]] void register_all(pybind11::module & mod);
+void register_all(pybind11::module & mod);
 }
 
-#endif /* __PY_AKANTU_HH__ */
+#endif /* PY_AKANTU_HH_ */

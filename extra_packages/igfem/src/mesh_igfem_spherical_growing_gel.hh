@@ -32,8 +32,8 @@
 /* -------------------------------------------------------------------------- */
 
 //#if 0
-#ifndef __AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH__
-#define __AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH__
+#ifndef AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH_
+#define AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH_
 
 #include "aka_common.hh"
 #include "mesh_sphere_intersector.hh"
@@ -215,6 +215,6 @@ protected:
 
 #include "mesh_igfem_spherical_growing_gel_tmpl.hh"
 
-#endif // __AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH__
+#endif // AKANTU_MESH_IGFEM_SPHERICAL_GROWING_GEL_HH_
 
 //#endif //

@@ -32,8 +32,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SPARSE_MATRIX_HH__
-#define __AKANTU_SPARSE_MATRIX_HH__
+#ifndef AKANTU_SPARSE_MATRIX_HH_
+#define AKANTU_SPARSE_MATRIX_HH_
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -64,7 +64,9 @@ public:
   virtual void clearProfile();
 
   /// set the matrix to 0
-  virtual void clear() = 0;
+  virtual void set(Real val) = 0;
+
+  virtual void zero() { this->set(0); }
 
   /// add a non-zero element to the profile
   virtual UInt add(UInt i, UInt j) = 0;
@@ -86,7 +88,7 @@ public:
   virtual void mul(Real alpha) = 0;
 
   /// add matrices
-  virtual void add(const SparseMatrix & matrix, Real alpha = 1.);
+  virtual void add(const SparseMatrix & B, Real alpha = 1.);
 
   /// Equivalent of *gemv in blas
   virtual void matVecMul(const SolverVector & x, SolverVector & y,
@@ -158,4 +160,4 @@ protected:
 /* -------------------------------------------------------------------------- */
 #include "sparse_matrix_inline_impl.hh"
 
-#endif /* __AKANTU_SPARSE_MATRIX_HH__ */
+#endif /* AKANTU_SPARSE_MATRIX_HH_ */

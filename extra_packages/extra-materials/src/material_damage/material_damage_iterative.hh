@@ -20,8 +20,8 @@
 #include "material_damage.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
-#define __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__
+#ifndef AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH_
+#define AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH_
 
 namespace akantu {
 
@@ -39,7 +39,7 @@ class MaterialDamageIterative : public MaterialDamage<spatial_dimension> {
 public:
   MaterialDamageIterative(SolidMechanicsModel & model, const ID & id = "");
 
-  virtual ~MaterialDamageIterative(){};
+  ~MaterialDamageIterative() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -47,16 +47,16 @@ public:
 public:
   ///  virtual void updateInternalParameters();
 
-  virtual void computeAllStresses(GhostType ghost_type = _not_ghost);
+  void computeAllStresses(GhostType ghost_type = _not_ghost) override;
 
   /// update internal field damage
   virtual UInt updateDamage();
 
-  UInt updateDamage(UInt quad_index, const Real eq_stress,
-                    const ElementType & el_type, const GhostType & ghost_type);
+  UInt updateDamage(UInt quad_index, Real eq_stress,
+                    ElementType el_type, GhostType ghost_type);
 
   /// update energies after damage has been updated
-  virtual void updateEnergiesAfterDamage(ElementType el_type);
+  void updateEnergiesAfterDamage(ElementType el_type) override;
 
   /// compute the equivalent stress on each Gauss point (i.e. the max prinicpal
   /// stress) and normalize it by the tensile strength
@@ -71,8 +71,8 @@ public:
 
 protected:
   /// constitutive law for all element of a type
-  virtual void computeStress(ElementType el_type,
-                             GhostType ghost_type = _not_ghost);
+  void computeStress(ElementType el_type,
+                             GhostType ghost_type = _not_ghost) override;
 
   inline void computeDamageAndStressOnQuad(Matrix<Real> & sigma, Real & dam);
 
@@ -142,4 +142,4 @@ protected:
 
 #include "material_damage_iterative_inline_impl.hh"
 
-#endif /* __AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH__ */
+#endif /* AKANTU_MATERIAL_DAMAGE_ITERATIVE_HH_ */

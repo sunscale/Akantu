@@ -38,12 +38,12 @@ ShapeLagrange<_ek_igfem>::ShapeLagrange(const Mesh & mesh, const ID & id,
 /*-------------------------------------------------------------------------- */
 void ShapeLagrange<_ek_igfem>::extractValuesAtStandardNodes(
     const Array<Real> & nodal_values, Array<Real> & extracted_values,
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
 
   AKANTU_DEBUG_ASSERT(nodal_values.getNbComponent() ==
                           extracted_values.getNbComponent(),
                       "The arrays are not of the same size!!!!!");
-  extracted_values.clear();
+  extracted_values.zero();
   UInt spatial_dimension = mesh.getSpatialDimension();
   Mesh::type_iterator it =
       mesh.firstType(spatial_dimension, ghost_type, _ek_igfem);

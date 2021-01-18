@@ -56,8 +56,9 @@ NodeGroup::NodeGroup(const std::string & name, const Mesh & mesh,
 NodeGroup::~NodeGroup() = default;
 
 /* -------------------------------------------------------------------------- */
-void NodeGroup::empty() { node_group.resize(0); }
-
+void NodeGroup::clear() { node_group.resize(0); }
+/* -------------------------------------------------------------------------- */
+//bool NodeGroup::empty() { return node_group.empty(); }
 /* -------------------------------------------------------------------------- */
 void NodeGroup::optimize() {
   std::sort(node_group.begin(), node_group.end());

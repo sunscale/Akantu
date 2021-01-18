@@ -28,104 +28,123 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_PADDING_HELPER_HH__
-#define __AKANTU_DUMPER_PADDING_HELPER_HH__
+#ifndef AKANTU_DUMPER_PADDING_HELPER_HH_
+#define AKANTU_DUMPER_PADDING_HELPER_HH_
 /* -------------------------------------------------------------------------- */
 #include "dumper_compute.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 namespace dumpers {
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
-class PadderInterface {
+  class PadderInterface {
 
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Constructors/Destructors */
+    /* ------------------------------------------------------------------------
+     */
 
-public:
-  PadderInterface() {
-    padding_m = 0;
-    padding_n = 0;
-  }
+  public:
+    PadderInterface() {
+      padding_m = 0;
+      padding_n = 0;
+    }
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Methods */
+    /* ------------------------------------------------------------------------
+     */
 
-public:
-  void setPadding(UInt m, UInt n = 0) {
-    padding_m = m;
-    padding_n = n;
-  }
+  public:
+    void setPadding(UInt m, UInt n = 0) {
+      padding_m = m;
+      padding_n = n;
+    }
 
-  virtual UInt getPaddedDim(UInt nb_data) { return nb_data; }
+    virtual UInt getPaddedDim(UInt nb_data) { return nb_data; }
 
-  /* ------------------------------------------------------------------------ */
-  /* Class Members                                                            */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Class Members */
+    /* ------------------------------------------------------------------------
+     */
 
-public:
-  /// padding informations
-  UInt padding_n, padding_m;
-};
+  public:
+    /// padding informations
+    UInt padding_n, padding_m;
+  };
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
-template <class input_type, class output_type>
-class PadderGeneric : public ComputeFunctor<input_type, output_type>,
-                      public PadderInterface {
+  template <class input_type, class output_type>
+  class PadderGeneric : public ComputeFunctor<input_type, output_type>,
+                        public PadderInterface {
 
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Constructors/Destructors */
+    /* ------------------------------------------------------------------------
+     */
 
-public:
-  PadderGeneric() : PadderInterface() {}
+  public:
+    PadderGeneric() : PadderInterface() {}
 
-  /* ------------------------------------------------------------------------ */
-  /* Methods                                                                  */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Methods */
+    /* ------------------------------------------------------------------------
+     */
 
-public:
-  inline output_type pad(const input_type & in,
-                         __attribute__((unused)) UInt nb_data) {
-    return in; // trick due to the fact that IOHelper padds the vectors (avoid a
-               // copy of data)
-  }
-};
-/* -------------------------------------------------------------------------- */
+  public:
+    inline output_type pad(const input_type & in,
+                           __attribute__((unused)) UInt nb_data) {
+      return in; // trick due to the fact that IOHelper padds the vectors (avoid
+                 // a copy of data)
+    }
+  };
+  /* --------------------------------------------------------------------------
+   */
 
-template <class T>
-class PadderGeneric<Vector<T>, Matrix<T>>
-    : public ComputeFunctor<Vector<T>, Matrix<T>>, public PadderInterface {
+  template <class T>
+  class PadderGeneric<Vector<T>, Matrix<T>>
+      : public ComputeFunctor<Vector<T>, Matrix<T>>, public PadderInterface {
 
-  /* ------------------------------------------------------------------------ */
-  /* Constructors/Destructors                                                 */
-  /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+     */
+    /* Constructors/Destructors */
+    /* ------------------------------------------------------------------------
+     */
 
-public:
-  inline Matrix<T> pad(const Vector<T> & _in, UInt nrows, UInt ncols,
-                       UInt nb_data) {
-    Matrix<T> in(_in.storage(), nrows, ncols);
+  public:
+    inline Matrix<T> pad(const Vector<T> & _in, UInt nrows, UInt ncols,
+                         UInt nb_data) {
+      Matrix<T> in(_in.storage(), nrows, ncols);
 
-    if (padding_m <= nrows && padding_n * nb_data <= ncols)
-      return in;
-    else {
+      if (padding_m <= nrows && padding_n * nb_data <= ncols) {
+        return in;
+      }
+
       Matrix<T> ret(padding_m, padding_n * nb_data);
       UInt nb_cols_per_data = in.cols() / nb_data;
-      for (UInt d = 0; d < nb_data; ++d)
-        for (UInt i = 0; i < in.rows(); ++i)
-          for (UInt j = 0; j < nb_cols_per_data; ++j)
+      for (UInt d = 0; d < nb_data; ++d) {
+        for (UInt i = 0; i < in.rows(); ++i) {
+          for (UInt j = 0; j < nb_cols_per_data; ++j) {
             ret(i, j + d * padding_n) = in(i, j + d * nb_cols_per_data);
+          }
+        }
+      }
       return ret;
     }
-  }
-};
+  };
 
-/* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
-} // namespace akantu
 } // namespace dumpers
+} // namespace akantu
 
-#endif /* __AKANTU_DUMPER_PADDING_HELPER_HH__ */
+#endif /* AKANTU_DUMPER_PADDING_HELPER_HH_ */

@@ -93,12 +93,10 @@ void MaterialPlastic<spatial_dimension>::initialize() {
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 Real MaterialPlastic<spatial_dimension>::getEnergy(const std::string & type) {
-  if (type == "plastic")
+  if (type == "plastic") {
     return getPlasticEnergy();
-  else
-    return MaterialElastic<spatial_dimension>::getEnergy(type);
-
-  return 0.;
+  }
+  return MaterialElastic<spatial_dimension>::getEnergy(type);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -35,7 +35,7 @@
 
 namespace akantu {
 
-Parameter::Parameter() : name(""), description("") {}
+Parameter::Parameter() = default;
 
 /* -------------------------------------------------------------------------- */
 Parameter::Parameter(std::string name, std::string description,
@@ -44,16 +44,16 @@ Parameter::Parameter(std::string name, std::string description,
       param_type(param_type) {}
 
 /* -------------------------------------------------------------------------- */
-bool Parameter::isWritable() const { return param_type & _pat_writable; }
+bool Parameter::isWritable() const { return (param_type & _pat_writable) != 0; }
 
 /* -------------------------------------------------------------------------- */
-bool Parameter::isReadable() const { return param_type & _pat_readable; }
+bool Parameter::isReadable() const { return (param_type & _pat_readable) != 0; }
 
 /* -------------------------------------------------------------------------- */
-bool Parameter::isInternal() const { return param_type & _pat_internal; }
+bool Parameter::isInternal() const { return (param_type & _pat_internal) != 0; }
 
 /* -------------------------------------------------------------------------- */
-bool Parameter::isParsable() const { return param_type & _pat_parsable; }
+bool Parameter::isParsable() const { return (param_type & _pat_parsable) != 0; }
 
 /* -------------------------------------------------------------------------- */
 void Parameter::setAccessType(ParameterAccessType ptype) {
@@ -63,23 +63,26 @@ void Parameter::setAccessType(ParameterAccessType ptype) {
 /* -------------------------------------------------------------------------- */
 void Parameter::printself(std::ostream & stream) const {
   stream << " ";
-  if (isInternal())
+  if (isInternal()) {
     stream << "iii";
-  else {
-    if (isReadable())
+  } else {
+    if (isReadable()) {
       stream << "r";
-    else
+    } else {
       stream << "-";
+    }
 
-    if (isWritable())
+    if (isWritable()) {
       stream << "w";
-    else
+    } else {
       stream << "-";
+    }
 
-    if (isParsable())
+    if (isParsable()) {
       stream << "p";
-    else
+    } else {
       stream << "-";
+    }
   }
   stream << " ";
 
@@ -88,7 +91,7 @@ void Parameter::printself(std::ostream & stream) const {
   UInt width = std::max(int(10 - sstr.str().length()), 0);
   sstr.width(width);
 
-  if (description != "") {
+  if (not description.empty()) {
     sstr << " [" << description << "]";
   }
 
@@ -105,10 +108,9 @@ ParameterRegistry::ParameterRegistry() = default;
 
 /* -------------------------------------------------------------------------- */
 ParameterRegistry::~ParameterRegistry() {
-  std::map<std::string, Parameter *>::iterator it, end;
-  for (it = params.begin(); it != params.end(); ++it) {
-    delete it->second;
-    it->second = NULL;
+  for (auto && data : params) {
+    delete data.second;
+    data.second = NULL;
   }
   this->params.clear();
 }
@@ -142,8 +144,9 @@ void ParameterRegistry::registerSubRegistry(const ID & id,
 void ParameterRegistry::setParameterAccessType(const std::string & name,
                                                ParameterAccessType ptype) {
   auto it = params.find(name);
-  if (it == params.end())
+  if (it == params.end()) {
     AKANTU_CUSTOM_EXCEPTION(debug::ParameterUnexistingException(name, *this));
+  }
   Parameter & param = *(it->second);
   param.setAccessType(ptype);
 }

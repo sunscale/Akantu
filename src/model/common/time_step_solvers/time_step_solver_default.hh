@@ -35,8 +35,8 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
-#define __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__
+#ifndef AKANTU_TIME_STEP_SOLVER_DEFAULT_HH_
+#define AKANTU_TIME_STEP_SOLVER_DEFAULT_HH_
 
 namespace akantu {
 class DOFManager;
@@ -94,7 +94,7 @@ private:
   template<class Func>
   void for_each_integrator(Func && function) {
     for (auto & pair : this->integration_schemes) {
-      auto & dof_id = pair.first;
+      const auto & dof_id = pair.first;
       auto & integration_scheme = pair.second;
       function(dof_id, *integration_scheme);
     }
@@ -126,4 +126,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_HH__ */
+#endif /* AKANTU_TIME_STEP_SOLVER_DEFAULT_HH_ */

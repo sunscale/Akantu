@@ -27,7 +27,7 @@ integration or a gradient. A simple example is given below::
     fem->gradientOnIntegrationPoints(const Array<Real> &u,
                                      Array<Real> &nablauq,
                                      const UInt nb_degree_of_freedom,
-                                     const ElementType & type);
+                                     ElementType type);
 
     // interpolate
     Array<Real> uq; //interpolated array to be computed
@@ -35,7 +35,7 @@ integration or a gradient. A simple example is given below::
     fem->interpolateOnIntegrationPoints(const Array<Real> &u,
                                         Array<Real> &uq,
                                         UInt nb_degree_of_freedom,
-                                        const ElementType & type);
+                                        ElementType type);
 
     // interpolated function can be integrated over the elements
     Array<Real> int_val_on_elem;
@@ -43,7 +43,7 @@ integration or a gradient. A simple example is given below::
     fem->integrate(const Array<Real> &uq,
                    Array<Real> &int_uq,
                    UInt nb_degree_of_freedom,
-                   const ElementType & type);
+                   ElementType type);
 
 Another example below shows how to integrate stress and strain fields
 over elements assigned to a particular material::

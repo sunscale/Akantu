@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef __AKANTU_MESH_GEOM_COMMON_HH__
-#define __AKANTU_MESH_GEOM_COMMON_HH__
+#ifndef AKANTU_MESH_GEOM_COMMON_HH_
+#define AKANTU_MESH_GEOM_COMMON_HH_
 
 #include "aka_common.hh"
 
@@ -53,4 +53,4 @@ namespace cgal {
 
 } // namespace akantu
 
-#endif // __AKANTU_MESH_GEOM_COMMON_HH__
+#endif // AKANTU_MESH_GEOM_COMMON_HH_

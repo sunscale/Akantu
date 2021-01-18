@@ -37,8 +37,8 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH__
-#define __AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH__
+#ifndef AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH_
+#define AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH_
 
 namespace akantu {
 
@@ -133,4 +133,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH__ */
+#endif /* AKANTU_MATERIAL_STANDARD_LINEAR_SOLID_DEVIATORIC_HH_ */

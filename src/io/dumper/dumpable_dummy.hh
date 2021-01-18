@@ -33,8 +33,8 @@
 /* -------------------------------------------------------------------------- */
 
 #if !defined(DOXYGEN)
-#ifndef __AKANTU_DUMPABLE_DUMMY_HH__
-#define __AKANTU_DUMPABLE_DUMMY_HH__
+#ifndef AKANTU_DUMPABLE_DUMMY_HH_
+#define AKANTU_DUMPABLE_DUMMY_HH_
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -73,21 +73,21 @@ public:
                               const bool is_default = false) {}
 
   void addDumpMesh(const Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-                   const GhostType & ghost_type = _not_ghost,
-                   const ElementKind & element_kind = _ek_not_defined) {}
+                   GhostType ghost_type = _not_ghost,
+                   ElementKind element_kind = _ek_not_defined) {}
 
   void addDumpMeshToDumper(const std::string & dumper_name, const Mesh & mesh,
                            UInt spatial_dimension = _all_dimensions,
-                           const GhostType & ghost_type = _not_ghost,
-                           const ElementKind & element_kind = _ek_not_defined) {
+                           GhostType ghost_type = _not_ghost,
+                           ElementKind element_kind = _ek_not_defined) {
   }
 
   void addDumpFilteredMesh(const Mesh & mesh,
                            const ElementTypeMapArray<UInt> & elements_filter,
                            const Array<UInt> & nodes_filter,
                            UInt spatial_dimension = _all_dimensions,
-                           const GhostType & ghost_type = _not_ghost,
-                           const ElementKind & element_kind = _ek_not_defined) {
+                           GhostType ghost_type = _not_ghost,
+                           ElementKind element_kind = _ek_not_defined) {
   }
 
   void addDumpFilteredMeshToDumper(
@@ -95,8 +95,8 @@ public:
       const ElementTypeMapArray<UInt> & elements_filter,
       const Array<UInt> & nodes_filter,
       UInt spatial_dimension = _all_dimensions,
-      const GhostType & ghost_type = _not_ghost,
-      const ElementKind & element_kind = _ek_not_defined) {}
+      GhostType ghost_type = _not_ghost,
+      ElementKind element_kind = _ek_not_defined) {}
 
   virtual void addDumpField(const std::string & field_id) {
     AKANTU_TO_IMPLEMENT();
@@ -138,8 +138,8 @@ public:
   addDumpFieldExternal(const std::string & field_id,
                        const ElementTypeMapArray<T> & field,
                        UInt spatial_dimension = _all_dimensions,
-                       const GhostType & ghost_type = _not_ghost,
-                       const ElementKind & element_kind = _ek_not_defined) {
+                       GhostType ghost_type = _not_ghost,
+                       ElementKind element_kind = _ek_not_defined) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
@@ -148,8 +148,8 @@ public:
       const std::string & dumper_name, const std::string & field_id,
       const ElementTypeMapArray<T> & field,
       UInt spatial_dimension = _all_dimensions,
-      const GhostType & ghost_type = _not_ghost,
-      const ElementKind & element_kind = _ek_not_defined) {
+      GhostType ghost_type = _not_ghost,
+      ElementKind element_kind = _ek_not_defined) {
     AKANTU_DEBUG_WARNING("No dumper activated at compilation, turn on "
                          "AKANTU_USE_IOHELPER in cmake.");
   }
@@ -263,5 +263,5 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPABLE_DUMMY_HH__ */
+#endif /* AKANTU_DUMPABLE_DUMMY_HH_ */
 #endif // DOXYGEN

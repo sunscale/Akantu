@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH__
-#define __AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH__
+#ifndef AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH_
+#define AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH_
 
 #include "aka_common.hh"
 #include "mesh_geom_common.hh"
@@ -43,13 +43,10 @@ namespace akantu {
 template <UInt dim, ElementType type>
 MeshSegmentIntersector<dim, type>::MeshSegmentIntersector(Mesh & mesh,
                                                           Mesh & result_mesh)
-    : parent_type(mesh), result_mesh(result_mesh), current_physical_name() {
+    : parent_type(mesh), result_mesh(result_mesh) {
   this->intersection_points = new Array<Real>(0, dim);
   this->constructData();
 }
-
-template <UInt dim, ElementType type>
-MeshSegmentIntersector<dim, type>::~MeshSegmentIntersector() {}
 
 template <UInt dim, ElementType type>
 void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(
@@ -72,8 +69,8 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(
 
   // Arrays for storing associated element and physical name
   bool valid_elemental_data = true;
-  Array<Element> * associated_element = NULL;
-  Array<std::string> * associated_physical_name = NULL;
+  Array<Element> * associated_element = nullptr;
+  Array<std::string> * associated_physical_name = nullptr;
 
   try {
     associated_element =
@@ -84,8 +81,8 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(
     valid_elemental_data = false;
   }
 
-  std::set<pair_type, segmentPairsLess>::iterator it = segment_set.begin(),
-                                                  end = segment_set.end();
+  auto it = segment_set.begin();
+  auto end = segment_set.end();
 
   // Loop over the segment pairs
   for (; it != end; ++it) {
@@ -96,7 +93,8 @@ void MeshSegmentIntersector<dim, type>::computeIntersectionQuery(
       connectivity.push_back(segment_connectivity);
 
       // Copy nodes
-      Vector<Real> source(dim), target(dim);
+      Vector<Real> source(dim);
+      Vector<Real> target(dim);
       for (UInt j = 0; j < dim; j++) {
         source(j) = it->first.source()[j];
         target(j) = it->first.target()[j];
@@ -148,14 +146,15 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
    *
    * We try to determine the case and still construct the segment list
    */
-  if (intersections.size() == 0) {
+  if (intersections.empty()) {
     // We look at all the primitives intersected by two rays
     // If there is one primitive in common, then query is inside
     // that primitive
     K::Ray_3 ray1(query.source(), query.target());
     K::Ray_3 ray2(query.target(), query.source());
 
-    std::set<UInt> ray1_results, ray2_results;
+    std::set<UInt> ray1_results;
+    std::set<UInt> ray2_results;
 
     this->factory.getTree().all_intersected_primitives(
         ray1, std::inserter(ray1_results, ray1_results.begin()));
@@ -165,8 +164,8 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
     bool inside_primitive = false;
     UInt primitive_id = 0;
 
-    std::set<UInt>::iterator ray2_it = ray2_results.begin(),
-                             ray2_end = ray2_results.end();
+    auto ray2_it = ray2_results.begin();
+    auto ray2_end = ray2_results.end();
 
     // Test if first list contains an element of second list
     for (; ray2_it != ray2_end && !inside_primitive; ++ray2_it) {
@@ -182,8 +181,8 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
   }
 
   else {
-    typename std::list<result_type>::const_iterator it = intersections.begin(),
-                                                    end = intersections.end();
+    auto it = intersections.begin();
+    auto end = intersections.end();
 
     for (; it != end; ++it) {
       UInt el = (*it)->second;
@@ -211,14 +210,16 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
           const Vector<UInt> & el_connectivity = connectivity_vec[el];
 
           Matrix<Real> node_coordinates(dim, nb_nodes_per_element);
-          for (UInt i = 0; i < nb_nodes_per_element; i++)
-            for (UInt j = 0; j < dim; j++)
+          for (UInt i = 0; i < nb_nodes_per_element; i++) {
+            for (UInt j = 0; j < dim; j++) {
               node_coordinates(j, i) = nodes(el_connectivity(i), j);
+            }
+          }
 
           this->factory.addPrimitive(node_coordinates, el, facets);
 
           // Local tree
-          TreeTypeHelper<Triangle<K>, K>::tree * local_tree =
+          auto * local_tree =
               new TreeTypeHelper<Triangle<K>, K>::tree(facets.begin(),
                                                        facets.end());
 
@@ -228,12 +229,11 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
               query, std::back_inserter(local_intersections));
 
           bool out_point_found = false;
-          typename std::list<result_type>::const_iterator
-              local_it = local_intersections.begin(),
-              local_end = local_intersections.end();
+          auto local_it = local_intersections.begin();
+          auto local_end = local_intersections.end();
 
           for (; local_it != local_end; ++local_it) {
-            if (const K::Point_3 * local_point =
+            if (const auto * local_point =
                     boost::get<K::Point_3>(&((*local_it)->first))) {
               if (!comparePoints(*point, *local_point)) {
                 K::Segment_3 seg(*point, *local_point);
@@ -244,25 +244,26 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
           }
 
           if (!out_point_found) {
-            TreeTypeHelper<Triangle<K>, K>::point_type a(
-                node_coordinates(0, 0), node_coordinates(1, 0),
-                node_coordinates(2, 0)),
-                b(node_coordinates(0, 1), node_coordinates(1, 1),
-                  node_coordinates(2, 1)),
-                c(node_coordinates(0, 2), node_coordinates(1, 2),
-                  node_coordinates(2, 2)),
-                d(node_coordinates(0, 3), node_coordinates(1, 3),
-                  node_coordinates(2, 3));
+            using Point = TreeTypeHelper<Triangle<K>, K>::point_type;
+            Point a(node_coordinates(0, 0), node_coordinates(1, 0),
+                    node_coordinates(2, 0));
+            Point b(node_coordinates(0, 1), node_coordinates(1, 1),
+                    node_coordinates(2, 1));
+            Point c(node_coordinates(0, 2), node_coordinates(1, 2),
+                    node_coordinates(2, 2));
+            Point d(node_coordinates(0, 3), node_coordinates(1, 3),
+                    node_coordinates(2, 3));
             K::Tetrahedron_3 tetra(a, b, c, d);
-            const K::Point_3 * inside_point = NULL;
+            const K::Point_3 * inside_point = nullptr;
             if (tetra.has_on_bounded_side(query.source()) &&
-                !tetra.has_on_boundary(query.source()))
+                !tetra.has_on_boundary(query.source())) {
               inside_point = &query.source();
-            else if (tetra.has_on_bounded_side(query.target()) &&
-                     !tetra.has_on_boundary(query.target()))
+            } else if (tetra.has_on_bounded_side(query.target()) &&
+                       !tetra.has_on_boundary(query.target())) {
               inside_point = &query.target();
+            }
 
-            if (inside_point) {
+            if (inside_point != nullptr) {
               K::Segment_3 seg(*inside_point, *point);
               segments.insert(std::make_pair(seg, el));
             }
@@ -279,4 +280,4 @@ void MeshSegmentIntersector<dim, type>::computeSegments(
 
 } // namespace akantu
 
-#endif // __AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH__
+#endif // AKANTU_MESH_SEGMENT_INTERSECTOR_TMPL_HH_

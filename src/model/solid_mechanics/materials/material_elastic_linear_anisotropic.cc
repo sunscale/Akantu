@@ -136,7 +136,9 @@ template <UInt Dim> void MaterialElasticLinearAnisotropic<Dim>::rotateCprime() {
 
   // make sure the vectors form a right-handed base
   Vector<Real> test_axis(3);
-  Vector<Real> v1(3), v2(3), v3(3, 0.);
+  Vector<Real> v1(3);
+  Vector<Real> v2(3);
+  Vector<Real> v3(3, 0.);
 
   if (Dim == 2) {
     for (UInt i = 0; i < Dim; ++i) {
@@ -210,7 +212,7 @@ void MaterialElasticLinearAnisotropic<dim>::computeStress(
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 void MaterialElasticLinearAnisotropic<dim>::computeTangentModuli(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
+    ElementType el_type, Array<Real> & tangent_matrix,
     GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 

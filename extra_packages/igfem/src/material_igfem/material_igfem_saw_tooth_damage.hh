@@ -17,8 +17,8 @@
 #include "material_igfem_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH__
-#define __AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH__
+#ifndef AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH_
+#define AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH_
 
 namespace akantu {
 
@@ -57,7 +57,7 @@ public:
   virtual UInt updateDamage();
 
   UInt updateDamage(UInt quad_index, const Real eq_stress,
-                    const ElementType & el_type, const GhostType & ghost_type);
+                    ElementType el_type, GhostType ghost_type);
 
   /// update energies after damage has been updated
   //  virtual void updateEnergiesAfterDamage(ElementType el_type, GhostType
@@ -135,4 +135,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH__ */
+#endif /* AKANTU_MATERIAL_IGFEM_SAW_TOOTH_DAMAGE_HH_ */

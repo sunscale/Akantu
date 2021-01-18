@@ -38,7 +38,7 @@ extern "C" {
 
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 extern "C" DumpHelper * getNewDumperHandle(int dumper_style){
   DumpHelper * box;
@@ -127,5 +127,4 @@ extern "C" void DumperSetDumpStep(DumpHelper * pH,int step){
 
 
 
-__END_IOHELPER__
-
+}

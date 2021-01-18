@@ -33,8 +33,8 @@
 #include <memory>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
-#define __AKANTU_REAL_STATIC_COMMUNICATOR_HH__
+#ifndef AKANTU_REAL_STATIC_COMMUNICATOR_HH_
+#define AKANTU_REAL_STATIC_COMMUNICATOR_HH_
 
 namespace akantu {
 
@@ -74,7 +74,7 @@ public:
   UInt getSource() const { return request->getSource(); }
   UInt getDestination() const { return request->getDestination(); }
 
-  bool isFreed() const { return request.get() == nullptr; }
+  bool isFreed() const { return request == nullptr; }
 
   InternalCommunicationRequest & getInternal() { return *request; }
 
@@ -108,4 +108,4 @@ template <typename T1, typename T2> struct SCMinMaxLoc {
 
 } // namespace akantu
 
-#endif /* __AKANTU_REAL_STATIC_COMMUNICATOR_HH__ */
+#endif /* AKANTU_REAL_STATIC_COMMUNICATOR_HH_ */

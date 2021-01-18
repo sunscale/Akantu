@@ -151,8 +151,9 @@ void SparseSolverMumps::mumpsDataDestroy() {
 #ifdef AKANTU_USE_MPI
   int finalized = 0;
   MPI_Finalized(&finalized);
-  if (finalized) // Da fuck !?
+  if (finalized != 0) { // Da fuck !?
     return;
+  }
 #endif
 
   if (this->is_initialized) {
@@ -167,8 +168,9 @@ void SparseSolverMumps::destroyInternalData() { mumpsDataDestroy(); }
 
 /* -------------------------------------------------------------------------- */
 void SparseSolverMumps::checkInitialized() {
-  if (this->is_initialized)
+  if (this->is_initialized) {
     return;
+  }
 
   this->initialize();
 }
@@ -286,7 +288,7 @@ void SparseSolverMumps::initialize() {
 
   const auto & A = dof_manager.getMatrix(matrix_id);
 
-  this->mumps_data.sym = 2 * (A.getMatrixType() == _symmetric);
+  this->mumps_data.sym = 2 * static_cast<int>(A.getMatrixType() == _symmetric);
   this->prank = communicator.whoAmI();
 
   this->setOutputLevel();
@@ -319,11 +321,12 @@ void SparseSolverMumps::factorize() {
 
   auto & A = dof_manager.getMatrix(matrix_id);
 
-  if (parallel_method == _fully_distributed)
+  if (parallel_method == _fully_distributed) {
     this->mumps_data.a_loc = A.getA().storage();
-  else {
-    if (prank == 0)
+  } else {
+    if (prank == 0) {
       this->mumps_data.a = A.getA().storage();
+    }
   }
 
   this->mumps_data.job = _smj_factorize; // factorize

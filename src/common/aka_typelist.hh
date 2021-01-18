@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TYPELIST_HH__
-#define __AKANTU_TYPELIST_HH__
+#ifndef AKANTU_TYPELIST_HH_
+#define AKANTU_TYPELIST_HH_
 
 #include "aka_common.hh"
 
@@ -151,4 +151,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_TYPELIST_HH__ */
+#endif /* AKANTU_TYPELIST_HH_ */

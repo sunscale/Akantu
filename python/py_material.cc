@@ -13,6 +13,11 @@
 namespace py = pybind11;
 /* -------------------------------------------------------------------------- */
 
+#if not defined(PYBIND11_OVERRIDE)
+#define PYBIND11_OVERRIDE PYBIND11_OVERLOAD
+#define PYBIND11_OVERRIDE_PURE PYBIND11_OVERLOAD_PURE
+#endif
+
 namespace akantu {
 
 template <typename _Material> class PyMaterial : public _Material {
@@ -21,31 +26,32 @@ public:
   /* Inherit the constructors */
   using _Material::_Material;
 
-  virtual ~PyMaterial(){};
+  ~PyMaterial() override = default;
+
   void initMaterial() override {
-    PYBIND11_OVERLOAD(void, _Material, initMaterial);
+      PYBIND11_OVERRIDE(void, _Material, initMaterial, ); // NOLINT
   };
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override {
-    PYBIND11_OVERLOAD_PURE(void, _Material, computeStress, el_type, ghost_type);
+    PYBIND11_OVERRIDE_PURE(void, _Material, computeStress, el_type, ghost_type);
   }
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override {
-    PYBIND11_OVERLOAD(void, _Material, computeTangentModuli, el_type,
+    PYBIND11_OVERRIDE(void, _Material, computeTangentModuli, el_type,
                       tangent_matrix, ghost_type);
   }
 
   void computePotentialEnergy(ElementType el_type) override {
-    PYBIND11_OVERLOAD(void, _Material, computePotentialEnergy, el_type);
+    PYBIND11_OVERRIDE(void, _Material, computePotentialEnergy, el_type);
   }
 
   Real getPushWaveSpeed(const Element & element) const override {
-    PYBIND11_OVERLOAD(Real, _Material, getPushWaveSpeed, element);
+    PYBIND11_OVERRIDE(Real, _Material, getPushWaveSpeed, element);
   }
 
   Real getShearWaveSpeed(const Element & element) const override {
-    PYBIND11_OVERLOAD(Real, _Material, getShearWaveSpeed, element);
+    PYBIND11_OVERRIDE(Real, _Material, getShearWaveSpeed, element);
   }
 
   void registerInternal(const std::string & name, UInt nb_component) {
@@ -70,8 +76,8 @@ void register_element_type_map_array(py::module & mod,
       mod, ("ElementTypeMapArray" + name).c_str())
       .def(
           "__call__",
-          [](ElementTypeMapArray<T> & self, ElementType & type,
-             const GhostType & ghost_type) -> decltype(auto) {
+          [](ElementTypeMapArray<T> & self, ElementType type,
+             GhostType ghost_type) -> decltype(auto) {
             return self(type, ghost_type);
           },
           py::arg("type"), py::arg("ghost_type") = _not_ghost,
@@ -154,7 +160,7 @@ void define_material(py::module & mod, const std::string & name) {
 }
 
 /* -------------------------------------------------------------------------- */
-[[gnu::visibility("default")]] void register_material(py::module & mod) {
+void register_material(py::module & mod) {
   py::class_<MaterialFactory>(mod, "MaterialFactory")
       .def_static(
           "getInstance",
@@ -164,7 +170,8 @@ void define_material(py::module & mod, const std::string & name) {
            [](MaterialFactory & self, const std::string id, py::function func) {
              self.registerAllocator(
                  id,
-                 [func, id](UInt dim, const ID &, SolidMechanicsModel & model,
+                 [func, id](UInt dim, const ID & /*unused*/,
+                            SolidMechanicsModel & model,
                             const ID & option) -> std::unique_ptr<Material> {
                    py::object obj = func(dim, id, model, option);
                    auto & ptr = py::cast<Material &>(obj);
@@ -221,3 +228,4 @@ void define_material(py::module & mod, const std::string & name) {
 }
 
 } // namespace akantu
+

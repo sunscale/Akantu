@@ -72,11 +72,13 @@ DOFSynchronizer::~DOFSynchronizer() = default;
 
 /* -------------------------------------------------------------------------- */
 void DOFSynchronizer::registerDOFs(const ID & dof_id) {
-  if (this->nb_proc == 1)
+  if (this->nb_proc == 1) {
     return;
+  }
 
-  if (dof_manager.getSupportType(dof_id) != _dst_nodal)
+  if (dof_manager.getSupportType(dof_id) != _dst_nodal) {
     return;
+  }
 
   const auto & equation_numbers = dof_manager.getLocalEquationsNumbers(dof_id);
 
@@ -119,12 +121,11 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
     }
   };
 
-  for (auto sr_it = send_recv_t::begin(); sr_it != send_recv_t::end();
-       ++sr_it) {
-    auto ncs_it = node_communications.begin_scheme(*sr_it);
-    auto ncs_end = node_communications.end_scheme(*sr_it);
+  for (auto sr : send_recv_t{}) {
+    auto ncs_it = node_communications.begin_scheme(sr);
+    auto ncs_end = node_communications.end_scheme(sr);
 
-    transcode_node_to_global_dof_scheme(ncs_it, ncs_end, *sr_it);
+    transcode_node_to_global_dof_scheme(ncs_it, ncs_end, sr);
   }
 
   entities_changed = true;
@@ -134,12 +135,13 @@ void DOFSynchronizer::registerDOFs(const ID & dof_id) {
 void DOFSynchronizer::fillEntityToSend(Array<UInt> & dofs_to_send) {
   UInt nb_dofs = dof_manager.getLocalSystemSize();
 
-  this->entities_from_root.clear();
+  this->entities_from_root.zero();
   dofs_to_send.resize(0);
 
   for (UInt d : arange(nb_dofs)) {
-    if (not dof_manager.isLocalOrMasterDOF(d))
+    if (not dof_manager.isLocalOrMasterDOF(d)) {
       continue;
+    }
 
     entities_from_root.push_back(d);
   }

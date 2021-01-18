@@ -51,10 +51,10 @@ inline void StressBasedWeightFunction::updateInternals() {
 // }
 
 /* -------------------------------------------------------------------------- */
-inline Real StressBasedWeightFunction::computeRhoSquare(
-    __attribute__((unused)) Real r, __attribute__((unused)) Vector<Real> & eigs,
-    __attribute__((unused)) Matrix<Real> & eigenvects,
-    __attribute__((unused)) Vector<Real> & x_s) {
+inline Real StressBasedWeightFunction::
+    computeRhoSquare( // NOLINT(readability-convert-member-functions-to-static)
+        Real /*r*/, Vector<Real> & /*eigs*/, Matrix<Real> & /*eigenvects*/,
+        Vector<Real> & /*x_s*/) {
   //   if (spatial_dimension == 1)
   //     return eigs[0];
   //   else if (spatial_dimension == 2) {
@@ -157,12 +157,10 @@ inline Real StressBasedWeightFunction::computeRhoSquare(
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real StressBasedWeightFunction::operator()(__attribute__((unused))
-                                                  Real r,
-                                                  __attribute__((unused))
-                                                  const IntegrationPoint & q1,
-                                                  __attribute__((unused))
-                                                  const IntegrationPoint & q2) {
+inline Real
+StressBasedWeightFunction::operator()(Real /*r*/,
+                                      const IntegrationPoint & /*q1*/,
+                                      const IntegrationPoint & /*q2*/) {
   // Real zero = std::numeric_limits<Real>::epsilon();
 
   // if(r < zero) return 1.; // means x and s are the same points

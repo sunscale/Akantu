@@ -5,8 +5,7 @@ from setuptools import setup, find_packages, Extension
 
 
 name = 'Akantu'
-version = '3.1.0'
-release = '1.0.0'
+version = '4.0.0'
 
 aka_inc_dirs = "@AKANTU_LIBRARY_INCLUDE_DIRS@".split(';')
 aka_inc_dirs += "@AKANTU_PRIVATE_EXTERNAL_INCLUDE_DIR@".split(';')

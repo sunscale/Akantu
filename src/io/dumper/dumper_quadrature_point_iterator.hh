@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__
-#define __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__
+#ifndef AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH_
+#define AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "dumper_elemental_field.hh"
@@ -70,4 +70,4 @@ public:
 } // namespace dumpers
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH__ */
+#endif /* AKANTU_DUMPER_QUADRATURE_POINT_ITERATOR_HH_ */

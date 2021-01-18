@@ -73,17 +73,21 @@ int main(int argc, char * argv[]) {
   model.dump();
 
   /// compute the pairs by looping over all the quadrature points
-  PairList pair_list[2];
-  computePairs(model, pair_list);
+  std::array<PairList, 2> pair_list;
+  computePairs(model, pair_list.data());
 
-  const PairList * pairs_mat_1 =
-      model.getNonLocalManager().getNeighborhood("mat_1").getPairLists();
-  const PairList * pairs_mat_2 =
-      model.getNonLocalManager().getNeighborhood("mat_2").getPairLists();
+  const auto & pairs_mat_1_not_ghost =
+      model.getNonLocalManager().getNeighborhood("mat_1").getPairLists(_not_ghost);
+  const auto & pairs_mat_1_ghost =
+      model.getNonLocalManager().getNeighborhood("mat_1").getPairLists(_ghost);
+  const auto & pairs_mat_2_not_ghost =
+      model.getNonLocalManager().getNeighborhood("mat_2").getPairLists(_not_ghost);
+  const auto & pairs_mat_2_ghost =
+      model.getNonLocalManager().getNeighborhood("mat_2").getPairLists(_ghost);
 
   /// compare the number of pairs
-  UInt nb_not_ghost_pairs_grid = pairs_mat_1[0].size() + pairs_mat_2[0].size();
-  UInt nb_ghost_pairs_grid = pairs_mat_1[1].size() + pairs_mat_2[1].size();
+  UInt nb_not_ghost_pairs_grid = pairs_mat_1_not_ghost.size() + pairs_mat_2_not_ghost.size();
+  UInt nb_ghost_pairs_grid = pairs_mat_1_ghost.size() + pairs_mat_2_ghost.size();
   UInt nb_not_ghost_pairs_no_grid = pair_list[0].size();
   UInt nb_ghost_pairs_no_grid = pair_list[1].size();
 
@@ -95,9 +99,9 @@ int main(int argc, char * argv[]) {
     return EXIT_FAILURE;
   }
 
-  for (UInt i = 0; i < pairs_mat_1[0].size(); ++i) {
+  for (UInt i = 0; i < pairs_mat_1_not_ghost.size(); ++i) {
     PairList::const_iterator it = std::find(
-        pair_list[0].begin(), pair_list[0].end(), (pairs_mat_1[0])[i]);
+        pair_list[0].begin(), pair_list[0].end(), (pairs_mat_1_not_ghost)[i]);
     if (it == pair_list[0].end()) {
       std::cout << "The pairs are not correct" << std::endl;
       finalize();
@@ -105,9 +109,9 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  for (UInt i = 0; i < pairs_mat_2[0].size(); ++i) {
+  for (UInt i = 0; i < pairs_mat_2_not_ghost.size(); ++i) {
     PairList::const_iterator it = std::find(
-        pair_list[0].begin(), pair_list[0].end(), (pairs_mat_2[0])[i]);
+        pair_list[0].begin(), pair_list[0].end(), (pairs_mat_2_not_ghost)[i]);
     if (it == pair_list[0].end()) {
       std::cout << "The pairs are not correct" << std::endl;
       finalize();
@@ -115,9 +119,9 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  for (UInt i = 0; i < pairs_mat_1[1].size(); ++i) {
+  for (UInt i = 0; i < pairs_mat_1_ghost.size(); ++i) {
     PairList::const_iterator it = std::find(
-        pair_list[1].begin(), pair_list[1].end(), (pairs_mat_1[1])[i]);
+        pair_list[1].begin(), pair_list[1].end(), (pairs_mat_1_ghost)[i]);
     if (it == pair_list[1].end()) {
       std::cout << "The pairs are not correct" << std::endl;
       finalize();
@@ -125,9 +129,9 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  for (UInt i = 0; i < pairs_mat_2[1].size(); ++i) {
+  for (UInt i = 0; i < pairs_mat_2_ghost.size(); ++i) {
     PairList::const_iterator it = std::find(
-        pair_list[1].begin(), pair_list[1].end(), (pairs_mat_2[1])[i]);
+        pair_list[1].begin(), pair_list[1].end(), (pairs_mat_2_ghost)[i]);
     if (it == pair_list[1].end()) {
       std::cout << "The pairs are not correct" << std::endl;
       finalize();
@@ -177,9 +181,7 @@ void computePairs(SolidMechanicsModel & model, PairList * pair_list) {
         q1.num_point = q_1;
         q1_coords = coord_it_1[q1.global_num];
         /// loop over all other quads and create pairs for this given quad
-        for (ghost_type_t::iterator gt = ghost_type_t::begin();
-             gt != ghost_type_t::end(); ++gt) {
-          GhostType ghost_type_2 = *gt;
+        for (auto ghost_type_2 : ghost_types) {
           q2.ghost_type = ghost_type_2;
 
           for (auto type_2 :

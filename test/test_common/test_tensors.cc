@@ -199,7 +199,7 @@ TEST_F(TensorFixture, VectorClear) {
   Vector<double> v(vref);
   compareToRef(v);
 
-  v.clear();
+  v.zero();
 
   for (int i = 0; i < size_; ++i)
     EXPECT_DOUBLE_EQ(0, v[i]);
@@ -454,7 +454,7 @@ TEST_F(TensorFixture, MatrixClear) {
   Matrix<double> m(mref);
   compareToRef(m);
 
-  m.clear();
+  m.zero();
 
   for (int i = 0; i < size_; ++i)
     EXPECT_DOUBLE_EQ(0, m[i]);

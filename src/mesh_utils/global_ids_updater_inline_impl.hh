@@ -34,8 +34,8 @@
 #include "mesh_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_HH__
-#define __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_HH__
+#ifndef AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_HH_
+#define AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -57,13 +57,16 @@ inline UInt GlobalIdsUpdater::getNbData(const Array<Element> & elements,
 inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
                                        const Array<Element> & elements,
                                        const SynchronizationTag & tag) const {
-  if (tag != SynchronizationTag::_giu_global_conn)
+  if (tag != SynchronizationTag::_giu_global_conn) {
     return;
+  }
+
+  int prank = mesh.getCommunicator().whoAmI();
 
   auto & global_nodes_ids = mesh.getGlobalNodesIds();
-  buffer << int(mesh.getCommunicator().whoAmI());
+  buffer << prank;
 
-  for (auto & element : elements) {
+  for (const auto & element : elements) {
     /// get element connectivity
     const Vector<UInt> current_conn =
         const_cast<const Mesh &>(mesh).getConnectivity(element);
@@ -87,8 +90,9 @@ inline void GlobalIdsUpdater::packData(CommunicationBuffer & buffer,
 inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
                                          const Array<Element> & elements,
                                          const SynchronizationTag & tag) {
-  if (tag != SynchronizationTag::_giu_global_conn)
+  if (tag != SynchronizationTag::_giu_global_conn) {
     return;
+  }
 
   MeshAccessor mesh_accessor(mesh);
   auto & global_nodes_ids = mesh_accessor.getNodesGlobalIds();
@@ -96,7 +100,7 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
   int proc;
   buffer >> proc;
 
-  for (auto & element : elements) {
+  for (const auto & element : elements) {
     /// get element connectivity
     Vector<UInt> current_conn =
         const_cast<const Mesh &>(mesh).getConnectivity(element);
@@ -108,15 +112,22 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
 #ifndef AKANTU_NDEBUG
       NodeFlag node_flag;
       buffer >> node_flag;
-      if (reduce)
+      if (reduce) {
         nodes_flags[node].push_back(std::make_pair(proc, node_flag));
+      }
 #endif
 
-      if (index == UInt(-1))
+      if (index == UInt(-1)) {
         continue;
+      }
 
       if (mesh.isSlaveNode(node)) {
-        global_nodes_ids(node) = index;
+        auto & gid = global_nodes_ids(node);
+        AKANTU_DEBUG_ASSERT(gid == UInt(-1) or gid == index,
+                            "The node already has a global id, from proc "
+                                << proc << ", different from the one received "
+                                << gid << " " << index);
+        gid = index;
         mesh_accessor.setNodePrank(node, proc);
       }
     }
@@ -125,4 +136,4 @@ inline void GlobalIdsUpdater::unpackData(CommunicationBuffer & buffer,
 
 } // namespace akantu
 
-#endif /* __AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_HH__ */
+#endif /* AKANTU_GLOBAL_IDS_UPDATER_INLINE_IMPL_HH_ */

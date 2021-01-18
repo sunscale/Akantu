@@ -30,8 +30,8 @@
 #include "solver_vector_default.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH__
-#define __AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH__
+#ifndef AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH_
+#define AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH_
 
 namespace akantu {
 
@@ -80,4 +80,4 @@ inline Int SolverVectorArrayTmpl<Array_>::localSize() const {
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH__ */
+#endif /* AKANTU_SOLVER_VECTOR_DEFAULT_TMPL_HH_ */

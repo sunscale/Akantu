@@ -30,8 +30,8 @@
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NODE_SYNCHRONIZER_INLINE_IMPL_HH__
-#define __AKANTU_NODE_SYNCHRONIZER_INLINE_IMPL_HH__
+#ifndef AKANTU_NODE_SYNCHRONIZER_INLINE_IMPL_HH_
+#define AKANTU_NODE_SYNCHRONIZER_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -52,4 +52,4 @@ inline UInt NodeSynchronizer::localToGlobalEntity(const UInt & local) {
 
 } // akantu
 
-#endif // __AKANTU_NODE_SYNCHRONIZER_INLINE_IMPL_HH__
+#endif // AKANTU_NODE_SYNCHRONIZER_INLINE_IMPL_HH_

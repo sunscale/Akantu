@@ -29,8 +29,8 @@
 #include "aka_array.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_VECTOR_HH__
-#define __AKANTU_SOLVER_VECTOR_HH__
+#ifndef AKANTU_SOLVER_VECTOR_HH_
+#define AKANTU_SOLVER_VECTOR_HH_
 
 namespace akantu {
 class DOFManager;
@@ -52,7 +52,8 @@ public:
   virtual void resize() = 0;
 
   // clear the vector
-  virtual void clear() = 0;
+  virtual void set(Real val) = 0;
+  void zero() { this->set({}); }
 
   virtual operator const Array<Real> &() const = 0;
 
@@ -83,4 +84,4 @@ inline std::ostream & operator<<(std::ostream & stream, SolverVector & _this) {
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_VECTOR_HH__ */
+#endif /* AKANTU_SOLVER_VECTOR_HH_ */

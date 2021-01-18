@@ -85,7 +85,7 @@ int main(int argc, char * argv[]) {
       .interpolateOnIntegrationPoints(position, quad_facets, spatial_dimension,
                                       type_facet);
 
-  Array<Element> & facet_to_element = mesh_facets.getSubelementToElement(type);
+  auto && facet_to_element = mesh_facets.getSubelementToElement(type);
   UInt nb_facet_per_elem = facet_to_element.getNbComponent();
 
   ElementTypeMapArray<Real> element_quad_facet;

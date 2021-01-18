@@ -28,8 +28,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__
-#define __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__
+#ifndef AKANTU_DUMPER_HOMOGENIZING_FIELD_HH_
+#define AKANTU_DUMPER_HOMOGENIZING_FIELD_HH_
 /* -------------------------------------------------------------------------- */
 #include "dumper_compute.hh"
 /* -------------------------------------------------------------------------- */
@@ -62,8 +62,8 @@ inline Matrix<type> typeConverter(const Matrix<type> & input,
 /* -------------------------------------------------------------------------- */
 
 template <typename type>
-inline Vector<type> typeConverter(const Vector<type> &, Vector<type> & res,
-                                  UInt) {
+inline Vector<type> typeConverter(const Vector<type> & /*unused*/,
+                                  Vector<type> & res, UInt /*unused*/) {
   return res;
 }
 
@@ -88,9 +88,11 @@ public:
 
     nb_data = nb_datas(*tit);
 
-    for (; tit != end; ++tit)
-      if (nb_data != nb_datas(*tit))
+    for (; tit != end; ++tit) {
+      if (nb_data != nb_datas(*tit)) {
         throw;
+      }
+    }
   }
 
   /* ------------------------------------------------------------------------ */
@@ -100,8 +102,9 @@ public:
   type func(const type & d, Element /*global_index*/) override {
     Vector<value_type> res(this->nb_data);
 
-    if (d.size() % this->nb_data)
+    if (d.size() % this->nb_data) {
       throw;
+    }
     UInt nb_to_average = d.size() / this->nb_data;
 
     value_type * ptr = d.storage();
@@ -198,4 +201,4 @@ HomogenizerProxy::createHomogenizer(Field & field) {
 } // namespace dumpers
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_HOMOGENIZING_FIELD_HH__ */
+#endif /* AKANTU_DUMPER_HOMOGENIZING_FIELD_HH_ */

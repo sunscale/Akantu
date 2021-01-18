@@ -32,8 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_IO_DIANA_HH__
-#define __AKANTU_MESH_IO_DIANA_HH__
+#ifndef AKANTU_MESH_IO_DIANA_HH_
+#define AKANTU_MESH_IO_DIANA_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "mesh_io.hh"
@@ -104,4 +104,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_IO_DIANA_HH__ */
+#endif /* AKANTU_MESH_IO_DIANA_HH_ */

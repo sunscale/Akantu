@@ -31,8 +31,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_SYNCHRONIZED_ARRAY_HH__
-#define __AST_SYNCHRONIZED_ARRAY_HH__
+#ifndef AST_SYNCHRONIZED_ARRAY_HH_
+#define AST_SYNCHRONIZED_ARRAY_HH_
 
 /* -------------------------------------------------------------------------- */
 // std
@@ -49,8 +49,8 @@ enum SyncChoice { _added, _deleted };
 /* -------------------------------------------------------------------------- */
 class SynchronizedArrayBase {
 public:
-  SynchronizedArrayBase(){};
-  ~SynchronizedArrayBase(){};
+  SynchronizedArrayBase() = default;
+  ~SynchronizedArrayBase() = default;
 
   virtual ID getID() const { return "call should be virtual"; };
 
@@ -65,15 +65,15 @@ class SynchronizedArray : public SynchronizedArrayBase, protected Array<T> {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  typedef typename Array<T>::value_type value_type;
-  typedef typename Array<T>::reference reference;
-  typedef typename Array<T>::pointer_type pointer_type;
-  typedef typename Array<T>::const_reference const_reference;
+  using value_type = typename Array<T>::value_type;
+  using reference = typename Array<T>::reference;
+  using pointer_type = typename Array<T>::pointer_type;
+  using const_reference = typename Array<T>::const_reference;
 
   SynchronizedArray(UInt size, UInt nb_component, const_reference value,
                     const ID & id, const_reference default_value,
-                    const std::string restart_name);
-  virtual ~SynchronizedArray(){};
+                    const std::string & restart_name);
+  ~SynchronizedArray() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -91,22 +91,22 @@ public:
   void syncElements(SyncChoice sync_choice);
 
   /// dump restart file
-  void dumpRestartFile(std::string file_name) const;
+  void dumpRestartFile(const std::string & file_name) const;
 
   /// read restart file
-  void readRestartFile(std::string file_name);
+  void readRestartFile(const std::string & file_name);
 
   /// register depending array
   void registerDependingArray(SynchronizedArrayBase & array);
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /// find position of element
   Int find(const T & elem) const { return Array<T>::find(elem); };
 
   /// set values to zero
-  inline void clear() { Array<T>::clear(); };
+  inline void zero() { Array<T>::zero(); };
   //  inline void clear() { memset(values, 0, size*nb_component*sizeof(T)); };
 
   /// set all entries of the array to the value t
@@ -135,8 +135,8 @@ public:
   UInt getNbComponent() const { return Array<T>::getNbComponent(); };
 
 protected:
-  UInt syncDeletedElements(std::vector<UInt> & del_elements);
-  UInt syncAddedElements(UInt nb_add_elements);
+  UInt syncDeletedElements(std::vector<UInt> & del_elements) override;
+  UInt syncAddedElements(UInt nb_add_elements) override;
 
   /* ------------------------------------------------------------------------ */
   /* Operators                                                                */
@@ -157,7 +157,7 @@ public:
 
   UInt size() const { return this->size_; };
 
-  ID getID() const { return Array<T>::getID(); };
+  ID getID() const override { return Array<T>::getID(); };
 
   const Array<T> & getArray() const {
     const Array<T> & a = *(dynamic_cast<const Array<T> *>(this));
@@ -199,4 +199,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* -------------------------------------------------------------------------- */
 #include "synchronized_array_inline_impl.hh"
 
-#endif /* __AST_SYNCHRONIZED_ARRAY_HH__ */
+#endif /* AST_SYNCHRONIZED_ARRAY_HH_ */

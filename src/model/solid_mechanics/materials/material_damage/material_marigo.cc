@@ -72,10 +72,7 @@ template <UInt spatial_dimension>
 void MaterialMarigo<spatial_dimension>::updateInternalParameters() {
   MaterialDamage<spatial_dimension>::updateInternalParameters();
   Yc = .5 * epsilon_c * this->E * epsilon_c;
-  if (std::abs(epsilon_c) > std::numeric_limits<Real>::epsilon())
-    yc_limit = true;
-  else
-    yc_limit = false;
+  yc_limit = (std::abs(epsilon_c) > std::numeric_limits<Real>::epsilon());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -84,8 +81,8 @@ void MaterialMarigo<spatial_dimension>::computeStress(ElementType el_type,
                                                       GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
-  Array<Real>::scalar_iterator dam = this->damage(el_type, ghost_type).begin();
-  Array<Real>::scalar_iterator Yd_q = this->Yd(el_type, ghost_type).begin();
+  auto dam = this->damage(el_type, ghost_type).begin();
+  auto Yd_q = this->Yd(el_type, ghost_type).begin();
 
   MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(el_type, ghost_type);
 

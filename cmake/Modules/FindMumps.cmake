@@ -144,6 +144,9 @@ function(mumps_add_dependency _pdep _libs)
       find_package(MPI REQUIRED C Fortran QUIET)
       set(${_libs} ${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES} PARENT_SCOPE)
     endif()
+  elseif(_pdep MATCHES "Threads")
+    find_package(Threads REQUIRED)
+    set(${_libs} Threads::Threads PARENT_SCOPE)
   else()
     find_package(${_pdep} REQUIRED QUIET)
     set(${_libs} ${${_u_pdep}_LIBRARIES} ${${_u_pdep}_LIBRARY} PARENT_SCOPE)
@@ -189,6 +192,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_symbol_mumps_common mumps_abort)
   set(_mumps_dep_symbol_pord SPACE_ordering)
   set(_mumps_dep_symbol_METIS metis_nodend)
+  set(_mumps_dep_symbol_Threads pthread_create)
   set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
 
   # added for fucking macosx that cannot fail at link
@@ -200,7 +204,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_comp_Scotch_esmumps COMPONENTS esmumps)
 
   set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
-    Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS)
+    Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS Threads)
   #===============================================================================
 
   set(_retry_try_run TRUE)

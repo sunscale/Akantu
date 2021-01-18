@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_EMBEDDED_INTERFACE_MODEL_HH__
-#define __AKANTU_EMBEDDED_INTERFACE_MODEL_HH__
+#ifndef AKANTU_EMBEDDED_INTERFACE_MODEL_HH_
+#define AKANTU_EMBEDDED_INTERFACE_MODEL_HH_
 
 #include "aka_common.hh"
 
@@ -102,12 +102,12 @@ public:
   void addDumpGroupFieldToDumper(const std::string & dumper_name,
                                  const std::string & field_id,
                                  const std::string & group_name,
-                                 const ElementKind & element_kind,
+                                 ElementKind element_kind,
                                  bool padding_flag) override;
 
   // virtual ElementTypeMap<UInt> getInternalDataPerElem(const std::string &
   // field_name,
-  //                                                     const ElementKind &
+  //                                                     ElementKind
   //                                                     kind);
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -152,4 +152,4 @@ public:
 
 } // namespace akantu
 
-#endif // __AKANTU_EMBEDDED_INTERFACE_MODEL_HH__
+#endif // AKANTU_EMBEDDED_INTERFACE_MODEL_HH_

@@ -35,8 +35,8 @@
 #include <vector>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TEST_COHESIVE_FIXTURE_HH__
-#define __AKANTU_TEST_COHESIVE_FIXTURE_HH__
+#ifndef AKANTU_TEST_COHESIVE_FIXTURE_HH_
+#define AKANTU_TEST_COHESIVE_FIXTURE_HH_
 
 using namespace akantu;
 
@@ -75,15 +75,15 @@ public:
   static constexpr size_t dim =
       ElementClass<cohesive_type>::getSpatialDimension();
 
-  void SetUp() override {
+  void SetUp()  {
     mesh = std::make_unique<Mesh>(this->dim);
     if (Communicator::getStaticCommunicator().whoAmI() == 0) {
-      ASSERT_NO_THROW({ mesh->read(this->mesh_name); });
+       mesh->read(this->mesh_name);
     }
     mesh->distribute();
   }
 
-  void TearDown() override {
+  void TearDown() {
     model.reset(nullptr);
     mesh.reset(nullptr);
   }
@@ -105,15 +105,17 @@ public:
     auto facet_type = mesh->getFacetType(this->cohesive_type);
 
     auto & fe_engine = model->getFEEngineBoundary();
-    auto & group = mesh->getElementGroup("insertion").getElements(facet_type);
+    const auto & group = mesh->getElementGroup("insertion");
+    group_size = group.size(_ghost_type = _not_ghost);
+    const auto & elements = group.getElements(facet_type);
     Array<Real> ones(fe_engine.getNbIntegrationPoints(facet_type) *
-                     group.size());
+                     group_size);
     ones.set(1.);
 
-    surface = fe_engine.integrate(ones, facet_type, _not_ghost, group);
+    surface = fe_engine.integrate(ones, facet_type, _not_ghost, elements);
     mesh->getCommunicator().allReduce(surface, SynchronizerOperation::_sum);
 
-    group_size = group.size();
+
 
     mesh->getCommunicator().allReduce(group_size, SynchronizerOperation::_sum);
 
@@ -154,8 +156,9 @@ public:
     auto & damage =
         model->getMaterial("insertion").getArray<Real>("damage", cohesive_type);
     for (auto d : damage) {
-      if (d >= .99)
+      if (d >= .99) {
         ++nb_damaged;
+      }
     }
 
     return (nb_damaged == group_size);
@@ -167,8 +170,9 @@ public:
     for (auto _ [[gnu::unused]] : arange(nb_steps)) {
       this->model->applyBC(functor, "loading");
       this->model->applyBC(functor, "fixed");
-      if (this->is_extrinsic)
+      if (this->is_extrinsic) {
         this->model->checkCohesiveStress();
+      }
 
       this->model->solveStep();
 #if debug_
@@ -199,8 +203,9 @@ public:
 
     auto speed = mat_el.getPushWaveSpeed(Element());
     auto direction = _y;
-    if (dim == 1)
+    if (dim == 1) {
       direction = _x;
+    }
     auto length =
         mesh->getUpperBounds()(direction) - mesh->getLowerBounds()(direction);
     nb_steps = length / speed / model->getTimeStep();
@@ -337,6 +342,6 @@ using coh_types = gtest_list_t<std::tuple<
     std::tuple<_element_type_cohesive_3d_16, _element_type_hexahedron_20,
                _element_type_hexahedron_20>*/>>;
 
-TYPED_TEST_SUITE(TestSMMCFixture, coh_types);
+TYPED_TEST_SUITE(TestSMMCFixture, coh_types, );
 
-#endif /* __AKANTU_TEST_COHESIVE_FIXTURE_HH__ */
+#endif /* AKANTU_TEST_COHESIVE_FIXTURE_HH_ */

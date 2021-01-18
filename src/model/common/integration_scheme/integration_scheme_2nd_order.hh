@@ -33,8 +33,8 @@
 #include "integration_scheme.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__
-#define __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__
+#ifndef AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH_
+#define AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH_
 
 namespace akantu {
 class SparseMatrix;
@@ -103,4 +103,4 @@ private:
 
 #include "newmark-beta.hh"
 
-#endif /* __AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH__ */
+#endif /* AKANTU_INTEGRATION_SCHEME_2ND_ORDER_HH_ */

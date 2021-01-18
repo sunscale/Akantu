@@ -32,8 +32,8 @@
 #include "element_class_structural.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_CLASS_KIRCHHOFF_SHELL_INLINE_IMPL_HH__
-#define __AKANTU_ELEMENT_CLASS_KIRCHHOFF_SHELL_INLINE_IMPL_HH__
+#ifndef AKANTU_ELEMENT_CLASS_KIRCHHOFF_SHELL_INLINE_IMPL_HH_
+#define AKANTU_ELEMENT_CLASS_KIRCHHOFF_SHELL_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -72,15 +72,17 @@ namespace detail {
 template <>
 inline void
 ElementClass<_discrete_kirchhoff_triangle_18>::computeRotationMatrix(
-    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> &) {
+    Matrix<Real> & R, const Matrix<Real> & X, const Vector<Real> & /*n*/) {
   auto dim = X.rows();
   Matrix<Real> P(dim, dim);
   detail::computeBasisChangeMatrix(P, X);
 
-  R.clear();
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  R.zero();
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       R(i + dim, j + dim) = R(i, j) = P(i, j);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -106,7 +108,9 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
   Vector<Real> X3 = X(2);
 
   std::array<Vector<Real>, 3> A = {X2 - X1, X3 - X2, X1 - X3};
-  std::array<Real, 3> L, C, S;
+  std::array<Real, 3> L;
+  std::array<Real, 3> C;
+  std::array<Real, 3> S;
 
   // Setting all last coordinates to 0
   std::for_each(A.begin(), A.end(), [](auto & a) { a(2) = 0; });
@@ -158,7 +162,7 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18>::computeDNDS(
       {3. / 2 * (dP(1, 0) * S[0] / L[0] - dP(1, 2) * S[2] / L[2]),
        3. / 2 * (dP(1, 1) * S[1] / L[1] - dP(1, 0) * S[0] / L[0]),
        3. / 2 * (dP(1, 2) * S[2] / L[2] - dP(1, 1) * S[1] / L[1])}};
-  Matrix<Real> dNy2 = dNx3;
+  const Matrix<Real> & dNy2 = dNx3;
   Matrix<Real> dNy3 = {
       // clang-format off
       {-1 - 3. / 4 * (dP(0, 0) * S[0] * S[0] + dP(0, 2) * S[2] * S[2]),
@@ -186,9 +190,15 @@ inline void
 InterpolationElement<_itp_discrete_kirchhoff_triangle_18,
                      _itk_structural>::arrangeInVoigt(const Matrix<Real> & dnds,
                                                       Matrix<Real> & B) {
-  Matrix<Real> dNm(2, 3), dNx1(2, 3), dNx2(2, 3), dNx3(2, 3), dNy1(2, 3),
-      dNy2(2, 3), dNy3(2, 3);
+  Matrix<Real> dNm(2, 3);
+  Matrix<Real> dNx1(2, 3);
+  Matrix<Real> dNx2(2, 3);
+  Matrix<Real> dNx3(2, 3);
+  Matrix<Real> dNy1(2, 3);
+  Matrix<Real> dNy2(2, 3);
+  Matrix<Real> dNy3(2, 3);
   UInt i = 0;
+
   for (Matrix<Real> * mat : {&dNm, &dNx1, &dNx2, &dNx3, &dNy1, &dNy2, &dNy3}) {
     *mat = dnds.block(0, i, 2, 3);
     i += mat->cols();
@@ -210,4 +220,4 @@ InterpolationElement<_itp_discrete_kirchhoff_triangle_18,
 
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_CLASS_KIRCHHOFF_SHELL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_ELEMENT_CLASS_KIRCHHOFF_SHELL_INLINE_IMPL_HH_ */

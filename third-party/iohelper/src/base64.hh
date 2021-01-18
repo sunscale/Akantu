@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __IOHLPER_BASE64_H__
-#define __IOHLPER_BASE64_H__
+#ifndef IOHELPER_BASE64_H_
+#define IOHELPER_BASE64_H_
 /* -------------------------------------------------------------------------- */
 #include <vector>
 #include "file_manager.hh"
@@ -39,7 +39,7 @@
 #endif
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 #if defined(__INTEL_COMPILER)
 #pragma warning ( push )
@@ -77,8 +77,7 @@ class Base64Writer{
   //! empty temporary buffer
   void ClearBuffer();
 
-  template<typename T>
-  inline void push(T c);
+  template <typename T> inline void push(T t);
 
   //! notify that we don't want to add any data. Closing the current buffer
   void finish();
@@ -134,10 +133,12 @@ template<typename T> inline void Base64Writer::push(T t) {
   }
 }
 
-template<> inline void Base64Writer::push<char *>(char * str) {
-  auto * c = (unsigned char *)str;
+template<> inline void Base64Writer::push<char *>(char * t) {
+  auto * c = (unsigned char *)t;
   for (unsigned int i = 0 ; i < 512 ; ++i){
-    if (str[i] == '\0') break;
+    if (t[i] == '\0') {
+      break;
+    }
     PushByteInBase64(c[i]);
   }
 }
@@ -226,7 +227,9 @@ inline void Base64Writer::PushByteInBase64(unsigned char c){
 
 
 inline void Base64Writer::finish(){
-  if (n == 0) return;
+  if (n == 0) {
+    return;
+  }
 
   dumpToBuffer();
   linelength = 0;
@@ -265,9 +268,9 @@ inline void Base64Writer::dumpToBuffer(){
 
   for(int i= 0;i<4;i++){
     //DUMP("dumped to buffer " << ogroup[i],DBG_ALL);
-    if (start == -1)
+    if (start == -1) {
       buffer.push_back(ogroup[i]);
-    else{
+    } else {
       buffer[start] = ogroup[i];
       ++start;
     }
@@ -290,15 +293,10 @@ inline void Base64Writer::dumpToBuffer(){
 
 inline int Base64Writer::Decode(char c0,char c1,char c2,char c3,
 				 char * r0,char * r1,char * r2){
-
-  unsigned char d0, d1, d2, d3;
-
-  d0 = dtable[0+c0];
-  d1 = dtable[0+c1];
-  d2 = dtable[0+c2];
-  d3 = dtable[0+c3];
-
-
+  auto d0 = dtable[0+c0];
+  auto d1 = dtable[0+c1];
+  auto d2 = dtable[0+c2];
+  auto d3 = dtable[0+c3];
 
   //DUMP("d0 " << (int)d0 << " d1 " << (int)d1 << " d2 " << (int)d2 << " d3 " << (int)d3,DBG_ALL);
 
@@ -369,13 +367,15 @@ inline void Base64Writer::WriteHeader(){
 
   //DUMP("placing number of writen bytes : " << nbBytes << " " << buffer.size(),DBG_ALL);
 
-  int temp = nbBytes;
+  auto temp = static_cast<int>(nbBytes);
   start = 0;
   push(temp);
-  if (nb > 1)
+  if (nb > 1) {
     push(byte[4]);
-  if (nb > 2)
+  }
+  if (nb > 2) {
     push(byte[5]);
+  }
 
   start = -1;
   nbBytes = temp;
@@ -430,9 +430,8 @@ inline Base64Writer::Base64Writer(File & f):
 
 
 
-__END_IOHELPER__
+}
 
 
 
-#endif /* __IOHLPER_BASE64_H__ */
-
+#endif /* IOHELPER_BASE64_H_ */

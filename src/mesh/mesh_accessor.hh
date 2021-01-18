@@ -32,8 +32,8 @@
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_ACCESSOR_HH__
-#define __AKANTU_MESH_ACCESSOR_HH__
+#ifndef AKANTU_MESH_ACCESSOR_HH_
+#define AKANTU_MESH_ACCESSOR_HH_
 
 namespace akantu {
 class NodeSynchronizer;
@@ -86,39 +86,81 @@ public:
   /// get a pointer to the coordinates Array
   inline auto getNodesSharedPtr() { return this->_mesh.nodes; }
 
-  /// get a pointer to the connectivity Array for the given type and create it
+  /// get the connectivities
+  inline auto & getConnectivities() { return this->_mesh.connectivities; }
+
+  /// get the connectivity Array for the given type and create it
   /// if necessary
-  inline auto & getConnectivity(const ElementType & type,
-                                const GhostType & ghost_type = _not_ghost) {
+  inline auto & getConnectivity(ElementType type,
+                                GhostType ghost_type = _not_ghost) {
     return this->_mesh.getConnectivityPointer(type, ghost_type);
   }
 
+  /// get the connectivity for the given element
+  inline decltype(auto) getConnectivity(const Element & element) {
+    return this->_mesh.getConnectivityNC(element);
+  }
+
   /// get the ghost element counter
-  inline auto & getGhostsCounters(const ElementType & type,
-                                  const GhostType & ghost_type = _ghost) {
+  inline auto & getGhostsCounters(ElementType type,
+                                  GhostType ghost_type = _ghost) {
     return this->_mesh.getGhostsCounters(type, ghost_type);
   }
 
-  /// get a pointer to the element_to_subelement Array for the given type and
+  /// get the element_to_subelement Array for the given type and
   /// create it if necessary
   inline auto &
-  getElementToSubelement(const ElementType & type,
-                         const GhostType & ghost_type = _not_ghost) {
+  getElementToSubelement(ElementType type,
+                         GhostType ghost_type = _not_ghost) {
     return this->_mesh.getElementToSubelementPointer(type, ghost_type);
   }
 
-  /// get a pointer to the subelement_to_element Array for the given type and
+  inline decltype(auto)
+  getElementToSubelementNC(const ElementType & type,
+                         const GhostType & ghost_type = _not_ghost) {
+    return this->_mesh.getElementToSubelementNC(type, ghost_type);
+  }
+
+  /// get the subelement_to_element Array for the given type and
   /// create it if necessary
   inline auto &
-  getSubelementToElement(const ElementType & type,
-                         const GhostType & ghost_type = _not_ghost) {
+  getSubelementToElement(ElementType type,
+                         GhostType ghost_type = _not_ghost) {
     return this->_mesh.getSubelementToElementPointer(type, ghost_type);
+  }
+
+  inline decltype(auto)
+  getSubelementToElementNC(const ElementType & type,
+                           const GhostType & ghost_type = _not_ghost) {
+    return this->_mesh.getSubelementToElementNC(type, ghost_type);
+  }
+
+  /// get  the element_to_subelement, creates it if necessary
+  inline decltype(auto) getElementToSubelement() {
+    return this->_mesh.getElementToSubelementNC();
+  }
+
+  /// get subelement_to_element, creates it if necessary
+  inline decltype(auto) getSubelementToElement() {
+    return this->_mesh.getSubelementToElementNC();
+  }
+
+  /// get a pointer to the element_to_subelement Array for element and
+  /// create it if necessary
+  inline decltype(auto) getElementToSubelement(const Element & element) {
+    return this->_mesh.getElementToSubelementNC(element);
+  }
+
+  /// get a pointer to the subelement_to_element Array for the given element and
+  /// create it if necessary
+  inline decltype(auto) getSubelementToElement(const Element & element) {
+    return this->_mesh.getSubelementToElementNC(element);
   }
 
   template <typename T>
   inline auto &
-  getData(const std::string & data_name, const ElementType & el_type,
-          const GhostType & ghost_type = _not_ghost, UInt nb_component = 1,
+  getData(const std::string & data_name, ElementType el_type,
+          GhostType ghost_type = _not_ghost, UInt nb_component = 1,
           bool size_to_nb_element = true, bool resize_with_parent = false) {
     return this->_mesh.getDataPointer<T>(data_name, el_type, ghost_type,
                                          nb_component, size_to_nb_element,
@@ -165,4 +207,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_ACCESSOR_HH__ */
+#endif /* AKANTU_MESH_ACCESSOR_HH_ */

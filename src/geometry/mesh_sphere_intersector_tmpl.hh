@@ -32,8 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__
-#define __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__
+#ifndef AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH_
+#define AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH_
 
 #include "aka_common.hh"
 #include "mesh_geom_common.hh"
@@ -211,4 +211,4 @@ void MeshSphereIntersector<dim, type>::computeMeshQueryIntersectionPoint(
 
 } // namespace akantu
 
-#endif // __AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH__
+#endif // AKANTU_MESH_SPHERE_INTERSECTOR_TMPL_HH_

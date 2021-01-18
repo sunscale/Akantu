@@ -36,8 +36,8 @@
 #include "material_damage.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_MAZARS_HH__
-#define __AKANTU_MATERIAL_MAZARS_HH__
+#ifndef AKANTU_MATERIAL_MAZARS_HH_
+#define AKANTU_MATERIAL_MAZARS_HH_
 
 namespace akantu {
 
@@ -121,4 +121,4 @@ protected:
 
 #include "material_mazars_inline_impl.hh"
 
-#endif /* __AKANTU_MATERIAL_MAZARS_HH__ */
+#endif /* AKANTU_MATERIAL_MAZARS_HH_ */

@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__
-#define __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__
+#ifndef AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH_
+#define AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -109,4 +109,4 @@ operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH__ */
+#endif /* AST_NTN_FRICREG_SIMPLIFIED_PRAKASH_CLIFTON_HH_ */

@@ -40,8 +40,8 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_GRID_DYNAMIC_HH__
-#define __AKANTU_AKA_GRID_DYNAMIC_HH__
+#ifndef AKANTU_AKA_GRID_DYNAMIC_HH_
+#define AKANTU_AKA_GRID_DYNAMIC_HH_
 
 namespace akantu {
 
@@ -70,7 +70,7 @@ public:
 
   class CellID {
   public:
-    CellID() : ids() {}
+    CellID() = default;
     explicit CellID(UInt dimention) : ids(dimention) {}
     void setID(UInt dir, Int id) { ids(dir) = id; }
     Int getID(UInt dir) const { return ids(dir); }
@@ -95,22 +95,25 @@ public:
           : cell_id(cell_id), position(cell_id.ids.size(), end ? 1 : -1) {
 
         this->updateIt();
-        if (end)
+        if (end) {
           this->it++;
+        }
       }
 
       neighbor_cells_iterator & operator++() {
         UInt i = 0;
-        for (; i < position.size() && position(i) == 1; ++i)
+        for (; i < position.size() && position(i) == 1; ++i) {
           ;
+        }
 
         if (i == position.size()) {
           ++it;
           return *this;
         }
 
-        for (UInt j = 0; j < i; ++j)
+        for (UInt j = 0; j < i; ++j) {
           position(j) = -1;
+        }
         position(i)++;
         updateIt();
 
@@ -139,8 +142,9 @@ public:
     private:
       void updateIt() {
         it = 0;
-        for (UInt i = 0; i < position.size(); ++i)
+        for (UInt i = 0; i < position.size(); ++i) {
           it = it * 3 + (position(i) + 1);
+        }
       }
 
     private:
@@ -204,36 +208,41 @@ private:
 public:
   const Cell & getCell(const CellID & cell_id) const {
     auto it = cells.find(cell_id);
-    if (it != cells.end())
+    if (it != cells.end()) {
       return it->second;
+    }
     return empty_cell;
   }
 
   decltype(auto) beginCell(const CellID & cell_id) {
     auto it = cells.find(cell_id);
-    if (it != cells.end())
+    if (it != cells.end()) {
       return it->second.begin();
+    }
     return empty_cell.begin();
   }
 
   decltype(auto) endCell(const CellID & cell_id) {
     auto it = cells.find(cell_id);
-    if (it != cells.end())
+    if (it != cells.end()) {
       return it->second.end();
+    }
     return empty_cell.end();
   }
 
   decltype(auto) beginCell(const CellID & cell_id) const {
     auto it = cells.find(cell_id);
-    if (it != cells.end())
+    if (it != cells.end()) {
       return it->second.begin();
+    }
     return empty_cell.begin();
   }
 
   decltype(auto) endCell(const CellID & cell_id) const {
     auto it = cells.find(cell_id);
-    if (it != cells.end())
+    if (it != cells.end()) {
       return it->second.end();
+    }
     return empty_cell.end();
   }
 
@@ -282,15 +291,16 @@ public:
       for (UInt i = 0; i < dimension; ++i) {
         Real posl = center(i) + cell_id.getID(i) * spacing(i);
         Real posu = posl + spacing(i);
-        if (posl < lower(i))
+        if (posl < lower(i)) {
           lower(i) = posl;
-        if (posu > upper(i))
+        }
+        if (posu > upper(i)) {
           upper(i) = posu;
+        }
       }
       return tmp;
-    } else {
-      return it->second.add(d);
     }
+    return it->second.add(d);
   }
 
   /* ------------------------------------------------------------------------ */
@@ -315,8 +325,9 @@ public:
 
   void printself(std::ostream & stream, int indent = 0) const {
     std::string space;
-    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT) {
       ;
+    }
 
     std::streamsize prec = stream.precision();
     std::ios_base::fmtflags ff = stream.flags();
@@ -329,29 +340,33 @@ public:
     stream << space << " + dimension    : " << this->dimension << std::endl;
     stream << space << " + lower bounds : {";
     for (UInt i = 0; i < lower.size(); ++i) {
-      if (i != 0)
+      if (i != 0) {
         stream << ", ";
+      }
       stream << lower(i);
     };
     stream << "}" << std::endl;
     stream << space << " + upper bounds : {";
     for (UInt i = 0; i < upper.size(); ++i) {
-      if (i != 0)
+      if (i != 0) {
         stream << ", ";
+      }
       stream << upper(i);
     };
     stream << "}" << std::endl;
     stream << space << " + spacing : {";
     for (UInt i = 0; i < spacing.size(); ++i) {
-      if (i != 0)
+      if (i != 0) {
         stream << ", ";
+      }
       stream << spacing(i);
     };
     stream << "}" << std::endl;
     stream << space << " + center : {";
     for (UInt i = 0; i < center.size(); ++i) {
-      if (i != 0)
+      if (i != 0) {
         stream << ", ";
+      }
       stream << center(i);
     };
     stream << "}" << std::endl;
@@ -425,7 +440,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
-  
+
   ElementType type = _not_defined;
   switch (dimension) {
   case 1:
@@ -452,11 +467,13 @@ template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
     UInt cur_elem = connectivity.size();
     const CellID & cell_id = cell_pair.first;
 
-    for (UInt i = 0; i < dimension; ++i)
+    for (UInt i = 0; i < dimension; ++i) {
       pos(i) = center(i) + cell_id.getID(i) * spacing(i);
+    }
     nodes.push_back(pos);
-    for (UInt i = 0; i < dimension; ++i)
+    for (UInt i = 0; i < dimension; ++i) {
       pos(i) += spacing(i);
+    }
     nodes.push_back(pos);
 
     connectivity.push_back(cur_node);
@@ -509,4 +526,4 @@ template <typename T> void SpatialGrid<T>::saveAsMesh(Mesh & mesh) const {
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_GRID_DYNAMIC_HH__ */
+#endif /* AKANTU_AKA_GRID_DYNAMIC_HH_ */

@@ -19,8 +19,8 @@
 #include "plane_stress_toolbox.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_IGFEM_ELASTIC_HH__
-#define __AKANTU_MATERIAL_IGFEM_ELASTIC_HH__
+#ifndef AKANTU_MATERIAL_IGFEM_ELASTIC_HH_
+#define AKANTU_MATERIAL_IGFEM_ELASTIC_HH_
 
 namespace akantu {
 
@@ -61,7 +61,7 @@ public:
                              GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
-  virtual void computeTangentModuli(const ElementType & el_type,
+  virtual void computeTangentModuli(ElementType el_type,
                                     Array<Real> & tangent_matrix,
                                     GhostType ghost_type = _not_ghost);
 
@@ -126,4 +126,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_IGFEM_ELASTIC_HH__ */
+#endif /* AKANTU_MATERIAL_IGFEM_ELASTIC_HH_ */

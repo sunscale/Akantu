@@ -36,8 +36,8 @@
 #include <fstream>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH__
-#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH__
+#ifndef AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH_
+#define AKANTU_NON_LOCAL_NEIGHBORHOOD_TMPL_HH_
 
 namespace akantu {
 
@@ -45,7 +45,7 @@ namespace akantu {
 template <class WeightFunction>
 template <class Func>
 inline void NonLocalNeighborhood<WeightFunction>::foreach_weight(
-    const GhostType & ghost_type, Func && func) {
+    GhostType ghost_type, Func && func) {
   auto weight_it =
       pair_weight[ghost_type]->begin(pair_weight[ghost_type]->getNbComponent());
 
@@ -59,7 +59,7 @@ inline void NonLocalNeighborhood<WeightFunction>::foreach_weight(
 template <class WeightFunction>
 template <class Func>
 inline void NonLocalNeighborhood<WeightFunction>::foreach_weight(
-    const GhostType & ghost_type, Func && func) const {
+    GhostType ghost_type, Func && func) const {
   auto weight_it =
       pair_weight[ghost_type]->begin(pair_weight[ghost_type]->getNbComponent());
 
@@ -122,7 +122,7 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
     /// resize the array to the correct size
     pair_weight[ghost_type]->resize(pair_list[ghost_type].size());
     /// set entries to zero
-    pair_weight[ghost_type]->clear();
+    pair_weight[ghost_type]->zero();
 
     /// loop over all pairs in the current pair list array and their
     /// corresponding weights
@@ -169,8 +169,9 @@ void NonLocalNeighborhood<WeightFunction>::computeWeights() {
         Real w2 = this->weight_function->operator()(r, q2, q1);
         weight(1) = q1_wJ * w2;
         quad_volumes_2(q2.global_num) += weight(1);
-      } else
+      } else {
         weight(1) = 0.;
+      }
     }
   }
 
@@ -217,9 +218,10 @@ void NonLocalNeighborhood<WeightFunction>::saveWeights(
 
     Array<Real> & weights = *(pair_weight[ghost_type]);
     auto weights_it = weights.begin(2);
-    for (UInt i = 0; i < weights.size(); ++i, ++weights_it)
+    for (UInt i = 0; i < weights.size(); ++i, ++weights_it) {
       pout << "w1: " << (*weights_it)(0) << " w2: " << (*weights_it)(1)
            << std::endl;
+    }
   }
 }
 
@@ -227,12 +229,13 @@ void NonLocalNeighborhood<WeightFunction>::saveWeights(
 template <class WeightFunction>
 void NonLocalNeighborhood<WeightFunction>::weightedAverageOnNeighbours(
     const ElementTypeMapReal & to_accumulate, ElementTypeMapReal & accumulated,
-    UInt nb_degree_of_freedom, const GhostType & ghost_type2) const {
+    UInt nb_degree_of_freedom, GhostType ghost_type2) const {
 
   auto it = non_local_variables.find(accumulated.getName());
   // do averaging only for variables registered in the neighborhood
-  if (it == non_local_variables.end())
+  if (it == non_local_variables.end()) {
     return;
+  }
 
   foreach_weight(
       ghost_type2,

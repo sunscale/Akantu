@@ -88,11 +88,12 @@ void initialize(const std::string & input_file, int & argc, char **& argv) {
   static_argparser.parse(argc, argv, cppargparse::_remove_parsed);
 
   std::string infile = static_argparser["aka_input_file"];
-  if (infile == "")
+  if (infile.empty()) {
     infile = input_file;
+  }
   debug::debugger.printBacktrace(static_argparser["aka_print_backtrace"]);
 
-  if ("" != infile) {
+  if (not infile.empty()) {
     readInputFile(infile);
   }
 
@@ -155,7 +156,7 @@ std::unique_ptr<Communicator> Communicator::static_communicator;
 
 std::ostream & operator<<(std::ostream & stream, NodeFlag flag) {
   using under = std::underlying_type_t<NodeFlag>;
-  int digits = std::log(std::numeric_limits<under>::max() + 1) / std::log(16);
+  auto digits = static_cast<int>(std::log(std::numeric_limits<under>::max() + 1) / std::log(16));
   std::ios_base::fmtflags ff;
   ff = stream.flags();
   auto value = static_cast<std::common_type_t<under, unsigned int>>(flag);

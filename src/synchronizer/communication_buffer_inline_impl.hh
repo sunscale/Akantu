@@ -29,12 +29,14 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "communication_buffer.hh"
+#include <cstring>
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <bool is_static>
 template <typename T>
-inline UInt CommunicationBufferTemplated<is_static>::sizeInBuffer(const T &) {
+inline UInt
+CommunicationBufferTemplated<is_static>::sizeInBuffer(const T & /*unused*/) {
   return sizeof(T);
 }
 
@@ -76,8 +78,9 @@ inline void CommunicationBufferTemplated<is_static>::packResize(UInt size) {
     char * values = buffer.storage();
     auto nb_packed = ptr_pack - values;
 
-    if (buffer.size() > nb_packed + size)
+    if (buffer.size() > nb_packed + size) {
       return;
+    }
 
     buffer.resize(nb_packed + size);
     ptr_pack = buffer.storage() + nb_packed;
@@ -95,7 +98,7 @@ CommunicationBufferTemplated<is_static>::operator<<(const T & to_pack) {
   AKANTU_DEBUG_ASSERT(
       (buffer.storage() + buffer.size()) >= (ptr_pack + size),
       "Packing too much data in the CommunicationBufferTemplated");
-  memcpy(ptr_pack, reinterpret_cast<const char *>(&to_pack), size);
+  std::memcpy(ptr_pack, reinterpret_cast<const char *>(&to_pack), size);
   ptr_pack += size;
   return *this;
 }
@@ -197,8 +200,9 @@ inline void CommunicationBufferTemplated<is_static>::packIterable(T & to_pack) {
   operator<<(size_t(to_pack.size()));
   auto it = to_pack.begin();
   auto end = to_pack.end();
-  for (; it != end; ++it)
+  for (; it != end; ++it) {
     operator<<(*it);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,8 +215,9 @@ CommunicationBufferTemplated<is_static>::unpackIterable(T & to_unpack) {
   to_unpack.resize(size);
   auto it = to_unpack.begin();
   auto end = to_unpack.end();
-  for (; it != end; ++it)
+  for (; it != end; ++it) {
     operator>>(*it);
+  }
 }
 
 /**
@@ -292,7 +297,7 @@ inline void CommunicationBufferTemplated<is_static>::resize(UInt size) {
   }
   reset();
 #ifndef AKANTU_NDEBUG
-  clear();
+  zero();
 #endif
 }
 
@@ -309,8 +314,8 @@ inline void CommunicationBufferTemplated<is_static>::reserve(UInt size) {
 
 /* -------------------------------------------------------------------------- */
 template <bool is_static>
-inline void CommunicationBufferTemplated<is_static>::clear() {
-  buffer.clear();
+inline void CommunicationBufferTemplated<is_static>::zero() {
+  buffer.zero();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -320,18 +325,4 @@ inline void CommunicationBufferTemplated<is_static>::reset() {
   ptr_unpack = buffer.storage();
 }
 
-/* -------------------------------------------------------------------------- */
-// template<bool is_static>
-// inline CommunicationBufferTemplated<is_static> &
-// CommunicationBufferTemplated<is_static>::packMeshData (const MeshData &
-// to_pack, const ElementType & type) {
-
-// UInt size = to_pack.size();
-// operator<<(size);
-// typename std::vector<T>::iterator it  = to_pack.begin();
-// typename std::vector<T>::iterator end = to_pack.end();
-// for(;it != end; ++it) operator<<(*it);
-// return *this;
-
-//}
 } // namespace akantu

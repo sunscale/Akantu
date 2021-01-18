@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__
-#define __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__
+#ifndef AST_NTN_FRICREG_RUBIN_AMPUERO_HH_
+#define AST_NTN_FRICREG_RUBIN_AMPUERO_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -98,4 +98,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTN_FRICREG_RUBIN_AMPUERO_HH__ */
+#endif /* AST_NTN_FRICREG_RUBIN_AMPUERO_HH_ */

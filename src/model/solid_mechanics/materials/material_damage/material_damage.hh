@@ -34,8 +34,8 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_DAMAGE_HH__
-#define __AKANTU_MATERIAL_DAMAGE_HH__
+#ifndef AKANTU_MATERIAL_DAMAGE_HH_
+#define AKANTU_MATERIAL_DAMAGE_HH_
 
 namespace akantu {
 template <UInt spatial_dimension,
@@ -55,7 +55,7 @@ public:
   void initMaterial() override;
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override;
 
@@ -109,4 +109,4 @@ protected:
 
 #include "material_damage_tmpl.hh"
 
-#endif /* __AKANTU_MATERIAL_DAMAGE_HH__ */
+#endif /* AKANTU_MATERIAL_DAMAGE_HH_ */

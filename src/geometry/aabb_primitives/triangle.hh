@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TRIANGLE_HH__
-#define __AKANTU_TRIANGLE_HH__
+#ifndef AKANTU_TRIANGLE_HH_
+#define AKANTU_TRIANGLE_HH_
 
 #include "aka_common.hh"
 
@@ -42,18 +42,23 @@ namespace akantu {
 
 /// Class used for substitution of CGAL::Triangle_3 primitive
 template <typename K> class Triangle : public CGAL::Triangle_3<K> {
+  using parent = CGAL::Triangle_3<K>;
+
 public:
   /// Default constructor
-  Triangle() : CGAL::Triangle_3<K>(), meshId(0) {}
+  Triangle() = default;
 
   /// Copy constructor
-  Triangle(const Triangle & other)
-      : CGAL::Triangle_3<K>(other), meshId(other.meshId) {}
+  Triangle(const Triangle & other) = default;
+  Triangle(Triangle && other) noexcept = default;
+
+  Triangle & operator=(const Triangle & other) = default;
+  Triangle & operator=(Triangle && other) noexcept = default;
 
   /// Construct from 3 points
   Triangle(const CGAL::Point_3<K> & a, const CGAL::Point_3<K> & b,
            const CGAL::Point_3<K> & c)
-      : CGAL::Triangle_3<K>(a, b, c), meshId(0) {}
+      : parent(a, b, c) {}
 
 public:
   UInt id() const { return meshId; }
@@ -61,9 +66,9 @@ public:
 
 protected:
   /// Id of the element represented by the primitive
-  UInt meshId;
+  UInt meshId{0};
 };
 
 } // namespace akantu
 
-#endif // __AKANTU_TRIANGLE_HH__
+#endif // AKANTU_TRIANGLE_HH_

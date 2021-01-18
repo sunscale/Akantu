@@ -64,8 +64,9 @@ void PeriodicNodeSynchronizer::update() {
     }
   }
 
-  if (not mesh.isDistributed() or nb_proc == 1)
+  if (not mesh.isDistributed() or nb_proc == 1) {
     return;
+  }
 
   std::map<Int, Array<UInt>> buffers;
   for (auto node : masters_to_receive) {
@@ -76,7 +77,7 @@ void PeriodicNodeSynchronizer::update() {
     buffers[proc].push_back(mesh.getNodeGlobalId(node));
   }
 
-  auto tag = Tag::genTag(0, count, Tag::_MODIFY_SCHEME);
+  auto tag = Tag::genTag(0, count, Tag::_modify_scheme);
   std::vector<CommunicationRequest> requests;
   for (auto && data : buffers) {
     auto proc = std::get<0>(data);

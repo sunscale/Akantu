@@ -94,8 +94,9 @@ template <typename T> std::string printMemorySize(UInt size) {
   Real real_size = size * sizeof(T);
 
   UInt mult = 0;
-  if (real_size != 0)
+  if (real_size != 0) {
     mult = (std::log(real_size) / std::log(2)) / 10;
+  }
 
   std::stringstream sstr;
 

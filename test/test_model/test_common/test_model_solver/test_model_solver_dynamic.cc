@@ -100,8 +100,8 @@ int main(int argc, char * argv[]) {
 
   MyModel model(F, mesh, _explicit, dof_manager_type);
 
-  model.forces.clear();
-  model.blocked.clear();
+  model.forces.zero();
+  model.blocked.zero();
 
   model.applyBC(Sinusoidal(model, A, pulse_width, 0.), "all");
   model.applyBC(BC::Dirichlet::FlagOnly(_x), "border");
@@ -134,7 +134,7 @@ int main(int argc, char * argv[]) {
   }
   Real wext = 0.;
 
-  model.getDOFManager().clearResidual();
+  model.getDOFManager().zeroResidual();
   model.assembleResidual();
 
   Real epot = 0; // model.getPotentialEnergy();

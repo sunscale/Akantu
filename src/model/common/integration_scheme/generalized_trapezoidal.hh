@@ -32,8 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_GENERALIZED_TRAPEZOIDAL_HH__
-#define __AKANTU_GENERALIZED_TRAPEZOIDAL_HH__
+#ifndef AKANTU_GENERALIZED_TRAPEZOIDAL_HH_
+#define AKANTU_GENERALIZED_TRAPEZOIDAL_HH_
 
 #include "integration_scheme_1st_order.hh"
 
@@ -88,7 +88,7 @@ public:
                  Array<Real> & u_dot, const Array<bool> & blocked_dofs,
                  const Array<Real> & delta) const override;
 
-  void assembleJacobian(const SolutionType & type, Real time_step) override;
+  void assembleJacobian(const SolutionType & type, Real delta_t) override;
 
 public:
   /// the coeffichent \f$ b \f$ in the description
@@ -158,4 +158,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_GENERALIZED_TRAPEZOIDAL_HH__ */
+#endif /* AKANTU_GENERALIZED_TRAPEZOIDAL_HH_ */

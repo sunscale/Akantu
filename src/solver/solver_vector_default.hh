@@ -31,8 +31,8 @@
 #include <utility>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_VECTOR_DEFAULT_HH__
-#define __AKANTU_SOLVER_VECTOR_DEFAULT_HH__
+#ifndef AKANTU_SOLVER_VECTOR_DEFAULT_HH_
+#define AKANTU_SOLVER_VECTOR_DEFAULT_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -45,7 +45,7 @@ public:
   SolverVectorArray(DOFManagerDefault & dof_manager, const ID & id);
   SolverVectorArray(const SolverVectorArray & vector, const ID & id);
 
-  virtual ~SolverVectorArray() = default;
+  ~SolverVectorArray() override = default;
 
   virtual Array<Real> & getVector() = 0;
   virtual const Array<Real> & getVector() const = 0;
@@ -92,10 +92,10 @@ public:
     ++this->release_;
   }
 
-  void clear() override {
-    static_assert(not std::is_const<std::remove_reference_t<Array_>>::value,
+  void set(Real val) override {
+      static_assert(not std::is_const<std::remove_reference_t<Array_>>::value,
                   "Cannot clear a const Array");
-    this->vector.clear();
+    this->vector.set(val);
     ++this->release_;
   }
 
@@ -137,4 +137,4 @@ decltype(auto) make_solver_vector_default_wrap(DOFManagerDefault & dof_manager,
 #include "solver_vector_default_tmpl.hh"
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_SOLVER_VECTOR_DEFAULT_HH__ */
+#endif /* AKANTU_SOLVER_VECTOR_DEFAULT_HH_ */

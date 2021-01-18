@@ -1,4 +1,12 @@
-Checks:          '-modernize-use-trailing-return-type, modernize-use-*, performance-*'
+Checks: "
+        modernize-use-*, -modernize-use-trailing-return-type*,
+        performance-*,
+        mpi-*,
+        openmp-*,
+        bugprone-*,
+        readability-*, -readability-magic-numbers, -readability-redundant-access-specifiers,
+        -clang-analyzer-*
+        "
 AnalyzeTemporaryDtors: false
-HeaderFilterRegex: 'src/.*'
-FormatStyle:     file
+HeaderFilterRegex:     'src/.*'
+FormatStyle:           file

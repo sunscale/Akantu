@@ -44,10 +44,6 @@
 /* -------------------------------------------------------------------------- */
 #include <iostream>
 #include <limits>
-/* -------------------------------------------------------------------------- */
-#if defined(AKANTU_DEBUG_TOOLS)
-#include "aka_debug_tools.hh"
-#endif
 
 namespace akantu {
 
@@ -65,18 +61,11 @@ namespace debug {
   std::ostream & _akantu_cout = std::cout;
 
   /// parallel context used in debug messages
-  std::string _parallel_context = "";
+  std::string _parallel_context;
 
   Debugger debugger;
 
-#if defined(AKANTU_DEBUG_TOOLS)
-  DebugElementManager element_manager;
-#endif
 } // namespace debug
-
-/* -------------------------------------------------------------------------- */
-/// list of ghost iterable types
-ghost_type_t ghost_types(_casper);
 
 /* -------------------------------------------------------------------------- */
 /// Paser for commandline arguments
@@ -97,8 +86,8 @@ const UInt _all_dimensions [[gnu::unused]] = UInt(-1);
 const Array<UInt> empty_filter(0, 1, "empty_filter");
 
 /* -------------------------------------------------------------------------- */
-template <> long int RandomGenerator<UInt>::_seed = 5489u;
-template <> std::default_random_engine RandomGenerator<UInt>::generator(5489u);
+template <> long int RandomGenerator<UInt>::_seed = 5489U;
+template <> std::default_random_engine RandomGenerator<UInt>::generator(5489U);
 /* -------------------------------------------------------------------------- */
 int Tag::max_tag = 0;
 

@@ -34,8 +34,8 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SYNCHRONIZER_REGISTRY_HH__
-#define __AKANTU_SYNCHRONIZER_REGISTRY_HH__
+#ifndef AKANTU_SYNCHRONIZER_REGISTRY_HH_
+#define AKANTU_SYNCHRONIZER_REGISTRY_HH_
 
 namespace akantu {
 class DataAccessorBase;
@@ -86,4 +86,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_SYNCHRONIZER_REGISTRY_HH__ */
+#endif /* AKANTU_SYNCHRONIZER_REGISTRY_HH_ */

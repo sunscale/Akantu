@@ -60,10 +60,11 @@ std::unique_ptr<MeshIO> MeshIO::getMeshIO(const std::string & filename,
       t = _miot_gmsh;
     } else if (ext == "diana") {
       t = _miot_diana;
-    } else
+    } else {
       AKANTU_EXCEPTION("Cannot guess the type of file of "
                        << filename << " (ext " << ext << "). "
                        << "Please provide the MeshIOType to the read function");
+    }
   }
 
   switch (t) {
@@ -96,14 +97,14 @@ void MeshIO::write(const std::string & filename, Mesh & mesh,
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
-  if (!physical_names.empty()) {
+  if (not physical_names.empty()) {
     for (auto type : mesh.elementTypes()) {
       auto & name_vec =
           mesh.getDataPointer<std::string>("physical_names", type);
 
       const auto & tags_vec = mesh.getData<UInt>(tag_name, type);
 
-      for (auto pair : zip(tags_vec, name_vec)) {
+      for (auto && pair : zip(tags_vec, name_vec)) {
         auto tag = std::get<0>(pair);
         auto & name = std::get<1>(pair);
         auto map_it = physical_names.find(tag);
@@ -123,11 +124,11 @@ void MeshIO::constructPhysicalNames(const std::string & tag_name, Mesh & mesh) {
 
 /* -------------------------------------------------------------------------- */
 void MeshIO::printself(std::ostream & stream, int indent) const {
-  std::string space(AKANTU_INDENT, indent);
+  std::string space(indent, AKANTU_INDENT);
 
-  if (physical_names.size()) {
+  if (not physical_names.empty()) {
     stream << space << "Physical map:" << std::endl;
-    for (auto & pair : physical_names) {
+    for (const auto & pair : physical_names) {
       stream << space << pair.first << ": " << pair.second << std::endl;
     }
   }

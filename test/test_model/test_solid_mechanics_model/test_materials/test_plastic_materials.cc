@@ -172,7 +172,7 @@ namespace {
 template <typename T>
 class TestPlasticMaterialFixture : public ::TestMaterialFixture<T> {};
 
-TYPED_TEST_SUITE(TestPlasticMaterialFixture, mat_types);
+TYPED_TEST_SUITE(TestPlasticMaterialFixture, mat_types, );
 
 TYPED_TEST(TestPlasticMaterialFixture, ComputeStress) {
   this->material->testComputeStress();

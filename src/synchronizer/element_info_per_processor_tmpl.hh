@@ -34,8 +34,8 @@
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
-#define __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__
+#ifndef AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH_
+#define AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH_
 
 namespace akantu {
 
@@ -130,8 +130,8 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
       AKANTU_DEBUG_ASSERT(e < mesh.getNbElement(type, ghost_type),
                           "The mesh does not have the element " << e);
 
-      for (auto && element : element_to_group) {
-        mesh.getElementGroup(element).add(el, false, false);
+      for (auto && group : element_to_group) {
+        mesh.getElementGroup(group).add(el, false, false);
       }
     }
   }
@@ -143,4 +143,4 @@ void ElementInfoPerProc::fillElementGroupsFromBuffer(
 
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH__ */
+#endif /* AKANTU_ELEMENT_INFO_PER_PROCESSOR_TMPL_HH_ */

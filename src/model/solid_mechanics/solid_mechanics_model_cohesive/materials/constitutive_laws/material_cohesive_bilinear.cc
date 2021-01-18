@@ -77,17 +77,19 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
   bool scale_traction = false;
 
   // don't scale sigma_c if volume_s hasn't been specified by the user
-  if (!Math::are_float_equal(this->volume_s, 0.))
+  if (!Math::are_float_equal(this->volume_s, 0.)) {
     scale_traction = true;
+  }
 
   Array<Element>::const_scalar_iterator el_it = element_list.begin();
   Array<Element>::const_scalar_iterator el_end = element_list.end();
 
   for (; el_it != el_end; ++el_it) {
     // filter not ghost cohesive elements
-    if (el_it->ghost_type != _not_ghost ||
-        Mesh::getKind(el_it->type) != _ek_cohesive)
+    if ((el_it->ghost_type != _not_ghost) or
+        (Mesh::getKind(el_it->type) != _ek_cohesive)) {
       continue;
+    }
 
     UInt index = el_it->element;
     ElementType type = el_it->type;
@@ -102,8 +104,9 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
         nb_quad_per_element, nb_element);
     Vector<Real> delta_c_vec = delta_c_begin[index];
 
-    if (scale_traction)
+    if (scale_traction) {
       scaleTraction(*el_it, sigma_c_vec);
+    }
 
     /**
      * Recompute sigma_c as
@@ -114,10 +117,11 @@ void MaterialCohesiveBilinear<spatial_dimension>::onElementsAdded(
     for (UInt q = 0; q < nb_quad_per_element; ++q) {
       delta_c_vec(q) = 2 * this->G_c / sigma_c_vec(q);
 
-      if (delta_c_vec(q) - delta_0 < Math::getTolerance())
+      if (delta_c_vec(q) - delta_0 < Math::getTolerance()) {
         AKANTU_ERROR("delta_0 = " << delta_0 << " must be lower than delta_c = "
                                   << delta_c_vec(q)
                                   << ", modify your material file");
+      }
 
       sigma_c_vec(q) *= delta_c_vec(q) / (delta_c_vec(q) - delta_0);
     }
@@ -160,8 +164,9 @@ void MaterialCohesiveBilinear<spatial_dimension>::scaleTraction(
     // loop over elements connected to each facet
     for (; elem != elem_end; ++elem) {
       // skip cohesive elements and dummy elements
-      if (*elem == ElementNull || Mesh::getKind(elem->type) == _ek_cohesive)
+      if (*elem == ElementNull || Mesh::getKind(elem->type) == _ek_cohesive) {
         continue;
+      }
 
       // unit vector for integration in order to obtain the volume
       UInt nb_quadrature_points = fe_engine.getNbIntegrationPoints(elem->type);

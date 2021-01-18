@@ -158,7 +158,7 @@ void Model::addDumpGroupFieldToDumper(const std::string & field_id,
                                       std::shared_ptr<dumpers::Field> field,
                                       DumperIOHelper & dumper) {
 #ifdef AKANTU_USE_IOHELPER
-  dumper.registerField(field_id, field);
+  dumper.registerField(field_id, std::move(field));
 #endif
 }
 
@@ -260,7 +260,7 @@ void Model::addDumpFieldTensorToDumper(const std::string & dumper_name,
 void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       const std::string & field_id,
                                       const std::string & group_name,
-                                      const ElementKind & element_kind,
+                                      ElementKind element_kind,
                                       bool padding_flag) {
   this->addDumpGroupFieldToDumper(dumper_name, field_id, group_name,
                                   this->spatial_dimension, element_kind,
@@ -272,27 +272,33 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
                                       const std::string & field_id,
                                       const std::string & group_name,
                                       UInt spatial_dimension,
-                                      const ElementKind & element_kind,
+                                      ElementKind element_kind,
                                       bool padding_flag) {
 
 #ifdef AKANTU_USE_IOHELPER
   std::shared_ptr<dumpers::Field> field;
 
-  if (!field)
+  if (!field) {
     field = this->createNodalFieldReal(field_id, group_name, padding_flag);
-  if (!field)
+  }
+  if (!field) {
     field = this->createNodalFieldUInt(field_id, group_name, padding_flag);
-  if (!field)
+  }
+  if (!field) {
     field = this->createNodalFieldBool(field_id, group_name, padding_flag);
-  if (!field)
+  }
+  if (!field) {
     field = this->createElementalField(field_id, group_name, padding_flag,
                                        spatial_dimension, element_kind);
-  if (!field)
+  }
+  if (!field) {
     field = this->mesh.createFieldFromAttachedData<UInt>(field_id, group_name,
                                                          element_kind);
-  if (!field)
+  }
+  if (!field) {
     field = this->mesh.createFieldFromAttachedData<Real>(field_id, group_name,
                                                          element_kind);
+  }
 
 #ifndef AKANTU_NDEBUG
   if (!field) {

@@ -30,8 +30,8 @@
 #include "mesh_geom_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_LINE_ARC_HH__
-#define __AKANTU_LINE_ARC_HH__
+#ifndef AKANTU_LINE_ARC_HH_
+#define AKANTU_LINE_ARC_HH_
 
 namespace akantu {
 
@@ -41,7 +41,7 @@ namespace akantu {
 template <typename K> class Line_arc : public CGAL::Line_arc_3<K> {
 public:
   /// Default constructor
-  Line_arc() : CGAL::Line_arc_3<K>(), mesh_id(0), seg_id(0) {}
+  Line_arc() : CGAL::Line_arc_3<K>() {}
 
   /// Copy constructor
   Line_arc(const Line_arc & other)
@@ -52,7 +52,7 @@ public:
   // "CGAL-4.5/doc_html/Circular_kernel_3/classCGAL_1_1Line__arc__3.html"
   Line_arc(const CGAL::Line_3<K> & l, const CGAL::Circular_arc_point_3<K> & a,
            const CGAL::Circular_arc_point_3<K> & b)
-      : CGAL::Line_arc_3<K>(l, a, b), mesh_id(0), seg_id(0) {}
+      : CGAL::Line_arc_3<K>(l, a, b) {}
 
 public:
   UInt id() const { return mesh_id; }
@@ -62,12 +62,12 @@ public:
 
 protected:
   /// Id of the element represented by the primitive
-  UInt mesh_id;
+  UInt mesh_id{0};
 
   /// Id of the segment represented by the primitive
-  UInt seg_id;
+  UInt seg_id{0};
 };
 
 } // namespace akantu
 
-#endif // __AKANTU_LINE_ARC_HH__
+#endif // AKANTU_LINE_ARC_HH_

@@ -29,8 +29,8 @@
 #include "solver_vector_default.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SOLVER_VECTOR_DISTRIBUTED_HH__
-#define __AKANTU_SOLVER_VECTOR_DISTRIBUTED_HH__
+#ifndef AKANTU_SOLVER_VECTOR_DISTRIBUTED_HH_
+#define AKANTU_SOLVER_VECTOR_DISTRIBUTED_HH_
 
 namespace akantu {
 
@@ -43,7 +43,7 @@ public:
                           const ID & id = "solver_vector_mumps");
 
   Array<Real> & getGlobalVector() override;
-  void setGlobalVector(const Array<Real> & global_vector) override;
+  void setGlobalVector(const Array<Real> & solution) override;
 
 protected:
   // full vector in case it needs to be centralized on master
@@ -52,4 +52,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_SOLVER_VECTOR_DISTRIBUTED_HH__ */
+#endif /* AKANTU_SOLVER_VECTOR_DISTRIBUTED_HH_ */

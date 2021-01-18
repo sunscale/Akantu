@@ -30,20 +30,27 @@
 #include "material_anisotropic_damage.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_ANISOTROPIC_DAMAGE_TMPL_HH__
-#define __AKANTU_MATERIAL_ANISOTROPIC_DAMAGE_TMPL_HH__
+#ifndef AKANTU_MATERIAL_ANISOTROPIC_DAMAGE_TMPL_HH_
+#define AKANTU_MATERIAL_ANISOTROPIC_DAMAGE_TMPL_HH_
 
 namespace akantu {
 struct EmptyIteratorContainer {
   struct iterator {
     auto & operator++() { return *this; }
     Real operator*() { return 0; }
-    bool operator!=(const iterator &) const { return true; }
-    bool operator==(const iterator &) const { return false; }
+    bool operator!=(const iterator & /*unused*/) const { return true; }
+    bool operator==(const iterator & /*unused*/) const { return false; }
   };
 
-  auto begin() { return iterator(); }
-  auto end() { return iterator(); }
+  auto begin() const // NOLINT(readability-convert-member-functions-to-static)
+  {
+    return iterator();
+  }
+  
+  auto end() const // NOLINT(readability-convert-member-functions-to-static)
+  {
+    return iterator();
+  }
 };
 } // namespace akantu
 
@@ -108,8 +115,8 @@ namespace {
   template <UInt dim, class Op>
   auto tensorPlus(const Matrix<Real> & A, Matrix<Real> & A_directions,
                   bool sorted = false) {
-    return tensorPlusOp<dim>(A, A_directions, [](Real x, Real) { return x; },
-                             sorted);
+    return tensorPlusOp<dim>(
+        A, A_directions, [](Real x, Real /*unused*/) { return x; }, sorted);
   }
 
   template <UInt dim, class Op>
@@ -119,11 +126,12 @@ namespace {
   }
 
   template <UInt dim> auto tensorPlus(const Matrix<Real> & A) {
-    return tensorPlusOp<dim>(A, [](Real x, Real) { return x; });
+    return tensorPlusOp<dim>(A, [](Real x, Real /*unused*/) { return x; });
   }
 
   template <UInt dim> auto tensorSqrt(const Matrix<Real> & A) {
-    return tensorPlusOp<dim>(A, [](Real x, UInt) { return std::sqrt(x); });
+    return tensorPlusOp<dim>(
+        A, [](Real x, UInt /*unused*/) { return std::sqrt(x); });
   }
 
 } // namespace
@@ -163,7 +171,8 @@ void MaterialAnisotropicDamage<dim, EquivalentStrain, DamageThreshold, Parent>::
   auto one_D = Matrix<Real>::eye(dim) - D;
   auto sqrt_one_D = tensorSqrt<dim>(one_D);
 
-  Real Tr_sigma_plus, Tr_sigma_minus;
+  Real Tr_sigma_plus;
+  Real Tr_sigma_minus;
   std::tie(Tr_sigma_plus, Tr_sigma_minus) = tensorPlusTrace<dim>(sigma_el);
 
   auto I = Matrix<Real>::eye(dim);
@@ -253,16 +262,17 @@ void MaterialAnisotropicDamage<dim, EquivalentStrain, DamageThreshold,
         } else if (std::abs(epsilon.trace()) < 1e-10) { // deviatoric case
           Matrix<Real> n(dim, dim);
           std::vector<UInt> ns;
-          tensorPlusOp<dim>(Dtmp, n,
-                            [&](Real x, UInt i) {
-                              if (x > this->Dc) {
-                                ns.push_back(i);
-                                return this->Dc;
-                              }
+          tensorPlusOp<dim>(
+              Dtmp, n,
+              [&](Real x, UInt i) {
+                if (x > this->Dc) {
+                  ns.push_back(i);
+                  return this->Dc;
+                }
 
-                              return x;
-                            },
-                            true);
+                return x;
+              },
+              true);
         }
       }
 
@@ -302,7 +312,7 @@ public:
   }
 
   template <class... Other>
-  Real operator()(const Matrix<Real> & epsilon, Real) {
+  Real operator()(const Matrix<Real> & epsilon, Real /*unused*/) {
     Real epsilon_hat = EquivalentStrainMazars<dim>::operator()(epsilon);
     epsilon_hat += k * epsilon.trace();
     return epsilon_hat;
@@ -362,4 +372,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_ANISOTROPIC_DAMAGE_TMPL_HH__ */
+#endif /* AKANTU_MATERIAL_ANISOTROPIC_DAMAGE_TMPL_HH_ */

@@ -35,8 +35,8 @@
 #include <memory>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_SELECTOR_HH__
-#define __AKANTU_MATERIAL_SELECTOR_HH__
+#ifndef AKANTU_MATERIAL_SELECTOR_HH_
+#define AKANTU_MATERIAL_SELECTOR_HH_
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -52,8 +52,9 @@ public:
   MaterialSelector() = default;
   virtual ~MaterialSelector() = default;
   virtual inline UInt operator()(const Element & element) {
-    if (fallback_selector)
+    if (fallback_selector) {
       return (*fallback_selector)(element);
+    }
 
     return fallback_value;
   }
@@ -72,7 +73,7 @@ public:
     return this->fallback_selector;
   }
 
-  inline UInt getFallbackValue() { return this->fallback_value; }
+  inline UInt getFallbackValue() const { return this->fallback_value; }
 
 protected:
   UInt fallback_value{0};
@@ -90,14 +91,16 @@ public:
       : material_index(material_index) {}
 
   UInt operator()(const Element & element) override {
-    if (not material_index.exists(element.type, element.ghost_type))
+    if (not material_index.exists(element.type, element.ghost_type)) {
       return MaterialSelector::operator()(element);
+    }
 
     const auto & mat_indexes = material_index(element.type, element.ghost_type);
     if (element.element < mat_indexes.size()) {
       auto && tmp_mat = mat_indexes(element.element);
-      if (tmp_mat != UInt(-1))
+      if (tmp_mat != UInt(-1)) {
         return tmp_mat;
+      }
     }
 
     return MaterialSelector::operator()(element);
@@ -157,4 +160,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_SELECTOR_HH__ */
+#endif /* AKANTU_MATERIAL_SELECTOR_HH_ */

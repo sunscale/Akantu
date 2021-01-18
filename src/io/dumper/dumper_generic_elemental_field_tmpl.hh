@@ -51,15 +51,17 @@ namespace dumpers {
         const auto & vect = this->field(*tit, ghost_type);
         auto nb_element = vect.size();
         auto nb_comp_cur = vect.getNbComponent();
-        if (homogen && nb_comp != nb_comp_cur)
+        if (homogen && nb_comp != nb_comp_cur) {
           homogen = false;
+        }
         this->nb_total_element += nb_element;
 
         //      this->nb_data_per_elem(*tit,this->ghost_type) = nb_comp_cur;
       }
 
-      if (!homogen)
+      if (!homogen) {
         nb_comp = 0;
+      }
     }
 
     this->homogeneous = homogen;

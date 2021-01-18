@@ -31,8 +31,8 @@
 #include "element_class.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__
-#define __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__
+#ifndef AKANTU_INTERPOLATION_ELEMENT_TMPL_HH_
+#define AKANTU_INTERPOLATION_ELEMENT_TMPL_HH_
 
 namespace akantu {
 
@@ -69,4 +69,4 @@ AKANTU_DEFINE_INTERPOLATION_TYPE_PROPERTY(_itp_lagrange_pentahedron_15,
                                           _itk_lagrangian, 15, 3);
 
 } // namespace akantu
-#endif /* __AKANTU_INTERPOLATION_ELEMENT_TMPL_HH__ */
+#endif /* AKANTU_INTERPOLATION_ELEMENT_TMPL_HH_ */

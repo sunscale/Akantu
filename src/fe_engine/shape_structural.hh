@@ -33,8 +33,8 @@
 #include "shape_functions.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_SHAPE_STRUCTURAL_HH__
-#define __AKANTU_SHAPE_STRUCTURAL_HH__
+#ifndef AKANTU_SHAPE_STRUCTURAL_HH_
+#define AKANTU_SHAPE_STRUCTURAL_HH_
 
 namespace akantu {
 
@@ -55,9 +55,7 @@ public:
 public:
   /// function to print the contain of the class
   void printself(std::ostream & stream, int indent = 0) const override {
-    std::string space;
-    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
-      ;
+    std::string space(indent, AKANTU_INDENT);
     stream << space << "ShapesStructural [" << std::endl;
     rotation_matrices.printself(stream, indent + 1);
     ShapeFunctions::printself(stream, indent + 1);
@@ -68,45 +66,43 @@ public:
   template <ElementType type>
   void computeShapesOnIntegrationPoints(
       const Array<Real> &, const Matrix<Real> & integration_points,
-      Array<Real> & shapes, const GhostType & ghost_type,
+      Array<Real> & shapes, GhostType ghost_type,
       const Array<UInt> & filter_elements = empty_filter) const;
 
   /// initialization function for structural elements
   inline void initShapeFunctions(const Array<Real> & nodes,
                                  const Matrix<Real> & integration_points,
-                                 const ElementType & type,
-                                 const GhostType & ghost_type);
+                                 ElementType type, GhostType ghost_type);
 
   /// precompute the rotation matrices for the elements dofs
   template <ElementType type>
   void precomputeRotationMatrices(const Array<Real> & nodes,
-                                  const GhostType & ghost_type);
+                                  GhostType ghost_type);
 
   /// pre compute all shapes on the element integration points from natural
   /// coordinates
   template <ElementType type>
   void precomputeShapesOnIntegrationPoints(const Array<Real> & nodes,
-                                           const GhostType & ghost_type);
+                                           GhostType ghost_type);
 
   /// pre compute all shapes on the element integration points from natural
   /// coordinates
   template <ElementType type>
-  void
-  precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
-                                                const GhostType & ghost_type);
+  void precomputeShapeDerivativesOnIntegrationPoints(const Array<Real> & nodes,
+                                                     GhostType ghost_type);
 
   /// interpolate nodal values on the integration points
   template <ElementType type>
   void interpolateOnIntegrationPoints(
-      const Array<Real> & u, Array<Real> & uq, UInt nb_degree_of_freedom,
-      const GhostType & ghost_type = _not_ghost,
+      const Array<Real> & u, Array<Real> & uq, UInt nb_dof,
+      GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
 
   /// compute the gradient of u on the integration points
   template <ElementType type>
   void gradientOnIntegrationPoints(
-      const Array<Real> & u, Array<Real> & nablauq, UInt nb_degree_of_freedom,
-      const GhostType & ghost_type = _not_ghost,
+      const Array<Real> & u, Array<Real> & nablauq, UInt nb_dof,
+      GhostType ghost_type = _not_ghost,
       const Array<UInt> & filter_elements = empty_filter) const;
 
   /// interpolate on physical point
@@ -114,7 +110,7 @@ public:
   void interpolate(const Vector<Real> & /*real_coords*/, UInt /*elem*/,
                    const Matrix<Real> & /*nodal_values*/,
                    Vector<Real> & /*interpolated*/,
-                   const GhostType & /*ghost_type*/) const {
+                   GhostType /*ghost_type*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -122,7 +118,7 @@ public:
   template <ElementType type>
   void computeShapes(const Vector<Real> & /*real_coords*/, UInt /*elem*/,
                      Vector<Real> & /*shapes*/,
-                     const GhostType & /*ghost_type*/) const {
+                     GhostType /*ghost_type*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
@@ -130,15 +126,14 @@ public:
   template <ElementType type>
   void computeShapeDerivatives(const Matrix<Real> & /*real_coords*/,
                                UInt /*elem*/, Tensor3<Real> & /*shapes*/,
-                               const GhostType & /*ghost_type*/) const {
+                               GhostType /*ghost_type*/) const {
     AKANTU_TO_IMPLEMENT();
   }
 
   /// get the rotations vector
   inline const Array<Real> &
-  getRotations(const ElementType & el_type,
-               __attribute__((unused))
-               const GhostType & ghost_type = _not_ghost) const {
+  getRotations(ElementType el_type, __attribute__((unused))
+                                    GhostType ghost_type = _not_ghost) const {
     return rotation_matrices(el_type);
   }
 
@@ -161,7 +156,7 @@ public:
   template <ElementType type>
   void
   computeNtb(const Array<Real> & /*bs*/, Array<Real> & /*Ntbs*/,
-             const GhostType & /*ghost_type*/,
+             GhostType /*ghost_type*/,
              const Array<UInt> & /*filter_elements*/ = empty_filter) const {
     AKANTU_TO_IMPLEMENT();
   }
@@ -174,4 +169,4 @@ protected:
 
 #include "shape_structural_inline_impl.hh"
 
-#endif /* __AKANTU_SHAPE_STRUCTURAL_HH__ */
+#endif /* AKANTU_SHAPE_STRUCTURAL_HH_ */

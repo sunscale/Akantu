@@ -133,7 +133,7 @@ void MaterialIGFEMElastic<spatial_dimension>::computeStress(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialIGFEMElastic<spatial_dimension>::computeTangentModuli(
-    __attribute__((unused)) const ElementType & el_type,
+    __attribute__((unused)) ElementType el_type,
     Array<Real> & tangent_matrix,
     __attribute__((unused)) GhostType ghost_type) {
   AKANTU_DEBUG_IN();

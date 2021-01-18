@@ -12,43 +12,42 @@
  * Copyright (©) 2010-2012, 2014 EPFL (Ecole Polytechnique Fédérale de Lausanne)
  * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
- * IOHelper is free  software: you can redistribute it and/or  modify it under the
- * terms  of the  GNU Lesser  General Public  License as  published by  the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * IOHelper is free  software: you can redistribute it and/or  modify it under
+ * the terms  of the  GNU Lesser  General Public  License as  published by  the
+ * Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
  *
- * IOHelper is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
- * details.
+ * IOHelper is  distributed in the  hope that it  will be useful, but  WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A  PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for
+ * more details.
  *
  * You should  have received  a copy  of the GNU  Lesser General  Public License
  * along with IOHelper. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
-#ifndef __IOHELPER_READER_H__
-#define __IOHELPER_READER_H__
+#ifndef IOHELPER_READER_H_
+#define IOHELPER_READER_H_
 /* -------------------------------------------------------------------------- */
+#include "iohelper_common.hh"
 #include <map>
 #include <string>
-#include "iohelper_common.hh"
 /* -------------------------------------------------------------------------- */
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 /** Class Reader
  * Interface of a reader
  */
 
-class Reader{
+class Reader {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 
- public:
-
+public:
   Reader();
   virtual ~Reader();
 
@@ -57,7 +56,7 @@ class Reader{
   /* ------------------------------------------------------------------------ */
 
   //! dump to file
-  virtual void Read()=0;
+  virtual void Read() = 0;
   //! do the allocation
   void Init();
   //! give vector with coordinates
@@ -67,22 +66,22 @@ class Reader{
   //! give vector to per node data
   void AddNodeDataField(const std::string & name);
   //! give vector to per element data
-  void AddElemDataField(const char *name);
+  void AddElemDataField(const char * name);
   //! set prefix directory
   void SetPrefix(const std::string & dir);
   // ! set parallel context
   void SetParallelContext(int me, int wld_size);
   //! set mode
-  virtual void SetMode(int mode){flag_compressed = mode & COMPRESSED;}
+  virtual void SetMode(int mode) { flag_compressed = mode & COMPRESSED; }
 
   //! give vector with coordinates
   double * GetPoints();
   //! give vector to connectivity
   int * GetConnectivity();
   //! give vector to per node data
-  double * GetNodeDataField(const char *name);
+  double * GetNodeDataField(const char * name);
   //! give vector to per element data
-  double * GetElemDataField(const char *name);
+  double * GetElemDataField(const char * name);
 
   //! return number of read nodes
   int GetNumberNodes();
@@ -93,8 +92,7 @@ class Reader{
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 
- protected:
-
+protected:
   std::string prefix;
   std::string base_name;
   int dump_step;
@@ -115,13 +113,8 @@ class Reader{
   int my_rank;
   int elem_type;
   int connectivity_mode;
-
 };
 
+} // namespace iohelper
 
-
-
-__END_IOHELPER__
-
-
-#endif /* __IOHELPER_READER_H__ */
+#endif /* IOHELPER_READER_H_ */

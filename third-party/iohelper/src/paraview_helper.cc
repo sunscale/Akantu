@@ -40,7 +40,7 @@
 #pragma warning ( disable : 383 )
 #endif //defined(__INTEL_COMPILER)
 
-__BEGIN_IOHELPER__
+namespace iohelper {
 
 /* -------------------------------------------------------------------------- */
 ParaviewHelper::ParaviewHelper(File & f, UInt mode):
@@ -175,8 +175,8 @@ void ParaviewHelper::writeTimePVD(const std::string & filename,
 	   << "<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl
 	   << "  <Collection>" << std::endl;
 
-  std::vector< std::pair<Real, std::string> >::const_iterator it  = pvtus.begin();
-  std::vector< std::pair<Real, std::string> >::const_iterator end = pvtus.end();
+  auto it = pvtus.begin();
+  auto end = pvtus.end();
   for (;it != end; ++it) {
     pvd_file << "    <DataSet timestep=\"" << it->first << "\" group=\"\" part=\"0\" file=\""
 	     << it->second << "\"/>" << std::endl;
@@ -201,8 +201,11 @@ void ParaviewHelper::writeHeader(int nb_nodes,int nb_elems){
 void ParaviewHelper::PDataArray(const std::string & name, int nb_components, const std::string & type){
   file << "   <PDataArray type=\"" << type << "\" NumberOfComponents=\""
        << nb_components << "\" Name=\"" << name << "\" format=\"";
-  if (bflag == BASE64) file << "binary";
-  else file << "ascii";
+  if (bflag == BASE64) {
+    file << "binary";
+  } else {
+    file << "ascii";
+  }
 
   file << "\"></PDataArray>" << std::endl;
 }
@@ -220,18 +223,27 @@ void ParaviewHelper::startData(const std::string & name,
 			       const std::string & type){
 
   file << "    <DataArray type=\"" << type << "\" ";
-  if (nb_components) file << "NumberOfComponents=\"" << nb_components << "\" ";
+  if (nb_components) {
+    file << "NumberOfComponents=\"" << nb_components << "\" ";
+  }
 
   file << "Name=\"" << name << "\" format=\"";
-  if (bflag == BASE64) file << "binary";
-  else file << "ascii";
+  if (bflag == BASE64) {
+    file << "binary";
+  } else {
+    file << "ascii";
+  }
   file << "\">" << std::endl;
-  if (bflag == BASE64) b64.CreateHeader();
+  if (bflag == BASE64) {
+    b64.CreateHeader();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void ParaviewHelper::endData(){
-  if (bflag == BASE64) b64.WriteHeader();
+  if (bflag == BASE64) {
+    b64.WriteHeader();
+  }
   file << std::endl << "    </DataArray>" << std::endl;
 }
 
@@ -309,4 +321,4 @@ void ParaviewHelper::endCellDataList(){
 
 /* -------------------------------------------------------------------------- */
 
-__END_IOHELPER__
+}

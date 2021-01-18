@@ -57,8 +57,8 @@
 #include <unordered_map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MPI_TYPE_WRAPPER_HH__
-#define __AKANTU_MPI_TYPE_WRAPPER_HH__
+#ifndef AKANTU_MPI_TYPE_WRAPPER_HH_
+#define AKANTU_MPI_TYPE_WRAPPER_HH_
 
 namespace akantu {
 
@@ -66,7 +66,7 @@ class MPICommunicatorData : public CommunicatorInternalData {
 public:
   MPICommunicatorData() {
     MPI_Initialized(&is_externaly_initialized);
-    if (not is_externaly_initialized) {
+    if (is_externaly_initialized == 0) {
       MPI_Init(nullptr, nullptr); // valid according to the spec
     }
 
@@ -77,7 +77,7 @@ public:
   }
 
   ~MPICommunicatorData() override {
-    if (not is_externaly_initialized) {
+    if (is_externaly_initialized == 0) {
       MPI_Comm_set_errhandler(communicator, save_error_handler);
       MPI_Errhandler_free(&error_handler);
       MPI_Finalize();
@@ -104,7 +104,7 @@ public:
   }
 
   inline MPI_Comm getMPICommunicator() const { return communicator; }
-  inline int getMaxTag() const {
+  static int getMaxTag() {
     int flag;
     int * value;
     // not defined on derived intra-communicator
@@ -120,7 +120,10 @@ private:
   /* ------------------------------------------------------------------------ */
   MPI_Errhandler error_handler;
 
-  static void errorHandler(MPI_Comm * /*comm*/, int * error_code, ...) {
+  static void
+  errorHandler(MPI_Comm * /*comm*/,
+               int * error_code, // NOLINT(readability-non-const-parameter)
+               ...) {
     char error_string[MPI_MAX_ERROR_STRING];
     int str_len;
     MPI_Error_string(*error_code, error_string, &str_len);
@@ -133,4 +136,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MPI_TYPE_WRAPPER_HH__ */
+#endif /* AKANTU_MPI_TYPE_WRAPPER_HH_ */

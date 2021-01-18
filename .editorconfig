@@ -1,0 +1,23 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+max_line_length = 80
+
+
+[*.{py,cc,hh,cmake,tcc}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+
+[CMakeLists.txt]
+charset = utf-8
+indent_style = space
+indent_size = 4
+
+[*.tcc]
+file_type_emacs = c++

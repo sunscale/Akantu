@@ -35,11 +35,12 @@
 #ifdef AKANTU_USE_IOHELPER
 
 #include <io_helper.hh>
+#include <utility>
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Dumpable::Dumpable() : default_dumper("") {}
+Dumpable::Dumpable() = default;
 
 /* -------------------------------------------------------------------------- */
 Dumpable::~Dumpable() = default;
@@ -48,15 +49,15 @@ Dumpable::~Dumpable() = default;
 void Dumpable::registerExternalDumper(std::shared_ptr<DumperIOHelper> dumper,
                                       const std::string & dumper_name,
                                       const bool is_default) {
-  this->dumpers[dumper_name] = dumper;
-  if (is_default)
+  this->dumpers[dumper_name] = std::move(dumper);
+  if (is_default) {
     this->default_dumper = dumper_name;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpMesh(const Mesh & mesh, UInt spatial_dimension,
-                           const GhostType & ghost_type,
-                           const ElementKind & element_kind) {
+                           GhostType ghost_type, ElementKind element_kind) {
 
   this->addDumpMeshToDumper(this->default_dumper, mesh, spatial_dimension,
                             ghost_type, element_kind);
@@ -65,8 +66,8 @@ void Dumpable::addDumpMesh(const Mesh & mesh, UInt spatial_dimension,
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpMeshToDumper(const std::string & dumper_name,
                                    const Mesh & mesh, UInt spatial_dimension,
-                                   const GhostType & ghost_type,
-                                   const ElementKind & element_kind) {
+                                   GhostType ghost_type,
+                                   ElementKind element_kind) {
 
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerMesh(mesh, spatial_dimension, ghost_type, element_kind);
@@ -76,7 +77,7 @@ void Dumpable::addDumpMeshToDumper(const std::string & dumper_name,
 void Dumpable::addDumpFilteredMesh(
     const Mesh & mesh, const ElementTypeMapArray<UInt> & elements_filter,
     const Array<UInt> & nodes_filter, UInt spatial_dimension,
-    const GhostType & ghost_type, const ElementKind & element_kind) {
+    GhostType ghost_type, ElementKind element_kind) {
   this->addDumpFilteredMeshToDumper(this->default_dumper, mesh, elements_filter,
                                     nodes_filter, spatial_dimension, ghost_type,
                                     element_kind);
@@ -87,7 +88,7 @@ void Dumpable::addDumpFilteredMeshToDumper(
     const std::string & dumper_name, const Mesh & mesh,
     const ElementTypeMapArray<UInt> & elements_filter,
     const Array<UInt> & nodes_filter, UInt spatial_dimension,
-    const GhostType & ghost_type, const ElementKind & element_kind) {
+    GhostType ghost_type, ElementKind element_kind) {
 
   DumperIOHelper & dumper = this->getDumper(dumper_name);
   dumper.registerFilteredMesh(mesh, elements_filter, nodes_filter,
@@ -110,7 +111,8 @@ void Dumpable::addDumpFieldToDumper(__attribute__((unused))
 /* -------------------------------------------------------------------------- */
 void Dumpable::addDumpFieldExternal(const std::string & field_id,
                                     std::shared_ptr<dumpers::Field> field) {
-  this->addDumpFieldExternalToDumper(this->default_dumper, field_id, field);
+  this->addDumpFieldExternalToDumper(this->default_dumper, field_id,
+                                     std::move(field));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -118,7 +120,7 @@ void Dumpable::addDumpFieldExternalToDumper(
     const std::string & dumper_name, const std::string & field_id,
     std::shared_ptr<dumpers::Field> field) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
-  dumper.registerField(field_id, field);
+  dumper.registerField(field_id, std::move(field));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -140,10 +142,8 @@ void Dumpable::addDumpFieldVector(const std::string & field_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-void Dumpable::addDumpFieldVectorToDumper(__attribute__((unused))
-                                          const std::string & dumper_name,
-                                          __attribute__((unused))
-                                          const std::string & field_id) {
+void Dumpable::addDumpFieldVectorToDumper(const std::string & /*dumper_name*/,
+                                          const std::string & /*field_id*/) {
   AKANTU_TO_IMPLEMENT();
 }
 
@@ -244,7 +244,7 @@ void Dumpable::internalAddDumpFieldToDumper(
     const std::string & dumper_name, const std::string & field_id,
     std::shared_ptr<dumpers::Field> field) {
   DumperIOHelper & dumper = this->getDumper(dumper_name);
-  dumper.registerField(field_id, field);
+  dumper.registerField(field_id, std::move(field));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -258,9 +258,10 @@ DumperIOHelper & Dumpable::getDumper(const std::string & dumper_name) {
   auto it = this->dumpers.find(dumper_name);
   auto end = this->dumpers.end();
 
-  if (it == end)
+  if (it == end) {
     AKANTU_EXCEPTION("Dumper " << dumper_name
                                << "has not been registered, yet.");
+  }
 
   return *(it->second);
 }
