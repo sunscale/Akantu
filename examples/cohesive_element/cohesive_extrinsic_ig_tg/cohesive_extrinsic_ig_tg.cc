@@ -70,9 +70,9 @@ int main(int argc, char * argv[]) {
   mesh.read("square.msh");
 
   SolidMechanicsModelCohesive model(mesh);
-  MaterialCohesiveRules rules{{{"top", "bottom"}, "tg_cohesive"},
-                              {{"top", "top"}, "ig_cohesive"},
-                              {{"bottom", "bottom"}, "ig_cohesive"}};
+  MaterialCohesiveRules rules{{{"btop", "bbottom"}, "tg_cohesive"},
+                              {{"btop", "btop"}, "ig_cohesive"},
+                              {{"bbottom", "bbottom"}, "ig_cohesive"}};
 
   /// model initialization
   auto material_selector =
