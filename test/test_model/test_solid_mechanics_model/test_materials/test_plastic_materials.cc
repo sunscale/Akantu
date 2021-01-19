@@ -120,7 +120,8 @@ void FriendMaterial<MaterialLinearIsotropicHardening<3>>::testComputeStress() {
     auto t = i * dt;
     auto grad_u = this->getDeviatoricStrain(t);
     auto grad_u_rot = this->applyRotation(grad_u, rotation_matrix);
-    Real iso_hardening, previous_iso_hardening;
+    Real iso_hardening{0.};
+    Real previous_iso_hardening{0.};
 
     this->computeStressOnQuad(grad_u_rot, previous_grad_u_rot, sigma_rot,
                               previous_sigma_rot, inelastic_strain_rot,
