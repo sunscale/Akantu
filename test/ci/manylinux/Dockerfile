@@ -11,5 +11,5 @@ RUN /spack/bin/spack install cmake
 RUN /spack/bin/spack install openblas
 RUN /spack/bin/spack install mumps@5.2.0 ~mpi
 RUN /spack/bin/spack install akantu@master external_solvers=mumps ~mpi ^mumps@5.2.0~mpi
-
-
+RUN yum install -y environment-modules
+RUN git clone https://gitlab.com/akantu/pypi_akantu.git
