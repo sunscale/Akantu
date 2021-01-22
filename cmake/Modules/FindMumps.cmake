@@ -138,6 +138,10 @@ function(mumps_add_dependency _pdep _libs)
         ENV MUMPS_DIR
         PATH_SUFFIXES lib
         )
+      if (NOT MUMPS_LIBRARY_MPISEQ)
+        message("Could not find libmpiseq for sequential version of MUMPS, was "
+          "MUMPS compiled in sequential ?")
+      endif()
       set(${_libs} ${MUMPS_LIBRARY_MPISEQ} PARENT_SCOPE)
       mark_as_advanced(MUMPS_LIBRARY_MPISEQ)
     else()
@@ -252,7 +256,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
           DEFINED _mumps_run_dep_symbol_${_pdep} AND
           _run MATCHES "${_mumps_run_dep_symbol_${_pdep}}")
         set(_add_pdep TRUE)
-	#message("NEED RUN ${_pdep}")
+	      #message("NEED RUN ${_pdep}")
       endif()
 
       if(_add_pdep)
@@ -271,6 +275,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
 
   if(_retry_count GREATER 10)
     message(FATAL_ERROR "Do not know what to do to link with mumps on your system, I give up!")
+    message("Last compilation outputs: \n${_out} \n And last run output \n${_run}")
   endif()
 
   if(APPLE)
