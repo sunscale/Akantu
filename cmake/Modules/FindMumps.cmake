@@ -150,6 +150,8 @@ function(mumps_add_dependency _pdep _libs)
   elseif(_pdep MATCHES "OpenMP")
     find_package(OpenMP REQUIRED)
     set(${_libs} OpenMP::OpenMP_C PARENT_SCOPE)
+  elseif(_pdep MATCHES "Math")
+    set(${_libs} m PARENT_SCOPE)
   else()
     find_package(${_pdep} REQUIRED QUIET)
     set(${_libs} ${${_u_pdep}_LIBRARIES} ${${_u_pdep}_LIBRARY} PARENT_SCOPE)
@@ -198,6 +200,8 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_symbol_METIS metis_nodend)
   set(_mumps_dep_symbol_Threads pthread_create)
   set(_mumps_dep_symbol_OpenMP GOMP_loop_end_nowait)
+  # TODO find missing symbols for IOMP
+  set(_mumps_dep_symbol_Math lround)
   set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
 
   # added for fucking macosx that cannot fail at link
@@ -208,8 +212,14 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_comp_Scotch_ptscotch COMPONENTS ptscotch)
   set(_mumps_dep_comp_Scotch_esmumps COMPONENTS esmumps)
 
-  set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
-	  Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS Threads OpenMP LAPACK)
+  set(_mumps_potential_dependencies
+    mumps_common pord
+    BLAS LAPACK ScaLAPACK
+    MPI
+	  Scotch Scotch_ptscotch Scotch_esmumps
+    METIS ParMETIS
+    Threads OpenMP
+    Math)
   #===============================================================================
 
   set(_retry_try_run TRUE)
@@ -217,7 +227,9 @@ ${_u_first_precision}MUMPS_STRUC_C id;
 
   # trying only as long as we add dependencies to avoid inifinte loop in case of an unkown dependency
   while (_retry_try_run AND _retry_count LESS 100)
-    try_run(_mumps_run _mumps_compiles "${_mumps_test_dir}" "${_mumps_test_dir}/mumps_test_code.c"
+    try_run(_mumps_run _mumps_compiles
+      "${_mumps_test_dir}"
+      "${_mumps_test_dir}/mumps_test_code.c"
       CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${_include_dirs}"
       LINK_LIBRARIES ${_libraries_all} ${_libraries_all} ${_compiler_specific}
       RUN_OUTPUT_VARIABLE _run
