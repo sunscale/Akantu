@@ -147,6 +147,9 @@ function(mumps_add_dependency _pdep _libs)
   elseif(_pdep MATCHES "Threads")
     find_package(Threads REQUIRED)
     set(${_libs} Threads::Threads PARENT_SCOPE)
+  elseif(_pdep MATCHES "OpenMP")
+    find_package(OpenMP REQUIRED)
+    set(${_libs} OpenMP::OpenMP_C PARENT_SCOPE)
   else()
     find_package(${_pdep} REQUIRED QUIET)
     set(${_libs} ${${_u_pdep}_LIBRARIES} ${${_u_pdep}_LIBRARY} PARENT_SCOPE)
@@ -154,7 +157,7 @@ function(mumps_add_dependency _pdep _libs)
 endfunction()
 
 function(mumps_find_dependencies)
-  set(_libraries_all ${MUMPS_LIBRARIES_ALL})
+  set(_libraries_all m ${MUMPS_LIBRARIES_ALL})
   set(_include_dirs ${MUMPS_INCLUDE_DIR})
 
   set(_mumps_test_dir "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}")
@@ -185,6 +188,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   #===============================================================================
   set(_mumps_dep_symbol_BLAS ${_first_precision}gemm)
   set(_mumps_dep_symbol_ScaLAPACK numroc)
+  set(_mumps_dep_symbol_LAPACK ilaenv)
   set(_mumps_dep_symbol_MPI mpi_send)
   set(_mumps_dep_symbol_Scotch SCOTCH_graphInit)
   set(_mumps_dep_symbol_Scotch_ptscotch scotchfdgraphexit)
@@ -193,6 +197,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_symbol_pord SPACE_ordering)
   set(_mumps_dep_symbol_METIS metis_nodend)
   set(_mumps_dep_symbol_Threads pthread_create)
+  set(_mumps_dep_symbol_OpenMP GOMP_loop_end_nowait)
   set(_mumps_dep_symbol_ParMETIS ParMETIS_V3_NodeND)
 
   # added for fucking macosx that cannot fail at link
@@ -204,7 +209,7 @@ ${_u_first_precision}MUMPS_STRUC_C id;
   set(_mumps_dep_comp_Scotch_esmumps COMPONENTS esmumps)
 
   set(_mumps_potential_dependencies mumps_common pord BLAS ScaLAPACK MPI
-    Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS Threads)
+	  Scotch Scotch_ptscotch Scotch_esmumps METIS ParMETIS Threads OpenMP LAPACK)
   #===============================================================================
 
   set(_retry_try_run TRUE)
