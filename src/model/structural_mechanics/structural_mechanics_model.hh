@@ -306,4 +306,6 @@ private:
 
 } // namespace akantu
 
+#include "structural_mechanics_model_inline_impl.hh"
+
 #endif /* AKANTU_STRUCTURAL_MECHANICS_MODEL_HH_ */

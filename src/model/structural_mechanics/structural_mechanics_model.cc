@@ -47,10 +47,25 @@
 #include "group_manager_inline_impl.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-#include "structural_mechanics_model_inline_impl.hh"
+#include "structural_element_bernoulli_beam_2.hh"
+#include "structural_element_bernoulli_beam_3.hh"
+#include "structural_element_kirchhoff_shell.hh"
+/* -------------------------------------------------------------------------- */
+//#include "structural_mechanics_model_inline_impl.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
+
+/* -------------------------------------------------------------------------- */
+inline UInt
+StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
+  UInt ndof = 0;
+#define GET_(type) ndof = ElementClass<type>::getNbDegreeOfFreedom()
+  AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_, _ek_structural);
+#undef GET_
+
+  return ndof;
+}
 
 /* -------------------------------------------------------------------------- */
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,

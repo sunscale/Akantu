@@ -57,3 +57,6 @@ endforeach()
 register_gtest_test(test_structural_mechanics
   FILES_TO_COPY ${_meshes})
 
+register_test(test_structural_mechanics_model_bernoulli_beam_dynamics
+  test_structural_mechanics_model_bernoulli_beam_dynamics.cc
+  PACKAGE structural_mechanics)

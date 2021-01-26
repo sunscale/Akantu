@@ -79,6 +79,7 @@ int main(int argc, char * argv[]) {
   Real length = total_length / nb_element;
   Real heigth = 1.;
 
+
   Array<Real> & nodes = const_cast<Array<Real> &>(beams.getNodes());
   nodes.resize(nb_nodes);
 
@@ -118,12 +119,12 @@ int main(int argc, char * argv[]) {
    */
   // Forces
   // model.initFull();
-  model.initFull(StructuralMechanicsModelOptions(_implicit_dynamic));
+  model.initFull(_analysis_method = _implicit_dynamic);
 
-  const Array<Real> & position = beams.getNodes();
-  Array<Real> & forces = model.getForce();
-  Array<Real> & displacement = model.getDisplacement();
-  Array<bool> & boundary = model.getBlockedDOFs();
+  const auto & position = beams.getNodes();
+  auto & forces = model.getExternalForce();
+  auto & displacement = model.getDisplacement();
+  auto & boundary = model.getBlockedDOFs();
 
   UInt node_to_print = -1;
 
@@ -148,12 +149,11 @@ int main(int argc, char * argv[]) {
 
   std::ofstream pos;
   pos.open("position.csv");
-  if (!pos.good()) {
-    std::cerr << "Cannot open file" << std::endl;
-    exit(EXIT_FAILURE);
+  if (not pos.good()) {
+    AKANTU_ERROR("Cannot open file \"position.csv\"");
   }
-  pos << "id,time,position,solution" << std::endl;
 
+  pos << "id,time,position,solution" << std::endl;
   // model.computeForcesFromFunction<type>(load, _bft_traction)
   /* --------------------------------------------------------------------------
    */
@@ -167,11 +167,11 @@ int main(int argc, char * argv[]) {
   // "Solve"
 
   Real time = 0;
-  model.assembleStiffnessMatrix();
-  model.assembleMass();
+  //model.assembleStiffnessMatrix();
+  //model.assembleMass();
   model.dump();
-  model.getStiffnessMatrix().saveMatrix("K.mtx");
-  model.getMassMatrix().saveMatrix("M.mt");
+  model.getDOFManager().getMatrix("K").saveMatrix("K.mtx");
+  model.getDOFManager().getMatrix("M").saveMatrix("M.mt");
   Real time_step = 1e-4;
   model.setTimeStep(time_step);
 
@@ -182,8 +182,7 @@ int main(int argc, char * argv[]) {
   /// time loop
   for (UInt s = 1; time < 0.64; ++s) {
 
-    model.solveStep<_scm_newton_raphson_tangent,
-                    SolveConvergenceCriteria::_increment>(1e-12, 1000);
+    model.solveStep();
 
     pos << s << "," << time << "," << displacement(node_to_print, 1) << ","
         << analytical_solution(s * time_step, total_length, mat1.rho, mat1.E,

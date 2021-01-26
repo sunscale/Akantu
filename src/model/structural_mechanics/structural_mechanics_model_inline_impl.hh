@@ -39,16 +39,6 @@
 #define AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH_
 
 namespace akantu {
-/* -------------------------------------------------------------------------- */
-inline UInt
-StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
-  UInt ndof = 0;
-#define GET_(type) ndof = ElementClass<type>::getNbDegreeOfFreedom()
-  AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_, _ek_structural);
-#undef GET_
-
-  return ndof;
-}
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
@@ -56,13 +46,6 @@ void StructuralMechanicsModel::computeTangentModuli(
     Array<Real> & /*tangent_moduli*/) {
   AKANTU_TO_IMPLEMENT();
 }
-} // namespace akantu
-
-#include "structural_element_bernoulli_beam_2.hh"
-#include "structural_element_bernoulli_beam_3.hh"
-#include "structural_element_kirchhoff_shell.hh"
-
-namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
@@ -118,7 +101,7 @@ template <ElementType type>
 void StructuralMechanicsModel::computeStressOnQuad() {
   AKANTU_DEBUG_IN();
 
-  Array<Real> & sigma = stress(type, _not_ghost);
+  auto & sigma = stress(type, _not_ghost);
 
   auto nb_element = mesh.getNbElement(type);
   auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
@@ -172,14 +155,13 @@ void StructuralMechanicsModel::computeStressOnQuad() {
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeForcesByLocalTractionArray(
-    const Array<Real> & /*tractions*/) {
+    const Array<Real> & tractions) {
   AKANTU_DEBUG_IN();
 
-#if 0
-  UInt nb_element = getFEEngine().getMesh().getNbElement(type);
-  UInt nb_nodes_per_element =
+  auto nb_element = getFEEngine().getMesh().getNbElement(type);
+  auto nb_nodes_per_element =
       getFEEngine().getMesh().getNbNodesPerElement(type);
-  UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
+  auto nb_quad = getFEEngine().getNbIntegrationPoints(type);
 
   // check dimension match
   AKANTU_DEBUG_ASSERT(
@@ -198,63 +180,53 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
                       "the number of components should be the spatial "
                       "dimension of the problem");
 
-  Array<Real> Nvoigt(nb_element * nb_quad, nb_degree_of_freedom *
-                                               nb_degree_of_freedom *
-                                               nb_nodes_per_element);
-  transferNMatrixToSymVoigtNMatrix<type>(Nvoigt);
+  Array<Real> Ntbs(nb_element * nb_quad,
+                   nb_degree_of_freedom * nb_nodes_per_element);
+  Array<Real> TtNtbs(nb_element * nb_quad,
+                     nb_degree_of_freedom * nb_nodes_per_element);
 
-  Array<Real>::const_matrix_iterator N_it = Nvoigt.begin(
-      nb_degree_of_freedom, nb_degree_of_freedom * nb_nodes_per_element);
-  Array<Real>::const_matrix_iterator T_it =
+  auto & fem = getFEEngine();
+  fem.computeNtb(tractions, Ntbs, type);
+
+  auto T_it =
       rotation_matrix(type).begin(nb_degree_of_freedom * nb_nodes_per_element,
                                   nb_degree_of_freedom * nb_nodes_per_element);
-  auto te_it =
-      tractions.begin(nb_degree_of_freedom);
+  auto Ntb_it = Ntbs.begin(nb_degree_of_freedom * nb_nodes_per_element);
+  auto TtNtb_it = TtNtbs.begin(nb_degree_of_freedom * nb_nodes_per_element);
 
-  Array<Real> funct(nb_element * nb_quad,
-                    nb_degree_of_freedom * nb_nodes_per_element, 0.);
-  Array<Real>::iterator<Vector<Real>> Fe_it =
-      funct.begin(nb_degree_of_freedom * nb_nodes_per_element);
-
-  Vector<Real> fe(nb_degree_of_freedom * nb_nodes_per_element);
   for (UInt e = 0; e < nb_element; ++e, ++T_it) {
-    const Matrix<Real> & T = *T_it;
-    for (UInt q = 0; q < nb_quad; ++q, ++N_it, ++te_it, ++Fe_it) {
-      const Matrix<Real> & N = *N_it;
-      const Vector<Real> & te = *te_it;
-      Vector<Real> & Fe = *Fe_it;
+    const auto & T = *T_it;
+    for (UInt q = 0; q < nb_quad; ++q, ++Ntb_it, ++TtNtb_it) {
+      const auto & Ntb = *Ntb_it;
+      auto & TtNtb = *TtNtb_it;
 
-      // compute N^t tl
-      fe.mul<true>(N, te);
       // turn N^t tl back in the global referential
-      Fe.mul<true>(T, fe);
+      TtNtb.mul<true>(T, Ntb);
     }
   }
 
   // allocate the vector that will contain the integrated values
-  std::stringstream name;
-  name << id << type << ":integral_boundary";
+  auto name = id + std::to_string(type) + ":integral_boundary";
   Array<Real> int_funct(nb_element, nb_degree_of_freedom * nb_nodes_per_element,
-                        name.str());
+                        name);
 
   // do the integration
-  getFEEngine().integrate(funct, int_funct,
+  getFEEngine().integrate(TtNtbs, int_funct,
                           nb_degree_of_freedom * nb_nodes_per_element, type);
 
   // assemble the result into force vector
-  getFEEngine().assembleArray(int_funct, *force_momentum,
-                              dof_synchronizer->getLocalDOFEquationNumbers(),
-                              nb_degree_of_freedom, type);
-#endif
+  getDOFManager().assembleElementalArrayLocalArray(int_funct, *external_force,
+                                                   type, _not_ghost, 1);
+
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
-    const Array<Real> & /*traction_global*/) {
+    const Array<Real> & traction_global) {
   AKANTU_DEBUG_IN();
-#if 0
+
   UInt nb_element = mesh.getNbElement(type);
   UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_nodes_per_element =
@@ -265,32 +237,30 @@ void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
   Array<Real> traction_local(nb_element * nb_quad, nb_degree_of_freedom,
                              name.str());
 
-  Array<Real>::const_matrix_iterator T_it =
+  auto T_it =
       rotation_matrix(type).begin(nb_degree_of_freedom * nb_nodes_per_element,
                                   nb_degree_of_freedom * nb_nodes_per_element);
 
-  Array<Real>::const_iterator<Vector<Real>> Te_it =
-      traction_global.begin(nb_degree_of_freedom);
-  Array<Real>::iterator<Vector<Real>> te_it =
-      traction_local.begin(nb_degree_of_freedom);
+  auto Te_it = traction_global.begin(nb_degree_of_freedom);
+  auto te_it = traction_local.begin(nb_degree_of_freedom);
 
   Matrix<Real> R(nb_degree_of_freedom, nb_degree_of_freedom);
   for (UInt e = 0; e < nb_element; ++e, ++T_it) {
-    const Matrix<Real> & T = *T_it;
+    const auto & T = *T_it;
     for (UInt i = 0; i < nb_degree_of_freedom; ++i)
       for (UInt j = 0; j < nb_degree_of_freedom; ++j)
         R(i, j) = T(i, j);
 
     for (UInt q = 0; q < nb_quad; ++q, ++Te_it, ++te_it) {
-      const Vector<Real> & Te = *Te_it;
-      Vector<Real> & te = *te_it;
+      const auto & Te = *Te_it;
+      auto & te = *te_it;
       // turn the traction in the local referential
       te.mul<false>(R, Te);
     }
   }
 
   computeForcesByLocalTractionArray<type>(traction_local);
-#endif
+
   AKANTU_DEBUG_OUT();
 }
 

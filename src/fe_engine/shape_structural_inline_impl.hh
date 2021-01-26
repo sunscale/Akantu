@@ -428,6 +428,42 @@ void ShapeStructural<_ek_structural>::computeBtD(
   }
 }
 
+/* -------------------------------------------------------------------------- */
+template <>
+template <ElementType type>
+void ShapeStructural<_ek_structural>::computeNtb(
+    const Array<Real> & bs, Array<Real> & Ntbs, GhostType ghost_type,
+    const Array<UInt> & filter_elements) const {
+  auto itp_type = ElementClassProperty<type>::interpolation_type;
+
+  auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
+  auto nb_nodes_per_element = mesh.getNbNodesPerElement(type);
+
+  const auto & shapes = this->shapes(itp_type, ghost_type);
+
+  Array<Real> shapes_filtered(0, shapes.getNbComponent());
+  auto && view = make_view(shapes, nb_dof, nb_dof * nb_nodes_per_element);
+  auto N_it = view.begin();
+  auto N_end = view.end();
+
+  if (filter_elements != empty_filter) {
+    FEEngine::filterElementalData(this->mesh, shapes, shapes_filtered, type,
+                                  ghost_type, filter_elements);
+    auto && view =
+        make_view(shapes_filtered, nb_dof, nb_dof * nb_nodes_per_element);
+    N_it = view.begin();
+    N_end = view.end();
+  }
+
+  for (auto && values : zip(range(N_it, N_end), make_view(bs, nb_dof),
+                            make_view(Ntbs, nb_dof * nb_nodes_per_element))) {
+    const auto & N = std::get<0>(values);
+    const auto & b = std::get<1>(values);
+    auto & Nt_b = std::get<2>(values);
+    Nt_b.template mul<true>(N, b);
+  }
+}
+
 } // namespace akantu
 
 #endif /* AKANTU_SHAPE_STRUCTURAL_INLINE_IMPL_HH_ */
