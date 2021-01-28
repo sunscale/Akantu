@@ -117,10 +117,6 @@ inline void
 InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeShapesDisplacements(
     const Vector<Real> & natural_coords, const Matrix<Real> & real_coord,
     Matrix<Real> & N) {
-  Matrix<Real> Ntotal(nb_degree_of_freedom, nb_degree_of_freedom * nb_nodes_per_element)
-  computeShapes(natural_coords, real_coord, Ntotal);
-
-  N = Ntotal.block(0, 0, N.rows(), N.cols());
 }
 #endif
 

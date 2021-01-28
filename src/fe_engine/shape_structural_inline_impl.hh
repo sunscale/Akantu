@@ -80,12 +80,12 @@ inline void ShapeStructural<_ek_structural>::initShapeFunctions(
 #undef INIT_SHAPE_FUNCTIONS
 
 /* -------------------------------------------------------------------------- */
-template <>
+template <ElementKind kind>
 template <ElementType type>
-void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
+void ShapeStructural<kind>::computeShapesOnIntegrationPointsInternal(
     const Array<Real> & nodes, const Matrix<Real> & integration_points,
     Array<Real> & shapes, GhostType ghost_type,
-    const Array<UInt> & filter_elements) const {
+    const Array<UInt> & filter_elements, bool mass) const {
 
   UInt nb_points = integration_points.cols();
   UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
@@ -101,9 +101,14 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
                           << "number of component");
 #endif
 
+  auto nb_rows = ndof;
+  if (mass) {
+    nb_rows = ElementClass<type>::getNaturalSpaceDimension();
+  }
+
   auto shapes_it = shapes.begin_reinterpret(
-      ElementClass<type>::getNbNodesPerInterpolationElement(), ndof, nb_points,
-      nb_element);
+      nb_rows, ElementClass<type>::getNbNodesPerInterpolationElement() * ndof,
+      nb_points, nb_element);
 
   auto shapes_begin = shapes_it;
   if (filter_elements != empty_filter) {
@@ -123,8 +128,12 @@ void ShapeStructural<_ek_structural>::computeShapesOnIntegrationPoints(
 
     Tensor3<Real> & N = *shapes_it;
     auto & real_coord = *nodes_it;
-    ElementClass<type>::computeShapes(integration_points, real_coord, N);
 
+    if(not mass) {
+      ElementClass<type>::computeShapes(integration_points, real_coord, N);
+    } else {
+      ElementClass<type>::computeShapesMass(integration_points, real_coord, N);
+    }
     if (filter_elements == empty_filter) {
       ++shapes_it;
       ++nodes_it;

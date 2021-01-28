@@ -76,6 +76,26 @@ public:
                                    const Matrix<Real> & real_coord,
                                    Matrix<Real> & N);
 
+  static inline void computeShapesMass(const Matrix<Real> & natural_coord,
+                                       const Matrix<Real> & real_coord,
+                                       Tensor3<Real> & N) {
+    for (UInt i = 0; i < natural_coord.cols(); ++i) {
+      Matrix<Real> n_t = N(i);
+      computeShapesMass(natural_coord(i), real_coord, n_t);
+    }
+  }
+
+  static inline void computeShapesMass(const Vector<Real> & natural_coords,
+                                       const Matrix<Real> & real_coords,
+                                       Matrix<Real> & N) {
+    Matrix<Real> Ntotal(interpolation_property::nb_degree_of_freedom,
+                        interpolation_property::nb_degree_of_freedom *
+                            interpolation_property::nb_nodes_per_element);
+    computeShapes(natural_coords, real_coords, Ntotal);
+
+    N = Ntotal.block(0, 0, N.rows(), N.cols());
+  }
+
   /// compute shape derivatives (input is dxds) for a set of points
   static inline void computeShapeDerivatives(const Tensor3<Real> & Js,
                                              const Tensor3<Real> & DNDSs,
@@ -150,6 +170,12 @@ public:
   }
   static inline constexpr auto getNbStressComponents() {
     return interpolation_property::nb_stress_components;
+  }
+
+  static inline constexpr auto getShapeMassSize() {
+    return interpolation_property::natural_space_dimension *
+           interpolation_property::nb_degree_of_freedom *
+           interpolation_property::nb_nodes_per_element;
   }
 };
 
