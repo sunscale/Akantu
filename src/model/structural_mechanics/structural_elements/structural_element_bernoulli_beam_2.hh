@@ -42,7 +42,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_2>() {
+inline void StructuralMechanicsModel::assembleMassMatrix<_bernoulli_beam_2>() {
   AKANTU_DEBUG_IN();
   constexpr ElementType type = _bernoulli_beam_2;
 

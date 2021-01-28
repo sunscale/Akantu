@@ -136,7 +136,7 @@ protected:
   void assembleStiffnessMatrix();
 
   /// assemble the mass matrix for consistent mass resolutions
-  void assembleMass();
+  void assembleMassMatrix();
 
   /// TODO remove
   void computeRotationMatrix(ElementType type);
@@ -151,7 +151,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 
   /// assemble the mass matrix for either _ghost or _not_ghost elements
-  void assembleMass(GhostType ghost_type);
+  void assembleMassMatrix(GhostType ghost_type);
 
   /// computes rho
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
@@ -162,7 +162,7 @@ protected:
   /* ------------------------------------------------------------------------ */
 private:
   template <ElementType type> void assembleStiffnessMatrix();
-  template <ElementType type> void assembleMass();
+  template <ElementType type> void assembleMassMatrix();
   template <ElementType type> void computeStressOnQuad();
   template <ElementType type>
   void computeTangentModuli(Array<Real> & tangent_moduli);

@@ -57,8 +57,7 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline UInt
-StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
+inline UInt StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
   UInt ndof = 0;
 #define GET_(type) ndof = ElementClass<type>::getNbDegreeOfFreedom()
   AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_, _ek_structural);
@@ -187,7 +186,7 @@ void StructuralMechanicsModel::initSolver(
 
   auto & dof_manager = this->getDOFManager();
 
-  if (!dof_manager.hasDOFs("displacement")) {
+  if (not dof_manager.hasDOFs("displacement")) {
     dof_manager.registerDOFs("displacement", *displacement_rotation,
                              _dst_nodal);
     dof_manager.registerBlockedDOFs("displacement", *this->blocked_dofs);
@@ -195,8 +194,8 @@ void StructuralMechanicsModel::initSolver(
 
   if (time_step_solver_type == TimeStepSolverType::_dynamic ||
       time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
-    this->allocNodalField(velocity, spatial_dimension, "velocity");
-    this->allocNodalField(acceleration, spatial_dimension, "acceleration");
+    this->allocNodalField(velocity, nb_degree_of_freedom, "velocity");
+    this->allocNodalField(acceleration, nb_degree_of_freedom, "acceleration");
 
     if (!dof_manager.hasDOFsDerivatives("displacement", 1)) {
       dof_manager.registerDOFsDerivative("displacement", 1, *this->velocity);
@@ -330,6 +329,16 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                         padding_size);
   }
 
+  if (field_name == "velocity") {
+    return mesh.createStridedNodalField(velocity, group_name, n, 0,
+                                        padding_size);
+  }
+
+  if (field_name == "acceleration") {
+    return mesh.createStridedNodalField(acceleration, group_name, n, 0,
+                                        padding_size);
+  }
+
   if (field_name == "rotation") {
     return mesh.createStridedNodalField(displacement_rotation, group_name,
                                         nb_degree_of_freedom - n, n,
@@ -337,6 +346,10 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "force") {
+    return mesh.createStridedNodalField(external_force, group_name, n, 0,
+                                        padding_size);
+  }
+  if (field_name == "external_force") {
     return mesh.createStridedNodalField(external_force, group_name, n, 0,
                                         padding_size);
   }
@@ -361,8 +374,8 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
 
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createElementalField(
-    const std::string & field_name, const std::string & group_name, bool /*unused*/,
-    UInt spatial_dimension, ElementKind kind) {
+    const std::string & field_name, const std::string & group_name,
+    bool /*unused*/, UInt spatial_dimension, ElementKind kind) {
 
   std::shared_ptr<dumpers::Field> field;
 
@@ -385,6 +398,8 @@ MatrixType StructuralMechanicsModel::getMatrixType(const ID & /*id*/) {
 void StructuralMechanicsModel::assembleMatrix(const ID & id) {
   if (id == "K") {
     assembleStiffnessMatrix();
+  } else if (id == "M") {
+    assembleMassMatrix();
   }
 }
 
@@ -435,6 +450,13 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
     options.integration_scheme_type["displacement"] =
         IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
+    break;
+  }
+  case TimeStepSolverType::_dynamic: {
+    options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_trapezoidal_rule_2;
+    options.solution_type["displacement"] = IntegrationScheme::_displacement;
     break;
   }
   default:

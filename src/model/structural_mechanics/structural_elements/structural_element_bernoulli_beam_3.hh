@@ -41,7 +41,7 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_3>() {
+inline void StructuralMechanicsModel::assembleMassMatrix<_bernoulli_beam_3>() {
   AKANTU_DEBUG_IN();
 #if 0
   GhostType ghost_type = _not_ghost;
@@ -64,8 +64,7 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_3>() {
   rho_field->clear();
   computeRho(*rho_field, type, _not_ghost);
 
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
   fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
                           0, 0, 0, true, ghost_type); // Ni ui ->         u
 
@@ -81,9 +80,7 @@ inline void StructuralMechanicsModel::assembleMass<_bernoulli_beam_3>() {
 
   fem.computeShapesMatrix(type, nb_degree_of_freedom, nb_nodes_per_element, n,
                           0, 3, 3, true, ghost_type); // Ni Theta_x_i->Theta_x
-  /* --------------------------------------------------------------------------
-   */
-
+  /* ------------------------------------------------------------------------ */
   fem.assembleFieldMatrix(*rho_field, nb_degree_of_freedom, *mass_matrix, n,
                           rotation_matrix, type, ghost_type);
 

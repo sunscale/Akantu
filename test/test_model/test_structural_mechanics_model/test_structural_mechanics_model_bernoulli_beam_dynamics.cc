@@ -35,6 +35,7 @@
 #include "aka_common.hh"
 #include "material.hh"
 #include "mesh.hh"
+#include "mesh_accessor.hh"
 #include "mesh_io.hh"
 #include "mesh_io_msh_struct.hh"
 #include "structural_mechanics_model.hh"
@@ -73,23 +74,23 @@ int main(int argc, char * argv[]) {
   /* --------------------------------------------------------------------------
    */
   // Mesh
-  UInt nb_element = 8;
+  UInt nb_element = 9;
   UInt nb_nodes = nb_element + 1;
   Real total_length = 10.;
   Real length = total_length / nb_element;
   Real heigth = 1.;
 
-
-  Array<Real> & nodes = const_cast<Array<Real> &>(beams.getNodes());
+  MeshAccessor mesh_accessor(beams);
+  auto & nodes = mesh_accessor.getNodes();
   nodes.resize(nb_nodes);
 
   beams.addConnectivityType(type);
-  Array<UInt> & connectivity =
-      const_cast<Array<UInt> &>(beams.getConnectivity(type));
+  auto & connectivity = mesh_accessor.getConnectivity(type);
   connectivity.resize(nb_element);
 
   beams.initNormals();
-  Array<Real> & normals = const_cast<Array<Real> &>(beams.getNormals(type));
+  auto & normals =
+      mesh_accessor.getData<Real>("extra_normal", type, _not_ghost, 2);
   normals.resize(nb_element);
 
   for (UInt i = 0; i < nb_nodes; ++i) {
@@ -101,6 +102,8 @@ int main(int argc, char * argv[]) {
     connectivity(i, 0) = i;
     connectivity(i, 1) = i + 1;
   }
+
+  mesh_accessor.makeReady();
 
   /* --------------------------------------------------------------------------
    */
@@ -138,11 +141,11 @@ int main(int argc, char * argv[]) {
   }
 
   for (UInt n = 0; n < nb_nodes; ++n) {
-    Real x = position(n, 0);
+    Real x = position(n, _x);
     //    Real y = position(n, 1);
 
     if (Math::are_float_equal(x, total_length / 2.)) {
-      forces(n, 1) = F;
+      forces(n, _y) = F;
       node_to_print = n;
     }
   }
@@ -167,17 +170,17 @@ int main(int argc, char * argv[]) {
   // "Solve"
 
   Real time = 0;
-  //model.assembleStiffnessMatrix();
-  //model.assembleMass();
+  // model.assembleStiffnessMatrix();
+  // model.assembleMass();
+  model.addDumpFieldVector("displacement");
+  model.addDumpFieldVector("force");
+  model.addDumpFieldVector("velocity");
+  model.addDumpFieldVector("acceleration");
   model.dump();
-  model.getDOFManager().getMatrix("K").saveMatrix("K.mtx");
-  model.getDOFManager().getMatrix("M").saveMatrix("M.mt");
   Real time_step = 1e-4;
   model.setTimeStep(time_step);
 
-  std::cout << "Time"
-            << "  |   "
-            << "Mid-Span Displacement" << std::endl;
+  std::cout << "Time  |   Mid-Span Displacement" << std::endl;
 
   /// time loop
   for (UInt s = 1; time < 0.64; ++s) {
@@ -197,6 +200,10 @@ int main(int argc, char * argv[]) {
                 << std::endl;
     model.dump();
   }
+
+  model.getDOFManager().getMatrix("K").saveMatrix("K.mtx");
+  model.getDOFManager().getMatrix("M").saveMatrix("M.mtx");
+
 
   pos.close();
 

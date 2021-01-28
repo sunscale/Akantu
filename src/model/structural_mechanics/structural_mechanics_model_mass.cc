@@ -53,16 +53,16 @@ private:
 };
 
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::assembleMass() {
+void StructuralMechanicsModel::assembleMassMatrix() {
   AKANTU_DEBUG_IN();
 
-  assembleMass(_not_ghost);
+  assembleMassMatrix(_not_ghost);
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
+void StructuralMechanicsModel::assembleMassMatrix(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
   auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctorStruct compute_rho(*this);
