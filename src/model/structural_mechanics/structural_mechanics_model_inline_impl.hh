@@ -201,7 +201,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
       auto & TtNtb = *TtNtb_it;
 
       // turn N^t tl back in the global referential
-      TtNtb.mul<true>(T, Ntb);
+      TtNtb.template mul<true>(T, Ntb);
     }
   }
 
@@ -247,15 +247,17 @@ void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
   Matrix<Real> R(nb_degree_of_freedom, nb_degree_of_freedom);
   for (UInt e = 0; e < nb_element; ++e, ++T_it) {
     const auto & T = *T_it;
-    for (UInt i = 0; i < nb_degree_of_freedom; ++i)
-      for (UInt j = 0; j < nb_degree_of_freedom; ++j)
+    for (UInt i = 0; i < nb_degree_of_freedom; ++i) {
+      for (UInt j = 0; j < nb_degree_of_freedom; ++j) {
         R(i, j) = T(i, j);
+      }
+    }
 
     for (UInt q = 0; q < nb_quad; ++q, ++Te_it, ++te_it) {
       const auto & Te = *Te_it;
       auto & te = *te_it;
       // turn the traction in the local referential
-      te.mul<false>(R, Te);
+      te.template mul<false>(R, Te);
     }
   }
 
