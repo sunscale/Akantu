@@ -16,6 +16,12 @@ Akantu: a FEM library
 
 .. toctree::
    :maxdepth: 2
+   :caption: Changelog
+
+   ./changelog.rst
+
+.. toctree::
+   :maxdepth: 2
    :caption: API Reference
 
    ./reference.rst
