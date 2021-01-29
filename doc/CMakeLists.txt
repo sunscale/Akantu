@@ -30,7 +30,7 @@
 #
 #===============================================================================
 
-if(AKANTU_DOCUMENTATION_DEVELOPER_MANUAL)
+if(AKANTU_DOCUMENTATION)
   add_subdirectory(dev-doc)
 endif()
 
