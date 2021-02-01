@@ -334,16 +334,12 @@ public:
                        ElementKind kind) override;
 
   virtual void dump(const std::string & dumper_name);
-
   virtual void dump(const std::string & dumper_name, UInt step);
-
   virtual void dump(const std::string & dumper_name, Real time, UInt step);
 
   void dump() override;
-
-  virtual void dump(UInt step);
-
-  virtual void dump(Real time, UInt step);
+  void dump(UInt step) override;
+  void dump(Real time, UInt step) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

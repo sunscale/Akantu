@@ -28,24 +28,18 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include <fstream>
-#include <limits>
-
-/* -------------------------------------------------------------------------- */
-#include "aka_common.hh"
-#include "material.hh"
-#include "mesh.hh"
 #include "mesh_accessor.hh"
-#include "mesh_io.hh"
-#include "mesh_io_msh_struct.hh"
+#include "non_linear_solver_newton_raphson.hh"
 #include "structural_mechanics_model.hh"
-
+/* -------------------------------------------------------------------------- */
+#include <fstream>
 #include <iostream>
-using namespace akantu;
+#include <limits>
 /* -------------------------------------------------------------------------- */
 
-#define TYPE _bernoulli_beam_2
+using namespace akantu;
 
+/* -------------------------------------------------------------------------- */
 static Real analytical_solution(Real time, Real L, Real rho, Real E,
                                 __attribute__((unused)) Real A, Real I,
                                 Real F) {
@@ -64,21 +58,32 @@ const Real F = 0.5e4;
 
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
-
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
-  Mesh beams(2);
-  debug::setDebugLevel(dblWarning);
-  const ElementType type = _bernoulli_beam_2;
 
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
+  UInt spatial_dimension = 2;
+  // auto method = _static;
+  auto method = _implicit_dynamic;
+  UInt nb_element = 100;
+  /* ------------------------------------------------------------------------ */
+
+  Mesh beams(spatial_dimension);
+  debug::setDebugLevel(dblWarning);
+
+
+  ElementType type = _bernoulli_beam_2;
+  if (spatial_dimension == 3) {
+    type = _bernoulli_beam_3;
+  }
+  /* ------------------------------------------------------------------------ */
   // Mesh
-  UInt nb_element = 9;
+//  UInt nb_element = 8;
+  //nb_element *= 2;
+
   UInt nb_nodes = nb_element + 1;
-  Real total_length = 10.;
+  Real total_length = 2.;
   Real length = total_length / nb_element;
-  Real heigth = 1.;
 
   MeshAccessor mesh_accessor(beams);
   auto & nodes = mesh_accessor.getNodes();
@@ -90,52 +95,65 @@ int main(int argc, char * argv[]) {
 
   beams.initNormals();
   auto & normals =
-      mesh_accessor.getData<Real>("extra_normal", type, _not_ghost, 2);
+      mesh_accessor.getData<Real>("extra_normal", type, _not_ghost, spatial_dimension);
   normals.resize(nb_element);
 
   for (UInt i = 0; i < nb_nodes; ++i) {
-    nodes(i, 0) = i * length;
-    nodes(i, 1) = 0;
+    nodes(i, _x) = i * length;
+    nodes(i, _y) = 0;
+    if (spatial_dimension == 3) {
+      nodes(i, _z) = 0;
+    }
   }
 
   for (UInt i = 0; i < nb_element; ++i) {
     connectivity(i, 0) = i;
     connectivity(i, 1) = i + 1;
+
+    if (spatial_dimension == 3) {
+      normals(i, _x) = 0;
+      normals(i, _y) = 0;
+      normals(i, _z) = 1;
+    }
   }
 
   mesh_accessor.makeReady();
 
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
   // Materials
-
   StructuralMechanicsModel model(beams);
 
   StructuralMaterial mat1;
   mat1.E = 120e6;
   mat1.rho = 1000;
-  mat1.A = heigth;
-  mat1.I = heigth * heigth * heigth / 12;
+
+  mat1.A = 0.003;
+
+  // Real heigth = .3;
+  // Real width  = .1;
+  mat1.I = 0.000225;
+  mat1.Iz = 0.000225;
+  mat1.Iy = 0.000025;
+  mat1.GJ = 0.0000790216;
+
   model.addMaterial(mat1);
 
-  /* --------------------------------------------------------------------------
-   */
+  /* ------------------------------------------------------------------------ */
   // Forces
-  // model.initFull();
-  model.initFull(_analysis_method = _implicit_dynamic);
+  //model.initFull(_analysis_method = _static);
+  model.initFull(_analysis_method = method);
 
   const auto & position = beams.getNodes();
   auto & forces = model.getExternalForce();
   auto & displacement = model.getDisplacement();
   auto & boundary = model.getBlockedDOFs();
 
-  UInt node_to_print = -1;
-
   forces.zero();
   displacement.zero();
   //  boundary.zero();
   // model.getElementMaterial(type)(i,0) = 0;
   // model.getElementMaterial(type)(i,0) = 1;
+  UInt node_to_print = -1;
   for (UInt i = 0; i < nb_element; ++i) {
     model.getElementMaterial(type)(i, 0) = 0;
   }
@@ -144,7 +162,7 @@ int main(int argc, char * argv[]) {
     Real x = position(n, _x);
     //    Real y = position(n, 1);
 
-    if (Math::are_float_equal(x, total_length / 2.)) {
+    if (Math::are_float_equal(x, total_length/2)) {
       forces(n, _y) = F;
       node_to_print = n;
     }
@@ -157,36 +175,64 @@ int main(int argc, char * argv[]) {
   }
 
   pos << "id,time,position,solution" << std::endl;
-  // model.computeForcesFromFunction<type>(load, _bft_traction)
   /* --------------------------------------------------------------------------
    */
   // Boundary conditions
   // true ~ displacement is blocked
-  boundary(0, 0) = true;
-  boundary(0, 1) = true;
-  boundary(nb_nodes - 1, 1) = true;
-  /* --------------------------------------------------------------------------
-   */
-  // "Solve"
+  boundary(0, _x) = true;
+  boundary(0, _y) = true;
 
+  boundary(nb_nodes - 1, _y) = true;
+
+  if(spatial_dimension == 3) {
+    boundary(0, _z) = true;
+    boundary(nb_nodes - 1, _z) = true;
+  }
+
+  /* ------------------------------------------------------------------------ */
+  // "Solve"
   Real time = 0;
   // model.assembleStiffnessMatrix();
   // model.assembleMass();
   model.addDumpFieldVector("displacement");
   model.addDumpFieldVector("force");
-  model.addDumpFieldVector("velocity");
-  model.addDumpFieldVector("acceleration");
+  model.addDumpFieldVector("internal_force");
+  if (method == _implicit_dynamic) {
+    model.addDumpFieldVector("velocity");
+    model.addDumpFieldVector("acceleration");
+  }
   model.dump();
+
   Real time_step = 1e-4;
   model.setTimeStep(time_step);
 
-  std::cout << "Time  |   Mid-Span Displacement" << std::endl;
+  model.assembleMatrix("K");
+  model.getDOFManager().getMatrix("K").saveMatrix("K.mtx");
 
+  model.assembleMatrix("M");
+  model.getDOFManager().getMatrix("M").saveMatrix("M.mtx");
+
+  auto & solver = model.getNonLinearSolver();
+  solver.set("max_iterations", 100);
+  solver.set("threshold", 1e-8);
+  solver.set("convergence_type", SolveConvergenceCriteria::_solution);
+
+  if (method == _static) {
+    model.solveStep();
+    model.dump();
+    return 0;
+  }
+
+  std::cout << "Time  |   Mid-Span Displacement" << std::endl;
   /// time loop
   for (UInt s = 1; time < 0.64; ++s) {
-
-    model.solveStep();
-
+    try {
+      model.solveStep();
+    } catch (debug::NLSNotConvergedException & e) {
+      std::cerr << "Did not converge after " << e.niter << " error: " << e.error
+                << " > " << e.threshold << std::endl;
+      return 1;
+    }
     pos << s << "," << time << "," << displacement(node_to_print, 1) << ","
         << analytical_solution(s * time_step, total_length, mat1.rho, mat1.E,
                                mat1.A, mat1.I, F)
@@ -194,20 +240,19 @@ int main(int argc, char * argv[]) {
     //    pos << s << "," << time << "," << displacement(node_to_print, 1) <<
     //    "," << analytical_solution(s*time_step) << std::endl;
 
+    Int n_iter = solver.get("nb_iterations");
+
     time += time_step;
-    if (s % 100 == 0)
-      std::cout << time << "  |   " << displacement(node_to_print, 1)
+    if (s % 100 == 0) {
+      std::cout << std::setw(5) << time << "  |   "
+                << std::setw(10) <<displacement(node_to_print, 1) << " |  " << n_iter
                 << std::endl;
-    model.dump();
+      model.dump(time, s);
+    }
+
   }
 
-  model.getDOFManager().getMatrix("K").saveMatrix("K.mtx");
-  model.getDOFManager().getMatrix("M").saveMatrix("M.mtx");
-
-
   pos.close();
-
-  finalize();
 
   return EXIT_SUCCESS;
 }

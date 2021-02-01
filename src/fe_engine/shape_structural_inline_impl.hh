@@ -87,29 +87,29 @@ void ShapeStructural<kind>::computeShapesOnIntegrationPointsInternal(
     Array<Real> & shapes, GhostType ghost_type,
     const Array<UInt> & filter_elements, bool mass) const {
 
-  UInt nb_points = integration_points.cols();
-  UInt nb_element = mesh.getConnectivity(type, ghost_type).size();
+  auto nb_points = integration_points.cols();
+  auto nb_element = mesh.getConnectivity(type, ghost_type).size();
+  auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
 
   shapes.resize(nb_element * nb_points);
 
-  UInt ndof = ElementClass<type>::getNbDegreeOfFreedom();
+  auto nb_dofs = ElementClass<type>::getNbDegreeOfFreedom();
+  auto nb_rows = nb_dofs;
+  if (mass) {
+    nb_rows = ElementClass<type>::getNbStressComponents();
+  }
 
 #if !defined(AKANTU_NDEBUG)
-  UInt size_of_shapes = ElementClass<type>::getShapeSize();
+  UInt size_of_shapes = nb_rows * nb_dofs * nb_nodes_per_element;
   AKANTU_DEBUG_ASSERT(shapes.getNbComponent() == size_of_shapes,
                       "The shapes array does not have the correct "
                           << "number of component");
 #endif
 
-  auto nb_rows = ndof;
-  if (mass) {
-    nb_rows = ElementClass<type>::getNaturalSpaceDimension();
-  }
 
   auto shapes_it = shapes.begin_reinterpret(
-      nb_rows, ElementClass<type>::getNbNodesPerInterpolationElement() * ndof,
+      nb_rows, ElementClass<type>::getNbNodesPerInterpolationElement() * nb_dofs,
       nb_points, nb_element);
-
   auto shapes_begin = shapes_it;
   if (filter_elements != empty_filter) {
     nb_element = filter_elements.size();
@@ -119,20 +119,33 @@ void ShapeStructural<kind>::computeShapesOnIntegrationPointsInternal(
   auto nodes_it = nodes_per_element->begin(mesh.getSpatialDimension(),
                                            Mesh::getNbNodesPerElement(type));
   auto nodes_begin = nodes_it;
+  auto rot_matrix_it =
+      make_view(rotation_matrices(type, ghost_type), nb_dofs, nb_dofs).begin();
+  auto rot_matrix_begin = rot_matrix_it;
 
   for (UInt elem = 0; elem < nb_element; ++elem) {
     if (filter_elements != empty_filter) {
       shapes_it = shapes_begin + filter_elements(elem);
       nodes_it = nodes_begin + filter_elements(elem);
+      rot_matrix_it = rot_matrix_begin + filter_elements(elem);
     }
 
     Tensor3<Real> & N = *shapes_it;
     auto & real_coord = *nodes_it;
 
-    if(not mass) {
-      ElementClass<type>::computeShapes(integration_points, real_coord, N);
+    auto & RDOFs = *rot_matrix_it;
+
+    Matrix<Real> T(N.size(1), N.size(1), 0);
+
+    for (UInt i = 0; i < nb_nodes_per_element; ++i) {
+      T.block(RDOFs, i * RDOFs.rows(), i * RDOFs.rows());
+    }
+
+    if (not mass) {
+      ElementClass<type>::computeShapes(integration_points, real_coord, T, N);
     } else {
-      ElementClass<type>::computeShapesMass(integration_points, real_coord, N);
+      ElementClass<type>::computeShapesMass(integration_points, real_coord, T,
+                                            N);
     }
     if (filter_elements == empty_filter) {
       ++shapes_it;
@@ -203,6 +216,9 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
   auto nb_element = mesh.getNbElement(type, ghost_type);
   auto nb_dof = ElementClass<type>::getNbDegreeOfFreedom();
   const auto dim = ElementClass<type>::getSpatialDimension();
+  const auto spatial_dimension = mesh.getSpatialDimension();
+  const auto natural_spatial_dimension =
+      ElementClass<type>::getNaturalSpaceDimension();
 
   auto itp_type = FEEngine::getInterpolationType(type);
   if (not shapes.exists(itp_type, ghost_type)) {
@@ -210,6 +226,7 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
     this->shapes.alloc(0, size_of_shapes, itp_type, ghost_type);
   }
 
+  auto & rot_matrices = this->rotation_matrices(type, ghost_type);
   auto & shapes_ = this->shapes(itp_type, ghost_type);
   shapes_.resize(nb_element * nb_points);
 
@@ -217,10 +234,24 @@ void ShapeStructural<kind>::precomputeShapesOnIntegrationPoints(
 
   for (auto && tuple :
        zip(make_view(shapes_, nb_dof, nb_dof * nb_nodes_per_element, nb_points),
-           make_view(*nodes_per_element, dim, nb_nodes_per_element))) {
+           make_view(*nodes_per_element, dim, nb_nodes_per_element),
+           make_view(rot_matrices, nb_dof, nb_dof))) {
     auto & N = std::get<0>(tuple);
-    auto & real_coord = std::get<1>(tuple);
-    ElementClass<type>::computeShapes(natural_coords, real_coord, N);
+    auto & X = std::get<1>(tuple);
+    auto & RDOFs = std::get<2>(tuple);
+
+    Matrix<Real> T(N.size(1), N.size(1), 0);
+
+    for (UInt i = 0; i < nb_nodes_per_element; ++i) {
+      T.block(RDOFs, i * RDOFs.rows(), i * RDOFs.rows());
+    }
+
+    auto R = RDOFs.block(0, 0, spatial_dimension, spatial_dimension);
+    // Rotate to local basis
+    auto x =
+        (R * X).block(0, 0, natural_spatial_dimension, nb_nodes_per_element);
+
+    ElementClass<type>::computeShapes(natural_coords, x, T, N);
   }
 
   AKANTU_DEBUG_OUT();

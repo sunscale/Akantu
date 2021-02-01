@@ -182,28 +182,9 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
 
   Array<Real> Ntbs(nb_element * nb_quad,
                    nb_degree_of_freedom * nb_nodes_per_element);
-  Array<Real> TtNtbs(nb_element * nb_quad,
-                     nb_degree_of_freedom * nb_nodes_per_element);
 
   auto & fem = getFEEngine();
   fem.computeNtb(tractions, Ntbs, type);
-
-  auto T_it =
-      rotation_matrix(type).begin(nb_degree_of_freedom * nb_nodes_per_element,
-                                  nb_degree_of_freedom * nb_nodes_per_element);
-  auto Ntb_it = Ntbs.begin(nb_degree_of_freedom * nb_nodes_per_element);
-  auto TtNtb_it = TtNtbs.begin(nb_degree_of_freedom * nb_nodes_per_element);
-
-  for (UInt e = 0; e < nb_element; ++e, ++T_it) {
-    const auto & T = *T_it;
-    for (UInt q = 0; q < nb_quad; ++q, ++Ntb_it, ++TtNtb_it) {
-      const auto & Ntb = *Ntb_it;
-      auto & TtNtb = *TtNtb_it;
-
-      // turn N^t tl back in the global referential
-      TtNtb.template mul<true>(T, Ntb);
-    }
-  }
 
   // allocate the vector that will contain the integrated values
   auto name = id + std::to_string(type) + ":integral_boundary";
@@ -211,7 +192,7 @@ void StructuralMechanicsModel::computeForcesByLocalTractionArray(
                         name);
 
   // do the integration
-  getFEEngine().integrate(TtNtbs, int_funct,
+  getFEEngine().integrate(Ntbs, int_funct,
                           nb_degree_of_freedom * nb_nodes_per_element, type);
 
   // assemble the result into force vector

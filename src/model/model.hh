@@ -306,6 +306,8 @@ public:
                             const std::string & directory);
 
   virtual void dump();
+  virtual void dump(UInt step);
+  virtual void dump(Real time, UInt step);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

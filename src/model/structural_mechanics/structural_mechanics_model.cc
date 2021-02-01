@@ -222,6 +222,10 @@ void StructuralMechanicsModel::initModel() {
 void StructuralMechanicsModel::assembleStiffnessMatrix() {
   AKANTU_DEBUG_IN();
 
+  if (not getDOFManager().hasMatrix("K")) {
+    getDOFManager().getNewMatrix("K", getMatrixType("K"));
+  }
+
   getDOFManager().getMatrix("K").zero();
 
   for (const auto & type :
@@ -412,11 +416,10 @@ void StructuralMechanicsModel::assembleResidual() {
 
   auto & dof_manager = getDOFManager();
 
-  internal_force->zero();
-  computeStresses();
   assembleInternalForce();
-  dof_manager.assembleToResidual("displacement", *internal_force, -1);
+
   dof_manager.assembleToResidual("displacement", *external_force, 1);
+  dof_manager.assembleToResidual("displacement", *internal_force, 1);
 
   AKANTU_DEBUG_OUT();
 }
@@ -446,7 +449,7 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
 
   switch (type) {
   case TimeStepSolverType::_static: {
-    options.non_linear_solver_type = NonLinearSolverType::_linear;
+    options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
     options.integration_scheme_type["displacement"] =
         IntegrationSchemeType::_pseudo_time;
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
@@ -468,8 +471,11 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleInternalForce() {
+  internal_force->zero();
+  computeStresses();
+
   for (auto type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
-                   _element_kind = _ek_structural)) {
+                                     _element_kind = _ek_structural)) {
     assembleInternalForce(type, _not_ghost);
     // assembleInternalForce(type, _ghost);
   }
@@ -494,7 +500,7 @@ void StructuralMechanicsModel::assembleInternalForce(ElementType type,
   BtSigma.resize(0);
 
   getDOFManager().assembleElementalArrayLocalArray(intBtSigma, *internal_force,
-                                                   type, gt, 1);
+                                                   type, gt, -1);
 }
 /* -------------------------------------------------------------------------- */
 

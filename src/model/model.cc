@@ -314,24 +314,26 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::dump() { mesh.dump(); }
 
 /* -------------------------------------------------------------------------- */
+void Model::dump(UInt step) { mesh.dump(step); }
 
+/* -------------------------------------------------------------------------- */
+void Model::dump(Real time, UInt step) { mesh.dump(time, step); }
+
+/* -------------------------------------------------------------------------- */
 void Model::setDirectory(const std::string & directory) {
   mesh.setDirectory(directory);
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::setDirectoryToDumper(const std::string & dumper_name,
                                  const std::string & directory) {
   mesh.setDirectoryToDumper(dumper_name, directory);
 }
 
 /* -------------------------------------------------------------------------- */
-
 void Model::setTextModeToDumper() { mesh.setTextModeToDumper(); }
 
 /* -------------------------------------------------------------------------- */

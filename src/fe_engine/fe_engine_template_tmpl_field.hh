@@ -411,9 +411,12 @@ namespace fe_engine {
                             UInt & nb_degree_of_freedom, UInt /*nb_element*/,
                             GhostType ghost_type) {
 
-        UInt shapes_size = ElementClass<type>::getShapeMassSize();
-        auto shapes = std::make_unique<Array<Real>>(0, shapes_size);
-        nb_degree_of_freedom = ElementClass<type>::getNaturalSpaceDimension();
+        auto nb_unknown = ElementClass<type>::getNbStressComponents();
+        auto nb_degree_of_freedom_ = ElementClass<type>::getNbDegreeOfFreedom();
+        auto nb_nodes_per_element = ElementClass<type>::getNbNodesPerElement();
+        auto shapes = std::make_unique<Array<Real>>(
+            0, nb_unknown * nb_nodes_per_element * nb_degree_of_freedom_);
+        nb_degree_of_freedom = nb_unknown;
         shape_functions.template computeShapesMassOnIntegrationPoints<type>(
             nodes, integration_points, *shapes, ghost_type);
 
