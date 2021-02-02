@@ -22,7 +22,7 @@ plugins:
     exclude_patterns:
       - "test/test_fe_engine/py_engine/py_engine.py"
   cppcheck:
-    enabled: true
+    enabled: false
     project: compile_commands.json
     language: c++
     check: warning, style, performance

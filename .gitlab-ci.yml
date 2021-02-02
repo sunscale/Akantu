@@ -284,6 +284,25 @@ code_quality:
   artifacts:
     paths: [gl-code-quality-report.json]
 
+code_quality_clang_tidy:
+  dependencies:
+    - build:debian_testing_clang
+  stage: test
+  script:
+    - cmake --build build --target clang-tidy-all > >(tee -a clang-tidy-all-out.log) 2> >(tee -a clang-tidy-all-err.log >&2)
+    - python3 ./test/ci/scripts/clang-tidy2code-quality.py
+  artifacts:
+    when: on_success
+    paths:
+      - clang-tidy-all-err.log
+      - clang-tidy-all-out.log
+      - code-quality-clang.json
+    expire_in: 10h
+  artifacts:
+    reports:
+      codequality:
+        - code-quality-clang.json
+
 # ------------------------------------------------------------------------------
 pages:
   stage: deploy

@@ -256,3 +256,9 @@ endforeach()
 generate_material_list()
 
 register_target_to_tidy(akantu)
+register_tidy_all(${AKANTU_LIBRARY_SRCS})
+register_code_to_format(
+  ${AKANTU_LIBRARY_SRCS}
+  ${AKANTU_LIBRARY_PUBLIC_HDRS}
+  ${AKANTU_LIBRARY_PRIVATE_HDRS}
+  )

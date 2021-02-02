@@ -71,17 +71,23 @@ endif()
 
 find_program(GCOV_EXECUTABLE gcov)
 if (GCOV_EXECUTABLE)
-  set(_coverage "-g -ggdb3 -DNDEBUG -DAKANTU_NDEBUG -O2 -fprofile-arcs -ftest-coverage")
+  set(_coverage "-g -ggdb3 -DNDEBUG -DAKANTU_NDEBUG -O2 --coverage")
   set(CMAKE_CXX_FLAGS_COVERAGE ${_coverage}
     CACHE STRING "Flags used by the compiler during profiling builds")
   set(CMAKE_C_FLAGS_COVERAGE ${_coverage}
     CACHE STRING "Flags used by the compiler during profiling builds")
   set(CMAKE_Fortran_FLAGS_COVERAGE ${_coverage}
     CACHE STRING "Flags used by the compiler during profiling builds")
+  set(CMAKE_SHARED_LINLER_FLAGS_COVERAGE ${_coverage}
+    CACHE STRING "Flags used by the compiler during profiling builds")
+  set(CMAKE_EXE_LINKER_FLAGS_COVERAGE ${_coverage}
+    CACHE STRING "Flags used by the linker during sanitizing builds")
 
   mark_as_advanced(
     CMAKE_CXX_FLAGS_COVERAGE
     CMAKE_C_FLAGS_COVERAGE
     CMAKE_Fortran_FLAGS_COVERAGE
+    CMAKE_SHARED_LINKER_FLAGS_SANITIZEMEMORY
+    CMAKE_EXE_LINKER_FLAGS_SANITIZEMEMORY
     )
 endif()
