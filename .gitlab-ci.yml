@@ -285,6 +285,8 @@ code_quality:
     paths: [gl-code-quality-report.json]
 
 code_quality_clang_tidy:
+  extends:
+    - .debian_testing_clang
   dependencies:
     - build:debian_testing_clang
   stage: test
