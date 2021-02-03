@@ -26,7 +26,7 @@ set(CMAKE_C_FLAGS_COVERAGE ${_coverage}
   CACHE STRING "Flags used by the compiler during profiling builds" FORCE)
 set(CMAKE_Fortran_FLAGS_COVERAGE ${_coverage}
   CACHE STRING "Flags used by the compiler during profiling builds" FORCE)
-set(CMAKE_SHARED_LINLER_FLAGS_COVERAGE ${_coverage}
+set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE ${_coverage}
   CACHE STRING "Flags used by the compiler during profiling builds" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_COVERAGE ${_coverage}
   CACHE STRING "Flags used by the linker during sanitizing builds" FORCE)
