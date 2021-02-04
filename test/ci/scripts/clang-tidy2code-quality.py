@@ -33,7 +33,7 @@ categories = {
     "readability": "Clarity",
 }
 
-issues = []
+issues = {}
 
 with open('clang-tidy-all-out.log', 'r') as log:
     for line in log:
@@ -54,11 +54,16 @@ with open('clang-tidy-all-out.log', 'r') as log:
                 'location': {
                     "path": line_dict['file'],
                     "lines": {
+                        "begin": int(line_dict['line']),
+                        "end": int(line_dict['line']),
+                    },
+                    "positions": {
                         "begin": {
                             "line": int(line_dict['line']),
                             "column": int(line_dict['column']),
                         },
-                    }
+                    },
+
                 },
                 'severity': 'minor',
             }
@@ -67,6 +72,9 @@ with open('clang-tidy-all-out.log', 'r') as log:
             if category in categories:
                 issue['category'] = categories[category]
 
-            issues.append(issue)
+            # use a dictionnary to avoid duplicates
+            issues[issue['fingerprint']] = issue
+
+issues = list(issues.values())
 
 json.dump(issues, sys.stdout)
