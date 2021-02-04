@@ -215,8 +215,26 @@ public:
 
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE(Set_ID, set_ID, UInt);
 
-  void addMaterial(StructuralMaterial & material) {
-    materials.push_back(material);
+  /**
+   * \brief	This function adds the `StructuralMaterial` material to the list of materials managed by *this.
+   *
+   * It is important that this function might invalidate all references to structural materials,
+   * that were previously optained by `getMaterial()`.
+   *
+   * \param  material 		The new material.
+   *
+   * \return 	The ID of the material that was added.
+   *
+   * \note	The return type is is new.
+   */
+  UInt
+  addMaterial(
+  	StructuralMaterial & material)
+  {
+    const auto matID = materials.size();	//ID of the material
+    materials.push_back(material);		//add the material, might cause reallocation.
+    AKANTU_DEBUG_ASSERT(matID <= (::std::size_t)::std::numeric_limits<UInt>::max(), "Can not represent the material ID");
+    return UInt(matID);
   }
 
   const StructuralMaterial & getMaterial(const Element & element) const {
