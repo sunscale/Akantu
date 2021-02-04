@@ -19,7 +19,7 @@ RUN apt-get -qq update && apt-get -qq -y install \
     gmsh python3-pytest \
     ccache clang-format python3-flake8 clang-tidy \
     curl git xsltproc jq \
-    gcovr binutils \
+    gcovr llvm binutils \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .openmpi /root/.openmpi

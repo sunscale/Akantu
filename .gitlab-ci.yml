@@ -95,6 +95,7 @@ docker build:ubuntu-lts:
     -   xsltproc -o ./juint.xml ${CI_PROJECT_DIR}/test/ci/ctest2junit.xsl Testing/${tag}/Test.xml;
     - fi
     - gcovr --xml
+            --gcov-executable "${GCOV_EXECUTABLE}"
             --output coverage.xml
             --object-directory ${CI_PROJECT_DIR}/build
             --root ${CI_PROJECT_DIR}  -s || true
@@ -154,12 +155,14 @@ docker build:ubuntu-lts:
     CC: /usr/lib/ccache/gcc
     CXX: /usr/lib/ccache/g++
     FC: gfortran
+    GCOV_EXECUTABLE: gcov
 
 .compiler_clang:
   variables:
     CC: /usr/lib/ccache/clang
     CXX: /usr/lib/ccache/clang++
     FC: gfortran
+    GCOV_EXECUTABLE: llvm-cov gcov
 
 # ------------------------------------------------------------------------------
 .debian_testing_gcc:
@@ -297,9 +300,9 @@ code_quality_clang_tidy:
     paths:
       - clang-tidy-all-err.log
       - clang-tidy-all-out.log
+      - code-quality-clang.json
     expire_in: 10h
   artifacts:
-    when: on_success
     reports:
       codequality:
         - code-quality-clang.json
