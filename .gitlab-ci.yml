@@ -292,7 +292,6 @@ code_quality_clang_tidy:
     - .debian_testing_clang
   dependencies:
     - build:debian_testing_clang
-    - code_quality
   stage: test
   script:
     - cmake --build build --target clang-tidy-all > >(tee -a clang-tidy-all-out.log) 2> >(tee -a clang-tidy-all-err.log >&2)
