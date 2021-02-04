@@ -16,16 +16,17 @@ namespace akantu {
 
 #define def_function_nocopy(func_name)                                         \
 	def(#func_name,							       \
-	    [](StructuralMechanicsModel & self) -> decltype(auto)       	       \
+	    [](StructuralMechanicsModel & self) -> decltype(auto)              \
 				{return self.func_name();},		       \
 	    py::return_value_policy::reference)
 
 #define def_function_(func_name)                                               \
 	def(#func_name,							       \
-	    [](StructuralMechanicsModel & self) -> decltype(auto)       	       \
+	    [](StructuralMechanicsModel & self) -> decltype(auto)              \
 				{return self.func_name();})
 
-#define def_plainmember(M) def_readwrite(#M, &StructuralMaterial:: M)
+#define def_plainmember(M) 						       \
+	def_readwrite(#M, &StructuralMaterial:: M)
 /* -------------------------------------------------------------------------- */
 
 
@@ -37,6 +38,7 @@ register_structural_mechanics_model(
 	 *  The wrapper aims to mimic the behaviour of the real material.
 	 */
 	py::class_<StructuralMaterial>(mod, "StructuralMaterial")
+		.def(py::init<>())
 		.def_plainmember(E)
 		.def_plainmember(A)
 		.def_plainmember(I)
@@ -45,14 +47,15 @@ register_structural_mechanics_model(
 		.def_plainmember(GJ)
 		.def_plainmember(rho)
 		.def_plainmember(t)
-		.def_plainmember(nu);
+		.def_plainmember(nu)
+	;
 
 
 	/* Now we create the structural model wrapper
 	 *  Note that this is basically a port from the solid mechanic part.
 	 */
 	py::class_<StructuralMechanicsModel, Model>(mod, "StructuralMechanicsModel")
-		.def(py::init<Mesh &, UInt, const ID &, const MemoryID &, const ModelType>(),
+		.def(py::init<Mesh &, UInt, const ID &, const MemoryID &>(),
 			py::arg("mesh"),
 			py::arg("spatial_dimension") = _all_dimensions,
 			py::arg("id") = "structural_mechanics_model",
@@ -63,6 +66,11 @@ register_structural_mechanics_model(
 			   { self.initFull(_analysis_method = analysis_method);	return; },
 			py::arg("_analysis_method")
 		)
+		.def("initFull",
+			[](StructuralMechanicsModel& self) -> void
+			   { self.initFull();	return; }
+		)
+#		if 0
 		.def("setTimeStep",
 			[](StructuralMechanicsModel& self, const Real& time_step, const ID& solver_id) -> void
 			   { AKANTU_ERROR("This function was commented out in the source code."); return;
@@ -70,6 +78,7 @@ register_structural_mechanics_model(
 			py::arg("time_step"),
 			py::arg("solver_id") = ""
 		)
+#		endif
 		.def_function_nocopy(getExternalForce)
 		.def_function_nocopy(getDisplacement)
 		.def_function_nocopy(getInternalForce)
@@ -78,28 +87,51 @@ register_structural_mechanics_model(
 		.def_function_nocopy(getInternalForce)
 		.def_function_nocopy(getBlockedDOFs)
 		.def_function_nocopy(getMesh)
-#if 0
-		.def("dump", py::overload_cast<>(&StructuralMechanicsModel::dump))
-		.def("dump",
-				py::overload_cast<const std::string &>(&StructuralMechanicsModel::dump))
-		.def("dump", py::overload_cast<const std::string &, UInt>(
-					&StructuralMechanicsModel::dump))
-		.def("dump", py::overload_cast<const std::string &, Real, UInt>(
-					&StructuralMechanicsModel::dump))
-		.def("getMaterial",
-				py::overload_cast<UInt>(&StructuralMechanicsModel::getMaterial),
-				py::return_value_policy::reference)
-		.def("getMaterial",
-				py::overload_cast<const std::string &>(
-					&StructuralMechanicsModel::getMaterial),
-				py::return_value_policy::reference)
-		.def("getMaterialIndex", &StructuralMechanicsModel::getMaterialIndex)
-		.def("setMaterialSelector", &StructuralMechanicsModel::setMaterialSelector)
-		.def("getMaterialSelector", &StructuralMechanicsModel::getMaterialSelector)
-#endif
+
+		/*
+		 * These functions are basically untested.
+		 */
+		.def("getElementMaterialMap",
+			[](StructuralMechanicsModel& self, const ElementType& type, GhostType ghost_type)
+			   { return self.getElementMaterial(type, ghost_type); },
+			"This function returns the map that maps elements to materials.",
+			py::arg("type"),
+			py::arg("ghost_type") = _not_ghost,
+          		py::return_value_policy::reference
+		)
+		.def("getMaterialOf",
+			[](StructuralMechanicsModel& self, Element element)
+			   { return self.getMaterial(element); },
+			"This function returns the `StructuralMaterial` instance that is associated with element `element`."
+			" It is important that the returned object can be modified, but this will not affect the material stored inside the model."
+			" If you want to change the material, use `addMaterial()` to add a new one and then manipulate the mapping by operating on `getElementMaterialMap()`.",
+			py::arg("element"),
+			py::return_value_policy::copy	//By using the copy operation, we completly decouple the C++ and Python part.
+		)
+		.def("addMaterial",
+			[](StructuralMechanicsModel& self, StructuralMaterial& mat) -> UInt
+			   { return self.addMaterial(mat); },
+			"This function adds the `StructuralMaterial` `mat` to `self`."
+			" The function returns the ID of the new material.",
+			py::arg("mat")
+		)
+		.def("getMaterialByID",
+			[](StructuralMechanicsModel& self, UInt i)
+			   { return self.getMaterialByID(i); },
+			"This function returns the `i`th material of `self`",
+			py::arg("i"),
+			py::return_value_policy::copy 	//Everything will be coupled so a complet decoupling
+		)
+		.def("getNbMaterials",
+			[](StructuralMechanicsModel& self)
+			   { return self.getNbMaterials(); },
+			"Returns the number of different materials inside `self`."
+			" The highest ID is one less than the returned number."
+		)
 		;
 
-}; //End: register structural mechanical model
+	return;
+} //End: register structural mechanical model
 
 } // namespace akantu
 
