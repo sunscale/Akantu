@@ -241,6 +241,34 @@ public:
     return materials[element_material(element)];
   }
 
+
+  /**
+   * \brief	Returns the ith material of *this.
+   *
+   * \param  i		The ith material
+   */
+  const StructuralMaterial&
+  getMaterialByID(
+  	UInt 	i)
+   const
+   noexcept(false)
+  {
+    return materials.at(i);
+  }
+
+
+  /**
+   * \brief	Returns the number of the different materials inside *this.
+   */
+   UInt
+   getNbMaterials()
+    const
+   {
+      return materials.size();
+   }
+
+
+
   /* ------------------------------------------------------------------------ */
   /* Boundaries (structural_mechanics_model_boundary.cc)                      */
   /* ------------------------------------------------------------------------ */
