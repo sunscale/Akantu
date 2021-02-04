@@ -101,6 +101,9 @@ public:
   /// callback to assemble the residual (rhs)
   void assembleResidual() override;
 
+  void assembleResidual(const ID & residual_part) override;
+
+  bool canSplitResidual() override { return false; }
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from Model                                               */
   /* ------------------------------------------------------------------------ */
@@ -138,18 +141,7 @@ protected:
   /// assemble the mass matrix for consistent mass resolutions
   void assembleMassMatrix();
 
-  /// TODO remove
-  void computeRotationMatrix(ElementType type);
-
 protected:
-  /// compute Rotation Matrices
-  template <const ElementType type>
-  void computeRotationMatrix(__attribute__((unused)) Array<Real> & rotations) {}
-
-  /* ------------------------------------------------------------------------ */
-  /* Mass (structural_mechanics_model_mass.cc) */
-  /* ------------------------------------------------------------------------ */
-
   /// assemble the mass matrix for either _ghost or _not_ghost elements
   void assembleMassMatrix(GhostType ghost_type);
 
@@ -162,7 +154,6 @@ protected:
   /* ------------------------------------------------------------------------ */
 private:
   template <ElementType type> void assembleStiffnessMatrix();
-  template <ElementType type> void assembleMassMatrix();
   template <ElementType type> void computeStressOnQuad();
   template <ElementType type>
   void computeTangentModuli(Array<Real> & tangent_moduli);
@@ -191,7 +182,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// set the value of the time step
-  // void setTimeStep(Real time_step, const ID & solver_id = "") override;
+  void setTimeStep(Real time_step, const ID & solver_id = "") override;
 
   /// return the dimension of the system space
   AKANTU_GET_MACRO(SpatialDimension, spatial_dimension, UInt);
@@ -299,6 +290,9 @@ private:
 
   /// flag defining if the increment must be computed or not
   bool increment_flag;
+
+  bool need_to_reassemble_mass{true};
+  bool need_to_reassemble_stiffness{true};
 
   /* ------------------------------------------------------------------------ */
   std::vector<StructuralMaterial> materials;

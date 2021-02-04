@@ -54,23 +54,22 @@ static Real analytical_solution(Real time, Real L, Real rho, Real E,
 }
 
 // load
-const Real F = 0.5e4;
-
 /* -------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------- */
 int main(int argc, char * argv[]) {
   initialize(argc, argv);
 
   /* ------------------------------------------------------------------------ */
-  UInt spatial_dimension = 2;
-  // auto method = _static;
+  UInt spatial_dimension = 3;
+  Real total_length = 20.;
+
+  //auto method = _static;
   auto method = _implicit_dynamic;
-  UInt nb_element = 100;
+  UInt nb_element = 10;
   /* ------------------------------------------------------------------------ */
 
   Mesh beams(spatial_dimension);
   debug::setDebugLevel(dblWarning);
-
 
   ElementType type = _bernoulli_beam_2;
   if (spatial_dimension == 3) {
@@ -78,11 +77,10 @@ int main(int argc, char * argv[]) {
   }
   /* ------------------------------------------------------------------------ */
   // Mesh
-//  UInt nb_element = 8;
-  //nb_element *= 2;
+  //  UInt nb_element = 8;
+  // nb_element *= 2;
 
   UInt nb_nodes = nb_element + 1;
-  Real total_length = 2.;
   Real length = total_length / nb_element;
 
   MeshAccessor mesh_accessor(beams);
@@ -94,8 +92,8 @@ int main(int argc, char * argv[]) {
   connectivity.resize(nb_element);
 
   beams.initNormals();
-  auto & normals =
-      mesh_accessor.getData<Real>("extra_normal", type, _not_ghost, spatial_dimension);
+  auto & normals = mesh_accessor.getData<Real>("extra_normal", type, _not_ghost,
+                                               spatial_dimension);
   normals.resize(nb_element);
 
   for (UInt i = 0; i < nb_nodes; ++i) {
@@ -123,50 +121,46 @@ int main(int argc, char * argv[]) {
   // Materials
   StructuralMechanicsModel model(beams);
 
-  StructuralMaterial mat1;
-  mat1.E = 120e6;
-  mat1.rho = 1000;
+  const Real F = 1;
 
-  mat1.A = 0.003;
+  StructuralMaterial mat1;
+  mat1.E = 1e9;
+  mat1.rho = 1;
+
+  mat1.A = 1;
 
   // Real heigth = .3;
   // Real width  = .1;
-  mat1.I = 0.000225;
-  mat1.Iz = 0.000225;
-  mat1.Iy = 0.000025;
-  mat1.GJ = 0.0000790216;
+  mat1.I = 1;
+  mat1.Iz = 1;
+  mat1.Iy = 1;
+  mat1.GJ = 1;
 
   model.addMaterial(mat1);
 
   /* ------------------------------------------------------------------------ */
   // Forces
-  //model.initFull(_analysis_method = _static);
+  // model.initFull(_analysis_method = _static);
   model.initFull(_analysis_method = method);
 
-  const auto & position = beams.getNodes();
   auto & forces = model.getExternalForce();
   auto & displacement = model.getDisplacement();
   auto & boundary = model.getBlockedDOFs();
 
   forces.zero();
   displacement.zero();
-  //  boundary.zero();
-  // model.getElementMaterial(type)(i,0) = 0;
-  // model.getElementMaterial(type)(i,0) = 1;
   UInt node_to_print = -1;
   for (UInt i = 0; i < nb_element; ++i) {
     model.getElementMaterial(type)(i, 0) = 0;
   }
 
-  for (UInt n = 0; n < nb_nodes; ++n) {
-    Real x = position(n, _x);
-    //    Real y = position(n, 1);
-
-    if (Math::are_float_equal(x, total_length/2)) {
-      forces(n, _y) = F;
-      node_to_print = n;
-    }
-  }
+  // for (UInt n = 0; n < nb_nodes; ++n) {
+  //   Real x = position(n, _x);
+  //   if (Math::are_float_equal(x, total_length/2)) {
+  //     forces(n, _y) = F;
+  //     node_to_print = n;
+  //   }
+  // }
 
   std::ofstream pos;
   pos.open("position.csv");
@@ -178,16 +172,15 @@ int main(int argc, char * argv[]) {
   /* --------------------------------------------------------------------------
    */
   // Boundary conditions
-  // true ~ displacement is blocked
-  boundary(0, _x) = true;
-  boundary(0, _y) = true;
-
-  boundary(nb_nodes - 1, _y) = true;
-
-  if(spatial_dimension == 3) {
-    boundary(0, _z) = true;
-    boundary(nb_nodes - 1, _z) = true;
+  for (UInt d = 0; d < spatial_dimension; ++d) {
+    boundary(0, d) = true;
   }
+  for (UInt d = 0; d < spatial_dimension - 1; ++d) {
+    boundary(nb_nodes - 1, d + 1) = true;
+  }
+
+  node_to_print = nb_nodes / 2 + 1;
+  forces(node_to_print - 1, _y) = F;
 
   /* ------------------------------------------------------------------------ */
   // "Solve"
@@ -195,15 +188,19 @@ int main(int argc, char * argv[]) {
   // model.assembleStiffnessMatrix();
   // model.assembleMass();
   model.addDumpFieldVector("displacement");
+  model.addDumpFieldVector("rotation");
   model.addDumpFieldVector("force");
+  model.addDumpFieldVector("momentum");
   model.addDumpFieldVector("internal_force");
+  model.addDumpFieldVector("internal_momentum");
+  model.addDumpField("stress");
   if (method == _implicit_dynamic) {
     model.addDumpFieldVector("velocity");
     model.addDumpFieldVector("acceleration");
   }
   model.dump();
 
-  Real time_step = 1e-4;
+  Real time_step = 1e-5;
   model.setTimeStep(time_step);
 
   model.assembleMatrix("K");
@@ -212,22 +209,35 @@ int main(int argc, char * argv[]) {
   model.assembleMatrix("M");
   model.getDOFManager().getMatrix("M").saveMatrix("M.mtx");
 
+  if (method == _static) {
+    model.solveStep();
+    model.dump();
+
+    model.assembleResidual();
+
+    const auto & stress = model.getStress(type);
+    const auto & internal_force = model.getInternalForce();
+    std::cout << "θ_a = " << displacement(0, spatial_dimension) << "\n"
+              << "θ_b = " << displacement(nb_nodes - 1, spatial_dimension) << "\n"
+              << "R_a = " << internal_force(0, _y) << "\n"
+              << "R_b = " << internal_force(nb_nodes - 1, _y) << "\n"
+              << "w = " << displacement(node_to_print, _y) << "\n"
+              << "M = " << stress(stress.size() / 2, 1) << "\n";
+
+    return 0;
+  }
+
   auto & solver = model.getNonLinearSolver();
   solver.set("max_iterations", 100);
   solver.set("threshold", 1e-8);
   solver.set("convergence_type", SolveConvergenceCriteria::_solution);
 
-  if (method == _static) {
-    model.solveStep();
-    model.dump();
-    return 0;
-  }
-
   std::cout << "Time  |   Mid-Span Displacement" << std::endl;
   /// time loop
-  for (UInt s = 1; time < 0.64; ++s) {
+  for (UInt s = 1; time < 0.01606; ++s) {
     try {
       model.solveStep();
+      model.getDOFManager().getMatrix("J").saveMatrix("J.mtx");
     } catch (debug::NLSNotConvergedException & e) {
       std::cerr << "Did not converge after " << e.niter << " error: " << e.error
                 << " > " << e.threshold << std::endl;
@@ -244,12 +254,11 @@ int main(int argc, char * argv[]) {
 
     time += time_step;
     if (s % 100 == 0) {
-      std::cout << std::setw(5) << time << "  |   "
-                << std::setw(10) <<displacement(node_to_print, 1) << " |  " << n_iter
+      std::cout << std::setw(5) << time << "  |   " << std::setw(10)
+                << displacement(node_to_print, 1) << " |  " << n_iter
                 << std::endl;
       model.dump(time, s);
     }
-
   }
 
   pos.close();

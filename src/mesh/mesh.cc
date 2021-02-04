@@ -433,7 +433,7 @@ template <typename T>
 ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays) {
   ElementTypeMap<UInt> nb_data_per_elem;
 
-  for (auto type : arrays.elementTypes()) {
+  for (auto type : arrays.elementTypes(_element_kind = _ek_not_defined)) {
     UInt nb_elements = this->getNbElement(type);
     auto & array = arrays(type);
 

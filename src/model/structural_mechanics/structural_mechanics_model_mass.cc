@@ -56,11 +56,18 @@ private:
 void StructuralMechanicsModel::assembleMassMatrix() {
   AKANTU_DEBUG_IN();
 
+  if (not need_to_reassemble_mass) {
+    return;
+  }
+
   if (not getDOFManager().hasMatrix("M")) {
     getDOFManager().getNewMatrix("M", getMatrixType("M"));
   }
 
+  this->getDOFManager().zeroMatrix("M");
   assembleMassMatrix(_not_ghost);
+
+  need_to_reassemble_mass = false;
 
   AKANTU_DEBUG_OUT();
 }

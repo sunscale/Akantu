@@ -100,7 +100,7 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::computeShapes(
       natural_coords, real_coord, H);
 
   // clang-format off
-  //    u1    v1       w1       x1    y1       z1       u2    v2       w2       x2    y2       z2
+  //    u1    v1       w1       tx1   ty1       tz1    u2      v2       w2       tx2   ty2       tz2
   N = {{L(0), 0      , 0      , 0   , 0       , 0      , L(1), 0      , 0      , 0   , 0       , 0      },  // u
        {0   , H(0, 0), 0      , 0   , 0       , H(0, 1), 0   , H(0, 2), 0      , 0   , 0       , H(0, 3)},  // v
        {0   , 0      , H(0, 0), 0   , -H(0, 1), 0      , 0   , 0      , H(0, 2), 0   , -H(0, 3), 0      },  // w
@@ -146,9 +146,9 @@ InterpolationElement<_itp_bernoulli_beam_2, _itk_structural>::arrangeInVoigt(
   auto L = dnds.block(0, 0, 1, 2); // Lagrange shape derivatives
   auto H = dnds.block(0, 2, 1, 4); // Hermite shape derivatives
   // clang-format off
-  //    u1       v1       t1       u2       v2       t2
-  B = {{L(0, 0), 0,       0,       L(0, 1), 0,       0      },
-       {0,       H(0, 0), H(0, 1), 0,       H(0, 2), H(0, 3)}};
+  //    u1       v1       t1        u2        v2        t2
+  B = {{L(0, 0), 0,       0,        L(0, 1),  0,        0      },
+       {0,      -H(0, 0), -H(0, 1), 0,       -H(0, 2), -H(0, 3)}};
   // clang-format on
 }
 
@@ -171,11 +171,11 @@ InterpolationElement<_itp_bernoulli_beam_3, _itk_structural>::arrangeInVoigt(
   auto H = dnds.block(0, 2, 1, 4); // Hermite shape derivatives
 
   // clang-format off
-  //    u1       v1       w1       x1       y1       z1       u2       v2       w2       x2       y2       z2
-  B = {{L(0, 0), 0      , 0      , 0      , 0      , 0      , L(0, 1), 0      , 0      , 0      , 0      , 0      },  // eps
-       {0      , H(0, 0), 0      , 0      , 0      , H(0, 1), 0      , H(0, 2), 0      , 0      , 0      , H(0, 3)},  // chi strong axis
-       {0      , 0      ,-H(0, 0), 0      , H(0, 1), 0      , 0      , 0      ,-H(0, 2), 0      , H(0, 3), 0      },  // chi weak axis
-       {0      , 0      , 0      , L(0, 0), 0      , 0      , 0      , 0      , 0      , L(0, 1), 0      , 0      }}; // chi torsion
+  //    u1       v1        w1        x1       y1        z1        u2       v2        w2         x2       y2       z2
+  B = {{L(0, 0), 0       , 0       , 0      , 0       , 0       , L(0, 1), 0       , 0        , 0      , 0        , 0      },  // eps
+       {0      , -H(0, 0), 0       , 0      , 0       , -H(0, 1), 0      , -H(0, 2), 0        , 0      , 0        ,-H(0, 3)},  // chi strong axis
+       {0      , 0       , -H(0, 0), 0      , H(0, 1) , 0       , 0      , 0       , -H(0, 2) , 0      , H(0, 3)  , 0      },  // chi weak axis
+       {0      , 0       , 0       , L(0, 0), 0       , 0       , 0      , 0       , 0        , L(0, 1), 0        , 0      }}; // chi torsion
   // clang-format on
 }
 

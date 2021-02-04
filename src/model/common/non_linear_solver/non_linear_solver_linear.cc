@@ -67,6 +67,11 @@ void NonLinearSolverLinear::solve(SolverCallback & solver_callback) {
   this->solver.solve();
 
   solver_callback.corrector();
+
+  if (solver_callback.canSplitResidual()) {
+    solver_callback.assembleResidual("internal");
+  }
+
   solver_callback.afterSolveStep(true);
 }
 

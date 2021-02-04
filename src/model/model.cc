@@ -196,18 +196,17 @@ void Model::setBaseNameToDumper(const std::string & dumper_name,
 
 void Model::addDumpFieldToDumper(const std::string & dumper_name,
                                  const std::string & field_id) {
-
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
-                                  false);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all",
+                                  dumper_default_element_kind, false);
 }
 
 /* -------------------------------------------------------------------------- */
 void Model::addDumpGroupField(const std::string & field_id,
                               const std::string & group_name) {
-
   ElementGroup & group = mesh.getElementGroup(group_name);
   this->addDumpGroupFieldToDumper(group.getDefaultDumperName(), field_id,
-                                  group_name, _ek_regular, false);
+                                  group_name, dumper_default_element_kind,
+                                  false);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -229,8 +228,8 @@ void Model::removeDumpGroupFieldFromDumper(const std::string & dumper_name,
 /* -------------------------------------------------------------------------- */
 void Model::addDumpFieldVectorToDumper(const std::string & dumper_name,
                                        const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
-                                  true);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all",
+                                  dumper_default_element_kind, true);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -246,14 +245,14 @@ void Model::addDumpGroupFieldVectorToDumper(const std::string & dumper_name,
                                             const std::string & field_id,
                                             const std::string & group_name) {
   this->addDumpGroupFieldToDumper(dumper_name, field_id, group_name,
-                                  _ek_regular, true);
+                                  dumper_default_element_kind, true);
 }
 /* -------------------------------------------------------------------------- */
 
 void Model::addDumpFieldTensorToDumper(const std::string & dumper_name,
                                        const std::string & field_id) {
-  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all", _ek_regular,
-                                  true);
+  this->addDumpGroupFieldToDumper(dumper_name, field_id, "all",
+                                  dumper_default_element_kind, true);
 }
 
 /* -------------------------------------------------------------------------- */

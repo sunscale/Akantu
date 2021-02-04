@@ -336,6 +336,9 @@ protected:
 
   /// parser to the pointer to use
   Parser & parser;
+
+  /// default ElementKind for dumper
+  ElementKind dumper_default_element_kind{_ek_regular};
 };
 
 /// standard output stream operator

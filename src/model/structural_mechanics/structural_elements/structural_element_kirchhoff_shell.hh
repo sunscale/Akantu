@@ -41,13 +41,6 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 template <>
-inline void
-StructuralMechanicsModel::assembleMassMatrix<_discrete_kirchhoff_triangle_18>() {
-  AKANTU_TO_IMPLEMENT();
-}
-
-/* -------------------------------------------------------------------------- */
-template <>
 void StructuralMechanicsModel::computeTangentModuli<
     _discrete_kirchhoff_triangle_18>(Array<Real> & tangent_moduli) {
 
