@@ -278,24 +278,25 @@ test:ubuntu_lts_gcc:
     - build:ubuntu_lts_gcc
 
 # ------------------------------------------------------------------------------
-include:
-  - template: Code-Quality.gitlab-ci.yml
+# include:
+#   - template: Code-Quality.gitlab-ci.yml
 
-code_quality:
-  dependencies:
-    - build:debian_testing_clang
-  artifacts:
-    paths: [gl-code-quality-report.json]
+# code_quality:
+#   dependencies:
+#     - build:debian_testing_clang
+#   artifacts:
+#     paths: [gl-code-quality-report.json]
 
 code_quality_clang_tidy:
   extends:
     - .debian_testing_clang
   dependencies:
     - build:debian_testing_clang
+    - code_quality
   stage: test
   script:
     - cmake --build build --target clang-tidy-all > >(tee -a clang-tidy-all-out.log) 2> >(tee -a clang-tidy-all-err.log >&2)
-    - python3 ./test/ci/scripts/clang-tidy2code-quality.py
+    - python3 ./test/ci/scripts/clang-tidy2code-quality.py | tee code-quality-clang.json | jq
   artifacts:
     paths:
       - clang-tidy-all-err.log

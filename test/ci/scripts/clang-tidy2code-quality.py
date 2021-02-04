@@ -3,6 +3,7 @@ import re
 import os
 import hashlib
 import json
+import sys
 
 
 # 7-bit C1 ANSI sequences
@@ -68,5 +69,4 @@ with open('clang-tidy-all-out.log', 'r') as log:
 
             issues.append(issue)
 
-with open('code-quality-clang.json', 'w') as jsoncq:
-    json.dump(issues, jsoncq)
+json.dump(issues, sys.stdout)
