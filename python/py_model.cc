@@ -71,7 +71,9 @@ void register_model(py::module & mod) {
       .def("setBaseNameToDumper", &Model::setBaseNameToDumper)
       .def("addDumpFieldVectorToDumper", &Model::addDumpFieldVectorToDumper)
       .def("addDumpFieldToDumper", &Model::addDumpFieldToDumper)
-      .def("dump", &Model::dump)
+      .def("dump", py::overload_cast<>(&Model::dump))
+      .def("dump", py::overload_cast<UInt>(&Model::dump))
+      .def("dump", py::overload_cast<Real, UInt>(&Model::dump))
       .def("initNewSolver", &Model::initNewSolver)
       .def("getDOFManager", &Model::getDOFManager,
            py::return_value_policy::reference);
