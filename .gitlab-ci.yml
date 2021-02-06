@@ -288,7 +288,8 @@ code_quality:
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
-    CODECLIMATE_DEV: ""
+    CODECLIMATE_DEV: 1
+    CODECLIMATE_DEBUG: 1
     CODE_QUALITY_IMAGE: "registry.gitlab.com/gitlab-org/ci-cd/codequality:0.85.22"
   needs: []
   script:
@@ -296,7 +297,6 @@ code_quality:
     - | # this is required to avoid undesirable reset of Docker image ENV variables being set on build stage
       function propagate_env_vars() {
         CURRENT_ENV=$(printenv)
-
         for VAR_NAME; do
           echo $CURRENT_ENV | grep "${VAR_NAME}=" > /dev/null && echo "--env $VAR_NAME "
         done
