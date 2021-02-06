@@ -15,7 +15,6 @@ class Runner:
     """Runs clang-tidy, collects and reports results."""
     def __init__(self):
         self._config_file_path = self.CONFIG_FILE_PATH
-        #self._workspace_path = workspace_path
         pass
 
     def run(self):
@@ -33,14 +32,20 @@ class Runner:
         plugin_config = config.get('config', {})
         command = Command(plugin_config, workspace_files).build()
 
-        command.append('src/')
         self._print_debug(f'[clang-tidy] command: {command}')
 
-        results = self._run_command(command)
-        issues = self._parse_results(results)
+        issues = {}
+        for file_ in workspace_files:
+            results = self._run_command([*command, file_])
+            issues_ = self._parse_results(results)
+            issues.update(issues_)
 
-        for issue in issues:
-            print(f'{json.dumps(issue)}\0')
+        for issue in issues.values():
+            # cppcheck will emit issues for files outside of the workspace,
+            # like header files. This ensures that we only emit issues for
+            # files in the workspace.
+            if issue and workspace.should_include(issue["location"]["path"]):
+                print('{}\0'.format(json.dumps(issue)))
 
     def _decode_config(self):
         self._print_debug(f"Decoding config file {self._config_file_path}")
@@ -99,7 +104,6 @@ class Runner:
             issue_ = IssueFormatter(issue).format()
             issues[issue_['fingerprint']] = issue_
 
-        issues = list(issues.values())
         return issues
 
     def _print_debug(self, message):
