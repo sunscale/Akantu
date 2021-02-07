@@ -16,7 +16,7 @@ class Workspace:
             elif self.should_include(path):
                 paths.append(path)
 
-        return paths
+        return [os.path.join('/code', path) for path in paths]
 
     def should_include(self, name):
         return name.lower().endswith(tuple(SRC_SUFFIX))

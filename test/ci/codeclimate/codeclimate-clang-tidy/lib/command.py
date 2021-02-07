@@ -1,4 +1,6 @@
 import os
+import json
+import sys
 
 
 class Command:
@@ -12,28 +14,62 @@ class Command:
                    '-clang-tidy-binary',
                    '/usr/bin/clang-tidy']
 
-        if self.config.get('check'):
-            command.append(
-                '-checks {}'.format(self.config.get('check')))
+        if 'checks' in self.config:
+            command.extend(
+                ['-checks', self.config["checks"]])
 
-        if self.config.get('config'):
-            command.append(
-                '-config {}'.format(self.config.get('project')))
+        if 'config' in self.config:
+            command.extend(
+                ['-config', self.config["config"]])
 
-        if self.config.get('header-filter'):
-            command.append(
-                '-header-filter {}'.format(self.config.get('language')))
+        if 'header-filter' in self.config:
+            command.extend(
+                ['-header-filter', self.config["header-file"]])
 
-        if self.config.get('compilation_database_path'):
-            command.append(
-                '-p {}'.format(self.config.get('compilation_database_path')))
+        extra_args = []
+        if 'extra-arg' in self.config:
+            extra_args = self.config['extra-arg']
+            if not isinstance(extra_args, list):
+                extra_args = [extra_args]
 
-        include_paths = []
-        for file_ in self.file_list:
-            include_paths.append(os.path.dirname(file_))
-        include_paths = [f'--extra-arg -I{path}' for path in set(include_paths)]
+            if 'compilation-database-path' in self.config:
+                for arg in extra_args:
+                    command.extend(['-extra-arg', arg])
 
-        command.extend(include_paths)
-        # command.extend(self.file_list)
+        # if 'line-filter' in self.config:
+        #     command.append(
+        #         f'--line-filter={json.dumps(self.config["line-filter"])}')
+
+        # if 'system-headers' in self.config:
+        #     command.append('--system-headers')
+
+        if 'compilation-database-path' in self.config:
+            command.extend(
+                ['-p', self.config['compilation-database-path']])
+        else:
+            include_paths = []
+            for file_ in self.file_list:
+                include_paths.append(os.path.dirname(file_))
+            include_paths = list(set(include_paths))
+
+            include_flags = ' -I'.join(include_paths)
+
+            compile_commands = []
+            for file_ in self.file_list:
+                cmd = {
+                    'directory': os.path.dirname(file_),
+                    'file': file_,
+                    'command': f'/usr/bin/clang++ {include_flags} {" ".join(extra_args)} -c {file_} -o dummy.o', # noqa
+                }
+                compile_commands.append(cmd)
+
+            location = '/tmp'
+            compile_database = os.path.join(location, 'compile_commands.json')
+            with open(compile_database, 'w') as db:
+                json.dump(compile_commands, db)
+
+            command.extend(['-p', location])
+
+        command.extend(self.file_list)
 
         return command

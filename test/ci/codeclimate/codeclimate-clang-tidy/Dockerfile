@@ -6,7 +6,9 @@ WORKDIR /usr/src/app
 RUN apk --update add --no-cache --upgrade \
     clang\
     clang-extra-tools \
+    g++ \
     musl-dev \
+    boost-dev \
     python3 \
     py3-lxml && \
     rm -rf /usr/share/ri && \

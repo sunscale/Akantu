@@ -33,9 +33,17 @@ plugins:
       - "doc/"
   clang-tidy:
     enabled: true
+    extra-arg:
+      - -std=c++14
+      - -Ithird-party/akantu_iterators/include
+      - -I/code/third-party/akantu_iterators/include
+      - -I/code/third-party/iohelper/src
+      - -I/code/test/ci/includes_for_ci
     exclude_patterns:
       - "test/"
+      - "cmake/"
       - "examples/"
+      - "extra_packages/igfem/"
 
 exclude_patterns:
 - "third-party/"

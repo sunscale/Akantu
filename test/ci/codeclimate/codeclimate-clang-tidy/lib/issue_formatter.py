@@ -41,6 +41,10 @@ class IssueFormatter:
             'description': self.issue_dict['detail'],
             'location': {
                 "path": self.issue_dict['file'],
+                "lines": {
+                    "begin": int(self.issue_dict['line']),
+                    "end": int(self.issue_dict['line']),
+                },
                 "positions": {
                     "begin": {
                         "line": int(self.issue_dict['line']),
@@ -69,5 +73,8 @@ class IssueFormatter:
         if type_ in self.CLASSIFICATIONS:
             issue['categories'] = self.CLASSIFICATIONS[type_]['categories']
             issue['severity'] = self.CLASSIFICATIONS[type_]['severity']
+        elif self.issue_dict['type'] == 'clang-diagnostic-error':
+            issue['categories'] = ['Bug Risk']
+            issue['severity'] = 'blocker'
 
         return issue
