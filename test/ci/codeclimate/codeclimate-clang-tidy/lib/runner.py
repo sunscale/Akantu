@@ -63,6 +63,8 @@ class Runner:
 
         stdout, stderr = process.communicate()
 
+        self._print_debug(stderr.decode('utf-8'))
+
         return_vals = stdout.decode('utf-8').split('\n')
         return return_vals
 
