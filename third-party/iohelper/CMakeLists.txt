@@ -45,7 +45,7 @@ find_package (ZLIB)
 
 if(ZLIB_FOUND)
   set (IOHELPER_EXTERNAL_LIBS ${IOHELPER_EXTERNAL_LIBS} ${ZLIB_LIBRARIES})
-  include_directories(${ZLIB_INCLUDE_DIRS})
+  include_directories(${ZLIB_INCLUDE_DIR})
 endif()
 
 #===============================================================================

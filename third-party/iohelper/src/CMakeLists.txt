@@ -75,6 +75,7 @@ target_include_directories(iohelper
   PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
             $<INSTALL_INTERFACE:include/iohelper>
+  PUBLIC ${ZLIB_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS}
   )
 
 
