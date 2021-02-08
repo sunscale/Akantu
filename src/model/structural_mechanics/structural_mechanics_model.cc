@@ -99,6 +99,7 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 
   this->dumper_default_element_kind = _ek_structural;
 
+
   AKANTU_DEBUG_OUT();
 }
 

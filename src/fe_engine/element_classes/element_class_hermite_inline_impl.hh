@@ -141,10 +141,10 @@ namespace {
       // natural coordinate
       Real xi = natural_coords(0);
       // Derivatives with respect to xi for rotations
-      auto M1 = 3. / (2. * a) * xi;
-      auto M2 = 3. / (2. * a) * (-xi);
-      auto L1 = 1. / 2. * (3 * xi - 1);
-      auto L2 = 1. / 2. * (3 * xi + 1);
+      auto M1 = 3. / 2. * xi;
+      auto M2 = 3. / 2. * (-xi);
+      auto L1 = 1. * a / 2. * (3 * xi - 1);
+      auto L2 = 1. * a / 2. * (3 * xi + 1);
 
       //    v1  t1  v2  t2
       B = {{M1, L1, M2, L2}}; // computing curvature : {chi} = [B]{d}
