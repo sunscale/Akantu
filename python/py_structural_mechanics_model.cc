@@ -78,7 +78,7 @@ void register_structural_mechanics_model(pybind11::module & mod) {
       .def(
           "getElementMaterialMap",
           [](StructuralMechanicsModel & self, const ElementType & type,
-             GhostType ghost_type) {
+             GhostType ghost_type) -> decltype(auto) {
             return self.getElementMaterial(type, ghost_type);
           },
           "This function returns the map that maps elements to materials.",
