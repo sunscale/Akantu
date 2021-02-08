@@ -5,6 +5,7 @@
 /* -------------------------------------------------------------------------- */
 #include <mesh.hh>
 #include <mesh_utils.hh>
+#include <mesh_accessor.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
 /* -------------------------------------------------------------------------- */
@@ -103,5 +104,10 @@ void register_mesh(py::module & mod) {
   /* ------------------------------------------------------------------------ */
   py::class_<MeshUtils>(mod, "MeshUtils")
       .def_static("buildFacets", &MeshUtils::buildFacets);
+
+  py::class_<MeshAccessor>(mod, "MeshAccessor")
+      .def("resizeConnectivity", &MeshAccessor::resizeConnectivity)
+      .def("resizeNodes", &MeshAccessor::resizeConnectivity)
+      .def("makeReady", &MeshAccessor::makeReady);
 }
 } // namespace akantu
