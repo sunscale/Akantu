@@ -58,15 +58,26 @@ public:
     model = std::make_unique<StructuralMechanicsModel>(*mesh, _all_dimensions,
                                                        element_type.str());
 
-    addMaterials();
-    model->initFull();
-    assignMaterials();
-    setDirichlets();
-    setNeumanns();
+    initModel();
   }
+
+  virtual void initModel() {
+    this->addMaterials();
+    auto method = getAnalysisMethod();
+    this->model->initFull(_analysis_method = method);
+    this->assignMaterials();
+    this->setDirichlets();
+    this->setNeumanns();
+  }
+
+  virtual AnalysisMethod getAnalysisMethod() const { return _static; }
 
   virtual void readMesh(std::string filename) {
     mesh->read(filename, _miot_gmsh_struct);
+    mesh->getElementalData<Real>("extra_normal")
+        .initialize(*this->mesh, _element_kind = _ek_structural,
+                    _nb_component = spatial_dimension, _with_nb_element = true,
+                    _default_value = 0.);
   }
 
   virtual std::string makeMeshName() {

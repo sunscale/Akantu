@@ -35,20 +35,16 @@
 
 using namespace akantu;
 
-class TestStructBernoulli3
+class TestStructBernoulli3Static
     : public TestStructuralFixture<element_type_t<_bernoulli_beam_3>> {
   using parent = TestStructuralFixture<element_type_t<_bernoulli_beam_3>>;
 
 public:
   void readMesh(std::string filename) override {
     parent::readMesh(filename);
-    auto & normals =
-        this->mesh->getElementalData<Real>("extra_normal")
-            .alloc(0, parent::spatial_dimension, parent::type, _not_ghost);
-    Vector<Real> normal = {0, 0, 1};
-    normals.push_back(normal);
-    normal = {0, 0, 1};
-    normals.push_back(normal);
+    auto &normals = this->mesh->getData<Real>("extra_normals", parent::type);
+    normals(0, _z) = 1;
+    normals(1, _z) = 1;
   }
 
   void addMaterials() override {
@@ -84,8 +80,7 @@ public:
 };
 
 /* -------------------------------------------------------------------------- */
-
-TEST_F(TestStructBernoulli3, TestDisplacements) {
+TEST_F(TestStructBernoulli3Static, TestDisplacements) {
   model->solveStep();
   auto vz = model->getDisplacement()(0, 2);
   auto thy = model->getDisplacement()(0, 4);

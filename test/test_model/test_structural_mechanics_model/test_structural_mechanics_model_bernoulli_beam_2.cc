@@ -72,15 +72,15 @@ public:
 
   void setNeumanns() override {
     Real M = 3600;  // Nm
-    Real q = -6000; // kN/m
+    Real q = 6000; // kN/m
     Real L = 10;    // m
     auto & forces = this->model->getExternalForce();
     forces(2, 2) = -M; // moment on last node
 #if 1                  // as long as integration is not available
-    forces(0, 1) = q * L / 2;
-    forces(0, 2) = q * L * L / 12;
-    forces(1, 1) = q * L / 2;
-    forces(1, 2) = -q * L * L / 12;
+    forces(0, 1) = -q * L / 2;
+    forces(0, 2) = -q * L * L / 12;
+    forces(1, 1) = -q * L / 2;
+    forces(1, 2) = q * L * L / 12;
 #else
     auto & group = mesh.createElementGroup("lin_force");
     group.add({type, 0, _not_ghost});

@@ -28,6 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
+#include "test_structural_mechanics_model_fixture.hh"
+/* -------------------------------------------------------------------------- */
 #include "mesh_accessor.hh"
 #include "non_linear_solver_newton_raphson.hh"
 #include "structural_mechanics_model.hh"
@@ -53,215 +55,123 @@ static Real analytical_solution(Real time, Real L, Real rho, Real E,
   return 2. * F * pow(L, 3) / pow(M_PI, 4) / E / I * sum;
 }
 
-// load
-/* -------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------- */
-int main(int argc, char * argv[]) {
-  initialize(argc, argv);
+class TestStructBernoulli3Dynamic
+    : public TestStructuralFixture<element_type_t<_bernoulli_beam_3>> {
+  using parent = TestStructuralFixture<element_type_t<_bernoulli_beam_3>>;
 
-  /* ------------------------------------------------------------------------ */
-  UInt spatial_dimension = 3;
-  Real total_length = 20.;
+public:
+  Real L{20};
+  const UInt nb_element{10};
+  UInt nb_nodes;
+  StructuralMaterial mat;
+  const Real F{1.};
 
-  //auto method = _static;
-  auto method = _implicit_dynamic;
-  UInt nb_element = 10;
-  /* ------------------------------------------------------------------------ */
+  void readMesh(std::string /*filename*/) override {
+    nb_nodes = nb_element + 1;
+    auto length = L / nb_element;
+    MeshAccessor mesh_accessor(*this->mesh);
+    auto & nodes = mesh_accessor.getNodes();
+    nodes.resize(nb_nodes);
 
-  Mesh beams(spatial_dimension);
-  debug::setDebugLevel(dblWarning);
+    this->mesh->addConnectivityType(_bernoulli_beam_3);
+    auto & connectivities = mesh_accessor.getConnectivity(parent::type);
+    connectivities.resize(nb_element);
 
-  ElementType type = _bernoulli_beam_2;
-  if (spatial_dimension == 3) {
-    type = _bernoulli_beam_3;
-  }
-  /* ------------------------------------------------------------------------ */
-  // Mesh
-  //  UInt nb_element = 8;
-  // nb_element *= 2;
+    this->mesh->getElementalData<Real>("extra_normal")
+        .initialize(*this->mesh, _element_kind = _ek_structural,
+                    _nb_component = 3, _with_nb_element = true,
+                    _default_value = 0.);
 
-  UInt nb_nodes = nb_element + 1;
-  Real length = total_length / nb_element;
+    auto & normals = this->mesh->getData<Real>("extra_normal", parent::type);
+    normals.resize(nb_element);
 
-  MeshAccessor mesh_accessor(beams);
-  auto & nodes = mesh_accessor.getNodes();
-  nodes.resize(nb_nodes);
-
-  beams.addConnectivityType(type);
-  auto & connectivity = mesh_accessor.getConnectivity(type);
-  connectivity.resize(nb_element);
-
-  beams.initNormals();
-  auto & normals = mesh_accessor.getData<Real>("extra_normal", type, _not_ghost,
-                                               spatial_dimension);
-  normals.resize(nb_element);
-
-  for (UInt i = 0; i < nb_nodes; ++i) {
-    nodes(i, _x) = i * length;
-    nodes(i, _y) = 0;
-    if (spatial_dimension == 3) {
-      nodes(i, _z) = 0;
+    for (auto && data : enumerate(make_view(nodes, 3))) {
+      auto & node = std::get<1>(data);
+      UInt i = std::get<0>(data);
+      node = {i * length, 0., 0.};
     }
-  }
 
-  for (UInt i = 0; i < nb_element; ++i) {
-    connectivity(i, 0) = i;
-    connectivity(i, 1) = i + 1;
+    for (auto && data :
+         enumerate(make_view(connectivities, 2), make_view(normals, 3))) {
+      UInt i = std::get<0>(data);
+      auto & connectivity = std::get<1>(data);
+      auto & normal = std::get<2>(data);
 
-    if (spatial_dimension == 3) {
-      normals(i, _x) = 0;
-      normals(i, _y) = 0;
-      normals(i, _z) = 1;
+      connectivity = {i, i + 1};
+      normal = {0., 0., 1.};
     }
+
+    mesh_accessor.makeReady();
   }
 
-  mesh_accessor.makeReady();
-
-  /* ------------------------------------------------------------------------ */
-  // Materials
-  StructuralMechanicsModel model(beams);
-
-  const Real F = 1;
-
-  StructuralMaterial mat1;
-  mat1.E = 1e9;
-  mat1.rho = 1;
-
-  mat1.A = 1;
-
-  // Real heigth = .3;
-  // Real width  = .1;
-  mat1.I = 1;
-  mat1.Iz = 1;
-  mat1.Iy = 1;
-  mat1.GJ = 1;
-
-  model.addMaterial(mat1);
-
-  /* ------------------------------------------------------------------------ */
-  // Forces
-  // model.initFull(_analysis_method = _static);
-  model.initFull(_analysis_method = method);
-
-  auto & forces = model.getExternalForce();
-  auto & displacement = model.getDisplacement();
-  auto & boundary = model.getBlockedDOFs();
-
-  forces.zero();
-  displacement.zero();
-  UInt node_to_print = -1;
-  for (UInt i = 0; i < nb_element; ++i) {
-    model.getElementMaterial(type)(i, 0) = 0;
+  AnalysisMethod getAnalysisMethod() const override {
+    return _implicit_dynamic;
   }
 
-  // for (UInt n = 0; n < nb_nodes; ++n) {
-  //   Real x = position(n, _x);
-  //   if (Math::are_float_equal(x, total_length/2)) {
-  //     forces(n, _y) = F;
-  //     node_to_print = n;
-  //   }
-  // }
+  void addMaterials() override {
+    this->mat.E = 1e9;
+    this->mat.rho = 1;
+    this->mat.Iz = 1;
+    this->mat.Iy = 1;
+    this->mat.A = 1;
+    this->mat.GJ = 1;
+
+    this->model->addMaterial(mat);
+  }
+
+  void setDirichlets() override {
+    auto boundary = this->model->getBlockedDOFs().begin(parent::ndof);
+    // clang-format off
+    Vector<bool> boundary_b = boundary[0];
+    Vector<bool> boundary_e = boundary[nb_nodes];
+    boundary_b = {true, true, true, false, false, false};
+    boundary_e = {false, true, true, false, false, false};
+    // clang-format on
+  }
+
+  void setNeumanns() override {
+    auto node_to_print = nb_nodes / 2 + 1;
+    // Forces
+    auto & forces = this->model->getExternalForce();
+    forces(node_to_print - 1, _y) = F;
+  }
+
+  void assignMaterials() override {
+    model->getElementMaterial(parent::type).set(0);
+  }
+};
+
+TEST_F(TestStructBernoulli3Dynamic, TestBeamOscilation) {
+  auto & solver = this->model->getNonLinearSolver();
+  solver.set("max_iterations", 100);
+  solver.set("threshold", 1e-8);
+  solver.set("convergence_type", SolveConvergenceCriteria::_solution);
+
+  auto node_to_print = this->nb_nodes / 2 + 1;
+  auto & d = this->model->getDisplacement()(node_to_print, 1);
+
+  Real time_step = 1e-5;
+  this->model->setTimeStep(time_step);
+
 
   std::ofstream pos;
   pos.open("position.csv");
   if (not pos.good()) {
     AKANTU_ERROR("Cannot open file \"position.csv\"");
   }
-
   pos << "id,time,position,solution" << std::endl;
-  /* --------------------------------------------------------------------------
-   */
-  // Boundary conditions
-  for (UInt d = 0; d < spatial_dimension; ++d) {
-    boundary(0, d) = true;
+
+  Real tol = 1e-10;
+  Real time = 0.;
+  for (UInt s = 1; time < 0.1606; ++s) {
+    EXPECT_NO_THROW(this->model->solveStep());
+
+    time = s * time_step;
+
+    auto da = analytical_solution(time, this->L, this->mat.rho, this->mat.E,
+                                  this->mat.A, this->mat.Iy, this->F);
+
+    pos << s << "," << time << "," << d << "," << da <<std::endl;
+    //EXPECT_NEAR(d , da, tol);
   }
-  for (UInt d = 0; d < spatial_dimension - 1; ++d) {
-    boundary(nb_nodes - 1, d + 1) = true;
-  }
-
-  node_to_print = nb_nodes / 2 + 1;
-  forces(node_to_print - 1, _y) = F;
-
-  /* ------------------------------------------------------------------------ */
-  // "Solve"
-  Real time = 0;
-  // model.assembleStiffnessMatrix();
-  // model.assembleMass();
-  model.addDumpFieldVector("displacement");
-  model.addDumpFieldVector("rotation");
-  model.addDumpFieldVector("force");
-  model.addDumpFieldVector("momentum");
-  model.addDumpFieldVector("internal_force");
-  model.addDumpFieldVector("internal_momentum");
-  model.addDumpField("stress");
-  if (method == _implicit_dynamic) {
-    model.addDumpFieldVector("velocity");
-    model.addDumpFieldVector("acceleration");
-  }
-  model.dump();
-
-  Real time_step = 1e-5;
-  model.setTimeStep(time_step);
-
-  model.assembleMatrix("K");
-  model.getDOFManager().getMatrix("K").saveMatrix("K.mtx");
-
-  model.assembleMatrix("M");
-  model.getDOFManager().getMatrix("M").saveMatrix("M.mtx");
-
-  if (method == _static) {
-    model.solveStep();
-    model.dump();
-
-    model.assembleResidual();
-
-    const auto & stress = model.getStress(type);
-    const auto & internal_force = model.getInternalForce();
-    std::cout << "θ_a = " << displacement(0, spatial_dimension) << "\n"
-              << "θ_b = " << displacement(nb_nodes - 1, spatial_dimension) << "\n"
-              << "R_a = " << internal_force(0, _y) << "\n"
-              << "R_b = " << internal_force(nb_nodes - 1, _y) << "\n"
-              << "w = " << displacement(node_to_print, _y) << "\n"
-              << "M = " << stress(stress.size() / 2, 1) << "\n";
-
-    return 0;
-  }
-
-  auto & solver = model.getNonLinearSolver();
-  solver.set("max_iterations", 100);
-  solver.set("threshold", 1e-8);
-  solver.set("convergence_type", SolveConvergenceCriteria::_solution);
-
-  std::cout << "Time  |   Mid-Span Displacement" << std::endl;
-  /// time loop
-  for (UInt s = 1; time < 0.01606; ++s) {
-    try {
-      model.solveStep();
-      model.getDOFManager().getMatrix("J").saveMatrix("J.mtx");
-    } catch (debug::NLSNotConvergedException & e) {
-      std::cerr << "Did not converge after " << e.niter << " error: " << e.error
-                << " > " << e.threshold << std::endl;
-      return 1;
-    }
-    pos << s << "," << time << "," << displacement(node_to_print, 1) << ","
-        << analytical_solution(s * time_step, total_length, mat1.rho, mat1.E,
-                               mat1.A, mat1.I, F)
-        << std::endl;
-    //    pos << s << "," << time << "," << displacement(node_to_print, 1) <<
-    //    "," << analytical_solution(s*time_step) << std::endl;
-
-    Int n_iter = solver.get("nb_iterations");
-
-    time += time_step;
-    if (s % 100 == 0) {
-      std::cout << std::setw(5) << time << "  |   " << std::setw(10)
-                << displacement(node_to_print, 1) << " |  " << n_iter
-                << std::endl;
-      model.dump(time, s);
-    }
-  }
-
-  pos.close();
-
-  return EXIT_SUCCESS;
 }
