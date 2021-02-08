@@ -188,10 +188,8 @@ void StructuralMechanicsModel::initSolver(
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::initModel() {
-  for (auto && type : mesh.elementTypes(_element_kind = _ek_structural)) {
-    // computeRotationMatrix(type);
-    element_material.alloc(mesh.getNbElement(type), 1, type);
-  }
+  element_material.initialize(mesh, _element_kind = _ek_structural,
+                              _default_value = 0, _with_nb_element = true);
 
   getFEEngine().initShapeFunctions(_not_ghost);
   getFEEngine().initShapeFunctions(_ghost);
