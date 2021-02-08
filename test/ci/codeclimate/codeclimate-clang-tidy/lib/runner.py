@@ -2,7 +2,12 @@ import json
 import subprocess
 import sys
 import re
-import tempfile
+import os
+try:
+    from termcolor import colored
+except ImportError:
+    def colored(text, color):
+        return text
 
 from command import Command
 from issue_formatter import IssueFormatter
@@ -19,19 +24,21 @@ class Runner:
         self._decode_config()
         self._ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         self._issue_parse = re.compile(r'(?P<file>.*\.(cc|hh)):(?P<line>[0-9]+):(?P<column>[0-9]+): (warning|error): (?P<detail>.*) \[(?P<type>.*)\]')  # noqa
+
         self._issues_fpr = []
+
         self._workspace = Workspace(self._config.get('include_paths', []))
+        self._files = self._workspace.files
+        self._include_paths = self._workspace.include_paths
 
     def run(self):
-        workspace_files = self._workspace.calculate()
-        if not len(workspace_files) > 0:
+        if not len(self._files) > 0:
             return
 
-        self._print_debug(f'[clang-tidy] analyzing {len(workspace_files)} files')
+        self._print_debug(f'[clang-tidy] analyzing {len(self._files)} files')
+        command = Command(self._config, self._workspace).build()
 
-        command = Command(self._config, workspace_files).build()
         self._print_debug(f'[clang-tidy] command: {command}')
-
         self._generate_issues(command)
 
     def _decode_config(self):
@@ -44,26 +51,11 @@ class Runner:
         self._config = json.loads(contents)
         self._print_debug(f'[clang-tidy] config: {self._config}')
 
-    def _run_command(self, command):
-        popen = subprocess.Popen(command,
-                                 stdout=subprocess.PIPE,
-                                 universal_newlines=True)
-
-        for stdout_line in iter(popen.stdout.readline, ""):
-            yield stdout_line
-
-        popen.stdout.close()
-
-        return_code = popen.wait()
-        if return_code:
-            raise subprocess.CalledProcessError(return_code, command)
-
     def _print_issue(self, issue):
         issue_ = IssueFormatter(issue).format()
-        if not issue_:
-            return
 
-        if not self._workspace.should_include(issue_["location"]["path"]):
+        path = os.path.dirname(os.path.abspath(issue_["location"]["path"]))
+        if path not in self._include_paths:
             return
 
         if issue_['fingerprint'] in self._issues_fpr:
@@ -78,7 +70,7 @@ class Runner:
             clean_line = self._ansi_escape.sub('', line)
             match = self._issue_parse.match(clean_line)
             if match:
-                if issue:
+                if issue is not None:
                     self._print_issue(issue)
                 issue = match.groupdict()
             elif issue:
@@ -86,9 +78,24 @@ class Runner:
                     issue['content'].append(line)
                 else:
                     issue['content'] = [line]
-
         self._print_issue(issue)
 
+    def _run_command(self, command):
+        popen = subprocess.Popen(command,
+                                 stdout=subprocess.PIPE,
+                                 universal_newlines=True)
+
+        for stdout_line in iter(popen.stdout.readline, ""):
+            yield stdout_line
+
+        popen.stdout.close()
+
+        return_code = popen.wait()
+        if return_code:
+            self._print_debug(
+                f"[clang-tidy] {command} ReturnCode {return_code}")
+            # raise subprocess.CalledProcessError(return_code, command)
+
     def _print_debug(self, message):
-        if 'debug' in self._config:
+        if 'debug' in self._config and self._config['debug'] == 1:
             print(message, file=sys.stderr)

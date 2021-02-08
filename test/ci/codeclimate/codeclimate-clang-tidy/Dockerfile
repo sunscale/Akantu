@@ -10,7 +10,7 @@ RUN apk --update add --no-cache --upgrade \
     musl-dev \
     boost-dev \
     python3 \
-    py3-lxml && \
+    py3-termcolor && \
     rm -rf /usr/share/ri && \
     adduser -u 9000 -D -s /bin/false app
 
