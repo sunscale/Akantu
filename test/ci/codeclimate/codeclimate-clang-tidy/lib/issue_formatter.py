@@ -30,6 +30,23 @@ class IssueFormatter:
         },
     }
 
+    def _get_classifiaction(self, type_):
+        categories = ['Bug Risk']
+        severity = 'blocker'
+
+        if type_ in self.CLASSIFICATIONS:
+            categories = self.CLASSIFICATIONS[type_]['categories']
+            severity = self.CLASSIFICATIONS[type_]['severity']
+        elif type_[0] == 'clang':
+            if type_[1] == 'diagnostic':
+                categories = ['Bug Risk']
+                severity = 'blocker'
+            elif type_[1] == 'analyzer':
+                categories = ['Bug Risk']
+                severity = 'major'
+
+        return (categories, severity)
+
     def __init__(self, issue):
         self.issue_dict = issue
 
@@ -70,11 +87,6 @@ class IssueFormatter:
         ).hexdigest()
 
         type_ = self.issue_dict['type'].split('-')[0]
-        if type_ in self.CLASSIFICATIONS:
-            issue['categories'] = self.CLASSIFICATIONS[type_]['categories']
-            issue['severity'] = self.CLASSIFICATIONS[type_]['severity']
-        elif self.issue_dict['type'] == 'clang-diagnostic-error':
-            issue['categories'] = ['Bug Risk']
-            issue['severity'] = 'blocker'
+        issue['categories'], issue['severity'] = self._get_classifiaction(type_)
 
         return issue

@@ -258,7 +258,7 @@ namespace Math {
   };
 
   struct NewtonRaphsonFunctor {
-    explicit NewtonRaphsonFunctor(std::string name) : name(std::move(name)) {}
+    explicit NewtonRaphsonFunctor(const std::string & name) : name(name) {}
 
     virtual ~NewtonRaphsonFunctor() = default;
 

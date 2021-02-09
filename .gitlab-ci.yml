@@ -289,7 +289,6 @@ code_quality:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
     CODECLIMATE_DEV: 1
-    CODECLIMATE_DEBUG: 1
     CODE_QUALITY_IMAGE: "registry.gitlab.com/gitlab-org/ci-cd/codequality:0.85.22"
   needs: []
   script:

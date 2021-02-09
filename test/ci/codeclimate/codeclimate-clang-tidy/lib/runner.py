@@ -86,6 +86,7 @@ class Runner:
                                  universal_newlines=True)
 
         for stdout_line in iter(popen.stdout.readline, ""):
+            self._print_debug(stdout_line)
             yield stdout_line
 
         popen.stdout.close()

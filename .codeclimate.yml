@@ -38,12 +38,12 @@ plugins:
       - -Ithird-party/akantu_iterators/include
       - -Ithird-party/iohelper/src
       - -Itest/ci/includes_for_ci
+      - -Isrc/mesh
     exclude_patterns:
       - "test/"
       - "cmake/"
       - "examples/"
-      - "extra_packages/igfem/"
-      - "extra_packages/extra-materials/"
+      - "extra_packages/"
 
 exclude_patterns:
 - "third-party/"
