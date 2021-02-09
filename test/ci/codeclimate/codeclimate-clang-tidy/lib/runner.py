@@ -39,6 +39,7 @@ class Runner:
         command = Command(self._config, self._workspace).build()
 
         self._print_debug(f'[clang-tidy] command: {command}')
+
         self._generate_issues(command)
 
     def _decode_config(self):
@@ -98,5 +99,4 @@ class Runner:
             # raise subprocess.CalledProcessError(return_code, command)
 
     def _print_debug(self, message):
-        if 'debug' in self._config and self._config['debug'] == 1:
-            print(message, file=sys.stderr)
+        print(message, file=sys.stderr, flush=True)

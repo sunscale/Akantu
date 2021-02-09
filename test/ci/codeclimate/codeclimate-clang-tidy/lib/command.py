@@ -15,16 +15,17 @@ class Command:
                    '/usr/bin/clang-tidy']
 
         if 'checks' in self.config:
-            command.extend(
-                ['-checks', self.config["checks"]])
+            checks = self.config["checks"]
+            if not isinstance(checks, list):
+                command.extend(['-checks', f'\'{checks}\''])
+            else:
+                command.extend(['-checks', f'\'{",".join(checks)}\''])
 
         if 'config' in self.config:
-            command.extend(
-                ['-config', self.config["config"]])
+            command.extend(['-config', self.config["config"]])
 
         if 'header-filter' in self.config:
-            command.extend(
-                ['-header-filter', self.config["header-file"]])
+            command.extend(['-header-filter', self.config["header-file"]])
 
         extra_args = []
         if 'extra-arg' in self.config:
@@ -47,8 +48,7 @@ class Command:
                     command.extend(['-extra-arg', arg])
 
         if 'compilation-database-path' in self.config:
-            command.extend(
-                ['-p', self.config['compilation-database-path']])
+            command.extend(['-p', self.config['compilation-database-path']])
         else:
             include_flags = ' -I'.join(self._workspace.include_paths)
 
@@ -68,6 +68,7 @@ class Command:
 
             command.extend(['-p', location])
 
-        command.extend([f'{path}*' for path in self._workspace.paths])
+        command.extend([f'{path}.*' if os.path.isdir(path) else path
+                        for path in self._workspace.paths])
 
         return command
