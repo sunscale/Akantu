@@ -4,7 +4,7 @@
 # # Test of Structural Mechanics
 # We will now test the python interface of teh structural mechanics part.
 # For that we will use the test `test/test_model/test_structural_mechanics_model/test_structural_mechanics_model_bernoulli_beam_2.cc`, which we will simply reproduce.
-import akantu as aka
+import py11_akantu as aka
 
 # Creating the Mesh
 
