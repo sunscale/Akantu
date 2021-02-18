@@ -16,7 +16,7 @@ formulation is used, the tangent matrix has to be computed.
   ``element_material`` vector. For
   every material assigned to the problem one has to specify the material
   characteristics (constitutive behavior and material properties) using
-  the text input file (see `[sect:io:material] <#sect:io:material>`__).
+  the text input file (see :ref:`sect-io-material`).
 | In order to conveniently store values at each quadrature in a material point
   ``Akantu`` provides a special data structure, the at :cpp:class:`InternalField
   <akantu::InternalField>`. The internal fields are inheriting from the at
@@ -72,8 +72,8 @@ The following sections describe the constitutive models implemented in
 ``Akantu``. In Appendix `7 <#app:material-parameters>`__ a summary of
 the parameters for all materials of ``Akantu`` is provided.
 
-Elasticity
-``````````
+Elastic
+```````
 
 The elastic law is a commonly used constitutive relationship that can be
 used for a wide range of engineering materials (*e.g.*, metals,
@@ -289,14 +289,14 @@ of the linear elastic relationship (Hooke’s Law) for large deformation.
 Thus, the model predicts nonlinear stress-strain behavior for bodies
 undergoing large deformations.
 
-.. figure:: figures/stress_strain_neo.pdf
+.. figure:: figures/cl/stress_strain_neo.svg
    :alt: Neo-hookean Stress-strain curve.
    :name: fig:smm:cl:neo_hookean
    :width: 40.0%
 
    Neo-hookean Stress-strain curve.
 
-As illustrated in Figure `4.6 <#fig:smm:cl:neo_hookean>`__, the behavior
+As illustrated in :numref:`fig:smm:cl:neo_hookean`, the behavior
 is initially linear and the mechanical behavior is very close to the
 corresponding linear elastic material. This constitutive relationship,
 which accounts for compressibility, is a modified version of the one
@@ -345,16 +345,30 @@ Visco-elasticity is characterized by strain rate dependent behavior.
 Moreover, when such a material undergoes a deformation it dissipates
 energy. This dissipation results in a hysteresis loop in the
 stress-strain curve at every loading cycle (see
-Figure `[fig:smm:cl:visco-elastic:hyst] <#fig:smm:cl:visco-elastic:hyst>`__).
+:numref:`fig:smm:cl:visco-elastic:hyst`).
 In principle, it can be applied to many materials, since all materials
 exhibit a visco-elastic behavior if subjected to particular conditions
 (such as high temperatures).
+
+.. figure:: figures/cl/stress_strain_visco.svg
+   :name:   fig:smm:cl:visco-elastic:hyst
+   :align: center
+   :width: 40.0%
+
+   Characteristic stress-strain behavior of a visco-elastic material with hysteresis loop
+
+.. figure:: figures/cl/visco_elastic_law.svg
+   :name:   fig:smm:cl:visco-elastic:model
+   :align: center
+   :width: 40.0%
+
+   Schematic representation of the standard rheological linear solid visco-elastic model
 
 The standard rheological linear solid model (see Sections 10.2 and 10.3
 of :cite:`simo92`) has been implemented in ``Akantu``. This
 model results from the combination of a spring mounted in parallel with
 a spring and a dashpot connected in series, as illustrated in
-Figure `[fig:smm:cl:visco-elastic:model] <#fig:smm:cl:visco-elastic:model>`__.
+:numref:`fig:smm:cl:visco-elastic:model`.
 The advantage of this model is that it allows to account for creep or
 stress relaxation. The equation that relates the stress to the strain is
 (in 1D):
@@ -375,6 +389,9 @@ tensor affects the stress tensor like an linear elastic material.
 
 .. _sect-smm-cl-plastic:
 
+Plastic
+```````
+
 Small-Deformation Plasticity
 ''''''''''''''''''''''''''''
 
@@ -385,7 +402,7 @@ infinitesimal deformation where the additive decomposition of the strain
 is a valid approximation. In this formulation, plastic strain is a
 shearing process where hydrostatic stress has no contribution to
 plasticity and consequently plasticity does not lead to volume change.
-Figure `4.7 <#fig:smm:cl:Lin-strain-hard>`__ shows the linear strain
+:numref:`fig:smm:cl:Lin-strain-hard` shows the linear strain
 hardening elasto-plastic behavior according to the additive
 decomposition of strain into the elastic and plastic parts in
 infinitesimal deformation as
@@ -395,6 +412,11 @@ infinitesimal deformation as
    \boldsymbol{\varepsilon} &= \boldsymbol{\varepsilon}^e +\boldsymbol{\varepsilon}^p\\
    \boldsymbol{\sigma} &= 2G(\boldsymbol{\varepsilon}^e) + \lambda  \mathrm{tr}(\boldsymbol{\varepsilon}^e)\boldsymbol{I}
 
+.. figure:: figures/cl/isotropic_hardening_plasticity.svg
+   :name:   fig:smm:cl:Lin-strain-hard
+   :align: center
+
+   Stress-strain curve for the small-deformation plasticity with linear isotropic hardening.
 
 In this class, the von Mises yield criterion is used. In the von Mises
 yield criterion, the yield is independent of the hydrostatic stress.
@@ -507,13 +529,13 @@ stiffness tensor. This formulation relies on the definition of an
 evolution law for the damage variable. In ``Akantu``, many possibilities
 exist and they are listed below.
 
-.. _sect-smm-cl-damage:
+.. _sect-smm-cl-damage-marigo:
 
 Marigo
 ''''''
 
 This damage evolution law is energy based as defined by Marigo
-:cite:`marigo81a, lemaitre96a`. It is an isotropic damage law.
+:cite:`marigo81a`, :cite:`lemaitre96a`. It is an isotropic damage law.
 
 .. math::
 
@@ -570,3 +592,326 @@ if the material were undamaged.
 
 The coefficients :math:`A` and :math:`B` are the post-peak asymptotic
 value and the decay shape parameters.
+
+.. _sect:smm:CLNL:
+
+Non-Local Constitutive Laws
+```````````````````````````
+
+Continuum damage modeling of quasi-brittle materials undergo significant
+softening after the onset of damage. This fast growth of damage causes a loss of
+ellipticity of partial differential equations of equilibrium. Therefore, the
+numerical simulation results won't be objective anymore, because the dissipated
+energy will depend on mesh size used in the simulation. One way to avoid this
+effect is the use of non-local damage formulations. In this approach a local
+quantity such as the strain is replaced by its non-local average, where the size
+of the domain, over which the quantitiy is averaged, depends on the underlying
+material microstructure. ``Akantu`` provides non-local versions of many
+constitutive laws for damage. Examples are for instance the material
+:ref:`sect-smm-cl-damage-mazars` and the material
+:ref:`sect-smm-cl-damage-marigo`, that can be used in a non-local context. In
+order to use the corresponding non-local formulation the user has to define the
+non-local material he wishes to use in the text input file:
+
+.. code-block::
+
+   material constitutive_law_non_local [
+       name = material_name
+       rho = $value$
+       ...
+   ]
+
+where ``constitutive_law_non_local`` is the name of the non-local constitutive law, *e.g.* `marigo_non_local`.
+In addition to the material the non-local neighborhood, that should be used for the averaging process needs to be defined in the material file as well:
+
+.. code-block::
+
+  non_local neighborhood_name weight_function_type [
+     radius = $value$
+     ...
+      weight_function weight_parameter [
+        damage_limit = $value$
+        ...
+     ]
+  ]
+
+for the non-local averaging, *e.g.* ``base_wf``, followed by the properties of the non-local neighborhood, such as the radius, and the weight function parameters. It is important to notice that the non-local neighborhood must have the same name as the material to which the neighborhood belongs!
+The following two sections list the non-local constitutive laws and different type of weight functions available in ``Akantu``.
+\subsection{Non-local constitutive laws}
+Let us consider a body having a volume :math:`V` and a boundary :math:`\Gamma`. The stress-strain relation for a non-local damage model can be described as follows:
+
+.. _eq:non-local-const:
+ .. math:: \vec{\sigma} = (1-\bar{d}) \vec{D}:\epsilon
+
+with :math:`\vec{D}` the elastic moduli tensor, :math:`\sigma` the stress tensor, :math:`\epsilon` the strain tensor and :math:`\bar{d}` the non-local damage variable. Note that this stres-strain relationship is similar to the relationship defined in Damage model except :math:`\bar{d}`. The non-local damage model can be extended to the damage constitutive laws: :ref:`sect-smm-cl-damage-marigo` and :ref:`sect-smm-cl-damage-mazars`.
+
+The non-local damage variable :math:`\bar{d}` is defined as follows:
+
+.. _eq:non-local-const:
+ .. math:: \bar{d}(\vec{x}) = \int_{V}W(\vec{x}, \vec{y}) d(\vec{y}) dV(\vec{y})
+
+with :math:`W(\vec{x},\vec{y})` the weight function which averages local damage variables to describe the non-local interactions. A list of available weight functions and its functionalities in \akantu are explained in the next section.
+
+Non-local weight functions
+''''''''''''''''''''''''''
+
+The available weight functions in ``Akantu`` are follows:
+
+ - ``base_weight_function``: This weight function averages local damage variables by using a bell-shape function on spatial dimensions.
+ -  ``damaged_weight_function``: A linear-shape weight function is applied to average local damage variables. Its slope is determined by damage variables. For example, the damage variables for an element which is highly damaged are averaged over  large spatial dimension (linear function including a small slope).
+ - ``remove_damaged_weight_function``: This weight function averages damage values by using a bell-shape function as  ``base_weight_function``, but excludes elements which are fully damaged.
+ - ``remove_damaged_with_damage_rate_weight_function``: A bell-shape function is applied to average local damage variables for elements having small damage rates.
+ - ``stress_based_weight_function``: Non local integral takes stress states, and use the states to construct weight function: an ellipsoid shape. Detailed explanations of this weight function are given in Giry et al. :cite:`giry13a`.
+
+
+
+.. _sec-cohesive-laws:
+
+Cohesive Constitutive laws
+``````````````````````````
+
+.. _ssect-smm-cl-coh-snozzi:
+
+Linear Irreversible Law
+'''''''''''''''''''''''
+
+.. figure:: figures/cl/linear_cohesive_law.svg
+   :alt: Irreversible cohesive laws for explicit simulations.
+   :name: fig:smm:coh:linear_cohesive_law
+   :align: center
+   :width: 60.0%
+
+   Irreversible cohesive laws for explicit simulations.
+
+
+`Akantu` includes the Snozzi-Molinari :cite:`snozzi_cohesive_2013`
+linear irreversible cohesive law (see
+:numref:`fig:smm:coh:linear_cohesive_law`). It is an extension to
+the Camacho-Ortiz :cite:`camacho_computational_1996` cohesive law in
+order to make dissipated fracture energy path-dependent. The concept
+of free potential energy is dropped and a new independent parameter
+:math:`\kappa` is introduced:
+
+.. math::
+  \kappa = \frac{G_\mathrm{c, II}}{G_\mathrm{c, I}}
+
+
+where :math:`G_\mathrm{c, I}` and :math:`G_\mathrm{c, II}` are the
+necessary works of separation per unit area to open completely a
+cohesive zone under mode I and mode II, respectively. Their model yields to the
+following equation for cohesive tractions :math:`\vec{T}` in case of crack
+opening :math:`{\delta}`:
+
+.. math::
+  \vec{T} = \left( \frac{\beta^2}{\kappa} \Delta_\mathrm{t} \vec{t} +
+    \Delta_\mathrm{n} \vec{n} \right)
+  \frac{\sigma_\mathrm{c}}{\delta}
+  \left( 1- \frac{\delta}{\delta_\mathrm{c}} \right)
+  = \hat{\vec T}\,
+  \frac{\sigma_\mathrm{c}}{\delta}
+  \left( 1- \frac{\delta}{\delta_\mathrm{c}} \right)
+  :label: eq-smm-coh-tractions
+
+where :math:`\sigma_\mathrm{c}` is the material strength along the fracture,
+:math:`\delta_\mathrm{c}` the critical effective displacement after which
+cohesive tractions are zero (complete decohesion), :math:`\Delta_\mathrm{t}`
+and :math:`\Delta_\mathrm{n}` are the tangential and normal components of
+the opening displacement vector :math:`\vec{\Delta}`, respectively. The
+parameter :math:`\beta` is a weight that indicates how big the tangential
+opening contribution is. The effective opening displacement is:
+
+.. math::
+   \delta = \sqrt{\frac{\beta^2}{\kappa^2} \Delta_\mathrm{t}^2 + \Delta_\mathrm{n}^2}
+
+In case of unloading or reloading :math:`\delta < \delta_\mathrm{max}`,
+tractions are calculated as:
+
+.. math::
+   \begin{eqnarray}
+   T_\mathrm{n} &= \Delta_\mathrm{n}\, \frac{\sigma_\mathrm{c}}{\delta_\mathrm{max}} \left( 1- \frac{\delta_\mathrm{max}}{\delta_\mathrm{c}} \right) \\
+  T_\mathrm{t} &= \frac{\beta^2}{\kappa}\, \Delta_\mathrm{t}\, \frac{\sigma_\mathrm{c}}{\delta_\mathrm{max}} \left( 1- \frac{\delta_\mathrm{max}}{\delta_\mathrm{c}} \right)
+   \end{eqnarray}
+
+so that they vary linearly between the origin and the maximum attained
+tractions. As shown in :numref:`fig:smm:coh:linear_cohesive_law`,
+in this law, the dissipated and reversible energies are:
+
+.. math::
+   \begin{eqnarray}
+   E_\mathrm{diss} &= \frac{1}{2} \sigma_\mathrm{c}\, \delta_\mathrm{max}\\[1ex]
+   E_\mathrm{rev} &= \frac{1}{2} T\, \delta
+   \end{eqnarray}
+
+Moreover, a damage parameter :math:`D` can be defined as:
+
+.. math::
+  D = \min \left(
+    \frac{\delta_\mathrm{max}}{\delta_\mathrm{c}},1 \right)
+
+which varies from 0 (undamaged condition) and 1 (fully
+damaged condition). This variable can only increase because damage is
+an irreversible process. A simple penalty contact model has been incorporated
+in the cohesive law so that normal tractions can be returned in
+case of compression:
+
+.. math::
+  T_\mathrm{n} = \alpha \Delta_\mathrm{n} \quad\text{if}\quad
+  \Delta_\mathrm{n}\quad <\quad 0
+
+where :math:`\alpha` is a stiffness parameter that defaults to zero. The
+relative contact energy is equivalent to reversible energy but in
+compression.
+
+The material name of the linear decreasing cohesive law is
+``material_cohesive_linear`` and its parameters with their respective default
+values are:
+
+- sigma_c: 0
+- delta_c: 0
+- beta: 0
+- G_c: 0
+- kappa: 1
+- penalty: 0
+
+where ``G_c`` corresponds to :math:`G_\mathrm{c, I}`. A random number
+generator can be used to assign a random :math:`\sigma_\mathrm{c}` to each
+facet following a given distribution (see
+Section :ref:`sect-smm-cl`). Only one parameter between ``delta_c``
+and ``G_c`` has to be specified. For random :math:`\sigma_\mathrm{c}`
+distributions, the chosen parameter of these two is kept fixed and the
+other one is varied.
+
+The bi-linear constitutive law works exactly the same way as the linear
+one, except for the additional parameter ``delta_0`` that by
+default is zero. Two examples for the extrinsic and intrinsic cohesive
+elements and also an example to assign different properties to
+inter-granular and trans-granular cohesive elements can be found in
+the folder ``examples/cohesive_element/``.
+
+.. _ssect:smm:cl:coh-friction:
+
+Linear Cohesive Law with Friction
+'''''''''''''''''''''''''''''''''
+
+This law represents a variation of the linear irreversible cohesive of
+the previous section, which adds friction.  The friction behavior is
+approximated with an elasto-plastic law, which relates the friction
+force to the relative sliding between the two faces of the cohesive
+element.  The slope of the elastic branch is called
+``penalty_for_friction``, and is defined by the user, together
+with the friction coefficient, as a material property.  The friction
+contribution evolves with the damage of the cohesive law: it is null
+when the damage is zero, and it becomes maximum when the damage is
+equal to one.  This is done by defining a current value of the
+friction coefficient (mu) that increases linearly with the damage, up
+to the value of the friction coefficient defined by the user.  The
+yielding plateau of the friction law is given by the product of the
+current friction coefficient and the local compression stress acting
+in the cohesive element.  Such an approach is equivalent to a
+node-to-node contact friction. Its accuracy is acceptable only for
+small displacements.
+
+The material name of the linear cohesive law with friction is
+``material_cohesive_linear_friction``. Its additional parameters
+with respect to those of the linear cohesive law without friction,
+with the respective default values, are:
+
+-mu: 0
+-penalty_for_friction: 0
+
+.. _ssect:smm:cl:coh-fatigue:
+
+Linear Cohesive Law with Fatigue
+''''''''''''''''''''''''''''''''
+
+This law represents a variation of the linear irreversible cohesive
+law of the previous section, that removes the hypothesis of elastic
+unloading-reloading cycles. With this law, some energy is dissipated
+also during unloading and reloading with hysteresis. The
+implementation follows the work of :cite:`nguyen2001`. During the
+unloading-reloading cycle, the traction increment is computed as
+
+.. math::
+  \dot{T} =
+  \begin{cases}
+    K^- \, \dot{\delta} & \text{if $\dot{\delta} < 0$} \\
+    K^+ \, \dot{\delta} & \text{if $\dot{\delta} > 0$} \\
+  \end{cases}
+
+where :math:`\dot{\delta}` and :math:`\dot{T}` are respectively the effective
+opening displacement and the cohesive traction increments with respect
+to time, while :math:`K^-` and :math:`K^+` are respectively the unloading and
+reloading incremental stiffness. The unloading path is linear and
+results in an unloading stiffness
+
+.. math::
+  K^- = \frac{T_\mathrm{max}}{\delta_\mathrm{max}}
+
+where :math:`T_\mathrm{max}` and :math:`\delta_\mathrm{max}` are the maximum
+cohesive traction and the effective opening displacement reached
+during the precedent loading phase. The unloading stiffness remains
+constant during the unloading phase. On the other hand the reloading
+stiffness increment :math:`\dot{K}^+` is calculated as
+
+.. math::
+  \dot{K}^+ =
+  \begin{cases}
+    - K^+ \, \dot{\delta} / \delta_\mathrm{f} & \text{if $\dot{\delta}
+      > 0$} \\
+    \left( K^+ - K^- \right) \, \dot{\delta} / \delta_\mathrm{f} &
+    \text{if $\dot{\delta}$ < $0$}
+  \end{cases}
+
+where :math:`\delta_\mathrm{f}` is a material parameter (refer
+to :cite:`vocialta15` for more details). During unloading the stiffness
+:math:`K^+` tends to :math:`K^-`, while during reloading :math:`K^+` gets decreased at
+every time step. If the cohesive traction during reloading exceeds the
+upper limit given by equation :eq:`eq-smm-coh-tractions`, it is
+recomputed following the behavior of the linear decreasing cohesive
+law for crack opening.
+
+.. _ssect:smm:cl:coh-exponential:
+
+Exponential Cohesive Law
+'''''''''''''''''''''''''
+
+Ortiz and Pandolfi proposed this cohesive law in 1999 :cite:`ortiz1999`.  The
+traction-opening equation for this law is as follows:
+
+.. math::
+   T = e \sigma_c \frac{\delta}{\delta_c}e^{-\delta/ \delta_c}
+   :label: eq:exponential_law
+
+This equation is plotted in Figure :numref:`fig:smm:cl:ecl`. The term
+:math:`\partial{\vec{T}}/ \partial{\delta}` after the necessary derivation
+can expressed as
+
+.. math::
+   \frac{\partial{\vec{T}}} {\partial{\delta}} = \hat{\vec{T}} \otimes
+   \frac                       {\partial{(T/\delta)}}{\partial{\delta}}
+   \frac{\hat{\vec{T}}}{\delta}+ \frac{T}{\delta}  \left[ \beta^2 \mat{I} +
+   \left(1-\beta^2\right) \left(\vec{n} \otimes \vec{n}\right)\right]
+   :label: eq:tangent_cohesive
+
+where
+
+.. math::
+  \frac{\partial{(T/ \delta)}}{\partial{\delta}} = \left\{\begin{array} {l l}
+      -e  \frac{\sigma_c}{\delta_c^2  }e^{-\delta  /  \delta_c} &  \quad  \text{if}
+      \delta \geq \delta_{max}\\
+      0 & \quad \text{if} \delta < \delta_{max}, \delta_n > 0
+    \end{array} \right.
+
+
+As regards the behavior in compression, two options are available:
+a contact penalty approach with stiffness following the formulation of
+the exponential law and a contact penalty approach with constant
+stiffness. In the second case, the stiffness is defined as a function
+of the tangent of the exponential law at the origin.
+
+.. figure:: figures/cl/cohesive_exponential.png
+   :alt:    Exponential cohesive law
+   :name:   fig:smm:cl:ecl
+   :align: center
+
+   Exponential cohesive law

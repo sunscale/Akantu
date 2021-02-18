@@ -83,6 +83,7 @@ pygments_style = 'sphinx'
 primary_domain = 'cpp'
 highlight_language = 'cpp'
 
+bibtex_bibfiles = ['manual/manual-bibliography.bib']
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

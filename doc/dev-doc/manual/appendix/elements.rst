@@ -42,8 +42,8 @@ Segment 2
    :align: center
 
    * - Coord. (:math:`\xi`)
-     - 0
-   * - Weight
+     - Weight
+   * - 0
      - 2
 
 Segment 3
@@ -73,10 +73,10 @@ Segment 3
    :align: center
 
    * - Coord. (:math:`\xi`)
-     - :math:`-1/\sqrt{3}`
-     - :math:`1/\sqrt{3}`
-   * - Weight
+     - Weight
+   * - :math:`-1/\sqrt{3}`
      - 1
+   * - :math:`1/\sqrt{3}`
      - 1
 
 
@@ -110,8 +110,8 @@ Triangle 3
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`)
-     - (:math:`\frac{1}{3}`, :math:`\frac{1}{3}`)
-   * - Weight
+     - Weight
+   * - (:math:`\frac{1}{3}`, :math:`\frac{1}{3}`)
      - :math:`\frac{1}{2}`
 
 Triangle 6
@@ -154,12 +154,12 @@ Triangle 6
 
 
    * - Coord. (:math:`\xi`, :math:`\eta`)
-     - (:math:`\frac{1}{6}`, :math:`\frac{1}{6}`)
-     - (:math:`\frac{2}{3}`, :math:`\frac{1}{6}`)
-     - (:math:`\frac{1}{6}`, :math:`\frac{2}{3}`)
-   * - Weight
+     - Weight
+   * - (:math:`\frac{1}{6}`, :math:`\frac{1}{6}`)
      - :math:`\frac{1}{6}`
+   * - (:math:`\frac{2}{3}`, :math:`\frac{1}{6}`)
      - :math:`\frac{1}{6}`
+   * - (:math:`\frac{1}{6}`, :math:`\frac{2}{3}`)
      - :math:`\frac{1}{6}`
 
 Quadrangle 4
@@ -193,14 +193,14 @@ Quadrangle 4
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
-   * - Weight
+     - Weight
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
      - 1
 
 Quadrangle 8
@@ -250,29 +250,26 @@ Quadrangle 8
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`)
-     - (:math:`0`, :math:`0`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-   * - Weight
+     - Weight
+   * - (:math:`0`, :math:`0`)
      - :math:`\frac{64}{81}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{25}{81}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{25}{81}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{25}{81}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{25}{81}`
-   * - Coord. (:math:`\xi`, :math:`\eta`)
-     - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
-     - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
-     -
-   * - Weight
+   * - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{40}{81}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{40}{81}`
+   * - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{40}{81}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{40}{81}`
-     -
+
 
 3D-Shape Functions
 ``````````````````
@@ -308,8 +305,8 @@ Tetrahedron 4
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`\frac{1}{4}`, :math:`\frac{1}{4}`, :math:`\frac{1}{4}`)
-   * - Weight
+     - Weight
+   * - (:math:`\frac{1}{4}`, :math:`\frac{1}{4}`, :math:`\frac{1}{4}`)
      - :math:`\frac{1}{6}`
 
 Tetrahedron 10
@@ -367,16 +364,14 @@ Tetrahedron 10
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`)
-     - (:math:`\frac{5+3\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`)
-   * - Weight
+     - Weight
+   * - (:math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`)
      - :math:`\frac{1}{24}`
+   * - (:math:`\frac{5+3\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`)
      - :math:`\frac{1}{24}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5+3\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`)
-     - (:math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5+3\sqrt{5}}{20}`)
-   * - Weight
+   * - (:math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5+3\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`)
      - :math:`\frac{1}{24}`
+   * - (:math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5-\sqrt{5}}{20}`, :math:`\frac{5+3\sqrt{5}}{20}`)
      - :math:`\frac{1}{24}`
 
 Hexahedron 8
@@ -426,24 +421,22 @@ Hexahedron 8
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
-   * - Weight
+     - Weight
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`)
      - 1
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
-   * - Weight
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
      - 1
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`, :math:`\frac{1}{\sqrt{3}}`)
      - 1
 
 Pentahedron 6
@@ -491,23 +484,18 @@ Pentahedron 6
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.5`)
-
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`0.0`, :math:`0.5`)
-
-     - (:math:`-\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.0`)
-
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.5`)
-
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`0.0`, :math:`0.5`)
-
-     - (:math:`\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.0`)
-   * - Weight
+     - Weight
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.5`)
      - :math:`\frac{1}{6}`
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`0.0`, :math:`0.5`)
      - :math:`\frac{1}{6}`
+   * - (:math:`-\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.0`)
      - :math:`\frac{1}{6}`
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.5`)
      - :math:`\frac{1}{6}`
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`0.0`, :math:`0.5`)
      - :math:`\frac{1}{6}`
+   * - (:math:`\frac{1}{\sqrt{3}}`, :math:`0.5`, :math:`0.0`)
      - :math:`\frac{1}{6}`
 
 Hexahedron 20
@@ -605,75 +593,61 @@ Hexahedron 20
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
-   * - Weight
+     - Weight
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{200}{729}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`0`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
-   * - Weight
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`0`)
      - :math:`\frac{320}{729}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{200}{729}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
-     - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-   * - Weight
+   * - (:math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
+   * - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{320}{729}`
+   * - (:math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`0`, :math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`0`, :math:`0`, :math:`0`)
-     - (:math:`0`, :math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-   * - Weight
+   * - (:math:`0`, :math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{320}{729}`
+   * - (:math:`0`, :math:`0`, :math:`0`)
      - :math:`\frac{512}{729}`
+   * - (:math:`0`, :math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{320}{729}`
+   * - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
-     - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
-   * - Weight
+   * - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{320}{729}`
+   * - (:math:`0`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{200}{729}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`0`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
-   * - Weight
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`0`)
      - :math:`\frac{320}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`0`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{200}{729}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
-     - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
-     -
-   * - Weight
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`-\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`0`)
      - :math:`\frac{200}{729}`
+   * - (:math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`, :math:`\sqrt{\tfrac{3}{5}}`)
      - :math:`\frac{125}{729}`
-     -
 
 Pentahedron 15
 ''''''''''''''
@@ -750,23 +724,20 @@ Pentahedron 15
    :align: center
 
    * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`\tfrac{1}{3}`, :math:`\tfrac{1}{3}`)
-     - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`0.6`, :math:`0.2`)
-
-     - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.6`)
-     - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.2`)
-   * - Weight
+     - Weight
+   * - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`\tfrac{1}{3}`, :math:`\tfrac{1}{3}`)
      - -:math:`\frac{27}{96}`
+   * - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`0.6`, :math:`0.2`)
      - :math:`\frac{25}{96}`
+   * - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.6`)
      - :math:`\frac{25}{96}`
+   * - (:math:`-{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.2`)
      - :math:`\frac{25}{96}`
-   * - Coord. (:math:`\xi`, :math:`\eta`, :math:`\zeta`)
-     - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`\tfrac{1}{3}`, :math:`\tfrac{1}{3}`)
-     - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`0.6`, :math:`0.2`)
-     - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.6`)
-     - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.2`)
-   * - Weight
+   * - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`\tfrac{1}{3}`, :math:`\tfrac{1}{3}`)
      - -:math:`\frac{27}{96}`
+   * - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`0.6`, :math:`0.2`)
      - :math:`\frac{25}{96}`
+   * - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.6`)
      - :math:`\frac{25}{96}`
+   * - (:math:`{\tfrac{1}{\sqrt{3}}}`, :math:`0.2`, :math:`0.2`)
      - :math:`\frac{25}{96}`

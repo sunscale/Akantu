@@ -67,6 +67,24 @@ Solid Mechanics Model
 .. doxygenclass:: akantu::Material
 .. doxygenclass:: akantu::InternalField
 
+Solid Mechanics Model Cohesive
+..............................
+
+.. doxygenclass:: akantu::SolidMechanicsModelCohesive
+.. doxygenclass:: akantu::FragmentManager
+
 Synchronizers
 `````````````
 .. doxygenclass:: akantu::DataAccessor
+
+Input/Output
+````````````
+.. doxygenclass:: akantu::Dumpable
+.. doxygenclass:: akantu::DumperIOHelper
+.. doxygenclass:: akantu::DumperParaview
+.. doxygenclass:: akantu::DumperText
+.. doxygenclass:: akantu::Field
+.. doxygenclass:: akantu::Parser
+.. doxygenclass:: akantu::ParserParameter
+.. doxygenclass:: akantu::ParserSection
+.. doxygenenum:: akantu::SectionType

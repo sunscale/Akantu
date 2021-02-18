@@ -77,12 +77,11 @@ follows::
 
   model.initFull()
 
-This function initializes the internal arrays and sets them to
-zero. Initial displacements and velocities that are not equal to zero
-can be prescribed by running a loop over the total number of
-nodes. Here, the initial displacement in :math:`x`-direction and the
-initial velocity in :math:`y`-direction for all nodes is set to :math:`0.1` and :math:`1`,
-respectively::
+This function initializes the internal arrays and sets them to zero. Initial
+displacements and velocities that are not equal to zero can be prescribed by
+running a loop over the total number of nodes. Here, the initial displacement in
+:math:`x`-direction and the initial velocity in :math:`y`-direction for all
+nodes is set to :math:`0.1` and :math:`1`, respectively::
 
     auto & disp = model.getDisplacement();
     auto & velo = model.getVelocity();
@@ -100,7 +99,7 @@ Setting Boundary Conditions
 This section explains how to impose Dirichlet or Neumann boundary
 conditions. A Dirichlet boundary condition specifies the values that
 the displacement needs to take for every point :math:`x` at the boundary
-(:math:`\Gamma_u`) of the problem domain (:numref:`fig:smm:boundaries`):
+(:math:`\Gamma_u`) of the problem domain (:numref:`fig-smm-boundaries`):
 
 .. math::
   \vec{u} = \bar{\vec u} \quad \forall \vec{x}\in \Gamma_{u}
@@ -108,7 +107,7 @@ the displacement needs to take for every point :math:`x` at the boundary
 
 A Neumann boundary condition imposes the value of the gradient of the
 solution at the boundary :math:`\Gamma_t` of the problem domain
-(:numref:`fig:smm:boundaries`):
+(:numref:`fig-smm-boundaries`):
 
 .. math::
     \vec{t} = \mat{\sigma} \vec{n} = \bar{\vec t} \quad
@@ -239,7 +238,7 @@ boundary conditions from the desired boundary
 User specified functors can also be implemented.  A full example for
 setting both initial and boundary conditions can be found in
 ``examples/boundary_conditions.cc``.  The problem solved
-in this example is shown in :numref:`fig-smm-bc_and_id`. It consists
+in this example is shown in :numref:`fig-smm-bc_and_ic`. It consists
 of a plate that is fixed with movable supports on the left and bottom
 side. On the right side, a traction, which increases linearly with the
 number of time steps, is applied. The initial displacement and
@@ -324,6 +323,126 @@ different elements.
 Apart from the ``Akantu``'s default material selectors, users can always
 develop their own classes in the main code to tackle various
 multi-material assignment situations.
+
+For cohesive material, ``Akantu`` has a pre-defined material selector to assign
+the first cohesive material by default to the cohesive elements which is called
+:cpp:class:`DefaultMaterialCohesiveSelector
+<akantu::DefaultMaterialCohesiveSelector>` and it inherits its properties from
+:cpp:class:`DefaultMaterialSelector <akantu::DefaultMaterialSelector>`. Multiple
+cohesive materials can be assigned using mesh data information (for more
+details, see :ref:`sect-smm-intrinsic-insertion`).
+
+
+Insertion of Cohesive Elements
+``````````````````````````````
+Cohesive elements are currently compatible only with static simulation
+and dynamic simulation with an explicit time integration scheme (see
+section :ref:`ssect-smm-expl-time-integration`). They do not have to be
+inserted when the mesh is generated (intrinsic) but can be added
+during the simulation (extrinsic). At any time during the simulation,
+it is possible to access the following energies with the relative
+function:
+
+.. code-block:: c++
+
+  Real Ed = model.getEnergy("dissipated");
+  Real Er = model.getEnergy("reversible");
+  Real Ec = model.getEnergy("contact");
+
+A new model have to be call in a very similar way that the solid
+mechanics model:
+
+.. code-block:: c++
+
+  SolidMechanicsModelCohesive model(mesh);
+  model.initFull(_analysis_method = _explicit_lumped_mass,
+                 _is_extrinsic = true);
+
+Cohesive element insertion can be either realized at the beginning of
+the simulation or it can be carried out dynamically during the
+simulation. The first approach is called ``intrinsic``, the second
+one ``extrinsic``. When an element is present from the beginning, a
+bi-linear or exponential cohesive law should be used instead of a
+linear one. A bi-linear law works exactly like a linear one except for
+an additional parameter :math:`\delta_0` separating an initial linear
+elastic part from the linear irreversible one. For additional details
+concerning cohesive laws see Section~\ref{sec:cohesive-laws}.
+
+.. _fig-smm-coh-insertion:
+.. figure:: figures/insertion.svg
+            :align: center
+
+            Insertion of a cohesive element.
+
+Extrinsic cohesive elements are dynamically inserted between two
+standard elements when
+
+.. math::
+   \sigma_\mathrm{eff} > \sigma_\mathrm{c} \quad\text {with} \quad \sigma_\mathrm{eff} = \sqrt{\sigma_\mathrm{n} ^ 2 + \frac{\tau ^ 2} {\beta ^ 2 }}
+
+in which :math:`\sigma_\mathrm { n }
+` is the tensile normal traction and $\tau$ the resulting tangential one(  :numref:`fig-smm-coh-insertion`).
+
+Extrinsic approach
+''''''''''''''''''
+
+During the simulation, stress has to be checked along each facet in order to
+insert cohesive elements where the stress criterion is reached. This check is
+performed by calling the method :cpp:func:`checkCohesiveStress
+<akantu::SolidMechanicsModelCohesive::checkCohesiveStress>`, as example before
+each step resolution:
+
+.. code-block:: c++
+
+   model.checkCohesiveStress();
+   model.solveStep();
+
+The area where stresses are checked and cohesive elements inserted can be
+limited using the method :cpp:func:`setLimit
+<akantu::CohesiveInserter::setLimit>` on the :cpp:class:`CohesiveInserter
+<akantu::CohesiveInserter>` during initialization. As example, to limit
+insertion in the range :math:`[-1.5, 1.5]` in the $x$ direction:
+
+.. code-block:: c++
+
+  auto & inserter = model.getElementInserter();
+  inserter.setLimit(_x, -1.5, 1.5);
+
+Additional restrictions with respect to :math:`_y` and :math:`_z` directions can
+be added as well.
+
+.. _sect-smm-intrinsic-insertion:
+
+Intrinsic approach
+''''''''''''''''''
+
+Intrinsic cohesive elements are inserted in the mesh with the method
+:cpp:func:`initFull <akantu::SolidMechanicsModelCohesive::initFull>`.
+Similarly, the range of insertion can be limited with :cpp:func:`setLimit
+<akantu::CohesiveInserter::setLimit>` before the :cpp:func:`initFull
+<akantu::SolidMechanicsModelCohesive::initFull>` call.
+
+In both cases extrinsic and intrinsic the insertion can be restricted to
+surfaces or element groups. To do so the list of groups should be specified in
+the input file.
+
+.. code-block::
+
+  model solid_mechanics_model_cohesive [
+    cohesive_inserter [
+      cohesive_surfaces = [surface1, surface2, ...]
+      cohesive_zones = [group1, group2, ...]
+    ]
+
+    material cohesive_linear [
+      name = insertion
+      beta = 1
+      G_c = 10
+      sigma_c = 1e6
+    ]
+  ]
+
+
 
 Static Analysis
 ---------------
@@ -434,15 +553,6 @@ of the length of the plate.
 The results of this analysis is depicted in
 :numref:`fig-smm-implicit:static_solution`.
 
-..
-   \begin{figure}[!htb]
-     \centering
-     \includegraphics[width=.7\linewidth]{figures/static_analysis}
-     \caption{Solution of the static analysis. Left: the initial
-   condition, right: the solution (deformation magnified 50 times)}
-     \label{fig-smm-implicit:static_solution}
-   \end{figure}
-
 .. _fig-smm-implicit:static_solution:
 .. figure:: figures/static_analysis.png
             :align: center
@@ -451,51 +561,6 @@ The results of this analysis is depicted in
             Solution of the static analysis. Left: the initial condition, right:
             the solution (deformation magnified 50 times).
 
-..
-   Static implicit analysis with dynamic insertion of cohesive elements
-   ````````````````````````````````````````````````````````````````````
-
-   In order to solve problems with the extrinsic cohesive method in the
-   static implicit solution scheme, the function ``solveStepCohesive``
-   has to be used::
-
-      model.solveStepCohesive<_scm_newton_raphson_tangent,
-                              SolveConvergenceCriteria::_increment>(1e-13, error,
-                                                                    25, false, 1e5,
-                                                                    true);
-
-
-   in which the arguments are: tolerance, error, max_iteration,
-   load_reduction, tol_increase_factor, do_not_factorize.  This
-   function, first applies the Newton-Raphson procedure to solve the
-   problem.  Then, it calls the method ``checkCohesiveStress`` to
-   check if cohesive elements have to be inserted.  Since the approach is
-   implicit, only one element is added, the most stressed one (see
-   Section \ref{extrinsic_insertion}).  After insertion, the
-   Newton-Raphson procedure is applied again to solve the same
-   incremental loading step, with the new inserted cohesive element.  The
-   procedure loops in this way since no new cohesive elements have to be
-   inserted.  At that point, the solution is saved, and the simulation
-   can advance to the next incremental loading step.  In case the
-   convergence is not reached, the obtained solution is not saved and the
-   simulation return to the main file with the error given by the
-   solution saved in the argument of the function *error*.  In this
-   way, the user can intervene in the simulation in order to find anyhow
-   convergence.  A possibility is, for instance, to reduce the last
-   incremental loading step.  The variable *load_reduction* can be
-   used to identify if the load has been already reduced or not.  At the
-   same time, with the variable *tol_increase_factor* it is
-   possible to increase the tolerance by a factor defined by the user in
-   the main file, in order to accept a solution even with an error bigger
-   than the tolerance set at the beginning.  It is possible to increase
-   the tolerance only in the phase of loading reduction, i.e., when
-   load_reduction = true.  A not converged solution is never saved.  In
-   case the convergence is not reached even after the loading reduction
-   procedure, the displacement field is not updated and remains the one
-   of the last converged incremental steps.  Also, cohesive elements are
-   inserted only if convergence is reached.  An example of the extrinsic
-   cohesive method in the static implicit solution scheme is presented in
-   ``examples/cohesive_element/cohesive_extrinsic_implicit``.
 
 Dynamic Methods
 ---------------
@@ -536,7 +601,7 @@ system of three equations (see :cite:`curnier92a,hughes-83a` for more details):
 In these new equations, :math:`\ddot{\vec{u}}_{n}`, :math:`\dot{\vec{u}}_{n}`
 and :math:`\vec{u}_{n}` are the approximations of :math:`\ddot{\vec{u}}(t_n)`,
 :math:`\dot{\vec{u}}(t_n)` and :math:`\vec{u}(t_n)`.
-Equation~(\ref{eqn:equation-motion-discret}) is the equation of motion
+Equation~(:eq:`eqn-equation-motion-discret`) is the equation of motion
 discretized in space (finite-element discretization), and the equations above
 are discretized in both space and time (Newmark discretization). The
 :math:`\alpha` and :math:`\beta` parameters determine the stability and the
@@ -554,7 +619,7 @@ are usually :math:`\beta = 1/2` for no numerical damping and :math:`0 < \alpha <
 
 
 The solution of this system of equations,
-(:eq:`eqn-equation-motion-discret`)) is
+(:eq:`eqn-equation-motion-discret`) is
 split into a predictor and a corrector system of equations.  Moreover,
 in the case of a non-linear equations, an iterative algorithm such as
 the Newton-Raphson method is applied. The system of equations can be
@@ -682,21 +747,8 @@ beam at 3 different times during the simulation: time steps 0, 1000 and
 
             Deformed beam at three different times (displacement :math:`\times
             10`).
-..
-   \begin{figure}[!htb]
-     \centering
-     \setlength{\unitlength}{0.1\textwidth}
-     \begin{tikzpicture}
-       \node[above right] (img) at (0,0)
-       {\includegraphics[width=.6\linewidth]{figures/dynamic_analysis}};
-       \node[left] at (0pt,20pt) {:math:`0`}; \node[left] at (0pt,60pt) {:math:`1000`};
-       \node[left] at (0pt,100pt) {:math:`2000`};
-     \end{tikzpicture}
 
-     \caption{Deformed beam at 3 different times (displacement are
-       magnified by a factor 10).}
-     \label{fig-smm-implicit:dynamic_solution}
-   \end{figure}
+.. _ssect-smm-expl-time-integration:
 
 Explicit Time Integration
 `````````````````````````
@@ -707,10 +759,10 @@ Newmark-:math:`\beta` scheme with :math:`\alpha=0` (see equations
 ``Akantu``, :math:`\beta` is defaults to :math:`\beta=1/2`, see section
 \ref{sect:smm:Dynamic_methods}.
 
-The initialization of the simulation is similar to the static and
-implicit dynamic version.  The model is created from the
-:cpp:class:`SolidMechanicsModel <akantu::SolidMechanicsModel>` class.  In the initialization, the explicit
-scheme is selected using the ``_explicit_lumped_mass`` constant::
+The initialization of the simulation is similar to the static and implicit
+dynamic version. The model is created from the :cpp:class:`SolidMechanicsModel
+<akantu::SolidMechanicsModel>` class. In the initialization, the explicit scheme
+is selected using the ``_explicit_lumped_mass`` constant::
 
    SolidMechanicsModel model(mesh);
    model.initFull(_analysis_method = _explicit_lumped_mass);
@@ -811,29 +863,6 @@ of a wave in a steel beam. The beam and the applied displacement in the
 
             Numerical setup.
 
-..
-   \begin{figure}[!htb] \centering
-     \begin{tikzpicture}
-       \coordinate (c) at (0,2);
-       \draw[shift={(c)},thick, color=blue] plot [id=x, domain=-5:5, samples=50] ({\x, {(40 * sin(0.1*pi*3*\x) * exp(- (0.1*pi*3*\x)*(0.1*pi*3*\x) / 4))}});
-       \draw[shift={(c)},-latex] (-6,0) -- (6,0) node[right, below] {:math:`x`};
-       \draw[shift={(c)},-latex] (0,-0.7) -- (0,1) node[right] {:math:`u`};
-       \draw[shift={(c)}] (-0.1,0.6) node[left] {:math:`A`}-- (1.5,0.6);
-
-       \coordinate (l) at (0,0.6);
-       \draw[shift={(0,-0.7)}] (-5, 0) -- (5,0) -- (5, 1) -- (-5, 1) -- cycle;
-       \draw[shift={(l)}, latex-latex] (-5,0)-- (5,0) node [midway, above] {:math:`L`};
-       \draw[shift={(l)}] (5,0.2)-- (5,-0.2);
-       \draw[shift={(l)}] (-5,0.2)-- (-5,-0.2);
-
-       \coordinate (h) at (5.3,-0.7);
-       \draw[shift={(h)}, latex-latex] (0,0)-- (0,1) node [midway, right] {:math:`h`};
-       \draw[shift={(h)}] (-0.2,1)-- (0.2,1);
-       \draw[shift={(h)}] (-0.2,0)-- (0.2,0);
-     \end{tikzpicture}
-
-     \caption{Numerical setup \label{fig-smm-explicit}}
-   \end{figure}
 
 The length and height of the beam are :math:`L={10}\textrm{m}` and :math:`h =
 {1}\textrm{m}`, respectively. The material is linear elastic, homogeneous and
