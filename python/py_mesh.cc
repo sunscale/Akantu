@@ -77,6 +77,11 @@ void register_mesh(py::module & mod) {
             return self.getConnectivity(type);
           },
           py::return_value_policy::reference)
+      .def("addConnectivityType",
+          [](Mesh & self, ElementType type, GhostType ghost_type) -> void {
+            self.addConnectivityType(type, ghost_type);
+          },
+          py::arg("type"), py::arg("ghost_type") = _not_ghost)
       .def("distribute", [](Mesh & self) { self.distribute(); })
       .def("makePeriodic",
            [](Mesh & self, const SpatialDirection & direction) {
