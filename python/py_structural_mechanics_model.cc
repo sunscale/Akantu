@@ -75,6 +75,8 @@ void register_structural_mechanics_model(pybind11::module & mod) {
       /*
        * These functions are basically untested.
        */
+      .def("setTimeStep", &StructuralMechanicsModel::setTimeStep,
+           py::arg("time_step"), py::arg("solver_id") = "")
       .def(
           "getElementMaterialMap",
           [](StructuralMechanicsModel & self, const ElementType & type,
