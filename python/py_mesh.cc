@@ -106,8 +106,16 @@ void register_mesh(py::module & mod) {
       .def_static("buildFacets", &MeshUtils::buildFacets);
 
   py::class_<MeshAccessor>(mod, "MeshAccessor")
-      .def("resizeConnectivity", &MeshAccessor::resizeConnectivity)
-      .def("resizeNodes", &MeshAccessor::resizeConnectivity)
+      .def(
+      	  py::init<Mesh &>(), py::arg("mesh"))
+      .def("resizeConnectivity",
+      	   [](MeshAccessor & self, UInt new_size, ElementType type, GhostType gt) -> void {
+      	     self.resizeConnectivity(new_size, type, gt);},
+      	   py::arg("new_size"), py::arg("type"), py::arg("ghost_type") = _not_ghost)
+      .def("resizeNodes",
+      	   [](MeshAccessor& self, UInt new_size) -> void {
+      	     self.resizeNodes(new_size);},
+           py::arg("new_size"))
       .def("makeReady", &MeshAccessor::makeReady);
 }
 } // namespace akantu
