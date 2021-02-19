@@ -13,6 +13,7 @@ Akantu: a FEM library
    ./manual/getting_started.rst
    ./manual/fe_engine.rst
    ./manual/solidmechanicsmodel.rst
+   ./manual/heattransfermodel.rst
    ./manual/io.rst
 
 .. toctree::

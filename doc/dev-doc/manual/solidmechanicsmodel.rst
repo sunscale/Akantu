@@ -1,3 +1,5 @@
+.. _sect-smm:
+
 Solid Mechanics Model
 =====================
 
