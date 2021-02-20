@@ -37,7 +37,7 @@ register_gtest_sources(
   )
 
 register_gtest_sources(
-  SOURCE test_structural_mechanics_model_bernoulli_beam_dynamics.cc
+  SOURCES test_structural_mechanics_model_bernoulli_beam_dynamics.cc
   PACKAGE implicit structural_mechanics
   )
 
