@@ -36,6 +36,7 @@ void register_structural_mechanics_model(pybind11::module & mod) {
    */
   py::class_<StructuralMaterial>(mod, "StructuralMaterial")
       .def(py::init<>())
+      .def(py::init<const StructuralMaterial&>())
       .def_plainmember(E)
       .def_plainmember(A)
       .def_plainmember(I)
