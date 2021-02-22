@@ -42,7 +42,7 @@ class TestStructBernoulli3Static
 public:
   void readMesh(std::string filename) override {
     parent::readMesh(filename);
-    auto &normals = this->mesh->getData<Real>("extra_normals", parent::type);
+    auto &normals = this->mesh->getData<Real>("extra_normal", parent::type);
     normals(0, _z) = 1;
     normals(1, _z) = 1;
   }
