@@ -73,6 +73,17 @@ Solid Mechanics Model Cohesive
 .. doxygenclass:: akantu::SolidMechanicsModelCohesive
 .. doxygenclass:: akantu::FragmentManager
 
+Heat Transfer Model
+...................
+
+.. doxygenclass:: akantu::HeatTransferModel
+
+Structural Mechanics Model
+..........................
+
+.. doxygenclass:: akantu::StructuralMaterial
+.. doxygenclass:: akantu::StructuralMechanicsModel
+
 Synchronizers
 `````````````
 .. doxygenclass:: akantu::DataAccessor
