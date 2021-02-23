@@ -151,7 +151,7 @@ of a square 2D plate of :math:`1 \text{m}^2` having an initial temperature of
 :math:`100 \text{K}` everywhere but a none centered hot point maintained at
 :math:`300 \text{K}`. :numref:`fig:htm:explicit:dynamic-1` presents the geometry
 of this case. The material used is a linear fictitious elastic material with a
-density of :math:`8940 \text{kg}/\text{m^3}`, a conductivity of
+density of :math:`8940 \text{kg}/\text{m}^3`, a conductivity of
 :math:`401 \text{W}/\text{m}/\text{K}` and a specific heat capacity of
 :math:`385 \text{J}/\text{K}/\text{kg}`. The time step used is
 :math:`0.12 \text{s}`.

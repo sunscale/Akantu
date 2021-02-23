@@ -612,7 +612,7 @@ are usually :math:`\beta = 1/2` for no numerical damping and :math:`0 < \alpha <
 1/2`.
 
 .. csv-table::
-   :header: ":math:`\alpha`", "Method (:math:`\beta= 1/2`)", "Type"
+   :header: ":math:`\\alpha`", "Method (:math:`\\beta = 1/2`)", "Type"
 
    ":math:`0`", "central difference", "explicit"
    ":math:`\frac{1}{6}`", "Fox-Goodwin(royal road)", "implicit"
@@ -651,7 +651,7 @@ are parameters depending on the method used to solve the equations
 
 
 .. csv-table::
-   :header: "", ":math:`\vec{w}`", ":math:`e`", ":math:`d`", ":math:`c`"
+   :header: "", ":math:`\\vec{w}`", ":math:`e`", ":math:`d`", ":math:`c`"
 
    "in acceleration", ":math:`\delta\ddot{\vec{u}}`", ":math:`\alpha\beta\Delta t^2`", ":math:`\beta\Delta t`", ":math:`1`"
    "in velocity", ":math:`\delta\dot{\vec{u}}`", ":math:`\alpha\Delta t`", ":math:`1`", ":math:`\frac{1}{\beta\Delta t}`"
@@ -659,7 +659,8 @@ are parameters depending on the method used to solve the equations
 
 
 .. note:: If you want to use the implicit solver ``Akantu`` should be compiled at
-          least with one sparse matrix solver such as Mumps :cite:`mumps`.
+          least with one sparse matrix solver such as `Mumps
+          <http://mumps.enseeiht.fr/>`_ :cite:`mumps`.
 
 
 Implicit Time Integration
@@ -823,34 +824,34 @@ function ``solveStep``::
 The method ``solveStep`` wraps the four following functions:
 
 - ``model.explicitPred()`` allows to compute the displacement
-     field at :math:`t+1` and a part of the velocity field at :math:`t+1`, denoted by
-     :math:`\vec{\dot{u}^{\st{p}}}_{n+1}`, which will be used later in the method
-     ``model.explicitCorr()``. The equations are:
+  field at :math:`t+1` and a part of the velocity field at :math:`t+1`, denoted by
+  :math:`\vec{\dot{u}^{\st{p}}}_{n+1}`, which will be used later in the method
+  ``model.explicitCorr()``. The equations are:
 
-     .. math::
-        \vec{u}_{n+1} &= \vec{u}_{n} + \Delta t
-        \vec{\dot{u}}_{n} + \frac{\Delta t^2}{2} \vec{\ddot{u}}_{n}\\
-        \vec{\dot{u}^{\st{p}}}_{n+1} &= \vec{\dot{u}}_{n} + \Delta t
-        \vec{\ddot{u}}_{n}
+   .. math::
+      \vec{u}_{n+1} &= \vec{u}_{n} + \Delta t
+      \vec{\dot{u}}_{n} + \frac{\Delta t^2}{2} \vec{\ddot{u}}_{n}\\
+      \vec{\dot{u}^{\st{p}}}_{n+1} &= \vec{\dot{u}}_{n} + \Delta t
+      \vec{\ddot{u}}_{n}
 
 - ``model.updateResidual()`` and ``model.updateAcceleration()`` compute the acceleration increment
-     :math:`\delta \vec{\ddot{u}}`:
+  :math:`\delta \vec{\ddot{u}}`:
 
-     .. math::
-        \left(\mat{M} + \frac{1}{2} \Delta t \mat{C}\right)
-        \delta \vec{\ddot{u}} = \vec{f_{\st{ext}}} - \vec{f}_{\st{int}\, n+1}
-        - \mat{C} \vec{\dot{u}^{\st{p}}}_{n+1} - \mat{M} \vec{\ddot{u}}_{n}
+  .. math::
+     \left(\mat{M} + \frac{1}{2} \Delta t \mat{C}\right)
+     \delta \vec{\ddot{u}} = \vec{f_{\st{ext}}} - \vec{f}_{\st{int}\, n+1}
+     - \mat{C} \vec{\dot{u}^{\st{p}}}_{n+1} - \mat{M} \vec{\ddot{u}}_{n}
 
-     The internal force :math:`\vec{f}_{\st{int}\, n+1}` is computed from the
-       displacement :math:`\vec{u}_{n+1}` based on the constitutive law.
+  The internal force :math:`\vec{f}_{\st{int}\, n+1}` is computed from the
+    displacement :math:`\vec{u}_{n+1}` based on the constitutive law.
 
 - ``model.explicitCorr()`` computes the velocity and
-     acceleration fields at :math:`t+1`:
+  acceleration fields at :math:`t+1`:
 
-     .. math::
-        \vec{\dot{u}}_{n+1} &= \vec{\dot{u}^{\st{p}}}_{n+1} + \frac{\Delta t}{2}
-        \delta \vec{\ddot{u}} \\ \vec{\ddot{u}}_{n+1} &=
-        \vec{\ddot{u}}_{n} + \delta \vec{\ddot{u}}
+  .. math::
+     \vec{\dot{u}}_{n+1} &= \vec{\dot{u}^{\st{p}}}_{n+1} + \frac{\Delta t}{2}
+     \delta \vec{\ddot{u}} \\ \vec{\ddot{u}}_{n+1} &=
+     \vec{\ddot{u}}_{n} + \delta \vec{\ddot{u}}
 
 The use of an explicit time integration scheme is illustrated by the example:
 ``examples/explicit/explicit_dynamic.cc``. This example models the propagation
@@ -868,8 +869,8 @@ of a wave in a steel beam. The beam and the applied displacement in the
 
 The length and height of the beam are :math:`L={10}\textrm{m}` and :math:`h =
 {1}\textrm{m}`, respectively. The material is linear elastic, homogeneous and
-isotropic (density: \SI{7800}{\kilo\gram\per\cubic\metre}, Young's modulus:
-\SI{210}{\giga\pascal} and Poisson's ratio: :math:`0.3`). The imposed
+isotropic (density: :math:`7800\mathrm{kg/m}^3`, Young's modulus:
+:math:`210\mathrm{GPa}` and Poisson's ratio: :math:`0.3`). The imposed
 displacement follow a Gaussian function with a maximum amplitude of :math:`A =
 {0.01}\textrm{m}`. The potential, kinetic and total energies are computed. The
 safety factor is equal to :math:`0.8`.

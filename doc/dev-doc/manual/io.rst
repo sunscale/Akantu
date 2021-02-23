@@ -18,26 +18,26 @@ Akantu Parser
 ``Akantu`` file parser has a tree organization.
 
 - :cpp:class:`Parser <akantu::Parser>`, the root of the tree, can be accessed
-   using::
+  using::
 
      auto & parser = getStaticParser();
 
 - :cpp:class:`ParserSection <akantu::ParserSection>`, branch of the tree,
-   contains map a of sub-sections (:cpp:enum:`SectionType
-   <akantu::SectionType>`, :cpp:class:`ParserSection <akantu::ParserSection>`)
-   and a :cpp:class:`ParserSection * <akantu::ParserSection>` pointing to the
-   parent section. The user section of the input file can directly be accessed
-   by::
+  contains map a of sub-sections (:cpp:enum:`SectionType
+  <akantu::SectionType>`, :cpp:class:`ParserSection <akantu::ParserSection>`)
+  and a :cpp:class:`ParserSection * <akantu::ParserSection>` pointing to the
+  parent section. The user section of the input file can directly be accessed
+  by::
 
      const auto & usersect = getUserParser();
 
 - :cpp:class:`ParserParameter <akantu::ParserParameter>`, the leaf of the tree,
-   carries data of the input file which can be cast to the correct type with the
-   assignment operator::
+  carries data of the input file which can be cast to the correct type with the
+  assignment operator::
 
      Real mass = usersect.getParameter("mass");
 
-   or used directly within an expression
+  or used directly within an expression
 
 Grammar
 ~~~~~~~
@@ -146,28 +146,28 @@ The list of fields depends on the models (for :cpp:class:`SolidMechanicsModel
 
    .. table:: List of dumpable fields for :cpp:class:`SolidMechanicsModel <akantu::SolidMechanicsModel>`.
 
-      ====================== ============ =================
-      key                    type         support
-      ====================== ============ =================
-      displacement           Vector<Real> nodes
-      mass                   Vector<Real> nodes
-      velocity               Vector<Real> nodes
-      acceleration           Vector<Real> nodes
-      force                  Vector<Real> nodes
-      residual               Vector<Real> nodes
-      increment              Vector<Real> nodes
-      blocked_dofs           Vector<bool> nodes
-      partitions             Real         elements
-      material_index         variable     elements
-      strain                 Matrix<Real> quadrature points
-      Green strain           Matrix<Real> quadrature points
-      principal strain       Vector<Real> quadrature points
-      principal Green strain Vector<Real> quadrature points
-      grad_u                 Matrix<Real> quadrature points
-      stress                 Matrix<Real> quadrature points
-      Von Mises stress       Real         quadrature points
-      material_index         variable     quadrature points
-      ====================== ============ =================
+      ====================== ================ =================
+      key                    type             support
+      ====================== ================ =================
+      displacement           ``Vector<Real>`` nodes
+      mass                   ``Vector<Real>`` nodes
+      velocity               ``Vector<Real>`` nodes
+      acceleration           ``Vector<Real>`` nodes
+      force                  ``Vector<Real>`` nodes
+      residual               ``Vector<Real>`` nodes
+      increment              ``Vector<Real>`` nodes
+      blocked_dofs           ``Vector<bool>`` nodes
+      partitions             ``Real``         elements
+      material_index         variable         elements
+      strain                 ``Matrix<Real>`` quadrature points
+      Green strain           ``Matrix<Real>`` quadrature points
+      principal strain       ``Vector<Real>`` quadrature points
+      principal Green strain ``Vector<Real>`` quadrature points
+      grad_u                 ``Matrix<Real>`` quadrature points
+      stress                 ``Matrix<Real>`` quadrature points
+      Von Mises stress       ``Real``         quadrature points
+      material_index         variable         quadrature points
+      ====================== ================ =================
 
 Cohesive elements’ data
 ~~~~~~~~~~~~~~~~~~~~~~~

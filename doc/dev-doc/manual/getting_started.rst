@@ -33,9 +33,9 @@ follows::
     using namespace akantu;
 
     int main(int argc, char *argv[]) {
-	initialize("input_file.dat", argc, argv);
+  initialize("input_file.dat", argc, argv);
 
-	// your code ...
+  // your code ...
 
     }
 
@@ -44,6 +44,8 @@ file and the program parameters which can be parsed by ``Akantu`` in due form (s
 sect:parser). Obviously it is necessary to include all files needed in main. In
 this manual all provided code implies the usage of ``akantu`` as
 namespace.
+
+.. _loading mesh:
 
 Creating and Loading a Mesh
 ---------------------------

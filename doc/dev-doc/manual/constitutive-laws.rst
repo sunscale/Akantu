@@ -766,12 +766,12 @@ The material name of the linear decreasing cohesive law is
 ``material_cohesive_linear`` and its parameters with their respective default
 values are:
 
-- sigma_c: 0
-- delta_c: 0
-- beta: 0
-- G_c: 0
-- kappa: 1
-- penalty: 0
+- ``sigma_c = 0``
+- ``delta_c = 0``
+- ``beta = 0``
+- ``G_c = 0``
+- ``kappa = 1``
+- ``penalty = 0``
 
 where ``G_c`` corresponds to :math:`G_\mathrm{c, I}`. A random number
 generator can be used to assign a random :math:`\sigma_\mathrm{c}` to each
@@ -816,8 +816,8 @@ The material name of the linear cohesive law with friction is
 with respect to those of the linear cohesive law without friction,
 with the respective default values, are:
 
--mu: 0
--penalty_for_friction: 0
+- ``mu = 0``
+- ``penalty_for_friction = 0``
 
 .. _ssect:smm:cl:coh-fatigue:
 

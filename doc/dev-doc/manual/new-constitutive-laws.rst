@@ -212,51 +212,51 @@ In the following a detailed description of these functions is provided:
   parameters.
 
 - ``computeStress``: In this method, the stresses are computed based on the
-     constitutive law as a function of the strains of the quadrature points. For
-     example, the stresses for the elastic material are calculated based on the
-     following formula:
+  constitutive law as a function of the strains of the quadrature points. For
+  example, the stresses for the elastic material are calculated based on the
+  following formula:
 
-     .. math::
+  .. math::
 
-        \mat{\sigma }  =\lambda\mathrm{tr}(\mat{\varepsilon})\mat{I}+2 \mu \mat{\varepsilon}
+     \mat{\sigma }  =\lambda\mathrm{tr}(\mat{\varepsilon})\mat{I}+2 \mu \mat{\varepsilon}
 
-     Therefore, this method contains a loop on all quadrature points assigned to
-     the material using the two macros:
-     ``MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN`` and
-     ``MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END``
+  Therefore, this method contains a loop on all quadrature points assigned to
+  the material using the two macros:
+  ``MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN`` and
+  ``MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END``
 
-     .. code::
+  .. code::
 
-       MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(element_type);
+     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_BEGIN(element_type);
 
-       // sigma <- f(grad_u)
+     // sigma <- f(grad_u)
 
-       MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
+     MATERIAL_STRESS_QUADRATURE_POINT_LOOP_END;
 
-     The strain vector in Akantu contains the values of :math:`\nabla \vec{u}`,
-     i.e. it is really the *displacement gradient*,
+  The strain vector in Akantu contains the values of :math:`\nabla \vec{u}`,
+  i.e. it is really the *displacement gradient*,
 
 - ``computeTangentStiffness``: This method is called when the tangent to the
-     stress-strain curve is desired (see Fig \ref {fig:smm:AL:K}). For example,
-     it is called in the implicit solver when the stiffness matrix for the
-     regular elements is assembled based on the following formula:
+  stress-strain curve is desired (see Fig \ref {fig:smm:AL:K}). For example,
+  it is called in the implicit solver when the stiffness matrix for the
+  regular elements is assembled based on the following formula:
 
-     .. math::
-        \label{eqn:smm:constitutive_elasc} \mat{K }
-        =\int{\mat{B^T}\mat{D(\varepsilon)}\mat{B}}
+  .. math::
+     \label{eqn:smm:constitutive_elasc} \mat{K }
+     =\int{\mat{B^T}\mat{D(\varepsilon)}\mat{B}}
 
-     Therefore, in this method, the ``tangent`` matrix (\mat{D}) is
-     computed for a given strain.
+  Therefore, in this method, the ``tangent`` matrix (\mat{D}) is
+  computed for a given strain.
 
-     The ``tangent`` matrix is a :math:`4^{th}` order tensor which is stored as
-     a matrix in Voigt notation.
+  The ``tangent`` matrix is a :math:`4^{th}` order tensor which is stored as
+  a matrix in Voigt notation.
 
-     .. _fig:smm:AL:K:
-     .. figure:: figures/tangent.svg
-                 :align: center
-                 :width: 60%
+  .. _fig:smm:AL:K:
+  .. figure:: figures/tangent.svg
+              :align: center
+              :width: 60%
 
-                 Tangent to the stress-strain curve.
+              Tangent to the stress-strain curve.
 
 ..
      \begin{figure}[!htb]

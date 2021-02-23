@@ -21,15 +21,17 @@ which the equations of statics are to be solved, and
 ``spatial_dimension`` is omitted, the problem is assumed to have
 the same dimensionality as the one specified by the mesh.
 
-\note[\ 1]{Dynamic computations are not supported to date.}
+.. warning::
+   Dynamic computations are not supported to date.
 
-\note[\ 2]{Structural meshes are created and loaded as described in
-  Section~\ref{sect:common:mesh} with ``_miot_gmsh_struct`` instead  of ``_miot_gmsh``:}
+.. note::
+   Structural meshes are created and loaded
+   with ``_miot_gmsh_struct`` instead  of ``_miot_gmsh`` (cf. :ref:`loading mesh`)
 
-.. code-block:: c++
+   .. code-block:: c++
 
-   Mesh mesh;
-   mesh.read("structural_mesh.msh", _miot_gmsh_struct);
+      Mesh mesh;
+      mesh.read("structural_mesh.msh", _miot_gmsh_struct);
 
 
 This model contains at least the following :cpp:class:`Arrays <akantu::Arrays>`:

@@ -44,7 +44,7 @@ an integration or a gradient.A simple example is given below:
 
 
 Another example below shows how to integrate stress and strain fields over
-    elements assigned to a particular material:
+elements assigned to a particular material:
 
 .. code-block:: c++
 
@@ -141,10 +141,10 @@ is not a Lagrangian but a serendipity element.
 .. csv-table:: Some basic properties of the 2D iso-parametric elements in ``Akantu``
                :header: "Element type", "Order", "#nodes", "#quad points"
 
-              ":cpp:enumerator:`_triangle_3 <akantu::_triangle_3>`", "linear", 3, 1
-              ":cpp:enumerator:`_triangle_6 <akantu::_triangle_6>`", "quadratic", 6, 3
-              ":cpp:enumerator:`_quadrangle_4 <akantu::_quadrangle_4>`", "linear", 4, 4
-              ":cpp:enumerator:`_quadrangle_8 <akantu::_quadrangle_8>`", "quadratic", 8, 9
+               ":cpp:enumerator:`_triangle_3 <akantu::_triangle_3>`", "linear", 3, 1
+               ":cpp:enumerator:`_triangle_6 <akantu::_triangle_6>`", "quadratic", 6, 3
+               ":cpp:enumerator:`_quadrangle_4 <akantu::_quadrangle_4>`", "linear", 4, 4
+               ":cpp:enumerator:`_quadrangle_8 <akantu::_quadrangle_8>`", "quadratic", 8, 9
 
 3D
 ````
