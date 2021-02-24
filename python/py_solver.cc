@@ -1,8 +1,8 @@
 /* -------------------------------------------------------------------------- */
+#include "py_solver.hh"
 #include "py_aka_array.hh"
 /* -------------------------------------------------------------------------- */
-#include "py_solver.h"
-/* -------------------------------------------------------------------------- */#include <model.hh>
+#include <model.hh>
 #include <non_linear_solver.hh>
 #include <sparse_matrix_aij.hh>
 /* -------------------------------------------------------------------------- */
@@ -16,7 +16,7 @@ namespace py = pybind11;
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-void register_solver(py::module & mod) {
+void register_solvers(py::module & mod) {
   py::class_<SparseMatrix>(mod, "SparseMatrix")
       .def("getMatrixType", &SparseMatrix::getMatrixType)
       .def("size", &SparseMatrix::size)
@@ -43,3 +43,5 @@ void register_solver(py::module & mod) {
 
   py::class_<SolverVector>(mod, "SolverVector");
 }
+
+} // namespace akantu

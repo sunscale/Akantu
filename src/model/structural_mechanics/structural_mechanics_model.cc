@@ -99,6 +99,10 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 
   this->dumper_default_element_kind = _ek_structural;
 
+  mesh.getElementalData<Real>("extra_normal")
+      .initialize(mesh, _element_kind = _ek_structural,
+                  _nb_component = spatial_dimension, _with_nb_element = true,
+                  _default_value = 0.);
 
   AKANTU_DEBUG_OUT();
 }

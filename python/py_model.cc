@@ -76,7 +76,8 @@ void register_model(py::module & mod) {
       .def("dump", py::overload_cast<Real, UInt>(&Model::dump))
       .def("initNewSolver", &Model::initNewSolver)
       .def("getDOFManager", &Model::getDOFManager,
-           py::return_value_policy::reference);
+           py::return_value_policy::reference)
+      .def("assembleMatrix", &Model::assembleMatrix);
 }
 
 } // namespace akantu

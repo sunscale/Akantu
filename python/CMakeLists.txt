@@ -50,6 +50,7 @@ set(PYAKANTU_SRCS
   py_mesh.cc
   py_model.cc
   py_parser.cc
+  py_solver.cc
   )
 
 package_is_activated(iohelper _is_activated)

@@ -9,6 +9,7 @@
 #include "py_mesh.hh"
 #include "py_model.hh"
 #include "py_parser.hh"
+#include "py_solver.hh"
 
 #if defined(AKANTU_USE_IOHELPER)
 #include "py_dumpable.hh"
@@ -47,6 +48,7 @@ void register_all(pybind11::module & mod) {
   register_error(mod);
   register_functions(mod);
   register_parser(mod);
+  register_solvers(mod);
 
   register_group_manager(mod);
 #if defined(AKANTU_USE_IOHELPER)
