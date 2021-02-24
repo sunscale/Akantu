@@ -51,71 +51,55 @@ void gradUToEpsilon(const Matrix<Real> &, Matrix<Real> &);
 /* -------------------------------------------------------------------------- */
 
 int main(int argc, char *argv[]) {
-
-  std::ofstream os("data.csv");
-  os << "#strain stress damage analytical_sigma analytical_damage" << std::endl;
-  
-  initialize("material_coupling.dat", argc, argv);
+ 
+  initialize("material_multiple.dat", argc, argv);
   
   Mesh mesh(spatial_dimension);
-  mesh.read("test_one_element.msh");
+  mesh.read("test_two_element.msh");
+
+ 
+
 
   SolidMechanicsModel model(mesh);
+  auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>(
+      "physical_names", model);
+  model.setMaterialSelector(mat_selector);
+
   model.initFull(_analysis_method = _static);
+
 
   PhaseFieldModel phase(mesh);
   auto && selector = std::make_shared<MeshDataPhaseFieldSelector<std::string>>(
-									       "physical_names", phase);
+      "physical_names", phase);
   phase.setPhaseFieldSelector(selector);
 
   phase.initFull(_analysis_method = _static);
   
-  phase.setBaseName("phase_solid");
-  model.addDumpField("stress");
-  model.addDumpField("grad_u");
-  model.addDumpFieldVector("displacement");
-  model.addDumpField("damage");
-  model.dump();
+  phase.setBaseName("multi_material");
+  //model.addDumpField("stress");
+  //model.addDumpField("grad_u");
+  phase.addDumpField("damage");
+  //model.addDumpFieldVector("displacement");
+  //model.addDumpField("blocked_dofs");
+  phase.dump();
   
-  UInt nbSteps = 1000;
-  Real increment = 1e-4;
-
-  auto & stress = model.getMaterial(0).getArray<Real>("stress", _quadrangle_4);
-  auto & damage = model.getMaterial(0).getArray<Real>("damage", _quadrangle_4);
-
-  Real analytical_damage{0.};
-  Real analytical_sigma{0.};
-
-  auto & mat = model.getMaterial(0);
-  auto & phasefield = phase.getPhaseField(0);
-    
-  Real E   = 210e3;
-  Real nu  = 0.3;
-  Real c22 = E*(1-nu)/((1+nu)*(1-2*nu));
-
-  Real gc = 5;
-  Real l0 = 0.1;
- 
+  UInt nbSteps = 10000;
+  Real increment = 2e-5;
+  
   for (UInt s = 0; s < nbSteps; ++s) {
     Real axial_strain = increment * s;
     applyDisplacement(model, axial_strain);
 
     model.solveStep();
+    model.assembleInternalForces();
     computeStrainOnQuadPoints(model, phase, _not_ghost);
 
     phase.solveStep();
     computeDamageOnQuadPoints(model, phase, _not_ghost);
 
-    analytical_damage = axial_strain*axial_strain*c22/(gc/l0 + axial_strain*axial_strain*c22);
-    analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);
-    
-    os << axial_strain << " " << stress(0, 3) << " " << damage(0) << " "
-       << analytical_sigma << " " << analytical_damage << std::endl;
-
-    model.dump();
+    phase.dump();
   }
 
-  os.close();
   finalize();
 
  
@@ -134,18 +118,16 @@ void applyDisplacement(SolidMechanicsModel & model, Real & increment) {
 
   
   for (UInt n = 0; n < model.getMesh().getNbNodes(); ++n) {
-    if (positions(n, 1) == -0.5) {
-      displacement(n, 0) = 0;
+    if (positions(n, 1) == -1) {
       displacement(n, 1) = 0;
-      blocked_dofs(n, 0) = true;
       blocked_dofs(n ,1) = true;
     }
-    else {
-      displacement(n, 0) = 0;
+    if (positions(n, 1) == 1) {
       displacement(n, 1) = increment;
-      blocked_dofs(n, 0) = true;
       blocked_dofs(n ,1) = true;
-    }
+    }  
+    displacement(n, 0) = 0;
+    blocked_dofs(n, 0) = true;
   }
 }
 
@@ -204,7 +186,7 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
   auto nb_phasefields = phase.getNbPhaseFields();
   
   AKANTU_DEBUG_ASSERT(nb_phasefields == nb_materials,
-                      "The number of phasefields and materials should be equal" );
+                     "The number of phasefields and materials should be equal" );
 
 
   for(auto index : arange(nb_materials)) {

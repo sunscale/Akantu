@@ -25,3 +25,16 @@ register_test(test_phasefield_selector
   FILES_TO_COPY phasefield_selector.dat phasefield_selector.msh
   PACKAGE core
   )
+
+
+register_test(test_phase_solid_coupling
+  SOURCES test_phase_solid_coupling.cc
+  FILES_TO_COPY material_coupling.dat test_one_element.msh
+  PACKAGE core
+  )
+
+register_test(test_multi_material
+  SOURCES test_multi_material.cc
+  FILES_TO_COPY material_multiple.dat test_two_element.msh
+  PACKAGE core
+  )

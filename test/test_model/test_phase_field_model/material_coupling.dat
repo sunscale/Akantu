@@ -6,9 +6,10 @@ material phasefield [
 	 Plane_Stress = false
 ]
 
-model phase_field_model [
-      l0 = 0.1
-      gc = 5.0e-3
-      E  = 210.0
-      nu = 0.3
+phasefield exponential [
+  name = plate
+  E = 210.0
+  nu = 0.3
+  gc = 5e-3
+  l0 = 0.1
 ]
