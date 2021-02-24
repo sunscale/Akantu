@@ -473,7 +473,6 @@ void StructuralMechanicsModel::assembleInternalForce(ElementType type,
 
   Array<Real> intBtSigma(0, ndof_per_elem, "intBtSigma");
   fem.integrate(BtSigma, intBtSigma, ndof_per_elem, type, gt);
-  BtSigma.resize(0);
 
   getDOFManager().assembleElementalArrayLocalArray(intBtSigma, *internal_force,
                                                    type, gt, -1.);

@@ -42,6 +42,9 @@ class TestStructBernoulli3Static
 public:
   void readMesh(std::string filename) override {
     parent::readMesh(filename);
+  }
+
+  void setNormals() override {
     auto &normals = this->mesh->getData<Real>("extra_normal", parent::type);
     normals(0, _z) = 1;
     normals(1, _z) = 1;
@@ -57,7 +60,7 @@ public:
     this->model->addMaterial(mat);
   }
 
-  void setDirichlets() override {
+  void setDirichletBCs() override {
     // Boundary conditions (blocking all DOFs of nodes 2 & 3)
     auto boundary = ++this->model->getBlockedDOFs().begin(parent::ndof);
     // clang-format off
@@ -66,7 +69,7 @@ public:
     // clang-format on
   }
 
-  void setNeumanns() override {
+  void setNeumannBCs() override {
     // Forces
     Real P = 1; // N
     auto & forces = this->model->getExternalForce();

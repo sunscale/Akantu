@@ -61,7 +61,7 @@ public:
     materials(1) = 1;
   }
 
-  void setDirichlets() override {
+  void setDirichletBCs() override {
     auto boundary = this->model->getBlockedDOFs().begin(parent::ndof);
     // clang-format off
     *boundary = {true, true, true}; ++boundary;
@@ -70,7 +70,7 @@ public:
     // clang-format on
   }
 
-  void setNeumanns() override {
+  void setNeumannBCs() override {
     Real M = 3600;  // Nm
     Real q = 6000; // kN/m
     Real L = 10;    // m
