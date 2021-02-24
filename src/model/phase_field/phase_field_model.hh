@@ -156,13 +156,13 @@ public:
 
 private:
   /// compute vector strain history field for each quadrature point
-  void computePhiHistoryOnQuadPoints(const GhostType & ghost_type);
+  //void computePhiHistoryOnQuadPoints(const GhostType & ghost_type);
 
   /// compute vector strain history field for each quadrature point
-  void computeDamageEnergyDensityOnQuadPoints(const GhostType & ghost_type);
+  //void computeDamageEnergyDensityOnQuadPoints(const GhostType & ghost_type);
 
   /// compute driving force for each quadrature point
-  void computeDrivingForce(const GhostType & ghost_type);
+  //void computeDrivingForce(const GhostType & ghost_type);
 
   /// compute the damage on quadrature points
   void computeDamageOnQuadPoints(const GhostType & ghost_type);
@@ -229,8 +229,8 @@ public:
   }
 
   ///
-  AKANTU_GET_MACRO_NOT_CONST(Strain, strain_on_qpoints,
-                             ElementTypeMapArray<Real> &);
+  //AKANTU_GET_MACRO_NOT_CONST(Strain, strain_on_qpoints,
+  //                           ElementTypeMapArray<Real> &);
 
   /// get the PhaseFieldModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
@@ -291,17 +291,17 @@ public:
   /* Dumpable Interface                                                       */
   /* ------------------------------------------------------------------------ */
 public:
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalFieldReal(const std::string & field_name,
                        const std::string & group_name,
                        bool padding_flag) override;
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createNodalFieldBool(const std::string & field_name,
                        const std::string & group_name,
                        bool padding_flag) override;
 
-  std::shared_ptr<dumper::Field>
+  std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
                        const UInt & spatial_dimension,
@@ -336,27 +336,27 @@ private:
   Array<Real> * damage_increment{nullptr};
 
   /// damage field on quadrature points
-  ElementTypeMapArray<Real> damage_on_qpoints;
+  //ElementTypeMapArray<Real> damage_on_qpoints;
 
   /// critical local damage energy on quadrature points for \mathbf{B}^t *
   /// \mathbf{W} * \mathbf{B}@f$
-  ElementTypeMapArray<Real> damage_energy_on_qpoints;
+  //ElementTypeMapArray<Real> damage_energy_on_qpoints;
 
   /// critical local damage energy density on quadrature points for
   ///  \mathbf{N}^t * \mathbf{w} * \mathbf{N}@f$
-  ElementTypeMapArray<Real> damage_energy_density_on_qpoints;
+  //ElementTypeMapArray<Real> damage_energy_density_on_qpoints;
 
   /// the speed of change in damage
-  ElementTypeMapArray<Real> damage_gradient;
+  //ElementTypeMapArray<Real> damage_gradient;
 
   /// strain on quadrature points
-  ElementTypeMapArray<Real> strain_on_qpoints;
+  //ElementTypeMapArray<Real> strain_on_qpoints;
 
   /// driving force on quadrature points for internal forces
-  ElementTypeMapArray<Real> driving_force_on_qpoints;
+  //ElementTypeMapArray<Real> driving_force_on_qpoints;
 
   /// vector \phi plus on quadrature points
-  ElementTypeMapArray<Real> phi_history_on_qpoints;
+  //ElementTypeMapArray<Real> phi_history_on_qpoints;
 
   /// boundary vector
   Array<bool> * blocked_dofs{nullptr};

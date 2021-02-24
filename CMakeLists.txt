@@ -56,8 +56,7 @@ set(AKANTU_MAJOR_VERSION 3)
 set(AKANTU_MINOR_VERSION 1)
 set(AKANTU_PATCH_VERSION 0)
 
-project(Akantu
-  HOMEPAGE_URL "htpps://akantu.ch")
+project(Akantu)
 enable_language(CXX)
 
 #===============================================================================

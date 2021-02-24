@@ -206,13 +206,15 @@ public:
   /// assemble the mass matrix for consistent mass resolutions
   void assembleMass();
 
-protected:
+public:
   /// assemble the lumped mass matrix for local and ghost elements
   void assembleMassLumped(GhostType ghost_type);
 
   /// assemble the mass matrix for either _ghost or _not_ghost elements
   void assembleMass(GhostType ghost_type);
 
+  
+protected:
   /// fill a vector of rho
   void computeRho(Array<Real> & rho, ElementType type, GhostType ghost_type);
 

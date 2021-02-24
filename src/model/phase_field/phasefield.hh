@@ -104,7 +104,7 @@ public:
   virtual void beforeSolveStep();
 
   ///
-  virtual void afterSolveStep() {}
+  virtual void afterSolveStep();
 
   /// assemble the residual for this phasefield
   virtual void assembleInternalForces(GhostType ghost_type);
@@ -145,6 +145,33 @@ protected:
     AKANTU_TO_IMPLEMENT();
   }
 
+  /* ------------------------------------------------------------------------ */
+  /* DataAccessor inherited members                                           */
+  /* ------------------------------------------------------------------------ */
+public:
+  inline UInt getNbData(const Array<Element> & elements,
+                        const SynchronizationTag & tag) const override;
+
+  inline void packData(CommunicationBuffer & buffer,
+                       const Array<Element> & elements,
+                       const SynchronizationTag & tag) const override;
+
+  inline void unpackData(CommunicationBuffer & buffer,
+                         const Array<Element> & elements,
+                         const SynchronizationTag & tag) override;
+
+  template <typename T>
+  inline void packElementDataHelper(const ElementTypeMapArray<T> & data_to_pack,
+                                    CommunicationBuffer & buffer,
+                                    const Array<Element> & elements,
+                                    const ID & fem_id = ID()) const;
+
+  template <typename T>
+  inline void unpackElementDataHelper(ElementTypeMapArray<T> & data_to_unpack,
+                                      CommunicationBuffer & buffer,
+                                      const Array<Element> & elements,
+                                      const ID & fem_id = ID());
+
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -155,7 +182,18 @@ public:
   AKANTU_GET_MACRO(Model, model, const PhaseFieldModel &)
 
   AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
+  
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Strain, strain, Real);
 
+  AKANTU_GET_MACRO(Strain, strain, const ElementTypeMapArray<Real> &);
+
+  AKANTU_GET_MACRO_NOT_CONST(Strain, strain, ElementTypeMapArray<Real> &);
+
+  
+  AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Damage, damage, Real);
+
+  AKANTU_GET_MACRO(Damage, damage, const ElementTypeMapArray<Real> &);
+  
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementFilter, element_filter, UInt);
 
   AKANTU_GET_MACRO(ElementFilter, element_filter,
@@ -300,7 +338,7 @@ inline std::ostream & operator<<(std::ostream & stream,
 	make_view(this->phi(el_type, ghost_type));			\
 									\
       for (auto && data : zip(eng_den_view, phi_view)) {		\
-	[[gnu::unused]] Real & dam_eng_density = std::get<0>(data);	\
+ 	[[gnu::unused]] Real & dam_eng_density = std::get<0>(data);	\
 	[[gnu::unused]] Real & phi_q = std::get<1>(data);
 
 #define PHASEFIELD_ENERGY_QUADRATURE_POINT_LOOP_END }
@@ -316,11 +354,9 @@ inline std::ostream & operator<<(std::ostream & stream,
      const ID & id) -> std::unique_ptr<PhaseField> {			\
     switch (dim) {							\
     case 1:								\
-      return std::make_unique<phase_name<1>>(model, id);		\
     case 2:								\
-      return std::make_unique<phase_name<2>>(model, id);		\
     case 3:								\
-      return std::make_unique<phase_name<3>>(model, id);		\
+      return std::make_unique<phase_name>(model, id);			\
     default:								\
       AKANTU_EXCEPTION("The dimension "					\
                        << dim << "is not a valid dimension for the phasefield "	\
@@ -329,7 +365,6 @@ inline std::ostream & operator<<(std::ostream & stream,
   }
 
 #define INSTANTIATE_PHASEFIELD(id, phase_name)				\
-  INSTANTIATE_PHASEFIELD_ONLY(phase_name);				\
   static bool phasefield_is_alocated_##id [[gnu::unused]] =		\
 				 PhaseFieldFactory::getInstance().registerAllocator( \
           #id, PHASEFIELD_DEFAULT_PER_DIM_ALLOCATOR(id, phase_name))

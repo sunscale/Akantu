@@ -42,6 +42,9 @@ MaterialPhaseField<spatial_dimension>::MaterialPhaseField(SolidMechanicsModel & 
 
   AKANTU_DEBUG_IN();
 
+  
+  this->damage.initialize(0);
+
   AKANTU_DEBUG_OUT();
 }
 

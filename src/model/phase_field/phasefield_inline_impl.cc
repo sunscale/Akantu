@@ -72,6 +72,74 @@ inline bool PhaseField::isInternal<Real>(const ID & id,
   return true;
 }
 
+
+/* -------------------------------------------------------------------------- */
+inline UInt PhaseField::getNbData(const Array<Element> & elements,
+                                const SynchronizationTag & tag) const {
+  /*if (tag == SynchronizationTag::_smm_stress) {
+    return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
+           spatial_dimension * sizeof(Real) *
+           this->getModel().getNbIntegrationPoints(elements);
+	   }*/
+  return 0;
+}
+
+/* -------------------------------------------------------------------------- */
+inline void PhaseField::packData(CommunicationBuffer & buffer,
+                               const Array<Element> & elements,
+                               const SynchronizationTag & tag) const {
+  /*if (tag == SynchronizationTag::_smm_stress) {
+    if (this->isFiniteDeformation()) {
+      packElementDataHelper(piola_kirchhoff_2, buffer, elements);
+      packElementDataHelper(gradu, buffer, elements);
+    }
+    packElementDataHelper(stress, buffer, elements);
+    }*/
+}
+
+/* -------------------------------------------------------------------------- */
+inline void PhaseField::unpackData(CommunicationBuffer & buffer,
+                                 const Array<Element> & elements,
+                                 const SynchronizationTag & tag) {
+  /*if (tag == SynchronizationTag::_smm_stress) {
+    if (this->isFiniteDeformation()) {
+      unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);
+      unpackElementDataHelper(gradu, buffer, elements);
+    }
+    unpackElementDataHelper(stress, buffer, elements);
+    }*/
+}
+
+
+  /* -------------------------------------------------------------------------- */
+inline const Parameter & PhaseField::getParam(const ID & param) const {
+  try {
+    return get(param);
+  } catch (...) {
+    AKANTU_EXCEPTION("No parameter " << param << " in the material "
+                                     << getID());
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+inline void PhaseField::packElementDataHelper(
+    const ElementTypeMapArray<T> & data_to_pack, CommunicationBuffer & buffer,
+    const Array<Element> & elements, const ID & fem_id) const {
+  DataAccessor::packElementalDataHelper<T>(data_to_pack, buffer, elements, true,
+                                           model.getFEEngine(fem_id));
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+inline void PhaseField::unpackElementDataHelper(
+    ElementTypeMapArray<T> & data_to_unpack, CommunicationBuffer & buffer,
+    const Array<Element> & elements, const ID & fem_id) {
+  DataAccessor::unpackElementalDataHelper<T>(data_to_unpack, buffer, elements,
+                                             true, model.getFEEngine(fem_id));
+}
+  
   
 
 }

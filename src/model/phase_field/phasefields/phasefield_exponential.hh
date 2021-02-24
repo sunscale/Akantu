@@ -67,7 +67,7 @@ protected:
 
 
 /* -------------------------------------------------------------------------- */
-inline void PhaseFieldExponential::computeDrivingForceOnQuad(const Real & phi_quad,
+inline void PhaseFieldExponential:: computeDrivingForceOnQuad(const Real & phi_quad,
 							     Real & driving_force_quad){
   driving_force_quad = 2.0 * phi_quad;
 }

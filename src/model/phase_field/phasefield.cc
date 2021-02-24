@@ -98,13 +98,14 @@ void PhaseField::initialize() {
   registerParam("E", E, _pat_parsmod, "Young's modulus");
   registerParam("nu", nu, _pat_parsmod, "Poisson ratio");
 
-  damage.initialize(1);
-  damage_energy.initialize(1);
+  damage.initialize(0);
+  
   phi.initialize(1);
   driving_force.initialize(1);
 
   strain.initialize(spatial_dimension * spatial_dimension);
-  damage_energy_density.initialize(spatial_dimension * spatial_dimension);
+  damage_energy_density.initialize(1);
+  damage_energy.initialize(1);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -170,7 +171,7 @@ void PhaseField::assembleInternalForces(GhostType ghost_type) {
 
   AKANTU_DEBUG_IN();
 
-  Array<Real> internal_forces = model.getInternalForce();
+  auto & internal_forces = model.getInternalForce();
 
   for (auto type : element_filter.elementTypes(_ghost_type = ghost_type)) {
   
@@ -197,7 +198,7 @@ void PhaseField::assembleInternalForces(GhostType ghost_type) {
 
   AKANTU_DEBUG_OUT();
 }
-
+ 
 /* -------------------------------------------------------------------------- */
 void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -215,6 +216,7 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
     auto nb_element = elem_filter.size();
     auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
     auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
+
 
     auto nt_b_n = std::make_unique<Array<Real>>(
         nb_element * nb_quadrature_points,
@@ -244,10 +246,10 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
         nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
 
     fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
-                  type);
+                  type, ghost_type, elem_filter);
 
     model.getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_n, type, _not_ghost, _symmetric);
+		  "K", "damage", *K_n, type, _not_ghost, _symmetric, elem_filter);
 
     /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
     /// \mathbf{B}@f$
@@ -255,10 +257,10 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
         nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_b");
 
     fem.integrate(*bt_d_b, *K_b, nb_nodes_per_element * nb_nodes_per_element,
-                  type);
+                  type, ghost_type, elem_filter);
 
     model.getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_b, type, _not_ghost, _symmetric);
+		 "K", "damage", *K_b, type, _not_ghost, _symmetric, elem_filter);
   }
 
   AKANTU_DEBUG_OUT();
@@ -267,12 +269,13 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
 /* -------------------------------------------------------------------------- */
 void PhaseField::beforeSolveStep() {
   this->savePreviousState();
-    
-  //computePhi
-  //computeEnergyDensity
-
 }
 
+/* -------------------------------------------------------------------------- */
+void PhaseField::afterSolveStep() {
+
+}
+  
 /* -------------------------------------------------------------------------- */
 void PhaseField::savePreviousState() {
   AKANTU_DEBUG_IN();

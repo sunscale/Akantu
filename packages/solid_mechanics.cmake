@@ -76,7 +76,6 @@ package_declare_sources(solid_mechanics
   model/solid_mechanics/materials/material_damage/material_marigo_inline_impl.hh
   model/solid_mechanics/materials/material_damage/material_mazars.cc
   model/solid_mechanics/materials/material_damage/material_mazars.hh
-  model/solid_mechanics/materials/material_damage/material_mazars_inline_impl.cc
   model/solid_mechanics/materials/material_damage/material_phasefield.cc
   model/solid_mechanics/materials/material_damage/material_phasefield.hh
   model/solid_mechanics/materials/material_damage/material_phasefield_inline_impl.cc

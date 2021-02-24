@@ -44,9 +44,9 @@ PhaseFieldExponential::PhaseFieldExponential(PhaseFieldModel & model,
 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldExponential::initialize() {
-  Matrix<double> d(spatial_dimension, spatial_dimension);
-  d.eye(this->g_c * this->l0);
-  damage_energy.set(d);
+  //Matrix<double> d(spatial_dimension, spatial_dimension);
+  //d.eye(this->g_c * this->l0);
+  damage_energy.set(this->g_c * this->l0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -56,93 +56,19 @@ void PhaseFieldExponential::computeDrivingForce(const ElementType & el_type,
   AKANTU_DEBUG_IN();
 
   for (auto && tuple : zip(this->phi(el_type, ghost_type),
-			   this->driving_force(el_type, ghost_type))) {
-    computeDrivingForceOnQuad(std::get<0>(tuple), std::get<1>(tuple));
+			   this->phi.previous(el_type, ghost_type),
+			   this->driving_force(el_type, ghost_type),
+			   this->damage_energy_density(el_type, ghost_type),
+			   make_view(this->strain(el_type, ghost_type),
+				     spatial_dimension, spatial_dimension))) {
+    computePhiOnQuad(std::get<4>(tuple), std::get<0>(tuple), std::get<1>(tuple));
+    computeDamageEnergyDensityOnQuad(std::get<0>(tuple), std::get<3>(tuple));
+    computeDrivingForceOnQuad(std::get<0>(tuple), std::get<2>(tuple));
   }
   
   AKANTU_DEBUG_OUT();
 }
 
-  
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldExponential::computeAllDrivingEnergy(GhostType ghost_type) {
-
-  AKANTU_DEBUG_IN();
-
-  for (auto type : element_filter.elementTypes(_ghost_type = ghost_type)) {
-    computeDamageEnergyDensity(type, ghost_type);
-  }
-
-  AKANTU_DEBUG_OUT();
-  }*/
-  
-  
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldExponential::assembleStiffnessMatrix(const ElementType & type,
-						     GhostType ghost_type) {
-
-  auto nb_element = mesh.getNbElement(type);
-  auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  auto nb_quadrature_points = fem.getNbIntegrationPoints(type, ghost_type);
-
-  auto nt_b_n = std::make_unique<Array<Real>>(
-      nb_element * nb_quadrature_points,
-      nb_nodes_per_element * nb_nodes_per_element, "N^t*b*N");
-
-  // damage_energy_on_qpoints = gc/l0 + phi = scalar
-  fem.computeNtbN(damage_energy_density(type, ghost_type), *nt_b_n, 2,
-		  type, ghost_type, elem_filter);
-
-  /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
-  /// \mathbf{N}@f$
-  auto K_n = std::make_unique<Array<Real>>(
-	nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
-
-  fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
-		type, ghost_type, elem_filter);
-
-  model.getDOFManager().assembleElementalMatricesToMatrix(
-	"K", "damage", *K_n, type, ghost_type, _symmetric, elem_filter);
-  
-  auto bt_d_b = std::make_unique<Array<Real>>(
-       nb_element * nb_quadrature_points,
-       nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
-
-  // damage_energy_on_qpoints = gc*l0 = scalar
-  fem.computeBtDB(damage_energy(type, ghost_type), *bt_d_b, 2, type,
-		  ghost_type, elem_filter);
-
-  /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
-  /// \mathbf{B}@f$
-  auto K_b = std::make_unique<Array<Real>>(
-	nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_b");
-
-  fem.integrate(*bt_d_b, *K_b, nb_nodes_per_element * nb_nodes_per_element,
-		type, ghost_type, elem_filter);
-
-  model.getDOFManager().assembleElementalMatricesToMatrix(
-	"K", "damage", *K_b, type, ghost_type, _symmetric, elem_filter);
-}*/
-
-
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldExponential::computeDamageEnergyDensity(const ElementType & type,
-						     GhostType ghost_type) {
-
-  AKANTU_DEBUG_IN();
-
-  for (auto && values :
-         zip(make_view(damage_energy(type, ghost_type)),
-             make_view(phi(type, ghost_type)))) {
-
-    auto & dam_energy = std::get<0>(values);
-    auto & phi_history = std::get<1>(values);
-    dam_energy = g_c / l_0 + 2.0 * phi_history;
-  }
- 
-
-  AKANTU_DEBUG_OUT();
-}*/
 
 /* -------------------------------------------------------------------------- */
 /*void PhaseFieldExponential::computePhiHistory(const ElementType & type,
@@ -217,5 +143,8 @@ void PhaseFieldExponential::computeDrivingForce(const ElementType & el_type,
 void PhaseFieldExponential::updateInternalParameters() {
   PhaseField::updateInternalParameters();
 }
+
+
+INSTANTIATE_PHASEFIELD(exponential, PhaseFieldExponential);
   
 }

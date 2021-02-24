@@ -34,7 +34,7 @@
 #include "element_synchronizer.hh"
 #include "fe_engine_template.hh"
 #include "generalized_trapezoidal.hh"
-#include "group_manager_inline_impl.cc"
+#include "group_manager_inline_impl.hh"
 #include "integrator_gauss.hh"
 #include "mesh.hh"
 #include "parser.hh"
@@ -57,15 +57,15 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
                                  const ModelType model_type)
     : Model(mesh, model_type, dim, id, memory_id),
       phasefield_index("phasefield index", id, memory_id),
-      phasefield_local_numbering("phasefield local numbering", id, memory_id),
-      BoundaryCondition<PhaseFieldModel>(),
-      damage_on_qpoints("damage_on_qpoints", id),
-      damage_energy_on_qpoints("damage_energy_on_qpoints", id),
-      damage_energy_density_on_qpoints("damage_energy_density_on_qpoints", id),
-      damage_gradient("damage_gradient", id),
-      strain_on_qpoints("strain_on_qpoints", id),
-      driving_force_on_qpoints("driving_force_on_qpoints", id),
-      phi_history_on_qpoints("phi_history_on_qpoints", id) {
+      phasefield_local_numbering("phasefield local numbering", id, memory_id) {
+  //BoundaryCondition<PhaseFieldModel>(),
+  //  damage_on_qpoints("damage_on_qpoints", id),
+  //    damage_energy_on_qpoints("damage_energy_on_qpoints", id),
+  //damage_energy_density_on_qpoints("damage_energy_density_on_qpoints", id),
+  //damage_gradient("damage_gradient", id),
+  //strain_on_qpoints("strain_on_qpoints", id),
+  //driving_force_on_qpoints("driving_force_on_qpoints", id),
+  //phi_history_on_qpoints("phi_history_on_qpoints", id) {
 
   AKANTU_DEBUG_IN();
    
@@ -111,7 +111,7 @@ void PhaseFieldModel::initModel() {
   fem.initShapeFunctions(_not_ghost);
   fem.initShapeFunctions(_ghost);
 
-  damage_on_qpoints.initialize(fem, _nb_component = 1);
+  /*damage_on_qpoints.initialize(fem, _nb_component = 1);
   damage_energy_on_qpoints.initialize(fem, _nb_component = spatial_dimension *
                                                            spatial_dimension);
   damage_energy_density_on_qpoints.initialize(fem, _nb_component = 1);
@@ -119,7 +119,7 @@ void PhaseFieldModel::initModel() {
   strain_on_qpoints.initialize(fem, _nb_component =
                                         spatial_dimension * spatial_dimension);
   driving_force_on_qpoints.initialize(fem, _nb_component = 1);
-  phi_history_on_qpoints.initialize(fem, _nb_component = 1);
+  phi_history_on_qpoints.initialize(fem, _nb_component = 1);*/
 }
 
 /* -------------------------------------------------------------------------- */
@@ -134,9 +134,8 @@ void PhaseFieldModel::initFullImpl(const ModelOptions & options) {
   // initialize the phasefields
   if (this->parser.getLastParsedFile() != "") {
     this->instantiatePhaseFields();
+    this->initPhaseFields();
   }
-
-  this->initPhaseFields();
   
   this->initBC(*this, *damage, *external_force);
 }
@@ -319,6 +318,9 @@ PhaseFieldModel::getDefaultSolverID(const AnalysisMethod & method) {
     return std::make_tuple("explicit_lumped",
                            TimeStepSolverType::_dynamic_lumped);
   }
+  case _explicit_consistent_mass: {
+    return std::make_tuple("explicit", TimeStepSolverType::_dynamic);
+  }
   case _static: {
     return std::make_tuple("static", TimeStepSolverType::_static);
   }
@@ -336,6 +338,13 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
   ModelSolverOptions options;
 
   switch (type) {
+  case TimeStepSolverType::_dynamic_lumped: {
+    options.non_linear_solver_type = NonLinearSolverType::_lumped;
+    options.integration_scheme_type["damage"] =
+        IntegrationSchemeType::_central_difference;
+    options.solution_type["damage"] = IntegrationScheme::_acceleration;
+    break;
+  }
   case TimeStepSolverType::_static: {
     options.non_linear_solver_type = NonLinearSolverType::_linear;
     options.integration_scheme_type["damage"] =
@@ -356,7 +365,7 @@ ModelSolverOptions PhaseFieldModel::getDefaultSolverOptions(
 
   return options;
 }
-
+ 
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::beforeSolveStep() {
 
@@ -603,9 +612,9 @@ void PhaseFieldModel::assembleInternalForces() {
 
   // assemble the residual due to ghost elements
   AKANTU_DEBUG_INFO("Assemble residual for ghost elements");
-  for (auto & phasefield : phasefields) {
-    phasefield->assembleInternalForces(_ghost);
-  }
+  //for (auto & phasefield : phasefields) {
+  //  phasefield->assembleInternalForces(_ghost);
+  //}
 
   AKANTU_DEBUG_OUT();
 }
@@ -767,13 +776,13 @@ void PhaseFieldModel::computeDamageOnQuadPoints(const GhostType & ghost_type) {
 
   AKANTU_DEBUG_IN();
 
-  auto & fem = this->getFEEngine();
+  /*auto & fem = this->getFEEngine();
 
   for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
     auto & damage_on_qpoints_vect = damage_on_qpoints(type, ghost_type);
     fem.interpolateOnIntegrationPoints(*damage, damage_on_qpoints_vect, 1, type,
                                        ghost_type);
-  }
+  }*/
 
   AKANTU_DEBUG_OUT();
 }
@@ -820,7 +829,7 @@ void PhaseFieldModel::packData(CommunicationBuffer & buffer,
                                const Array<Element> & elements,
                                const SynchronizationTag & tag) const {
 
-  switch (tag) {
+  /*switch (tag) {
   case SynchronizationTag::_pfm_damage: {
     packNodalDataHelper(*damage, buffer, elements, mesh);
     break;
@@ -838,7 +847,7 @@ void PhaseFieldModel::packData(CommunicationBuffer & buffer,
     break;
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
-  }
+  }*/
 }
 
 /* -------------------------------------------------------------------------- */
@@ -846,7 +855,7 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
                                  const Array<Element> & elements,
                                  const SynchronizationTag & tag) {
 
-  switch (tag) {
+  /*switch (tag) {
   case SynchronizationTag::_pfm_damage: {
     unpackNodalDataHelper(*damage, buffer, elements, mesh);
     break;
@@ -864,7 +873,7 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
     break;
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
-  }
+  }*/
 }
 
 /* -------------------------------------------------------------------------- */
@@ -930,7 +939,7 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 PhaseFieldModel::createNodalFieldBool(const std::string & field_name,
                                       const std::string & group_name,
                                       bool /*padding_flag*/) {
@@ -940,12 +949,12 @@ PhaseFieldModel::createNodalFieldBool(const std::string & field_name,
 
   return mesh.createNodalField(uint_nodal_fields[field_name], group_name);
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
                                       const std::string & group_name,
                                       bool /*padding_flag*/) {
@@ -963,51 +972,51 @@ PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
 
   return mesh.createNodalField(real_nodal_fields[field_name], group_name);
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> PhaseFieldModel::createElementalField(
+std::shared_ptr<dumpers::Field> PhaseFieldModel::createElementalField(
     const std::string & field_name, const std::string & group_name,
     bool /*padding_flag*/, const UInt & /*spatial_dimension*/,
     const ElementKind & element_kind) {
 
   if (field_name == "partitions") {
-    return mesh.createElementalField<UInt, dumper::ElementPartitionField>(
+    return mesh.createElementalField<UInt, dumpers::ElementPartitionField>(
         mesh.getConnectivities(), group_name, this->spatial_dimension,
         element_kind);
-  } else if (field_name == "damage_gradient") {
+  } /*else if (field_name == "damage_gradient") {
     ElementTypeMap<UInt> nb_data_per_elem =
         this->mesh.getNbDataPerElem(damage_gradient);
 
-    return mesh.createElementalField<Real, dumper::InternalMaterialField>(
+    return mesh.createElementalField<Real, dumpers::InternalMaterialField>(
         damage_gradient, group_name, this->spatial_dimension, element_kind,
         nb_data_per_elem);
   } else if (field_name == "damage_energy") {
     ElementTypeMap<UInt> nb_data_per_elem =
         this->mesh.getNbDataPerElem(damage_energy_on_qpoints);
 
-    return mesh.createElementalField<Real, dumper::InternalMaterialField>(
+    return mesh.createElementalField<Real, dumpers::InternalMaterialField>(
         damage_energy_on_qpoints, group_name, this->spatial_dimension,
         element_kind, nb_data_per_elem);
-  }
+	}*/
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> PhaseFieldModel::createElementalField(
+std::shared_ptr<dumpers::Field> PhaseFieldModel::createElementalField(
     const std::string & /*field_name*/, const std::string & /*group_name*/,
     bool /*padding_flag*/, const ElementKind & /*element_kind*/) {
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 PhaseFieldModel::createNodalFieldBool(const std::string & /*field_name*/,
                                       const std::string & /*group_name*/,
                                       bool /*padding_flag*/) {
@@ -1015,7 +1024,7 @@ PhaseFieldModel::createNodalFieldBool(const std::string & /*field_name*/,
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 PhaseFieldModel::createNodalFieldReal(const std::string & /*field_name*/,
                                       const std::string & /*group_name*/,
                                       bool /*padding_flag*/) {

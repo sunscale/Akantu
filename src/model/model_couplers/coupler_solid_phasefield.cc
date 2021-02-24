@@ -41,6 +41,7 @@
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
+  
 
 CouplerSolidPhaseField::CouplerSolidPhaseField(Mesh & mesh, UInt dim,
                                                const ID & id,
@@ -87,6 +88,8 @@ void CouplerSolidPhaseField::initFullImpl(const ModelOptions & options) {
   Model::initFullImpl(options);
 
   this->initBC(*this, *displacement, *displacement_increment, *external_force);
+  solid->initFull( _analysis_method = this->method);
+  phasefield->initFull( _analysis_method = this->method);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -103,14 +106,39 @@ FEEngine & CouplerSolidPhaseField::getFEEngineBoundary(const ID & name) {
 }
 
 /* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::initSolver(TimeStepSolverType,
-                                        NonLinearSolverType) {}
+void CouplerSolidPhaseField::initSolver(TimeStepSolverType time_step_solver_type,
+                                        NonLinearSolverType non_linear_solver_type) {
+
+  auto & solid_model_solver =
+    aka::as_type<ModelSolver>(*solid);
+  solid_model_solver.initSolver(time_step_solver_type,  non_linear_solver_type);
+
+  auto & phase_model_solver =
+    aka::as_type<ModelSolver>(*phasefield);
+  phase_model_solver.initSolver(time_step_solver_type,  non_linear_solver_type);
+}
 
 /* -------------------------------------------------------------------------- */
 std::tuple<ID, TimeStepSolverType>
 CouplerSolidPhaseField::getDefaultSolverID(const AnalysisMethod & method) {
 
-  return std::make_tuple("unkown", TimeStepSolverType::_not_defined);
+  switch (method) {
+  case _explicit_lumped_mass: {
+    return std::make_tuple("explicit_lumped",
+                           TimeStepSolverType::_dynamic_lumped);
+  }
+  case _explicit_consistent_mass: {
+    return std::make_tuple("explicit", TimeStepSolverType::_dynamic);
+  }
+  case _static: {
+    return std::make_tuple("static", TimeStepSolverType::_static);
+  }
+  case _implicit_dynamic: {
+    return std::make_tuple("implicit", TimeStepSolverType::_dynamic);
+  }
+  default:
+    return std::make_tuple("unknown", TimeStepSolverType::_not_defined);
+  }  
 }
 
 /* -------------------------------------------------------------------------- */
@@ -211,6 +239,31 @@ void CouplerSolidPhaseField::assembleResidual(const ID & residual_part) {
 }
 
 
+/* -------------------------------------------------------------------------- */
+void CouplerSolidPhaseField::predictor() {
+
+  auto & solid_model_solver =
+    aka::as_type<ModelSolver>(*solid);
+  solid_model_solver.predictor();
+  
+  auto & phase_model_solver =
+    aka::as_type<ModelSolver>(*phasefield);
+  phase_model_solver.predictor();
+}
+
+/* -------------------------------------------------------------------------- */
+void CouplerSolidPhaseField::corrector() {
+
+  auto & solid_model_solver =
+    aka::as_type<ModelSolver>(*solid);
+  solid_model_solver.corrector();
+  
+  auto & phase_model_solver =
+    aka::as_type<ModelSolver>(*phasefield);
+  phase_model_solver.corrector();
+}
+  
+  
 
 /* -------------------------------------------------------------------------- */
 MatrixType CouplerSolidPhaseField::getMatrixType(const ID & matrix_id) {
@@ -241,6 +294,29 @@ void CouplerSolidPhaseField::assembleLumpedMatrix(const ID & matrix_id) {
 }
 
 /* -------------------------------------------------------------------------- */
+void CouplerSolidPhaseField::beforeSolveStep() {
+  auto & solid_solver_callback =
+    aka::as_type<SolverCallback>(*solid);
+  solid_solver_callback.beforeSolveStep();
+  
+  auto & phase_solver_callback =
+    aka::as_type<SolverCallback>(*phasefield);
+  phase_solver_callback.beforeSolveStep();
+}
+
+/* -------------------------------------------------------------------------- */
+void CouplerSolidPhaseField::afterSolveStep(bool converged) {
+  auto & solid_solver_callback =
+    aka::as_type<SolverCallback>(*solid);
+  solid_solver_callback.afterSolveStep(converged);
+  
+  auto & phase_solver_callback =
+    aka::as_type<SolverCallback>(*phasefield);
+  phase_solver_callback.afterSolveStep(converged);
+}
+  
+
+/* -------------------------------------------------------------------------- */
 void CouplerSolidPhaseField::assembleInternalForces() {
   AKANTU_DEBUG_IN();
 
@@ -265,21 +341,19 @@ void CouplerSolidPhaseField::assembleStiffnessMatrix() {
 }
 
 /* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::assembleMassLumped() {
-  solid->assembleMassLumped();
-}
+void CouplerSolidPhaseField::assembleMassLumped() { solid->assembleMassLumped(); }
 
 /* -------------------------------------------------------------------------- */
 void CouplerSolidPhaseField::assembleMass() { solid->assembleMass(); }
 
 /* -------------------------------------------------------------------------- */
 void CouplerSolidPhaseField::assembleMassLumped(GhostType ghost_type) {
-  //solid->assembleMassLumped(ghost_type);
+  solid->assembleMassLumped(ghost_type);
 }
 
 /* -------------------------------------------------------------------------- */
 void CouplerSolidPhaseField::assembleMass(GhostType ghost_type) {
-  //solid->assembleMass(ghost_type);
+  solid->assembleMass(ghost_type);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -413,11 +487,11 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
   }
 
   return false;
-}
+}*/
 
 
 /* -------------------------------------------------------------------------- */
-UInt CouplerSolidPhaseField::getNbData(const Array<Element> & elements,
+/*UInt CouplerSolidPhaseField::getNbData(const Array<Element> & elements,
 				       const SynchronizationTag & tag) const {
 
   AKANTU_DEBUG_IN();
@@ -442,7 +516,7 @@ UInt CouplerSolidPhaseField::getNbData(const Array<Element> & elements,
 
 
 /* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::packData(CommunicationBuffer & buffer,
+/*void CouplerSolidPhaseField::packData(CommunicationBuffer & buffer,
 				      const Array<Element> & elements,
 				      const SynchronizationTag & tag) const {
 
@@ -461,10 +535,10 @@ void CouplerSolidPhaseField::packData(CommunicationBuffer & buffer,
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
-}
+  }*/
 
 /* -------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::unpackData(CommunicationBuffer & buffer,
+/*void CouplerSolidPhaseField::unpackData(CommunicationBuffer & buffer,
 					const Array<Element> & elements,
 					const SynchronizationTag & tag) {
 
@@ -482,14 +556,14 @@ void CouplerSolidPhaseField::unpackData(CommunicationBuffer & buffer,
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
-}
+  }*/
 
   
 /* -------------------------------------------------------------------------- */
 #ifdef AKANTU_USE_IOHELPER
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> CouplerSolidPhaseField::createElementalField(
+std::shared_ptr<dumpers::Field> CouplerSolidPhaseField::createElementalField(
     const std::string & field_name, const std::string & group_name,
     bool padding_flag, const UInt & spatial_dimension,
     const ElementKind & kind) {
@@ -497,52 +571,52 @@ std::shared_ptr<dumper::Field> CouplerSolidPhaseField::createElementalField(
   return solid->createElementalField(field_name, group_name, padding_flag,
                                      spatial_dimension, kind);
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 CouplerSolidPhaseField::createNodalFieldReal(const std::string & field_name,
                                              const std::string & group_name,
                                              bool padding_flag) {
 
   return solid->createNodalFieldReal(field_name, group_name, padding_flag);
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   return field;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 CouplerSolidPhaseField::createNodalFieldBool(const std::string & field_name,
                                              const std::string & group_name,
                                              bool padding_flag) {
 
   return solid->createNodalFieldBool(field_name, group_name, padding_flag);
 
-  std::shared_ptr<dumper::Field> field;
+  std::shared_ptr<dumpers::Field> field;
   return field;
 }
 
 #else
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field> CouplerSolidPhaseField::createElementalField(
+std::shared_ptr<dumpers::Field> CouplerSolidPhaseField::createElementalField(
     const std::string &, const std::string &, bool, const UInt &,
     const ElementKind &) {
   return nullptr;
 }
 
 /* ----------------------------------------------------------------------- */
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 CouplerSolidPhaseField::createNodalFieldReal(const std::string &,
                                              const std::string &, bool) {
   return nullptr;
 }
 
 /*-------------------------------------------------------------------*/
-std::shared_ptr<dumper::Field>
+std::shared_ptr<dumpers::Field>
 CouplerSolidPhaseField::createNodalFieldBool(const std::string &,
                                              const std::string &, bool) {
   return nullptr;
