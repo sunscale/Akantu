@@ -324,17 +324,6 @@ public:
                                         ? allocated_size + AKANTU_MIN_ALLOCATION
                                         : allocated_size;
 
-<<<<<<< HEAD
-      if(size_to_allocate != allocated_size) {
-	auto * tmp_ptr = reinterpret_cast<T *>(realloc(
-	    this->values, size_to_allocate * this->nb_component * sizeof(T)));
-	if (tmp_ptr == nullptr) {
-	  throw std::bad_alloc();
-	}
-      
-	this->values = tmp_ptr;
-	this->allocated_size = size_to_allocate;
-=======
       if (size_to_allocate ==
           allocated_size) { // otherwhy the reserve + push_back might fail...
         this->size_ = size;
@@ -349,9 +338,10 @@ public:
         StaticMemory::getStaticMemory().printself(std::cerr);
         
         throw std::bad_alloc();
->>>>>>> upstream/master
       }
 
+      this->values = tmp_ptr;
+      this->allocated_size = size_to_allocate;
     }
 
     this->size_ = size;
