@@ -1,9 +1,9 @@
 /**
- * @file   tets_phase_field_2d.cc
+ * @file   test_phase_field_coupling.cc
  *
  * @author Mohit Pundir <mohit.pundir@epfl.ch>
  *
- * @date creation: Mon Oct 1 2018
+ * @date creation: Thu Feb 25 2021
  *
  * @brief  test of the class PhaseFieldModel on the 2d square
  *
@@ -106,11 +106,13 @@ int main(int argc, char *argv[]) {
     phase.solveStep();
     computeDamageOnQuadPoints(model, phase, _not_ghost);
 
+    model.assembleInternalForces();
+
     analytical_damage = axial_strain*axial_strain*c22/(gc/l0 + axial_strain*axial_strain*c22);
     analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);
     
     os << axial_strain << " " << stress(0, 3) << " " << damage(0) << " "
-       << analytical_sigma << " " << analytical_damage << std::endl;
+       << analytical_sigma/1000. << " " << analytical_damage << std::endl;
 
     model.dump();
   }

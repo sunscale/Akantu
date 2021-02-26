@@ -6,7 +6,7 @@
  * @date creation: Fri Sep 28 2018
  * @date last modification: Thu Jun 20 2019
  *
- * @brief  class for coupling of solid mechancis and phasefield model
+ * @brief  class for coupling of solid mechancis and phase model
  *
  * @section LICENSE
  *
@@ -66,7 +66,7 @@ CouplerSolidPhaseField::CouplerSolidPhaseField(Mesh & mesh, UInt dim,
 
   solid = new SolidMechanicsModel(mesh, Model::spatial_dimension,
                                   "solid_mechanics_model", 0);
-  phasefield = new PhaseFieldModel(mesh, Model::spatial_dimension,
+  phase = new PhaseFieldModel(mesh, Model::spatial_dimension,
                                    "phase_field_model", 0);
 
   if (this->mesh.isDistributed()) {
@@ -89,7 +89,7 @@ void CouplerSolidPhaseField::initFullImpl(const ModelOptions & options) {
 
   this->initBC(*this, *displacement, *displacement_increment, *external_force);
   solid->initFull( _analysis_method = this->method);
-  phasefield->initFull( _analysis_method = this->method);
+  phase->initFull( _analysis_method = this->method);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -114,7 +114,7 @@ void CouplerSolidPhaseField::initSolver(TimeStepSolverType time_step_solver_type
   solid_model_solver.initSolver(time_step_solver_type,  non_linear_solver_type);
 
   auto & phase_model_solver =
-    aka::as_type<ModelSolver>(*phasefield);
+    aka::as_type<ModelSolver>(*phase);
   phase_model_solver.initSolver(time_step_solver_type,  non_linear_solver_type);
 }
 
@@ -190,8 +190,8 @@ void CouplerSolidPhaseField::assembleResidual() {
   auto & solid_internal_force = solid->getInternalForce();
   auto & solid_external_force = solid->getExternalForce();
 
-  auto & phasefield_internal_force = phasefield->getInternalForce();
-  auto & phasefield_external_force = phasefield->getExternalForce();
+  auto & phasefield_internal_force = phase->getInternalForce();
+  auto & phasefield_external_force = phase->getExternalForce();
 
   /* ------------------------------------------------------------------------ */
   this->getDOFManager().assembleToResidual("displacement", solid_external_force,
@@ -211,8 +211,8 @@ void CouplerSolidPhaseField::assembleResidual(const ID & residual_part) {
   auto & solid_internal_force = solid->getInternalForce();
   auto & solid_external_force = solid->getExternalForce();
 
-  auto & phasefield_internal_force = phasefield->getInternalForce();
-  auto & phasefield_external_force = phasefield->getExternalForce();
+  auto & phasefield_internal_force = phase->getInternalForce();
+  auto & phasefield_external_force = phase->getExternalForce();
 
   if ("external" == residual_part) {
     this->getDOFManager().assembleToResidual("displacement",
@@ -247,7 +247,7 @@ void CouplerSolidPhaseField::predictor() {
   solid_model_solver.predictor();
   
   auto & phase_model_solver =
-    aka::as_type<ModelSolver>(*phasefield);
+    aka::as_type<ModelSolver>(*phase);
   phase_model_solver.predictor();
 }
 
@@ -259,7 +259,7 @@ void CouplerSolidPhaseField::corrector() {
   solid_model_solver.corrector();
   
   auto & phase_model_solver =
-    aka::as_type<ModelSolver>(*phasefield);
+    aka::as_type<ModelSolver>(*phase);
   phase_model_solver.corrector();
 }
   
@@ -300,7 +300,7 @@ void CouplerSolidPhaseField::beforeSolveStep() {
   solid_solver_callback.beforeSolveStep();
   
   auto & phase_solver_callback =
-    aka::as_type<SolverCallback>(*phasefield);
+    aka::as_type<SolverCallback>(*phase);
   phase_solver_callback.beforeSolveStep();
 }
 
@@ -311,7 +311,7 @@ void CouplerSolidPhaseField::afterSolveStep(bool converged) {
   solid_solver_callback.afterSolveStep(converged);
   
   auto & phase_solver_callback =
-    aka::as_type<SolverCallback>(*phasefield);
+    aka::as_type<SolverCallback>(*phase);
   phase_solver_callback.afterSolveStep(converged);
 }
   
@@ -323,7 +323,7 @@ void CouplerSolidPhaseField::assembleInternalForces() {
   AKANTU_DEBUG_INFO("Assemble the internal forces");
 
   solid->assembleInternalForces();
-  phasefield->assembleInternalForces();
+  phase->assembleInternalForces();
 
   AKANTU_DEBUG_OUT();
 }
@@ -335,7 +335,7 @@ void CouplerSolidPhaseField::assembleStiffnessMatrix() {
   AKANTU_DEBUG_INFO("Assemble the new stiffness matrix");
 
   solid->assembleStiffnessMatrix();
-  phasefield->assembleStiffnessMatrix();
+  phase->assembleStiffnessMatrix();
   
   AKANTU_DEBUG_OUT();
 }
@@ -362,37 +362,55 @@ void CouplerSolidPhaseField::computeDamageOnQuadPoints(
 
   AKANTU_DEBUG_IN();
 
-  auto & fem = phasefield->getFEEngine();
-  auto & mesh = phasefield->getMesh();
+  auto & fem = phase->getFEEngine();
+  auto & mesh = phase->getMesh();
 
-  switch (spatial_dimension) {
-  case 1: {
-    auto & mat = static_cast<MaterialPhaseField<1> &>(solid->getMaterial(0));
-    auto & damage = mat.getDamage();
-    for (auto & type :
-         mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
-      auto & damage_on_qpoints_vect = damage(type, ghost_type);
-      fem.interpolateOnIntegrationPoints(
-          phasefield->getDamage(), damage_on_qpoints_vect, 1, type, ghost_type);
+  auto nb_materials   = solid->getNbMaterials();
+  auto nb_phasefields = phase->getNbPhaseFields();
+  
+  AKANTU_DEBUG_ASSERT(nb_phasefields == nb_materials,
+                      "The number of phasefields and materials should be equal" );
+  
+  for(auto index : arange(nb_materials)) {
+    auto & material = solid->getMaterial(index);
+    
+    for(auto index2 : arange(nb_phasefields)) {
+      auto & phasefield = phase->getPhaseField(index2);
+      
+      if(phasefield.getName() == material.getName()){
+
+	switch (spatial_dimension) {
+	case 1: {
+	  auto & mat = static_cast<MaterialPhaseField<1> &>(material);
+	  auto & damage = mat.getDamage();
+	  for (auto & type :
+		 mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+	    auto & damage_on_qpoints_vect = damage(type, ghost_type);
+	    fem.interpolateOnIntegrationPoints(phase->getDamage(), damage_on_qpoints_vect,
+					       1, type, ghost_type);
+	  }
+
+	  break;
+	}
+
+	case 2: {
+	  auto & mat = static_cast<MaterialPhaseField<2> &>(material);
+	  auto & damage = mat.getDamage();
+
+	  for (auto & type :
+		 mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+	    auto & damage_on_qpoints_vect = damage(type, ghost_type);
+	    fem.interpolateOnIntegrationPoints(phase->getDamage(), damage_on_qpoints_vect,
+					       1, type, ghost_type);
+	  }
+	  break;
+	}
+	default:
+	  auto & mat = static_cast<MaterialPhaseField<3> &>(material);
+	  break;
+	}
+      }
     }
-
-    break;
-  }
-  case 2: {
-    auto & mat = static_cast<MaterialPhaseField<2> &>(solid->getMaterial(0));
-    auto & damage = mat.getDamage();
-
-    for (auto & type :
-         mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
-      auto & damage_on_qpoints_vect = damage(type, ghost_type);
-      fem.interpolateOnIntegrationPoints(
-          phasefield->getDamage(), damage_on_qpoints_vect, 1, type, ghost_type);
-    }
-    break;
-  }
-  default:
-    auto & mat = static_cast<MaterialPhaseField<3> &>(solid->getMaterial(0));
-    break;
   }
 
   AKANTU_DEBUG_OUT();
@@ -403,20 +421,42 @@ void CouplerSolidPhaseField::computeStrainOnQuadPoints(
     const GhostType & ghost_type) {
   AKANTU_DEBUG_IN();
 
-  auto & strain_on_qpoints = phasefield->getStrain();
-  auto & gradu_on_qpoints = solid->getMaterial(0).getGradU();
+  
+  auto & mesh = solid->getMesh();
 
-  for (auto & type : mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
-    auto & strain_on_qpoints_vect = strain_on_qpoints(type, ghost_type);
-    auto & gradu_on_qpoints_vect = gradu_on_qpoints(type, ghost_type);
-    for (auto && values :
-         zip(make_view(strain_on_qpoints_vect, Model::spatial_dimension,
-                       Model::spatial_dimension),
-             make_view(gradu_on_qpoints_vect, Model::spatial_dimension,
-                       Model::spatial_dimension))) {
-      auto & strain = std::get<0>(values);
-      auto & grad_u = std::get<1>(values);
-      this->gradUToEpsilon(grad_u, strain);
+  auto nb_materials   = solid->getNbMaterials();
+  auto nb_phasefields = phase->getNbPhaseFields();
+  
+  AKANTU_DEBUG_ASSERT(nb_phasefields == nb_materials,
+                      "The number of phasefields and materials should be equal" );
+
+
+  for(auto index : arange(nb_materials)) {
+    auto & material = solid->getMaterial(index);
+    
+    for(auto index2 : arange(nb_phasefields)) {
+      auto & phasefield = phase->getPhaseField(index2);
+      
+      if(phasefield.getName() == material.getName()){
+      
+	auto & strain_on_qpoints = phasefield.getStrain();
+	auto & gradu_on_qpoints  = material.getGradU();
+      
+	for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
+	  auto & strain_on_qpoints_vect = strain_on_qpoints(type, ghost_type);
+	  auto & gradu_on_qpoints_vect  = gradu_on_qpoints(type, ghost_type);
+	  for (auto && values:
+		 zip(make_view(strain_on_qpoints_vect, spatial_dimension, spatial_dimension),
+	       make_view(gradu_on_qpoints_vect,  spatial_dimension, spatial_dimension))) {
+	    auto & strain = std::get<0>(values);
+	    auto & grad_u =  std::get<1>(values);
+	    gradUToEpsilon(grad_u, strain);
+	  }
+	}
+
+	break;
+      }
+      
     }
   }
 
@@ -429,7 +469,7 @@ void CouplerSolidPhaseField::solve() {
   solid->solveStep();
   this->computeStrainOnQuadPoints(_not_ghost);
 
-  phasefield->solveStep();
+  phase->solveStep();
   this->computeDamageOnQuadPoints(_not_ghost);
 
   solid->assembleInternalForces();
@@ -487,7 +527,7 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
   }
 
   return false;
-}*/
+}
 
 
 /* -------------------------------------------------------------------------- */
@@ -529,7 +569,7 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
     break;
   }
   case SynchronizationTag::_csp_strain: {
-    packElementalDataHelper(phasefield->getStrain(), buffer, elements,
+    packElementalDataHelper(phase->getStrain(), buffer, elements,
 			    true, getFEEngine());
     break;
   }
@@ -550,7 +590,7 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
     break;
   }
   case SynchronizationTag::_csp_strain: {
-    unpackElementalDataHelper(phasefield->getStrain(), buffer, elements,
+    unpackElementalDataHelper(phase->getStrain(), buffer, elements,
 			      true, getFEEngine());
     break;
   }

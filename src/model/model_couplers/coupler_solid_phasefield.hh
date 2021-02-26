@@ -194,14 +194,18 @@ public:
 public:
   // DataAccessor<Element>
   UInt getNbData(const Array<Element> &,
-                 const SynchronizationTag &) const override;
+                 const SynchronizationTag &) const override {
+    return 0;
+  }
   void packData(CommunicationBuffer &, const Array<Element> &,
-                const SynchronizationTag &) const override;
+                const SynchronizationTag &) const override {}
   void unpackData(CommunicationBuffer &, const Array<Element> &,
-                  const SynchronizationTag &) override;
+                  const SynchronizationTag &) override {}
 
   UInt getNbData(const Array<UInt> & indexes,
-                 const SynchronizationTag & tag) const override {}
+                 const SynchronizationTag & tag) const override {
+    return 0;
+  }
 
   void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
                 const SynchronizationTag & tag) const override{}
@@ -227,7 +231,7 @@ public:
   AKANTU_GET_MACRO(SolidMechanicsModel, *solid, SolidMechanicsModel &);
 
   /// get the contact mechanics model
-  AKANTU_GET_MACRO(PhaseFieldModel, *phasefield, PhaseFieldModel &);
+  AKANTU_GET_MACRO(PhaseFieldModel, *phase, PhaseFieldModel &);
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable interface                                                       */
@@ -269,7 +273,7 @@ private:
   SolidMechanicsModel * solid{nullptr};
 
   /// phasefield model
-  PhaseFieldModel * phasefield{nullptr};
+  PhaseFieldModel * phase{nullptr};
 
   Array<Real> * displacement{nullptr};
 

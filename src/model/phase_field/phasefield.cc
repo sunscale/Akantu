@@ -98,7 +98,7 @@ void PhaseField::initialize() {
   registerParam("E", E, _pat_parsmod, "Young's modulus");
   registerParam("nu", nu, _pat_parsmod, "Poisson ratio");
 
-  damage.initialize(0);
+  damage.initialize(1);
   
   phi.initialize(1);
   driving_force.initialize(1);

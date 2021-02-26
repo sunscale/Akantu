@@ -57,17 +57,18 @@ int main(int argc, char *argv[]) {
   Mesh mesh(spatial_dimension);
   mesh.read("test_two_element.msh");
 
- 
-
-
   SolidMechanicsModel model(mesh);
   auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>(
       "physical_names", model);
   model.setMaterialSelector(mat_selector);
 
-  model.initFull(_analysis_method = _static);
+  model.initFull(_analysis_method = _explicit_lumped_mass);
 
+  Real time_step = model.getStableTimeStep();
+  time_step *= 0.8;
+  model.setTimeStep(time_step);
 
+  
   PhaseFieldModel phase(mesh);
   auto && selector = std::make_shared<MeshDataPhaseFieldSelector<std::string>>(
       "physical_names", phase);
@@ -75,29 +76,29 @@ int main(int argc, char *argv[]) {
 
   phase.initFull(_analysis_method = _static);
   
-  phase.setBaseName("multi_material");
-  //model.addDumpField("stress");
-  //model.addDumpField("grad_u");
-  phase.addDumpField("damage");
-  //model.addDumpFieldVector("displacement");
-  //model.addDumpField("blocked_dofs");
-  phase.dump();
+  model.setBaseName("multi_material");
+  model.addDumpField("stress");
+  model.addDumpField("grad_u");
+  model.addDumpField("damage");
+  model.addDumpFieldVector("displacement");
+  model.addDumpField("blocked_dofs");
+  model.dump();
   
   UInt nbSteps = 10000;
-  Real increment = 2e-5;
+  Real increment = 1e-5;
   
   for (UInt s = 0; s < nbSteps; ++s) {
     Real axial_strain = increment * s;
     applyDisplacement(model, axial_strain);
 
     model.solveStep();
-    model.assembleInternalForces();
     computeStrainOnQuadPoints(model, phase, _not_ghost);
 
     phase.solveStep();
     computeDamageOnQuadPoints(model, phase, _not_ghost);
 
-    phase.dump();
+    model.assembleInternalForces();
+    model.dump();
   }
 
   finalize();
@@ -120,14 +121,22 @@ void applyDisplacement(SolidMechanicsModel & model, Real & increment) {
   for (UInt n = 0; n < model.getMesh().getNbNodes(); ++n) {
     if (positions(n, 1) == -1) {
       displacement(n, 1) = 0;
+      blocked_dofs(n, 1) = true;
+      displacement(n, 0) = 0;
+      blocked_dofs(n ,0) = true;
+    }
+    else if (positions(n, 1) == 1) {
+      displacement(n, 0) = 0;
+      displacement(n, 1) = increment;
+      blocked_dofs(n, 0) = true;
       blocked_dofs(n ,1) = true;
     }
-    if (positions(n, 1) == 1) {
-      displacement(n, 1) = increment;
-      blocked_dofs(n ,1) = true;
-    }  
+    else {
     displacement(n, 0) = 0;
+    //displacement(n, 1) = 0;
     blocked_dofs(n, 0) = true;
+    //blocked_dofs(n, 1) = true;
+    }
   }
 }
 
@@ -208,8 +217,20 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	    auto & damage_on_qpoints_vect = solid_damage(type, ghost_type);
 	    auto & phase_damage_on_qpoints_vect =  phase_damage(type, ghost_type);
 	    
+	    /*for (auto && values:
+		   zip(make_view(damage_on_qpoints_vect),
+		       make_view(phase_damage_on_qpoints_vect))) {
+	      auto & dam = std::get<0>(values);
+	      auto & phase_dam =  std::get<1>(values);
+	      dam = phase_dam;
+	      }*/
+
+	    //fem.interpolateOnIntegrationPoints(phase.getDamage(), phase_damage_on_qpoints_vect,
+	    //				       1, type, ghost_type);
+	    
 	    fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
-					       1, type, ghost_type); 
+	    				       1, type, ghost_type);
+	    
 	  }
     
 	  break;
@@ -223,8 +244,22 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	    auto & damage_on_qpoints_vect = solid_damage(type, ghost_type);
 	    auto & phase_damage_on_qpoints_vect =  phase_damage(type, ghost_type);
 
+	    
+	    //fem.interpolateOnIntegrationPoints(phase.getDamage(), phase_damage_on_qpoints_vect,
+	    //				       1, type, ghost_type); 
+	    
+
 	    fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 					       1, type, ghost_type); 
+	    
+	    /*for (auto && values:
+		   zip(make_view(damage_on_qpoints_vect),
+		       make_view(phase_damage_on_qpoints_vect))) {
+	      auto & dam = std::get<0>(values);
+	      auto & phase_dam =  std::get<1>(values);
+	      dam = phase_dam;
+	    }*/
+
 	  }
 	  break;
 	}  
