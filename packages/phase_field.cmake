@@ -30,6 +30,7 @@
 #===============================================================================
 
 package_declare(phase_field
+  DEPENDS model_couplers
   DESCRIPTION "Use Phase Field package of Akantu")
 
 package_declare_sources(phase_field
@@ -48,10 +49,9 @@ package_declare_sources(phase_field
   )
 
 package_declare_documentation_files(phase_field
-  #manual-heattransfermodel.tex
+  #
   )
 
 package_declare_documentation(phase_field
   "This package activates the phase field model within Akantu. "
-  "It has no additional dependencies."
   )

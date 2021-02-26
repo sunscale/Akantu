@@ -405,7 +405,7 @@ void PhaseFieldModel::assembleStiffnessMatrix() {
     this->getDOFManager().getNewMatrix("K", getMatrixType("K"));
   }
 
-  this->getDOFManager().clearMatrix("K");
+  this->getDOFManager().zeroMatrix("K");
 
   for (auto & phasefield : phasefields) {
     phasefield->assembleStiffnessMatrix(_not_ghost);
@@ -632,7 +632,7 @@ void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
 std::shared_ptr<dumpers::Field>
 PhaseFieldModel::createNodalFieldBool(const std::string & field_name,
                                       const std::string & group_name,
-                                      bool /*padding_flag*/) {
+                                      bool) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
   uint_nodal_fields["blocked_dofs"] = blocked_dofs;
@@ -647,7 +647,7 @@ PhaseFieldModel::createNodalFieldBool(const std::string & field_name,
 std::shared_ptr<dumpers::Field>
 PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
                                       const std::string & group_name,
-                                      bool /*padding_flag*/) {
+                                      bool) {
 
   if (field_name == "capacity_lumped") {
     AKANTU_EXCEPTION(
@@ -667,10 +667,11 @@ PhaseFieldModel::createNodalFieldReal(const std::string & field_name,
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumpers::Field> PhaseFieldModel::createElementalField(
-    const std::string & field_name, const std::string & group_name,
-    bool /*padding_flag*/, const UInt & /*spatial_dimension*/,
-    const ElementKind & element_kind) {
+std::shared_ptr<dumpers::Field>
+PhaseFieldModel::createElementalField(const std::string & field_name,
+				      const std::string & group_name,
+				      bool, UInt,
+				      ElementKind element_kind) {
 
   if (field_name == "partitions") {
     return mesh.createElementalField<UInt, dumpers::ElementPartitionField>(
@@ -699,25 +700,24 @@ std::shared_ptr<dumpers::Field> PhaseFieldModel::createElementalField(
 /* -------------------------------------------------------------------------- */
 #else
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumpers::Field> PhaseFieldModel::createElementalField(
-    const std::string & /*field_name*/, const std::string & /*group_name*/,
-    bool /*padding_flag*/, const ElementKind & /*element_kind*/) {
+std::shared_ptr<dumpers::Field>
+PhaseFieldModel::createElementalField(const std::string &,
+				      const std::string &, bool,
+				      const UInt &, ElementKind) {
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field>
-PhaseFieldModel::createNodalFieldBool(const std::string & /*field_name*/,
-                                      const std::string & /*group_name*/,
-                                      bool /*padding_flag*/) {
+PhaseFieldModel::createNodalFieldReal(const std::string &,
+				      const std::string &, bool) {
   return nullptr;
 }
-
+  
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field>
-PhaseFieldModel::createNodalFieldReal(const std::string & /*field_name*/,
-                                      const std::string & /*group_name*/,
-                                      bool /*padding_flag*/) {
+PhaseFieldModel::createNodalFieldBool(const std::string &,
+				      const std::string &, bool) {
   return nullptr;
 }
 #endif

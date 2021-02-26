@@ -91,12 +91,12 @@ inline void PhaseFieldExponential::computePhiOnQuad(const Matrix<Real> & strain_
 
   Real trace_plus, trace_minus;
 
-  strain_plus.clear();
-  strain_minus.clear();
-  strain_dir.clear();
-  strain_values.clear();
-  strain_diag_plus.clear();
-  strain_diag_minus.clear();
+  strain_plus.zero();
+  strain_minus.zero();
+  strain_dir.zero();
+  strain_values.zero();
+  strain_diag_plus.zero();
+  strain_diag_minus.zero();
   
   strain_quad.eig(strain_values, strain_dir);
 

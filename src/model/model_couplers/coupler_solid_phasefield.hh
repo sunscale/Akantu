@@ -250,8 +250,8 @@ public:
   std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
-                       const UInt & spatial_dimension,
-                       const ElementKind & kind) override;
+                       UInt spatial_dimension,
+                       ElementKind kind) override;
 
   virtual void dump(const std::string & dumper_name);
 

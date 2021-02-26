@@ -605,8 +605,8 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field> CouplerSolidPhaseField::createElementalField(
     const std::string & field_name, const std::string & group_name,
-    bool padding_flag, const UInt & spatial_dimension,
-    const ElementKind & kind) {
+    bool padding_flag, UInt spatial_dimension,
+    ElementKind kind) {
 
   return solid->createElementalField(field_name, group_name, padding_flag,
                                      spatial_dimension, kind);
@@ -643,8 +643,8 @@ CouplerSolidPhaseField::createNodalFieldBool(const std::string & field_name,
 
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field> CouplerSolidPhaseField::createElementalField(
-    const std::string &, const std::string &, bool, const UInt &,
-    const ElementKind &) {
+    const std::string &, const std::string &, bool, UInt ,
+    ElementKind) {
   return nullptr;
 }
 
