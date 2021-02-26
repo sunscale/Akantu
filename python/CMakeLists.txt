@@ -71,6 +71,14 @@ if (_is_activated)
     )
 endif()
 
+package_is_activated(phase_field _is_activated)
+if (_is_activated)
+  list(APPEND PYAKANTU_SRCS
+    py_phase_field_model.cc
+    )
+endif()
+
+
 pybind11_add_module(py11_akantu ${PYAKANTU_SRCS})
 target_link_libraries(py11_akantu PRIVATE akantu pybind11)
 target_include_directories(py11_akantu INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
