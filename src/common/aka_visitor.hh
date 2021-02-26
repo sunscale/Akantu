@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_VISITOR_HH__
-#define __AKANTU_VISITOR_HH__
+#ifndef AKANTU_VISITOR_HH_
+#define AKANTU_VISITOR_HH_
 
 #include "aka_typelist.hh"
 
@@ -160,4 +160,4 @@ public:
 
 } // namespace akantu
 
-#endif /* __AKANTU_VISITOR_HH__ */
+#endif /* AKANTU_VISITOR_HH_ */

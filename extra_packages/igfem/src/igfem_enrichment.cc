@@ -91,7 +91,7 @@ void IGFEMEnrichment::moveInterface(Real new_position, ID domain) {
     SK::Sphere_3 sphere(query_it->center(), new_position * new_position);
     sphere_list.push_back(sphere);
   }
-  geometry.clear();
+  geometry.zero();
   geometry = sphere_list;
 
   this->update(domain);

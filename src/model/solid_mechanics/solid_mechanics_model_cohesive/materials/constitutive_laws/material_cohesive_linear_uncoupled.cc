@@ -76,7 +76,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::initMaterial() {
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
-    const Array<Real> &, ElementType el_type, GhostType ghost_type) {
+    const Array<Real> & /*unused*/, ElementType el_type, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   delta_n_max.resize();
@@ -117,7 +117,8 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
        ++normal_it, ++sigma_c_it, ++delta_n_max_it, ++delta_t_max_it,
        ++delta_c_it, ++damage_n_it, ++damage_t_it, ++insertion_stress_it) {
 
-    Real normal_opening_norm, tangential_opening_norm;
+    Real normal_opening_norm;
+    Real tangential_opening_norm;
     bool penetration;
 
     Real delta_c2_R2 = *delta_c_it * (*delta_c_it) / R / R;
@@ -141,9 +142,10 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
         tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
     penetration = normal_opening_norm < 0.0;
-    if (this->contact_after_breaking == false &&
-        Math::are_float_equal(*damage_n_it, 1.))
+    if (not this->contact_after_breaking and
+        Math::are_float_equal(*damage_n_it, 1.)) {
       penetration = false;
+    }
 
     if (penetration) {
       /// use penalty coefficient in case of penetration
@@ -153,13 +155,13 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
 
       /// don't consider penetration contribution for delta
       //*opening_it = tangential_opening;
-      normal_opening.clear();
+      normal_opening.zero();
 
     } else {
       delta_n += normal_opening_norm * normal_opening_norm;
       delta_t += normal_opening_norm * normal_opening_norm * delta_c2_R2;
-      contact_traction_it->clear();
-      contact_opening_it->clear();
+      contact_traction_it->zero();
+      contact_opening_it->zero();
     }
 
     delta_n = std::sqrt(delta_n);
@@ -176,13 +178,14 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
     Vector<Real> shear_traction(spatial_dimension);
 
     /// NORMAL TRACTIONS
-    if (Math::are_float_equal(*damage_n_it, 1.))
-      normal_traction.clear();
-    else if (Math::are_float_equal(*damage_n_it, 0.)) {
-      if (penetration)
-        normal_traction.clear();
-      else
+    if (Math::are_float_equal(*damage_n_it, 1.)) {
+      normal_traction.zero();
+    } else if (Math::are_float_equal(*damage_n_it, 0.)) {
+      if (penetration) {
+        normal_traction.zero();
+      } else {
         normal_traction = *insertion_stress_it;
+      }
     } else {
       // the following formulation holds both in loading and in
       // unloading-reloading
@@ -195,10 +198,9 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
     }
 
     /// SHEAR TRACTIONS
-    if (Math::are_float_equal(*damage_t_it, 1.))
-      shear_traction.clear();
-    else if (Math::are_float_equal(*damage_t_it, 0.)) {
-      shear_traction.clear();
+    if (Math::are_float_equal(*damage_t_it, 1.) or
+        Math::are_float_equal(*damage_t_it, 0.)) {
+      shear_traction.zero();
     } else {
       shear_traction = tangential_opening;
 
@@ -219,8 +221,8 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTraction(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
-    const ElementType & el_type, Array<Real> & tangent_matrix,
-    const Array<Real> &, GhostType ghost_type) {
+    ElementType el_type, Array<Real> & tangent_matrix,
+    const Array<Real> & /*unused*/, GhostType ghost_type) {
   AKANTU_DEBUG_IN();
 
   /// define iterators
@@ -249,7 +251,8 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
                                     ++delta_n_max_it, ++delta_t_max_it,
                                     ++damage_n_it, ++contact_opening_it) {
 
-    Real normal_opening_norm, tangential_opening_norm;
+    Real normal_opening_norm;
+    Real tangential_opening_norm;
     bool penetration;
     Real delta_c2_R2 = *delta_c_it * (*delta_c_it) / R / R;
 
@@ -276,9 +279,10 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
         tangential_opening_norm * tangential_opening_norm * this->beta2_kappa2;
 
     penetration = normal_opening_norm < 0.0;
-    if (this->contact_after_breaking == false &&
-        Math::are_float_equal(*damage_n_it, 1.))
+    if (not this->contact_after_breaking and
+        Math::are_float_equal(*damage_n_it, 1.)) {
       penetration = false;
+    }
 
     Real derivative = 0; // derivative = d(t/delta)/ddelta
     Real T = 0;
@@ -293,7 +297,7 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
       *tangent_it *= this->penalty;
 
       //*opening_it = tangential_opening;
-      normal_opening.clear();
+      normal_opening.zero();
     } else {
       delta_n += normal_opening_norm * normal_opening_norm;
       delta_n = std::sqrt(delta_n);
@@ -306,8 +310,9 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
        * 0. Therefore, a fictictious value is defined, for the
        * evaluation of the first value of K.
        */
-      if (delta_n < Math::getTolerance())
+      if (delta_n < Math::getTolerance()) {
         delta_n = *delta_c_it / 1000.;
+      }
 
       // loading
       if (delta_n >= *delta_n_max_it) {
@@ -358,8 +363,9 @@ void MaterialCohesiveLinearUncoupled<spatial_dimension>::computeTangentTraction(
      * 0. Therefore, a fictictious value is defined, for the
      * evaluation of the first value of K.
      */
-    if (delta_t < Math::getTolerance())
+    if (delta_t < Math::getTolerance()) {
       delta_t = *delta_c_it / 1000.;
+    }
 
     // loading
     if (delta_t >= *delta_t_max_it) {

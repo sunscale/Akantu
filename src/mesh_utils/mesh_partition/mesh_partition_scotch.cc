@@ -33,6 +33,7 @@
 #include "aka_common.hh"
 #include "aka_random_generator.hh"
 #include "aka_static_if.hh"
+#include "mesh_accessor.hh"
 #include "mesh_utils.hh"
 /* -------------------------------------------------------------------------- */
 #include <cstdio>
@@ -58,8 +59,8 @@ namespace {
 }
 
 /* -------------------------------------------------------------------------- */
-MeshPartitionScotch::MeshPartitionScotch(const Mesh & mesh,
-                                         UInt spatial_dimension, const ID & id,
+MeshPartitionScotch::MeshPartitionScotch(Mesh & mesh, UInt spatial_dimension,
+                                         const ID & id,
                                          const MemoryID & memory_id)
     : MeshPartition(mesh, spatial_dimension, id, memory_id) {
   AKANTU_DEBUG_IN();
@@ -87,7 +88,7 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
   UInt total_nb_element = 0;
   UInt nb_edge = 0;
 
-  for (auto & type : mesh.elementTypes(spatial_dimension)) {
+  for (const auto & type : mesh.elementTypes(spatial_dimension)) {
     UInt nb_element = mesh.getNbElement(type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
 
@@ -110,9 +111,10 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
 
   memset(verttab, 0, (vnodnbr + velmnbr + 1) * sizeof(SCOTCH_Num));
 
-  for (auto & type : mesh.elementTypes(spatial_dimension)) {
-    if (Mesh::getSpatialDimension(type) != spatial_dimension)
+  for (const auto & type : mesh.elementTypes(spatial_dimension)) {
+    if (Mesh::getSpatialDimension(type) != spatial_dimension) {
       continue;
+    }
 
     UInt nb_element = mesh.getNbElement(type);
     UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
@@ -128,10 +130,12 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
   }
 
   /// convert the occurrence array in a csr one
-  for (UInt i = 1; i < nb_nodes; ++i)
+  for (UInt i = 1; i < nb_nodes; ++i) {
     verttab[i] += verttab[i - 1];
-  for (UInt i = nb_nodes; i > 0; --i)
+  }
+  for (UInt i = nb_nodes; i > 0; --i) {
     verttab[i] = verttab[i - 1];
+  }
   verttab[0] = 0;
 
   /// rearrange element to get the node-element list
@@ -140,37 +144,36 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
 
   UInt linearized_el = 0;
 
-  for (auto & type : mesh.elementTypes(spatial_dimension)) {
-    UInt nb_element = mesh.getNbElement(type);
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
+  for (const auto & type : mesh.elementTypes(spatial_dimension)) {
+    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
 
-    for (UInt el = 0; el < nb_element; ++el, ++linearized_el) {
-      UInt * conn_val = connectivity.storage() + el * nb_nodes_per_element;
-      for (UInt n = 0; n < nb_nodes_per_element; ++n)
-        edgetab[verttab[*(conn_val++)]++] = linearized_el + velmbas;
+    for (auto && conn : make_view(connectivity, nb_nodes_per_element)) {
+      for (auto c : conn) {
+        edgetab[verttab[c]++] = linearized_el + velmbas;
+      }
+      ++linearized_el;
     }
   }
 
-  for (UInt i = nb_nodes; i > 0; --i)
+  for (UInt i = nb_nodes; i > 0; --i) {
     verttab[i] = verttab[i - 1];
+  }
   verttab[0] = 0;
 
   SCOTCH_Num * verttab_tmp = verttab + vnodnbr + 1;
   SCOTCH_Num * edgetab_tmp = edgetab + verttab[vnodnbr];
 
-  for (auto & type : mesh.elementTypes(spatial_dimension)) {
-    UInt nb_element = mesh.getNbElement(type);
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+  for (const auto & type : mesh.elementTypes(spatial_dimension)) {
+    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
+    const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
 
-    const Array<UInt> & connectivity = mesh.getConnectivity(type, _not_ghost);
-
-    for (UInt el = 0; el < nb_element; ++el) {
+    for (auto && conn : make_view(connectivity, nb_nodes_per_element)) {
       *verttab_tmp = *(verttab_tmp - 1) + nb_nodes_per_element;
       verttab_tmp++;
-      UInt * conn = connectivity.storage() + el * nb_nodes_per_element;
-      for (UInt i = 0; i < nb_nodes_per_element; ++i) {
-        *(edgetab_tmp++) = *(conn++) + vnodbas;
+
+      for (auto c : conn) {
+        *(edgetab_tmp++) = c + vnodbas;
       }
     }
   }
@@ -202,8 +205,9 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
     Real * nodes_val = nodes.storage();
     for (UInt i = 0; i < nb_nodes; ++i) {
       fgeominit << i << " ";
-      for (UInt s = 0; s < spatial_dimension; ++s)
+      for (UInt s = 0; s < spatial_dimension; ++s) {
         fgeominit << *(nodes_val++) << " ";
+      }
       fgeominit << std::endl;
       ;
     }
@@ -219,8 +223,18 @@ static SCOTCH_Mesh * createMesh(const Mesh & mesh) {
 static void destroyMesh(SCOTCH_Mesh * meshptr) {
   AKANTU_DEBUG_IN();
 
-  SCOTCH_Num velmbas, vnodbas, vnodnbr, velmnbr, *verttab, *vendtab, *velotab,
-      *vnlotab, *vlbltab, edgenbr, *edgetab, degrptr;
+  SCOTCH_Num velmbas;
+  SCOTCH_Num vnodbas;
+  SCOTCH_Num vnodnbr;
+  SCOTCH_Num velmnbr;
+  SCOTCH_Num * verttab;
+  SCOTCH_Num * vendtab;
+  SCOTCH_Num * velotab;
+  SCOTCH_Num * vnlotab;
+  SCOTCH_Num * vlbltab;
+  SCOTCH_Num edgenbr;
+  SCOTCH_Num * edgetab;
+  SCOTCH_Num degrptr;
 
   SCOTCH_meshData(meshptr, &velmbas, &vnodbas, &velmnbr, &vnodnbr, &verttab,
                   &vendtab, &velotab, &vnlotab, &vlbltab, &edgenbr, &edgetab,
@@ -239,8 +253,8 @@ static void destroyMesh(SCOTCH_Mesh * meshptr) {
 /* -------------------------------------------------------------------------- */
 void MeshPartitionScotch::partitionate(
     UInt nb_part,
-    std::function<Int(const Element &, const Element &)> edge_load_func,
-    std::function<Int(const Element &)> vertex_load_func) {
+    const std::function<Int(const Element &, const Element &)> & edge_load_func,
+    const std::function<Int(const Element &)> & vertex_load_func) {
   AKANTU_DEBUG_IN();
 
   nb_partitions = nb_part;
@@ -310,24 +324,23 @@ void MeshPartitionScotch::partitionate(
     auto nodes_it = nodes.begin(spatial_dimension);
 
     UInt out_linerized_el = 0;
-    for (auto & type :
+    for (const auto & type :
          mesh.elementTypes(spatial_dimension, _not_ghost, _ek_not_defined)) {
-      UInt nb_element = mesh.getNbElement(type);
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
       const Array<UInt> & connectivity = mesh.getConnectivity(type);
 
       Vector<Real> mid(spatial_dimension);
-      for (UInt el = 0; el < nb_element; ++el) {
+      for (auto && conn : make_view(connectivity, nb_nodes_per_element)) {
         mid.set(0.);
-        for (UInt n = 0; n < nb_nodes_per_element; ++n) {
-          UInt node = connectivity.storage()[nb_nodes_per_element * el + n];
+        for (auto node : conn) {
           mid += Vector<Real>(nodes_it[node]);
         }
         mid /= nb_nodes_per_element;
 
         fgeominit << out_linerized_el++ << " ";
-        for (UInt s = 0; s < spatial_dimension; ++s)
+        for (UInt s = 0; s < spatial_dimension; ++s) {
           fgeominit << mid[s] << " ";
+        }
 
         fgeominit << std::endl;
         ;
@@ -359,8 +372,9 @@ void MeshPartitionScotch::partitionate(
     std::ofstream fmap;
     fmap.open("MapFile.map");
     fmap << vertnbr << std::endl;
-    for (Int i = 0; i < vertnbr; i++)
+    for (Int i = 0; i < vertnbr; i++) {
       fmap << i << "    " << parttab[i] << std::endl;
+    }
     fmap.close();
   }
 #endif
@@ -428,17 +442,12 @@ void MeshPartitionScotch::reorder() {
 
   /// Renumbering
   UInt spatial_dimension = mesh.getSpatialDimension();
-
+  MeshAccessor mesh_accessor(mesh);
   for (auto gt : ghost_types) {
-    for (auto & type : mesh.elementTypes(_ghost_type = gt)) {
-      UInt nb_element = mesh.getNbElement(type, gt);
-      UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-
-      const Array<UInt> & connectivity = mesh.getConnectivity(type, gt);
-
-      UInt * conn = connectivity.storage();
-      for (UInt el = 0; el < nb_element * nb_nodes_per_element; ++el, ++conn) {
-        *conn = permtab[*conn];
+    for (const auto & type : mesh.elementTypes(_ghost_type = gt)) {
+      auto & connectivity = mesh_accessor.getConnectivity(type, gt);
+      for (auto && c : make_view(connectivity)) {
+        c = permtab[c];
       }
     }
   }

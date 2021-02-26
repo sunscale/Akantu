@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
 
   for (UInt ft = 0; ft < types_facet.size(); ++ft) {
     ElementType type_facet = types_facet(ft);
-    Array<std::vector<Element>> & el_to_subel3 =
+    auto && el_to_subel3 =
         mesh_facets.getElementToSubelement(type_facet);
 
     std::cout << "ElementToSubelement3" << std::endl;
@@ -103,7 +103,7 @@ int main(int argc, char * argv[]) {
   /* Subelement to Element testing                                            */
   /* ------------------------------------------------------------------------ */
 
-  const Array<Element> & subel_to_el3 =
+  auto && subel_to_el3 =
       mesh_facets.getSubelementToElement(type);
 
   std::cout << " " << std::endl;
@@ -119,7 +119,7 @@ int main(int argc, char * argv[]) {
 
   for (UInt ft = 0; ft < types_facet.size(); ++ft) {
     ElementType type_facet = types_facet(ft);
-    Array<Element> & subel_to_el2 =
+    auto && subel_to_el2 =
         mesh_facets.getSubelementToElement(type_facet);
 
     std::cout << "SubelementToElement2" << std::endl;

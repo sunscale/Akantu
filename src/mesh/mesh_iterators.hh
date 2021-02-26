@@ -33,8 +33,8 @@
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_ITERATORS_HH__
-#define __AKANTU_MESH_ITERATORS_HH__
+#ifndef AKANTU_MESH_ITERATORS_HH_
+#define AKANTU_MESH_ITERATORS_HH_
 
 namespace akantu {
 
@@ -57,8 +57,8 @@ public:
         : type((*begin).type), ghost_type((*begin).ghost_type), begin(begin),
           end(end) {}
 
-    AKANTU_GET_MACRO(Type, type, const ElementType &);
-    AKANTU_GET_MACRO(GhostType, ghost_type, const GhostType &);
+    AKANTU_GET_MACRO(Type, type, ElementType);
+    AKANTU_GET_MACRO(GhostType, ghost_type, GhostType);
 
     const Array<UInt> & getElements() {
       elements.resize(end - begin);
@@ -192,8 +192,9 @@ void for_each_element(const Mesh & mesh, Func && function, pack &&... _pack) {
   auto element_kind = OPTIONAL_NAMED_ARG(element_kind, _ek_not_defined);
 
   for (auto ghost_type : ghost_types) {
-    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types))
+    if ((not(ghost_type == requested_ghost_type)) and (not all_ghost_types)) {
       continue;
+    }
 
     auto element_types =
         mesh.elementTypes(spatial_dimension, ghost_type, element_kind);
@@ -224,4 +225,4 @@ void for_each_element(const Mesh & mesh, Func && function, pack &&... _pack) {
 
 } // namespace akantu
 
-#endif /* __AKANTU_MESH_ITERATORS_HH__ */
+#endif /* AKANTU_MESH_ITERATORS_HH_ */

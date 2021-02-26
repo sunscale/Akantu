@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_SEGMENT_INTERSECTOR_HH__
-#define __AKANTU_MESH_SEGMENT_INTERSECTOR_HH__
+#ifndef AKANTU_MESH_SEGMENT_INTERSECTOR_HH_
+#define AKANTU_MESH_SEGMENT_INTERSECTOR_HH_
 
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
@@ -49,23 +49,23 @@ class MeshSegmentIntersector
                                  cgal::Cartesian::Segment_3, cgal::Cartesian> {
   using K = cgal::Cartesian;
   /// Parent class type
-  typedef MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K>
-      parent_type;
+  using parent_type =
+      MeshGeomIntersector<dim, type, Triangle<K>, K::Segment_3, K>;
 
   /// Result of intersection function type
-  typedef typename IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>,
-                                          K::Segment_3>::intersection_type
-      result_type;
+  using result_type =
+      typename IntersectionTypeHelper<TreeTypeHelper<Triangle<K>, K>,
+                                      K::Segment_3>::intersection_type;
 
   /// Pair of segments and element id
-  typedef std::pair<K::Segment_3, UInt> pair_type;
+  using pair_type = std::pair<K::Segment_3, UInt>;
 
 public:
   /// Construct from mesh
   explicit MeshSegmentIntersector(Mesh & mesh, Mesh & result_mesh);
 
   /// Destructor
-  virtual ~MeshSegmentIntersector();
+  ~MeshSegmentIntersector() override = default;
 
 public:
   /**
@@ -73,15 +73,15 @@ public:
    *
    * @param query the segment to compute the intersections with the mesh
    */
-  virtual void computeIntersectionQuery(const K::Segment_3 & query);
+  void computeIntersectionQuery(const K::Segment_3 & query) override;
 
   /// Compute intersection points between the mesh and a query
-  virtual void computeMeshQueryIntersectionPoint(const K::Segment_3 & query,
-                                                 UInt nb_old_nodes);
+  void computeMeshQueryIntersectionPoint(const K::Segment_3 & query,
+                                                 UInt nb_old_nodes) override;
 
   /// Compute the embedded mesh
-  virtual void
-  buildResultFromQueryList(const std::list<K::Segment_3> & query_list);
+  void
+  buildResultFromQueryList(const std::list<K::Segment_3> & query_list) override;
 
   void setPhysicalName(const std::string & other) {
     current_physical_name = other;
@@ -105,4 +105,4 @@ protected:
 
 #include "mesh_segment_intersector_tmpl.hh"
 
-#endif // __AKANTU_MESH_SEGMENT_INTERSECTOR_HH__
+#endif // AKANTU_MESH_SEGMENT_INTERSECTOR_HH_

@@ -30,8 +30,8 @@
 /* -------------------------------------------------------------------------- */
 #include "grid_synchronizer.hh"
 
-#ifndef __AKANTU_GRID_SYNCHRONIZER_TMPL_HH__
-#define __AKANTU_GRID_SYNCHRONIZER_TMPL_HH__
+#ifndef AKANTU_GRID_SYNCHRONIZER_TMPL_HH_
+#define AKANTU_GRID_SYNCHRONIZER_TMPL_HH_
 
 namespace akantu {
 
@@ -62,7 +62,7 @@ GridSynchronizer::GridSynchronizer(
   AKANTU_DEBUG_IN();
 
   // Register the tags if any
-  for (auto & tag : tags_to_register) {
+  for (const auto & tag : tags_to_register) {
     synchronizer_registry.registerSynchronizer(*this, tag);
   }
 
@@ -71,4 +71,4 @@ GridSynchronizer::GridSynchronizer(
 
 } // namespace akantu
 
-#endif /* __AKANTU_GRID_SYNCHRONIZER_TMPL_HH__ */
+#endif /* AKANTU_GRID_SYNCHRONIZER_TMPL_HH_ */

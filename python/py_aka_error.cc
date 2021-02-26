@@ -13,11 +13,11 @@ namespace py = pybind11;
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 
-[[gnu::visibility("default")]] void register_error(py::module & mod) {
+void register_error(py::module & mod) {
 
   mod.def("setDebugLevel", &debug::setDebugLevel);
   mod.def("getDebugLevel", &debug::getDebugLevel);
-  mod.def("printBacktrace", [](bool flag) { debug::printBacktrace(flag); });
+  mod.def("printBacktrace", [](bool flag) { debug::debugger.printBacktrace(flag); });
 
   py::enum_<DebugLevel>(mod, "DebugLevel")
       .value("dblError", dblError)

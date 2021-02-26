@@ -32,8 +32,8 @@
 #include "material.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PLANE_STRESS_TOOLBOX_HH__
-#define __AKANTU_PLANE_STRESS_TOOLBOX_HH__
+#ifndef AKANTU_PLANE_STRESS_TOOLBOX_HH_
+#define AKANTU_PLANE_STRESS_TOOLBOX_HH_
 
 namespace akantu {
 class SolidMechanicsModel;
@@ -80,7 +80,8 @@ public:
     AKANTU_DEBUG_OUT();
   }
 
-  virtual void computeThirdAxisDeformation(ElementType, GhostType) {}
+  virtual void computeThirdAxisDeformation(ElementType /*unused*/,
+                                           GhostType /*unused*/) {}
 
 protected:
   bool initialize_third_axis_deformation{false};
@@ -99,4 +100,4 @@ AKANTU_PLANE_STRESS_TOOL_SPEC(3)
 
 #include "plane_stress_toolbox_tmpl.hh"
 
-#endif /* __AKANTU_PLANE_STRESS_TOOLBOX_HH__ */
+#endif /* AKANTU_PLANE_STRESS_TOOLBOX_HH_ */

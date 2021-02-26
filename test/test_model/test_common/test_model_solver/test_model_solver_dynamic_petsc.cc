@@ -338,7 +338,7 @@ public:
   void assembleStiffness() {
     std::cout << "assembleStiffness" << std::endl;
     // SparseMatrix & K = this->getDOFManager().getMatrix("K");
-    // K.clear();
+    // K.zero();
     ierr = MatZeroEntries(K);
     CHECK_ERR_CXX("MatZeroEntries", ierr);
 
@@ -463,7 +463,7 @@ public:
     VecView(rhs, PETSC_VIEWER_STDOUT_WORLD);
   }
 
-  void assembleResidual(const GhostType & ghost_type) {
+  void assembleResidual(GhostType ghost_type) {
     std::cout << "assembleResidual" << std::endl;
     VecZeroEntries(f_int);
 
@@ -692,8 +692,8 @@ int main(int argc, char * argv[]) {
 
   MyModel model(F, mesh, _explicit);
 
-  //  model.forces.clear();
-  //  model.blocked.clear();
+  //  model.forces.zero();
+  //  model.blocked.zero();
 
   // model.applyBC(Sinusoidal(model, A, pulse_width, 0.), "all");
   // model.applyBC(BC::Dirichlet::FlagOnly(_x), "border");

@@ -32,8 +32,8 @@
 #include "element_type_map.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_INTERNAL_FIELD_HH__
-#define __AKANTU_INTERNAL_FIELD_HH__
+#ifndef AKANTU_INTERNAL_FIELD_HH_
+#define AKANTU_INTERNAL_FIELD_HH_
 
 namespace akantu {
 
@@ -62,8 +62,10 @@ public:
 
     InternalFieldTmpl(const ID & id, const InternalFieldTmpl<Material, T> & other);
 
+
 private:
   InternalFieldTmpl operator=(const InternalFieldTmpl &) = delete;
+
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -128,13 +130,13 @@ public:
   //     typename ElementTypeMapArray<UInt>::type_iterator;
 
   // /// get the type iterator on all types contained in the internal field
-  // type_iterator firstType(const GhostType & ghost_type = _not_ghost) const {
+  // type_iterator firstType(GhostType ghost_type = _not_ghost) const {
   //   return ElementTypeMapArray<T>::firstType(this->spatial_dimension,
   //                                            ghost_type, this->element_kind);
   // }
 
   // /// get the type iterator on the last type contained in the internal field
-  // type_iterator lastType(const GhostType & ghost_type = _not_ghost) const {
+  // type_iterator lastType(GhostType ghost_type = _not_ghost) const {
   //   return ElementTypeMapArray<T>::lastType(this->spatial_dimension,
   //   ghost_type,
   //                                           this->element_kind);
@@ -142,7 +144,7 @@ public:
 
   // /// get the type iterator on all types contained in the internal field
   // filter_type_iterator
-  // filterFirstType(const GhostType & ghost_type = _not_ghost) const {
+  // filterFirstType(GhostType ghost_type = _not_ghost) const {
   //   return this->element_filter.firstType(this->spatial_dimension,
   //   ghost_type,
   //                                         this->element_kind);
@@ -150,20 +152,20 @@ public:
 
   // /// get the type iterator on the last type contained in the internal field
   // filter_type_iterator
-  // filterLastType(const GhostType & ghost_type = _not_ghost) const {
+  // filterLastType(GhostType ghost_type = _not_ghost) const {
   //   return this->element_filter.lastType(this->spatial_dimension, ghost_type,
   //                                        this->element_kind);
   // }
 
   /// get filter types for range loop
-  decltype(auto) elementTypes(const GhostType & ghost_type = _not_ghost) const {
+  decltype(auto) elementTypes(GhostType ghost_type = _not_ghost) const {
     return ElementTypeMapArray<T>::elementTypes(
         _spatial_dimension = this->spatial_dimension,
         _element_kind = this->element_kind, _ghost_type = ghost_type);
   }
 
   /// get filter types for range loop
-  decltype(auto) filterTypes(const GhostType & ghost_type = _not_ghost) const {
+  decltype(auto) filterTypes(GhostType ghost_type = _not_ghost) const {
     return this->element_filter.elementTypes(
         _spatial_dimension = this->spatial_dimension,
         _element_kind = this->element_kind, _ghost_type = ghost_type);
@@ -171,25 +173,25 @@ public:
 
   /// get the array for a given type of the element_filter
   const Array<UInt> &
-  getFilter(const ElementType & type,
-            const GhostType & ghost_type = _not_ghost) const {
+  getFilter(ElementType type,
+            GhostType ghost_type = _not_ghost) const {
     return this->element_filter(type, ghost_type);
   }
 
   /// get the Array corresponding to the type en ghost_type specified
-  virtual Array<T> & operator()(const ElementType & type,
-                                const GhostType & ghost_type = _not_ghost) {
+  virtual Array<T> & operator()(ElementType type,
+                                GhostType ghost_type = _not_ghost) {
     return ElementTypeMapArray<T>::operator()(type, ghost_type);
   }
 
   virtual const Array<T> &
-  operator()(const ElementType & type,
-             const GhostType & ghost_type = _not_ghost) const {
+  operator()(ElementType type,
+             GhostType ghost_type = _not_ghost) const {
     return ElementTypeMapArray<T>::operator()(type, ghost_type);
   }
 
-  virtual Array<T> & previous(const ElementType & type,
-                              const GhostType & ghost_type = _not_ghost) {
+  virtual Array<T> & previous(ElementType type,
+                              GhostType ghost_type = _not_ghost) {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
@@ -197,8 +199,8 @@ public:
   }
 
   virtual const Array<T> &
-  previous(const ElementType & type,
-           const GhostType & ghost_type = _not_ghost) const {
+  previous(ElementType type,
+           GhostType ghost_type = _not_ghost) const {
     AKANTU_DEBUG_ASSERT(previous_values != nullptr,
                         "The history of the internal "
                             << this->getID() << " has not been activated");
@@ -223,7 +225,7 @@ public:
   bool hasHistory() const { return (previous_values != nullptr); }
 
   /// get the kind treated by the internal
-  const ElementKind & getElementKind() const { return element_kind; }
+  ElementKind getElementKind() const { return element_kind; }
 
   /// return the number of components
   UInt getNbComponent() const { return nb_component; }
@@ -278,4 +280,4 @@ using InternalField = InternalFieldTmpl<Material, T>;
 
 } // namespace akantu
 
-#endif /* __AKANTU_INTERNAL_FIELD_HH__ */
+#endif /* AKANTU_INTERNAL_FIELD_HH_ */

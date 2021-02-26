@@ -104,7 +104,7 @@ void MaterialOrthotropicDamageIterative<spatial_dimension>::
 
   for (; grad_u_it != grad_u_end;
        ++Sc_it, ++equivalent_stress_it, ++stress_dir_it, ++grad_u_it) {
-    sigma.clear();
+    sigma.zero();
     MaterialOrthotropicDamage<spatial_dimension>::computeStressOnQuad(
         *grad_u_it, sigma, 0.);
 

@@ -31,8 +31,8 @@
 #include "communications.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMUNICATIONS_TMPL_HH__
-#define __AKANTU_COMMUNICATIONS_TMPL_HH__
+#ifndef AKANTU_COMMUNICATIONS_TMPL_HH_
+#define AKANTU_COMMUNICATIONS_TMPL_HH_
 
 namespace akantu {
 
@@ -136,10 +136,11 @@ typename Communications<Entity>::CommunicationPerProcs &
 Communications<Entity>::getCommunications(const SynchronizationTag & tag,
                                           const CommunicationSendRecv & sr) {
   auto comm_it = this->communications[sr].find(tag);
-  if (comm_it == this->communications[sr].end())
+  if (comm_it == this->communications[sr].end()) {
     AKANTU_CUSTOM_EXCEPTION_INFO(
         debug::CommunicationException(),
         "No known communications for the tag: " << tag);
+  }
   return comm_it->second;
 }
 
@@ -151,8 +152,9 @@ UInt Communications<Entity>::getPending(
       pending_communications[sr];
   auto it = pending.find(tag);
 
-  if (it == pending.end())
+  if (it == pending.end()) {
     return 0;
+  }
   return it->second;
 }
 
@@ -193,19 +195,19 @@ Communications<Entity>::waitAny(const SynchronizationTag & tag,
 
   for (; it != end; ++it) {
     auto & request = it->second.request();
-    if (!request.isFreed())
+    if (!request.isFreed()) {
       requests.push_back(request);
+    }
   }
 
-  UInt req_id = communicator.waitAny(requests);
+  UInt req_id = Communicator::waitAny(requests);
   if (req_id != UInt(-1)) {
     auto & request = requests[req_id];
     UInt proc = sr == _recv ? request.getSource() : request.getDestination();
 
     return iterator(this->schemes[sr].find(proc), comms.find(proc), *this, tag);
-  } else {
-    return this->end(tag, sr);
   }
+  return this->end(tag, sr);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -222,7 +224,7 @@ void Communications<Entity>::waitAll(const SynchronizationTag & tag,
     requests.push_back(it->second.request());
   }
 
-  communicator.waitAll(requests);
+  Communicator::waitAll(requests);
 }
 
 template <class Entity>
@@ -291,18 +293,18 @@ template <class Entity>
 void Communications<Entity>::initializeCommunications(
     const SynchronizationTag & tag) {
 
-  for (auto t = send_recv_t::begin(); t != send_recv_t::end(); ++t) {
-    pending_communications[*t].insert(std::make_pair(tag, 0));
+  for (auto t : send_recv_t{}) {
+    pending_communications[t].insert(std::make_pair(tag, 0));
 
-    auto & comms = this->communications[*t];
+    auto & comms = this->communications[t];
     auto & comms_per_tag =
         comms.insert(std::make_pair(tag, CommunicationPerProcs()))
             .first->second;
 
-    for (auto pair : this->schemes[*t]) {
+    for (const auto & pair : this->schemes[t]) {
       comms_per_tag.emplace(std::piecewise_construct,
                             std::forward_as_tuple(pair.first),
-                            std::forward_as_tuple(*t));
+                            std::forward_as_tuple(t));
     }
   }
 
@@ -547,4 +549,4 @@ void Communications<Entity>::setRecvCommunicationSize(
 
 } // namespace akantu
 
-#endif /* __AKANTU_COMMUNICATIONS_TMPL_HH__ */
+#endif /* AKANTU_COMMUNICATIONS_TMPL_HH_ */

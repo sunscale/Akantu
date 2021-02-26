@@ -34,8 +34,8 @@
 #include "material_cohesive.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__
-#define __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__
+#ifndef AKANTU_MATERIAL_COHESIVE_LINEAR_HH_
+#define AKANTU_MATERIAL_COHESIVE_LINEAR_HH_
 
 namespace akantu {
 
@@ -74,7 +74,7 @@ public:
   Real computeEffectiveNorm(const Matrix<Real> & stress,
                             const Vector<Real> & normal,
                             const Vector<Real> & tangent,
-                            Vector<Real> & normal_stress) const;
+                            Vector<Real> & normal_traction) const;
 
 protected:
   /// constitutive law
@@ -82,7 +82,7 @@ protected:
                        GhostType ghost_type = _not_ghost) override;
 
   /// compute tangent stiffness matrix
-  void computeTangentTraction(const ElementType & el_type,
+  void computeTangentTraction(ElementType el_type,
                               Array<Real> & tangent_matrix,
                               const Array<Real> & normal,
                               GhostType ghost_type) override;
@@ -184,4 +184,4 @@ protected:
 
 #include "material_cohesive_linear_inline_impl.hh"
 
-#endif /* __AKANTU_MATERIAL_COHESIVE_LINEAR_HH__ */
+#endif /* AKANTU_MATERIAL_COHESIVE_LINEAR_HH_ */

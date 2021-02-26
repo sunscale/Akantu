@@ -37,8 +37,8 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_SOLVER_HH__
-#define __AKANTU_MODEL_SOLVER_HH__
+#ifndef AKANTU_MODEL_SOLVER_HH_
+#define AKANTU_MODEL_SOLVER_HH_
 
 namespace akantu {
 class Mesh;
@@ -196,4 +196,4 @@ struct ModelSolverOptions {
 
 } // namespace akantu
 
-#endif /* __AKANTU_MODEL_SOLVER_HH__ */
+#endif /* AKANTU_MODEL_SOLVER_HH_ */

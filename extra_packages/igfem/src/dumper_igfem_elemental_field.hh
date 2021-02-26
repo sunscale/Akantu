@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_IGFEM_ELEMENTAL_FIELD_HH__
-#define __AKANTU_DUMPER_IGFEM_ELEMENTAL_FIELD_HH__
+#ifndef AKANTU_DUMPER_IGFEM_ELEMENTAL_FIELD_HH_
+#define AKANTU_DUMPER_IGFEM_ELEMENTAL_FIELD_HH_
 /* -------------------------------------------------------------------------- */
 #include "dumper_field.hh"
 #include "dumper_igfem_generic_elemental_field.hh"
@@ -53,4 +53,4 @@ public:
 } // namespace dumpers
 } // namespace akantu
 
-#endif /* __AKANTU_DUMPER_IGFEM_ELEMENTAL_FIELD_HH__ */
+#endif /* AKANTU_DUMPER_IGFEM_ELEMENTAL_FIELD_HH_ */

@@ -34,16 +34,17 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_STATIC_MEMORY_HH__
-#define __AKANTU_STATIC_MEMORY_HH__
+#ifndef AKANTU_STATIC_MEMORY_HH_
+#define AKANTU_STATIC_MEMORY_HH_
 
 /* -------------------------------------------------------------------------- */
-#include "aka_array.hh"
 #include "aka_common.hh"
-
 /* -------------------------------------------------------------------------- */
 #include <map>
 
+namespace akantu {
+class ArrayBase;
+}
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
@@ -77,7 +78,7 @@ public:
   static bool isInstantiated() { return is_instantiated; };
 
   /// remove a reference on the static memory
-  void destroy();
+  static void destroy();
 
   /// access to an Array
   inline const ArrayBase & getArray(const MemoryID & memory_id,
@@ -98,7 +99,8 @@ public:
    * @param size number of size (for example number of nodes)
    * @param nb_component number of component (for example spatial dimension)
    *
-   * @return pointer an array of memory actual size: size * nb_component * sizeof(T)
+   * @return pointer an array of memory actual size: size * nb_component *
+   * sizeof(T)
    */
   template <typename T>
   Array<T> & smalloc(const MemoryID & memory_id, const ID & name, UInt size,
@@ -151,4 +153,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 #include "aka_static_memory_inline_impl.hh"
 #include "aka_static_memory_tmpl.hh"
 
-#endif /* __AKANTU_STATIC_MEMORY_HH__ */
+#endif /* AKANTU_STATIC_MEMORY_HH_ */

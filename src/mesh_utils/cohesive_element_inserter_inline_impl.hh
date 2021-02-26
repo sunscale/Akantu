@@ -31,8 +31,8 @@
 #include "cohesive_element_inserter.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COHESIVE_ELEMENT_INSERTER_INLINE_IMPL_HH__
-#define __AKANTU_COHESIVE_ELEMENT_INSERTER_INLINE_IMPL_HH__
+#ifndef AKANTU_COHESIVE_ELEMENT_INSERTER_INLINE_IMPL_HH_
+#define AKANTU_COHESIVE_ELEMENT_INSERTER_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -85,4 +85,4 @@ CohesiveElementInserter::unpackData(CommunicationBuffer & buffer,
 
 } // namespace akantu
 
-#endif /* __AKANTU_COHESIVE_ELEMENT_INSERTER_INLINE_IMPL_HH__ */
+#endif /* AKANTU_COHESIVE_ELEMENT_INSERTER_INLINE_IMPL_HH_ */

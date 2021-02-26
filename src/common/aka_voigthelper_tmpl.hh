@@ -31,8 +31,8 @@
 #include "aka_voigthelper.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_VOIGTHELPER_TMPL_HH__
-#define __AKANTU_AKA_VOIGTHELPER_TMPL_HH__
+#ifndef AKANTU_AKA_VOIGTHELPER_TMPL_HH_
+#define AKANTU_AKA_VOIGTHELPER_TMPL_HH_
 
 namespace akantu {
 
@@ -103,11 +103,13 @@ inline decltype(auto) VoigtHelper<dim>::voigtToMatrix(V && vector) {
 template <UInt dim>
 inline void VoigtHelper<dim>::transferBMatrixToSymVoigtBMatrix(
     const Matrix<Real> & B, Matrix<Real> & Bvoigt, UInt nb_nodes_per_element) {
-  Bvoigt.clear();
+  Bvoigt.zero();
 
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt n = 0; n < nb_nodes_per_element; ++n)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt n = 0; n < nb_nodes_per_element; ++n) {
       Bvoigt(i, i + n * dim) = B(i, n);
+    }
+  }
 
   if (dim == 2) {
     /// in 2D, fill the @f$ [\frac{\partial N_i}{\partial x}, \frac{\partial
@@ -147,7 +149,7 @@ template <UInt dim>
 inline void VoigtHelper<dim>::transferBMatrixToBNL(const Matrix<Real> & B,
                                                    Matrix<Real> & Bvoigt,
                                                    UInt nb_nodes_per_element) {
-  Bvoigt.clear();
+  Bvoigt.zero();
 
   // see Finite element formulations for large deformation dynamic analysis,
   // Bathe et al. IJNME vol 9, 1975, page 364 B_{NL}
@@ -168,9 +170,10 @@ inline void VoigtHelper<1>::transferBMatrixToBL2(const Matrix<Real> & B,
                                                  const Matrix<Real> & grad_u,
                                                  Matrix<Real> & Bvoigt,
                                                  UInt nb_nodes_per_element) {
-  Bvoigt.clear();
-  for (UInt j = 0; j < nb_nodes_per_element; ++j)
+  Bvoigt.zero();
+  for (UInt j = 0; j < nb_nodes_per_element; ++j) {
     Bvoigt(0, j) = grad_u(0, 0) * B(0, j);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -179,12 +182,15 @@ inline void VoigtHelper<3>::transferBMatrixToBL2(const Matrix<Real> & dNdX,
                                                  const Matrix<Real> & grad_u,
                                                  Matrix<Real> & Bvoigt,
                                                  UInt nb_nodes_per_element) {
-  Bvoigt.clear();
+  Bvoigt.zero();
 
-  for (UInt I = 0; I < 3; ++I)
-    for (UInt a = 0; a < nb_nodes_per_element; ++a)
-      for (UInt i = 0; i < 3; ++i)
+  for (UInt I = 0; I < 3; ++I) {
+    for (UInt a = 0; a < nb_nodes_per_element; ++a) {
+      for (UInt i = 0; i < 3; ++i) {
         Bvoigt(I, a * 3 + i) = grad_u(i, I) * dNdX(I, a);
+      }
+    }
+  }
 
   for (UInt Iv = 3; Iv < 6; ++Iv) {
     for (UInt a = 0; a < nb_nodes_per_element; ++a) {
@@ -209,12 +215,15 @@ inline void VoigtHelper<2>::transferBMatrixToBL2(const Matrix<Real> & B,
                                                  Matrix<Real> & Bvoigt,
                                                  UInt nb_nodes_per_element) {
 
-  Bvoigt.clear();
+  Bvoigt.zero();
 
-  for (UInt i = 0; i < 2; ++i)
-    for (UInt j = 0; j < nb_nodes_per_element; ++j)
-      for (UInt k = 0; k < 2; ++k)
+  for (UInt i = 0; i < 2; ++i) {
+    for (UInt j = 0; j < nb_nodes_per_element; ++j) {
+      for (UInt k = 0; k < 2; ++k) {
         Bvoigt(i, j * 2 + k) = grad_u(k, i) * B(i, j);
+      }
+    }
+  }
 
   for (UInt j = 0; j < nb_nodes_per_element; ++j) {
     for (UInt k = 0; k < 2; ++k) {
@@ -229,4 +238,4 @@ inline void VoigtHelper<2>::transferBMatrixToBL2(const Matrix<Real> & B,
 
 } // namespace akantu
 
-#endif /* __AKANTU_AKA_VOIGTHELPER_TMPL_HH__ */
+#endif /* AKANTU_AKA_VOIGTHELPER_TMPL_HH_ */

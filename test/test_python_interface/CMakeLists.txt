@@ -42,7 +42,7 @@
 #  PRIVATE $<TARGET_PROPERTY:py11_akantu,INCLUDE_DIRECTORIES>)
 #
 
-akantu_pybind11_add_module(py11_akantu_test_common MODULE test_common.cc ${AKANTU_PY11_SRCS})
+akantu_pybind11_add_module(py11_akantu_test_common MODULE test_common.cc)
 
 add_mesh(mesh_dcb_2d mesh_dcb_2d.geo 2 2)
 

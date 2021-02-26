@@ -985,7 +985,7 @@ void initMaterial();
 computeStress(ElementType el_type, GhostType ghost_type = _not_ghost);
 
 // for implicit simulations
-void computeTangentStiffness(const ElementType & el_type,
+void computeTangentStiffness(ElementType el_type,
 			     Array<Real> & tangent_matrix,
 			     GhostType ghost_type = _not_ghost);
 

@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMON_HH__
-#define __AKANTU_COMMON_HH__
+#ifndef AKANTU_COMMON_HH_
+#define AKANTU_COMMON_HH_
 
 #include "aka_compatibilty_with_cpp_standard.hh"
 
@@ -300,6 +300,7 @@ enum CommunicatorType { _communicator_mpi, _communicator_dummy };
   (smmc_damage)                                 \
   (giu_global_conn)                             \
   (ce_groups)                                   \
+  (ce_insertion_order)                          \
   (gm_clusters)                                 \
   (htm_temperature)                             \
   (htm_gradient_temperature)                    \
@@ -359,6 +360,8 @@ enum class SynchronizationTag {
   // --- CohesiveElementInserter tags ---
   _ce_groups, ///< synchronization of cohesive element insertion depending
               /// on facet groups
+  _ce_insertion_order, ///< synchronization of the order of insertion of
+                       ///cohesive elements
 
   // --- GroupManager tags ---
   _gm_clusters, ///< synchronization of clusters
@@ -474,10 +477,12 @@ struct GhostType_def {
 };
 
 using ghost_type_t = safe_enum<GhostType_def>;
-extern ghost_type_t ghost_types;
+namespace {
+  constexpr ghost_type_t ghost_types{_casper};
+}
 
 /// standard output stream operator for GhostType
-inline std::ostream & operator<<(std::ostream & stream, GhostType type);
+// inline std::ostream & operator<<(std::ostream & stream, GhostType type);
 
 /* -------------------------------------------------------------------------- */
 /* Global defines                                                             */
@@ -498,19 +503,27 @@ inline std::ostream & operator<<(std::ostream & stream, GhostType type);
   inline type get##name() { return variable; }
 
 #define AKANTU_GET_MACRO_DEREF_PTR(name, ptr)                                  \
-  inline decltype(auto) get##name() const {                                    \
-    if (not ptr) {                                                             \
+  inline const auto & get##name() const {                                      \
+    if (not(ptr)) {                                                            \
       AKANTU_EXCEPTION("The member " << #ptr << " is not initialized");        \
     }                                                                          \
-    return (*ptr);                                                             \
+    return (*(ptr));                                                           \
+  }
+
+#define AKANTU_GET_MACRO_DEREF_PTR_NOT_CONST(name, ptr)                        \
+  inline auto & get##name() {                                                  \
+    if (not(ptr)) {                                                            \
+      AKANTU_EXCEPTION("The member " << #ptr << " is not initialized");        \
+    }                                                                          \
+    return (*(ptr));                                                           \
   }
 
 #define AKANTU_GET_MACRO_BY_SUPPORT_TYPE(name, variable, type, support, con)   \
-  inline con Array<type> & get##name(                                          \
-      const support & el_type, const GhostType & ghost_type = _not_ghost)      \
-      con {                                                                    \
+  inline con Array<type> & get##name(const support & el_type,                  \
+                                     GhostType ghost_type = _not_ghost)        \
+      con { /* NOLINT */                                                       \
     return variable(el_type, ghost_type);                                      \
-  }
+  } // NOLINT
 
 #define AKANTU_GET_MACRO_BY_ELEMENT_TYPE(name, variable, type)                 \
   AKANTU_GET_MACRO_BY_SUPPORT_TYPE(name, variable, type, ElementType, )
@@ -662,5 +675,4 @@ private:
 
 } // namespace std
 
-
-#endif /* __AKANTU_COMMON_HH__ */
+#endif // AKANTU_COMMON_HH_

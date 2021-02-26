@@ -20,9 +20,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-
-#ifndef __AKANTU_AKA_CONFIG_HH__
-#define __AKANTU_AKA_CONFIG_HH__
+#ifndef AKANTU_AKA_CONFIG_HH_
+#define AKANTU_AKA_CONFIG_HH_
 
 #define AKANTU_VERSION_MAJOR @AKANTU_MAJOR_VERSION@
 #define AKANTU_VERSION_MINOR @AKANTU_MINOR_VERSION@
@@ -91,6 +90,4 @@ using UInt = @AKANTU_UNSIGNED_INTEGER_TYPE@;
 #cmakedefine READLINK_COMMAND @READLINK_COMMAND@
 #cmakedefine ADDR2LINE_COMMAND @ADDR2LINE_COMMAND@
 
-#define __aka_inline__ inline
-
-#endif /* __AKANTU_AKA_CONFIG_HH__ */
+#endif /* AKANTU_AKA_CONFIG_HH_ */

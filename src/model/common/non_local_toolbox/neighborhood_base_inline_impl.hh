@@ -33,8 +33,8 @@
 #include "neighborhood_base.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_HH__
-#define __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_HH__
+#ifndef AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_HH_
+#define AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -46,4 +46,4 @@ NeighborhoodBase::insertIntegrationPoint(const IntegrationPoint & quad,
 
 } // namespace akantu
 
-#endif /* __AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_NEIGHBORHOOD_BASE_INLINE_IMPL_HH_ */

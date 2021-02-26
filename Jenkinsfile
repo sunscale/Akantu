@@ -15,14 +15,12 @@ pipeline {
     PHABRICATOR_HOST = 'https://c4science.ch/api/'
     PYTHONPATH = sh returnStdout: true, script: 'echo ${WORKSPACE}/test/ci/script/'
     BLA_VENDOR = 'OpenBLAS'
-    OMPI_MCA_plm = 'isolated'
-    OMPI_MCA_btl = 'tcp,self'
   }
   
   agent {
     dockerfile {
       filename 'Dockerfile'
-      dir 'test/ci/debian.testing'
+      dir 'test/ci/phabricator'
       additionalBuildArgs '--tag akantu-environment'
     }
   }

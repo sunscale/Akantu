@@ -33,8 +33,8 @@
 #include "material_elastic.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_PLASTIC_HH__
-#define __AKANTU_MATERIAL_PLASTIC_HH__
+#ifndef AKANTU_MATERIAL_PLASTIC_HH_
+#define AKANTU_MATERIAL_PLASTIC_HH_
 
 namespace akantu {
 
@@ -74,13 +74,14 @@ protected:
   inline void computeStressAndInelasticStrainOnQuad(
       const Matrix<Real> & grad_u, const Matrix<Real> & previous_grad_u,
       Matrix<Real> & sigma, const Matrix<Real> & previous_sigma,
-      Matrix<Real> & inelas_strain, const Matrix<Real> & previous_inelas_strain,
+      Matrix<Real> & inelastic_strain,
+      const Matrix<Real> & previous_inelastic_strain,
       const Matrix<Real> & delta_inelastic_strain) const;
 
   inline void computeStressAndInelasticStrainOnQuad(
       const Matrix<Real> & delta_grad_u, Matrix<Real> & sigma,
-      const Matrix<Real> & previous_sigma, Matrix<Real> & inelas_strain,
-      const Matrix<Real> & previous_inelas_strain,
+      const Matrix<Real> & previous_sigma, Matrix<Real> & inelastic_strain,
+      const Matrix<Real> & previous_inelastic_strain,
       const Matrix<Real> & delta_inelastic_strain) const;
 
   /// get the plastic energy for the time step
@@ -124,4 +125,4 @@ protected:
 } // namespace akantu
 
 #include "material_plastic_inline_impl.hh"
-#endif /* __AKANTU_MATERIAL_PLASTIC_HH__ */
+#endif /* AKANTU_MATERIAL_PLASTIC_HH_ */

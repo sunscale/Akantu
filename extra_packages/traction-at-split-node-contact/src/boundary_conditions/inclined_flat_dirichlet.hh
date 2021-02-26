@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_INCLINED_FLAT_DIRICHLET_HH__
-#define __AST_INCLINED_FLAT_DIRICHLET_HH__
+#ifndef AST_INCLINED_FLAT_DIRICHLET_HH_
+#define AST_INCLINED_FLAT_DIRICHLET_HH_
 
 // akantu
 #include "aka_common.hh"
@@ -77,4 +77,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AST_INCLINED_FLAT_DIRICHLET_HH__ */
+#endif /* AST_INCLINED_FLAT_DIRICHLET_HH_ */

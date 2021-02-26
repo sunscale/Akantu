@@ -32,8 +32,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_SPHERE_INTERSECTOR_HH__
-#define __AKANTU_MESH_SPHERE_INTERSECTOR_HH__
+#ifndef AKANTU_MESH_SPHERE_INTERSECTOR_HH_
+#define AKANTU_MESH_SPHERE_INTERSECTOR_HH_
 
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
@@ -115,4 +115,4 @@ protected:
 
 #include "mesh_sphere_intersector_tmpl.hh"
 
-#endif // __AKANTU_MESH_SPHERE_INTERSECTOR_HH__
+#endif // AKANTU_MESH_SPHERE_INTERSECTOR_HH_

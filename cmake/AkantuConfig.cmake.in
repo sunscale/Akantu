@@ -42,7 +42,7 @@ if(EXISTS "${AKANTU_CMAKE_DIR}/CMakeCache.txt")
   include(AkantuSimulationMacros)
 else()
   # In install tree
-  set(AKANTU_INCLUDE_DIRS "${AKANTU_CMAKE_DIR}/../../include/akantu")
+  set(AKANTU_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include/akantu")
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${AKANTU_CMAKE_DIR}")
   include(AkantuSimulationMacros)
 endif()

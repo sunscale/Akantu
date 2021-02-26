@@ -25,8 +25,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_SOLID_MECHANICS_MODEL_RVE_HH__
-#define __AKANTU_SOLID_MECHANICS_MODEL_RVE_HH__
+#ifndef AKANTU_SOLID_MECHANICS_MODEL_RVE_HH_
+#define AKANTU_SOLID_MECHANICS_MODEL_RVE_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_grid_dynamic.hh"
@@ -229,4 +229,4 @@ protected:
 
 ///#include "material_selector_tmpl.hh"
 
-#endif /* __AKANTU_SOLID_MECHANICS_MODEL_RVE_HH__ */
+#endif /* AKANTU_SOLID_MECHANICS_MODEL_RVE_HH_ */

@@ -64,18 +64,17 @@ EmbeddedInterfaceIntersector::EmbeddedInterfaceIntersector(
       .alloc(0, 1, _segment_2);
 }
 
-EmbeddedInterfaceIntersector::~EmbeddedInterfaceIntersector() {}
-
 void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
   AKANTU_DEBUG_IN();
 
   const UInt dim = this->mesh.getSpatialDimension();
 
-  if (dim == 1)
+  if (dim == 1) {
     AKANTU_ERROR(
         "No embedded model in 1D. Deactivate intersection initialization");
+  }
 
-  Array<std::string> * physical_names = NULL;
+  Array<std::string> * physical_names = nullptr;
 
   try {
     physical_names = &const_cast<Array<std::string> &>(
@@ -88,11 +87,11 @@ void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
   }
 
   const UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(_segment_2);
-  Array<UInt>::const_vector_iterator connectivity =
+  auto connectivity =
       primitive_mesh.getConnectivity(_segment_2).begin(nb_nodes_per_element);
 
-  Array<std::string>::scalar_iterator names_it = physical_names->begin(),
-                                      names_end = physical_names->end();
+  auto names_it = physical_names->begin();
+  auto names_end = physical_names->end();
 
   std::map<std::string, std::list<K::Segment_3>> name_to_primitives_map;
 
@@ -107,9 +106,8 @@ void EmbeddedInterfaceIntersector::constructData(GhostType /*ghost_type*/) {
   }
 
   // Loop over the background types of the mesh
-  std::map<std::string, std::list<K::Segment_3>>::iterator
-      name_to_primitives_it,
-      name_to_primitives_end = name_to_primitives_map.end();
+  auto name_to_primitives_end = name_to_primitives_map.end();
+  decltype(name_to_primitives_end) name_to_primitives_it;
 
   for (auto type : this->mesh.elementTypes(dim, _not_ghost)) {
     // Used in AKANTU_BOOST_ELEMENT_SWITCH
@@ -141,26 +139,25 @@ K::Segment_3
 EmbeddedInterfaceIntersector::createSegment(const Vector<UInt> & connectivity) {
   AKANTU_DEBUG_IN();
 
-  K::Point_3 *source = NULL, *target = NULL;
+  std::unique_ptr<K::Point_3> source;
+  std::unique_ptr<K::Point_3> target;
   const Array<Real> & nodes = this->primitive_mesh.getNodes();
 
   if (this->mesh.getSpatialDimension() == 2) {
-    source = new K::Point_3(nodes(connectivity(0), 0),
-                            nodes(connectivity(0), 1), 0.);
-    target = new K::Point_3(nodes(connectivity(1), 0),
-                            nodes(connectivity(1), 1), 0.);
+    source = std::make_unique<K::Point_3>(nodes(connectivity(0), 0),
+                                          nodes(connectivity(0), 1), 0.);
+    target = std::make_unique<K::Point_3>(nodes(connectivity(1), 0),
+                                          nodes(connectivity(1), 1), 0.);
   } else if (this->mesh.getSpatialDimension() == 3) {
-    source =
-        new K::Point_3(nodes(connectivity(0), 0), nodes(connectivity(0), 1),
-                       nodes(connectivity(0), 2));
-    target =
-        new K::Point_3(nodes(connectivity(1), 0), nodes(connectivity(1), 1),
-                       nodes(connectivity(1), 2));
+    source = std::make_unique<K::Point_3>(nodes(connectivity(0), 0),
+                                          nodes(connectivity(0), 1),
+                                          nodes(connectivity(0), 2));
+    target = std::make_unique<K::Point_3>(nodes(connectivity(1), 0),
+                                          nodes(connectivity(1), 1),
+                                          nodes(connectivity(1), 2));
   }
 
   K::Segment_3 segment(*source, *target);
-  delete source;
-  delete target;
 
   AKANTU_DEBUG_OUT();
   return segment;

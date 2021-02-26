@@ -34,8 +34,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_GROUP_MANAGER_HH__
-#define __AKANTU_GROUP_MANAGER_HH__
+#ifndef AKANTU_GROUP_MANAGER_HH_
+#define AKANTU_GROUP_MANAGER_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -72,8 +72,8 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  GroupManager(const Mesh & mesh, const ID & id = "group_manager",
-               const MemoryID & memory_id = 0);
+  GroupManager(Mesh & mesh, const ID & id = "group_manager",
+               const MemoryID & mem_id = 0);
   virtual ~GroupManager();
 
   /* ------------------------------------------------------------------------ */
@@ -138,7 +138,7 @@ public:
 public:
   class ClusteringFilter {
   public:
-    virtual bool operator()(const Element &) const { return true; }
+    virtual bool operator()(const Element & /*unused*/) const { return true; }
   };
 
   /* ------------------------------------------------------------------------ */
@@ -204,12 +204,12 @@ public:
 
   /// create element clusters for a given dimension
   UInt createClusters(UInt element_dimension, Mesh & mesh_facets,
-                      std::string cluster_name_prefix = "cluster",
+                      const std::string & cluster_name_prefix = "cluster",
                       const ClusteringFilter & filter = ClusteringFilter());
 
   /// create element clusters for a given dimension
   UInt createClusters(UInt element_dimension,
-                      std::string cluster_name_prefix = "cluster",
+                      const std::string & cluster_name_prefix = "cluster",
                       const ClusteringFilter & filter = ClusteringFilter());
 
 private:
@@ -235,7 +235,7 @@ public:
   template <typename T, template <bool> class dump_type>
   std::shared_ptr<dumpers::Field> createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
-      UInt spatial_dimension, const ElementKind & kind,
+      UInt spatial_dimension, ElementKind kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
 
   /// register an elemental field to the given group name (overloading for
@@ -244,7 +244,7 @@ public:
             template <class, template <class> class, bool> class dump_type>
   std::shared_ptr<dumpers::Field> createElementalField(
       const ElementTypeMapArray<T> & field, const std::string & group_name,
-      UInt spatial_dimension, const ElementKind & kind,
+      UInt spatial_dimension, ElementKind kind,
       ElementTypeMap<UInt> nb_data_per_elem = ElementTypeMap<UInt>());
 
   /// register an elemental field to the given group name (overloading for
@@ -255,7 +255,7 @@ public:
   std::shared_ptr<dumpers::Field>
   createElementalField(const ElementTypeMapArray<T> & field,
                        const std::string & group_name, UInt spatial_dimension,
-                       const ElementKind & kind,
+                       ElementKind kind,
                        ElementTypeMap<UInt> nb_data_per_elem);
 
   template <typename type, bool flag, template <class, bool> class ftype>
@@ -281,7 +281,7 @@ protected:
   template <class dump_type, typename field_type>
   inline std::shared_ptr<dumpers::Field>
   createElementalField(const field_type & field, const std::string & group_name,
-                       UInt spatial_dimension, const ElementKind & kind,
+                       UInt spatial_dimension, ElementKind kind,
                        const ElementTypeMap<UInt> & nb_data_per_elem);
 
   /// register an elemental field to the given group name
@@ -289,7 +289,7 @@ protected:
   inline std::shared_ptr<dumpers::Field>
   createElementalFilteredField(const field_type & field,
                                const std::string & group_name,
-                               UInt spatial_dimension, const ElementKind & kind,
+                               UInt spatial_dimension, ElementKind kind,
                                ElementTypeMap<UInt> nb_data_per_elem);
 
   /* ------------------------------------------------------------------------ */
@@ -336,7 +336,7 @@ protected:
   ElementGroups element_groups;
 
   /// Mesh to which the element belongs
-  const Mesh & mesh;
+  Mesh & mesh;
 };
 
 /// standard output stream operator
@@ -348,4 +348,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AKANTU_GROUP_MANAGER_HH__ */
+#endif /* AKANTU_GROUP_MANAGER_HH_ */

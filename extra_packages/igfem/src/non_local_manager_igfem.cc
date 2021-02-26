@@ -111,8 +111,8 @@ void NonLocalManagerIGFEM::computeAllNonLocalStresses() {
 
   for (; non_local_variable_it != non_local_variable_end;
        ++non_local_variable_it) {
-    non_local_variable_it->second->local.clear();
-    non_local_variable_it->second->non_local.clear();
+    non_local_variable_it->second->local.zero();
+    non_local_variable_it->second->non_local.zero();
     for (UInt gt = _not_ghost; gt <= _ghost; ++gt) {
       GhostType ghost_type = (GhostType)gt;
       this->flattenInternal(non_local_variable_it->second->local, ghost_type,
@@ -122,7 +122,7 @@ void NonLocalManagerIGFEM::computeAllNonLocalStresses() {
     }
   }
 
-  this->volumes.clear();
+  this->volumes.zero();
   /// loop over all the neighborhoods and compute intiate the
   /// exchange of the non-local_variables
   std::set<ID>::const_iterator global_neighborhood_it =
@@ -199,7 +199,7 @@ void NonLocalManagerIGFEM::cleanupExtraGhostElements(
     ElementSet::const_iterator it = to_keep_per_neighborhood.begin();
     for (; it != to_keep_per_neighborhood.end(); ++it)
       relevant_ghost_elements.insert(*it);
-    to_keep_per_neighborhood.clear();
+    to_keep_per_neighborhood.zero();
   }
 
   /// remove all unneccessary ghosts from the mesh

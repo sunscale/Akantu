@@ -72,7 +72,7 @@ EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
   // Registering allocator for material reinforcement
   MaterialFactory::getInstance().registerAllocator(
       "reinforcement",
-      [&](UInt dim, const ID & constitutive, SolidMechanicsModel &,
+      [&](UInt dim, const ID & constitutive, SolidMechanicsModel & /*unused*/,
           const ID & id) -> std::unique_ptr<Material> {
         if (constitutive == "elastic") {
           using mat = MaterialElastic<1>;
@@ -102,8 +102,9 @@ void EmbeddedInterfaceModel::initFullImpl(const ModelOptions & options) {
       aka::as_type<EmbeddedInterfaceModelOptions>(options);
 
   // Do no initialize interface_mesh if told so
-  if (eim_options.has_intersections)
+  if (eim_options.has_intersections) {
     intersector.constructData();
+  }
 
   SolidMechanicsModel::initFullImpl(options);
 
@@ -145,16 +146,16 @@ void EmbeddedInterfaceModel::assignMaterialToElements(
 /* -------------------------------------------------------------------------- */
 void EmbeddedInterfaceModel::addDumpGroupFieldToDumper(
     const std::string & dumper_name, const std::string & field_id,
-    const std::string & group_name, const ElementKind & element_kind,
+    const std::string & group_name, ElementKind element_kind,
     bool padding_flag) {
 #ifdef AKANTU_USE_IOHELPER
   std::shared_ptr<dumpers::Field> field;
 
   // If dumper is reinforcement, create a 1D elemental field
-  if (dumper_name == "reinforcement")
+  if (dumper_name == "reinforcement") {
     field = this->createElementalField(field_id, group_name, padding_flag, 1,
                                        element_kind);
-  else {
+  } else {
     try {
       SolidMechanicsModel::addDumpGroupFieldToDumper(
           dumper_name, field_id, group_name, element_kind, padding_flag);

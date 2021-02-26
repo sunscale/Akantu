@@ -16,7 +16,8 @@ namespace akantu {
   def(func_name, [](py::args, py::kwargs) { AKANTU_ERROR(mesg); })
 
 #define def_function_nocopy(func_name)                                         \
-  def(#func_name,                                                              \
+  def(                                                                         \
+      #func_name,                                                              \
       [](SolidMechanicsModel & self) -> decltype(auto) {                       \
         return self.func_name();                                               \
       },                                                                       \
@@ -28,12 +29,12 @@ namespace akantu {
   })
 /* -------------------------------------------------------------------------- */
 
-[[gnu::visibility("default")]] void
+void
 register_solid_mechanics_model(py::module & mod) {
 
   py::class_<SolidMechanicsModelOptions>(mod, "SolidMechanicsModelOptions")
       .def(py::init<AnalysisMethod>(),
-           py::arg("analysis_method") = _explicit_lumped_mass);
+           py::arg("_analysis_method") = _explicit_lumped_mass);
 
   py::class_<SolidMechanicsModel, Model>(mod, "SolidMechanicsModel",
                                          py::multiple_inheritance())
@@ -42,18 +43,20 @@ register_solid_mechanics_model(py::module & mod) {
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
            py::arg("id") = "solid_mechanics_model", py::arg("memory_id") = 0,
            py::arg("model_type") = ModelType::_solid_mechanics_model)
-      .def("initFull",
-           [](SolidMechanicsModel & self,
-              const SolidMechanicsModelOptions & options) {
-             self.initFull(options);
-           },
-           py::arg("_analysis_method") = SolidMechanicsModelOptions())
-      .def("initFull",
-           [](SolidMechanicsModel & self,
-              const AnalysisMethod & analysis_method) {
-             self.initFull(_analysis_method = analysis_method);
-           },
-           py::arg("_analysis_method"))
+      .def(
+          "initFull",
+          [](SolidMechanicsModel & self,
+             const SolidMechanicsModelOptions & options) {
+            self.initFull(options);
+          },
+          py::arg("option") = SolidMechanicsModelOptions())
+      .def(
+          "initFull",
+          [](SolidMechanicsModel & self,
+             const AnalysisMethod & analysis_method) {
+            self.initFull(_analysis_method = analysis_method);
+          },
+          py::arg("_analysis_method"))
       .def_deprecated("applyDirichletBC", "Deprecated: use applyBC")
       .def("applyBC",
            [](SolidMechanicsModel & self,
@@ -103,7 +106,8 @@ register_solid_mechanics_model(py::module & mod) {
                &SolidMechanicsModel::getMaterial),
            py::return_value_policy::reference)
       .def("getMaterialIndex", &SolidMechanicsModel::getMaterialIndex)
-      .def("setMaterialSelector", &SolidMechanicsModel::setMaterialSelector);
+      .def("setMaterialSelector", &SolidMechanicsModel::setMaterialSelector)
+      .def("getMaterialSelector", &SolidMechanicsModel::getMaterialSelector);
 }
 
 } // namespace akantu

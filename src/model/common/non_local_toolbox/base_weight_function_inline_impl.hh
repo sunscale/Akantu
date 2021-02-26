@@ -32,8 +32,8 @@
 #include "base_weight_function.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_HH__
-#define __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_HH__
+#ifndef AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_HH_
+#define AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_HH_
 
 namespace akantu {
 
@@ -51,8 +51,9 @@ inline void BaseWeightFunction::setRadius(Real radius) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline Real BaseWeightFunction::operator()(Real r, const IntegrationPoint &,
-                                           const IntegrationPoint &) {
+inline Real
+BaseWeightFunction::operator()(Real r, const IntegrationPoint & /* q1 */,
+                               const IntegrationPoint & /* q2 */) const {
 
   /// initialize the weight
   Real w = 0;
@@ -67,4 +68,4 @@ inline Real BaseWeightFunction::operator()(Real r, const IntegrationPoint &,
 }
 
 } // namespace akantu
-#endif /* __AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_HH__ */
+#endif /* AKANTU_BASE_WEIGHT_FUNCTION_INLINE_IMPL_HH_ */

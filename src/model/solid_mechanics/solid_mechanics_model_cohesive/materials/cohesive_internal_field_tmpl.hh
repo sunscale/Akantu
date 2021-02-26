@@ -30,8 +30,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__
-#define __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__
+#ifndef AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH_
+#define AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH_
 
 namespace akantu {
 
@@ -91,4 +91,4 @@ ParameterTyped<RandomInternalField<Real, CohesiveInternalField>>::setAuto(
 
 } // namespace akantu
 
-#endif /* __AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH__ */
+#endif /* AKANTU_COHESIVE_INTERNAL_FIELD_TMPL_HH_ */

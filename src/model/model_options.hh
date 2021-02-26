@@ -32,8 +32,8 @@
 #include "aka_named_argument.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MODEL_OPTIONS_HH__
-#define __AKANTU_MODEL_OPTIONS_HH__
+#ifndef AKANTU_MODEL_OPTIONS_HH_
+#define AKANTU_MODEL_OPTIONS_HH_
 
 namespace akantu {
 
@@ -46,7 +46,7 @@ struct ModelOptions {
       : analysis_method(analysis_method) {}
 
   template <typename... pack>
-  ModelOptions(use_named_args_t, pack &&... _pack)
+  ModelOptions(use_named_args_t /*unused*/, pack &&... _pack)
       : ModelOptions(OPTIONAL_NAMED_ARG(analysis_method, _static)) {}
 
   virtual ~ModelOptions() = default;
@@ -62,7 +62,7 @@ struct SolidMechanicsModelOptions : public ModelOptions {
       : ModelOptions(analysis_method) {}
 
   template <typename... pack>
-  SolidMechanicsModelOptions(use_named_args_t, pack &&... _pack)
+  SolidMechanicsModelOptions(use_named_args_t /*unused*/, pack &&... _pack)
       : SolidMechanicsModelOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
 };
@@ -81,7 +81,8 @@ struct SolidMechanicsModelCohesiveOptions : public SolidMechanicsModelOptions {
       : SolidMechanicsModelOptions(analysis_method), is_extrinsic(extrinsic) {}
 
   template <typename... pack>
-  SolidMechanicsModelCohesiveOptions(use_named_args_t, pack &&... _pack)
+  SolidMechanicsModelCohesiveOptions(use_named_args_t /*unused*/,
+                                     pack &&... _pack)
       : SolidMechanicsModelCohesiveOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
             OPTIONAL_NAMED_ARG(is_extrinsic, false)) {}
@@ -98,7 +99,7 @@ struct HeatTransferModelOptions : public ModelOptions {
       : ModelOptions(analysis_method) {}
 
   template <typename... pack>
-  HeatTransferModelOptions(use_named_args_t, pack &&... _pack)
+  HeatTransferModelOptions(use_named_args_t /*unused*/, pack &&... _pack)
       : HeatTransferModelOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass)) {}
 };
@@ -138,7 +139,7 @@ struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
         has_intersections(init_intersections) {}
 
   template <typename... pack>
-  EmbeddedInterfaceModelOptions(use_named_args_t, pack &&... _pack)
+  EmbeddedInterfaceModelOptions(use_named_args_t /*unused*/, pack &&... _pack)
       : EmbeddedInterfaceModelOptions(
             OPTIONAL_NAMED_ARG(analysis_method, _explicit_lumped_mass),
             OPTIONAL_NAMED_ARG(init_intersections, true)) {}
@@ -150,4 +151,4 @@ struct EmbeddedInterfaceModelOptions : SolidMechanicsModelOptions {
 
 } // namespace akantu
 
-#endif /* __AKANTU_MODEL_OPTIONS_HH__ */
+#endif /* AKANTU_MODEL_OPTIONS_HH_ */

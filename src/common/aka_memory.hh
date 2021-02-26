@@ -35,8 +35,8 @@
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MEMORY_HH__
-#define __AKANTU_MEMORY_HH__
+#ifndef AKANTU_MEMORY_HH_
+#define AKANTU_MEMORY_HH_
 
 namespace akantu {
 
@@ -103,4 +103,4 @@ protected:
 
 #include "aka_memory_inline_impl.hh"
 
-#endif /* __AKANTU_MEMORY_HH__ */
+#endif /* AKANTU_MEMORY_HH_ */

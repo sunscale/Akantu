@@ -15,17 +15,17 @@ Line(5) = {6, 1};
 Line(6) = {1, 2};
 Line(7) = {2, 5};
 
-Curve Loop(1) = {1, 2, 3, 4};
+Line Loop(1) = {1, 2, 3, 4};
 Plane Surface(1) = {1};
 
-Curve Loop(2) = {-3, 5, 6, 7};
+Line Loop(2) = {-3, 5, 6, 7};
 Plane Surface(2) = {2};
 
-Physical Curve("top") = {6};
-Physical Curve("bottom") = {1};
+Physical Line("top") = {6};
+Physical Line("bottom") = {1};
 
-Physical Curve("left") = {4, 7};
-Physical Curve("right") = {2, 5};
+Physical Line("left") = {4, 7};
+Physical Line("right") = {2, 5};
 
 Physical Surface("btop") = {2};
 Physical Surface("bbottom") = {1};

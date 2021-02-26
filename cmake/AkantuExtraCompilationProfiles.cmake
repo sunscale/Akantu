@@ -1,18 +1,24 @@
 #Profiling
-set(CMAKE_CXX_FLAGS_PROFILING "-g -ggdb3 -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+set(_profiling "-g -ggdb3 -pg -DNDEBUG -DAKANTU_NDEBUG -O2")
+set(CMAKE_CXX_FLAGS_PROFILING ${_profiling}
   CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_C_FLAGS_PROFILING "-g -ggdb3 -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+set(CMAKE_C_FLAGS_PROFILING ${_profiling}
   CACHE STRING "Flags used by the compiler during profiling builds")
-set(CMAKE_Fortran_FLAGS_PROFILING "-g -ggdb3 -pg -DNDEBUG -DAKANTU_NDEBUG -O2"
+set(CMAKE_Fortran_FLAGS_PROFILING ${_profiling}
   CACHE STRING "Flags used by the compiler during profiling builds")
 set(CMAKE_EXE_LINKER_FLAGS_PROFILING "-pg"
   CACHE STRING "Flags used by the linker during profiling builds")
 set(CMAKE_SHARED_LINKER_FLAGS_PROFILING "-pg"
   CACHE STRING "Flags used by the linker during profiling builds")
 
-mark_as_advanced(CMAKE_CXX_FLAGS_PROFILING CMAKE_C_FLAGS_PROFILING
-    CMAKE_Fortran_FLAGS_PROFILING CMAKE_EXE_LINKER_FLAGS_PROFILING
-    CMAKE_SHARED_LINKER_FLAGS_PROFILING)
+mark_as_advanced(
+  CMAKE_CXX_FLAGS_PROFILING
+  CMAKE_C_FLAGS_PROFILING
+  CMAKE_Fortran_FLAGS_PROFILING
+  CMAKE_EXE_LINKER_FLAGS_PROFILING
+  CMAKE_SHARED_LINKER_FLAGS_PROFILING
+  )
+
 # Sanitize the code
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.2") OR
     CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -30,9 +36,12 @@ if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION
   set(CMAKE_SHARED_LINKER_FLAGS_SANITIZE ${_sanitize}
     CACHE STRING "Flags used by the linker during sanitizing builds")
 
-  mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_SANITIZE
-    CMAKE_CXX_FLAGS_SANITIZE CMAKE_C_FLAGS_SANITIZE
-    CMAKE_Fortran_FLAGS_SANITIZE CMAKE_EXE_LINKER_FLAGS_SANITIZE
+  mark_as_advanced(
+    CMAKE_CXX_FLAGS_SANITIZE
+    CMAKE_C_FLAGS_SANITIZE
+    CMAKE_Fortran_FLAGS_SANITIZE
+    CMAKE_SHARED_LINKER_FLAGS_SANITIZE
+    CMAKE_EXE_LINKER_FLAGS_SANITIZE
     )
 endif()
 
@@ -51,8 +60,28 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_SHARED_LINKER_FLAGS_SANITIZEMEMORY ${_sanitize}
     CACHE STRING "Flags used by the linker during sanitizing builds")
 
-  mark_as_advanced(CMAKE_SHARED_LINKER_FLAGS_SANITIZEMEMORY
-    CMAKE_CXX_FLAGS_SANITIZEMEMORY CMAKE_C_FLAGS_SANITIZEMEMORY
-    CMAKE_Fortran_FLAGS_SANITIZEMEMORY CMAKE_EXE_LINKER_FLAGS_SANITIZEMEMORY
+  mark_as_advanced(
+    CMAKE_CXX_FLAGS_SANITIZEMEMORY
+    CMAKE_C_FLAGS_SANITIZEMEMORY
+    CMAKE_Fortran_FLAGS_SANITIZEMEMORY
+    CMAKE_SHARED_LINKER_FLAGS_SANITIZEMEMORY
+    CMAKE_EXE_LINKER_FLAGS_SANITIZEMEMORY
+    )
+endif()
+
+find_program(GCOV_EXECUTABLE gcov)
+if (GCOV_EXECUTABLE)
+  set(_coverage "-g -ggdb3 -DNDEBUG -DAKANTU_NDEBUG -O2 -fprofile-arcs -ftest-coverage")
+  set(CMAKE_CXX_FLAGS_COVERAGE ${_coverage}
+    CACHE STRING "Flags used by the compiler during profiling builds")
+  set(CMAKE_C_FLAGS_COVERAGE ${_coverage}
+    CACHE STRING "Flags used by the compiler during profiling builds")
+  set(CMAKE_Fortran_FLAGS_COVERAGE ${_coverage}
+    CACHE STRING "Flags used by the compiler during profiling builds")
+
+  mark_as_advanced(
+    CMAKE_CXX_FLAGS_COVERAGE
+    CMAKE_C_FLAGS_COVERAGE
+    CMAKE_Fortran_FLAGS_COVERAGE
     )
 endif()

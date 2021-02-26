@@ -441,12 +441,12 @@ void SolidMechanicsModelRVE::homogenizeStiffness(Matrix<Real> & C_macro) {
   this->performVirtualTesting(H, stresses, strains, 0);
 
   /// virtual test 2:
-  H.clear();
+  H.zero();
   H(1, 1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 1);
 
   /// virtual test 3:
-  H.clear();
+  H.zero();
   H(0, 1) = 0.01;
   this->performVirtualTesting(H, stresses, strains, 2);
 

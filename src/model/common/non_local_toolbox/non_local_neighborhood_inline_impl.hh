@@ -32,8 +32,8 @@
 #include "non_local_neighborhood.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_HH__
-#define __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_HH__
+#ifndef AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_HH_
+#define AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
@@ -83,4 +83,4 @@ inline void NonLocalNeighborhood<WeightFunction>::unpackData(
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_HH__ */
+#endif /* AKANTU_NON_LOCAL_NEIGHBORHOOD_INLINE_IMPL_HH_ */

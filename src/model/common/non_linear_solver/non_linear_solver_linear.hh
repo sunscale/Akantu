@@ -34,8 +34,8 @@
 #include "sparse_solver_mumps.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__
+#ifndef AKANTU_NON_LINEAR_SOLVER_LINEAR_HH_
+#define AKANTU_NON_LINEAR_SOLVER_LINEAR_HH_
 
 namespace akantu {
 class DOFManagerDefault;
@@ -76,4 +76,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_LINEAR_HH__ */
+#endif /* AKANTU_NON_LINEAR_SOLVER_LINEAR_HH_ */

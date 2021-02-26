@@ -160,7 +160,7 @@ protected:
 template <class T> constexpr DOFManagerType DOFManagerFixture<T>::type;
 template <class T> constexpr UInt DOFManagerFixture<T>::dim;
 
-TYPED_TEST_SUITE(DOFManagerFixture, dof_manager_types);
+TYPED_TEST_SUITE(DOFManagerFixture, dof_manager_types, );
 
 /* -------------------------------------------------------------------------- */
 TYPED_TEST(DOFManagerFixture, Construction) {
@@ -211,7 +211,7 @@ TYPED_TEST(DOFManagerFixture, RegisterMixedDOF) {
 TYPED_TEST(DOFManagerFixture, AssembleVector) {
   auto dof_manager = this->registerDOFs(_dst_nodal, _dst_generic);
 
-  dof_manager.residual().clear();
+  dof_manager.residual().zero();
 
   for (auto && data :
        enumerate(make_view(*this->dof1, this->dof1->getNbComponent()))) {
@@ -250,7 +250,7 @@ TYPED_TEST(DOFManagerFixture, AssembleMatrixNodal) {
   auto dof_manager = this->registerDOFs(_dst_nodal, _dst_nodal);
 
   auto && K = dof_manager->getNewMatrix("K", _symmetric);
-  K.clear();
+  K.zero();
 
   auto && elemental_matrix = std::make_unique<Array<Real>>(
       this->mesh->getNbElement(this->dim), 8 * 3 * 8 * 3);
@@ -275,7 +275,7 @@ TYPED_TEST(DOFManagerFixture, AssembleMatrixNodal) {
   CSR<Element> node_to_elem;
   MeshUtils::buildNode2Elements(*this->mesh, node_to_elem, this->dim);
 
-  dof_manager.residual().clear();
+  dof_manager.residual().zero();
 
   for (auto && data :
        enumerate(zip(make_view(*this->dof1, this->dof1->getNbComponent()),

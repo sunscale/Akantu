@@ -36,8 +36,8 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_DOF_MANAGER_HH__
-#define __AKANTU_DOF_MANAGER_HH__
+#ifndef AKANTU_DOF_MANAGER_HH_
+#define AKANTU_DOF_MANAGER_HH_
 
 namespace akantu {
 class TermsToAssemble;
@@ -74,7 +74,7 @@ public:
   /// the dof as an implied type of _dst_nodal and is defined only on a subset
   /// of nodes
   virtual void registerDOFs(const ID & dof_id, Array<Real> & dofs_array,
-                            const ID & group_support);
+                            const ID & support_group);
 
   /// register an array of previous values of the degree of freedom
   virtual void registerDOFsPrevious(const ID & dof_id,
@@ -111,7 +111,7 @@ public:
    **/
   virtual void assembleElementalArrayLocalArray(
       const Array<Real> & elementary_vect, Array<Real> & array_assembeled,
-      const ElementType & type, const GhostType & ghost_type,
+      ElementType type, GhostType ghost_type,
       Real scale_factor = 1.,
       const Array<UInt> & filter_elements = empty_filter);
 
@@ -122,7 +122,7 @@ public:
    **/
   virtual void assembleElementalArrayToResidual(
       const ID & dof_id, const Array<Real> & elementary_vect,
-      const ElementType & type, const GhostType & ghost_type,
+      ElementType type, GhostType ghost_type,
       Real scale_factor = 1.,
       const Array<UInt> & filter_elements = empty_filter);
 
@@ -132,8 +132,8 @@ public:
    */
   virtual void assembleElementalArrayToLumpedMatrix(
       const ID & dof_id, const Array<Real> & elementary_vect,
-      const ID & lumped_mtx, const ElementType & type,
-      const GhostType & ghost_type, Real scale_factor = 1.,
+      const ID & lumped_mtx, ElementType type,
+      GhostType ghost_type, Real scale_factor = 1.,
       const Array<UInt> & filter_elements = empty_filter);
 
   /**
@@ -143,8 +143,8 @@ public:
    **/
   virtual void assembleElementalMatricesToMatrix(
       const ID & matrix_id, const ID & dof_id,
-      const Array<Real> & elementary_mat, const ElementType & type,
-      const GhostType & ghost_type = _not_ghost,
+      const Array<Real> & elementary_mat, ElementType type,
+      GhostType ghost_type = _not_ghost,
       const MatrixType & elemental_matrix_type = _symmetric,
       const Array<UInt> & filter_elements = empty_filter) = 0;
 
@@ -180,11 +180,11 @@ public:
   virtual void updateGlobalBlockedDofs();
 
   /// sets the residual to 0
-  virtual void clearResidual();
+  virtual void zeroResidual();
   /// sets the matrix to 0
-  virtual void clearMatrix(const ID & mtx);
+  virtual void zeroMatrix(const ID & mtx);
   /// sets the lumped matrix to 0
-  virtual void clearLumpedMatrix(const ID & mtx);
+  virtual void zeroLumpedMatrix(const ID & mtx);
 
   virtual void applyBoundary(const ID & matrix_id = "J");
   // virtual void applyBoundaryLumped(const ID & matrix_id = "J");
@@ -213,10 +213,9 @@ protected:
 
   /// fill a Vector with the equation numbers corresponding to the given
   /// connectivity
-  inline void extractElementEquationNumber(const Array<Int> & equation_numbers,
-                                           const Vector<UInt> & connectivity,
-                                           UInt nb_degree_of_freedom,
-                                           Vector<Int> & local_equation_number);
+  static inline void extractElementEquationNumber(
+      const Array<Int> & equation_numbers, const Vector<UInt> & connectivity,
+      UInt nb_degree_of_freedom, Vector<Int> & element_equation_number);
 
   /// Assemble a array to a global one
   void assembleMatMulVectToGlobalArray(const ID & dof_id, const ID & A_id,
@@ -234,7 +233,7 @@ protected:
   template <typename Mat>
   void assembleElementalMatricesToMatrix_(
       Mat & A, const ID & dof_id, const Array<Real> & elementary_mat,
-      const ElementType & type, const GhostType & ghost_type,
+      ElementType type, GhostType ghost_type,
       const MatrixType & elemental_matrix_type,
       const Array<UInt> & filter_elements);
 
@@ -290,7 +289,7 @@ public:
   inline DOFSupportType getSupportType(const ID & dofs_id) const;
 
   /// are the dofs registered
-  inline bool hasDOFs(const ID & dofs_id) const;
+  inline bool hasDOFs(const ID & dof_id) const;
 
   /// Get a reference to the registered dof derivatives array for a given id
   inline Array<Real> & getDOFsDerivatives(const ID & dofs_id, UInt order);
@@ -482,11 +481,10 @@ public:
 
   /* ------------------------------------------------------------------------ */
   const Mesh & getMesh() {
-    if (mesh) {
+    if (mesh != nullptr) {
       return *mesh;
-    } else {
-      AKANTU_EXCEPTION("No mesh registered in this dof manager");
     }
+    AKANTU_EXCEPTION("No mesh registered in this dof manager");
   }
 
   /* ------------------------------------------------------------------------ */
@@ -550,10 +548,10 @@ public:
 protected:
   inline DOFData & getDOFData(const ID & dof_id);
   inline const DOFData & getDOFData(const ID & dof_id) const;
-  template <class _DOFData>
-  inline _DOFData & getDOFDataTyped(const ID & dof_id);
-  template <class _DOFData>
-  inline const _DOFData & getDOFDataTyped(const ID & dof_id) const;
+  template <class DOFData_>
+  inline DOFData_ & getDOFDataTyped(const ID & dof_id);
+  template <class DOFData_>
+  inline const DOFData_ & getDOFDataTyped(const ID & dof_id) const;
 
   virtual std::unique_ptr<DOFData> getNewDOFData(const ID & dof_id) = 0;
 
@@ -714,4 +712,4 @@ using DOFManagerFactory =
 
 #include "dof_manager_inline_impl.hh"
 
-#endif /* __AKANTU_DOF_MANAGER_HH__ */
+#endif /* AKANTU_DOF_MANAGER_HH_ */

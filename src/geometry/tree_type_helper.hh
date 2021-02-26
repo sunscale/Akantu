@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TREE_TYPE_HELPER_HH__
-#define __AKANTU_TREE_TYPE_HELPER_HH__
+#ifndef AKANTU_TREE_TYPE_HELPER_HH_
+#define AKANTU_TREE_TYPE_HELPER_HH_
 
 #include "aka_common.hh"
 
@@ -57,12 +57,12 @@ template <typename iterator> struct VoidTree {
 template <class Primitive, class Kernel> struct TreeTypeHelper {
   static const bool is_valid = false;
 
-  typedef Primitive primitive_type;
-  typedef typename std::list<primitive_type> container_type;
-  typedef typename container_type::iterator iterator;
-  typedef typename container_type::const_iterator const_iterator;
-  typedef typename CGAL::Point_3<Kernel> point_type;
-  typedef VoidTree<iterator> tree;
+  using primitive_type = Primitive;
+  using container_type = typename std::list<primitive_type>;
+  using iterator = typename container_type::iterator;
+  using const_iterator = typename container_type::const_iterator;
+  using point_type = typename CGAL::Point_3<Kernel>;
+  using tree = VoidTree<iterator>;
 };
 
 /// Helper class used to ease the use of intersections
@@ -75,25 +75,26 @@ template <class TTHelper, class Query> struct IntersectionTypeHelper;
  * @param my_kernel kernel type
  */
 #define TREE_TYPE_HELPER_MACRO(my_primitive, my_query, my_kernel)              \
-  template <> struct TreeTypeHelper<my_primitive<my_kernel>, my_kernel> {      \
+  template <>                                                                  \
+  struct TreeTypeHelper<my_primitive<my_kernel> /*NOLINT*/, my_kernel> {       \
     static const bool is_valid = true;                                         \
-    typedef my_primitive<my_kernel> primitive_type;                            \
-    typedef my_primitive##_primitive aabb_primitive_type;                      \
-    typedef CGAL::Point_3<my_kernel> point_type;                               \
-                                                                               \
-    typedef std::list<primitive_type> container_type;                          \
-    typedef container_type::iterator iterator;                                 \
-    typedef CGAL::AABB_traits<my_kernel, aabb_primitive_type>                  \
-        aabb_traits_type;                                                      \
-    typedef CGAL::AABB_tree<aabb_traits_type> tree;                            \
-    typedef tree::Primitive_id id_type;                                        \
+    using primitive_type = my_primitive<my_kernel>; /*NOLINT*/                 \
+    using aabb_primitive_type = my_primitive##_primitive;                      \
+    using point_type = CGAL::Point_3<my_kernel>;                               \
+    using container_type = std::list<primitive_type>;                          \
+    using iterator = container_type::iterator;                                 \
+    using aabb_traits_type =                                                   \
+        CGAL::AABB_traits<my_kernel, aabb_primitive_type>;                     \
+    using tree = CGAL::AABB_tree<aabb_traits_type>;                            \
+    using id_type = tree::Primitive_id;                                        \
   };                                                                           \
                                                                                \
   template <>                                                                  \
   struct IntersectionTypeHelper<                                               \
-      TreeTypeHelper<my_primitive<my_kernel>, my_kernel>, my_query> {          \
+      TreeTypeHelper<my_primitive<my_kernel>, /*NOLINT*/ my_kernel>,           \
+      my_query> {                                                              \
     typedef boost::optional<TreeTypeHelper<                                    \
-        my_primitive<my_kernel>,                                               \
+        my_primitive<my_kernel>, /*NOLINT*/                                    \
         my_kernel>::tree::Intersection_and_primitive_id<my_query>::Type>       \
         intersection_type;                                                     \
   }
@@ -105,4 +106,4 @@ TREE_TYPE_HELPER_MACRO(Triangle, cgal::Cartesian::Segment_3, cgal::Cartesian);
 
 } // namespace akantu
 
-#endif // __AKANTU_TREE_TYPE_HELPER_HH__
+#endif // AKANTU_TREE_TYPE_HELPER_HH_

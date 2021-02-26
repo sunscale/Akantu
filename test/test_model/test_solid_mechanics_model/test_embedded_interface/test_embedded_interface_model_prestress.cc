@@ -61,7 +61,7 @@ struct StressSolution : public BC::Neumann::FromHigherDim {
       AKANTU_ERROR("Solution not valid for 1D");
 
     Matrix<Real> stress(dim, dim);
-    stress.clear();
+    stress.zero();
     stress(0, 0) = this->stress(coord(1));
     dual.mul<false>(stress, normals);
   }
@@ -142,7 +142,7 @@ int main(int argc, char * argv[]) {
   Array<Real> analytical_residual(mesh.getNbNodes(), dim,
                                   "analytical_residual");
   analytical_residual.copy(model.getExternalForce());
-  model.getExternalForce().clear();
+  model.getExternalForce().zero();
 
   delete concrete_stress;
   delete steel_stress;

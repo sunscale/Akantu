@@ -29,8 +29,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_MESH_IO_HH__
-#define __AKANTU_MESH_IO_HH__
+#ifndef AKANTU_MESH_IO_HH_
+#define AKANTU_MESH_IO_HH_
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
@@ -53,17 +53,16 @@ public:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  void read(const std::string & filename, Mesh & mesh, const MeshIOType & type);
-  void write(const std::string & filename, Mesh & mesh,
-             const MeshIOType & type);
+  static void read(const std::string & filename, Mesh & mesh,
+                   const MeshIOType & type);
+  static void write(const std::string & filename, Mesh & mesh,
+                    const MeshIOType & type);
 
   /// read a mesh from the file
-  virtual void read(__attribute__((unused)) const std::string & filename,
-                    __attribute__((unused)) Mesh & mesh) {}
+  virtual void read(const std::string & /*filename*/, Mesh & /*mesh*/) {}
 
   /// write a mesh to a file
-  virtual void write(__attribute__((unused)) const std::string & filename,
-                     __attribute__((unused)) const Mesh & mesh) {}
+  virtual void write(const std::string & /*filename*/, const Mesh & /*mesh*/) {}
 
   /// function to request the manual construction of the physical names maps
   virtual void constructPhysicalNames(const std::string & tag_name,
@@ -86,9 +85,8 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  bool canReadSurface;
-
-  bool canReadExtendedData;
+  bool canReadSurface{false};
+  bool canReadExtendedData{false};
 
   /// correspondance between a tag and physical names (if applicable)
   std::map<int, std::string> physical_names;
@@ -112,4 +110,4 @@ inline std::ostream & operator<<(std::ostream & stream, const MeshIO & _this) {
 #include "mesh_io_msh_struct.hh"
 #endif
 
-#endif /* __AKANTU_MESH_IO_HH__ */
+#endif /* AKANTU_MESH_IO_HH_ */

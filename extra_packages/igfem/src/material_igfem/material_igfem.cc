@@ -66,7 +66,7 @@ void MaterialIGFEM::initialize() {
 /* -------------------------------------------------------------------------- */
 void MaterialIGFEM::computeQuadraturePointsCoordinates(
     ElementTypeMapArray<Real> & quadrature_points_coordinates,
-    const GhostType & ghost_type) const {
+    GhostType ghost_type) const {
   AKANTU_DEBUG_IN();
 
   /// compute quadrature points position in undeformed configuration

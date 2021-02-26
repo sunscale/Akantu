@@ -31,8 +31,8 @@
 #include "group_manager.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_FRAGMENT_MANAGER_HH__
-#define __AKANTU_FRAGMENT_MANAGER_HH__
+#ifndef AKANTU_FRAGMENT_MANAGER_HH_
+#define AKANTU_FRAGMENT_MANAGER_HH_
 
 namespace akantu {
 class SolidMechanicsModelCohesive;
@@ -165,4 +165,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_FRAGMENT_MANAGER_HH__ */
+#endif /* AKANTU_FRAGMENT_MANAGER_HH_ */

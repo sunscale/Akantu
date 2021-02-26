@@ -11,7 +11,7 @@ using namespace akantu;
 TEST(TestFiniteDeformation, NotUnit) {
   getStaticParser().parse("material_finite_deformation.dat");
 
-  constexpr double pi = std::atan(1) * 4;
+  const double pi = std::atan(1) * 4;
   constexpr int dim = 3;
 
   Mesh mesh(dim);
@@ -33,7 +33,7 @@ TEST(TestFiniteDeformation, NotUnit) {
                      {0.00, 0.10, 0.11, 0.12}};
 
   auto impose_disp = [&] {
-    model.getDisplacement().clear();
+    model.getDisplacement().zero();
     for (auto data :  zip(make_view(mesh.getNodes(), dim),
                           make_view(model.getDisplacement(), dim),
                           make_view(model.getBlockedDOFs(), dim))) {

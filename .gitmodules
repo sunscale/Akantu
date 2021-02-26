@@ -1,3 +1,0 @@
-[submodule "extra_packages/students-extra-package"]
-	path = extra_packages/students-extra-package
-	url = git@lsmssrv1.epfl.ch:students-extra-package.git

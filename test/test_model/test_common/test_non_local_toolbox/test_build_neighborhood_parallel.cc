@@ -87,7 +87,7 @@ int main(int argc, char * argv[]) {
 
   /// apply constant strain field everywhere in the plate
   Matrix<Real> applied_strain(spatial_dimension, spatial_dimension);
-  applied_strain.clear();
+  applied_strain.zero();
   for (UInt i = 0; i < spatial_dimension; ++i)
     applied_strain(i, i) = 2.;
 

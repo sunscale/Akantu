@@ -80,8 +80,8 @@
 #include "element_class_structural.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_CLASS_HERMITE_INLINE_IMPL_HH__
-#define __AKANTU_ELEMENT_CLASS_HERMITE_INLINE_IMPL_HH__
+#ifndef AKANTU_ELEMENT_CLASS_HERMITE_INLINE_IMPL_HH_
+#define AKANTU_ELEMENT_CLASS_HERMITE_INLINE_IMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
@@ -140,13 +140,13 @@ namespace {
       // natural coordinate
       Real xi = natural_coords(0);
       // Derivatives with respect to xi for rotations
-      auto M1__ = 3. / 2. * xi;
-      auto M2__ = 3. / 2. * (-xi);
-      auto L1__ = a / 2. * (3 * xi - 1);
-      auto L2__ = a / 2. * (3 * xi + 1);
+      auto M1 = 3. / 2. * xi;
+      auto M2 = 3. / 2. * (-xi);
+      auto L1 = a / 2. * (3 * xi - 1);
+      auto L2 = a / 2. * (3 * xi + 1);
 
-      //    v1    t1    v2    t2
-      B = {{M1__, L1__, M2__, L2__}}; // computing curvature : {chi} = [B]{d}
+      //    v1  t1  v2  t2
+      B = {{M1, L1, M2, L2}}; // computing curvature : {chi} = [B]{d}
       B /= a; // to account for first order deriv w/r to x
     }
   } // namespace details
@@ -172,4 +172,4 @@ inline void InterpolationElement<_itp_hermite_2, _itk_structural>::computeDNDS(
 }
 
 } // namespace akantu
-#endif /* __AKANTU_ELEMENT_CLASS_HERMITE_INLINE_IMPL_HH__ */
+#endif /* AKANTU_ELEMENT_CLASS_HERMITE_INLINE_IMPL_HH_ */

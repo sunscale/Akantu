@@ -69,10 +69,22 @@ ElementGroup::ElementGroup(const std::string & group_name, const Mesh & mesh,
 }
 
 /* -------------------------------------------------------------------------- */
-ElementGroup::ElementGroup(const ElementGroup & other) = default;
+ElementGroup::ElementGroup(const ElementGroup & /*other*/) = default;
 
 /* -------------------------------------------------------------------------- */
-void ElementGroup::empty() { elements.free(); }
+void ElementGroup::clear() {
+  elements.free();
+}
+
+/* -------------------------------------------------------------------------- */
+void ElementGroup::clear(ElementType type, GhostType ghost_type) {
+  if (elements.exists(type, ghost_type)) {
+    elements(type, ghost_type).clear();
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+bool ElementGroup::empty() const { return elements.empty(); }
 
 /* -------------------------------------------------------------------------- */
 void ElementGroup::append(const ElementGroup & other_group) {
@@ -118,8 +130,9 @@ void ElementGroup::append(const ElementGroup & other_group) {
 /* -------------------------------------------------------------------------- */
 void ElementGroup::printself(std::ostream & stream, int indent) const {
   std::string space;
-  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+  for (Int i = 0; i < indent; i++, space += AKANTU_INDENT) {
     ;
+  }
 
   stream << space << "ElementGroup [" << std::endl;
   stream << space << " + name: " << name << std::endl;
@@ -160,10 +173,12 @@ void ElementGroup::fillFromNodeGroup() {
     for (; ite != ende; ++ite) {
       const Element & elem = *ite;
       if (this->dimension != _all_dimensions &&
-          this->dimension != Mesh::getSpatialDimension(elem.type))
+          this->dimension != Mesh::getSpatialDimension(elem.type)) {
         continue;
-      if (seen.find(elem) != seen.end())
+      }
+      if (seen.find(elem) != seen.end()) {
         continue;
+      }
 
       UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(elem.type);
       Array<UInt>::const_iterator<Vector<UInt>> conn_it =
@@ -177,8 +192,9 @@ void ElementGroup::fillFromNodeGroup() {
             (this->node_group.getNodes().find(conn(n)) != UInt(-1) ? 1 : 0);
       }
 
-      if (count == nb_nodes_per_element)
+      if (count == nb_nodes_per_element) {
         this->add(elem);
+      }
 
       seen.insert(elem);
     }

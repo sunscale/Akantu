@@ -43,39 +43,46 @@ Communicator::Communicator(int & /*argc*/, char **& /*argv*/,
 Communicator::Communicator(const private_member & /*unused*/) {}
 
 template <typename T>
-void Communicator::sendImpl(const T *, Int, Int, Int,
-                            const CommunicationMode &) const {}
+void Communicator::sendImpl(const T * /*unused*/, Int /*unused*/,
+                            Int /*unused*/, Int /*unused*/,
+                            const CommunicationMode & /*unused*/) const {}
 template <typename T>
-void Communicator::receiveImpl(T *, Int, Int, Int) const {}
+void Communicator::receiveImpl(T * /*unused*/, Int /*unused*/, Int /*unused*/,
+                               Int /*unused*/) const {}
 
 template <typename T>
 CommunicationRequest
-Communicator::asyncSendImpl(const T *, Int, Int, Int,
-                            const CommunicationMode &) const {
+Communicator::asyncSendImpl(const T * /*unused*/, Int /*unused*/,
+                            Int /*unused*/, Int /*unused*/,
+                            const CommunicationMode & /*unused*/) const {
   return std::shared_ptr<InternalCommunicationRequest>(
       new InternalCommunicationRequest(0, 0));
 }
 
 template <typename T>
-CommunicationRequest Communicator::asyncReceiveImpl(T *, Int, Int, Int) const {
+CommunicationRequest
+Communicator::asyncReceiveImpl(T * /*unused*/, Int /*unused*/, Int /*unused*/,
+                               Int /*unused*/) const {
   return std::shared_ptr<InternalCommunicationRequest>(
       new InternalCommunicationRequest(0, 0));
 }
 
 template <typename T>
-void Communicator::probe(Int, Int, CommunicationStatus &) const {}
+void Communicator::probe(Int /*unused*/, Int /*unused*/,
+                         CommunicationStatus & /*unused*/) const {}
 template <typename T>
-bool Communicator::asyncProbe(Int, Int, CommunicationStatus &) const {
+bool Communicator::asyncProbe(Int /*unused*/, Int /*unused*/,
+                              CommunicationStatus & /*unused*/) const {
   return true;
 }
 
-bool Communicator::test(CommunicationRequest &) const { return true; }
-bool Communicator::testAll(std::vector<CommunicationRequest> &) const {
+bool Communicator::test(CommunicationRequest & /*unused*/) { return true; }
+bool Communicator::testAll(std::vector<CommunicationRequest> & /*unused*/) {
   return true;
 }
-void Communicator::wait(CommunicationRequest &) const {}
-void Communicator::waitAll(std::vector<CommunicationRequest> &) const {}
-UInt Communicator::waitAny(std::vector<CommunicationRequest> &) const {
+void Communicator::wait(CommunicationRequest & /*unused*/) {}
+void Communicator::waitAll(std::vector<CommunicationRequest> & /*unused*/) {}
+UInt Communicator::waitAny(std::vector<CommunicationRequest> & /*unused*/) {
   return UInt(-1);
 }
 
@@ -86,46 +93,58 @@ CommunicationRequest Communicator::asyncBarrier() const {
 }
 
 template <typename T>
-void Communicator::reduceImpl(T *, int, SynchronizerOperation, int) const {}
+void Communicator::reduceImpl(T * /*unused*/, int /*unused*/,
+                              SynchronizerOperation /*unused*/,
+                              int /*unused*/) const {}
 
 template <typename T>
-void Communicator::allReduceImpl(T *, int, SynchronizerOperation) const {}
+void Communicator::allReduceImpl(T * /*unused*/, int /*unused*/,
+                                 SynchronizerOperation /*unused*/) const {}
 
 template <typename T>
 void Communicator::scanImpl(T * values, T * result, int n,
-                            SynchronizerOperation) const {
-  if (values == result)
+                            SynchronizerOperation /*unused*/) const {
+  if (values == result) {
     return;
+  }
 
   std::copy_n(values, n, result);
 }
 
 template <typename T>
 void Communicator::exclusiveScanImpl(T * /*values*/, T * result, int n,
-                                     SynchronizerOperation) const {
+                                     SynchronizerOperation /*unused*/) const {
   std::fill_n(result, n, T());
 }
 
-template <typename T> inline void Communicator::allGatherImpl(T *, int) const {}
 template <typename T>
-inline void Communicator::allGatherVImpl(T *, int *) const {}
+inline void Communicator::allGatherImpl(T * /*unused*/, int /*unused*/) const {}
+template <typename T>
+inline void Communicator::allGatherVImpl(T * /*unused*/,
+                                         int * /*unused*/) const {}
 
 template <typename T>
-inline void Communicator::gatherImpl(T *, int, int) const {}
+inline void Communicator::gatherImpl(T * /*unused*/, int /*unused*/,
+                                     int /*unused*/) const {}
 template <typename T>
 void Communicator::gatherImpl(T * values, int nb_values, T * gathered,
-                              int) const {
+                              int /*unused*/) const {
   static_assert(std::is_trivially_copyable<T>{},
                 "Cannot send this type of data");
   std::memcpy(gathered, values, nb_values);
 }
 
 template <typename T>
-inline void Communicator::gatherVImpl(T *, int *, int) const {}
+inline void Communicator::gatherVImpl(T * /*unused*/, int * /*unused*/,
+                                      int /*unused*/) const {}
 template <typename T>
-inline void Communicator::broadcastImpl(T *, int, int) const {}
+inline void Communicator::broadcastImpl(T * /*unused*/, int /*unused*/,
+                                        int /*unused*/) const {}
 
 int Communicator::getMaxTag() const { return std::numeric_limits<int>::max(); }
 int Communicator::getMinTag() const { return 0; }
+
+Int Communicator::getNbProc() const { return 1; }
+Int Communicator::whoAmI() const { return 0; }
 
 } // namespace akantu

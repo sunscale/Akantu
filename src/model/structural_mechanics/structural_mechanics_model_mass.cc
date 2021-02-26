@@ -64,7 +64,7 @@ void StructuralMechanicsModel::assembleMass() {
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleMass(GhostType ghost_type) {
   AKANTU_DEBUG_IN();
-  MyFEEngineType & fem = getFEEngineClass<MyFEEngineType>();
+  auto & fem = getFEEngineClass<MyFEEngineType>();
   ComputeRhoFunctorStruct compute_rho(*this);
 
   for (auto type :

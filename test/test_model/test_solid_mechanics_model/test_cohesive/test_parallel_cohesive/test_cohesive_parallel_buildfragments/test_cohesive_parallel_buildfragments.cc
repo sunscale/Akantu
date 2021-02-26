@@ -364,7 +364,7 @@ void displaceElements(SolidMechanicsModelCohesive & model, const Real lim,
   Mesh & mesh = model.getMesh();
   UInt nb_nodes = mesh.getNbNodes();
   Array<bool> displaced(nb_nodes);
-  displaced.clear();
+  displaced.zero();
   Vector<Real> barycenter(spatial_dimension);
 
   for (ghost_type_t::iterator gt = ghost_type_t::begin();

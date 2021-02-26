@@ -34,8 +34,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
-#define __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__
+#ifndef AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH_
+#define AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH_
 
 namespace akantu {
 
@@ -121,4 +121,4 @@ inline void ParameterTyped<RandomInternalField<Real>>::setAuto(
 
 } // namespace akantu
 
-#endif /* __AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH__ */
+#endif /* AKANTU_RANDOM_INTERNAL_FIELD_TMPL_HH_ */

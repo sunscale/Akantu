@@ -28,8 +28,8 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#ifndef __AST_NTN_BASE_CONTACT_HH__
-#define __AST_NTN_BASE_CONTACT_HH__
+#ifndef AST_NTN_BASE_CONTACT_HH_
+#define AST_NTN_BASE_CONTACT_HH_
 
 /* -------------------------------------------------------------------------- */
 // akantu
@@ -248,4 +248,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 /* -------------------------------------------------------------------------- */
 #include "ntn_base_contact_inline_impl.hh"
 
-#endif /* __AST_NTN_BASE_CONTACT_HH__ */
+#endif /* AST_NTN_BASE_CONTACT_HH_ */

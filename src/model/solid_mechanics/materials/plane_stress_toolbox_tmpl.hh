@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__
-#define __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__
+#ifndef AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH_
+#define AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH_
 
 namespace akantu {
 
@@ -73,12 +73,14 @@ public:
   /* ------------------------------------------------------------------------ */
   void computeStress(ElementType el_type, GhostType ghost_type) override {
     ParentMaterial::computeStress(el_type, ghost_type);
-    if (this->plane_stress)
+    if (this->plane_stress) {
       computeThirdAxisDeformation(el_type, ghost_type);
+    }
   }
 
   /* ------------------------------------------------------------------------ */
-  virtual void computeThirdAxisDeformation(ElementType, GhostType) {}
+  virtual void computeThirdAxisDeformation(ElementType /*unused*/,
+                                           GhostType /*unused*/) {}
 
   /// Computation of Cauchy stress tensor in the case of finite deformation
   void computeAllCauchyStresses(GhostType ghost_type = _not_ghost) override {
@@ -160,4 +162,4 @@ inline PlaneStressToolbox<2, Material>::PlaneStressToolbox(
 
 } // namespace akantu
 
-#endif /* __AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH__ */
+#endif /* AKANTU_PLANE_STRESS_TOOLBOX_TMPL_HH_ */

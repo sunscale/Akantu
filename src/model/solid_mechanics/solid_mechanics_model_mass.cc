@@ -58,17 +58,18 @@ private:
 void SolidMechanicsModel::assembleMassLumped() {
   AKANTU_DEBUG_IN();
 
-  if (not need_to_reassemble_lumped_mass)
+  if (not need_to_reassemble_lumped_mass) {
     return;
+  }
 
   this->allocNodalField(this->mass, spatial_dimension, "mass");
-  mass->clear();
+  mass->zero();
 
   if (!this->getDOFManager().hasLumpedMatrix("M")) {
     this->getDOFManager().getNewLumpedMatrix("M");
   }
 
-  this->getDOFManager().clearLumpedMatrix("M");
+  this->getDOFManager().zeroLumpedMatrix("M");
 
   assembleMassLumped(_not_ghost);
   assembleMassLumped(_ghost);
@@ -89,9 +90,10 @@ void SolidMechanicsModel::assembleMassLumped() {
     }
   }
 
-  if (has_unconnected_nodes)
+  if (has_unconnected_nodes) {
     AKANTU_DEBUG_WARNING("There are nodes that seem to not be connected to any "
                          "elements, beware that they have lumped mass of 0.");
+  }
 #endif
 
   this->synchronize(SynchronizationTag::_smm_mass);
@@ -105,10 +107,11 @@ void SolidMechanicsModel::assembleMassLumped() {
 void SolidMechanicsModel::assembleMass() {
   AKANTU_DEBUG_IN();
 
-  if (not need_to_reassemble_mass)
+  if (not need_to_reassemble_mass) {
     return;
+  }
 
-  this->getDOFManager().clearMatrix("M");
+  this->getDOFManager().zeroMatrix("M");
   assembleMass(_not_ghost);
 
   need_to_reassemble_mass = false;

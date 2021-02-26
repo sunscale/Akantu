@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH__
-#define __AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH__
+#ifndef AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH_
+#define AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH_
 
 namespace akantu {
 
@@ -74,4 +74,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 //#include "time_step_solver_default_explicit_inline_impl.hh"
 
-#endif /* __AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH__ */
+#endif /* AKANTU_TIME_STEP_SOLVER_DEFAULT_EXPLICIT_HH_ */

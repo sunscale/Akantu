@@ -35,13 +35,13 @@
 #include "structural_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH__
-#define __AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH__
+#ifndef AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH_
+#define AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
 inline UInt
-StructuralMechanicsModel::getNbDegreeOfFreedom(const ElementType & type) const {
+StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
   UInt ndof = 0;
 #define GET_(type) ndof = ElementClass<type>::getNbDegreeOfFreedom()
   AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_, _ek_structural);
@@ -312,7 +312,7 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(
   std::stringstream name;
   name << id << ":structuralmechanics:imposed_linear_load";
   Array<Real> lin_load(0, nb_degree_of_freedom, name.str());
-  name.clear();
+  name.zero();
 
   UInt offset = nb_degree_of_freedom;
 
@@ -320,7 +320,7 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(
   UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
   UInt nb_element = getFEEngine().getMesh().getNbElement(type);
 
-  name.clear();
+  name.zero();
   name << id << ":structuralmechanics:quad_coords";
   Array<Real> quad_coords(nb_element * nb_quad, spatial_dimension,
                           "quad_coords");
@@ -367,4 +367,4 @@ inline void StructuralMechanicsModel::computeForcesFromFunction(
 #endif
 } // namespace akantu
 
-#endif /* __AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_STRUCTURAL_MECHANICS_MODEL_INLINE_IMPL_HH_ */

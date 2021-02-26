@@ -335,7 +335,7 @@ namespace {
 /* -------------------------------------------------------------------------- */
 template <typename File, typename Readers>
 void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
-  readers["$NOD"] = readers["$Nodes"] = [&](const std::string &) {
+  readers["$NOD"] = readers["$Nodes"] = [&](const std::string & /*unused*/) {
     UInt nb_nodes;
     file.read_line(nb_nodes);
 
@@ -366,7 +366,7 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
     }
   };
 
-  readers["$ELM"] = readers["$Elements"] = [&](const std::string &) {
+  readers["$ELM"] = readers["$Elements"] = [&](const std::string & /*unused*/) {
     UInt nb_elements;
     file.read_line(nb_elements);
 
@@ -398,7 +398,9 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
 
       /// read tags informations
       if (file.version < 2) {
-        Int tag0, tag1, nb_nodes; // reg-phys, reg-elem, number-of-nodes
+        Int tag0;
+        Int tag1;
+        Int nb_nodes; // reg-phys, reg-elem, number-of-nodes
         sstr_elem >> tag0 >> tag1 >> nb_nodes;
 
         auto & data0 =
@@ -439,7 +441,7 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
     }
   };
 
-  readers["$Periodic"] = [&](const std::string &) {
+  readers["$Periodic"] = [&](const std::string & /*unused*/) {
     UInt nb_periodic_entities;
     file.read_line(nb_periodic_entities);
 
@@ -466,7 +468,8 @@ void MeshIOMSH::populateReaders2(File & file, Readers & readers) {
         continue;
 
         if (dimension == file.mesh.getSpatialDimension() - 1) {
-          UInt slave, master;
+          UInt slave;
+          UInt master;
 
           sstr >> slave;
           sstr >> master;
@@ -490,7 +493,7 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
       {3, "volume"},
   };
 
-  readers["$Entities"] = [&](const std::string &) {
+  readers["$Entities"] = [&](const std::string & /*unused*/) {
     size_t num_entity[4];
     file.read_line(num_entity[0], num_entity[1], num_entity[2], num_entity[3]);
 
@@ -499,7 +502,12 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
         auto && sstr = file.get_line();
 
         int tag;
-        double min_x, min_y, min_z, max_x, max_y, max_z;
+        double min_x;
+        double min_y;
+        double min_z;
+        double max_x;
+        double max_y;
+        double max_z;
         size_t num_physical_tags;
         sstr >> tag >> min_x >> min_y >> min_z;
 
@@ -533,8 +541,9 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
     }
   };
 
-  readers["$Nodes"] = [&](const std::string &) {
-    size_t num_blocks, num_nodes;
+  readers["$Nodes"] = [&](const std::string & /*unused*/) {
+    size_t num_blocks;
+    size_t num_nodes;
     if (file.version >= 4.1) {
       file.read_line(num_blocks, num_nodes, file.first_node_number,
                      file.last_node_number);
@@ -554,7 +563,9 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
     size_t node_id{0};
 
     for (auto block [[gnu::unused]] : arange(num_blocks)) {
-      int entity_dim, entity_tag, parametric;
+      int entity_dim;
+      int entity_tag;
+      int parametric;
       size_t num_nodes_in_block;
       Vector<double> pos(3);
       Vector<double> real_pos(nodes.getNbComponent());
@@ -604,12 +615,15 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
     }
   };
 
-  readers["$Elements"] = [&](const std::string &) {
-    size_t num_blocks, num_elements;
+  readers["$Elements"] = [&](const std::string & /*unused*/) {
+    size_t num_blocks;
+    size_t num_elements;
     file.read_line(num_blocks, num_elements);
 
     for (auto block [[gnu::unused]] : arange(num_blocks)) {
-      int entity_dim, entity_tag, element_type;
+      int entity_dim;
+      int entity_tag;
+      int element_type;
       size_t num_elements_in_block;
 
       if (file.version >= 4.1) {
@@ -672,12 +686,14 @@ void MeshIOMSH::populateReaders4(File & file, Readers & readers) {
           if (first) {
             data0(elem.element) =
                 it->second; // for compatibility with version 2
-            if (phys_it != this->physical_names.end())
+            if (phys_it != this->physical_names.end()) {
               physical_data(elem.element) = phys_it->second;
+            }
             first = false;
           }
-          if (phys_it != this->physical_names.end())
+          if (phys_it != this->physical_names.end()) {
             file.mesh.getElementGroup(phys_it->second).add(elem, true, false);
+          }
         }
       }
     }
@@ -695,14 +711,15 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
 
   std::map<std::string, std::function<void(const std::string &)>> readers;
 
-  readers["$MeshFormat"] = [&](const std::string &) {
+  readers["$MeshFormat"] = [&](const std::string & /*unused*/) {
     auto && sstr = file.get_line();
 
     int format;
     sstr >> file.version >> format;
 
-    if (format != 0)
+    if (format != 0) {
       AKANTU_ERROR("This reader can only read ASCII files.");
+    }
 
     if (file.version > 2) {
       sstr >> file.size_of_size_t;
@@ -757,7 +774,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
     }
   };
 
-  readers["$NodeData"] = [&](const std::string &) {
+  readers["$NodeData"] = [&](const std::string & /*unused*/) {
     /* $NodeData
        numStringTags(ASCII int)
        stringTag(string) ...
@@ -768,23 +785,24 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
        nodeTag(size_t) value(double) ...
        ...
        $EndNodeData */
-    read_data(file.node_tags,
-              [&](auto && id, auto && size [[gnu::unused]],
-                  auto && nb_component [[gnu::unused]]) -> Array<double> & {
-                auto & data =
-                    file.mesh.template getNodalData<double>(id, nb_component);
-                data.resize(size);
-                return data;
-              },
-              [&](auto && node, auto && sstr, auto && data,
-                  auto && nb_component [[gnu::unused]]) {
-                for (auto c : arange(nb_component)) {
-                  sstr >> data(node, c);
-                }
-              });
+    read_data(
+        file.node_tags,
+        [&](auto && id, auto && size [[gnu::unused]],
+            auto && nb_component [[gnu::unused]]) -> Array<double> & {
+          auto & data =
+              file.mesh.template getNodalData<double>(id, nb_component);
+          data.resize(size);
+          return data;
+        },
+        [&](auto && node, auto && sstr, auto && data,
+            auto && nb_component [[gnu::unused]]) {
+          for (auto c : arange(nb_component)) {
+            sstr >> data(node, c);
+          }
+        });
   };
 
-  readers["$ElementData"] = [&](const std::string &) {
+  readers["$ElementData"] = [&](const std::string & /*unused*/) {
     /* $ElementData
        numStringTags(ASCII int)
        stringTag(string) ...
@@ -816,7 +834,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         });
   };
 
-  readers["$ElementNodeData"] = [&](const std::string &) {
+  readers["$ElementNodeData"] = [&](const std::string & /*unused*/) {
     /* $ElementNodeData
        numStringTags(ASCII int)
        stringTag(string) ...
@@ -853,7 +871,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
         });
   };
 
-  readers["$PhysicalNames"] = [&](const std::string &) {
+  readers["$PhysicalNames"] = [&](const std::string & /*unused*/) {
     file.has_physical_names = true;
     int num_of_phys_names;
     file.read_line(num_of_phys_names); /// the format line
@@ -896,7 +914,7 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
                          << block << ". Expected a $End" << block << " at line "
                          << file.current_line);
       }
-    } else if (block.size() != 0) {
+    } else if (not block.empty()) {
       readers["Unsupported"](block);
     }
   }
@@ -904,8 +922,9 @@ void MeshIOMSH::read(const std::string & filename, Mesh & mesh) {
   // mesh.updateTypesOffsets(_not_ghost);
   if (file.version < 4) {
     this->constructPhysicalNames("tag_0", mesh);
-    if (file.has_physical_names)
+    if (file.has_physical_names) {
       mesh.createGroupsFromMeshData<std::string>("physical_names");
+    }
   }
 
   MeshUtils::fillElementToSubElementsData(mesh);
@@ -939,8 +958,9 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
       outfile << " " << nodes.storage()[offset + j];
     }
 
-    for (UInt p = nodes.getNbComponent(); p < 3; ++p)
+    for (UInt p = nodes.getNbComponent(); p < 3; ++p) {
       outfile << " " << 0.;
+    }
     outfile << "\n";
     ;
   }
@@ -961,7 +981,7 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
   std::map<Element, size_t> element_to_msh_element;
 
   UInt element_idx = 1;
-  Element element;
+  auto element = ElementNull;
   for (auto && type :
        mesh.elementTypes(_all_dimensions, _not_ghost, _ek_not_defined)) {
     const auto & connectivity = mesh.getConnectivity(type, _not_ghost);
@@ -982,17 +1002,19 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
          enumerate(make_view(connectivity, connectivity.getNbComponent()))) {
       element.element = std::get<0>(data);
       const auto & conn = std::get<1>(data);
-      element_to_msh_element[element] = element_idx;
+      element_to_msh_element.insert(std::make_pair(element, element_idx));
 
       outfile << element_idx << " " << _akantu_to_msh_element_types[type]
               << " 2";
 
       /// \todo write the real data in the file
-      for (UInt t = 0; t < 2; ++t)
-        if (tag[t])
+      for (UInt t = 0; t < 2; ++t) {
+        if (tag[t] != nullptr) {
           outfile << " " << tag[t][element.element];
-        else
+        } else {
           outfile << " 0";
+        }
+      }
 
       for (auto && c : conn) {
         outfile << " " << c + 1;
@@ -1051,12 +1073,14 @@ void MeshIOMSH::write(const std::string & filename, const Mesh & mesh) {
             << type << " data");
         continue;
       }
-      if (data.isNodal())
+      if (data.isNodal()) {
         continue;
+      }
 
       auto size = data.size();
-      if (size == 0)
+      if (size == 0) {
         continue;
+      }
       auto && nb_components = data.getNbComponents();
       auto nb_component = nb_components(*(data.elementTypes().begin()));
 

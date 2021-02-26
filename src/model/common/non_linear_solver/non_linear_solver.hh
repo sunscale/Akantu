@@ -35,8 +35,8 @@
 #include <set>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_NON_LINEAR_SOLVER_HH__
-#define __AKANTU_NON_LINEAR_SOLVER_HH__
+#ifndef AKANTU_NON_LINEAR_SOLVER_HH_
+#define AKANTU_NON_LINEAR_SOLVER_HH_
 
 namespace akantu {
 class DOFManager;
@@ -109,4 +109,4 @@ namespace debug {
 
 } // namespace akantu
 
-#endif /* __AKANTU_NON_LINEAR_SOLVER_HH__ */
+#endif /* AKANTU_NON_LINEAR_SOLVER_HH_ */

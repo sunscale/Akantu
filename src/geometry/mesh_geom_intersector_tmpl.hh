@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH__
-#define __AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH__
+#ifndef AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH_
+#define AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH_
 
 #include "aka_common.hh"
 #include "mesh_geom_intersector.hh"
@@ -47,11 +47,6 @@ MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::MeshGeomIntersector(
 
 template <UInt dim, ElementType type, class Primitive, class Query,
           class Kernel>
-MeshGeomIntersector<dim, type, Primitive, Query,
-                    Kernel>::~MeshGeomIntersector() {}
-
-template <UInt dim, ElementType type, class Primitive, class Query,
-          class Kernel>
 void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData(
     GhostType ghost_type) {
   this->intersection_points->resize(0);
@@ -60,4 +55,4 @@ void MeshGeomIntersector<dim, type, Primitive, Query, Kernel>::constructData(
 
 } // namespace akantu
 
-#endif // __AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH__
+#endif // AKANTU_MESH_GEOM_INTERSECTOR_TMPL_HH_

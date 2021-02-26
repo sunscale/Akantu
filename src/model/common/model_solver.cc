@@ -55,9 +55,9 @@ template <typename T> static T getOptionToType(const std::string & opt_str) {
 /* -------------------------------------------------------------------------- */
 ModelSolver::ModelSolver(Mesh & mesh, const ModelType & type, const ID & id,
                          UInt memory_id)
-    : Parsable(ParserType::_model, id), SolverCallback(), model_type(type),
+    : Parsable(ParserType::_model, id), model_type(type),
       parent_id(id), parent_memory_id(memory_id), mesh(mesh),
-      dof_manager(nullptr), default_solver_id("") {}
+      dof_manager(nullptr) {}
 
 /* -------------------------------------------------------------------------- */
 ModelSolver::~ModelSolver() = default;
@@ -68,14 +68,15 @@ std::tuple<ParserSection, bool> ModelSolver::getParserSection() {
 
   auto it = std::find_if(
       sub_sections.begin(), sub_sections.end(), [&](auto && section) {
-        ModelType type = getOptionToType<ModelType>(section.getName());
+        auto type = getOptionToType<ModelType>(section.getName());
         // default id should be the model type if not defined
         std::string name = section.getParameter("name", this->parent_id);
         return type == model_type and name == this->parent_id;
       });
 
-  if (it == sub_sections.end())
+  if (it == sub_sections.end()) {
     return std::make_tuple(ParserSection(), true);
+  }
 
   return std::make_tuple(*it, false);
 }
@@ -191,19 +192,21 @@ void ModelSolver::initDOFManager(const ParserSection & section,
     ID default_solver = section.getParameter("default_solver");
     if (this->hasSolver(default_solver)) {
       this->setDefaultSolver(default_solver);
-    } else
+    } else {
       AKANTU_EXCEPTION(
           "The solver \""
           << default_solver
           << "\" was not created, it cannot be set as default solver");
+    }
   }
 }
 
 /* -------------------------------------------------------------------------- */
 TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) {
   ID tmp_solver_id = solver_id;
-  if (tmp_solver_id == "")
+  if (tmp_solver_id.empty()) {
     tmp_solver_id = this->default_solver_id;
+  }
 
   TimeStepSolver & tss = this->dof_manager->getTimeStepSolver(tmp_solver_id);
   return tss;
@@ -212,8 +215,9 @@ TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) {
 /* -------------------------------------------------------------------------- */
 const TimeStepSolver & ModelSolver::getSolver(const ID & solver_id) const {
   ID tmp_solver_id = solver_id;
-  if (solver_id == "")
+  if (solver_id.empty()) {
     tmp_solver_id = this->default_solver_id;
+  }
 
   const TimeStepSolver & tss =
       this->dof_manager->getTimeStepSolver(tmp_solver_id);
@@ -244,8 +248,9 @@ ModelSolver::getNonLinearSolver(const ID & solver_id) const {
 /* -------------------------------------------------------------------------- */
 bool ModelSolver::hasSolver(const ID & solver_id) const {
   ID tmp_solver_id = solver_id;
-  if (solver_id == "")
+  if (solver_id.empty()) {
     tmp_solver_id = this->default_solver_id;
+  }
 
   if (not this->dof_manager) {
     AKANTU_EXCEPTION("No DOF manager was initialized");
@@ -281,7 +286,7 @@ void ModelSolver::solveStep(const ID & solver_id) {
 void ModelSolver::getNewSolver(const ID & solver_id,
                                TimeStepSolverType time_step_solver_type,
                                NonLinearSolverType non_linear_solver_type) {
-  if (this->default_solver_id == "") {
+  if (this->default_solver_id.empty()) {
     this->default_solver_id = solver_id;
   }
 
@@ -336,7 +341,7 @@ void ModelSolver::setIntegrationScheme(
 
 /* -------------------------------------------------------------------------- */
 bool ModelSolver::hasDefaultSolver() const {
-  return (this->default_solver_id != "");
+  return (not this->default_solver_id.empty());
 }
 
 /* -------------------------------------------------------------------------- */

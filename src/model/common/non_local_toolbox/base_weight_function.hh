@@ -35,8 +35,8 @@
 #include "parsable.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_BASE_WEIGHT_FUNCTION_HH__
-#define __AKANTU_BASE_WEIGHT_FUNCTION_HH__
+#ifndef AKANTU_BASE_WEIGHT_FUNCTION_HH_
+#define AKANTU_BASE_WEIGHT_FUNCTION_HH_
 
 namespace akantu {
 
@@ -75,13 +75,14 @@ public:
   /* ------------------------------------------------------------------------ */
   /// compute the weight for a given distance between two quadrature points
   inline Real operator()(Real r, const IntegrationPoint & q1,
-                         const IntegrationPoint & q2);
+                         const IntegrationPoint & q2) const;
 
   /// print function
   void printself(std::ostream & stream, int indent = 0) const override {
     std::string space;
-    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT)
+    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT) {
       ;
+    }
     stream << space << "WeightFunction " << type << " [" << std::endl;
     Parsable::printself(stream, indent);
     stream << space << "]" << std::endl;
@@ -95,25 +96,27 @@ public:
 
 public:
   /// get the radius
-  Real getRadius() { return R; }
+  Real getRadius() const { return R; }
   /// get the update rate
-  UInt getUpdateRate() { return update_rate; }
+  UInt getUpdateRate() const { return update_rate; }
 
 public:
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
   /* ------------------------------------------------------------------------ */
 
-  UInt getNbData(const Array<Element> &,
-                 const SynchronizationTag &) const override {
+  UInt getNbData(const Array<Element> & /*elements*/,
+                 const SynchronizationTag & /*tag*/) const override {
     return 0;
   }
 
-  inline void packData(CommunicationBuffer &, const Array<Element> &,
-                       const SynchronizationTag &) const override {}
+  inline void packData(CommunicationBuffer & /*buffer*/,
+                       const Array<Element> & /*element*/,
+                       const SynchronizationTag & /*tag*/) const override {}
 
-  inline void unpackData(CommunicationBuffer &, const Array<Element> &,
-                         const SynchronizationTag &) override {}
+  inline void unpackData(CommunicationBuffer & /*buffer*/,
+                         const Array<Element> & /*element*/,
+                         const SynchronizationTag & /*tag*/) override {}
 
   /* ------------------------------------------------------------------------ */
   /* Accessors */
@@ -165,4 +168,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 #endif
 /* -------------------------------------------------------------------------- */
 
-#endif /* __AKANTU_BASE_WEIGHT_FUNCTION_HH__ */
+#endif /* AKANTU_BASE_WEIGHT_FUNCTION_HH_ */

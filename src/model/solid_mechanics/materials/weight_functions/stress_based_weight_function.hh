@@ -31,8 +31,8 @@
 /* -------------------------------------------------------------------------- */
 #include "base_weight_function.hh"
 /* -------------------------------------------------------------------------- */
-#ifndef __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__
-#define __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__
+#ifndef AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH_
+#define AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
@@ -95,4 +95,4 @@ private:
 
 #include "stress_based_weight_function_inline_impl.hh"
 
-#endif /* __AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH__ */
+#endif /* AKANTU_STRESS_BASED_WEIGHT_FUNCTION_HH_ */

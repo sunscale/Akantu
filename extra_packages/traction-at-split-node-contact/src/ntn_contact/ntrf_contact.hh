@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AST_NTRF_CONTACT_HH__
-#define __AST_NTRF_CONTACT_HH__
+#ifndef AST_NTRF_CONTACT_HH_
+#define AST_NTRF_CONTACT_HH_
 
 /* -------------------------------------------------------------------------- */
 // simtools
@@ -122,4 +122,4 @@ inline std::ostream & operator<<(std::ostream & stream,
 
 } // namespace akantu
 
-#endif /* __AST_NTRF_CONTACT_HH__ */
+#endif /* AST_NTRF_CONTACT_HH_ */

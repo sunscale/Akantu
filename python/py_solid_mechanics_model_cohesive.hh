@@ -1,9 +1,8 @@
-#ifndef __AKANTU_PY_SOLID_MECHANICS_MODEL_COHESIVE_HH__
-#define __AKANTU_PY_SOLID_MECHANICS_MODEL_COHESIVE_HH__
+#include <pybind11/pybind11.h>
 
-namespace pybind11 {
-struct module;
-} // namespace pybind11
+#ifndef AKANTU_PY_SOLID_MECHANICS_MODEL_COHESIVE_HH_
+#define AKANTU_PY_SOLID_MECHANICS_MODEL_COHESIVE_HH_
+
 
 namespace akantu {
 
@@ -11,4 +10,4 @@ void register_solid_mechanics_model_cohesive(pybind11::module & mod);
 
 } // namespace akantu
 
-#endif // __AKANTU_PY_SOLID_MECHANICS_MODEL_COHESIVE_HH__
+#endif // AKANTU_PY_SOLID_MECHANICS_MODEL_COHESIVE_HH_

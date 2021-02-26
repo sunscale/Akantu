@@ -76,7 +76,7 @@ template <typename T> constexpr size_t TestLumpedMassesFixture<T>::dim;
 
 using mass_types = gtest_list_t<TestElementTypes>;
 
-TYPED_TEST_SUITE(TestLumpedMassesFixture, mass_types);
+TYPED_TEST_SUITE(TestLumpedMassesFixture, mass_types, );
 
 TYPED_TEST(TestLumpedMassesFixture, TestLumpedMass) {
   this->model->assembleMassLumped();

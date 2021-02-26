@@ -75,8 +75,8 @@ public:
     openings->resize(1);
     tractions->resize(1);
 
-    openings->clear();
-    tractions->clear();
+    openings->zero();
+    tractions->zero();
   }
 
   /* ------------------------------------------------------------------------ */

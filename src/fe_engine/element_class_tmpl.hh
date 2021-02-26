@@ -37,8 +37,8 @@
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_CLASS_TMPL_HH__
-#define __AKANTU_ELEMENT_CLASS_TMPL_HH__
+#ifndef AKANTU_ELEMENT_CLASS_TMPL_HH_
+#define AKANTU_ELEMENT_CLASS_TMPL_HH_
 
 namespace akantu {
 
@@ -110,9 +110,10 @@ template <class vector_type>
 inline bool
 GeometricalShapeContains<_gst_square>::contains(const vector_type & coords) {
   bool in = true;
-  for (UInt i = 0; i < coords.size() && in; ++i)
+  for (UInt i = 0; i < coords.size() && in; ++i) {
     in &= ((coords(i) >= -(1. + std::numeric_limits<Real>::epsilon())) &&
            (coords(i) <= (1. + std::numeric_limits<Real>::epsilon())));
+  }
   return in;
 }
 
@@ -128,8 +129,9 @@ GeometricalShapeContains<_gst_triangle>::contains(const vector_type & coords) {
            (coords(i) <= (1. + Math::getTolerance())));
     sum += coords(i);
   }
-  if (in)
+  if (in) {
     return (in && (sum <= (1. + Math::getTolerance())));
+  }
   return in;
 }
 
@@ -435,7 +437,7 @@ inline void ElementClass<type, kind>::inverseMap(
 
   // initial guess
   //  Matrix<Real> natural_guess(natural_coords.storage(), dimension, 1);
-  natural_coords.clear();
+  natural_coords.zero();
 
   // real space coordinates provided by initial guess
   Matrix<Real> physical_guess(dimension, 1);
@@ -527,4 +529,4 @@ inline void ElementClass<type, kind>::inverseMap(
 
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_CLASS_TMPL_HH__ */
+#endif /* AKANTU_ELEMENT_CLASS_TMPL_HH_ */

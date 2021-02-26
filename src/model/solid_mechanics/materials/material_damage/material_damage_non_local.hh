@@ -32,8 +32,8 @@
 #include "material_non_local.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__
-#define __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__
+#ifndef AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH_
+#define AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH_
 
 namespace akantu {
 
@@ -57,8 +57,9 @@ protected:
 
     for (auto type : this->element_filter.elementTypes(dim, ghost_type)) {
       auto & elem_filter = this->element_filter(type, ghost_type);
-      if (elem_filter.size() == 0)
+      if (elem_filter.empty()) {
         continue;
+      }
 
       computeNonLocalStress(type, ghost_type);
     }
@@ -69,4 +70,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH__ */
+#endif /* AKANTU_MATERIAL_DAMAGE_NON_LOCAL_HH_ */

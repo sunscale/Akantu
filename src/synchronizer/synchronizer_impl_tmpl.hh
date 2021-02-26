@@ -56,17 +56,21 @@ void SynchronizerImpl<Entity>::communicateOnce(
     const Tag::CommTags & comm_tag, DataAccessor<Entity> & data_accessor,
     const SynchronizationTag & tag) const {
   // no need to synchronize
-  if (this->nb_proc == 1)
+  if (this->nb_proc == 1) {
     return;
+  }
 
-  CommunicationSendRecv send_dir, recv_dir;
+  CommunicationSendRecv send_dir;
+  CommunicationSendRecv recv_dir;
   std::tie(send_dir, recv_dir) = send_recv_schemes;
 
   using CommunicationRequests = std::vector<CommunicationRequest>;
   using CommunicationBuffers = std::map<UInt, CommunicationBuffer>;
 
-  CommunicationRequests send_requests, recv_requests;
-  CommunicationBuffers send_buffers, recv_buffers;
+  CommunicationRequests send_requests;
+  CommunicationRequests recv_requests;
+  CommunicationBuffers send_buffers;
+  CommunicationBuffers recv_buffers;
 
   auto postComm = [&](const auto & sr, auto & buffers,
                       auto & requests) -> void {
@@ -74,14 +78,16 @@ void SynchronizerImpl<Entity>::communicateOnce(
       auto & proc = pair.first;
       const auto & scheme = pair.second;
 
-      if (scheme.size() == 0)
+      if (scheme.empty()) {
         continue;
+      }
 
       auto & buffer = buffers[proc];
 
       auto buffer_size = data_accessor.getNbData(scheme, tag);
-      if (buffer_size == 0)
+      if (buffer_size == 0) {
         continue;
+      }
 
 #ifndef AKANTU_NDEBUG
       buffer_size += this->sanityCheckDataSize(scheme, tag, false);
@@ -123,7 +129,7 @@ void SynchronizerImpl<Entity>::communicateOnce(
 
   // treat the receive requests
   UInt request_ready;
-  while ((request_ready = communicator.waitAny(recv_requests)) != UInt(-1)) {
+  while ((request_ready = Communicator::waitAny(recv_requests)) != UInt(-1)) {
     auto & req = recv_requests[request_ready];
     auto proc = req.getSource();
 
@@ -145,8 +151,8 @@ void SynchronizerImpl<Entity>::communicateOnce(
     recv_requests.erase(recv_requests.begin() + request_ready);
   }
 
-  communicator.waitAll(send_requests);
-  communicator.freeCommunicationRequest(send_requests);
+  Communicator::waitAll(send_requests);
+  Communicator::freeCommunicationRequest(send_requests);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -154,7 +160,7 @@ template <class Entity>
 void SynchronizerImpl<Entity>::slaveReductionOnceImpl(
     DataAccessor<Entity> & data_accessor,
     const SynchronizationTag & tag) const {
-  communicateOnce(std::make_tuple(_recv, _send), Tag::_REDUCE, data_accessor,
+  communicateOnce(std::make_tuple(_recv, _send), Tag::_reduce, data_accessor,
                   tag);
 }
 
@@ -163,7 +169,7 @@ template <class Entity>
 void SynchronizerImpl<Entity>::synchronizeOnceImpl(
     DataAccessor<Entity> & data_accessor,
     const SynchronizationTag & tag) const {
-  communicateOnce(std::make_tuple(_send, _recv), Tag::_SYNCHRONIZE,
+  communicateOnce(std::make_tuple(_send, _recv), Tag::_synchronize,
                   data_accessor, tag);
 }
 
@@ -174,8 +180,9 @@ void SynchronizerImpl<Entity>::asynchronousSynchronizeImpl(
     const SynchronizationTag & tag) {
   AKANTU_DEBUG_IN();
 
-  if (not this->communications.hasCommunicationSize(tag))
+  if (not this->communications.hasCommunicationSize(tag)) {
     this->computeBufferSize(data_accessor, tag);
+  }
 
   this->communications.incrementCounter(tag);
 
@@ -222,10 +229,11 @@ void SynchronizerImpl<Entity>::waitEndSynchronizeImpl(
 #ifndef AKANTU_NDEBUG
   if (this->communications.begin(tag, _recv) !=
           this->communications.end(tag, _recv) &&
-      !this->communications.hasPendingRecv(tag))
+      !this->communications.hasPendingRecv(tag)) {
     AKANTU_CUSTOM_EXCEPTION_INFO(debug::CommunicationException(),
                                  "No pending communication with the tag \""
                                      << tag);
+  }
 #endif
 
   auto recv_end = this->communications.end(tag, _recv);
@@ -378,7 +386,7 @@ void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
       }
     }
 
-    auto tag = Tag::genTag(this->rank, 0, Tag::_MODIFY_SCHEME);
+    auto tag = Tag::genTag(this->rank, 0, Tag::_modify_scheme);
     AKANTU_DEBUG_INFO("I have " << keep_entity.size()
                                 << " elements to still receive from processor "
                                 << proc << " (communication tag : " << tag
@@ -393,7 +401,7 @@ void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
     auto proc = scheme_pair.first;
     auto & scheme = scheme_pair.second;
 
-    auto tag = Tag::genTag(proc, 0, Tag::_MODIFY_SCHEME);
+    auto tag = Tag::genTag(proc, 0, Tag::_modify_scheme);
     AKANTU_DEBUG_INFO("Waiting list of elements to keep from processor "
                       << proc << " (communication tag : " << tag << ")");
 
@@ -411,8 +419,8 @@ void SynchronizerImpl<Entity>::filterScheme(Pred && pred) {
     filter_list(keep_entity, scheme);
   }
 
-  communicator.waitAll(requests);
-  communicator.freeCommunicationRequest(requests);
+  Communicator::waitAll(requests);
+  Communicator::freeCommunicationRequest(requests);
   communications.invalidateSizes();
 }
 
@@ -438,17 +446,17 @@ void SynchronizerImpl<Entity>::copySchemes(const SynchronizerImpl & other) {
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-SynchronizerImpl<Entity> & SynchronizerImpl<Entity>::
-operator=(const SynchronizerImpl & other) {
+SynchronizerImpl<Entity> &
+SynchronizerImpl<Entity>::operator=(const SynchronizerImpl & other) {
   copySchemes(other);
   return *this;
 }
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>
-UInt SynchronizerImpl<Entity>::sanityCheckDataSize(const Array<Entity> &,
-                                                   const SynchronizationTag &,
-                                                   bool is_comm_desc) const {
+UInt SynchronizerImpl<Entity>::sanityCheckDataSize(
+    const Array<Entity> & /*unused*/, const SynchronizationTag & /*unused*/,
+    bool is_comm_desc) const {
   if (not is_comm_desc) {
     return 0;
   }
@@ -560,34 +568,36 @@ inline void SynchronizerImpl<UInt>::initScatterGatherCommunicationScheme() {
     communicator.gather(entities_to_send.size(), nb_entities_per_proc);
 
     for (UInt p = 0; p < nb_proc; ++p) {
-      if (p == UInt(this->root))
+      if (p == UInt(this->root)) {
         continue;
+      }
 
       auto & receive_per_proc = master_receive_entities[p];
       receive_per_proc.resize(nb_entities_per_proc(p));
-      if (nb_entities_per_proc(p) == 0)
+      if (nb_entities_per_proc(p) == 0) {
         continue;
+      }
 
       requests.push_back(communicator.asyncReceive(
           receive_per_proc, p,
-          Tag::genTag(p, 0, Tag::_GATHER_INITIALIZATION, this->hash_id)));
+          Tag::genTag(p, 0, Tag::_gather_initialization, this->hash_id)));
     }
   } else {
     communicator.gather(entities_to_send.size(), this->root);
     AKANTU_DEBUG(dblDebug, "I have " << entities_to_send.size()
                                      << " entities to send to master proc");
 
-    if (entities_to_send.size() != 0) {
+    if (not entities_to_send.empty()) {
       requests.push_back(communicator.asyncSend(
           entities_to_send, this->root,
-          Tag::genTag(this->rank, 0, Tag::_GATHER_INITIALIZATION,
+          Tag::genTag(this->rank, 0, Tag::_gather_initialization,
                       this->hash_id)));
     }
   }
 
   entities_changed = false;
-  communicator.waitAll(requests);
-  communicator.freeCommunicationRequest(requests);
+  Communicator::waitAll(requests);
+  Communicator::freeCommunicationRequest(requests);
 
   AKANTU_DEBUG_OUT();
 }
@@ -597,8 +607,9 @@ template <class Entity>
 template <typename T>
 void SynchronizerImpl<Entity>::gather(const Array<T> & to_gather,
                                       Array<T> & gathered) {
-  if (this->hasChanged())
+  if (this->hasChanged()) {
     initScatterGatherCommunicationScheme();
+  }
 
   AKANTU_DEBUG_ASSERT(this->rank == UInt(this->root),
                       "This function cannot be called on a slave processor");
@@ -617,16 +628,18 @@ void SynchronizerImpl<Entity>::gather(const Array<T> & to_gather,
   std::map<UInt, CommunicationBuffer> buffers;
   std::vector<CommunicationRequest> requests;
   for (UInt p = 0; p < this->nb_proc; ++p) {
-    if (p == UInt(this->root))
+    if (p == UInt(this->root)) {
       continue;
+    }
 
     auto receive_it = this->master_receive_entities.find(p);
     AKANTU_DEBUG_ASSERT(receive_it != this->master_receive_entities.end(),
                         "Could not find the receive list for dofs of proc "
                             << p);
     const auto & receive_entities = receive_it->second;
-    if (receive_entities.size() == 0)
+    if (receive_entities.empty()) {
       continue;
+    }
 
     CommunicationBuffer & buffer = buffers[p];
 
@@ -636,10 +649,10 @@ void SynchronizerImpl<Entity>::gather(const Array<T> & to_gather,
     AKANTU_DEBUG_INFO(
         "Preparing to receive data for "
         << receive_entities.size() << " entities from processor " << p << " "
-        << Tag::genTag(p, this->root, Tag::_GATHER, this->hash_id));
+        << Tag::genTag(p, this->root, Tag::_gather, this->hash_id));
 
     requests.push_back(communicator.asyncReceive(
-        buffer, p, Tag::genTag(p, this->root, Tag::_GATHER, this->hash_id)));
+        buffer, p, Tag::genTag(p, this->root, Tag::_gather, this->hash_id)));
   }
 
   auto data_gathered_it = gathered.begin(to_gather.getNbComponent());
@@ -656,7 +669,7 @@ void SynchronizerImpl<Entity>::gather(const Array<T> & to_gather,
   }
 
   auto rr = UInt(-1);
-  while ((rr = communicator.waitAny(requests)) != UInt(-1)) {
+  while ((rr = Communicator::waitAny(requests)) != UInt(-1)) {
     auto & request = requests[rr];
     auto sender = request.getSource();
 
@@ -684,15 +697,16 @@ template <typename T>
 void SynchronizerImpl<Entity>::gather(const Array<T> & to_gather) {
   AKANTU_DEBUG_IN();
 
-  if (this->hasChanged())
+  if (this->hasChanged()) {
     initScatterGatherCommunicationScheme();
+  }
 
   AKANTU_DEBUG_ASSERT(this->rank != UInt(this->root),
                       "This function cannot be called on the root processor");
   AKANTU_DEBUG_ASSERT(to_gather.size() == this->canScatterSize(),
                       "The array to gather does not have the correct size");
 
-  if (this->entities_from_root.size() == 0) {
+  if (this->entities_from_root.empty()) {
     AKANTU_DEBUG_OUT();
     return;
   }
@@ -708,10 +722,10 @@ void SynchronizerImpl<Entity>::gather(const Array<T> & to_gather) {
   AKANTU_DEBUG_INFO("Gathering data for "
                     << to_gather.size() << " dofs on processor " << this->root
                     << " "
-                    << Tag::genTag(this->rank, 0, Tag::_GATHER, this->hash_id));
+                    << Tag::genTag(this->rank, 0, Tag::_gather, this->hash_id));
 
   communicator.send(buffer, this->root,
-                    Tag::genTag(this->rank, 0, Tag::_GATHER, this->hash_id));
+                    Tag::genTag(this->rank, 0, Tag::_gather, this->hash_id));
 
   AKANTU_DEBUG_OUT();
 }
@@ -723,8 +737,9 @@ void SynchronizerImpl<Entity>::scatter(Array<T> & scattered,
                                        const Array<T> & to_scatter) {
   AKANTU_DEBUG_IN();
 
-  if (this->hasChanged())
+  if (this->hasChanged()) {
     initScatterGatherCommunicationScheme();
+  }
 
   AKANTU_DEBUG_ASSERT(this->rank == UInt(this->root),
                       "This function cannot be called on a slave processor");
@@ -776,12 +791,12 @@ void SynchronizerImpl<Entity>::scatter(Array<T> & scattered,
 
     // send the data
     requests.push_back(communicator.asyncSend(
-        buffer, p, Tag::genTag(p, 0, Tag::_SCATTER, this->hash_id)));
+        buffer, p, Tag::genTag(p, 0, Tag::_scatter, this->hash_id)));
   }
 
   // wait a clean communications
-  communicator.waitAll(requests);
-  communicator.freeCommunicationRequest(requests);
+  Communicator::waitAll(requests);
+  Communicator::freeCommunicationRequest(requests);
 
   // synchronize slave and ghost nodes
   synchronizeArray(scattered);
@@ -795,8 +810,9 @@ template <typename T>
 void SynchronizerImpl<Entity>::scatter(Array<T> & scattered) {
   AKANTU_DEBUG_IN();
 
-  if (this->hasChanged())
+  if (this->hasChanged()) {
     this->initScatterGatherCommunicationScheme();
+  }
 
   AKANTU_DEBUG_ASSERT(this->rank != UInt(this->root),
                       "This function cannot be called on the root processor");
@@ -811,7 +827,7 @@ void SynchronizerImpl<Entity>::scatter(Array<T> & scattered) {
   // receive the data
   communicator.receive(
       buffer, this->root,
-      Tag::genTag(this->rank, 0, Tag::_SCATTER, this->hash_id));
+      Tag::genTag(this->rank, 0, Tag::_scatter, this->hash_id));
 
   // unpack the data
   for (auto local_entity : entities_from_root) {

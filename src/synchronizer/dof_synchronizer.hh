@@ -39,8 +39,8 @@ class Mesh;
 class DOFManagerDefault;
 } // namespace akantu
 
-#ifndef __AKANTU_DOF_SYNCHRONIZER_HH__
-#define __AKANTU_DOF_SYNCHRONIZER_HH__
+#ifndef AKANTU_DOF_SYNCHRONIZER_HH_
+#define AKANTU_DOF_SYNCHRONIZER_HH_
 
 namespace akantu {
 
@@ -80,4 +80,4 @@ private:
 
 #include "dof_synchronizer_inline_impl.hh"
 
-#endif /* __AKANTU_DOF_SYNCHRONIZER_HH__ */
+#endif /* AKANTU_DOF_SYNCHRONIZER_HH_ */

@@ -86,7 +86,7 @@ void growGel(std::list<SK::Sphere_3> & query_list, Real new_radius) {
     SK::Sphere_3 sphere(query_it->center(), new_radius * new_radius);
     sphere_list.push_back(sphere);
   }
-  query_list.clear();
+  query_list.zero();
   query_list = sphere_list;
 }
 
@@ -125,8 +125,8 @@ void applyBoundaryConditions(SolidMechanicsModelIGFEM & model,
   Real radius = 0;
   Real phi = 0;
 
-  disp.clear();
-  boun.clear();
+  disp.zero();
+  boun.zero();
   /// absolute confinement
   for (UInt i = 0; i < mesh.getNbNodes(); ++i) {
 

@@ -10,13 +10,21 @@
  * @brief  Declaration of the enums for the element classes
  *
  *
- * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne) Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
+ * Copyright (©) 2015-2018 EPFL (Ecole Polytechnique Fédérale de Lausanne)
+ * Laboratory (LSMS - Laboratoire de Simulation en Mécanique des Solides)
  *
- * Akantu is free  software: you can redistribute it and/or  modify it under the terms  of the  GNU Lesser  General Public  License as published by  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Akantu is free  software: you can redistribute it and/or  modify it under the
+ * terms  of the  GNU Lesser  General Public  License as published by  the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
  *
- * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more details.
+ * Akantu is  distributed in the  hope that it  will be useful, but  WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See  the GNU  Lesser General  Public License  for more
+ * details.
  *
- * You should  have received  a copy  of the GNU  Lesser General  Public License along with Akantu. If not, see <http://www.gnu.org/licenses/>.
+ * You should  have received  a copy  of the GNU  Lesser General  Public License
+ * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 /* -------------------------------------------------------------------------- */
@@ -25,8 +33,8 @@
 #include <boost/preprocessor.hpp>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_AKA_ELEMENT_CLASSES_INFO_HH__
-#define __AKANTU_AKA_ELEMENT_CLASSES_INFO_HH__
+#ifndef AKANTU_AKA_ELEMENT_CLASSES_INFO_HH_
+#define AKANTU_AKA_ELEMENT_CLASSES_INFO_HH_
 
 namespace akantu {
 
@@ -123,7 +131,8 @@ enum InterpolationKind {
     switch (var) {                                                             \
       BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, macro1, list1)            \
     default: {                                                                 \
-      AKANTU_ERROR("Type (" << var << ") not handled by this function"); \
+      AKANTU_ERROR("Type ("                                                    \
+                   << var /* NOLINT */ << ") not handled by this function");   \
     }                                                                          \
     }                                                                          \
   } while (0)
@@ -132,8 +141,7 @@ enum InterpolationKind {
   do {                                                                         \
     switch (var) {                                                             \
       BOOST_PP_SEQ_FOR_EACH(AKANTU_BOOST_CASE_MACRO, macro1, list1)            \
-    case _not_defined:                                                         \
-      break;                                                                   \
+    case _not_defined: /* FALLTHRU */                                          \
     case _max_element_type:                                                    \
       break;                                                                   \
     }                                                                          \
@@ -196,6 +204,6 @@ enum InterpolationKind {
 
 } // akantu
 
-#endif /* __AKANTU_AKA_ELEMENT_CLASSES_INFO_HH__ */
+#endif /* AKANTU_AKA_ELEMENT_CLASSES_INFO_HH_ */
 
 #include "aka_element_classes_info_inline_impl.hh"

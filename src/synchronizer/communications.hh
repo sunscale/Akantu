@@ -35,8 +35,8 @@
 #include <map>
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMUNICATIONS_HH__
-#define __AKANTU_COMMUNICATIONS_HH__
+#ifndef AKANTU_COMMUNICATIONS_HH_
+#define AKANTU_COMMUNICATIONS_HH_
 
 namespace akantu {
 
@@ -103,7 +103,7 @@ public:
 
 public:
   explicit Communications(const Communicator & communicator);
-  explicit Communications(const Communications & communications);
+  explicit Communications(const Communications & other);
 
   /* ------------------------------------------------------------------------ */
   void swapSendRecv();
@@ -113,8 +113,7 @@ public:
   public:
     IterableCommunicationDesc(Communications & communications,
                               SynchronizationTag tag, CommunicationSendRecv sr)
-        : communications(communications), tag(std::move(tag)),
-          sr(std::move(sr)) {}
+        : communications(communications), tag(tag), sr(sr) {}
     auto begin() { return communications.begin(tag, sr); }
     auto end() { return communications.end(tag, sr); }
 
@@ -184,7 +183,7 @@ public:
   class IterableSchemes {
   public:
     IterableSchemes(Communications & communications, CommunicationSendRecv sr)
-        : communications(communications), sr(std::move(sr)) {}
+        : communications(communications), sr(sr) {}
     decltype(auto) begin() { return communications.begin_scheme(sr); }
     decltype(auto) end() { return communications.end_scheme(sr); }
 
@@ -197,7 +196,7 @@ public:
   public:
     ConstIterableSchemes(const Communications & communications,
                          CommunicationSendRecv sr)
-        : communications(communications), sr(std::move(sr)) {}
+        : communications(communications), sr(sr) {}
     decltype(auto) begin() const { return communications.begin_scheme(sr); }
     decltype(auto) end() const { return communications.end_scheme(sr); }
 
@@ -273,4 +272,4 @@ protected:
 
 #include "communications_tmpl.hh"
 
-#endif /* __AKANTU_COMMUNICATIONS_HH__ */
+#endif /* AKANTU_COMMUNICATIONS_HH_ */

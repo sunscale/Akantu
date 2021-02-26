@@ -34,8 +34,8 @@
 #include "data_accessor.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_COMMUNICATION_DESCRIPTOR_HH__
-#define __AKANTU_COMMUNICATION_DESCRIPTOR_HH__
+#ifndef AKANTU_COMMUNICATION_DESCRIPTOR_HH_
+#define AKANTU_COMMUNICATION_DESCRIPTOR_HH_
 
 namespace akantu {
 
@@ -150,4 +150,4 @@ protected:
 
 #include "communication_descriptor_tmpl.hh"
 
-#endif /* __AKANTU_COMMUNICATION_DESCRIPTOR_HH__ */
+#endif /* AKANTU_COMMUNICATION_DESCRIPTOR_HH_ */

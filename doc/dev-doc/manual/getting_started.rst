@@ -15,14 +15,6 @@ follow the usual way::
   > make
   > make install
 
-Or, use the ``Makefile`` we added for your convenience to
-handle the CMake configuration::
-
-  > cd akantu
-  > make config
-  > make
-  > make install
-
 All the Akantu options are documented in Appendix app:package-dependencies.
 
 Writing a ``main`` function
@@ -31,9 +23,8 @@ Writing a ``main`` function
 Akantu first needs to be initialized. The memory management included in the core
 library handles the correct allocation and de-allocation of vectors, structures
 and/or objects. Moreover, in parallel computations, the initialization procedure
-performs the communication setup. This is achieved by a pair of functions
-(:cpp:func:`initialize <akantu::initialize>` and :cpp:func:`finalize
-<akantu::finalize>`) that are used as follows::
+performs the communication setup. This is achieved by the function
+:cpp:func:`initialize <akantu::initialize>` that is used as follows::
 
     #include "aka_common.hh"
     #include "..."
@@ -45,7 +36,6 @@ performs the communication setup. This is achieved by a pair of functions
 
 	// your code ...
 
-	finalize();
     }
 
 The :cpp:func:`initialize <akantu::initialize>` function takes the text inpute
@@ -71,23 +61,11 @@ file extension is used, the mesh type has to be specified. ::
     mesh.read("my_gmsh_mesh.msh");
     mesh.read("my_gmsh_mesh", _miot_gmsh);
 
-    // Reading Abaqus files
-    mesh.read("my_abaqus_mesh.inp");
-    mesh.read("my_abaqus_mesh", _miot_abaqus);
-
-    // Reading Diana files
-    mesh.read("my_diana_mesh.dat");
-    mesh.read("my_diana_mesh", _miot_diana);
-
 The Gmsh reader adds the geometrical and physical tags as mesh data. The
 physical values are stored as a :cpp:type:`UInt <akantu::UInt>` data called
 ``tag_0``, if a string name is provided it is stored as a ``std::string`` data
 named ``physical_names``. The geometrical tag is stored as a :cpp:type:`UInt
 <akantu::UInt>` data named ``tag_1``.
-
-The Abaqus reader stores the ``ELSET`` in ElementGroups and the ``NSET``
-in NodeGroups. The material assignment can be retrieved from the
-``std::string`` mesh data named ``abaqus_material``.
 
 Using Arrays
 ------------

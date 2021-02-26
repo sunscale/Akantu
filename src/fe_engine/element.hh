@@ -31,8 +31,8 @@
 #include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_ELEMENT_HH__
-#define __AKANTU_ELEMENT_HH__
+#ifndef AKANTU_ELEMENT_HH_
+#define AKANTU_ELEMENT_HH_
 
 namespace akantu {
 
@@ -124,4 +124,4 @@ inline std::ostream & operator<<(std::ostream & stream, const Element & _this) {
 }
 } // namespace akantu
 
-#endif /* __AKANTU_ELEMENT_HH__ */
+#endif /* AKANTU_ELEMENT_HH_ */

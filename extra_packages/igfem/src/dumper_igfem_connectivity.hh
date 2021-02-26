@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_IGFEM_CONNECTIVITY_HH__
-#define __AKANTU_DUMPER_IGFEM_CONNECTIVITY_HH__
+#ifndef AKANTU_DUMPER_IGFEM_CONNECTIVITY_HH_
+#define AKANTU_DUMPER_IGFEM_CONNECTIVITY_HH_
 /* -------------------------------------------------------------------------- */
 #include "dumper_igfem_element_iterator.hh"
 #include "dumper_igfem_generic_elemental_field.hh"
@@ -113,4 +113,4 @@ public:
 } // namespace akantu
 
 /* -------------------------------------------------------------------------- */
-#endif /*__AKANTU_DUMPER_IGFEM_CONNECTIVITY_HH__ */
+#endif /*AKANTU_DUMPER_IGFEM_CONNECTIVITY_HH_ */

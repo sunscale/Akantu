@@ -29,8 +29,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_CORE_INCLUDES_HH__
-#define __AKANTU_MATERIAL_CORE_INCLUDES_HH__
+#ifndef AKANTU_MATERIAL_CORE_INCLUDES_HH_
+#define AKANTU_MATERIAL_CORE_INCLUDES_HH_
 
 /* -------------------------------------------------------------------------- */
 /* Material list                                                              */
@@ -68,4 +68,4 @@
            MaterialLinearIsotropicHardening)))(                                \
       (2, (phasefield, MaterialPhaseField)))					       
 
-#endif /* __AKANTU_MATERIAL_CORE_INCLUDES_HH__ */
+#endif /* AKANTU_MATERIAL_CORE_INCLUDES_HH_ */

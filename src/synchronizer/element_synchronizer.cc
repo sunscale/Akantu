@@ -62,8 +62,9 @@ ElementSynchronizer::ElementSynchronizer(Mesh & mesh, const ID & id,
       mesh(mesh), element_to_prank("element_to_prank", id, memory_id) {
   AKANTU_DEBUG_IN();
 
-  if (register_to_event_manager)
+  if (register_to_event_manager) {
     this->mesh.registerEventHandler(*this, event_priority);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -79,8 +80,9 @@ ElementSynchronizer::ElementSynchronizer(const ElementSynchronizer & other,
 
   element_to_prank.copy(other.element_to_prank);
 
-  if (register_to_event_manager)
+  if (register_to_event_manager) {
     this->mesh.registerEventHandler(*this, event_priority);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -99,8 +101,9 @@ void ElementSynchronizer::substituteElements(
       auto & list = scheme_pair.second;
       for (auto & el : list) {
         auto found_element_it = old_to_new_elements.find(el);
-        if (found_element_it != found_element_end)
+        if (found_element_it != found_element_end) {
           el = found_element_it->second;
+        }
       }
     }
   }
@@ -109,8 +112,9 @@ void ElementSynchronizer::substituteElements(
 /* -------------------------------------------------------------------------- */
 void ElementSynchronizer::onElementsChanged(
     const Array<Element> & old_elements_list,
-    const Array<Element> & new_elements_list, const ElementTypeMapArray<UInt> &,
-    const ChangedElementsEvent &) {
+    const Array<Element> & new_elements_list,
+    const ElementTypeMapArray<UInt> & /*unused*/,
+    const ChangedElementsEvent & /*unused*/) {
   // create a map to link old elements to new ones
   std::map<Element, Element> old_to_new_elements;
 
@@ -131,7 +135,7 @@ void ElementSynchronizer::onElementsChanged(
 void ElementSynchronizer::onElementsRemoved(
     const Array<Element> & element_to_remove,
     const ElementTypeMapArray<UInt> & new_numbering,
-    const RemovedElementsEvent &) {
+    const RemovedElementsEvent & /*unused*/) {
   AKANTU_DEBUG_IN();
 
   this->filterScheme([&](auto && element) {
@@ -185,8 +189,9 @@ void ElementSynchronizer::renumberElements(
     for (auto && scheme_pair : communications.iterateSchemes(sr)) {
       auto & list = scheme_pair.second;
       for (auto && el : list) {
-        if (new_numbering.exists(el.type, el.ghost_type))
+        if (new_numbering.exists(el.type, el.ghost_type)) {
           el.element = new_numbering(el);
+        }
       }
     }
   }

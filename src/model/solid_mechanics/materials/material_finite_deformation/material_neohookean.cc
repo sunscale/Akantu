@@ -61,8 +61,9 @@ template <UInt spatial_dimension>
 void MaterialNeohookean<spatial_dimension>::initMaterial() {
   AKANTU_DEBUG_IN();
   PlaneStressToolbox<spatial_dimension>::initMaterial();
-  if (spatial_dimension == 1)
+  if (spatial_dimension == 1) {
     nu = 0.;
+  }
   this->updateInternalParameters();
   AKANTU_DEBUG_OUT();
 }
@@ -73,8 +74,9 @@ template <> void MaterialNeohookean<2>::initMaterial() {
   PlaneStressToolbox<2>::initMaterial();
   this->updateInternalParameters();
 
-  if (this->plane_stress)
+  if (this->plane_stress) {
     this->third_axis_deformation.setDefaultValue(1.);
+  }
 
   AKANTU_DEBUG_OUT();
 }
@@ -208,7 +210,7 @@ void MaterialNeohookean<spatial_dimension>::computePotentialEnergy(
 /* -------------------------------------------------------------------------- */
 template <UInt spatial_dimension>
 void MaterialNeohookean<spatial_dimension>::computeTangentModuli(
-    __attribute__((unused)) const ElementType & el_type,
+    __attribute__((unused)) ElementType el_type,
     Array<Real> & tangent_matrix,
     __attribute__((unused)) GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -223,7 +225,7 @@ void MaterialNeohookean<spatial_dimension>::computeTangentModuli(
 /* -------------------------------------------------------------------------- */
 template <>
 void MaterialNeohookean<2>::computeTangentModuli(__attribute__((unused))
-                                                 const ElementType & el_type,
+                                                 ElementType el_type,
                                                  Array<Real> & tangent_matrix,
                                                  __attribute__((unused))
                                                  GhostType ghost_type) {

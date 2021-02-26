@@ -72,8 +72,9 @@ template <UInt dim> void MaterialElastic<dim>::initMaterial() {
   AKANTU_DEBUG_IN();
   Parent::initMaterial();
 
-  if (dim == 1)
+  if (dim == 1) {
     this->nu = 0.;
+  }
 
   this->updateInternalParameters();
   AKANTU_DEBUG_OUT();
@@ -98,8 +99,9 @@ template <> void MaterialElastic<2>::updateInternalParameters() {
   this->lambda = this->nu * this->E / ((1 + this->nu) * (1 - 2 * this->nu));
   this->mu = this->E / (2 * (1 + this->nu));
 
-  if (this->plane_stress)
+  if (this->plane_stress) {
     this->lambda = this->nu * this->E / ((1 + this->nu) * (1 - this->nu));
+  }
 
   this->kpa = this->lambda + 2. / 3. * this->mu;
 
@@ -146,7 +148,7 @@ void MaterialElastic<dim>::computeStress(ElementType el_type,
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-void MaterialElastic<dim>::computeTangentModuli(const ElementType & el_type,
+void MaterialElastic<dim>::computeTangentModuli(ElementType el_type,
                                                 Array<Real> & tangent_matrix,
                                                 GhostType ghost_type) {
   AKANTU_DEBUG_IN();
@@ -162,13 +164,13 @@ void MaterialElastic<dim>::computeTangentModuli(const ElementType & el_type,
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-Real MaterialElastic<dim>::getPushWaveSpeed(const Element &) const {
+Real MaterialElastic<dim>::getPushWaveSpeed(const Element & /*unused*/) const {
   return sqrt((lambda + 2 * mu) / this->rho);
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
-Real MaterialElastic<dim>::getShearWaveSpeed(const Element &) const {
+Real MaterialElastic<dim>::getShearWaveSpeed(const Element & /*unused*/) const {
   return sqrt(mu / this->rho);
 }
 
@@ -212,8 +214,9 @@ void MaterialElastic<dim>::computePotentialEnergyByElement(
   auto gradu_end = this->gradu(type).begin(dim, dim);
   auto stress_it = this->stress(type).begin(dim, dim);
 
-  if (this->finite_deformation)
+  if (this->finite_deformation) {
     stress_it = this->piola_kirchhoff_2(type).begin(dim, dim);
+  }
 
   UInt nb_quadrature_points = this->fem.getNbIntegrationPoints(type);
 

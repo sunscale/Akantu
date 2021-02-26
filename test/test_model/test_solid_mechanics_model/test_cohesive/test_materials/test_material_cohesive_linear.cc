@@ -149,7 +149,7 @@ using TestMaterialCohesiveLinearFixture =
 
 using coh_types = gtest_list_t<TestAllDimensions>;
 
-TYPED_TEST_SUITE(TestMaterialCohesiveLinearFixture, coh_types);
+TYPED_TEST_SUITE(TestMaterialCohesiveLinearFixture, coh_types, );
 
 TYPED_TEST(TestMaterialCohesiveLinearFixture, ModeI) {
   this->checkModeI(this->material->delta_c_, this->material->get("G_c"));

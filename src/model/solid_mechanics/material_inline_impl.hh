@@ -33,14 +33,14 @@
 #include "solid_mechanics_model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_INLINE_IMPL_HH__
-#define __AKANTU_MATERIAL_INLINE_IMPL_HH__
+#ifndef AKANTU_MATERIAL_INLINE_IMPL_HH_
+#define AKANTU_MATERIAL_INLINE_IMPL_HH_
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-inline UInt Material::addElement(const ElementType & type, UInt element,
-                                 const GhostType & ghost_type) {
+inline UInt Material::addElement(ElementType type, UInt element,
+                                 GhostType ghost_type) {
   Array<UInt> & el_filter = this->element_filter(type, ghost_type);
   el_filter.push_back(element);
   return el_filter.size() - 1;
@@ -52,12 +52,12 @@ inline UInt Material::addElement(const Element & element) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Material::getTangentStiffnessVoigtSize(UInt dim) const {
+inline UInt Material::getTangentStiffnessVoigtSize(UInt dim) {
   return (dim * (dim - 1) / 2 + dim);
 }
 
 /* -------------------------------------------------------------------------- */
-inline UInt Material::getCauchyStressMatrixSize(UInt dim) const {
+inline UInt Material::getCauchyStressMatrixSize(UInt dim) {
   return (dim * dim);
 }
 
@@ -69,9 +69,11 @@ inline void Material::gradUToF(const Matrix<Real> & grad_u, Matrix<Real> & F) {
                       "equal to the dimension of the tensor grad_u.");
   F.eye();
 
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       F(i, j) += grad_u(i, j);
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -108,9 +110,11 @@ inline void Material::leftCauchy(const Matrix<Real> & F, Matrix<Real> & B) {
 template <UInt dim>
 inline void Material::gradUToEpsilon(const Matrix<Real> & grad_u,
                                      Matrix<Real> & epsilon) {
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       epsilon(i, j) = 0.5 * (grad_u(i, j) + grad_u(j, i));
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -126,9 +130,11 @@ template <UInt dim>
 inline void Material::gradUToE(const Matrix<Real> & grad_u, Matrix<Real> & E) {
   E.mul<true, false>(grad_u, grad_u, .5);
 
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       E(i, j) += 0.5 * (grad_u(i, j) + grad_u(j, i));
+    }
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -146,9 +152,11 @@ inline Real Material::stressToVonMises(const Matrix<Real> & stress) {
   Matrix<Real> deviatoric_stress =
       Matrix<Real>::eye(dim, -1. * stress.trace() / 3.);
 
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       deviatoric_stress(i, j) += stress(i, j);
+    }
+  }
 
   // return Von Mises stress
   return std::sqrt(3. * deviatoric_stress.doubleDot(deviatoric_stress) / 2.);
@@ -160,7 +168,7 @@ inline void Material::setCauchyStressMatrix(const Matrix<Real> & S_t,
                                             Matrix<Real> & sigma) {
   AKANTU_DEBUG_IN();
 
-  sigma.clear();
+  sigma.zero();
 
   /// see Finite ekement formulations for large deformation dynamic analysis,
   /// Bathe et al. IJNME vol 9, 1975, page 364 ^t \f$\tau\f$
@@ -340,32 +348,30 @@ inline void Material::unregisterInternal<bool>(InternalField<bool> & vect) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-inline bool Material::isInternal(__attribute__((unused)) const ID & id,
-                                 __attribute__((unused))
-                                 const ElementKind & element_kind) const {
+inline bool Material::isInternal(const ID & /*id*/,
+                                 ElementKind /*element_kind*/) const {
   AKANTU_TO_IMPLEMENT();
 }
 
 template <>
 inline bool Material::isInternal<Real>(const ID & id,
-                                       const ElementKind & element_kind) const {
+                                       ElementKind element_kind) const {
   auto internal_array = internal_vectors_real.find(this->getID() + ":" + id);
 
-  if (internal_array == internal_vectors_real.end() ||
-      internal_array->second->getElementKind() != element_kind)
-    return false;
-  return true;
+  return not (internal_array == internal_vectors_real.end() ||
+              internal_array->second->getElementKind() != element_kind);
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline ElementTypeMap<UInt>
 Material::getInternalDataPerElem(const ID & field_id,
-                                 const ElementKind & element_kind) const {
+                                 ElementKind element_kind) const {
 
-  if (!this->template isInternal<T>(field_id, element_kind))
+  if (!this->template isInternal<T>(field_id, element_kind)) {
     AKANTU_EXCEPTION("Cannot find internal field " << id << " in material "
                                                    << this->name);
+  }
 
   const InternalField<T> & internal_field =
       this->template getInternal<T>(field_id);
@@ -391,9 +397,10 @@ void Material::flattenInternal(const std::string & field_id,
                                const GhostType ghost_type,
                                ElementKind element_kind) const {
 
-  if (!this->template isInternal<T>(field_id, element_kind))
+  if (!this->template isInternal<T>(field_id, element_kind)) {
     AKANTU_EXCEPTION("Cannot find internal field " << id << " in material "
                                                    << this->name);
+  }
 
   const InternalField<T> & internal_field =
       this->template getInternal<T>(field_id);
@@ -419,8 +426,9 @@ void Material::flattenInternal(const std::string & field_id,
                           type, ghost_type);
     }
 
-    if (nb_element_src == 0)
+    if (nb_element_src == 0) {
       continue;
+    }
 
     // number of data per element
     UInt nb_data = nb_quad_per_elem * nb_data_per_quad;
@@ -438,4 +446,4 @@ void Material::flattenInternal(const std::string & field_id,
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_INLINE_IMPL_HH__ */
+#endif /* AKANTU_MATERIAL_INLINE_IMPL_HH_ */

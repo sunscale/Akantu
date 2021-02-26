@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef __AKANTU_DUMPER_NODAL_FIELD_HH__
-#define __AKANTU_DUMPER_NODAL_FIELD_HH__
+#ifndef AKANTU_DUMPER_NODAL_FIELD_HH_
+#define AKANTU_DUMPER_NODAL_FIELD_HH_
 
 #include "dumper_field.hh"
 #include <io_helper.hh>
@@ -109,10 +109,11 @@ public:
   void checkHomogeneity() override { this->homogeneous = true; }
 
   virtual UInt getDim() {
-    if (this->padding)
+    if (this->padding) {
       return this->padding;
-    else
+    }
       return n;
+
   }
 
   void setPadding(UInt padding) { this->padding = padding; }
@@ -211,10 +212,11 @@ public:
   void checkHomogeneity() override { this->homogeneous = true; }
 
   virtual UInt getDim() {
-    if (this->padding)
+    if (this->padding) {
       return this->padding;
-    else
+    }
       return n;
+
   }
 
   void setPadding(UInt padding) { this->padding = padding; }
@@ -238,4 +240,4 @@ private:
 } // namespace dumpers
 } // namespace akantu
 /* -------------------------------------------------------------------------- */
-#endif /* __AKANTU_DUMPER_NODAL_FIELD_HH__ */
+#endif /* AKANTU_DUMPER_NODAL_FIELD_HH_ */

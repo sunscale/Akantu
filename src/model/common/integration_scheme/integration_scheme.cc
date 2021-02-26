@@ -46,19 +46,19 @@ std::istream & operator>>(std::istream & stream,
                           IntegrationScheme::SolutionType & type) {
   std::string str;
   stream >> str;
-  if (str == "displacement")
+  if (str == "displacement") {
     type = IntegrationScheme::_displacement;
-  else if (str == "temperature")
+  } else if (str == "temperature") {
     type = IntegrationScheme::_temperature;
-  else if (str == "velocity")
+  } else if (str == "velocity") {
     type = IntegrationScheme::_velocity;
-  else if (str == "temperature_rate")
+  } else if (str == "temperature_rate") {
     type = IntegrationScheme::_temperature_rate;
-  else if (str == "acceleration")
+  } else if (str == "acceleration") {
     type = IntegrationScheme::_acceleration;
-  else if (str == "damage")
+  } else if (str == "damage") {
     type = IntegrationScheme::_damage;
-  else {
+  } else {
     stream.setstate(std::ios::failbit);
   }
 

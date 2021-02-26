@@ -38,8 +38,8 @@
 #include "model.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__
-#define __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__
+#ifndef AKANTU_STRUCTURAL_MECHANICS_MODEL_HH_
+#define AKANTU_STRUCTURAL_MECHANICS_MODEL_HH_
 
 /* -------------------------------------------------------------------------- */
 namespace akantu {
@@ -74,12 +74,11 @@ public:
   using MyFEEngineType =
       FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
 
-  StructuralMechanicsModel(Mesh & mesh,
-                           UInt spatial_dimension = _all_dimensions,
+  StructuralMechanicsModel(Mesh & mesh, UInt dim = _all_dimensions,
                            const ID & id = "structural_mechanics_model",
                            const MemoryID & memory_id = 0);
 
-  virtual ~StructuralMechanicsModel();
+  ~StructuralMechanicsModel() override;
 
   /// Init full model
   void initFullImpl(const ModelOptions & options) override;
@@ -91,13 +90,13 @@ public:
   /* Virtual methods from SolverCallback                                      */
   /* ------------------------------------------------------------------------ */
   /// get the type of matrix needed
-  MatrixType getMatrixType(const ID &) override;
+  MatrixType getMatrixType(const ID & matrix_id) override;
 
   /// callback to assemble a Matrix
-  void assembleMatrix(const ID &) override;
+  void assembleMatrix(const ID & matrix_id) override;
 
   /// callback to assemble a lumped Matrix
-  void assembleLumpedMatrix(const ID &) override;
+  void assembleLumpedMatrix(const ID & matrix_id) override;
 
   /// callback to assemble the residual (rhs)
   void assembleResidual() override;
@@ -113,12 +112,13 @@ protected:
   ModelSolverOptions
   getDefaultSolverOptions(const TimeStepSolverType & type) const override;
 
-  UInt getNbDegreeOfFreedom(const ElementType & type) const;
+  static UInt getNbDegreeOfFreedom(ElementType type);
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
-  void initSolver(TimeStepSolverType, NonLinearSolverType) override;
+  void initSolver(TimeStepSolverType time_step_solver_type,
+                  NonLinearSolverType non_linear_solver_type) override;
 
   /// initialize the model
   void initModel() override;
@@ -130,7 +130,7 @@ protected:
   void assembleInternalForce();
 
   /// compute the nodal forces for an element type
-  void assembleInternalForce(const ElementType & type, GhostType gt);
+  void assembleInternalForce(ElementType type, GhostType gt);
 
   /// assemble the stiffness matrix
   void assembleStiffnessMatrix();
@@ -139,7 +139,7 @@ protected:
   void assembleMass();
 
   /// TODO remove
-  void computeRotationMatrix(const ElementType & type);
+  void computeRotationMatrix(ElementType type);
 
 protected:
   /// compute Rotation Matrices
@@ -184,8 +184,7 @@ public:
   std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
-                       const UInt & spatial_dimension,
-                       const ElementKind & kind) override;
+                       UInt spatial_dimension, ElementKind kind) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -307,4 +306,4 @@ private:
 
 } // namespace akantu
 
-#endif /* __AKANTU_STRUCTURAL_MECHANICS_MODEL_HH__ */
+#endif /* AKANTU_STRUCTURAL_MECHANICS_MODEL_HH_ */

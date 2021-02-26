@@ -96,14 +96,13 @@ NTNBaseContact::NTNBaseContact(SolidMechanicsModel & model, const ID & id,
       node_to_elements() {
   AKANTU_DEBUG_IN();
 
-  FEEngine & boundary_fem = this->model.getFEEngineBoundary();
-  for (ghost_type_t::iterator gt = ghost_type_t::begin();
-       gt != ghost_type_t::end(); ++gt) {
-    boundary_fem.initShapeFunctions(*gt);
+  auto & boundary_fem = this->model.getFEEngineBoundary();
+  for (auto && ghost_type : ghost_types) {
+    boundary_fem.initShapeFunctions(ghost_type);
   }
 
-  Mesh & mesh = this->model.getMesh();
-  UInt spatial_dimension = this->model.getSpatialDimension();
+  auto & mesh = this->model.getMesh();
+  auto spatial_dimension = this->model.getSpatialDimension();
 
   this->slave_elements.initialize(mesh,
                                   _spatial_dimension = spatial_dimension - 1);
@@ -301,7 +300,7 @@ void NTNBaseContact::internalUpdateLumpedBoundary(
   AKANTU_DEBUG_IN();
 
   // set all values in lumped_boundary to zero
-  boundary.clear();
+  boundary.zero();
 
   UInt dim = this->model.getSpatialDimension();
   //  UInt nb_contact_nodes = getNbContactNodes();

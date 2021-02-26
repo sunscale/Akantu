@@ -31,8 +31,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_PETSC_WRAPPER_HH__
-#define __AKANTU_PETSC_WRAPPER_HH__
+#ifndef AKANTU_PETSC_WRAPPER_HH_
+#define AKANTU_PETSC_WRAPPER_HH_
 
 /* -------------------------------------------------------------------------- */
 #include <mpi.h>
@@ -76,4 +76,4 @@ extern int aka_PETScError(int ierr);
 
 } // namespace akantu
 
-#endif /* __AKANTU_PETSC_WRAPPER_HH__ */
+#endif /* AKANTU_PETSC_WRAPPER_HH_ */

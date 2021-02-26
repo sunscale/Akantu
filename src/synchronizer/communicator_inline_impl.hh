@@ -31,19 +31,19 @@
 #include "communicator.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__
-#define __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__
+#ifndef AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH_
+#define AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH_
 
 namespace akantu {
 /* -------------------------------------------------------------------------- */
-inline void
-Communicator::freeCommunicationRequest(CommunicationRequest & request) const {
+ inline void
+Communicator::freeCommunicationRequest(CommunicationRequest & request) {
   request.free();
 }
 
 /* -------------------------------------------------------------------------- */
-inline void Communicator::freeCommunicationRequest(
-    std::vector<CommunicationRequest> & requests) const {
+ inline void Communicator::freeCommunicationRequest(
+    std::vector<CommunicationRequest> & requests) {
   std::vector<CommunicationRequest>::iterator it;
   for (it = requests.begin(); it != requests.end(); ++it) {
     it->free();
@@ -56,7 +56,8 @@ inline void Communicator::receiveAnyNumber(
     std::vector<CommunicationRequest> & send_requests,
     MsgProcessor && processor, Int tag) const {
   CommunicationRequest barrier_request;
-  bool got_all = false, are_send_finished = false;
+  bool got_all{false};
+  bool are_send_finished{false};
 
   AKANTU_DEBUG_INFO("Sending " << send_requests.size()
                                << " messages and checking for receives TAG["
@@ -92,4 +93,4 @@ inline void Communicator::receiveAnyNumber(
 }
 } // namespace akantu
 
-#endif /* __AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH__ */
+#endif /* AKANTU_STATIC_COMMUNICATOR_INLINE_IMPL_HH_ */

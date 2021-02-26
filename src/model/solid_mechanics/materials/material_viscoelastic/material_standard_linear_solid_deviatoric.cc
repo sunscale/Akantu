@@ -100,13 +100,14 @@ void MaterialStandardLinearSolidDeviatoric<dim>::setToSteadyState(
   /// Compute the first invariant of strain
   Real Theta = grad_u.trace();
 
-  for (UInt i = 0; i < dim; ++i)
+  for (UInt i = 0; i < dim; ++i) {
     for (UInt j = 0; j < dim; ++j) {
-      dev_s(i, j) =
-          2 * this->mu *
-          (.5 * (grad_u(i, j) + grad_u(j, i)) - 1. / 3. * Theta * (i == j));
+      dev_s(i, j) = 2 * this->mu *
+                    (.5 * (grad_u(i, j) + grad_u(j, i)) -
+                     1. / 3. * Theta * Math::kronecker(i, j));
       h(i, j) = 0.;
     }
+  }
 
   /// Save the deviator of stress
   ++stress_d;
@@ -147,8 +148,8 @@ void MaterialStandardLinearSolidDeviatoric<dim>::computeStress(
   Matrix<Real> & dev_s = *stress_d;
   Matrix<Real> & h = *history_int;
 
-  s.clear();
-  sigma.clear();
+  s.zero();
+  sigma.zero();
 
   /// Compute the first invariant of strain
   Real gamma_inf = E_inf / this->E;
@@ -163,13 +164,14 @@ void MaterialStandardLinearSolidDeviatoric<dim>::computeStress(
 
   U_rond_prim.eye(gamma_inf * this->kpa * Theta);
 
-  for (UInt i = 0; i < dim; ++i)
+  for (UInt i = 0; i < dim; ++i) {
     for (UInt j = 0; j < dim; ++j) {
       s(i, j) = 2 * this->mu * epsilon_d(i, j);
       h(i, j) = exp_dt_tau * h(i, j) + exp_dt_tau_2 * (s(i, j) - dev_s(i, j));
       dev_s(i, j) = s(i, j);
       sigma(i, j) = U_rond_prim(i, j) + gamma_inf * s(i, j) + gamma_v * h(i, j);
     }
+  }
 
   /// Save the deviator of stress
   ++stress_d;
@@ -232,9 +234,11 @@ void MaterialStandardLinearSolidDeviatoric<dim>::updateDissipatedEnergy(
   q_rate -= q;
   q_rate /= tau;
 
-  for (UInt i = 0; i < dim; ++i)
-    for (UInt j = 0; j < dim; ++j)
+  for (UInt i = 0; i < dim; ++i) {
+    for (UInt j = 0; j < dim; ++j) {
       *dis_energy += (epsilon_d(i, j) - alpha * q(i, j)) * q_rate(i, j) * dt;
+    }
+  }
 
   /// Save the deviator of stress
   ++stress_d;
@@ -283,24 +287,26 @@ Real MaterialStandardLinearSolidDeviatoric<dim>::getDissipatedEnergy(
 template <UInt dim>
 Real MaterialStandardLinearSolidDeviatoric<dim>::getEnergy(
     const std::string & type) {
-  if (type == "dissipated")
+  if (type == "dissipated") {
     return getDissipatedEnergy();
-  else if (type == "dissipated_sls_deviatoric")
+  }
+  if (type == "dissipated_sls_deviatoric") {
     return getDissipatedEnergy();
-  else
-    return MaterialElastic<dim>::getEnergy(type);
+  }
+  return MaterialElastic<dim>::getEnergy(type);
 }
 
 /* -------------------------------------------------------------------------- */
 template <UInt dim>
 Real MaterialStandardLinearSolidDeviatoric<dim>::getEnergy(
     const std::string & energy_id, ElementType type, UInt index) {
-  if (energy_id == "dissipated")
+  if (energy_id == "dissipated") {
     return getDissipatedEnergy(type, index);
-  else if (energy_id == "dissipated_sls_deviatoric")
+  }
+  if (energy_id == "dissipated_sls_deviatoric") {
     return getDissipatedEnergy(type, index);
-  else
-    return MaterialElastic<dim>::getEnergy(energy_id, type, index);
+  }
+  return MaterialElastic<dim>::getEnergy(energy_id, type, index);
 }
 
 /* -------------------------------------------------------------------------- */

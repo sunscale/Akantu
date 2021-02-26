@@ -45,9 +45,10 @@ ParserSection::~ParserSection() { this->clean(); }
 
 /* -------------------------------------------------------------------------- */
 ParserParameter & ParserSection::addParameter(const ParserParameter & param) {
-  if (parameters.find(param.getName()) != parameters.end())
+  if (parameters.find(param.getName()) != parameters.end()) {
     AKANTU_EXCEPTION("The parameter \"" + param.getName() +
                      "\" is already defined in this section");
+  }
 
   return (parameters
               .insert(std::pair<std::string, ParserParameter>(param.getName(),
@@ -70,7 +71,7 @@ void ParserSection::printself(std::ostream & stream,
                               unsigned int indent) const {
   std::string space(indent, AKANTU_INDENT);
   stream << space << "Section(" << this->type << ") " << this->name
-         << (option != "" ? (" " + option) : "") << " [" << std::endl;
+         << ((not option.empty()) ? (" " + option) : "") << " [" << std::endl;
   if (!this->parameters.empty()) {
     stream << space << " Parameters [" << std::endl;
     auto pit = this->parameters.begin();
@@ -85,8 +86,9 @@ void ParserSection::printself(std::ostream & stream,
   if (!this->sub_sections_by_type.empty()) {
     stream << space << " Subsections [" << std::endl;
     auto sit = this->sub_sections_by_type.begin();
-    for (; sit != this->sub_sections_by_type.end(); ++sit)
+    for (; sit != this->sub_sections_by_type.end(); ++sit) {
       sit->second.printself(stream, indent + 2);
+    }
     stream << std::endl;
     stream << space << " ]" << std::endl;
   }

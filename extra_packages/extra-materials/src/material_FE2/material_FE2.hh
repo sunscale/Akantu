@@ -18,8 +18,8 @@
 #include "material_thermal.hh"
 /* -------------------------------------------------------------------------- */
 
-#ifndef __AKANTU_MATERIAL_FE_2_HH__
-#define __AKANTU_MATERIAL_FE_2_HH__
+#ifndef AKANTU_MATERIAL_FE_2_HH_
+#define AKANTU_MATERIAL_FE_2_HH_
 
 namespace akantu {
 class SolidMechanicsModelRVE;
@@ -62,7 +62,7 @@ public:
                              GhostType ghost_type = _not_ghost);
 
   /// compute the tangent stiffness matrix for an element type
-  void computeTangentModuli(const ElementType & el_type,
+  void computeTangentModuli(ElementType el_type,
                             Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost);
 
@@ -108,4 +108,4 @@ protected:
 
 } // namespace akantu
 
-#endif /* __AKANTU_MATERIAL_FE_2_HH__ */
+#endif /* AKANTU_MATERIAL_FE_2_HH_ */
