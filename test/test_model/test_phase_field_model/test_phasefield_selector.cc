@@ -30,6 +30,7 @@
 
 #include "aka_common.hh"
 #include "phase_field_model.hh"
+#include "phasefield_exponential.hh"
 
 using namespace akantu;
 
@@ -53,10 +54,13 @@ int main(int argc, char *argv[]){
   PhaseField & chewing_gum = model.getPhaseField("chewing-gum");
   PhaseField & candy = model.getPhaseField("candy");
 
+  const Real gc = chocolate.getParam("gc");
+  
+
   UInt chocolate_element = chocolate.getElementFilter(_segment_2)(0, 0);
   UInt chewing_gum_element = chewing_gum.getElementFilter(_segment_2)(0, 0);
   UInt candy_element = candy.getElementFilter(_segment_2)(0, 0);
-
+  
   if (chocolate_element != 0 || chewing_gum_element != 1 || candy_element != 2 ) {
     return EXIT_FAILURE;
   }

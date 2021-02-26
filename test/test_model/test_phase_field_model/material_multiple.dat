@@ -9,10 +9,11 @@ material phasefield [
 material phasefield [
 	 name = rigid
 	 rho = 1.
-	 E = 210.0
+	 E = 21.0
 	 nu = 0.3
 	 Plane_Stress = false
 ]
+
 
 
 phasefield exponential [
@@ -27,7 +28,7 @@ phasefield exponential [
 
 phasefield exponential [
   name = rigid
-  E = 210.0
+  E = 21.0
   nu = 0.3
   gc = 5e-3
   l0 = 0.1

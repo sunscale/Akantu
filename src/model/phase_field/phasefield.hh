@@ -192,6 +192,7 @@ public:
   
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(Damage, damage, Real);
 
+  AKANTU_GET_MACRO_NOT_CONST(Damage, damage, ElementTypeMapArray<Real> &);
   AKANTU_GET_MACRO(Damage, damage, const ElementTypeMapArray<Real> &);
   
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(ElementFilter, element_filter, UInt);

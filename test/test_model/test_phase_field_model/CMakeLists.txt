@@ -26,7 +26,6 @@ register_test(test_phasefield_selector
   PACKAGE core
   )
 
-
 register_test(test_phase_solid_coupling
   SOURCES test_phase_solid_coupling.cc
   FILES_TO_COPY material_coupling.dat test_one_element.msh

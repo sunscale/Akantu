@@ -91,12 +91,12 @@ PhaseField::~PhaseField() = default;
 /* -------------------------------------------------------------------------- */
 void PhaseField::initialize() {
   registerParam("name", name, std::string(), _pat_parsable | _pat_readable);
-  registerParam("l0", l0, Real(0.), _pat_parsmod,
+  registerParam("l0", l0, Real(0.), _pat_parsable | _pat_readable,
 		"length scale parameter");
-  registerParam("gc", g_c, _pat_parsmod,
+  registerParam("gc", g_c, _pat_parsable | _pat_readable,
 		"critical local fracture energy density");
-  registerParam("E", E, _pat_parsmod, "Young's modulus");
-  registerParam("nu", nu, _pat_parsmod, "Poisson ratio");
+  registerParam("E", E, _pat_parsable | _pat_readable, "Young's modulus");
+  registerParam("nu", nu, _pat_parsable | _pat_readable, "Poisson ratio");
 
   damage.initialize(1);
   
@@ -105,7 +105,7 @@ void PhaseField::initialize() {
 
   strain.initialize(spatial_dimension * spatial_dimension);
   damage_energy_density.initialize(1);
-  damage_energy.initialize(1);
+  damage_energy.initialize(spatial_dimension * spatial_dimension);
 }
 
 /* -------------------------------------------------------------------------- */

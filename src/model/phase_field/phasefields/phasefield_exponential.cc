@@ -38,15 +38,17 @@ PhaseFieldExponential::PhaseFieldExponential(PhaseFieldModel & model,
 					      const ID & id)
   : PhaseField(model, id) {
   AKANTU_DEBUG_IN();
-  this->initialize();
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldExponential::initialize() {
-  //Matrix<double> d(spatial_dimension, spatial_dimension);
-  //d.eye(this->g_c * this->l0);
-  damage_energy.set(this->g_c * this->l0);
+void PhaseFieldExponential::updateInternalParameters() {
+
+  PhaseField::updateInternalParameters();
+
+  Matrix<Real> d(spatial_dimension, spatial_dimension);
+  d.eye(this->g_c * this->l0);
+  damage_energy.set(d);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -138,12 +140,7 @@ void PhaseFieldExponential::computeDrivingForce(const ElementType & el_type,
   }*/
 
 
-  
-/* -------------------------------------------------------------------------- */
-void PhaseFieldExponential::updateInternalParameters() {
-  PhaseField::updateInternalParameters();
-}
-
+ 
 
 INSTANTIATE_PHASEFIELD(exponential, PhaseFieldExponential);
   

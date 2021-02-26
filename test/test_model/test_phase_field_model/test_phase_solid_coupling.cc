@@ -65,12 +65,11 @@ int main(int argc, char *argv[]) {
 
   PhaseFieldModel phase(mesh);
   auto && selector = std::make_shared<MeshDataPhaseFieldSelector<std::string>>(
-									       "physical_names", phase);
+	  "physical_names", phase);
   phase.setPhaseFieldSelector(selector);
-
   phase.initFull(_analysis_method = _static);
   
-  phase.setBaseName("phase_solid");
+  model.setBaseName("phase_solid");
   model.addDumpField("stress");
   model.addDumpField("grad_u");
   model.addDumpFieldVector("displacement");
@@ -89,12 +88,12 @@ int main(int argc, char *argv[]) {
   auto & mat = model.getMaterial(0);
   auto & phasefield = phase.getPhaseField(0);
     
-  Real E   = 210e3;
-  Real nu  = 0.3;
+  const Real E   = phasefield.getParam("E");
+  const Real nu  = phasefield.getParam("nu");
   Real c22 = E*(1-nu)/((1+nu)*(1-2*nu));
 
-  Real gc = 5;
-  Real l0 = 0.1;
+  const Real gc = phasefield.getParam("gc");
+  const Real l0 = phasefield.getParam("l0");
  
   for (UInt s = 0; s < nbSteps; ++s) {
     Real axial_strain = increment * s;
@@ -112,7 +111,7 @@ int main(int argc, char *argv[]) {
     analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);
     
     os << axial_strain << " " << stress(0, 3) << " " << damage(0) << " "
-       << analytical_sigma/1000. << " " << analytical_damage << std::endl;
+       << analytical_sigma << " " << analytical_damage << std::endl;
 
     model.dump();
   }

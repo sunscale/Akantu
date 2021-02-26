@@ -150,28 +150,8 @@ public:
   // compute the internal forces
   void assembleInternalForces(const GhostType & ghost_type);
   
-  /// coupling parameters damage and strains from solid mechanics model
-  void setCouplingParameters(ElementTypeMapArray<Real> & strain_on_qpoints,
-                             Array<Real> & damage);
-
-private:
-  /// compute vector strain history field for each quadrature point
-  //void computePhiHistoryOnQuadPoints(const GhostType & ghost_type);
-
-  /// compute vector strain history field for each quadrature point
-  //void computeDamageEnergyDensityOnQuadPoints(const GhostType & ghost_type);
-
-  /// compute driving force for each quadrature point
-  //void computeDrivingForce(const GhostType & ghost_type);
-
-  /// compute the damage on quadrature points
-  void computeDamageOnQuadPoints(const GhostType & ghost_type);
-
-  /// compute the fracture energy
-  Real computeFractureEnergyByNode();
-
   /* ------------------------------------------------------------------------ */
-  /* Methods for static                                                       */
+  /* Methods for dynamic                                                      */
   /* ------------------------------------------------------------------------ */
 public:
   /// set the stable timestep
@@ -227,10 +207,6 @@ public:
                          "use getExternalForce instead");
     return *external_force;
   }
-
-  ///
-  //AKANTU_GET_MACRO_NOT_CONST(Strain, strain_on_qpoints,
-  //                           ElementTypeMapArray<Real> &);
 
   /// get the PhaseFieldModel::blocked_dofs vector
   AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
@@ -334,29 +310,6 @@ private:
 
   /// increment of damage
   Array<Real> * damage_increment{nullptr};
-
-  /// damage field on quadrature points
-  //ElementTypeMapArray<Real> damage_on_qpoints;
-
-  /// critical local damage energy on quadrature points for \mathbf{B}^t *
-  /// \mathbf{W} * \mathbf{B}@f$
-  //ElementTypeMapArray<Real> damage_energy_on_qpoints;
-
-  /// critical local damage energy density on quadrature points for
-  ///  \mathbf{N}^t * \mathbf{w} * \mathbf{N}@f$
-  //ElementTypeMapArray<Real> damage_energy_density_on_qpoints;
-
-  /// the speed of change in damage
-  //ElementTypeMapArray<Real> damage_gradient;
-
-  /// strain on quadrature points
-  //ElementTypeMapArray<Real> strain_on_qpoints;
-
-  /// driving force on quadrature points for internal forces
-  //ElementTypeMapArray<Real> driving_force_on_qpoints;
-
-  /// vector \phi plus on quadrature points
-  //ElementTypeMapArray<Real> phi_history_on_qpoints;
 
   /// boundary vector
   Array<bool> * blocked_dofs{nullptr};

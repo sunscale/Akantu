@@ -1,7 +1,0 @@
-material elastic [
-	 name = plate
-	 rho = 1.
-	 E = 210.0
-	 nu = 0.3
-	 Plane_Stress = false
-]

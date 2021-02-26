@@ -58,14 +58,6 @@ PhaseFieldModel::PhaseFieldModel(Mesh & mesh, UInt dim, const ID & id,
     : Model(mesh, model_type, dim, id, memory_id),
       phasefield_index("phasefield index", id, memory_id),
       phasefield_local_numbering("phasefield local numbering", id, memory_id) {
-  //BoundaryCondition<PhaseFieldModel>(),
-  //  damage_on_qpoints("damage_on_qpoints", id),
-  //    damage_energy_on_qpoints("damage_energy_on_qpoints", id),
-  //damage_energy_density_on_qpoints("damage_energy_density_on_qpoints", id),
-  //damage_gradient("damage_gradient", id),
-  //strain_on_qpoints("strain_on_qpoints", id),
-  //driving_force_on_qpoints("driving_force_on_qpoints", id),
-  //phi_history_on_qpoints("phi_history_on_qpoints", id) {
 
   AKANTU_DEBUG_IN();
    
@@ -110,16 +102,6 @@ void PhaseFieldModel::initModel() {
   auto & fem = this->getFEEngine();
   fem.initShapeFunctions(_not_ghost);
   fem.initShapeFunctions(_ghost);
-
-  /*damage_on_qpoints.initialize(fem, _nb_component = 1);
-  damage_energy_on_qpoints.initialize(fem, _nb_component = spatial_dimension *
-                                                           spatial_dimension);
-  damage_energy_density_on_qpoints.initialize(fem, _nb_component = 1);
-  damage_gradient.initialize(fem, _nb_component = spatial_dimension);
-  strain_on_qpoints.initialize(fem, _nb_component =
-                                        spatial_dimension * spatial_dimension);
-  driving_force_on_qpoints.initialize(fem, _nb_component = 1);
-  phi_history_on_qpoints.initialize(fem, _nb_component = 1);*/
 }
 
 /* -------------------------------------------------------------------------- */
@@ -432,143 +414,7 @@ void PhaseFieldModel::assembleStiffnessMatrix() {
   AKANTU_DEBUG_OUT();
 }
 
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::assembleDamageMatrix() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Assemble the new damage matrix");
-
-  auto & fem = this->getFEEngine();
-
-  for (auto && type : mesh.elementTypes(spatial_dimension)) {
-    auto nb_element = mesh.getNbElement(type);
-    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
-
-    auto nt_b_n = std::make_unique<Array<Real>>(
-        nb_element * nb_quadrature_points,
-        nb_nodes_per_element * nb_nodes_per_element, "N^t*b*N");
-
-    auto & damage_energy_density_on_qpoints_vect =
-        damage_energy_density_on_qpoints(type);
-
-    // damage_energy_on_qpoints = gc/l0 + phi = scalar
-    fem.computeNtbN(damage_energy_density_on_qpoints_vect, *nt_b_n, 2, type);
-
-    /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
-    /// \mathbf{N}@f$
-    auto K_n = std::make_unique<Array<Real>>(
-        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
-
-    fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
-                  type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_n, type, _not_ghost, _symmetric);
-  }
-
-  AKANTU_DEBUG_OUT();
-
-}*/
-  
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::assembleDamageMatrix() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Assemble the new damage matrix");
-
-  auto & fem = this->getFEEngine();
-
-  for (auto && type : mesh.elementTypes(spatial_dimension)) {
-    auto nb_element = mesh.getNbElement(type);
-    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
-
-    auto nt_b_n = std::make_unique<Array<Real>>(
-        nb_element * nb_quadrature_points,
-        nb_nodes_per_element * nb_nodes_per_element, "N^t*b*N");
-
-    auto bt_d_b = std::make_unique<Array<Real>>(
-        nb_element * nb_quadrature_points,
-        nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
-
-    // damage_energy_on_qpoints = gc/l0 + phi = scalar
-    auto & damage_energy_density_on_qpoints_vect =
-        damage_energy_density_on_qpoints(type);
-
-    // damage_energy_on_qpoints = gc*l0 = scalar
-    auto & damage_energy_on_qpoints_vect =
-        damage_energy_on_qpoints(type);
-
-    fem.computeBtDB(damage_energy_on_qpoints_vect, *bt_d_b, 2, type);
     
-    fem.computeNtbN(damage_energy_density_on_qpoints_vect, *nt_b_n, 2, type);
-
-    /// compute @f$ K_{\grad d} = \int_e \mathbf{N}^t * \mathbf{w} *
-    /// \mathbf{N}@f$
-    auto K_n = std::make_unique<Array<Real>>(
-        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_n");
-
-    fem.integrate(*nt_b_n, *K_n, nb_nodes_per_element * nb_nodes_per_element,
-                  type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_n, type, _not_ghost, _symmetric);
-
-    /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
-    /// \mathbf{B}@f$
-    auto K_b = std::make_unique<Array<Real>>(
-        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_b");
-
-    fem.integrate(*bt_d_b, *K_b, nb_nodes_per_element * nb_nodes_per_element,
-                  type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_b, type, _not_ghost, _symmetric);
-  }
-
-  AKANTU_DEBUG_OUT();
-  }*/
-
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::assembleDamageGradMatrix() {
-  AKANTU_DEBUG_IN();
-
-  AKANTU_DEBUG_INFO("Assemble the new damage gradient matrix");
-
-  auto & fem = this->getFEEngine();
-
-  for (auto && type : mesh.elementTypes(spatial_dimension)) {
-    auto nb_element = mesh.getNbElement(type);
-    auto nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-    auto nb_quadrature_points = fem.getNbIntegrationPoints(type);
-
-    auto bt_d_b = std::make_unique<Array<Real>>(
-        nb_element * nb_quadrature_points,
-        nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
-
-    auto & damage_energy_on_qpoints_vect =
-        damage_energy_on_qpoints(type);
-
-    // damage_energy_on_qpoints = gc*l0 = scalar
-    fem.computeBtDB(damage_energy_on_qpoints_vect, *bt_d_b, 2, type);
-
-    /// compute @f$ K_{\grad d} = \int_e \mathbf{B}^t * \mathbf{W} *
-    /// \mathbf{B}@f$
-    auto K_b = std::make_unique<Array<Real>>(
-        nb_element, nb_nodes_per_element * nb_nodes_per_element, "K_b");
-
-    fem.integrate(*bt_d_b, *K_b, nb_nodes_per_element * nb_nodes_per_element,
-                  type);
-
-    this->getDOFManager().assembleElementalMatricesToMatrix(
-        "K", "damage", *K_b, type, _not_ghost, _symmetric);
-  }
-
-
-  AKANTU_DEBUG_OUT();
-  }*/
-  
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleResidual() {
 
@@ -618,39 +464,6 @@ void PhaseFieldModel::assembleInternalForces() {
 
   AKANTU_DEBUG_OUT();
 }
-
-
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::assembleInternalForces(const GhostType & ghost_type) {
-  AKANTU_DEBUG_IN();
-
-  this->synchronize(SynchronizationTag::_pfm_damage);
-  auto & fem = this->getFEEngine();
-
-  for (auto type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-    UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-
-    auto & driving_force_on_qpoints_vect =
-      driving_force_on_qpoints(type, ghost_type);
-
-    UInt nb_quad_points = driving_force_on_qpoints_vect.size();
-    Array<Real> nt_driving_force(nb_quad_points, nb_nodes_per_element);
-    fem.computeNtb(driving_force_on_qpoints_vect, nt_driving_force, type,
-		   ghost_type);
-
-    UInt nb_elements = mesh.getNbElement(type, ghost_type);
-    Array<Real> int_nt_driving_force(nb_elements, nb_nodes_per_element);
-
-    fem.integrate(nt_driving_force, int_nt_driving_force,
-		  nb_nodes_per_element, type, ghost_type);
-    
-    this->getDOFManager().assembleElementalArrayLocalArray(
-	  int_nt_driving_force, *this->internal_force, type, ghost_type, 1);
-  }
-  AKANTU_DEBUG_OUT();
-}*/
-
-
   
 /* -------------------------------------------------------------------------- */
 void PhaseFieldModel::assembleLumpedMatrix(const ID & /*matrix_id*/) {}
@@ -662,129 +475,6 @@ void PhaseFieldModel::setTimeStep(Real time_step, const ID & solver_id) {
 #if defined(AKANTU_USE_IOHELPER)
   this->mesh.getDumper("phase_field").setTimeStep(time_step);
 #endif
-}
-
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::computeDrivingForce(const GhostType & ghost_type) {
-
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-
-    for (auto && values :
-         zip(make_view(phi_history_on_qpoints(type, ghost_type)),
-             make_view(driving_force_on_qpoints(type, ghost_type)))) {
-      auto & phi_history = std::get<0>(values);
-      auto & driving_force = std::get<1>(values);
-
-      driving_force = 2.0 * phi_history;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-  }*/
-
-
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::computeDamageEnergyDensityOnQuadPoints(
-    const GhostType & ghost_type) {
-
-  AKANTU_DEBUG_IN();
-
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-    for (auto && values :
-         zip(make_view(damage_energy_density_on_qpoints(type, ghost_type)),
-             make_view(phi_history_on_qpoints(type, ghost_type)))) {
-
-      auto & dam_energy_density = std::get<0>(values);
-      auto & phi_history = std::get<1>(values);
-      dam_energy_density = g_c / l_0 + 2.0 * phi_history;
-    }
-  }
-
-  AKANTU_DEBUG_OUT();
-  }*/
-
-/* -------------------------------------------------------------------------- */
-/*void PhaseFieldModel::computePhiHistoryOnQuadPoints(
-    const GhostType & ghost_type) {
-
-  Matrix<Real> strain_plus(spatial_dimension, spatial_dimension);
-  Matrix<Real> strain_minus(spatial_dimension, spatial_dimension);
-  Matrix<Real> strain_dir(spatial_dimension, spatial_dimension);
-  Matrix<Real> strain_diag_plus(spatial_dimension, spatial_dimension);
-  Matrix<Real> strain_diag_minus(spatial_dimension, spatial_dimension);
-
-  Vector<Real> strain_values(spatial_dimension);
-
-  Real trace_plus, trace_minus, phi_plus;
-
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-
-    for (auto && values :
-         zip(make_view(strain_on_qpoints(type, ghost_type), spatial_dimension,
-                       spatial_dimension),
-             make_view(phi_history_on_qpoints(type, ghost_type)))) {
-
-      auto & strain = std::get<0>(values);
-      auto & phi_history = std::get<1>(values);
-
-      strain_plus.clear();
-      strain_minus.clear();
-      strain_dir.clear();
-      strain_values.clear();
-      strain_diag_plus.clear();
-      strain_diag_minus.clear();
-
-      strain.eig(strain_values, strain_dir);
-
-      for (UInt i = 0; i < spatial_dimension; i++) {
-        strain_diag_plus(i, i) = std::max(Real(0.), strain_values(i));
-        strain_diag_minus(i, i) = std::min(Real(0.), strain_values(i));
-      }
-
-      Matrix<Real> mat_tmp(spatial_dimension, spatial_dimension);
-      Matrix<Real> sigma_plus(spatial_dimension, spatial_dimension);
-      Matrix<Real> sigma_minus(spatial_dimension, spatial_dimension);
-
-      mat_tmp.mul<false, true>(strain_diag_plus, strain_dir);
-      strain_plus.mul<false, false>(strain_dir, mat_tmp);
-      mat_tmp.mul<false, true>(strain_diag_minus, strain_dir);
-      strain_minus.mul<false, true>(strain_dir, mat_tmp);
-
-      trace_plus = std::max(Real(0.), strain.trace());
-      trace_minus = std::min(Real(0.), strain.trace());
-
-      for (UInt i = 0; i < spatial_dimension; i++) {
-        for (UInt j = 0; j < spatial_dimension; j++) {
-          sigma_plus(i, j) =
-              (i == j) * lambda * trace_plus + 2 * mu * strain_plus(i, j);
-          sigma_minus(i, j) =
-              (i == j) * lambda * trace_minus + 2 * mu * strain_minus(i, j);
-        }
-      }
-
-      phi_plus = 1. / 2 * sigma_plus.doubleDot(strain);
-
-      if (phi_plus > phi_history) {
-        phi_history = phi_plus;
-      }
-    }
-  }
-  }*/
-  
-/* -------------------------------------------------------------------------- */
-void PhaseFieldModel::computeDamageOnQuadPoints(const GhostType & ghost_type) {
-
-  AKANTU_DEBUG_IN();
-
-  /*auto & fem = this->getFEEngine();
-
-  for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-    auto & damage_on_qpoints_vect = damage_on_qpoints(type, ghost_type);
-    fem.interpolateOnIntegrationPoints(*damage, damage_on_qpoints_vect, 1, type,
-                                       ghost_type);
-  }*/
-
-  AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */

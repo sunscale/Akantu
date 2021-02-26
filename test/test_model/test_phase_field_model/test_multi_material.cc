@@ -133,9 +133,7 @@ void applyDisplacement(SolidMechanicsModel & model, Real & increment) {
     }
     else {
     displacement(n, 0) = 0;
-    //displacement(n, 1) = 0;
     blocked_dofs(n, 0) = true;
-    //blocked_dofs(n, 1) = true;
     }
   }
 }
@@ -217,17 +215,6 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	    auto & damage_on_qpoints_vect = solid_damage(type, ghost_type);
 	    auto & phase_damage_on_qpoints_vect =  phase_damage(type, ghost_type);
 	    
-	    /*for (auto && values:
-		   zip(make_view(damage_on_qpoints_vect),
-		       make_view(phase_damage_on_qpoints_vect))) {
-	      auto & dam = std::get<0>(values);
-	      auto & phase_dam =  std::get<1>(values);
-	      dam = phase_dam;
-	      }*/
-
-	    //fem.interpolateOnIntegrationPoints(phase.getDamage(), phase_damage_on_qpoints_vect,
-	    //				       1, type, ghost_type);
-	    
 	    fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 	    				       1, type, ghost_type);
 	    
@@ -244,22 +231,9 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	    auto & damage_on_qpoints_vect = solid_damage(type, ghost_type);
 	    auto & phase_damage_on_qpoints_vect =  phase_damage(type, ghost_type);
 
-	    
-	    //fem.interpolateOnIntegrationPoints(phase.getDamage(), phase_damage_on_qpoints_vect,
-	    //				       1, type, ghost_type); 
-	    
-
 	    fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 					       1, type, ghost_type); 
 	    
-	    /*for (auto && values:
-		   zip(make_view(damage_on_qpoints_vect),
-		       make_view(phase_damage_on_qpoints_vect))) {
-	      auto & dam = std::get<0>(values);
-	      auto & phase_dam =  std::get<1>(values);
-	      dam = phase_dam;
-	    }*/
-
 	  }
 	  break;
 	}  

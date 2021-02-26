@@ -59,10 +59,9 @@ protected:
   inline void computeDamageEnergyDensityOnQuad(const Real &, Real &);
 
 
-protected:
-  void initialize();
-  
-  void updateInternalParameters();
+public:
+
+  void updateInternalParameters() override;
 };
 
 
