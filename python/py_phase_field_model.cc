@@ -3,6 +3,7 @@
 /* -------------------------------------------------------------------------- */
 #include <non_linear_solver.hh>
 #include <phase_field_model.hh>
+#include <coupler_solid_phasefield.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
 /* -------------------------------------------------------------------------- */
@@ -96,4 +97,25 @@ register_phase_field_model(py::module & mod) {
 }
   
 
+[[gnu::visibility("default")]] void
+register_phase_field_coupler(py::module & mod) {
+  
+  py::class_<CouplerSolidPhaseField, Model>(mod, "CouplerSolidPhaseField")
+      .def(py::init<Mesh &, UInt, const ID &, const MemoryID &,
+	   const ModelType>(),
+           py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
+           py::arg("id") = "coupler_solid_phasefield", py::arg("memory_id") = 0,
+	   py::arg("model_type") = ModelType::_coupler_solid_phasefield)
+      .def("solve", [](CouplerSolidPhaseField & self) { self.solve(); })
+      .def("getSolidMechanicsModel",
+           &CouplerSolidPhaseField::getSolidMechanicsModel,
+           py::return_value_policy::reference)
+      .def("getPhaseFieldModel",
+           &CouplerSolidPhaseField::getPhaseFieldModel,
+           py::return_value_policy::reference);
+
+}
+  
+
+  
 }

@@ -75,6 +75,7 @@ void register_all(pybind11::module & mod) {
 
 #if defined(AKANTU_PHASE_FIELD)
   register_phase_field_model(mod);
+  register_phase_field_coupler(mod);
 #endif
 }
 } // namespace akantu
