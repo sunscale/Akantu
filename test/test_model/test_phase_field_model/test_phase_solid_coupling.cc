@@ -94,7 +94,10 @@ int main(int argc, char *argv[]) {
 
   const Real gc = phasefield.getParam("gc");
   const Real l0 = phasefield.getParam("l0");
- 
+
+  Real error_stress{0.};
+  Real error_damage{0.};
+  
   for (UInt s = 0; s < nbSteps; ++s) {
     Real axial_strain = increment * s;
     applyDisplacement(model, axial_strain);
@@ -109,6 +112,15 @@ int main(int argc, char *argv[]) {
 
     analytical_damage = axial_strain*axial_strain*c22/(gc/l0 + axial_strain*axial_strain*c22);
     analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);
+
+    error_stress = std::abs(analytical_sigma - stress(0, 3))/analytical_sigma;
+    
+    error_damage = std::abs(analytical_damage - damage(0))/analytical_damage;
+
+    if (error_damage > 0.01) {
+      return EXIT_FAILURE;
+    }
+
     
     os << axial_strain << " " << stress(0, 3) << " " << damage(0) << " "
        << analytical_sigma << " " << analytical_damage << std::endl;
