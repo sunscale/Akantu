@@ -171,7 +171,7 @@ void PhaseField::assembleInternalForces(GhostType ghost_type) {
 
   AKANTU_DEBUG_IN();
 
-  auto & internal_forces = model.getInternalForce();
+  Array<Real> & internal_force = model.getInternalForce();
 
   for (auto type : element_filter.elementTypes(_ghost_type = ghost_type)) {
   
@@ -192,7 +192,7 @@ void PhaseField::assembleInternalForces(GhostType ghost_type) {
 		  nb_nodes_per_element, type, ghost_type, elem_filter);
 
     model.getDOFManager().assembleElementalArrayLocalArray(
-	 int_nt_driving_force, internal_forces, type, ghost_type, 1,
+	 int_nt_driving_force, internal_force, type, ghost_type, 1,
 	 elem_filter);
   }
 

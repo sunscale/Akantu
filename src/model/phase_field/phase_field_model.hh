@@ -193,15 +193,21 @@ public:
   AKANTU_GET_MACRO(SpatialDimension, Model::spatial_dimension, UInt);
 
   /// return the damage array
-  AKANTU_GET_MACRO(Damage, *damage, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR(Damage, damage);
 
-  /// get the ContactMechanics::internal_force vector (internal forces)
-  AKANTU_GET_MACRO(InternalForce, *internal_force, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR_NOT_CONST(Damage, damage);
+  
+  /// get the PhaseFieldModel::internal_force vector (internal forces)
+  AKANTU_GET_MACRO_DEREF_PTR(InternalForce, internal_force);
 
-  /// get the ContactMechanicsModel::external_force vector (external forces)
-  AKANTU_GET_MACRO(ExternalForce, *external_force, Array<Real> &);
+  AKANTU_GET_MACRO_DEREF_PTR_NOT_CONST(InternalForce, internal_force);
+  
+  /// get the PhaseFieldModel::external_force vector (external forces)
+  AKANTU_GET_MACRO_DEREF_PTR(ExternalForce, external_force);
 
-  /// get the ContactMechanicsModel::force vector (external forces)
+  AKANTU_GET_MACRO_DEREF_PTR_NOT_CONST(ExternalForce, external_force);
+  
+  /// get the PhaseFieldModel::force vector (external forces)
   Array<Real> & getForce() {
     AKANTU_DEBUG_WARNING("getForce was maintained for backward compatibility, "
                          "use getExternalForce instead");
@@ -209,7 +215,7 @@ public:
   }
 
   /// get the PhaseFieldModel::blocked_dofs vector
-  AKANTU_GET_MACRO(BlockedDOFs, *blocked_dofs, Array<bool> &);
+  AKANTU_GET_MACRO_DEREF_PTR(BlockedDOFs, blocked_dofs);
 
   
   /// get an iterable on the phasefields

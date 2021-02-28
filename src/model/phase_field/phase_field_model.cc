@@ -390,7 +390,7 @@ void PhaseFieldModel::afterSolveStep(bool converged) {
     auto & prev_dam = std::get<1>(values);
 
     dam -= prev_dam;
-    dam = std::min(1., 2 * dam - dam * dam);
+    //dam = std::min(1., 2 * dam - dam * dam);
     prev_dam = dam;
   }
 }
@@ -434,7 +434,7 @@ void PhaseFieldModel::assembleInternalForces() {
 
   AKANTU_DEBUG_INFO("Assemble the internal forces");
   
-  this->internal_force->clear();
+  this->internal_force->zero();
   
   // compute the driving forces of local elements
   AKANTU_DEBUG_INFO("Compute local driving forces");
