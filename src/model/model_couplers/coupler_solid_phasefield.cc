@@ -464,9 +464,9 @@ void CouplerSolidPhaseField::computeStrainOnQuadPoints(
 }
 
 /* ------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::solve() {
+void CouplerSolidPhaseField::solve(const ID & solver_id) {
 
-  solid->solveStep();
+  solid->solveStep(solver_id);
   this->computeStrainOnQuadPoints(_not_ghost);
 
   phase->solveStep();

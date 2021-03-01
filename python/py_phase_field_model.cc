@@ -106,7 +106,8 @@ register_phase_field_coupler(py::module & mod) {
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
            py::arg("id") = "coupler_solid_phasefield", py::arg("memory_id") = 0,
 	   py::arg("model_type") = ModelType::_coupler_solid_phasefield)
-      .def("solve", [](CouplerSolidPhaseField & self) { self.solve(); })
+    .def("solve", [](CouplerSolidPhaseField & self, const ID & solver_id) {
+	self.solve(solver_id); })
       .def("getSolidMechanicsModel",
            &CouplerSolidPhaseField::getSolidMechanicsModel,
            py::return_value_policy::reference)

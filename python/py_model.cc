@@ -62,6 +62,7 @@ void register_model(py::module & mod) {
 
   py::class_<Model, ModelSolver>(mod, "Model", py::multiple_inheritance())
       .def("setBaseName", &Model::setBaseName)
+      .def("setDirectory", &Model::setDirectory)
       .def("getFEEngine", &Model::getFEEngine, py::arg("name") = "",
            py::return_value_policy::reference)
       .def("getFEEngineBoundary", &Model::getFEEngine, py::arg("name") = "",

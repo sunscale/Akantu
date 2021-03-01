@@ -111,7 +111,7 @@ public:
   void computeStrainOnQuadPoints(const GhostType & ghost_type);
 
   /// solve the coupled model
-  void solve();
+  void solve(const ID & solver_id = "");
 
 private:
   /// computes small strain from displacement gradient
