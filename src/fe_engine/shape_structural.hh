@@ -152,6 +152,14 @@ public:
     AKANTU_TO_IMPLEMENT();
   }
 
+  
+  template <ElementType type>
+  void computeNtbN(const Array<Real> & /*bs*/, Array<Real> & /*NtbNs*/,
+                   UInt /*order_d*/, GhostType /*ghost_type*/,
+                   const Array<UInt> & /*filter_elements*/) const {
+    AKANTU_TO_IMPLEMENT();
+  }
+
   /// multiply a field by shape functions
   template <ElementType type>
   void
