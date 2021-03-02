@@ -8,6 +8,7 @@
 /* -------------------------------------------------------------------------- */
 
 using namespace akantu;
+const UInt spatial_dimension = 2;
 
 /* -------------------------------------------------------------------------- */
 
@@ -19,13 +20,15 @@ int main(int argc, char *argv[]){
   Mesh mesh(spatial_dimension);
   mesh.read("square_notch.msh");
 
-  SolidMechanicsModel model(mesh);
+  CouplerSolidPhaseField coupler(mesh);
+  auto & model = coupler.getSolidMechanicsModel();
+  auto & phase = coupler.getPhaseFieldModel();
+
   model.initFull(_analysis_method = _static);
   auto && mat_selector = std::make_shared<MeshDataMaterialSelector<std::string>>(
       "physical_names", model);
   model.setMaterialSelector(mat_selector);
 
-  PhaseFieldModel phase(mesh);
   auto && selector = std::make_shared<MeshDataPhaseFieldSelector<std::string>>(
        "physical_names", phase);
   phase.setPhaseFieldSelector(selector);
@@ -53,15 +56,8 @@ int main(int argc, char *argv[]){
 
     model.applyBC(BC::Dirichlet::IncrementValue(increment, _y), "top");
 
-
-    model.solveStep();
-    model.assembleInternalForces();
-    computeStrainOnQuadPoints(model, phase, _not_ghost);
-
-    phase.solveStep();
-    computeDamageOnQuadPoints(model, phase, _not_ghost);
-
-    phase.dump();
+    coupler.solve();
+    model.dump();
   }
 
 
