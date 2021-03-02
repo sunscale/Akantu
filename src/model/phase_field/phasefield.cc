@@ -226,7 +226,7 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
         nb_element * nb_quadrature_points,
         nb_nodes_per_element * nb_nodes_per_element, "B^t*D*B");
 
-    // damage_energy_on_qpoints = gc/l0 + phi = scalar
+    // damage_energy_density_on_qpoints = gc/l0 + phi = scalar
     auto & damage_energy_density_vect =
       damage_energy_density(type, ghost_type);
 

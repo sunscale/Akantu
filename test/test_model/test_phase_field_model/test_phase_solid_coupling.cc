@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
 	  "physical_names", phase);
   phase.setPhaseFieldSelector(selector);
   phase.initFull(_analysis_method = _static);
+
   
   model.setBaseName("phase_solid");
   model.addDumpField("stress");
@@ -85,7 +86,6 @@ int main(int argc, char *argv[]) {
   Real analytical_damage{0.};
   Real analytical_sigma{0.};
 
-  auto & mat = model.getMaterial(0);
   auto & phasefield = phase.getPhaseField(0);
     
   const Real E   = phasefield.getParam("E");
@@ -95,7 +95,6 @@ int main(int argc, char *argv[]) {
   const Real gc = phasefield.getParam("gc");
   const Real l0 = phasefield.getParam("l0");
 
-  Real error_stress{0.};
   Real error_damage{0.};
   
   for (UInt s = 0; s < nbSteps; ++s) {
@@ -112,8 +111,6 @@ int main(int argc, char *argv[]) {
 
     analytical_damage = axial_strain*axial_strain*c22/(gc/l0 + axial_strain*axial_strain*c22);
     analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);
-
-    error_stress = std::abs(analytical_sigma - stress(0, 3))/analytical_sigma;
     
     error_damage = std::abs(analytical_damage - damage(0))/analytical_damage;
 
@@ -233,11 +230,9 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	case 1: {
 	  auto & mat = static_cast<MaterialPhaseField<1> &>(material);
 	  auto & solid_damage = mat.getDamage();
-	  auto & phase_damage = phasefield.getDamage();
 
 	  for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
 	    auto & damage_on_qpoints_vect = solid_damage(type, ghost_type);
-	    auto & phase_damage_on_qpoints_vect =  phase_damage(type, ghost_type);
 	    
 	    fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 					       1, type, ghost_type); 
@@ -248,11 +243,9 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	case 2: {
 	  auto & mat = static_cast<MaterialPhaseField<2> &>(material);
 	  auto & solid_damage = mat.getDamage();
-	  auto & phase_damage = phasefield.getDamage();
 
 	  for (auto & type: mesh.elementTypes(spatial_dimension, ghost_type)) {
 	    auto & damage_on_qpoints_vect = solid_damage(type, ghost_type);
-	    auto & phase_damage_on_qpoints_vect =  phase_damage(type, ghost_type);
 
 	    fem.interpolateOnIntegrationPoints(phase.getDamage(), damage_on_qpoints_vect,
 					       1, type, ghost_type); 
@@ -260,7 +253,6 @@ void computeDamageOnQuadPoints(SolidMechanicsModel & solid, PhaseFieldModel & ph
 	  break;
 	}  
 	default:
-	  auto & mat  = static_cast<MaterialPhaseField<3> &>(material);
 	  break;
 	}
 

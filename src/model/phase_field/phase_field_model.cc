@@ -515,9 +515,9 @@ UInt PhaseFieldModel::getNbData(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const {
+void PhaseFieldModel::packData(__attribute__((unused)) CommunicationBuffer & buffer,
+                               __attribute__((unused)) const Array<Element> & elements,
+                               __attribute__((unused)) const SynchronizationTag & tag) const {
 
   /*switch (tag) {
   case SynchronizationTag::_pfm_damage: {
@@ -541,9 +541,9 @@ void PhaseFieldModel::packData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-void PhaseFieldModel::unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag) {
+void PhaseFieldModel::unpackData(__attribute__((unused)) CommunicationBuffer & buffer,
+                                 __attribute__((unused)) const Array<Element> & elements,
+                                 __attribute__((unused)) const SynchronizationTag & tag) {
 
   /*switch (tag) {
   case SynchronizationTag::_pfm_damage: {

@@ -389,7 +389,6 @@ void CouplerSolidPhaseField::computeDamageOnQuadPoints(
 	    fem.interpolateOnIntegrationPoints(phase->getDamage(), damage_on_qpoints_vect,
 					       1, type, ghost_type);
 	  }
-
 	  break;
 	}
 
@@ -407,6 +406,14 @@ void CouplerSolidPhaseField::computeDamageOnQuadPoints(
 	}
 	default:
 	  auto & mat = static_cast<MaterialPhaseField<3> &>(material);
+	  auto & damage = mat.getDamage();
+
+	  for (auto & type :
+		 mesh.elementTypes(Model::spatial_dimension, ghost_type)) {
+	    auto & damage_on_qpoints_vect = damage(type, ghost_type);
+	    fem.interpolateOnIntegrationPoints(phase->getDamage(), damage_on_qpoints_vect,
+					       1, type, ghost_type);
+	  }
 	  break;
 	}
       }
@@ -464,12 +471,12 @@ void CouplerSolidPhaseField::computeStrainOnQuadPoints(
 }
 
 /* ------------------------------------------------------------------------- */
-void CouplerSolidPhaseField::solve(const ID & solver_id) {
+void CouplerSolidPhaseField::solve(const ID & solid_solver_id, const ID & phase_solver_id) {
 
-  solid->solveStep(solver_id);
+  solid->solveStep(solid_solver_id);
   this->computeStrainOnQuadPoints(_not_ghost);
 
-  phase->solveStep();
+  phase->solveStep(phase_solver_id);
   this->computeDamageOnQuadPoints(_not_ghost);
 
   solid->assembleInternalForces();
@@ -555,8 +562,7 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
 }
 
 
-/* -------------------------------------------------------------------------- */
-/*void CouplerSolidPhaseField::packData(CommunicationBuffer & buffer,
+void CouplerSolidPhaseField::packData(CommunicationBuffer & buffer,
 				      const Array<Element> & elements,
 				      const SynchronizationTag & tag) const {
 
@@ -575,10 +581,9 @@ bool CouplerSolidPhaseField::checkConvergence(Array<Real> & u_new,
   }
   default: { AKANTU_ERROR("Unknown ghost synchronization tag : " << tag); }
   }
-  }*/
+  }
 
-/* -------------------------------------------------------------------------- */
-/*void CouplerSolidPhaseField::unpackData(CommunicationBuffer & buffer,
+void CouplerSolidPhaseField::unpackData(CommunicationBuffer & buffer,
 					const Array<Element> & elements,
 					const SynchronizationTag & tag) {
 

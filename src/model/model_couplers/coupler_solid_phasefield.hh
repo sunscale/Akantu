@@ -111,7 +111,7 @@ public:
   void computeStrainOnQuadPoints(const GhostType & ghost_type);
 
   /// solve the coupled model
-  void solve(const ID & solver_id = "");
+  void solve(const ID & solid_solver_id = "", const ID & phase_solver_id = "");
 
 private:
   /// computes small strain from displacement gradient
@@ -193,6 +193,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   // DataAccessor<Element>
+  
   UInt getNbData(const Array<Element> &,
                  const SynchronizationTag &) const override {
     return 0;
@@ -200,19 +201,21 @@ public:
   void packData(CommunicationBuffer &, const Array<Element> &,
                 const SynchronizationTag &) const override {}
   void unpackData(CommunicationBuffer &, const Array<Element> &,
-                  const SynchronizationTag &) override {}
-
-  UInt getNbData(const Array<UInt> & indexes,
-                 const SynchronizationTag & tag) const override {
+  const SynchronizationTag &) override {}
+  
+  UInt getNbData(__attribute__((unused)) const Array<UInt> & indexes,
+                 __attribute__((unused)) const SynchronizationTag & tag) const override {
     return 0;
   }
 
-  void packData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
-                const SynchronizationTag & tag) const override{}
+  void packData(__attribute__((unused)) CommunicationBuffer & buffer,
+		__attribute__((unused)) const Array<UInt> & dofs,
+                __attribute__((unused)) const SynchronizationTag & tag) const override{}
 
-  void unpackData(CommunicationBuffer & buffer, const Array<UInt> & dofs,
-                  const SynchronizationTag & tag) override {}
-
+  void unpackData(__attribute__((unused)) CommunicationBuffer & buffer,
+		  __attribute__((unused)) const Array<UInt> & dofs,
+                  __attribute__((unused)) const SynchronizationTag & tag) override {}
+  
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */

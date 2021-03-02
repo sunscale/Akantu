@@ -74,8 +74,8 @@ inline bool PhaseField::isInternal<Real>(const ID & id,
 
 
 /* -------------------------------------------------------------------------- */
-inline UInt PhaseField::getNbData(const Array<Element> & elements,
-                                const SynchronizationTag & tag) const {
+inline UInt PhaseField::getNbData(__attribute__((unused)) const Array<Element> & elements,
+				  __attribute__((unused)) const SynchronizationTag & tag) const {
   /*if (tag == SynchronizationTag::_smm_stress) {
     return (this->isFiniteDeformation() ? 3 : 1) * spatial_dimension *
            spatial_dimension * sizeof(Real) *
@@ -85,9 +85,9 @@ inline UInt PhaseField::getNbData(const Array<Element> & elements,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void PhaseField::packData(CommunicationBuffer & buffer,
-                               const Array<Element> & elements,
-                               const SynchronizationTag & tag) const {
+inline void PhaseField::packData(__attribute__((unused)) CommunicationBuffer & buffer,
+				 __attribute__((unused)) const Array<Element> & elements,
+				 __attribute__((unused)) const SynchronizationTag & tag) const {
   /*if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       packElementDataHelper(piola_kirchhoff_2, buffer, elements);
@@ -98,9 +98,9 @@ inline void PhaseField::packData(CommunicationBuffer & buffer,
 }
 
 /* -------------------------------------------------------------------------- */
-inline void PhaseField::unpackData(CommunicationBuffer & buffer,
-                                 const Array<Element> & elements,
-                                 const SynchronizationTag & tag) {
+inline void PhaseField::unpackData(__attribute__((unused)) CommunicationBuffer & buffer,
+				   __attribute__((unused)) const Array<Element> & elements,
+				   __attribute__((unused)) const SynchronizationTag & tag) {
   /*if (tag == SynchronizationTag::_smm_stress) {
     if (this->isFiniteDeformation()) {
       unpackElementDataHelper(piola_kirchhoff_2, buffer, elements);

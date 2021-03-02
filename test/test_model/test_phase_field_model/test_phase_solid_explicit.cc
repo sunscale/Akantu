@@ -89,7 +89,6 @@ int main(int argc, char *argv[]) {
   Real analytical_damage{0.};
   Real analytical_sigma{0.};
 
-  auto & mat = model.getMaterial(0);
   auto & phasefield = phase.getPhaseField(0);
     
   const Real E   = phasefield.getParam("E");
@@ -106,7 +105,7 @@ int main(int argc, char *argv[]) {
     Real axial_strain = increment * s;
     applyDisplacement(model, axial_strain);
 
-    coupler.solve();
+    coupler.solve("explicit_lumped", "static");
     
     analytical_damage = axial_strain*axial_strain*c22/(gc/l0 + axial_strain*axial_strain*c22);
     analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);

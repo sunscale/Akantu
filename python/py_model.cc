@@ -74,6 +74,14 @@ void register_model(py::module & mod) {
       .def("addDumpFieldToDumper", &Model::addDumpFieldToDumper)
       .def("dump", &Model::dump)
       .def("initNewSolver", &Model::initNewSolver)
+      .def("getNewSolver", [](Model & self, const std::string id, const TimeStepSolverType & time,
+			      const NonLinearSolverType & type) {
+	     self.getNewSolver(id, time, type);
+	   }, py::return_value_policy::reference)
+      .def("setIntegrationScheme", [](Model & self, const std::string id, const std::string primal,
+				      const IntegrationSchemeType & scheme) {
+	     self.setIntegrationScheme(id, primal, scheme);
+	   })
       .def("getDOFManager", &Model::getDOFManager,
            py::return_value_policy::reference);
 }
