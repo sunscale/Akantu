@@ -104,7 +104,38 @@ void register_mesh(py::module & mod) {
           py::arg("type"), py::arg("ghost_type") = _not_ghost)
       .def_static("getSpatialDimension", [](ElementType & type) {
         return Mesh::getSpatialDimension(type);
-      });
+      })
+
+      /* Extra Normal specific stuff
+       */
+      .def("hasExtraNormal",
+      	   [](Mesh & self, ElementType type, GhostType ghost_type) -> bool {
+      	     return self.hasData<Real>("extra_normal", type, ghost_type);
+      	   },
+	   py::arg("type"), py::arg("ghost_type") = _not_ghost)
+
+      .def("makeExtraNormal",
+      	   [](Mesh & self, ElementType type, UInt dim) -> decltype(auto) {
+      	      if(not self.hasData<Real>("extra_normal", type)){
+    		 self.getElementalData<Real>("extra_normal")
+        		.initialize(self, _element_kind = _ek_structural,
+                    	_nb_component = dim, _with_nb_element = true,
+                    	_default_value = 0.);
+              };
+
+              return self.getData<Real>("extra_normal", type);
+            },
+      	    R"(If the "extra_normal" mesh data does not exists create it and return it.)",
+            py::arg("type"), py::arg("spatial_dimension") = 3,
+            py::return_value_policy::reference)
+
+      .def("getExtraNormal",
+      	   [](Mesh & self, ElementType type) -> decltype(auto) {
+      	      return self.getData<Real>("extra_normal", type);
+      	   },
+	   py::arg("type"),
+	   py::return_value_policy::reference)
+      ;
 
   /* ------------------------------------------------------------------------ */
   py::class_<MeshUtils>(mod, "MeshUtils")
