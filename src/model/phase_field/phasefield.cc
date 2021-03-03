@@ -269,6 +269,7 @@ void PhaseField::assembleStiffnessMatrix(GhostType ghost_type) {
 /* -------------------------------------------------------------------------- */
 void PhaseField::beforeSolveStep() {
   this->savePreviousState();
+  this->computeAllDrivingForces(_not_ghost);
 }
 
 /* -------------------------------------------------------------------------- */

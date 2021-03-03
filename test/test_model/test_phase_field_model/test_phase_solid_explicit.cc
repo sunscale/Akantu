@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     
     error_damage = std::abs(analytical_damage - damage(0))/analytical_damage;
 
-    if (error_damage > 0.01) {
+    if (error_damage > 1e-8 and error_stress > 1e-8) {
       return EXIT_FAILURE;
     }
     

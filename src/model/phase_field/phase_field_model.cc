@@ -437,10 +437,10 @@ void PhaseFieldModel::assembleInternalForces() {
   this->internal_force->zero();
   
   // compute the driving forces of local elements
-  AKANTU_DEBUG_INFO("Compute local driving forces");
-  for (auto & phasefield : phasefields) {
-    phasefield->computeAllDrivingForces(_not_ghost);
-  }
+  //AKANTU_DEBUG_INFO("Compute local driving forces");
+  // for (auto & phasefield : phasefields) {
+  //  phasefield->computeAllDrivingForces(_not_ghost);
+  //}
 
   // communicate the driving forces
   AKANTU_DEBUG_INFO("Send data for residual assembly");

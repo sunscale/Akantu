@@ -94,6 +94,8 @@ int main(int argc, char *argv[]) {
 
   const Real gc = phasefield.getParam("gc");
   const Real l0 = phasefield.getParam("l0");
+  
+  Real error_stress{0.};
 
   Real error_damage{0.};
   
@@ -111,16 +113,19 @@ int main(int argc, char *argv[]) {
 
     analytical_damage = axial_strain*axial_strain*c22/(gc/l0 + axial_strain*axial_strain*c22);
     analytical_sigma  = c22*axial_strain*(1-analytical_damage)*(1-analytical_damage);
-    
+
+    error_stress = std::abs(analytical_sigma - stress(0, 3))/analytical_sigma;
+
     error_damage = std::abs(analytical_damage - damage(0))/analytical_damage;
 
-    if (error_damage > 0.01) {
+    if (error_damage > 1e-8 and error_stress > 1e-8) {
       return EXIT_FAILURE;
     }
 
     
     os << axial_strain << " " << stress(0, 3) << " " << damage(0) << " "
-       << analytical_sigma << " " << analytical_damage << std::endl;
+       << analytical_sigma << " " << analytical_damage << " "  <<
+      error_stress  << " " << error_damage << std::endl;
 
     model.dump();
   }
