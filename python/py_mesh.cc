@@ -116,7 +116,14 @@ void register_mesh(py::module & mod) {
             return _this.getData<Real>(name, type, ghost_type);
           },
           py::arg("name"), py::arg("type"), py::arg("ghost_type") = _not_ghost,
-          py::return_value_policy::reference);
+          py::return_value_policy::reference)
+      .def(
+          "hasDataReal",
+          [](Mesh & _this, const ID & name, ElementType type,
+             GhostType ghost_type) -> bool {
+            return _this.hasData<Real>(name, type, ghost_type);
+          },
+          py::arg("name"), py::arg("type"), py::arg("ghost_type") = _not_ghost);
 
   /* ------------------------------------------------------------------------ */
   py::class_<MeshUtils>(mod, "MeshUtils")
