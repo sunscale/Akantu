@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- */
 #include "py_aka_array.hh"
 /* -------------------------------------------------------------------------- */
-#include "structural_mechanics_model.hh"
+#include <structural_mechanics_model.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
 /* -------------------------------------------------------------------------- */
@@ -36,7 +36,7 @@ void register_structural_mechanics_model(pybind11::module & mod) {
    */
   py::class_<StructuralMaterial>(mod, "StructuralMaterial")
       .def(py::init<>())
-      .def(py::init<const StructuralMaterial&>())
+      .def(py::init<const StructuralMaterial &>())
       .def_plainmember(E)
       .def_plainmember(A)
       .def_plainmember(I)
@@ -73,13 +73,10 @@ void register_structural_mechanics_model(pybind11::module & mod) {
       .def_function_nocopy(getBlockedDOFs)
       .def_function_nocopy(getMesh)
 
-      /*
-       * These functions are basically untested.
-       */
       .def("setTimeStep", &StructuralMechanicsModel::setTimeStep,
            py::arg("time_step"), py::arg("solver_id") = "")
       .def(
-          "getElementMaterialMap",
+          "getElementMaterial",
           [](StructuralMechanicsModel & self, const ElementType & type,
              GhostType ghost_type) -> decltype(auto) {
             return self.getElementMaterial(type, ghost_type);
@@ -88,43 +85,35 @@ void register_structural_mechanics_model(pybind11::module & mod) {
           py::arg("type"), py::arg("ghost_type") = _not_ghost,
           py::return_value_policy::reference)
       .def(
-          "getMaterialOf",
-          [](StructuralMechanicsModel & self, Element element) {
-            return self.getMaterial(element);
-          },
+          "getMaterialByElement",
+          [](StructuralMechanicsModel & self, Element element)
+              -> decltype(auto) { return self.getMaterialByElement(element); },
           "This function returns the `StructuralMaterial` instance that is "
-          "associated with element `element`."
-          " It is important that the returned object can be modified, but this "
-          "will not affect the material stored inside the model."
-          " If you want to change the material, use `addMaterial()` to add a "
-          "new one and then manipulate the mapping by operating on "
-          "`getElementMaterialMap()`.",
-          py::arg("element"),
-          py::return_value_policy::copy // By using the copy operation, we
-                                        // completly decouple the C++ and Python
-                                        // part.
-          )
+          "associated with element `element`.",
+          py::arg("element"), py::return_value_policy::reference)
       .def(
           "addMaterial",
-          [](StructuralMechanicsModel & self, StructuralMaterial & mat)
-              -> UInt { return self.addMaterial(mat); },
+          [](StructuralMechanicsModel & self, StructuralMaterial & mat,
+             const ID & name) -> UInt { return self.addMaterial(mat, name); },
           "This function adds the `StructuralMaterial` `mat` to `self`."
           " The function returns the ID of the new material.",
-          py::arg("mat"))
+          py::arg("mat"), py::arg("name") = "")
       .def(
-          "getMaterialByID",
-          [](StructuralMechanicsModel & self, UInt i) {
-            return self.getMaterialByID(i);
-          },
+          "getMaterial",
+          [](StructuralMechanicsModel & self, UInt material_index)
+              -> decltype(auto) { return self.getMaterial(material_index); },
           "This function returns the `i`th material of `self`", py::arg("i"),
-          py::return_value_policy::copy // Everything will be coupled so a
-                                        // complet decoupling
-          )
+          py::return_value_policy::reference)
+      .def(
+          "getMaterial",
+          [](StructuralMechanicsModel & self, const ID & name)
+              -> decltype(auto) { return self.getMaterial(name); },
+          "This function returns the `i`th material of `self`", py::arg("i"),
+          py::return_value_policy::reference)
       .def(
           "getNbMaterials",
           [](StructuralMechanicsModel & self) { return self.getNbMaterials(); },
-          "Returns the number of different materials inside `self`."
-          " The highest ID is one less than the returned number.");
+          "Returns the number of different materials inside `self`.");
 } // End: register structural mechanical model
 
 } // namespace akantu

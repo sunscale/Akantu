@@ -228,28 +228,18 @@ public:
    *
    * \note The return type is is new.
    */
-  UInt addMaterial(StructuralMaterial & material) {
-    const auto matID = materials.size(); // ID of the material
-    materials.push_back(material);       // add the material, might cause
-                                         // reallocation.
-    AKANTU_DEBUG_ASSERT(matID <=
-                            (::std::size_t)::std::numeric_limits<UInt>::max(),
-                        "Can not represent the material ID");
-    return UInt(matID);
-  }
+  UInt addMaterial(StructuralMaterial & material, const ID & name = "");
 
-  const StructuralMaterial & getMaterial(const Element & element) const {
-    return materials[element_material(element)];
-  }
+  const StructuralMaterial &
+  getMaterialByElement(const Element & element) const;
 
   /**
    * \brief	Returns the ith material of *this.
-   *
    * \param  i		The ith material
    */
-  const StructuralMaterial & getMaterialByID(UInt i) const noexcept(false) {
-    return materials.at(i);
-  }
+  const StructuralMaterial & getMaterial(UInt material_index) const;
+
+  const StructuralMaterial & getMaterial(const ID & name) const;
 
   /**
    * \brief	Returns the number of the different materials inside *this.
@@ -329,6 +319,7 @@ private:
 
   /* ------------------------------------------------------------------------ */
   std::vector<StructuralMaterial> materials;
+  std::map<std::string, UInt> materials_names_to_id;
 };
 
 } // namespace akantu

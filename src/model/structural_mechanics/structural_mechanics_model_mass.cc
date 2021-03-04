@@ -44,7 +44,7 @@ public:
       : model(model){};
 
   void operator()(Matrix<Real> & rho, const Element & element) const {
-    Real mat_rho = model.getMaterial(element).rho;
+    Real mat_rho = model.getMaterialByElement(element).rho;
     rho.set(mat_rho);
   }
 

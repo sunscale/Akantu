@@ -41,6 +41,60 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+inline UInt StructuralMechanicsModel::addMaterial(StructuralMaterial & material,
+                                                  const ID & name) {
+
+  const auto material_index = materials.size();
+
+  auto material_name = name;
+  if (name.empty()) {
+    material_name = "material_" + std::to_string(material_index);
+  }
+
+  if (materials_names_to_id.find(material_name) !=
+      materials_names_to_id.end()) {
+    AKANTU_EXCEPTION("The material " << material_name
+                                     << " already exists in the model " << id);
+  }
+
+  AKANTU_DEBUG_ASSERT(material_index <=
+                          (::std::size_t)::std::numeric_limits<UInt>::max(),
+                      "Can not represent the material ID");
+
+  std::cout << "Registering material " << material_name << " as material "
+            << material_index << std::endl;
+  materials_names_to_id[material_name] = material_index;
+  materials.push_back(material); // add the material, might cause
+                                 // reallocation.
+
+  return UInt(material_index);
+}
+
+/* -------------------------------------------------------------------------- */
+inline const StructuralMaterial &
+StructuralMechanicsModel::getMaterialByElement(const Element & element) const {
+  return materials[element_material(element)];
+}
+
+/* -------------------------------------------------------------------------- */
+inline const StructuralMaterial &
+StructuralMechanicsModel::getMaterial(UInt material_index) const {
+  return materials.at(material_index);
+}
+
+/* -------------------------------------------------------------------------- */
+inline const StructuralMaterial &
+StructuralMechanicsModel::getMaterial(const ID & name) const {
+  auto it = materials_names_to_id.find(name);
+  if (it == materials_names_to_id.end()) {
+    AKANTU_EXCEPTION("The material " << name << " was not found in the model "
+                                     << id);
+  }
+
+  return materials.at(it->second);
+}
+
+/* -------------------------------------------------------------------------- */
 template <ElementType type>
 void StructuralMechanicsModel::computeTangentModuli(
     Array<Real> & /*tangent_moduli*/) {
