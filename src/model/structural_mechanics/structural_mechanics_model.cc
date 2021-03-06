@@ -477,6 +477,66 @@ void StructuralMechanicsModel::assembleInternalForce(ElementType type,
   getDOFManager().assembleElementalArrayLocalArray(intBtSigma, *internal_force,
                                                    type, gt, -1.);
 }
+
+/* -------------------------------------------------------------------------- */
+Real StructuralMechanicsModel::getKineticEnergy() {
+
+  if (not this->getDOFManager().hasMatrix("M")) {
+    return 0.;
+  }
+
+  Real ekin = 0.;
+  UInt nb_nodes = mesh.getNbNodes();
+
+  Array<Real> Mv(nb_nodes, nb_degree_of_freedom);
+  this->getDOFManager().assembleMatMulVectToArray("displacement", "M",
+                                                  *this->velocity, Mv);
+
+  for (auto && data : zip(arange(nb_nodes), make_view(Mv, nb_degree_of_freedom),
+                          make_view(*this->velocity, nb_degree_of_freedom))) {
+    ekin += std::get<2>(data).dot(std::get<1>(data)) *
+            static_cast<Real>(mesh.isLocalOrMasterNode(std::get<0>(data)));
+  }
+
+  mesh.getCommunicator().allReduce(ekin, SynchronizerOperation::_sum);
+
+  return ekin / 2.;
+}
+
+/* -------------------------------------------------------------------------- */
+Real StructuralMechanicsModel::getPotentialEnergy() {
+  Real epot = 0.;
+  UInt nb_nodes = mesh.getNbNodes();
+
+  Array<Real> Ku(nb_nodes, nb_degree_of_freedom);
+  this->getDOFManager().assembleMatMulVectToArray(
+      "displacement", "K", *this->displacement_rotation, Ku);
+
+  for (auto && data :
+       zip(arange(nb_nodes), make_view(Ku, nb_degree_of_freedom),
+           make_view(*this->displacement_rotation, nb_degree_of_freedom))) {
+    epot += std::get<2>(data).dot(std::get<1>(data)) *
+            static_cast<Real>(mesh.isLocalOrMasterNode(std::get<0>(data)));
+  }
+
+  mesh.getCommunicator().allReduce(epot, SynchronizerOperation::_sum);
+
+  return epot / 2.;
+}
+
+/* -------------------------------------------------------------------------- */
+Real StructuralMechanicsModel::getEnergy(const ID & energy) {
+  if (energy == "kinetic") {
+    return getKineticEnergy();
+  }
+
+  if (energy == "potential") {
+    return getPotentialEnergy();
+  }
+
+  return 0;
+}
+
 /* -------------------------------------------------------------------------- */
 
 } // namespace akantu

@@ -104,6 +104,16 @@ public:
   void assembleResidual(const ID & residual_part) override;
 
   bool canSplitResidual() override { return false; }
+
+  /// compute kinetic energy
+  Real getKineticEnergy();
+
+  /// compute potential energy
+  Real getPotentialEnergy();
+
+  /// compute the specified energy
+  Real getEnergy(const ID & energy);
+
   /* ------------------------------------------------------------------------ */
   /* Virtual methods from Model                                               */
   /* ------------------------------------------------------------------------ */

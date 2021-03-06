@@ -113,7 +113,14 @@ void register_structural_mechanics_model(pybind11::module & mod) {
       .def(
           "getNbMaterials",
           [](StructuralMechanicsModel & self) { return self.getNbMaterials(); },
-          "Returns the number of different materials inside `self`.");
+          "Returns the number of different materials inside `self`.")
+      .def("getKineticEnergy", &StructuralMechanicsModel::getKineticEnergy,
+           "Compute kinetic energy")
+      .def("getPotentialEnergy", &StructuralMechanicsModel::getPotentialEnergy,
+           "Compute potential energy")
+      .def("getEnergy", &StructuralMechanicsModel::getEnergy,
+           "Compute the specified energy");
+
 } // End: register structural mechanical model
 
 } // namespace akantu
