@@ -32,6 +32,12 @@ void register_solvers(py::module & mod) {
             self.add(i, j, value);
           },
           "Add the value to the matrix")
+      .def(
+          "add",
+          [](SparseMatrix & self, SparseMatrix & A, Real alpha) {
+            self.add(A, alpha);
+          },
+          "Add a matrix to the matrix", py::arg("A"), py::arg("alpha") = 1.)
       .def("__call__", [](const SparseMatrix & self, UInt i, UInt j) {
         return self(i, j);
       });
