@@ -61,8 +61,6 @@ inline UInt StructuralMechanicsModel::addMaterial(StructuralMaterial & material,
                           (::std::size_t)::std::numeric_limits<UInt>::max(),
                       "Can not represent the material ID");
 
-  std::cout << "Registering material " << material_name << " as material "
-            << material_index << std::endl;
   materials_names_to_id[material_name] = material_index;
   materials.push_back(material); // add the material, might cause
                                  // reallocation.
