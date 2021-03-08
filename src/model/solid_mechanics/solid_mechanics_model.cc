@@ -692,6 +692,7 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id) {
   AKANTU_DEBUG_OUT();
   return energy;
 }
+
 /* -------------------------------------------------------------------------- */
 Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
                                     ElementType type, UInt index) {
@@ -707,6 +708,23 @@ Real SolidMechanicsModel::getEnergy(const std::string & energy_id,
       this->materials[mat_index]->getEnergy(energy_id, type, mat_loc_num);
 
   AKANTU_DEBUG_OUT();
+  return energy;
+}
+
+/* -------------------------------------------------------------------------- */
+Real SolidMechanicsModel::getEnergy(const ID & energy_id,
+                                    const ID & group_id) {
+  auto && group = mesh.getElementGroup(group_id);
+  auto energy = 0.;
+  for(auto && type : group.elementTypes()) {
+    for(auto && el : group.getElementsIterable(type)) {
+      energy += getEnergy(energy_id, el);
+    }
+  }
+
+  /// reduction sum over all processors
+  mesh.getCommunicator().allReduce(energy, SynchronizerOperation::_sum);
+
   return energy;
 }
 
