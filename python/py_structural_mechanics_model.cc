@@ -102,13 +102,17 @@ void register_structural_mechanics_model(pybind11::module & mod) {
           "getMaterial",
           [](StructuralMechanicsModel & self, UInt material_index)
               -> decltype(auto) { return self.getMaterial(material_index); },
-          "This function returns the `i`th material of `self`", py::arg("i"),
+          "This function returns the `i`th material of `self`."
+          " Note a reference is returned which allows to modify the material inside `self`.",
+          py::arg("i"),
           py::return_value_policy::reference)
       .def(
           "getMaterial",
           [](StructuralMechanicsModel & self, const ID & name)
               -> decltype(auto) { return self.getMaterial(name); },
-          "This function returns the `i`th material of `self`", py::arg("i"),
+          "This function returns the material with name `i` of `self`."
+          " Note a reference is returned which allows to modify the material inside `self`.",
+          py::arg("i"),
           py::return_value_policy::reference)
       .def(
           "getNbMaterials",
