@@ -188,7 +188,8 @@ namespace tuple {
   namespace details {
     template <std::size_t N> struct Foreach {
       template <class Tuple>
-      static inline bool not_equal(Tuple && a, Tuple && b) {
+
+      static constexpr inline auto not_equal(Tuple && a, Tuple && b) -> bool {
         if (std::get<N - 1>(std::forward<Tuple>(a)) ==
             std::get<N - 1>(std::forward<Tuple>(b))) {
           return false;
@@ -196,14 +197,37 @@ namespace tuple {
         return Foreach<N - 1>::not_equal(std::forward<Tuple>(a),
                                          std::forward<Tuple>(b));
       }
+
+      template <class Tuple, class V>
+      static constexpr inline auto find(Tuple && tuple, V && value)
+          -> std::size_t {
+        constexpr auto size = std::tuple_size<std::decay_t<Tuple>>::value;
+        if (std::get<size - N>(std::forward<Tuple>(tuple)) == value) {
+          return size - N;
+        }
+
+        return Foreach<N - 1>::find(std::forward<Tuple>(tuple),
+                                    std::forward<V>(value));
+      }
     };
 
     /* ---------------------------------------------------------------------- */
     template <> struct Foreach<0> {
       template <class Tuple>
-      static inline bool not_equal(Tuple && a, Tuple && b) {
+      static constexpr inline auto not_equal(Tuple && a, Tuple && b) -> bool {
         return std::get<0>(std::forward<Tuple>(a)) !=
                std::get<0>(std::forward<Tuple>(b));
+      }
+
+      template <class Tuple, class V>
+      static constexpr inline auto find(Tuple && tuple, V && value)
+          -> std::size_t {
+        constexpr auto size = std::tuple_size<std::decay_t<Tuple>>::value;
+        if (std::get<size - 1>(std::forward<Tuple>(tuple)) == value) {
+          return size - 1;
+        }
+
+        return size;
       }
     };
 
@@ -213,28 +237,38 @@ namespace tuple {
     }
 
     template <typename... Names, typename... Ts>
-    decltype(auto) make_named_tuple_no_decay(std::tuple<Names...> /*unused*/,
-                                             Ts &&... args) {
+    constexpr decltype(auto)
+    make_named_tuple_no_decay(std::tuple<Names...> /*unused*/, Ts &&... args) {
       return named_tuple<named_tag<Names, Ts>...>(std::forward<Ts>(args)...);
     }
 
     template <class F, class Tuple, std::size_t... Is>
-    void foreach_impl(F && func, Tuple && tuple,
-                      std::index_sequence<Is...> && /*unused*/) {
+    constexpr void foreach_impl(F && func, Tuple && tuple,
+                                std::index_sequence<Is...> && /*unused*/) {
       (void)std::initializer_list<int>{
           (std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple))),
            0)...};
     }
 
     template <class F, class Tuple, std::size_t... Is>
-    decltype(auto) transform_impl(F && func, Tuple && tuple,
-                                  std::index_sequence<Is...> && /*unused*/) {
+    constexpr decltype(auto)
+    transform_impl(F && func, Tuple && tuple,
+                   std::index_sequence<Is...> && /*unused*/) {
       return make_tuple_no_decay(
           std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple)))...);
     }
 
     template <class F, class Tuple, std::size_t... Is>
-    decltype(auto)
+    constexpr decltype(auto)
+    transform_impl(F && func, Tuple && tuple1, Tuple && tuple2,
+                   std::index_sequence<Is...> && /*unused*/) {
+      return make_tuple_no_decay(
+          std::forward<F>(func)(std::get<Is>(std::forward<Tuple>(tuple1)),
+                                std::get<Is>(std::forward<Tuple>(tuple2)))...);
+    }
+
+    template <class F, class Tuple, std::size_t... Is>
+    constexpr decltype(auto)
     transform_named_impl(F && func, Tuple && tuple,
                          std::index_sequence<Is...> && /*unused*/) {
       return make_named_tuple_no_decay(
@@ -244,11 +278,12 @@ namespace tuple {
 
   } // namespace details
 
-  /* ------------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------------
+   */
   template <class Tuple,
             std::enable_if_t<not is_named_tuple<std::decay_t<Tuple>>::value> * =
                 nullptr>
-  bool are_not_equal(Tuple && a, Tuple && b) {
+  constexpr auto are_not_equal(Tuple && a, Tuple && b) -> bool {
     return details::Foreach<std::tuple_size<std::decay_t<Tuple>>::value>::
         not_equal(std::forward<Tuple>(a), std::forward<Tuple>(b));
   }
@@ -256,16 +291,22 @@ namespace tuple {
   template <
       class Tuple,
       std::enable_if_t<is_named_tuple<std::decay_t<Tuple>>::value> * = nullptr>
-  bool are_not_equal(Tuple && a, Tuple && b) {
+  constexpr auto are_not_equal(Tuple && a, Tuple && b) -> bool {
     return details::Foreach<
         std::tuple_size<typename std::decay_t<Tuple>::parent>::value>::
         not_equal(std::forward<Tuple>(a), std::forward<Tuple>(b));
   }
 
+  template <class Tuple, class V>
+  constexpr decltype(auto) find(Tuple && tuple, V && value) {
+    return details::Foreach<std::tuple_size<std::decay_t<Tuple>>::value>::find(
+        std::forward<Tuple>(tuple), std::forward<V>(value));
+  }
+
   template <class F, class Tuple,
             std::enable_if_t<not is_named_tuple<std::decay_t<Tuple>>::value> * =
                 nullptr>
-  void foreach (F && func, Tuple && tuple) {
+  constexpr void foreach (F && func, Tuple && tuple) {
     return details::foreach_impl(
         std::forward<F>(func), std::forward<Tuple>(tuple),
         std::make_index_sequence<
@@ -275,7 +316,7 @@ namespace tuple {
   template <
       class F, class Tuple,
       std::enable_if_t<is_named_tuple<std::decay_t<Tuple>>::value> * = nullptr>
-  void foreach (F && func, Tuple && tuple) {
+  constexpr void foreach (F && func, Tuple && tuple) {
     return details::foreach_impl(
         std::forward<F>(func), std::forward<Tuple>(tuple),
         std::make_index_sequence<
@@ -285,9 +326,21 @@ namespace tuple {
   template <class F, class Tuple,
             std::enable_if_t<not is_named_tuple<std::decay_t<Tuple>>::value> * =
                 nullptr>
-  decltype(auto) transform(F && func, Tuple && tuple) {
+  constexpr decltype(auto) transform(F && func, Tuple && tuple) {
     return details::transform_impl(
         std::forward<F>(func), std::forward<Tuple>(tuple),
+        std::make_index_sequence<
+            std::tuple_size<std::decay_t<Tuple>>::value>{});
+  }
+
+  template <class F, class Tuple,
+            std::enable_if_t<not is_named_tuple<std::decay_t<Tuple>>::value> * =
+                nullptr>
+  constexpr decltype(auto) transform(F && func, Tuple && tuple1,
+                                     Tuple && tuple2) {
+    return details::transform_impl(
+        std::forward<F>(func), std::forward<Tuple>(tuple1),
+        std::forward<Tuple>(tuple2),
         std::make_index_sequence<
             std::tuple_size<std::decay_t<Tuple>>::value>{});
   }
@@ -295,7 +348,7 @@ namespace tuple {
   template <
       class F, class Tuple,
       std::enable_if_t<is_named_tuple<std::decay_t<Tuple>>::value> * = nullptr>
-  decltype(auto) transform(F && func, Tuple && tuple) {
+  constexpr decltype(auto) transform(F && func, Tuple && tuple) {
     return details::transform_named_impl(
         std::forward<F>(func), std::forward<Tuple>(tuple),
         std::make_index_sequence<
@@ -304,16 +357,35 @@ namespace tuple {
 
   namespace details {
     template <class Tuple, std::size_t... Is>
-    decltype(auto) flatten(Tuple && tuples,
-                           std::index_sequence<Is...> /*unused*/) {
+    constexpr decltype(auto) flatten(Tuple && tuples,
+                                     std::index_sequence<Is...> /*unused*/) {
       return std::tuple_cat(std::get<Is>(tuples)...);
     }
   } // namespace details
 
-  template <class Tuple> decltype(auto) flatten(Tuple && tuples) {
+  template <class Tuple> constexpr decltype(auto) flatten(Tuple && tuples) {
     return details::flatten(std::forward<Tuple>(tuples),
                             std::make_index_sequence<
                                 std::tuple_size<std::decay_t<Tuple>>::value>());
+  }
+
+  namespace details {
+    template <size_t n, class Tuple>
+    decltype(auto) dynamic_get_impl(size_t i, Tuple && tuple) {
+      constexpr auto size = std::tuple_size<std::decay_t<Tuple>>::value;
+      if (i == n) {
+        return std::get<n>(tuple);
+      } else if (n == size - 1) {
+        throw std::out_of_range("Tuple element out of range.");
+      } else {
+        return dynamic_get_impl<(n < size - 1 ? n + 1 : 0)>(i, tuple);
+      }
+    }
+  } // namespace details
+
+  template <class Tuple>
+  constexpr decltype(auto) dynamic_get(std::size_t i, Tuple && tuple) {
+    return details::dynamic_get_impl<0>(i, std::forward<Tuple>(tuple));
   }
 } // namespace tuple
 
