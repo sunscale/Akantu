@@ -33,6 +33,12 @@ void register_model(py::module & mod) {
           },
           py::return_value_policy::reference)
       .def("getArrayPerDOFs", &DOFManager::getArrayPerDOFs)
+      .def(
+      	  "hasMatrix",
+      	  [](DOFManager & self, const ID & name) -> bool {
+      	     return self.hasMatrix(name);
+      	  },
+	  py::arg("name"))
       .def("assembleToResidual", &DOFManager::assembleToResidual);
 
   py::class_<NonLinearSolver>(mod, "NonLinearSolver")
