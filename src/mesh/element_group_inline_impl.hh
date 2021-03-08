@@ -32,7 +32,7 @@
 /* -------------------------------------------------------------------------- */
 #include "element_group.hh"
 #include "mesh.hh"
-
+#include "aka_iterators.hh"
 /* -------------------------------------------------------------------------- */
 
 #ifndef AKANTU_ELEMENT_GROUP_INLINE_IMPL_HH_
@@ -77,8 +77,7 @@ inline void ElementGroup::removeNode(UInt node_id) {
 }
 
 /* -------------------------------------------------------------------------- */
-inline void ElementGroup::addElement(ElementType elem_type,
-                                     UInt elem_id,
+inline void ElementGroup::addElement(ElementType elem_type, UInt elem_id,
                                      GhostType ghost_type) {
   if (!(elements.exists(elem_type, ghost_type))) {
     elements.alloc(0, 1, elem_type, ghost_type);
@@ -101,15 +100,13 @@ ElementGroup::firstType(UInt dim, GhostType ghost_type,
 
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::type_iterator
-ElementGroup::lastType(UInt dim, GhostType ghost_type,
-                       ElementKind kind) const {
+ElementGroup::lastType(UInt dim, GhostType ghost_type, ElementKind kind) const {
   return elements.elementTypes(dim, ghost_type, kind).end();
 }
 
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::const_element_iterator
-ElementGroup::begin(ElementType type,
-                    GhostType ghost_type) const {
+ElementGroup::begin(ElementType type, GhostType ghost_type) const {
   if (elements.exists(type, ghost_type)) {
     return elements(type, ghost_type).begin();
   }
@@ -118,8 +115,7 @@ ElementGroup::begin(ElementType type,
 
 /* -------------------------------------------------------------------------- */
 inline ElementGroup::const_element_iterator
-ElementGroup::end(ElementType type,
-                  GhostType ghost_type) const {
+ElementGroup::end(ElementType type, GhostType ghost_type) const {
   if (elements.exists(type, ghost_type)) {
     return elements(type, ghost_type).end();
   }
@@ -128,8 +124,7 @@ ElementGroup::end(ElementType type,
 
 /* -------------------------------------------------------------------------- */
 inline const Array<UInt> &
-ElementGroup::getElements(ElementType type,
-                          GhostType ghost_type) const {
+ElementGroup::getElements(ElementType type, GhostType ghost_type) const {
   if (elements.exists(type, ghost_type)) {
     return elements(type, ghost_type);
   }
@@ -137,6 +132,14 @@ ElementGroup::getElements(ElementType type,
 }
 
 /* -------------------------------------------------------------------------- */
+inline decltype(auto)
+ElementGroup::getElementsIterable(ElementType type,
+                                  GhostType ghost_type) const {
+  return make_transform_adaptor(this->elements(type, ghost_type),
+                                [&type, &ghost_type](auto && el) {
+                                  return Element{type, el, ghost_type};
+                                });
+}
 
 } // namespace akantu
 
