@@ -39,9 +39,8 @@ namespace akantu {
 TimeStepSolver::TimeStepSolver(DOFManager & dof_manager,
                                const TimeStepSolverType & type,
                                NonLinearSolver & non_linear_solver,
-                               SolverCallback & solver_callback, const ID & id,
-                               UInt memory_id)
-    : Memory(id, memory_id), SolverCallback(dof_manager),
+                               SolverCallback & solver_callback, const ID & id)
+    : SolverCallback(dof_manager), id(id),
       _dof_manager(dof_manager), type(type), time_step(0.),
       solver_callback(&solver_callback), non_linear_solver(non_linear_solver) {
   this->registerSubRegistry("non_linear_solver", non_linear_solver);

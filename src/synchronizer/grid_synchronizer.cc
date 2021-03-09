@@ -151,7 +151,7 @@ void GridSynchronizer::createGridSynchronizer(const SpatialGrid<E> & grid) {
       sstr << "element_per_proc_" << p;
       element_per_proc.emplace(
           std::piecewise_construct, std::forward_as_tuple(p),
-          std::forward_as_tuple(sstr.str(), id, memory_id));
+          std::forward_as_tuple(sstr.str(), id));
 
       ElementTypeMapArray<UInt> & elempproc = element_per_proc[p];
 

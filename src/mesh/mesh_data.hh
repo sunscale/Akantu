@@ -34,7 +34,6 @@
 #define AKANTU_MESH_DATA_HH_
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "element_type_map.hh"
 #include <map>
 #include <string>
@@ -75,8 +74,7 @@ private:
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  MeshData(const ID & id = "mesh_data", const ID & parent_id = "",
-           const MemoryID & mem_id = 0);
+  MeshData(const ID & id = "mesh_data", const ID & parent_id = "");
 
   /* ------------------------------------------------------------------------ */
   /* Methods and accessors                                                    */
@@ -170,7 +168,6 @@ private:
   /* ------------------------------------------------------------------------ */
 private:
   ID _id;
-  UInt _memory_id{0};
 
   /// Map when elemental data is stored as ElementTypeMap
   ElementalDataMap elemental_data;

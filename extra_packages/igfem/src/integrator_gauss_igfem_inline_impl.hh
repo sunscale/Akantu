@@ -177,8 +177,8 @@ IntegratorGauss<_ek_igfem, IOF>::computeJacobianOnQuadPointsByElement(
 /* -------------------------------------------------------------------------- */
 template <class IOF>
 inline IntegratorGauss<_ek_igfem, IOF>::IntegratorGauss(
-    const Mesh & mesh, const ID & id, const MemoryID & memory_id)
-    : Integrator(mesh, id, memory_id) {
+    const Mesh & mesh, const ID & id)
+    : Integrator(mesh, id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();

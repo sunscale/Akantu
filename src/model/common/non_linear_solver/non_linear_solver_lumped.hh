@@ -49,8 +49,7 @@ class NonLinearSolverLumped : public NonLinearSolver {
 public:
   NonLinearSolverLumped(DOFManagerDefault & dof_manager,
                         const NonLinearSolverType & non_linear_solver_type,
-                        const ID & id = "non_linear_solver_lumped",
-                        UInt memory_id = 0);
+                        const ID & id = "non_linear_solver_lumped");
   ~NonLinearSolverLumped() override;
 
   /* ------------------------------------------------------------------------ */

@@ -45,8 +45,7 @@ template <ElementKind kind> class ShapeStructural : public ShapeFunctions {
   // Ctors/Dtors should be explicitely implemented for _ek_structural
 public:
   ShapeStructural(Mesh & mesh, UInt spatial_dimension,
-                  const ID & id = "shape_structural",
-                  const MemoryID & memory_id = 0);
+                  const ID & id = "shape_structural");
   ~ShapeStructural() override;
 
   /* ------------------------------------------------------------------------ */

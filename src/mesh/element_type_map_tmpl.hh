@@ -184,8 +184,7 @@ void ElementTypeMapArray<T, SupportType>::copy(
 template <typename T, typename SupportType>
 ElementTypeMapArray<T, SupportType>::ElementTypeMapArray(
     const ElementTypeMapArray & other)
-    : parent(), Memory(other.id + "_copy", other.memory_id),
-      name(other.name + "_copy") {
+    : parent(), id(other.id + "_copy"), name(other.name + "_copy") {
   this->copy(other);
 }
 
@@ -199,25 +198,22 @@ inline Array<T> & ElementTypeMapArray<T, SupportType>::alloc(
     ghost_id = ":ghost";
   }
 
-  Array<T> * tmp;
-
   auto it = this->getData(ghost_type).find(type);
 
   if (it == this->getData(ghost_type).end()) {
     auto id = this->id + ":" + std::to_string(type) + ghost_id;
-    tmp = &(Memory::alloc<T>(id, size, nb_component, default_value));
 
-    this->getData(ghost_type)[type] = tmp;
-  } else {
-    AKANTU_DEBUG_INFO(
-        "The vector "
-        << this->id << this->printType(type, ghost_type)
-        << " already exists, it is resized instead of allocated.");
-    tmp = it->second;
-    it->second->resize(size);
+    this->getData(ghost_type)[type] =
+        std::make_unique<Array<T>>(size, nb_component, default_value, id);
+    return *(this->getData(ghost_type)[type]);
   }
 
-  return *tmp;
+  AKANTU_DEBUG_INFO("The vector "
+                    << this->id << this->printType(type, ghost_type)
+                    << " already exists, it is resized instead of allocated.");
+  auto && array = *(it->second);
+  array.resize(size);
+  return array;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -237,9 +233,6 @@ inline void ElementTypeMapArray<T, SupportType>::free() {
 
   for (auto gt : ghost_types) {
     auto & data = this->getData(gt);
-    for (auto & pair : data) {
-      dealloc(pair.second->getID());
-    }
     data.clear();
   }
 

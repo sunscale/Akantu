@@ -47,8 +47,7 @@ class NTNFriction : public FrictionLaw<Regularisation> {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNFriction(NTNBaseContact & contact, const ID & id = "friction",
-              const MemoryID & memory_id = 0);
+  NTNFriction(NTNBaseContact & contact, const ID & id = "friction");
   virtual ~NTNFriction(){};
 
   /* ------------------------------------------------------------------------ */

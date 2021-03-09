@@ -49,9 +49,8 @@ namespace akantu {
 EmbeddedInterfaceModel::EmbeddedInterfaceModel(Mesh & mesh,
                                                Mesh & primitive_mesh,
                                                UInt spatial_dimension,
-                                               const ID & id,
-                                               const MemoryID & memory_id)
-    : SolidMechanicsModel(mesh, spatial_dimension, id, memory_id),
+                                               const ID & id)
+    : SolidMechanicsModel(mesh, spatial_dimension, id),
       intersector(mesh, primitive_mesh), interface_mesh(nullptr),
       primitive_mesh(primitive_mesh), interface_material_selector(nullptr) {
   this->model_type = ModelType::_embedded_model;

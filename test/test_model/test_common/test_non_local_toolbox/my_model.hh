@@ -80,7 +80,7 @@ public:
   void insertIntegrationPointsInNeighborhoods(
       GhostType ghost_type) override {
     ElementTypeMapArray<Real> quadrature_points_coordinates(
-        "quadrature_points_coordinates_tmp_nl", this->id, this->memory_id);
+        "quadrature_points_coordinates_tmp_nl", this->id);
     quadrature_points_coordinates.initialize(this->getFEEngine(),
                                              _nb_component = spatial_dimension,
                                              _ghost_type = ghost_type);

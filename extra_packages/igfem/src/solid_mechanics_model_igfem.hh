@@ -51,8 +51,7 @@ public:
 
   SolidMechanicsModelIGFEM(Mesh & mesh,
                            UInt spatial_dimension = _all_dimensions,
-                           const ID & id = "solid_mechanics_model_igfem",
-                           const MemoryID & memory_id = 0);
+                           const ID & id = "solid_mechanics_model_igfem");
 
   virtual ~SolidMechanicsModelIGFEM();
 

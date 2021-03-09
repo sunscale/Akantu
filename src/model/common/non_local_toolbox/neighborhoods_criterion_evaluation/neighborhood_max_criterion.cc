@@ -37,11 +37,11 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NeighborhoodMaxCriterion::NeighborhoodMaxCriterion(
     Model & model, const ElementTypeMapReal & quad_coordinates,
-    const ID & criterion_id, const ID & id, const MemoryID & memory_id)
-    : NeighborhoodBase(model, quad_coordinates, id, memory_id),
+    const ID & criterion_id, const ID & id)
+    : NeighborhoodBase(model, quad_coordinates, id),
       Parsable(ParserType::_non_local, id),
-      is_highest("is_highest", id, memory_id),
-      criterion(criterion_id, id, memory_id) {
+      is_highest("is_highest", id),
+      criterion(criterion_id, id) {
 
   AKANTU_DEBUG_IN();
 
@@ -119,9 +119,9 @@ void NeighborhoodMaxCriterion::createGridSynchronizer() {
   tags.insert(SynchronizationTag::_nh_criterion);
 
   std::stringstream sstr;
-  sstr << getID() << ":grid_synchronizer";
+  sstr << id << ":grid_synchronizer";
   this->grid_synchronizer = std::make_unique<GridSynchronizer>(
-      this->model.getMesh(), *spatial_grid, *this, tags, sstr.str(), 0, false);
+      this->model.getMesh(), *spatial_grid, *this, tags, sstr.str(), false);
   this->is_creating_grid = false;
 }
 

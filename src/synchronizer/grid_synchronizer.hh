@@ -49,7 +49,7 @@ class GridSynchronizer : public ElementSynchronizer {
 public:
   template <typename E>
   GridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
-                   const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
+                   const ID & id = "grid_synchronizer",
                    bool register_to_event_manager = true,
                    EventHandlerPriority event_priority = _ehp_synchronizer);
 
@@ -57,7 +57,7 @@ public:
   GridSynchronizer(Mesh & mesh, const SpatialGrid<E> & grid,
                    SynchronizerRegistry & synchronizer_registry,
                    const std::set<SynchronizationTag> & tags_to_register,
-                   const ID & id = "grid_synchronizer", MemoryID memory_id = 0,
+                   const ID & id = "grid_synchronizer",
                    bool register_to_event_manager = true,
                    EventHandlerPriority event_priority = _ehp_synchronizer);
 

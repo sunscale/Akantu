@@ -70,7 +70,7 @@ public:
   using Shape = S<kind>;
 
   FEEngineTemplate(Mesh & mesh, UInt spatial_dimension = _all_dimensions,
-                   const ID & id = "fem", MemoryID memory_id = 0);
+                   const ID & id = "fem");
 
   ~FEEngineTemplate() override;
 

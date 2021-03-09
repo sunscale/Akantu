@@ -46,7 +46,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 MaterialCohesive::MaterialCohesive(SolidMechanicsModel & model, const ID & id)
     : Material(model, id),
-      facet_filter("facet_filter", id, this->getMemoryID()),
+      facet_filter("facet_filter", id),
       fem_cohesive(
           model.getFEEngineClass<MyFEEngineCohesiveType>("CohesiveFEEngine")),
       reversible_energy("reversible_energy", *this),

@@ -38,9 +38,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact, const ID & id,
-                                 const MemoryID & memory_id)
-    : Memory(id, memory_id), Parsable(ParserType::_friction, id), Dumpable(),
+NTNBaseFriction::NTNBaseFriction(NTNBaseContact & contact, const ID & id)
+    : Parsable(ParserType::_friction, id), Dumpable(),
       contact(contact),
       is_sticking(0, 1, true, id + ":is_sticking", true, "is_sticking"),
       frictional_strength(0, 1, 0., id + ":frictional_strength", 0.,

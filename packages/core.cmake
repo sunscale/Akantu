@@ -62,16 +62,9 @@ package_declare_sources(core
   common/aka_math.cc
   common/aka_math.hh
   common/aka_math_tmpl.hh
-  common/aka_memory.cc
-  common/aka_memory.hh
-  common/aka_memory_inline_impl.hh
   common/aka_named_argument.hh
   common/aka_random_generator.hh
   common/aka_safe_enum.hh
-  common/aka_static_memory.cc
-  common/aka_static_memory.hh
-  common/aka_static_memory_inline_impl.hh
-  common/aka_static_memory_tmpl.hh
   common/aka_typelist.hh
   common/aka_types.hh
   common/aka_visitor.hh

@@ -36,15 +36,14 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-NTNContact::NTNContact(SolidMechanicsModel & model, const ID & id,
-                       const MemoryID & memory_id)
-    : NTNBaseContact(model, id, memory_id),
+NTNContact::NTNContact(SolidMechanicsModel & model, const ID & id)
+    : NTNBaseContact(model, id),
       masters(0, 1, 0, id + ":masters", std::numeric_limits<UInt>::quiet_NaN(),
               "masters"),
       lumped_boundary_masters(0, 1, 0, id + ":lumped_boundary_masters",
                               std::numeric_limits<Real>::quiet_NaN(),
                               "lumped_boundary_masters"),
-      master_elements("master_elements", id, memory_id) {
+      master_elements("master_elements", id) {
   AKANTU_DEBUG_IN();
 
   const Mesh & mesh = this->model.getMesh();

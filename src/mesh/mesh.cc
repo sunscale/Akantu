@@ -63,25 +63,21 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
-           Communicator & communicator)
-    : Memory(id, memory_id),
-      GroupManager(*this, id + ":group_manager", memory_id),
-      MeshData("mesh_data", id, memory_id),
-      connectivities("connectivities", id, memory_id),
-      ghosts_counters("ghosts_counters", id, memory_id),
-      normals("normals", id, memory_id), spatial_dimension(spatial_dimension),
-      size(spatial_dimension, 0.), bbox(spatial_dimension),
-      bbox_local(spatial_dimension), communicator(&communicator) {
+Mesh::Mesh(UInt spatial_dimension, const ID & id, Communicator & communicator)
+    : GroupManager(*this, id + ":group_manager"), MeshData("mesh_data", id),
+      id(id), connectivities("connectivities", id),
+      ghosts_counters("ghosts_counters", id), normals("normals", id),
+      spatial_dimension(spatial_dimension), size(spatial_dimension, 0.),
+      bbox(spatial_dimension), bbox_local(spatial_dimension),
+      communicator(&communicator) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, Communicator & communicator, const ID & id,
-           const MemoryID & memory_id)
-    : Mesh(spatial_dimension, id, memory_id, communicator) {
+Mesh::Mesh(UInt spatial_dimension, Communicator & communicator, const ID & id)
+    : Mesh(spatial_dimension, id, communicator) {
   AKANTU_DEBUG_IN();
 
   this->nodes =
@@ -93,15 +89,13 @@ Mesh::Mesh(UInt spatial_dimension, Communicator & communicator, const ID & id,
 }
 
 /* -------------------------------------------------------------------------- */
-Mesh::Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
-    : Mesh(spatial_dimension, Communicator::getStaticCommunicator(), id,
-           memory_id) {}
+Mesh::Mesh(UInt spatial_dimension, const ID & id)
+    : Mesh(spatial_dimension, Communicator::getStaticCommunicator(), id) {}
 
 /* -------------------------------------------------------------------------- */
 Mesh::Mesh(UInt spatial_dimension, const std::shared_ptr<Array<Real>> & nodes,
-           const ID & id, const MemoryID & memory_id)
-    : Mesh(spatial_dimension, id, memory_id,
-           Communicator::getStaticCommunicator()) {
+           const ID & id)
+    : Mesh(spatial_dimension, id, Communicator::getStaticCommunicator()) {
   this->nodes = nodes;
 
   this->nb_global_nodes = this->nodes->size();
@@ -149,7 +143,8 @@ public:
                 const SynchronizationTag & tag) const override {
     if (tag == SynchronizationTag::_smmc_facets_conn) {
       for (const auto & element : elements) {
-        const auto & conns = global_connectivity(element.type, element.ghost_type);
+        const auto & conns =
+            global_connectivity(element.type, element.ghost_type);
         for (auto n : arange(conns.getNbComponent())) {
           buffer << conns(element.element, n);
         }
@@ -185,7 +180,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
   }
 
   mesh_facets = std::make_unique<Mesh>(spatial_dimension, this->nodes,
-                                       getID() + ":" + id, getMemoryID());
+                                       getID() + ":" + id);
 
   mesh_facets->mesh_parent = this;
   mesh_facets->is_mesh_facets = true;
@@ -281,7 +276,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
 
         // set physical name
         auto && facet_element = Element{element.type, UInt(std::get<0>(*facet)),
-              element.ghost_type};
+                                        element.ghost_type};
         phys_data(facet_element) = mesh_phys_data(element);
       },
       _spatial_dimension = spatial_dimension - 1);
@@ -499,11 +494,10 @@ void Mesh::distributeImpl(
   this->communicator = &communicator;
 
   this->element_synchronizer = std::make_unique<ElementSynchronizer>(
-      *this, this->getID() + ":element_synchronizer", this->getMemoryID(),
-      true);
+      *this, this->getID() + ":element_synchronizer", true);
 
   this->node_synchronizer = std::make_unique<NodeSynchronizer>(
-      *this, this->getID() + ":node_synchronizer", this->getMemoryID(), true);
+      *this, this->getID() + ":node_synchronizer", true);
 
   Int psize = this->communicator->getNbProc();
 

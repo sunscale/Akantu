@@ -82,10 +82,9 @@ protected:
   using EventManager = EventHandlerManager<SolidMechanicsModelEventHandler>;
 
 public:
-  SolidMechanicsModel(
-      Mesh & mesh, UInt dim = _all_dimensions,
-      const ID & id = "solid_mechanics_model", const MemoryID & memory_id = 0,
-      ModelType model_type = ModelType::_solid_mechanics_model);
+  SolidMechanicsModel(Mesh & mesh, UInt dim = _all_dimensions,
+                      const ID & id = "solid_mechanics_model",
+                      ModelType model_type = ModelType::_solid_mechanics_model);
 
   ~SolidMechanicsModel() override;
 

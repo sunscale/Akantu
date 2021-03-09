@@ -25,9 +25,8 @@ void register_mesh(py::module & mod) {
 
   py::class_<Mesh, GroupManager, Dumpable, MeshData>(mod, "Mesh",
                                                      py::multiple_inheritance())
-      .def(py::init<UInt, const ID &, const MemoryID &>(),
-           py::arg("spatial_dimension"), py::arg("id") = "mesh",
-           py::arg("memory_id") = 0)
+      .def(py::init<UInt, const ID &>(),
+           py::arg("spatial_dimension"), py::arg("id") = "mesh")
       .def("read", &Mesh::read, py::arg("filename"),
            py::arg("mesh_io_type") = _miot_auto, "read the mesh from a file")
       .def(

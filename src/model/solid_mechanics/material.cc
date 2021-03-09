@@ -40,10 +40,10 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 Material::Material(SolidMechanicsModel & model, const ID & id)
-    : Memory(id, model.getMemoryID()), Parsable(ParserType::_material, id),
+    : Parsable(ParserType::_material, id),
       is_init(false), fem(model.getFEEngine()), finite_deformation(false),
       model(model), spatial_dimension(this->model.getSpatialDimension()),
-      element_filter("element_filter", id, this->memory_id),
+      element_filter("element_filter", id),
       stress("stress", *this), eigengradu("eigen_grad_u", *this),
       gradu("grad_u", *this), green_strain("green_strain", *this),
       piola_kirchhoff_2("piola_kirchhoff_2", *this),
@@ -72,10 +72,10 @@ Material::Material(SolidMechanicsModel & model, const ID & id)
 /* -------------------------------------------------------------------------- */
 Material::Material(SolidMechanicsModel & model, UInt dim, const Mesh & mesh,
                    FEEngine & fe_engine, const ID & id)
-    : Memory(id, model.getMemoryID()), Parsable(ParserType::_material, id),
+    : Parsable(ParserType::_material, id),
       is_init(false), fem(fe_engine), finite_deformation(false), model(model),
       spatial_dimension(dim),
-      element_filter("element_filter", id, this->memory_id),
+      element_filter("element_filter", id),
       stress("stress", *this, dim, fe_engine, this->element_filter),
       eigengradu("eigen_grad_u", *this, dim, fe_engine, this->element_filter),
       gradu("gradu", *this, dim, fe_engine, this->element_filter),
@@ -902,107 +902,46 @@ void Material::interpolateStressOnFacets(
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const Array<T> & Material::getArray(const ID & /*vect_id*/,
-                                    ElementType /*type*/,
-                                    GhostType /*ghost_type*/) const {
-  AKANTU_TO_IMPLEMENT();
-  return NULL;
+const Array<T> & Material::getArray(const ID & vect_id,
+                                    ElementType type,
+                                    GhostType ghost_type) const {
+  try {
+    return this->template getInternal<T>(vect_id)(type, ghost_type);
+  } catch (debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+                                            << ") does not contain a vector "
+                                            << vect_id << " [" << e << "]");
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-Array<T> & Material::getArray(const ID & /*vect_id*/, ElementType /*type*/,
-                              GhostType /*ghost_type*/) {
-  AKANTU_TO_IMPLEMENT();
+Array<T> & Material::getArray(const ID & vect_id, ElementType type,
+                              GhostType ghost_type) {
+  try {
+    return this->template getInternal<T>(vect_id)(type, ghost_type);
+  } catch (debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+                                            << ") does not contain a vector "
+                                            << vect_id << " [" << e << "]");
+  }
 }
 
-/* -------------------------------------------------------------------------- */
-template <>
+template
 const Array<Real> & Material::getArray(const ID & vect_id, ElementType type,
-                                       GhostType ghost_type) const {
-  std::stringstream sstr;
-  std::string ghost_id;
-  if (ghost_type == _ghost) {
-    ghost_id = ":ghost";
-  }
-  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
-
-  ID fvect_id = sstr.str();
-  try {
-    return Memory::getArray<Real>(fvect_id);
-  } catch (debug::Exception & e) {
-    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
-                                            << ") does not contain a vector "
-                                            << vect_id << " (" << fvect_id
-                                            << ") [" << e << "]");
-  }
-}
-
+                                       GhostType ghost_type) const;
 /* -------------------------------------------------------------------------- */
-template <>
+template
 Array<Real> & Material::getArray(const ID & vect_id, ElementType type,
-                                 GhostType ghost_type) {
-  std::stringstream sstr;
-  std::string ghost_id;
-  if (ghost_type == _ghost) {
-    ghost_id = ":ghost";
-  }
-  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
-
-  ID fvect_id = sstr.str();
-  try {
-    return Memory::getArray<Real>(fvect_id);
-  } catch (debug::Exception & e) {
-    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
-                                            << ") does not contain a vector "
-                                            << vect_id << " (" << fvect_id
-                                            << ") [" << e << "]");
-  }
-}
-
+                                 GhostType ghost_type);
 /* -------------------------------------------------------------------------- */
-template <>
+template
 const Array<UInt> & Material::getArray(const ID & vect_id, ElementType type,
-                                       GhostType ghost_type) const {
-  std::stringstream sstr;
-  std::string ghost_id;
-  if (ghost_type == _ghost) {
-    ghost_id = ":ghost";
-  }
-  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
-
-  ID fvect_id = sstr.str();
-  try {
-    return Memory::getArray<UInt>(fvect_id);
-  } catch (debug::Exception & e) {
-    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
-                                            << ") does not contain a vector "
-                                            << vect_id << " (" << fvect_id
-                                            << ") [" << e << "]");
-  }
-}
-
+                                       GhostType ghost_type) const;
 /* -------------------------------------------------------------------------- */
-template <>
+template
 Array<UInt> & Material::getArray(const ID & vect_id, ElementType type,
-                                 GhostType ghost_type) {
-  std::stringstream sstr;
-  std::string ghost_id;
-  if (ghost_type == _ghost) {
-    ghost_id = ":ghost";
-  }
-  sstr << getID() << ":" << vect_id << ":" << type << ghost_id;
-
-  ID fvect_id = sstr.str();
-  try {
-    return Memory::getArray<UInt>(fvect_id);
-  } catch (debug::Exception & e) {
-    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
-                                            << ") does not contain a vector "
-                                            << vect_id << "(" << fvect_id
-                                            << ") [" << e << "]");
-  }
-}
+                                 GhostType ghost_type);
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
@@ -1105,7 +1044,7 @@ void Material::removeElements(const Array<Element> & elements_to_remove) {
   }
 
   ElementTypeMapArray<UInt> material_local_new_numbering(
-      "remove mat filter elem", getID(), getMemoryID());
+      "remove mat filter elem", getID());
 
   Element element;
   for (auto ghost_type : ghost_types) {
@@ -1201,7 +1140,7 @@ void Material::onElementsRemoved(
   UInt my_num = model.getInternalIndexFromID(getID());
 
   ElementTypeMapArray<UInt> material_local_new_numbering(
-      "remove mat filter elem", getID(), getMemoryID());
+      "remove mat filter elem", getID());
 
   auto el_begin = element_list.begin();
   auto el_end = element_list.end();

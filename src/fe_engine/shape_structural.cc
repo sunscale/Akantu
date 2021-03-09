@@ -31,7 +31,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "shape_structural.hh"
-#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -41,10 +40,9 @@ namespace akantu {
 template <>
 ShapeStructural<_ek_structural>::ShapeStructural(Mesh & mesh,
                                                  UInt spatial_dimension,
-                                                 const ID & id,
-                                                 const MemoryID & memory_id)
-    : ShapeFunctions(mesh, spatial_dimension, id, memory_id),
-      rotation_matrices("rotation_matrices", id, memory_id) {}
+                                                 const ID & id)
+    : ShapeFunctions(mesh, spatial_dimension, id),
+      rotation_matrices("rotation_matrices", id) {}
 
 /* -------------------------------------------------------------------------- */
 template <> ShapeStructural<_ek_structural>::~ShapeStructural() = default;

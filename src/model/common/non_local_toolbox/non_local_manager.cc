@@ -42,12 +42,11 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NonLocalManager::NonLocalManager(Model & model,
                                  NonLocalManagerCallback & callback,
-                                 const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), Parsable(ParserType::_neighborhoods, id),
-      spatial_dimension(model.getMesh().getSpatialDimension()), model(model),
-      integration_points_positions("integration_points_positions", id,
-                                   memory_id),
-      volumes("volumes", id, memory_id), compute_stress_calls(0),
+                                 const ID & id)
+    : Parsable(ParserType::_neighborhoods, id),
+      spatial_dimension(model.getMesh().getSpatialDimension()), id(id), model(model),
+      integration_points_positions("integration_points_positions", id),
+      volumes("volumes", id), compute_stress_calls(0),
       dummy_registry(nullptr), dummy_grid(nullptr) {
   /// parse the neighborhood information from the input file
   const Parser & parser = getStaticParser();
@@ -252,7 +251,7 @@ void NonLocalManager::createNeighborhoodSynchronizers() {
       dummy_synchronizers[neighborhood_id] = std::make_unique<GridSynchronizer>(
           this->model.getMesh(), *dummy_grid,
           std::string(this->id + ":" + neighborhood_id + ":grid_synchronizer"),
-          this->memory_id, false);
+          false);
     }
   }
 }
@@ -360,8 +359,7 @@ NonLocalManager::registerWeightFunctionInternal(const ID & field_name) {
   auto it = this->weight_function_internals.find(field_name);
   if (it == weight_function_internals.end()) {
     weight_function_internals[field_name] =
-        std::make_unique<ElementTypeMapReal>(field_name, this->id,
-                                             this->memory_id);
+        std::make_unique<ElementTypeMapReal>(field_name, this->id);
   }
 
   AKANTU_DEBUG_OUT();

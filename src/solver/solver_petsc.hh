@@ -52,7 +52,7 @@ class SolverPETSc : public SparseSolver {
   /* ------------------------------------------------------------------------ */
 public:
   SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
-              const ID & id = "solver_petsc", const MemoryID & memory_id = 0);
+              const ID & id = "solver_petsc");
 
   ~SolverPETSc() override;
 

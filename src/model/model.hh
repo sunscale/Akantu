@@ -31,7 +31,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "aka_memory.hh"
 #include "aka_named_argument.hh"
 #include "fe_engine.hh"
 #include "mesh.hh"
@@ -53,13 +52,13 @@ class DumperIOHelper;
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class Model : public Memory, public ModelSolver, public MeshEventHandler {
+class Model : public ModelSolver, public MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   Model(Mesh & mesh, const ModelType & type, UInt dim = _all_dimensions,
-        const ID & id = "model", const MemoryID & memory_id = 0);
+        const ID & id = "model");
 
   ~Model() override;
 
@@ -158,10 +157,6 @@ public:
   }
 
 protected:
-  template <typename T>
-  void allocNodalField(Array<T> *& array, UInt nb_component,
-                       const ID & name);
-
   template <typename T>
   void allocNodalField(std::unique_ptr<Array<T>> & array, UInt nb_component,
                        const ID & name) const;
@@ -313,6 +308,8 @@ public:
 protected:
   friend std::ostream & operator<<(std::ostream & /*stream*/,
                                    const Model & /*_this*/);
+
+  ID id;
 
   /// analysis method check the list in akantu::AnalysisMethod
   AnalysisMethod method;

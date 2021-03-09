@@ -114,7 +114,7 @@ void SolidMechanicsModel::instantiateMaterials() {
     }
 
     this->non_local_manager = std::make_unique<NonLocalManager>(
-        *this, *this, id + ":non_local_manager", memory_id);
+        *this, *this, id + ":non_local_manager");
     break;
   }
 #endif

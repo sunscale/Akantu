@@ -50,7 +50,7 @@ class DOFSynchronizer : public SynchronizerImpl<UInt> {
   /* ------------------------------------------------------------------------ */
 public:
   DOFSynchronizer(DOFManagerDefault & dof_manager,
-                  const ID & id = "dof_synchronizer", MemoryID memory_id = 0);
+                  const ID & id = "dof_synchronizer");
   ~DOFSynchronizer() override;
 
   virtual void registerDOFs(const ID & dof_id);

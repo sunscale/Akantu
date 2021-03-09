@@ -55,9 +55,8 @@ namespace akantu {
  * This information is needed for the asychronous communications. The
  * constructor sets up this information.
  */
-DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id,
-                                 MemoryID memory_id)
-    : SynchronizerImpl<UInt>(dof_manager.getCommunicator(), id, memory_id),
+DOFSynchronizer::DOFSynchronizer(DOFManagerDefault & dof_manager, const ID & id)
+    : SynchronizerImpl<UInt>(dof_manager.getCommunicator(), id),
       dof_manager(dof_manager) {
   std::vector<ID> dof_ids = dof_manager.getDOFIDs();
 

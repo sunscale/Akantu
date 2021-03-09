@@ -35,8 +35,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawLinearSlipWeakening<Regularisation>::NTNFricLawLinearSlipWeakening(
-    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
-    : NTNFricLawCoulomb<Regularisation>(contact, id, memory_id),
+    NTNBaseContact & contact, const ID & id)
+    : NTNFricLawCoulomb<Regularisation>(contact, id),
       mu_s(0, 1, 0., id + ":mu_s", 0., "mu_s"),
       mu_k(0, 1, 0., id + ":mu_k", 0., "mu_k"),
       d_c(0, 1, 0., id + ":d_c", 0., "d_c") {

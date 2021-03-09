@@ -49,7 +49,7 @@ public:
 
     /// compute barycenter for each element
     barycenters =
-        std::make_unique<ElementTypeMapArray<Real>>("barycenters", "", 0);
+        std::make_unique<ElementTypeMapArray<Real>>("barycenters");
     this->initBarycenters(*barycenters, this->mesh->getMeshFacets());
 
     test_accessor =

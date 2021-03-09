@@ -36,9 +36,9 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Entity>
 SynchronizerImpl<Entity>::SynchronizerImpl(const Communicator & comm,
-                                           const ID & id, MemoryID memory_id)
+                                           const ID & id)
 
-    : Synchronizer(comm, id, memory_id), communications(comm) {}
+    : Synchronizer(comm, id), communications(comm) {}
 
 /* -------------------------------------------------------------------------- */
 template <class Entity>

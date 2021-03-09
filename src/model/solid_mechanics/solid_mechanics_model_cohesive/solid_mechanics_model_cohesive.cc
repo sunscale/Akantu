@@ -119,8 +119,8 @@ private:
 
 /* -------------------------------------------------------------------------- */
 SolidMechanicsModelCohesive::SolidMechanicsModelCohesive(
-    Mesh & mesh, UInt dim, const ID & id, const MemoryID & memory_id)
-    : SolidMechanicsModel(mesh, dim, id, memory_id,
+    Mesh & mesh, UInt dim, const ID & id)
+    : SolidMechanicsModel(mesh, dim, id,
                           ModelType::_solid_mechanics_model_cohesive),
       tangents("tangents", id), facet_stress("facet_stress", id),
       facet_material("facet_material", id) {

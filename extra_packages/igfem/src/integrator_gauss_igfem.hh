@@ -27,8 +27,7 @@ template <class IOF> class IntegratorGauss<_ek_igfem, IOF> : public Integrator {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  IntegratorGauss(const Mesh & mesh, const ID & id = "integrator_gauss",
-                  const MemoryID & memory_id = 0);
+  IntegratorGauss(const Mesh & mesh, const ID & id = "integrator_gauss");
 
   virtual ~IntegratorGauss(){};
 
@@ -48,7 +47,7 @@ public:
   /// integrate f on the element "elem" of type "type"
   template <ElementType type>
   inline void integrateOnElement(const Array<Real> & f, Real * intf,
-                                 UInt nb_degree_of_freedom, const UInt elem,
+                                 UInt nb_degree_of_freedom, UInt elem,
                                  GhostType ghost_type) const;
 
   /// integrate f for all elements of type "type"

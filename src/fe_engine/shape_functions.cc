@@ -35,9 +35,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 ShapeFunctions::ShapeFunctions(const Mesh & mesh, UInt spatial_dimension,
-                               const ID & id, const MemoryID & memory_id)
-    : Memory(id, memory_id), shapes("shapes_generic", id, memory_id),
-      shapes_derivatives("shapes_derivatives_generic", id, memory_id),
+                               const ID & id)
+    : shapes("shapes_generic", id),
+      shapes_derivatives("shapes_derivatives_generic", id),
       mesh(mesh), _spatial_dimension(spatial_dimension) {}
 
 /* -------------------------------------------------------------------------- */

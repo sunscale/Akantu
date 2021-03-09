@@ -41,8 +41,7 @@ class NonLocalManagerIGFEM : public NonLocalManager {
   /* ------------------------------------------------------------------------ */
 public:
   NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model,
-                       const ID & id = "non_local_manager_igfem",
-                       const MemoryID & memory_id = 0);
+                       const ID & id = "non_local_manager_igfem");
   virtual ~NonLocalManagerIGFEM();
 
   /* --------------------------------------------------------------------------

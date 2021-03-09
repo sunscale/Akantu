@@ -52,8 +52,7 @@ public:
   TimeStepSolverDefault(DOFManager & dof_manager,
                         const TimeStepSolverType & type,
                         NonLinearSolver & non_linear_solver,
-                        SolverCallback & solver_callback, const ID & id,
-                        UInt memory_id);
+                        SolverCallback & solver_callback, const ID & id);
 
   ~TimeStepSolverDefault() override;
 

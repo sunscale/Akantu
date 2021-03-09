@@ -35,9 +35,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawCoulomb<Regularisation>::NTNFricLawCoulomb(NTNBaseContact & contact,
-                                                     const ID & id,
-                                                     const MemoryID & memory_id)
-    : Regularisation(contact, id, memory_id),
+                                                     const ID & id)
+    : Regularisation(contact, id),
       mu(0, 1, 0., id + ":mu", 0., "mu") {
   AKANTU_DEBUG_IN();
 

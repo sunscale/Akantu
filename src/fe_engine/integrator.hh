@@ -32,27 +32,25 @@
 #define AKANTU_INTEGRATOR_HH_
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 namespace akantu {
 
-class Integrator : protected Memory {
+class Integrator {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   Integrator(const Mesh & mesh, UInt spatial_dimension,
-             const ID & id = "integrator", const MemoryID & memory_id = 0)
-      : Memory(id, memory_id), mesh(mesh),
-        _spatial_dimension(spatial_dimension),
-        jacobians("jacobians", id, memory_id) {
+             const ID & id = "integrator")
+      : mesh(mesh), _spatial_dimension(spatial_dimension),
+        jacobians("jacobians", id) {
     AKANTU_DEBUG_IN();
 
     AKANTU_DEBUG_OUT();
   };
 
-  ~Integrator() override = default;
+  virtual ~Integrator() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -99,9 +97,8 @@ public:
   };
 
   /// access to the jacobians const
-  const Array<Real> &
-  getJacobians(ElementType type,
-               GhostType ghost_type = _not_ghost) const {
+  const Array<Real> & getJacobians(ElementType type,
+                                   GhostType ghost_type = _not_ghost) const {
     return jacobians(type, ghost_type);
   };
 

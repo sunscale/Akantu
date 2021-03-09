@@ -73,9 +73,8 @@ inline void NonLocalNeighborhood<WeightFunction>::foreach_weight(
 template <class WeightFunction>
 NonLocalNeighborhood<WeightFunction>::NonLocalNeighborhood(
     NonLocalManager & manager, const ElementTypeMapReal & quad_coordinates,
-    const ID & id, const MemoryID & memory_id)
-    : NonLocalNeighborhoodBase(manager.getModel(), quad_coordinates, id,
-                               memory_id),
+    const ID & id)
+    : NonLocalNeighborhoodBase(manager.getModel(), quad_coordinates, id),
       non_local_manager(manager) {
   AKANTU_DEBUG_IN();
 

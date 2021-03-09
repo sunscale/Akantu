@@ -47,8 +47,7 @@ class FragmentManager : public GroupManager {
   /* ------------------------------------------------------------------------ */
 public:
   FragmentManager(SolidMechanicsModelCohesive & model, bool dump_data = true,
-                  const ID & id = "fragment_manager",
-                  const MemoryID & memory_id = 0);
+                  const ID & id = "fragment_manager");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

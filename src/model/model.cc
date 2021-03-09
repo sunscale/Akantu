@@ -41,9 +41,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
-             const MemoryID & memory_id)
-    : Memory(id, memory_id), ModelSolver(mesh, type, id, memory_id), mesh(mesh),
+Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id)
+    : ModelSolver(mesh, type, id), mesh(mesh),
       spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
                                                : dim),
       parser(getStaticParser()) {

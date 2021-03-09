@@ -40,9 +40,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 NonLinearSolverLumped::NonLinearSolverLumped(
     DOFManagerDefault & dof_manager,
-    const NonLinearSolverType & non_linear_solver_type, const ID & id,
-    UInt memory_id)
-    : NonLinearSolver(dof_manager, non_linear_solver_type, id, memory_id),
+    const NonLinearSolverType & non_linear_solver_type, const ID & id)
+    : NonLinearSolver(dof_manager, non_linear_solver_type, id),
       dof_manager(dof_manager) {
   this->supported_type.insert(NonLinearSolverType::_lumped);
   this->checkIfTypeIsSupported();

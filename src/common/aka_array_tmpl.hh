@@ -31,7 +31,6 @@
 /* Inline Functions Array<T>                                                  */
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh" // NOLINT
-#include "aka_static_memory.hh"
 /* -------------------------------------------------------------------------- */
 #include <memory>
 /* -------------------------------------------------------------------------- */
@@ -335,8 +334,6 @@ public:
                   size_to_allocate * this->nb_component * sizeof(T)));
 
       if (tmp_ptr == nullptr) {
-        StaticMemory::getStaticMemory().printself(std::cerr);
-        
         throw std::bad_alloc();
       }
 

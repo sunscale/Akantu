@@ -77,8 +77,7 @@ using MaterialFactory =
  * \endcode
  *
  */
-class Material : public Memory,
-                 public DataAccessor<Element>,
+class Material : public DataAccessor<Element>,
                  public Parsable,
                  public MeshEventHandler,
                  protected SolidMechanicsModelEventHandler {
@@ -423,7 +422,7 @@ public:
 
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &)
 
-  AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
+  AKANTU_GET_MACRO(ID, id, const ID &);
   AKANTU_GET_MACRO(Rho, rho, Real);
   AKANTU_SET_MACRO(Rho, rho, Real);
 
@@ -534,6 +533,8 @@ protected:
   std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
+  ID id;
+
   /// Link to the fem object in the model
   FEEngine & fem;
 

@@ -54,13 +54,11 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
-                                                   const ID & id,
-                                                   const MemoryID & memory_id)
-    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id),
-      time_step(NAN), f_m2a(1.0), stress("stress", id, memory_id),
-      element_material("element_material", id, memory_id),
-      set_ID("beam sets", id, memory_id),
-      rotation_matrix("rotation_matices", id, memory_id) {
+                                                   const ID & id)
+    : Model(mesh, ModelType::_structural_mechanics_model, dim, id),
+      time_step(NAN), f_m2a(1.0), stress("stress", id),
+      element_material("element_material", id), set_ID("beam sets", id),
+      rotation_matrix("rotation_matices", id) {
   AKANTU_DEBUG_IN();
 
   registerFEEngineObject<MyFEEngineType>("StructuralMechanicsFEEngine", mesh,
@@ -287,7 +285,7 @@ std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createNodalFieldBool(
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
-  uint_nodal_fields["blocked_dofs"] = blocked_dofs;
+  uint_nodal_fields["blocked_dofs"] = blocked_dofs.get();
 
   return mesh.createNodalField(uint_nodal_fields[field_name], group_name);
 }
@@ -311,34 +309,36 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "displacement") {
-    return mesh.createStridedNodalField(displacement_rotation, group_name, n, 0,
-                                        padding_size);
+    return mesh.createStridedNodalField(displacement_rotation.get(), group_name,
+                                        n, 0, padding_size);
   }
 
   if (field_name == "rotation") {
-    return mesh.createStridedNodalField(displacement_rotation, group_name,
+    return mesh.createStridedNodalField(displacement_rotation.get(), group_name,
                                         nb_degree_of_freedom - n, n,
                                         padding_size);
   }
 
   if (field_name == "force") {
-    return mesh.createStridedNodalField(external_force, group_name, n, 0,
+    return mesh.createStridedNodalField(external_force.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "momentum") {
-    return mesh.createStridedNodalField(
-        external_force, group_name, nb_degree_of_freedom - n, n, padding_size);
+    return mesh.createStridedNodalField(external_force.get(), group_name,
+                                        nb_degree_of_freedom - n, n,
+                                        padding_size);
   }
 
   if (field_name == "internal_force") {
-    return mesh.createStridedNodalField(internal_force, group_name, n, 0,
+    return mesh.createStridedNodalField(internal_force.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "internal_momentum") {
-    return mesh.createStridedNodalField(
-        internal_force, group_name, nb_degree_of_freedom - n, n, padding_size);
+    return mesh.createStridedNodalField(internal_force.get(), group_name,
+                                        nb_degree_of_freedom - n, n,
+                                        padding_size);
   }
 
   return nullptr;
@@ -346,8 +346,8 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
 
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createElementalField(
-    const std::string & field_name, const std::string & group_name, bool /*unused*/,
-    UInt spatial_dimension, ElementKind kind) {
+    const std::string & field_name, const std::string & group_name,
+    bool /*unused*/, UInt spatial_dimension, ElementKind kind) {
 
   std::shared_ptr<dumpers::Field> field;
 

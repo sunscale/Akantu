@@ -32,12 +32,12 @@
 #include <mesh_partition_scotch.hh>
 #include <mesh_utils.hh>
 /* -------------------------------------------------------------------------- */
-
 #include <gtest/gtest.h>
 #include <numeric>
 #include <string>
 #include <type_traits>
 /* -------------------------------------------------------------------------- */
+
 namespace akantu {
 enum DOFManagerType { _dmt_default, _dmt_petsc };
 }
@@ -46,16 +46,16 @@ AKANTU_ENUM_HASH(DOFManagerType)
 using namespace akantu;
 
 // defined as struct to get there names in gtest outputs
-struct _dof_manager_default
+struct dof_manager_default_
     : public std::integral_constant<DOFManagerType, _dmt_default> {};
-struct _dof_manager_petsc
+struct dof_manager_petsc_
     : public std::integral_constant<DOFManagerType, _dmt_petsc> {};
 
 using dof_manager_types = ::testing::Types<
 #ifdef AKANTU_USE_PETSC
-    _dof_manager_petsc,
+    dof_manager_petsc_,
 #endif
-    _dof_manager_default>;
+    dof_manager_default_>;
 
 namespace std {
 
@@ -128,7 +128,7 @@ public:
       {_dmt_default, "default"}, {_dmt_petsc, "petsc"}};
 
     return DOFManagerTester(DOFManagerFactory::getInstance().allocate(
-        types[T::value], *mesh, "dof_manager", 0));
+        types[T::value], *mesh, "dof_manager"));
   }
 
   decltype(auto) registerDOFs(DOFSupportType dst1, DOFSupportType dst2) {

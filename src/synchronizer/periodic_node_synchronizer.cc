@@ -34,9 +34,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 PeriodicNodeSynchronizer::PeriodicNodeSynchronizer(
-    Mesh & mesh, const ID & id, MemoryID memory_id,
+    Mesh & mesh, const ID & id,
     const bool register_to_event_manager, EventHandlerPriority event_priority)
-    : NodeSynchronizer(mesh, id + ":masters", memory_id,
+    : NodeSynchronizer(mesh, id + ":masters",
                        register_to_event_manager, event_priority) {}
 
 /* -------------------------------------------------------------------------- */

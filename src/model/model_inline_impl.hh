@@ -58,7 +58,7 @@ inline FEEngineClass & Model::getFEEngineClassBoundary(std::string name) {
     auto spatial_dimension = it->second->getElementDimension();
     fems_boundary[name] = std::make_unique<FEEngineClass>(
         it->second->getMesh(), spatial_dimension - 1,
-        id + ":fem_boundary:" + name, memory_id);
+        id + ":fem_boundary:" + name);
   }
 
   return aka::as_type<FEEngineClass>(*fems_boundary[name]);
@@ -107,8 +107,7 @@ inline void Model::registerFEEngineObject(const std::string & name, Mesh & mesh,
   }
 
   fems[name] = std::make_unique<FEEngineClass>(
-      mesh, spatial_dimension, id + ":fem:" + name + std::to_string(memory_id),
-      memory_id);
+      mesh, spatial_dimension, id + ":fem:" + name);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -140,18 +139,6 @@ inline FEEngine & Model::getFEEngineBoundary(const ID & name) {
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void Model::allocNodalField(Array<T> *& array, UInt nb_component,
-                            const ID & name) {
-  if (array) {
-    return;
-  }
-
-  UInt nb_nodes = mesh.getNbNodes();
-  array = &(alloc<T>(id + ":" + name, nb_nodes, nb_component, T()));
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
 void Model::allocNodalField(std::unique_ptr<Array<T>> & array,
                             UInt nb_component, const ID & name) const {
   if (array) {
@@ -160,7 +147,7 @@ void Model::allocNodalField(std::unique_ptr<Array<T>> & array,
 
   UInt nb_nodes = mesh.getNbNodes();
   array =
-      std::make_unique<Array<T>>(nb_nodes, nb_component, T(), id + ":" + name);
+      std::make_unique<Array<T>>(nb_nodes, nb_component, id + ":" + name);
 }
 
 /* -------------------------------------------------------------------------- */

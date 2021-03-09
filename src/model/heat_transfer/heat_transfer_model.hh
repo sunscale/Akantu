@@ -60,8 +60,7 @@ public:
   using FEEngineType = FEEngineTemplate<IntegratorGauss, ShapeLagrange>;
 
   HeatTransferModel(Mesh & mesh, UInt dim = _all_dimensions,
-                    const ID & id = "heat_transfer_model",
-                    const MemoryID & memory_id = 0);
+                    const ID & id = "heat_transfer_model");
 
   ~HeatTransferModel() override;
 
@@ -249,27 +248,21 @@ protected:
   void getThermalEnergy(iterator Eth, Array<Real>::const_iterator<Real> T_it,
                         const Array<Real>::const_iterator<Real> & T_end) const;
 
-  template <typename T>
-  void allocNodalField(Array<T> *& array, const ID & name);
-
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
-  /// number of iterations
-  // UInt n_iter;
-
   /// time step
   Real time_step;
 
   /// temperatures array
-  Array<Real> * temperature{nullptr};
+  std::unique_ptr<Array<Real>> temperature;
 
   /// temperatures derivatives array
-  Array<Real> * temperature_rate{nullptr};
+  std::unique_ptr<Array<Real>> temperature_rate;
 
   /// increment array (@f$\delta \dot T@f$ or @f$\delta T@f$)
-  Array<Real> * increment{nullptr};
+  std::unique_ptr<Array<Real>> increment;
 
   /// the density
   Real density;
@@ -287,13 +280,13 @@ private:
   ElementTypeMapArray<Real> k_gradt_on_qpoints;
 
   /// external flux vector
-  Array<Real> * external_heat_rate{nullptr};
+  std::unique_ptr<Array<Real>> external_heat_rate;
 
   /// residuals array
-  Array<Real> * internal_heat_rate{nullptr};
+  std::unique_ptr<Array<Real>> internal_heat_rate;
 
   /// boundary vector
-  Array<bool> * blocked_dofs{nullptr};
+  std::unique_ptr<Array<bool>> blocked_dofs;
 
   // realtime
   // Real time;
