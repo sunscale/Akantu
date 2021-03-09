@@ -136,7 +136,7 @@ inline decltype(auto)
 ElementGroup::getElementsIterable(ElementType type,
                                   GhostType ghost_type) const {
   return make_transform_adaptor(this->elements(type, ghost_type),
-                                [&type, &ghost_type](auto && el) {
+                                [type, ghost_type](auto && el) {
                                   return Element{type, el, ghost_type};
                                 });
 }

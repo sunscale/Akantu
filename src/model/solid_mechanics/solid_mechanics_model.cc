@@ -717,7 +717,7 @@ Real SolidMechanicsModel::getEnergy(const ID & energy_id,
   auto && group = mesh.getElementGroup(group_id);
   auto energy = 0.;
   for(auto && type : group.elementTypes()) {
-    for(auto && el : group.getElementsIterable(type)) {
+    for(auto el : group.getElementsIterable(type)) {
       energy += getEnergy(energy_id, el);
     }
   }
