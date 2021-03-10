@@ -147,7 +147,7 @@ void Model::allocNodalField(std::unique_ptr<Array<T>> & array,
 
   UInt nb_nodes = mesh.getNbNodes();
   array =
-      std::make_unique<Array<T>>(nb_nodes, nb_component, id + ":" + name);
+      std::make_unique<Array<T>>(nb_nodes, nb_component, T(), id + ":" + name);
 }
 
 /* -------------------------------------------------------------------------- */
