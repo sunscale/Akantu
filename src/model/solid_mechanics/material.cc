@@ -902,49 +902,6 @@ void Material::interpolateStressOnFacets(
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-const Array<T> & Material::getArray(const ID & vect_id,
-                                    ElementType type,
-                                    GhostType ghost_type) const {
-  try {
-    return this->template getInternal<T>(vect_id)(type, ghost_type);
-  } catch (debug::Exception & e) {
-    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
-                                            << ") does not contain a vector "
-                                            << vect_id << " [" << e << "]");
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
-Array<T> & Material::getArray(const ID & vect_id, ElementType type,
-                              GhostType ghost_type) {
-  try {
-    return this->template getInternal<T>(vect_id)(type, ghost_type);
-  } catch (debug::Exception & e) {
-    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
-                                            << ") does not contain a vector "
-                                            << vect_id << " [" << e << "]");
-  }
-}
-
-template
-const Array<Real> & Material::getArray(const ID & vect_id, ElementType type,
-                                       GhostType ghost_type) const;
-/* -------------------------------------------------------------------------- */
-template
-Array<Real> & Material::getArray(const ID & vect_id, ElementType type,
-                                 GhostType ghost_type);
-/* -------------------------------------------------------------------------- */
-template
-const Array<UInt> & Material::getArray(const ID & vect_id, ElementType type,
-                                       GhostType ghost_type) const;
-/* -------------------------------------------------------------------------- */
-template
-Array<UInt> & Material::getArray(const ID & vect_id, ElementType type,
-                                 GhostType ghost_type);
-
-/* -------------------------------------------------------------------------- */
-template <typename T>
 const InternalField<T> &
 Material::getInternal([[gnu::unused]] const ID & int_id) const {
   AKANTU_TO_IMPLEMENT();
@@ -1007,6 +964,49 @@ template <> InternalField<UInt> & Material::getInternal(const ID & int_id) {
   }
   return *it->second;
 }
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+const Array<T> & Material::getArray(const ID & vect_id,
+                                    ElementType type,
+                                    GhostType ghost_type) const {
+  try {
+    return this->template getInternal<T>(vect_id)(type, ghost_type);
+  } catch (debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+                                            << ") does not contain a vector "
+                                            << vect_id << " [" << e << "]");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+template <typename T>
+Array<T> & Material::getArray(const ID & vect_id, ElementType type,
+                              GhostType ghost_type) {
+  try {
+    return this->template getInternal<T>(vect_id)(type, ghost_type);
+  } catch (debug::Exception & e) {
+    AKANTU_SILENT_EXCEPTION("The material " << name << "(" << getID()
+                                            << ") does not contain a vector "
+                                            << vect_id << " [" << e << "]");
+  }
+}
+
+template
+const Array<Real> & Material::getArray(const ID & vect_id, ElementType type,
+                                       GhostType ghost_type) const;
+/* -------------------------------------------------------------------------- */
+template
+Array<Real> & Material::getArray(const ID & vect_id, ElementType type,
+                                 GhostType ghost_type);
+/* -------------------------------------------------------------------------- */
+template
+const Array<UInt> & Material::getArray(const ID & vect_id, ElementType type,
+                                       GhostType ghost_type) const;
+/* -------------------------------------------------------------------------- */
+template
+Array<UInt> & Material::getArray(const ID & vect_id, ElementType type,
+                                 GhostType ghost_type);
 
 /* -------------------------------------------------------------------------- */
 void Material::addElements(const Array<Element> & elements_to_add) {
