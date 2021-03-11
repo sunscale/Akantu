@@ -56,6 +56,7 @@ namespace {
   DECLARE_NAMED_ARGUMENT(with_nb_nodes_per_element);
   DECLARE_NAMED_ARGUMENT(spatial_dimension);
   DECLARE_NAMED_ARGUMENT(do_not_default);
+  DECLARE_NAMED_ARGUMENT(element_filter);
 } // namespace
 
 template <class Stored, typename SupportType = ElementType>

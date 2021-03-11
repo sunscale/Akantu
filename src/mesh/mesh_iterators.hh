@@ -174,10 +174,6 @@ void for_each_element(UInt nb_elements, const Array<UInt> & filter_elements,
   }
 }
 
-namespace {
-  DECLARE_NAMED_ARGUMENT(element_filter);
-}
-
 /* -------------------------------------------------------------------------- */
 template <class Func, typename... pack>
 void for_each_element(const Mesh & mesh, Func && function, pack &&... _pack) {

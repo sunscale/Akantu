@@ -456,11 +456,11 @@ public:
   /// index
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index,
                                          UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
+  // AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering,
                                          material_local_numbering, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
-                                   material_local_numbering, UInt);
+  // AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
+  //                                  material_local_numbering, UInt);
 
   AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, *material_selector,
                              MaterialSelector &);
@@ -555,6 +555,8 @@ protected:
 
   /// tells if the material are instantiated
   bool are_materials_instantiated{false};
+
+  friend class Material;
 };
 
 /* -------------------------------------------------------------------------- */
