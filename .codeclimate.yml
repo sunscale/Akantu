@@ -32,7 +32,7 @@ plugins:
     exclude_patterns:
       - "doc/"
   clang-tidy:
-    enabled: true
+    enabled: false
     checks:
     extra-arg:
       - -std=c++14
