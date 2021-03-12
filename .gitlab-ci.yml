@@ -295,4 +295,4 @@ pages:
     paths:
       - public
   only:
-    - features/doc
+    - master
