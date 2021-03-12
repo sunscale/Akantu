@@ -13,6 +13,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import shutil
 # import subprocess
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
@@ -104,7 +105,7 @@ else:
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
+html_logo = '_static/logo_only_akantu.svg'
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
@@ -221,7 +222,10 @@ if read_the_docs_build:
     akantu_path = "."
 else:
     akantu_path = "@CMAKE_CURRENT_BINARY_DIR@"
-    os.makedirs("@CMAKE_CURRENT_BINARY_DIR@/_static", exist_ok=True)
+    os.makedirs(os.path.join(akantu_path, '_static'), exist_ok=True)
+    shutil.copyfile(
+        os.path.join('@CMAKE_CURRENT_SOURCE_DIR@', html_logo),
+        os.path.join(akantu_path, html_logo))
 
 # print("akantu_path = '{}'".format(akantu_path))
 breathe_projects = {"Akantu": os.path.join(akantu_path, "xml")}
