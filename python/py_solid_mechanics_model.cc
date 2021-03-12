@@ -29,8 +29,7 @@ namespace akantu {
   })
 /* -------------------------------------------------------------------------- */
 
-void
-register_solid_mechanics_model(py::module & mod) {
+void register_solid_mechanics_model(py::module & mod) {
 
   py::class_<SolidMechanicsModelOptions>(mod, "SolidMechanicsModelOptions")
       .def(py::init<AnalysisMethod>(),
@@ -75,6 +74,11 @@ register_solid_mechanics_model(py::module & mod) {
            py::overload_cast<const std::string &>(
                &SolidMechanicsModel::getEnergy),
            py::arg("energy_id"))
+      .def("getEnergy",
+           py::overload_cast<const std::string &, const std::string &>(
+               &SolidMechanicsModel::getEnergy),
+           py::arg("energy_id"), py::arg("group_id"))
+
       .def_function(assembleStiffnessMatrix)
       .def_function(assembleInternalForces)
       .def_function(assembleMass)
