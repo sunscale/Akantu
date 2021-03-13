@@ -11,8 +11,12 @@
 
 import akantu as aka
 import numpy
-import matplotlib.pyplot as plt
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 
 # ### Creating the Mesh
@@ -164,25 +168,26 @@ for d in disps:
     maxMin[0] = max(np.max(d), maxMin[0])
     maxMin[1] = min(np.min(d), maxMin[1])
 
-#plt.plot(disp0, times, color='k', label = "left node (fix)")
-plt.plot(disp1, times, color='g', label = "middle, left node")
-plt.plot(disp2, times, color='g', linestyle = '--', label = "middle, right node")
-plt.plot(disp3, times, color='b', label = "right node")
+if has_matplotlib:
+    #plt.plot(disp0, times, color='k', label = "left node (fix)")
+    plt.plot(disp1, times, color='g', label = "middle, left node")
+    plt.plot(disp2, times, color='g', linestyle = '--', label = "middle, right node")
+    plt.plot(disp3, times, color='b', label = "right node")
 
-if(softDuration > 0):
-    plt.plot((maxMin[1], maxMin[0]), (switchT, switchT),)
-    plt.plot((maxMin[1], maxMin[0]), (switchEnd, switchEnd), )
+    if(softDuration > 0):
+        plt.plot((maxMin[1], maxMin[0]), (switchT, switchT),)
+        plt.plot((maxMin[1], maxMin[0]), (switchEnd, switchEnd), )
 
-plt.title("Displacement in $x$ of the nodes")
-plt.ylabel("Time [S]")
-plt.xlabel("displacement [m]")
-plt.xlim((maxMin[1] * 1.3, maxMin[0] * 1.1))
-plt.legend()
-plt.show()
+    plt.title("Displacement in $x$ of the nodes")
+    plt.ylabel("Time [S]")
+    plt.xlabel("displacement [m]")
+    plt.xlim((maxMin[1] * 1.3, maxMin[0] * 1.1))
+    plt.legend()
+    plt.show()
 
 # If the softening is disabled, then the displacement looks wierd.
 # Because the displacement first increases and then decreases.
 # In this case `softDuration > 0` holds.
 #
-# However if the softening is enabled, it looks rather good.
-# The left middle node will start to vibrate, because it is not pulled in the other direction.
+# However if the softening is enabled, it looks rather good. The left middle
+# node will start to vibrate, because it is not pulled in the other direction.

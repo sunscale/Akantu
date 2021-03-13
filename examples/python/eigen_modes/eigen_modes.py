@@ -6,9 +6,13 @@ import argparse
 import akantu as aka
 import numpy as np
 from image_saver import ImageSaver
-import matplotlib.pyplot as plt
 from scipy.sparse.linalg import eigsh
 from scipy.sparse import csr_matrix
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 # -----------------------------------------------------------------------------
 # parser
@@ -235,7 +239,7 @@ for step in range(1, max_steps + 1):
         model.dump()
 
 
-if not plot:
+if not plot or not has_matplotlib:
     sys.exit(0)
 
 # -----------------------------------------------------------------------------

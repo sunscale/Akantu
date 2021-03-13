@@ -3,8 +3,12 @@
 
 import akantu as aka
 import numpy
-import matplotlib.pyplot as plt
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 # ### Creating the Mesh
 # Create a mesh for the two dimensional case
@@ -154,13 +158,15 @@ def sol(x):
                                mat1.A, mat1.I, F)
 
 
-times = np.arange(N) * deltaT
-plt.plot(times, sol(times))
-plt.plot(times, displs)
-plt.plot(times, displs - sol(times))
+if has_matplotlib:
+    times = np.arange(N) * deltaT
+    plt.plot(times, sol(times))
+    plt.plot(times, displs)
+    plt.plot(times, displs - sol(times))
 
-# What I do not fully understand is why the middle node first go backwards until it goes forward.
-# I could imagine that there is some vibration, because everything is in rest.
-np.max(displs - sol(times))
-plt.plot(times, ekin+epot)
-plt.plot(times, ework)
+    # What I do not fully understand is why the middle node first go backwards
+    # until it goes forward. I could imagine that there is some vibration,
+    # because everything is in rest.
+    np.max(displs - sol(times))
+    plt.plot(times, ekin+epot)
+    plt.plot(times, ework)

@@ -6,8 +6,12 @@
 # The left most node is fixed and a force is applied at the right most node.
 import akantu as aka
 import numpy
-import matplotlib.pyplot as plt
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 # ### Creating the Mesh
 # Create a mesh for the two dimensional case
@@ -121,15 +125,16 @@ for d in disps:
     maxMin[0] = max(np.max(d), maxMin[0])
     maxMin[1] = min(np.min(d), maxMin[1])
 
-plt.plot(disp1, times, color='g', label = "middle node")
-plt.plot(disp2, times, color='b', label = "right node")
+if has_matplotlib:
+    plt.plot(disp1, times, color='g', label = "middle node")
+    plt.plot(disp2, times, color='b', label = "right node")
 
-plt.title("Displacement in $x$ of the nodes")
-plt.ylabel("Time [S]")
-plt.xlabel("displacement [m]")
+    plt.title("Displacement in $x$ of the nodes")
+    plt.ylabel("Time [S]")
+    plt.xlabel("displacement [m]")
 
-plt.xlim((maxMin[1] * 1.3, maxMin[0] * 1.1))
+    plt.xlim((maxMin[1] * 1.3, maxMin[0] * 1.1))
 
-plt.legend()
+    plt.legend()
 
-plt.show()
+    plt.show()
