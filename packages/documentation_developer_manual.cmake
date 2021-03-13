@@ -28,10 +28,10 @@
 # along with Akantu. If not, see <http://www.gnu.org/licenses/>.
 #
 #===============================================================================
-package_declare(documentation_developer_manual
+package_declare(documentation
   DESCRIPTION "Build source documentation using Sphinx/Doxygen.")
 
-package_declare_documentation(documentation_developer_manual
+package_declare_documentation(documentation
   "This generates the Doxygen documantation of the source code."
   "It depends on:"
   "\\begin{itemize}"
@@ -46,10 +46,10 @@ package_declare_documentation(documentation_developer_manual
   "\\end{command}"
   )
 
-package_set_package_system_dependency(documentation_developer_manual deb-src
+package_set_package_system_dependency(documentation deb-src
   python3-sphinx python3-breathe doxygen graphviz)
 
-package_declare_extra_files_to_package(documentation_developer_manual
+package_declare_extra_files_to_package(documentation
   PROJECT doc/dev-doc/akantu.dox.in
           doc/dev-doc/conf.py.in
           doc/dev-doc/index.rst

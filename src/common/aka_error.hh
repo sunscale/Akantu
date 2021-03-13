@@ -107,12 +107,13 @@ namespace debug {
     /* Constructors/Destructors                                               */
     /* ---------------------------------------------------------------------- */
   protected:
-    explicit Exception(std::string info = "") : _info(std::move(info)) {}
+    explicit Exception(const std::string & info = "") : _info(info) {}
 
   public:
     //! full constructor
-    Exception(std::string info, std::string file, unsigned int line)
-        : _info(std::move(info)), _file(std::move(file)), _line(line) {}
+    Exception(const std::string & info, const std::string & file,
+              unsigned int line)
+        : _info(info), _file(file), _line(line) {}
 
     /* ---------------------------------------------------------------------- */
     /*  Methods */
@@ -230,12 +231,12 @@ namespace debug {
     bool printBacktrace() const { return this->print_backtrace; }
 
     void addModuleToDebug(const std::string & id) {
-      modules_to_debug.insert(id);
+      this->modules_to_debug.insert(id);
     }
     void removeModuleToDebug(const std::string & id) {
-      auto it = modules_to_debug.find(id);
-      if (it != modules_to_debug.end()) {
-        modules_to_debug.erase(it);
+      auto it = this->modules_to_debug.find(id);
+      if (it != this->modules_to_debug.end()) {
+        this->modules_to_debug.erase(it);
       }
     }
 
@@ -384,10 +385,10 @@ namespace debug {
 namespace debug {
   /* ------------------------------------------------------------------------ */
   template <class Except>
-  void
-  Debugger::throwCustomException(Except ex, const std::string & info,
-                                 const std::string & file, unsigned int line,
-                                 const std::string & module_) const
+  void Debugger::throwCustomException(Except ex, const std::string & info,
+                                      const std::string & file,
+                                      unsigned int line,
+                                      const std::string & module_) const
       noexcept(false) {
     ex.setInfo(info);
     ex.setFile(file);

@@ -9,6 +9,7 @@ set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 set(SPHINX_OUTPUT "${SPHINX_HTML_DIR}/index.html")
+set(SPHINX_INPUT "${CMAKE_CURRENT_BINARY_DIR}/conf.py")
 
 # ---------------------------------------------------------------------------- #
 # Doxygen                                                                      #
@@ -82,14 +83,14 @@ if (CMAKE_VERSION VERSION_GREATER 3.9.5)
   set(DOXYGEN_ENABLE_PREPROCESSING YES)
   set(DOXYGEN_MACRO_EXPANSION YES)
   set(DOXYGEN_INCLUDE_PATH ${_akantu_include_dirs})
-#  set(DOXYGEN_PREDEFINED
-#    ${AKANTU_DEFINITIONS}
-#    "DOXYGEN"
+  set(DOXYGEN_PREDEFINED
+    ${AKANTU_DEFINITIONS}
+    "DOXYGEN"
 #    "AKANTU_TO_IMPLEMENT()="
 #    "DECLARE_NAMED_ARGUMENT()="
 #    "OPTIONAL_NAMED_ARGUMENT(n, v)=v"
 #    "REQUIRED_NAMED_ARGUMENT(n)="
-#    )
+    )
   set(DOXYGEN_COLLABORATION_GRAPH NO)
   set(DOXYGEN_UML_LOOK YES)
   set(DOXYGEN_TEMPLATE_RELATIONS YES)
@@ -100,6 +101,8 @@ if (CMAKE_VERSION VERSION_GREATER 3.9.5)
   set(DOXYGEN_LOOKUP_CACHE_SIZE 9)
 
   set(_SRCS
+    ${PROJECT_BINARY_DIR}/src/aka_config.hh
+    ${PROJECT_BINARY_DIR}/src/aka_element_classes_info.hh
     ${AKANTU_LIBRARY_SRCS}
     ${AKANTU_LIBRARY_PUBLIC_HDRS}
     ${AKANTU_LIBRARY_PRIVATE_HDRS}
@@ -159,7 +162,7 @@ endif(CMAKE_VERBOSE_MAKEFILE)
 set(AKANTU_IN_READTHEDOC FALSE)
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
+  "${SPHINX_INPUT}"
   @ONLY)
 
 set(SPHINX_PARALLEL_FLAG)

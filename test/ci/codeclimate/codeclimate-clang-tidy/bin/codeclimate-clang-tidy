@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+lib_path = os.path.abspath(os.path.join(__file__, '..', '..', 'lib'))
+sys.path.append(lib_path)
+
+from runner import Runner  # noqa
+
+if __name__ == '__main__':
+    print(f"Arguments: {sys.argv}", file=sys.stderr)
+    Runner().run()
