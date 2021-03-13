@@ -403,6 +403,7 @@ namespace fe_engine {
       }
     };
 
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
     template <> struct ShapesForMassHelper<_ek_structural> {
       template <ElementType type, class ShapeFunctions>
       static auto getShapes(ShapeFunctions & shape_functions,
@@ -423,6 +424,7 @@ namespace fe_engine {
         return shapes;
       }
     };
+#endif
   } // namespace details
 } // namespace fe_engine
   //

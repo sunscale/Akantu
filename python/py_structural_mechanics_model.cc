@@ -51,10 +51,9 @@ void register_structural_mechanics_model(pybind11::module & mod) {
    * Note that this is basically a port from the solid mechanic part.
    */
   py::class_<StructuralMechanicsModel, Model>(mod, "StructuralMechanicsModel")
-      .def(py::init<Mesh &, UInt, const ID &, const MemoryID &>(),
+      .def(py::init<Mesh &, UInt, const ID &>(),
            py::arg("mesh"), py::arg("spatial_dimension") = _all_dimensions,
-           py::arg("id") = "structural_mechanics_model",
-           py::arg("memory_id") = 0)
+           py::arg("id") = "structural_mechanics_model")
       .def(
           "initFull",
           [](StructuralMechanicsModel & self,

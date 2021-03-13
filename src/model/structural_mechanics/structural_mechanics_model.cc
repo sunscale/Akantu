@@ -276,12 +276,12 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "velocity") {
-    return mesh.createStridedNodalField(velocity, group_name, n, 0,
+    return mesh.createStridedNodalField(velocity.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "acceleration") {
-    return mesh.createStridedNodalField(acceleration, group_name, n, 0,
+    return mesh.createStridedNodalField(acceleration.get(), group_name, n, 0,
                                         padding_size);
   }
 
@@ -296,7 +296,7 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                         padding_size);
   }
   if (field_name == "external_force") {
-    return mesh.createStridedNodalField(external_force, group_name, n, 0,
+    return mesh.createStridedNodalField(external_force.get(), group_name, n, 0,
                                         padding_size);
   }
 
