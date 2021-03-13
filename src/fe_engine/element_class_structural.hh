@@ -64,10 +64,12 @@ public:
   /// compute the shape values for a given set of points in natural coordinates
   static inline void computeShapes(const Matrix<Real> & natural_coord,
                                    const Matrix<Real> & real_coord,
-                                   Tensor3<Real> & N) {
+                                   const Matrix<Real> & T, Tensor3<Real> & Ns) {
     for (UInt i = 0; i < natural_coord.cols(); ++i) {
-      Matrix<Real> n_t = N(i);
-      computeShapes(natural_coord(i), real_coord, n_t);
+      Matrix<Real> N_T = Ns(i);
+      Matrix<Real> N(N_T.rows(), N_T.cols());
+      computeShapes(natural_coord(i), real_coord, N);
+      N_T.mul<false, false>(N, T);
     }
   }
 
@@ -75,6 +77,20 @@ public:
   static inline void computeShapes(const Vector<Real> & natural_coord,
                                    const Matrix<Real> & real_coord,
                                    Matrix<Real> & N);
+
+  static inline void computeShapesMass(const Matrix<Real> & natural_coords,
+                                       const Matrix<Real> & xs,
+                                       const Matrix<Real> & T,
+                                       Tensor3<Real> & Ns) {
+    for (UInt i = 0; i < natural_coords.cols(); ++i) {
+      Matrix<Real> N_T = Ns(i);
+      Vector<Real> X = natural_coords(i);
+      Matrix<Real> N(interpolation_property::nb_degree_of_freedom, N_T.cols());
+
+      computeShapes(X, xs, N);
+      N_T.mul<false, false>(N.block(0, 0, N_T.rows(), N_T.cols()), T);
+    }
+  }
 
   /// compute shape derivatives (input is dxds) for a set of points
   static inline void computeShapeDerivatives(const Tensor3<Real> & Js,
@@ -136,6 +152,11 @@ public:
     return interpolation_property::nb_nodes_per_element *
            interpolation_property::nb_degree_of_freedom *
            interpolation_property::nb_degree_of_freedom;
+  }
+  static inline constexpr auto getShapeIndependantSize() {
+    return interpolation_property::nb_nodes_per_element *
+           interpolation_property::nb_degree_of_freedom *
+           interpolation_property::nb_stress_components;
   }
   static inline constexpr auto getShapeDerivativesSize() {
     return interpolation_property::nb_nodes_per_element *

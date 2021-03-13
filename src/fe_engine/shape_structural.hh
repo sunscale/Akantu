@@ -61,12 +61,33 @@ public:
     stream << space << "]" << std::endl;
   }
 
+private:
+  template <ElementType type>
+  void computeShapesOnIntegrationPointsInternal(
+      const Array<Real> & nodes, const Matrix<Real> & integration_points,
+      Array<Real> & shapes, GhostType ghost_type,
+      const Array<UInt> & filter_elements = empty_filter,
+      bool mass = false) const;
+
+public:
   /// compute shape functions on given integration points
   template <ElementType type>
   void computeShapesOnIntegrationPoints(
-      const Array<Real> &, const Matrix<Real> & integration_points,
+      const Array<Real> & nodes, const Matrix<Real> & integration_points,
       Array<Real> & shapes, GhostType ghost_type,
-      const Array<UInt> & filter_elements = empty_filter) const;
+      const Array<UInt> & filter_elements = empty_filter) const {
+    this->template computeShapesOnIntegrationPointsInternal<type>(
+        nodes, integration_points, shapes, ghost_type, filter_elements, false);
+  }
+
+  template <ElementType type>
+  void computeShapesMassOnIntegrationPoints(
+      const Array<Real> & nodes, const Matrix<Real> & integration_points,
+      Array<Real> & shapes, GhostType ghost_type,
+      const Array<UInt> & filter_elements = empty_filter) const {
+    this->template computeShapesOnIntegrationPointsInternal<type>(
+        nodes, integration_points, shapes, ghost_type, filter_elements, true);
+  }
 
   /// initialization function for structural elements
   inline void initShapeFunctions(const Array<Real> & nodes,

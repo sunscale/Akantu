@@ -1000,6 +1000,7 @@ void DOFManager::assembleMatMulVectToGlobalArray(const ID & dof_id,
                                                  Real scale_factor) {
   auto & A = this->getMatrix(A_id);
 
+  data_cache->resize();
   data_cache->zero();
   this->assembleToGlobalArray(dof_id, x, *data_cache, 1.);
 

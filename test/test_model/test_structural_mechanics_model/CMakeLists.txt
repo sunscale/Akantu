@@ -24,17 +24,22 @@
 register_gtest_sources(
   SOURCES test_structural_mechanics_model_bernoulli_beam_2.cc
   PACKAGE implicit structural_mechanics
-)
+  )
 
 register_gtest_sources(
   SOURCES test_structural_mechanics_model_bernoulli_beam_3.cc
   PACKAGE implicit structural_mechanics
-)
+  )
 
 register_gtest_sources(
   SOURCES test_structural_mechanics_model_discrete_kirchhoff_triangle_18.cc
   PACKAGE implicit structural_mechanics
-)
+  )
+
+register_gtest_sources(
+  SOURCES test_structural_mechanics_model_bernoulli_beam_dynamics.cc
+  PACKAGE implicit structural_mechanics
+  )
 
 #===============================================================================
 
@@ -55,5 +60,5 @@ endforeach()
 #===============================================================================
 # Registering google test
 register_gtest_test(test_structural_mechanics
-  FILES_TO_COPY ${_meshes})
-
+  FILES_TO_COPY ${_meshes}
+  )

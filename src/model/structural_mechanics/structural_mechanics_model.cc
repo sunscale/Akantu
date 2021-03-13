@@ -43,21 +43,37 @@
 #ifdef AKANTU_USE_IOHELPER
 #include "dumpable_inline_impl.hh"
 #include "dumper_elemental_field.hh"
+#include "dumper_internal_material_field.hh"
 #include "dumper_iohelper_paraview.hh"
 #include "group_manager_inline_impl.hh"
 #endif
 /* -------------------------------------------------------------------------- */
-#include "structural_mechanics_model_inline_impl.hh"
+#include "structural_element_bernoulli_beam_2.hh"
+#include "structural_element_bernoulli_beam_3.hh"
+#include "structural_element_kirchhoff_shell.hh"
+/* -------------------------------------------------------------------------- */
+//#include "structural_mechanics_model_inline_impl.hh"
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
+inline UInt StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
+  UInt ndof = 0;
+#define GET_(type) ndof = ElementClass<type>::getNbDegreeOfFreedom()
+  AKANTU_BOOST_KIND_ELEMENT_SWITCH(GET_, _ek_structural);
+#undef GET_
+
+  return ndof;
+}
+
+/* -------------------------------------------------------------------------- */
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
                                                    const ID & id)
     : Model(mesh, ModelType::_structural_mechanics_model, dim, id),
-      time_step(NAN), f_m2a(1.0), stress("stress", id),
-      element_material("element_material", id), set_ID("beam sets", id),
+      f_m2a(1.0), stress("stress", id),
+      element_material("element_material", id),
+      set_ID("beam sets", id),
       rotation_matrix("rotation_matices", id) {
   AKANTU_DEBUG_IN();
 
@@ -80,6 +96,13 @@ StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
 
   this->initDOFManager();
 
+  this->dumper_default_element_kind = _ek_structural;
+
+  mesh.getElementalData<Real>("extra_normal")
+      .initialize(mesh, _element_kind = _ek_structural,
+                  _nb_component = spatial_dimension, _with_nb_element = true,
+                  _default_value = 0.);
+
   AKANTU_DEBUG_OUT();
 }
 
@@ -88,30 +111,6 @@ StructuralMechanicsModel::~StructuralMechanicsModel() = default;
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::initFullImpl(const ModelOptions & options) {
-  // <<<< This is the SolidMechanicsModel implementation for future ref >>>>
-  // material_index.initialize(mesh, _element_kind = _ek_not_defined,
-  //                           _default_value = UInt(-1), _with_nb_element =
-  //                           true);
-  // material_local_numbering.initialize(mesh, _element_kind = _ek_not_defined,
-  //                                     _with_nb_element = true);
-
-  // Model::initFullImpl(options);
-
-  // // initialize pbc
-  // if (this->pbc_pair.size() != 0)
-  //   this->initPBC();
-
-  // // initialize the materials
-  // if (this->parser.getLastParsedFile() != "") {
-  //   this->instantiateMaterials();
-  // }
-
-  // this->initMaterials();
-  // this->initBC(*this, *displacement, *displacement_increment,
-  // *external_force);
-
-  // <<<< END >>>>
-
   Model::initFullImpl(options);
 
   // Initializing stresses
@@ -147,13 +146,13 @@ void StructuralMechanicsModel::initFEEngineBoundary() {
 }
 
 /* -------------------------------------------------------------------------- */
-// void StructuralMechanicsModel::setTimeStep(Real time_step) {
-//   this->time_step = time_step;
-
-// #if defined(AKANTU_USE_IOHELPER)
-//   this->mesh.getDumper().setTimeStep(time_step);
-// #endif
-// }
+void StructuralMechanicsModel::setTimeStep(Real time_step,
+                                           const ID & solver_id) {
+  Model::setTimeStep(time_step, solver_id);
+#if defined(AKANTU_USE_IOHELPER)
+  this->mesh.getDumper().setTimeStep(time_step);
+#endif
+}
 
 /* -------------------------------------------------------------------------- */
 /* Initialisation                                                             */
@@ -170,7 +169,7 @@ void StructuralMechanicsModel::initSolver(
 
   auto & dof_manager = this->getDOFManager();
 
-  if (!dof_manager.hasDOFs("displacement")) {
+  if (not dof_manager.hasDOFs("displacement")) {
     dof_manager.registerDOFs("displacement", *displacement_rotation,
                              _dst_nodal);
     dof_manager.registerBlockedDOFs("displacement", *this->blocked_dofs);
@@ -178,8 +177,8 @@ void StructuralMechanicsModel::initSolver(
 
   if (time_step_solver_type == TimeStepSolverType::_dynamic ||
       time_step_solver_type == TimeStepSolverType::_dynamic_lumped) {
-    this->allocNodalField(velocity, spatial_dimension, "velocity");
-    this->allocNodalField(acceleration, spatial_dimension, "acceleration");
+    this->allocNodalField(velocity, nb_degree_of_freedom, "velocity");
+    this->allocNodalField(acceleration, nb_degree_of_freedom, "acceleration");
 
     if (!dof_manager.hasDOFsDerivatives("displacement", 1)) {
       dof_manager.registerDOFsDerivative("displacement", 1, *this->velocity);
@@ -193,10 +192,8 @@ void StructuralMechanicsModel::initSolver(
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::initModel() {
-  for (auto && type : mesh.elementTypes(_element_kind = _ek_structural)) {
-    // computeRotationMatrix(type);
-    element_material.alloc(mesh.getNbElement(type), 1, type);
-  }
+  element_material.initialize(mesh, _element_kind = _ek_structural,
+                              _default_value = 0, _with_nb_element = true);
 
   getFEEngine().initShapeFunctions(_not_ghost);
   getFEEngine().initShapeFunctions(_ghost);
@@ -206,7 +203,15 @@ void StructuralMechanicsModel::initModel() {
 void StructuralMechanicsModel::assembleStiffnessMatrix() {
   AKANTU_DEBUG_IN();
 
-  getDOFManager().getMatrix("K").zero();
+  if (not need_to_reassemble_stiffness) {
+    return;
+  }
+
+  if (not getDOFManager().hasMatrix("K")) {
+    getDOFManager().getNewMatrix("K", getMatrixType("K"));
+  }
+
+  this->getDOFManager().zeroMatrix("K");
 
   for (const auto & type :
        mesh.elementTypes(spatial_dimension, _not_ghost, _ek_structural)) {
@@ -215,6 +220,8 @@ void StructuralMechanicsModel::assembleStiffnessMatrix() {
     AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(ASSEMBLE_STIFFNESS_MATRIX);
 #undef ASSEMBLE_STIFFNESS_MATRIX
   }
+
+  need_to_reassemble_stiffness = false;
 
   AKANTU_DEBUG_OUT();
 }
@@ -232,51 +239,6 @@ void StructuralMechanicsModel::computeStresses() {
   }
 
   AKANTU_DEBUG_OUT();
-}
-
-/* -------------------------------------------------------------------------- */
-void StructuralMechanicsModel::computeRotationMatrix(ElementType type) {
-  Mesh & mesh = getFEEngine().getMesh();
-
-  UInt nb_nodes_per_element = Mesh::getNbNodesPerElement(type);
-  UInt nb_element = mesh.getNbElement(type);
-
-  if (!rotation_matrix.exists(type)) {
-    rotation_matrix.alloc(nb_element,
-                          nb_degree_of_freedom * nb_nodes_per_element *
-                              nb_degree_of_freedom * nb_nodes_per_element,
-                          type);
-  } else {
-    rotation_matrix(type).resize(nb_element);
-  }
-  rotation_matrix(type).zero();
-
-  Array<Real> rotations(nb_element,
-                        nb_degree_of_freedom * nb_degree_of_freedom);
-  rotations.zero();
-
-#define COMPUTE_ROTATION_MATRIX(type) computeRotationMatrix<type>(rotations);
-
-  AKANTU_BOOST_STRUCTURAL_ELEMENT_SWITCH(COMPUTE_ROTATION_MATRIX);
-#undef COMPUTE_ROTATION_MATRIX
-
-  auto R_it = rotations.begin(nb_degree_of_freedom, nb_degree_of_freedom);
-  auto T_it =
-      rotation_matrix(type).begin(nb_degree_of_freedom * nb_nodes_per_element,
-                                  nb_degree_of_freedom * nb_nodes_per_element);
-
-  for (UInt el = 0; el < nb_element; ++el, ++R_it, ++T_it) {
-    auto & T = *T_it;
-    auto & R = *R_it;
-    for (UInt k = 0; k < nb_nodes_per_element; ++k) {
-      for (UInt i = 0; i < nb_degree_of_freedom; ++i) {
-        for (UInt j = 0; j < nb_degree_of_freedom; ++j) {
-          T(k * nb_degree_of_freedom + i, k * nb_degree_of_freedom + j) =
-              R(i, j);
-        }
-      }
-    }
-  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -313,6 +275,16 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
                                         n, 0, padding_size);
   }
 
+  if (field_name == "velocity") {
+    return mesh.createStridedNodalField(velocity, group_name, n, 0,
+                                        padding_size);
+  }
+
+  if (field_name == "acceleration") {
+    return mesh.createStridedNodalField(acceleration, group_name, n, 0,
+                                        padding_size);
+  }
+
   if (field_name == "rotation") {
     return mesh.createStridedNodalField(displacement_rotation.get(), group_name,
                                         nb_degree_of_freedom - n, n,
@@ -321,6 +293,10 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
 
   if (field_name == "force") {
     return mesh.createStridedNodalField(external_force.get(), group_name, n, 0,
+                                        padding_size);
+  }
+  if (field_name == "external_force") {
+    return mesh.createStridedNodalField(external_force, group_name, n, 0,
                                         padding_size);
   }
 
@@ -355,6 +331,13 @@ std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createElementalField(
     field = mesh.createElementalField<UInt, Vector, dumpers::ElementalField>(
         field_name, group_name, spatial_dimension, kind);
   }
+  if (field_name == "stress") {
+    ElementTypeMap<UInt> nb_data_per_elem = this->mesh.getNbDataPerElem(stress);
+
+    field = mesh.createElementalField<Real, dumpers::InternalMaterialField>(
+        stress, group_name, this->spatial_dimension, kind, nb_data_per_elem);
+  }
+
   return field;
 }
 
@@ -370,6 +353,8 @@ MatrixType StructuralMechanicsModel::getMatrixType(const ID & /*id*/) {
 void StructuralMechanicsModel::assembleMatrix(const ID & id) {
   if (id == "K") {
     assembleStiffnessMatrix();
+  } else if (id == "M") {
+    assembleMassMatrix();
   }
 }
 
@@ -382,11 +367,35 @@ void StructuralMechanicsModel::assembleResidual() {
 
   auto & dof_manager = getDOFManager();
 
-  internal_force->zero();
-  computeStresses();
   assembleInternalForce();
-  dof_manager.assembleToResidual("displacement", *internal_force, -1);
+
   dof_manager.assembleToResidual("displacement", *external_force, 1);
+  dof_manager.assembleToResidual("displacement", *internal_force, 1);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::assembleResidual(const ID & residual_part) {
+  AKANTU_DEBUG_IN();
+
+  if ("external" == residual_part) {
+    this->getDOFManager().assembleToResidual("displacement",
+                                             *this->external_force, 1);
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  if ("internal" == residual_part) {
+    this->assembleInternalForce();
+    this->getDOFManager().assembleToResidual("displacement",
+                                             *this->internal_force, 1);
+    AKANTU_DEBUG_OUT();
+    return;
+  }
+
+  AKANTU_CUSTOM_EXCEPTION(
+      debug::SolverCallbackResidualPartUnknown(residual_part));
 
   AKANTU_DEBUG_OUT();
 }
@@ -422,6 +431,13 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
     options.solution_type["displacement"] = IntegrationScheme::_not_defined;
     break;
   }
+  case TimeStepSolverType::_dynamic: {
+    options.non_linear_solver_type = NonLinearSolverType::_newton_raphson;
+    options.integration_scheme_type["displacement"] =
+        IntegrationSchemeType::_trapezoidal_rule_2;
+    options.solution_type["displacement"] = IntegrationScheme::_displacement;
+    break;
+  }
   default:
     AKANTU_EXCEPTION(type << " is not a valid time step solver type");
   }
@@ -431,6 +447,10 @@ ModelSolverOptions StructuralMechanicsModel::getDefaultSolverOptions(
 
 /* -------------------------------------------------------------------------- */
 void StructuralMechanicsModel::assembleInternalForce() {
+
+  internal_force->zero();
+  computeStresses();
+
   for (auto type : mesh.elementTypes(_spatial_dimension = _all_dimensions,
                    _element_kind = _ek_structural)) {
     assembleInternalForce(type, _not_ghost);
@@ -454,11 +474,70 @@ void StructuralMechanicsModel::assembleInternalForce(ElementType type,
 
   Array<Real> intBtSigma(0, ndof_per_elem, "intBtSigma");
   fem.integrate(BtSigma, intBtSigma, ndof_per_elem, type, gt);
-  BtSigma.resize(0);
 
   getDOFManager().assembleElementalArrayLocalArray(intBtSigma, *internal_force,
-                                                   type, gt, 1);
+                                                   type, gt, -1.);
 }
+
+/* -------------------------------------------------------------------------- */
+Real StructuralMechanicsModel::getKineticEnergy() {
+
+  if (not this->getDOFManager().hasMatrix("M")) {
+    return 0.;
+  }
+
+  Real ekin = 0.;
+  UInt nb_nodes = mesh.getNbNodes();
+
+  Array<Real> Mv(nb_nodes, nb_degree_of_freedom);
+  this->getDOFManager().assembleMatMulVectToArray("displacement", "M",
+                                                  *this->velocity, Mv);
+
+  for (auto && data : zip(arange(nb_nodes), make_view(Mv, nb_degree_of_freedom),
+                          make_view(*this->velocity, nb_degree_of_freedom))) {
+    ekin += std::get<2>(data).dot(std::get<1>(data)) *
+            static_cast<Real>(mesh.isLocalOrMasterNode(std::get<0>(data)));
+  }
+
+  mesh.getCommunicator().allReduce(ekin, SynchronizerOperation::_sum);
+
+  return ekin / 2.;
+}
+
+/* -------------------------------------------------------------------------- */
+Real StructuralMechanicsModel::getPotentialEnergy() {
+  Real epot = 0.;
+  UInt nb_nodes = mesh.getNbNodes();
+
+  Array<Real> Ku(nb_nodes, nb_degree_of_freedom);
+  this->getDOFManager().assembleMatMulVectToArray(
+      "displacement", "K", *this->displacement_rotation, Ku);
+
+  for (auto && data :
+       zip(arange(nb_nodes), make_view(Ku, nb_degree_of_freedom),
+           make_view(*this->displacement_rotation, nb_degree_of_freedom))) {
+    epot += std::get<2>(data).dot(std::get<1>(data)) *
+            static_cast<Real>(mesh.isLocalOrMasterNode(std::get<0>(data)));
+  }
+
+  mesh.getCommunicator().allReduce(epot, SynchronizerOperation::_sum);
+
+  return epot / 2.;
+}
+
+/* -------------------------------------------------------------------------- */
+Real StructuralMechanicsModel::getEnergy(const ID & energy) {
+  if (energy == "kinetic") {
+    return getKineticEnergy();
+  }
+
+  if (energy == "potential") {
+    return getPotentialEnergy();
+  }
+
+  return 0;
+}
+
 /* -------------------------------------------------------------------------- */
 
 } // namespace akantu

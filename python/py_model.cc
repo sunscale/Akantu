@@ -33,6 +33,12 @@ void register_model(py::module & mod) {
           },
           py::return_value_policy::reference)
       .def("getArrayPerDOFs", &DOFManager::getArrayPerDOFs)
+      .def(
+      	  "hasMatrix",
+      	  [](DOFManager & self, const ID & name) -> bool {
+      	     return self.hasMatrix(name);
+      	  },
+	  py::arg("name"))
       .def("assembleToResidual", &DOFManager::assembleToResidual);
 
   py::class_<NonLinearSolver>(mod, "NonLinearSolver")
@@ -71,10 +77,13 @@ void register_model(py::module & mod) {
       .def("setBaseNameToDumper", &Model::setBaseNameToDumper)
       .def("addDumpFieldVectorToDumper", &Model::addDumpFieldVectorToDumper)
       .def("addDumpFieldToDumper", &Model::addDumpFieldToDumper)
-      .def("dump", &Model::dump)
+      .def("dump", py::overload_cast<>(&Model::dump))
+      .def("dump", py::overload_cast<UInt>(&Model::dump))
+      .def("dump", py::overload_cast<Real, UInt>(&Model::dump))
       .def("initNewSolver", &Model::initNewSolver)
       .def("getDOFManager", &Model::getDOFManager,
-           py::return_value_policy::reference);
+           py::return_value_policy::reference)
+      .def("assembleMatrix", &Model::assembleMatrix);
 }
 
 } // namespace akantu

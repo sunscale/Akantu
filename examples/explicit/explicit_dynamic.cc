@@ -58,7 +58,8 @@ int main(int argc, char * argv[]) {
   time_step = model.getStableTimeStep();
   std::cout << "Time Step = " << time_step * time_factor << "s (" << time_step
             << "s)" << std::endl;
-  model.setTimeStep(time_step * time_factor);
+  time_step *= time_factor;
+  model.setTimeStep(time_step);
 
   /// boundary and initial conditions
   Array<Real> & displacement = model.getDisplacement();

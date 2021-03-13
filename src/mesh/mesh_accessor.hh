@@ -96,6 +96,17 @@ public:
     return this->_mesh.getConnectivityPointer(type, ghost_type);
   }
 
+  /// resize the connectivity (use carefully)
+  inline void resizeConnectivity(UInt new_size, ElementType type,
+                                 GhostType ghost_type = _not_ghost) {
+    this->getConnectivity(type, ghost_type).resize(new_size, UInt(-1));
+  }
+
+  /// resize the nodes (use carefully)
+  inline void resizeNodes(UInt new_size) {
+    this->getNodes().resize(new_size, UInt(-1));
+  }
+
   /// get the connectivity for the given element
   inline decltype(auto) getConnectivity(const Element & element) {
     return this->_mesh.getConnectivityNC(element);
@@ -109,23 +120,21 @@ public:
 
   /// get the element_to_subelement Array for the given type and
   /// create it if necessary
-  inline auto &
-  getElementToSubelement(ElementType type,
-                         GhostType ghost_type = _not_ghost) {
+  inline auto & getElementToSubelement(ElementType type,
+                                       GhostType ghost_type = _not_ghost) {
     return this->_mesh.getElementToSubelementPointer(type, ghost_type);
   }
 
   inline decltype(auto)
   getElementToSubelementNC(const ElementType & type,
-                         const GhostType & ghost_type = _not_ghost) {
+                           const GhostType & ghost_type = _not_ghost) {
     return this->_mesh.getElementToSubelementNC(type, ghost_type);
   }
 
   /// get the subelement_to_element Array for the given type and
   /// create it if necessary
-  inline auto &
-  getSubelementToElement(ElementType type,
-                         GhostType ghost_type = _not_ghost) {
+  inline auto & getSubelementToElement(ElementType type,
+                                       GhostType ghost_type = _not_ghost) {
     return this->_mesh.getSubelementToElementPointer(type, ghost_type);
   }
 
@@ -158,10 +167,10 @@ public:
   }
 
   template <typename T>
-  inline auto &
-  getData(const std::string & data_name, ElementType el_type,
-          GhostType ghost_type = _not_ghost, UInt nb_component = 1,
-          bool size_to_nb_element = true, bool resize_with_parent = false) {
+  inline auto & getData(const std::string & data_name, ElementType el_type,
+                        GhostType ghost_type = _not_ghost,
+                        UInt nb_component = 1, bool size_to_nb_element = true,
+                        bool resize_with_parent = false) {
     return this->_mesh.getDataPointer<T>(data_name, el_type, ghost_type,
                                          nb_component, size_to_nb_element,
                                          resize_with_parent);
