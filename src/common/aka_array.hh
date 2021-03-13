@@ -330,8 +330,9 @@ public:
   UInt find(const_reference elem) const;
 
   /// @see Array::find(const_reference elem) const
-//  UInt find(T elem[]) const;
+  //  UInt find(T elem[]) const;
 
+  /// append a value to the end of the Array
   inline void push_back(const_reference value) { parent::push_back(value); }
 
   /// append a Vector or a Matrix
@@ -342,6 +343,7 @@ public:
     parent::push_back(new_elem);
   }
 
+  /// append the content of the iterator at the end of the Array
   template <typename Ret> inline void push_back(const iterator<Ret> & it) {
     push_back(*it);
   }
@@ -363,6 +365,7 @@ public:
     std::fill_n(this->values, this->size_ * this->nb_component, t);
   }
 
+  /// set the array to T{}
   inline void zero() { this->set({}); }
 
   /// resize the array to 0

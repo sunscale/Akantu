@@ -239,7 +239,7 @@ TEST(TestNamedZipFixutre, Simple) {
     EXPECT_EQ(b, a);
   }
 
-   for (auto && data : named_zip(get<"a"_h>() = a, get<"b"_h>() = b)) {
+  for (auto && data : named_zip(get<"a"_h>() = a, get<"b"_h>() = b)) {
     auto & a = tuple::get<"a"_h>(data);
     auto & b = tuple::get<"b"_h>(data);
     EXPECT_EQ(b, a);
@@ -389,6 +389,14 @@ TEST(TestFilteredIterator, Temporary) {
   for (auto && data :
        zip(filter_, filter(filter_, std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8,
                                                      9, 10}))) {
+    EXPECT_EQ(std::get<0>(data), std::get<1>(data));
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+TEST(TestConcatenateIterator, SimpleTest) {
+  for (auto && data : zip(arange(0, 13), concat(arange(0, 5), arange(5, 10),
+                                                arange(10, 13)))) {
     EXPECT_EQ(std::get<0>(data), std::get<1>(data));
   }
 }

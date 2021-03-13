@@ -1,11 +1,55 @@
+checks:
+  duplicate:
+    enabled: true
+    exclude_patterns:
+      - "test/"
+      - "examples/"
+  structure:
+    enabled: true
+    exclude_patterns:
+      - "test/"
+
 plugins:
   editorconfig:
     enabled: false
-  pylint:
+    config:
+      editorconfig: .editorconfig
+    exclude_patterns:
+      - ".clangd/"
+      - ".cache/"
+  pep8:
     enabled: true
+    exclude_patterns:
+      - "test/test_fe_engine/py_engine/py_engine.py"
   cppcheck:
-    enabled: true
+    enabled: false
     project: compile_commands.json
     language: c++
     check: warning, style, performance
     stds: [c++14]
+  fixme:
+    enabled: true
+    exclude_patterns:
+      - "doc/"
+  clang-tidy:
+    enabled: false
+    checks:
+    extra-arg:
+      - -std=c++14
+      - -Ithird-party/akantu_iterators/include
+      - -Ithird-party/iohelper/src
+      - -Itest/ci/includes_for_ci
+      - -Isrc/mesh
+    checks:
+      - '-*'
+      - 'modernize-*'
+    exclude_patterns:
+      - test/
+      - cmake/
+      - examples/
+      - extra_packages/
+      - .clangd/
+
+exclude_patterns:
+- "third-party/"
+- "build*/"

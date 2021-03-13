@@ -352,7 +352,7 @@ enum class SynchronizationTag {
   _ce_groups, ///< synchronization of cohesive element insertion depending
               /// on facet groups
   _ce_insertion_order, ///< synchronization of the order of insertion of
-                       ///cohesive elements
+                       /// cohesive elements
 
   // --- GroupManager tags ---
   _gm_clusters, ///< synchronization of clusters

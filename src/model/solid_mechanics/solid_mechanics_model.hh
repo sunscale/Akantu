@@ -233,18 +233,15 @@ protected:
 
   void computeNonLocalStresses(GhostType ghost_type) override;
 
-  void
-  insertIntegrationPointsInNeighborhoods(GhostType ghost_type) override;
+  void insertIntegrationPointsInNeighborhoods(GhostType ghost_type) override;
 
   /// update the values of the non local internal
   void updateLocalInternal(ElementTypeMapReal & internal_flat,
-                           GhostType ghost_type,
-                           ElementKind kind) override;
+                           GhostType ghost_type, ElementKind kind) override;
 
   /// copy the results of the averaging in the materials
   void updateNonLocalInternal(ElementTypeMapReal & internal_flat,
-                              GhostType ghost_type,
-                              ElementKind kind) override;
+                              GhostType ghost_type, ElementKind kind) override;
 
   /* ------------------------------------------------------------------------ */
   /* Data Accessor inherited members                                          */
@@ -302,12 +299,10 @@ public:
   virtual void onDump();
 
   //! decide wether a field is a material internal or not
-  bool isInternal(const std::string & field_name,
-                  ElementKind element_kind);
+  bool isInternal(const std::string & field_name, ElementKind element_kind);
   //! give the amount of data per element
   virtual ElementTypeMap<UInt>
-  getInternalDataPerElem(const std::string & field_name,
-                         ElementKind kind);
+  getInternalDataPerElem(const std::string & field_name, ElementKind kind);
 
   //! flatten a given material internal field
   ElementTypeMapArray<Real> &
@@ -329,8 +324,7 @@ public:
   std::shared_ptr<dumpers::Field>
   createElementalField(const std::string & field_name,
                        const std::string & group_name, bool padding_flag,
-                       UInt spatial_dimension,
-                       ElementKind kind) override;
+                       UInt spatial_dimension, ElementKind kind) override;
 
   virtual void dump(const std::string & dumper_name);
 
@@ -443,9 +437,16 @@ public:
   /// get the energies
   Real getEnergy(const std::string & energy_id);
 
-  /// compute the energy for energy
-  Real getEnergy(const std::string & energy_id, ElementType type,
-                 UInt index);
+  /// compute the energy for an element
+  Real getEnergy(const std::string & energy_id, ElementType type, UInt index);
+
+  /// compute the energy for an element
+  Real getEnergy(const std::string & energy_id, const Element & element) {
+    return getEnergy(energy_id, element.type, element.element);
+  }
+
+  /// compute the energy for an element group
+  Real getEnergy(const ID & energy_id, const ID & group_id);
 
   AKANTU_GET_MACRO(MaterialByElement, material_index,
                    const ElementTypeMapArray<UInt> &);
@@ -464,7 +465,8 @@ public:
 
   AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, *material_selector,
                              MaterialSelector &);
-  void setMaterialSelector(std::shared_ptr<MaterialSelector> material_selector) {
+  void
+  setMaterialSelector(std::shared_ptr<MaterialSelector> material_selector) {
     this->material_selector = std::move(material_selector);
   }
 

@@ -27,10 +27,10 @@
  */
 /* -------------------------------------------------------------------------- */
 #include "aka_compatibilty_with_cpp_standard.hh"
+#include "aka_iterator_tools.hh"
 #include "aka_tuple_tools.hh"
 /* -------------------------------------------------------------------------- */
 #include <iterator>
-#include <tuple>
 #include <utility>
 /* -------------------------------------------------------------------------- */
 
@@ -45,27 +45,6 @@ namespace AKANTU_ITERATORS_NAMESPACE {
 
 /* -------------------------------------------------------------------------- */
 namespace iterators {
-  namespace details {
-    template <bool enable> struct CopyAssignmentEnabler {};
-    template <> struct CopyAssignmentEnabler<false> {
-      CopyAssignmentEnabler() = default;
-      CopyAssignmentEnabler(const CopyAssignmentEnabler &) = default;
-      CopyAssignmentEnabler(CopyAssignmentEnabler &&) = default;
-      CopyAssignmentEnabler & operator=(const CopyAssignmentEnabler &) = delete;
-      CopyAssignmentEnabler & operator=(CopyAssignmentEnabler &&) = default;
-    };
-
-    template <bool enable> struct MoveAssignmentEnabler {};
-    template <> struct MoveAssignmentEnabler<false> {
-      MoveAssignmentEnabler() = default;
-      MoveAssignmentEnabler(const MoveAssignmentEnabler &) = default;
-      MoveAssignmentEnabler(MoveAssignmentEnabler &&) = default;
-      MoveAssignmentEnabler & operator=(const MoveAssignmentEnabler &) = delete;
-      MoveAssignmentEnabler & operator=(MoveAssignmentEnabler &&) = default;
-    };
-
-  } // namespace details
-
   /* ------------------------------------------------------------------------ */
   template <template <class...> class Tuple, class... Iterators>
   class ZipIterator_

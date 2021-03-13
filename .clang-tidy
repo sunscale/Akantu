@@ -1,11 +1,14 @@
 Checks: "
-        modernize-use-*, -modernize-use-trailing-return-type*,
-        performance-*,
-        mpi-*,
-        openmp-*,
-        bugprone-*,
-        readability-*, -readability-magic-numbers, -readability-redundant-access-specifiers,
-        -clang-analyzer-*
+        -*,
+
+        modernize-use-*,
+        -modernize-use-trailing-return-type*,
+
+        readability-*,
+        -readability-magic-numbers,
+        -readability-redundant-access-specifiers,
+        -readability-convert-member-functions-to-static,
+        -readability-isolate-declaration,
         "
 AnalyzeTemporaryDtors: false
 HeaderFilterRegex:     'src/.*'

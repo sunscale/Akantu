@@ -153,6 +153,9 @@ public:
     return elements.size(std::forward<Args>(pack)...);
   }
 
+  decltype(auto) getElementsIterable(ElementType type,
+                                     GhostType ghost_type = _not_ghost) const;
+
   //  AKANTU_GET_MACRO(Nodes, node_group.getNodes(), const Array<UInt> &);
 
   AKANTU_GET_MACRO(NodeGroup, node_group, const NodeGroup &);
