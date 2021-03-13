@@ -326,9 +326,9 @@ public:
                        const std::string & group_name, bool padding_flag,
                        UInt spatial_dimension, ElementKind kind) override;
 
-  virtual void dump(const std::string & dumper_name);
-  virtual void dump(const std::string & dumper_name, UInt step);
-  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+  void dump(const std::string & dumper_name) override;
+  void dump(const std::string & dumper_name, UInt step) override;
+  void dump(const std::string & dumper_name, Real time, UInt step) override;
 
   void dump() override;
   void dump(UInt step) override;

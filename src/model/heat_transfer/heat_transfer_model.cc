@@ -752,54 +752,27 @@ std::shared_ptr<dumpers::Field> HeatTransferModel::createElementalField(
 #else
 /* -------------------------------------------------------------------------- */
 std::shared_ptr<dumpers::Field> HeatTransferModel::createElementalField(
-    __attribute__((unused)) const std::string & field_name,
-    __attribute__((unused)) const std::string & group_name,
-    __attribute__((unused)) bool padding_flag,
-    __attribute__((unused)) ElementKind element_kind) {
+    const std::string & /* field_name*/, const std::string & /*group_name*/,
+    bool /*padding_flag*/, ElementKind /*element_kind*/) {
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldBool(
-    __attribute__((unused)) const std::string & field_name,
-    __attribute__((unused)) const std::string & group_name,
-    __attribute__((unused)) bool padding_flag) {
+std::shared_ptr<dumpers::Field>
+HeatTransferModel::createNodalFieldBool(const std::string & /*field_name*/,
+                                        const std::string & /*group_name*/,
+                                        bool /*padding_flag*/) {
   return nullptr;
 }
 
 /* -------------------------------------------------------------------------- */
-std::shared_ptr<dumpers::Field> HeatTransferModel::createNodalFieldReal(
-    __attribute__((unused)) const std::string & field_name,
-    __attribute__((unused)) const std::string & group_name,
-    __attribute__((unused)) bool padding_flag) {
+std::shared_ptr<dumpers::Field>
+HeatTransferModel::createNodalFieldReal(const std::string & /*field_name*/,
+                                        const std::string & /*group_name*/,
+                                        bool /*padding_flag*/) {
   return nullptr;
 }
 #endif
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(const std::string & dumper_name) {
-  mesh.dump(dumper_name);
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(const std::string & dumper_name, UInt step) {
-  mesh.dump(dumper_name, step);
-}
-
-/* ------------------------------------------------------------------------- */
-void HeatTransferModel::dump(const std::string & dumper_name, Real time,
-                             UInt step) {
-  mesh.dump(dumper_name, time, step);
-}
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump() { mesh.dump(); }
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(UInt step) { mesh.dump(step); }
-
-/* -------------------------------------------------------------------------- */
-void HeatTransferModel::dump(Real time, UInt step) { mesh.dump(time, step); }
 
 /* -------------------------------------------------------------------------- */
 inline UInt HeatTransferModel::getNbData(const Array<UInt> & indexes,

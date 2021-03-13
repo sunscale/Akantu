@@ -261,7 +261,7 @@ public:
 public:
   /// Compute Linear load function set in global axis
   template <ElementType type>
-  void computeForcesByGlobalTractionArray(const Array<Real> & tractions);
+  void computeForcesByGlobalTractionArray(const Array<Real> & traction_global);
 
   /// Compute Linear load function set in local axis
   template <ElementType type>

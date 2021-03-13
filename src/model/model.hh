@@ -202,7 +202,7 @@ public:
   AKANTU_GET_MACRO(AnalysisMethod, method, AnalysisMethod);
 
   /* ------------------------------------------------------------------------ */
-  /* Pack and unpack helper functions                                         */
+  /* Pack and unpack hexlper functions                                         */
   /* ------------------------------------------------------------------------ */
 public:
   inline UInt getNbIntegrationPoints(const Array<Element> & elements,
@@ -300,6 +300,12 @@ public:
   void setDirectoryToDumper(const std::string & dumper_name,
                             const std::string & directory);
 
+
+  /* ------------------------------------------------------------------------ */
+  virtual void dump(const std::string & dumper_name);
+  virtual void dump(const std::string & dumper_name, UInt step);
+  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+  /* ------------------------------------------------------------------------ */
   virtual void dump();
   virtual void dump(UInt step);
   virtual void dump(Real time, UInt step);
