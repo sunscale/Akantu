@@ -336,7 +336,7 @@ pages:
     - .debian_testing_gcc
   script:
     - cd build
-    - cmake -DAKANTU_DOCUMENTATION_DEVELOPER_MANUAL=ON ..
+    - cmake -DAKANTU_DOCUMENTATION=ON ..
     - cmake --build . -t sphinx-doc
     - mv doc/dev-doc/html ../public
   dependencies:
@@ -345,4 +345,4 @@ pages:
     paths:
       - public
   only:
-    - features/doc
+    - master
