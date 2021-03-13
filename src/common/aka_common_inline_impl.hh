@@ -36,6 +36,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <array>
 /* -------------------------------------------------------------------------- */
 
 namespace akantu {
@@ -104,45 +105,23 @@ template <typename T> std::string printMemorySize(UInt size) {
   sstr << std::setprecision(2) << std::fixed << real_size;
 
   std::string size_prefix;
-  switch (mult) {
-  case 0:
-    sstr << "";
-    break;
-  case 1:
-    sstr << "Ki";
-    break;
-  case 2:
-    sstr << "Mi";
-    break;
-  case 3:
-    sstr << "Gi";
-    break; // I started on this type of machines
-           // (32bit computers) (Nicolas)
-  case 4:
-    sstr << "Ti";
-    break;
-  case 5:
-    sstr << "Pi";
-    break;
-  case 6:
-    sstr << "Ei";
-    break; // theoritical limit of RAM of the current
-           // computers in 2014 (64bit computers) (Nicolas)
-  case 7:
-    sstr << "Zi";
-    break;
-  case 8:
-    sstr << "Yi";
-    break;
-  default:
+  std::array<std::string, 9> ratio = {
+      "", "Ki", "Mi",
+      "Gi", // I started on this type of machines (32bit computers) (Nicolas)
+      "Ti", "Pi",
+      "Ei", // theoritical limit of RAM of the current computers in 2014 (64bit
+            // computers) (Nicolas)
+      "Zi", "Yi"};
+
+  if (mult >= ratio.size()) {
     AKANTU_ERROR(
         "The programmer in 2014 didn't thought so far (even wikipedia does not "
         "go further)."
         << " You have at least 1024 times more than a yobibit of RAM!!!"
-        << " Just add the prefix corresponding in this switch case.");
+        << " Just add the prefix corresponding in the ratio array.");
   }
 
-  sstr << "Byte";
+  sstr << ratio[mult] << "Byte";
 
   return sstr.str();
 }
