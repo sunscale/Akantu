@@ -258,7 +258,7 @@ public:
       return *this;
     }
 
-    cells_iterator operator++(int) {
+    cells_iterator operator++(int /*unused*/) {
       cells_iterator tmp(*this);
       operator++();
       return tmp;
@@ -324,10 +324,7 @@ public:
   }
 
   void printself(std::ostream & stream, int indent = 0) const {
-    std::string space;
-    for (Int i = 0; i < indent; i++, space += AKANTU_INDENT) {
-      ;
-    }
+    std::string space(indent, AKANTU_INDENT);
 
     std::streamsize prec = stream.precision();
     std::ios_base::fmtflags ff = stream.flags();
