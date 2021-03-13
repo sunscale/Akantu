@@ -149,7 +149,8 @@ public:
                 const SynchronizationTag & tag) const override {
     if (tag == SynchronizationTag::_smmc_facets_conn) {
       for (const auto & element : elements) {
-        const auto & conns = global_connectivity(element.type, element.ghost_type);
+        const auto & conns =
+            global_connectivity(element.type, element.ghost_type);
         for (auto n : arange(conns.getNbComponent())) {
           buffer << conns(element.element, n);
         }
@@ -281,7 +282,7 @@ Mesh & Mesh::initMeshFacets(const ID & id) {
 
         // set physical name
         auto && facet_element = Element{element.type, UInt(std::get<0>(*facet)),
-              element.ghost_type};
+                                        element.ghost_type};
         phys_data(facet_element) = mesh_phys_data(element);
       },
       _spatial_dimension = spatial_dimension - 1);
@@ -433,7 +434,7 @@ template <typename T>
 ElementTypeMap<UInt> Mesh::getNbDataPerElem(ElementTypeMapArray<T> & arrays) {
   ElementTypeMap<UInt> nb_data_per_elem;
 
-  for (auto type : arrays.elementTypes()) {
+  for (auto type : arrays.elementTypes(_element_kind = _ek_not_defined)) {
     UInt nb_elements = this->getNbElement(type);
     auto & array = arrays(type);
 

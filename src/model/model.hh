@@ -306,6 +306,8 @@ public:
                             const std::string & directory);
 
   virtual void dump();
+  virtual void dump(UInt step);
+  virtual void dump(Real time, UInt step);
 
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */
@@ -334,6 +336,9 @@ protected:
 
   /// parser to the pointer to use
   Parser & parser;
+
+  /// default ElementKind for dumper
+  ElementKind dumper_default_element_kind{_ek_regular};
 };
 
 /// standard output stream operator

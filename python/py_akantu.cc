@@ -9,6 +9,7 @@
 #include "py_mesh.hh"
 #include "py_model.hh"
 #include "py_parser.hh"
+#include "py_solver.hh"
 
 #if defined(AKANTU_USE_IOHELPER)
 #include "py_dumpable.hh"
@@ -25,6 +26,10 @@
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
 #include "py_solid_mechanics_model_cohesive.hh"
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+#include "py_structural_mechanics_model.hh"
 #endif
 /* -------------------------------------------------------------------------- */
 #include <aka_error.hh>
@@ -43,6 +48,7 @@ void register_all(pybind11::module & mod) {
   register_error(mod);
   register_functions(mod);
   register_parser(mod);
+  register_solvers(mod);
 
   register_group_manager(mod);
 #if defined(AKANTU_USE_IOHELPER)
@@ -65,6 +71,10 @@ void register_all(pybind11::module & mod) {
 
 #if defined(AKANTU_COHESIVE_ELEMENT)
   register_solid_mechanics_model_cohesive(mod);
+#endif
+
+#if defined(AKANTU_STRUCTURAL_MECHANICS)
+  register_structural_mechanics_model(mod);
 #endif
 }
 } // namespace akantu

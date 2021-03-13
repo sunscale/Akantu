@@ -5,7 +5,7 @@
 
 namespace akantu {
 
-void register_solver(pybind11::module & mod);
+void register_solvers(pybind11::module & mod);
 
 }
 

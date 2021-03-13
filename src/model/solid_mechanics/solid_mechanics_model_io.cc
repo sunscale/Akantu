@@ -292,24 +292,21 @@ SolidMechanicsModel::createNodalFieldBool(const std::string &,
 }
 
 #endif
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::dump(const std::string & dumper_name) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
   mesh.dump(dumper_name);
 }
 
-/* --------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::dump(const std::string & dumper_name, UInt step) {
   this->onDump();
   EventManager::sendEvent(SolidMechanicsModelEvent::BeforeDumpEvent());
   mesh.dump(dumper_name, step);
 }
 
-/* -------------------------------------------------------------------------
- */
+/* -------------------------------------------------------------------------- */
 void SolidMechanicsModel::dump(const std::string & dumper_name, Real time,
                                UInt step) {
   this->onDump();
