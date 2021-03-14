@@ -18,7 +18,7 @@ except ImportError:
 beam = aka.Mesh(2)
 
 # We now create the connectivity array for the beam.
-beam.addConnectivity(aka._bernoulli_beam_2)
+beam.addConnectivityType(aka._bernoulli_beam_2)
 
 # We need a `MeshAccessor` in order to change the size of the mesh entities.
 beamAcc = aka.MeshAccessor(beam)

@@ -138,7 +138,8 @@ softDuration = 1000
 SoftStart = (N // 2) - softDuration // 2
 SoftEnd = SoftStart + softDuration
 if(softDuration > 0):
-    softFactor = (model.getMaterial('mat3ID').E / model.getMaterial('mat2ID').E) ** (1.0 / softDuration)
+    softFactor = (model.getMaterial('mat3').E
+                  / model.getMaterial('mat2').E) ** (1.0 / softDuration)
 
 mat2 = model.getMaterial('mat2')
 

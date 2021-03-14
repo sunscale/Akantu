@@ -82,6 +82,8 @@ int main(int argc, char * argv[]) {
     connectivity(i, 1) = i + 1;
   }
 
+  mesh_accessor.makeReady();
+
   // Defining the materials
   StructuralMechanicsModel model(beams);
 
