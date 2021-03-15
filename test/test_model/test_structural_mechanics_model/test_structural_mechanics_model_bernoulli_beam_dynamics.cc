@@ -156,7 +156,7 @@ public:
 using beam_types = gtest_list_t<std::tuple<element_type_t<_bernoulli_beam_2>,
                                            element_type_t<_bernoulli_beam_3>>>;
 
-TYPED_TEST_SUITE(TestStructBernoulliDynamic, beam_types);
+TYPED_TEST_SUITE(TestStructBernoulliDynamic, beam_types, );
 
 template <class Type>
 void getElementMassMatrix(const StructuralMaterial & /*material*/, Real /*l*/,
