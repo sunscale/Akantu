@@ -23,7 +23,8 @@ beam.addConnectivityType(aka._bernoulli_beam_2)
 # We need a `MeshAccessor` in order to change the size of the mesh entities.
 beamAcc = aka.MeshAccessor(beam)
 
-# Now we create the array to store the nodes and the connectivities and give them their size.
+# Now we create the array to store the nodes and the connectivities and give
+# them their size.
 beamAcc.resizeConnectivity(2, aka._bernoulli_beam_2)
 beamAcc.resizeNodes(3)
 
@@ -50,7 +51,7 @@ model = aka.StructuralMechanicsModel(beam)
 mat1 = aka.StructuralMaterial()
 mat1.E = 1e9
 mat1.rho = 1.
-mat1.I = 1.
+mat1.I = 1.  # noqa: E741
 mat1.Iz = 1.
 mat1.Iy = 1.
 mat1.A = 1.
@@ -60,7 +61,7 @@ model.addMaterial(mat1)
 mat2 = aka.StructuralMaterial()
 mat2.E = 1e9
 mat2.rho = 1.
-mat2.I = 1.
+mat2.I = 1.  # noqa: E741
 mat2.Iz = 1.
 mat2.Iy = 1.
 mat2.A = 1.
@@ -126,8 +127,8 @@ for d in disps:
     maxMin[1] = min(np.min(d), maxMin[1])
 
 if has_matplotlib:
-    plt.plot(disp1, times, color='g', label = "middle node")
-    plt.plot(disp2, times, color='b', label = "right node")
+    plt.plot(disp1, times, color='g', label="middle node")
+    plt.plot(disp2, times, color='b', label="right node")
 
     plt.title("Displacement in $x$ of the nodes")
     plt.ylabel("Time [S]")
