@@ -8,6 +8,7 @@
 #include <mesh_utils.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
 /* -------------------------------------------------------------------------- */
@@ -31,7 +32,7 @@ void register_element_type_map_array(py::module & mod,
       .def(
           "elementTypes",
           [](ElementTypeMapArray<T> & self, UInt _dim, GhostType _ghost_type,
-             ElementKind _kind) -> decltype(auto) {
+             ElementKind _kind) -> std::vector<ElementType> {
             auto types = self.elementTypes(_dim, _ghost_type, _kind);
             std::vector<ElementType> _types;
             for (auto && t : types) {
