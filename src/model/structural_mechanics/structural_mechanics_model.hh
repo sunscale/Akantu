@@ -260,12 +260,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// Compute Linear load function set in global axis
-  template <ElementType type>
-  void computeForcesByGlobalTractionArray(const Array<Real> & traction_global);
+  void computeForcesByGlobalTractionArray(const Array<Real> & traction_global,
+                                          ElementType type);
 
   /// Compute Linear load function set in local axis
-  template <ElementType type>
-  void computeForcesByLocalTractionArray(const Array<Real> & tractions);
+  void computeForcesByLocalTractionArray(const Array<Real> & tractions,
+                                         ElementType type);
 
   /// compute force vector from a function(x,y,momentum) that describe stresses
   // template <ElementType type>
