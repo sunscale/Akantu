@@ -148,7 +148,7 @@ void Material::initMaterial() {
   auto dim = model.getSpatialDimension();
   for (const auto & type :
        element_filter.elementTypes(_element_kind = _ek_regular)) {
-    for (auto eigen_gradu : make_view(eigengradu(type), dim, dim)) {
+    for (auto & eigen_gradu : make_view(eigengradu(type), dim, dim)) {
       eigen_gradu = eigen_grad_u;
     }
   }
