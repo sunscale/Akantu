@@ -12,9 +12,7 @@ custom material. Its implementation is provided in the ``material_XXX.cc``. The
 new law must inherit from the :cpp:class:`Material <akantu::Material>` class or
 any other existing material class. It is therefore necessary to include the
 interface of the parent material in the header file of your local material and
-indicate the inheritance in the declaration of the class:
-
-.. code-block:: c++
+indicate the inheritance in the declaration of the class::
 
    auto & solver = model.getNonLinearSolver();
    solver.set("max_iterations", 1);

@@ -739,7 +739,7 @@ beam is given by:
      \label{fig-smm-implicit:dynamic}
    \end{figure}
 
-Figure :numref:`fig-smm-implicit-dynamic_solution` presents the deformed
+:numref:`fig-smm-implicit-dynamic_solution` presents the deformed
 beam at 3 different times during the simulation: time steps 0, 1000 and
 2000.
 

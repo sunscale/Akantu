@@ -97,7 +97,15 @@ Linear isotropic
 The linear isotropic elastic behavior is described by Hooke’s law, which
 states that the stress is linearly proportional to the applied strain
 (material behaves like an ideal spring), as illustrated in
-Figure `[fig:smm:cl:elastic] <#fig:smm:cl:elastic>`__.
+ :numref:`fig:smm:cl:el`.
+
+.. figure:: figures/cl/stress_strain_el.svg
+   :alt: Elastic strain-stress curve
+   :name: fig:smm:cl:el
+   :width: 60.0%
+
+   Stress-strain curve of elastic material and schematic representation of
+   Hooke's law, denoted as a spring.
 
 The equation that relates the strains to the displacements is: point)
 from the displacements as follows:
@@ -613,7 +621,7 @@ constitutive laws for damage. Examples are for instance the material
 order to use the corresponding non-local formulation the user has to define the
 non-local material he wishes to use in the text input file:
 
-.. code-block::
+.. code-block:: none
 
    material constitutive_law_non_local [
        name = material_name
@@ -624,7 +632,7 @@ non-local material he wishes to use in the text input file:
 where ``constitutive_law_non_local`` is the name of the non-local constitutive law, *e.g.* `marigo_non_local`.
 In addition to the material the non-local neighborhood, that should be used for the averaging process needs to be defined in the material file as well:
 
-.. code-block::
+.. code-block:: none
 
   non_local neighborhood_name weight_function_type [
      radius = $value$
@@ -882,7 +890,7 @@ traction-opening equation for this law is as follows:
    T = e \sigma_c \frac{\delta}{\delta_c}e^{-\delta/ \delta_c}
    :label: eq:exponential_law
 
-This equation is plotted in Figure :numref:`fig:smm:cl:ecl`. The term
+This equation is plotted in :numref:`fig:smm:cl:ecl`. The term
 :math:`\partial{\vec{T}}/ \partial{\delta}` after the necessary derivation
 can expressed as
 
