@@ -44,8 +44,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SolverPETSc::SolverPETSc(DOFManagerPETSc & dof_manager, const ID & matrix_id,
-                         const ID & id, const MemoryID & memory_id)
-    : SparseSolver(dof_manager, matrix_id, id, memory_id),
+                         const ID & id)
+    : SparseSolver(dof_manager, matrix_id, id),
       dof_manager(dof_manager), matrix(dof_manager.getMatrix(matrix_id)) {
   auto && mpi_comm = dof_manager.getMPIComm();
 

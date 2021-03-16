@@ -3,8 +3,12 @@
 
 import akantu as aka
 import numpy
-import matplotlib.pyplot as plt
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 # ### Creating the Mesh
 # Create a mesh for the two dimensional case
@@ -17,7 +21,8 @@ beam.addConnectivityType(el_type)
 # We need a `MeshAccessor` in order to change the size of the mesh entities.
 beamAcc = aka.MeshAccessor(beam)
 
-# Now we create the array to store the nodes and the connectivities and give them their size.
+# Now we create the array to store the nodes and the connectivities and give
+# them their size.
 nb_elem = 40
 L = 2
 beamAcc.resizeConnectivity(nb_elem, el_type)
@@ -53,7 +58,7 @@ if el_type == aka._bernoulli_beam_3:
 mat1 = aka.StructuralMaterial()
 mat1.E = 1e9
 mat1.rho = 10.
-mat1.I = 1.
+mat1.I = 1.   # noqa: E741
 mat1.Iz = 1.
 mat1.Iy = 1.
 mat1.A = 1.
@@ -112,7 +117,8 @@ C_ = model.getDOFManager().getMatrix("C")
 C_.add(M_, 0.00001)
 C_.add(K_, 0.00001)
 
-def analytical_solution(time, L, rho, E, A, I, F):
+
+def analytical_solution(time, L, rho, E, A, I, F):   # noqa: E741
     omega = np.pi**2 / L**2 * np.sqrt(E * I / rho)
     sum = 0.
     N = 110
@@ -120,6 +126,7 @@ def analytical_solution(time, L, rho, E, A, I, F):
         sum += (1. - np.cos(n * n * omega * time)) / n**4
 
     return 2. * F * L**3 / np.pi**4 / E / I * sum
+
 
 # Perform N time steps.
 #  At each step records the displacement of all three nodes in x direction.
@@ -154,13 +161,15 @@ def sol(x):
                                mat1.A, mat1.I, F)
 
 
-times = np.arange(N) * deltaT
-plt.plot(times, sol(times))
-plt.plot(times, displs)
-plt.plot(times, displs - sol(times))
+if has_matplotlib:
+    times = np.arange(N) * deltaT
+    plt.plot(times, sol(times))
+    plt.plot(times, displs)
+    plt.plot(times, displs - sol(times))
 
-# What I do not fully understand is why the middle node first go backwards until it goes forward.
-# I could imagine that there is some vibration, because everything is in rest.
-np.max(displs - sol(times))
-plt.plot(times, ekin+epot)
-plt.plot(times, ework)
+    # What I do not fully understand is why the middle node first go backwards
+    # until it goes forward. I could imagine that there is some vibration,
+    # because everything is in rest.
+    np.max(displs - sol(times))
+    plt.plot(times, ekin+epot)
+    plt.plot(times, ework)

@@ -1,12 +1,17 @@
-import sys
+#!/usr/bin/env python
+
 import subprocess
 import argparse
 import akantu as aka
 import numpy as np
-from image_saver import ImageSaver
-import matplotlib.pyplot as plt
 from scipy.sparse.linalg import eigsh
 from scipy.sparse import csr_matrix
+try:
+    import matplotlib.pyplot as plt
+    from image_saver import ImageSaver
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 # -----------------------------------------------------------------------------
 # parser
@@ -159,9 +164,6 @@ else:
 
 model.setTimeStep(time_step)
 
-disp_sav = ImageSaver(mesh, displacement, 0, Lbar)
-velo_sav = ImageSaver(mesh, velocity, 0, Lbar)
-
 
 # ------------------------------------------------------------------------
 # compute the eigen modes
@@ -211,6 +213,11 @@ e_k[0] = ekin
 e_t[0] = epot + ekin
 time[0] = 0
 
+if has_matplotlib:
+    disp_sav = ImageSaver(mesh, displacement, 0, Lbar)
+    velo_sav = ImageSaver(mesh, velocity, 0, Lbar)
+
+
 # -----------------------------------------------------------------------------
 # loop for evolution of motion dynamics
 # -----------------------------------------------------------------------------
@@ -227,31 +234,31 @@ for step in range(1, max_steps + 1):
     e_t[step] = epot + ekin
     time[step] = (step + 1) * time_step
 
-    disp_sav.storeStep()
-    velo_sav.storeStep()
+    if has_matplotlib:
+        disp_sav.storeStep()
+        velo_sav.storeStep()
+
     if step % 10 == 0:
         model.dump()
 
 
-if not plot:
-    sys.exit(0)
+if plot and has_matplotlib:
+    # --------------------------------------------------------------------------
+    # plot figures for global evolution
+    # --------------------------------------------------------------------------
+    # energy norms
+    plt.figure(1)
+    plt.plot(time, e_t, 'r', time, e_p, 'b', time, e_k, 'g')
 
-# -----------------------------------------------------------------------------
-# plot figures for global evolution
-# -----------------------------------------------------------------------------
-# energy norms
-plt.figure(1)
-plt.plot(time, e_t, 'r', time, e_p, 'b', time, e_k, 'g')
+    # space-time diagram for diplacements
+    plt.figure(2)
+    plt.imshow(disp_sav.getImage(), extent=(0, Lbar, max_steps * time_step, 0))
+    plt.xlabel("Space ")
+    plt.ylabel("Time ")
 
-# space-time diagram for diplacements
-plt.figure(2)
-plt.imshow(disp_sav.getImage(), extent=(0, Lbar, max_steps * time_step, 0))
-plt.xlabel("Space ")
-plt.ylabel("Time ")
-
-# space-time diagram for velocities
-plt.figure(3)
-plt.imshow(velo_sav.getImage(), extent=(0, Lbar, max_steps * time_step, 0))
-plt.xlabel("Velocity")
-plt.ylabel("Time")
-plt.show()
+    # space-time diagram for velocities
+    plt.figure(3)
+    plt.imshow(velo_sav.getImage(), extent=(0, Lbar, max_steps * time_step, 0))
+    plt.xlabel("Velocity")
+    plt.ylabel("Time")
+    plt.show()

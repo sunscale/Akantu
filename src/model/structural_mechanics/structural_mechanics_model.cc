@@ -69,13 +69,10 @@ inline UInt StructuralMechanicsModel::getNbDegreeOfFreedom(ElementType type) {
 
 /* -------------------------------------------------------------------------- */
 StructuralMechanicsModel::StructuralMechanicsModel(Mesh & mesh, UInt dim,
-                                                   const ID & id,
-                                                   const MemoryID & memory_id)
-    : Model(mesh, ModelType::_structural_mechanics_model, dim, id, memory_id),
-      f_m2a(1.0), stress("stress", id, memory_id),
-      element_material("element_material", id, memory_id),
-      set_ID("beam sets", id, memory_id),
-      rotation_matrix("rotation_matices", id, memory_id) {
+                                                   const ID & id)
+    : Model(mesh, ModelType::_structural_mechanics_model, dim, id), f_m2a(1.0),
+      stress("stress", id), element_material("element_material", id),
+      set_ID("beam sets", id) {
   AKANTU_DEBUG_IN();
 
   registerFEEngineObject<MyFEEngineType>("StructuralMechanicsFEEngine", mesh,
@@ -248,7 +245,7 @@ std::shared_ptr<dumpers::Field> StructuralMechanicsModel::createNodalFieldBool(
     __attribute__((unused)) bool padding_flag) {
 
   std::map<std::string, Array<bool> *> uint_nodal_fields;
-  uint_nodal_fields["blocked_dofs"] = blocked_dofs;
+  uint_nodal_fields["blocked_dofs"] = blocked_dofs.get();
 
   return mesh.createNodalField(uint_nodal_fields[field_name], group_name);
 }
@@ -272,48 +269,50 @@ StructuralMechanicsModel::createNodalFieldReal(const std::string & field_name,
   }
 
   if (field_name == "displacement") {
-    return mesh.createStridedNodalField(displacement_rotation, group_name, n, 0,
-                                        padding_size);
+    return mesh.createStridedNodalField(displacement_rotation.get(), group_name,
+                                        n, 0, padding_size);
   }
 
   if (field_name == "velocity") {
-    return mesh.createStridedNodalField(velocity, group_name, n, 0,
+    return mesh.createStridedNodalField(velocity.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "acceleration") {
-    return mesh.createStridedNodalField(acceleration, group_name, n, 0,
+    return mesh.createStridedNodalField(acceleration.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "rotation") {
-    return mesh.createStridedNodalField(displacement_rotation, group_name,
+    return mesh.createStridedNodalField(displacement_rotation.get(), group_name,
                                         nb_degree_of_freedom - n, n,
                                         padding_size);
   }
 
   if (field_name == "force") {
-    return mesh.createStridedNodalField(external_force, group_name, n, 0,
+    return mesh.createStridedNodalField(external_force.get(), group_name, n, 0,
                                         padding_size);
   }
   if (field_name == "external_force") {
-    return mesh.createStridedNodalField(external_force, group_name, n, 0,
+    return mesh.createStridedNodalField(external_force.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "momentum") {
-    return mesh.createStridedNodalField(
-        external_force, group_name, nb_degree_of_freedom - n, n, padding_size);
+    return mesh.createStridedNodalField(external_force.get(), group_name,
+                                        nb_degree_of_freedom - n, n,
+                                        padding_size);
   }
 
   if (field_name == "internal_force") {
-    return mesh.createStridedNodalField(internal_force, group_name, n, 0,
+    return mesh.createStridedNodalField(internal_force.get(), group_name, n, 0,
                                         padding_size);
   }
 
   if (field_name == "internal_momentum") {
-    return mesh.createStridedNodalField(
-        internal_force, group_name, nb_degree_of_freedom - n, n, padding_size);
+    return mesh.createStridedNodalField(internal_force.get(), group_name,
+                                        nb_degree_of_freedom - n, n,
+                                        padding_size);
   }
 
   return nullptr;
@@ -538,5 +537,84 @@ Real StructuralMechanicsModel::getEnergy(const ID & energy) {
 }
 
 /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::computeForcesByLocalTractionArray(
+    const Array<Real> & tractions, ElementType type) {
+  AKANTU_DEBUG_IN();
+
+  auto nb_element = getFEEngine().getMesh().getNbElement(type);
+  auto nb_nodes_per_element =
+      getFEEngine().getMesh().getNbNodesPerElement(type);
+  auto nb_quad = getFEEngine().getNbIntegrationPoints(type);
+
+  // check dimension match
+  AKANTU_DEBUG_ASSERT(
+      Mesh::getSpatialDimension(type) == getFEEngine().getElementDimension(),
+      "element type dimension does not match the dimension of boundaries : "
+          << getFEEngine().getElementDimension()
+          << " != " << Mesh::getSpatialDimension(type));
+
+  // check size of the vector
+  AKANTU_DEBUG_ASSERT(
+      tractions.size() == nb_quad * nb_element,
+      "the size of the vector should be the total number of quadrature points");
+
+  // check number of components
+  AKANTU_DEBUG_ASSERT(tractions.getNbComponent() == nb_degree_of_freedom,
+                      "the number of components should be the spatial "
+                      "dimension of the problem");
+
+  Array<Real> Ntbs(nb_element * nb_quad,
+                   nb_degree_of_freedom * nb_nodes_per_element);
+
+  auto & fem = getFEEngine();
+  fem.computeNtb(tractions, Ntbs, type);
+
+  // allocate the vector that will contain the integrated values
+  auto name = id + std::to_string(type) + ":integral_boundary";
+  Array<Real> int_funct(nb_element, nb_degree_of_freedom * nb_nodes_per_element,
+                        name);
+
+  // do the integration
+  getFEEngine().integrate(Ntbs, int_funct,
+                          nb_degree_of_freedom * nb_nodes_per_element, type);
+
+  // assemble the result into force vector
+  getDOFManager().assembleElementalArrayLocalArray(int_funct, *external_force,
+                                                   type, _not_ghost, 1);
+
+  AKANTU_DEBUG_OUT();
+}
+
+/* -------------------------------------------------------------------------- */
+void StructuralMechanicsModel::computeForcesByGlobalTractionArray(
+    const Array<Real> & traction_global, ElementType type) {
+  AKANTU_DEBUG_IN();
+
+  UInt nb_element = mesh.getNbElement(type);
+  UInt nb_quad = getFEEngine().getNbIntegrationPoints(type);
+
+  Array<Real> traction_local(nb_element * nb_quad, nb_degree_of_freedom,
+                             id + ":structuralmechanics:imposed_linear_load");
+
+  auto R_it = getFEEngineClass<MyFEEngineType>()
+                  .getShapeFunctions()
+                  .getRotations(type)
+                  .begin(nb_degree_of_freedom, nb_degree_of_freedom);
+
+  auto Te_it = traction_global.begin(nb_degree_of_freedom);
+  auto te_it = traction_local.begin(nb_degree_of_freedom);
+
+  for (UInt e = 0; e < nb_element; ++e, ++R_it) {
+    for (UInt q = 0; q < nb_quad; ++q, ++Te_it, ++te_it) {
+      // turn the traction in the local referential
+      te_it->template mul<false>(*R_it, *Te_it);
+    }
+  }
+
+  computeForcesByLocalTractionArray(traction_local, type);
+
+  AKANTU_DEBUG_OUT();
+}
 
 } // namespace akantu

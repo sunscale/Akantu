@@ -63,7 +63,7 @@ inline RemovedElementsEvent::RemovedElementsEvent(const Mesh & mesh,
                                                   const ID & new_numbering_id,
                                                   const std::string & origin)
     : MeshEvent<Element>(origin),
-      new_numbering(new_numbering_id, mesh.getID(), mesh.getMemoryID()) {}
+      new_numbering(new_numbering_id, mesh.getID()) {}
 
 /* -------------------------------------------------------------------------- */
 template <>

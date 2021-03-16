@@ -39,11 +39,9 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLocalNeighborhoodBase::NonLocalNeighborhoodBase(
-    Model & model, const ElementTypeMapReal & quad_coordinates, const ID & id,
-    const MemoryID & memory_id)
-    : NeighborhoodBase(model, quad_coordinates, id, memory_id),
+    Model & model, const ElementTypeMapReal & quad_coordinates, const ID & id)
+    : NeighborhoodBase(model, quad_coordinates, id),
       Parsable(ParserType::_non_local, id) {
-
   AKANTU_DEBUG_IN();
 
   this->registerParam("radius", neighborhood_radius, 100.,
@@ -63,7 +61,7 @@ void NonLocalNeighborhoodBase::createGridSynchronizer() {
       this->model.getMesh(), *spatial_grid, *this,
       std::set<SynchronizationTag>{SynchronizationTag::_mnl_weight,
                                    SynchronizationTag::_mnl_for_average},
-      std::string(getID() + ":grid_synchronizer"), this->memory_id, false);
+      std::string(id + ":grid_synchronizer"), false);
 
   this->is_creating_grid = false;
 }

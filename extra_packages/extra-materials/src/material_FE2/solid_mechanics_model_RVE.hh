@@ -46,8 +46,7 @@ public:
   SolidMechanicsModelRVE(Mesh & mesh, bool use_RVE_mat_selector = true,
                          UInt nb_gel_pockets = 400,
                          UInt spatial_dimension = _all_dimensions,
-                         const ID & id = "solid_mechanics_model",
-                         const MemoryID & memory_id = 0);
+                         const ID & id = "solid_mechanics_model");
 
   virtual ~SolidMechanicsModelRVE();
 

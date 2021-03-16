@@ -49,7 +49,7 @@ def solve(material_file, mesh_file, traction):
     solver = model.getNonLinearSolver('static')
     solver.set('max_iterations', 100)
     solver.set('threshold', 1e-10)
-    solver.set('convergence_type', aka._scc_residual)
+    solver.set("convergence_type", aka.SolveConvergenceCriteria.residual)
 
     model.solveStep('static')
     model.dump()

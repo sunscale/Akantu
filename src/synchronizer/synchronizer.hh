@@ -28,9 +28,8 @@
  * along with Akantu. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
+#include "aka_common.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
 /* -------------------------------------------------------------------------- */
@@ -47,17 +46,16 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 /* Base class for synchronizers                                               */
 /* -------------------------------------------------------------------------- */
-class Synchronizer : protected Memory {
+class Synchronizer {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  Synchronizer(const Communicator & comm, const ID & id = "synchronizer",
-               MemoryID memory_id = 0);
+  Synchronizer(const Communicator & comm, const ID & id = "synchronizer");
 
   Synchronizer(const Synchronizer & other) = default;
 
-  ~Synchronizer() override = default;
+  virtual ~Synchronizer()  = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

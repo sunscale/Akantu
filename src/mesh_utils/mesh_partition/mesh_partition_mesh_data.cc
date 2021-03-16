@@ -43,9 +43,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 MeshPartitionMeshData::MeshPartitionMeshData(Mesh & mesh,
                                              UInt spatial_dimension,
-                                             const ID & id,
-                                             const MemoryID & memory_id)
-    : MeshPartition(mesh, spatial_dimension, id, memory_id) {
+                                             const ID & id)
+    : MeshPartition(mesh, spatial_dimension, id) {
   AKANTU_DEBUG_IN();
 
   AKANTU_DEBUG_OUT();
@@ -54,8 +53,8 @@ MeshPartitionMeshData::MeshPartitionMeshData(Mesh & mesh,
 /* -------------------------------------------------------------------------- */
 MeshPartitionMeshData::MeshPartitionMeshData(
     Mesh & mesh, const ElementTypeMapArray<UInt> & mapping,
-    UInt spatial_dimension, const ID & id, const MemoryID & memory_id)
-    : MeshPartition(mesh, spatial_dimension, id, memory_id),
+    UInt spatial_dimension, const ID & id)
+    : MeshPartition(mesh, spatial_dimension, id),
       partition_mapping(&mapping) {
   AKANTU_DEBUG_IN();
 

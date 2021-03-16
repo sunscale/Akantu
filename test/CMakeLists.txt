@@ -43,7 +43,6 @@ set(AKANTU_TESTS_FILES CACHE INTERNAL "")
 # List of tests
 #===============================================================================
 add_akantu_test(test_common "Test the common part of Akantu")
-add_akantu_test(test_static_memory "Test static memory")
 add_akantu_test(test_fe_engine "Test finite element functionalties")
 add_akantu_test(test_mesh_utils "Test mesh utils")
 add_akantu_test(test_mesh "Test mesh")

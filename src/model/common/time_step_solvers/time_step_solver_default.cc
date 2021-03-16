@@ -44,9 +44,8 @@ namespace akantu {
 TimeStepSolverDefault::TimeStepSolverDefault(
     DOFManager & dof_manager, const TimeStepSolverType & type,
     NonLinearSolver & non_linear_solver, SolverCallback & solver_callback,
-    const ID & id, UInt memory_id)
-    : TimeStepSolver(dof_manager, type, non_linear_solver, solver_callback, id,
-                     memory_id) {
+    const ID & id)
+    : TimeStepSolver(dof_manager, type, non_linear_solver, solver_callback, id) {
   switch (type) {
   case TimeStepSolverType::_dynamic:
     break;

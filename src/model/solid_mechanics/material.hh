@@ -77,8 +77,7 @@ using MaterialFactory =
  * \endcode
  *
  */
-class Material : public Memory,
-                 public DataAccessor<Element>,
+class Material : public DataAccessor<Element>,
                  public Parsable,
                  public MeshEventHandler,
                  protected SolidMechanicsModelEventHandler {
@@ -423,7 +422,7 @@ public:
 
   AKANTU_GET_MACRO(Model, model, const SolidMechanicsModel &)
 
-  AKANTU_GET_MACRO(ID, Memory::getID(), const ID &);
+  AKANTU_GET_MACRO(ID, id, const ID &);
   AKANTU_GET_MACRO(Rho, rho, Real);
   AKANTU_SET_MACRO(Rho, rho, Real);
 
@@ -527,21 +526,23 @@ protected:
   /* ------------------------------------------------------------------------ */
 protected:
   /// boolean to know if the material has been initialized
-  bool is_init;
+  bool is_init{false};
 
   std::map<ID, InternalField<Real> *> internal_vectors_real;
   std::map<ID, InternalField<UInt> *> internal_vectors_uint;
   std::map<ID, InternalField<bool> *> internal_vectors_bool;
 
 protected:
+  ID id;
+
   /// Link to the fem object in the model
   FEEngine & fem;
 
   /// Finite deformation
-  bool finite_deformation;
+  bool finite_deformation{false};
 
   /// Finite deformation
-  bool inelastic_deformation;
+  bool inelastic_deformation{false};
 
   /// material name
   std::string name;
@@ -550,7 +551,7 @@ protected:
   SolidMechanicsModel & model;
 
   /// density : rho
-  Real rho;
+  Real rho{0.};
 
   /// spatial dimension
   UInt spatial_dimension;
@@ -578,13 +579,13 @@ protected:
   InternalField<Real> potential_energy;
 
   /// tell if using in non local mode or not
-  bool is_non_local;
+  bool is_non_local{false};
 
   /// tell if the material need the previous stress state
-  bool use_previous_stress;
+  bool use_previous_stress{false};
 
   /// tell if the material need the previous strain state
-  bool use_previous_gradu;
+  bool use_previous_gradu{false};
 
   /// elemental field interpolation coordinates
   InternalField<Real> interpolation_inverse_coordinates;

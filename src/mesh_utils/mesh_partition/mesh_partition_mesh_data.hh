@@ -47,14 +47,13 @@ class MeshPartitionMeshData : public MeshPartition {
   /* ------------------------------------------------------------------------ */
 public:
   MeshPartitionMeshData(Mesh & mesh, UInt spatial_dimension,
-                        const ID & id = "MeshPartitionerMeshData",
-                        const MemoryID & memory_id = 0);
+                        const ID & id = "MeshPartitionerMeshData"
+                        );
 
   MeshPartitionMeshData(Mesh & mesh,
                         const ElementTypeMapArray<UInt> & mapping,
                         UInt spatial_dimension,
-                        const ID & id = "MeshPartitionerMeshData",
-                        const MemoryID & memory_id = 0);
+                        const ID & id = "MeshPartitionerMeshData");
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

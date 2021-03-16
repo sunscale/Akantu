@@ -29,7 +29,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_factory.hh"
-#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 #include <map>
@@ -50,7 +49,7 @@ class SolverCallback;
 
 namespace akantu {
 
-class DOFManager : protected Memory, protected MeshEventHandler {
+class DOFManager : protected MeshEventHandler {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
@@ -58,9 +57,8 @@ protected:
   struct DOFData;
 
 public:
-  DOFManager(const ID & id = "dof_manager", const MemoryID & memory_id = 0);
-  DOFManager(Mesh & mesh, const ID & id = "dof_manager",
-             const MemoryID & memory_id = 0);
+  DOFManager(const ID & id = "dof_manager");
+  DOFManager(Mesh & mesh, const ID & id = "dof_manager");
   ~DOFManager() override;
 
   /* ------------------------------------------------------------------------ */
@@ -376,7 +374,7 @@ protected:
                                             const NonLinearSolverType & type) {
     ID non_linear_solver_id = this->id + ":nls:" + id;
     std::unique_ptr<NonLinearSolver> nls = std::make_unique<NLSType>(
-        dm, type, non_linear_solver_id, this->memory_id);
+        dm, type, non_linear_solver_id);
     return this->registerNonLinearSolver(non_linear_solver_id, nls);
   }
 
@@ -388,7 +386,7 @@ protected:
     ID time_step_solver_id = this->id + ":tss:" + id;
     std::unique_ptr<TimeStepSolver> tss =
         std::make_unique<TSSType>(dm, type, non_linear_solver, solver_callback,
-                                  time_step_solver_id, this->memory_id);
+                                  time_step_solver_id);
     return this->registerTimeStepSolver(time_step_solver_id, tss);
   }
 
@@ -628,6 +626,8 @@ protected:
   /// type to store all the time step solver
   using TimeStepSolversMap = std::map<ID, std::unique_ptr<TimeStepSolver>>;
 
+  ID id;
+
   /// store a reference to the dof arrays
   DOFStorage dofs;
 
@@ -704,9 +704,9 @@ private:
 };
 
 using DefaultDOFManagerFactory =
-    Factory<DOFManager, ID, const ID &, const MemoryID &>;
+    Factory<DOFManager, ID, const ID &>;
 using DOFManagerFactory =
-    Factory<DOFManager, ID, Mesh &, const ID &, const MemoryID &>;
+    Factory<DOFManager, ID, Mesh &, const ID &>;
 
 } // namespace akantu
 

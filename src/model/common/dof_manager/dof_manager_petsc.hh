@@ -67,10 +67,8 @@ class DOFManagerPETSc : public DOFManager {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  DOFManagerPETSc(const ID & id = "dof_manager_petsc",
-                  const MemoryID & memory_id = 0);
-  DOFManagerPETSc(Mesh & mesh, const ID & id = "dof_manager_petsc",
-                  const MemoryID & memory_id = 0);
+  DOFManagerPETSc(const ID & id = "dof_manager_petsc");
+  DOFManagerPETSc(Mesh & mesh, const ID & id = "dof_manager_petsc");
 
   ~DOFManagerPETSc() override = default;
 

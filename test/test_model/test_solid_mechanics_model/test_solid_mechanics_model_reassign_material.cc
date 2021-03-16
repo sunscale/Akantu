@@ -40,85 +40,72 @@ using namespace akantu;
 class StraightInterfaceMaterialSelector : public MaterialSelector {
 public:
   StraightInterfaceMaterialSelector(SolidMechanicsModel & model,
+                                    UInt horizontal, Real & pos_interface,
                                     const std::string & mat_1_material,
-                                    const std::string & mat_2_material,
-                                    bool & horizontal, Real & pos_interface)
-      : model(model), mat_1_material(mat_1_material),
-        mat_2_material(mat_2_material), horizontal(horizontal),
-        pos_interface(pos_interface) {
+                                    const std::string & mat_2_material)
+      : model(model), horizontal(horizontal), pos_interface(pos_interface),
+        mat_1_material(mat_1_material), mat_2_material(mat_2_material) {
     Mesh & mesh = model.getMesh();
     UInt spatial_dimension = mesh.getSpatialDimension();
 
     /// store barycenters of all elements
     barycenters.initialize(mesh, _spatial_dimension = spatial_dimension,
-                           _nb_component = spatial_dimension);
+                           _nb_component = spatial_dimension,
+                           _with_nb_element = true);
 
-    for (auto ghost_type : ghost_types) {
-      Element e;
-      e.ghost_type = ghost_type;
-
-      for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-        UInt nb_element = mesh.getNbElement(type, ghost_type);
-        e.type = type;
-        Array<Real> & barycenter = barycenters(type, ghost_type);
-        barycenter.resize(nb_element);
-
-        Array<Real>::iterator<Vector<Real>> bary_it =
-            barycenter.begin(spatial_dimension);
-        for (UInt elem = 0; elem < nb_element; ++elem) {
-          e.element = elem;
-          mesh.getBarycenter(e, *bary_it);
-          ++bary_it;
-        }
-      }
-    }
+    for_each_element(mesh, [&](auto && el) {
+      Vector<Real> bary(barycenters.get(el));
+      mesh.getBarycenter(el, bary);
+    });
   }
 
-  UInt operator()(const Element & elem) {
-    UInt spatial_dimension = model.getSpatialDimension();
-    const Vector<Real> & bary = barycenters(elem.type, elem.ghost_type)
-                                    .begin(spatial_dimension)[elem.element];
+  void setMaterials() {
+    mat_ids[0] = model.getMaterialIndex(mat_1_material);
+    mat_ids[1] = model.getMaterialIndex(mat_2_material);
+  }
 
+  UInt operator()(const Element & elem) override {
+    if (not materials_set) {
+      setMaterials();
+    }
+    const Vector<Real> bary = barycenters.get(elem);
     /// check for a given element on which side of the material interface plane
     /// the bary center lies and assign corresponding material
-    if (bary(!horizontal) < pos_interface) {
-      return model.getMaterialIndex(mat_1_material);
-      ;
+    if (bary(horizontal) < pos_interface) {
+      return mat_ids[0];
     }
-    return model.getMaterialIndex(mat_2_material);
-    ;
+    return mat_ids[1];
   }
 
   bool isConditonVerified() {
-
     /// check if material has been (re)-assigned correctly
-    Mesh & mesh = model.getMesh();
-    UInt spatial_dimension = mesh.getSpatialDimension();
-    GhostType ghost_type = _not_ghost;
-
-    for (auto & type : mesh.elementTypes(spatial_dimension, ghost_type)) {
-      Array<UInt> & mat_indexes = model.getMaterialByElement(type, ghost_type);
-      UInt nb_element = mesh.getNbElement(type, ghost_type);
-      Array<Real>::iterator<Vector<Real>> bary =
-          barycenters(type, ghost_type).begin(spatial_dimension);
-      for (UInt elem = 0; elem < nb_element; ++elem, ++bary) {
+    auto & mesh = model.getMesh();
+    auto spatial_dimension = mesh.getSpatialDimension();
+    for (const auto & type : mesh.elementTypes(spatial_dimension)) {
+      auto & mat_indexes = model.getMaterialByElement(type);
+      for (auto && data :
+           enumerate(make_view(barycenters(type), spatial_dimension))) {
+        auto elem = std::get<0>(data);
+        auto & bary = std::get<1>(data);
         /// compare element_index_by material to material index that should be
         /// assigned due to the geometry of the interface
         UInt mat_index;
-        if ((*bary)(!horizontal) < pos_interface)
-          mat_index = model.getMaterialIndex(mat_1_material);
-        else
-          mat_index = model.getMaterialIndex(mat_2_material);
+        if (bary(horizontal) < pos_interface) {
+          mat_index = mat_ids[0];
+        } else {
+          mat_index = mat_ids[1];
+        }
 
-        if (mat_indexes(elem) != mat_index)
+        if (mat_indexes(elem) != mat_index) {
           /// wrong material index, make test fail
           return false;
+        }
       }
     }
     return true;
   }
 
-  void moveInterface(Real & pos_new, bool & horizontal_new) {
+  void moveInterface(Real & pos_new, UInt horizontal_new) {
     /// update position and orientation of material interface plane
     pos_interface = pos_new;
     horizontal = horizontal_new;
@@ -128,10 +115,12 @@ public:
 protected:
   SolidMechanicsModel & model;
   ElementTypeMapArray<Real> barycenters;
+  std::array<UInt, 2> mat_ids;
+  UInt horizontal;
+  Real pos_interface;
+  bool materials_set{false};
   std::string mat_1_material;
   std::string mat_2_material;
-  bool horizontal;
-  Real pos_interface;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -145,7 +134,6 @@ int main(int argc, char * argv[]) {
   initialize("two_materials.dat", argc, argv);
 
   /// specify position and orientation of material interface plane
-  bool horizontal = true;
   Real pos_interface = 0.;
 
   UInt spatial_dimension = 3;
@@ -155,8 +143,9 @@ int main(int argc, char * argv[]) {
 
   Mesh mesh(spatial_dimension);
 
-  if (prank == 0)
+  if (prank == 0) {
     mesh.read("cube_two_materials.msh");
+  }
   mesh.distribute();
 
   /// model creation
@@ -166,7 +155,7 @@ int main(int argc, char * argv[]) {
   /// StraightInterfaceMaterialSelector
 
   auto && mat_selector = std::make_shared<StraightInterfaceMaterialSelector>(
-      model, "mat_1", "mat_2", horizontal, pos_interface);
+      model, _x, pos_interface, "mat_1", "mat_2");
 
   model.setMaterialSelector(mat_selector);
   model.initFull(_analysis_method = _static);
@@ -174,20 +163,21 @@ int main(int argc, char * argv[]) {
 
   /// check if different materials have been assigned correctly
   test_passed = mat_selector->isConditonVerified();
-  if (!test_passed) {
+  if (not test_passed) {
     AKANTU_ERROR("materials not correctly assigned");
     return EXIT_FAILURE;
   }
 
+  model.addDumpField("material_index");
   /// change orientation of material interface plane
-  horizontal = false;
-  mat_selector->moveInterface(pos_interface, horizontal);
 
-  // model.dump();
+  model.dump();
+  mat_selector->moveInterface(pos_interface, _y);
+  model.dump();
 
   /// test if material has been reassigned correctly
   test_passed = mat_selector->isConditonVerified();
-  if (!test_passed) {
+  if (not test_passed) {
     AKANTU_ERROR("materials not correctly reassigned");
     return EXIT_FAILURE;
   }

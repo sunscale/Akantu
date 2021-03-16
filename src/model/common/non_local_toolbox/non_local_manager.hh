@@ -55,16 +55,13 @@ class FEEngine;
 
 namespace akantu {
 
-class NonLocalManager : protected Memory,
-                        public MeshEventHandler,
-                        public Parsable {
+class NonLocalManager : public MeshEventHandler, public Parsable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   NonLocalManager(Model & model, NonLocalManagerCallback & callback,
-                  const ID & id = "non_local_manager",
-                  const MemoryID & memory_id = 0);
+                  const ID & id = "non_local_manager");
   ~NonLocalManager() override;
   using NeighborhoodMap =
       std::map<ID, std::unique_ptr<NonLocalNeighborhoodBase>>;
@@ -129,7 +126,7 @@ protected:
   /// resizing of element type maps
   void resizeElementTypeMap(UInt nb_component, ElementTypeMapReal & element_map,
                             const FEEngine & fee,
-                             ElementKind el_kind = _ek_regular);
+                            ElementKind el_kind = _ek_regular);
 
   /// remove integration points from element type maps
   static void removeIntegrationPointsFromMap(
@@ -194,6 +191,7 @@ private:
   /// the spatial dimension
   const UInt spatial_dimension;
 
+  ID id;
 protected:
   /// the non-local neighborhoods present
   NeighborhoodMap neighborhoods;
@@ -204,7 +202,7 @@ protected:
   struct NonLocalVariable {
     NonLocalVariable(const ID & variable_name, const ID & nl_variable_name,
                      const ID & id, UInt nb_component)
-        : local(variable_name, id, 0), non_local(nl_variable_name, id, 0),
+        : local(variable_name, id), non_local(nl_variable_name, id),
           nb_component(nb_component) {}
     ElementTypeMapReal local;
     ElementTypeMapReal non_local;

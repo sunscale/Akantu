@@ -84,7 +84,6 @@ protected:
 public:
   SolidMechanicsModel(Mesh & mesh, UInt dim = _all_dimensions,
                       const ID & id = "solid_mechanics_model",
-                      const MemoryID & memory_id = 0,
                       ModelType model_type = ModelType::_solid_mechanics_model);
 
   ~SolidMechanicsModel() override;
@@ -327,9 +326,9 @@ public:
                        const std::string & group_name, bool padding_flag,
                        UInt spatial_dimension, ElementKind kind) override;
 
-  virtual void dump(const std::string & dumper_name);
-  virtual void dump(const std::string & dumper_name, UInt step);
-  virtual void dump(const std::string & dumper_name, Real time, UInt step);
+  void dump(const std::string & dumper_name) override;
+  void dump(const std::string & dumper_name, UInt step) override;
+  void dump(const std::string & dumper_name, Real time, UInt step) override;
 
   void dump() override;
   void dump(UInt step) override;
@@ -454,11 +453,11 @@ public:
   /// index
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialByElement, material_index,
                                          UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
+  // AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialByElement, material_index, UInt);
   AKANTU_GET_MACRO_BY_ELEMENT_TYPE_CONST(MaterialLocalNumbering,
                                          material_local_numbering, UInt);
-  AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
-                                   material_local_numbering, UInt);
+  // AKANTU_GET_MACRO_BY_ELEMENT_TYPE(MaterialLocalNumbering,
+  //                                  material_local_numbering, UInt);
 
   AKANTU_GET_MACRO_NOT_CONST(MaterialSelector, *material_selector,
                              MaterialSelector &);
@@ -554,6 +553,8 @@ protected:
 
   /// tells if the material are instantiated
   bool are_materials_instantiated{false};
+
+  friend class Material;
 };
 
 /* -------------------------------------------------------------------------- */

@@ -39,7 +39,7 @@ using namespace akantu;
 
 // Linear load function
 static void lin_load(const Array<Real> & nodes, Array<Real>& load) {
-  for(auto &&data : zip(make_view(nodes, 2), make_view(load, 2))) {
+  for(auto &&data : zip(make_view(nodes, 2), make_view(load, 3))) {
     if (std::get<0>(data)[_y] <= 10) {
       std::get<1>(data)[_y] = -6000;
     }
@@ -82,6 +82,8 @@ int main(int argc, char * argv[]) {
     connectivity(i, 1) = i + 1;
   }
 
+  mesh_accessor.makeReady();
+
   // Defining the materials
   StructuralMechanicsModel model(beams);
 
@@ -120,10 +122,10 @@ int main(int argc, char * argv[]) {
 
   forces(nb_nodes - 1, 2) += M;
 
-  Array<Real> load(nodes.size(), 2);
+  Array<Real> load(nodes.size(), 3);
   lin_load(nodes, load);
 
-  model.computeForcesByGlobalTractionArray<_bernoulli_beam_2>(load);
+  model.computeForcesByGlobalTractionArray(load, _bernoulli_beam_2);
 
   // Defining the boundary conditions
   boundary(0, 0) = true;

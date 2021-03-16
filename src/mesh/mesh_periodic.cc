@@ -453,8 +453,7 @@ void Mesh::updatePeriodicSynchronizer() {
   if (not this->periodic_node_synchronizer) {
     this->periodic_node_synchronizer =
         std::make_unique<PeriodicNodeSynchronizer>(
-            *this, this->getID() + ":periodic_synchronizer",
-            this->getMemoryID(), false);
+            *this, this->getID() + ":periodic_synchronizer", false);
   }
 
   this->periodic_node_synchronizer->update();

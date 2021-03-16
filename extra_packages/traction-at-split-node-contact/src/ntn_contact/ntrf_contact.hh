@@ -44,9 +44,8 @@ class NTRFContact : public NTNBaseContact {
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTRFContact(SolidMechanicsModel & model, const ID & id = "contact",
-              const MemoryID & memory_id = 0);
-  virtual ~NTRFContact(){};
+  NTRFContact(SolidMechanicsModel & model, const ID & id = "contact");
+  ~NTRFContact() override = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -62,35 +61,36 @@ public:
   void addNodes(Array<UInt> & nodes);
 
   /// update (copy the normal to all normals)
-  virtual void updateNormals();
+  void updateNormals() override;
 
   /// update the impedance matrix
-  virtual void updateImpedance();
+  void updateImpedance() override;
 
   /// compute the normal gap
-  virtual void computeNormalGap(Array<Real> & gap) const;
+  void computeNormalGap(Array<Real> & gap) const override;
 
   /// compute relative normal field (only value that has to be multiplied with
   /// the normal)
   /// relative to master nodes
-  virtual void computeRelativeNormalField(const Array<Real> & field,
-                                          Array<Real> & rel_normal_field) const;
+  void
+  computeRelativeNormalField(const Array<Real> & field,
+                             Array<Real> & rel_normal_field) const override;
 
   /// compute relative tangential field (complet array)
   /// relative to master nodes
-  virtual void
+  void
   computeRelativeTangentialField(const Array<Real> & field,
-                                 Array<Real> & rel_tang_field) const;
+                                 Array<Real> & rel_tang_field) const override;
 
   /// function to print the contain of the class
-  virtual void printself(std::ostream & stream, int indent = 0) const;
+  void printself(std::ostream & stream, int indent = 0) const override;
 
   /* ------------------------------------------------------------------------ */
   /* Dumpable                                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  virtual void addDumpFieldToDumper(const std::string & dumper_name,
-                                    const std::string & field_id);
+  void addDumpFieldToDumper(const std::string & dumper_name,
+                            const std::string & field_id) override;
   //  virtual void addDumpFieldVector(const std::string & field_id);
 
   /* ------------------------------------------------------------------------ */

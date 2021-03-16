@@ -29,14 +29,13 @@ public:
   ~PyMaterial() override = default;
 
   void initMaterial() override {
-      PYBIND11_OVERRIDE(void, _Material, initMaterial, ); // NOLINT
+    PYBIND11_OVERRIDE(void, _Material, initMaterial, ); // NOLINT
   };
   void computeStress(ElementType el_type,
                      GhostType ghost_type = _not_ghost) override {
     PYBIND11_OVERRIDE_PURE(void, _Material, computeStress, el_type, ghost_type);
   }
-  void computeTangentModuli(ElementType el_type,
-                            Array<Real> & tangent_matrix,
+  void computeTangentModuli(ElementType el_type, Array<Real> & tangent_matrix,
                             GhostType ghost_type = _not_ghost) override {
     PYBIND11_OVERRIDE(void, _Material, computeTangentModuli, el_type,
                       tangent_matrix, ghost_type);
@@ -54,18 +53,18 @@ public:
     PYBIND11_OVERRIDE(Real, _Material, getShearWaveSpeed, element);
   }
 
+  template <typename T>
   void registerInternal(const std::string & name, UInt nb_component) {
-    this->internals[name] = std::make_shared<InternalField<Real>>(name, *this);
+    auto && internal = std::make_shared<InternalField<T>>(name, *this);
     AKANTU_DEBUG_INFO("alloc internal " << name << " "
                                         << &this->internals[name]);
 
-    this->internals[name]->initialize(nb_component);
+    internal->initialize(nb_component);
+    this->internals[name] = internal;
   }
 
-  auto & getInternals() { return this->internals; }
-
 protected:
-  std::map<std::string, std::shared_ptr<InternalField<Real>>> internals;
+  std::map<std::string, std::shared_ptr<ElementTypeMapBase>> internals;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -107,32 +106,34 @@ void define_material(py::module & mod, const std::string & name) {
           py::return_value_policy::reference)
       .def("initMaterial", &Material::initMaterial)
       .def("getModel", &Material::getModel)
-      .def("registerInternal",
+      .def("registerInternalReal",
            [](Material & self, const std::string & name, UInt nb_component) {
-             return dynamic_cast<PyMaterial<Material> &>(self).registerInternal(
-                 name, nb_component);
+             return dynamic_cast<PyMaterial<Material> &>(self)
+                 .registerInternal<Real>(name, nb_component);
+           })
+      .def("registerInternalUInt",
+           [](Material & self, const std::string & name, UInt nb_component) {
+             return dynamic_cast<PyMaterial<Material> &>(self)
+                 .registerInternal<UInt>(name, nb_component);
            })
       .def(
-          "getInternalFieldReal",
-          [](Material & self, const ID & id, const ElementType & type,
-             const GhostType & ghost_type) -> Array<Real> & {
-            return self.getArray<Real>(id, type, ghost_type);
+          "getInternalReal",
+          [](Material & self, const ID & id) -> decltype(auto) {
+            return self.getInternal<Real>(id);
           },
-          py::arg("id"), py::arg("type"), py::arg("ghost_type") = _not_ghost)
+          py::arg("id"), py::return_value_policy::reference)
       .def(
-          "getInternalFieldUInt",
-          [](Material & self, const ID & id, const ElementType & type,
-             const GhostType & ghost_type) -> Array<UInt> & {
-            return self.getArray<UInt>(id, type, ghost_type);
+          "getInternalUInt",
+          [](Material & self, const ID & id) -> decltype(auto) {
+            return self.getInternal<UInt>(id);
           },
-          py::arg("id"), py::arg("type"), py::arg("ghost_type") = _not_ghost)
+          py::arg("id"), py::return_value_policy::reference)
       .def(
           "getElementFilter",
-          [](Material & self, const ElementType & type,
-             const GhostType & ghost_type) -> const Array<UInt> & {
-            return self.getElementFilter()(type, ghost_type);
+          [](Material & self) -> decltype(auto) {
+            return self.getElementFilter();
           },
-          py::arg("type"), py::arg("ghost_type") = _not_ghost);
+          py::return_value_policy::reference);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -204,4 +205,3 @@ void register_material(py::module & mod) {
 }
 
 } // namespace akantu
-

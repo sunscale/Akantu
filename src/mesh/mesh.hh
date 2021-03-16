@@ -39,7 +39,6 @@
 #include "aka_array.hh"
 #include "aka_bbox.hh"
 #include "aka_event_handler_manager.hh"
-#include "aka_memory.hh"
 #include "communicator.hh"
 #include "dumpable.hh"
 #include "element.hh"
@@ -97,8 +96,7 @@ namespace {
   });
  @endcode
 */
-class Mesh : protected Memory,
-             public EventHandlerManager<MeshEventHandler>,
+class Mesh : public EventHandlerManager<MeshEventHandler>,
              public GroupManager,
              public MeshData,
              public Dumpable {
@@ -108,24 +106,23 @@ class Mesh : protected Memory,
 private:
   /// default constructor used for chaining, the last parameter is just to
   /// differentiate constructors
-  Mesh(UInt spatial_dimension, const ID & id, const MemoryID & memory_id,
+  Mesh(UInt spatial_dimension, const ID & id,
        Communicator & communicator);
 
 public:
   /// constructor that create nodes coordinates array
-  Mesh(UInt spatial_dimension, const ID & id = "mesh",
-       const MemoryID & memory_id = 0);
+  Mesh(UInt spatial_dimension, const ID & id = "mesh");
 
   /// mesh not distributed and not using the default communicator
   Mesh(UInt spatial_dimension, Communicator & communicator,
-       const ID & id = "mesh", const MemoryID & memory_id = 0);
+       const ID & id = "mesh");
 
   /**
    * constructor that use an existing nodes coordinates
    * array, by getting the vector of coordinates
    */
   Mesh(UInt spatial_dimension, const std::shared_ptr<Array<Real>> & nodes,
-       const ID & id = "mesh", const MemoryID & memory_id = 0);
+       const ID & id = "mesh");
 
   ~Mesh() override;
 
@@ -282,10 +279,7 @@ private:
   /* ------------------------------------------------------------------------ */
 public:
   /// get the id of the mesh
-  AKANTU_GET_MACRO(ID, Memory::id, const ID &);
-
-  /// get the id of the mesh
-  AKANTU_GET_MACRO(MemoryID, Memory::memory_id, const MemoryID &);
+  AKANTU_GET_MACRO(ID, id, const ID &);
 
   /// get the spatial dimension of the mesh = number of component of the
   /// coordinates
@@ -601,6 +595,8 @@ private:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 private:
+  ID id;
+
   /// array of the nodes coordinates
   std::shared_ptr<Array<Real>> nodes;
 

@@ -34,9 +34,8 @@ const SolidMechanicsModelIGFEMOptions
     default_solid_mechanics_model_igfem_options(_static, false);
 
 SolidMechanicsModelIGFEM::SolidMechanicsModelIGFEM(Mesh & mesh, UInt dim,
-                                                   const ID & id,
-                                                   const MemoryID & memory_id)
-    : SolidMechanicsModel(mesh, dim, id, memory_id), IGFEMEnrichment(mesh),
+                                                   const ID & id)
+    : SolidMechanicsModel(mesh, dim, id), IGFEMEnrichment(mesh),
       global_ids_updater(NULL) {
   AKANTU_DEBUG_IN();
 

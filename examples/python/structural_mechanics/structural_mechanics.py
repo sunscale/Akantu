@@ -6,20 +6,25 @@
 # The left most node is fixed and a force is applied at the right most node.
 import akantu as aka
 import numpy
-import matplotlib.pyplot as plt
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ImportError:
+    has_matplotlib = False
 
 # ### Creating the Mesh
 # Create a mesh for the two dimensional case
 beam = aka.Mesh(2)
 
 # We now create the connectivity array for the beam.
-beam.addConnectivity(aka._bernoulli_beam_2)
+beam.addConnectivityType(aka._bernoulli_beam_2)
 
 # We need a `MeshAccessor` in order to change the size of the mesh entities.
 beamAcc = aka.MeshAccessor(beam)
 
-# Now we create the array to store the nodes and the connectivities and give them their size.
+# Now we create the array to store the nodes and the connectivities and give
+# them their size.
 beamAcc.resizeConnectivity(2, aka._bernoulli_beam_2)
 beamAcc.resizeNodes(3)
 
@@ -46,7 +51,7 @@ model = aka.StructuralMechanicsModel(beam)
 mat1 = aka.StructuralMaterial()
 mat1.E = 1e9
 mat1.rho = 1.
-mat1.I = 1.
+mat1.I = 1.  # noqa: E741
 mat1.Iz = 1.
 mat1.Iy = 1.
 mat1.A = 1.
@@ -56,7 +61,7 @@ model.addMaterial(mat1)
 mat2 = aka.StructuralMaterial()
 mat2.E = 1e9
 mat2.rho = 1.
-mat2.I = 1.
+mat2.I = 1.  # noqa: E741
 mat2.Iz = 1.
 mat2.Iy = 1.
 mat2.A = 1.
@@ -121,15 +126,16 @@ for d in disps:
     maxMin[0] = max(np.max(d), maxMin[0])
     maxMin[1] = min(np.min(d), maxMin[1])
 
-plt.plot(disp1, times, color='g', label = "middle node")
-plt.plot(disp2, times, color='b', label = "right node")
+if has_matplotlib:
+    plt.plot(disp1, times, color='g', label="middle node")
+    plt.plot(disp2, times, color='b', label="right node")
 
-plt.title("Displacement in $x$ of the nodes")
-plt.ylabel("Time [S]")
-plt.xlabel("displacement [m]")
+    plt.title("Displacement in $x$ of the nodes")
+    plt.ylabel("Time [S]")
+    plt.xlabel("displacement [m]")
 
-plt.xlim((maxMin[1] * 1.3, maxMin[0] * 1.1))
+    plt.xlim((maxMin[1] * 1.3, maxMin[0] * 1.1))
 
-plt.legend()
+    plt.legend()
 
-plt.show()
+    plt.show()

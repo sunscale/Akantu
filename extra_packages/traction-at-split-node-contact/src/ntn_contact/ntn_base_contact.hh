@@ -58,16 +58,13 @@ class NTNBaseContact;
 // };
 
 /* -------------------------------------------------------------------------- */
-class NTNBaseContact : protected Memory,
-                       public DataAccessor<Element>,
-                       public Dumpable {
+class NTNBaseContact : public DataAccessor<Element>, public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
-  NTNBaseContact(SolidMechanicsModel & model, const ID & id = "contact",
-                 const MemoryID & memory_id = 0);
-  virtual ~NTNBaseContact();
+  NTNBaseContact(SolidMechanicsModel & model, const ID & id = "contact");
+  ~NTNBaseContact() override;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */
@@ -95,7 +92,7 @@ public:
   virtual void computeContactPressure();
 
   /// impose the normal contact force
-  virtual void applyContactPressure() ;
+  virtual void applyContactPressure();
 
   /// register synchronizedarrays for sync
   virtual void registerSynchronizedArray(SynchronizedArrayBase & array);
@@ -162,7 +159,7 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   void addDumpFieldToDumper(const std::string & dumper_name,
-                                    const std::string & field_id) override;
+                            const std::string & field_id) override;
 
   /* ------------------------------------------------------------------------ */
   /* Accessors                                                                */
@@ -203,7 +200,9 @@ public:
   /* Class Members                                                            */
   /* ------------------------------------------------------------------------ */
 protected:
-  typedef std::set<const ElementGroup *> SurfacePtrSet;
+  using SurfacePtrSet = std::set<const ElementGroup *>;
+
+  ID id;
 
   SolidMechanicsModel & model;
 

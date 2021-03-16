@@ -37,9 +37,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegRubinAmpuero::NTNFricRegRubinAmpuero(NTNBaseContact & contact,
-                                               const ID & id,
-                                               const MemoryID & memory_id)
-    : NTNFricRegNoRegularisation(contact, id, memory_id),
+                                               const ID & id)
+    : NTNFricRegNoRegularisation(contact, id),
       t_star(0, 1, 0., id + ":t_star", 0., "t_star") {
   AKANTU_DEBUG_IN();
 

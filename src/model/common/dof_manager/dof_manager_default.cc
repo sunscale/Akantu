@@ -49,8 +49,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
-    : DOFManager(id, memory_id), synchronizer(nullptr) {
+DOFManagerDefault::DOFManagerDefault(const ID & id)
+    : DOFManager(id), synchronizer(nullptr) {
   residual = std::make_unique<SolverVectorDefault>(
       *this, std::string(id + ":residual"));
   solution = std::make_unique<SolverVectorDefault>(
@@ -60,12 +60,11 @@ DOFManagerDefault::DOFManagerDefault(const ID & id, const MemoryID & memory_id)
 }
 
 /* -------------------------------------------------------------------------- */
-DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id,
-                                     const MemoryID & memory_id)
-    : DOFManager(mesh, id, memory_id), synchronizer(nullptr) {
+DOFManagerDefault::DOFManagerDefault(Mesh & mesh, const ID & id)
+    : DOFManager(mesh, id), synchronizer(nullptr) {
   if (this->mesh->isDistributed()) {
     this->synchronizer = std::make_unique<DOFSynchronizer>(
-        *this, this->id + ":dof_synchronizer", this->memory_id);
+        *this, this->id + ":dof_synchronizer");
     residual = std::make_unique<SolverVectorDistributed>(
         *this, std::string(id + ":residual"));
     solution = std::make_unique<SolverVectorDistributed>(
@@ -471,29 +470,18 @@ const Array<bool> & DOFManagerDefault::getBlockedDOFs() const {
 }
 
 /* -------------------------------------------------------------------------- */
-// register in factory
-// static bool default_dof_manager_is_registered [[gnu::unused]] =
-//     DefaultDOFManagerFactory::getInstance().registerAllocator(
-//         "default",
-//         [](const ID & id,
-//            const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-//           return std::make_unique<DOFManagerDefault>(id, mem_id);
-//         });
-
 static bool dof_manager_is_registered [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
         "default",
-        [](Mesh & mesh, const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        [](Mesh & mesh, const ID & id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id);
         });
 
 static bool dof_manager_is_registered_mumps [[gnu::unused]] =
     DOFManagerFactory::getInstance().registerAllocator(
         "mumps",
-        [](Mesh & mesh, const ID & id,
-           const MemoryID & mem_id) -> std::unique_ptr<DOFManager> {
-          return std::make_unique<DOFManagerDefault>(mesh, id, mem_id);
+        [](Mesh & mesh, const ID & id) -> std::unique_ptr<DOFManager> {
+          return std::make_unique<DOFManagerDefault>(mesh, id);
         });
 
 } // namespace akantu

@@ -60,9 +60,8 @@ namespace {
 
 /* -------------------------------------------------------------------------- */
 MeshPartitionScotch::MeshPartitionScotch(Mesh & mesh, UInt spatial_dimension,
-                                         const ID & id,
-                                         const MemoryID & memory_id)
-    : MeshPartition(mesh, spatial_dimension, id, memory_id) {
+                                         const ID & id)
+    : MeshPartition(mesh, spatial_dimension, id) {
   AKANTU_DEBUG_IN();
 
   // check if the akantu types and Scotch one are consistent

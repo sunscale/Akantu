@@ -8,6 +8,7 @@
 #include <mesh_utils.hh>
 /* -------------------------------------------------------------------------- */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 /* -------------------------------------------------------------------------- */
 namespace py = pybind11;
 /* -------------------------------------------------------------------------- */
@@ -31,7 +32,7 @@ void register_element_type_map_array(py::module & mod,
       .def(
           "elementTypes",
           [](ElementTypeMapArray<T> & self, UInt _dim, GhostType _ghost_type,
-             ElementKind _kind) -> decltype(auto) {
+             ElementKind _kind) -> std::vector<ElementType> {
             auto types = self.elementTypes(_dim, _ghost_type, _kind);
             std::vector<ElementType> _types;
             for (auto && t : types) {
@@ -65,9 +66,8 @@ void register_mesh(py::module & mod) {
 
   py::class_<Mesh, GroupManager, Dumpable, MeshData>(mod, "Mesh",
                                                      py::multiple_inheritance())
-      .def(py::init<UInt, const ID &, const MemoryID &>(),
-           py::arg("spatial_dimension"), py::arg("id") = "mesh",
-           py::arg("memory_id") = 0)
+      .def(py::init<UInt, const ID &>(),
+           py::arg("spatial_dimension"), py::arg("id") = "mesh")
       .def("read", &Mesh::read, py::arg("filename"),
            py::arg("mesh_io_type") = _miot_auto, "read the mesh from a file")
       .def(

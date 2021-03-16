@@ -53,8 +53,7 @@ class NonLocalNeighborhood : public NonLocalNeighborhoodBase {
 public:
   NonLocalNeighborhood(NonLocalManager & manager,
                        const ElementTypeMapReal & quad_coordinates,
-                       const ID & id = "neighborhood",
-                       const MemoryID & memory_id = 0);
+                       const ID & id = "neighborhood");
   ~NonLocalNeighborhood() override;
 
   /* ------------------------------------------------------------------------ */

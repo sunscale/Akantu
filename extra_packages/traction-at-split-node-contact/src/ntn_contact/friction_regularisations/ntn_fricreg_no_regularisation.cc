@@ -37,8 +37,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NTNFricRegNoRegularisation::NTNFricRegNoRegularisation(
-    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
-    : NTNBaseFriction(contact, id, memory_id),
+    NTNBaseContact & contact, const ID & id)
+    : NTNBaseFriction(contact, id),
       frictional_contact_pressure(0, 1, 0., id + ":frictional_contact_pressure",
                                   0., "frictional_contact_pressure") {
   AKANTU_DEBUG_IN();

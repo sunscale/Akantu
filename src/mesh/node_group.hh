@@ -30,7 +30,6 @@
 /* -------------------------------------------------------------------------- */
 #include "aka_array.hh"
 #include "aka_common.hh"
-#include "aka_memory.hh"
 #include "dumpable.hh"
 #include "mesh_filter.hh"
 /* -------------------------------------------------------------------------- */
@@ -40,14 +39,13 @@
 
 namespace akantu {
 
-class NodeGroup : public Memory, public Dumpable {
+class NodeGroup : public Dumpable {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   NodeGroup(const std::string & name, const Mesh & mesh,
-            const std::string & id = "node_group",
-            const MemoryID & memory_id = 0);
+            const std::string & id = "node_group");
   ~NodeGroup() override;
 
   /* ------------------------------------------------------------------------ */
@@ -110,7 +108,7 @@ private:
   std::string name;
 
   /// list of nodes in the group
-  Array<UInt> & node_group;
+  Array<UInt> node_group;
 
   /// reference to the mesh in question
   // const Mesh & mesh;

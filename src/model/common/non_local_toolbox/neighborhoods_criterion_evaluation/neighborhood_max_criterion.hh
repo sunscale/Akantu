@@ -45,8 +45,7 @@ public:
   NeighborhoodMaxCriterion(Model & model,
                            const ElementTypeMapReal & quad_coordinates,
                            const ID & criterion_id,
-                           const ID & id = "neighborhood_max_criterion",
-                           const MemoryID & memory_id = 0);
+                           const ID & id = "neighborhood_max_criterion");
   ~NeighborhoodMaxCriterion() override;
 
   /* ------------------------------------------------------------------------ */
@@ -91,11 +90,9 @@ public:
                                         const Array<Element> & elements,
                                         SynchronizationTag tag);
 
-  /* --------------------------------------------------------------------------
-   */
-  /* Accessors */
-  /* --------------------------------------------------------------------------
-   */
+  /* -------------------------------------------------------------------------*/
+  /* Accessors                                                                */
+  /* -------------------------------------------------------------------------*/
 public:
   /* ------------------------------------------------------------------------ */
   /* Class Members                                                            */

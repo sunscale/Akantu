@@ -41,9 +41,8 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id,
-             const MemoryID & memory_id)
-    : Memory(id, memory_id), ModelSolver(mesh, type, id, memory_id), mesh(mesh),
+Model::Model(Mesh & mesh, const ModelType & type, UInt dim, const ID & id)
+    : ModelSolver(mesh, type, id), mesh(mesh),
       spatial_dimension(dim == _all_dimensions ? mesh.getSpatialDimension()
                                                : dim),
       parser(getStaticParser()) {
@@ -313,13 +312,38 @@ void Model::addDumpGroupFieldToDumper(const std::string & dumper_name,
 }
 
 /* -------------------------------------------------------------------------- */
-void Model::dump() { mesh.dump(); }
+void Model::dump(const std::string & dumper_name) {
+  mesh.dump(dumper_name);
+}
 
 /* -------------------------------------------------------------------------- */
-void Model::dump(UInt step) { mesh.dump(step); }
+void Model::dump(const std::string & dumper_name, UInt step) {
+  mesh.dump(dumper_name, step);
+}
+
+/* ------------------------------------------------------------------------- */
+void Model::dump(const std::string & dumper_name, Real time,
+                             UInt step) {
+  mesh.dump(dumper_name, time, step);
+}
 
 /* -------------------------------------------------------------------------- */
-void Model::dump(Real time, UInt step) { mesh.dump(time, step); }
+void Model::dump() {
+  auto default_dumper = mesh.getDefaultDumperName();
+  this->dump(default_dumper);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::dump(UInt step) {
+  auto default_dumper = mesh.getDefaultDumperName();
+  this->dump(default_dumper, step);
+}
+
+/* -------------------------------------------------------------------------- */
+void Model::dump(Real time, UInt step) {
+  auto default_dumper = mesh.getDefaultDumperName();
+  this->dump(default_dumper, time, step);
+}
 
 /* -------------------------------------------------------------------------- */
 void Model::setDirectory(const std::string & directory) {

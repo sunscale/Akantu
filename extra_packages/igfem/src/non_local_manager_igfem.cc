@@ -33,9 +33,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 NonLocalManagerIGFEM::NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model,
-                                           const ID & id,
-                                           const MemoryID & memory_id)
-    : NonLocalManager(model, id, memory_id) {
+                                           const ID & id)
+    : NonLocalManager(model, id) {
 
   Mesh & mesh = this->model.getMesh();
 
@@ -47,7 +46,7 @@ NonLocalManagerIGFEM::NonLocalManagerIGFEM(SolidMechanicsModelIGFEM & model,
 }
 
 /* -------------------------------------------------------------------------- */
-NonLocalManagerIGFEM::~NonLocalManagerIGFEM() {}
+NonLocalManagerIGFEM::~NonLocalManagerIGFEM() =default;
 
 /* -------------------------------------------------------------------------- */
 void NonLocalManagerIGFEM::init() {

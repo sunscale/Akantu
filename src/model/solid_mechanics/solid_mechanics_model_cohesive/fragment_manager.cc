@@ -46,9 +46,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 FragmentManager::FragmentManager(SolidMechanicsModelCohesive & model,
-                                 bool dump_data, const ID & id,
-                                 const MemoryID & memory_id)
-    : GroupManager(model.getMesh(), id, memory_id), model(model),
+                                 bool dump_data, const ID & id)
+    : GroupManager(model.getMesh(), id), model(model),
       mass_center(0, model.getSpatialDimension(), "mass_center"),
       mass(0, model.getSpatialDimension(), "mass"),
       velocity(0, model.getSpatialDimension(), "velocity"),

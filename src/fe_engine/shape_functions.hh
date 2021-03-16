@@ -29,7 +29,6 @@
  */
 
 /* -------------------------------------------------------------------------- */
-#include "aka_memory.hh"
 #include "mesh.hh"
 /* -------------------------------------------------------------------------- */
 
@@ -39,14 +38,14 @@
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-class ShapeFunctions : protected Memory {
+class ShapeFunctions  {
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
   /* ------------------------------------------------------------------------ */
 public:
   ShapeFunctions(const Mesh & mesh, UInt spatial_dimension,
-                 const ID & id = "shape", const MemoryID & memory_id = 0);
-  ~ShapeFunctions() override = default;
+                 const ID & id = "shape");
+  virtual ~ShapeFunctions() = default;
 
   /* ------------------------------------------------------------------------ */
   /* Methods                                                                  */

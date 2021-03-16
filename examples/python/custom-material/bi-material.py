@@ -14,8 +14,8 @@ class LocalElastic(aka.Material):
                                   'Poisson ratio')
 
         # change it to have the initialize wrapped
-        super().registerInternal('factor', 1)
-        super().registerInternal('quad_coordinates', 2)
+        super().registerInternalReal('factor', 1)
+        super().registerInternalReal('quad_coordinates', 2)
 
     def initMaterial(self):
         nu = self.getReal('nu')
@@ -27,12 +27,12 @@ class LocalElastic(aka.Material):
         self.lame_mu = E / (2. * (1. + nu))
         super().initMaterial()
 
-        quad_coords = self.internals["quad_coordinates"]
-        factor = self.internals["factor"]
+        quad_coords = self.getInternalReal("quad_coordinates")
+        factor = self.getInternalReal("factor")
         model = self.getModel()
 
         model.getFEEngine().computeIntegrationPointsCoordinates(
-            quad_coords, self.element_filter)
+            quad_coords, self.getElementFilter())
 
         for elem_type in factor.elementTypes():
             factor = factor(elem_type)
@@ -57,7 +57,8 @@ class LocalElastic(aka.Material):
 
         n_quads = grad_u.shape[0]
         grad_u = grad_u.reshape((n_quads, 2, 2))
-        factor = self.internals['factor'](el_type, ghost_type).reshape(n_quads)
+        factor = self.getInternalReal('factor')(
+            el_type, ghost_type).reshape(n_quads)
         epsilon = self.computeEpsilon(grad_u)
         sigma = sigma.reshape((n_quads, 2, 2))
         trace = np.einsum('aii->a', grad_u)
@@ -73,7 +74,8 @@ class LocalElastic(aka.Material):
     def computeTangentModuli(self, el_type, tangent_matrix, ghost_type):
         n_quads = tangent_matrix.shape[0]
         tangent = tangent_matrix.reshape(n_quads, 3, 3)
-        factor = self.internals['factor'](el_type, ghost_type).reshape(n_quads)
+        factor = self.getInternalReal('factor')(
+            el_type, ghost_type).reshape(n_quads)
 
         Miiii = self.lame_lambda + 2 * self.lame_mu
         Miijj = self.lame_lambda

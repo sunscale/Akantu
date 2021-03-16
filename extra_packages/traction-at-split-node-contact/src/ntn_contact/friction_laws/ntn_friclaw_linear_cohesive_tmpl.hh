@@ -35,8 +35,8 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <class Regularisation>
 NTNFricLawLinearCohesive<Regularisation>::NTNFricLawLinearCohesive(
-    NTNBaseContact & contact, const ID & id, const MemoryID & memory_id)
-    : Regularisation(contact, id, memory_id),
+    NTNBaseContact & contact, const ID & id)
+    : Regularisation(contact, id),
       G_c(0, 1, 0., id + ":G_c", 0., "G_c"),
       tau_c(0, 1, 0., id + ":tau_c", 0., "tau_c"),
       tau_r(0, 1, 0., id + ":tau_r", 0., "tau_r") {

@@ -46,8 +46,7 @@ namespace dumpers {
   public:
     MaterialFunctor(const SolidMechanicsModel & model)
         : model(model), material_index(model.getMaterialByElement()),
-          nb_data_per_element("nb_data_per_element", model.getID(),
-                              model.getMemoryID()),
+          nb_data_per_element("nb_data_per_element", model.getID()),
           spatial_dimension(model.getSpatialDimension()) {}
 
     /* ------------------------------------------------------------------------

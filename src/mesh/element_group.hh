@@ -31,7 +31,6 @@
 
 /* -------------------------------------------------------------------------- */
 #include "aka_common.hh"
-#include "aka_memory.hh"
 #include "dumpable.hh"
 #include "element_type_map.hh"
 #include "node_group.hh"
@@ -50,7 +49,7 @@ class Element;
 namespace akantu {
 
 /* -------------------------------------------------------------------------- */
-class ElementGroup : private Memory, public Dumpable {
+class ElementGroup : public Dumpable {
 
   /* ------------------------------------------------------------------------ */
   /* Constructors/Destructors                                                 */
@@ -58,8 +57,7 @@ class ElementGroup : private Memory, public Dumpable {
 public:
   ElementGroup(const std::string & name, const Mesh & mesh,
                NodeGroup & node_group, UInt dimension = _all_dimensions,
-               const std::string & id = "element_group",
-               const MemoryID & mem_id = 0);
+               const std::string & id = "element_group");
 
   ElementGroup(const ElementGroup & /*unused*/);
 

@@ -75,8 +75,7 @@ public:
       FEEngineTemplate<IntegratorGauss, ShapeStructural, _ek_structural>;
 
   StructuralMechanicsModel(Mesh & mesh, UInt dim = _all_dimensions,
-                           const ID & id = "structural_mechanics_model",
-                           const MemoryID & memory_id = 0);
+                           const ID & id = "structural_mechanics_model");
 
   ~StructuralMechanicsModel() override;
 
@@ -261,12 +260,12 @@ public:
   /* ------------------------------------------------------------------------ */
 public:
   /// Compute Linear load function set in global axis
-  template <ElementType type>
-  void computeForcesByGlobalTractionArray(const Array<Real> & tractions);
+  void computeForcesByGlobalTractionArray(const Array<Real> & traction_global,
+                                          ElementType type);
 
   /// Compute Linear load function set in local axis
-  template <ElementType type>
-  void computeForcesByLocalTractionArray(const Array<Real> & tractions);
+  void computeForcesByLocalTractionArray(const Array<Real> & tractions,
+                                         ElementType type);
 
   /// compute force vector from a function(x,y,momentum) that describe stresses
   // template <ElementType type>
@@ -284,25 +283,25 @@ private:
   Real f_m2a;
 
   /// displacements array
-  Array<Real> * displacement_rotation{nullptr};
+  std::unique_ptr<Array<Real>> displacement_rotation;
 
   /// velocities array
-  Array<Real> * velocity{nullptr};
+  std::unique_ptr<Array<Real>> velocity;
 
   /// accelerations array
-  Array<Real> * acceleration{nullptr};
+  std::unique_ptr<Array<Real>> acceleration;
 
   /// forces array
-  Array<Real> * internal_force{nullptr};
+  std::unique_ptr<Array<Real>> internal_force;
 
   /// forces array
-  Array<Real> * external_force{nullptr};
+  std::unique_ptr<Array<Real>> external_force;
 
   /// lumped mass array
-  Array<Real> * mass{nullptr};
+  std::unique_ptr<Array<Real>> mass;
 
   /// boundaries array
-  Array<bool> * blocked_dofs{nullptr};
+  std::unique_ptr<Array<bool>> blocked_dofs;
 
   /// stress array
   ElementTypeMapArray<Real> stress;

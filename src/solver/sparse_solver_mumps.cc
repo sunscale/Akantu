@@ -120,9 +120,8 @@ namespace akantu {
 
 /* -------------------------------------------------------------------------- */
 SparseSolverMumps::SparseSolverMumps(DOFManagerDefault & dof_manager,
-                                     const ID & matrix_id, const ID & id,
-                                     const MemoryID & memory_id)
-    : SparseSolver(dof_manager, matrix_id, id, memory_id),
+                                     const ID & matrix_id, const ID & id)
+    : SparseSolver(dof_manager, matrix_id, id),
       dof_manager(dof_manager), master_rhs_solution(0, 1) {
   AKANTU_DEBUG_IN();
 

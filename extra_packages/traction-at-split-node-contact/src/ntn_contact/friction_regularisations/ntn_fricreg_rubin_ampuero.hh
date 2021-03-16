@@ -44,8 +44,7 @@ class NTNFricRegRubinAmpuero : public NTNFricRegNoRegularisation {
   /* ------------------------------------------------------------------------ */
 public:
   NTNFricRegRubinAmpuero(NTNBaseContact & contact,
-                         const ID & id = "rubin_ampuero",
-                         const MemoryID & memory_id = 0);
+                         const ID & id = "rubin_ampuero");
   virtual ~NTNFricRegRubinAmpuero(){};
 
   /* ------------------------------------------------------------------------ */

@@ -39,7 +39,7 @@ namespace akantu {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 InternalField<T>::InternalField(const ID & id, Material & material)
-    : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, material.getID()),
       material(material), fem(&(material.getModel().getFEEngine())),
       element_filter(material.getElementFilter()),
       spatial_dimension(material.getModel().getSpatialDimension()) {}
@@ -49,7 +49,7 @@ template <typename T>
 InternalField<T>::InternalField(
     const ID & id, Material & material, FEEngine & fem,
     const ElementTypeMapArray<UInt> & element_filter)
-    : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, material.getID()),
       material(material), fem(&fem), element_filter(element_filter),
       spatial_dimension(material.getSpatialDimension()) {}
 
@@ -58,15 +58,14 @@ template <typename T>
 InternalField<T>::InternalField(
     const ID & id, Material & material, UInt dim, FEEngine & fem,
     const ElementTypeMapArray<UInt> & element_filter)
-    : ElementTypeMapArray<T>(id, material.getID(), material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, material.getID()),
       material(material), fem(&fem), element_filter(element_filter),
       spatial_dimension(dim) {}
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
 InternalField<T>::InternalField(const ID & id, const InternalField<T> & other)
-    : ElementTypeMapArray<T>(id, other.material.getID(),
-                             other.material.getMemoryID()),
+    : ElementTypeMapArray<T>(id, other.material.getID()),
       material(other.material), fem(other.fem),
       element_filter(other.element_filter), default_value(other.default_value),
       spatial_dimension(other.spatial_dimension),
