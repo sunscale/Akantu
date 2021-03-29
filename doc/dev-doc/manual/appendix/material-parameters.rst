@@ -15,6 +15,10 @@ Parameters:
 - ``nu``: (*Real*) Poisson's ratio
 - ``Plane_stress``: (*bool*) Plane stress simplification (only 2D problems)
 
+Energies:
+
+- ``potential``: elastic potential energy
+
 
 Linear elastic anisotropic
 --------------------------
@@ -94,6 +98,11 @@ Parameters:
 - ``nu``: (*Real*) Poisson's ratio
 - ``h``: (*Real*) Hardening modulus
 - ``sigma_y``: (*Real*) Yield stress
+
+Energies:
+
+- ``potential``: elastic part of the potential energy
+- ``plastic``: dissipated plastic energy (integrated over time)
 
 
 Marigo

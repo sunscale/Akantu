@@ -60,13 +60,17 @@ protected:
   /* Methods                                                                  */
   /* ------------------------------------------------------------------------ */
 public:
-  /// get the energy specifying the type for the time step
+  /**
+   * @brief Return potential or plastic energy
+   *
+   * Plastic dissipated energy is integrated over time.
+   */
   Real getEnergy(const std::string & type) override;
 
-  /// Compute the plastic energy
+  /// Update the plastic energy for the current timestep
   void updateEnergies(ElementType el_type) override;
 
-  /// Compute the true potential energy
+  /// Compute the true potential energy (w/ elastic strain)
   void computePotentialEnergy(ElementType el_type) override;
 
 protected:
@@ -84,7 +88,7 @@ protected:
       const Matrix<Real> & previous_inelastic_strain,
       const Matrix<Real> & delta_inelastic_strain) const;
 
-  /// get the plastic energy for the time step
+  /// Get the integrated plastic energy for the time step
   Real getPlasticEnergy();
 
   /* ------------------------------------------------------------------------ */
