@@ -11,17 +11,16 @@ import matplotlib.pyplot as plt
 
 # ## Setting up the geometry
 #
-# The above problem is modelled with the *BRep* representation in the GMsh format as follows.
-# Please read and understand geoemtric details. Report your observations.
-#
+# The above problem is modelled with the *BRep* representation
+# in the GMsh format as follows.
 # The file *plate.geo* is:
 
 L = 10
-l = L/100
+length = L/100
 
 geometry_file = f"""
 L = {L};
-l = {l};
+l = {length};
 h = l;
 """
 
@@ -60,10 +59,12 @@ else:
 
 
 # ## Regularization of the problem with cohesive element insertion
-# In order the employ cohesive-zone modeling in **Akantu** with dynamical insersion, several changes must be made.
+# In order the employ cohesive-zone modeling in **Akantu** with
+# dynamical insersion, several changes must be made.
 
 # ### Setting up the cohesive constitutive law
-# We use a brittle material (same parameters as in the paper Zhou, Molinari, Ramesh 2007)
+# We use a brittle material (same parameters as in the paper:
+# Zhou, Molinari, Ramesh 2007)
 
 material_file = """
 model solid_mechanics_model_cohesive [
@@ -128,7 +129,7 @@ model.updateAutomaticInsertion()
 
 # Implement Boundary and initial conditions
 # Dirichlet Boundary condition
-#model.applyBC(aka.FixedValue(0., aka._x), 'left')
+# model.applyBC(aka.FixedValue(0., aka._x), 'left')
 model.applyBC(aka.FixedValue(0., aka._y), 'bottom')
 
 model.getExternalForce()[:] = 0
@@ -180,7 +181,8 @@ model.applyBC(functor_r, 'right')
 functor_l = FixedDisplacement(aka._x, -1e-1)
 model.applyBC(functor_l, 'left')
 
-# Initial condition : velocity gradient : in x = 0 we have -v and in x = L we have +v
+# Initial condition : velocity gradient:
+#  in x = 0 we have -v and in x = L we have +v
 
 nodes = model.getMesh().getNodes()
 vel_field = np.zeros(nodes.shape)
