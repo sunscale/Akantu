@@ -1,4 +1,5 @@
 /* -------------------------------------------------------------------------- */
+#include "py_aka_array.hh"
 #include <fragment_manager.hh>
 #include <solid_mechanics_model_cohesive.hh>
 /* -------------------------------------------------------------------------- */
@@ -27,15 +28,17 @@ namespace akantu {
   })
 
 void register_fragment_manager(py::module & mod) {
-  py::class_<FragmentManager>(mod, "FragmentManager")
+  py::class_<FragmentManager, GroupManager>(mod, "FragmentManager")
       .def(py::init<SolidMechanicsModelCohesive &, bool, const ID &>(),
            py::arg("model"), py::arg("dump_data") = true,
            py::arg("ID") = "fragment_manager")
-      .def_function(buildFragments)
+      .def("buildFragments", &FragmentManager::buildFragments,
+           py::arg("damage_limit") = 1.)
       .def_function(computeCenterOfMass)
       .def_function(computeVelocity)
       .def_function(computeInertiaMoments)
-      .def_function(computeAllData)
+      .def("computeAllData", &FragmentManager::computeAllData,
+           py::arg("damage_limit") = 1.)
       .def_function(computeNbElementsPerFragment)
       .def_function(getNbFragment)
       .def_function(getMass)

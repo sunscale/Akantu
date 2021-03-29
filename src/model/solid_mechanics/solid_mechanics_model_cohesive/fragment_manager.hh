@@ -85,7 +85,7 @@ public:
   void computeInertiaMoments();
 
   /// compute all fragments' data
-  void computeAllData();
+  void computeAllData(Real damage_limit = 1.);
 
   /// compute number of elements per fragment
   void computeNbElementsPerFragment();
