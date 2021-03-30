@@ -9,98 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# ## Setting up the geometry
-#
-# The above problem is modelled with the *BRep* representation
-# in the GMsh format as follows.
-# The file *plate.geo* is:
-
-L = 10
-length = L/100
-
-geometry_file = f"""
-L = {L};
-l = {length};
-h = l;
-"""
-
-geometry_file += """
-Point(1) = {0, 0, 0, h};
-Point(2) = {L, 0, 0, h};
-Point(3) = {L, l, 0, h};
-Point(4) = {0, l, 0, h};
-
-Line(1) = {1, 2};
-Line(2) = {2, 3};
-Line(3) = {3, 4};
-Line(4) = {4, 1};
-
-Line Loop(1) = {1, 2, 3, 4};
-Plane Surface(1) = {1};
-
-Transfinite Surface "*";
-
-
-Physical Surface("bulk") = {1};
-Physical Line("left") = {4};
-Physical Line("bottom") = {1};
-Physical Line("top") = {3};
-Physical Line("right") = {2};
-"""
-
-with open('plate.geo', 'w') as f:
-    f.write(geometry_file)
-
-ret = subprocess.run("gmsh -2 -order 1 -o plate.msh plate.geo", shell=True)
-if ret.returncode:
-    print("Beware, gmsh could not run: mesh is not regenerated")
-else:
-    print("Mesh generated")
-
-
-# ## Regularization of the problem with cohesive element insertion
-# In order the employ cohesive-zone modeling in **Akantu** with
-# dynamical insersion, several changes must be made.
-
-# ### Setting up the cohesive constitutive law
-# We use a brittle material (same parameters as in the paper:
-# Zhou, Molinari, Ramesh 2007)
-
-material_file = """
-model solid_mechanics_model_cohesive [
-
-   cohesive_inserter [
-    bounding_box = [[0,10],[-10, 10]]
-  ]
-
-
-  material elastic [
-    name = virtual
-    rho = 1    # density
-    E   = 1    # young's modulus
-    nu  = 0.3  # poisson's ratio
-    finite_deformation = true
-  ]
-
-  material cohesive_linear [
-    name = cohesive
-    sigma_c = 0.1
-    G_c = 1e-2
-    beta = 1.
-    penalty = 10.
-  ]
-]
-"""
-
-with open('material.dat', 'w') as f:
-    f.write(material_file)
-
-
 # ### Setting up the *SolidMechanicsModelCohesive*
 # We need to read again the material file and the mesh
-
 # Create the Solid Mechanics Cohesive Model in Akantu
-
 
 # reading material file
 aka.parseInput('material.dat')
