@@ -73,6 +73,7 @@ package_is_activated(cohesive_element _is_activated)
 if (_is_activated)
   list(APPEND PYAKANTU_SRCS
     py_solid_mechanics_model_cohesive.cc
+    py_fragment_manager.cc
     )
 endif()
 

@@ -126,7 +126,7 @@ public:
 private:
   struct IsUnbrokenFunctor {
     IsUnbrokenFunctor(const Real & max_damage) : max_damage(max_damage) {}
-    bool operator()(const Real & x) const  { return x < max_damage; }
+    bool operator()(const Real & x) const { return x < max_damage; }
     const Real max_damage;
   };
 
@@ -347,12 +347,13 @@ void FragmentManager::computeInertiaMoments() {
 }
 
 /* -------------------------------------------------------------------------- */
-void FragmentManager::computeAllData() {
+void FragmentManager::computeAllData(Real damage_limit) {
   AKANTU_DEBUG_IN();
 
-  buildFragments();
+  buildFragments(damage_limit);
   computeVelocity();
   computeInertiaMoments();
+  computeNbElementsPerFragment();
 
   AKANTU_DEBUG_OUT();
 }

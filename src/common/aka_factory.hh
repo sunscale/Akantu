@@ -77,6 +77,14 @@ public:
         allocators.at(id)(std::forward<AArgs>(args)...));
   }
 
+  std::vector<T> getPossibleAllocators() {
+    std::vector<T> keys;
+    for (auto & e : allocators) {
+      keys.push_back(e.first);
+    }
+    return keys;
+  }
+
 private:
   std::map<T, allocator_t> allocators;
 };
