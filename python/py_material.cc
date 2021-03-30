@@ -69,8 +69,7 @@ protected:
 
 /* -------------------------------------------------------------------------- */
 template <typename T>
-void register_internal_field(py::module & mod,
-                                     const std::string & name) {
+void register_internal_field(py::module & mod, const std::string & name) {
   py::class_<InternalField<T>, ElementTypeMapArray<T>,
              std::shared_ptr<InternalField<T>>>(
       mod, ("InternalField" + name).c_str());
@@ -156,7 +155,8 @@ void register_material(py::module & mod) {
                    obj.release();
                    return std::unique_ptr<Material>(&ptr);
                  });
-           });
+           })
+      .def("getPossibleAllocators", &MaterialFactory::getPossibleAllocators);
 
   register_internal_field<Real>(mod, "Real");
   register_internal_field<UInt>(mod, "UInt");
