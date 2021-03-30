@@ -2,11 +2,9 @@
 # coding: utf-8
 
 # import akantu
-import subprocess
 import akantu as aka
 # import numpy for vector manipulation
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 # ### Setting up the *SolidMechanicsModelCohesive*
@@ -180,21 +178,3 @@ print('average fragment size:', s_mean)
 Time = [i*dt for i in range(0, maxsteps)]
 
 Stress_MPa = [x/10**6 for x in Stress]
-
-plt.figure()
-plt.plot(Time, Stress)
-plt.xlabel("Time [s]")
-plt.ylabel("Stress [Pa]")
-plt.show()
-
-
-# Plot the energies as a function of time
-plt.figure()
-plt.plot(Time, E_pot, label='Potential Energy')
-plt.plot(Time, E_kin, label='Kinetic Energy')
-plt.plot(Time, E_dis, label='Dissipated Energy')
-plt.plot(Time, E_rev, label='Reversible Energy')
-plt.plot(Time, E_con, label='Contact Energy')
-plt.legend()
-print('uncomment if you want to see the graphs')
-# plt.show()
