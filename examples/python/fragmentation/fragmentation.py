@@ -18,7 +18,12 @@ aka.parseInput('material.dat')
 # creating mesh
 spatial_dimension = 2
 mesh = aka.Mesh(spatial_dimension)
-mesh.read('plate.msh')
+
+# geometry (as defined in geo file)
+L = 10
+length = L/100
+
+mesh.read('fragmentation_mesh.msh')
 
 # creates the model
 model = aka.SolidMechanicsModelCohesive(mesh)
@@ -165,7 +170,7 @@ print('Nb_frag:', Nb_frag)
 Nb_elem_mean = np.mean(Nb_elem_per_frag)
 print('average Nb elem / fragment:', Nb_elem_mean)
 # knowing the element size we can get the average fragment size
-s_mean = Nb_elem_mean*l
+s_mean = Nb_elem_mean*length
 print('average fragment size:', s_mean)
 
 
@@ -191,4 +196,5 @@ plt.plot(Time, E_dis, label='Dissipated Energy')
 plt.plot(Time, E_rev, label='Reversible Energy')
 plt.plot(Time, E_con, label='Contact Energy')
 plt.legend()
-plt.show()
+print('uncomment if you want to see the graphs')
+# plt.show()
