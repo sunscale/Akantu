@@ -42,7 +42,7 @@ MaterialPhaseField<spatial_dimension>::MaterialPhaseField(SolidMechanicsModel & 
 
   AKANTU_DEBUG_IN();
 
-  
+  this->registerParam("eta", eta, Real(0.), _pat_parsable, "eta");
   this->damage.initialize(0);
 
   AKANTU_DEBUG_OUT();
@@ -95,7 +95,7 @@ void MaterialPhaseField<spatial_dimension>::computeTangentModuli(
 template <UInt spatial_dimension>
 void MaterialPhaseField<spatial_dimension>::computeTangentModuliOnQuad(
     Matrix<Real> & tangent, Real & dam) {
-  tangent *= (1 - dam)*(1 - dam);
+  tangent *= (1 - dam)*(1 - dam) + eta;
 }
 
   
